@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Giga3 AI Test</title>
+</head>
+<body>
+
+<h2>Giga3 AI Test</h2>
+
+<input id="msg" placeholder="Ask AI..." />
+<button onclick="send()">Send</button>
+
+<p id="out"></p>
+
+<script>
+async function send() {
+  const message = document.getElementById("msg").value;
+
+  const res = await fetch("https://colorful-porpoise-374.convex.cloud/action/ai:askAI", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ message })
+  });
+
+  const data = await res.json();
+  document.getElementById("out").innerText = data;
+}
+</script>
+
+</body>
+</html>

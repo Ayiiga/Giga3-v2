@@ -1,0 +1,50 @@
+:root{
+  --bg:#0f1115;
+  --card: rgba(255,255,255,0.04);
+  --glass: rgba(255,255,255,0.06);
+  --muted: rgba(255,255,255,0.6);
+  --accent: #7c5cff;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,-apple-system,Arial}
+body{background:linear-gradient(180deg,#071018 0%, #0f1115 100%);color:#e6eef8;display:flex;align-items:center;justify-content:center}
+
+.container{max-width:700px;width:100%;padding:32px;border-radius:20px;background:rgba(255,255,255,0.04);backdrop-filter:blur(18px);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.4)}
+.button{display:inline-flex;align-items:center;justify-content:center;padding:14px 22px;border-radius:12px;background:rgba(124,92,255,0.15);color:#fff;text-decoration:none;font-weight:700;border:1px solid rgba(124,92,255,0.4);transition:transform .2s ease,background .2s ease}
+.button:hover{transform:translateY(-1px);background:rgba(124,92,255,0.22)}
+
+.app-shell{width:100%;max-width:1100px;height:92vh;margin:24px;border-radius:16px;display:grid;grid-template-columns:280px 1fr;overflow:hidden;backdrop-filter:blur(8px);box-shadow:0 6px 30px rgba(2,6,23,0.7)}
+.sidebar{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:18px;border-right:1px solid rgba(255,255,255,0.03)}
+.logo{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px}
+.new-chat{margin-top:16px;padding:10px;border-radius:10px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+.chats-list{margin-top:18px;display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow:auto}
+.chat-item{padding:10px;border-radius:8px;background:transparent;color:var(--muted);font-size:14px}
+
+.chat-panel{display:flex;flex-direction:column;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);}
+.chat-header{padding:18px;border-bottom:1px solid rgba(255,255,255,0.03);display:flex;justify-content:space-between;align-items:center}
+.messages{flex:1;padding:18px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:80%;padding:12px;border-radius:12px;background:var(--card);backdrop-filter:blur(6px)}
+.msg.user{align-self:flex-end;background:linear-gradient(180deg, rgba(124,92,255,0.14), rgba(124,92,255,0.06));}
+.msg.assistant{align-self:flex-start;background:rgba(255,255,255,0.03);}
+
+.input-box{display:flex;gap:8px;padding:14px;border-top:1px solid rgba(255,255,255,0.03);align-items:center}
+.input-box input{flex:1;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+.input-box button{padding:10px 14px;border-radius:10px;border:none;background:var(--accent);color:#06102a;font-weight:600;cursor:pointer}
+
+.tokens{font-size:13px;color:var(--muted)}
+
+/* Mobile first */
+@media(min-width:900px){
+  body{padding:20px}
+}
+
+/* Loading */
+.loader{display:inline-block;width:18px;height:18px;border:3px solid rgba(255,255,255,0.08);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Simple glass for auth */
+.auth-box{max-width:420px;margin:120px auto;padding:28px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 8px 40px rgba(2,6,23,0.6)}
+.auth-box input{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+.auth-box button{width:100%;padding:12px;margin-top:14px;border-radius:8px;border:none;background:var(--accent);color:#06102a;font-weight:700}
+
+.center{display:flex;flex-direction:column;align-items:center;justify-content:center}

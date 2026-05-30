@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard - Giga3 AI</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+</head>
+<body>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="logo">Giga3 AI</div>
+      <div class="new-chat">+ New Chat</div>
+      <div class="chats-list" id="chatsList">
+        <!-- chat history placeholder -->
+      </div>
+      <div style="margin-top:20px" class="tokens">Tokens: <span id="tokenCount">-</span></div>
+    </aside>
+
+    <section class="chat-panel">
+      <div class="chat-header">
+        <div>Giga3 AI</div>
+        <div class="tokens">User: <span id="userEmail">guest</span> • <a href="#" onclick="logout()" style="color:#7c5cff;text-decoration:none;">Logout</a></div>
+      </div>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="input-box">
+        <input id="message" placeholder="Ask Giga3 AI..." autocomplete="off" />
+        <button id="sendBtn" onclick="send()">Send</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/auth.js"></script>
+  <script src="./assets/js/chat.js"></script>
+
+</body>
+</html>
