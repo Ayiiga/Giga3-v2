@@ -63,3 +63,4 @@ Files changed/added
 If you want, I can:
 - Deploy Convex functions and provide the Cloud URL (requires your Convex account)
 - Wire Cloudflare Pages config for deployment
+"# Giga3-v2" 
