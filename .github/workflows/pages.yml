@@ -62,7 +62,7 @@ jobs:
           NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY }}
         run: |
           set -o pipefail
-          npm run build 2>&1 | tee ../build.log
+          npm run build 2>&1 | tee ../build.log || (echo '--- BUILD FAILED ---' && tail -80 ../build.log && exit 1)
 
       - name: Report build failure
         if: failure()
