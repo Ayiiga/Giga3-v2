@@ -1,4 +1,5 @@
 import type { UsageSnapshot } from "./constants";
+import { CREDIT_COSTS } from "./constants";
 
 export function formatExpiry(expiresAt: number | null): string {
   if (!expiresAt) return "—";
@@ -21,4 +22,12 @@ export function planDisplayName(plan: string): string {
 
 export function creditsLow(usage: UsageSnapshot, threshold = 10): boolean {
   return usage.credits <= threshold;
+}
+
+export function canGenerateImage(usage: UsageSnapshot): boolean {
+  return usage.credits >= CREDIT_COSTS.image;
+}
+
+export function canGenerateVideo(usage: UsageSnapshot): boolean {
+  return usage.credits >= CREDIT_COSTS.video;
 }
