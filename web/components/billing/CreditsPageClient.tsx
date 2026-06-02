@@ -4,8 +4,8 @@ import { CreditBadge } from "@/components/billing/CreditBadge";
 import { UsageTracker } from "@/components/billing/UsageTracker";
 import { ButtonLink } from "@/components/ui/Button";
 import { useBilling } from "@/hooks/useBilling";
+import { CREDIT_COSTS } from "@/lib/credits/constants";
 import { CREDIT_PACKS, formatGhs } from "@/lib/payments/plans";
-import { CREDITS_PER_IMAGE, CREDITS_PER_VIDEO } from "@/lib/credits/constants";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -28,8 +28,8 @@ export function CreditsPageClient() {
       <div className="text-center">
         <h1 className="text-3xl font-bold">Buy credits</h1>
         <p className="mt-2 text-muted">
-          Images cost {CREDITS_PER_IMAGE} credits · Videos cost {CREDITS_PER_VIDEO}{" "}
-          credits (Premium). Payments in GHS via Paystack.
+          Images cost {CREDIT_COSTS.image} credits · Videos cost{" "}
+          {CREDIT_COSTS.video} credits. Payments in GHS via Paystack.
         </p>
         {usage && (
           <div className="mt-4 flex justify-center">
@@ -62,13 +62,13 @@ export function CreditsPageClient() {
           </article>
         ))}
       </div>
-      {!usage?.premium && (
+      {usage && !usage.canGenerateVideo && (
         <p className="rounded-xl border border-amber-500/30 bg-amber-950/30 p-4 text-sm text-amber-100">
-          Video generation requires{" "}
+          Need more credits for video?{" "}
           <Link href="/subscribe" className="underline">
-            Premium
-          </Link>
-          . Free users get 5 images per day without credits.
+            Subscribe
+          </Link>{" "}
+          or buy a larger credit pack.
         </p>
       )}
       <p className="text-center">

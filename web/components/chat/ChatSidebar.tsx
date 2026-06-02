@@ -124,7 +124,7 @@ export function ChatSidebar({
 
         <div className="border-t border-border p-3 text-xs text-muted">
           <p className="truncate font-medium text-foreground">{email}</p>
-          <p className="mt-1">Credits: {tokens ?? "—"}</p>
+          <p className="mt-1">Credits: {credits ?? "—"}</p>
         </div>
       </aside>
     </>

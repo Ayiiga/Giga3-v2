@@ -3,6 +3,9 @@ import { CREDIT_COSTS, FREE_STARTER_CREDITS } from "@/lib/payments/subscriptionC
 
 export { CREDIT_COSTS, FREE_STARTER_CREDITS };
 
+export const CREDITS_PER_IMAGE = CREDIT_COSTS.image;
+export const CREDITS_PER_VIDEO = CREDIT_COSTS.video;
+
 export interface UsageSnapshot {
   subscriptionPlan: SubscriptionPlanId;
   subscriptionActive: boolean;
