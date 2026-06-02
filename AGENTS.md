@@ -2,69 +2,45 @@
 
 ## Cursor Cloud specific instructions
 
-### Product overview
+### Services
 
-Giga3 AI is a Convex backend (`convex/`) with a Next.js 14 app in `web/` (static export → `web/out` → Cloudflare Pages via GitHub Actions on `main`). Legacy static UI remains in `frontend/`.
+| Service | Path | Notes |
+|---------|------|--------|
+| Convex backend | `convex/` | `npx convex dev` / `npx convex deploy` from repo root |
+| Next.js PWA (static export) | `web/` | Output: **`web/out`** (not `.next`) |
+| Legacy static site | `frontend/` | Not deployed by CI; optional reference only |
 
-### Services (local development)
+### Commands (from repo root)
 
-| Service | Command | Notes |
-|--------|---------|--------|
-| Convex backend | `npx convex dev` | If CLI fails on version check, start the local binary (see below). URLs in `.env.local` (`CONVEX_URL` → `http://127.0.0.1:3210`). |
-| Legacy chat UI | `npx --yes serve frontend -l 5173` | `config.js` auto-uses local Convex on `127.0.0.1` / `localhost`. |
-| Next.js site | `cd web && npm run dev` | Port 3000; `npm run build` → `web/out/`. |
+- Install root: `npm ci --legacy-peer-deps` (or `npm install` if no lockfile change)
+- Install web: `cd web && npm install --legacy-peer-deps`
+- Lint: `npm run lint` (runs `web` ESLint)
+- Build: `npm run build` (static export to `web/out`)
+- Convex codegen: `npx convex codegen`
 
-Use tmux for long-running processes.
+### Build-time env (web)
 
-### Dependencies
+Set in `web/.env.local` or CI secrets:
 
-```bash
-npm install              # root: convex, openai, stripe
-cd web && npm install    # Next.js app (separate from root lockfile)
-```
+- `NEXT_PUBLIC_CONVEX_URL` — required for production build (CI uses GitHub secret)
+- `NEXT_PUBLIC_CONVEX_SITE_URL` — optional (HTTP actions URL)
+- `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` — optional in UI
 
-No real test suite (`npm test` at root is a placeholder). Next.js: `npm run build:web` or `cd web && npm run lint && npm run build`.
+### Convex production env
 
-**Deploy:** See `DEPLOYMENT.md`. Pushing `main` deploys `web/out` to Cloudflare Pages. This VM may hit `ECONNRESET` on npm; verify builds in CI or locally.
+Set in Convex dashboard: `OPENAI_API_KEY`, `PAYSTACK_SECRET_KEY`, `FRONTEND_URL` (e.g. `https://www.giga3ai.com`), plus `REPLICATE_API_TOKEN` for media.
 
-### Secrets
+Paystack webhook: `https://<deployment>.convex.site/paystack/webhook`
 
-```bash
-npx convex env set OPENAI_API_KEY "$OPENAI_API_KEY"
-```
+### Cloudflare Pages
 
-Optional: `STRIPE_SECRET_KEY`, `FRONTEND_URL=http://127.0.0.1:5173`, Paystack keys for billing.
+- Project name: **`giga3ai`**
+- Build: `cd web && npm install --legacy-peer-deps && npm run build`
+- Output directory: **`web/out`**
+- `_redirects` in `web/public/_redirects` (static export uses per-route HTML; not SPA `/* /index.html 200`)
 
-**Cloud Agent note:** Outbound HTTPS to `api.openai.com` may be blocked in some VMs (SSL/connect errors). Login, queries, and chat actions still prove the stack; full AI replies need egress or run chat tests outside the sandbox.
+### Gotchas
 
-### Convex CLI offline workaround
-
-If `npx convex dev` fails with "Failed to fetch latest backend version", start the cached backend manually, then run the CLI watcher in another terminal:
-
-```bash
-~/.cache/convex/binaries/*/convex-local-backend \
-  --port 3210 --site-proxy-port 3211 \
-  --instance-name anonymous-workspace \
-  --instance-secret "$(grep instance-secret .env.local 2>/dev/null || echo '')" \
-  --local-storage /workspace/.convex/local/default/convex_local_storage \
-  /workspace/.convex/local/default/convex_local_backend.sqlite3
-```
-
-(Use the `instance-secret` from your existing anonymous dev setup in `.convex/`.)
-
-### HTTP API
-
-Frontend uses `frontend/assets/js/convexHttp.js` → `/api/query`, `/api/mutation`, `/api/action`.
-
-### Smoke test (API)
-
-```bash
-curl -sS -X POST "http://127.0.0.1:3210/api/query" \
-  -H "Content-Type: application/json" \
-  -d '{"path":"users:getUser","args":{"email":"you@example.com"},"format":"json"}'
-```
-
-### Smoke test (UI)
-
-1. Start Convex + `npx serve frontend -l 5173` or `cd web && npm run dev`
-2. Open chat login or legacy login, sign in, send a message (requires `OPENAI_API_KEY` on Convex and outbound access to OpenAI)
+- Static export + `useSearchParams`: payment pages wrap hooks in `<Suspense>`; `next.config.mjs` sets `experimental.missingSuspenseWithCSRBailout: false`.
+- Convex hooks must not run during SSR: billing/chat/media pages use `dynamic(..., { ssr: false })` and `mounted` guards before `useQuery`.
+- VM npm registry access may fail locally; rely on GitHub Actions for full `next build` verification when network is restricted.

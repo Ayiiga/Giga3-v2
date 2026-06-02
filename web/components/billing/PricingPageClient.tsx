@@ -11,7 +11,6 @@ import {
   SUBSCRIPTION_PRODUCTS,
   formatGhs,
 } from "@/lib/payments/plans";
-import { FREE_STARTER_CREDITS } from "@/lib/payments/subscriptionCatalog";
 import { useBilling } from "@/hooks/useBilling";
 import { cn } from "@/lib/utils";
 

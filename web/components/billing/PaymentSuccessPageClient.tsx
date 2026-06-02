@@ -4,9 +4,17 @@ import { PaymentSuccess } from "@/components/billing/PaymentSuccess";
 import { useBilling } from "@/hooks/useBilling";
 import { planDisplayName } from "@/lib/credits/rules";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 export function PaymentSuccessPageClient() {
+  return (
+    <Suspense fallback={<p className="text-center text-muted">Loading payment…</p>}>
+      <PaymentSuccessPageContent />
+    </Suspense>
+  );
+}
+
+function PaymentSuccessPageContent() {
   const params = useSearchParams();
   const reference = params.get("reference") ?? undefined;
   const { verify } = useBilling();
