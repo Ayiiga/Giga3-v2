@@ -3,46 +3,36 @@ name: Deploy to Cloudflare Pages
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: npm
-          cache-dependency-path: web/package.json
+          cache-dependency-path: web/package-lock.json
 
-      - name: Install and build Next.js site
-        working-directory: web
-        run: |
-          npm install
-          npm run build
+      - name: Install dependencies
+        run: npm ci || npm install
 
-      - name: Verify static export
-        working-directory: web
-        run: test -f out/index.html
+      - name: Lint
+        run: npm run lint
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-          cache-dependency-path: web/package.json
-
-      - name: Build for deploy
-        working-directory: web
-        run: |
-          npm install
-          npm run build
+      - name: Build static site
+        env:
+          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
+          NEXT_PUBLIC_CONVEX_SITE_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_SITE_URL }}
+          NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY }}
+        run: npm run build
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1

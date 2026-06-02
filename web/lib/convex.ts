@@ -1,14 +1,10 @@
 "use client";
 
 import { ConvexReactClient } from "convex/react";
+import { getConvexUrl, requireConvexUrl } from "./convex/env";
 
-const url = process.env.NEXT_PUBLIC_CONVEX_URL;
+const url = getConvexUrl();
 
 export const convex = url ? new ConvexReactClient(url) : null;
 
-export function getConvexUrl(): string {
-  if (!url) {
-    throw new Error("NEXT_PUBLIC_CONVEX_URL is not configured");
-  }
-  return url;
-}
+export { getConvexUrl, getConvexSiteUrl, requireConvexUrl } from "./convex/env";

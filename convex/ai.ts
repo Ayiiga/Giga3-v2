@@ -1,49 +1,96 @@
-import { action } from "./_generated/server";
-import { api } from "./_generated/api";
+import { action, internalMutation } from "./_generated/server";
+import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import OpenAI from "openai";
+
+const openai = () =>
+  new OpenAI({ apiKey: process.env.OPENAI_API_KEY ?? "" });
+
+export const persistLegacyChat = internalMutation({
+  args: {
+    email: v.string(),
+    userMessage: v.string(),
+    assistantMessage: v.string(),
+    newTokens: v.number(),
+  },
+  handler: async (ctx, args) => {
+    let user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
+
+    if (!user) {
+      const userId = await ctx.db.insert("users", {
+        email: args.email,
+        tokens: 12,
+        plan: "free",
+        tier: "free",
+        credits: 0,
+      });
+      user = await ctx.db.get(userId);
+      if (!user) throw new Error("Failed to create user");
+    }
+
+    await ctx.db.insert("chats", {
+      userId: args.email,
+      message: args.userMessage,
+      role: "user",
+      createdAt: Date.now(),
+    });
+
+    await ctx.db.insert("chats", {
+      userId: args.email,
+      message: args.assistantMessage,
+      role: "assistant",
+      createdAt: Date.now(),
+    });
+
+    await ctx.db.patch(user._id, { tokens: args.newTokens });
+    return { tokens: args.newTokens };
+  },
+});
 
 export const askAI = action({
   args: {
     email: v.string(),
     message: v.string(),
   },
-
   handler: async (ctx, args) => {
     const { email, message } = args;
+
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error("OPENAI_API_KEY is not configured");
+    }
 
     let user = await ctx.runQuery(api.users.getUser, { email });
     if (!user) {
       await ctx.runMutation(api.users.createUser, { email });
       user = await ctx.runQuery(api.users.getUser, { email });
     }
-
-    if (!user || user.tokens <= 0) {
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if (user.tokens <= 0) {
       throw new Error("Insufficient tokens. Please purchase more tokens.");
     }
 
-    await ctx.runMutation(api.chat.saveMessage, {
-      userId: email,
-      message,
-      role: "user",
-    });
-
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const response = await client.chat.completions.create({
-      model: "gpt-4o-mini",
+    const response = await openai().chat.completions.create({
+      model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
       messages: [{ role: "user", content: message }],
     });
 
     const aiContent =
-      response?.choices?.[0]?.message?.content ?? String(response ?? "");
+      response.choices[0]?.message?.content?.trim() ||
+      "I could not generate a response.";
 
-    await ctx.runMutation(api.chat.saveMessage, {
-      userId: email,
-      message: aiContent,
-      role: "assistant",
+    const newTokens = Math.max(0, user.tokens - 1);
+
+    await ctx.runMutation(internal.ai.persistLegacyChat, {
+      email,
+      userMessage: message,
+      assistantMessage: aiContent,
+      newTokens,
     });
-
-    const newTokens = await ctx.runMutation(api.users.deductToken, { email });
 
     return { content: aiContent, tokens: newTokens };
   },

@@ -4,7 +4,7 @@
 
 ### Product overview
 
-Giga3 AI is a static HTML/JS chat app (`frontend/`) plus Convex backend (`convex/`). A Next.js 14 marketing site lives in `web/` (static export → Cloudflare Pages).
+Giga3 AI is a Convex backend (`convex/`) with a Next.js 14 app in `web/` (static export → `web/out` → Cloudflare Pages via GitHub Actions on `main`). Legacy static UI remains in `frontend/`.
 
 ### Services (local development)
 
@@ -19,11 +19,13 @@ Use tmux for long-running processes.
 ### Dependencies
 
 ```bash
-npm install          # root: Convex + workspace web/
-cd web && npm install   # if workspace install fails
+npm install              # root: convex, openai, stripe
+cd web && npm install    # Next.js app (separate from root lockfile)
 ```
 
-No real test suite (`npm test` at root is a placeholder). Next.js: `npm run build -w giga3-ai-web` or `cd web && npm run build`.
+No real test suite (`npm test` at root is a placeholder). Next.js: `npm run build:web` or `cd web && npm run lint && npm run build`.
+
+**Deploy:** See `DEPLOYMENT.md`. Pushing `main` deploys `web/out` to Cloudflare Pages. This VM may hit `ECONNRESET` on npm; verify builds in CI or locally.
 
 ### Secrets
 
@@ -31,13 +33,13 @@ No real test suite (`npm test` at root is a placeholder). Next.js: `npm run buil
 npx convex env set OPENAI_API_KEY "$OPENAI_API_KEY"
 ```
 
-Optional: `STRIPE_SECRET_KEY`, `FRONTEND_URL=http://127.0.0.1:5173`.
+Optional: `STRIPE_SECRET_KEY`, `FRONTEND_URL=http://127.0.0.1:5173`, Paystack keys for billing.
 
-**Cloud Agent note:** Outbound HTTPS to `api.openai.com` may be blocked in some VMs (SSL/connect errors). Login, queries, and `askAI` reaching OpenAI still prove the stack; full AI replies need egress or run chat tests outside the sandbox.
+**Cloud Agent note:** Outbound HTTPS to `api.openai.com` may be blocked in some VMs (SSL/connect errors). Login, queries, and chat actions still prove the stack; full AI replies need egress or run chat tests outside the sandbox.
 
 ### Convex CLI offline workaround
 
-If `npx convex dev` fails with “Failed to fetch latest backend version”, start the cached backend manually, then run the CLI watcher in another terminal:
+If `npx convex dev` fails with "Failed to fetch latest backend version", start the cached backend manually, then run the CLI watcher in another terminal:
 
 ```bash
 ~/.cache/convex/binaries/*/convex-local-backend \
@@ -64,6 +66,5 @@ curl -sS -X POST "http://127.0.0.1:3210/api/query" \
 
 ### Smoke test (UI)
 
-1. Start Convex + `npx serve frontend -l 5173`
-2. Open `http://127.0.0.1:5173/login.html`, sign in, open dashboard
-3. Send a chat message (requires `OPENAI_API_KEY` on Convex **and** outbound access to OpenAI)
+1. Start Convex + `npx serve frontend -l 5173` or `cd web && npm run dev`
+2. Open chat login or legacy login, sign in, send a message (requires `OPENAI_API_KEY` on Convex and outbound access to OpenAI)
