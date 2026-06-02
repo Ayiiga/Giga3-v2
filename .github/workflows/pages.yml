@@ -91,7 +91,17 @@ jobs:
           path: build.log
 
       - name: Verify static output
-        run: test -f out/index.html
+        run: |
+          find out -maxdepth 4 -name 'index.html' | head -30
+          if [ -f out/index.html ]; then
+            echo "Found out/index.html"
+          elif [ -f out/index/index.html ]; then
+            echo "Found out/index/index.html (trailingSlash)"
+          else
+            echo "::error::No index.html in out/ — static export may have failed"
+            ls -la out 2>/dev/null || ls -la
+            exit 1
+          fi
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
