@@ -1,3 +1,8 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "export",
@@ -10,12 +15,15 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Import Convex from repo root (../convex)
   experimental: {
     externalDir: true,
   },
   transpilePackages: ["convex"],
   webpack: (config) => {
+    config.resolve.alias = {
+      ...(config.resolve.alias ?? {}),
+      "convex/server": path.resolve(__dirname, "node_modules/convex/server"),
+    };
     config.module.rules.push({
       test: /[\\/]convex[\\/]_generated[\\/].*\.js$/,
       type: "javascript/auto",
