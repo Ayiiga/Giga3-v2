@@ -36,6 +36,7 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex" aria-label="Main">
+          <a href="/media" className="text-sm text-muted transition-colors hover:text-foreground">Media</a>
           {navLinks.map((link) => (
             <a
               key={link.href}
@@ -71,7 +72,8 @@ export function Header() {
       {open && (
         <div className="glass border-t md:hidden">
           <Container className="flex flex-col gap-4 py-4">
-            {navLinks.map((link) => (
+            <a href="/media" className="text-sm text-muted transition-colors hover:text-foreground">Media</a>
+          {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}

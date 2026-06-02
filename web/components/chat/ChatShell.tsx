@@ -5,6 +5,8 @@ import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { MessageList } from "@/components/chat/MessageList";
 import { ToolSelector } from "@/components/chat/ToolSelector";
 import { useChatPlatform } from "@/hooks/useChatPlatform";
+import { useBilling } from "@/hooks/useBilling";
+import { CreditBadge } from "@/components/billing/CreditBadge";
 import { clearUserEmail } from "@/lib/auth";
 import { Menu, Sparkles } from "lucide-react";
 import Link from "next/link";
@@ -31,6 +33,7 @@ export function ChatShell() {
     changeMode,
     sendMessage,
   } = useChatPlatform();
+  const { usage } = useBilling();
 
   useEffect(() => {
     if (!email) router.replace("/chat/login");
@@ -74,7 +77,8 @@ export function ChatShell() {
             <Sparkles className="h-4 w-4 text-accent" />
             Giga3 AI
           </Link>
-          <span className="ml-auto text-xs text-muted">
+          <span className="ml-auto flex items-center gap-2 text-xs text-muted">
+            {usage && <CreditBadge credits={usage.credits} showLabel={false} />}
             {user?.tokens ?? "—"} tokens
           </span>
           <button

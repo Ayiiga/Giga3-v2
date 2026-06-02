@@ -49,8 +49,14 @@ export const sendMessage = action({
       await ctx.runMutation(api.users.createUser, { email: args.userId });
       user = await ctx.runQuery(api.users.getUser, { email: args.userId });
     }
-    if (!user || user.tokens <= 0) {
-      throw new Error("Insufficient tokens. Please purchase more tokens.");
+    await ctx.runMutation(api.credits.assertCanChat, { userId: args.userId });
+
+    const premium =
+      (user?.tier ?? "free") === "premium" &&
+      (!user?.subscriptionExpiresAt || user.subscriptionExpiresAt > Date.now());
+
+    if (!premium && (user?.tokens ?? 0) <= 0) {
+      throw new Error("Insufficient tokens. Upgrade to Premium or purchase credits.");
     }
 
     const mode =
@@ -101,9 +107,12 @@ export const sendMessage = action({
       content: assistantContent,
     });
 
-    const newTokens = await ctx.runMutation(api.users.deductToken, {
-      email: args.userId,
-    });
+    let newTokens = user?.tokens ?? 0;
+    if (!premium) {
+      newTokens = await ctx.runMutation(api.users.deductToken, {
+        email: args.userId,
+      });
+    }
 
     const title =
       conv.title === "New chat" || conv.title.endsWith("…")

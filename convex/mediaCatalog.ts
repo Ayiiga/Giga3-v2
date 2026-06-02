@@ -1,0 +1,68 @@
+export const IMAGE_CATEGORIES = {
+  anime_art: {
+    label: "Anime Art",
+    promptSuffix: "anime art style, vibrant colors, detailed illustration",
+  },
+  art_3d: {
+    label: "3D Art",
+    promptSuffix: "3d render, octane render, cinematic lighting, highly detailed",
+  },
+  historical_scenes: {
+    label: "Historical Scenes",
+    promptSuffix: "historical scene, period accurate, dramatic composition, photorealistic",
+  },
+  cinematic_posters: {
+    label: "Cinematic Posters",
+    promptSuffix: "movie poster style, cinematic, bold typography space, epic composition",
+  },
+  social_graphics: {
+    label: "Social Media Graphics",
+    promptSuffix: "social media graphic, clean layout, eye-catching, modern design",
+  },
+} as const;
+
+export const VIDEO_CATEGORIES = {
+  anime_videos: {
+    label: "Anime Videos",
+    promptSuffix: "anime style motion, smooth animation, vibrant",
+  },
+  historical_movies: {
+    label: "Historical Movies",
+    promptSuffix: "historical film scene, cinematic motion, period drama",
+  },
+  dramatic_scenes: {
+    label: "Dramatic Scenes",
+    promptSuffix: "dramatic cinematic scene, emotional lighting, film grain",
+  },
+  cinematic_trailers: {
+    label: "Cinematic Trailers",
+    promptSuffix: "movie trailer style, epic pacing, dramatic cuts feel",
+  },
+  social_shorts: {
+    label: "Social Media Shorts",
+    promptSuffix: "vertical social short, dynamic motion, trendy",
+  },
+} as const;
+
+export type ImageCategoryId = keyof typeof IMAGE_CATEGORIES;
+export type VideoCategoryId = keyof typeof VIDEO_CATEGORIES;
+
+export const REPLICATE_IMAGE_MODEL =
+  process.env.REPLICATE_IMAGE_MODEL ??
+  "black-forest-labs/flux-schnell";
+
+export const REPLICATE_VIDEO_MODEL =
+  process.env.REPLICATE_VIDEO_MODEL ??
+  "minimax/video-01";
+
+export function buildImagePrompt(category: string, userPrompt: string): string {
+  const cat =
+    IMAGE_CATEGORIES[category as ImageCategoryId] ?? IMAGE_CATEGORIES.anime_art;
+  return `${userPrompt.trim()}. ${cat.promptSuffix}`;
+}
+
+export function buildVideoPrompt(category: string, userPrompt: string): string {
+  const cat =
+    VIDEO_CATEGORIES[category as VideoCategoryId] ?? VIDEO_CATEGORIES.anime_videos;
+  return `${userPrompt.trim()}. ${cat.promptSuffix}`;
+}
