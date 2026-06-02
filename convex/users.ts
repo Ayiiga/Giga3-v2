@@ -28,3 +28,17 @@ export const getUser = query({
       .first();
   },
 });
+
+export const deductToken = mutation({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("email"), args.email))
+      .first();
+    if (!user) throw new Error("User not found");
+    const newTokens = Math.max(0, (user.tokens ?? 0) - 1);
+    await ctx.db.patch(user._id, { tokens: newTokens });
+    return newTokens;
+  },
+});

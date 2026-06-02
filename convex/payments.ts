@@ -75,25 +75,14 @@ export const confirmPurchase = action({
 		const tokens = Number((session.metadata as any)?.tokens || 0);
 		if (!email || tokens <= 0) throw new Error("Invalid session metadata");
 
-		// find or create user
-		let user = await ctx.db
-			.query("users")
-			.filter((q) => q.eq(q.field("email"), email))
-			.first();
-
+		let user = await ctx.runQuery(api.users.getUser, { email });
 		if (!user) {
-			const userId = await ctx.db.insert("users", { email, tokens: 0, plan: "paid" });
-			user = { _id: userId, email, tokens: 0, plan: "paid" } as any;
+			await ctx.runMutation(api.users.createUser, { email });
 		}
 
-		await ctx.db.patch(user._id, { tokens: (user.tokens ?? 0) + tokens });
-		await ctx.db.insert("transactions", {
-			userId: email,
-			amount: tokens,
-			reference: args.sessionId,
-			tokens,
-		});
+		await ctx.runMutation(api.payments.addTokens, { email, tokens });
+		const updated = await ctx.runQuery(api.users.getUser, { email });
 
-		return { email, tokens: (user.tokens ?? 0) + tokens };
+		return { email, tokens: updated?.tokens ?? tokens };
 	},
 });

@@ -1,5 +1,3 @@
-const convexUrl = window.GIGA3_CONFIG.CONVEX_URL;
-
 function appendMessage(text, role = "assistant") {
   const messagesDiv = document.getElementById("messages");
   const el = document.createElement("div");
@@ -34,18 +32,7 @@ async function send() {
   sendBtn.disabled = true;
 
   try {
-    const res = await fetch(`${convexUrl}/action/ai:askAI`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, message }),
-    });
-
-    if (!res.ok) {
-      const txt = await res.text();
-      throw new Error(txt || "Server error");
-    }
-
-    const data = await res.json();
+    const data = await convexAction("ai:askAI", { email, message });
     loadingWrap.remove();
     appendMessage(data.content || "(no reply)", "assistant");
     document.getElementById("tokenCount").innerText = data.tokens ?? "-";
@@ -77,28 +64,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function loadMessages(email) {
   try {
-    const res = await fetch(`${convexUrl}/query/chat:getMessages`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: email }),
-    });
-    if (!res.ok) return;
-    const msgs = await res.json();
+    const msgs = await convexQuery("chat:getMessages", { userId: email });
     const messagesDiv = document.getElementById("messages");
     messagesDiv.innerHTML = "";
     msgs.forEach((m) => {
       appendMessage(m.message, m.role === "user" ? "user" : "assistant");
     });
 
-    const userRes = await fetch(`${convexUrl}/query/users:getUser`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    if (userRes.ok) {
-      const user = await userRes.json();
-      document.getElementById("tokenCount").innerText = user?.tokens ?? "-";
-    }
+    const user = await convexQuery("users:getUser", { email });
+    document.getElementById("tokenCount").innerText = user?.tokens ?? "-";
   } catch (err) {
     console.warn("loadMessages error", err);
   }

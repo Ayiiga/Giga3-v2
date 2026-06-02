@@ -1,4 +1,5 @@
 import { action } from "./_generated/server";
+import { api } from "./_generated/api";
 import { v } from "convex/values";
 import OpenAI from "openai";
 
@@ -11,37 +12,23 @@ export const askAI = action({
   handler: async (ctx, args) => {
     const { email, message } = args;
 
-    // Ensure user exists
-    let user = await ctx.db
-      .query("users")
-      .filter((q) => q.eq(q.field("email"), email))
-      .first();
-
-    let userId = user?._id;
+    let user = await ctx.runQuery(api.users.getUser, { email });
     if (!user) {
-      userId = await ctx.db.insert("users", {
-        email,
-        tokens: 12,
-        plan: "free",
-      });
-      user = { _id: userId, email, tokens: 12, plan: "free" } as any;
+      await ctx.runMutation(api.users.createUser, { email });
+      user = await ctx.runQuery(api.users.getUser, { email });
     }
 
-    if (user.tokens <= 0) {
+    if (!user || user.tokens <= 0) {
       throw new Error("Insufficient tokens. Please purchase more tokens.");
     }
 
-    // Save user message
-    await ctx.db.insert("chats", {
+    await ctx.runMutation(api.chat.saveMessage, {
       userId: email,
       message,
       role: "user",
-      createdAt: Date.now(),
     });
 
-    // Call OpenAI securely on server
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
     const response = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: message }],
@@ -50,17 +37,13 @@ export const askAI = action({
     const aiContent =
       response?.choices?.[0]?.message?.content ?? String(response ?? "");
 
-    // Save AI response
-    await ctx.db.insert("chats", {
+    await ctx.runMutation(api.chat.saveMessage, {
       userId: email,
       message: aiContent,
       role: "assistant",
-      createdAt: Date.now(),
     });
 
-    // Deduct one token
-    const newTokens = Math.max(0, (user.tokens ?? 0) - 1);
-    await ctx.db.patch(userId, { tokens: newTokens });
+    const newTokens = await ctx.runMutation(api.users.deductToken, { email });
 
     return { content: aiContent, tokens: newTokens };
   },

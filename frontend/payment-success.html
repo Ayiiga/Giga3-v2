@@ -14,17 +14,14 @@
   </div>
 
   <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/convexHttp.js"></script>
   <script>
     async function confirm() {
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get('session_id');
       if (!sessionId) return document.getElementById('status').innerText = 'Missing session id.';
       try {
-        const res = await fetch(`${window.GIGA3_CONFIG.CONVEX_URL}/action/payments:confirmPurchase`, {
-          method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ sessionId })
-        });
-        if (!res.ok) throw new Error(await res.text());
-        const data = await res.json();
+        const data = await convexAction('payments:confirmPurchase', { sessionId });
         document.getElementById('status').innerText = `Success! ${data.tokens} tokens added to ${data.email}`;
       } catch (err) {
         document.getElementById('status').innerText = 'Error confirming purchase: ' + (err.message || err);
