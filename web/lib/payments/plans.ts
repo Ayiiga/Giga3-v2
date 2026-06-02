@@ -60,19 +60,19 @@ export const CREDIT_PACKS: PaymentProduct[] = [
   },
 ];
 
-export const FREE_TIER_FEATURES = [
+export const FREE_TIER_FEATURES: string[] = [
   `${FREE_STARTER_CREDITS} starter credits`,
   "Chat · writing · research modes",
   "Image & video (credit-based)",
   "Installable PWA",
-] as const;
+];
 
-export const PLAN_FEATURE_HIGHLIGHTS = [
+export const PLAN_FEATURE_HIGHLIGHTS: string[] = [
   "Monthly credit refill on renewal",
   "Paystack · Ghana Cedis (GHS)",
   "Webhook-activated subscriptions",
   "Usage logged in Convex",
-] as const;
+];
 
 export function getProductById(id: string): PaymentProduct | undefined {
   return [...SUBSCRIPTION_PRODUCTS, ...CREDIT_PACKS].find((p) => p.id === id);
