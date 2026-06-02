@@ -1,4 +1,3 @@
-import type { ChatMessage } from "./ai/types";
 
 /** Keep mode ids in sync with convex/aiModes.ts */
 export const AI_MODES = [
@@ -115,28 +114,4 @@ export function getModeDefinition(mode: string): AiModeDefinition {
   return (
     AI_MODE_DEFINITIONS.find((m) => m.id === mode) ?? AI_MODE_DEFINITIONS[0]
   );
-}
-
-export function buildMessagesForProvider(
-  mode: AiModeId,
-  history: ChatMessage[],
-  userMessage: string
-): ChatMessage[] {
-  const { systemPrompt } = getModeDefinition(mode);
-  return [
-    { role: "system", content: systemPrompt },
-    ...history.filter((m) => m.role !== "system"),
-    { role: "user", content: userMessage },
-  ];
-}
-
-export async function routeChatCompletion(
-  mode: AiModeId,
-  history: ChatMessage[],
-  userMessage: string
-) {
-  const { getAiProvider } = await import("./ai/providers");
-  const provider = getAiProvider();
-  const messages = buildMessagesForProvider(mode, history, userMessage);
-  return provider.complete({ messages });
 }
