@@ -47,7 +47,6 @@ export const metadata: Metadata = {
     description: siteConfig.description,
   },
   manifest: "/manifest.json",
-  other: { "alternate-manifest": "/manifest.webmanifest" },
   icons: {
     icon: [
       { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },

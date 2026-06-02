@@ -1,5 +1,5 @@
 import type { PaymentProduct } from "./types";
-import { SUBSCRIPTION_PLANS } from "./subscriptionCatalog";
+import { FREE_STARTER_CREDITS, SUBSCRIPTION_PLANS } from "./subscriptionCatalog";
 
 export const SUBSCRIPTION_PRODUCTS: PaymentProduct[] = [
   {
@@ -61,7 +61,7 @@ export const CREDIT_PACKS: PaymentProduct[] = [
 ];
 
 export const FREE_TIER_FEATURES = [
-  `${SUBSCRIPTION_PLANS.basic.credits > 0 ? "25" : "25"} starter credits`,
+  `${FREE_STARTER_CREDITS} starter credits`,
   "Chat · writing · research modes",
   "Image & video (credit-based)",
   "Installable PWA",

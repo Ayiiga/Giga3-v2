@@ -48,10 +48,10 @@ jobs:
       - name: Install dependencies
         run: |
           if [ -f package-lock.json ]; then
-            npm ci
+            npm ci --legacy-peer-deps
           else
-            echo "::warning::web/package-lock.json missing; using npm install"
-            npm install
+            echo "::warning::package-lock.json missing; using npm install --legacy-peer-deps"
+            npm install --legacy-peer-deps
           fi
 
       - name: Lint
@@ -72,6 +72,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          # Must match the Cloudflare Pages project name (dashboard → Workers & Pages → giga3ai).
           projectName: giga3ai
           directory: web/out

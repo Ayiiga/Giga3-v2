@@ -6,6 +6,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm run build --prefix web",
+    "lint": "npm run lint --prefix web",
     "build:web": "npm run build --prefix web",
     "dev:web": "npm run dev --prefix web",
     "lint:web": "npm run lint --prefix web"

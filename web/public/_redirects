@@ -1,0 +1,5 @@
+# Cloudflare Pages — Next.js static export (trailingSlash: true)
+# HTML files are emitted per route under web/out/; this handles client-side fallbacks.
+/payment/success/*  /payment/success/index.html  200
+/payment/failed/*   /payment/failed/index.html   200
+/chat/*             /chat/index.html             200

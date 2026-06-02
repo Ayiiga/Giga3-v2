@@ -70,7 +70,7 @@ export function PricingPageClient() {
           <p className="mt-2 text-3xl font-bold">{formatGhs(0)}</p>
           <ul className="mt-6 space-y-2 text-sm text-muted">
             {FREE_TIER_FEATURES.map((f) => (
-              <li key={f}>• {f.replace("25", String(FREE_STARTER_CREDITS))}</li>
+              <li key={f}>• {f}</li>
             ))}
           </ul>
           <ButtonLink href="/chat/login" variant="secondary" className="mt-6 w-full">
