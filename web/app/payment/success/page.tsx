@@ -1,6 +1,14 @@
-import { PaymentSuccessPageClient } from "@/components/billing/PaymentSuccessPageClient";
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { Suspense } from "react";
+
+const PaymentSuccessPageClient = dynamic(
+  () =>
+    import("@/components/billing/PaymentSuccessPageClient").then((m) => ({
+      default: m.PaymentSuccessPageClient,
+    })),
+  { ssr: false }
+);
 
 export const metadata: Metadata = {
   title: "Payment successful",

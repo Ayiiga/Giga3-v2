@@ -1,10 +1,18 @@
 import { Container } from "@/components/ui/Container";
-import { PricingPageClient } from "@/components/billing/PricingPageClient";
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
+
+const PricingPageClient = dynamic(
+  () =>
+    import("@/components/billing/PricingPageClient").then((m) => ({
+      default: m.PricingPageClient,
+    })),
+  { ssr: false, loading: () => <p className="text-center text-muted">Loading…</p> }
+);
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: "Giga3 AI plans in Ghana Cedis — Free, Premium, and credit packs",
+  description: "Giga3 AI plans in Ghana Cedis — Basic, Pro, Premium, and credit packs",
 };
 
 export default function PricingPage() {
@@ -14,8 +22,8 @@ export default function PricingPage() {
         <div className="mx-auto max-w-2xl text-center">
           <h1 className="text-4xl font-bold tracking-tight">Pricing</h1>
           <p className="mt-4 text-muted">
-            Pay in <strong className="text-foreground">Ghana Cedis (GHS)</strong> via Paystack.
-            Free tier for everyday chat; Premium for unlimited messages and media credits.
+            Pay in <strong className="text-foreground">Ghana Cedis (GHS)</strong> via
+            Paystack. Subscription credits refill every billing period.
           </p>
         </div>
         <PricingPageClient />

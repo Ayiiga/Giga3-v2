@@ -12,8 +12,7 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
     setClient(getConvexClient());
   }, []);
 
-  const url = getConvexUrl();
-  if (!url) {
+  if (!getConvexUrl()) {
     return (
       <div className="flex min-h-screen items-center justify-center p-6 text-center text-sm text-muted">
         <p>
@@ -25,7 +24,7 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
   }
 
   if (!client) {
-    return <div className="min-h-screen bg-background" aria-busy="true" />;
+    return <>{children}</>;
   }
 
   return <ConvexProvider client={client}>{children}</ConvexProvider>;

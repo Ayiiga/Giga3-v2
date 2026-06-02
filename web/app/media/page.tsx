@@ -1,6 +1,14 @@
 import { Container } from "@/components/ui/Container";
-import { MediaStudioClient } from "@/components/media/MediaStudioClient";
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
+
+const MediaStudioClient = dynamic(
+  () =>
+    import("@/components/media/MediaStudioClient").then((m) => ({
+      default: m.MediaStudioClient,
+    })),
+  { ssr: false, loading: () => <p className="text-center text-muted">Loading…</p> }
+);
 
 export const metadata: Metadata = {
   title: "Media Studio",
