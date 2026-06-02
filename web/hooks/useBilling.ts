@@ -7,7 +7,7 @@ import {
   initializePaystackPayment,
   verifyPaystackPayment,
 } from "@/lib/payments/paystackService";
-import { api } from "../../convex/_generated/api";
+import { api } from "convex/_generated/api";
 import { useAction, useQuery } from "convex/react";
 import { useCallback, useEffect, useState } from "react";
 

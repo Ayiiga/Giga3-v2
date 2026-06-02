@@ -2,7 +2,7 @@
 
 import { getUserEmail } from "@/lib/auth";
 import type { ImageCategoryId, VideoCategoryId } from "@/lib/media/catalog";
-import { api } from "../../convex/_generated/api";
+import { api } from "convex/_generated/api";
 import { useAction, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 

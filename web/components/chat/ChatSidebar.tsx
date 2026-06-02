@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/Button";
 import { getModeDefinition, type AiModeId } from "@/lib/aiRouter";
 import { cn } from "@/lib/utils";
-import { Id } from "../../../convex/_generated/dataModel";
+import { Id } from "convex/_generated/dataModel";
 import { MessageSquarePlus, PanelLeftClose, PanelLeft, Trash2 } from "lucide-react";
 
 export interface ConversationItem {

@@ -4,8 +4,8 @@ import type { UiMessage } from "@/components/chat/MessageList";
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
 import { getUserEmail } from "@/lib/auth";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
-import { api } from "../../convex/_generated/api";
-import { Id } from "../../convex/_generated/dataModel";
+import { api } from "convex/_generated/api";
+import { Id } from "convex/_generated/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
