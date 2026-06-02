@@ -9,17 +9,22 @@ import {
 } from "@/lib/payments/paystackService";
 import { api } from "../../convex/_generated/api";
 import { useAction, useQuery } from "convex/react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function useBilling() {
   const email = getUserEmail();
   const userId = email ?? "";
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const usageRaw = useQuery(
     api.credits.getUsageSnapshot,
-    userId ? { userId } : "skip"
+    mounted && userId ? { userId } : "skip"
   );
 
   const initPayment = useAction(api.paystack.initializePayment);

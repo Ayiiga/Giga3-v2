@@ -27,15 +27,23 @@ export function useChatPlatform() {
   const [mode, setMode] = useState<AiModeId>("general");
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  const user = useQuery(api.users.getUser, email ? { email } : "skip");
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const user = useQuery(
+    api.users.getUser,
+    mounted && email ? { email } : "skip"
+  );
   const conversationsRaw = useQuery(
     api.conversations.list,
-    email ? { userId: email } : "skip"
+    mounted && email ? { userId: email } : "skip"
   );
   const messagesRaw = useQuery(
     api.messages.listByConversation,
-    email && activeId
+    mounted && email && activeId
       ? { conversationId: activeId, userId: email }
       : "skip"
   );

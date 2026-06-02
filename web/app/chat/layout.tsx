@@ -1,4 +1,3 @@
-import { ConvexClientProvider } from "@/components/providers/ConvexClientProvider";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -12,8 +11,8 @@ export default function ChatLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ConvexClientProvider>
-      <div className="dark min-h-screen bg-background text-foreground">{children}</div>
-    </ConvexClientProvider>
+    <div className="dark min-h-screen bg-background text-foreground">
+      {children}
+    </div>
   );
 }

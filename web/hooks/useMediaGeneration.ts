@@ -4,15 +4,23 @@ import { getUserEmail } from "@/lib/auth";
 import type { ImageCategoryId, VideoCategoryId } from "@/lib/media/catalog";
 import { api } from "../../convex/_generated/api";
 import { useAction, useQuery } from "convex/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function useMediaGeneration() {
   const email = getUserEmail();
   const userId = email ?? "";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  const jobs = useQuery(api.media.listJobs, userId ? { userId } : "skip");
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const jobs = useQuery(
+    api.media.listJobs,
+    mounted && userId ? { userId } : "skip"
+  );
   const generateImage = useAction(api.media.generateImage);
   const generateVideo = useAction(api.media.generateVideo);
 
