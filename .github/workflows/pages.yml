@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: cloudflare-pages-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -14,6 +18,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate deployment secrets
+        working-directory: .
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in CF_API_TOKEN CF_ACCOUNT_ID NEXT_PUBLIC_CONVEX_URL; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub secret: $name"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+          echo "Required secrets present."
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -22,7 +46,13 @@ jobs:
           cache-dependency-path: web/package-lock.json
 
       - name: Install dependencies
-        run: npm ci || npm install
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            echo "::warning::web/package-lock.json missing; using npm install"
+            npm install
+          fi
 
       - name: Lint
         run: npm run lint
@@ -34,10 +64,14 @@ jobs:
           NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY }}
         run: npm run build
 
+      - name: Verify static output
+        run: test -f out/index.html
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          projectName: ${{ secrets.CF_PROJECT_NAME }}
+          # Must match the Cloudflare Pages project name (dashboard → Workers & Pages → giga3ai).
+          projectName: giga3ai
           directory: web/out

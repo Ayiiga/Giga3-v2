@@ -29,15 +29,16 @@ npx convex dev
 6. Update `frontend/assets/js/config.js` with your deployed Convex Cloud URLs when deploying the frontend. The current repo is already configured for `https://perfect-lark-521.convex.cloud`.
 
 Deploy
-- Deploy Convex functions with `npx convex deploy`.
-- Deploy `frontend/` to Cloudflare Pages (connect repo or upload files).
-- The included workflow at `.github/workflows/pages.yml` will build and publish the `frontend/` folder.
 
-Environment
-- `OPENAI_API_KEY` for OpenAI calls
-- `STRIPE_SECRET_KEY` for Stripe Checkout payments
-- `FRONTEND_URL` for redirecting Stripe success/cancel pages
-- `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `CF_PROJECT_NAME` if using GitHub Actions for Cloudflare Pages
+See **[DEPLOYMENT.md](DEPLOYMENT.md)** for the full Cloudflare Pages checklist.
+
+1. `npx convex deploy` — backend (from repo root).
+2. Push to `main` — GitHub Actions builds `web/` and deploys **`web/out`** to Cloudflare Pages project **`giga3ai`**.
+3. Custom domain: `www.giga3ai.com` (see `frontend/CNAME`).
+
+GitHub Actions secrets: `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `NEXT_PUBLIC_CONVEX_URL` (and optionally `NEXT_PUBLIC_CONVEX_SITE_URL`). Convex secrets (`OPENAI_API_KEY`, `PAYSTACK_SECRET_KEY`, `FRONTEND_URL`, etc.) are set on Convex, not in the Next.js build.
+
+The legacy `frontend/` folder is not deployed by CI; the production app is **`web/`** (Next.js static export).
 
 Notes
 - Do NOT put `OPENAI_API_KEY` in frontend — it's used only server-side in Convex.
