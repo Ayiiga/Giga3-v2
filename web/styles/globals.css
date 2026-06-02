@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #050508;
+  --foreground: #f4f4f5;
+  --muted: #a1a1aa;
+  --accent: #7c5cff;
+  --accent-foreground: #ffffff;
+  --card: rgba(255, 255, 255, 0.03);
+  --border: rgba(255, 255, 255, 0.08);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  background-image: radial-gradient(
+      ellipse 120% 80% at 50% -30%,
+      rgba(124, 92, 255, 0.12),
+      transparent 55%
+    ),
+    var(--background);
+}
+
+::selection {
+  background: rgba(124, 92, 255, 0.35);
+  color: #fff;
+}
+
+.glass {
+  @apply border border-border bg-card backdrop-blur-xl;
+}
+
+.section-padding {
+  @apply px-4 py-20 sm:px-6 lg:px-8 lg:py-28;
+}
+
+.text-gradient {
+  @apply bg-gradient-to-r from-white via-violet-200 to-violet-400 bg-clip-text text-transparent;
+}

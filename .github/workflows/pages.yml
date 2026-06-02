@@ -2,13 +2,47 @@ name: Deploy to Cloudflare Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package.json
+
+      - name: Install and build Next.js site
+        working-directory: web
+        run: |
+          npm install
+          npm run build
+
+      - name: Verify static export
+        working-directory: web
+        run: test -f out/index.html
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package.json
+
+      - name: Build for deploy
+        working-directory: web
+        run: |
+          npm install
+          npm run build
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
@@ -16,4 +50,4 @@ jobs:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           projectName: ${{ secrets.CF_PROJECT_NAME }}
-          directory: frontend
+          directory: web/out

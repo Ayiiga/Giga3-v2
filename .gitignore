@@ -1,2 +1,7 @@
 
 .env.local
+node_modules/
+web/node_modules/
+web/.next/
+web/out/
+web/public/sw.js.map
