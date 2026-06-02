@@ -35,25 +35,25 @@ export const createCheckout = action({
 
 		const unitAmount = Math.max(100, Math.round(args.tokens * 100)); // $1/token minimum
 
-const frontendUrl = process.env.FRONTEND_URL || "https://www.giga3ai.com";
-+	const session = await stripe.checkout.sessions.create({
-+		payment_method_types: ["card"],
-+		mode: "payment",
-+		line_items: [
-+			{
-+				price_data: {
-+					currency: "usd",
-+					product_data: { name: `Giga3 AI Tokens (${args.tokens})` },
-+					unit_amount: unitAmount,
-+				},
-+				quantity: 1,
-+			},
-+		],
-+		customer_email: args.email,
-+		success_url: `${frontendUrl}/payment-success.html?session_id={CHECKOUT_SESSION_ID}`,
-+		cancel_url: `${frontendUrl}/pricing.html`,
-+		metadata: { email: args.email, tokens: String(args.tokens) },
-+	});
+		const frontendUrl = process.env.FRONTEND_URL || "https://www.giga3ai.com";
+		const session = await stripe.checkout.sessions.create({
+			payment_method_types: ["card"],
+			mode: "payment",
+			line_items: [
+				{
+					price_data: {
+						currency: "usd",
+						product_data: { name: `Giga3 AI Tokens (${args.tokens})` },
+						unit_amount: unitAmount,
+					},
+					quantity: 1,
+				},
+			],
+			customer_email: args.email,
+			success_url: `${frontendUrl}/payment-success.html?session_id={CHECKOUT_SESSION_ID}`,
+			cancel_url: `${frontendUrl}/pricing.html`,
+			metadata: { email: args.email, tokens: String(args.tokens) },
+		});
 
 		return { url: session.url };
 	},
@@ -75,14 +75,25 @@ export const confirmPurchase = action({
 		const tokens = Number((session.metadata as any)?.tokens || 0);
 		if (!email || tokens <= 0) throw new Error("Invalid session metadata");
 
-		let user = await ctx.runQuery(api.users.getUser, { email });
+		// find or create user
+		let user = await ctx.db
+			.query("users")
+			.filter((q) => q.eq(q.field("email"), email))
+			.first();
+
 		if (!user) {
-			await ctx.runMutation(api.users.createUser, { email });
+			const userId = await ctx.db.insert("users", { email, tokens: 0, plan: "paid" });
+			user = { _id: userId, email, tokens: 0, plan: "paid" } as any;
 		}
 
-		await ctx.runMutation(api.payments.addTokens, { email, tokens });
-		const updated = await ctx.runQuery(api.users.getUser, { email });
+		await ctx.db.patch(user._id, { tokens: (user.tokens ?? 0) + tokens });
+		await ctx.db.insert("transactions", {
+			userId: email,
+			amount: tokens,
+			reference: args.sessionId,
+			tokens,
+		});
 
-		return { email, tokens: updated?.tokens ?? tokens };
+		return { email, tokens: (user.tokens ?? 0) + tokens };
 	},
 });

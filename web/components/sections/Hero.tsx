@@ -32,7 +32,7 @@ export function Hero() {
           </p>
 
           <div className="animate-fade-in mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row [animation-delay:240ms]">
-            <ButtonLink href={siteConfig.links.dashboard} size="lg" external>
+            <ButtonLink href="/chat" size="lg">
               Start chatting
               <ArrowRight className="h-4 w-4" aria-hidden />
             </ButtonLink>

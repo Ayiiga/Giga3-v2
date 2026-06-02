@@ -24,7 +24,7 @@ export const getUser = query({
   handler: async (ctx, args) => {
     return await ctx.db
       .query("users")
-      .filter((q) => q.eq(q.field("email"), args.email))
+      .withIndex("by_email", (q) => q.eq("email", args.email))
       .first();
   },
 });
@@ -34,7 +34,7 @@ export const deductToken = mutation({
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query("users")
-      .filter((q) => q.eq(q.field("email"), args.email))
+      .withIndex("by_email", (q) => q.eq("email", args.email))
       .first();
     if (!user) throw new Error("User not found");
     const newTokens = Math.max(0, (user.tokens ?? 0) - 1);

@@ -3,14 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "private": true,
-  "workspaces": [
-    "web"
-  ],
+  "workspaces": ["web"],
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:web": "npm run build -w giga3-ai-web",
-    "lint:web": "npm run lint -w giga3-ai-web"
+    "dev:web": "npm run dev -w giga3-ai-web"
   },
   "keywords": [],
   "author": "",

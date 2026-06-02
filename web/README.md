@@ -1,66 +1,59 @@
 # Giga3 AI — Next.js Web
 
-Production-ready marketing site for **Giga3 AI**, built with **Next.js 14**, **TypeScript**, **Tailwind CSS**, and the **App Router**.
+Marketing site + **ChatGPT-style chat platform** (Next.js 14, App Router, TypeScript, Tailwind).
 
-## Stack
+## Chat platform (`/chat`)
 
-- Next.js 14 (static export for Cloudflare Pages)
-- TypeScript, Tailwind CSS
-- PWA: `manifest.webmanifest`, service worker, install button, offline page
-- Mobile-first, dark mode by default
+- Sidebar with conversation history, new chat, delete
+- Tool selector with 10 AI modes (see `lib/aiRouter.ts`)
+- User / assistant bubbles, typing indicator, auto-scroll
+- Persistence via **Convex** (`conversations` + `messages` tables)
+- OpenAI via `OPENAI_API_KEY` (Convex action + optional `/api/chat` route)
 
-## Project structure
-
-```
-web/
-├── app/              # App Router pages & layout
-├── components/       # UI, layout, sections, PWA
-├── hooks/            # PWA install, online status
-├── lib/              # Site config, utilities
-├── public/           # Static assets, SW, manifest, icons
-├── scripts/          # Icon generator (prebuild)
-└── styles/           # Global CSS
-```
-
-## Development
+### Run locally
 
 ```bash
+# Terminal 1 — Convex (repo root)
+npm install
+npx convex dev
+
+# Terminal 2 — Next.js
 cd web
+cp .env.local.example .env.local   # set NEXT_PUBLIC_CONVEX_URL + OPENAI_API_KEY
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000/chat/login](http://localhost:3000/chat/login).
 
-## Production build (Cloudflare Pages)
+### Architecture
+
+| Layer | Path | Role |
+|-------|------|------|
+| UI | `app/chat/`, `components/chat/` | ChatGPT-style interface |
+| Router | `lib/aiRouter.ts` | Mode definitions & prompt assembly |
+| OpenAI | `lib/openai.ts` | Client singleton (env vars) |
+| Providers | `lib/ai/providers/` | Pluggable backends (`openai` today) |
+| API | `app/api/chat/route.ts` | Standalone HTTP chat (no Convex storage) |
+| Backend | `convex/platform.ts` | `sendMessage` action + storage |
+
+Keep `convex/aiModes.ts` in sync with `lib/aiRouter.ts` mode ids.
+
+### Environment
+
+```env
+NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3210
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini
+AI_PROVIDER=openai
+```
+
+## Marketing site
+
+Static-friendly landing at `/`. Build:
 
 ```bash
-cd web
-npm install
 npm run build
 ```
 
-Output directory: **`web/out/`** (static export).
-
-### Cloudflare Pages settings
-
-| Setting | Value |
-|--------|--------|
-| Build command | `cd web && npm install && npm run build` |
-| Build output directory | `web/out` |
-| Node.js version | 20.x |
-
-`public/_headers` is copied into `out/` on build for caching and security headers.
-
-## PWA
-
-- **Manifest:** `public/manifest.webmanifest`
-- **Service worker:** `public/sw.js` (precaches shell routes and caches static assets)
-- **Install:** `InstallButton` uses `beforeinstallprompt` where supported
-- **Offline:** `/offline/` fallback; `OfflineBanner` when the browser is offline
-
-Icons are generated before build via `npm run prebuild` → `public/icons/`.
-
-## Environment
-
-No env vars required for the marketing site. App links point to the existing Giga3 app URLs in `lib/site.ts`.
+For Cloudflare Pages with API routes, use `@cloudflare/next-on-pages` or deploy to Node/Vercel.
