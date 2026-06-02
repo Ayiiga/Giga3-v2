@@ -1,5 +1,6 @@
 "use client";
 
+import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { MessageList } from "@/components/chat/MessageList";
@@ -48,6 +49,7 @@ export function ChatShell() {
   }
 
   return (
+    <ConvexAppShell>
     <div className="flex h-[100dvh] overflow-hidden bg-background">
       <ChatSidebar
         conversations={conversations}
@@ -105,5 +107,6 @@ export function ChatShell() {
         <ChatInput onSend={(msg) => void sendMessage(msg)} disabled={isSending} />
       </div>
     </div>
+    </ConvexAppShell>
   );
 }

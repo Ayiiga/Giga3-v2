@@ -1,5 +1,6 @@
 "use client";
 
+import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { SubscriptionCard } from "@/components/billing/SubscriptionCard";
 import { UsageTracker } from "@/components/billing/UsageTracker";
 import { ButtonLink } from "@/components/ui/Button";
@@ -25,6 +26,7 @@ export function SubscribePageClient() {
   }
 
   return (
+    <ConvexAppShell>
     <div className="space-y-8">
       <div className="text-center">
         <h1 className="text-3xl font-bold">Choose your plan</h1>
@@ -59,5 +61,6 @@ export function SubscribePageClient() {
         </ButtonLink>
       </p>
     </div>
+    </ConvexAppShell>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { SubscriptionCard } from "@/components/billing/SubscriptionCard";
 import { UsageTracker } from "@/components/billing/UsageTracker";
@@ -18,6 +19,7 @@ export function PricingPageClient() {
   const { usage, paying, error, checkout, email } = useBilling();
 
   return (
+    <ConvexAppShell>
     <div className="mt-14 space-y-16">
       {email && usage && (
         <div className="mx-auto max-w-md space-y-3">
@@ -108,5 +110,6 @@ export function PricingPageClient() {
         </div>
       </section>
     </div>
+    </ConvexAppShell>
   );
 }

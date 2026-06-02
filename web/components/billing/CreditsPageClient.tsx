@@ -1,5 +1,6 @@
 "use client";
 
+import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { UsageTracker } from "@/components/billing/UsageTracker";
 import { ButtonLink } from "@/components/ui/Button";
@@ -24,6 +25,7 @@ export function CreditsPageClient() {
   }
 
   return (
+    <ConvexAppShell>
     <div className="space-y-8">
       <div className="text-center">
         <h1 className="text-3xl font-bold">Buy credits</h1>
@@ -77,5 +79,6 @@ export function CreditsPageClient() {
         </ButtonLink>
       </p>
     </div>
+    </ConvexAppShell>
   );
 }

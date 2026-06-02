@@ -1,4 +1,3 @@
-import { ConvexClientProvider } from "@/components/providers/ConvexClientProvider";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
 import { Footer } from "@/components/layout/Footer";
@@ -73,13 +72,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.variable} ${jetbrains.variable} font-sans`}>
-        <ConvexClientProvider>
-          <Header />
+        <Header />
           <main>{children}</main>
           <Footer />
           <ServiceWorkerRegister />
           <OfflineBanner />
-        </ConvexClientProvider>
       </body>
     </html>
   );

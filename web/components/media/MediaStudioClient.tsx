@@ -1,5 +1,6 @@
 "use client";
 
+import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { UsageTracker } from "@/components/billing/UsageTracker";
 import { Button } from "@/components/ui/Button";
@@ -50,6 +51,7 @@ export function MediaStudioClient() {
   }
 
   return (
+    <ConvexAppShell>
     <div className="mx-auto max-w-4xl space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -171,5 +173,6 @@ export function MediaStudioClient() {
         </div>
       </section>
     </div>
+    </ConvexAppShell>
   );
 }

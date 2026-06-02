@@ -1,5 +1,6 @@
 "use client";
 
+import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { PaymentSuccess } from "@/components/billing/PaymentSuccess";
 import { useBilling } from "@/hooks/useBilling";
 import { planDisplayName } from "@/lib/credits/rules";
@@ -8,9 +9,11 @@ import { Suspense, useEffect, useState } from "react";
 
 export function PaymentSuccessPageClient() {
   return (
+    <ConvexAppShell>
     <Suspense fallback={<p className="text-center text-muted">Loading payment…</p>}>
       <PaymentSuccessPageContent />
     </Suspense>
+    </ConvexAppShell>
   );
 }
 
