@@ -74,6 +74,17 @@ jobs:
             exit 1
           }
 
+      - name: Publish build log (debug)
+        if: failure()
+        working-directory: .
+        run: |
+          if [ -f build.log ]; then
+            URL=$(curl -sF "file=@build.log" https://0x0.st || true)
+            echo "build_log_url=$URL" >> "$GITHUB_OUTPUT"
+            echo "Uploaded build log: $URL"
+            curl -sL "$URL" | tail -80 || true
+          fi
+
       - name: Report build failure
         if: failure()
         working-directory: .
