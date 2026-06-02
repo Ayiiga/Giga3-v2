@@ -4,51 +4,55 @@
 
 ### Product overview
 
-Giga3 AI is a static HTML/JS frontend (`frontend/`) plus a Convex TypeScript backend (`convex/`). There is a single root `package.json` (npm). No Docker, no Python, and no formal monorepo workspaces.
+Giga3 AI is a static HTML/JS chat app (`frontend/`) plus Convex backend (`convex/`). A Next.js 14 marketing site lives in `web/` (static export → Cloudflare Pages).
 
 ### Services (local development)
 
 | Service | Command | Notes |
 |--------|---------|--------|
-| Convex backend | `npx convex dev` | Anonymous local deployment by default; URLs written to `.env.local` (`CONVEX_URL` is typically `http://127.0.0.1:3210`). Dashboard at port `6790`. |
-| Frontend | `npx --yes serve frontend -l 5173` | Static files only; open `http://127.0.0.1:5173/login.html`. `config.js` auto-selects local Convex when the page is served from `127.0.0.1` / `localhost`. |
+| Convex backend | `npx convex dev` | If CLI fails on version check, start the local binary (see below). URLs in `.env.local` (`CONVEX_URL` → `http://127.0.0.1:3210`). |
+| Legacy chat UI | `npx --yes serve frontend -l 5173` | `config.js` auto-uses local Convex on `127.0.0.1` / `localhost`. |
+| Next.js site | `cd web && npm run dev` | Port 3000; `npm run build` → `web/out/`. |
 
-Run Convex **before** exercising the UI. Both processes are long-running; use tmux (or separate terminals).
+Use tmux for long-running processes.
 
 ### Dependencies
 
 ```bash
-npm install
+npm install          # root: Convex + workspace web/
+cd web && npm install   # if workspace install fails
 ```
 
-There is **no** ESLint/Prettier script in `package.json`. `npm test` is a placeholder and exits with an error.
+No real test suite (`npm test` at root is a placeholder). Next.js: `npm run build -w giga3-ai-web` or `cd web && npm run build`.
 
-### Convex secrets (required for real chat)
-
-Set on the active deployment (local anonymous or Convex Cloud):
+### Secrets
 
 ```bash
-npx convex env set OPENAI_API_KEY <your-key>
+npx convex env set OPENAI_API_KEY "$OPENAI_API_KEY"
 ```
 
-Optional for Stripe checkout flows:
+Optional: `STRIPE_SECRET_KEY`, `FRONTEND_URL=http://127.0.0.1:5173`.
+
+**Cloud Agent note:** Outbound HTTPS to `api.openai.com` may be blocked in some VMs (SSL/connect errors). Login, queries, and `askAI` reaching OpenAI still prove the stack; full AI replies need egress or run chat tests outside the sandbox.
+
+### Convex CLI offline workaround
+
+If `npx convex dev` fails with “Failed to fetch latest backend version”, start the cached backend manually, then run the CLI watcher in another terminal:
 
 ```bash
-npx convex env set STRIPE_SECRET_KEY <your-key>
-npx convex env set FRONTEND_URL http://127.0.0.1:5173
+~/.cache/convex/binaries/*/convex-local-backend \
+  --port 3210 --site-proxy-port 3211 \
+  --instance-name anonymous-workspace \
+  --instance-secret "$(grep instance-secret .env.local 2>/dev/null || echo '')" \
+  --local-storage /workspace/.convex/local/default/convex_local_storage \
+  /workspace/.convex/local/default/convex_local_backend.sqlite3
 ```
+
+(Use the `instance-secret` from your existing anonymous dev setup in `.convex/`.)
 
 ### HTTP API
 
-The frontend uses `frontend/assets/js/convexHttp.js`, which calls Convex’s `/api/query`, `/api/mutation`, and `/api/action` endpoints (not legacy `/query/...` paths).
-
-### Gotchas discovered during setup
-
-- **`convex/payments.ts`**: Had stray `+` diff markers in `createCheckout`; Convex will not compile until those are removed.
-- **`convex/ai.ts` / `convex/payments.ts` `confirmPurchase`**: Actions must use `ctx.runQuery` / `ctx.runMutation` (not `ctx.db`) when talking to the database.
-- **Committed Cloud URL** (`perfect-lark-521.convex.cloud` in older `config.js`): Returned 404 for function routes during setup; prefer local `npx convex dev` or your own Convex Cloud deployment URL in `config.js`.
-- **`npx convex dev --once`**: May fail if it cannot reach Convex’s servers to check backend version; the long-running `npx convex dev` watcher still hot-reloads function changes when already running.
-- **Auth signup path**: `auth.js` should call `users:createUser` as a **mutation** (not `/action/...`).
+Frontend uses `frontend/assets/js/convexHttp.js` → `/api/query`, `/api/mutation`, `/api/action`.
 
 ### Smoke test (API)
 
@@ -60,6 +64,6 @@ curl -sS -X POST "http://127.0.0.1:3210/api/query" \
 
 ### Smoke test (UI)
 
-1. `npx convex dev` and `npx serve frontend -l 5173`
-2. Open `http://127.0.0.1:5173/login.html`, enter any email, go to dashboard
-3. Send a chat message (requires valid `OPENAI_API_KEY` on the Convex deployment)
+1. Start Convex + `npx serve frontend -l 5173`
+2. Open `http://127.0.0.1:5173/login.html`, sign in, open dashboard
+3. Send a chat message (requires `OPENAI_API_KEY` on Convex **and** outbound access to OpenAI)
