@@ -19,7 +19,7 @@ interface ChatSidebarProps {
   onSelect: (id: Id<"conversations">) => void;
   onNewChat: () => void;
   onDelete: (id: Id<"conversations">) => void;
-  tokens: number | null;
+  credits: number | null;
   email: string;
   collapsed: boolean;
   onToggleCollapse: () => void;
@@ -33,7 +33,7 @@ export function ChatSidebar({
   onSelect,
   onNewChat,
   onDelete,
-  tokens,
+  credits,
   email,
   collapsed,
   onToggleCollapse,
@@ -124,7 +124,7 @@ export function ChatSidebar({
 
         <div className="border-t border-border p-3 text-xs text-muted">
           <p className="truncate font-medium text-foreground">{email}</p>
-          <p className="mt-1">Tokens: {tokens ?? "—"}</p>
+          <p className="mt-1">Credits: {tokens ?? "—"}</p>
         </div>
       </aside>
     </>
