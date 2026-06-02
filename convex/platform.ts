@@ -11,7 +11,11 @@ export const appendMessage = internalMutation({
   args: {
     conversationId: v.id("conversations"),
     userId: v.string(),
-    role: v.union(v.literal("user"), v.literal("assistant"), v.literal("system")),
+    role: v.union(
+      v.literal("user"),
+      v.literal("assistant"),
+      v.literal("system")
+    ),
     content: v.string(),
   },
   handler: async (ctx, args) => {
@@ -49,18 +53,16 @@ export const sendMessage = action({
       await ctx.runMutation(api.users.createUser, { email: args.userId });
       user = await ctx.runQuery(api.users.getUser, { email: args.userId });
     }
-    await ctx.runMutation(api.credits.assertCanChat, { userId: args.userId });
-
-    const premium =
-      (user?.tier ?? "free") === "premium" &&
-      (!user?.subscriptionExpiresAt || user.subscriptionExpiresAt > Date.now());
-
-    if (!premium && (user?.tokens ?? 0) <= 0) {
-      throw new Error("Insufficient tokens. Upgrade to Premium or purchase credits.");
-    }
 
     const mode =
       args.mode && isValidMode(args.mode) ? args.mode : conv.mode ?? "general";
+
+    await ctx.runMutation(api.credits.deductForChatMode, {
+      userId: args.userId,
+      mode,
+      reference: args.conversationId,
+    });
+
     if (mode !== conv.mode) {
       await ctx.runMutation(api.conversations.setMode, {
         conversationId: args.conversationId,
@@ -107,16 +109,14 @@ export const sendMessage = action({
       content: assistantContent,
     });
 
-    let newTokens = user?.tokens ?? 0;
-    if (!premium) {
-      newTokens = await ctx.runMutation(api.users.deductToken, {
-        email: args.userId,
-      });
-    }
+    const updatedUser = await ctx.runQuery(api.users.getUser, {
+      email: args.userId,
+    });
 
     const title =
       conv.title === "New chat" || conv.title.endsWith("…")
-        ? args.content.slice(0, 48).trim() + (args.content.length > 48 ? "…" : "")
+        ? args.content.slice(0, 48).trim() +
+          (args.content.length > 48 ? "…" : "")
         : conv.title;
 
     if (title !== conv.title) {
@@ -129,7 +129,7 @@ export const sendMessage = action({
 
     return {
       content: assistantContent,
-      tokens: newTokens,
+      credits: updatedUser?.credits ?? 0,
       mode,
     };
   },

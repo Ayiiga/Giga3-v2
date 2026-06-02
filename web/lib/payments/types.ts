@@ -1,12 +1,13 @@
-export type PaymentProductType = "subscription" | "credits";
+export type SubscriptionPlanId = "free" | "basic" | "pro" | "premium";
 
 export interface PaymentProduct {
   id: string;
   label: string;
   description: string;
   amountGhs: number;
-  type: PaymentProductType;
+  type: "subscription" | "credits";
   credits?: number;
+  planId?: SubscriptionPlanId;
   highlighted?: boolean;
 }
 
@@ -18,7 +19,8 @@ export interface InitializePaymentResult {
 }
 
 export interface VerifyPaymentResult {
-  status: "success" | "failed";
-  type?: PaymentProductType;
+  status: "success";
+  type?: "subscription" | "credits";
+  planId?: string;
   creditsGranted?: number;
 }

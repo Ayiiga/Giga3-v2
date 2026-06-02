@@ -2,6 +2,7 @@
 
 import { PaymentSuccess } from "@/components/billing/PaymentSuccess";
 import { useBilling } from "@/hooks/useBilling";
+import { planDisplayName } from "@/lib/credits/rules";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -23,15 +24,21 @@ export function PaymentSuccessPageClient() {
         if (res.status === "success") {
           if (res.type === "credits") {
             setMessage(
-              `Credits added successfully${res.creditsGranted ? ` (+${res.creditsGranted})` : ""}.`
+              `Credits added${res.creditsGranted ? ` (+${res.creditsGranted})` : ""}.`
+            );
+          } else if (res.planId) {
+            setMessage(
+              `${planDisplayName(res.planId)} subscription activated. Credits refilled.`
             );
           } else {
-            setMessage("Premium subscription activated. Enjoy unlimited chats!");
+            setMessage("Subscription activated. Credits refilled.");
           }
         }
       })
       .catch(() => {
-        setMessage("We could not verify this payment. Contact support with your reference.");
+        setMessage(
+          "We could not verify this payment. Your webhook may still activate it shortly."
+        );
         setFailed(true);
       });
   }, [reference, verify]);
@@ -46,7 +53,5 @@ export function PaymentSuccessPageClient() {
     );
   }
 
-  return (
-    <PaymentSuccess message={message} reference={reference} />
-  );
+  return <PaymentSuccess message={message} reference={reference} />;
 }

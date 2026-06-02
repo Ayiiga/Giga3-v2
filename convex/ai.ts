@@ -25,7 +25,9 @@ export const persistLegacyChat = internalMutation({
         tokens: 12,
         plan: "free",
         tier: "free",
+        subscriptionPlan: "free",
         credits: 0,
+        starterCreditsGranted: false,
       });
       user = await ctx.db.get(userId);
       if (!user) throw new Error("Failed to create user");

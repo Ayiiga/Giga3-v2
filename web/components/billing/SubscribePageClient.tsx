@@ -5,7 +5,7 @@ import { UsageTracker } from "@/components/billing/UsageTracker";
 import { ButtonLink } from "@/components/ui/Button";
 import { useBilling } from "@/hooks/useBilling";
 import {
-  PREMIUM_TIER_FEATURES,
+  PLAN_FEATURE_HIGHLIGHTS,
   SUBSCRIPTION_PRODUCTS,
 } from "@/lib/payments/plans";
 import Link from "next/link";
@@ -27,23 +27,31 @@ export function SubscribePageClient() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold">Go Premium</h1>
+        <h1 className="text-3xl font-bold">Choose your plan</h1>
         <p className="mt-2 text-muted">
-          Unlimited chats · Credit-based media · Billed in{" "}
-          <span className="text-foreground">GHS</span> via Paystack
+          Monthly billing in <span className="text-foreground">GHS</span> via
+          Paystack · Credits refill on renewal
         </p>
       </div>
       {usage && <UsageTracker usage={usage} />}
       {error && <p className="text-sm text-red-300">{error}</p>}
-      <SubscriptionCard
-        product={SUBSCRIPTION_PRODUCTS[0]}
-        features={PREMIUM_TIER_FEATURES}
-        onSelect={(id) => void checkout(id)}
-        loading={paying}
-      />
+      <div className="grid gap-6 md:grid-cols-3">
+        {SUBSCRIPTION_PRODUCTS.map((product) => (
+          <SubscriptionCard
+            key={product.id}
+            product={product}
+            features={[
+              `${product.credits} credits / month`,
+              ...PLAN_FEATURE_HIGHLIGHTS,
+            ]}
+            onSelect={(id) => void checkout(id)}
+            loading={paying}
+          />
+        ))}
+      </div>
       <p className="text-center text-xs text-muted">
         <Link href="/pricing" className="text-accent hover:underline">
-          Compare all plans
+          Full pricing & credit packs
         </Link>
         {" · "}
         <ButtonLink href="/credits" variant="ghost" size="sm">

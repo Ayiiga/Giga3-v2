@@ -1,193 +1,235 @@
-import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { creditActionValidator } from "./schema";
 import {
-  CREDITS_PER_IMAGE,
-  CREDITS_PER_VIDEO,
-  FREE_DAILY_CHATS,
-  FREE_DAILY_IMAGES,
-  isPremium,
-  todayKey,
+  CREDIT_COSTS,
+  creditActionForMode,
+  isSubscriptionActive,
+  type CreditAction,
 } from "./creditsConfig";
 
-async function getOrCreateUsage(
-  ctx: { db: any },
-  userId: string,
-  dateKey: string
-) {
-  const existing = await ctx.db
-    .query("usageDaily")
-    .withIndex("by_user_date", (q: any) =>
-      q.eq("userId", userId).eq("dateKey", dateKey)
-    )
+type DbCtx = { db: any };
+
+async function getUserByEmail(ctx: DbCtx, email: string) {
+  return await ctx.db
+    .query("users")
+    .withIndex("by_email", (q: any) => q.eq("email", email))
     .first();
-  if (existing) return existing;
-  const id = await ctx.db.insert("usageDaily", {
-    userId,
-    dateKey,
-    chatsUsed: 0,
-    imagesUsed: 0,
-  });
-  return await ctx.db.get(id);
 }
+
+async function logCredit(
+  ctx: DbCtx,
+  args: {
+    userId: string;
+    action:
+      | CreditAction
+      | "subscription_refill"
+      | "credit_purchase"
+      | "starter_grant"
+      | "admin_grant";
+    amount: number;
+    balanceAfter: number;
+    reference?: string;
+    metadata?: string;
+  }
+) {
+  await ctx.db.insert("creditLogs", {
+    userId: args.userId,
+    action: args.action,
+    amount: args.amount,
+    balanceAfter: args.balanceAfter,
+    reference: args.reference,
+    metadata: args.metadata,
+    createdAt: Date.now(),
+  });
+}
+
+async function performDeduct(
+  ctx: DbCtx,
+  userId: string,
+  action: CreditAction,
+  reference?: string,
+  metadata?: string
+) {
+  await ctx.runMutation(internal.subscriptions.expireStaleSubscriptions, {});
+
+  const user = await getUserByEmail(ctx, userId);
+  if (!user) throw new Error("User not found");
+
+  const cost = CREDIT_COSTS[action];
+  const balance = user.credits ?? 0;
+  if (balance < cost) {
+    throw new Error(
+      `Insufficient credits (${cost} required, ${balance} available). Subscribe or renew to refill.`
+    );
+  }
+
+  const balanceAfter = balance - cost;
+  await ctx.db.patch(user._id, { credits: balanceAfter });
+  await logCredit(ctx, {
+    userId,
+    action,
+    amount: -cost,
+    balanceAfter,
+    reference,
+    metadata,
+  });
+
+  return { balanceAfter, charged: cost };
+}
+
+export const grantCreditsInternal = internalMutation({
+  args: {
+    userId: v.string(),
+    credits: v.number(),
+    action: creditActionValidator,
+    reference: v.optional(v.string()),
+    metadata: v.optional(v.string()),
+    setBalance: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getUserByEmail(ctx, args.userId);
+    if (!user) throw new Error("User not found");
+
+    const balanceAfter = args.setBalance
+      ? args.credits
+      : (user.credits ?? 0) + args.credits;
+
+    await ctx.db.patch(user._id, { credits: balanceAfter });
+    await logCredit(ctx, {
+      userId: args.userId,
+      action: args.action,
+      amount: args.setBalance
+        ? args.credits - (user.credits ?? 0)
+        : args.credits,
+      balanceAfter,
+      reference: args.reference,
+      metadata: args.metadata,
+    });
+
+    return balanceAfter;
+  },
+});
+
+export const deductCredits = mutation({
+  args: {
+    userId: v.string(),
+    action: creditActionValidator,
+    reference: v.optional(v.string()),
+    metadata: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    return await performDeduct(
+      ctx,
+      args.userId,
+      args.action as CreditAction,
+      args.reference,
+      args.metadata
+    );
+  },
+});
+
+export const deductForChatMode = mutation({
+  args: {
+    userId: v.string(),
+    mode: v.string(),
+    reference: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const action = creditActionForMode(args.mode);
+    return await performDeduct(
+      ctx,
+      args.userId,
+      action,
+      args.reference,
+      JSON.stringify({ mode: args.mode })
+    );
+  },
+});
 
 export const getUsageSnapshot = query({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.userId))
-      .first();
+    const user = await getUserByEmail(ctx, args.userId);
     if (!user) return null;
 
-    const dateKey = todayKey();
-    const usage = await getOrCreateUsage(ctx, args.userId, dateKey);
-    const tier = user.tier ?? (user.plan === "premium" ? "premium" : "free");
-    const premium = isPremium(tier, user.subscriptionExpiresAt);
+    const plan = (user.subscriptionPlan ?? "free") as SubscriptionPlanId;
+    const active = isSubscriptionActive(plan, user.subscriptionExpiresAt);
+
+    const subscription = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_user_status", (q) =>
+        q.eq("userId", args.userId).eq("status", "active")
+      )
+      .first();
 
     return {
-      tier,
-      premium,
+      subscriptionPlan: active ? plan : "free",
+      subscriptionActive: active,
       credits: user.credits ?? 0,
       tokens: user.tokens ?? 0,
-      dateKey,
-      chatsUsed: usage?.chatsUsed ?? 0,
-      chatsLimit: premium ? null : FREE_DAILY_CHATS,
-      imagesUsed: usage?.imagesUsed ?? 0,
-      imagesLimit: premium ? null : FREE_DAILY_IMAGES,
-      canGenerateVideo: premium && (user.credits ?? 0) >= CREDITS_PER_VIDEO,
+      subscriptionExpiresAt: user.subscriptionExpiresAt ?? null,
+      planLabel: subscription?.planId ?? plan,
+      canGenerateVideo: (user.credits ?? 0) >= CREDIT_COSTS.video,
+      creditCosts: CREDIT_COSTS,
     };
   },
 });
 
-export const assertCanChat = mutation({
+export const listCreditLogs = query({
+  args: { userId: v.string(), limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const cap = args.limit ?? 50;
+    const rows = await ctx.db
+      .query("creditLogs")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .order("desc")
+      .take(cap);
+    return rows;
+  },
+});
+
+/** @deprecated use deductCredits — kept for media module compatibility */
+export const assertCanGenerateImage = mutation({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.userId))
-      .first();
-    if (!user) throw new Error("User not found");
+    const result = await performDeduct(ctx, args.userId, "image");
+    return { chargedCredits: result.charged };
+  },
+});
 
-    const tier = user.tier ?? (user.plan === "premium" ? "premium" : "free");
-    const premium = isPremium(tier, user.subscriptionExpiresAt);
-    if (premium) return { allowed: true as const };
+/** @deprecated use deductCredits */
+export const assertCanGenerateVideo = mutation({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const result = await performDeduct(ctx, args.userId, "video");
+    return { chargedCredits: result.charged };
+  },
+});
 
-    const usage = await getOrCreateUsage(ctx, args.userId, todayKey());
-    if ((usage?.chatsUsed ?? 0) >= FREE_DAILY_CHATS) {
-      throw new Error(
-        `Daily chat limit reached (${FREE_DAILY_CHATS}/day). Upgrade to Premium for unlimited chats.`
-      );
-    }
-    await ctx.db.patch(usage!._id, { chatsUsed: (usage!.chatsUsed ?? 0) + 1 });
+/** @deprecated use deductForChatMode */
+export const assertCanChat = mutation({
+  args: { userId: v.string(), mode: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const action = creditActionForMode(args.mode ?? "general");
+    await performDeduct(ctx, args.userId, action);
     return { allowed: true as const };
   },
 });
 
-export const assertCanGenerateImage = mutation({
-  args: { userId: v.string() },
-  handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.userId))
-      .first();
-    if (!user) throw new Error("User not found");
-
-    const tier = user.tier ?? (user.plan === "premium" ? "premium" : "free");
-    const premium = isPremium(tier, user.subscriptionExpiresAt);
-
-    if (!premium) {
-      const usage = await getOrCreateUsage(ctx, args.userId, todayKey());
-      if ((usage?.imagesUsed ?? 0) >= FREE_DAILY_IMAGES) {
-        throw new Error(
-          `Daily image limit reached (${FREE_DAILY_IMAGES}/day). Go Premium or wait until tomorrow.`
-        );
-      }
-      await ctx.db.patch(usage!._id, {
-        imagesUsed: (usage!.imagesUsed ?? 0) + 1,
-      });
-      return { chargedCredits: 0 };
-    }
-
-    if ((user.credits ?? 0) < CREDITS_PER_IMAGE) {
-      throw new Error(
-        `Not enough credits (${CREDITS_PER_IMAGE} required). Purchase credits to continue.`
-      );
-    }
-    await ctx.db.patch(user._id, {
-      credits: (user.credits ?? 0) - CREDITS_PER_IMAGE,
-    });
-    return { chargedCredits: CREDITS_PER_IMAGE };
-  },
-});
-
-export const assertCanGenerateVideo = mutation({
-  args: { userId: v.string() },
-  handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.userId))
-      .first();
-    if (!user) throw new Error("User not found");
-
-    const tier = user.tier ?? (user.plan === "premium" ? "premium" : "free");
-    const premium = isPremium(tier, user.subscriptionExpiresAt);
-    if (!premium) {
-      throw new Error("Video generation requires a Premium subscription.");
-    }
-    if ((user.credits ?? 0) < CREDITS_PER_VIDEO) {
-      throw new Error(
-        `Not enough credits (${CREDITS_PER_VIDEO} required for video).`
-      );
-    }
-    await ctx.db.patch(user._id, {
-      credits: (user.credits ?? 0) - CREDITS_PER_VIDEO,
-    });
-    return { chargedCredits: CREDITS_PER_VIDEO };
-  },
-});
-
 export const grantCredits = mutation({
-  args: { userId: v.string(), credits: v.number(), reference: v.string() },
-  handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.userId))
-      .first();
-    if (!user) throw new Error("User not found");
-    await ctx.db.patch(user._id, {
-      credits: (user.credits ?? 0) + args.credits,
-    });
-    await ctx.db.insert("transactions", {
-      userId: args.userId,
-      amount: args.credits,
-      reference: args.reference,
-      tokens: 0,
-    });
-    return (user.credits ?? 0) + args.credits;
-  },
-});
-
-export const activatePremium = mutation({
   args: {
     userId: v.string(),
-    months: v.number(),
+    credits: v.number(),
     reference: v.string(),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.userId))
-      .first();
-    if (!user) throw new Error("User not found");
-
-    const base = Math.max(user.subscriptionExpiresAt ?? Date.now(), Date.now());
-    const expires = base + args.months * 30 * 24 * 60 * 60 * 1000;
-
-    await ctx.db.patch(user._id, {
-      tier: "premium",
-      plan: "premium",
-      subscriptionExpiresAt: expires,
+    return await ctx.runMutation(internal.credits.grantCreditsInternal, {
+      userId: args.userId,
+      credits: args.credits,
+      action: "admin_grant",
+      reference: args.reference,
     });
-    return expires;
   },
 });

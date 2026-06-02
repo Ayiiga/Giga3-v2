@@ -1,19 +1,15 @@
-export const FREE_DAILY_CHATS = 15;
-export const FREE_DAILY_IMAGES = 5;
-export const CREDITS_PER_IMAGE = 2;
-export const CREDITS_PER_VIDEO = 8;
+import type { SubscriptionPlanId } from "@/lib/payments/types";
+import { CREDIT_COSTS, FREE_STARTER_CREDITS } from "@/lib/payments/subscriptionCatalog";
 
-export type UserTier = "free" | "premium";
+export { CREDIT_COSTS, FREE_STARTER_CREDITS };
 
 export interface UsageSnapshot {
-  tier: UserTier;
-  premium: boolean;
+  subscriptionPlan: SubscriptionPlanId;
+  subscriptionActive: boolean;
   credits: number;
   tokens: number;
-  dateKey: string;
-  chatsUsed: number;
-  chatsLimit: number | null;
-  imagesUsed: number;
-  imagesLimit: number | null;
+  subscriptionExpiresAt: number | null;
+  planLabel: string;
   canGenerateVideo: boolean;
+  creditCosts: typeof CREDIT_COSTS;
 }

@@ -55,7 +55,7 @@ export function ChatShell() {
         onSelect={selectConversation}
         onNewChat={() => void startNewChat()}
         onDelete={(id) => void deleteConversation(id)}
-        tokens={user?.tokens ?? null}
+        credits={usage?.credits ?? user?.credits ?? null}
         email={email}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
@@ -79,7 +79,7 @@ export function ChatShell() {
           </Link>
           <span className="ml-auto flex items-center gap-2 text-xs text-muted">
             {usage && <CreditBadge credits={usage.credits} showLabel={false} />}
-            {user?.tokens ?? "—"} tokens
+            {usage?.credits ?? user?.credits ?? "—"} credits
           </span>
           <button
             type="button"

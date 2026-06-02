@@ -14,12 +14,16 @@ import type * as chat from "../chat.js";
 import type * as conversations from "../conversations.js";
 import type * as credits from "../credits.js";
 import type * as creditsConfig from "../creditsConfig.js";
+import type * as crons from "../crons.js";
+import type * as http from "../http.js";
 import type * as media from "../media.js";
 import type * as mediaCatalog from "../mediaCatalog.js";
 import type * as messages from "../messages.js";
 import type * as payments from "../payments.js";
 import type * as paystack from "../paystack.js";
 import type * as platform from "../platform.js";
+import type * as subscriptionPlans from "../subscriptionPlans.js";
+import type * as subscriptions from "../subscriptions.js";
 import type * as users from "../users.js";
 
 import type {
@@ -35,12 +39,16 @@ declare const fullApi: ApiFromModules<{
   conversations: typeof conversations;
   credits: typeof credits;
   creditsConfig: typeof creditsConfig;
+  crons: typeof crons;
+  http: typeof http;
   media: typeof media;
   mediaCatalog: typeof mediaCatalog;
   messages: typeof messages;
   payments: typeof payments;
   paystack: typeof paystack;
   platform: typeof platform;
+  subscriptionPlans: typeof subscriptionPlans;
+  subscriptions: typeof subscriptions;
   users: typeof users;
 }>;
 

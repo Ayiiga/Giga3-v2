@@ -27,16 +27,16 @@ export function useBilling() {
 
   const usage: UsageSnapshot | null = usageRaw
     ? {
-        tier: (usageRaw.tier as UsageSnapshot["tier"]) ?? "free",
-        premium: usageRaw.premium,
+        subscriptionPlan:
+          (usageRaw.subscriptionPlan as UsageSnapshot["subscriptionPlan"]) ??
+          "free",
+        subscriptionActive: usageRaw.subscriptionActive,
         credits: usageRaw.credits,
         tokens: usageRaw.tokens,
-        dateKey: usageRaw.dateKey,
-        chatsUsed: usageRaw.chatsUsed,
-        chatsLimit: usageRaw.chatsLimit,
-        imagesUsed: usageRaw.imagesUsed,
-        imagesLimit: usageRaw.imagesLimit,
+        subscriptionExpiresAt: usageRaw.subscriptionExpiresAt,
+        planLabel: String(usageRaw.planLabel),
         canGenerateVideo: usageRaw.canGenerateVideo,
+        creditCosts: usageRaw.creditCosts,
       }
     : null;
 
