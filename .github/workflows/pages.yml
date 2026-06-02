@@ -74,6 +74,23 @@ jobs:
             exit 1
           }
 
+      - name: File build failure issue
+        if: failure()
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ ! -f build.log ]; then exit 0; fi
+          BODY_FILE=$(mktemp)
+          {
+            echo "Auto-generated from workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo ""
+            echo '```'
+            tail -150 build.log
+            echo '```'
+          } > "$BODY_FILE"
+          gh issue create --repo "${{ github.repository }}" --title "CI: Next.js build failed (${{ github.sha }})" --body-file "$BODY_FILE" || true
+
       - name: Publish build log (debug)
         if: failure()
         working-directory: .
