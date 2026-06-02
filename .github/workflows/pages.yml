@@ -62,7 +62,7 @@ jobs:
           NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY }}
           NEXT_TELEMETRY_DISABLED: "1"
         run: |
-          set -e
+          set -eo pipefail
           npm run build 2>&1 | tee ../build.log || {
             echo "::group::Next.js build log"
             cat ../build.log
