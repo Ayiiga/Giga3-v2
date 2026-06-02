@@ -41,6 +41,8 @@ Paystack webhook: `https://<deployment>.convex.site/paystack/webhook`
 
 ### Gotchas
 
-- Static export + `useSearchParams`: payment pages wrap hooks in `<Suspense>`; `next.config.mjs` sets `experimental.missingSuspenseWithCSRBailout: false`.
-- Convex hooks must not run during SSR: billing/chat/media pages use `dynamic(..., { ssr: false })` and `mounted` guards before `useQuery`.
-- VM npm registry access may fail locally; rely on GitHub Actions for full `next build` verification when network is restricted.
+- **Convex + Next static export**: `web/next.config.mjs` needs `experimental.externalDir`, `transpilePackages: ["convex"]`, a webpack rule for `convex/_generated/*.js`, and `resolve.alias` for `convex/server` → `web/node_modules/convex/server`.
+- Convex hooks: wrap client trees with `ConvexAppShell`, use `dynamic(..., { ssr: false })`, and `mounted` guards before `useQuery`.
+- Payment pages wrap `useSearchParams` in `<Suspense>`.
+- CI: use `set -o pipefail` when piping `npm run build` to `tee`.
+- VM npm registry access may fail locally; use GitHub Actions to verify production builds.
