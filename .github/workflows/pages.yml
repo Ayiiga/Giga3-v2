@@ -60,11 +60,19 @@ jobs:
           NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
           NEXT_PUBLIC_CONVEX_SITE_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_SITE_URL }}
           NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY }}
+          NEXT_TELEMETRY_DISABLED: "1"
         run: |
-          set -euxo pipefail
-          test -x node_modules/.bin/next
-          node_modules/.bin/next --version
-          npm run build 2>&1 | tee ../build.log
+          set -e
+          npm run build 2>&1 | tee ../build.log || {
+            echo "::group::Next.js build log"
+            cat ../build.log
+            echo "::endgroup::"
+            echo "### Next.js build failed" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            tail -120 ../build.log >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
 
       - name: Report build failure
         if: failure()

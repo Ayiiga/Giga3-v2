@@ -5,19 +5,6 @@ import { Header } from "@/components/layout/Header";
 import { siteConfig } from "@/lib/site";
 import "@/styles/globals.css";
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-geist-sans",
-  display: "swap",
-});
-
-const jetbrains = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-geist-mono",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -71,12 +58,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} ${jetbrains.variable} font-sans`}>
+      <body className="font-sans">
         <Header />
-          <main>{children}</main>
-          <Footer />
-          <ServiceWorkerRegister />
-          <OfflineBanner />
+        <main>{children}</main>
+        <Footer />
+        <ServiceWorkerRegister />
+        <OfflineBanner />
       </body>
     </html>
   );
