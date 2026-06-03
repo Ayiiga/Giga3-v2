@@ -3,7 +3,7 @@
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { UsageTracker } from "@/components/billing/UsageTracker";
-import { ButtonLink } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { useBilling } from "@/hooks/useBilling";
 import { CREDIT_COSTS } from "@/lib/credits/constants";
 import { CREDIT_PACKS, formatGhs } from "@/lib/payments/plans";
@@ -40,26 +40,28 @@ function CreditsPageClientInner() {
       </div>
       {usage && <UsageTracker usage={usage} />}
       {error && <p className="text-sm text-red-300">{error}</p>}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-3">
         {CREDIT_PACKS.map((pack) => (
           <article
             key={pack.id}
             className={cn(
-              "glass flex flex-col rounded-2xl p-6",
+              "glass flex flex-col rounded-2xl p-8",
               pack.highlighted && "border-violet-500/40"
             )}
           >
             <h3 className="font-semibold">{pack.label}</h3>
             <p className="mt-2 text-2xl font-bold">{formatGhs(pack.amountGhs)}</p>
             <p className="mt-2 flex-1 text-sm text-muted">{pack.description}</p>
-            <button
+            <Button
               type="button"
+              variant="primary"
+              size="lg"
               disabled={paying}
               onClick={() => void checkout(pack.id)}
-              className="mt-6 rounded-xl bg-accent py-2.5 text-sm font-medium text-accent-foreground disabled:opacity-50"
+              className="mt-8 w-full"
             >
               Pay with Paystack
-            </button>
+            </Button>
           </article>
         ))}
       </div>

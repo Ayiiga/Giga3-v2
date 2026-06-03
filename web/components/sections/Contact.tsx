@@ -20,13 +20,13 @@ export function Contact() {
         <div className="glass overflow-hidden rounded-3xl">
           <div className="grid lg:grid-cols-2">
             <div className="p-8 sm:p-12 lg:border-r lg:border-border">
-              <p className="text-sm font-medium uppercase tracking-wider text-accent">
+              <p className="section-heading text-sm font-medium uppercase tracking-wider text-accent">
                 Contact
               </p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight">
+              <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
                 Let&apos;s build together
               </h2>
-              <p className="mt-4 text-muted">
+              <p className="section-lead">
                 Questions about enterprise plans, partnerships, or custom deployments?
                 We&apos;d love to hear from you.
               </p>
@@ -34,7 +34,7 @@ export function Contact() {
                 href={`mailto:${siteConfig.contact.email}`}
                 className="mt-8 inline-flex items-center gap-2 text-accent hover:underline"
               >
-                <Mail className="h-4 w-4" aria-hidden />
+                <Mail aria-hidden />
                 {siteConfig.contact.email}
               </a>
             </div>
@@ -46,7 +46,7 @@ export function Contact() {
                   directly.
                 </p>
               ) : (
-                <div className="space-y-5">
+                <div className="space-y-6">
                   <div>
                     <label htmlFor="name" className="mb-1.5 block text-sm font-medium">
                       Name
@@ -55,7 +55,7 @@ export function Contact() {
                       id="name"
                       name="name"
                       required
-                      className="w-full rounded-xl border border-border bg-black/40 px-4 py-3 text-sm outline-none ring-accent focus:ring-2"
+                      className="w-full rounded-xl border border-border bg-black/40 px-4 py-3 text-base outline-none ring-accent focus:ring-2"
                       placeholder="Your name"
                     />
                   </div>
@@ -68,7 +68,7 @@ export function Contact() {
                       name="email"
                       type="email"
                       required
-                      className="w-full rounded-xl border border-border bg-black/40 px-4 py-3 text-sm outline-none ring-accent focus:ring-2"
+                      className="w-full rounded-xl border border-border bg-black/40 px-4 py-3 text-base outline-none ring-accent focus:ring-2"
                       placeholder="you@company.com"
                     />
                   </div>
@@ -81,12 +81,12 @@ export function Contact() {
                       name="message"
                       required
                       rows={4}
-                      className="w-full resize-none rounded-xl border border-border bg-black/40 px-4 py-3 text-sm outline-none ring-accent focus:ring-2"
+                      className="w-full resize-none rounded-xl border border-border bg-black/40 px-4 py-3 text-base outline-none ring-accent focus:ring-2"
                       placeholder="Tell us about your project..."
                     />
                   </div>
-                  <Button type="submit" size="lg" className="w-full">
-                    <Send className="h-4 w-4" aria-hidden />
+                  <Button type="submit" size="lg" className="mt-2 w-full">
+                    <Send aria-hidden />
                     Send message
                   </Button>
                 </div>

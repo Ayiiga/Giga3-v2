@@ -37,11 +37,11 @@ interface ToolSelectorProps {
 
 export function ToolSelector({ value, onChange, disabled }: ToolSelectorProps) {
   return (
-    <div className="border-b border-border bg-black/30 px-3 py-2 sm:px-4">
-      <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted">
+    <div className="border-b border-border bg-black/30 px-4 py-3 sm:px-5">
+      <label className="mb-3 block text-sm font-semibold uppercase tracking-wide text-muted">
         AI mode
       </label>
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
+      <div className="grid auto-cols-[minmax(140px,1fr)] grid-flow-col gap-3 overflow-x-auto pb-1 scrollbar-thin">
         {AI_MODE_DEFINITIONS.map((mode) => {
           const Icon = ICONS[mode.icon] ?? MessageCircle;
           const active = value === mode.id;
@@ -53,14 +53,14 @@ export function ToolSelector({ value, onChange, disabled }: ToolSelectorProps) {
               onClick={() => onChange(mode.id)}
               title={mode.description}
               className={cn(
-                "flex shrink-0 items-center gap-2 rounded-xl border px-3 py-2 text-left text-xs transition-all sm:text-sm",
+                "flex min-h-12 shrink-0 items-center gap-2.5 rounded-xl border px-4 py-3 text-left text-sm transition-all",
                 active
-                  ? "border-accent bg-accent/15 text-foreground"
-                  : "border-border bg-card text-muted hover:border-violet-500/40 hover:text-foreground",
+                  ? "border-blue-500/50 bg-blue-500/15 text-foreground shadow-sm shadow-blue-500/10"
+                  : "border-border bg-card text-muted hover:border-blue-500/30 hover:text-foreground",
                 disabled && "pointer-events-none opacity-50"
               )}
             >
-              <Icon className="h-4 w-4 shrink-0 text-accent" aria-hidden />
+              <Icon className="shrink-0 text-blue-400" aria-hidden />
               <span className="font-medium whitespace-nowrap">{mode.label}</span>
             </button>
           );

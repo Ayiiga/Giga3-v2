@@ -30,35 +30,35 @@ export function MultiChat() {
     >
       <Container>
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-medium uppercase tracking-wider text-accent">
+          <p className="section-heading text-sm font-medium uppercase tracking-wider text-accent">
             Multi-provider AI
           </p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
             Chat that keeps going when one AI fails
           </h2>
-          <p className="mt-4 text-muted">
+          <p className="section-lead">
             Giga3 runs a multi-step chat engine on the server—so a single outage does
             not blank your product. Multiple conversations, modes, and history are
             built in.
           </p>
         </div>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+        <div className="mt-16 grid gap-8 md:grid-cols-3">
           {steps.map((step, i) => {
             const Icon = step.icon;
             return (
               <article
                 key={step.title}
-                className="glass relative rounded-2xl p-6 transition hover:border-violet-500/30"
+                className="glass relative rounded-2xl p-8 transition hover:border-violet-500/30"
               >
                 <span className="absolute right-4 top-4 text-xs font-mono text-muted">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-accent/15 text-accent">
-                  <Icon className="h-5 w-5" aria-hidden />
+                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-accent/15 text-accent">
+                  <Icon aria-hidden />
                 </div>
-                <h3 className="text-lg font-semibold">{step.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">
+                <h3 className="text-xl font-semibold">{step.title}</h3>
+                <p className="mt-3 leading-relaxed text-muted">
                   {step.description}
                 </p>
               </article>
@@ -66,10 +66,10 @@ export function MultiChat() {
           })}
         </div>
 
-        <div className="mt-10 flex justify-center">
-          <ButtonLink href="/chat/login" size="lg">
+        <div className="mt-14 flex justify-center">
+          <ButtonLink href="/chat/login" size="lg" className="min-w-[240px]">
             Try multi-chat now
-            <ArrowRight className="h-4 w-4" aria-hidden />
+            <ArrowRight aria-hidden />
           </ButtonLink>
         </div>
       </Container>

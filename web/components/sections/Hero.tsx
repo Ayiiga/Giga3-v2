@@ -24,8 +24,8 @@ export function Hero() {
 
       <Container className="relative">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="animate-fade-in mb-6 inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-4 py-1.5 text-sm text-violet-200 shadow-lg shadow-violet-500/10">
-            <BrandLogo size={20} className="!h-5 !w-5" />
+          <div className="animate-fade-in mb-8 inline-flex items-center gap-2.5 rounded-full border border-violet-500/30 bg-violet-500/10 px-5 py-2 text-base text-violet-200 shadow-lg shadow-violet-500/10">
+            <BrandLogo size={24} />
             Multi-provider AI · Production-ready PWA
           </div>
 
@@ -35,23 +35,23 @@ export function Hero() {
             <span className="text-foreground">{siteConfig.tagline}</span>
           </h1>
 
-          <p className="animate-fade-in mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted [animation-delay:160ms]">
+          <p className="section-lead animate-fade-in mx-auto max-w-2xl text-lg leading-relaxed [animation-delay:160ms]">
             {siteConfig.description} Run multiple chats with automatic AI failover,
             credit-based billing, and a polished mobile experience.
           </p>
 
-          <div className="animate-fade-in mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row [animation-delay:240ms]">
-            <ButtonLink href="/chat/login" size="lg">
+          <div className="animate-fade-in mx-auto mt-12 grid w-full max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2 lg:max-w-3xl lg:grid-cols-3 [animation-delay:240ms]">
+            <ButtonLink href="/chat/login" size="lg" className="w-full">
               Start chatting
-              <ArrowRight className="h-4 w-4" aria-hidden />
+              <ArrowRight aria-hidden />
             </ButtonLink>
-            <ButtonLink href="#multi-chat" variant="secondary" size="lg">
+            <ButtonLink href="#multi-chat" variant="secondary" size="lg" className="w-full">
               See multi-AI
             </ButtonLink>
-            <InstallButton size="lg" variant="outline" />
+            <InstallButton size="lg" variant="outline" className="w-full sm:col-span-2 lg:col-span-1" />
           </div>
 
-          <dl className="animate-fade-in mx-auto mt-12 grid max-w-lg grid-cols-3 gap-4 [animation-delay:280ms]">
+          <dl className="animate-fade-in mx-auto mt-16 grid max-w-lg grid-cols-3 gap-5 [animation-delay:280ms]">
             {heroStats.map((stat) => (
               <div
                 key={stat.label}
@@ -64,12 +64,12 @@ export function Hero() {
           </dl>
         </div>
 
-        <div className="animate-fade-in relative mx-auto mt-16 max-w-4xl [animation-delay:320ms]">
+        <div className="animate-fade-in relative mx-auto mt-20 max-w-4xl [animation-delay:320ms]">
           <div className="glass animate-float overflow-hidden rounded-2xl p-1 shadow-2xl shadow-violet-500/15 ring-1 ring-violet-500/20">
             <div className="rounded-xl bg-gradient-to-b from-white/[0.07] to-transparent p-6 sm:p-8">
               <div className="mb-4 flex items-center gap-2 border-b border-border pb-4">
-                <Bot className="h-5 w-5 text-accent" aria-hidden />
-                <span className="text-sm font-medium">Giga3 Assistant</span>
+                <Bot className="text-accent" aria-hidden />
+                <span className="font-medium">Giga3 Assistant</span>
                 <span className="ml-auto rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-300">
                   Failover active
                 </span>

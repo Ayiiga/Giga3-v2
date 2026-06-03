@@ -1,7 +1,7 @@
 "use client";
 
 import { Component, type ReactNode } from "react";
-import Link from "next/link";
+import { Button, ButtonLink } from "@/components/ui/Button";
 
 interface State {
   error: Error | null;
@@ -48,26 +48,16 @@ export class ChatErrorBoundary extends Component<
               {raw.length > 120 ? "…" : ""}
             </p>
           )}
-          <div className="flex flex-wrap justify-center gap-3">
-            <button
-              type="button"
-              onClick={() => this.setState({ error: null })}
-              className="rounded-xl bg-accent px-4 py-2 text-sm font-medium text-accent-foreground"
-            >
+          <div className="grid w-full max-w-md grid-cols-1 gap-3 sm:grid-cols-3">
+            <Button type="button" variant="primary" size="md" onClick={() => this.setState({ error: null })}>
               Try again
-            </button>
-            <Link
-              href="/chat/login"
-              className="rounded-xl border border-border px-4 py-2 text-sm text-muted hover:text-foreground"
-            >
+            </Button>
+            <ButtonLink href="/chat/login" variant="outline" size="md" className="w-full">
               Sign in again
-            </Link>
-            <Link
-              href="/"
-              className="rounded-xl border border-border px-4 py-2 text-sm text-muted hover:text-foreground"
-            >
+            </ButtonLink>
+            <ButtonLink href="/" variant="ghost" size="md" className="w-full">
               Home
-            </Link>
+            </ButtonLink>
           </div>
         </div>
       );

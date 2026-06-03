@@ -65,7 +65,7 @@ export function ChatSidebar({
             className="hidden rounded-lg p-2 text-muted hover:bg-white/5 lg:inline-flex"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+            {collapsed ? <PanelLeft aria-hidden /> : <PanelLeftClose aria-hidden />}
           </button>
         </div>
 
@@ -79,7 +79,7 @@ export function ChatSidebar({
               onCloseMobile();
             }}
           >
-            <MessageSquarePlus className="h-4 w-4" />
+            <MessageSquarePlus aria-hidden />
             New chat
           </Button>
         </div>
