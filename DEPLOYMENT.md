@@ -234,3 +234,15 @@ Convex env (optional):
 
 Gemini + OpenAI are raced in parallel; fal queue LLM is not used for chat.
 
+
+## Chat error: Could not find users:getUser
+
+This means production Convex never received the latest functions (deploy CI is failing).
+
+1. Open [Actions → Deploy Convex backend](https://github.com/Ayiiga/Giga3-v2/actions/workflows/convex-deploy.yml)
+2. Open the latest failed run → **Summary** for the error tail
+3. Regenerate deploy key: Convex dashboard → **perfect-lark-521** → Settings → Deploy key → `prod:perfect-lark-521|…`
+4. Set GitHub secret **CONVEX_DEPLOY_KEY** (repository secrets or environment **CF_ACCOUNT_ID**)
+5. Re-run the workflow on `main`
+
+After a green deploy, refresh https://www.giga3ai.com/chat — `users:getUser` and `platformActions:sendMessage` will be available.
