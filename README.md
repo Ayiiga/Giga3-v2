@@ -28,6 +28,11 @@ npx convex dev
 
 6. Update `frontend/assets/js/config.js` with your deployed Convex Cloud URLs when deploying the frontend. The current repo is already configured for `https://perfect-lark-521.convex.cloud`.
 
+Branding
+- App logo: `frontend/assets/images/logo.png` (also used for favicons/PWA under `frontend/assets/icons/`).
+- Next.js app uses the same asset at `web/public/images/logo.png`.
+- To use your official logo file, replace those PNGs and redeploy.
+
 Deploy
 - Deploy Convex functions with `npx convex deploy`.
 - Deploy `frontend/` to Cloudflare Pages (connect repo or upload files).
@@ -35,17 +40,9 @@ Deploy
 
 Environment
 - `OPENAI_API_KEY` for OpenAI calls
-- `FAL_KEY` (or `FAL_API_KEY`) for fal.ai image and video generation
-- `FAL_VIDEO_MODEL` (optional, default `nvidia/cosmos-3-super/image-to-video`)
-- `FAL_IMAGE_MODEL` (optional, default `fal-ai/nano-banana-pro`)
 - `STRIPE_SECRET_KEY` for Stripe Checkout payments
 - `FRONTEND_URL` for redirecting Stripe success/cancel pages
 - `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `CF_PROJECT_NAME` if using GitHub Actions for Cloudflare Pages
-
-Media (fal.ai)
-- Convex actions: `media:generateVideo` (Cosmos3 Super image-to-video), `media:generateImage`
-- UI: [frontend/media.html](frontend/media.html) — requires first-frame `imageUrl` + motion `prompt` for video
-- Quick env setup: `FAL_KEY=... ./scripts/convex-env-ai-providers.sh`
 
 Notes
 - Do NOT put `OPENAI_API_KEY` in frontend — it's used only server-side in Convex.

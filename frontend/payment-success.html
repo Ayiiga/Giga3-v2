@@ -3,6 +3,10 @@
 <head>
   <title>Payment Success</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#071018" />
+  <link rel="icon" href="./assets/icons/icon-192.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png" />
+  <link rel="manifest" href="./site.webmanifest" />
   <link rel="stylesheet" href="./assets/css/style.css">
   <style>.card{max-width:720px;margin:60px auto;padding:20px;border-radius:12px;background:rgba(255,255,255,0.02)}</style>
 </head>
@@ -14,14 +18,17 @@
   </div>
 
   <script src="./assets/js/config.js"></script>
-  <script src="./assets/js/convexHttp.js"></script>
   <script>
     async function confirm() {
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get('session_id');
       if (!sessionId) return document.getElementById('status').innerText = 'Missing session id.';
       try {
-        const data = await convexAction('payments:confirmPurchase', { sessionId });
+        const res = await fetch(`${window.GIGA3_CONFIG.CONVEX_URL}/action/payments:confirmPurchase`, {
+          method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ sessionId })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
         document.getElementById('status').innerText = `Success! ${data.tokens} tokens added to ${data.email}`;
       } catch (err) {
         document.getElementById('status').innerText = 'Error confirming purchase: ' + (err.message || err);

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { getUserEmail, isValidEmail, setUserEmail } from "@/lib/auth";
 import { api } from "convex/_generated/api";
 import { useMutation } from "convex/react";
-import { Sparkles } from "lucide-react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useEffect, useState } from "react";
@@ -48,7 +48,7 @@ function ChatLoginFormInner() {
     <div className="flex min-h-[100dvh] flex-col items-center justify-center px-4">
       <div className="glass w-full max-w-md rounded-2xl p-8">
         <div className="mb-6 flex items-center justify-center gap-2">
-          <Sparkles className="h-6 w-6 text-accent" />
+          <BrandLogo size={40} />
           <h1 className="text-xl font-bold">Sign in to Giga3 AI</h1>
         </div>
         <p className="mb-6 text-center text-sm text-muted">

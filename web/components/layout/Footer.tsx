@@ -1,6 +1,6 @@
 import { Container } from "@/components/ui/Container";
 import { navLinks, siteConfig } from "@/lib/site";
-import { Sparkles } from "lucide-react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import Link from "next/link";
 
 export function Footer() {
