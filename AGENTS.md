@@ -14,10 +14,24 @@
 
 - Install root: `npm ci --legacy-peer-deps`
 - Install web: `cd web && npm install --legacy-peer-deps`
-- Lint: `npm run lint` (runs `web` ESLint)
-- Build: `npm run build` (static export to `web/out`)
-- Convex codegen: `npx convex codegen`
+- Lint: `cd web && npm run lint`
+- Build: `cd web && npm run build` (static export to `web/out`)
+- Dev server: `cd web && npm run dev` → http://localhost:3000 (chat login: `/chat/login/`)
+- Convex codegen: `CONVEX_DEPLOY_KEY=… npx convex codegen` (uses deploy key from secrets)
 - Convex deploy: `npx convex deploy --yes` (requires `CONVEX_DEPLOY_KEY`)
+
+There is no root `lint`/`build`/`dev` script — run those from `web/`.
+
+### Local dev env file
+
+Create `web/.env.local` once (gitignored; copy from `web/.env.local.example`). For Cloud Agent VMs without a local Convex dev process, point at production:
+
+```env
+NEXT_PUBLIC_CONVEX_URL=https://perfect-lark-521.convex.cloud
+NEXT_PUBLIC_CONVEX_SITE_URL=https://perfect-lark-521.convex.site
+```
+
+Optional: run `npx convex dev` at repo root for a local backend (`http://127.0.0.1:3210`) and set those URLs instead.
 
 ### Build-time env (web)
 
