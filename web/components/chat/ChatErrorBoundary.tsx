@@ -16,7 +16,7 @@ function friendlyMessage(message: string): string {
     );
   }
   if (message.includes("NEXT_PUBLIC_CONVEX_URL")) {
-    return "Chat is misconfigured: the site is missing its Convex URL. Check Cloudflare Pages environment variables.";
+    return "Chat is misconfigured: missing NEXT_PUBLIC_CONVEX_URL at build time. Rebuild with GitHub Actions or Cloudflare env set.";
   }
   return message;
 }

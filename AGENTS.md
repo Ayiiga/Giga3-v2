@@ -39,6 +39,11 @@ Paystack webhook: `https://<deployment>.convex.site/paystack/webhook`
 - Output directory: **`web/out`**
 - `_redirects` in `web/public/_redirects` (static export uses per-route HTML; not SPA `/* /index.html 200`)
 
+**Client env convention (Next.js only):** `NEXT_PUBLIC_CONVEX_URL` (required), `NEXT_PUBLIC_CONVEX_SITE_URL` (optional). Do not use `EXPO_PUBLIC_*`.
+
+- **GitHub Actions deploy (default):** set secrets in the repo; CI bakes URLs into `web/out` via `pages.yml`.
+- **Cloudflare-native build:** set the same `NEXT_PUBLIC_*` names in Pages → Settings → Environment variables (Production).
+
 
 ### Multi-provider chat (failover)
 

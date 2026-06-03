@@ -90,6 +90,11 @@ jobs:
           name: next-build-log
           path: build.log
 
+      - name: Verify Convex URL in static bundle
+        env:
+          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
+        run: node scripts/verify-convex-in-build.mjs
+
       - name: Verify static output
         run: |
           find out -maxdepth 4 -name 'index.html' | head -30

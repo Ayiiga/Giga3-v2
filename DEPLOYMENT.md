@@ -153,10 +153,22 @@ Set in GitHub Actions (or `web/.env.local` for local production builds):
 
 | Variable | Used in | Notes |
 |----------|---------|--------|
-| `NEXT_PUBLIC_CONVEX_URL` | `web/lib/convex/env.ts` | **Required** — Convex client WebSocket/HTTP URL |
-| `NEXT_PUBLIC_CONVEX_SITE_URL` | `web/lib/convex/env.ts` | Optional; exported, not used by current pages |
-| `EXPO_PUBLIC_CONVEX_URL` | `web/lib/convex/env.ts` | Alternative prefix (Expo); optional |
-| `EXPO_PUBLIC_CONVEX_SITE_URL` | `web/lib/convex/env.ts` | Alternative prefix; optional |
+| `NEXT_PUBLIC_CONVEX_URL` | `web/lib/convex/env.ts` | **Required** — Convex client URL (`.convex.cloud`) |
+| `NEXT_PUBLIC_CONVEX_SITE_URL` | `web/lib/convex/env.ts` | Optional — HTTP actions URL (`.convex.site`) |
+
+**Convention:** This repo is Next.js only. Do **not** use `EXPO_PUBLIC_CONVEX_*` — those names are not read by the app.
+
+### Cloudflare Pages environment variables
+
+If Cloudflare **builds** the site (not only uploads `web/out` from GitHub Actions), set the same names in the Pages project → **Settings → Environment variables** (Production):
+
+| Variable | Example |
+|----------|---------|
+| `NEXT_PUBLIC_CONVEX_URL` | `https://perfect-lark-521.convex.cloud` |
+| `NEXT_PUBLIC_CONVEX_SITE_URL` | `https://perfect-lark-521.convex.site` |
+
+When deploy uses **GitHub Actions** (this repo’s default), variables are injected in `.github/workflows/pages.yml` at build time; Cloudflare only hosts static files from `web/out` and does not need them unless you add a CF-native build.
+
 
 Do **not** put `OPENAI_API_KEY` in the Next.js app — it belongs only on Convex.
 

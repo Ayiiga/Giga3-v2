@@ -19,7 +19,7 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
       <div className="flex min-h-screen items-center justify-center p-6 text-center text-sm text-muted">
         <p>
           Missing <code className="text-accent">NEXT_PUBLIC_CONVEX_URL</code>. Set it in
-          your deployment environment (Convex dashboard → Settings).
+          GitHub Actions / Cloudflare Pages build environment (see DEPLOYMENT.md).
         </p>
       </div>
     );
