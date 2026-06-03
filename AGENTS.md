@@ -32,6 +32,9 @@ Set in `web/.env.local` or CI secrets:
 Production deployment: **`perfect-lark-521`** (`https://perfect-lark-521.convex.cloud`).
 
 - `users:getUser` is a **public query** in `convex/users.ts`. If the client reports it is missing, production has not received a successful deploy.
+- New users receive **25 starter credits** (`FREE_STARTER_CREDITS`) via `users:createUser` / `credits:ensureStarterCredits`. See `docs/CREDITS_AUDIT_REPORT.md`.
+- Backfill zero-balance legacy users: `npx convex run credits:backfillStarterCredits '{"limit": 1000}'` (requires deploy key).
+- Dev-only credit bypass (Convex env, not Next.js): `CREDITS_BYPASS_DEV=true` — never set in production.
 - This Cloud Agent VM often **cannot** reach `api.convex.dev` or `*.convex.cloud` (TLS). Use GitHub Actions **Deploy Convex backend** or a local machine for codegen/deploy.
 - If CI fails in ~20s at **Deploy to Convex** after key format validation passes, regenerate `CONVEX_DEPLOY_KEY` (`prod:perfect-lark-521|…`) in Convex Dashboard → production → Settings → Deploy key.
 
