@@ -30,6 +30,10 @@ export const sendMessage = action({
       user = await ctx.runQuery(api.users.getUser, { email: args.userId });
     }
 
+    await ctx.runMutation(api.credits.ensureStarterCredits, {
+      userId: args.userId,
+    });
+
     const mode =
       args.mode && isValidMode(args.mode) ? args.mode : conv.mode ?? "general";
 

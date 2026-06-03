@@ -8,8 +8,14 @@ import {
   isSubscriptionActive,
   type CreditAction,
 } from "./creditsConfig";
+import {
+  applyStarterGrantIfNeeded,
+  isCreditsBypassEnabled,
+  normalizeCredits,
+} from "./creditsLogic";
+import type { SubscriptionPlanId } from "./subscriptionPlans";
 
-type DbCtx = { db: any };
+type DbCtx = { db: any; runMutation?: (ref: any, args: any) => Promise<any> };
 
 async function getUserByEmail(ctx: DbCtx, email: string) {
   return await ctx.db
@@ -38,11 +44,19 @@ async function logCredit(
     userId: args.userId,
     action: args.action,
     amount: args.amount,
-    balanceAfter: args.balanceAfter,
+    balanceAfter: normalizeCredits(args.balanceAfter),
     reference: args.reference,
     metadata: args.metadata,
     createdAt: Date.now(),
   });
+}
+
+async function ensureStarterCreditsForUser(ctx: DbCtx, email: string) {
+  const user = await getUserByEmail(ctx, email);
+  if (!user) throw new Error("User not found");
+  return await applyStarterGrantIfNeeded(ctx, user, (entry) =>
+    logCredit(ctx, entry)
+  );
 }
 
 async function performDeduct(
@@ -52,21 +66,33 @@ async function performDeduct(
   reference?: string,
   metadata?: string
 ) {
-  await ctx.runMutation(internal.subscriptions.expireStaleSubscriptions, {});
+  if (ctx.runMutation) {
+    await ctx.runMutation(internal.subscriptions.expireStaleSubscriptions, {});
+  }
 
   const user = await getUserByEmail(ctx, userId);
   if (!user) throw new Error("User not found");
 
+  await applyStarterGrantIfNeeded(ctx, user, (entry) => logCredit(ctx, entry));
+
+  const refreshed = await getUserByEmail(ctx, userId);
+  if (!refreshed) throw new Error("User not found");
+
+  const balance = normalizeCredits(refreshed.credits);
+
+  if (isCreditsBypassEnabled()) {
+    return { balanceAfter: balance, charged: 0, bypassed: true as const };
+  }
+
   const cost = CREDIT_COSTS[action];
-  const balance = user.credits ?? 0;
   if (balance < cost) {
     throw new Error(
       `Insufficient credits (${cost} required, ${balance} available). Subscribe or renew to refill.`
     );
   }
 
-  const balanceAfter = balance - cost;
-  await ctx.db.patch(user._id, { credits: balanceAfter });
+  const balanceAfter = normalizeCredits(balance - cost);
+  await ctx.db.patch(refreshed._id, { credits: balanceAfter });
   await logCredit(ctx, {
     userId,
     action,
@@ -92,16 +118,18 @@ export const grantCreditsInternal = internalMutation({
     const user = await getUserByEmail(ctx, args.userId);
     if (!user) throw new Error("User not found");
 
-    const balanceAfter = args.setBalance
-      ? args.credits
-      : (user.credits ?? 0) + args.credits;
+    const balanceAfter = normalizeCredits(
+      args.setBalance
+        ? args.credits
+        : normalizeCredits(user.credits) + args.credits
+    );
 
     await ctx.db.patch(user._id, { credits: balanceAfter });
     await logCredit(ctx, {
       userId: args.userId,
       action: args.action,
       amount: args.setBalance
-        ? args.credits - (user.credits ?? 0)
+        ? balanceAfter - normalizeCredits(user.credits)
         : args.credits,
       balanceAfter,
       reference: args.reference,
@@ -109,6 +137,51 @@ export const grantCreditsInternal = internalMutation({
     });
 
     return balanceAfter;
+  },
+});
+
+/** Idempotent one-time starter grant — safe to call on login and before chat. */
+export const ensureStarterCredits = mutation({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const balanceAfter = await ensureStarterCreditsForUser(ctx, args.userId);
+    return { balanceAfter, starterCreditsGranted: true as const };
+  },
+});
+
+/** Backfill existing users who never received onboarding credits. */
+export const backfillStarterCredits = internalMutation({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const cap = args.limit ?? 500;
+    const users = await ctx.db.query("users").take(cap);
+    let granted = 0;
+    let flagsFixed = 0;
+    let normalized = 0;
+
+    for (const user of users) {
+      const before = normalizeCredits(user.credits);
+      if (before !== user.credits) {
+        await ctx.db.patch(user._id, { credits: before });
+        normalized += 1;
+      }
+
+      if (user.starterCreditsGranted) continue;
+
+      const current = normalizeCredits(user.credits);
+      if (current > 0) {
+        await ctx.db.patch(user._id, { starterCreditsGranted: true });
+        flagsFixed += 1;
+        continue;
+      }
+
+      await applyStarterGrantIfNeeded(ctx, user, (entry) =>
+        logCredit(ctx, entry)
+      );
+      granted += 1;
+    }
+
+    return { scanned: users.length, granted, flagsFixed, normalized };
   },
 });
 
@@ -164,15 +237,19 @@ export const getUsageSnapshot = query({
       )
       .first();
 
+    const credits = normalizeCredits(user.credits);
+
     return {
       subscriptionPlan: active ? plan : "free",
       subscriptionActive: active,
-      credits: user.credits ?? 0,
+      credits,
       tokens: user.tokens ?? 0,
       subscriptionExpiresAt: user.subscriptionExpiresAt ?? null,
       planLabel: subscription?.planId ?? plan,
-      canGenerateVideo: (user.credits ?? 0) >= CREDIT_COSTS.video,
+      starterCreditsGranted: user.starterCreditsGranted ?? false,
+      canGenerateVideo: credits >= CREDIT_COSTS.video,
       creditCosts: CREDIT_COSTS,
+      creditsBypassDev: isCreditsBypassEnabled(),
     };
   },
 });

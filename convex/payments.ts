@@ -1,5 +1,6 @@
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { applyStarterGrantIfNeeded } from "./creditsLogic";
 
 const newPaidUserFields = {
   tier: "free" as const,
@@ -43,7 +44,18 @@ export const grantPurchaseTokens = mutation({
         plan: "paid",
         ...newPaidUserFields,
       });
-      user = { _id: userId, email: args.email, tokens: 0, plan: "paid" };
+      user = await ctx.db.get(userId);
+      if (!user) throw new Error("Failed to create user");
+      await applyStarterGrantIfNeeded(ctx, user, async (entry) => {
+        await ctx.db.insert("creditLogs", {
+          userId: entry.userId,
+          action: entry.action,
+          amount: entry.amount,
+          balanceAfter: entry.balanceAfter,
+          reference: entry.reference,
+          createdAt: Date.now(),
+        });
+      });
     }
 
     const balance = (user.tokens ?? 0) + args.tokens;

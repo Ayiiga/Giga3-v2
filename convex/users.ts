@@ -1,5 +1,24 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { applyStarterGrantIfNeeded } from "./creditsLogic";
+
+async function logStarterGrant(
+  ctx: { db: { insert: (table: string, doc: Record<string, unknown>) => Promise<unknown> } },
+  args: {
+    userId: string;
+    amount: number;
+    balanceAfter: number;
+  }
+) {
+  await ctx.db.insert("creditLogs", {
+    userId: args.userId,
+    action: "starter_grant",
+    amount: args.amount,
+    balanceAfter: args.balanceAfter,
+    reference: "onboarding",
+    createdAt: Date.now(),
+  });
+}
 
 export const createUser = mutation({
   args: { email: v.string() },
@@ -9,9 +28,17 @@ export const createUser = mutation({
       .withIndex("by_email", (q) => q.eq("email", args.email))
       .first();
     if (existing) {
+      await applyStarterGrantIfNeeded(ctx, existing, (entry) =>
+        logStarterGrant(ctx, {
+          userId: entry.userId,
+          amount: entry.amount,
+          balanceAfter: entry.balanceAfter,
+        })
+      );
       return existing;
     }
-    return await ctx.db.insert("users", {
+
+    const userId = await ctx.db.insert("users", {
       email: args.email,
       tokens: 12,
       plan: "free",
@@ -20,6 +47,19 @@ export const createUser = mutation({
       credits: 0,
       starterCreditsGranted: false,
     });
+
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error("Failed to create user");
+
+    await applyStarterGrantIfNeeded(ctx, user, (entry) =>
+      logStarterGrant(ctx, {
+        userId: entry.userId,
+        amount: entry.amount,
+        balanceAfter: entry.balanceAfter,
+      })
+    );
+
+    return await ctx.db.get(userId);
   },
 });
 
