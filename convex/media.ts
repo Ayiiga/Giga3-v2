@@ -1,125 +1,153 @@
-"use node";
-
-import { action } from "./_generated/server";
+import { action, internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { api } from "./_generated/api";
-import { falGenerateImage, falGenerateVideo, type FalImageSize } from "./falClient";
+import { api, internal } from "./_generated/api";
+import {
+  buildImagePrompt,
+  buildVideoPrompt,
+} from "./mediaCatalog";
+import {
+  replicateGenerateImage,
+  replicateGenerateVideo,
+} from "./replicateClient";
+import { CREDIT_COSTS } from "./creditsConfig";
 
-const imageSizeValidator = v.optional(
-  v.union(
-    v.literal("square_hd"),
-    v.literal("square"),
-    v.literal("portrait_4_3"),
-    v.literal("portrait_16_9"),
-    v.literal("landscape_4_3"),
-    v.literal("landscape_16_9"),
-    v.object({ width: v.number(), height: v.number() }),
-  ),
-);
+export const listJobs = query({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const rows = await ctx.db
+      .query("mediaJobs")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .order("desc")
+      .take(50);
+    return rows;
+  },
+});
 
-const VIDEO_TOKEN_COST = 5;
-const IMAGE_TOKEN_COST = 2;
-
-export const generateVideo = action({
+export const insertJob = internalMutation({
   args: {
-    email: v.string(),
+    userId: v.string(),
+    mediaType: v.union(v.literal("image"), v.literal("video")),
+    category: v.string(),
     prompt: v.string(),
-    imageUrl: v.string(),
-    negativePrompt: v.optional(v.string()),
-    enablePromptExpansion: v.optional(v.boolean()),
-    agenticMaxIterations: v.optional(v.number()),
-    agenticSamplesPerIteration: v.optional(v.number()),
-    agenticEarlyStop: v.optional(v.boolean()),
-    imageSize: imageSizeValidator,
-    numFrames: v.optional(v.number()),
-    framesPerSecond: v.optional(v.number()),
-    numInferenceSteps: v.optional(v.number()),
-    guidanceScale: v.optional(v.number()),
-    seed: v.optional(v.number()),
-    enableSafetyChecker: v.optional(v.boolean()),
-    syncMode: v.optional(v.boolean()),
+    creditsCharged: v.number(),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.runQuery(api.users.getUser, { email: args.email });
-    if (!user) {
-      throw new Error("User not found");
-    }
-    if ((user.tokens ?? 0) < VIDEO_TOKEN_COST) {
-      throw new Error(`Insufficient tokens (need ${VIDEO_TOKEN_COST} for video)`);
-    }
-
-    const result = await falGenerateVideo({
+    return await ctx.db.insert("mediaJobs", {
+      userId: args.userId,
+      mediaType: args.mediaType,
+      category: args.category,
       prompt: args.prompt,
-      image_url: args.imageUrl,
-      negative_prompt: args.negativePrompt,
-      enable_prompt_expansion: args.enablePromptExpansion,
-      agentic_max_iterations: args.agenticMaxIterations,
-      agentic_samples_per_iteration: args.agenticSamplesPerIteration,
-      agentic_early_stop: args.agenticEarlyStop,
-      image_size: args.imageSize as FalImageSize | undefined,
-      num_frames: args.numFrames,
-      frames_per_second: args.framesPerSecond,
-      num_inference_steps: args.numInferenceSteps,
-      guidance_scale: args.guidanceScale,
-      seed: args.seed,
-      enable_safety_checker: args.enableSafetyChecker,
-      sync_mode: args.syncMode,
+      status: "processing",
+      creditsCharged: args.creditsCharged,
+      createdAt: Date.now(),
     });
+  },
+});
 
-    const tokens = await ctx.runMutation(api.users.deductTokens, {
-      email: args.email,
-      amount: VIDEO_TOKEN_COST,
+export const finishJob = internalMutation({
+  args: {
+    jobId: v.id("mediaJobs"),
+    status: v.union(v.literal("succeeded"), v.literal("failed")),
+    outputUrl: v.optional(v.string()),
+    replicatePredictionId: v.optional(v.string()),
+    errorMessage: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.jobId, {
+      status: args.status,
+      outputUrl: args.outputUrl,
+      replicatePredictionId: args.replicatePredictionId,
+      errorMessage: args.errorMessage,
     });
-
-    return {
-      videoUrl: result.videoUrl,
-      contentType: result.contentType ?? "video/mp4",
-      seed: result.seed,
-      requestId: result.requestId,
-      tokens,
-    };
   },
 });
 
 export const generateImage = action({
   args: {
-    email: v.string(),
+    userId: v.string(),
+    category: v.string(),
     prompt: v.string(),
-    negativePrompt: v.optional(v.string()),
-    imageSize: imageSizeValidator,
-    numInferenceSteps: v.optional(v.number()),
-    guidanceScale: v.optional(v.number()),
-    seed: v.optional(v.number()),
-    enableSafetyChecker: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.runQuery(api.users.getUser, { email: args.email });
-    if (!user) {
-      throw new Error("User not found");
-    }
-    if ((user.tokens ?? 0) < IMAGE_TOKEN_COST) {
-      throw new Error(`Insufficient tokens (need ${IMAGE_TOKEN_COST} for image)`);
-    }
-
-    const result = await falGenerateImage({
+    const fullPrompt = buildImagePrompt(args.category, args.prompt);
+    const jobId = await ctx.runMutation(internal.media.insertJob, {
+      userId: args.userId,
+      mediaType: "image",
+      category: args.category,
       prompt: args.prompt,
-      negative_prompt: args.negativePrompt,
-      image_size: args.imageSize as FalImageSize | undefined,
-      num_inference_steps: args.numInferenceSteps,
-      guidance_scale: args.guidanceScale,
-      seed: args.seed,
-      enable_safety_checker: args.enableSafetyChecker,
+      creditsCharged: CREDIT_COSTS.image,
     });
 
-    const tokens = await ctx.runMutation(api.users.deductTokens, {
-      email: args.email,
-      amount: IMAGE_TOKEN_COST,
+    try {
+      await ctx.runMutation(api.credits.deductCredits, {
+        userId: args.userId,
+        action: "image",
+        reference: String(jobId),
+        metadata: JSON.stringify({ category: args.category }),
+      });
+
+      const result = await replicateGenerateImage(fullPrompt);
+      await ctx.runMutation(internal.media.finishJob, {
+        jobId,
+        status: "succeeded",
+        outputUrl: result.outputUrl,
+        replicatePredictionId: result.predictionId,
+      });
+
+      return { jobId, outputUrl: result.outputUrl };
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Image generation failed";
+      await ctx.runMutation(internal.media.finishJob, {
+        jobId,
+        status: "failed",
+        errorMessage: message,
+      });
+      throw e;
+    }
+  },
+});
+
+export const generateVideo = action({
+  args: {
+    userId: v.string(),
+    category: v.string(),
+    prompt: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const fullPrompt = buildVideoPrompt(args.category, args.prompt);
+    const jobId = await ctx.runMutation(internal.media.insertJob, {
+      userId: args.userId,
+      mediaType: "video",
+      category: args.category,
+      prompt: args.prompt,
+      creditsCharged: CREDIT_COSTS.video,
     });
 
-    return {
-      imageUrl: result.imageUrl,
-      requestId: result.requestId,
-      tokens,
-    };
+    try {
+      await ctx.runMutation(api.credits.deductCredits, {
+        userId: args.userId,
+        action: "video",
+        reference: String(jobId),
+        metadata: JSON.stringify({ category: args.category }),
+      });
+
+      const result = await replicateGenerateVideo(fullPrompt);
+      await ctx.runMutation(internal.media.finishJob, {
+        jobId,
+        status: "succeeded",
+        outputUrl: result.outputUrl,
+        replicatePredictionId: result.predictionId,
+      });
+
+      return { jobId, outputUrl: result.outputUrl };
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Video generation failed";
+      await ctx.runMutation(internal.media.finishJob, {
+        jobId,
+        status: "failed",
+        errorMessage: message,
+      });
+      throw e;
+    }
   },
 });
