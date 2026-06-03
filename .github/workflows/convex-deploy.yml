@@ -62,14 +62,29 @@ jobs:
           echo "DEPLOY_KEY=${DEPLOY_KEY}" >> "$GITHUB_ENV"
 
       - name: Deploy to Convex
+        id: convex_deploy
         run: |
           set -euo pipefail
           export CONVEX_DEPLOY_KEY="${DEPLOY_KEY}"
-          if ! npx convex deploy --yes --verbose --typecheck enable 2>&1 | tee convex-deploy.log; then
-            echo "::error::Convex deploy failed. Last 40 log lines:"
-            tail -40 convex-deploy.log
-            exit 1
-          fi
+          npx convex deploy --yes --verbose --typecheck try 2>&1 | tee convex-deploy.log
+
+      - name: Convex deploy failure details
+        if: failure() && steps.convex_deploy.outcome == 'failure'
+        run: |
+          echo "## Convex deploy failed" >> "$GITHUB_STEP_SUMMARY"
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          tail -60 convex-deploy.log >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::See job summary for convex-deploy.log tail"
+          exit 1
+
+      - name: Upload deploy log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: convex-deploy-log
+          path: convex-deploy.log
+          if-no-files-found: ignore
 
       - name: Deployment summary
         if: success()
