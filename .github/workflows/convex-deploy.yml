@@ -1,0 +1,47 @@
+name: Deploy Convex backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "convex/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/convex-deploy.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: convex-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Deploy to Convex
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CONVEX_DEPLOY_KEY}" ]; then
+            echo "::error::Missing GitHub secret CONVEX_DEPLOY_KEY. Create one at https://dashboard.convex.dev → Project Settings → Deploy keys"
+            exit 1
+          fi
+          npx convex deploy --yes
+
+      - name: Deployment summary
+        run: |
+          echo "### Convex deploy" >> "$GITHUB_STEP_SUMMARY"
+          echo "Backend functions (including multi-provider chatEngine) deployed from \`main\`." >> "$GITHUB_STEP_SUMMARY"

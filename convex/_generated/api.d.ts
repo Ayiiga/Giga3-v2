@@ -11,6 +11,7 @@
 import type * as ai from "../ai.js";
 import type * as aiModes from "../aiModes.js";
 import type * as chat from "../chat.js";
+import type * as chatEngine from "../chatEngine.js";
 import type * as conversations from "../conversations.js";
 import type * as credits from "../credits.js";
 import type * as creditsConfig from "../creditsConfig.js";
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   ai: typeof ai;
   aiModes: typeof aiModes;
   chat: typeof chat;
+  chatEngine: typeof chatEngine;
   conversations: typeof conversations;
   credits: typeof credits;
   creditsConfig: typeof creditsConfig;
