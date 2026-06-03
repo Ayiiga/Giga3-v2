@@ -8,6 +8,9 @@
  * @module
  */
 
+import type * as aiActions from "../aiActions.js";
+import type * as platformActions from "../platformActions.js";
+import type * as stripeActions from "../stripeActions.js";
 import type * as ai from "../ai.js";
 import type * as aiModes from "../aiModes.js";
 import type * as chat from "../chat.js";
@@ -35,6 +38,9 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   ai: typeof ai;
+  stripeActions: typeof stripeActions;
+  platformActions: typeof platformActions;
+  aiActions: typeof aiActions;
   aiModes: typeof aiModes;
   chat: typeof chat;
   chatEngine: typeof chatEngine;
