@@ -57,7 +57,8 @@ jobs:
             exit 1
           fi
           if [[ "${PREFIX}" != prod:* ]]; then
-            echo "::warning::Deploy key does not start with prod: — deploying with prefix '${PREFIX}'. Use a production deploy key if this workflow should update prod."
+            echo "::error::Use a production deploy key (prod:deployment-name|token). Got prefix: ${PREFIX}"
+            exit 1
           fi
           echo "DEPLOY_KEY=${DEPLOY_KEY}" >> "$GITHUB_ENV"
 
@@ -66,7 +67,7 @@ jobs:
         run: |
           set -euo pipefail
           export CONVEX_DEPLOY_KEY="${DEPLOY_KEY}"
-          npx convex deploy --yes --verbose --typecheck disable 2>&1 | tee convex-deploy.log
+          npx convex deploy --yes --verbose --typecheck try 2>&1 | tee convex-deploy.log
 
       - name: Convex deploy failure details
         if: failure() && steps.convex_deploy.outcome == 'failure'
