@@ -1,4 +1,3 @@
-"use node";
 
 import OpenAI from "openai";
 import { falOpenRouterChatComplete, getFalApiKey } from "./falClient";
