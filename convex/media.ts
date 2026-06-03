@@ -12,8 +12,15 @@ async function replicateCreatePrediction(
   model: string,
   input: Record<string, unknown>
 ): Promise<{ id: string; status: string; output?: unknown; error?: string }> {
-  const token = process.env.REPLICATE_API_TOKEN;
-  if (!token) throw new Error("REPLICATE_API_TOKEN is not configured");
+  const token = (
+    process.env.REPLICATE_API_TOKEN?.trim() ||
+    process.env.REPLICATE_API?.trim()
+  );
+  if (!token) {
+    throw new Error(
+      "REPLICATE_API_TOKEN is not configured (set REPLICATE_API_TOKEN or REPLICATE_API in Convex)"
+    );
+  }
 
   const [owner, name] = model.includes("/")
     ? model.split("/")

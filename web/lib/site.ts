@@ -20,17 +20,36 @@ export const siteConfig = {
 
 export const navLinks = [
   { href: "#features", label: "Features" },
+  { href: "#multi-chat", label: "Multi-AI" },
   { href: "/pricing", label: "Pricing" },
   { href: "/media", label: "Media" },
   { href: "/chat/login", label: "Chat" },
   { href: "#contact", label: "Contact" },
 ] as const;
 
+export const heroStats = [
+  { label: "AI failover paths", value: "5+" },
+  { label: "Chat modes", value: "6" },
+  { label: "Deploy stack", value: "PWA" },
+] as const;
+
 export const features = [
+  {
+    title: "Multi-provider AI failover",
+    description:
+      "If the primary model fails, Giga3 automatically tries backup models, compact retries, and an optional secondary API key—so chat keeps working.",
+    icon: "layers" as const,
+  },
+  {
+    title: "Multiple conversations",
+    description:
+      "Run parallel chats with modes for general, writing, research, and more—each with its own history on Convex.",
+    icon: "messages" as const,
+  },
   {
     title: "Lightning-fast responses",
     description:
-      "Powered by optimized inference pipelines so your users get answers in seconds, not minutes.",
+      "Optimized server-side inference with credit-based usage and clear provider status in the UI.",
     icon: "zap" as const,
   },
   {
@@ -46,22 +65,10 @@ export const features = [
     icon: "shield" as const,
   },
   {
-    title: "Mobile-first UX",
+    title: "Mobile-first PWA",
     description:
-      "Glassmorphism UI tuned for phones and tablets with installable PWA support.",
+      "Glassmorphism UI tuned for phones and tablets with installable app support.",
     icon: "smartphone" as const,
-  },
-  {
-    title: "Real-time chat history",
-    description:
-      "Persistent conversations synced through a reliable Convex backend.",
-    icon: "messages" as const,
-  },
-  {
-    title: "Paystack checkout",
-    description:
-      "Subscribe or buy credits in GHS with hosted Paystack and instant activation.",
-    icon: "credit-card" as const,
   },
 ] as const;
 

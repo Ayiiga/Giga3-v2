@@ -60,6 +60,15 @@ function ChatShellInner() {
     );
   }
 
+  if (user === undefined) {
+    return (
+      <div className="flex h-[100dvh] flex-col items-center justify-center gap-2 text-muted">
+        <p className="text-sm">Connecting to Giga3…</p>
+        <p className="text-xs text-muted/80">Setting up your account</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-background">
       <ChatSidebar

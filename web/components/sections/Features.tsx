@@ -3,7 +3,7 @@ import { features } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import {
   Coins,
-  CreditCard,
+  Layers,
   MessageSquare,
   Shield,
   Smartphone,
@@ -12,12 +12,12 @@ import {
 } from "lucide-react";
 
 const iconMap: Record<(typeof features)[number]["icon"], LucideIcon> = {
+  layers: Layers,
+  messages: MessageSquare,
   zap: Zap,
   coins: Coins,
   shield: Shield,
   smartphone: Smartphone,
-  messages: MessageSquare,
-  "credit-card": CreditCard,
 };
 
 export function Features() {
@@ -32,8 +32,8 @@ export function Features() {
             Everything you need to launch AI chat
           </h2>
           <p className="mt-4 text-muted">
-            From secure inference to Paystack billing in GHS—Giga3 is built for real
-            products, not demos.
+            Multi-conversation chat, provider failover, Paystack billing in GHS—built
+            for production on Convex and Cloudflare.
           </p>
         </div>
 
@@ -44,8 +44,8 @@ export function Features() {
               <article
                 key={feature.title}
                 className={cn(
-                  "glass group rounded-2xl p-6 transition-all hover:border-violet-500/30 hover:shadow-lg hover:shadow-violet-500/5",
-                  i === 0 && "sm:col-span-2 lg:col-span-1"
+                  "glass group rounded-2xl p-6 transition-all hover:-translate-y-0.5 hover:border-violet-500/35 hover:shadow-lg hover:shadow-violet-500/10",
+                  i === 0 && "ring-1 ring-violet-500/20 sm:col-span-2 lg:col-span-1"
                 )}
               >
                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-accent/15 text-accent transition-colors group-hover:bg-accent/25">

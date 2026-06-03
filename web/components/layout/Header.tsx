@@ -24,19 +24,18 @@ export function Header() {
     <header
       className={cn(
         "fixed inset-x-0 top-0 z-50 transition-all duration-300",
-        scrolled ? "glass border-b py-3" : "bg-transparent py-4"
+        scrolled ? "glass border-b py-3 shadow-lg shadow-black/20" : "bg-transparent py-4"
       )}
     >
       <Container className="flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/20 text-accent">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/20 text-accent ring-1 ring-accent/30">
             <Sparkles className="h-5 w-5" aria-hidden />
           </span>
           <span>{siteConfig.name}</span>
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex" aria-label="Main">
-          <a href="/media" className="text-sm text-muted transition-colors hover:text-foreground">Media</a>
+        <nav className="hidden items-center gap-7 md:flex" aria-label="Main">
           {navLinks.map((link) => (
             <a
               key={link.href}
@@ -72,8 +71,7 @@ export function Header() {
       {open && (
         <div className="glass border-t md:hidden">
           <Container className="flex flex-col gap-4 py-4">
-            <a href="/media" className="text-sm text-muted transition-colors hover:text-foreground">Media</a>
-          {navLinks.map((link) => (
+            {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}

@@ -24,8 +24,13 @@ body {
   @apply bg-background text-foreground antialiased;
   background-image: radial-gradient(
       ellipse 120% 80% at 50% -30%,
-      rgba(124, 92, 255, 0.12),
+      rgba(124, 92, 255, 0.14),
       transparent 55%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 100% 0%,
+      rgba(192, 38, 211, 0.08),
+      transparent 50%
     ),
     var(--background);
 }
@@ -45,4 +50,10 @@ body {
 
 .text-gradient {
   @apply bg-gradient-to-r from-white via-violet-200 to-violet-400 bg-clip-text text-transparent;
+}
+
+/* Subtle focus for accessibility */
+a:focus-visible,
+button:focus-visible {
+  @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-background;
 }
