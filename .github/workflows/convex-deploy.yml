@@ -17,6 +17,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: CF_ACCOUNT_ID
     steps:
       - uses: actions/checkout@v4
 
