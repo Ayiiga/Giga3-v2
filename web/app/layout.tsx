@@ -1,4 +1,3 @@
-import { ConditionalSiteChrome } from "@/components/layout/ConditionalSiteChrome";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
 import { siteConfig } from "@/lib/site";
@@ -58,7 +57,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="font-sans">
-        <ConditionalSiteChrome>{children}</ConditionalSiteChrome>
+        {children}
         <ServiceWorkerRegister />
         <OfflineBanner />
       </body>
