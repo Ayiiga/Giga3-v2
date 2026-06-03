@@ -11,7 +11,7 @@ export default function OfflinePage() {
     <div className="flex min-h-[70vh] items-center section-padding">
       <Container className="text-center">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-400">
-          <WifiOff className="h-8 w-8" aria-hidden />
+          <WifiOff className="app-icon !h-8 !w-8" aria-hidden />
         </div>
         <h1 className="mt-6 text-2xl font-bold">You&apos;re offline</h1>
         <p className="mx-auto mt-3 max-w-md text-muted">

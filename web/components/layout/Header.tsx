@@ -63,24 +63,24 @@ export function Header() {
           aria-label={open ? "Close menu" : "Open menu"}
           onClick={() => setOpen(!open)}
         >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {open ? <X className="app-icon" aria-hidden /> : <Menu className="app-icon" aria-hidden />}
         </Button>
       </Container>
 
       {open && (
         <div className="glass border-t md:hidden">
-          <Container className="flex flex-col gap-4 py-4">
+          <Container className="action-button-grid py-5">
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
-                className="text-muted hover:text-foreground"
+                className="col-span-full text-base text-muted hover:text-foreground"
                 onClick={() => setOpen(false)}
               >
                 {link.label}
               </a>
             ))}
-            <InstallButton className="w-full" />
+            <InstallButton className="col-span-full w-full" />
             <ButtonLink href={siteConfig.links.login} variant="secondary" className="w-full">
               Log in
             </ButtonLink>

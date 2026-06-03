@@ -57,36 +57,41 @@ export function ChatSidebar({
           collapsed && "lg:w-0 lg:overflow-hidden lg:border-0"
         )}
       >
-        <div className="flex items-center justify-between gap-2 border-b border-border p-3">
-          <span className="truncate text-sm font-semibold">Giga3 AI</span>
+        <div className="flex items-center justify-between gap-3 border-b border-border p-4">
+          <span className="truncate text-base font-semibold">Giga3 AI</span>
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="hidden rounded-lg p-2 text-muted hover:bg-white/5 lg:inline-flex"
+            className="hidden rounded-xl p-2.5 text-muted hover:bg-white/8 lg:inline-flex"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+            {collapsed ? (
+              <PanelLeft className="app-icon" aria-hidden />
+            ) : (
+              <PanelLeftClose className="app-icon" aria-hidden />
+            )}
           </button>
         </div>
 
-        <div className="p-3">
+        <div className="p-4">
           <Button
             type="button"
             variant="primary"
-            className="w-full justify-start gap-2"
+            size="md"
+            className="w-full justify-start"
             onClick={() => {
               onNewChat();
               onCloseMobile();
             }}
           >
-            <MessageSquarePlus className="h-4 w-4" />
+            <MessageSquarePlus className="app-icon" aria-hidden />
             New chat
           </Button>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-2 pb-2" aria-label="Chat history">
           {conversations.length === 0 && (
-            <p className="px-2 py-4 text-center text-xs text-muted">No chats yet</p>
+            <p className="px-2 py-4 text-center text-sm text-muted">No chats yet</p>
           )}
           {conversations.map((c) => {
             const modeLabel = getModeDefinition(c.mode as AiModeId).label;
@@ -95,7 +100,7 @@ export function ChatSidebar({
                 key={c._id}
                 className={cn(
                   "group mb-1 flex items-center gap-1 rounded-lg",
-                  activeId === c._id && "bg-accent/15"
+                  activeId === c._id && "bg-blue-500/15"
                 )}
               >
                 <button
@@ -104,25 +109,25 @@ export function ChatSidebar({
                     onSelect(c._id);
                     onCloseMobile();
                   }}
-                  className="min-w-0 flex-1 px-3 py-2.5 text-left text-sm hover:bg-white/5 rounded-lg"
+                  className="min-w-0 flex-1 rounded-xl px-3 py-3 text-left text-base hover:bg-white/8"
                 >
                   <span className="block truncate font-medium">{c.title}</span>
-                  <span className="block truncate text-[10px] text-muted">{modeLabel}</span>
+                  <span className="block truncate text-xs text-muted">{modeLabel}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => onDelete(c._id)}
-                  className="shrink-0 rounded-lg p-2 text-muted opacity-0 transition-opacity hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100"
+                  className="shrink-0 rounded-xl p-2.5 text-muted opacity-0 transition-opacity hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100"
                   aria-label="Delete chat"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="app-icon" aria-hidden />
                 </button>
               </div>
             );
           })}
         </nav>
 
-        <div className="border-t border-border p-3 text-xs text-muted">
+        <div className="border-t border-border p-4 text-sm text-muted">
           <p className="truncate font-medium text-foreground">{email}</p>
           <p className="mt-1">Credits: {credits ?? "—"}</p>
         </div>

@@ -55,7 +55,7 @@ export function MultiChat() {
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-accent/15 text-accent">
-                  <Icon className="h-5 w-5" aria-hidden />
+                  <Icon className="app-icon" aria-hidden />
                 </div>
                 <h3 className="text-lg font-semibold">{step.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">
@@ -69,7 +69,7 @@ export function MultiChat() {
         <div className="mt-10 flex justify-center">
           <ButtonLink href="/chat/login" size="lg">
             Try multi-chat now
-            <ArrowRight className="h-4 w-4" aria-hidden />
+            <ArrowRight className="app-icon" aria-hidden />
           </ButtonLink>
         </div>
       </Container>

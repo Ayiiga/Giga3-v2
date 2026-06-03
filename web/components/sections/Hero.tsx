@@ -24,7 +24,7 @@ export function Hero() {
 
       <Container className="relative">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="animate-fade-in mb-6 inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-4 py-1.5 text-sm text-violet-200 shadow-lg shadow-violet-500/10">
+          <div className="animate-fade-in mb-6 inline-flex items-center gap-2.5 rounded-full border border-blue-500/35 bg-blue-500/10 px-5 py-2 text-base text-blue-200 shadow-lg shadow-blue-500/15">
             <BrandLogo size={20} className="!h-5 !w-5" />
             Multi-provider AI · Production-ready PWA
           </div>
@@ -40,15 +40,15 @@ export function Hero() {
             credit-based billing, and a polished mobile experience.
           </p>
 
-          <div className="animate-fade-in mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row [animation-delay:240ms]">
-            <ButtonLink href="/chat/login" size="lg">
+          <div className="action-button-grid animate-fade-in mx-auto mt-10 max-w-2xl [animation-delay:240ms]">
+            <ButtonLink href="/chat/login" size="lg" className="w-full">
               Start chatting
-              <ArrowRight className="h-4 w-4" aria-hidden />
+              <ArrowRight className="app-icon" aria-hidden />
             </ButtonLink>
-            <ButtonLink href="#multi-chat" variant="secondary" size="lg">
+            <ButtonLink href="#multi-chat" variant="secondary" size="lg" className="w-full">
               See multi-AI
             </ButtonLink>
-            <InstallButton size="lg" variant="outline" />
+            <InstallButton size="lg" variant="outline" className="w-full" />
           </div>
 
           <dl className="animate-fade-in mx-auto mt-12 grid max-w-lg grid-cols-3 gap-4 [animation-delay:280ms]">
@@ -68,7 +68,7 @@ export function Hero() {
           <div className="glass animate-float overflow-hidden rounded-2xl p-1 shadow-2xl shadow-violet-500/15 ring-1 ring-violet-500/20">
             <div className="rounded-xl bg-gradient-to-b from-white/[0.07] to-transparent p-6 sm:p-8">
               <div className="mb-4 flex items-center gap-2 border-b border-border pb-4">
-                <Bot className="h-5 w-5 text-accent" aria-hidden />
+                <Bot className="app-icon text-accent" aria-hidden />
                 <span className="text-sm font-medium">Giga3 Assistant</span>
                 <span className="ml-auto rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-300">
                   Failover active

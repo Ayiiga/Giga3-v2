@@ -16,25 +16,25 @@ export function UsageTracker({ usage, className }: UsageTrackerProps) {
   return (
     <div
       className={cn(
-        "glass space-y-3 rounded-xl border border-border p-4",
+        "glass space-y-4 rounded-2xl border border-border p-5",
         className
       )}
     >
-      <p className="text-xs font-medium uppercase tracking-wide text-muted">
+      <p className="text-sm font-semibold uppercase tracking-wide text-muted">
         Account
       </p>
-      <div className="flex items-center justify-between text-sm">
-        <span className="flex items-center gap-2 text-muted">
-          <Sparkles className="h-4 w-4" aria-hidden />
+      <div className="flex items-center justify-between text-base">
+        <span className="flex items-center gap-3 text-muted">
+          <Sparkles className="app-icon" aria-hidden />
           Plan
         </span>
         <span className="font-medium capitalize">
           {planDisplayName(usage.subscriptionPlan)}
         </span>
       </div>
-      <div className="flex items-center justify-between text-sm">
-        <span className="flex items-center gap-2 text-muted">
-          <Coins className="h-4 w-4" aria-hidden />
+      <div className="flex items-center justify-between text-base">
+        <span className="flex items-center gap-3 text-muted">
+          <Coins className="app-icon" aria-hidden />
           Credits
         </span>
         <span className={cn("font-medium", low && "text-amber-300")}>
@@ -42,9 +42,9 @@ export function UsageTracker({ usage, className }: UsageTrackerProps) {
         </span>
       </div>
       {usage.subscriptionActive && (
-        <div className="flex items-center justify-between text-sm">
-          <span className="flex items-center gap-2 text-muted">
-            <Calendar className="h-4 w-4" aria-hidden />
+        <div className="flex items-center justify-between text-base">
+          <span className="flex items-center gap-3 text-muted">
+            <Calendar className="app-icon" aria-hidden />
             Renews
           </span>
           <span className="font-medium">
@@ -52,13 +52,13 @@ export function UsageTracker({ usage, className }: UsageTrackerProps) {
           </span>
         </div>
       )}
-      <p className="text-xs text-muted">
+      <p className="text-sm text-muted">
         Chat {usage.creditCosts.chat} · Writing {usage.creditCosts.writing} ·
         Research {usage.creditCosts.research} · Image {usage.creditCosts.image}{" "}
         · Video {usage.creditCosts.video}
       </p>
       {low && (
-        <p className="text-xs text-amber-300">
+        <p className="text-sm text-amber-300">
           Low credits — subscribe or buy a top-up pack.
         </p>
       )}
