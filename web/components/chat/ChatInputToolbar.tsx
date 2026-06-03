@@ -1,16 +1,18 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { buildMediaStudioUrl, MEDIA_STUDIO_TEMPLATES } from "@/lib/media/studioTemplates";
+import type { AttachmentKind } from "@/lib/chat/fileAttachments";
 import {
   Camera,
   Clapperboard,
   FolderOpen,
   ImageIcon,
+  Loader2,
   Sparkles,
 } from "lucide-react";
-import Link from "next/link";
-import { useRef } from "react";
-import type { AttachmentKind } from "@/lib/chat/fileAttachments";
+import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
 
 interface ChatInputToolbarProps {
   disabled?: boolean;
@@ -18,18 +20,61 @@ interface ChatInputToolbarProps {
   onError: (message: string) => void;
 }
 
-const toolbarBtn =
-  "inline-flex min-h-12 min-w-12 flex-col items-center justify-center gap-0.5 rounded-xl border border-border bg-card px-2 py-2 text-[10px] font-medium text-muted transition-all hover:border-blue-500/40 hover:bg-blue-500/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:pointer-events-none disabled:opacity-50 sm:min-w-[4.5rem] sm:px-3 sm:text-xs";
+const actions: {
+  kind: AttachmentKind | "media";
+  label: string;
+  icon: typeof Camera;
+  color: string;
+  gradient: string;
+}[] = [
+  {
+    kind: "camera",
+    label: "Camera",
+    icon: Camera,
+    color: "text-sky-300",
+    gradient: "from-sky-500/30 to-blue-600/20",
+  },
+  {
+    kind: "file",
+    label: "Upload",
+    icon: FolderOpen,
+    color: "text-amber-300",
+    gradient: "from-amber-500/30 to-orange-600/20",
+  },
+  {
+    kind: "image",
+    label: "Image",
+    icon: ImageIcon,
+    color: "text-emerald-300",
+    gradient: "from-emerald-500/30 to-teal-600/20",
+  },
+  {
+    kind: "video",
+    label: "Video",
+    icon: Clapperboard,
+    color: "text-rose-300",
+    gradient: "from-rose-500/30 to-red-600/20",
+  },
+  {
+    kind: "media",
+    label: "Create Media",
+    icon: Sparkles,
+    color: "text-violet-300",
+    gradient: "from-violet-500/40 to-fuchsia-600/25",
+  },
+];
 
 export function ChatInputToolbar({
   disabled,
   onPickFile,
   onError,
 }: ChatInputToolbarProps) {
+  const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const imageRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
+  const [mediaLoading, setMediaLoading] = useState(false);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement>,
@@ -45,11 +90,37 @@ export function ChatInputToolbar({
     }
   }
 
+  function openCreateMedia() {
+    if (disabled || mediaLoading) return;
+    setMediaLoading(true);
+    try {
+      const template = MEDIA_STUDIO_TEMPLATES[0];
+      router.push(buildMediaStudioUrl(template));
+    } catch {
+      onError("Could not open Media Studio. Visit /media from the menu.");
+      setMediaLoading(false);
+    }
+  }
+
+  function triggerInput(kind: AttachmentKind | "media") {
+    if (kind === "media") {
+      openCreateMedia();
+      return;
+    }
+    const map = {
+      camera: cameraRef,
+      file: fileRef,
+      image: imageRef,
+      video: videoRef,
+    } as const;
+    map[kind].current?.click();
+  }
+
   return (
     <div
-      className="flex flex-wrap items-center gap-2"
+      className="rounded-2xl border border-border/80 bg-gradient-to-r from-violet-950/40 via-black/30 to-blue-950/30 p-2.5 shadow-lg shadow-black/20 sm:p-3"
       role="toolbar"
-      aria-label="Message attachments"
+      aria-label="Message attachments and media"
     >
       <input
         ref={cameraRef}
@@ -89,63 +160,37 @@ export function ChatInputToolbar({
         onChange={(e) => handleChange(e, "video")}
       />
 
-      <button
-        type="button"
-        className={toolbarBtn}
-        disabled={disabled}
-        title="Take a photo with your camera"
-        aria-label="Camera"
-        onClick={() => cameraRef.current?.click()}
-      >
-        <Camera className="h-6 w-6 text-sky-400" aria-hidden />
-        <span>Camera</span>
-      </button>
-
-      <button
-        type="button"
-        className={toolbarBtn}
-        disabled={disabled}
-        title="Upload a document or text file"
-        aria-label="Upload file"
-        onClick={() => fileRef.current?.click()}
-      >
-        <FolderOpen className="h-6 w-6 text-amber-400" aria-hidden />
-        <span>Upload</span>
-      </button>
-
-      <button
-        type="button"
-        className={toolbarBtn}
-        disabled={disabled}
-        title="Attach an image file"
-        aria-label="Image"
-        onClick={() => imageRef.current?.click()}
-      >
-        <ImageIcon className="h-6 w-6 text-emerald-400" aria-hidden />
-        <span>Image</span>
-      </button>
-
-      <button
-        type="button"
-        className={toolbarBtn}
-        disabled={disabled}
-        title="Attach a video file"
-        aria-label="Video"
-        onClick={() => videoRef.current?.click()}
-      >
-        <Clapperboard className="h-6 w-6 text-rose-400" aria-hidden />
-        <span>Video</span>
-      </button>
-
-      <Link
-        href="/media"
-        className={cn(toolbarBtn, disabled && "pointer-events-none opacity-50")}
-        title="Open Media Studio for AI image and video generation"
-        aria-label="Media Studio"
-      >
-        <Sparkles className="h-6 w-6 text-violet-400" aria-hidden />
-        <span>Media</span>
-      </Link>
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 sm:gap-2.5">
+        {actions.map((action) => {
+          const Icon = action.icon;
+          const isMedia = action.kind === "media";
+          const loading = isMedia && mediaLoading;
+          return (
+            <button
+              key={action.label}
+              type="button"
+              disabled={disabled || (isMedia && mediaLoading)}
+              title={action.label}
+              aria-label={action.label}
+              onClick={() => triggerInput(action.kind)}
+              className={cn(
+                "flex min-h-[4.5rem] flex-col items-center justify-center gap-1.5 rounded-xl border border-white/10 px-2 py-2.5 transition-all",
+                "bg-gradient-to-br shadow-md hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98]",
+                action.gradient,
+                isMedia && "ring-1 ring-violet-400/40",
+                disabled && "pointer-events-none opacity-50"
+              )}
+            >
+              {loading ? (
+                <Loader2 className="h-8 w-8 animate-spin text-violet-200" aria-hidden />
+              ) : (
+                <Icon className={cn("h-8 w-8", action.color)} aria-hidden />
+              )}
+              <span className="text-xs font-bold text-foreground sm:text-sm">{action.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -1,10 +1,10 @@
 "use client";
 
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
+import { MediaErrorBoundary } from "@/components/media/MediaErrorBoundary";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { UsageTracker } from "@/components/billing/UsageTracker";
-import { Button } from "@/components/ui/Button";
-import { ButtonLink } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { useBilling } from "@/hooks/useBilling";
 import { useMediaGeneration } from "@/hooks/useMediaGeneration";
 import {
@@ -13,23 +13,54 @@ import {
   type ImageCategoryId,
   type VideoCategoryId,
 } from "@/lib/media/catalog";
+import {
+  buildMediaStudioUrl,
+  getMediaStudioTemplate,
+  MEDIA_STUDIO_TEMPLATES,
+} from "@/lib/media/studioTemplates";
 import { canGenerateImage, canGenerateVideo } from "@/lib/credits/rules";
 import { cn } from "@/lib/utils";
-import { ImageIcon, Loader2, Video } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { CheckCircle2, ImageIcon, Loader2, Video, XCircle } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
-function MediaStudioClientInner() {
+function MediaStudioContent() {
   const router = useRouter();
+  const params = useSearchParams();
   const { email, usage } = useBilling();
-  const { jobs, loading, error, createImage, createVideo } = useMediaGeneration();
-  const [tab, setTab] = useState<"image" | "video">("image");
-  const [category, setCategory] = useState<string>("anime_art");
-  const [prompt, setPrompt] = useState("");
+  const {
+    jobs,
+    loading,
+    phase,
+    error,
+    successMessage,
+    clearStatus,
+    createImage,
+    createVideo,
+  } = useMediaGeneration();
+
+  const initialTab = params.get("tab") === "video" ? "video" : "image";
+  const initialCategory = params.get("category") ?? "anime_art";
+  const initialPrompt = params.get("prompt") ?? "";
+
+  const [tab, setTab] = useState<"image" | "video">(initialTab);
+  const [category, setCategory] = useState<string>(initialCategory);
+  const [prompt, setPrompt] = useState(initialPrompt);
 
   useEffect(() => {
     if (!email) router.replace("/chat/login?next=/media");
   }, [email, router]);
+
+  useEffect(() => {
+    const templateId = params.get("template");
+    if (!templateId) return;
+    const template = getMediaStudioTemplate(templateId);
+    if (!template) return;
+    setTab(template.tab);
+    setCategory(template.category);
+    setPrompt(template.prompt);
+  }, [params]);
 
   async function handleGenerate() {
     if (!prompt.trim()) return;
@@ -38,7 +69,20 @@ function MediaStudioClientInner() {
     } else {
       await createVideo(category as VideoCategoryId, prompt);
     }
-    setPrompt("");
+  }
+
+  function applyTemplate(templateId: string) {
+    const template = getMediaStudioTemplate(templateId);
+    if (!template) return;
+    setTab(template.tab);
+    setCategory(template.category);
+    setPrompt(template.prompt);
+    clearStatus();
+    try {
+      router.replace(buildMediaStudioUrl(template), { scroll: false });
+    } catch {
+      /* URL update optional */
+    }
   }
 
   const categories = tab === "image" ? IMAGE_CATEGORIES : VIDEO_CATEGORIES;
@@ -47,22 +91,62 @@ function MediaStudioClientInner() {
     (tab === "image" ? canGenerateImage(usage) : canGenerateVideo(usage));
 
   if (!email) {
-    return <p className="text-center text-muted">Redirecting…</p>;
+    return <p className="text-center text-base text-muted">Redirecting…</p>;
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-10">
+    <div className="mx-auto max-w-5xl animate-fade-in space-y-10">
       <div className="flex flex-wrap items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Media Studio</h1>
-          <p className="mt-2 text-muted">
-            Powered by Replicate · Images & videos with category presets
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+            Media Studio
+          </h1>
+          <p className="mt-3 text-base text-muted sm:text-lg">
+            AI images & videos · Powered by Replicate
           </p>
         </div>
-        {usage && <CreditBadge credits={usage.credits} />}
+        <div className="flex flex-wrap items-center gap-3">
+          {usage && <CreditBadge credits={usage.credits} />}
+          <ButtonLink href="/chat" variant="outline" size="md">
+            Back to chat
+          </ButtonLink>
+        </div>
       </div>
 
       {usage && <UsageTracker usage={usage} />}
+
+      <section className="space-y-4">
+        <h2 className="text-lg font-bold text-foreground sm:text-xl">Quick templates</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {MEDIA_STUDIO_TEMPLATES.map((template) => {
+            const Icon = template.icon;
+            return (
+              <button
+                key={template.id}
+                type="button"
+                onClick={() => applyTemplate(template.id)}
+                className={cn(
+                  "saas-card flex min-h-[5rem] items-center gap-3 p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-premium",
+                  params.get("template") === template.id && "ring-2 ring-violet-500/50"
+                )}
+              >
+                <div
+                  className={cn(
+                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br",
+                    template.gradient
+                  )}
+                >
+                  <Icon className="h-6 w-6 text-white" aria-hidden />
+                </div>
+                <span>
+                  <span className="block text-base font-semibold">{template.title}</span>
+                  <span className="text-sm text-muted">{template.description}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <button
@@ -70,13 +154,14 @@ function MediaStudioClientInner() {
           onClick={() => {
             setTab("image");
             setCategory("anime_art");
+            clearStatus();
           }}
           className={cn(
-            "inline-flex min-h-12 items-center justify-center gap-2.5 rounded-xl px-6 py-3 text-base font-semibold transition-all",
-            tab === "image" ? "btn-media-image-active" : "btn-media-inactive"
+            "inline-flex min-h-14 items-center justify-center gap-3 rounded-2xl px-6 py-4 text-lg font-bold transition-all",
+            tab === "image" ? "btn-media-image-active shadow-lg" : "btn-media-inactive"
           )}
         >
-          <ImageIcon aria-hidden />
+          <ImageIcon className="h-7 w-7" aria-hidden />
           Images
         </button>
         <button
@@ -84,31 +169,30 @@ function MediaStudioClientInner() {
           onClick={() => {
             setTab("video");
             setCategory("anime_videos");
+            clearStatus();
           }}
           className={cn(
-            "inline-flex min-h-12 items-center justify-center gap-2.5 rounded-xl px-6 py-3 text-base font-semibold transition-all",
-            tab === "video" ? "btn-media-video-active" : "btn-media-inactive"
+            "inline-flex min-h-14 items-center justify-center gap-3 rounded-2xl px-6 py-4 text-lg font-bold transition-all",
+            tab === "video" ? "btn-media-video-active shadow-lg" : "btn-media-inactive"
           )}
         >
-          <Video aria-hidden />
+          <Video className="h-7 w-7" aria-hidden />
           Videos
         </button>
       </div>
 
-      <div className="glass space-y-6 rounded-2xl p-6 sm:p-8">
-        <label className="text-sm font-semibold uppercase tracking-wide text-muted">
-          Category
-        </label>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+      <div className="saas-card space-y-6 p-6 shadow-premium sm:p-8">
+        <label className="text-sm font-bold uppercase tracking-wide text-muted">Category</label>
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4">
           {categories.map((c) => (
             <button
               key={c.id}
               type="button"
               onClick={() => setCategory(c.id)}
               className={cn(
-                "min-h-11 rounded-xl border px-3 py-2.5 text-sm font-medium transition-all",
+                "min-h-12 rounded-xl border px-3 py-3 text-sm font-semibold transition-all sm:text-base",
                 category === c.id
-                  ? "border-accent bg-accent/15 text-foreground shadow-sm"
+                  ? "border-accent bg-accent/15 text-foreground shadow-md"
                   : "border-border text-muted hover:border-violet-500/40 hover:text-foreground"
               )}
             >
@@ -116,56 +200,93 @@ function MediaStudioClientInner() {
             </button>
           ))}
         </div>
+
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          rows={3}
+          rows={4}
           placeholder={`Describe your ${tab}…`}
-          className="w-full rounded-xl border border-border bg-black/40 px-4 py-3 text-base outline-none ring-accent focus:ring-2"
+          className="w-full rounded-2xl border border-border bg-black/40 px-5 py-4 text-base outline-none ring-accent focus:ring-2 sm:text-lg"
         />
-        {error && <p className="text-sm text-red-300">{error}</p>}
+
+        {loading && (
+          <div
+            role="status"
+            className="rounded-2xl border border-violet-500/30 bg-violet-500/10 px-4 py-4"
+          >
+            <div className="flex items-center gap-3 text-base font-medium text-violet-100">
+              <Loader2 className="h-6 w-6 animate-spin" aria-hidden />
+              Generating your {tab}…
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/40">
+              <div className="h-full w-2/3 animate-pulse-soft rounded-full bg-gradient-to-r from-violet-500 to-blue-500" />
+            </div>
+          </div>
+        )}
+
+        {phase === "success" && successMessage && (
+          <div
+            role="status"
+            className="flex items-start gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-4 text-base text-emerald-100"
+          >
+            <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0" aria-hidden />
+            <span>{successMessage}</span>
+          </div>
+        )}
+
+        {error && (
+          <div
+            role="alert"
+            className="flex items-start gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-4 text-base text-red-100"
+          >
+            <XCircle className="mt-0.5 h-6 w-6 shrink-0" aria-hidden />
+            <span>{error}</span>
+          </div>
+        )}
+
         {!canGen && usage && (
-          <p className="text-sm text-amber-300">
+          <p className="text-base text-amber-200">
             {tab === "video"
               ? "Premium + credits required for video."
               : "Daily image limit reached or insufficient credits."}{" "}
-            <ButtonLink href="/credits" variant="ghost" size="sm">
+            <Link href="/credits" className="font-semibold text-accent underline">
               Get credits
-            </ButtonLink>
+            </Link>
           </p>
         )}
+
         <Button
           type="button"
           variant={tab === "video" ? "video" : "image"}
           size="lg"
           disabled={loading || !canGen || !prompt.trim()}
           onClick={() => void handleGenerate()}
-          className="w-full sm:w-auto"
+          className="w-full min-h-14 text-lg sm:w-auto"
         >
           {loading ? (
             <>
-              <Loader2 className="animate-spin" aria-hidden /> Generating…
+              <Loader2 className="h-6 w-6 animate-spin" aria-hidden /> Generating…
             </>
           ) : tab === "video" ? (
             <>
-              <Video aria-hidden /> Generate video
+              <Video className="h-6 w-6" aria-hidden /> Generate video
             </>
           ) : (
             <>
-              <ImageIcon aria-hidden /> Generate image
+              <ImageIcon className="h-6 w-6" aria-hidden /> Generate image
             </>
           )}
         </Button>
       </div>
 
       <section className="space-y-6">
-        <h2 className="text-xl font-semibold tracking-tight">Recent generations</h2>
+        <h2 className="text-xl font-bold sm:text-2xl">Recent generations</h2>
         <div className="grid gap-5 sm:grid-cols-2">
           {jobs.length === 0 && (
-            <p className="text-sm text-muted">No media yet — create your first above.</p>
+            <p className="text-base text-muted">No media yet — create your first above.</p>
           )}
           {jobs.map((job) => (
-            <article key={job._id} className="glass overflow-hidden rounded-xl">
+            <article key={job._id} className="saas-card overflow-hidden shadow-md">
               {job.outputUrl && job.mediaType === "image" && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={job.outputUrl} alt="" className="aspect-video w-full object-cover" />
@@ -173,8 +294,8 @@ function MediaStudioClientInner() {
               {job.outputUrl && job.mediaType === "video" && (
                 <video src={job.outputUrl} controls className="aspect-video w-full" />
               )}
-              <div className="p-3 text-xs">
-                <p className="font-medium capitalize">
+              <div className="p-4 text-sm sm:text-base">
+                <p className="font-semibold capitalize">
                   {job.mediaType} · {job.status}
                 </p>
                 <p className="mt-1 line-clamp-2 text-muted">{job.prompt}</p>
@@ -187,10 +308,20 @@ function MediaStudioClientInner() {
   );
 }
 
+function MediaStudioClientInner() {
+  return (
+    <Suspense fallback={<p className="text-center text-base text-muted">Loading studio…</p>}>
+      <MediaStudioContent />
+    </Suspense>
+  );
+}
+
 export function MediaStudioClient() {
   return (
     <ConvexAppShell>
-      <MediaStudioClientInner />
+      <MediaErrorBoundary>
+        <MediaStudioClientInner />
+      </MediaErrorBoundary>
     </ConvexAppShell>
   );
 }

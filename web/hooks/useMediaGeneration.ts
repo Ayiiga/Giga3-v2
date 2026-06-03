@@ -4,13 +4,16 @@ import { getUserEmail } from "@/lib/auth";
 import type { ImageCategoryId, VideoCategoryId } from "@/lib/media/catalog";
 import { api } from "convex/_generated/api";
 import { useAction, useQuery } from "convex/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+export type MediaGenerationPhase = "idle" | "generating" | "success" | "error";
 
 export function useMediaGeneration() {
   const email = getUserEmail();
   const userId = email ?? "";
-  const [loading, setLoading] = useState(false);
+  const [phase, setPhase] = useState<MediaGenerationPhase>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -24,35 +27,67 @@ export function useMediaGeneration() {
   const generateImage = useAction(api.media.generateImage);
   const generateVideo = useAction(api.media.generateVideo);
 
-  async function createImage(category: ImageCategoryId, prompt: string) {
-    if (!userId) throw new Error("Sign in required");
-    setLoading(true);
+  const loading = phase === "generating";
+
+  const clearStatus = useCallback(() => {
     setError(null);
+    setSuccessMessage(null);
+    setPhase("idle");
+  }, []);
+
+  async function createImage(category: ImageCategoryId, prompt: string) {
+    if (!userId) {
+      setError("Sign in required");
+      setPhase("error");
+      return null;
+    }
+    setPhase("generating");
+    setError(null);
+    setSuccessMessage(null);
     try {
-      return await generateImage({ userId, category, prompt });
+      const result = await generateImage({ userId, category, prompt });
+      setPhase("success");
+      setSuccessMessage("Image generation started — check Recent generations below.");
+      return result;
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Image failed";
+      const msg = e instanceof Error ? e.message : "Image generation failed";
       setError(msg);
-      throw e;
-    } finally {
-      setLoading(false);
+      setPhase("error");
+      return null;
     }
   }
 
   async function createVideo(category: VideoCategoryId, prompt: string) {
-    if (!userId) throw new Error("Sign in required");
-    setLoading(true);
+    if (!userId) {
+      setError("Sign in required");
+      setPhase("error");
+      return null;
+    }
+    setPhase("generating");
     setError(null);
+    setSuccessMessage(null);
     try {
-      return await generateVideo({ userId, category, prompt });
+      const result = await generateVideo({ userId, category, prompt });
+      setPhase("success");
+      setSuccessMessage("Video generation started — this may take a minute.");
+      return result;
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Video failed";
+      const msg = e instanceof Error ? e.message : "Video generation failed";
       setError(msg);
-      throw e;
-    } finally {
-      setLoading(false);
+      setPhase("error");
+      return null;
     }
   }
 
-  return { email, jobs: jobs ?? [], loading, error, createImage, createVideo };
+  return {
+    email,
+    jobs: jobs ?? [],
+    loading,
+    phase,
+    error,
+    successMessage,
+    clearStatus,
+    createImage,
+    createVideo,
+  };
 }

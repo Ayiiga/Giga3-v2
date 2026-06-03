@@ -1,10 +1,18 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { getModeDefinition, type AiModeId } from "@/lib/aiRouter";
+import { getModeDefinition, isValidMode, type AiModeId } from "@/lib/aiRouter";
 import { cn } from "@/lib/utils";
 import { Id } from "convex/_generated/dataModel";
-import { MessageSquarePlus, PanelLeftClose, PanelLeft, Trash2 } from "lucide-react";
+import {
+  Coins,
+  MessageSquarePlus,
+  PanelLeft,
+  PanelLeftClose,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
+import Link from "next/link";
 
 export interface ConversationItem {
   _id: Id<"conversations">;
@@ -52,79 +60,113 @@ export function ChatSidebar({
       )}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[min(100%,280px)] flex-col border-r border-border bg-[#0a0a0f] transition-transform lg:static lg:z-0 lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-[min(100%,300px)] flex-col border-r border-border/80 bg-[#0a0a0f]/95 backdrop-blur-xl transition-transform lg:static lg:z-0 lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
           collapsed && "lg:w-0 lg:overflow-hidden lg:border-0"
         )}
       >
-        <div className="flex items-center justify-between gap-2 border-b border-border p-3">
-          <span className="truncate text-sm font-semibold">Giga3 AI</span>
+        <div className="flex items-center justify-between gap-2 border-b border-border/80 p-4">
+          <span className="truncate text-base font-bold">Giga3 AI</span>
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="hidden rounded-lg p-2 text-muted hover:bg-white/5 lg:inline-flex"
+            className="hidden rounded-xl p-2.5 text-muted hover:bg-white/5 lg:inline-flex"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            {collapsed ? <PanelLeft aria-hidden /> : <PanelLeftClose aria-hidden />}
+            {collapsed ? <PanelLeft className="h-5 w-5" aria-hidden /> : <PanelLeftClose className="h-5 w-5" aria-hidden />}
           </button>
         </div>
 
-        <div className="p-3">
+        <div className="space-y-3 p-4">
           <Button
             type="button"
             variant="primary"
-            className="w-full justify-start gap-2"
+            size="lg"
+            className="w-full justify-start gap-3 text-base"
             onClick={() => {
               onNewChat();
               onCloseMobile();
             }}
           >
-            <MessageSquarePlus aria-hidden />
+            <MessageSquarePlus className="h-6 w-6" aria-hidden />
             New chat
           </Button>
+
+          <div className="grid grid-cols-2 gap-2">
+            <Link
+              href="/media"
+              onClick={onCloseMobile}
+              className="saas-card flex min-h-12 items-center justify-center gap-2 rounded-xl px-2 py-2 text-sm font-semibold text-violet-200 transition-all hover:bg-violet-500/10"
+            >
+              <Sparkles className="h-5 w-5" aria-hidden />
+              Media
+            </Link>
+            <Link
+              href="/credits"
+              onClick={onCloseMobile}
+              className="saas-card flex min-h-12 items-center justify-center gap-2 rounded-xl px-2 py-2 text-sm font-semibold text-muted transition-all hover:text-foreground"
+            >
+              <Coins className="h-5 w-5" aria-hidden />
+              Credits
+            </Link>
+          </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-2 pb-2" aria-label="Chat history">
+        <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3">
           {conversations.length === 0 && (
-            <p className="px-2 py-4 text-center text-xs text-muted">No chats yet</p>
+            <p className="px-2 py-4 text-sm text-muted">No conversations yet.</p>
           )}
-          {conversations.map((c) => {
-            const modeLabel = getModeDefinition(c.mode as AiModeId).label;
-            return (
-              <div
-                key={c._id}
-                className={cn(
-                  "group mb-1 flex items-center gap-1 rounded-lg",
-                  activeId === c._id && "bg-accent/15"
-                )}
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelect(c._id);
-                    onCloseMobile();
-                  }}
-                  className="min-w-0 flex-1 px-3 py-2.5 text-left text-sm hover:bg-white/5 rounded-lg"
-                >
-                  <span className="block truncate font-medium">{c.title}</span>
-                  <span className="block truncate text-[10px] text-muted">{modeLabel}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onDelete(c._id)}
-                  className="shrink-0 rounded-lg p-2 text-muted opacity-0 transition-opacity hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100"
-                  aria-label="Delete chat"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            );
-          })}
-        </nav>
+          <ul className="space-y-1.5">
+            {conversations.map((c) => {
+              const active = c._id === activeId;
+              const modeLabel = isValidMode(c.mode)
+                ? getModeDefinition(c.mode).label
+                : "Chat";
+              return (
+                <li key={c._id}>
+                  <div
+                    className={cn(
+                      "group flex items-center gap-2 rounded-xl border px-3 py-3 transition-all",
+                      active
+                        ? "border-violet-500/40 bg-violet-500/10"
+                        : "border-transparent hover:border-border hover:bg-white/5"
+                    )}
+                  >
+                    <button
+                      type="button"
+                      className="min-w-0 flex-1 text-left"
+                      onClick={() => {
+                        onSelect(c._id);
+                        onCloseMobile();
+                      }}
+                    >
+                      <span className="block truncate text-sm font-semibold text-foreground sm:text-base">
+                        {c.title || "Untitled"}
+                      </span>
+                      <span className="mt-0.5 block truncate text-xs text-muted sm:text-sm">
+                        {modeLabel}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-lg p-2 text-muted opacity-0 transition-opacity hover:bg-red-500/10 hover:text-red-300 group-hover:opacity-100"
+                      aria-label="Delete conversation"
+                      onClick={() => onDelete(c._id)}
+                    >
+                      <Trash2 className="h-5 w-5" aria-hidden />
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
 
-        <div className="border-t border-border p-3 text-xs text-muted">
-          <p className="truncate font-medium text-foreground">{email}</p>
-          <p className="mt-1">Credits: {credits ?? "—"}</p>
+        <div className="border-t border-border/80 p-4">
+          <p className="truncate text-sm font-medium text-foreground">{email}</p>
+          <p className="mt-1 text-sm text-muted">
+            {credits != null ? `${credits} credits remaining` : "Loading credits…"}
+          </p>
         </div>
       </aside>
     </>

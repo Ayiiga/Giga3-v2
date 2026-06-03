@@ -14,6 +14,8 @@ interface DocumentTemplatePickerProps {
   onInsert: (text: string) => void;
   onError: (message: string) => void;
   compact?: boolean;
+  embedded?: boolean;
+  defaultOpen?: boolean;
 }
 
 export function DocumentTemplatePicker({
@@ -21,8 +23,11 @@ export function DocumentTemplatePicker({
   onInsert,
   onError,
   compact = false,
+  embedded = false,
+  defaultOpen,
 }: DocumentTemplatePickerProps) {
-  const [open, setOpen] = useState(!compact);
+  const initialOpen = defaultOpen ?? !compact;
+  const [open, setOpen] = useState(initialOpen);
 
   function insertTemplate(id: DocumentTemplateId) {
     try {
@@ -38,34 +43,32 @@ export function DocumentTemplatePicker({
   }
 
   return (
-    <div className={cn("border-border", compact ? "" : "border-b bg-black/20 px-3 py-3 sm:px-4")}>
+    <div
+      className={cn(
+        embedded ? "px-3 py-3 sm:px-4" : "border-b bg-black/20 px-3 py-3 sm:px-4",
+        !embedded && "border-border"
+      )}
+    >
       <button
         type="button"
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full min-h-12 items-center justify-between gap-2 rounded-xl px-1 text-left text-sm font-semibold text-foreground hover:text-accent disabled:opacity-50"
+        className="flex w-full min-h-12 items-center justify-between gap-2 rounded-xl px-1 text-left text-base font-bold text-foreground hover:text-accent disabled:opacity-50"
         aria-expanded={open}
       >
-        <span className="flex items-center gap-2">
-          <LayoutTemplate className="h-5 w-5 text-accent" aria-hidden />
-          Professional templates
+        <span className="flex items-center gap-2.5">
+          <LayoutTemplate className="h-6 w-6 text-accent" aria-hidden />
+          Document templates
         </span>
         {open ? (
-          <ChevronUp className="h-5 w-5 text-muted" aria-hidden />
+          <ChevronUp className="h-6 w-6 text-muted" aria-hidden />
         ) : (
-          <ChevronDown className="h-5 w-5 text-muted" aria-hidden />
+          <ChevronDown className="h-6 w-6 text-muted" aria-hidden />
         )}
       </button>
 
       {open && (
-        <div
-          className={cn(
-            "mt-3 grid gap-2",
-            compact
-              ? "grid-cols-1 sm:grid-cols-2"
-              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          )}
-        >
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {DOCUMENT_TEMPLATES.map((template) => {
             const Icon = template.icon;
             return (
@@ -75,17 +78,19 @@ export function DocumentTemplatePicker({
                 disabled={disabled}
                 onClick={() => insertTemplate(template.id)}
                 className={cn(
-                  "flex min-h-[4.5rem] items-start gap-3 rounded-xl border border-border bg-card p-3 text-left transition-all",
-                  "hover:border-accent/40 hover:bg-accent/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+                  "saas-card group flex min-h-[5.5rem] items-start gap-3 p-4 text-left transition-all",
+                  "hover:-translate-y-0.5 hover:shadow-xl hover:shadow-violet-500/10",
                   disabled && "pointer-events-none opacity-50"
                 )}
               >
-                <Icon className="mt-0.5 h-6 w-6 shrink-0 text-accent" aria-hidden />
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600/30 to-blue-600/20 shadow-inner">
+                  <Icon className="h-6 w-6 text-violet-300" aria-hidden />
+                </div>
                 <span className="min-w-0">
-                  <span className="block text-sm font-semibold text-foreground">
+                  <span className="block text-base font-semibold text-foreground">
                     {template.title}
                   </span>
-                  <span className="mt-0.5 block text-xs leading-snug text-muted">
+                  <span className="mt-1 block text-sm leading-snug text-muted">
                     {template.description}
                   </span>
                 </span>
@@ -95,9 +100,10 @@ export function DocumentTemplatePicker({
         </div>
       )}
 
-      {!compact && open && (
-        <p className="mt-2 text-xs text-muted">
-          Templates insert editable text with today&apos;s date — refine in the message box before sending.
+      {open && (
+        <p className="mt-3 text-sm text-muted">
+          Templates insert editable text with today&apos;s date — refine in the message box before
+          sending.
         </p>
       )}
     </div>

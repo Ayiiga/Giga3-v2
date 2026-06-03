@@ -33,15 +33,28 @@ interface ToolSelectorProps {
   value: AiModeId;
   onChange: (mode: AiModeId) => void;
   disabled?: boolean;
+  /** When true, omits outer panel chrome (used inside ChatWorkspacePanel). */
+  embedded?: boolean;
 }
 
-export function ToolSelector({ value, onChange, disabled }: ToolSelectorProps) {
+export function ToolSelector({
+  value,
+  onChange,
+  disabled,
+  embedded = false,
+}: ToolSelectorProps) {
   return (
-    <div className="border-b border-border bg-black/30 px-4 py-3 sm:px-5">
-      <label className="mb-3 block text-sm font-semibold uppercase tracking-wide text-muted">
-        AI mode
-      </label>
-      <div className="grid auto-cols-[minmax(140px,1fr)] grid-flow-col gap-3 overflow-x-auto pb-1 scrollbar-thin">
+    <div
+      className={cn(
+        embedded ? "px-3 py-4 sm:px-4" : "border-b border-border bg-black/30 px-4 py-4 sm:px-5"
+      )}
+    >
+      {!embedded && (
+        <label className="mb-3 block text-sm font-bold uppercase tracking-wider text-muted">
+          AI mode
+        </label>
+      )}
+      <div className="grid auto-cols-[minmax(160px,1fr)] grid-flow-col gap-3 overflow-x-auto pb-1 scrollbar-thin">
         {AI_MODE_DEFINITIONS.map((mode) => {
           const Icon = ICONS[mode.icon] ?? MessageCircle;
           const active = value === mode.id;
@@ -53,15 +66,18 @@ export function ToolSelector({ value, onChange, disabled }: ToolSelectorProps) {
               onClick={() => onChange(mode.id)}
               title={mode.description}
               className={cn(
-                "flex min-h-14 shrink-0 items-center gap-3 rounded-xl border px-4 py-3.5 text-left text-sm transition-all",
+                "saas-card flex min-h-[3.75rem] shrink-0 items-center gap-3 px-4 py-3.5 text-left transition-all",
                 active
-                  ? "border-blue-500/50 bg-blue-500/15 text-foreground shadow-sm shadow-blue-500/10"
-                  : "border-border bg-card text-muted hover:border-blue-500/30 hover:text-foreground",
+                  ? "border-violet-500/50 bg-gradient-to-br from-violet-600/25 to-blue-600/15 text-foreground shadow-lg shadow-violet-500/15 ring-1 ring-violet-500/40"
+                  : "text-muted hover:border-violet-500/30 hover:text-foreground",
                 disabled && "pointer-events-none opacity-50"
               )}
             >
-              <Icon className="h-6 w-6 shrink-0 text-blue-400" aria-hidden />
-              <span className="font-medium whitespace-nowrap">{mode.label}</span>
+              <Icon
+                className={cn("h-7 w-7 shrink-0", active ? "text-violet-300" : "text-blue-400")}
+                aria-hidden
+              />
+              <span className="text-base font-semibold whitespace-nowrap">{mode.label}</span>
             </button>
           );
         })}

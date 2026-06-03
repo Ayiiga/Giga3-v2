@@ -79,6 +79,20 @@ body {
   .btn-media-inactive {
     @apply glass text-muted hover:border-white/20 hover:text-foreground;
   }
+
+  .saas-panel {
+    @apply bg-gradient-to-b from-black/40 to-transparent backdrop-blur-sm;
+  }
+
+  .saas-card {
+    @apply rounded-2xl border border-border bg-card backdrop-blur-md;
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+
+  .chat-composer {
+    @apply border-t border-border backdrop-blur-xl;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.35), transparent);
+  }
 }
 
 .text-gradient {

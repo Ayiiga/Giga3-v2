@@ -5,17 +5,17 @@ import { ChatDateTimeLabel } from "@/components/chat/ChatDateTimeLabel";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatErrorBanner } from "@/components/chat/ChatErrorBanner";
 import { ChatProviderBanner } from "@/components/chat/ChatProviderBanner";
-import { DocumentTemplatePicker } from "@/components/chat/DocumentTemplatePicker";
+import { ChatWorkspacePanel } from "@/components/chat/ChatWorkspacePanel";
 import { SlowNetworkBanner } from "@/components/chat/SlowNetworkBanner";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { MessageList } from "@/components/chat/MessageList";
-import { ToolSelector } from "@/components/chat/ToolSelector";
 import { useChatPlatform } from "@/hooks/useChatPlatform";
 import { useBilling } from "@/hooks/useBilling";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { clearUserEmail } from "@/lib/auth";
+import { siteConfig } from "@/lib/site";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import { Menu } from "lucide-react";
+import { Menu, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -60,7 +60,7 @@ function ChatShellInner() {
 
   if (!email) {
     return (
-      <div className="flex h-[100dvh] items-center justify-center text-muted">
+      <div className="flex h-[100dvh] items-center justify-center text-base text-muted">
         Redirecting…
       </div>
     );
@@ -68,12 +68,15 @@ function ChatShellInner() {
 
   if (user === undefined) {
     return (
-      <div className="flex h-[100dvh] flex-col items-center justify-center gap-2 text-muted">
-        <p className="text-sm">Connecting to Giga3…</p>
-        <p className="text-xs text-muted/80">Setting up your account</p>
+      <div className="flex h-[100dvh] flex-col items-center justify-center gap-3 text-muted">
+        <p className="text-base font-medium">Connecting to Giga3…</p>
+        <p className="text-sm text-muted/80">Setting up your account</p>
       </div>
     );
   }
+
+  const navLink =
+    "hidden rounded-xl px-3 py-2 text-sm font-semibold text-muted transition-colors hover:bg-white/5 hover:text-foreground sm:inline-flex sm:items-center sm:gap-1.5";
 
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-background">
@@ -92,23 +95,39 @@ function ChatShellInner() {
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center gap-3 border-b border-border px-3 py-3 sm:px-4">
+        <header className="flex flex-wrap items-center gap-2 border-b border-border/80 bg-black/30 px-3 py-3 backdrop-blur-md sm:gap-3 sm:px-5 sm:py-3.5">
           <button
             type="button"
-            className="rounded-lg p-2 text-muted hover:bg-white/5 lg:hidden"
+            className="rounded-xl p-2.5 text-muted hover:bg-white/5 lg:hidden"
             onClick={() => setMobileOpen(true)}
             aria-label="Open sidebar"
           >
-            <Menu aria-hidden />
+            <Menu className="h-6 w-6" aria-hidden />
           </button>
-          <Link href="/" className="flex items-center gap-2 text-sm font-semibold">
-            <BrandLogo size={28} className="!h-7 !w-7" />
-            Giga3 AI
+          <Link href="/" className="flex items-center gap-2.5 text-base font-bold sm:text-lg">
+            <BrandLogo size={32} className="!h-8 !w-8" />
+            {siteConfig.name}
           </Link>
-          <span className="ml-auto flex items-center gap-3 text-xs text-muted">
+
+          <nav className="ml-2 hidden items-center gap-1 md:flex" aria-label="Chat navigation">
+            <Link href="/media" className={navLink}>
+              <Sparkles className="h-4 w-4" aria-hidden />
+              Media
+            </Link>
+            <Link href="/pricing" className={navLink}>
+              Pricing
+            </Link>
+            <Link href="/credits" className={navLink}>
+              Credits
+            </Link>
+          </nav>
+
+          <span className="ml-auto flex items-center gap-2 sm:gap-3">
             <ChatDateTimeLabel />
             {usage && <CreditBadge credits={usage.credits} showLabel={false} />}
-            {usage?.credits ?? user?.credits ?? "—"} credits
+            <span className="rounded-full bg-violet-500/15 px-3 py-1 text-sm font-semibold text-violet-200 ring-1 ring-violet-500/30">
+              {usage?.credits ?? user?.credits ?? "—"} credits
+            </span>
           </span>
           <button
             type="button"
@@ -116,7 +135,7 @@ function ChatShellInner() {
               clearUserEmail();
               router.push("/chat/login");
             }}
-            className="text-xs text-muted hover:text-foreground"
+            className="rounded-xl px-3 py-2 text-sm font-medium text-muted hover:bg-white/5 hover:text-foreground"
           >
             Sign out
           </button>
@@ -125,14 +144,12 @@ function ChatShellInner() {
         <SlowNetworkBanner />
         <ChatProviderBanner label={chatProviderLabel} usedFallback={usedFallback} />
 
-        <ToolSelector value={mode} onChange={(m) => void changeMode(m)} disabled={isSending} />
-
-        <ToolSelector value={mode} onChange={(m) => void changeMode(m)} disabled={isSending} />
-
-        <DocumentTemplatePicker
+        <ChatWorkspacePanel
+          mode={mode}
+          onModeChange={(m) => void changeMode(m)}
           disabled={isSending}
-          compact={messages.length > 0}
-          onInsert={(text) => {
+          hasMessages={messages.length > 0}
+          onInsertDocument={(text) => {
             if (insertRef.current) {
               insertRef.current(text);
               setTemplateNotice(null);
@@ -144,7 +161,7 @@ function ChatShellInner() {
         />
 
         {templateNotice && (
-          <p className="border-b border-border bg-red-500/10 px-4 py-2 text-center text-xs text-red-200">
+          <p className="border-b border-red-500/20 bg-red-500/10 px-4 py-2.5 text-center text-sm text-red-200">
             {templateNotice}
           </p>
         )}

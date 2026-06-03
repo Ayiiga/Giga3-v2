@@ -95,7 +95,7 @@ Instructions for AI: Personalize tone, tighten prose, and match the job descript
   },
   {
     id: "book-writing",
-    title: "Book Writing",
+    title: "Book Writer",
     description: "Outline, chapters, and narrative development",
     icon: BookOpen,
     body: `# Book project — started {{DATETIME}}

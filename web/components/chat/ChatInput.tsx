@@ -105,9 +105,9 @@ export function ChatInput({
   return (
     <form
       onSubmit={handleSubmit}
-      className="border-t border-border bg-background/80 p-3 backdrop-blur sm:p-4"
+      className="chat-composer p-3 sm:p-5"
     >
-      <div className="mx-auto max-w-3xl space-y-3">
+      <div className="mx-auto max-w-3xl space-y-4">
         <ChatInputToolbar
           disabled={inputDisabled}
           onPickFile={(file, kind) => void handlePickFile(file, kind)}
@@ -131,22 +131,22 @@ export function ChatInput({
             disabled={inputDisabled}
             rows={1}
             placeholder={placeholder}
-            className="max-h-52 min-h-[52px] flex-1 resize-none rounded-xl border border-border bg-card px-4 py-3.5 text-base outline-none ring-accent focus:ring-2 disabled:opacity-50"
+            className="max-h-56 min-h-[56px] flex-1 resize-none rounded-2xl border border-border/80 bg-card/90 px-5 py-4 text-base outline-none ring-accent focus:ring-2 disabled:opacity-50 sm:min-h-[60px] sm:text-lg"
             aria-label="Chat message"
           />
           <Button
             type="submit"
             disabled={inputDisabled || !value.trim()}
             size="lg"
-            className="min-h-[52px] min-w-[52px] px-4"
+            className="min-h-[56px] min-w-[56px] px-5 sm:min-h-[60px] sm:min-w-[60px]"
             aria-label="Send"
           >
-            <Send className="h-5 w-5" aria-hidden />
+            <Send className="h-6 w-6" aria-hidden />
           </Button>
         </div>
       </div>
 
-      <p className="mx-auto mt-2 max-w-3xl text-center text-[10px] text-muted sm:text-xs">
+      <p className="mx-auto mt-3 max-w-3xl text-center text-xs text-muted sm:text-sm">
         Enter to send · Shift+Enter for new line · Attach files or use templates above
       </p>
     </form>

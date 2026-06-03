@@ -40,10 +40,13 @@ const config: Config = {
         "btn-primary": "0 10px 28px -6px rgba(37, 99, 235, 0.55)",
         "btn-image": "0 10px 28px -6px rgba(16, 185, 129, 0.45)",
         "btn-video": "0 10px 28px -6px rgba(239, 68, 68, 0.45)",
+        premium: "0 20px 50px -12px rgba(124, 92, 255, 0.25)",
       },
       animation: {
         "fade-in": "fadeIn 0.6s ease-out forwards",
         float: "float 6s ease-in-out infinite",
+        "slide-up": "slideUp 0.35s ease-out forwards",
+        "pulse-soft": "pulseSoft 2s ease-in-out infinite",
       },
       keyframes: {
         fadeIn: {
@@ -53,6 +56,14 @@ const config: Config = {
         float: {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-8px)" },
+        },
+        slideUp: {
+          from: { opacity: "0", transform: "translateY(8px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        pulseSoft: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.65" },
         },
       },
     },
