@@ -5,9 +5,12 @@ export const siteConfig = {
     "Giga3 AI is a modern AI SaaS platform for fast, secure, and delightful chat experiences—built for teams and creators.",
   url: "https://www.giga3ai.com",
   links: {
-    login: "https://www.giga3ai.com/login.html",
-    dashboard: "https://www.giga3ai.com/dashboard.html",
-    pricing: "https://www.giga3ai.com/pricing.html",
+    login: "/chat/login",
+    dashboard: "/chat",
+    pricing: "/pricing",
+    subscribe: "/subscribe",
+    credits: "/credits",
+    media: "/media",
     github: "https://github.com/Ayiiga/Giga3-v2",
   },
   contact: {
@@ -31,9 +34,9 @@ export const features = [
     icon: "zap" as const,
   },
   {
-    title: "Token-based billing",
+    title: "Credit-based billing",
     description:
-      "Transparent usage with flexible token packs—pay only for what you use.",
+      "Transparent usage in Ghana Cedis—subscriptions and top-up packs via Paystack.",
     icon: "coins" as const,
   },
   {
@@ -55,49 +58,58 @@ export const features = [
     icon: "messages" as const,
   },
   {
-    title: "Stripe checkout",
+    title: "Paystack checkout",
     description:
-      "Upgrade in one click with hosted payments and instant token credit.",
+      "Subscribe or buy credits in GHS with hosted Paystack and instant activation.",
     icon: "credit-card" as const,
   },
 ] as const;
 
+/** Marketing teaser plans — full catalog at /pricing */
 export const pricingPlans = [
   {
-    name: "Starter",
-    price: "Free",
+    name: "Free",
+    price: "GHS 0",
     period: "",
-    description: "Try Giga3 with 12 tokens to explore the product.",
-    features: ["12 free tokens", "GPT-4o mini model", "Chat history", "Email login"],
+    description: "25 starter credits to explore chat, writing, and media.",
+    features: [
+      "25 starter credits",
+      "Chat & research modes",
+      "Image & video studio",
+      "Email sign-in",
+    ],
     cta: "Get started",
+    href: "/chat/login",
     highlighted: false,
   },
   {
     name: "Pro",
-    price: "$9",
-    period: "/ pack",
-    description: "Best for regular users who need more capacity.",
+    price: "GHS 150",
+    period: "/ month",
+    description: "500 monthly credits for daily creators and power users.",
     features: [
-      "50 tokens per pack",
-      "Priority responses",
-      "Stripe checkout",
+      "500 credits / month",
+      "Paystack billing",
+      "Media studio",
       "PWA install",
     ],
-    cta: "Buy tokens",
+    cta: "View plans",
+    href: "/pricing",
     highlighted: true,
   },
   {
-    name: "Team",
+    name: "Enterprise",
     price: "Custom",
     period: "",
     description: "Volume pricing and dedicated support for organizations.",
     features: [
-      "Custom token pools",
+      "Custom credit pools",
       "SLA options",
       "Dedicated onboarding",
       "Invoice billing",
     ],
     cta: "Contact sales",
+    href: "#contact",
     highlighted: false,
   },
 ] as const;

@@ -50,10 +50,10 @@ export function Header() {
 
         <div className="hidden items-center gap-3 md:flex">
           <InstallButton size="sm" variant="ghost" />
-          <ButtonLink href={siteConfig.links.login} variant="ghost" size="sm" external>
+          <ButtonLink href={siteConfig.links.login} variant="ghost" size="sm">
             Log in
           </ButtonLink>
-          <ButtonLink href={siteConfig.links.dashboard} size="sm" external>
+          <ButtonLink href={siteConfig.links.dashboard} size="sm">
             Open app
           </ButtonLink>
         </div>
@@ -84,10 +84,10 @@ export function Header() {
               </a>
             ))}
             <InstallButton className="w-full" />
-            <ButtonLink href={siteConfig.links.login} variant="secondary" external className="w-full">
+            <ButtonLink href={siteConfig.links.login} variant="secondary" className="w-full">
               Log in
             </ButtonLink>
-            <ButtonLink href={siteConfig.links.dashboard} className="w-full" external>
+            <ButtonLink href={siteConfig.links.dashboard} className="w-full">
               Open app
             </ButtonLink>
           </Container>

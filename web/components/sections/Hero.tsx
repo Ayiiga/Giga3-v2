@@ -32,7 +32,7 @@ export function Hero() {
           </p>
 
           <div className="animate-fade-in mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row [animation-delay:240ms]">
-            <ButtonLink href="/chat" size="lg">
+            <ButtonLink href="/chat/login" size="lg">
               Start chatting
               <ArrowRight className="h-4 w-4" aria-hidden />
             </ButtonLink>
@@ -58,7 +58,7 @@ export function Hero() {
                   How can Giga3 help my team ship AI features faster?
                 </div>
                 <div className="ml-auto max-w-[90%] rounded-2xl rounded-tr-sm bg-accent/20 px-4 py-3 text-foreground">
-                  Giga3 gives you token-based chat, secure server-side AI calls, and a
+                  Giga3 gives you credit-based chat, secure server-side AI calls, and a
                   mobile-first PWA—deployed globally on Cloudflare Pages.
                 </div>
               </div>

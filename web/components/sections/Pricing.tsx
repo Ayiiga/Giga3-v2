@@ -1,6 +1,6 @@
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { pricingPlans, siteConfig } from "@/lib/site";
+import { pricingPlans } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 
@@ -16,7 +16,7 @@ export function Pricing() {
             Simple, transparent plans
           </h2>
           <p className="mt-4 text-muted">
-            Start free with tokens. Upgrade when you&apos;re ready—no hidden fees.
+            Start free with credits. Upgrade when you&apos;re ready—no hidden fees.
           </p>
         </div>
 
@@ -54,14 +54,9 @@ export function Pricing() {
               </ul>
 
               <ButtonLink
-                href={
-                  plan.name === "Team"
-                    ? "#contact"
-                    : siteConfig.links.pricing
-                }
+                href={plan.href}
                 variant={plan.highlighted ? "primary" : "secondary"}
                 className="mt-8 w-full"
-                external={plan.name !== "Team"}
               >
                 {plan.cta}
               </ButtonLink>

@@ -1,0 +1,99 @@
+"use client";
+
+import { Button } from "@/components/ui/Button";
+import { getUserEmail, isValidEmail, setUserEmail } from "@/lib/auth";
+import { api } from "convex/_generated/api";
+import { useMutation } from "convex/react";
+import { Sparkles } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, Suspense, useEffect, useState } from "react";
+
+function ChatLoginFormInner() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const nextPath = params.get("next") || "/chat";
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const createUser = useMutation(api.users.createUser);
+
+  useEffect(() => {
+    const existing = getUserEmail();
+    if (existing) router.replace(nextPath.startsWith("/") ? nextPath : "/chat");
+  }, [router, nextPath]);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!isValidEmail(email)) {
+      setError("Enter a valid email address.");
+      return;
+    }
+    setError(null);
+    setSubmitting(true);
+    const normalized = email.trim().toLowerCase();
+    try {
+      await createUser({ email: normalized });
+      setUserEmail(normalized);
+      router.push(nextPath.startsWith("/") ? nextPath : "/chat");
+    } catch {
+      setUserEmail(normalized);
+      router.push(nextPath.startsWith("/") ? nextPath : "/chat");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center px-4">
+      <div className="glass w-full max-w-md rounded-2xl p-8">
+        <div className="mb-6 flex items-center justify-center gap-2">
+          <Sparkles className="h-6 w-6 text-accent" />
+          <h1 className="text-xl font-bold">Sign in to Giga3 AI</h1>
+        </div>
+        <p className="mb-6 text-center text-sm text-muted">
+          Sign up or log in with your email. Chats, credits, and subscriptions sync via
+          Convex.
+        </p>
+        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="mb-1.5 block text-sm font-medium">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-xl border border-border bg-black/40 px-4 py-3 text-sm outline-none ring-accent focus:ring-2"
+              placeholder="you@example.com"
+            />
+          </div>
+          {error && <p className="text-sm text-red-300">{error}</p>}
+          <Button type="submit" className="w-full" size="lg" disabled={submitting}>
+            {submitting ? "Signing in…" : "Continue"}
+          </Button>
+        </form>
+        <p className="mt-6 text-center text-xs text-muted">
+          <Link href="/pricing" className="text-accent hover:underline">
+            View pricing
+          </Link>
+          {" · "}
+          <Link href="/" className="text-accent hover:underline">
+            Back to home
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export function ChatLoginForm() {
+  return (
+    <Suspense fallback={<p className="p-8 text-center text-muted">Loading…</p>}>
+      <ChatLoginFormInner />
+    </Suspense>
+  );
+}
