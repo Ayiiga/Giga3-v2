@@ -3,6 +3,7 @@
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatErrorBanner } from "@/components/chat/ChatErrorBanner";
+import { ChatProviderBanner } from "@/components/chat/ChatProviderBanner";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { MessageList } from "@/components/chat/MessageList";
 import { ToolSelector } from "@/components/chat/ToolSelector";
@@ -42,6 +43,8 @@ function ChatShellInner() {
     deleteConversation,
     changeMode,
     sendMessage,
+    chatProviderLabel,
+    usedFallback,
   } = useChatPlatform();
   const { usage } = useBilling();
 
@@ -102,6 +105,8 @@ function ChatShellInner() {
             Sign out
           </button>
         </header>
+
+        <ChatProviderBanner label={chatProviderLabel} usedFallback={usedFallback} />
 
         <ToolSelector value={mode} onChange={(m) => void changeMode(m)} disabled={isSending} />
 

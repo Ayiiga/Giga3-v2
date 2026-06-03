@@ -1,10 +1,7 @@
 import { action, internalMutation } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
-import OpenAI from "openai";
-
-const openai = () =>
-  new OpenAI({ apiKey: process.env.OPENAI_API_KEY ?? "" });
+import { completeChatWithFailover } from "./chatEngine";
 
 export const persistLegacyChat = internalMutation({
   args: {
@@ -60,10 +57,6 @@ export const askAI = action({
   handler: async (ctx, args) => {
     const { email, message } = args;
 
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error("OPENAI_API_KEY is not configured");
-    }
-
     let user = await ctx.runQuery(api.users.getUser, { email });
     if (!user) {
       await ctx.runMutation(api.users.createUser, { email });
@@ -76,16 +69,14 @@ export const askAI = action({
       throw new Error("Insufficient tokens. Please purchase more tokens.");
     }
 
-    const response = await openai().chat.completions.create({
-      model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
-      messages: [{ role: "user", content: message }],
-    });
+    const engineResult = await completeChatWithFailover([
+      { role: "user", content: message },
+    ]);
 
-    const aiContent =
-      response.choices[0]?.message?.content?.trim() ||
-      "I could not generate a response.";
+    const aiContent = engineResult.content;
+    const chargedAi = engineResult.providerId !== "local_fallback";
 
-    const newTokens = Math.max(0, user.tokens - 1);
+    const newTokens = chargedAi ? Math.max(0, user.tokens - 1) : user.tokens;
 
     await ctx.runMutation(internal.ai.persistLegacyChat, {
       email,
@@ -94,6 +85,11 @@ export const askAI = action({
       newTokens,
     });
 
-    return { content: aiContent, tokens: newTokens };
+    return {
+      content: aiContent,
+      tokens: newTokens,
+      usedFallback: engineResult.usedFallback,
+      chatProvider: engineResult.providerId,
+    };
   },
 });

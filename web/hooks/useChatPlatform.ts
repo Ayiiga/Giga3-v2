@@ -27,6 +27,8 @@ export function useChatPlatform() {
   const [mode, setMode] = useState<AiModeId>("general");
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [chatProviderLabel, setChatProviderLabel] = useState<string | null>(null);
+  const [usedFallback, setUsedFallback] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -137,12 +139,18 @@ export function useChatPlatform() {
           setActiveId(conversationId);
         }
 
-        await sendMessageAction({
+        const result = await sendMessageAction({
           userId: email,
           conversationId,
           content,
           mode,
         });
+        setChatProviderLabel(
+          typeof result.chatProviderLabel === "string"
+            ? result.chatProviderLabel
+            : null
+        );
+        setUsedFallback(Boolean(result.usedFallback));
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to send");
       } finally {
@@ -167,5 +175,7 @@ export function useChatPlatform() {
     changeMode,
     sendMessage,
     setActiveId,
+    chatProviderLabel,
+    usedFallback,
   };
 }

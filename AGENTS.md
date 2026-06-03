@@ -39,6 +39,19 @@ Paystack webhook: `https://<deployment>.convex.site/paystack/webhook`
 - Output directory: **`web/out`**
 - `_redirects` in `web/public/_redirects` (static export uses per-route HTML; not SPA `/* /index.html 200`)
 
+
+### Multi-provider chat (failover)
+
+`convex/chatEngine.ts` tries chat backends in order until one succeeds:
+
+1. **openai_primary** — `OPENAI_MODEL` (default `gpt-4o-mini`)
+2. **openai_fallback_model** — `OPENAI_FALLBACK_MODEL` (default `gpt-3.5-turbo`)
+3. **openai_retry** — primary model with shorter history
+4. **openai_secondary_key** — optional `OPENAI_FALLBACK_API_KEY`
+5. **local_fallback** — user-visible notice (no credit charge)
+
+Convex env: `OPENAI_API_KEY`, optional `OPENAI_FALLBACK_MODEL`, `OPENAI_FALLBACK_API_KEY`.
+
 ### Gotchas
 
 - **Convex + Next static export**: `web/next.config.mjs` needs `experimental.externalDir`, `transpilePackages: ["convex"]`, a webpack rule for `convex/_generated/*.js`, and `resolve.alias` for `convex/server` → `web/node_modules/convex/server`.

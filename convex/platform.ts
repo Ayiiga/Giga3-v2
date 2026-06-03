@@ -1,11 +1,8 @@
 import { action, internalMutation } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
-import OpenAI from "openai";
+import { completeChatWithFailover, getChatProviderLabel } from "./chatEngine";
 import { getSystemPrompt, isValidMode } from "./aiModes";
-
-const openai = () =>
-  new OpenAI({ apiKey: process.env.OPENAI_API_KEY ?? "" });
 
 export const appendMessage = internalMutation({
   args: {
@@ -38,10 +35,6 @@ export const sendMessage = action({
     mode: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error("OPENAI_API_KEY is not configured");
-    }
-
     const conv = await ctx.runQuery(api.conversations.get, {
       conversationId: args.conversationId,
       userId: args.userId,
@@ -56,12 +49,6 @@ export const sendMessage = action({
 
     const mode =
       args.mode && isValidMode(args.mode) ? args.mode : conv.mode ?? "general";
-
-    await ctx.runMutation(api.credits.deductForChatMode, {
-      userId: args.userId,
-      mode,
-      reference: args.conversationId,
-    });
 
     if (mode !== conv.mode) {
       await ctx.runMutation(api.conversations.setMode, {
@@ -84,23 +71,27 @@ export const sendMessage = action({
     });
 
     const systemPrompt = getSystemPrompt(mode);
-    const openaiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-      { role: "system", content: systemPrompt },
+    const chatMessages = [
+      { role: "system" as const, content: systemPrompt },
       ...history.map((m) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
       })),
     ];
 
-    const response = await openai().chat.completions.create({
-      model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
-      messages: openaiMessages,
-      temperature: 0.7,
-    });
+    const engineResult = await completeChatWithFailover(chatMessages);
+    const assistantContent = engineResult.content;
 
-    const assistantContent =
-      response.choices[0]?.message?.content?.trim() ||
-      "I could not generate a response.";
+    const chargedAi =
+      engineResult.providerId !== "local_fallback" && !!process.env.OPENAI_API_KEY;
+
+    if (chargedAi) {
+      await ctx.runMutation(api.credits.deductForChatMode, {
+        userId: args.userId,
+        mode,
+        reference: args.conversationId,
+      });
+    }
 
     await ctx.runMutation(internal.platform.appendMessage, {
       conversationId: args.conversationId,
@@ -131,6 +122,9 @@ export const sendMessage = action({
       content: assistantContent,
       credits: updatedUser?.credits ?? 0,
       mode,
+      chatProvider: engineResult.providerId,
+      chatProviderLabel: getChatProviderLabel(engineResult.providerId),
+      usedFallback: engineResult.usedFallback,
     };
   },
 });
