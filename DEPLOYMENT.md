@@ -32,6 +32,19 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    ```
    Use your **production** Convex deployment (not the anonymous dev deployment).
 
+   **GitHub Actions (recommended):** In the repo → **Settings → Secrets → Actions**, add:
+
+   | Secret | Value |
+   |--------|--------|
+   | `CONVEX_DEPLOY_KEY` | Production deploy key from Convex → **production** deployment → **Settings → Deploy key**. Must look like `prod:your-deployment-name\|eyJ…` (not `user-…`, not `preview:…`). |
+
+   Pushes to `main` that touch `convex/` run **Deploy Convex backend**. If deploy fails, open the workflow log — the **Validate deploy key** step reports format issues; **Deploy to Convex** prints the last lines of the CLI output.
+
+   Local non-interactive deploy:
+   ```bash
+   CONVEX_DEPLOY_KEY='prod:…' ./scripts/convex-deploy.sh
+   ```
+
 4. **Copy deployment URLs** from the Convex dashboard (Settings → Deployment URLs):
    - **Deployment URL** → `https://<your-deployment>.convex.cloud` (use for `NEXT_PUBLIC_CONVEX_URL`)
    - **HTTP Actions / site URL** → `https://<your-deployment>.convex.site` (optional; `NEXT_PUBLIC_CONVEX_SITE_URL`)

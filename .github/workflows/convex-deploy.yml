@@ -30,19 +30,46 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Deploy to Convex
+      - name: Validate deploy key
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
           CONVEX_DEPLOYMENT_VALUE: ${{ secrets.CONVEX_DEPLOYMENT_VALUE }}
         run: |
           set -euo pipefail
-          DEPLOY_KEY="${CONVEX_DEPLOY_KEY:-${CONVEX_DEPLOYMENT_VALUE:-}}"
+          RAW="${CONVEX_DEPLOY_KEY:-${CONVEX_DEPLOYMENT_VALUE:-}}"
+          DEPLOY_KEY="$(printf '%s' "$RAW" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
           if [ -z "${DEPLOY_KEY}" ]; then
-            echo "::error::Add GitHub secret CONVEX_DEPLOY_KEY (Convex dashboard → Settings → Deploy key → Generate)"
+            echo "::error::Add GitHub secret CONVEX_DEPLOY_KEY (Convex dashboard → production deployment → Settings → Deploy key → Generate). Format: prod:deployment-name|token"
             exit 1
           fi
+          if [[ "${DEPLOY_KEY}" == user-* ]]; then
+            echo "::error::CONVEX_DEPLOY_KEY looks like a user id (user-…). Generate a production deploy key: prod:your-deployment|eyJ…"
+            exit 1
+          fi
+          if [[ "${DEPLOY_KEY}" != *"|"* ]]; then
+            echo "::error::CONVEX_DEPLOY_KEY must include a pipe (|). Example: prod:perfect-lark-521|eyJ…"
+            exit 1
+          fi
+          PREFIX="${DEPLOY_KEY%%|*}"
+          echo "Deploy key prefix: ${PREFIX}|… (length ${#DEPLOY_KEY})"
+          if [[ "${PREFIX}" == preview:* ]]; then
+            echo "::error::Preview deploy key detected. For main branch CI use a production key (prod:deployment-name|…), not preview:team:project|…"
+            exit 1
+          fi
+          if [[ "${PREFIX}" != prod:* ]]; then
+            echo "::warning::Deploy key does not start with prod: — deploying with prefix '${PREFIX}'. Use a production deploy key if this workflow should update prod."
+          fi
+          echo "DEPLOY_KEY=${DEPLOY_KEY}" >> "$GITHUB_ENV"
+
+      - name: Deploy to Convex
+        run: |
+          set -euo pipefail
           export CONVEX_DEPLOY_KEY="${DEPLOY_KEY}"
-          npx convex deploy --yes
+          if ! npx convex deploy --yes --verbose --typecheck enable 2>&1 | tee convex-deploy.log; then
+            echo "::error::Convex deploy failed. Last 40 log lines:"
+            tail -40 convex-deploy.log
+            exit 1
+          fi
 
       - name: Deployment summary
         if: success()
