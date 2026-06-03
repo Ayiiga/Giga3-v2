@@ -6,7 +6,7 @@ export const createUser = mutation({
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("users")
-      .filter((q) => q.eq(q.field("email"), args.email))
+      .withIndex("by_email", (q) => q.eq("email", args.email))
       .first();
     if (existing) {
       return existing;
@@ -15,6 +15,10 @@ export const createUser = mutation({
       email: args.email,
       tokens: 12,
       plan: "free",
+      tier: "free",
+      subscriptionPlan: "free",
+      credits: 0,
+      starterCreditsGranted: false,
     });
   },
 });
@@ -24,7 +28,7 @@ export const getUser = query({
   handler: async (ctx, args) => {
     return await ctx.db
       .query("users")
-      .filter((q) => q.eq(q.field("email"), args.email))
+      .withIndex("by_email", (q) => q.eq("email", args.email))
       .first();
   },
 });
@@ -34,7 +38,7 @@ export const deductTokens = mutation({
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query("users")
-      .filter((q) => q.eq(q.field("email"), args.email))
+      .withIndex("by_email", (q) => q.eq("email", args.email))
       .first();
     if (!user) {
       throw new Error("User not found");
