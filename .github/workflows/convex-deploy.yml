@@ -17,7 +17,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: CF_ACCOUNT_ID
+    # environment: CF_ACCOUNT_ID  # uncomment if secrets live only in that GitHub Environment
     steps:
       - uses: actions/checkout@v4
 
@@ -40,6 +40,7 @@ jobs:
           fi
 
       - name: Validate deploy key
+        # Uses secrets from environment CF_ACCOUNT_ID and/or repository
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
           CONVEX_DEPLOYMENT_VALUE: ${{ secrets.CONVEX_DEPLOYMENT_VALUE }}
