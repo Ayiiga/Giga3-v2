@@ -6,18 +6,27 @@
 
 | Service | Path | Notes |
 |---------|------|--------|
-| Convex backend | `convex/` | Deploy via CI or `npx convex deploy` — see `DEPLOYMENT.md` |
-| Next.js PWA (static export) | `web/` | Output: **`web/out`** (not `.next`) |
+| Convex backend | `convex/` | Local: `npx convex dev` → `http://127.0.0.1:3210` (writes repo-root `.env.local`). Production: `perfect-lark-521` — see `DEPLOYMENT.md` |
+| Next.js PWA (static export) | `web/` | Dev: `npm run dev` (port 3000). Build output: **`web/out`** |
 | Legacy static site | `frontend/` | Uses Convex HTTP paths; config in `frontend/assets/js/config.js` |
 
-### Commands (from repo root)
+### Local dev (two terminals / tmux)
+
+1. **Convex:** from repo root, `CONVEX_LOCAL_BACKEND_STARTUP_TIMEOUT_SECS=180 npx convex dev` (first start on Cloud VMs can exceed the default 30s). Set `OPENAI_API_KEY` via `npx convex env set OPENAI_API_KEY …` on that deployment.
+2. **Web:** `cd web`, copy `web/.env.local.example` → `web/.env.local` with `NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3210` and `NEXT_PUBLIC_CONVEX_SITE_URL=http://127.0.0.1:3211`, then `npm run dev`. Chat entry: `http://localhost:3000/chat/login/`.
+
+If local Convex cannot start, point `web/.env.local` at production URLs instead (chat may fail if production functions are out of date).
+
+### Commands
 
 - Install root: `npm ci --legacy-peer-deps`
-- Install web: `cd web && npm install --legacy-peer-deps`
-- Lint: `npm run lint` (runs `web` ESLint)
-- Build: `npm run build` (static export to `web/out`)
-- Convex codegen: `npx convex codegen`
-- Convex deploy: `npx convex deploy --yes` (requires `CONVEX_DEPLOY_KEY`)
+- Install web: `cd web && npm install --legacy-peer-deps` (no `web/package-lock.json`; use install, not `npm ci`)
+- Lint: `cd web && npm run lint`
+- Build: `cd web && NEXT_PUBLIC_CONVEX_URL=… npm run build` → `web/out/`
+- Verify build env: `cd web && NEXT_PUBLIC_CONVEX_URL=… npm run verify:convex-env`
+- Convex codegen: `npx convex codegen` (repo root)
+- Convex deploy: `CONVEX_DEPLOY_KEY=… npx convex deploy --yes` (or `CONVEX_DEPLOYMENT_VALUE` secret). Deploy can fail if existing production `users` rows do not match `convex/schema.ts` (e.g. missing `credits`).
+- Tests: root `npm test` is a stub (exits 1); no Jest/Playwright suite in-repo.
 
 ### Build-time env (web)
 
