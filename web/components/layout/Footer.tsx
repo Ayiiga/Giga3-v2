@@ -1,6 +1,6 @@
 import { Container } from "@/components/ui/Container";
 import { navLinks, siteConfig } from "@/lib/site";
-import { Sparkles } from "lucide-react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import Link from "next/link";
 
 export function Footer() {
@@ -11,10 +11,8 @@ export function Footer() {
       <Container className="section-padding !py-14">
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2">
-            <Link href="/" className="flex items-center gap-2 font-semibold">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/20 text-accent">
-                <Sparkles className="h-5 w-5" aria-hidden />
-              </span>
+            <Link href="/" className="flex items-center gap-2.5 font-semibold">
+              <BrandLogo size={36} />
               {siteConfig.name}
             </Link>
             <p className="mt-4 max-w-sm text-sm text-muted">{siteConfig.description}</p>

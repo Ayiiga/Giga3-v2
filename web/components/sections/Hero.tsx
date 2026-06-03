@@ -2,7 +2,8 @@ import { InstallButton } from "@/components/pwa/InstallButton";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { heroStats, siteConfig } from "@/lib/site";
-import { ArrowRight, Bot, Sparkles } from "lucide-react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
+import { ArrowRight, Bot } from "lucide-react";
 
 export function Hero() {
   return (
@@ -24,7 +25,7 @@ export function Hero() {
       <Container className="relative">
         <div className="mx-auto max-w-3xl text-center">
           <div className="animate-fade-in mb-6 inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-4 py-1.5 text-sm text-violet-200 shadow-lg shadow-violet-500/10">
-            <Sparkles className="h-4 w-4" aria-hidden />
+            <BrandLogo size={20} className="!h-5 !w-5" />
             Multi-provider AI · Production-ready PWA
           </div>
 

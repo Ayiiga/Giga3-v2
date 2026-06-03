@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   formatDetection: { telephone: false },
   openGraph: {
     type: "website",
+    images: [{ url: "/images/logo.png", width: 512, height: 512, alt: "Giga3 AI" }],
     locale: "en_US",
     url: siteConfig.url,
     siteName: siteConfig.name,

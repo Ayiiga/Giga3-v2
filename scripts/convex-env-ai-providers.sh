@@ -1,26 +1,26 @@
 #!/usr/bin/env bash
-# Set optional multi-provider AI env vars on Convex production.
-# Run from repo root after: npx convex login
-#
-# Usage:
-#   GEMINI_API_KEY=... FAL_KEY=... ./scripts/convex-env-ai-providers.sh
-
+# Set fal.ai + optional Gemini env on Convex (run after: npx convex login)
 set -euo pipefail
-cd "$(dirname "$0")/.."
 
-if [ -n "${GEMINI_API_KEY:-}" ]; then
+: "${FAL_KEY:?Set FAL_KEY in your shell before running}"
+
+npx convex env set FAL_KEY "$FAL_KEY"
+npx convex env set FAL_VIDEO_MODEL "nvidia/cosmos-3-super/image-to-video"
+npx convex env set FAL_IMAGE_MODEL "fal-ai/nano-banana-pro"
+
+if [[ -n "${GEMINI_API_KEY:-}" ]]; then
   npx convex env set GEMINI_API_KEY "$GEMINI_API_KEY"
 fi
-
-npx convex env set GEMINI_MODEL "${GEMINI_MODEL:-gemini-2.5-flash}"
-
-if [ -n "${FAL_KEY:-}" ]; then
-  npx convex env set FAL_KEY "$FAL_KEY"
-elif [ -n "${FAL_API_KEY:-}" ]; then
-  npx convex env set FAL_API_KEY "$FAL_API_KEY"
+if [[ -n "${GEMINI_MODEL:-}" ]]; then
+  npx convex env set GEMINI_MODEL "$GEMINI_MODEL"
 fi
 
-npx convex env set FAL_MODEL "${FAL_MODEL:-google/gemini-2.5-flash}"
-npx convex env set FAL_IMAGE_MODEL "${FAL_IMAGE_MODEL:-fal-ai/nano-banana-pro}"
+echo "Convex fal/Gemini env updated."
 
-echo "Done. Redeploy: npx convex deploy --yes"
+# Chat latency (high-latency / African mobile networks)
+npx convex env set CHAT_PROVIDER_TIMEOUT_MS "22000"
+npx convex env set CHAT_MAX_TOKENS "1024"
+npx convex env set CHAT_MAX_HISTORY_TURNS "12"
+npx convex env set CHAT_ENABLE_FAL "false"
+
+echo "Chat latency env set (FAL chat disabled by default)."

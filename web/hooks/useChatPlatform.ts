@@ -9,6 +9,8 @@ import { Id } from "convex/_generated/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+const CHAT_ACTION_TIMEOUT_MS = 75_000;
+
 function toUiMessages(
   rows: { _id: string; role: string; content: string }[]
 ): UiMessage[] {
@@ -21,11 +23,31 @@ function toUiMessages(
     }));
 }
 
+function withClientTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  message: string
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+    promise
+      .then((v) => {
+        clearTimeout(timer);
+        resolve(v);
+      })
+      .catch((e) => {
+        clearTimeout(timer);
+        reject(e);
+      });
+  });
+}
+
 export function useChatPlatform() {
   const email = getUserEmail();
   const [activeId, setActiveId] = useState<Id<"conversations"> | null>(null);
   const [mode, setMode] = useState<AiModeId>("general");
   const [isSending, setIsSending] = useState(false);
+  const [pendingUserText, setPendingUserText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [chatProviderLabel, setChatProviderLabel] = useState<string | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
@@ -61,10 +83,22 @@ export function useChatPlatform() {
     [conversationsRaw]
   );
 
-  const messages = useMemo(
-    () => toUiMessages(messagesRaw ?? []),
-    [messagesRaw]
-  );
+  const messages = useMemo(() => {
+    const base = toUiMessages(messagesRaw ?? []);
+    if (!pendingUserText) return base;
+    const last = base[base.length - 1];
+    if (last?.role === "user" && last.content === pendingUserText) {
+      return base;
+    }
+    return [
+      ...base,
+      {
+        id: "pending-user",
+        role: "user" as const,
+        content: pendingUserText,
+      },
+    ];
+  }, [messagesRaw, pendingUserText]);
 
   useEffect(() => {
     if (!email) return;
@@ -86,6 +120,12 @@ export function useChatPlatform() {
       setMode(conv.mode);
     }
   }, [activeId, conversations]);
+
+  useEffect(() => {
+    if (!isSending) {
+      setPendingUserText(null);
+    }
+  }, [messagesRaw, isSending]);
 
   const startNewChat = useCallback(async () => {
     if (!email) return;
@@ -130,6 +170,7 @@ export function useChatPlatform() {
         return;
       }
       setError(null);
+      setPendingUserText(content);
       setIsSending(true);
 
       try {
@@ -139,12 +180,16 @@ export function useChatPlatform() {
           setActiveId(conversationId);
         }
 
-        const result = await sendMessageAction({
-          userId: email,
-          conversationId,
-          content,
-          mode,
-        });
+        const result = await withClientTimeout(
+          sendMessageAction({
+            userId: email,
+            conversationId,
+            content,
+            mode,
+          }),
+          CHAT_ACTION_TIMEOUT_MS,
+          "Chat is taking longer than usual on this connection. Your message was saved — please try sending again in a moment."
+        );
         setChatProviderLabel(
           typeof result.chatProviderLabel === "string"
             ? result.chatProviderLabel
@@ -155,6 +200,7 @@ export function useChatPlatform() {
         setError(e instanceof Error ? e.message : "Failed to send");
       } finally {
         setIsSending(false);
+        setPendingUserText(null);
       }
     },
     [email, activeId, mode, createConversation, sendMessageAction]

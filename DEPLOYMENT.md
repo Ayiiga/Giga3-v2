@@ -181,6 +181,20 @@ Do **not** put `OPENAI_API_KEY` in the Next.js app — it belongs only on Convex
 
 ---
 
+## GitHub Actions: Convex deploy
+
+Workflow: `.github/workflows/convex-deploy.yml`
+
+**Triggers:** push to `main` when `convex/**`, `package.json`, or the workflow file changes; or **Run workflow** manually.
+
+**Required GitHub secret:** `CONVEX_DEPLOY_KEY` — production deploy key (`prod:perfect-lark-521|eyJ…`).
+
+**Optional secrets** (synced after deploy): `OPENAI_API_KEY`, `GEMINI_API_KEY`, `FAL_KEY`.
+
+The job applies `CHAT_*` latency defaults after each successful deploy.
+
+---
+
 ## Known blockers and fixes
 
 | Blocker | Impact | Fix |
@@ -208,3 +222,15 @@ export NEXT_PUBLIC_CONVEX_URL="https://YOUR_DEPLOYMENT.convex.cloud"
 npm run lint && npm run build
 # Static files: web/out/
 ```
+
+## Chat latency (mobile / African networks)
+
+Convex env (optional):
+
+- `CHAT_PROVIDER_TIMEOUT_MS` — per-provider timeout (default `22000`)
+- `CHAT_MAX_TOKENS` — shorter replies, faster download (default `1024`)
+- `CHAT_MAX_HISTORY_TURNS` — trim context (default `12`)
+- `CHAT_ENABLE_FAL` — set `false` to skip slow fal chat fallback (recommended)
+
+Gemini + OpenAI are raced in parallel; fal queue LLM is not used for chat.
+

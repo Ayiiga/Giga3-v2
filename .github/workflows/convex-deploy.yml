@@ -17,6 +17,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: CF_ACCOUNT_ID
     steps:
       - uses: actions/checkout@v4
 
@@ -47,11 +48,11 @@ jobs:
           RAW="${CONVEX_DEPLOY_KEY:-${CONVEX_DEPLOYMENT_VALUE:-}}"
           DEPLOY_KEY="$(printf '%s' "$RAW" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
           if [ -z "${DEPLOY_KEY}" ]; then
-            echo "::error::Add GitHub secret CONVEX_DEPLOY_KEY (Convex dashboard → production deployment → Settings → Deploy key → Generate). Format: prod:deployment-name|token"
+            echo "::error::Add GitHub secret CONVEX_DEPLOY_KEY (Convex dashboard → production deployment → Settings → Deploy key). Format: prod:deployment-name|token"
             exit 1
           fi
           if [[ "${DEPLOY_KEY}" == user-* ]]; then
-            echo "::error::CONVEX_DEPLOY_KEY looks like a user id (user-…). Generate a production deploy key: prod:your-deployment|eyJ…"
+            echo "::error::CONVEX_DEPLOY_KEY looks like a user id. Use prod:your-deployment|eyJ…"
             exit 1
           fi
           if [[ "${DEPLOY_KEY}" != *"|"* ]]; then
@@ -61,21 +62,48 @@ jobs:
           PREFIX="${DEPLOY_KEY%%|*}"
           echo "Deploy key prefix: ${PREFIX}|… (length ${#DEPLOY_KEY})"
           if [[ "${PREFIX}" == preview:* ]]; then
-            echo "::error::Preview deploy key detected. For main branch CI use a production key (prod:deployment-name|…), not preview:team:project|…"
+            echo "::error::Use a production deploy key (prod:…), not preview:…"
             exit 1
           fi
           if [[ "${PREFIX}" != prod:* ]]; then
-            echo "::error::Use a production deploy key (prod:deployment-name|token). Got prefix: ${PREFIX}"
+            echo "::error::Use a production deploy key (prod:deployment-name|token). Got: ${PREFIX}"
             exit 1
           fi
           echo "DEPLOY_KEY=${DEPLOY_KEY}" >> "$GITHUB_ENV"
 
       - name: Deploy to Convex
         id: convex_deploy
+        env:
+          CONVEX_DEPLOY_KEY: ${{ env.DEPLOY_KEY }}
         run: |
           set -euo pipefail
-          export CONVEX_DEPLOY_KEY="${DEPLOY_KEY}"
           npx convex deploy --yes --verbose --typecheck disable 2>&1 | tee convex-deploy.log
+
+      - name: Apply chat latency env defaults
+        if: success()
+        env:
+          CONVEX_DEPLOY_KEY: ${{ env.DEPLOY_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FAL_KEY: ${{ secrets.FAL_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -euo pipefail
+          npx convex env set CHAT_PROVIDER_TIMEOUT_MS "22000"
+          npx convex env set CHAT_MAX_TOKENS "1024"
+          npx convex env set CHAT_MAX_HISTORY_TURNS "12"
+          npx convex env set CHAT_ENABLE_FAL "false"
+          if [ -n "${GEMINI_API_KEY:-}" ]; then
+            npx convex env set GEMINI_API_KEY "${GEMINI_API_KEY}"
+          fi
+          if [ -n "${FAL_KEY:-}" ]; then
+            npx convex env set FAL_KEY "${FAL_KEY}"
+            npx convex env set FAL_VIDEO_MODEL "nvidia/cosmos-3-super/image-to-video"
+            npx convex env set FAL_IMAGE_MODEL "fal-ai/nano-banana-pro"
+          fi
+          if [ -n "${OPENAI_API_KEY:-}" ]; then
+            npx convex env set OPENAI_API_KEY "${OPENAI_API_KEY}"
+          fi
+          echo "Chat latency env applied (CHAT_*). Optional secrets synced if present."
 
       - name: Convex deploy failure details
         if: failure() && steps.convex_deploy.outcome == 'failure'
@@ -99,4 +127,5 @@ jobs:
         if: success()
         run: |
           echo "### Convex deploy" >> "$GITHUB_STEP_SUMMARY"
-          echo "Backend deployed (chatEngine failover, Paystack, credits)." >> "$GITHUB_STEP_SUMMARY"
+          echo "Backend deployed. CHAT_* latency defaults applied." >> "$GITHUB_STEP_SUMMARY"
+          echo "Add GitHub secrets OPENAI_API_KEY, GEMINI_API_KEY, FAL_KEY (optional) to sync provider keys on each deploy." >> "$GITHUB_STEP_SUMMARY"

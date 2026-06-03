@@ -5,7 +5,8 @@ import { Container } from "@/components/ui/Container";
 import { InstallButton } from "@/components/pwa/InstallButton";
 import { navLinks, siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
-import { Menu, Sparkles, X } from "lucide-react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
+import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -28,10 +29,8 @@ export function Header() {
       )}
     >
       <Container className="flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/20 text-accent ring-1 ring-accent/30">
-            <Sparkles className="h-5 w-5" aria-hidden />
-          </span>
+        <Link href="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
+          <BrandLogo size={36} priority />
           <span>{siteConfig.name}</span>
         </Link>
 

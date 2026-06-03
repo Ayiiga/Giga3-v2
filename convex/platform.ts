@@ -1,7 +1,11 @@
 import { action, internalMutation } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
-import { completeChatWithFailover, getChatProviderLabel } from "./chatEngine";
+import {
+  completeChatWithFailover,
+  getChatProviderLabel,
+  trimChatMessages,
+} from "./chatEngine";
 import { getSystemPrompt, isValidMode } from "./aiModes";
 
 export const appendMessage = internalMutation({
@@ -71,13 +75,13 @@ export const sendMessage = action({
     });
 
     const systemPrompt = getSystemPrompt(mode);
-    const chatMessages = [
+    const chatMessages = trimChatMessages([
       { role: "system" as const, content: systemPrompt },
       ...history.map((m) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
       })),
-    ];
+    ]);
 
     const engineResult = await completeChatWithFailover(chatMessages);
     const assistantContent = engineResult.content;

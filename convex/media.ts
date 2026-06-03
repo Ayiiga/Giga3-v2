@@ -1,246 +1,123 @@
-import { action, internalMutation, query } from "./_generated/server";
-import { api, internal } from "./_generated/api";
+import { action } from "./_generated/server";
 import { v } from "convex/values";
-import {
-  buildImagePrompt,
-  buildVideoPrompt,
-  REPLICATE_IMAGE_MODEL,
-  REPLICATE_VIDEO_MODEL,
-} from "./mediaCatalog";
-import { falGenerateImage, getFalApiKey } from "./falClient";
+import { api } from "./_generated/api";
+import { falGenerateImage, falGenerateVideo, type FalImageSize } from "./falClient";
 
-async function replicateCreatePrediction(
-  model: string,
-  input: Record<string, unknown>
-): Promise<{ id: string; status: string; output?: unknown; error?: string }> {
-  const token = (
-    process.env.REPLICATE_API_TOKEN?.trim() ||
-    process.env.REPLICATE_API?.trim()
-  );
-  if (!token) {
-    throw new Error(
-      "REPLICATE_API_TOKEN is not configured (set REPLICATE_API_TOKEN or REPLICATE_API in Convex)"
-    );
-  }
+const imageSizeValidator = v.optional(
+  v.union(
+    v.literal("square_hd"),
+    v.literal("square"),
+    v.literal("portrait_4_3"),
+    v.literal("portrait_16_9"),
+    v.literal("landscape_4_3"),
+    v.literal("landscape_16_9"),
+    v.object({ width: v.number(), height: v.number() }),
+  ),
+);
 
-  const [owner, name] = model.includes("/")
-    ? model.split("/")
-    : ["", model];
+const VIDEO_TOKEN_COST = 5;
+const IMAGE_TOKEN_COST = 2;
 
-  const res = await fetch(
-    `https://api.replicate.com/v1/models/${owner}/${name}/predictions`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        Prefer: "wait=60",
-      },
-      body: JSON.stringify({ input }),
-    }
-  );
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Replicate error: ${text}`);
-  }
-
-  return res.json();
-}
-
-function extractOutputUrl(output: unknown): string | null {
-  if (!output) return null;
-  if (typeof output === "string") return output;
-  if (Array.isArray(output) && typeof output[0] === "string") return output[0];
-  if (typeof output === "object" && output !== null && "url" in output) {
-    return String((output as { url: string }).url);
-  }
-  return null;
-}
-
-export const listJobs = query({
-  args: { userId: v.string() },
-  handler: async (ctx, args) => {
-    const jobs = await ctx.db
-      .query("mediaJobs")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
-      .collect();
-    return jobs.sort((a, b) => b.createdAt - a.createdAt).slice(0, 50);
-  },
-});
-
-export const updateJob = internalMutation({
+export const generateVideo = action({
   args: {
-    jobId: v.id("mediaJobs"),
-    status: v.union(
-      v.literal("pending"),
-      v.literal("processing"),
-      v.literal("succeeded"),
-      v.literal("failed")
-    ),
-    outputUrl: v.optional(v.string()),
-    replicatePredictionId: v.optional(v.string()),
-    errorMessage: v.optional(v.string()),
+    email: v.string(),
+    prompt: v.string(),
+    imageUrl: v.string(),
+    negativePrompt: v.optional(v.string()),
+    enablePromptExpansion: v.optional(v.boolean()),
+    agenticMaxIterations: v.optional(v.number()),
+    agenticSamplesPerIteration: v.optional(v.number()),
+    agenticEarlyStop: v.optional(v.boolean()),
+    imageSize: imageSizeValidator,
+    numFrames: v.optional(v.number()),
+    framesPerSecond: v.optional(v.number()),
+    numInferenceSteps: v.optional(v.number()),
+    guidanceScale: v.optional(v.number()),
+    seed: v.optional(v.number()),
+    enableSafetyChecker: v.optional(v.boolean()),
+    syncMode: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.jobId, {
-      status: args.status,
-      outputUrl: args.outputUrl,
-      replicatePredictionId: args.replicatePredictionId,
-      errorMessage: args.errorMessage,
+    const user = await ctx.runQuery(api.users.getUser, { email: args.email });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if ((user.tokens ?? 0) < VIDEO_TOKEN_COST) {
+      throw new Error(`Insufficient tokens (need ${VIDEO_TOKEN_COST} for video)`);
+    }
+
+    const result = await falGenerateVideo({
+      prompt: args.prompt,
+      image_url: args.imageUrl,
+      negative_prompt: args.negativePrompt,
+      enable_prompt_expansion: args.enablePromptExpansion,
+      agentic_max_iterations: args.agenticMaxIterations,
+      agentic_samples_per_iteration: args.agenticSamplesPerIteration,
+      agentic_early_stop: args.agenticEarlyStop,
+      image_size: args.imageSize as FalImageSize | undefined,
+      num_frames: args.numFrames,
+      frames_per_second: args.framesPerSecond,
+      num_inference_steps: args.numInferenceSteps,
+      guidance_scale: args.guidanceScale,
+      seed: args.seed,
+      enable_safety_checker: args.enableSafetyChecker,
+      sync_mode: args.syncMode,
     });
+
+    const tokens = await ctx.runMutation(api.users.deductTokens, {
+      email: args.email,
+      amount: VIDEO_TOKEN_COST,
+    });
+
+    return {
+      videoUrl: result.videoUrl,
+      contentType: result.contentType ?? "video/mp4",
+      seed: result.seed,
+      requestId: result.requestId,
+      tokens,
+    };
   },
 });
 
 export const generateImage = action({
   args: {
-    userId: v.string(),
-    category: v.string(),
+    email: v.string(),
     prompt: v.string(),
+    negativePrompt: v.optional(v.string()),
+    imageSize: imageSizeValidator,
+    numInferenceSteps: v.optional(v.number()),
+    guidanceScale: v.optional(v.number()),
+    seed: v.optional(v.number()),
+    enableSafetyChecker: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const { chargedCredits } = await ctx.runMutation(
-      api.credits.assertCanGenerateImage,
-      { userId: args.userId }
-    );
-
-    const jobId = await ctx.runMutation(internal.media.createJob, {
-      userId: args.userId,
-      mediaType: "image",
-      category: args.category,
-      prompt: args.prompt,
-      creditsCharged: chargedCredits,
-    });
-
-    try {
-      await ctx.runMutation(internal.media.updateJob, {
-        jobId,
-        status: "processing",
-      });
-
-      const fullPrompt = buildImagePrompt(args.category, args.prompt);
-      let outputUrl: string | null = null;
-      let externalId: string | undefined;
-
-      if (getFalApiKey()) {
-        try {
-          const falImage = await falGenerateImage({
-            prompt: fullPrompt,
-            numImages: 1,
-            aspectRatio: "1:1",
-            outputFormat: "png",
-            resolution: "1K",
-          });
-          outputUrl = falImage.url;
-          externalId = `fal:${process.env.FAL_IMAGE_MODEL ?? "fal-ai/nano-banana-pro"}`;
-        } catch (falErr) {
-          console.error("[media] fal image failed, trying Replicate:", falErr);
-        }
-      }
-
-      if (!outputUrl) {
-        const prediction = await replicateCreatePrediction(REPLICATE_IMAGE_MODEL, {
-          prompt: fullPrompt,
-          num_outputs: 1,
-        });
-        outputUrl = extractOutputUrl(prediction.output);
-        if (!outputUrl && prediction.status !== "succeeded") {
-          throw new Error(prediction.error ?? "Image generation failed");
-        }
-        externalId = prediction.id;
-      }
-
-      await ctx.runMutation(internal.media.updateJob, {
-        jobId,
-        status: outputUrl ? "succeeded" : "failed",
-        outputUrl: outputUrl ?? undefined,
-        replicatePredictionId: externalId,
-        errorMessage: outputUrl ? undefined : "No output URL",
-      });
-
-      return { jobId, outputUrl, status: outputUrl ? "succeeded" : "failed" };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Generation failed";
-      await ctx.runMutation(internal.media.updateJob, {
-        jobId,
-        status: "failed",
-        errorMessage: msg,
-      });
-      throw e;
+    const user = await ctx.runQuery(api.users.getUser, { email: args.email });
+    if (!user) {
+      throw new Error("User not found");
     }
-  },
-});
-
-export const generateVideo = action({
-  args: {
-    userId: v.string(),
-    category: v.string(),
-    prompt: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const { chargedCredits } = await ctx.runMutation(
-      api.credits.assertCanGenerateVideo,
-      { userId: args.userId }
-    );
-
-    const jobId = await ctx.runMutation(internal.media.createJob, {
-      userId: args.userId,
-      mediaType: "video",
-      category: args.category,
-      prompt: args.prompt,
-      creditsCharged: chargedCredits,
-    });
-
-    try {
-      await ctx.runMutation(internal.media.updateJob, {
-        jobId,
-        status: "processing",
-      });
-
-      const fullPrompt = buildVideoPrompt(args.category, args.prompt);
-      const prediction = await replicateCreatePrediction(REPLICATE_VIDEO_MODEL, {
-        prompt: fullPrompt,
-      });
-
-      const outputUrl = extractOutputUrl(prediction.output);
-      await ctx.runMutation(internal.media.updateJob, {
-        jobId,
-        status: outputUrl ? "succeeded" : "failed",
-        outputUrl: outputUrl ?? undefined,
-        replicatePredictionId: prediction.id,
-        errorMessage: outputUrl ? undefined : prediction.error ?? "No output",
-      });
-
-      return { jobId, outputUrl, status: outputUrl ? "succeeded" : "failed" };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Generation failed";
-      await ctx.runMutation(internal.media.updateJob, {
-        jobId,
-        status: "failed",
-        errorMessage: msg,
-      });
-      throw e;
+    if ((user.tokens ?? 0) < IMAGE_TOKEN_COST) {
+      throw new Error(`Insufficient tokens (need ${IMAGE_TOKEN_COST} for image)`);
     }
-  },
-});
 
-export const createJob = internalMutation({
-  args: {
-    userId: v.string(),
-    mediaType: v.union(v.literal("image"), v.literal("video")),
-    category: v.string(),
-    prompt: v.string(),
-    creditsCharged: v.number(),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.db.insert("mediaJobs", {
-      userId: args.userId,
-      mediaType: args.mediaType,
-      category: args.category,
+    const result = await falGenerateImage({
       prompt: args.prompt,
-      status: "pending",
-      creditsCharged: args.creditsCharged,
-      createdAt: Date.now(),
+      negative_prompt: args.negativePrompt,
+      image_size: args.imageSize as FalImageSize | undefined,
+      num_inference_steps: args.numInferenceSteps,
+      guidance_scale: args.guidanceScale,
+      seed: args.seed,
+      enable_safety_checker: args.enableSafetyChecker,
     });
+
+    const tokens = await ctx.runMutation(api.users.deductTokens, {
+      email: args.email,
+      amount: IMAGE_TOKEN_COST,
+    });
+
+    return {
+      imageUrl: result.imageUrl,
+      requestId: result.requestId,
+      tokens,
+    };
   },
 });

@@ -1,7 +1,7 @@
 import { action, internalMutation } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
-import { completeChatWithFailover } from "./chatEngine";
+import { completeChatWithFailover, trimChatMessages } from "./chatEngine";
 
 export const persistLegacyChat = internalMutation({
   args: {
@@ -69,9 +69,9 @@ export const askAI = action({
       throw new Error("Insufficient tokens. Please purchase more tokens.");
     }
 
-    const engineResult = await completeChatWithFailover([
-      { role: "user", content: message },
-    ]);
+    const engineResult = await completeChatWithFailover(
+      trimChatMessages([{ role: "user", content: message }], 4)
+    );
 
     const aiContent = engineResult.content;
     const chargedAi = engineResult.providerId !== "local_fallback";

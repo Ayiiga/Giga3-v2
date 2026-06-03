@@ -4,6 +4,7 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatErrorBanner } from "@/components/chat/ChatErrorBanner";
 import { ChatProviderBanner } from "@/components/chat/ChatProviderBanner";
+import { SlowNetworkBanner } from "@/components/chat/SlowNetworkBanner";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { MessageList } from "@/components/chat/MessageList";
 import { ToolSelector } from "@/components/chat/ToolSelector";
@@ -11,7 +12,8 @@ import { useChatPlatform } from "@/hooks/useChatPlatform";
 import { useBilling } from "@/hooks/useBilling";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { clearUserEmail } from "@/lib/auth";
-import { Menu, Sparkles } from "lucide-react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
+import { Menu } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -96,7 +98,7 @@ function ChatShellInner() {
             <Menu className="h-5 w-5" />
           </button>
           <Link href="/" className="flex items-center gap-2 text-sm font-semibold">
-            <Sparkles className="h-4 w-4 text-accent" />
+            <BrandLogo size={28} className="!h-7 !w-7" />
             Giga3 AI
           </Link>
           <span className="ml-auto flex items-center gap-2 text-xs text-muted">
@@ -115,6 +117,7 @@ function ChatShellInner() {
           </button>
         </header>
 
+        <SlowNetworkBanner />
         <ChatProviderBanner label={chatProviderLabel} usedFallback={usedFallback} />
 
         <ToolSelector value={mode} onChange={(m) => void changeMode(m)} disabled={isSending} />
