@@ -5,6 +5,7 @@ import { getUserEmail, isValidEmail, setUserEmail } from "@/lib/auth";
 import { api } from "convex/_generated/api";
 import { useMutation } from "convex/react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { siteConfig } from "@/lib/site";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useEffect, useState } from "react";
@@ -76,6 +77,10 @@ function ChatLoginFormInner() {
             {submitting ? "Signing in…" : "Continue"}
           </Button>
         </form>
+        <p className="mt-6 text-center text-[11px] leading-relaxed text-muted">
+          A product of {siteConfig.founder.organizationShort} · Founded by{" "}
+          {siteConfig.founder.name}, {siteConfig.founder.location}
+        </p>
         <p className="mt-6 text-center text-xs text-muted">
           <Link href="/pricing" className="text-accent hover:underline">
             View pricing

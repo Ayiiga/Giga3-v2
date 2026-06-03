@@ -2,8 +2,15 @@ export const siteConfig = {
   name: "Giga3 AI",
   tagline: "Intelligent conversations at scale",
   description:
-    "Giga3 AI is a modern AI SaaS platform for fast, secure, and delightful chat experiences—built for teams and creators.",
+    "Giga3 AI is a modern AI platform from Ghana for fast, secure chat, writing, and media—built for learners, educators, and creators.",
   url: "https://www.giga3ai.com",
+  founder: {
+    name: "Ayiiga Benard Issaka",
+    location: "Ghana",
+    role: "Basic school educationist",
+    organization: "Intelligence Global Arena (GIGA)",
+    organizationShort: "GIGA",
+  },
   links: {
     login: "/chat/login",
     dashboard: "/chat",

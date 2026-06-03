@@ -16,6 +16,12 @@ export function Footer() {
               {siteConfig.name}
             </Link>
             <p className="mt-4 max-w-sm text-sm text-muted">{siteConfig.description}</p>
+            <p className="mt-3 max-w-sm text-xs leading-relaxed text-muted">
+              Designed and founded by{" "}
+              <span className="text-foreground">{siteConfig.founder.name}</span>,{" "}
+              {siteConfig.founder.role} from {siteConfig.founder.location} — founder of{" "}
+              {siteConfig.founder.organization}.
+            </p>
           </div>
 
           <div>
