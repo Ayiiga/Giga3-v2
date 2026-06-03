@@ -4,7 +4,7 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { SubscriptionCard } from "@/components/billing/SubscriptionCard";
 import { UsageTracker } from "@/components/billing/UsageTracker";
-import { ButtonLink } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import {
   CREDIT_PACKS,
   FREE_TIER_FEATURES,
@@ -39,7 +39,7 @@ function PricingPageClientInner() {
           Pay with Paystack (GHS). Credits refill each billing period. Webhook
           activates your plan automatically.
         </p>
-        <div className="mt-8 grid gap-6 lg:grid-cols-3">
+        <div className="mt-10 grid gap-8 lg:grid-cols-3">
           {SUBSCRIPTION_PRODUCTS.map((product) => (
             <SubscriptionCard
               key={product.id}
@@ -73,7 +73,7 @@ function PricingPageClientInner() {
               <li key={f}>• {f}</li>
             ))}
           </ul>
-          <ButtonLink href="/chat/login" variant="secondary" className="mt-6 w-full">
+          <ButtonLink href="/chat/login" variant="secondary" size="lg" className="mt-8 w-full">
             Get started
           </ButtonLink>
         </article>
@@ -84,7 +84,7 @@ function PricingPageClientInner() {
         <p className="mx-auto mt-2 max-w-lg text-center text-sm text-muted">
           One-time packs added to your balance (any plan).
         </p>
-        <div className="mt-8 grid gap-6 md:grid-cols-3">
+        <div className="mt-10 grid gap-8 md:grid-cols-3">
           {CREDIT_PACKS.map((pack) => (
             <article
               key={pack.id}
@@ -96,14 +96,16 @@ function PricingPageClientInner() {
               <h3 className="font-semibold">{pack.label}</h3>
               <p className="mt-2 text-2xl font-bold">{formatGhs(pack.amountGhs)}</p>
               <p className="mt-2 flex-1 text-sm text-muted">{pack.description}</p>
-              <button
+              <Button
                 type="button"
+                variant="primary"
+                size="lg"
                 disabled={!email || paying}
                 onClick={() => void checkout(pack.id)}
-                className="mt-6 rounded-xl bg-accent py-2.5 text-sm font-medium text-accent-foreground disabled:opacity-50"
+                className="mt-8 w-full"
               >
                 Buy credits
-              </button>
+              </Button>
             </article>
           ))}
         </div>

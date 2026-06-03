@@ -20,9 +20,11 @@ export function PaymentFailed({
       {reference && (
         <p className="mt-2 font-mono text-xs text-muted">Ref: {reference}</p>
       )}
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-        <ButtonLink href="/credits">Try again</ButtonLink>
-        <ButtonLink href="/pricing" variant="secondary">
+      <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <ButtonLink href="/credits" size="lg" className="w-full">
+          Try again
+        </ButtonLink>
+        <ButtonLink href="/pricing" variant="secondary" size="lg" className="w-full">
           View pricing
         </ButtonLink>
       </div>

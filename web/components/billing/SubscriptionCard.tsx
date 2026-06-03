@@ -22,7 +22,7 @@ export function SubscriptionCard({
   return (
     <article
       className={cn(
-        "glass flex flex-col rounded-2xl p-6",
+        "glass flex flex-col rounded-2xl p-8",
         product.highlighted && "border-violet-500/50 shadow-lg shadow-violet-500/10"
       )}
     >
@@ -37,14 +37,15 @@ export function SubscriptionCard({
       <ul className="mt-6 flex-1 space-y-2">
         {features.map((f) => (
           <li key={f} className="flex gap-2 text-sm">
-            <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+            <Check className="mt-0.5 shrink-0 text-accent" aria-hidden />
             {f}
           </li>
         ))}
       </ul>
       <Button
         type="button"
-        className="mt-6 w-full"
+        size="lg"
+        className="mt-8 w-full"
         variant={product.highlighted ? "primary" : "secondary"}
         disabled={disabled || loading}
         onClick={() => onSelect(product.id)}

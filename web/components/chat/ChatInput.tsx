@@ -58,11 +58,11 @@ export function ChatInput({
           disabled={disabled}
           rows={1}
           placeholder={placeholder}
-          className="max-h-40 min-h-[44px] flex-1 resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none ring-accent focus:ring-2 disabled:opacity-50"
+          className="max-h-40 min-h-[48px] flex-1 resize-none rounded-xl border border-border bg-card px-4 py-3 text-base outline-none ring-accent focus:ring-2 disabled:opacity-50"
           aria-label="Chat message"
         />
         <Button type="submit" disabled={disabled || !value.trim()} size="md" aria-label="Send">
-          <Send className="h-4 w-4" />
+          <Send aria-hidden />
         </Button>
       </div>
       <p className="mx-auto mt-2 max-w-3xl text-center text-[10px] text-muted sm:text-xs">

@@ -39,7 +39,7 @@ export function Header() {
             <a
               key={link.href}
               href={link.href}
-              className="text-sm text-muted transition-colors hover:text-foreground"
+              className="text-base text-muted transition-colors hover:text-foreground"
             >
               {link.label}
             </a>
@@ -63,13 +63,13 @@ export function Header() {
           aria-label={open ? "Close menu" : "Open menu"}
           onClick={() => setOpen(!open)}
         >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {open ? <X aria-hidden /> : <Menu aria-hidden />}
         </Button>
       </Container>
 
       {open && (
         <div className="glass border-t md:hidden">
-          <Container className="flex flex-col gap-4 py-4">
+          <Container className="grid grid-cols-1 gap-3 py-5">
             {navLinks.map((link) => (
               <a
                 key={link.href}

@@ -95,7 +95,7 @@ function ChatShellInner() {
             onClick={() => setMobileOpen(true)}
             aria-label="Open sidebar"
           >
-            <Menu className="h-5 w-5" />
+            <Menu aria-hidden />
           </button>
           <Link href="/" className="flex items-center gap-2 text-sm font-semibold">
             <BrandLogo size={28} className="!h-7 !w-7" />

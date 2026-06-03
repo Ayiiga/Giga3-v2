@@ -20,9 +20,11 @@ export function PaymentSuccess({
       {reference && (
         <p className="mt-2 font-mono text-xs text-muted">Ref: {reference}</p>
       )}
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-        <ButtonLink href="/chat">Open chat</ButtonLink>
-        <ButtonLink href="/media" variant="secondary">
+      <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <ButtonLink href="/chat" size="lg" className="w-full">
+          Open chat
+        </ButtonLink>
+        <ButtonLink href="/media" variant="secondary" size="lg" className="w-full">
           Create media
         </ButtonLink>
       </div>

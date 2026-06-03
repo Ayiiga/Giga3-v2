@@ -18,10 +18,11 @@
 
 html {
   scroll-behavior: smooth;
+  font-size: 18px;
 }
 
 body {
-  @apply bg-background text-foreground antialiased;
+  @apply bg-background text-base text-foreground antialiased;
   background-image: radial-gradient(
       ellipse 120% 80% at 50% -30%,
       rgba(124, 92, 255, 0.14),
@@ -45,7 +46,38 @@ body {
 }
 
 .section-padding {
-  @apply px-4 py-20 sm:px-6 lg:px-8 lg:py-28;
+  @apply px-4 py-24 sm:px-6 sm:py-28 lg:px-8 lg:py-36;
+}
+
+.section-heading {
+  @apply mb-4;
+}
+
+.section-lead {
+  @apply mt-5 text-muted;
+}
+
+/* Lucide icons — minimum 24px touch targets */
+.lucide {
+  width: 1.5rem;
+  height: 1.5rem;
+  min-width: 24px;
+  min-height: 24px;
+  flex-shrink: 0;
+}
+
+@layer components {
+  .btn-media-image-active {
+    @apply bg-btn-image text-white shadow-btn-image hover:brightness-110;
+  }
+
+  .btn-media-video-active {
+    @apply bg-btn-video text-white shadow-btn-video hover:brightness-110;
+  }
+
+  .btn-media-inactive {
+    @apply glass text-muted hover:border-white/20 hover:text-foreground;
+  }
 }
 
 .text-gradient {
