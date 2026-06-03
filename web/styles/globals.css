@@ -10,21 +10,28 @@
   --background: #050508;
   --foreground: #f4f4f5;
   --muted: #a1a1aa;
-  --accent: #7c5cff;
+  --accent: #3b82f6;
   --accent-foreground: #ffffff;
-  --card: rgba(255, 255, 255, 0.03);
-  --border: rgba(255, 255, 255, 0.08);
+  --card: rgba(255, 255, 255, 0.04);
+  --border: rgba(255, 255, 255, 0.1);
 }
 
 html {
   scroll-behavior: smooth;
+  font-size: 106.25%;
+}
+
+@media (min-width: 640px) {
+  html {
+    font-size: 112.5%;
+  }
 }
 
 body {
-  @apply bg-background text-foreground antialiased;
+  @apply bg-background text-foreground text-base leading-relaxed antialiased;
   background-image: radial-gradient(
       ellipse 120% 80% at 50% -30%,
-      rgba(124, 92, 255, 0.14),
+      rgba(59, 130, 246, 0.12),
       transparent 55%
     ),
     radial-gradient(
@@ -36,7 +43,7 @@ body {
 }
 
 ::selection {
-  background: rgba(124, 92, 255, 0.35);
+  background: rgba(59, 130, 246, 0.35);
   color: #fff;
 }
 
@@ -49,7 +56,17 @@ body {
 }
 
 .text-gradient {
-  @apply bg-gradient-to-r from-white via-violet-200 to-violet-400 bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-white via-blue-200 to-blue-400 bg-clip-text text-transparent;
+}
+
+@layer components {
+  .app-icon {
+    @apply h-6 w-6 min-h-[24px] min-w-[24px] shrink-0;
+  }
+
+  .action-button-grid {
+    @apply grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3;
+  }
 }
 
 /* Subtle focus for accessibility */

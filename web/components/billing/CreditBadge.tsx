@@ -15,11 +15,11 @@ export function CreditBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 px-2.5 py-1 text-xs font-medium text-violet-200",
+        "inline-flex items-center gap-2 rounded-full border border-blue-500/35 bg-blue-500/10 px-3 py-1.5 text-sm font-medium text-blue-200",
         className
       )}
     >
-      <Coins className="h-3.5 w-3.5" aria-hidden />
+      <Coins className="app-icon" aria-hidden />
       {showLabel && <span>{credits} credits</span>}
       {!showLabel && <span>{credits}</span>}
     </span>

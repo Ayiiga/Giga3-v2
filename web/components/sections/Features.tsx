@@ -44,12 +44,12 @@ export function Features() {
               <article
                 key={feature.title}
                 className={cn(
-                  "glass group rounded-2xl p-6 transition-all hover:-translate-y-0.5 hover:border-violet-500/35 hover:shadow-lg hover:shadow-violet-500/10",
-                  i === 0 && "ring-1 ring-violet-500/20 sm:col-span-2 lg:col-span-1"
+                  "glass group rounded-2xl p-6 transition-all hover:-translate-y-0.5 hover:border-blue-500/35 hover:shadow-lg hover:shadow-blue-500/10",
+                  i === 0 && "ring-1 ring-blue-500/20 sm:col-span-2 lg:col-span-1"
                 )}
               >
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-accent/15 text-accent transition-colors group-hover:bg-accent/25">
-                  <Icon className="h-5 w-5" aria-hidden />
+                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/15 text-accent shadow-sm transition-colors group-hover:bg-accent/25">
+                  <Icon className="app-icon" aria-hidden />
                 </div>
                 <h3 className="text-lg font-semibold">{feature.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">

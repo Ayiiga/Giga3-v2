@@ -37,7 +37,7 @@ export function SubscriptionCard({
       <ul className="mt-6 flex-1 space-y-2">
         {features.map((f) => (
           <li key={f} className="flex gap-2 text-sm">
-            <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+            <Check className="app-icon mt-0.5 text-accent" aria-hidden />
             {f}
           </li>
         ))}

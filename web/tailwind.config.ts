@@ -21,11 +21,14 @@ const config: Config = {
         sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-geist-mono)", "monospace"],
       },
+      fontSize: {
+        base: ["1rem", { lineHeight: "1.65" }],
+      },
       backgroundImage: {
         "grid-pattern":
-          "linear-gradient(to right, rgba(124, 92, 255, 0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(124, 92, 255, 0.06) 1px, transparent 1px)",
+          "linear-gradient(to right, rgba(59, 130, 246, 0.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(59, 130, 246, 0.07) 1px, transparent 1px)",
         "hero-glow":
-          "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124, 92, 255, 0.35), transparent)",
+          "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.32), transparent)",
       },
       animation: {
         "fade-in": "fadeIn 0.6s ease-out forwards",

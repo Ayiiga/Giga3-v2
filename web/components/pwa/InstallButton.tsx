@@ -47,7 +47,7 @@ export function InstallButton({
       onClick={() => void install()}
       aria-label="Install Giga3 AI app"
     >
-      <Download className="h-4 w-4" aria-hidden />
+      <Download className="app-icon" aria-hidden />
       Install app
     </Button>
   );

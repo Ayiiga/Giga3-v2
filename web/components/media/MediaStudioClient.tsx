@@ -54,8 +54,8 @@ function MediaStudioClientInner() {
     <div className="mx-auto max-w-4xl space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Media Studio</h1>
-          <p className="mt-1 text-sm text-muted">
+          <h1 className="text-3xl font-bold sm:text-4xl">Media Studio</h1>
+          <p className="mt-2 text-base text-muted">
             Powered by Replicate · Images & videos with category presets
           </p>
         </div>
@@ -64,48 +64,52 @@ function MediaStudioClientInner() {
 
       {usage && <UsageTracker usage={usage} />}
 
-      <div className="flex gap-2">
-        <button
+      <div className="action-button-grid max-w-lg">
+        <Button
           type="button"
+          variant={tab === "image" ? "image" : "outline"}
+          size="md"
+          className="w-full justify-center"
           onClick={() => {
             setTab("image");
             setCategory("anime_art");
           }}
-          className={cn(
-            "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium",
-            tab === "image" ? "bg-accent text-accent-foreground" : "glass text-muted"
-          )}
         >
-          <ImageIcon className="h-4 w-4" /> Images
-        </button>
-        <button
+          <ImageIcon className="app-icon" aria-hidden />
+          Images
+        </Button>
+        <Button
           type="button"
+          variant={tab === "video" ? "video" : "outline"}
+          size="md"
+          className="w-full justify-center"
           onClick={() => {
             setTab("video");
             setCategory("anime_videos");
           }}
-          className={cn(
-            "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium",
-            tab === "video" ? "bg-accent text-accent-foreground" : "glass text-muted"
-          )}
         >
-          <Video className="h-4 w-4" /> Videos
-        </button>
+          <Video className="app-icon" aria-hidden />
+          Videos
+        </Button>
       </div>
 
-      <div className="glass rounded-2xl p-6 space-y-4">
-        <label className="text-xs font-medium uppercase text-muted">Category</label>
-        <div className="flex flex-wrap gap-2">
+      <div className="glass space-y-6 rounded-2xl p-6 sm:p-8">
+        <label className="text-sm font-semibold uppercase tracking-wide text-muted">
+          Category
+        </label>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {categories.map((c) => (
             <button
               key={c.id}
               type="button"
               onClick={() => setCategory(c.id)}
               className={cn(
-                "rounded-lg border px-3 py-1.5 text-xs",
+                "min-h-12 rounded-xl border-2 px-4 py-3 text-sm font-medium shadow-sm transition-all",
                 category === c.id
-                  ? "border-accent bg-accent/15"
-                  : "border-border hover:border-violet-500/40"
+                  ? tab === "video"
+                    ? "border-red-500/60 bg-red-500/15 text-foreground shadow-red-900/20"
+                    : "border-emerald-500/60 bg-emerald-500/15 text-foreground shadow-emerald-900/20"
+                  : "border-border bg-black/25 text-muted hover:border-white/20 hover:text-foreground"
               )}
             >
               {c.label}
@@ -117,7 +121,7 @@ function MediaStudioClientInner() {
           onChange={(e) => setPrompt(e.target.value)}
           rows={3}
           placeholder={`Describe your ${tab}…`}
-          className="w-full rounded-xl border border-border bg-black/40 px-4 py-3 text-sm outline-none ring-accent focus:ring-2"
+          className="w-full rounded-2xl border-2 border-border bg-black/40 px-5 py-4 text-base outline-none ring-blue-500/60 focus:ring-2"
         />
         {error && <p className="text-sm text-red-300">{error}</p>}
         {!canGen && usage && (
@@ -132,13 +136,15 @@ function MediaStudioClientInner() {
         )}
         <Button
           type="button"
+          variant={tab === "video" ? "video" : "image"}
+          size="lg"
           disabled={loading || !canGen || !prompt.trim()}
           onClick={() => void handleGenerate()}
-          className="w-full sm:w-auto"
+          className="w-full sm:w-auto sm:min-w-[220px]"
         >
           {loading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" /> Generating…
+              <Loader2 className="app-icon animate-spin" aria-hidden /> Generating…
             </>
           ) : (
             `Generate ${tab}`

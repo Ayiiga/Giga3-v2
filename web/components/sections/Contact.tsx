@@ -34,7 +34,7 @@ export function Contact() {
                 href={`mailto:${siteConfig.contact.email}`}
                 className="mt-8 inline-flex items-center gap-2 text-accent hover:underline"
               >
-                <Mail className="h-4 w-4" aria-hidden />
+                <Mail className="app-icon" aria-hidden />
                 {siteConfig.contact.email}
               </a>
             </div>
@@ -86,7 +86,7 @@ export function Contact() {
                     />
                   </div>
                   <Button type="submit" size="lg" className="w-full">
-                    <Send className="h-4 w-4" aria-hidden />
+                    <Send className="app-icon" aria-hidden />
                     Send message
                   </Button>
                 </div>
