@@ -181,6 +181,20 @@ Do **not** put `OPENAI_API_KEY` in the Next.js app — it belongs only on Convex
 
 ---
 
+## GitHub Actions: Convex deploy
+
+Workflow: `.github/workflows/convex-deploy.yml`
+
+**Triggers:** push to `main` when `convex/**`, `package.json`, or the workflow file changes; or **Run workflow** manually.
+
+**Required GitHub secret:** `CONVEX_DEPLOY_KEY` — production deploy key (`prod:perfect-lark-521|eyJ…`).
+
+**Optional secrets** (synced after deploy): `OPENAI_API_KEY`, `GEMINI_API_KEY`, `FAL_KEY`.
+
+The job applies `CHAT_*` latency defaults after each successful deploy.
+
+---
+
 ## Known blockers and fixes
 
 | Blocker | Impact | Fix |
