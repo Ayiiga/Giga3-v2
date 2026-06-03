@@ -1,7 +1,6 @@
+import { ConditionalSiteChrome } from "@/components/layout/ConditionalSiteChrome";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
-import { Footer } from "@/components/layout/Footer";
-import { Header } from "@/components/layout/Header";
 import { siteConfig } from "@/lib/site";
 import "@/styles/globals.css";
 import type { Metadata, Viewport } from "next";
@@ -59,9 +58,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="font-sans">
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        <ConditionalSiteChrome>{children}</ConditionalSiteChrome>
         <ServiceWorkerRegister />
         <OfflineBanner />
       </body>
