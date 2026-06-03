@@ -4,6 +4,7 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatErrorBanner } from "@/components/chat/ChatErrorBanner";
 import { ChatProviderBanner } from "@/components/chat/ChatProviderBanner";
+import { SlowNetworkBanner } from "@/components/chat/SlowNetworkBanner";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { MessageList } from "@/components/chat/MessageList";
 import { ToolSelector } from "@/components/chat/ToolSelector";
@@ -116,6 +117,7 @@ function ChatShellInner() {
           </button>
         </header>
 
+        <SlowNetworkBanner />
         <ChatProviderBanner label={chatProviderLabel} usedFallback={usedFallback} />
 
         <ToolSelector value={mode} onChange={(m) => void changeMode(m)} disabled={isSending} />

@@ -208,3 +208,15 @@ export NEXT_PUBLIC_CONVEX_URL="https://YOUR_DEPLOYMENT.convex.cloud"
 npm run lint && npm run build
 # Static files: web/out/
 ```
+
+## Chat latency (mobile / African networks)
+
+Convex env (optional):
+
+- `CHAT_PROVIDER_TIMEOUT_MS` — per-provider timeout (default `22000`)
+- `CHAT_MAX_TOKENS` — shorter replies, faster download (default `1024`)
+- `CHAT_MAX_HISTORY_TURNS` — trim context (default `12`)
+- `CHAT_ENABLE_FAL` — set `false` to skip slow fal chat fallback (recommended)
+
+Gemini + OpenAI are raced in parallel; fal queue LLM is not used for chat.
+

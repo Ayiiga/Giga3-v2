@@ -5,12 +5,20 @@
 
 const FAL_QUEUE_BASE = "https://queue.fal.run";
 
+export function getFalApiKey(): string | undefined {
+  return (
+    process.env.FAL_KEY?.trim() ||
+    process.env.FAL_API_KEY?.trim() ||
+    undefined
+  );
+}
+
 function getFalKey(): string {
-  const key = process.env.FAL_KEY ?? process.env.FAL_API_KEY;
-  if (!key?.trim()) {
+  const key = getFalApiKey();
+  if (!key) {
     throw new Error("FAL_KEY is not configured in Convex environment");
   }
-  return key.trim();
+  return key;
 }
 
 export type FalImageSize =
@@ -206,4 +214,66 @@ export async function falGenerateImage(input: FalImageInput): Promise<{
     throw new Error("fal image response missing image URL");
   }
   return { imageUrl, requestId };
+}
+
+
+function authHeaders(key: string): HeadersInit {
+  return {
+    Authorization: `Key ${key}`,
+    "Content-Type": "application/json",
+  };
+}
+
+/** OpenAI-shaped chat via fal OpenRouter proxy (sync — keep timeout low for chat). */
+export async function falOpenRouterChatComplete(
+  model: string,
+  messages: Array<{ role: string; content: string }>,
+  timeoutMs = 12_000,
+  maxTokens = 1024
+): Promise<string> {
+  const key = getFalApiKey();
+  if (!key) {
+    throw new Error("FAL_KEY is not configured");
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let res: Response;
+  try {
+    res = await fetch(
+      "https://fal.run/openrouter/router/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: authHeaders(key),
+        body: JSON.stringify({
+          model,
+          messages,
+          temperature: 0.7,
+          max_tokens: maxTokens,
+        }),
+        signal: controller.signal,
+      }
+    );
+  } catch (err) {
+    if (controller.signal.aborted) {
+      throw new Error(`fal OpenRouter timed out after ${timeoutMs}ms`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`fal OpenRouter HTTP ${res.status}: ${text.slice(0, 300)}`);
+  }
+
+  const data = (await res.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
+  const content = data.choices?.[0]?.message?.content?.trim();
+  if (!content) {
+    throw new Error("Empty response from fal OpenRouter");
+  }
+  return content;
 }

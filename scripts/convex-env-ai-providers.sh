@@ -16,3 +16,11 @@ if [[ -n "${GEMINI_MODEL:-}" ]]; then
 fi
 
 echo "Convex fal/Gemini env updated."
+
+# Chat latency (high-latency / African mobile networks)
+npx convex env set CHAT_PROVIDER_TIMEOUT_MS "22000"
+npx convex env set CHAT_MAX_TOKENS "1024"
+npx convex env set CHAT_MAX_HISTORY_TURNS "12"
+npx convex env set CHAT_ENABLE_FAL "false"
+
+echo "Chat latency env set (FAL chat disabled by default)."

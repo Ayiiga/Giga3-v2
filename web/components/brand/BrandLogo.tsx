@@ -17,7 +17,7 @@ export function BrandLogo({ size = 36, className, priority }: BrandLogoProps) {
       height={size}
       priority={priority}
       className={cn(
-        "rounded-xl object-cover shadow-glow ring-1 ring-accent/30",
+        "rounded-xl object-cover shadow-[0_0_24px_rgba(0,212,255,0.35)] ring-1 ring-accent/30",
         className
       )}
     />
