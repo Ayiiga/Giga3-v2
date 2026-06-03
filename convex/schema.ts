@@ -41,6 +41,10 @@ export default defineSchema({
     starterCreditsGranted: v.boolean(),
     /** JSON InterestProfile — built from chat history for personalization */
     interestProfile: v.optional(v.string()),
+    /** OAuth / profile fields present in production */
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+    emailVerificationTime: v.optional(v.number()),
   }).index("by_email", ["email"]),
 
   subscriptions: defineTable({
