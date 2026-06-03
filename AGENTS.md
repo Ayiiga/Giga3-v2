@@ -20,7 +20,7 @@ If local Convex cannot start, point `web/.env.local` at production URLs instead 
 ### Commands
 
 - Install root: `npm ci --legacy-peer-deps`
-- Install web: `cd web && npm install --legacy-peer-deps` (no `web/package-lock.json`; use install, not `npm ci`)
+- Install web: `cd web && npm ci --legacy-peer-deps` (or `npm install --legacy-peer-deps` if lockfile is missing)
 - Lint: `cd web && npm run lint`
 - Build: `cd web && NEXT_PUBLIC_CONVEX_URL=… npm run build` → `web/out/`
 - Verify build env: `cd web && NEXT_PUBLIC_CONVEX_URL=… npm run verify:convex-env`
