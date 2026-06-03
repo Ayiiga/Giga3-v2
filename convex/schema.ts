@@ -31,14 +31,22 @@ export const creditActionValidator = v.union(
 export default defineSchema({
   users: defineTable({
     email: v.string(),
-    tokens: v.number(),
-    plan: v.string(),
+    /** Legacy token balance (pre-credits billing) */
+    tokens: v.optional(v.number()),
+    plan: v.optional(v.string()),
+    /** Convex Auth / OAuth profile fields (legacy production rows) */
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+    emailVerificationTime: v.optional(v.number()),
     /** @deprecated use subscriptionPlan — kept for legacy clients */
-    tier: v.union(v.literal("free"), v.literal("premium")),
-    subscriptionPlan: subscriptionPlanValidator,
-    credits: v.number(),
+    tier: v.optional(
+      v.union(v.literal("free"), v.literal("premium"))
+    ),
+    subscriptionPlan: v.optional(subscriptionPlanValidator),
+    /** Legacy rows may lack credits until migrations:backfillUsers runs */
+    credits: v.optional(v.number()),
     subscriptionExpiresAt: v.optional(v.number()),
-    starterCreditsGranted: v.boolean(),
+    starterCreditsGranted: v.optional(v.boolean()),
   }).index("by_email", ["email"]),
 
   subscriptions: defineTable({
