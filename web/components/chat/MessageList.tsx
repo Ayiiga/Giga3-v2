@@ -2,6 +2,8 @@
 
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
+import { PullToRefresh } from "@/components/pwa/PullToRefresh";
+import { refreshApp } from "@/lib/refresh";
 import { useEffect, useRef } from "react";
 
 export interface UiMessage {
@@ -17,13 +19,23 @@ interface MessageListProps {
 
 export function MessageList({ messages, isTyping }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
   return (
-    <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-6">
+    <PullToRefresh
+      onRefresh={refreshApp}
+      scrollRef={scrollRef}
+      className="flex min-h-0 flex-1 flex-col"
+      contentClassName="flex min-h-0 flex-1 flex-col"
+    >
+    <div
+      ref={scrollRef}
+      className="flex-1 overflow-y-auto overscroll-y-contain px-3 py-4 sm:px-6"
+    >
       {messages.length === 0 && !isTyping && (
         <div className="flex h-full min-h-[200px] flex-col items-center justify-center text-center text-muted">
           <p className="text-lg font-medium text-foreground">Start a conversation</p>
@@ -46,5 +58,6 @@ export function MessageList({ messages, isTyping }: MessageListProps) {
         <div ref={bottomRef} />
       </div>
     </div>
+    </PullToRefresh>
   );
 }
