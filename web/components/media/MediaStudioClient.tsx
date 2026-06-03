@@ -19,7 +19,7 @@ import { ImageIcon, Loader2, Video } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export function MediaStudioClient() {
+function MediaStudioClientInner() {
   const router = useRouter();
   const { email, usage } = useBilling();
   const { jobs, loading, error, createImage, createVideo } = useMediaGeneration();
@@ -51,7 +51,6 @@ export function MediaStudioClient() {
   }
 
   return (
-    <ConvexAppShell>
     <div className="mx-auto max-w-4xl space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -173,6 +172,13 @@ export function MediaStudioClient() {
         </div>
       </section>
     </div>
+  );
+}
+
+export function MediaStudioClient() {
+  return (
+    <ConvexAppShell>
+      <MediaStudioClientInner />
     </ConvexAppShell>
   );
 }

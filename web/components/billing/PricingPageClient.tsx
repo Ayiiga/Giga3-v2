@@ -15,11 +15,10 @@ import {
 import { useBilling } from "@/hooks/useBilling";
 import { cn } from "@/lib/utils";
 
-export function PricingPageClient() {
+function PricingPageClientInner() {
   const { usage, paying, error, checkout, email } = useBilling();
 
   return (
-    <ConvexAppShell>
     <div className="mt-14 space-y-16">
       {email && usage && (
         <div className="mx-auto max-w-md space-y-3">
@@ -110,6 +109,13 @@ export function PricingPageClient() {
         </div>
       </section>
     </div>
+  );
+}
+
+export function PricingPageClient() {
+  return (
+    <ConvexAppShell>
+      <PricingPageClientInner />
     </ConvexAppShell>
   );
 }

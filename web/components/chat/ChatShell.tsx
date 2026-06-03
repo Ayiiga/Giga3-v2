@@ -16,6 +16,14 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export function ChatShell() {
+  return (
+    <ConvexAppShell>
+      <ChatShellInner />
+    </ConvexAppShell>
+  );
+}
+
+function ChatShellInner() {
   const router = useRouter();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -50,7 +58,6 @@ export function ChatShell() {
   }
 
   return (
-    <ConvexAppShell>
     <div className="flex h-[100dvh] overflow-hidden bg-background">
       <ChatSidebar
         conversations={conversations}
@@ -104,6 +111,5 @@ export function ChatShell() {
         <ChatInput onSend={(msg) => void sendMessage(msg)} disabled={isSending} />
       </div>
     </div>
-    </ConvexAppShell>
   );
 }

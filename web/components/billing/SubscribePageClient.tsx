@@ -13,7 +13,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-export function SubscribePageClient() {
+function SubscribePageClientInner() {
   const router = useRouter();
   const { email, usage, paying, error, checkout } = useBilling();
 
@@ -26,7 +26,6 @@ export function SubscribePageClient() {
   }
 
   return (
-    <ConvexAppShell>
     <div className="space-y-8">
       <div className="text-center">
         <h1 className="text-3xl font-bold">Choose your plan</h1>
@@ -61,6 +60,13 @@ export function SubscribePageClient() {
         </ButtonLink>
       </p>
     </div>
+  );
+}
+
+export function SubscribePageClient() {
+  return (
+    <ConvexAppShell>
+      <SubscribePageClientInner />
     </ConvexAppShell>
   );
 }

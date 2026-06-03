@@ -12,7 +12,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-export function CreditsPageClient() {
+function CreditsPageClientInner() {
   const router = useRouter();
   const { email, usage, paying, error, checkout } = useBilling();
 
@@ -25,7 +25,6 @@ export function CreditsPageClient() {
   }
 
   return (
-    <ConvexAppShell>
     <div className="space-y-8">
       <div className="text-center">
         <h1 className="text-3xl font-bold">Buy credits</h1>
@@ -79,6 +78,13 @@ export function CreditsPageClient() {
         </ButtonLink>
       </p>
     </div>
+  );
+}
+
+export function CreditsPageClient() {
+  return (
+    <ConvexAppShell>
+      <CreditsPageClientInner />
     </ConvexAppShell>
   );
 }
