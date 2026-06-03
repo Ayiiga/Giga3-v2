@@ -76,8 +76,15 @@ jobs:
         env:
           CONVEX_DEPLOY_KEY: ${{ env.DEPLOY_KEY }}
         run: |
-          set -euo pipefail
-          npx convex deploy --yes --verbose --typecheck disable 2>&1 | tee convex-deploy.log
+          set -o pipefail
+          echo "convex CLI: $(npx convex --version)"
+          if ! npx convex deploy --yes --verbose --typecheck disable 2>&1 | tee convex-deploy.log; then
+            echo "## Convex deploy failed" >> "$GITHUB_STEP_SUMMARY"
+            echo '```text' >> "$GITHUB_STEP_SUMMARY"
+            tail -80 convex-deploy.log >> "$GITHUB_STEP_SUMMARY" || true
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
 
       - name: Apply chat latency env defaults
         if: success()
