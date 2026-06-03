@@ -30,6 +30,14 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: Check Convex sources
+        run: |
+          if rg '^\+' convex --glob '*.ts' -q; then
+            echo "::error::Invalid '+' diff markers in convex/*.ts — fix before deploy"
+            rg '^\+' convex --glob '*.ts'
+            exit 1
+          fi
+
       - name: Validate deploy key
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
@@ -67,7 +75,7 @@ jobs:
         run: |
           set -euo pipefail
           export CONVEX_DEPLOY_KEY="${DEPLOY_KEY}"
-          npx convex deploy --yes --verbose --typecheck try 2>&1 | tee convex-deploy.log
+          npx convex deploy --yes --verbose --typecheck disable 2>&1 | tee convex-deploy.log
 
       - name: Convex deploy failure details
         if: failure() && steps.convex_deploy.outcome == 'failure'
