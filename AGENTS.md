@@ -14,10 +14,25 @@
 
 - Install root: `npm ci --legacy-peer-deps`
 - Install web: `cd web && npm install --legacy-peer-deps`
-- Lint: `npm run lint` (runs `web` ESLint)
-- Build: `npm run build` (static export to `web/out`)
-- Convex codegen: `npx convex codegen`
+- Lint: `cd web && npm run lint`
+- Build: `cd web && npm run build` (static export to `web/out`)
+- Dev server: `cd web && npm run dev` → `http://localhost:3000` (chat login at `/chat/login/`)
+- Convex codegen: `npx convex codegen` (requires `npx convex dev` login or `.env.local` with `CONVEX_DEPLOYMENT`; committed types live in `convex/_generated/`)
 - Convex deploy: `npx convex deploy --yes` (requires `CONVEX_DEPLOY_KEY`)
+
+### Local dev without `npx convex dev`
+
+If Convex CLI login is unavailable, point the Next.js app at production:
+
+```bash
+cd web
+cp .env.local.example .env.local
+# set NEXT_PUBLIC_CONVEX_URL=https://perfect-lark-521.convex.cloud
+# set NEXT_PUBLIC_CONVEX_SITE_URL=https://perfect-lark-521.convex.site
+npm run dev
+```
+
+This is enough for UI + chat E2E against the deployed backend. Use `npx convex dev` when changing `convex/` functions locally.
 
 ### Build-time env (web)
 
@@ -32,7 +47,7 @@ Set in `web/.env.local` or CI secrets:
 Production deployment: **`perfect-lark-521`** (`https://perfect-lark-521.convex.cloud`).
 
 - `users:getUser` is a **public query** in `convex/users.ts`. If the client reports it is missing, production has not received a successful deploy.
-- This Cloud Agent VM often **cannot** reach `api.convex.dev` or `*.convex.cloud` (TLS). Use GitHub Actions **Deploy Convex backend** or a local machine for codegen/deploy.
+- Convex **client** endpoints (`*.convex.cloud`) are reachable from this VM for dev/testing. Convex **CLI** codegen/deploy may still require `npx convex login` or `CONVEX_DEPLOY_KEY`; use GitHub Actions **Deploy Convex backend** when CLI auth is missing.
 - If CI fails in ~20s at **Deploy to Convex** after key format validation passes, regenerate `CONVEX_DEPLOY_KEY` (`prod:perfect-lark-521|…`) in Convex Dashboard → production → Settings → Deploy key.
 
 ### Frontend HTTP paths (static `frontend/`)
