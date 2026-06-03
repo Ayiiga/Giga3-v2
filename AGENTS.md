@@ -64,6 +64,7 @@ npx convex env set GEMINI_API_KEY "your-google-ai-studio-key"
 npx convex env set GEMINI_MODEL "gemini-2.5-flash"
 npx convex env set FAL_KEY "your-fal-api-key"
 npx convex env set FAL_MODEL "google/gemini-2.5-flash"
+npx convex env set FAL_IMAGE_MODEL "fal-ai/nano-banana-pro"
 ```
 
 Also: `OPENAI_API_KEY`, optional `OPENAI_FALLBACK_MODEL`, `OPENAI_FALLBACK_API_KEY`.

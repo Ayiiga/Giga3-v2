@@ -21,5 +21,6 @@ elif [ -n "${FAL_API_KEY:-}" ]; then
 fi
 
 npx convex env set FAL_MODEL "${FAL_MODEL:-google/gemini-2.5-flash}"
+npx convex env set FAL_IMAGE_MODEL "${FAL_IMAGE_MODEL:-fal-ai/nano-banana-pro}"
 
-echo "Done. Redeploy if needed: npx convex deploy --yes"
+echo "Done. Redeploy: npx convex deploy --yes"

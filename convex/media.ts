@@ -7,6 +7,7 @@ import {
   REPLICATE_IMAGE_MODEL,
   REPLICATE_VIDEO_MODEL,
 } from "./mediaCatalog";
+import { falGenerateImage, getFalApiKey } from "./falClient";
 
 async function replicateCreatePrediction(
   model: string,
@@ -118,21 +119,42 @@ export const generateImage = action({
       });
 
       const fullPrompt = buildImagePrompt(args.category, args.prompt);
-      const prediction = await replicateCreatePrediction(REPLICATE_IMAGE_MODEL, {
-        prompt: fullPrompt,
-        num_outputs: 1,
-      });
+      let outputUrl: string | null = null;
+      let externalId: string | undefined;
 
-      const outputUrl = extractOutputUrl(prediction.output);
-      if (!outputUrl && prediction.status !== "succeeded") {
-        throw new Error(prediction.error ?? "Image generation failed");
+      if (getFalApiKey()) {
+        try {
+          const falImage = await falGenerateImage({
+            prompt: fullPrompt,
+            numImages: 1,
+            aspectRatio: "1:1",
+            outputFormat: "png",
+            resolution: "1K",
+          });
+          outputUrl = falImage.url;
+          externalId = `fal:${process.env.FAL_IMAGE_MODEL ?? "fal-ai/nano-banana-pro"}`;
+        } catch (falErr) {
+          console.error("[media] fal image failed, trying Replicate:", falErr);
+        }
+      }
+
+      if (!outputUrl) {
+        const prediction = await replicateCreatePrediction(REPLICATE_IMAGE_MODEL, {
+          prompt: fullPrompt,
+          num_outputs: 1,
+        });
+        outputUrl = extractOutputUrl(prediction.output);
+        if (!outputUrl && prediction.status !== "succeeded") {
+          throw new Error(prediction.error ?? "Image generation failed");
+        }
+        externalId = prediction.id;
       }
 
       await ctx.runMutation(internal.media.updateJob, {
         jobId,
         status: outputUrl ? "succeeded" : "failed",
         outputUrl: outputUrl ?? undefined,
-        replicatePredictionId: prediction.id,
+        replicatePredictionId: externalId,
         errorMessage: outputUrl ? undefined : "No output URL",
       });
 

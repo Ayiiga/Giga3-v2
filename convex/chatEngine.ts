@@ -1,4 +1,9 @@
 import OpenAI from "openai";
+import {
+  falAnyLlmComplete,
+  falOpenRouterChatComplete,
+  getFalApiKey,
+} from "./falClient";
 
 export type ChatCompletionMessage = {
   role: "system" | "user" | "assistant";
@@ -18,7 +23,8 @@ const PROVIDER_LABELS: Record<string, string> = {
   openai_retry: "Compact retry (OpenAI)",
   openai_secondary_key: "Secondary API key (OpenAI)",
   gemini: "Google Gemini",
-  fal_ai: "fal.ai",
+  fal_ai: "fal.ai (OpenRouter)",
+  fal_any_llm: "fal.ai (Any LLM)",
   local_fallback: "Service notice",
 };
 
@@ -26,12 +32,10 @@ export function getChatProviderLabel(providerId: string): string {
   return PROVIDER_LABELS[providerId] ?? providerId;
 }
 
-function getFalApiKey(): string | undefined {
-  return (
-    process.env.FAL_KEY?.trim() ||
-    process.env.FAL_API_KEY?.trim() ||
-    undefined
-  );
+function messagesToSinglePrompt(messages: ChatCompletionMessage[]): string {
+  return messages
+    .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
+    .join("\n\n");
 }
 
 async function openaiComplete(
@@ -110,49 +114,6 @@ async function geminiComplete(
   return text;
 }
 
-/** fal.ai OpenRouter-compatible chat (OpenAI message shape). */
-async function falComplete(
-  falKey: string,
-  model: string,
-  messages: OpenAI.Chat.ChatCompletionMessageParam[]
-): Promise<string> {
-  const res = await fetch(
-    "https://fal.run/openrouter/router/openai/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Key ${falKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature: 0.7,
-        max_tokens: 2048,
-      }),
-    }
-  );
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`fal.ai HTTP ${res.status}: ${errText.slice(0, 300)}`);
-  }
-
-  const data = (await res.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-    output?: string;
-  };
-
-  const fromChoices = data.choices?.[0]?.message?.content?.trim();
-  if (fromChoices) return fromChoices;
-
-  if (typeof data.output === "string" && data.output.trim()) {
-    return data.output.trim();
-  }
-
-  throw new Error("Empty response from fal.ai");
-}
-
 function trimHistoryForRetry(
   messages: ChatCompletionMessage[],
   maxTurns: number
@@ -225,7 +186,18 @@ export async function completeChatWithFailover(
   if (falKey) {
     attempts.push({
       id: "fal_ai",
-      run: () => falComplete(falKey, falModel, asOpenAi),
+      run: () =>
+        falOpenRouterChatComplete(
+          falModel,
+          asOpenAi.map((m) => ({
+            role: String(m.role),
+            content: typeof m.content === "string" ? m.content : "",
+          }))
+        ),
+    });
+    attempts.push({
+      id: "fal_any_llm",
+      run: () => falAnyLlmComplete(messagesToSinglePrompt(messages), falModel),
     });
   }
 
