@@ -55,6 +55,12 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    |----------|----------|---------|
    | `OPENAI_API_KEY` | **Yes** | Chat (`platform.sendMessage`, legacy `ai.askAI`) |
    | `OPENAI_MODEL` | No | Default `gpt-4o-mini` |
+   | `OPENAI_FALLBACK_MODEL` | No | Backup OpenAI model in failover |
+   | `OPENAI_FALLBACK_API_KEY` | No | Optional second OpenAI key |
+   | `GEMINI_API_KEY` | For Gemini failover | Google AI Studio key |
+   | `GEMINI_MODEL` | No | Default `gemini-2.5-flash` |
+   | `FAL_KEY` or `FAL_API_KEY` | For fal.ai failover | fal.ai dashboard |
+   | `FAL_MODEL` | No | fal OpenRouter model id, default `google/gemini-2.5-flash` |
    | `REPLICATE_API_TOKEN` | For media | Image/video generation |
    | `REPLICATE_IMAGE_MODEL` | No | Default in `mediaCatalog.ts` |
    | `REPLICATE_VIDEO_MODEL` | No | Default in `mediaCatalog.ts` |

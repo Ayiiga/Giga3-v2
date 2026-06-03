@@ -83,7 +83,7 @@ export const sendMessage = action({
     const assistantContent = engineResult.content;
 
     const chargedAi =
-      engineResult.providerId !== "local_fallback" && !!process.env.OPENAI_API_KEY;
+      engineResult.providerId !== "local_fallback";
 
     if (chargedAi) {
       await ctx.runMutation(api.credits.deductForChatMode, {

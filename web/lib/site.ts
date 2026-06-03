@@ -28,7 +28,7 @@ export const navLinks = [
 ] as const;
 
 export const heroStats = [
-  { label: "AI failover paths", value: "5+" },
+  { label: "AI failover paths", value: "7+" },
   { label: "Chat modes", value: "6" },
   { label: "Deploy stack", value: "PWA" },
 ] as const;

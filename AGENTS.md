@@ -53,9 +53,20 @@ Paystack webhook: `https://<deployment>.convex.site/paystack/webhook`
 2. **openai_fallback_model** — `OPENAI_FALLBACK_MODEL` (default `gpt-3.5-turbo`)
 3. **openai_retry** — primary model with shorter history
 4. **openai_secondary_key** — optional `OPENAI_FALLBACK_API_KEY`
-5. **local_fallback** — user-visible notice (no credit charge)
+5. **gemini** — `GEMINI_API_KEY` + `GEMINI_MODEL` (default `gemini-2.5-flash`)
+6. **fal_ai** — `FAL_KEY` or `FAL_API_KEY` + `FAL_MODEL` (default `google/gemini-2.5-flash` via fal OpenRouter)
+7. **local_fallback** — user-visible notice (no credit charge)
 
-Convex env: `OPENAI_API_KEY`, optional `OPENAI_FALLBACK_MODEL`, `OPENAI_FALLBACK_API_KEY`.
+Convex env:
+
+```bash
+npx convex env set GEMINI_API_KEY "your-google-ai-studio-key"
+npx convex env set GEMINI_MODEL "gemini-2.5-flash"
+npx convex env set FAL_KEY "your-fal-api-key"
+npx convex env set FAL_MODEL "google/gemini-2.5-flash"
+```
+
+Also: `OPENAI_API_KEY`, optional `OPENAI_FALLBACK_MODEL`, `OPENAI_FALLBACK_API_KEY`.
 
 ### Gotchas
 

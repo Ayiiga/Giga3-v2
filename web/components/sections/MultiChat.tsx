@@ -5,13 +5,13 @@ import { ArrowRight, Layers, RefreshCw, Shield } from "lucide-react";
 const steps = [
   {
     title: "Primary model",
-    description: "Your message goes to the configured OpenAI model first.",
+    description: "Your message goes to OpenAI first, then backup models and keys.",
     icon: Layers,
   },
   {
     title: "Automatic failover",
     description:
-      "If that provider errors or times out, Giga3 tries backup models, a compact retry, and an optional secondary API key.",
+      "If OpenAI fails, Giga3 tries Gemini, then fal.ai (OpenRouter), with clear provider labels in chat.",
     icon: RefreshCw,
   },
   {
