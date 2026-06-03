@@ -3,8 +3,23 @@ import {
   REPLICATE_VIDEO_MODEL,
 } from "./mediaCatalog";
 
-function getReplicateToken(): string {
-  const token = process.env.REPLICATE_API_TOKEN?.trim();
+/** Replicate `Prefer: wait=N` only accepts 1–60 seconds. */
+const REPLICATE_PREFER_WAIT_MAX = 60;
+
+function getReplicateToken(): string | undefined {
+  const token =
+    process.env.REPLICATE_API_TOKEN?.trim() ||
+    process.env.REPLICATE_API?.trim() ||
+    undefined;
+  return token || undefined;
+}
+
+export function hasReplicateToken(): boolean {
+  return Boolean(getReplicateToken());
+}
+
+function requireReplicateToken(): string {
+  const token = getReplicateToken();
   if (!token) {
     throw new Error(
       "REPLICATE_API_TOKEN is not configured in Convex environment",
@@ -43,12 +58,45 @@ function extractOutputUrl(output: unknown, mediaType: "image" | "video"): string
   );
 }
 
+async function fetchPrediction(id: string): Promise<ReplicatePrediction> {
+  const token = requireReplicateToken();
+  const res = await fetch(`https://api.replicate.com/v1/predictions/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const body = (await res.json()) as ReplicatePrediction & { detail?: string };
+  if (!res.ok) {
+    throw new Error(body.detail ?? body.error ?? `Replicate HTTP ${res.status}`);
+  }
+  return body;
+}
+
+async function pollPrediction(
+  predictionId: string,
+  maxWaitMs: number,
+): Promise<ReplicatePrediction> {
+  const deadline = Date.now() + maxWaitMs;
+  while (Date.now() < deadline) {
+    const body = await fetchPrediction(predictionId);
+    if (body.status === "succeeded") return body;
+    if (body.status === "failed" || body.status === "canceled") {
+      throw new Error(body.error ?? "Replicate prediction failed");
+    }
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+  throw new Error(`Replicate prediction timed out after ${maxWaitMs}ms`);
+}
+
 async function createModelPrediction(
   model: string,
   input: Record<string, unknown>,
-  waitSeconds = 120,
+  totalWaitSeconds = 120,
 ): Promise<ReplicatePrediction> {
-  const token = getReplicateToken();
+  const token = requireReplicateToken();
+  const preferWait = Math.min(
+    REPLICATE_PREFER_WAIT_MAX,
+    Math.max(1, totalWaitSeconds),
+  );
+
   const res = await fetch(
     `https://api.replicate.com/v1/models/${model}/predictions`,
     {
@@ -56,7 +104,7 @@ async function createModelPrediction(
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-        Prefer: `wait=${waitSeconds}`,
+        Prefer: `wait=${preferWait}`,
       },
       body: JSON.stringify({ input }),
     },
@@ -72,8 +120,17 @@ async function createModelPrediction(
     );
   }
 
-  if (body.status === "failed") {
+  if (body.status === "failed" || body.status === "canceled") {
     throw new Error(body.error ?? "Replicate prediction failed");
+  }
+
+  if (body.status === "succeeded") {
+    return body;
+  }
+
+  if (body.id) {
+    const remainingMs = Math.max(0, totalWaitSeconds - preferWait) * 1000;
+    return pollPrediction(body.id, remainingMs + 30_000);
   }
 
   return body;

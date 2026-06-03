@@ -47,7 +47,7 @@ export function useMediaGeneration() {
     try {
       const result = await generateImage({ userId, category, prompt });
       setPhase("success");
-      setSuccessMessage("Image generation started — check Recent generations below.");
+      setSuccessMessage("Image ready — see Recent generations below.");
       return result;
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Image generation failed";
