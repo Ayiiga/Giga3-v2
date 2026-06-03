@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { USER_FIELD_DEFAULTS, userBackfillPatch, withUserDefaults } from "./userDefaults";
 
 export const createUser = mutation({
   args: { email: v.string() },
@@ -9,27 +10,34 @@ export const createUser = mutation({
       .withIndex("by_email", (q) => q.eq("email", args.email))
       .first();
     if (existing) {
-      return existing;
+      const patch = userBackfillPatch(existing);
+      if (Object.keys(patch).length > 0) {
+        await ctx.db.patch(existing._id, patch);
+        const updated = await ctx.db.get(existing._id);
+        return updated ? withUserDefaults(updated) : withUserDefaults(existing);
+      }
+      return withUserDefaults(existing);
     }
-    return await ctx.db.insert("users", {
+    const id = await ctx.db.insert("users", {
       email: args.email,
-      tokens: 12,
-      plan: "free",
-      tier: "free",
-      subscriptionPlan: "free",
-      credits: 0,
-      starterCreditsGranted: false,
+      ...USER_FIELD_DEFAULTS,
     });
+    const created = await ctx.db.get(id);
+    if (!created) throw new Error("Failed to create user");
+    return withUserDefaults(created);
   },
 });
 
+/** Public query — used by web (`api.users.getUser`) and legacy frontend HTTP paths. */
 export const getUser = query({
   args: { email: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", args.email))
       .first();
+    if (!user) return null;
+    return withUserDefaults(user);
   },
 });
 

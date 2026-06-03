@@ -88,6 +88,16 @@ jobs:
             exit 1
           fi
 
+      - name: Backfill legacy user documents
+        if: success()
+        env:
+          CONVEX_DEPLOY_KEY: ${{ env.DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          echo "Running migrations:runUserBackfill (idempotent)..."
+          npx convex run migrations:runUserBackfill --no-push
+          echo "User backfill complete."
+
       - name: Apply chat latency env defaults
         if: success()
         env:

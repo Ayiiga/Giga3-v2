@@ -246,3 +246,15 @@ This means production Convex never received the latest functions (deploy CI is f
 5. Re-run the workflow on `main`
 
 After a green deploy, refresh https://www.giga3ai.com/chat — `users:getUser` and `platformActions:sendMessage` will be available.
+
+## Schema mismatch: missing `credits` (or other user fields)
+
+Older production users may only have `email`, `tokens`, and `plan`. New schema adds `credits`, `tier`, `subscriptionPlan`, and `starterCreditsGranted`.
+
+The deploy workflow runs **`migrations:runUserBackfill`** after each successful deploy (idempotent). Manual run:
+
+```bash
+CONVEX_DEPLOY_KEY='prod:perfect-lark-521|…' npx convex run migrations:runUserBackfill
+```
+
+Defaults applied per user: `credits: 0`, `tokens: 12` (if missing), `plan/tier/subscriptionPlan: free`, `starterCreditsGranted: false`.
