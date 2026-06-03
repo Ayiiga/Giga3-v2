@@ -24,7 +24,7 @@
       const sessionId = params.get('session_id');
       if (!sessionId) return document.getElementById('status').innerText = 'Missing session id.';
       try {
-        const res = await fetch(`${window.GIGA3_CONFIG.CONVEX_URL}/action/payments:confirmPurchase`, {
+        const res = await fetch(`${window.GIGA3_CONFIG.CONVEX_URL}/action/stripeActions:confirmPurchase`, {
           method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ sessionId })
         });
         if (!res.ok) throw new Error(await res.text());

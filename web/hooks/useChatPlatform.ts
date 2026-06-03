@@ -75,7 +75,7 @@ export function useChatPlatform() {
   const createConversation = useMutation(api.conversations.create);
   const removeConversation = useMutation(api.conversations.remove);
   const setConversationMode = useMutation(api.conversations.setMode);
-  const sendMessageAction = useAction(api.platform.sendMessage);
+  const sendMessageAction = useAction(api.platformActions.sendMessage);
   const createUser = useMutation(api.users.createUser);
 
   const conversations: ConversationItem[] = useMemo(

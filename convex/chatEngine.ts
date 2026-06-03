@@ -1,3 +1,5 @@
+"use node";
+
 import OpenAI from "openai";
 import { falOpenRouterChatComplete, getFalApiKey } from "./falClient";
 
@@ -26,6 +28,16 @@ export function getChatProviderLabel(providerId: string): string {
   return PROVIDER_LABELS[providerId] ?? providerId;
 }
 
+function chatConfig() {
+  return {
+    providerTimeoutMs: Number(process.env.CHAT_PROVIDER_TIMEOUT_MS) || 22_000,
+    maxTokens: Number(process.env.CHAT_MAX_TOKENS) || 1024,
+    maxDialogueMessages: Number(process.env.CHAT_MAX_HISTORY_TURNS) || 12,
+    enableFalChat: process.env.CHAT_ENABLE_FAL !== "false",
+    falTimeoutMs: Number(process.env.CHAT_FAL_TIMEOUT_MS) || 12_000,
+  };
+}
+
 /** Limits context size — critical on high-latency / metered networks. */
 export function trimChatMessages(
   messages: ChatCompletionMessage[],
@@ -42,26 +54,6 @@ export function trimChatMessages(
     trimmed = trimmed.slice(1);
   }
   return [...system, ...trimmed];
-}
-
-function chatConfig() {
-  return {
-    providerTimeoutMs: Number(process.env.CHAT_PROVIDER_TIMEOUT_MS) || 22_000,
-    maxTokens: Number(process.env.CHAT_MAX_TOKENS) || 1024,
-    maxDialogueMessages: Number(process.env.CHAT_MAX_HISTORY_TURNS) || 12,
-    enableFalChat: process.env.CHAT_ENABLE_FAL !== "false",
-    falTimeoutMs: Number(process.env.CHAT_FAL_TIMEOUT_MS) || 12_000,
-  };
-}
-
-function isTimeoutError(err: unknown): boolean {
-  const msg = err instanceof Error ? err.message : String(err);
-  return (
-    msg.includes("timed out") ||
-    msg.includes("timeout") ||
-    msg.includes("aborted") ||
-    msg.includes("AbortError")
-  );
 }
 
 async function withProviderTimeout<T>(
@@ -189,13 +181,11 @@ async function raceFirstSuccess(
   return new Promise((resolve) => {
     let settled = false;
     let failures = 0;
-    const errors: string[] = [];
 
     const finishFailure = (id: string, err: unknown) => {
       if (settled) return;
       failures += 1;
       const msg = err instanceof Error ? err.message : String(err);
-      errors.push(`${id}: ${msg}`);
       console.error(`[chatEngine] ${id} failed:`, msg);
       if (failures >= attempts.length) {
         settled = true;
@@ -223,7 +213,6 @@ async function runSequential(
   attempts: Attempt[],
   timeoutMs: number
 ): Promise<ChatEngineResult | null> {
-  const failures: string[] = [];
   for (const attempt of attempts) {
     try {
       const content = await withProviderTimeout(
@@ -238,21 +227,12 @@ async function runSequential(
       };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      failures.push(`${attempt.id}: ${msg}`);
       console.error(`[chatEngine] ${attempt.id} failed:`, msg);
-      if (isTimeoutError(err)) {
-        continue;
-      }
     }
   }
-  return failures.length > 0 ? null : null;
+  return null;
 }
 
-/**
- * Fast path for chat: race Gemini + OpenAI, then one backup each.
- * Skips slow fal queue LLMs; optional fal OpenRouter with short timeout.
- * Tuned for high-latency African mobile networks (smaller payloads, hard timeouts).
- */
 export async function completeChatWithFailover(
   messages: ChatCompletionMessage[]
 ): Promise<ChatEngineResult> {
