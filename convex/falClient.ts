@@ -162,7 +162,12 @@ function defaultVideoInput(input: FalVideoInput): Record<string, unknown> {
   };
 }
 
-export async function falGenerateVideo(input: FalVideoInput): Promise<{
+export type FalPollOptions = { maxWaitMs?: number; pollIntervalMs?: number };
+
+export async function falGenerateVideo(
+  input: FalVideoInput,
+  options?: FalPollOptions
+): Promise<{
   videoUrl: string;
   contentType?: string;
   seed: number;
@@ -173,8 +178,8 @@ export async function falGenerateVideo(input: FalVideoInput): Promise<{
   const payload = defaultVideoInput(input);
   const requestId = await falQueueSubmit(modelId, payload);
   const result = await falQueuePoll<FalVideoResult>(modelId, requestId, {
-    maxWaitMs: 20 * 60 * 1000,
-    pollIntervalMs: 3000,
+    maxWaitMs: options?.maxWaitMs ?? 20 * 60 * 1000,
+    pollIntervalMs: options?.pollIntervalMs ?? 3000,
   });
   if (!result.video?.url) {
     throw new Error("fal video response missing video.url");
@@ -187,11 +192,17 @@ export async function falGenerateVideo(input: FalVideoInput): Promise<{
   };
 }
 
-export async function falGenerateImage(input: FalImageInput): Promise<{
+export async function falGenerateImage(
+  input: FalImageInput,
+  options?: FalPollOptions & { modelId?: string }
+): Promise<{
   imageUrl: string;
   requestId: string;
 }> {
-  const modelId = process.env.FAL_IMAGE_MODEL?.trim() || "fal-ai/nano-banana-pro";
+  const modelId =
+    options?.modelId?.trim() ||
+    process.env.FAL_IMAGE_MODEL?.trim() ||
+    "fal-ai/nano-banana-pro";
   const payload: Record<string, unknown> = {
     prompt: input.prompt,
     ...(input.negative_prompt !== undefined && { negative_prompt: input.negative_prompt }),
@@ -205,8 +216,8 @@ export async function falGenerateImage(input: FalImageInput): Promise<{
   };
   const requestId = await falQueueSubmit(modelId, payload);
   const result = await falQueuePoll<FalImageResult>(modelId, requestId, {
-    maxWaitMs: 5 * 60 * 1000,
-    pollIntervalMs: 2000,
+    maxWaitMs: options?.maxWaitMs ?? 5 * 60 * 1000,
+    pollIntervalMs: options?.pollIntervalMs ?? 2000,
   });
   const imageUrl =
     result.images?.[0]?.url ?? result.image?.url;

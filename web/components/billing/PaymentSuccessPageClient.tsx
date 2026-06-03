@@ -20,7 +20,7 @@ export function PaymentSuccessPageClient() {
 function PaymentSuccessPageContent() {
   const params = useSearchParams();
   const reference = params.get("reference") ?? undefined;
-  const { verify } = useBilling();
+  const { verify, reconcile } = useBilling();
   const [message, setMessage] = useState("Verifying your payment…");
   const [failed, setFailed] = useState(false);
 
@@ -30,8 +30,16 @@ function PaymentSuccessPageContent() {
       setFailed(true);
       return;
     }
-    void verify(reference)
-      .then((res) => {
+
+    let cancelled = false;
+
+    async function runVerify(attempt: number) {
+      try {
+        const res =
+          attempt > 0
+            ? await reconcile(reference!)
+            : await verify(reference!);
+        if (cancelled) return;
         if (res.status === "success") {
           if (res.type === "credits") {
             setMessage(
@@ -44,15 +52,26 @@ function PaymentSuccessPageContent() {
           } else {
             setMessage("Subscription activated. Credits refilled.");
           }
+          setFailed(false);
         }
-      })
-      .catch(() => {
+      } catch {
+        if (cancelled) return;
+        if (attempt < 2) {
+          await new Promise((r) => setTimeout(r, 2000 * (attempt + 1)));
+          return runVerify(attempt + 1);
+        }
         setMessage(
-          "We could not verify this payment. Your webhook may still activate it shortly."
+          "We could not verify this payment yet. If you were charged, credits may appear within a few minutes via Paystack webhook."
         );
         setFailed(true);
-      });
-  }, [reference, verify]);
+      }
+    }
+
+    void runVerify(0);
+    return () => {
+      cancelled = true;
+    };
+  }, [reference, verify, reconcile]);
 
   if (failed) {
     return (

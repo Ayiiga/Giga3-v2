@@ -95,10 +95,15 @@ export function ChatInputToolbar({
     setMediaLoading(true);
     try {
       const template = MEDIA_STUDIO_TEMPLATES[0];
+      if (!template) {
+        onError("Media Studio is unavailable right now.");
+        return;
+      }
       router.push(buildMediaStudioUrl(template));
     } catch {
       onError("Could not open Media Studio. Visit /media from the menu.");
-      setMediaLoading(false);
+    } finally {
+      window.setTimeout(() => setMediaLoading(false), 1200);
     }
   }
 

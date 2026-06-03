@@ -1,6 +1,7 @@
 "use client";
 
 import { getUserEmail } from "@/lib/auth";
+import { formatMediaError } from "@/lib/media/errors";
 import type { ImageCategoryId, VideoCategoryId } from "@/lib/media/catalog";
 import { api } from "convex/_generated/api";
 import { useAction, useQuery } from "convex/react";
@@ -14,6 +15,8 @@ export function useMediaGeneration() {
   const [phase, setPhase] = useState<MediaGenerationPhase>("idle");
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [lastOutputUrl, setLastOutputUrl] = useState<string | null>(null);
+  const [lastMediaType, setLastMediaType] = useState<"image" | "video" | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -44,20 +47,27 @@ export function useMediaGeneration() {
     setPhase("generating");
     setError(null);
     setSuccessMessage(null);
+    setLastOutputUrl(null);
     try {
       const result = await generateImage({ userId, category, prompt });
+      setLastOutputUrl(result.imageUrl ?? null);
+      setLastMediaType("image");
       setPhase("success");
-      setSuccessMessage("Image generation started — check Recent generations below.");
+      setSuccessMessage("Image ready — saved to Recent generations.");
       return result;
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Image generation failed";
+      const msg = formatMediaError(e);
       setError(msg);
       setPhase("error");
       return null;
     }
   }
 
-  async function createVideo(category: VideoCategoryId, prompt: string) {
+  async function createVideo(
+    category: VideoCategoryId,
+    prompt: string,
+    imageUrl?: string
+  ) {
     if (!userId) {
       setError("Sign in required");
       setPhase("error");
@@ -66,13 +76,21 @@ export function useMediaGeneration() {
     setPhase("generating");
     setError(null);
     setSuccessMessage(null);
+    setLastOutputUrl(null);
     try {
-      const result = await generateVideo({ userId, category, prompt });
+      const result = await generateVideo({
+        userId,
+        category,
+        prompt,
+        ...(imageUrl?.trim() ? { imageUrl: imageUrl.trim() } : {}),
+      });
+      setLastOutputUrl(result.videoUrl ?? null);
+      setLastMediaType("video");
       setPhase("success");
-      setSuccessMessage("Video generation started — this may take a minute.");
+      setSuccessMessage("Video ready — saved to Recent generations.");
       return result;
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Video generation failed";
+      const msg = formatMediaError(e);
       setError(msg);
       setPhase("error");
       return null;
@@ -86,6 +104,8 @@ export function useMediaGeneration() {
     phase,
     error,
     successMessage,
+    lastOutputUrl,
+    lastMediaType,
     clearStatus,
     createImage,
     createVideo,

@@ -29,6 +29,7 @@ export function useBilling() {
 
   const initPayment = useAction(api.paystack.initializePayment);
   const verifyPayment = useAction(api.paystack.verifyPayment);
+  const reconcilePayment = useAction(api.paystack.reconcilePayment);
 
   const usage: UsageSnapshot | null = usageRaw
     ? {
@@ -72,5 +73,12 @@ export function useBilling() {
     [verifyPayment]
   );
 
-  return { email, usage, paying, error, checkout, verify };
+  const reconcile = useCallback(
+    async (reference: string) => {
+      return reconcilePayment({ reference });
+    },
+    [reconcilePayment]
+  );
+
+  return { email, usage, paying, error, checkout, verify, reconcile };
 }
