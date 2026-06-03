@@ -33,15 +33,19 @@ jobs:
       - name: Deploy to Convex
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          CONVEX_DEPLOYMENT_VALUE: ${{ secrets.CONVEX_DEPLOYMENT_VALUE }}
         run: |
           set -euo pipefail
-          if [ -z "${CONVEX_DEPLOY_KEY}" ]; then
-            echo "::error::Missing GitHub secret CONVEX_DEPLOY_KEY. Create one at https://dashboard.convex.dev → Project Settings → Deploy keys"
+          DEPLOY_KEY="${CONVEX_DEPLOY_KEY:-${CONVEX_DEPLOYMENT_VALUE:-}}"
+          if [ -z "${DEPLOY_KEY}" ]; then
+            echo "::error::Add GitHub secret CONVEX_DEPLOY_KEY (Convex dashboard → Settings → Deploy key → Generate)"
             exit 1
           fi
+          export CONVEX_DEPLOY_KEY="${DEPLOY_KEY}"
           npx convex deploy --yes
 
       - name: Deployment summary
+        if: success()
         run: |
           echo "### Convex deploy" >> "$GITHUB_STEP_SUMMARY"
-          echo "Backend functions (including multi-provider chatEngine) deployed from \`main\`." >> "$GITHUB_STEP_SUMMARY"
+          echo "Backend deployed (chatEngine failover, Paystack, credits)." >> "$GITHUB_STEP_SUMMARY"
