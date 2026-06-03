@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/Container";
+import { MediaErrorBoundary } from "@/components/media/MediaErrorBoundary";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 
@@ -19,7 +20,9 @@ export default function MediaPage() {
   return (
     <div className="section-padding pt-28">
       <Container>
-        <MediaStudioClient />
+        <MediaErrorBoundary>
+          <MediaStudioClient />
+        </MediaErrorBoundary>
       </Container>
     </div>
   );
