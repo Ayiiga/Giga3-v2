@@ -24,7 +24,7 @@ export function TypingIndicator({ showNetworkHint = true }: TypingIndicatorProps
         <span className="h-2 w-2 animate-bounce rounded-full bg-cyan-400 [animation-delay:0ms]" />
         <span className="h-2 w-2 animate-bounce rounded-full bg-cyan-400 [animation-delay:150ms]" />
         <span className="h-2 w-2 animate-bounce rounded-full bg-cyan-400 [animation-delay:300ms]" />
-        <span className="ml-2 text-xs text-muted">
+        <span className="ml-2 text-sm font-medium text-zinc-700">
           Thinking{seconds > 0 ? ` · ${seconds}s` : "…"}
         </span>
       </div>

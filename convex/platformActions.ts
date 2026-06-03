@@ -9,6 +9,7 @@ import {
   trimChatMessages,
 } from "./chatEngine";
 import { getSystemPrompt, isValidMode } from "./aiModes";
+import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
 
 export const sendMessage = action({
   args: {
@@ -48,12 +49,25 @@ export const sendMessage = action({
       content: args.content,
     });
 
+    await ctx.runMutation(api.users.recordChatInteraction, {
+      email: args.userId,
+      mode,
+      messageContent: args.content,
+    });
+
     const history = await ctx.runQuery(api.messages.listByConversation, {
       conversationId: args.conversationId,
       userId: args.userId,
     });
 
-    const systemPrompt = getSystemPrompt(mode);
+    const refreshedUser = await ctx.runQuery(api.users.getUser, {
+      email: args.userId,
+    });
+
+    const systemPrompt =
+      getSystemPrompt(mode) +
+      buildInterestSystemAddon(parseInterestProfile(refreshedUser?.interestProfile));
+
     const chatMessages = trimChatMessages([
       { role: "system" as const, content: systemPrompt },
       ...history.map((m) => ({

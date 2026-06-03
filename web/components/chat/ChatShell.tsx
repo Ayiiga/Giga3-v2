@@ -6,6 +6,7 @@ import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatErrorBanner } from "@/components/chat/ChatErrorBanner";
 import { ChatProviderBanner } from "@/components/chat/ChatProviderBanner";
 import { ChatWorkspacePanel } from "@/components/chat/ChatWorkspacePanel";
+import { UserLearningBanner } from "@/components/chat/UserLearningBanner";
 import { SlowNetworkBanner } from "@/components/chat/SlowNetworkBanner";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { MessageList } from "@/components/chat/MessageList";
@@ -142,6 +143,7 @@ function ChatShellInner() {
         </header>
 
         <SlowNetworkBanner />
+        <UserLearningBanner interestProfileJson={user?.interestProfile} />
         <ChatProviderBanner label={chatProviderLabel} usedFallback={usedFallback} />
 
         <ChatWorkspacePanel

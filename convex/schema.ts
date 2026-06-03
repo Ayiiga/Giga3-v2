@@ -39,6 +39,8 @@ export default defineSchema({
     credits: v.number(),
     subscriptionExpiresAt: v.optional(v.number()),
     starterCreditsGranted: v.boolean(),
+    /** JSON InterestProfile — built from chat history for personalization */
+    interestProfile: v.optional(v.string()),
   }).index("by_email", ["email"]),
 
   subscriptions: defineTable({

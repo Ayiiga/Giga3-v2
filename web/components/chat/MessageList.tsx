@@ -95,13 +95,14 @@ export function MessageList({
               key={m.id}
               role={m.role}
               content={typeof m.content === "string" ? m.content : ""}
+              pending={m.id === "pending-user"}
             />
           ))}
           {isTyping && (
             <div className="flex justify-start">
-              <div className="rounded-2xl rounded-bl-md border border-border bg-card">
-                <TypingIndicator />
-              </div>
+            <div className="rounded-2xl rounded-bl-md border border-zinc-200 bg-white px-4 py-3 shadow-sm">
+              <TypingIndicator />
+            </div>
             </div>
           )}
           <div ref={bottomRef} />

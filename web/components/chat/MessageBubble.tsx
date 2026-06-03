@@ -3,9 +3,11 @@ import { cn } from "@/lib/utils";
 export interface MessageBubbleProps {
   role: "user" | "assistant";
   content: string;
+  /** Optimistic / in-flight user message */
+  pending?: boolean;
 }
 
-export function MessageBubble({ role, content }: MessageBubbleProps) {
+export function MessageBubble({ role, content, pending }: MessageBubbleProps) {
   const isUser = role === "user";
   const safeContent =
     typeof content === "string" && content.length > 0
@@ -21,13 +23,19 @@ export function MessageBubble({ role, content }: MessageBubbleProps) {
     >
       <div
         className={cn(
-          "max-w-[92%] rounded-2xl px-5 py-4 text-base leading-relaxed sm:max-w-[80%] sm:text-lg",
+          "max-w-[92%] rounded-2xl border px-5 py-4 text-base font-medium leading-relaxed shadow-md sm:max-w-[80%] sm:text-lg",
           isUser
-            ? "rounded-br-md bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/25"
-            : "rounded-bl-md border border-border/80 bg-card/90 text-foreground shadow-md backdrop-blur-sm"
+            ? "rounded-br-md border-violet-300/80 bg-white text-black shadow-violet-500/15"
+            : "rounded-bl-md border-zinc-200 bg-zinc-50 text-black shadow-black/10",
+          pending && "ring-2 ring-violet-400/50"
         )}
       >
-        <p className="whitespace-pre-wrap break-words">{safeContent}</p>
+        <p className="whitespace-pre-wrap break-words text-black">{safeContent}</p>
+        {pending && (
+          <p className="mt-2 text-sm font-normal text-zinc-600" aria-live="polite">
+            Sending…
+          </p>
+        )}
       </div>
     </div>
   );

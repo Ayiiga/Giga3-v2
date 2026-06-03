@@ -131,7 +131,7 @@ export function ChatInput({
             disabled={inputDisabled}
             rows={1}
             placeholder={placeholder}
-            className="max-h-56 min-h-[56px] flex-1 resize-none rounded-2xl border border-border/80 bg-card/90 px-5 py-4 text-base outline-none ring-accent focus:ring-2 disabled:opacity-50 sm:min-h-[60px] sm:text-lg"
+            className="max-h-56 min-h-[56px] flex-1 resize-none rounded-2xl border border-zinc-300 bg-white px-5 py-4 text-base font-medium text-black outline-none ring-violet-500 focus:ring-2 disabled:opacity-50 sm:min-h-[60px] sm:text-lg placeholder:text-zinc-500"
             aria-label="Chat message"
           />
           <Button
