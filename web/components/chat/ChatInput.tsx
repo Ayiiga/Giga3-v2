@@ -1,28 +1,73 @@
 "use client";
 
+import { ChatInputToolbar } from "@/components/chat/ChatInputToolbar";
 import { Button } from "@/components/ui/Button";
-import { Send } from "lucide-react";
-import { FormEvent, KeyboardEvent, useRef, useState } from "react";
+import {
+  buildAttachmentMessage,
+  type AttachmentKind,
+} from "@/lib/chat/fileAttachments";
+import { Send, X } from "lucide-react";
+import {
+  FormEvent,
+  KeyboardEvent,
+  MutableRefObject,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled?: boolean;
   placeholder?: string;
+  /** Parent can call `.current(text)` to insert templates into the textarea. */
+  insertRef?: MutableRefObject<((text: string) => void) | null>;
 }
 
 export function ChatInput({
   onSend,
   disabled,
   placeholder = "Message Giga3 AI…",
+  insertRef,
 }: ChatInputProps) {
   const [value, setValue] = useState("");
+  const [notice, setNotice] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const insertText = useCallback(
+    (text: string) => {
+      setValue((prev) => (prev.trim() ? `${prev.trimEnd()}\n\n${text}` : text));
+      requestAnimationFrame(() => {
+        const el = textareaRef.current;
+        if (!el) return;
+        el.style.height = "auto";
+        el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
+        el.focus();
+      });
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (!insertRef) return;
+    insertRef.current = (text: string) => {
+      insertText(text);
+      setNotice("Template inserted — edit below, then send.");
+    };
+    return () => {
+      insertRef.current = null;
+    };
+  }, [insertRef, insertText]);
 
   function submit() {
     const trimmed = value.trim();
-    if (!trimmed || disabled) return;
+    if (!trimmed || disabled || busy) return;
     onSend(trimmed);
     setValue("");
+    setNotice(null);
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
@@ -40,34 +85,95 @@ export function ChatInput({
     }
   }
 
+  async function handlePickFile(file: File, kind: AttachmentKind) {
+    if (disabled || busy) return;
+    setBusy(true);
+    setNotice(null);
+    try {
+      const prefix = await buildAttachmentMessage(file, kind);
+      insertText(prefix);
+      setNotice(`Attached ${file.name}. Add details below, then send.`);
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : "Could not attach file.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const inputDisabled = disabled || busy;
+
   return (
     <form
       onSubmit={handleSubmit}
       className="border-t border-border bg-background/80 p-3 backdrop-blur sm:p-4"
     >
-      <div className="mx-auto flex max-w-3xl items-end gap-2">
-        <textarea
-          ref={textareaRef}
-          value={value}
-          onChange={(e) => {
-            setValue(e.target.value);
-            e.target.style.height = "auto";
-            e.target.style.height = `${Math.min(e.target.scrollHeight, 160)}px`;
-          }}
-          onKeyDown={handleKeyDown}
-          disabled={disabled}
-          rows={1}
-          placeholder={placeholder}
-          className="max-h-40 min-h-[48px] flex-1 resize-none rounded-xl border border-border bg-card px-4 py-3 text-base outline-none ring-accent focus:ring-2 disabled:opacity-50"
-          aria-label="Chat message"
+      <div className="mx-auto max-w-3xl space-y-3">
+        <ChatInputToolbar
+          disabled={inputDisabled}
+          onPickFile={(file, kind) => void handlePickFile(file, kind)}
+          onError={(msg) => setNotice(msg)}
         />
-        <Button type="submit" disabled={disabled || !value.trim()} size="md" aria-label="Send">
-          <Send aria-hidden />
-        </Button>
+
+        {notice && (
+          <NoticeBanner message={notice} onDismiss={() => setNotice(null)} />
+        )}
+
+        <div className="flex items-end gap-2">
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={(e) => {
+              setValue(e.target.value);
+              e.target.style.height = "auto";
+              e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
+            }}
+            onKeyDown={handleKeyDown}
+            disabled={inputDisabled}
+            rows={1}
+            placeholder={placeholder}
+            className="max-h-52 min-h-[52px] flex-1 resize-none rounded-xl border border-border bg-card px-4 py-3.5 text-base outline-none ring-accent focus:ring-2 disabled:opacity-50"
+            aria-label="Chat message"
+          />
+          <Button
+            type="submit"
+            disabled={inputDisabled || !value.trim()}
+            size="lg"
+            className="min-h-[52px] min-w-[52px] px-4"
+            aria-label="Send"
+          >
+            <Send className="h-5 w-5" aria-hidden />
+          </Button>
+        </div>
       </div>
+
       <p className="mx-auto mt-2 max-w-3xl text-center text-[10px] text-muted sm:text-xs">
-        Enter to send · Shift+Enter for new line
+        Enter to send · Shift+Enter for new line · Attach files or use templates above
       </p>
     </form>
+  );
+}
+
+function NoticeBanner({
+  message,
+  onDismiss,
+}: {
+  message: string;
+  onDismiss: () => void;
+}) {
+  return (
+    <div
+      role="status"
+      className="flex items-start justify-between gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100 sm:text-sm"
+    >
+      <span>{message}</span>
+      <button
+        type="button"
+        className="shrink-0 rounded p-1 hover:bg-white/10"
+        aria-label="Dismiss notice"
+        onClick={onDismiss}
+      >
+        <X className="h-4 w-4" aria-hidden />
+      </button>
+    </div>
   );
 }

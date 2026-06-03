@@ -28,7 +28,11 @@ export class ChatErrorBoundary extends Component<
   state: State = { error: null };
 
   static getDerivedStateFromError(error: Error): State {
-    return { error };
+    return { error: error ?? new Error("Unknown error") };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error("[ChatErrorBoundary]", error);
   }
 
   render() {

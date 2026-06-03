@@ -53,14 +53,14 @@ export function ToolSelector({ value, onChange, disabled }: ToolSelectorProps) {
               onClick={() => onChange(mode.id)}
               title={mode.description}
               className={cn(
-                "flex min-h-12 shrink-0 items-center gap-2.5 rounded-xl border px-4 py-3 text-left text-sm transition-all",
+                "flex min-h-14 shrink-0 items-center gap-3 rounded-xl border px-4 py-3.5 text-left text-sm transition-all",
                 active
                   ? "border-blue-500/50 bg-blue-500/15 text-foreground shadow-sm shadow-blue-500/10"
                   : "border-border bg-card text-muted hover:border-blue-500/30 hover:text-foreground",
                 disabled && "pointer-events-none opacity-50"
               )}
             >
-              <Icon className="shrink-0 text-blue-400" aria-hidden />
+              <Icon className="h-6 w-6 shrink-0 text-blue-400" aria-hidden />
               <span className="font-medium whitespace-nowrap">{mode.label}</span>
             </button>
           );

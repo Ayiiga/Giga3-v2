@@ -7,6 +7,10 @@ export interface MessageBubbleProps {
 
 export function MessageBubble({ role, content }: MessageBubbleProps) {
   const isUser = role === "user";
+  const safeContent =
+    typeof content === "string" && content.length > 0
+      ? content
+      : "(Empty message)";
 
   return (
     <div
@@ -23,7 +27,7 @@ export function MessageBubble({ role, content }: MessageBubbleProps) {
             : "rounded-bl-md border border-border bg-card text-foreground"
         )}
       >
-        <p className="whitespace-pre-wrap break-words">{content}</p>
+        <p className="whitespace-pre-wrap break-words">{safeContent}</p>
       </div>
     </div>
   );

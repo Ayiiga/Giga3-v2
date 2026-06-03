@@ -1,9 +1,11 @@
 "use client";
 
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
+import { ChatDateTimeLabel } from "@/components/chat/ChatDateTimeLabel";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatErrorBanner } from "@/components/chat/ChatErrorBanner";
 import { ChatProviderBanner } from "@/components/chat/ChatProviderBanner";
+import { DocumentTemplatePicker } from "@/components/chat/DocumentTemplatePicker";
 import { SlowNetworkBanner } from "@/components/chat/SlowNetworkBanner";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { MessageList } from "@/components/chat/MessageList";
@@ -16,7 +18,7 @@ import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function ChatShell() {
   return (
@@ -30,6 +32,8 @@ function ChatShellInner() {
   const router = useRouter();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [templateNotice, setTemplateNotice] = useState<string | null>(null);
+  const insertRef = useRef<((text: string) => void) | null>(null);
 
   const {
     email,
@@ -101,7 +105,8 @@ function ChatShellInner() {
             <BrandLogo size={28} className="!h-7 !w-7" />
             Giga3 AI
           </Link>
-          <span className="ml-auto flex items-center gap-2 text-xs text-muted">
+          <span className="ml-auto flex items-center gap-3 text-xs text-muted">
+            <ChatDateTimeLabel />
             {usage && <CreditBadge credits={usage.credits} showLabel={false} />}
             {usage?.credits ?? user?.credits ?? "—"} credits
           </span>
@@ -122,10 +127,40 @@ function ChatShellInner() {
 
         <ToolSelector value={mode} onChange={(m) => void changeMode(m)} disabled={isSending} />
 
+        <ToolSelector value={mode} onChange={(m) => void changeMode(m)} disabled={isSending} />
+
+        <DocumentTemplatePicker
+          disabled={isSending}
+          compact={messages.length > 0}
+          onInsert={(text) => {
+            if (insertRef.current) {
+              insertRef.current(text);
+              setTemplateNotice(null);
+            } else {
+              setTemplateNotice("Could not insert template. Refresh and try again.");
+            }
+          }}
+          onError={(msg) => setTemplateNotice(msg)}
+        />
+
+        {templateNotice && (
+          <p className="border-b border-border bg-red-500/10 px-4 py-2 text-center text-xs text-red-200">
+            {templateNotice}
+          </p>
+        )}
+
         {error && <ChatErrorBanner message={error} />}
 
-        <MessageList messages={messages} isTyping={isSending} />
-        <ChatInput onSend={(msg) => void sendMessage(msg)} disabled={isSending} />
+        <MessageList
+          messages={messages}
+          isTyping={isSending}
+          onInsertTemplate={(text) => insertRef.current?.(text)}
+        />
+        <ChatInput
+          insertRef={insertRef}
+          onSend={(msg) => void sendMessage(msg)}
+          disabled={isSending}
+        />
       </div>
     </div>
   );
