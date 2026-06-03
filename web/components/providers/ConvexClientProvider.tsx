@@ -24,7 +24,11 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
   }
 
   if (!client) {
-    return <>{children}</>;
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center p-6 text-sm text-muted">
+        Loading…
+      </div>
+    );
   }
 
   return <ConvexProvider client={client}>{children}</ConvexProvider>;

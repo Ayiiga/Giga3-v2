@@ -32,7 +32,7 @@ export function Features() {
             Everything you need to launch AI chat
           </h2>
           <p className="mt-4 text-muted">
-            From secure inference to Stripe billing—Giga3 is built for real
+            From secure inference to Paystack billing in GHS—Giga3 is built for real
             products, not demos.
           </p>
         </div>
