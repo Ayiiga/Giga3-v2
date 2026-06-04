@@ -95,6 +95,8 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           FAL_KEY: ${{ secrets.FAL_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PAYSTACK_SECRET_KEY: ${{ secrets.PAYSTACK_SECRET_KEY }}
+          PAYSTACK_PUBLIC_KEY: ${{ secrets.PAYSTACK_PUBLIC_KEY }}
         run: |
           set -euo pipefail
           npx convex env set CHAT_PROVIDER_TIMEOUT_MS "22000"
@@ -111,6 +113,12 @@ jobs:
           fi
           if [ -n "${OPENAI_API_KEY:-}" ]; then
             npx convex env set OPENAI_API_KEY "${OPENAI_API_KEY}"
+          fi
+          if [ -n "${PAYSTACK_SECRET_KEY:-}" ]; then
+            npx convex env set PAYSTACK_SECRET_KEY "${PAYSTACK_SECRET_KEY}"
+          fi
+          if [ -n "${PAYSTACK_PUBLIC_KEY:-}" ]; then
+            npx convex env set PAYSTACK_PUBLIC_KEY "${PAYSTACK_PUBLIC_KEY}"
           fi
           echo "Chat latency env applied (CHAT_*). Optional secrets synced if present."
 
