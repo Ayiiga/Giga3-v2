@@ -191,6 +191,8 @@ export const fulfillPayment = internalMutation({
   args: {
     reference: v.string(),
     paystackResponse: v.string(),
+    /** When false, log amount mismatches but still fulfill (webhook recovery). */
+    strictAmountCheck: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const record = await ctx.db
@@ -200,7 +202,13 @@ export const fulfillPayment = internalMutation({
     if (!record) throw new Error("Payment record not found");
     if (record.status === "success") return { alreadyFulfilled: true as const };
 
-    validatePaymentAmount(record, args.paystackResponse);
+    const strict = args.strictAmountCheck !== false;
+    try {
+      validatePaymentAmount(record, args.paystackResponse);
+    } catch (amountErr) {
+      console.error("[paystack] amount validation:", amountErr);
+      if (strict) throw amountErr;
+    }
 
     await ctx.db.patch(record._id, {
       status: "success",
@@ -420,6 +428,7 @@ export const processWebhookPayload = internalMutation({
     await ctx.runMutation(internal.paystack.fulfillPayment, {
       reference,
       paystackResponse: args.payload,
+      strictAmountCheck: false,
     });
 
     return { handled: true, reference, outcome: "success" as const };

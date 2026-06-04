@@ -324,11 +324,21 @@ function MediaStudioContent() {
           )}
           {jobs.map((job: (typeof jobs)[number]) => (
             <article key={job._id} className="saas-card overflow-hidden shadow-md">
-              {job.outputUrl && job.mediaType === "image" && (
+              {job.status === "processing" && (
+                <div className="flex aspect-video items-center justify-center bg-black/40 text-muted">
+                  <Loader2 className="h-8 w-8 animate-spin" aria-hidden />
+                </div>
+              )}
+              {job.status === "failed" && job.errorMessage && (
+                <div className="aspect-video bg-red-950/40 p-4 text-sm text-red-100">
+                  {job.errorMessage}
+                </div>
+              )}
+              {job.outputUrl && job.mediaType === "image" && job.status === "succeeded" && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={job.outputUrl} alt="" className="aspect-video w-full object-cover" />
               )}
-              {job.outputUrl && job.mediaType === "video" && (
+              {job.outputUrl && job.mediaType === "video" && job.status === "succeeded" && (
                 <video src={job.outputUrl} controls className="aspect-video w-full" />
               )}
               <div className="p-4 text-sm sm:text-base">

@@ -46,7 +46,10 @@ function PaymentSuccessPageContent() {
             ? await reconcile(reference!)
             : await verify(reference!);
         if (cancelled) return;
-        if (res.status === "success") {
+        const ok =
+          res.status === "success" ||
+          ("alreadyFulfilled" in res && Boolean(res.alreadyFulfilled));
+        if (ok) {
           if (res.type === "credits") {
             setMessage(
               `Payment confirmed${

@@ -7,6 +7,7 @@ import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import type { FalImageSize } from "./falClient";
 import { buildImagePrompt, buildVideoPrompt } from "./mediaCatalog";
+import { assertCreditsAvailable, chargeCreditsForMedia } from "./mediaCredits";
 import { generateImageWithFallback, generateVideoWithFallback } from "./mediaEngine";
 import { toUserMediaError } from "./mediaUtils";
 
@@ -48,22 +49,6 @@ export const listJobs = query({
   },
 });
 
-async function refundCredits(
-  ctx: ActionCtx,
-  userId: string,
-  credits: number,
-  reference: string
-) {
-  if (credits <= 0) return;
-  await ctx.runMutation(internal.credits.grantCreditsInternal, {
-    userId,
-    credits,
-    action: "admin_grant",
-    reference: `refund:${reference}`,
-    metadata: JSON.stringify({ reason: "media_generation_failed" }),
-  });
-}
-
 export const generateVideo = action({
   args: {
     email: v.optional(v.string()),
@@ -95,20 +80,17 @@ export const generateVideo = action({
     if (!user) throw new Error("User not found");
 
     let jobId: Id<"mediaJobs"> | undefined;
-    let creditsCharged = 0;
+    let creditCost = 0;
 
     try {
       if (creditMode) {
-        const charged = await ctx.runMutation(api.credits.assertCanGenerateVideo, {
-          userId: email,
-        });
-        creditsCharged = charged.chargedCredits;
+        creditCost = await assertCreditsAvailable(ctx, email, "video");
         jobId = await ctx.runMutation(internal.mediaInternal.createMediaJob, {
           userId: email,
           mediaType: "video",
           category,
           prompt: fullPrompt,
-          creditsCharged,
+          creditsCharged: creditCost,
         });
       } else if ((user.tokens ?? 0) < VIDEO_TOKEN_COST) {
         throw new Error(`Insufficient tokens (need ${VIDEO_TOKEN_COST} for video)`);
@@ -132,6 +114,10 @@ export const generateVideo = action({
         syncMode: args.syncMode,
       });
 
+      if (creditMode && jobId) {
+        await chargeCreditsForMedia(ctx, email, "video", String(jobId));
+      }
+
       if (jobId) {
         await ctx.runMutation(internal.mediaInternal.completeMediaJob, {
           jobId,
@@ -152,6 +138,7 @@ export const generateVideo = action({
 
       return {
         videoUrl: result.videoUrl,
+        outputUrl: result.videoUrl,
         contentType: result.contentType ?? "video/mp4",
         seed: result.seed,
         requestId: result.externalId,
@@ -167,9 +154,6 @@ export const generateVideo = action({
           status: "failed",
           errorMessage: message,
         });
-      }
-      if (creditMode && creditsCharged > 0) {
-        await refundCredits(ctx, email, creditsCharged, jobId ?? "video");
       }
       throw new Error(message);
     }
@@ -199,20 +183,17 @@ export const generateImage = action({
     if (!user) throw new Error("User not found");
 
     let jobId: Id<"mediaJobs"> | undefined;
-    let creditsCharged = 0;
+    let creditCost = 0;
 
     try {
       if (creditMode) {
-        const charged = await ctx.runMutation(api.credits.assertCanGenerateImage, {
-          userId: email,
-        });
-        creditsCharged = charged.chargedCredits;
+        creditCost = await assertCreditsAvailable(ctx, email, "image");
         jobId = await ctx.runMutation(internal.mediaInternal.createMediaJob, {
           userId: email,
           mediaType: "image",
           category,
           prompt: fullPrompt,
-          creditsCharged,
+          creditsCharged: creditCost,
         });
       } else if ((user.tokens ?? 0) < IMAGE_TOKEN_COST) {
         throw new Error(`Insufficient tokens (need ${IMAGE_TOKEN_COST} for image)`);
@@ -227,6 +208,10 @@ export const generateImage = action({
         seed: args.seed,
         enableSafetyChecker: args.enableSafetyChecker,
       });
+
+      if (creditMode && jobId) {
+        await chargeCreditsForMedia(ctx, email, "image", String(jobId));
+      }
 
       if (jobId) {
         await ctx.runMutation(internal.mediaInternal.completeMediaJob, {
@@ -248,6 +233,7 @@ export const generateImage = action({
 
       return {
         imageUrl: result.imageUrl,
+        outputUrl: result.imageUrl,
         requestId: result.externalId,
         provider: result.provider,
         tokens,
@@ -261,9 +247,6 @@ export const generateImage = action({
           status: "failed",
           errorMessage: message,
         });
-      }
-      if (creditMode && creditsCharged > 0) {
-        await refundCredits(ctx, email, creditsCharged, jobId ?? "image");
       }
       throw new Error(message);
     }
