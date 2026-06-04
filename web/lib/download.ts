@@ -1,5 +1,11 @@
 /** Client-side download / share helpers (no server changes). */
 
+export type DownloadProgress = {
+  phase: "idle" | "loading" | "success" | "error";
+  percent: number;
+  message: string;
+};
+
 function triggerDownload(href: string, filename: string) {
   const a = document.createElement("a");
   a.href = href;
@@ -17,16 +23,87 @@ export function downloadTextFile(filename: string, content: string, mime = "text
   URL.revokeObjectURL(url);
 }
 
-export async function downloadRemoteFile(url: string, filename: string): Promise<void> {
+export async function fetchRemoteBlob(
+  url: string,
+  onProgress?: (percent: number) => void
+): Promise<Blob> {
   const res = await fetch(url, { mode: "cors" });
   if (!res.ok) throw new Error("Could not download file");
-  const blob = await res.blob();
+
+  const length = res.headers.get("content-length");
+  const total = length ? Number.parseInt(length, 10) : 0;
+  if (!res.body || !total || !onProgress) {
+    onProgress?.(100);
+    return res.blob();
+  }
+
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let received = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) {
+      chunks.push(value);
+      received += value.length;
+      onProgress(Math.min(99, Math.round((received / total) * 100)));
+    }
+  }
+
+  onProgress(100);
+  return new Blob(chunks, { type: res.headers.get("content-type") ?? undefined });
+}
+
+export async function downloadRemoteFile(
+  url: string,
+  filename: string,
+  onProgress?: (percent: number) => void
+): Promise<void> {
+  const blob = await fetchRemoteBlob(url, onProgress);
   const objectUrl = URL.createObjectURL(blob);
   try {
     triggerDownload(objectUrl, filename);
   } finally {
     URL.revokeObjectURL(objectUrl);
   }
+}
+
+/** Mobile-friendly save: share file to Photos/Files when supported, else download. */
+export async function saveToGallery(options: {
+  url: string;
+  filename: string;
+  mimeType: string;
+  onProgress?: (percent: number) => void;
+}): Promise<{ method: "share" | "download"; message: string }> {
+  const { url, filename, mimeType, onProgress } = options;
+  const blob = await fetchRemoteBlob(url, onProgress);
+  const file = new File([blob], filename, { type: mimeType || blob.type });
+
+  if (typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({
+        title: filename,
+        files: [file],
+      });
+      return { method: "share", message: "Saved — check Photos or your share target" };
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") {
+        throw new Error("Save cancelled");
+      }
+    }
+  }
+
+  const objectUrl = URL.createObjectURL(blob);
+  try {
+    triggerDownload(objectUrl, filename);
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+  return {
+    method: "download",
+    message: "Downloaded — open your Downloads or Files app",
+  };
 }
 
 export async function copyTextToClipboard(text: string): Promise<void> {
@@ -64,16 +141,15 @@ export async function shareRemoteMedia(options: {
   url: string;
   filename: string;
   mimeType: string;
+  onProgress?: (percent: number) => void;
 }): Promise<boolean> {
-  const { title, url, filename, mimeType } = options;
+  const { title, url, filename, mimeType, onProgress } = options;
   if (typeof navigator.share !== "function") {
     await copyTextToClipboard(url);
     return true;
   }
   try {
-    const res = await fetch(url, { mode: "cors" });
-    if (!res.ok) throw new Error("fetch failed");
-    const blob = await res.blob();
+    const blob = await fetchRemoteBlob(url, onProgress);
     const file = new File([blob], filename, { type: mimeType || blob.type });
     if (navigator.canShare?.({ files: [file] })) {
       await navigator.share({ title, files: [file] });

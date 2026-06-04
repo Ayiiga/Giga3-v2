@@ -20,6 +20,7 @@ import {
 } from "@/lib/media/studioTemplates";
 import { canGenerateImage, canGenerateVideo } from "@/lib/credits/rules";
 import { cn } from "@/lib/utils";
+import { MediaContextMenu } from "@/components/media/MediaContextMenu";
 import { MediaOutputActions } from "@/components/media/MediaOutputActions";
 import { CheckCircle2, ImageIcon, Loader2, Video, XCircle } from "lucide-react";
 import Link from "next/link";
@@ -237,20 +238,37 @@ function MediaStudioContent() {
         )}
 
         {phase === "success" && lastOutputUrl && (
-          <div className="overflow-hidden rounded-2xl border border-emerald-500/30">
-            {lastMediaType === "video" ? (
-              <video src={lastOutputUrl} controls className="aspect-video w-full" />
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={lastOutputUrl} alt="Generated" className="aspect-video w-full object-cover" />
-            )}
-            <div className="border-t border-emerald-500/20 bg-zinc-50 p-3">
-              <MediaOutputActions
-                url={lastOutputUrl}
-                mediaType={lastMediaType === "video" ? "video" : "image"}
-              />
+          <MediaContextMenu
+            url={lastOutputUrl}
+            mediaType={lastMediaType === "video" ? "video" : "image"}
+          >
+            <div className="overflow-hidden rounded-2xl border border-emerald-500/30">
+              {lastMediaType === "video" ? (
+                <video
+                  src={lastOutputUrl}
+                  controls
+                  className="aspect-video w-full bg-black"
+                  preload="metadata"
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={lastOutputUrl}
+                  alt="Generated"
+                  width={1280}
+                  height={720}
+                  className="aspect-video w-full bg-zinc-100 object-cover"
+                  decoding="async"
+                />
+              )}
+              <div className="border-t border-emerald-500/20 bg-zinc-50 p-3">
+                <MediaOutputActions
+                  url={lastOutputUrl}
+                  mediaType={lastMediaType === "video" ? "video" : "image"}
+                />
+              </div>
             </div>
-          </div>
+          </MediaContextMenu>
         )}
 
         {loading && (

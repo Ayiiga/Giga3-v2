@@ -1,39 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { memo } from "react";
 
 interface TypingIndicatorProps {
-  /** Show guidance for high-latency / mobile networks (e.g. Africa). */
   showNetworkHint?: boolean;
 }
 
-export function TypingIndicator({ showNetworkHint = true }: TypingIndicatorProps) {
-  const [seconds, setSeconds] = useState(0);
-
-  useEffect(() => {
-    const start = Date.now();
-    const id = setInterval(() => {
-      setSeconds(Math.floor((Date.now() - start) / 1000));
-    }, 1000);
-    return () => clearInterval(id);
-  }, []);
-
+/** Static typing indicator — no timers (avoids 1Hz re-renders that shake the chat column). */
+function TypingIndicatorInner({ showNetworkHint = true }: TypingIndicatorProps) {
   return (
-    <div className="px-4 py-3" aria-live="polite" aria-label="Assistant is typing">
-      <div className="flex items-center gap-1">
-        <span className="h-2 w-2 rounded-full bg-cyan-400 motion-safe:animate-bounce [animation-delay:0ms]" />
-        <span className="h-2 w-2 rounded-full bg-cyan-400 motion-safe:animate-bounce [animation-delay:150ms]" />
-        <span className="h-2 w-2 rounded-full bg-cyan-400 motion-safe:animate-bounce [animation-delay:300ms]" />
-        <span className="ml-2 text-sm font-medium text-zinc-700">
-          Thinking{seconds > 0 ? ` · ${seconds}s` : "…"}
+    <div className="px-1 py-1" aria-live="polite" aria-label="Assistant is typing">
+      <div className="flex items-center gap-2">
+        <span className="inline-flex gap-1" aria-hidden>
+          <span className="h-2 w-2 rounded-full bg-cyan-500 opacity-90" />
+          <span className="h-2 w-2 rounded-full bg-cyan-500 opacity-70" />
+          <span className="h-2 w-2 rounded-full bg-cyan-500 opacity-50" />
         </span>
+        <span className="text-sm font-medium text-zinc-700">Thinking…</span>
       </div>
-      {showNetworkHint && seconds >= 8 && (
+      {showNetworkHint && (
         <p className="mt-2 max-w-sm text-[11px] leading-relaxed text-muted">
-          Still working — on slower mobile networks this can take up to a minute.
-          Keep this tab open; you can send again if it fails.
+          On slower networks this can take up to a minute. Keep this tab open.
         </p>
       )}
     </div>
   );
 }
+
+export const TypingIndicator = memo(TypingIndicatorInner);

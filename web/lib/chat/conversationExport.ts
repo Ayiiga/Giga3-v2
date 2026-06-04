@@ -5,20 +5,43 @@ function sanitizeFilenamePart(value: string): string {
   return value.replace(/[^\w.-]+/g, "_").slice(0, 48) || "chat";
 }
 
+function formatMessageTimestamp(createdAt?: number): string {
+  if (typeof createdAt !== "number") return "";
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(new Date(createdAt));
+  } catch {
+    return new Date(createdAt).toISOString();
+  }
+}
+
 export function formatConversationPlain(messages: UiMessage[]): string {
-  return messages
+  const exportedAt = formatMessageTimestamp(Date.now());
+  const header = exportedAt ? `Exported: ${exportedAt}\n\n` : "";
+  const body = messages
     .map((m) => {
       const role = m.role === "user" ? "You" : "Giga3 AI";
-      return `${role}:\n${m.content}\n`;
+      const ts = formatMessageTimestamp(m.createdAt);
+      const prefix = ts ? `[${ts}] ${role}` : role;
+      return `${prefix}:\n${m.content}\n`;
     })
     .join("\n---\n\n");
+  return header + body;
 }
 
 export function formatConversationMarkdown(messages: UiMessage[]): string {
-  const lines = ["# Giga3 AI Chat Export", ""];
+  const exportedAt = formatMessageTimestamp(Date.now());
+  const lines = [
+    "# Giga3 AI Chat Export",
+    exportedAt ? `*Exported ${exportedAt}*` : "",
+    "",
+  ];
   for (const m of messages) {
     const heading = m.role === "user" ? "## You" : "## Giga3 AI";
-    lines.push(heading, "", m.content, "");
+    const ts = formatMessageTimestamp(m.createdAt);
+    lines.push(ts ? `${heading} — ${ts}` : heading, "", m.content, "");
   }
   return lines.join("\n");
 }

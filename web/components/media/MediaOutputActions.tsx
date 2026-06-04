@@ -3,11 +3,12 @@
 import {
   copyTextToClipboard,
   downloadRemoteFile,
+  saveToGallery,
   shareRemoteMedia,
 } from "@/lib/download";
 import { cn } from "@/lib/utils";
-import { Download, Share2 } from "lucide-react";
-import { useState } from "react";
+import { Download, Images, Share2 } from "lucide-react";
+import { memo, useState } from "react";
 
 interface MediaOutputActionsProps {
   url: string;
@@ -16,62 +17,41 @@ interface MediaOutputActionsProps {
   compact?: boolean;
 }
 
-export function MediaOutputActions({
+function MediaOutputActionsInner({
   url,
   mediaType,
   className,
   compact = false,
 }: MediaOutputActionsProps) {
-  const [busy, setBusy] = useState<"download" | "share" | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [progress, setProgress] = useState<number | null>(null);
 
   const ext = mediaType === "video" ? "mp4" : "png";
   const filename = `giga3-${mediaType}-${Date.now()}.${ext}`;
   const mimeType = mediaType === "video" ? "video/mp4" : "image/png";
 
-  async function handleDownload() {
-    setBusy("download");
-    setNotice(null);
-    try {
-      await downloadRemoteFile(url, filename);
-      setNotice("Download started");
-    } catch {
-      try {
-        window.open(url, "_blank", "noopener,noreferrer");
-        setNotice("Opened in new tab — save from there");
-      } catch {
-        setNotice("Download failed");
-      }
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  async function handleShare() {
-    setBusy("share");
-    setNotice(null);
-    try {
-      const shared = await shareRemoteMedia({
-        title: `Giga3 ${mediaType}`,
-        url,
-        filename,
-        mimeType,
-      });
-      setNotice(shared ? "Shared" : "Share cancelled");
-    } catch {
-      try {
-        await copyTextToClipboard(url);
-        setNotice("Link copied");
-      } catch {
-        setNotice("Share unavailable");
-      }
-    } finally {
-      setBusy(null);
-    }
-  }
-
   const btn =
     "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl border border-border bg-white px-3 py-2 text-sm font-semibold text-foreground shadow-sm hover:bg-zinc-50 disabled:opacity-50";
+
+  async function run(
+    key: string,
+    fn: () => Promise<void>,
+    success: string
+  ) {
+    setBusy(key);
+    setNotice(null);
+    setProgress(null);
+    try {
+      await fn();
+      setNotice(success);
+    } catch (e) {
+      setNotice(e instanceof Error ? e.message : "Failed");
+    } finally {
+      setBusy(null);
+      setProgress(null);
+    }
+  }
 
   return (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
@@ -79,7 +59,32 @@ export function MediaOutputActions({
         type="button"
         className={btn}
         disabled={Boolean(busy)}
-        onClick={() => void handleDownload()}
+        onClick={() =>
+          void run("gallery", async () => {
+            const r = await saveToGallery({
+              url,
+              filename,
+              mimeType,
+              onProgress: setProgress,
+            });
+            setNotice(r.message);
+          }, "Saved")
+        }
+        aria-label={`Save ${mediaType} to gallery`}
+      >
+        <Images className="h-4 w-4" aria-hidden />
+        {!compact && "Save to Gallery"}
+      </button>
+      <button
+        type="button"
+        className={btn}
+        disabled={Boolean(busy)}
+        onClick={() =>
+          void run("download", async () => {
+            await downloadRemoteFile(url, filename, setProgress);
+            setNotice("Download started");
+          }, "Downloaded")
+        }
         aria-label={`Download ${mediaType}`}
       >
         <Download className="h-4 w-4" aria-hidden />
@@ -89,17 +94,43 @@ export function MediaOutputActions({
         type="button"
         className={btn}
         disabled={Boolean(busy)}
-        onClick={() => void handleShare()}
+        onClick={() =>
+          void run("share", async () => {
+            const ok = await shareRemoteMedia({
+              title: `Giga3 ${mediaType}`,
+              url,
+              filename,
+              mimeType,
+              onProgress: setProgress,
+            });
+            setNotice(ok ? "Shared" : "Cancelled");
+          }, "Shared")
+        }
         aria-label={`Share ${mediaType}`}
       >
         <Share2 className="h-4 w-4" aria-hidden />
         {!compact && "Share"}
       </button>
-      {notice && (
-        <span className="text-xs font-medium text-muted" role="status">
-          {notice}
+      <button
+        type="button"
+        className={btn}
+        disabled={Boolean(busy)}
+        onClick={() =>
+          void run("copy", () => copyTextToClipboard(url), "Link copied")
+        }
+        aria-label="Copy media link"
+      >
+        {!compact && "Copy link"}
+      </button>
+      {(notice || progress !== null) && (
+        <span className="w-full text-xs font-medium text-muted" role="status">
+          {progress !== null && progress < 100
+            ? `Downloading… ${progress}%`
+            : notice}
         </span>
       )}
     </div>
   );
 }
+
+export const MediaOutputActions = memo(MediaOutputActionsInner);

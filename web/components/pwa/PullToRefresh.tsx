@@ -54,7 +54,7 @@ export function PullToRefresh({
             ready && !refreshing && "border-blue-500/40"
           )}
           style={{
-            transform: `scale(${0.85 + progress * 0.15})`,
+            opacity: 0.85 + progress * 0.15,
           }}
         >
           {refreshing ? (

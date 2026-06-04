@@ -10,7 +10,7 @@ import {
 import { copyTextToClipboard, shareText } from "@/lib/download";
 import { cn } from "@/lib/utils";
 import { Copy, Download, FileText, Share2 } from "lucide-react";
-import { useState } from "react";
+import { memo, useState } from "react";
 
 interface ChatConversationActionsProps {
   messages: UiMessage[];
@@ -18,7 +18,7 @@ interface ChatConversationActionsProps {
   className?: string;
 }
 
-export function ChatConversationActions({
+function ChatConversationActionsInner({
   messages,
   disabled,
   className,
@@ -61,7 +61,7 @@ export function ChatConversationActions({
         aria-label="Share chat"
       >
         <Share2 className="h-4 w-4 shrink-0" aria-hidden />
-        <span className="hidden xs:inline">Share</span>
+        Share Chat
       </button>
       <button
         type="button"
@@ -76,7 +76,7 @@ export function ChatConversationActions({
         aria-label="Copy chat"
       >
         <Copy className="h-4 w-4 shrink-0" aria-hidden />
-        <span className="hidden xs:inline">Copy</span>
+        Copy Chat
       </button>
       <button
         type="button"
@@ -89,7 +89,24 @@ export function ChatConversationActions({
         aria-label="Export chat as TXT"
       >
         <Download className="h-4 w-4 shrink-0" aria-hidden />
-        TXT
+        Export TXT
+      </button>
+      <button
+        type="button"
+        className={btn}
+        disabled={disabled || !hasContent}
+        onClick={() => {
+          try {
+            exportConversationPdf(messages);
+            setNotice("PDF ready — use Save as PDF in print dialog");
+          } catch (e) {
+            setNotice(e instanceof Error ? e.message : "PDF export failed");
+          }
+        }}
+        aria-label="Export chat as PDF"
+      >
+        <FileText className="h-4 w-4 shrink-0" aria-hidden />
+        Export PDF
       </button>
       <button
         type="button"
@@ -104,23 +121,6 @@ export function ChatConversationActions({
         <FileText className="h-4 w-4 shrink-0" aria-hidden />
         MD
       </button>
-      <button
-        type="button"
-        className={btn}
-        disabled={disabled || !hasContent}
-        onClick={() => {
-          try {
-            exportConversationPdf(messages);
-            setNotice("PDF print dialog opened");
-          } catch (e) {
-            setNotice(e instanceof Error ? e.message : "PDF export failed");
-          }
-        }}
-        aria-label="Export chat as PDF"
-      >
-        <FileText className="h-4 w-4 shrink-0" aria-hidden />
-        PDF
-      </button>
       {notice && (
         <span className="text-xs font-medium text-violet-800" role="status">
           {notice}
@@ -129,3 +129,5 @@ export function ChatConversationActions({
     </div>
   );
 }
+
+export const ChatConversationActions = memo(ChatConversationActionsInner);

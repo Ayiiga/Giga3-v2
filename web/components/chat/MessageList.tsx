@@ -5,14 +5,14 @@ import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { ChatLoadingSkeleton } from "@/components/chat/ChatLoadingSkeleton";
 import { DOCUMENT_TEMPLATES } from "@/lib/chat/documentTemplates";
 import { formatCurrentDate, resolveTemplatePlaceholders } from "@/lib/datetime";
-import { PullToRefresh } from "@/components/pwa/PullToRefresh";
-import { refreshApp } from "@/lib/refresh";
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 
 export interface UiMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
+  /** Unix ms from Convex `createdAt` when available */
+  createdAt?: number;
 }
 
 interface MessageListProps {
@@ -22,7 +22,7 @@ interface MessageListProps {
   onInsertTemplate?: (text: string) => void;
 }
 
-export function MessageList({
+function MessageListInner({
   messages,
   isLoading = false,
   isTyping,
@@ -31,22 +31,28 @@ export function MessageList({
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messageCountRef = useRef(0);
+  const lastMessageIdRef = useRef<string | null>(null);
   const wasTypingRef = useRef(false);
+
+  const messageCount = messages.length;
+  const lastMessageId = messageCount > 0 ? messages[messageCount - 1]?.id ?? null : null;
 
   useEffect(() => {
     const el = bottomRef.current;
     if (!el) return;
 
-    const countChanged = messages.length !== messageCountRef.current;
+    const countChanged = messageCount !== messageCountRef.current;
+    const lastChanged = lastMessageId !== lastMessageIdRef.current;
     const typingStarted = isTyping && !wasTypingRef.current;
 
-    if (countChanged || typingStarted) {
+    if (countChanged || lastChanged || typingStarted) {
       el.scrollIntoView({ behavior: "auto", block: "end" });
     }
 
-    messageCountRef.current = messages.length;
+    messageCountRef.current = messageCount;
+    lastMessageIdRef.current = lastMessageId;
     wasTypingRef.current = isTyping;
-  }, [messages, isTyping]);
+  }, [messageCount, lastMessageId, isTyping]);
 
   const todayLabel = (() => {
     try {
@@ -61,12 +67,7 @@ export function MessageList({
   }
 
   return (
-    <PullToRefresh
-      onRefresh={refreshApp}
-      scrollRef={scrollRef}
-      className="flex min-h-0 flex-1 flex-col"
-      contentClassName="flex min-h-0 flex-1 flex-col"
-    >
+    <div className="flex min-h-0 flex-1 flex-col">
       <div
         ref={scrollRef}
         data-chat-scroll
@@ -129,6 +130,8 @@ export function MessageList({
           <div ref={bottomRef} className="h-px shrink-0" aria-hidden />
         </div>
       </div>
-    </PullToRefresh>
+    </div>
   );
 }
+
+export const MessageList = memo(MessageListInner);
