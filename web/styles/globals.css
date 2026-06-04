@@ -17,14 +17,20 @@
 }
 
 html {
-  scroll-behavior: smooth;
   font-size: 18px;
-  overscroll-behavior-y: contain;
+  overscroll-behavior-y: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
   @apply bg-background text-base font-medium text-foreground antialiased;
   background-color: var(--background);
+  touch-action: manipulation;
 }
 
 ::selection {
@@ -103,4 +109,15 @@ body {
 a:focus-visible,
 button:focus-visible {
   @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-background;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

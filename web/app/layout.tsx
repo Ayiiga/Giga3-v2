@@ -58,7 +58,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-sans overscroll-y-contain">
+      <body className="font-sans">
         <AppPullToRefresh>{children}</AppPullToRefresh>
         <ServiceWorkerRegister />
         <OfflineBanner />

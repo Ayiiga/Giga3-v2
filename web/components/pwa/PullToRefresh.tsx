@@ -45,7 +45,7 @@ export function PullToRefresh({
       >
         <div
           className={cn(
-            "mt-2 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card/95 shadow-lg backdrop-blur",
+            "mt-2 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white shadow-lg",
             ready && !refreshing && "border-blue-500/40"
           )}
           style={{
@@ -72,8 +72,8 @@ export function PullToRefresh({
         )}
         style={{
           transform:
-            pullDistance > 0 || refreshing
-              ? `translateY(${refreshing ? 56 : pullDistance}px)`
+            pullDistance > 2 || refreshing
+              ? `translate3d(0, ${refreshing ? 56 : pullDistance}px, 0)`
               : undefined,
         }}
       >

@@ -14,24 +14,24 @@ export function Hero() {
       />
 
       <Container className="relative">
-        <div className="mx-auto max-w-3xl text-center">
-          <div className="animate-fade-in mb-8 inline-flex items-center gap-2.5 rounded-full border border-violet-300 bg-violet-50 px-5 py-2 text-base font-bold text-violet-900 shadow-sm">
+        <div className="motion-safe:animate-fade-in mx-auto max-w-3xl text-center">
+          <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-violet-300 bg-violet-50 px-5 py-2 text-base font-bold text-violet-900 shadow-sm">
             <BrandLogo size={24} />
             Multi-provider AI · Production-ready PWA
           </div>
 
-          <h1 className="animate-fade-in text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl [animation-delay:80ms]">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             <span className="text-gradient">{siteConfig.name}</span>
             <br />
             <span>{siteConfig.tagline}</span>
           </h1>
 
-          <p className="section-lead animate-fade-in mx-auto max-w-2xl text-xl font-medium leading-relaxed text-foreground [animation-delay:160ms]">
+          <p className="section-lead mx-auto max-w-2xl text-xl font-medium leading-relaxed text-foreground">
             {siteConfig.description} Run multiple chats with automatic AI failover,
             credit-based billing, and a polished mobile experience.
           </p>
 
-          <div className="animate-fade-in mx-auto mt-12 grid w-full max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2 lg:max-w-3xl lg:grid-cols-3 [animation-delay:240ms]">
+          <div className="mx-auto mt-12 grid w-full max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2 lg:max-w-3xl lg:grid-cols-3">
             <ButtonLink href="/chat/login" size="lg" className="w-full">
               Start chatting
               <ArrowRight aria-hidden />
@@ -42,7 +42,7 @@ export function Hero() {
             <InstallButton size="lg" variant="outline" className="w-full sm:col-span-2 lg:col-span-1" />
           </div>
 
-          <dl className="animate-fade-in mx-auto mt-16 grid max-w-lg grid-cols-3 gap-5 [animation-delay:280ms]">
+          <dl className="mx-auto mt-16 grid max-w-lg grid-cols-3 gap-5">
             {heroStats.map((stat) => (
               <div
                 key={stat.label}
@@ -55,8 +55,8 @@ export function Hero() {
           </dl>
         </div>
 
-        <div className="animate-fade-in relative mx-auto mt-20 max-w-4xl [animation-delay:320ms]">
-          <div className="glass animate-float overflow-hidden rounded-2xl p-1 shadow-2xl shadow-violet-500/15 ring-1 ring-violet-500/20">
+        <div className="relative mx-auto mt-20 max-w-4xl">
+          <div className="glass overflow-hidden rounded-2xl p-1 shadow-2xl shadow-violet-500/15 ring-1 ring-violet-500/20">
             <div className="rounded-xl bg-gradient-to-b from-white/[0.07] to-transparent p-6 sm:p-8">
               <div className="mb-4 flex items-center gap-2 border-b border-border pb-4">
                 <Bot className="text-accent" aria-hidden />

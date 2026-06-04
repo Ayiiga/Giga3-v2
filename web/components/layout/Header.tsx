@@ -24,8 +24,8 @@ export function Header() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-all duration-300",
-        scrolled ? "border-b border-border bg-white/95 py-3 shadow-md" : "bg-white/80 py-4"
+        "fixed inset-x-0 top-0 z-50 transition-[padding,box-shadow,background-color] duration-200",
+        scrolled ? "border-b border-border bg-white py-3 shadow-md" : "border-b border-transparent bg-white py-4"
       )}
     >
       <Container className="flex items-center justify-between gap-4">

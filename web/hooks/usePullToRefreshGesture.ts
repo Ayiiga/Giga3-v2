@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 
 const PULL_THRESHOLD = 80;
 const MAX_PULL = 112;
+/** Ignore micro-movements at scroll top (reduces jitter while scrolling). */
+const PULL_ACTIVATION_PX = 12;
 
 interface UsePullToRefreshGestureOptions {
   onRefresh: () => Promise<void> | void;
@@ -53,9 +55,9 @@ export function usePullToRefreshGesture({
     function onTouchMove(e: TouchEvent) {
       if (!isDragging.current || refreshingRef.current) return;
       const delta = e.touches[0].clientY - touchStartY.current;
-      if (delta > 0 && isAtScrollTop()) {
+      if (delta > PULL_ACTIVATION_PX && isAtScrollTop()) {
         if (e.cancelable) e.preventDefault();
-        const next = Math.min(delta * 0.5, MAX_PULL);
+        const next = Math.min((delta - PULL_ACTIVATION_PX) * 0.45, MAX_PULL);
         pullRef.current = next;
         setPullDistance(next);
       } else if (delta <= 0) {

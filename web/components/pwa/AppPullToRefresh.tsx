@@ -1,21 +1,12 @@
 "use client";
 
-import { PullToRefresh } from "@/components/pwa/PullToRefresh";
-import { refreshApp } from "@/lib/refresh";
-import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-/** Window-level pull-to-refresh for scrollable marketing / billing pages. */
+/**
+ * Root layout wrapper. Window-level pull-to-refresh was removed: translating the
+ * entire page on touch caused shaking/ghosting on mobile marketing/PWA views.
+ * Chat keeps pull-to-refresh on the message list scroller only.
+ */
 export function AppPullToRefresh({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
-
-  // Chat uses an internal scroll container (MessageList) with its own PTR.
-  const normalized = pathname?.replace(/\/$/, "") ?? "";
-  const disabled = normalized === "/chat";
-
-  return (
-    <PullToRefresh onRefresh={refreshApp} disabled={disabled} className="min-h-dvh">
-      {children}
-    </PullToRefresh>
-  );
+  return <div className="min-h-dvh">{children}</div>;
 }
