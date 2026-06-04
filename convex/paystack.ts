@@ -8,6 +8,7 @@ import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import { getCreditPack } from "./creditPacks";
 import {
+  getPlanMonthlyCredits,
   getPlanPriceGhs,
   productIdToPlanId,
   SUBSCRIPTION_PLANS,
@@ -56,12 +57,13 @@ async function paystackGet(path: string) {
 function getProduct(productId: string) {
   const planId = productIdToPlanId(productId);
   if (planId) {
+    const amountGhs = getPlanPriceGhs(planId);
     return {
       label: SUBSCRIPTION_PLANS[planId].label,
-      amountGhs: getPlanPriceGhs(planId),
+      amountGhs,
       type: "subscription" as const,
       planId,
-      credits: SUBSCRIPTION_PLANS[planId].credits,
+      credits: getPlanMonthlyCredits(planId),
     };
   }
 
@@ -165,17 +167,19 @@ export const fulfillPayment = internalMutation({
     });
 
     if (record.type === "subscription" && record.planId) {
-      const plan = SUBSCRIPTION_PLANS[record.planId as PaidPlanId];
+      const planId = record.planId as PaidPlanId;
+      const creditsToGrant =
+        record.creditsGranted ?? getPlanMonthlyCredits(planId);
       await ctx.runMutation(internal.subscriptions.activateSubscription, {
         userId: record.userId,
         planId: record.planId,
         paystackReference: record.reference,
         paymentId: record._id,
-        creditsToGrant: plan.credits,
+        creditsToGrant,
       });
       await ctx.runMutation(internal.credits.grantCreditsInternal, {
         userId: record.userId,
-        credits: plan.credits,
+        credits: creditsToGrant,
         action: "subscription_refill",
         reference: record.reference,
         setBalance: true,
