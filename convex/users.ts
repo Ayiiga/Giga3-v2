@@ -6,6 +6,7 @@ import {
   updateInterestProfile,
 } from "./userLearning";
 import { isValidMode } from "./aiModes";
+import { FREE_STARTER_CREDITS } from "./subscriptionPlans";
 
 export const createUser = mutation({
   args: { email: v.string() },
@@ -14,18 +15,49 @@ export const createUser = mutation({
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", args.email))
       .first();
+
     if (existing) {
+      if (existing.starterCreditsGranted !== true) {
+        const balanceAfter = (existing.credits ?? 0) + FREE_STARTER_CREDITS;
+        await ctx.db.patch(existing._id, {
+          credits: balanceAfter,
+          starterCreditsGranted: true,
+        });
+        await ctx.db.insert("creditLogs", {
+          userId: args.email,
+          action: "starter_grant",
+          amount: FREE_STARTER_CREDITS,
+          balanceAfter,
+          reference: "free_starter",
+          metadata: JSON.stringify({ reason: "login_backfill" }),
+          createdAt: Date.now(),
+        });
+        return await ctx.db.get(existing._id);
+      }
       return existing;
     }
-    return await ctx.db.insert("users", {
+
+    const userId = await ctx.db.insert("users", {
       email: args.email,
       tokens: 12,
       plan: "free",
       tier: "free",
       subscriptionPlan: "free",
-      credits: 0,
-      starterCreditsGranted: false,
+      credits: FREE_STARTER_CREDITS,
+      starterCreditsGranted: true,
     });
+
+    await ctx.db.insert("creditLogs", {
+      userId: args.email,
+      action: "starter_grant",
+      amount: FREE_STARTER_CREDITS,
+      balanceAfter: FREE_STARTER_CREDITS,
+      reference: "free_starter",
+      metadata: JSON.stringify({ reason: "signup" }),
+      createdAt: Date.now(),
+    });
+
+    return await ctx.db.get(userId);
   },
 });
 

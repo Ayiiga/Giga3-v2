@@ -187,11 +187,44 @@ export async function falGenerateVideo(input: FalVideoInput): Promise<{
   };
 }
 
+const FAL_IMAGE_FALLBACK_MODELS = [
+  "fal-ai/nano-banana-pro",
+  "fal-ai/flux/schnell",
+] as const;
+
 export async function falGenerateImage(input: FalImageInput): Promise<{
   imageUrl: string;
   requestId: string;
 }> {
-  const modelId = process.env.FAL_IMAGE_MODEL?.trim() || "fal-ai/nano-banana-pro";
+  const configured =
+    process.env.FAL_IMAGE_MODEL?.trim() || FAL_IMAGE_FALLBACK_MODELS[0];
+  const modelsToTry = [
+    configured,
+    ...FAL_IMAGE_FALLBACK_MODELS.filter((m) => m !== configured),
+  ];
+
+  let lastError: Error | undefined;
+  for (const modelId of modelsToTry) {
+    try {
+      return await falGenerateImageWithModel(modelId, input);
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      const msg = lastError.message;
+      const retryable =
+        msg.includes("404") ||
+        msg.includes("not found") ||
+        msg.includes("422");
+      if (!retryable) throw lastError;
+    }
+  }
+
+  throw lastError ?? new Error("fal image generation failed");
+}
+
+async function falGenerateImageWithModel(
+  modelId: string,
+  input: FalImageInput,
+): Promise<{ imageUrl: string; requestId: string }> {
   const payload: Record<string, unknown> = {
     prompt: input.prompt,
     ...(input.negative_prompt !== undefined && { negative_prompt: input.negative_prompt }),

@@ -1,5 +1,6 @@
 import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { FREE_STARTER_CREDITS } from "./subscriptionPlans";
 
 export const persistLegacyChat = internalMutation({
   args: {
@@ -21,8 +22,8 @@ export const persistLegacyChat = internalMutation({
         plan: "free",
         tier: "free",
         subscriptionPlan: "free",
-        credits: 0,
-        starterCreditsGranted: false,
+        credits: FREE_STARTER_CREDITS,
+        starterCreditsGranted: true,
       });
       user = await ctx.db.get(userId);
       if (!user) throw new Error("Failed to create user");

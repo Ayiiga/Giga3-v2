@@ -121,5 +121,5 @@ export function buildMediaStudioUrl(template: MediaStudioTemplate): string {
     prompt: template.prompt,
     template: template.id,
   });
-  return `/media?${params.toString()}`;
+  return `/media/?${params.toString()}`;
 }
