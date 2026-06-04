@@ -9,6 +9,7 @@ import { ChatWorkspacePanel } from "@/components/chat/ChatWorkspacePanel";
 import { UserLearningBanner } from "@/components/chat/UserLearningBanner";
 import { SlowNetworkBanner } from "@/components/chat/SlowNetworkBanner";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
+import { ChatConversationActions } from "@/components/chat/ChatConversationActions";
 import { MessageList } from "@/components/chat/MessageList";
 import { useChatPlatform } from "@/hooks/useChatPlatform";
 import { useBilling } from "@/hooks/useBilling";
@@ -163,6 +164,8 @@ function ChatShellInner() {
         )}
 
         {error && <ChatErrorBanner message={error} />}
+
+        <ChatConversationActions messages={messages} disabled={isSending} />
 
         <MessageList
           messages={messages}

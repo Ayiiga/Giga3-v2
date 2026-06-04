@@ -180,7 +180,7 @@ export function ChatInputToolbar({
               onClick={() => triggerInput(action.kind)}
               className={cn(
                 "flex min-h-[4.5rem] flex-col items-center justify-center gap-1.5 rounded-xl border border-white/10 px-2 py-2.5 transition-all",
-                "bg-gradient-to-br shadow-md hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98]",
+                "bg-gradient-to-br shadow-md pointer-fine:hover:-translate-y-0.5 pointer-fine:hover:shadow-lg pointer-fine:active:scale-[0.98]",
                 action.gradient,
                 isMedia && "ring-1 ring-violet-400/40",
                 disabled && "pointer-events-none opacity-50"

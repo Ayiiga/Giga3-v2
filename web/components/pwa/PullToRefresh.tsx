@@ -14,6 +14,10 @@ interface PullToRefreshProps {
   disabled?: boolean;
 }
 
+/**
+ * Pull-to-refresh indicator only — does NOT translate the scroll content.
+ * Translating the message list caused mobile layout shake / ghosting.
+ */
 export function PullToRefresh({
   children,
   onRefresh,
@@ -29,15 +33,16 @@ export function PullToRefresh({
   });
 
   const showIndicator = pullDistance > 0 || refreshing;
+  const indicatorHeight = refreshing ? 56 : Math.min(pullDistance, 56);
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative flex min-h-0 flex-1 flex-col", className)}>
       <div
         className={cn(
-          "pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center transition-opacity duration-200",
+          "pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center overflow-hidden transition-opacity duration-150",
           showIndicator ? "opacity-100" : "opacity-0"
         )}
-        style={{ height: Math.max(pullDistance, refreshing ? 56 : 0) }}
+        style={{ height: indicatorHeight }}
         aria-hidden={!showIndicator}
         role="status"
         aria-live="polite"
@@ -49,7 +54,7 @@ export function PullToRefresh({
             ready && !refreshing && "border-blue-500/40"
           )}
           style={{
-            transform: `scale(${0.85 + progress * 0.15}) rotate(${progress * 180}deg)`,
+            opacity: 0.85 + progress * 0.15,
           }}
         >
           {refreshing ? (
@@ -65,20 +70,7 @@ export function PullToRefresh({
         </div>
       </div>
 
-      <div
-        className={cn(
-          "transition-transform duration-200 ease-out",
-          contentClassName
-        )}
-        style={{
-          transform:
-            pullDistance > 2 || refreshing
-              ? `translate3d(0, ${refreshing ? 56 : pullDistance}px, 0)`
-              : undefined,
-        }}
-      >
-        {children}
-      </div>
+      <div className={cn("flex min-h-0 flex-1 flex-col", contentClassName)}>{children}</div>
     </div>
   );
 }

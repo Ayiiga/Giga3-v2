@@ -7,12 +7,12 @@ import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const CHAT_ACTION_TIMEOUT_MS = 75_000;
 
 function toUiMessages(
-  rows: { _id: string; role: string; content: string }[]
+  rows: { _id: string; role: string; content: string; createdAt?: number }[]
 ): UiMessage[] {
   return rows
     .filter((r) => r.role === "user" || r.role === "assistant")
@@ -20,6 +20,7 @@ function toUiMessages(
       id: r._id,
       role: r.role as "user" | "assistant",
       content: r.content,
+      createdAt: typeof r.createdAt === "number" ? r.createdAt : undefined,
     }));
 }
 
@@ -105,31 +106,43 @@ export function useChatPlatform() {
     ];
   }, [messagesRaw, pendingUserText]);
 
+  const createUserAttemptedRef = useRef(false);
+
   useEffect(() => {
-    if (!email) return;
-    if (user === null) {
-      void createUser({ email });
-    }
+    if (!email || user !== null) return;
+    if (createUserAttemptedRef.current) return;
+    createUserAttemptedRef.current = true;
+    void createUser({ email });
   }, [email, user, createUser]);
+
+  const syncedActiveRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (conversations.length === 0) {
-      if (activeId) setActiveId(null);
+      if (activeId !== null) setActiveId(null);
+      syncedActiveRef.current = null;
       return;
     }
+    const firstId = conversations[0]._id;
     const activeStillExists =
-      activeId && conversations.some((c) => c._id === activeId);
-    if (!activeStillExists) {
-      setActiveId(conversations[0]._id);
+      activeId !== null && conversations.some((c) => c._id === activeId);
+    if (!activeStillExists && syncedActiveRef.current !== firstId) {
+      syncedActiveRef.current = firstId;
+      setActiveId(firstId);
     }
   }, [conversations, activeId]);
+
+  const lastModeSyncRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!activeId || !conversations.length) return;
     const conv = conversations.find((c) => c._id === activeId);
-    if (conv && isValidMode(conv.mode)) {
-      setMode(conv.mode);
-    }
+    if (!conv || !isValidMode(conv.mode)) return;
+    const key = `${activeId}:${conv.mode}`;
+    if (lastModeSyncRef.current === key) return;
+    lastModeSyncRef.current = key;
+    const nextMode = conv.mode as AiModeId;
+    setMode((prev) => (prev === nextMode ? prev : nextMode));
   }, [activeId, conversations]);
 
   useEffect(() => {

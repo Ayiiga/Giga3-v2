@@ -59,7 +59,7 @@ export function ChatWorkspacePanel({
       disabled={disabled}
       onClick={() => setTab(id)}
       className={cn(
-        "inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all sm:text-base",
+        "inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold pointer-fine:transition-all sm:text-base",
         tab === id
           ? "bg-violet-100 font-bold text-violet-900 ring-1 ring-violet-300"
           : "font-semibold text-foreground hover:bg-zinc-100"
@@ -78,14 +78,7 @@ export function ChatWorkspacePanel({
         {tabBtn("media", "Create Media", Sparkles)}
       </div>
 
-      <div
-        className={cn(
-          "overflow-y-auto overscroll-y-contain",
-          hasMessages
-            ? "max-h-[min(24vh,180px)]"
-            : "max-h-[min(42vh,320px)]"
-        )}
-      >
+      <div className="max-h-[min(26vh,180px)] overflow-y-auto overscroll-y-contain">
         {tab === "modes" && (
           <ToolSelector
             value={mode}
@@ -122,8 +115,8 @@ export function ChatWorkspacePanel({
                     disabled={disabled || Boolean(mediaNavigating)}
                     onClick={() => void openMediaStudio(template.id)}
                     className={cn(
-                      "saas-card group flex min-h-[5.5rem] items-start gap-3 p-4 text-left transition-all",
-                      "hover:-translate-y-0.5 hover:shadow-xl hover:shadow-violet-500/10",
+                      "saas-card group flex min-h-[5.5rem] items-start gap-3 p-4 text-left pointer-fine:transition-all",
+                      "pointer-fine:hover:-translate-y-0.5 pointer-fine:hover:shadow-xl pointer-fine:hover:shadow-violet-500/10",
                       loading && "ring-2 ring-violet-500/50"
                     )}
                   >

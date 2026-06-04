@@ -124,8 +124,11 @@ export function ChatInput({
             value={value}
             onChange={(e) => {
               setValue(e.target.value);
-              e.target.style.height = "auto";
-              e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
+            }}
+            onInput={(e) => {
+              const el = e.currentTarget;
+              el.style.height = "auto";
+              el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
             }}
             onKeyDown={handleKeyDown}
             disabled={inputDisabled}

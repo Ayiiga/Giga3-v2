@@ -62,7 +62,7 @@ export function ChatSidebar({
       )}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[min(100%,300px)] flex-col border-r border-border bg-white shadow-lg transition-transform lg:static lg:z-0 lg:translate-x-0 lg:shadow-none",
+          "fixed inset-y-0 left-0 z-50 flex w-[min(100%,300px)] flex-col border-r border-border bg-white shadow-lg pointer-fine:transition-transform lg:static lg:z-0 lg:translate-x-0 lg:shadow-none",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
           collapsed && "lg:w-0 lg:overflow-hidden lg:border-0"
         )}

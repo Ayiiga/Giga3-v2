@@ -21,10 +21,11 @@ html {
   overscroll-behavior-y: none;
   text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
+  scroll-behavior: auto;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  html {
+  html:not(.app-stable) {
     scroll-behavior: smooth;
   }
 }
@@ -148,5 +149,60 @@ button:focus-visible {
   .marketing-stable header {
     position: sticky;
     top: 0;
+  }
+}
+
+/* Chat / app shell: prevent mobile GPU tearing and layout shake. */
+.chat-stable {
+  isolation: isolate;
+}
+
+.chat-stable .animate-slide-up,
+.chat-stable .animate-fade-in,
+.chat-stable .animate-pulse-soft,
+.chat-stable .animate-pulse {
+  animation: none !important;
+}
+
+@media (max-width: 1023px) {
+  .chat-stable * {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+
+  .chat-stable [class*="hover:-translate"],
+  .chat-stable [class*="hover:translate"] {
+    transform: none !important;
+  }
+}
+
+.chat-stable [data-chat-scroll] {
+  contain: layout style;
+  will-change: auto;
+}
+
+/* Whole PWA shell — extends marketing-stable + chat-stable rules app-wide */
+.app-stable {
+  isolation: isolate;
+}
+
+.app-stable .animate-slide-up,
+.app-stable .animate-fade-in,
+.app-stable .animate-pulse-soft,
+.app-stable .animate-pulse,
+.app-stable .animate-bounce {
+  animation: none !important;
+}
+
+.app-stable [style*="translate3d"],
+.app-stable [style*="translateY"],
+.app-stable [style*="translateX"] {
+  transform: none !important;
+}
+
+@media (max-width: 1023px) {
+  .app-stable * {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
   }
 }

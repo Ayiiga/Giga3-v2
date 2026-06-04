@@ -18,6 +18,9 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: siteConfig.name,
   },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
   formatDetection: { telephone: false },
   openGraph: {
     type: "website",
@@ -58,8 +61,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="font-sans">
+    <html lang="en" className="app-stable">
+      <body className="app-stable font-sans">
         <AppPullToRefresh>{children}</AppPullToRefresh>
         <ServiceWorkerRegister />
         <OfflineBanner />

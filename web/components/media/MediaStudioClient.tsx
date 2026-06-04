@@ -20,6 +20,8 @@ import {
 } from "@/lib/media/studioTemplates";
 import { canGenerateImage, canGenerateVideo } from "@/lib/credits/rules";
 import { cn } from "@/lib/utils";
+import { MediaContextMenu } from "@/components/media/MediaContextMenu";
+import { MediaOutputActions } from "@/components/media/MediaOutputActions";
 import { CheckCircle2, ImageIcon, Loader2, Video, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -106,7 +108,7 @@ function MediaStudioContent() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl animate-fade-in space-y-10">
+    <div className="mx-auto max-w-5xl space-y-10">
       <div className="flex flex-wrap items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
@@ -137,7 +139,7 @@ function MediaStudioContent() {
                 type="button"
                 onClick={() => applyTemplate(template.id)}
                 className={cn(
-                  "saas-card flex min-h-[5rem] items-center gap-3 p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-premium",
+                  "saas-card flex min-h-[5rem] items-center gap-3 p-4 text-left pointer-fine:transition-all pointer-fine:hover:-translate-y-0.5 pointer-fine:hover:shadow-premium",
                   params.get("template") === template.id && "ring-2 ring-violet-500/50"
                 )}
               >
@@ -236,14 +238,37 @@ function MediaStudioContent() {
         )}
 
         {phase === "success" && lastOutputUrl && (
-          <div className="overflow-hidden rounded-2xl border border-emerald-500/30">
-            {lastMediaType === "video" ? (
-              <video src={lastOutputUrl} controls className="aspect-video w-full" />
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={lastOutputUrl} alt="Generated" className="aspect-video w-full object-cover" />
-            )}
-          </div>
+          <MediaContextMenu
+            url={lastOutputUrl}
+            mediaType={lastMediaType === "video" ? "video" : "image"}
+          >
+            <div className="overflow-hidden rounded-2xl border border-emerald-500/30">
+              {lastMediaType === "video" ? (
+                <video
+                  src={lastOutputUrl}
+                  controls
+                  className="aspect-video w-full bg-black"
+                  preload="metadata"
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={lastOutputUrl}
+                  alt="Generated"
+                  width={1280}
+                  height={720}
+                  className="aspect-video w-full bg-zinc-100 object-cover"
+                  decoding="async"
+                />
+              )}
+              <div className="border-t border-emerald-500/20 bg-zinc-50 p-3">
+                <MediaOutputActions
+                  url={lastOutputUrl}
+                  mediaType={lastMediaType === "video" ? "video" : "image"}
+                />
+              </div>
+            </div>
+          </MediaContextMenu>
         )}
 
         {loading && (
@@ -256,7 +281,7 @@ function MediaStudioContent() {
               Generating your {tab}…
             </div>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-200">
-              <div className="h-full w-2/3 animate-pulse-soft rounded-full bg-gradient-to-r from-violet-500 to-blue-500" />
+              <div className="h-full w-2/3 rounded-full bg-gradient-to-r from-violet-500 to-blue-500" />
             </div>
           </div>
         )}
@@ -340,6 +365,15 @@ function MediaStudioContent() {
               )}
               {job.outputUrl && job.mediaType === "video" && job.status === "succeeded" && (
                 <video src={job.outputUrl} controls className="aspect-video w-full" />
+              )}
+              {job.outputUrl && job.status === "succeeded" && (
+                <div className="border-t border-border px-3 py-2">
+                  <MediaOutputActions
+                    url={job.outputUrl}
+                    mediaType={job.mediaType === "video" ? "video" : "image"}
+                    compact
+                  />
+                </div>
               )}
               <div className="p-4 text-sm sm:text-base">
                 <p className="font-semibold capitalize">
