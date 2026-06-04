@@ -35,6 +35,8 @@ function MediaStudioContent() {
     phase,
     error,
     successMessage,
+    lastOutputUrl,
+    lastMediaType,
     clearStatus,
     createImage,
     createVideo,
@@ -47,6 +49,7 @@ function MediaStudioContent() {
   const [tab, setTab] = useState<"image" | "video">(initialTab);
   const [category, setCategory] = useState<string>(initialCategory);
   const [prompt, setPrompt] = useState(initialPrompt);
+  const [videoImageUrl, setVideoImageUrl] = useState("");
 
   useEffect(() => {
     if (!email) router.replace("/chat/login?next=/media");
@@ -64,10 +67,18 @@ function MediaStudioContent() {
 
   async function handleGenerate() {
     if (!prompt.trim()) return;
-    if (tab === "image") {
-      await createImage(category as ImageCategoryId, prompt);
-    } else {
-      await createVideo(category as VideoCategoryId, prompt);
+    try {
+      if (tab === "image") {
+        await createImage(category as ImageCategoryId, prompt);
+      } else {
+        await createVideo(
+          category as VideoCategoryId,
+          prompt,
+          videoImageUrl || undefined
+        );
+      }
+    } catch {
+      /* Errors surfaced via useMediaGeneration */
     }
   }
 
@@ -102,7 +113,7 @@ function MediaStudioContent() {
             Media Studio
           </h1>
           <p className="mt-3 text-base text-muted sm:text-lg">
-            AI images & videos · Powered by Replicate
+            AI images & videos · fal.ai with automatic fallback
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -206,8 +217,34 @@ function MediaStudioContent() {
           onChange={(e) => setPrompt(e.target.value)}
           rows={4}
           placeholder={`Describe your ${tab}…`}
-          className="w-full rounded-2xl border border-border bg-black/40 px-5 py-4 text-base outline-none ring-accent focus:ring-2 sm:text-lg"
+          className="input-surface sm:text-lg"
         />
+
+        {tab === "video" && (
+          <div className="space-y-2">
+            <label className="text-sm font-bold uppercase tracking-wide text-muted">
+              Source image URL (optional)
+            </label>
+            <input
+              type="url"
+              value={videoImageUrl}
+              onChange={(e) => setVideoImageUrl(e.target.value)}
+              placeholder="https://… — improves quality; text-only uses backup provider"
+              className="w-full rounded-xl border border-border bg-black/40 px-4 py-3 text-base outline-none ring-accent focus:ring-2"
+            />
+          </div>
+        )}
+
+        {phase === "success" && lastOutputUrl && (
+          <div className="overflow-hidden rounded-2xl border border-emerald-500/30">
+            {lastMediaType === "video" ? (
+              <video src={lastOutputUrl} controls className="aspect-video w-full" />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={lastOutputUrl} alt="Generated" className="aspect-video w-full object-cover" />
+            )}
+          </div>
+        )}
 
         {loading && (
           <div
@@ -218,7 +255,7 @@ function MediaStudioContent() {
               <Loader2 className="h-6 w-6 animate-spin" aria-hidden />
               Generating your {tab}…
             </div>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/40">
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-200">
               <div className="h-full w-2/3 animate-pulse-soft rounded-full bg-gradient-to-r from-violet-500 to-blue-500" />
             </div>
           </div>
@@ -285,13 +322,23 @@ function MediaStudioContent() {
           {jobs.length === 0 && (
             <p className="text-base text-muted">No media yet — create your first above.</p>
           )}
-          {jobs.map((job) => (
+          {jobs.map((job: (typeof jobs)[number]) => (
             <article key={job._id} className="saas-card overflow-hidden shadow-md">
-              {job.outputUrl && job.mediaType === "image" && (
+              {job.status === "processing" && (
+                <div className="flex aspect-video items-center justify-center bg-black/40 text-muted">
+                  <Loader2 className="h-8 w-8 animate-spin" aria-hidden />
+                </div>
+              )}
+              {job.status === "failed" && job.errorMessage && (
+                <div className="aspect-video bg-red-950/40 p-4 text-sm text-red-100">
+                  {job.errorMessage}
+                </div>
+              )}
+              {job.outputUrl && job.mediaType === "image" && job.status === "succeeded" && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={job.outputUrl} alt="" className="aspect-video w-full object-cover" />
               )}
-              {job.outputUrl && job.mediaType === "video" && (
+              {job.outputUrl && job.mediaType === "video" && job.status === "succeeded" && (
                 <video src={job.outputUrl} controls className="aspect-video w-full" />
               )}
               <div className="p-4 text-sm sm:text-base">

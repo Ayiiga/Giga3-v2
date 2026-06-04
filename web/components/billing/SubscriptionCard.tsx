@@ -9,6 +9,7 @@ interface SubscriptionCardProps {
   features: readonly string[];
   onSelect: (productId: string) => void;
   loading?: boolean;
+  loadingLabel?: string;
   disabled?: boolean;
 }
 
@@ -17,6 +18,7 @@ export function SubscriptionCard({
   features,
   onSelect,
   loading,
+  loadingLabel = "Subscribe with Paystack",
   disabled,
 }: SubscriptionCardProps) {
   return (
@@ -31,8 +33,8 @@ export function SubscriptionCard({
           Recommended
         </span>
       )}
-      <h3 className="text-lg font-semibold">{product.label}</h3>
-      <p className="mt-2 text-3xl font-bold">{formatGhs(product.amountGhs)}</p>
+      <h3 className="text-xl font-bold text-foreground">{product.label}</h3>
+      <p className="mt-2 text-3xl font-bold text-foreground">{formatGhs(product.amountGhs)}</p>
       <p className="mt-2 text-sm text-muted">{product.description}</p>
       <ul className="mt-6 flex-1 space-y-2">
         {features.map((f) => (
@@ -50,7 +52,7 @@ export function SubscriptionCard({
         disabled={disabled || loading}
         onClick={() => onSelect(product.id)}
       >
-        {loading ? "Redirecting…" : "Subscribe with Paystack"}
+        {loading ? loadingLabel : "Subscribe with Paystack"}
       </Button>
     </article>
   );

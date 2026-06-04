@@ -46,7 +46,7 @@ export function ToolSelector({
   return (
     <div
       className={cn(
-        embedded ? "px-3 py-4 sm:px-4" : "border-b border-border bg-black/30 px-4 py-4 sm:px-5"
+        embedded ? "px-3 py-4 sm:px-4" : "border-b border-border bg-white px-4 py-4 sm:px-5"
       )}
     >
       {!embedded && (

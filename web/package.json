@@ -10,6 +10,7 @@
     "verify:convex-env": "node scripts/verify-convex-in-build.mjs"
   },
   "dependencies": {
+    "@paystack/inline-js": "^2.22.9",
     "clsx": "^2.1.1",
     "convex": "^1.39.1",
     "lucide-react": "^0.468.0",

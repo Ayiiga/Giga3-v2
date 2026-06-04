@@ -38,6 +38,14 @@ Set in `web/.env.local` or CI secrets:
 - `NEXT_PUBLIC_CONVEX_SITE_URL` — optional (HTTP actions URL)
 - `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` — optional in UI
 
+### Paystack (live billing)
+
+- **Server secret (required):** `PAYSTACK_SECRET_KEY` on Convex (`sk_live_…`). Checkout runs in `convex/paystack.ts` actions — not in the browser.
+- **Public key:** `PAYSTACK_PUBLIC_KEY` on Convex (optional today; reserved). `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` in GitHub is optional for future client use.
+- **Redirects:** `FRONTEND_URL` must be `https://www.giga3ai.com` (success: `/payment/success/?reference=…`).
+- **Webhook (Paystack dashboard):** `https://perfect-lark-521.convex.site/paystack/webhook` — subscribe to **`charge.success`**. Uses the same `PAYSTACK_SECRET_KEY` for HMAC verification.
+- Sync keys to Convex: `npx convex env set PAYSTACK_SECRET_KEY "sk_live_…"` or add GitHub secrets `PAYSTACK_SECRET_KEY` / `PAYSTACK_PUBLIC_KEY` (CI syncs on Convex deploy).
+
 ### Convex production env
 
 Production deployment: **`perfect-lark-521`** (`https://perfect-lark-521.convex.cloud`).

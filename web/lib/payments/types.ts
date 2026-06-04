@@ -13,6 +13,8 @@ export interface PaymentProduct {
 
 export interface InitializePaymentResult {
   authorizationUrl: string;
+  /** From Paystack initialize API — used by Inline JS resumeTransaction */
+  accessCode?: string;
   reference: string;
   amountGhs: number;
   label: string;

@@ -55,7 +55,7 @@ export function Contact() {
                       id="name"
                       name="name"
                       required
-                      className="w-full rounded-xl border border-border bg-black/40 px-4 py-3 text-base outline-none ring-accent focus:ring-2"
+                      className="input-surface"
                       placeholder="Your name"
                     />
                   </div>
@@ -68,7 +68,7 @@ export function Contact() {
                       name="email"
                       type="email"
                       required
-                      className="w-full rounded-xl border border-border bg-black/40 px-4 py-3 text-base outline-none ring-accent focus:ring-2"
+                      className="input-surface"
                       placeholder="you@company.com"
                     />
                   </div>
@@ -81,7 +81,7 @@ export function Contact() {
                       name="message"
                       required
                       rows={4}
-                      className="w-full resize-none rounded-xl border border-border bg-black/40 px-4 py-3 text-base outline-none ring-accent focus:ring-2"
+                      className="input-surface resize-none"
                       placeholder="Tell us about your project..."
                     />
                   </div>

@@ -61,8 +61,8 @@ export function ChatWorkspacePanel({
       className={cn(
         "inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all sm:text-base",
         tab === id
-          ? "bg-gradient-to-r from-violet-600/30 to-blue-600/20 text-foreground shadow-lg shadow-violet-500/10 ring-1 ring-violet-500/30"
-          : "text-muted hover:bg-white/5 hover:text-foreground"
+          ? "bg-violet-100 font-bold text-violet-900 ring-1 ring-violet-300"
+          : "font-semibold text-foreground hover:bg-zinc-100"
       )}
     >
       <Icon className="h-5 w-5 shrink-0" aria-hidden />
@@ -78,7 +78,14 @@ export function ChatWorkspacePanel({
         {tabBtn("media", "Create Media", Sparkles)}
       </div>
 
-      <div className="max-h-[min(42vh,320px)] overflow-y-auto overscroll-y-contain">
+      <div
+        className={cn(
+          "overflow-y-auto overscroll-y-contain",
+          hasMessages
+            ? "max-h-[min(24vh,180px)]"
+            : "max-h-[min(42vh,320px)]"
+        )}
+      >
         {tab === "modes" && (
           <ToolSelector
             value={mode}

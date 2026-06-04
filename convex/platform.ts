@@ -1,5 +1,6 @@
 import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { normalizeUserId } from "./userIds";
 
 export const appendMessage = internalMutation({
   args: {
@@ -15,7 +16,7 @@ export const appendMessage = internalMutation({
   handler: async (ctx, args) => {
     await ctx.db.insert("messages", {
       conversationId: args.conversationId,
-      userId: args.userId,
+      userId: normalizeUserId(args.userId),
       role: args.role,
       content: args.content,
       createdAt: Date.now(),

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   applicationName: siteConfig.name,
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: siteConfig.name,
   },
   formatDetection: { telephone: false },
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#050508",
+  themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -57,7 +57,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <body className="font-sans overscroll-y-contain">
         <AppPullToRefresh>{children}</AppPullToRefresh>
         <ServiceWorkerRegister />

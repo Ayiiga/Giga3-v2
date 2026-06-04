@@ -4,22 +4,22 @@ export const SUBSCRIPTION_PLANS = {
     productId: "sub_basic_monthly",
     label: "Basic",
     priceGhs: 60,
-    credits: 100,
-    description: "100 credits/month — chat, writing, research & media.",
+    credits: 60,
+    description: "60 credits/month (60 GHS) — chat, writing, research & media.",
   },
   pro: {
     productId: "sub_pro_monthly",
     label: "Pro",
     priceGhs: 150,
-    credits: 500,
-    description: "500 credits/month for daily creators.",
+    credits: 150,
+    description: "150 credits/month (150 GHS) for daily creators.",
   },
   premium: {
     productId: "sub_premium_monthly",
     label: "Premium",
     priceGhs: 350,
-    credits: 2000,
-    description: "2000 credits/month for teams and power users.",
+    credits: 350,
+    description: "350 credits/month (350 GHS) for teams and power users.",
   },
 } as const;
 

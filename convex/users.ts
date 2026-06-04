@@ -6,19 +6,22 @@ import {
   updateInterestProfile,
 } from "./userLearning";
 import { isValidMode } from "./aiModes";
+import { grantStarterCreditsIfNeeded } from "./userStarterCredits";
 
 export const createUser = mutation({
   args: { email: v.string() },
   handler: async (ctx, args) => {
+    const email = args.email.trim().toLowerCase();
     const existing = await ctx.db
       .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .withIndex("by_email", (q) => q.eq("email", email))
       .first();
     if (existing) {
-      return existing;
+      return await grantStarterCreditsIfNeeded(ctx, email, existing);
     }
-    return await ctx.db.insert("users", {
-      email: args.email,
+
+    const userId = await ctx.db.insert("users", {
+      email,
       tokens: 12,
       plan: "free",
       tier: "free",
@@ -26,6 +29,28 @@ export const createUser = mutation({
       credits: 0,
       starterCreditsGranted: false,
     });
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      throw new Error("Failed to create user");
+    }
+    return await grantStarterCreditsIfNeeded(ctx, email, user);
+  },
+});
+
+/** One-time backfill for users created without starter credits (e.g. legacy paths). */
+export const backfillMissingStarterCredits = mutation({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const cap = Math.min(args.limit ?? 100, 500);
+    const users = await ctx.db.query("users").take(cap * 3);
+    let patched = 0;
+    for (const user of users) {
+      if (patched >= cap) break;
+      if (user.starterCreditsGranted) continue;
+      await grantStarterCreditsIfNeeded(ctx, user.email, user);
+      patched += 1;
+    }
+    return { patched };
   },
 });
 
