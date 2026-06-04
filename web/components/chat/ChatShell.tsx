@@ -101,7 +101,7 @@ function ChatShellInner() {
     "hidden rounded-xl px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-zinc-100 sm:inline-flex sm:items-center sm:gap-1.5";
 
   return (
-    <div className="flex h-dvh max-h-dvh overflow-hidden bg-background">
+    <div className="flex h-full min-h-0 flex-1 overflow-hidden bg-background">
       <ChatSidebar
         conversations={conversations}
         conversationsLoading={conversationsLoading}

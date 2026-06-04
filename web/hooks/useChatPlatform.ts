@@ -1,6 +1,7 @@
 "use client";
 
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
+import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
 import { getUserEmail } from "@/lib/auth";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
@@ -77,9 +78,8 @@ export function useChatPlatform() {
   const messagesLoading =
     Boolean(activeId) && messagesRaw === undefined && mounted && Boolean(email);
 
-  const conversations: ConversationItem[] = useMemo(
-    () => (conversationsRaw ?? []) as ConversationItem[],
-    [conversationsRaw]
+  const conversations = useStableConversations(
+    conversationsRaw as ConversationItem[] | undefined
   );
 
   const messages = useStableUiMessages(messagesRaw, pendingUserText);

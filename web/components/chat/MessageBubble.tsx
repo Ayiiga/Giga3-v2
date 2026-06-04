@@ -1,7 +1,6 @@
 import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
 import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
 import { cn } from "@/lib/utils";
-import { probeRender } from "@/lib/debug/renderProbe";
 import { memo, useMemo } from "react";
 
 export interface MessageBubbleProps {
@@ -16,7 +15,6 @@ export const MessageBubble = memo(function MessageBubble({
   content,
   pending,
 }: MessageBubbleProps) {
-  probeRender("MessageBubble");
   const isUser = role === "user";
   const parsed = useMemo(() => parseMessageMedia(content), [content]);
   const safeContent =

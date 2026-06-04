@@ -17,12 +17,12 @@ async function main() {
     window.__renderProbeLog = [];
   });
 
-  await page.goto(`${base}/chat/login/`, { waitUntil: "networkidle" });
-  await page.fill('input[type="email"]', "probe@example.com");
-  await page.click('button[type="submit"]');
-  await page.waitForURL("**/chat/**", { timeout: 20000 });
-  await page.goto(`${base}/chat/?renderProbe=1`, { waitUntil: "networkidle" });
-  await page.waitForSelector("text=Giga3 AI", { timeout: 15000 });
+  await page.goto(`${base}/chat/login/`, { waitUntil: "domcontentloaded" });
+  await page.evaluate(() => {
+    localStorage.setItem("giga3_user_email", "probe@example.com");
+  });
+  await page.goto(`${base}/chat/?renderProbe=1`, { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(3000);
   await page.waitForTimeout(dwellMs);
 
   const probeTable = await page.evaluate(() => {

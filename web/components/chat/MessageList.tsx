@@ -5,8 +5,8 @@ import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { DOCUMENT_TEMPLATES } from "@/lib/chat/documentTemplates";
 import { formatCurrentDate, resolveTemplatePlaceholders } from "@/lib/datetime";
 import { probeRender } from "@/lib/debug/renderProbe";
-import { useStickToBottom } from "@/hooks/useStickToBottom";
-import { memo, useCallback, useMemo, useRef } from "react";
+import { useScrollToLatestMessage } from "@/hooks/useScrollToLatestMessage";
+import { memo, useMemo, useRef } from "react";
 
 export interface UiMessage {
   id: string;
@@ -31,12 +31,14 @@ function MessageListInner({
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastMessageId = messages[messages.length - 1]?.id;
+  const scrollAnchorId = useMemo(() => {
+    if (isTyping) return `${lastMessageId ?? "none"}|typing`;
+    return lastMessageId;
+  }, [lastMessageId, isTyping]);
 
-  useStickToBottom({
+  useScrollToLatestMessage({
     scrollRef,
-    messageCount: messages.length,
-    lastMessageId,
-    isTyping,
+    anchorMessageId: scrollAnchorId,
   });
 
   const todayLabel = useMemo(() => {

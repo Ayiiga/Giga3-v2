@@ -11,7 +11,7 @@ export default function ChatLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="chat-stable dark flex min-h-dvh flex-col bg-background text-foreground">
+    <div className="chat-stable dark fixed inset-0 flex flex-col overflow-hidden bg-background text-foreground">
       {children}
     </div>
   );

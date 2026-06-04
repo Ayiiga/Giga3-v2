@@ -75,13 +75,13 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
 
   return (
     <div className={cn("mt-3 space-y-2", className)}>
-      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100">
+      <div className="aspect-video min-h-[12rem] w-full overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100">
         {kind === "image" ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={url}
             alt="Generated or shared image"
-            className="max-h-[min(420px,55vh)] w-full object-contain"
+            className="h-full w-full object-contain"
             loading="lazy"
             decoding="async"
             width={640}
@@ -93,7 +93,7 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
             controls
             playsInline
             preload="metadata"
-            className="max-h-[min(420px,55vh)] w-full bg-black object-contain"
+            className="h-full w-full bg-black object-contain"
           />
         )}
       </div>

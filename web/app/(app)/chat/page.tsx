@@ -6,7 +6,7 @@ const ChatShell = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-[100dvh] items-center justify-center text-muted">
+      <div className="flex h-full items-center justify-center text-muted">
         Loading chat…
       </div>
     ),
