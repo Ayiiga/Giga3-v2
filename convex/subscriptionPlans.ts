@@ -28,16 +28,16 @@ export const SUBSCRIPTION_PLANS: Record<
     productId: "sub_pro_monthly",
     label: "Pro",
     priceGhs: 150,
-    credits: 150,
-    description: "150 credits/month (150 GHS) — best for daily creators.",
+    credits: 250,
+    description: "250 credits/month (150 GHS) — best for daily creators.",
   },
   premium: {
     id: "premium",
     productId: "sub_premium_monthly",
     label: "Premium",
     priceGhs: 350,
-    credits: 350,
-    description: "350 credits/month (350 GHS) — teams and power users.",
+    credits: 500,
+    description: "500 credits/month (350 GHS) — teams and power users.",
   },
 };
 
@@ -57,12 +57,9 @@ export function getPlanPriceGhs(planId: PaidPlanId): number {
   return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
-/** Basic: 100 credits at ₵60. Pro/Premium: monthly credits match GHS charged (1 GHS = 1 credit). */
+/** Monthly credits from catalog (price in GHS may differ from credit count). */
 export function getPlanMonthlyCredits(planId: PaidPlanId): number {
-  if (planId === "basic") {
-    return SUBSCRIPTION_PLANS.basic.credits;
-  }
-  return getPlanPriceGhs(planId);
+  return SUBSCRIPTION_PLANS[planId].credits;
 }
 
 export function productIdToPlanId(productId: string): PaidPlanId | null {
