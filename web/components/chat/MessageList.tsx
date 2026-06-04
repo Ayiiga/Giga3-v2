@@ -55,18 +55,18 @@ export function MessageList({
       >
         {isLoading && messages.length === 0 && (
           <div className="flex h-full min-h-[200px] flex-col items-center justify-center text-center text-muted">
-            <p className="text-lg font-medium text-foreground">Loading messages…</p>
+            <p className="text-xl font-bold text-foreground">Loading messages…</p>
           </div>
         )}
         {messages.length === 0 && !isTyping && !isLoading && (
           <div className="flex h-full min-h-[200px] flex-col items-center justify-center text-center text-muted">
-            <p className="text-lg font-medium text-foreground">Start a conversation</p>
+            <p className="text-xl font-bold text-foreground">Start a conversation</p>
             {todayLabel && (
               <p className="mt-1 text-xs text-muted" suppressHydrationWarning>
                 {todayLabel}
               </p>
             )}
-            <p className="mt-2 max-w-sm text-sm">
+            <p className="mt-2 max-w-sm text-base font-medium text-foreground">
               Pick an AI mode, choose a professional template, or attach files below. Chats
               save automatically.
             </p>

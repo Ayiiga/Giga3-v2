@@ -7,13 +7,13 @@
     sans-serif;
   --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     monospace;
-  --background: #050508;
-  --foreground: #f4f4f5;
-  --muted: #a1a1aa;
-  --accent: #7c5cff;
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --muted: #52525b;
+  --accent: #5b21b6;
   --accent-foreground: #ffffff;
-  --card: rgba(255, 255, 255, 0.03);
-  --border: rgba(255, 255, 255, 0.08);
+  --card: #fafafa;
+  --border: rgba(0, 0, 0, 0.12);
 }
 
 html {
@@ -23,27 +23,17 @@ html {
 }
 
 body {
-  @apply bg-background text-base text-foreground antialiased;
-  background-image: radial-gradient(
-      ellipse 120% 80% at 50% -30%,
-      rgba(124, 92, 255, 0.14),
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 60% 40% at 100% 0%,
-      rgba(192, 38, 211, 0.08),
-      transparent 50%
-    ),
-    var(--background);
+  @apply bg-background text-base font-medium text-foreground antialiased;
+  background-color: var(--background);
 }
 
 ::selection {
-  background: rgba(124, 92, 255, 0.35);
-  color: #fff;
+  background: rgba(91, 33, 182, 0.2);
+  color: #0a0a0a;
 }
 
 .glass {
-  @apply border border-border bg-card backdrop-blur-xl;
+  @apply border border-border bg-white shadow-sm;
 }
 
 .section-padding {
@@ -51,11 +41,19 @@ body {
 }
 
 .section-heading {
-  @apply mb-4;
+  @apply mb-4 text-sm font-bold uppercase tracking-wider text-accent;
 }
 
 .section-lead {
-  @apply mt-5 text-muted;
+  @apply mt-5 text-lg font-medium text-foreground;
+}
+
+.page-title {
+  @apply text-3xl font-bold tracking-tight text-foreground sm:text-4xl;
+}
+
+.page-subtitle {
+  @apply text-lg font-semibold text-foreground;
 }
 
 /* Lucide icons — minimum 24px touch targets */
@@ -69,34 +67,36 @@ body {
 
 @layer components {
   .btn-media-image-active {
-    @apply bg-btn-image text-white shadow-btn-image hover:brightness-110;
+    @apply bg-btn-image font-bold text-white shadow-btn-image hover:brightness-110;
   }
 
   .btn-media-video-active {
-    @apply bg-btn-video text-white shadow-btn-video hover:brightness-110;
+    @apply bg-btn-video font-bold text-white shadow-btn-video hover:brightness-110;
   }
 
   .btn-media-inactive {
-    @apply glass text-muted hover:border-white/20 hover:text-foreground;
+    @apply border border-border bg-white font-semibold text-foreground shadow-sm hover:border-zinc-300 hover:bg-zinc-50;
   }
 
   .saas-panel {
-    @apply bg-gradient-to-b from-black/40 to-transparent backdrop-blur-sm;
+    @apply border-b border-border bg-white;
   }
 
   .saas-card {
-    @apply rounded-2xl border border-border bg-card backdrop-blur-md;
-    background-color: rgba(255, 255, 255, 0.04);
+    @apply rounded-2xl border border-border bg-white shadow-sm;
   }
 
   .chat-composer {
-    @apply border-t border-border backdrop-blur-xl;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.35), transparent);
+    @apply border-t border-border bg-white;
+  }
+
+  .input-surface {
+    @apply w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-base font-medium text-foreground outline-none placeholder:text-zinc-500 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/25;
   }
 }
 
 .text-gradient {
-  @apply bg-gradient-to-r from-white via-violet-200 to-violet-400 bg-clip-text text-transparent;
+  @apply font-bold text-foreground;
 }
 
 /* Subtle focus for accessibility */

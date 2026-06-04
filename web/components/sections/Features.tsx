@@ -28,7 +28,7 @@ export function Features() {
           <p className="section-heading text-sm font-medium uppercase tracking-wider text-accent">
             Features
           </p>
-          <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Everything you need to launch AI chat
           </h2>
           <p className="section-lead">

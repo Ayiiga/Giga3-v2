@@ -55,14 +55,14 @@ export function ChatSidebar({
       {mobileOpen && (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-black/60 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
           aria-label="Close sidebar"
           onClick={onCloseMobile}
         />
       )}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[min(100%,300px)] flex-col border-r border-border/80 bg-[#0a0a0f]/95 backdrop-blur-xl transition-transform lg:static lg:z-0 lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-[min(100%,300px)] flex-col border-r border-border bg-white shadow-lg transition-transform lg:static lg:z-0 lg:translate-x-0 lg:shadow-none",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
           collapsed && "lg:w-0 lg:overflow-hidden lg:border-0"
         )}
@@ -72,7 +72,7 @@ export function ChatSidebar({
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="hidden rounded-xl p-2.5 text-muted hover:bg-white/5 lg:inline-flex"
+            className="hidden rounded-xl p-2.5 text-foreground hover:bg-zinc-100 lg:inline-flex"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? <PanelLeft className="h-5 w-5" aria-hidden /> : <PanelLeftClose className="h-5 w-5" aria-hidden />}
@@ -98,7 +98,7 @@ export function ChatSidebar({
             <Link
               href="/media"
               onClick={onCloseMobile}
-              className="saas-card flex min-h-12 items-center justify-center gap-2 rounded-xl px-2 py-2 text-sm font-semibold text-violet-200 transition-all hover:bg-violet-500/10"
+              className="saas-card flex min-h-12 items-center justify-center gap-2 rounded-xl px-2 py-2 text-sm font-bold text-violet-800 transition-all hover:bg-violet-50"
             >
               <Sparkles className="h-5 w-5" aria-hidden />
               Media
@@ -106,7 +106,7 @@ export function ChatSidebar({
             <Link
               href="/credits"
               onClick={onCloseMobile}
-              className="saas-card flex min-h-12 items-center justify-center gap-2 rounded-xl px-2 py-2 text-sm font-semibold text-muted transition-all hover:text-foreground"
+              className="saas-card flex min-h-12 items-center justify-center gap-2 rounded-xl px-2 py-2 text-sm font-bold text-foreground transition-all hover:bg-zinc-50"
             >
               <Coins className="h-5 w-5" aria-hidden />
               Credits
@@ -116,10 +116,10 @@ export function ChatSidebar({
 
         <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3">
           {conversationsLoading && (
-            <p className="px-2 py-4 text-sm text-muted">Loading chats…</p>
+            <p className="px-2 py-4 text-sm font-medium text-muted">Loading chats…</p>
           )}
           {!conversationsLoading && conversations.length === 0 && (
-            <p className="px-2 py-4 text-sm text-muted">No conversations yet.</p>
+            <p className="px-2 py-4 text-sm font-medium text-muted">No conversations yet.</p>
           )}
           <ul className="space-y-1.5">
             {conversations.map((c) => {
@@ -133,8 +133,8 @@ export function ChatSidebar({
                     className={cn(
                       "group flex items-center gap-2 rounded-xl border px-3 py-3 transition-all",
                       active
-                        ? "border-violet-500/40 bg-violet-500/10"
-                        : "border-transparent hover:border-border hover:bg-white/5"
+                        ? "border-violet-400 bg-violet-50"
+                        : "border-transparent hover:border-zinc-200 hover:bg-zinc-50"
                     )}
                   >
                     <button
@@ -145,7 +145,7 @@ export function ChatSidebar({
                         onCloseMobile();
                       }}
                     >
-                      <span className="block truncate text-sm font-semibold text-foreground sm:text-base">
+                      <span className="block truncate text-sm font-bold text-foreground sm:text-base">
                         {c.title || "Untitled"}
                       </span>
                       <span className="mt-0.5 block truncate text-xs text-muted sm:text-sm">
@@ -154,7 +154,7 @@ export function ChatSidebar({
                     </button>
                     <button
                       type="button"
-                      className="rounded-lg p-2 text-muted opacity-0 transition-opacity hover:bg-red-500/10 hover:text-red-300 group-hover:opacity-100"
+                      className="rounded-lg p-2 text-zinc-600 opacity-0 transition-opacity hover:bg-red-50 hover:text-red-700 group-hover:opacity-100"
                       aria-label="Delete conversation"
                       onClick={() => onDelete(c._id)}
                     >
@@ -168,7 +168,7 @@ export function ChatSidebar({
         </div>
 
         <div className="border-t border-border/80 p-4">
-          <p className="truncate text-sm font-medium text-foreground">{email}</p>
+          <p className="truncate text-sm font-bold text-foreground">{email}</p>
           <p className="mt-1 text-sm text-muted">
             {credits != null ? `${credits} credits remaining` : "Loading credits…"}
           </p>

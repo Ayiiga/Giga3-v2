@@ -206,7 +206,7 @@ function MediaStudioContent() {
           onChange={(e) => setPrompt(e.target.value)}
           rows={4}
           placeholder={`Describe your ${tab}…`}
-          className="w-full rounded-2xl border border-border bg-black/40 px-5 py-4 text-base outline-none ring-accent focus:ring-2 sm:text-lg"
+          className="input-surface sm:text-lg"
         />
 
         {loading && (
@@ -218,7 +218,7 @@ function MediaStudioContent() {
               <Loader2 className="h-6 w-6 animate-spin" aria-hidden />
               Generating your {tab}…
             </div>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/40">
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-200">
               <div className="h-full w-2/3 animate-pulse-soft rounded-full bg-gradient-to-r from-violet-500 to-blue-500" />
             </div>
           </div>

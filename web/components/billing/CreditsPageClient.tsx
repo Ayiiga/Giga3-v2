@@ -47,8 +47,8 @@ function CreditsPageClientInner() {
         amountGhs={checkoutPreview?.amountGhs}
       />
       <div className="text-center">
-        <h1 className="text-3xl font-bold">Buy credits</h1>
-        <p className="mt-2 text-muted">
+        <h1 className="page-title">Buy credits</h1>
+        <p className="mt-2 text-lg font-medium text-foreground">
           Images cost {CREDIT_COSTS.image} credits · Videos cost{" "}
           {CREDIT_COSTS.video} credits. Payments in GHS via Paystack.
         </p>

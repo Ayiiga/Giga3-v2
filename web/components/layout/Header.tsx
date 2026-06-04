@@ -25,11 +25,11 @@ export function Header() {
     <header
       className={cn(
         "fixed inset-x-0 top-0 z-50 transition-all duration-300",
-        scrolled ? "glass border-b py-3 shadow-lg shadow-black/20" : "bg-transparent py-4"
+        scrolled ? "border-b border-border bg-white/95 py-3 shadow-md" : "bg-white/80 py-4"
       )}
     >
       <Container className="flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
+        <Link href="/" className="flex items-center gap-2.5 text-lg font-bold tracking-tight text-foreground">
           <BrandLogo size={36} priority />
           <span>{siteConfig.name}</span>
         </Link>
@@ -39,7 +39,7 @@ export function Header() {
             <a
               key={link.href}
               href={link.href}
-              className="text-base text-muted transition-colors hover:text-foreground"
+              className="text-base font-semibold text-foreground transition-colors hover:text-accent"
             >
               {link.label}
             </a>

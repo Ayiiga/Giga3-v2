@@ -7,35 +7,26 @@ import { ArrowRight, Bot } from "lucide-react";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pt-28 sm:pt-36">
-      <div className="pointer-events-none absolute inset-0 bg-hero-glow" aria-hidden />
+    <section className="relative overflow-hidden bg-white pt-28 sm:pt-36">
       <div
-        className="pointer-events-none absolute -left-1/4 top-1/4 h-[420px] w-[420px] rounded-full bg-violet-600/20 blur-[100px]"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -right-1/4 bottom-0 h-[320px] w-[320px] rounded-full bg-fuchsia-600/15 blur-[90px]"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute inset-0 bg-grid-pattern bg-[length:48px_48px] opacity-40"
+        className="pointer-events-none absolute inset-0 bg-grid-pattern bg-[length:48px_48px] opacity-30"
         aria-hidden
       />
 
       <Container className="relative">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="animate-fade-in mb-8 inline-flex items-center gap-2.5 rounded-full border border-violet-500/30 bg-violet-500/10 px-5 py-2 text-base text-violet-200 shadow-lg shadow-violet-500/10">
+          <div className="animate-fade-in mb-8 inline-flex items-center gap-2.5 rounded-full border border-violet-300 bg-violet-50 px-5 py-2 text-base font-bold text-violet-900 shadow-sm">
             <BrandLogo size={24} />
             Multi-provider AI · Production-ready PWA
           </div>
 
-          <h1 className="animate-fade-in text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl [animation-delay:80ms]">
+          <h1 className="animate-fade-in text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl [animation-delay:80ms]">
             <span className="text-gradient">{siteConfig.name}</span>
             <br />
-            <span className="text-foreground">{siteConfig.tagline}</span>
+            <span>{siteConfig.tagline}</span>
           </h1>
 
-          <p className="section-lead animate-fade-in mx-auto max-w-2xl text-lg leading-relaxed [animation-delay:160ms]">
+          <p className="section-lead animate-fade-in mx-auto max-w-2xl text-xl font-medium leading-relaxed text-foreground [animation-delay:160ms]">
             {siteConfig.description} Run multiple chats with automatic AI failover,
             credit-based billing, and a polished mobile experience.
           </p>
