@@ -48,8 +48,8 @@ function SubscribePageClientInner() {
         amountGhs={checkoutPreview?.amountGhs}
       />
       <div className="text-center">
-        <h1 className="text-3xl font-bold">Choose your plan</h1>
-        <p className="mt-2 text-muted">
+        <h1 className="page-title">Choose your plan</h1>
+        <p className="mt-2 text-lg font-medium text-foreground">
           Monthly billing in <span className="text-foreground">GHS</span> via
           Paystack · Credits refill on renewal
         </p>

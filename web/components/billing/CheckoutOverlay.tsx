@@ -29,7 +29,7 @@ export function CheckoutOverlay({ phase, label, amountGhs }: CheckoutOverlayProp
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-labelledby="checkout-overlay-title"
@@ -37,18 +37,18 @@ export function CheckoutOverlay({ phase, label, amountGhs }: CheckoutOverlayProp
     >
       <div
         className={cn(
-          "w-full max-w-sm rounded-2xl border border-border/80 bg-[#0f0f14] p-8 text-center shadow-2xl",
+          "w-full max-w-sm rounded-2xl border border-border bg-white p-8 text-center shadow-2xl",
           "animate-fade-in"
         )}
       >
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-violet-500/15">
           {phase === "verifying" ? (
-            <ShieldCheck className="h-7 w-7 text-violet-300" aria-hidden />
+            <ShieldCheck className="h-7 w-7 text-violet-700" aria-hidden />
           ) : (
-            <Loader2 className="h-7 w-7 animate-spin text-violet-300" aria-hidden />
+            <Loader2 className="h-7 w-7 animate-spin text-violet-700" aria-hidden />
           )}
         </div>
-        <h2 id="checkout-overlay-title" className="mt-5 text-lg font-semibold text-foreground">
+        <h2 id="checkout-overlay-title" className="mt-5 text-xl font-bold text-foreground">
           {PHASE_COPY[phase]}
         </h2>
         {label && (

@@ -33,8 +33,8 @@ export function SubscriptionCard({
           Recommended
         </span>
       )}
-      <h3 className="text-lg font-semibold">{product.label}</h3>
-      <p className="mt-2 text-3xl font-bold">{formatGhs(product.amountGhs)}</p>
+      <h3 className="text-xl font-bold text-foreground">{product.label}</h3>
+      <p className="mt-2 text-3xl font-bold text-foreground">{formatGhs(product.amountGhs)}</p>
       <p className="mt-2 text-sm text-muted">{product.description}</p>
       <ul className="mt-6 flex-1 space-y-2">
         {features.map((f) => (

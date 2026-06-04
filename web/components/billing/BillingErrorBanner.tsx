@@ -13,7 +13,7 @@ export function BillingErrorBanner({
 }: BillingErrorBannerProps) {
   return (
     <div
-      className="flex flex-col items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100 sm:flex-row sm:justify-between"
+      className="flex flex-col items-center gap-3 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900 sm:flex-row sm:justify-between"
       role="alert"
     >
       <p className="text-center sm:text-left">{message}</p>
@@ -21,7 +21,7 @@ export function BillingErrorBanner({
         {onRetry && (
           <button
             type="button"
-            className="rounded-lg bg-red-500/20 px-3 py-1.5 font-medium hover:bg-red-500/30"
+            className="rounded-lg bg-red-100 px-3 py-1.5 font-bold text-red-900 hover:bg-red-200"
             onClick={onRetry}
           >
             Try again
@@ -29,7 +29,7 @@ export function BillingErrorBanner({
         )}
         <button
           type="button"
-          className="rounded-lg px-3 py-1.5 text-red-200/90 hover:bg-red-500/15"
+          className="rounded-lg px-3 py-1.5 font-semibold text-red-800 hover:bg-red-100"
           onClick={onDismiss}
         >
           Dismiss

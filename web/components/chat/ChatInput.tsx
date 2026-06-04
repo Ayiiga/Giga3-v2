@@ -168,7 +168,7 @@ function NoticeBanner({
       <span>{message}</span>
       <button
         type="button"
-        className="shrink-0 rounded p-1 hover:bg-white/10"
+        className="shrink-0 rounded p-1 text-foreground hover:bg-zinc-100"
         aria-label="Dismiss notice"
         onClick={onDismiss}
       >

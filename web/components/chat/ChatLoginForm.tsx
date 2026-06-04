@@ -50,15 +50,15 @@ function ChatLoginFormInner() {
       <div className="glass w-full max-w-md rounded-2xl p-8 sm:p-10">
         <div className="mb-6 flex items-center justify-center gap-2">
           <BrandLogo size={40} />
-          <h1 className="text-xl font-bold">Sign in to Giga3 AI</h1>
+          <h1 className="text-2xl font-bold text-foreground">Sign in to Giga3 AI</h1>
         </div>
-        <p className="mb-8 text-center text-muted">
+        <p className="mb-8 text-center text-base font-medium text-foreground">
           Sign up or log in with your email. Chats, credits, and subscriptions sync via
           Convex.
         </p>
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
           <div>
-            <label htmlFor="email" className="mb-1.5 block text-sm font-medium">
+            <label htmlFor="email" className="mb-1.5 block text-sm font-bold text-foreground">
               Email
             </label>
             <input
@@ -68,11 +68,11 @@ function ChatLoginFormInner() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-border bg-black/40 px-4 py-3 text-base outline-none ring-accent focus:ring-2"
+              className="input-surface"
               placeholder="you@example.com"
             />
           </div>
-          {error && <p className="text-sm text-red-300">{error}</p>}
+          {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
           <Button type="submit" className="w-full" size="lg" disabled={submitting}>
             {submitting ? "Signing in…" : "Continue"}
           </Button>
