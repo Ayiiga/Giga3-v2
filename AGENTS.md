@@ -14,10 +14,13 @@
 
 - Install root: `npm ci --legacy-peer-deps`
 - Install web: `cd web && npm install --legacy-peer-deps`
-- Lint: `npm run lint` (runs `web` ESLint)
-- Build: `npm run build` (static export to `web/out`)
-- Convex codegen: `npx convex codegen`
-- Convex deploy: `npx convex deploy --yes` (requires `CONVEX_DEPLOY_KEY`)
+- Lint: `cd web && npm run lint`
+- Build: `cd web && npm run build` (static export to `web/out`)
+- Dev server: `cd web && npm run dev` → `http://localhost:3000` (copy `web/.env.local.example` → `web/.env.local` first)
+- Serve static export: `cd web/out && npx serve -s . -l 3456`
+- Convex codegen: `CONVEX_DEPLOY_KEY="$CONVEX_DEPLOYMENT_VALUE" npx convex codegen` (or `npx convex dev` after linking a project)
+- Convex deploy: `CONVEX_DEPLOY_KEY=… npx convex deploy --yes`
+- Automated tests: none in repo (`npm test` at root exits 1 by design)
 
 ### Build-time env (web)
 
@@ -40,7 +43,8 @@ Set in `web/.env.local` or CI secrets:
 Production deployment: **`perfect-lark-521`** (`https://perfect-lark-521.convex.cloud`).
 
 - `users:getUser` is a **public query** in `convex/users.ts`. If the client reports it is missing, production has not received a successful deploy.
-- This Cloud Agent VM often **cannot** reach `api.convex.dev` or `*.convex.cloud` (TLS). Use GitHub Actions **Deploy Convex backend** or a local machine for codegen/deploy.
+- HTTP and WebSocket to `*.convex.cloud` work from this VM when `web/.env.local` points at production. `npx convex codegen` / deploy still need `CONVEX_DEPLOY_KEY` (Cloud secret `CONVEX_DEPLOYMENT_VALUE` works). If `api.convex.dev` returns 401, you have not authenticated — use the deploy key, not `npx convex dev` alone.
+- Chat UI needs a real login at `/chat/login/` (sets `localStorage` key `giga3_user_email`); manually setting localStorage alone can leave Convex queries stuck on “Loading chats…”.
 - If CI fails in ~20s at **Deploy to Convex** after key format validation passes, regenerate `CONVEX_DEPLOY_KEY` (`prod:perfect-lark-521|…`) in Convex Dashboard → production → Settings → Deploy key.
 
 ### Frontend HTTP paths (static `frontend/`)
