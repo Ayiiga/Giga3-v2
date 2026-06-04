@@ -37,19 +37,10 @@ export function ChatInput({
   const [busy, setBusy] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const insertText = useCallback(
-    (text: string) => {
-      setValue((prev) => (prev.trim() ? `${prev.trimEnd()}\n\n${text}` : text));
-      requestAnimationFrame(() => {
-        const el = textareaRef.current;
-        if (!el) return;
-        el.style.height = "auto";
-        el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
-        el.focus();
-      });
-    },
-    []
-  );
+  const insertText = useCallback((text: string) => {
+    setValue((prev) => (prev.trim() ? `${prev.trimEnd()}\n\n${text}` : text));
+    requestAnimationFrame(() => textareaRef.current?.focus());
+  }, []);
 
   useEffect(() => {
     if (!insertRef) return;
@@ -68,9 +59,6 @@ export function ChatInput({
     onSend(trimmed);
     setValue("");
     setNotice(null);
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-    }
   }
 
   function handleSubmit(e: FormEvent) {
@@ -122,16 +110,12 @@ export function ChatInput({
           <textarea
             ref={textareaRef}
             value={value}
-            onChange={(e) => {
-              setValue(e.target.value);
-              e.target.style.height = "auto";
-              e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
-            }}
+            onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={inputDisabled}
             rows={1}
             placeholder={placeholder}
-            className="max-h-56 min-h-[56px] flex-1 resize-none rounded-2xl border border-zinc-300 bg-white px-5 py-4 text-base font-medium text-black outline-none ring-violet-500 focus:ring-2 disabled:opacity-50 sm:min-h-[60px] sm:text-lg placeholder:text-zinc-500"
+            className="max-h-40 min-h-[56px] flex-1 resize-none overflow-y-auto rounded-2xl border border-zinc-300 bg-white px-5 py-4 text-base font-medium text-black outline-none ring-violet-500 focus:ring-2 disabled:opacity-50 sm:min-h-[60px] sm:text-lg placeholder:text-zinc-500"
             aria-label="Chat message"
           />
           <Button

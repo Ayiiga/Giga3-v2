@@ -1,27 +1,15 @@
 "use client";
 
-import type { UiMessage } from "@/components/chat/MessageList";
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
+import { useStableUiMessages } from "@/hooks/useStableUiMessages";
 import { getUserEmail } from "@/lib/auth";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const CHAT_ACTION_TIMEOUT_MS = 75_000;
-
-function toUiMessages(
-  rows: { _id: string; role: string; content: string }[]
-): UiMessage[] {
-  return rows
-    .filter((r) => r.role === "user" || r.role === "assistant")
-    .map((r) => ({
-      id: r._id,
-      role: r.role as "user" | "assistant",
-      content: r.content,
-    }));
-}
 
 function withClientTimeout<T>(
   promise: Promise<T>,
@@ -52,26 +40,32 @@ export function useChatPlatform() {
   const [chatProviderLabel, setChatProviderLabel] = useState<string | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const createUserAttempted = useRef(false);
 
   useEffect(() => {
     setMounted(true);
     setEmail(getUserEmail());
   }, []);
 
-  const user = useQuery(
-    api.users.getUser,
-    mounted && email ? { email } : "skip"
+  const userQueryArgs = useMemo(
+    () => (mounted && email ? { email } : ("skip" as const)),
+    [mounted, email]
   );
-  const conversationsRaw = useQuery(
-    api.conversations.list,
-    mounted && email ? { userId: email } : "skip"
+  const conversationsQueryArgs = useMemo(
+    () => (mounted && email ? { userId: email } : ("skip" as const)),
+    [mounted, email]
   );
-  const messagesRaw = useQuery(
-    api.messages.listByConversation,
-    mounted && email && activeId
-      ? { conversationId: activeId, userId: email }
-      : "skip"
+  const messagesQueryArgs = useMemo(
+    () =>
+      mounted && email && activeId
+        ? { conversationId: activeId, userId: email }
+        : ("skip" as const),
+    [mounted, email, activeId]
   );
+
+  const user = useQuery(api.users.getUser, userQueryArgs);
+  const conversationsRaw = useQuery(api.conversations.list, conversationsQueryArgs);
+  const messagesRaw = useQuery(api.messages.listByConversation, messagesQueryArgs);
 
   const createConversation = useMutation(api.conversations.create);
   const removeConversation = useMutation(api.conversations.remove);
@@ -88,28 +82,12 @@ export function useChatPlatform() {
     [conversationsRaw]
   );
 
-  const messages = useMemo(() => {
-    const base = toUiMessages(messagesRaw ?? []);
-    if (!pendingUserText) return base;
-    const last = base[base.length - 1];
-    if (last?.role === "user" && last.content === pendingUserText) {
-      return base;
-    }
-    return [
-      ...base,
-      {
-        id: "pending-user",
-        role: "user" as const,
-        content: pendingUserText,
-      },
-    ];
-  }, [messagesRaw, pendingUserText]);
+  const messages = useStableUiMessages(messagesRaw, pendingUserText);
 
   useEffect(() => {
-    if (!email) return;
-    if (user === null) {
-      void createUser({ email });
-    }
+    if (!email || user !== null || createUserAttempted.current) return;
+    createUserAttempted.current = true;
+    void createUser({ email });
   }, [email, user, createUser]);
 
   useEffect(() => {

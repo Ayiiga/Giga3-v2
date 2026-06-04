@@ -4,8 +4,9 @@ import { MessageBubble } from "@/components/chat/MessageBubble";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { DOCUMENT_TEMPLATES } from "@/lib/chat/documentTemplates";
 import { formatCurrentDate, resolveTemplatePlaceholders } from "@/lib/datetime";
+import { probeRender } from "@/lib/debug/renderProbe";
 import { useStickToBottom } from "@/hooks/useStickToBottom";
-import { memo, useMemo, useRef } from "react";
+import { memo, useCallback, useMemo, useRef } from "react";
 
 export interface UiMessage {
   id: string;
@@ -26,22 +27,16 @@ function MessageListInner({
   isTyping,
   onInsertTemplate,
 }: MessageListProps) {
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  probeRender("MessageList");
 
-  const scrollSignal = useMemo(
-    () => ({
-      count: messages.length,
-      lastId: messages[messages.length - 1]?.id,
-      typing: isTyping,
-    }),
-    [messages, isTyping]
-  );
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const lastMessageId = messages[messages.length - 1]?.id;
 
   useStickToBottom({
     scrollRef,
-    anchorRef: bottomRef,
-    signal: scrollSignal,
+    messageCount: messages.length,
+    lastMessageId,
+    isTyping,
   });
 
   const todayLabel = useMemo(() => {
@@ -117,11 +112,19 @@ function MessageListInner({
               </div>
             </div>
           )}
-          <div ref={bottomRef} className="h-px shrink-0" aria-hidden />
         </div>
       </div>
     </div>
   );
 }
 
-export const MessageList = memo(MessageListInner);
+function propsEqual(prev: MessageListProps, next: MessageListProps): boolean {
+  return (
+    prev.isLoading === next.isLoading &&
+    prev.isTyping === next.isTyping &&
+    prev.onInsertTemplate === next.onInsertTemplate &&
+    prev.messages === next.messages
+  );
+}
+
+export const MessageList = memo(MessageListInner, propsEqual);

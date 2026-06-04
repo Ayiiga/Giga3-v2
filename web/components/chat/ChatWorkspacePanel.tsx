@@ -81,9 +81,7 @@ export function ChatWorkspacePanel({
       <div
         className={cn(
           "overflow-y-auto overscroll-y-contain",
-          hasMessages
-            ? "max-h-[min(24vh,180px)]"
-            : "max-h-[min(42vh,320px)]"
+          hasMessages ? "max-h-[180px]" : "max-h-[280px]"
         )}
       >
         {tab === "modes" && (

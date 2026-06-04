@@ -24,7 +24,7 @@ export function ChatDateTimeLabel() {
 
   return (
     <time
-      dateTime={new Date().toISOString()}
+      dateTime={label}
       className="hidden text-sm font-medium text-muted md:block"
       suppressHydrationWarning
     >

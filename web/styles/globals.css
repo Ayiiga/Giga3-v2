@@ -167,6 +167,14 @@ button:focus-visible {
   animation: none !important;
 }
 
+.chat-header-stable {
+  flex-shrink: 0;
+}
+
+.chat-stable .chat-composer {
+  flex-shrink: 0;
+}
+
 @media (max-width: 1023px) {
   .chat-stable * {
     transition-duration: 0s !important;

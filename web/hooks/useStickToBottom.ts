@@ -4,25 +4,33 @@ import { useEffect, useRef, type RefObject } from "react";
 
 interface UseStickToBottomOptions {
   scrollRef: RefObject<HTMLElement | null>;
-  anchorRef: RefObject<HTMLElement | null>;
-  /** Bump when message list or typing state changes. */
-  signal: unknown;
-  /** Pin to bottom when user is already near the bottom (default 96px). */
+  messageCount: number;
+  lastMessageId: string | undefined;
+  isTyping: boolean;
   thresholdPx?: number;
 }
 
+function scrollToBottom(el: HTMLElement): void {
+  const target = el.scrollHeight - el.clientHeight;
+  if (Math.abs(el.scrollTop - target) <= 1) return;
+  el.scrollTop = target;
+}
+
 /**
- * Scrolls the message list only when appropriate — avoids smooth-scroll jitter
- * and fighting the user while they read older messages.
+ * Pins the message scroller to the bottom when the user is already there.
+ * Uses scrollTop (not scrollIntoView) to avoid scroll chaining / layout feedback loops.
  */
 export function useStickToBottom({
   scrollRef,
-  anchorRef,
-  signal,
+  messageCount,
+  lastMessageId,
+  isTyping,
   thresholdPx = 96,
 }: UseStickToBottomOptions) {
   const stickRef = useRef(true);
-  const lastSignalRef = useRef(signal);
+  const signatureRef = useRef("");
+
+  const signature = `${messageCount}:${lastMessageId ?? ""}:${isTyping}`;
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -40,18 +48,16 @@ export function useStickToBottom({
 
   useEffect(() => {
     const el = scrollRef.current;
-    const anchor = anchorRef.current;
-    if (!el || !anchor) return;
+    if (!el) return;
 
-    const signalChanged = lastSignalRef.current !== signal;
-    lastSignalRef.current = signal;
+    const changed = signatureRef.current !== signature;
+    signatureRef.current = signature;
+    if (!changed) return;
 
-    if (!stickRef.current && !signalChanged) return;
+    if (!stickRef.current && !isTyping) return;
 
-    const run = () => {
-      anchor.scrollIntoView({ block: "end", behavior: "auto" });
-    };
-
-    requestAnimationFrame(run);
-  }, [scrollRef, anchorRef, signal]);
+    requestAnimationFrame(() => {
+      scrollToBottom(el);
+    });
+  }, [scrollRef, signature, isTyping]);
 }

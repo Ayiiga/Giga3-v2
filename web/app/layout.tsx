@@ -49,7 +49,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover",
-  interactiveWidget: "resizes-content",
+  // overlays-content avoids keyboard resizing the layout (major mobile shake source).
+  interactiveWidget: "overlays-content",
 };
 
 export default function RootLayout({

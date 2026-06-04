@@ -46,7 +46,8 @@ Production deployment: **`perfect-lark-521`** (`https://perfect-lark-521.convex.
 ### Chat UI stability
 
 - Chat routes use the `chat-stable` class (`web/app/(app)/chat/layout.tsx`) to disable entrance animations and smooth-scroll jitter.
-- Message list scrolling uses `useStickToBottom` (`web/hooks/useStickToBottom.ts`) — no `behavior: "smooth"` on every Convex update.
+- **Root shake causes (fixed):** (1) Convex re-emitting new `messages` array references → `useStableUiMessages` keeps referential equality; (2) `scrollIntoView` feedback loop → `useStickToBottom` uses `scrollTop` + primitive signature; (3) `viewport.interactiveWidget: resizes-content` + `vh` workspace heights → `overlays-content` + fixed `px` max-heights; (4) duplicate `useBilling` on chat → use `user.credits` only; (5) composer textarea auto-resize reflowing flex layout → fixed max-height + internal scroll.
+- Dev render probe: `localStorage.giga3_render_probe=1` or `?renderProbe=1` logs `probeRender()` counts in the console.
 - Pull-to-refresh on `/chat` only updates the service worker (no full `location.reload()`); see `web/lib/refresh.ts`.
 - Media in messages: URLs in assistant replies render with save/share actions (`MessageMediaBlock`). Chat export: header **Chat actions** menu.
 

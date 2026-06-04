@@ -5,12 +5,15 @@ import {
   parseInterestProfile,
 } from "@/lib/chat/userInterests";
 import { Sparkles } from "lucide-react";
+import { memo } from "react";
 
 interface UserLearningBannerProps {
   interestProfileJson?: string | null;
 }
 
-export function UserLearningBanner({ interestProfileJson }: UserLearningBannerProps) {
+function UserLearningBannerInner({
+  interestProfileJson,
+}: UserLearningBannerProps) {
   const profile = parseInterestProfile(interestProfileJson);
   const summary = formatInterestSummary(profile);
 
@@ -32,3 +35,5 @@ export function UserLearningBanner({ interestProfileJson }: UserLearningBannerPr
     </div>
   );
 }
+
+export const UserLearningBanner = memo(UserLearningBannerInner);
