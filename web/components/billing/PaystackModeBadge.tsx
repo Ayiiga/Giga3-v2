@@ -37,7 +37,7 @@ export function PaystackModeBadge({
       )}
     >
       {label}
-      {inlineEnabled ? " · popup checkout" : ""}
+      {inlineEnabled ? " · secure checkout" : ""}
     </span>
   );
 }

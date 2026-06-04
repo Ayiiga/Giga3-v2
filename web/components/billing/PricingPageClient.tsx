@@ -12,16 +12,34 @@ import {
   SUBSCRIPTION_PRODUCTS,
   formatGhs,
 } from "@/lib/payments/plans";
+import { BillingErrorBanner } from "@/components/billing/BillingErrorBanner";
+import { CheckoutOverlay } from "@/components/billing/CheckoutOverlay";
 import { PaystackModeBadge } from "@/components/billing/PaystackModeBadge";
 import { useBilling } from "@/hooks/useBilling";
+import { paystackButtonLabel } from "@/lib/payments/checkoutLabels";
 import { cn } from "@/lib/utils";
 
 function PricingPageClientInner() {
-  const { usage, paying, error, checkout, email, paystackMode, inlineEnabled } =
-    useBilling();
+  const {
+    usage,
+    paying,
+    checkoutPhase,
+    checkoutPreview,
+    error,
+    checkout,
+    email,
+    paystackMode,
+    inlineEnabled,
+    dismissError,
+  } = useBilling();
 
   return (
     <div className="mt-14 space-y-16">
+      <CheckoutOverlay
+        phase={checkoutPhase}
+        label={checkoutPreview?.label}
+        amountGhs={checkoutPreview?.amountGhs}
+      />
       {email && usage && (
         <div className="mx-auto max-w-md space-y-3">
           <UsageTracker usage={usage} />
@@ -32,7 +50,7 @@ function PricingPageClientInner() {
       )}
 
       {error && (
-        <p className="text-center text-sm text-red-300">{error}</p>
+        <BillingErrorBanner message={error} onDismiss={dismissError} />
       )}
 
       <section>
@@ -55,7 +73,8 @@ function PricingPageClientInner() {
               ]}
               onSelect={(id) => void checkout(id)}
               loading={paying}
-              disabled={!email}
+              loadingLabel={paystackButtonLabel(checkoutPhase, "Subscribe with Paystack")}
+              disabled={!email || paying}
             />
           ))}
         </div>
@@ -109,7 +128,7 @@ function PricingPageClientInner() {
                 onClick={() => void checkout(pack.id)}
                 className="mt-8 w-full"
               >
-                Buy credits
+                {paystackButtonLabel(checkoutPhase, "Buy credits")}
               </Button>
             </article>
           ))}

@@ -4,8 +4,11 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { SubscriptionCard } from "@/components/billing/SubscriptionCard";
 import { UsageTracker } from "@/components/billing/UsageTracker";
 import { ButtonLink } from "@/components/ui/Button";
+import { BillingErrorBanner } from "@/components/billing/BillingErrorBanner";
+import { CheckoutOverlay } from "@/components/billing/CheckoutOverlay";
 import { PaystackModeBadge } from "@/components/billing/PaystackModeBadge";
 import { useBilling } from "@/hooks/useBilling";
+import { paystackButtonLabel } from "@/lib/payments/checkoutLabels";
 import {
   PLAN_FEATURE_HIGHLIGHTS,
   SUBSCRIPTION_PRODUCTS,
@@ -16,8 +19,18 @@ import { useEffect } from "react";
 
 function SubscribePageClientInner() {
   const router = useRouter();
-  const { email, usage, paying, error, checkout, paystackMode, inlineEnabled } =
-    useBilling();
+  const {
+    email,
+    usage,
+    paying,
+    checkoutPhase,
+    checkoutPreview,
+    error,
+    checkout,
+    paystackMode,
+    inlineEnabled,
+    dismissError,
+  } = useBilling();
 
   useEffect(() => {
     if (!email) router.replace("/chat/login?next=/subscribe");
@@ -29,6 +42,11 @@ function SubscribePageClientInner() {
 
   return (
     <div className="space-y-8">
+      <CheckoutOverlay
+        phase={checkoutPhase}
+        label={checkoutPreview?.label}
+        amountGhs={checkoutPreview?.amountGhs}
+      />
       <div className="text-center">
         <h1 className="text-3xl font-bold">Choose your plan</h1>
         <p className="mt-2 text-muted">
@@ -40,7 +58,9 @@ function SubscribePageClientInner() {
         </div>
       </div>
       {usage && <UsageTracker usage={usage} />}
-      {error && <p className="text-sm text-red-300">{error}</p>}
+      {error && (
+        <BillingErrorBanner message={error} onDismiss={dismissError} />
+      )}
       <div className="grid gap-6 md:grid-cols-3">
         {SUBSCRIPTION_PRODUCTS.map((product) => (
           <SubscriptionCard
@@ -52,6 +72,8 @@ function SubscribePageClientInner() {
             ]}
             onSelect={(id) => void checkout(id)}
             loading={paying}
+            loadingLabel={paystackButtonLabel(checkoutPhase, "Subscribe with Paystack")}
+            disabled={paying}
           />
         ))}
       </div>
