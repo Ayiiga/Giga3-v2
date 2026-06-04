@@ -6,6 +6,7 @@ import {
 } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
+import { getCreditPack } from "./creditPacks";
 import {
   getPlanPriceGhs,
   productIdToPlanId,
@@ -64,33 +65,12 @@ function getProduct(productId: string) {
     };
   }
 
-  const packs: Record<
-    string,
-    { label: string; amountGhs: number; credits: number }
-  > = {
-    credits_50: {
-      label: "50 Credits",
-      amountGhs: Number(process.env.PAYSTACK_CREDITS_50_GHS ?? "25"),
-      credits: 50,
-    },
-    credits_150: {
-      label: "150 Credits",
-      amountGhs: Number(process.env.PAYSTACK_CREDITS_150_GHS ?? "65"),
-      credits: 150,
-    },
-    credits_500: {
-      label: "500 Credits",
-      amountGhs: Number(process.env.PAYSTACK_CREDITS_500_GHS ?? "199"),
-      credits: 500,
-    },
-  };
-
-  const pack = packs[productId];
+  const pack = getCreditPack(productId);
   if (!pack) throw new Error("Unknown product");
   return {
     label: pack.label,
     amountGhs: pack.amountGhs,
-    type: "credits" as const,
+    type: pack.type,
     credits: pack.credits,
     planId: undefined,
   };

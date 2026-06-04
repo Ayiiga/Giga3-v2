@@ -20,8 +20,8 @@ export const SUBSCRIPTION_PLANS: Record<
     productId: "sub_basic_monthly",
     label: "Basic",
     priceGhs: 60,
-    credits: 100,
-    description: "100 credits/month for chat, writing, research & media.",
+    credits: 60,
+    description: "60 credits/month (60 GHS) — chat, writing, research & media.",
   },
   pro: {
     id: "pro",

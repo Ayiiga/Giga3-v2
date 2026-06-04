@@ -67,9 +67,9 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `REPLICATE_VIDEO_MODEL` | No | Default in `mediaCatalog.ts` |
    | `PAYSTACK_SECRET_KEY` | For billing | Paystack server API |
    | `PAYSTACK_PREMIUM_GHS` | No | Default `49` |
-   | `PAYSTACK_CREDITS_50_GHS` | No | Default `25` |
-   | `PAYSTACK_CREDITS_150_GHS` | No | Default `65` |
-   | `PAYSTACK_CREDITS_500_GHS` | No | Default `199` |
+   | `PAYSTACK_CREDITS_60_GHS` | No | Default `60` (grants same number of credits) |
+   | `PAYSTACK_CREDITS_150_GHS` | No | Default `150` |
+   | `PAYSTACK_CREDITS_500_GHS` | No | Default `500` |
    | `FRONTEND_URL` | **Yes (prod)** | Paystack/Stripe redirects, e.g. `https://www.giga3ai.com` |
    | `STRIPE_SECRET_KEY` | Legacy only | Old token checkout in `payments.ts` |
 

@@ -14,6 +14,7 @@ import type * as aiModes from "../aiModes.js";
 import type * as chat from "../chat.js";
 import type * as chatEngine from "../chatEngine.js";
 import type * as conversations from "../conversations.js";
+import type * as creditPacks from "../creditPacks.js";
 import type * as credits from "../credits.js";
 import type * as creditsConfig from "../creditsConfig.js";
 import type * as crons from "../crons.js";
@@ -47,6 +48,7 @@ declare const fullApi: ApiFromModules<{
   chat: typeof chat;
   chatEngine: typeof chatEngine;
   conversations: typeof conversations;
+  creditPacks: typeof creditPacks;
   credits: typeof credits;
   creditsConfig: typeof creditsConfig;
   crons: typeof crons;
