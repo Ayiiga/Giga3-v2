@@ -55,6 +55,7 @@ export function useBilling() {
 
   const initPayment = useAction(api.paystack.initializePayment);
   const verifyPayment = useAction(api.paystack.verifyPayment);
+  const reconcilePayment = useAction(api.paystack.reconcilePayment);
 
   const publicKey = useMemo(() => {
     const fromBuild = getPaystackPublicKeyFromBuild();
@@ -177,6 +178,13 @@ export function useBilling() {
     [verifyPayment]
   );
 
+  const reconcile = useCallback(
+    async (reference: string) => {
+      return reconcilePayment({ reference });
+    },
+    [reconcilePayment]
+  );
+
   const dismissError = useCallback(() => setError(null), []);
 
   return {
@@ -188,6 +196,7 @@ export function useBilling() {
     error,
     checkout,
     verify,
+    reconcile,
     paystackMode,
     inlineEnabled,
     keysMismatch,

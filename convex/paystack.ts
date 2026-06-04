@@ -4,6 +4,8 @@ import {
   internalMutation,
   query,
 } from "./_generated/server";
+import type { ActionCtx } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import { getCreditPack } from "./creditPacks";
@@ -14,13 +16,33 @@ import {
   SUBSCRIPTION_PLANS,
   type PaidPlanId,
 } from "./subscriptionPlans";
+import {
+  assertPaystackProductionReady,
+  getPaystackMode,
+  getPaystackSecret,
+  parsePaystackAmountPesewas,
+} from "./paystackConfig";
 
 const PAYSTACK_BASE = "https://api.paystack.co";
 
 function paystackSecret(): string {
-  const key = process.env.PAYSTACK_SECRET_KEY;
+  const key = getPaystackSecret();
   if (!key) throw new Error("PAYSTACK_SECRET_KEY is not configured");
   return key;
+}
+
+function validatePaymentAmount(record: { amountGhs: number }, paystackResponse: string) {
+  const pesewas = parsePaystackAmountPesewas(paystackResponse);
+  if (pesewas === null) {
+    console.warn("[paystack] Could not parse amount from Paystack response for reconciliation");
+    return;
+  }
+  const expected = toPesewas(record.amountGhs);
+  if (pesewas !== expected) {
+    throw new Error(
+      `Payment amount mismatch: expected ${expected} pesewas, got ${pesewas}`
+    );
+  }
 }
 
 function toPesewas(ghs: number): number {
@@ -120,6 +142,23 @@ export const getPaymentByReference = query({
   },
 });
 
+/** Client-safe Paystack configuration status (no secrets). */
+export const getPaystackStatus = query({
+  args: {},
+  handler: async () => {
+    const mode = getPaystackMode();
+    const requireLive = process.env.PAYSTACK_REQUIRE_LIVE === "true";
+    const frontend = process.env.FRONTEND_URL ?? "https://www.giga3ai.com";
+    return {
+      mode,
+      requireLive,
+      frontendUrl: frontend,
+      liveReady: mode === "live",
+      webhookPath: "/paystack/webhook",
+    };
+  },
+});
+
 export const createPendingPayment = internalMutation({
   args: {
     userId: v.string(),
@@ -152,6 +191,8 @@ export const fulfillPayment = internalMutation({
   args: {
     reference: v.string(),
     paystackResponse: v.string(),
+    /** When false, log amount mismatches but still fulfill (webhook recovery). */
+    strictAmountCheck: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const record = await ctx.db
@@ -160,6 +201,14 @@ export const fulfillPayment = internalMutation({
       .first();
     if (!record) throw new Error("Payment record not found");
     if (record.status === "success") return { alreadyFulfilled: true as const };
+
+    const strict = args.strictAmountCheck !== false;
+    try {
+      validatePaymentAmount(record, args.paystackResponse);
+    } catch (amountErr) {
+      console.error("[paystack] amount validation:", amountErr);
+      if (strict) throw amountErr;
+    }
 
     await ctx.db.patch(record._id, {
       status: "success",
@@ -197,6 +246,25 @@ export const fulfillPayment = internalMutation({
   },
 });
 
+export const markPaymentFailed = internalMutation({
+  args: {
+    reference: v.string(),
+    paystackResponse: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const record = await ctx.db
+      .query("payments")
+      .withIndex("by_reference", (q) => q.eq("reference", args.reference))
+      .first();
+    if (!record || record.status === "success") return { updated: false as const };
+    await ctx.db.patch(record._id, {
+      status: "failed",
+      paystackResponse: args.paystackResponse,
+    });
+    return { updated: true as const };
+  },
+});
+
 export const initializePayment = action({
   args: {
     userId: v.string(),
@@ -204,6 +272,7 @@ export const initializePayment = action({
     productId: v.string(),
   },
   handler: async (ctx, args) => {
+    assertPaystackProductionReady();
     const email = args.email.trim().toLowerCase();
     const userId = args.userId.trim().toLowerCase();
     if (!email.includes("@")) {
@@ -217,6 +286,7 @@ export const initializePayment = action({
 
     const reference = `giga3_${args.productId}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     const frontend = process.env.FRONTEND_URL ?? "https://www.giga3ai.com";
+    const mode = getPaystackMode();
 
     await ctx.runMutation(internal.paystack.createPendingPayment, {
       userId,
@@ -237,6 +307,7 @@ export const initializePayment = action({
       metadata: {
         userId,
         productId: args.productId,
+        paystack_mode: mode,
         custom_fields: [
           { display_name: "Product", variable_name: "product", value: catalog.label },
           {
@@ -260,32 +331,64 @@ export const initializePayment = action({
       reference,
       amountGhs: catalog.amountGhs,
       label: catalog.label,
+      mode,
     };
   },
 });
 
+async function verifyAndFulfill(
+  ctx: ActionCtx,
+  reference: string
+): Promise<Doc<"payments"> | null> {
+  const verified = await paystackGet(
+    `/transaction/verify/${encodeURIComponent(reference)}`
+  );
+
+  if (verified.data.status !== "success") {
+    await ctx.runMutation(internal.paystack.markPaymentFailed, {
+      reference,
+      paystackResponse: JSON.stringify(verified.data),
+    });
+    throw new Error("Payment not successful");
+  }
+
+  await ctx.runMutation(internal.paystack.fulfillPayment, {
+    reference,
+    paystackResponse: JSON.stringify(verified.data),
+  });
+
+  return await ctx.runQuery(api.paystack.getPaymentByReference, { reference });
+}
+
 export const verifyPayment = action({
   args: { reference: v.string() },
   handler: async (ctx, args) => {
-    const verified = await paystackGet(
-      `/transaction/verify/${encodeURIComponent(args.reference)}`
-    );
-
-    if (verified.data.status !== "success") {
-      throw new Error("Payment not successful");
-    }
-
-    await ctx.runMutation(internal.paystack.fulfillPayment, {
-      reference: args.reference,
-      paystackResponse: JSON.stringify(verified.data),
-    });
-
-    const record = await ctx.runQuery(api.paystack.getPaymentByReference, {
-      reference: args.reference,
-    });
+    const record = await verifyAndFulfill(ctx, args.reference);
 
     return {
       status: "success" as const,
+      type: record?.type,
+      planId: record?.planId,
+      creditsGranted: record?.creditsGranted,
+    };
+  },
+});
+
+/** Re-run Paystack verify for a pending payment (recovery after client/network errors). */
+export const reconcilePayment = action({
+  args: { reference: v.string() },
+  handler: async (ctx, args) => {
+    const existing = await ctx.runQuery(api.paystack.getPaymentByReference, {
+      reference: args.reference,
+    });
+    if (!existing) throw new Error("Payment reference not found");
+    if (existing.status === "success") {
+      return { status: "success" as const, alreadyFulfilled: true };
+    }
+    const record = await verifyAndFulfill(ctx, args.reference);
+    return {
+      status: "success" as const,
+      alreadyFulfilled: false,
       type: record?.type,
       planId: record?.planId,
       creditsGranted: record?.creditsGranted,
@@ -301,19 +404,34 @@ export const processWebhookPayload = internalMutation({
       data?: { reference?: string; status?: string };
     };
 
+    const reference = event.data?.reference;
+    if (!reference) {
+      return { handled: false, reason: "missing_reference" };
+    }
+
+    if (event.event === "charge.failed") {
+      await ctx.runMutation(internal.paystack.markPaymentFailed, {
+        reference,
+        paystackResponse: args.payload,
+      });
+      return { handled: true, reference, outcome: "failed" as const };
+    }
+
     if (event.event !== "charge.success") {
       return { handled: false, reason: event.event ?? "unknown" };
     }
 
-    const reference = event.data?.reference;
-    if (!reference) throw new Error("Missing reference in webhook");
+    if (event.data?.status && event.data.status !== "success") {
+      return { handled: false, reason: `status_${event.data.status}` };
+    }
 
     await ctx.runMutation(internal.paystack.fulfillPayment, {
       reference,
       paystackResponse: args.payload,
+      strictAmountCheck: false,
     });
 
-    return { handled: true, reference };
+    return { handled: true, reference, outcome: "success" as const };
   },
 });
 

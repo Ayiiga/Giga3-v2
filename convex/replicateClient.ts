@@ -1,108 +1,142 @@
-import {
-  REPLICATE_IMAGE_MODEL,
-  REPLICATE_VIDEO_MODEL,
-} from "./mediaCatalog";
+/**
+ * Replicate predictions API — fallback when fal.ai fails.
+ * Set REPLICATE_API_TOKEN in Convex environment.
+ */
 
-function getReplicateToken(): string {
-  const token = process.env.REPLICATE_API_TOKEN?.trim();
+import { sleep, withRetries } from "./mediaUtils";
+import { REPLICATE_IMAGE_MODEL, REPLICATE_VIDEO_MODEL } from "./mediaCatalog";
+
+const REPLICATE_API = "https://api.replicate.com/v1";
+
+export function getReplicateToken(): string | undefined {
+  return (
+    process.env.REPLICATE_API_TOKEN?.trim() ||
+    process.env.REPLICATE_API_KEY?.trim() ||
+    undefined
+  );
+}
+
+function requireReplicateToken(): string {
+  const token = getReplicateToken();
   if (!token) {
-    throw new Error(
-      "REPLICATE_API_TOKEN is not configured in Convex environment",
-    );
+    throw new Error("REPLICATE_API_TOKEN is not configured");
   }
   return token;
 }
 
-type ReplicatePrediction = {
-  id?: string;
-  status?: string;
+type PredictionResponse = {
+  id: string;
+  status: string;
   output?: unknown;
-  error?: string;
+  error?: string | null;
 };
 
-function extractOutputUrl(output: unknown, mediaType: "image" | "video"): string {
-  if (typeof output === "string" && output.startsWith("http")) {
-    return output;
+function modelPath(modelId: string): string {
+  const parts = modelId.split("/").filter(Boolean);
+  if (parts.length < 2) {
+    throw new Error(`Invalid Replicate model id: ${modelId}`);
   }
-  if (Array.isArray(output)) {
-    const first = output.find(
-      (item) => typeof item === "string" && item.startsWith("http"),
-    );
-    if (typeof first === "string") return first;
-  }
-  if (output && typeof output === "object") {
-    const record = output as Record<string, unknown>;
-    const candidate =
-      record.url ?? record.video ?? record.image ?? record.output;
-    if (typeof candidate === "string" && candidate.startsWith("http")) {
-      return candidate;
-    }
-  }
-  throw new Error(
-    `Replicate returned no ${mediaType} URL (output: ${JSON.stringify(output)?.slice(0, 200)})`,
-  );
+  return `/models/${parts[0]}/${parts[1]}/predictions`;
 }
 
-async function createModelPrediction(
-  model: string,
-  input: Record<string, unknown>,
-  waitSeconds = 120,
-): Promise<ReplicatePrediction> {
-  const token = getReplicateToken();
-  const res = await fetch(
-    `https://api.replicate.com/v1/models/${model}/predictions`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        Prefer: `wait=${waitSeconds}`,
-      },
-      body: JSON.stringify({ input }),
+async function replicateFetch(path: string, init?: RequestInit): Promise<PredictionResponse> {
+  const res = await fetch(`${REPLICATE_API}${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${requireReplicateToken()}`,
+      "Content-Type": "application/json",
+      ...(init?.headers ?? {}),
     },
-  );
-
-  const body = (await res.json()) as ReplicatePrediction & {
-    detail?: string;
-  };
-
+  });
+  const body = (await res.json()) as PredictionResponse & { detail?: string };
   if (!res.ok) {
-    throw new Error(
-      body.detail ?? body.error ?? `Replicate HTTP ${res.status}`,
-    );
+    const detail =
+      typeof body.detail === "string"
+        ? body.detail
+        : body.error ?? `Replicate HTTP ${res.status}`;
+    throw new Error(`Replicate request failed: ${detail}`);
   }
-
-  if (body.status === "failed") {
-    throw new Error(body.error ?? "Replicate prediction failed");
-  }
-
   return body;
 }
 
-export async function replicateGenerateImage(prompt: string): Promise<{
-  outputUrl: string;
-  predictionId?: string;
-}> {
-  const prediction = await createModelPrediction(REPLICATE_IMAGE_MODEL, {
-    prompt,
-  });
-  return {
-    outputUrl: extractOutputUrl(prediction.output, "image"),
-    predictionId: prediction.id,
-  };
+async function pollPrediction(
+  id: string,
+  options: { maxWaitMs: number; pollIntervalMs: number }
+): Promise<PredictionResponse> {
+  const deadline = Date.now() + options.maxWaitMs;
+  while (Date.now() < deadline) {
+    const prediction = await replicateFetch(`/predictions/${id}`);
+    if (prediction.status === "succeeded") return prediction;
+    if (prediction.status === "failed" || prediction.status === "canceled") {
+      throw new Error(prediction.error ?? `Replicate prediction ${prediction.status}`);
+    }
+    await sleep(options.pollIntervalMs);
+  }
+  throw new Error(`Replicate prediction timed out after ${options.maxWaitMs}ms`);
 }
 
-export async function replicateGenerateVideo(prompt: string): Promise<{
-  outputUrl: string;
-  predictionId?: string;
+function extractUrl(output: unknown): string | undefined {
+  if (typeof output === "string" && output.startsWith("http")) return output;
+  if (Array.isArray(output)) {
+    const first = output[0];
+    if (typeof first === "string" && first.startsWith("http")) return first;
+  }
+  if (output && typeof output === "object" && "url" in output) {
+    const url = (output as { url?: string }).url;
+    if (url?.startsWith("http")) return url;
+  }
+  return undefined;
+}
+
+export async function replicateGenerateImage(prompt: string): Promise<{
+  imageUrl: string;
+  predictionId: string;
 }> {
-  const prediction = await createModelPrediction(
-    REPLICATE_VIDEO_MODEL,
-    { prompt },
-    180,
+  return withRetries(
+    "replicate-image",
+    async () => {
+      const created = await replicateFetch(modelPath(REPLICATE_IMAGE_MODEL), {
+        method: "POST",
+        body: JSON.stringify({ input: { prompt } }),
+      });
+      const done = await pollPrediction(created.id, {
+        maxWaitMs: Number(process.env.REPLICATE_IMAGE_MAX_WAIT_MS ?? 5 * 60 * 1000),
+        pollIntervalMs: 2500,
+      });
+      const imageUrl = extractUrl(done.output);
+      if (!imageUrl) {
+        throw new Error("Replicate image response missing URL");
+      }
+      return { imageUrl, predictionId: done.id };
+    },
+    { attempts: 2 }
   );
-  return {
-    outputUrl: extractOutputUrl(prediction.output, "video"),
-    predictionId: prediction.id,
-  };
+}
+
+export async function replicateGenerateVideo(
+  prompt: string,
+  imageUrl?: string
+): Promise<{ videoUrl: string; predictionId: string }> {
+  return withRetries(
+    "replicate-video",
+    async () => {
+      const input: Record<string, unknown> = { prompt };
+      if (imageUrl) input.image = imageUrl;
+
+      const created = await replicateFetch(modelPath(REPLICATE_VIDEO_MODEL), {
+        method: "POST",
+        body: JSON.stringify({ input }),
+      });
+      const done = await pollPrediction(created.id, {
+        maxWaitMs: Number(process.env.REPLICATE_VIDEO_MAX_WAIT_MS ?? 8 * 60 * 1000),
+        pollIntervalMs: 3000,
+      });
+      const videoUrl = extractUrl(done.output);
+      if (!videoUrl) {
+        throw new Error("Replicate video response missing URL");
+      }
+      return { videoUrl, predictionId: done.id };
+    },
+    { attempts: 2 }
+  );
 }

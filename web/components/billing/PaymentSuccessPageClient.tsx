@@ -23,7 +23,7 @@ export function PaymentSuccessPageClient() {
 function PaymentSuccessPageContent() {
   const params = useSearchParams();
   const reference = params.get("reference") ?? undefined;
-  const { verify } = useBilling();
+  const { verify, reconcile } = useBilling();
   const [message, setMessage] = useState("Confirming your payment…");
   const [failed, setFailed] = useState(false);
   const started = useRef(false);
@@ -41,14 +41,15 @@ function PaymentSuccessPageContent() {
 
     async function runVerify(attempt: number) {
       try {
-        const res = (await verify(reference!)) as {
-          status?: string;
-          type?: string;
-          creditsGranted?: number;
-          planId?: string;
-        };
+        const res =
+          attempt > 0
+            ? await reconcile(reference!)
+            : await verify(reference!);
         if (cancelled) return;
-        if (res.status === "success") {
+        const ok =
+          res.status === "success" ||
+          ("alreadyFulfilled" in res && Boolean(res.alreadyFulfilled));
+        if (ok) {
           if (res.type === "credits") {
             setMessage(
               `Payment confirmed${
@@ -84,7 +85,7 @@ function PaymentSuccessPageContent() {
     return () => {
       cancelled = true;
     };
-  }, [reference, verify]);
+  }, [reference, verify, reconcile]);
 
   if (failed) {
     return (
