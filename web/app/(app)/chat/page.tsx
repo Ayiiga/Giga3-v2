@@ -1,8 +1,11 @@
 import { ChatErrorBoundary } from "@/components/chat/ChatErrorBoundary";
 import dynamic from "next/dynamic";
 
-const ChatShell = dynamic(
-  () => import("@/components/chat/ChatShell").then((m) => ({ default: m.ChatShell })),
+const ChatPageRoot = dynamic(
+  () =>
+    import("@/components/chat/ChatPageRoot").then((m) => ({
+      default: m.ChatPageRoot,
+    })),
   {
     ssr: false,
     loading: () => (
@@ -16,7 +19,7 @@ const ChatShell = dynamic(
 export default function ChatPage() {
   return (
     <ChatErrorBoundary>
-      <ChatShell />
+      <ChatPageRoot />
     </ChatErrorBoundary>
   );
 }

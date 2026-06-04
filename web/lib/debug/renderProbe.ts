@@ -18,10 +18,12 @@ function syncToWindow(): void {
 
 export function isRenderProbeEnabled(): boolean {
   if (typeof window === "undefined") return false;
-  if (process.env.NODE_ENV === "production") return false;
   try {
     if (window.location.search.includes("renderProbe=1")) return true;
-    return window.localStorage.getItem("giga3_render_probe") === "1";
+    if (process.env.NODE_ENV !== "production") {
+      return window.localStorage.getItem("giga3_render_probe") === "1";
+    }
+    return false;
   } catch {
     return false;
   }

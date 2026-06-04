@@ -1,4 +1,7 @@
+"use client";
+
 import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
+import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
 import { cn } from "@/lib/utils";
 import { memo, useMemo } from "react";
@@ -15,6 +18,8 @@ export const MessageBubble = memo(function MessageBubble({
   content,
   pending,
 }: MessageBubbleProps) {
+  useRenderDiagnostic("MessageBubble");
+
   const isUser = role === "user";
   const parsed = useMemo(() => parseMessageMedia(content), [content]);
   const safeContent =
@@ -28,7 +33,7 @@ export const MessageBubble = memo(function MessageBubble({
     <div className={cn("flex w-full", isUser ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "max-w-[92%] rounded-2xl border px-5 py-4 text-base font-medium leading-relaxed shadow-md sm:max-w-[80%] sm:text-lg",
+          "chat-message-bubble max-w-[92%] rounded-2xl border px-5 py-4 text-base font-medium leading-relaxed shadow-md sm:max-w-[80%] sm:text-lg",
           isUser
             ? "rounded-br-md border-violet-300/80 bg-white text-black shadow-violet-500/15"
             : "rounded-bl-md border-zinc-200 bg-zinc-50 text-black shadow-black/10",

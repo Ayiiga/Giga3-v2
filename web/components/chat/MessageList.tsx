@@ -1,10 +1,9 @@
 "use client";
 
 import { MessageBubble } from "@/components/chat/MessageBubble";
-import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { DOCUMENT_TEMPLATES } from "@/lib/chat/documentTemplates";
 import { formatCurrentDate, resolveTemplatePlaceholders } from "@/lib/datetime";
-import { probeRender } from "@/lib/debug/renderProbe";
+import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { useScrollToLatestMessage } from "@/hooks/useScrollToLatestMessage";
 import { memo, useMemo, useRef } from "react";
 
@@ -17,28 +16,23 @@ export interface UiMessage {
 interface MessageListProps {
   messages: UiMessage[];
   isLoading?: boolean;
-  isTyping: boolean;
   onInsertTemplate?: (text: string) => void;
 }
 
 function MessageListInner({
   messages,
   isLoading = false,
-  isTyping,
   onInsertTemplate,
 }: MessageListProps) {
-  probeRender("MessageList");
+  useRenderDiagnostic("MessageList");
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastMessageId = messages[messages.length - 1]?.id;
-  const scrollAnchorId = useMemo(() => {
-    if (isTyping) return `${lastMessageId ?? "none"}|typing`;
-    return lastMessageId;
-  }, [lastMessageId, isTyping]);
 
   useScrollToLatestMessage({
     scrollRef,
-    anchorMessageId: scrollAnchorId,
+    lastMessageId,
+    enabled: messages.length > 0,
   });
 
   const todayLabel = useMemo(() => {
@@ -60,7 +54,7 @@ function MessageListInner({
             <p className="text-xl font-bold text-foreground">Loading messages…</p>
           </div>
         )}
-        {messages.length === 0 && !isTyping && !isLoading && (
+        {messages.length === 0 && !isLoading && (
           <div className="flex h-full min-h-[200px] flex-col items-center justify-center text-center text-muted">
             <p className="text-xl font-bold text-foreground">Start a conversation</p>
             {todayLabel && (
@@ -87,7 +81,7 @@ function MessageListInner({
                           /* parent handles errors via insertRef */
                         }
                       }}
-                      className="flex min-h-12 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-left text-xs transition-colors hover:border-accent/40 hover:bg-accent/5"
+                      className="flex min-h-12 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-left text-xs hover:border-accent/40 hover:bg-accent/5"
                     >
                       <Icon className="h-5 w-5 shrink-0 text-accent" aria-hidden />
                       <span className="font-medium text-foreground">{template.title}</span>
@@ -107,13 +101,6 @@ function MessageListInner({
               pending={m.id === "pending-user"}
             />
           ))}
-          {isTyping && (
-            <div className="flex justify-start">
-              <div className="min-h-[52px] rounded-2xl rounded-bl-md border border-zinc-200 bg-white px-4 py-3 shadow-sm">
-                <TypingIndicator />
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -123,7 +110,6 @@ function MessageListInner({
 function propsEqual(prev: MessageListProps, next: MessageListProps): boolean {
   return (
     prev.isLoading === next.isLoading &&
-    prev.isTyping === next.isTyping &&
     prev.onInsertTemplate === next.onInsertTemplate &&
     prev.messages === next.messages
   );

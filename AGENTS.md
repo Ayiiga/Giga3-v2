@@ -46,7 +46,7 @@ Production deployment: **`perfect-lark-521`** (`https://perfect-lark-521.convex.
 ### Chat UI stability
 
 - Chat routes use the `chat-stable` class (`web/app/(app)/chat/layout.tsx`) to disable entrance animations and smooth-scroll jitter.
-- **Root shake causes (fixed):** (1) Convex re-emitting new array refs → `useStableUiMessages` / `useStableConversations`; (2) scroll feedback loops → `useScrollToLatestMessage` (one `scrollTop` per message id, no listeners/rAF); (3) mobile `dvh` chrome resize → chat `fixed inset-0`; (4) `interactiveWidget: overlays-content`; (5) TypingIndicator `setInterval` removed; (6) workspace panel fixed `200px` max-height; (7) pull-to-refresh removed; (8) media `aspect-video` placeholders.
+- **Root shake causes (fixed):** (1) Convex re-emitting new array refs → `useStableUiMessages` / `useStableConversations`; (2) scroll on `isTyping` / `\|typing` anchor → `useScrollToLatestMessage` only when `lastMessageId` changes; typing UI in `ChatTypingBar` outside `MessageList`; (3) mobile `dvh` → chat `fixed inset-0`; (4) `interactiveWidget: overlays-content`; (5) static `TypingIndicator`; (6) workspace `200px` max-height; (7) no pull-to-refresh; (8) chat-stable disables animations/transitions. Render probe: `?renderProbe=1` → `ChatPage`, `MessageList`, `MessageBubble` counts.
 - Dev render probe: `localStorage.giga3_render_probe=1` or `?renderProbe=1` logs `probeRender()` counts in the console.
 - Pull-to-refresh is **disabled** (no custom gesture, no page translate). Use normal navigation or hard refresh if needed.
 - Media in messages: URLs in assistant replies render with save/share actions (`MessageMediaBlock`). Chat export: header **Chat actions** menu.

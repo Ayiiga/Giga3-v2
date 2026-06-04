@@ -1,13 +1,17 @@
 "use client";
 
 import { Info, ShieldCheck } from "lucide-react";
+import { memo } from "react";
 
 interface ChatProviderBannerProps {
   label: string | null;
   usedFallback: boolean;
 }
 
-export function ChatProviderBanner({ label, usedFallback }: ChatProviderBannerProps) {
+export const ChatProviderBanner = memo(function ChatProviderBanner({
+  label,
+  usedFallback,
+}: ChatProviderBannerProps) {
   if (!label) return null;
 
   if (usedFallback) {
@@ -28,4 +32,4 @@ export function ChatProviderBanner({ label, usedFallback }: ChatProviderBannerPr
       <span>Connected via {label}</span>
     </div>
   );
-}
+});

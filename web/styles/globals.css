@@ -170,8 +170,25 @@ button:focus-visible {
 
 .chat-stable .animate-slide-up,
 .chat-stable .animate-fade-in,
-.chat-stable .animate-bounce {
+.chat-stable .animate-bounce,
+.chat-stable .animate-spin,
+.chat-stable .animate-pulse,
+.chat-stable .animate-pulse-soft {
   animation: none !important;
+}
+
+.chat-stable *,
+.chat-stable *::before,
+.chat-stable *::after {
+  transition-property: none !important;
+}
+
+.chat-typing-bar {
+  min-height: 3.25rem;
+}
+
+.chat-message-bubble {
+  contain: layout style;
 }
 
 .chat-header-stable {

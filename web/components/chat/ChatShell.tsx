@@ -9,11 +9,12 @@ import { ChatWorkspacePanel } from "@/components/chat/ChatWorkspacePanel";
 import { UserLearningBanner } from "@/components/chat/UserLearningBanner";
 import { SlowNetworkBanner } from "@/components/chat/SlowNetworkBanner";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
+import { ChatTypingBar } from "@/components/chat/ChatTypingBar";
 import { MessageList } from "@/components/chat/MessageList";
 import { useChatPlatform } from "@/hooks/useChatPlatform";
+import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { clearUserEmail } from "@/lib/auth";
-import { probeRender } from "@/lib/debug/renderProbe";
 import { siteConfig } from "@/lib/site";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { ChatActionsMenu } from "@/components/chat/ChatActionsMenu";
@@ -31,7 +32,7 @@ export function ChatShell() {
 }
 
 function ChatShellInner() {
-  probeRender("ChatShellInner");
+  useRenderDiagnostic("ChatShellInner");
 
   const router = useRouter();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -194,9 +195,9 @@ function ChatShellInner() {
         <MessageList
           messages={messages}
           isLoading={messagesLoading}
-          isTyping={isSending}
           onInsertTemplate={handleInsertTemplate}
         />
+        <ChatTypingBar visible={isSending} />
         <ChatInput
           insertRef={insertRef}
           onSend={handleSend}

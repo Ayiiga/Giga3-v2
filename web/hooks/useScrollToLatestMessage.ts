@@ -4,27 +4,33 @@ import { useEffect, useRef, type RefObject } from "react";
 
 interface UseScrollToLatestMessageOptions {
   scrollRef: RefObject<HTMLElement | null>;
-  /** Scroll only when this id changes (new / pending message). */
-  anchorMessageId: string | undefined;
+  /** Convex message id or optimistic pending-user id — scroll only when this changes. */
+  lastMessageId: string | undefined;
+  enabled?: boolean;
 }
 
 /**
- * Scrolls the message list once per new message id.
- * No stick-to-bottom loop, no scroll listeners, no requestAnimationFrame retries.
+ * Scrolls once when a new message id appears.
+ * Does NOT scroll for typing state, isSending, or Convex reference-only updates.
  */
 export function useScrollToLatestMessage({
   scrollRef,
-  anchorMessageId,
+  lastMessageId,
+  enabled = true,
 }: UseScrollToLatestMessageOptions) {
   const prevIdRef = useRef<string | undefined>();
 
   useEffect(() => {
-    if (!anchorMessageId || prevIdRef.current === anchorMessageId) return;
-    prevIdRef.current = anchorMessageId;
+    if (!enabled || !lastMessageId || prevIdRef.current === lastMessageId) {
+      return;
+    }
+    prevIdRef.current = lastMessageId;
 
     const el = scrollRef.current;
     if (!el) return;
 
-    el.scrollTop = el.scrollHeight;
-  }, [scrollRef, anchorMessageId]);
+    const target = el.scrollHeight - el.clientHeight;
+    if (Math.abs(el.scrollTop - target) <= 2) return;
+    el.scrollTop = target;
+  }, [scrollRef, lastMessageId, enabled]);
 }
