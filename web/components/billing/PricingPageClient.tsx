@@ -12,11 +12,13 @@ import {
   SUBSCRIPTION_PRODUCTS,
   formatGhs,
 } from "@/lib/payments/plans";
+import { PaystackModeBadge } from "@/components/billing/PaystackModeBadge";
 import { useBilling } from "@/hooks/useBilling";
 import { cn } from "@/lib/utils";
 
 function PricingPageClientInner() {
-  const { usage, paying, error, checkout, email } = useBilling();
+  const { usage, paying, error, checkout, email, paystackMode, inlineEnabled } =
+    useBilling();
 
   return (
     <div className="mt-14 space-y-16">
@@ -39,6 +41,9 @@ function PricingPageClientInner() {
           Pay with Paystack (GHS). Credits refill each billing period. Webhook
           activates your plan automatically.
         </p>
+        <div className="mt-3 flex justify-center">
+          <PaystackModeBadge mode={paystackMode} inlineEnabled={inlineEnabled} />
+        </div>
         <div className="mt-10 grid gap-8 lg:grid-cols-3">
           {SUBSCRIPTION_PRODUCTS.map((product) => (
             <SubscriptionCard

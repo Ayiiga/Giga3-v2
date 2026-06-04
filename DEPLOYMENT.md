@@ -93,7 +93,7 @@ Add these under **Settings → Secrets and variables → Actions → Repository 
 | `CF_ACCOUNT_ID` | **Yes** | Cloudflare account ID (dashboard URL or API) |
 | `NEXT_PUBLIC_CONVEX_URL` | **Yes** | Production Convex URL, e.g. `https://<deployment>.convex.cloud` |
 | `NEXT_PUBLIC_CONVEX_SITE_URL` | Recommended | `https://<deployment>.convex.site` (exported for future use; not required by current UI) |
-| `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | No | Reserved; Paystack runs via Convex actions (no browser secret today) |
+| `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Recommended | Paystack Inline popup (`pk_live_…`); fallback: Convex `PAYSTACK_PUBLIC_KEY` via `paystack.getClientConfig` |
 | ~~`CF_PROJECT_NAME`~~ | **Not used** | Workflow deploys to hardcoded project **`giga3ai`** |
 
 **`CF_PROJECT_NAME` confirmation:** the Cloudflare Pages project name must be **`giga3ai`**. The GitHub workflow sets `projectName: giga3ai` explicitly so the secret is not required.

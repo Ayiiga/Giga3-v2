@@ -4,6 +4,7 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { SubscriptionCard } from "@/components/billing/SubscriptionCard";
 import { UsageTracker } from "@/components/billing/UsageTracker";
 import { ButtonLink } from "@/components/ui/Button";
+import { PaystackModeBadge } from "@/components/billing/PaystackModeBadge";
 import { useBilling } from "@/hooks/useBilling";
 import {
   PLAN_FEATURE_HIGHLIGHTS,
@@ -15,7 +16,8 @@ import { useEffect } from "react";
 
 function SubscribePageClientInner() {
   const router = useRouter();
-  const { email, usage, paying, error, checkout } = useBilling();
+  const { email, usage, paying, error, checkout, paystackMode, inlineEnabled } =
+    useBilling();
 
   useEffect(() => {
     if (!email) router.replace("/chat/login?next=/subscribe");
@@ -33,6 +35,9 @@ function SubscribePageClientInner() {
           Monthly billing in <span className="text-foreground">GHS</span> via
           Paystack · Credits refill on renewal
         </p>
+        <div className="mt-3 flex justify-center">
+          <PaystackModeBadge mode={paystackMode} inlineEnabled={inlineEnabled} />
+        </div>
       </div>
       {usage && <UsageTracker usage={usage} />}
       {error && <p className="text-sm text-red-300">{error}</p>}

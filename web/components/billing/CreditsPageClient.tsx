@@ -4,6 +4,7 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { UsageTracker } from "@/components/billing/UsageTracker";
 import { Button, ButtonLink } from "@/components/ui/Button";
+import { PaystackModeBadge } from "@/components/billing/PaystackModeBadge";
 import { useBilling } from "@/hooks/useBilling";
 import { CREDIT_COSTS } from "@/lib/credits/constants";
 import { CREDIT_PACKS, formatGhs } from "@/lib/payments/plans";
@@ -14,7 +15,8 @@ import { useEffect } from "react";
 
 function CreditsPageClientInner() {
   const router = useRouter();
-  const { email, usage, paying, error, checkout } = useBilling();
+  const { email, usage, paying, error, checkout, paystackMode, inlineEnabled } =
+    useBilling();
 
   useEffect(() => {
     if (!email) router.replace("/chat/login?next=/credits");
@@ -32,6 +34,9 @@ function CreditsPageClientInner() {
           Images cost {CREDIT_COSTS.image} credits · Videos cost{" "}
           {CREDIT_COSTS.video} credits. Payments in GHS via Paystack.
         </p>
+        <div className="mt-3 flex justify-center">
+          <PaystackModeBadge mode={paystackMode} inlineEnabled={inlineEnabled} />
+        </div>
         {usage && (
           <div className="mt-4 flex justify-center">
             <CreditBadge credits={usage.credits} />

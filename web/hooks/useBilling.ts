@@ -3,15 +3,22 @@
 import { getUserEmail } from "@/lib/auth";
 import type { UsageSnapshot } from "@/lib/credits/constants";
 import {
-  redirectToPaystack,
+  getPaystackPublicKeyFromBuild,
+  paystackModeFromPublicKey,
+  type PaystackClientMode,
+} from "@/lib/payments/paystackConfig";
+import {
+  openPaystackCheckout,
   initializePaystackPayment,
   verifyPaystackPayment,
 } from "@/lib/payments/paystackService";
 import { api } from "convex/_generated/api";
 import { useAction, useQuery } from "convex/react";
-import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export function useBilling() {
+  const router = useRouter();
   const email = getUserEmail();
   const userId = email ?? "";
   const [paying, setPaying] = useState(false);
@@ -22,6 +29,11 @@ export function useBilling() {
     setMounted(true);
   }, []);
 
+  const paystackConfig = useQuery(
+    api.paystack.getClientConfig,
+    mounted ? {} : "skip"
+  );
+
   const usageRaw = useQuery(
     api.credits.getUsageSnapshot,
     mounted && userId ? { userId } : "skip"
@@ -29,6 +41,21 @@ export function useBilling() {
 
   const initPayment = useAction(api.paystack.initializePayment);
   const verifyPayment = useAction(api.paystack.verifyPayment);
+
+  const publicKey = useMemo(() => {
+    const fromBuild = getPaystackPublicKeyFromBuild();
+    if (fromBuild) return fromBuild;
+    if (paystackConfig?.enabled) return paystackConfig.publicKey;
+    return undefined;
+  }, [paystackConfig]);
+
+  const paystackMode: PaystackClientMode | null = useMemo(() => {
+    if (publicKey) return paystackModeFromPublicKey(publicKey);
+    if (paystackConfig?.enabled) return paystackConfig.mode;
+    return null;
+  }, [publicKey, paystackConfig]);
+
+  const inlineEnabled = Boolean(publicKey) || Boolean(paystackConfig?.enabled);
 
   const usage: UsageSnapshot | null = usageRaw
     ? {
@@ -56,13 +83,40 @@ export function useBilling() {
           email,
           productId,
         });
-        redirectToPaystack(result.authorizationUrl);
+
+        const mode = await openPaystackCheckout(result, {
+          email,
+          publicKey,
+          onSuccess: async (reference) => {
+            try {
+              await verifyPaystackPayment(verifyPayment, reference);
+              router.push(
+                `/payment/success/?reference=${encodeURIComponent(reference)}`
+              );
+            } catch {
+              router.push(
+                `/payment/success/?reference=${encodeURIComponent(reference)}`
+              );
+            } finally {
+              setPaying(false);
+            }
+          },
+          onCancel: () => setPaying(false),
+          onError: (message) => {
+            setError(message);
+            setPaying(false);
+          },
+        });
+
+        if (mode === "redirect") {
+          return;
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : "Payment failed");
         setPaying(false);
       }
     },
-    [email, initPayment]
+    [email, initPayment, publicKey, router, verifyPayment]
   );
 
   const verify = useCallback(
@@ -72,5 +126,14 @@ export function useBilling() {
     [verifyPayment]
   );
 
-  return { email, usage, paying, error, checkout, verify };
+  return {
+    email,
+    usage,
+    paying,
+    error,
+    checkout,
+    verify,
+    paystackMode,
+    inlineEnabled,
+  };
 }

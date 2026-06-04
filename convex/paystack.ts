@@ -1,4 +1,9 @@
-import { action, httpAction, internalMutation, query } from "./_generated/server";
+import {
+  action,
+  httpAction,
+  internalMutation,
+  query,
+} from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import {
@@ -90,6 +95,23 @@ function getProduct(productId: string) {
     planId: undefined,
   };
 }
+
+/** Public checkout config for Paystack Inline (popup). Secret key stays server-only. */
+export const getClientConfig = query({
+  args: {},
+  handler: async () => {
+    const publicKey = process.env.PAYSTACK_PUBLIC_KEY?.trim();
+    if (!publicKey) {
+      return { enabled: false as const };
+    }
+    const mode = publicKey.startsWith("pk_live_")
+      ? ("live" as const)
+      : publicKey.startsWith("pk_test_")
+        ? ("test" as const)
+        : ("unknown" as const);
+    return { enabled: true as const, publicKey, mode, currency: "GHS" as const };
+  },
+});
 
 export const getPaymentByReference = query({
   args: { reference: v.string() },
@@ -214,6 +236,7 @@ export const initializePayment = action({
 
     return {
       authorizationUrl: init.data.authorization_url as string,
+      accessCode: init.data.access_code as string,
       reference,
       amountGhs: catalog.amountGhs,
       label: catalog.label,
