@@ -1,3 +1,4 @@
+import { internal } from "./_generated/api";
 import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
@@ -26,6 +27,11 @@ export const persistLegacyChat = internalMutation({
       });
       user = await ctx.db.get(userId);
       if (!user) throw new Error("Failed to create user");
+      await ctx.runMutation(internal.userStarterCredits.ensureStarterCredits, {
+        email: args.email,
+      });
+      user = await ctx.db.get(userId);
+      if (!user) throw new Error("Failed to refresh user");
     }
 
     await ctx.db.insert("chats", {
