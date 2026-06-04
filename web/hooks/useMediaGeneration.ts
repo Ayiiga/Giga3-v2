@@ -42,7 +42,7 @@ export function useMediaGeneration() {
   }, []);
 
   const jobs = useQuery(
-    api.media.listJobs,
+    api.mediaQueries.listJobs,
     mounted && userId ? { userId } : "skip"
   );
   const generateImage = useAction(api.media.generateImage);

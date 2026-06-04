@@ -1,6 +1,6 @@
 "use node";
 
-import { action, query } from "./_generated/server";
+import { action } from "./_generated/server";
 import type { ActionCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { api, internal } from "./_generated/api";
@@ -36,18 +36,6 @@ function resolveEmail(args: { email?: string; userId?: string }): string {
 function usesCreditBilling(args: { category?: string; userId?: string; email?: string }): boolean {
   return Boolean(args.category) || Boolean(args.userId && !args.email);
 }
-
-export const listJobs = query({
-  args: { userId: v.string() },
-  handler: async (ctx, args) => {
-    const rows = await ctx.db
-      .query("mediaJobs")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
-      .order("desc")
-      .take(50);
-    return rows;
-  },
-});
 
 export const generateVideo = action({
   args: {
