@@ -20,8 +20,8 @@ export const SUBSCRIPTION_PLANS: Record<
     productId: "sub_basic_monthly",
     label: "Basic",
     priceGhs: 60,
-    credits: 60,
-    description: "60 credits/month (60 GHS) — chat, writing, research & media.",
+    credits: 100,
+    description: "100 credits/month (60 GHS) — chat, writing, research & media.",
   },
   pro: {
     id: "pro",
@@ -57,8 +57,11 @@ export function getPlanPriceGhs(planId: PaidPlanId): number {
   return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
-/** Monthly credits match GHS charged (1 GHS = 1 credit). Respects PAYSTACK_*_GHS env overrides. */
+/** Basic: 100 credits at ₵60. Pro/Premium: monthly credits match GHS charged (1 GHS = 1 credit). */
 export function getPlanMonthlyCredits(planId: PaidPlanId): number {
+  if (planId === "basic") {
+    return SUBSCRIPTION_PLANS.basic.credits;
+  }
   return getPlanPriceGhs(planId);
 }
 

@@ -4,8 +4,8 @@ export const SUBSCRIPTION_PLANS = {
     productId: "sub_basic_monthly",
     label: "Basic",
     priceGhs: 60,
-    credits: 60,
-    description: "60 credits/month (60 GHS) — chat, writing, research & media.",
+    credits: 100,
+    description: "100 credits/month (60 GHS) — chat, writing, research & media.",
   },
   pro: {
     productId: "sub_pro_monthly",
