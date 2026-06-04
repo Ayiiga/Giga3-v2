@@ -8,8 +8,9 @@ import {
   isSubscriptionActive,
   type CreditAction,
 } from "./creditsConfig";
+import { FREE_STARTER_CREDITS } from "./subscriptionPlans";
 
-type DbCtx = { db: any };
+type DbCtx = { db: any; runMutation?: (ref: any, args: any) => Promise<any> };
 
 async function getUserByEmail(ctx: DbCtx, email: string) {
   return await ctx.db
@@ -45,6 +46,59 @@ async function logCredit(
   });
 }
 
+/** One-time welcome grant — idempotent via starterCreditsGranted flag. */
+async function ensureStarterCreditsIfNeeded(
+  ctx: DbCtx,
+  userId: string,
+): Promise<boolean> {
+  const user = await getUserByEmail(ctx, userId);
+  if (!user || user.starterCreditsGranted === true) {
+    return false;
+  }
+
+  const balanceAfter = (user.credits ?? 0) + FREE_STARTER_CREDITS;
+  await ctx.db.patch(user._id, {
+    credits: balanceAfter,
+    starterCreditsGranted: true,
+  });
+  await logCredit(ctx, {
+    userId,
+    action: "starter_grant",
+    amount: FREE_STARTER_CREDITS,
+    balanceAfter,
+    reference: "free_starter",
+    metadata: JSON.stringify({ reason: "welcome_grant" }),
+  });
+  return true;
+}
+
+export const ensureStarterCredits = internalMutation({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const granted = await ensureStarterCreditsIfNeeded(ctx, args.userId);
+    const user = await getUserByEmail(ctx, args.userId);
+    return {
+      granted,
+      credits: user?.credits ?? 0,
+    };
+  },
+});
+
+/** Backfill existing accounts that signed up before starter credits shipped. */
+export const backfillStarterCreditsForAll = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const users = await ctx.db.query("users").collect();
+    let updated = 0;
+    for (const user of users) {
+      if (user.starterCreditsGranted === true) continue;
+      await ensureStarterCreditsIfNeeded(ctx, user.email);
+      updated++;
+    }
+    return { usersUpdated: updated };
+  },
+});
+
 async function performDeduct(
   ctx: DbCtx,
   userId: string,
@@ -52,7 +106,11 @@ async function performDeduct(
   reference?: string,
   metadata?: string
 ) {
-  await ctx.runMutation(internal.subscriptions.expireStaleSubscriptions, {});
+  if (ctx.runMutation) {
+    await ctx.runMutation(internal.subscriptions.expireStaleSubscriptions, {});
+  }
+
+  await ensureStarterCreditsIfNeeded(ctx, userId);
 
   const user = await getUserByEmail(ctx, userId);
   if (!user) throw new Error("User not found");

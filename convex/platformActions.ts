@@ -10,6 +10,7 @@ import {
 } from "./chatEngine";
 import { getSystemPrompt, isValidMode } from "./aiModes";
 import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
+import { CREDIT_COSTS, creditActionForMode } from "./creditsConfig";
 
 export const sendMessage = action({
   args: {
@@ -31,8 +32,24 @@ export const sendMessage = action({
       user = await ctx.runQuery(api.users.getUser, { email: args.userId });
     }
 
+    await ctx.runMutation(internal.credits.ensureStarterCredits, {
+      userId: args.userId,
+    });
+
     const mode =
       args.mode && isValidMode(args.mode) ? args.mode : conv.mode ?? "general";
+
+    const creditAction = creditActionForMode(mode);
+    const usage = await ctx.runQuery(api.credits.getUsageSnapshot, {
+      userId: args.userId,
+    });
+    const availableCredits = usage?.credits ?? 0;
+    const requiredCredits = CREDIT_COSTS[creditAction];
+    if (availableCredits < requiredCredits) {
+      throw new Error(
+        `Insufficient credits (${requiredCredits} required, ${availableCredits} available). Subscribe or renew to refill.`,
+      );
+    }
 
     if (mode !== conv.mode) {
       await ctx.runMutation(api.conversations.setMode, {
