@@ -7,16 +7,11 @@ import { ArrowRight, Bot } from "lucide-react";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-white pt-28 sm:pt-36">
-      <div
-        className="pointer-events-none absolute inset-0 bg-grid-pattern bg-[length:48px_48px] opacity-30"
-        aria-hidden
-      />
-
-      <Container className="relative">
-        <div className="motion-safe:animate-fade-in mx-auto max-w-3xl text-center">
+    <section className="bg-white pt-10 sm:pt-14">
+      <Container>
+        <div className="mx-auto max-w-3xl text-center">
           <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-violet-300 bg-violet-50 px-5 py-2 text-base font-bold text-violet-900 shadow-sm">
-            <BrandLogo size={24} />
+            <BrandLogo size={24} className="shadow-none ring-0" />
             Multi-provider AI · Production-ready PWA
           </div>
 
@@ -56,20 +51,20 @@ export function Hero() {
         </div>
 
         <div className="relative mx-auto mt-20 max-w-4xl">
-          <div className="glass overflow-hidden rounded-2xl p-1 shadow-2xl shadow-violet-500/15 ring-1 ring-violet-500/20">
-            <div className="rounded-xl bg-gradient-to-b from-white/[0.07] to-transparent p-6 sm:p-8">
+          <div className="glass overflow-hidden rounded-2xl border border-border p-1 shadow-lg">
+            <div className="rounded-xl bg-zinc-50 p-6 sm:p-8">
               <div className="mb-4 flex items-center gap-2 border-b border-border pb-4">
                 <Bot className="text-accent" aria-hidden />
                 <span className="font-medium">Giga3 Assistant</span>
-                <span className="ml-auto rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-300">
+                <span className="ml-auto rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
                   Failover active
                 </span>
               </div>
               <div className="space-y-4 text-sm">
-                <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-white/5 px-4 py-3 text-muted">
+                <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-border bg-white px-4 py-3 text-muted">
                   What happens if the primary AI provider is down?
                 </div>
-                <div className="ml-auto max-w-[90%] rounded-2xl rounded-tr-sm bg-accent/20 px-4 py-3 text-foreground">
+                <div className="ml-auto max-w-[90%] rounded-2xl rounded-tr-sm border border-violet-200 bg-violet-50 px-4 py-3 text-foreground">
                   Giga3 tries backup models and keys automatically—your team keeps
                   chatting while we surface which provider answered.
                 </div>

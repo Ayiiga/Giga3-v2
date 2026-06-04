@@ -7,10 +7,10 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <div data-marketing="true" className="marketing-stable min-h-dvh bg-white">
       <Header />
       <main>{children}</main>
       <Footer />
-    </>
+    </div>
   );
 }

@@ -4,33 +4,23 @@ import { Button, ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { InstallButton } from "@/components/pwa/InstallButton";
 import { navLinks, siteConfig } from "@/lib/site";
-import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
+/**
+ * Static sticky header — no scroll listeners or style transitions.
+ * Scroll-driven re-renders caused visible tearing/ghosting on mobile Chrome/PWA.
+ */
 export function Header() {
   const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   return (
-    <header
-      className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-[padding,box-shadow,background-color] duration-200",
-        scrolled ? "border-b border-border bg-white py-3 shadow-md" : "border-b border-transparent bg-white py-4"
-      )}
-    >
+    <header className="sticky top-0 z-50 border-b border-border bg-white py-3 shadow-sm">
       <Container className="flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2.5 text-lg font-bold tracking-tight text-foreground">
-          <BrandLogo size={36} priority />
+          <BrandLogo size={36} priority className="shadow-none ring-0" />
           <span>{siteConfig.name}</span>
         </Link>
 
@@ -39,7 +29,7 @@ export function Header() {
             <a
               key={link.href}
               href={link.href}
-              className="text-base font-semibold text-foreground transition-colors hover:text-accent"
+              className="text-base font-semibold text-foreground hover:text-accent"
             >
               {link.label}
             </a>
@@ -68,7 +58,7 @@ export function Header() {
       </Container>
 
       {open && (
-        <div className="glass border-t md:hidden">
+        <div className="border-t border-border bg-white md:hidden">
           <Container className="grid grid-cols-1 gap-3 py-5">
             {navLinks.map((link) => (
               <a

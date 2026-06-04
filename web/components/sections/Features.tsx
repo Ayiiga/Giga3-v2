@@ -44,12 +44,11 @@ export function Features() {
               <article
                 key={feature.title}
                 className={cn(
-                  "glass group rounded-2xl p-8 transition-colors",
-                  "pointer-fine:hover:-translate-y-0.5 pointer-fine:hover:border-violet-500/35 pointer-fine:hover:shadow-lg pointer-fine:hover:shadow-violet-500/10",
+                  "glass rounded-2xl p-8",
                   i === 0 && "ring-1 ring-violet-500/20 sm:col-span-2 lg:col-span-1"
                 )}
               >
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-accent/15 text-accent transition-colors pointer-fine:group-hover:bg-accent/25">
+                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-accent/15 text-accent">
                   <Icon aria-hidden />
                 </div>
                 <h3 className="text-xl font-semibold">{feature.title}</h3>

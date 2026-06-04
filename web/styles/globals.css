@@ -19,6 +19,8 @@
 html {
   font-size: 18px;
   overscroll-behavior-y: none;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -119,5 +121,32 @@ button:focus-visible {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Marketing/PWA: prevent mobile GPU tearing (ghosting while scrolling). */
+.marketing-stable {
+  isolation: isolate;
+  overflow-x: clip;
+}
+
+.marketing-stable main section {
+  transform: none !important;
+}
+
+.marketing-stable,
+.marketing-stable * {
+  animation: none !important;
+}
+
+@media (max-width: 1023px) {
+  .marketing-stable * {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+
+  .marketing-stable header {
+    position: sticky;
+    top: 0;
   }
 }

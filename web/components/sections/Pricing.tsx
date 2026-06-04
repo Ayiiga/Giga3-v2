@@ -26,8 +26,7 @@ export function Pricing() {
               key={plan.name}
               className={cn(
                 "glass flex flex-col rounded-2xl p-8 sm:p-10",
-                plan.highlighted &&
-                  "relative border-violet-500/50 shadow-xl shadow-violet-500/10 lg:scale-[1.02]"
+                plan.highlighted && "relative border-violet-500/50 shadow-lg"
               )}
             >
               {plan.highlighted && (
