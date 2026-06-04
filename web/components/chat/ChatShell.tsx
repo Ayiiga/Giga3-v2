@@ -40,6 +40,8 @@ function ChatShellInner() {
     email,
     user,
     conversations,
+    conversationsLoading,
+    messagesLoading,
     activeId,
     messages,
     mode,
@@ -67,15 +69,6 @@ function ChatShellInner() {
     );
   }
 
-  if (user === undefined) {
-    return (
-      <div className="flex h-[100dvh] flex-col items-center justify-center gap-3 text-muted">
-        <p className="text-base font-medium">Connecting to Giga3…</p>
-        <p className="text-sm text-muted/80">Setting up your account</p>
-      </div>
-    );
-  }
-
   const navLink =
     "hidden rounded-xl px-3 py-2 text-sm font-semibold text-muted transition-colors hover:bg-white/5 hover:text-foreground sm:inline-flex sm:items-center sm:gap-1.5";
 
@@ -83,6 +76,7 @@ function ChatShellInner() {
     <div className="flex h-[100dvh] overflow-hidden bg-background">
       <ChatSidebar
         conversations={conversations}
+        conversationsLoading={conversationsLoading}
         activeId={activeId}
         onSelect={selectConversation}
         onNewChat={() => void startNewChat()}
@@ -172,6 +166,7 @@ function ChatShellInner() {
 
         <MessageList
           messages={messages}
+          isLoading={messagesLoading}
           isTyping={isSending}
           onInsertTemplate={(text) => insertRef.current?.(text)}
         />
