@@ -9,6 +9,7 @@ interface SubscriptionCardProps {
   features: readonly string[];
   onSelect: (productId: string) => void;
   loading?: boolean;
+  loadingLabel?: string;
   disabled?: boolean;
 }
 
@@ -17,6 +18,7 @@ export function SubscriptionCard({
   features,
   onSelect,
   loading,
+  loadingLabel = "Subscribe with Paystack",
   disabled,
 }: SubscriptionCardProps) {
   return (
@@ -50,7 +52,7 @@ export function SubscriptionCard({
         disabled={disabled || loading}
         onClick={() => onSelect(product.id)}
       >
-        {loading ? "Redirecting…" : "Subscribe with Paystack"}
+        {loading ? loadingLabel : "Subscribe with Paystack"}
       </Button>
     </article>
   );

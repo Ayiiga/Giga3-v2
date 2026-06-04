@@ -1,6 +1,12 @@
-import { action, httpAction, internalMutation, query } from "./_generated/server";
+import {
+  action,
+  httpAction,
+  internalMutation,
+  query,
+} from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
+import { getCreditPack } from "./creditPacks";
 import {
   getPlanPriceGhs,
   productIdToPlanId,
@@ -59,37 +65,48 @@ function getProduct(productId: string) {
     };
   }
 
-  const packs: Record<
-    string,
-    { label: string; amountGhs: number; credits: number }
-  > = {
-    credits_50: {
-      label: "50 Credits",
-      amountGhs: Number(process.env.PAYSTACK_CREDITS_50_GHS ?? "25"),
-      credits: 50,
-    },
-    credits_150: {
-      label: "150 Credits",
-      amountGhs: Number(process.env.PAYSTACK_CREDITS_150_GHS ?? "65"),
-      credits: 150,
-    },
-    credits_500: {
-      label: "500 Credits",
-      amountGhs: Number(process.env.PAYSTACK_CREDITS_500_GHS ?? "199"),
-      credits: 500,
-    },
-  };
-
-  const pack = packs[productId];
+  const pack = getCreditPack(productId);
   if (!pack) throw new Error("Unknown product");
   return {
     label: pack.label,
     amountGhs: pack.amountGhs,
-    type: "credits" as const,
+    type: pack.type,
     credits: pack.credits,
     planId: undefined,
   };
 }
+
+function paystackKeyMode(key: string): "live" | "test" | "unknown" {
+  if (key.startsWith("pk_live_") || key.startsWith("sk_live_")) return "live";
+  if (key.startsWith("pk_test_") || key.startsWith("sk_test_")) return "test";
+  return "unknown";
+}
+
+/** Public checkout config for Paystack Inline (popup). Secret key stays server-only. */
+export const getClientConfig = query({
+  args: {},
+  handler: async () => {
+    const publicKey = process.env.PAYSTACK_PUBLIC_KEY?.trim();
+    if (!publicKey) {
+      return { enabled: false as const };
+    }
+    const mode = paystackKeyMode(publicKey);
+    const secret = process.env.PAYSTACK_SECRET_KEY?.trim();
+    const keyMismatch =
+      Boolean(secret) &&
+      paystackKeyMode(secret) !== "unknown" &&
+      mode !== "unknown" &&
+      paystackKeyMode(secret) !== mode;
+
+    return {
+      enabled: true as const,
+      publicKey,
+      mode,
+      currency: "GHS" as const,
+      keyMismatch,
+    };
+  },
+});
 
 export const getPaymentByReference = query({
   args: { reference: v.string() },
@@ -183,12 +200,22 @@ export const initializePayment = action({
     productId: v.string(),
   },
   handler: async (ctx, args) => {
+    const email = args.email.trim().toLowerCase();
+    const userId = args.userId.trim().toLowerCase();
+    if (!email.includes("@")) {
+      throw new Error("A valid email is required for checkout");
+    }
+
     const catalog = getProduct(args.productId);
+    if (catalog.amountGhs <= 0) {
+      throw new Error("Invalid product price");
+    }
+
     const reference = `giga3_${args.productId}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     const frontend = process.env.FRONTEND_URL ?? "https://www.giga3ai.com";
 
     await ctx.runMutation(internal.paystack.createPendingPayment, {
-      userId: args.userId,
+      userId,
       reference,
       productId: args.productId,
       type: catalog.type,
@@ -198,22 +225,34 @@ export const initializePayment = action({
     });
 
     const init = await paystackPost("/transaction/initialize", {
-      email: args.email,
+      email,
       amount: toPesewas(catalog.amountGhs),
       currency: "GHS",
       reference,
       callback_url: `${frontend}/payment/success/?reference=${encodeURIComponent(reference)}`,
       metadata: {
-        userId: args.userId,
+        userId,
         productId: args.productId,
         custom_fields: [
           { display_name: "Product", variable_name: "product", value: catalog.label },
+          {
+            display_name: "Amount (GHS)",
+            variable_name: "amount_ghs",
+            value: String(catalog.amountGhs),
+          },
         ],
       },
     });
 
+    const authorizationUrl = init.data?.authorization_url as string | undefined;
+    const accessCode = init.data?.access_code as string | undefined;
+    if (!authorizationUrl?.trim()) {
+      throw new Error("Paystack did not return a checkout URL. Please try again.");
+    }
+
     return {
-      authorizationUrl: init.data.authorization_url as string,
+      authorizationUrl,
+      accessCode: accessCode?.trim() ?? "",
       reference,
       amountGhs: catalog.amountGhs,
       label: catalog.label,
