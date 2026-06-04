@@ -15,6 +15,7 @@ import { useBilling } from "@/hooks/useBilling";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { clearUserEmail } from "@/lib/auth";
 import { siteConfig } from "@/lib/site";
+import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Menu, Sparkles } from "lucide-react";
 import Link from "next/link";
@@ -70,7 +71,7 @@ function ChatShellInner() {
   }
 
   const navLink =
-    "hidden rounded-xl px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-zinc-100 sm:inline-flex sm:items-center sm:gap-1.5";
+    "inline-flex items-center gap-1.5 rounded-xl px-2 py-2 text-xs font-bold text-foreground transition-colors hover:bg-zinc-100 sm:px-3 sm:text-sm";
 
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-background">
@@ -104,13 +105,16 @@ function ChatShellInner() {
             {siteConfig.name}
           </Link>
 
-          <nav className="ml-2 hidden items-center gap-1 md:flex" aria-label="Chat navigation">
+          <nav className="ml-1 flex min-w-0 flex-1 flex-wrap items-center gap-0.5 sm:ml-2 sm:gap-1" aria-label="Chat navigation">
             <Link href="/media" className={navLink}>
-              <Sparkles className="h-4 w-4" aria-hidden />
+              <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
               Media
             </Link>
             <Link href="/pricing" className={navLink}>
               Pricing
+            </Link>
+            <Link href="/subscribe" className={cn(navLink, "hidden min-[400px]:inline-flex")}>
+              Subscribe
             </Link>
             <Link href="/credits" className={navLink}>
               Credits

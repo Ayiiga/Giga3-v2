@@ -6,10 +6,12 @@ import { cn } from "@/lib/utils";
 import { Id } from "convex/_generated/dataModel";
 import {
   Coins,
+  CreditCard,
   MessageSquarePlus,
   PanelLeft,
   PanelLeftClose,
   Sparkles,
+  Tag,
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
@@ -110,6 +112,22 @@ export function ChatSidebar({
             >
               <Coins className="h-5 w-5" aria-hidden />
               Credits
+            </Link>
+            <Link
+              href="/pricing"
+              onClick={onCloseMobile}
+              className="saas-card flex min-h-12 items-center justify-center gap-2 rounded-xl px-2 py-2 text-sm font-bold text-foreground transition-all hover:bg-zinc-50"
+            >
+              <Tag className="h-5 w-5" aria-hidden />
+              Pricing
+            </Link>
+            <Link
+              href="/subscribe"
+              onClick={onCloseMobile}
+              className="saas-card flex min-h-12 items-center justify-center gap-2 rounded-xl px-2 py-2 text-sm font-bold text-foreground transition-all hover:bg-zinc-50"
+            >
+              <CreditCard className="h-5 w-5" aria-hidden />
+              Subscribe
             </Link>
           </div>
         </div>

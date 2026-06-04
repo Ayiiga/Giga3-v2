@@ -36,7 +36,7 @@ export function Hero() {
               Start chatting
               <ArrowRight aria-hidden />
             </ButtonLink>
-            <ButtonLink href="#multi-chat" variant="secondary" size="lg" className="w-full">
+            <ButtonLink href="/#multi-chat" variant="secondary" size="lg" className="w-full">
               See multi-AI
             </ButtonLink>
             <InstallButton size="lg" variant="outline" className="w-full sm:col-span-2 lg:col-span-1" />

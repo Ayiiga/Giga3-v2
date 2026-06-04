@@ -11,6 +11,16 @@ export function Contact() {
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const form = e.currentTarget;
+    const data = new FormData(form);
+    const name = String(data.get("name") ?? "").trim();
+    const fromEmail = String(data.get("email") ?? "").trim();
+    const message = String(data.get("message") ?? "").trim();
+    const subject = encodeURIComponent(`Giga3 AI — message from ${name || "visitor"}`);
+    const body = encodeURIComponent(
+      `Name: ${name}\nEmail: ${fromEmail}\n\n${message}`
+    );
+    window.location.href = `mailto:${siteConfig.contact.email}?subject=${subject}&body=${body}`;
     setSubmitted(true);
   }
 

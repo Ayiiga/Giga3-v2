@@ -5,6 +5,7 @@ import { getUserEmail, isValidEmail, setUserEmail } from "@/lib/auth";
 import { api } from "convex/_generated/api";
 import { useMutation } from "convex/react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { sanitizeLoginRedirect } from "@/lib/navigation";
 import { siteConfig } from "@/lib/site";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -13,7 +14,7 @@ import { FormEvent, Suspense, useEffect, useState } from "react";
 function ChatLoginFormInner() {
   const router = useRouter();
   const params = useSearchParams();
-  const nextPath = params.get("next") || "/chat";
+  const nextPath = sanitizeLoginRedirect(params.get("next"));
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -21,7 +22,7 @@ function ChatLoginFormInner() {
 
   useEffect(() => {
     const existing = getUserEmail();
-    if (existing) router.replace(nextPath.startsWith("/") ? nextPath : "/chat");
+    if (existing) router.replace(nextPath);
   }, [router, nextPath]);
 
   async function handleSubmit(e: FormEvent) {
@@ -36,10 +37,10 @@ function ChatLoginFormInner() {
     try {
       await createUser({ email: normalized });
       setUserEmail(normalized);
-      router.push(nextPath.startsWith("/") ? nextPath : "/chat");
+      router.push(nextPath);
     } catch {
       setUserEmail(normalized);
-      router.push(nextPath.startsWith("/") ? nextPath : "/chat");
+      router.push(nextPath);
     } finally {
       setSubmitting(false);
     }

@@ -31,6 +31,7 @@ function PricingPageClientInner() {
     paystackMode,
     inlineEnabled,
     dismissError,
+    retryLastCheckout,
   } = useBilling();
 
   return (
@@ -50,7 +51,11 @@ function PricingPageClientInner() {
       )}
 
       {error && (
-        <BillingErrorBanner message={error} onDismiss={dismissError} />
+        <BillingErrorBanner
+          message={error}
+          onDismiss={dismissError}
+          onRetry={retryLastCheckout}
+        />
       )}
 
       <section>

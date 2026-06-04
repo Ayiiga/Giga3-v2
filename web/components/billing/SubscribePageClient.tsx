@@ -30,6 +30,7 @@ function SubscribePageClientInner() {
     paystackMode,
     inlineEnabled,
     dismissError,
+    retryLastCheckout,
   } = useBilling();
 
   useEffect(() => {
@@ -59,7 +60,11 @@ function SubscribePageClientInner() {
       </div>
       {usage && <UsageTracker usage={usage} />}
       {error && (
-        <BillingErrorBanner message={error} onDismiss={dismissError} />
+        <BillingErrorBanner
+          message={error}
+          onDismiss={dismissError}
+          onRetry={retryLastCheckout}
+        />
       )}
       <div className="grid gap-6 md:grid-cols-3">
         {SUBSCRIPTION_PRODUCTS.map((product) => (

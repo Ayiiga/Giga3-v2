@@ -34,6 +34,7 @@ export function useBilling() {
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const checkoutLock = useRef(false);
+  const lastProductId = useRef<string | null>(null);
 
   const paying = checkoutActive || checkoutPhase !== null;
 
@@ -108,6 +109,7 @@ export function useBilling() {
       }
 
       checkoutLock.current = true;
+      lastProductId.current = productId;
       setCheckoutActive(true);
       setError(null);
       setCheckoutPhase("preparing");
@@ -179,6 +181,13 @@ export function useBilling() {
 
   const dismissError = useCallback(() => setError(null), []);
 
+  const retryLastCheckout = useCallback(() => {
+    const id = lastProductId.current;
+    if (!id) return;
+    dismissError();
+    void checkout(id);
+  }, [checkout, dismissError]);
+
   return {
     email,
     usage,
@@ -193,5 +202,6 @@ export function useBilling() {
     keysMismatch,
     clearCheckout,
     dismissError,
+    retryLastCheckout,
   };
 }
