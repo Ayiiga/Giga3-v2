@@ -100,9 +100,9 @@ export const pricingPlans = [
     name: "Pro",
     price: "GHS 150",
     period: "/ month",
-    description: "500 monthly credits for daily creators and power users.",
+    description: "150 monthly credits (150 GHS) for daily creators.",
     features: [
-      "500 credits / month",
+      "150 credits / month",
       "Paystack billing",
       "Media studio",
       "PWA install",
