@@ -1,4 +1,3 @@
-import { AppPullToRefresh } from "@/components/pwa/AppPullToRefresh";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
 import { siteConfig } from "@/lib/site";
@@ -61,7 +60,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans">
-        <AppPullToRefresh>{children}</AppPullToRefresh>
+        <div className="min-h-dvh">{children}</div>
         <ServiceWorkerRegister />
         <OfflineBanner />
       </body>

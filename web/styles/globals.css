@@ -33,6 +33,13 @@ body {
   @apply bg-background text-base font-medium text-foreground antialiased;
   background-color: var(--background);
   touch-action: manipulation;
+  overscroll-behavior-y: none;
+}
+
+.message-list-scroll,
+.chat-stable .message-list-scroll {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 ::selection {

@@ -48,7 +48,7 @@ Production deployment: **`perfect-lark-521`** (`https://perfect-lark-521.convex.
 - Chat routes use the `chat-stable` class (`web/app/(app)/chat/layout.tsx`) to disable entrance animations and smooth-scroll jitter.
 - **Root shake causes (fixed):** (1) Convex re-emitting new `messages` array references → `useStableUiMessages` keeps referential equality; (2) `scrollIntoView` feedback loop → `useStickToBottom` uses `scrollTop` + primitive signature; (3) `viewport.interactiveWidget: resizes-content` + `vh` workspace heights → `overlays-content` + fixed `px` max-heights; (4) duplicate `useBilling` on chat → use `user.credits` only; (5) composer textarea auto-resize reflowing flex layout → fixed max-height + internal scroll.
 - Dev render probe: `localStorage.giga3_render_probe=1` or `?renderProbe=1` logs `probeRender()` counts in the console.
-- Pull-to-refresh on `/chat` only updates the service worker (no full `location.reload()`); see `web/lib/refresh.ts`.
+- Pull-to-refresh is **disabled** (no custom gesture, no page translate). Use normal navigation or hard refresh if needed.
 - Media in messages: URLs in assistant replies render with save/share actions (`MessageMediaBlock`). Chat export: header **Chat actions** menu.
 
 ### Frontend HTTP paths (static `frontend/`)
