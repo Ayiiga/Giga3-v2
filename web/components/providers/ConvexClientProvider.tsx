@@ -6,11 +6,13 @@ import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { ReactNode, useLayoutEffect, useState } from "react";
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
-  const [client, setClient] = useState<ConvexReactClient | null>(null);
+  const [client, setClient] = useState<ConvexReactClient | null>(() =>
+    typeof window !== "undefined" ? getConvexClient() : null
+  );
 
   useLayoutEffect(() => {
-    setClient(getConvexClient());
-  }, []);
+    if (!client) setClient(getConvexClient());
+  }, [client]);
 
   const convexUrl = getConvexUrl();
 

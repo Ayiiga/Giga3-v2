@@ -22,13 +22,16 @@ interface MessageListProps {
   onInsertTemplate?: (text: string) => void;
 }
 
+function scrollContainerToBottom(container: HTMLElement) {
+  container.scrollTop = container.scrollHeight;
+}
+
 function MessageListInner({
   messages,
   isLoading = false,
   isTyping,
   onInsertTemplate,
 }: MessageListProps) {
-  const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messageCountRef = useRef(0);
   const lastMessageIdRef = useRef<string | null>(null);
@@ -38,15 +41,15 @@ function MessageListInner({
   const lastMessageId = messageCount > 0 ? messages[messageCount - 1]?.id ?? null : null;
 
   useEffect(() => {
-    const el = bottomRef.current;
-    if (!el) return;
+    const container = scrollRef.current;
+    if (!container) return;
 
     const countChanged = messageCount !== messageCountRef.current;
     const lastChanged = lastMessageId !== lastMessageIdRef.current;
     const typingStarted = isTyping && !wasTypingRef.current;
 
     if (countChanged || lastChanged || typingStarted) {
-      el.scrollIntoView({ behavior: "auto", block: "end" });
+      scrollContainerToBottom(container);
     }
 
     messageCountRef.current = messageCount;
@@ -127,7 +130,6 @@ function MessageListInner({
               </div>
             </div>
           )}
-          <div ref={bottomRef} className="h-px shrink-0" aria-hidden />
         </div>
       </div>
     </div>

@@ -73,7 +73,7 @@ function MediaOutputActionsInner({
         aria-label={`Save ${mediaType} to gallery`}
       >
         <Images className="h-4 w-4" aria-hidden />
-        {!compact && "Save to Gallery"}
+        {!compact && (mediaType === "video" ? "Save Video" : "Save Image")}
       </button>
       <button
         type="button"
@@ -109,7 +109,7 @@ function MediaOutputActionsInner({
         aria-label={`Share ${mediaType}`}
       >
         <Share2 className="h-4 w-4" aria-hidden />
-        {!compact && "Share"}
+        {!compact && (mediaType === "video" ? "Share Video" : "Share Image")}
       </button>
       <button
         type="button"

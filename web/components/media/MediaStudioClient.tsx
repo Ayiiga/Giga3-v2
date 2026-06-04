@@ -281,7 +281,7 @@ function MediaStudioContent() {
               Generating your {tab}…
             </div>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-200">
-              <div className="h-full w-2/3 rounded-full bg-gradient-to-r from-violet-500 to-blue-500 motion-safe:animate-pulse-soft" />
+              <div className="h-full w-2/3 rounded-full bg-gradient-to-r from-violet-500 to-blue-500" />
             </div>
           </div>
         )}

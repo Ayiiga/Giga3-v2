@@ -55,12 +55,55 @@ export async function fetchRemoteBlob(
   return new Blob(chunks, { type: res.headers.get("content-type") ?? undefined });
 }
 
+async function trySaveWithFilePicker(
+  blob: Blob,
+  filename: string,
+  mimeType: string
+): Promise<{ saved: boolean; cancelled: boolean }> {
+  const picker = (
+    window as Window & {
+      showSaveFilePicker?: (options: {
+        suggestedName?: string;
+        types?: { description: string; accept: Record<string, string[]> }[];
+      }) => Promise<FileSystemFileHandle>;
+    }
+  ).showSaveFilePicker;
+
+  if (!picker) return { saved: false, cancelled: false };
+
+  const ext = filename.includes(".") ? filename.slice(filename.lastIndexOf(".")) : "";
+  try {
+    const handle = await picker({
+      suggestedName: filename,
+      types: [
+        {
+          description: mimeType,
+          accept: { [mimeType]: ext ? [ext] : [] },
+        },
+      ],
+    });
+    const writable = await handle.createWritable();
+    await writable.write(blob);
+    await writable.close();
+    return { saved: true, cancelled: false };
+  } catch (e) {
+    if (e instanceof DOMException && e.name === "AbortError") {
+      return { saved: false, cancelled: true };
+    }
+    return { saved: false, cancelled: false };
+  }
+}
+
 export async function downloadRemoteFile(
   url: string,
   filename: string,
   onProgress?: (percent: number) => void
 ): Promise<void> {
   const blob = await fetchRemoteBlob(url, onProgress);
+  const picked = await trySaveWithFilePicker(blob, filename, blob.type);
+  if (picked.saved) return;
+  if (picked.cancelled) throw new Error("Save cancelled");
+
   const objectUrl = URL.createObjectURL(blob);
   try {
     triggerDownload(objectUrl, filename);
@@ -69,23 +112,26 @@ export async function downloadRemoteFile(
   }
 }
 
-/** Mobile-friendly save: share file to Photos/Files when supported, else download. */
+/** Mobile-friendly save: File Picker → Web Share files → download fallback. */
 export async function saveToGallery(options: {
   url: string;
   filename: string;
   mimeType: string;
   onProgress?: (percent: number) => void;
-}): Promise<{ method: "share" | "download"; message: string }> {
+}): Promise<{ method: "picker" | "share" | "download"; message: string }> {
   const { url, filename, mimeType, onProgress } = options;
   const blob = await fetchRemoteBlob(url, onProgress);
   const file = new File([blob], filename, { type: mimeType || blob.type });
 
+  const picked = await trySaveWithFilePicker(blob, filename, mimeType || blob.type);
+  if (picked.saved) {
+    return { method: "picker", message: "Saved to your chosen location" };
+  }
+  if (picked.cancelled) throw new Error("Save cancelled");
+
   if (typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
     try {
-      await navigator.share({
-        title: filename,
-        files: [file],
-      });
+      await navigator.share({ title: filename, files: [file] });
       return { method: "share", message: "Saved — check Photos or your share target" };
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") {
@@ -102,7 +148,7 @@ export async function saveToGallery(options: {
   }
   return {
     method: "download",
-    message: "Downloaded — open your Downloads or Files app",
+    message: "Downloaded — open Downloads or Files to add to gallery",
   };
 }
 
@@ -144,28 +190,27 @@ export async function shareRemoteMedia(options: {
   onProgress?: (percent: number) => void;
 }): Promise<boolean> {
   const { title, url, filename, mimeType, onProgress } = options;
-  if (typeof navigator.share !== "function") {
-    await copyTextToClipboard(url);
-    return true;
-  }
-  try {
-    const blob = await fetchRemoteBlob(url, onProgress);
-    const file = new File([blob], filename, { type: mimeType || blob.type });
-    if (navigator.canShare?.({ files: [file] })) {
+  const blob = await fetchRemoteBlob(url, onProgress);
+  const file = new File([blob], filename, { type: mimeType || blob.type });
+
+  if (typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
+    try {
       await navigator.share({ title, files: [file] });
       return true;
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return false;
     }
-    await navigator.share({ title, text: url, url });
-    return true;
-  } catch (e) {
-    if (e instanceof DOMException && e.name === "AbortError") return false;
+  }
+
+  if (typeof navigator.share === "function") {
     try {
       await navigator.share({ title, text: url, url });
       return true;
-    } catch (inner) {
-      if (inner instanceof DOMException && inner.name === "AbortError") return false;
-      await copyTextToClipboard(url);
-      return true;
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return false;
     }
   }
+
+  await copyTextToClipboard(url);
+  return true;
 }

@@ -78,14 +78,7 @@ export function ChatWorkspacePanel({
         {tabBtn("media", "Create Media", Sparkles)}
       </div>
 
-      <div
-        className={cn(
-          "overflow-y-auto overscroll-y-contain",
-          hasMessages
-            ? "max-h-[min(24vh,180px)]"
-            : "max-h-[min(42vh,320px)]"
-        )}
-      >
+      <div className="max-h-[min(26vh,180px)] overflow-y-auto overscroll-y-contain">
         {tab === "modes" && (
           <ToolSelector
             value={mode}

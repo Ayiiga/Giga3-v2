@@ -106,11 +106,13 @@ export function useChatPlatform() {
     ];
   }, [messagesRaw, pendingUserText]);
 
+  const createUserAttemptedRef = useRef(false);
+
   useEffect(() => {
-    if (!email) return;
-    if (user === null) {
-      void createUser({ email });
-    }
+    if (!email || user !== null) return;
+    if (createUserAttemptedRef.current) return;
+    createUserAttemptedRef.current = true;
+    void createUser({ email });
   }, [email, user, createUser]);
 
   const syncedActiveRef = useRef<string | null>(null);
@@ -139,7 +141,8 @@ export function useChatPlatform() {
     const key = `${activeId}:${conv.mode}`;
     if (lastModeSyncRef.current === key) return;
     lastModeSyncRef.current = key;
-    setMode((prev) => (prev === conv.mode ? prev : conv.mode));
+    const nextMode = conv.mode as AiModeId;
+    setMode((prev) => (prev === nextMode ? prev : nextMode));
   }, [activeId, conversations]);
 
   useEffect(() => {

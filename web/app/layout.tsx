@@ -18,6 +18,9 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: siteConfig.name,
   },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
   formatDetection: { telephone: false },
   openGraph: {
     type: "website",

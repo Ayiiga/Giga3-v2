@@ -38,7 +38,7 @@ export function CheckoutOverlay({ phase, label, amountGhs }: CheckoutOverlayProp
       <div
         className={cn(
           "w-full max-w-sm rounded-2xl border border-border bg-white p-8 text-center shadow-2xl",
-          "animate-fade-in"
+          ""
         )}
       >
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-violet-500/15">
