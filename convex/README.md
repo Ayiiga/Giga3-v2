@@ -10,7 +10,7 @@ Required production env vars are documented in `/DEPLOYMENT.md`.
 
 Backend: multi-provider failover (chatEngine), platform.sendMessage, conversations/messages.
 
-<!-- deploy-sync: 2026-06-04T23:15:00Z frontend+backend -->
+<!-- deploy-sync: 2026-06-04T23:45:00Z chat-stability frontend+backend -->
 
 Failover env: OPENAI_*, GEMINI_API_KEY, GEMINI_MODEL, FAL_KEY, FAL_MODEL.
 
