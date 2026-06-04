@@ -43,7 +43,7 @@ function withClientTimeout<T>(
 }
 
 export function useChatPlatform() {
-  const email = getUserEmail();
+  const [email, setEmail] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<Id<"conversations"> | null>(null);
   const [mode, setMode] = useState<AiModeId>("general");
   const [isSending, setIsSending] = useState(false);
@@ -55,6 +55,7 @@ export function useChatPlatform() {
 
   useEffect(() => {
     setMounted(true);
+    setEmail(getUserEmail());
   }, []);
 
   const user = useQuery(
@@ -77,6 +78,10 @@ export function useChatPlatform() {
   const setConversationMode = useMutation(api.conversations.setMode);
   const sendMessageAction = useAction(api.platformActions.sendMessage);
   const createUser = useMutation(api.users.createUser);
+
+  const conversationsLoading = conversationsRaw === undefined;
+  const messagesLoading =
+    Boolean(activeId) && messagesRaw === undefined && mounted && Boolean(email);
 
   const conversations: ConversationItem[] = useMemo(
     () => (conversationsRaw ?? []) as ConversationItem[],
@@ -102,13 +107,19 @@ export function useChatPlatform() {
 
   useEffect(() => {
     if (!email) return;
-    if (!user) {
+    if (user === null) {
       void createUser({ email });
     }
   }, [email, user, createUser]);
 
   useEffect(() => {
-    if (conversations.length > 0 && !activeId) {
+    if (conversations.length === 0) {
+      if (activeId) setActiveId(null);
+      return;
+    }
+    const activeStillExists =
+      activeId && conversations.some((c) => c._id === activeId);
+    if (!activeStillExists) {
       setActiveId(conversations[0]._id);
     }
   }, [conversations, activeId]);
@@ -122,10 +133,14 @@ export function useChatPlatform() {
   }, [activeId, conversations]);
 
   useEffect(() => {
-    if (!isSending) {
+    if (!pendingUserText || !messagesRaw) return;
+    const synced = messagesRaw.some(
+      (m) => m.role === "user" && m.content === pendingUserText
+    );
+    if (synced) {
       setPendingUserText(null);
     }
-  }, [messagesRaw, isSending]);
+  }, [messagesRaw, pendingUserText]);
 
   const startNewChat = useCallback(async () => {
     if (!email) return;
@@ -137,6 +152,7 @@ export function useChatPlatform() {
   const selectConversation = useCallback((id: Id<"conversations">) => {
     setActiveId(id);
     setError(null);
+    setPendingUserText(null);
   }, []);
 
   const deleteConversation = useCallback(
@@ -145,6 +161,7 @@ export function useChatPlatform() {
       await removeConversation({ conversationId: id, userId: email });
       if (activeId === id) {
         setActiveId(null);
+        setPendingUserText(null);
       }
     },
     [email, removeConversation, activeId]
@@ -198,9 +215,9 @@ export function useChatPlatform() {
         setUsedFallback(Boolean(result.usedFallback));
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to send");
+        setPendingUserText(null);
       } finally {
         setIsSending(false);
-        setPendingUserText(null);
       }
     },
     [email, activeId, mode, createConversation, sendMessageAction]
@@ -210,6 +227,8 @@ export function useChatPlatform() {
     email,
     user,
     conversations,
+    conversationsLoading,
+    messagesLoading,
     activeId,
     messages,
     mode,

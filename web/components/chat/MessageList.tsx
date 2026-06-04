@@ -16,12 +16,14 @@ export interface UiMessage {
 
 interface MessageListProps {
   messages: UiMessage[];
+  isLoading?: boolean;
   isTyping: boolean;
   onInsertTemplate?: (text: string) => void;
 }
 
 export function MessageList({
   messages,
+  isLoading = false,
   isTyping,
   onInsertTemplate,
 }: MessageListProps) {
@@ -51,7 +53,12 @@ export function MessageList({
         ref={scrollRef}
         className="flex-1 overflow-y-auto overscroll-y-contain px-3 py-4 sm:px-6"
       >
-        {messages.length === 0 && !isTyping && (
+        {isLoading && messages.length === 0 && (
+          <div className="flex h-full min-h-[200px] flex-col items-center justify-center text-center text-muted">
+            <p className="text-lg font-medium text-foreground">Loading messages…</p>
+          </div>
+        )}
+        {messages.length === 0 && !isTyping && !isLoading && (
           <div className="flex h-full min-h-[200px] flex-col items-center justify-center text-center text-muted">
             <p className="text-lg font-medium text-foreground">Start a conversation</p>
             {todayLabel && (

@@ -23,6 +23,7 @@ export interface ConversationItem {
 
 interface ChatSidebarProps {
   conversations: ConversationItem[];
+  conversationsLoading?: boolean;
   activeId: Id<"conversations"> | null;
   onSelect: (id: Id<"conversations">) => void;
   onNewChat: () => void;
@@ -37,6 +38,7 @@ interface ChatSidebarProps {
 
 export function ChatSidebar({
   conversations,
+  conversationsLoading = false,
   activeId,
   onSelect,
   onNewChat,
@@ -113,7 +115,10 @@ export function ChatSidebar({
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3">
-          {conversations.length === 0 && (
+          {conversationsLoading && (
+            <p className="px-2 py-4 text-sm text-muted">Loading chats…</p>
+          )}
+          {!conversationsLoading && conversations.length === 0 && (
             <p className="px-2 py-4 text-sm text-muted">No conversations yet.</p>
           )}
           <ul className="space-y-1.5">
