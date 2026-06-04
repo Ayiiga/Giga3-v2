@@ -47,6 +47,7 @@ export function Header() {
         </div>
 
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           className="md:hidden"

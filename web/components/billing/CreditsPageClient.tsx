@@ -29,6 +29,7 @@ function CreditsPageClientInner() {
     paystackMode,
     inlineEnabled,
     dismissError,
+    retryLastCheckout,
   } = useBilling();
 
   useEffect(() => {
@@ -63,7 +64,11 @@ function CreditsPageClientInner() {
       </div>
       {usage && <UsageTracker usage={usage} />}
       {error && (
-        <BillingErrorBanner message={error} onDismiss={dismissError} />
+        <BillingErrorBanner
+          message={error}
+          onDismiss={dismissError}
+          onRetry={retryLastCheckout}
+        />
       )}
       <div className="grid gap-8 md:grid-cols-3">
         {CREDIT_PACKS.map((pack) => (

@@ -35,8 +35,8 @@ export function Footer() {
                 </li>
               ))}
               <li>
-                <a href="/pricing" className="hover:text-foreground">
-                  App pricing
+                <a href={siteConfig.links.subscribe} className="hover:text-foreground">
+                  Subscribe
                 </a>
               </li>
             </ul>
