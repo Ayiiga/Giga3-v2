@@ -16,6 +16,7 @@ import { CreditBadge } from "@/components/billing/CreditBadge";
 import { clearUserEmail } from "@/lib/auth";
 import { siteConfig } from "@/lib/site";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { ChatActionsMenu } from "@/components/chat/ChatActionsMenu";
 import { Menu, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -56,6 +57,8 @@ function ChatShellInner() {
     usedFallback,
   } = useChatPlatform();
   const { usage } = useBilling();
+
+  const activeConversation = conversations.find((c) => c._id === activeId);
 
   useEffect(() => {
     if (!email) router.replace("/chat/login");
@@ -118,6 +121,12 @@ function ChatShellInner() {
           </nav>
 
           <span className="ml-auto flex items-center gap-2 sm:gap-3">
+            <ChatActionsMenu
+              messages={messages}
+              conversationTitle={activeConversation?.title}
+              email={email}
+              disabled={isSending}
+            />
             <ChatDateTimeLabel />
             {usage && <CreditBadge credits={usage.credits} showLabel={false} />}
             <span className="rounded-full bg-violet-100 px-3 py-1 text-sm font-bold text-violet-900 ring-1 ring-violet-300">

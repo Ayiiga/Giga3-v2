@@ -150,3 +150,26 @@ button:focus-visible {
     top: 0;
   }
 }
+
+/* Chat/PWA: stable layout — no entrance animations or page-level smooth scroll. */
+.chat-stable {
+  isolation: isolate;
+}
+
+.chat-stable,
+.chat-stable .message-list-scroll {
+  scroll-behavior: auto;
+}
+
+.chat-stable .animate-slide-up,
+.chat-stable .animate-fade-in,
+.chat-stable .animate-bounce {
+  animation: none !important;
+}
+
+@media (max-width: 1023px) {
+  .chat-stable * {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+}

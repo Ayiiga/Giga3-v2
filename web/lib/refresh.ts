@@ -11,5 +11,11 @@ export async function refreshApp(): Promise<void> {
     }
   }
 
+  const path = window.location.pathname;
+  // Full reload on chat causes flicker, scroll jumps, and lost composer state.
+  if (path.startsWith("/chat")) {
+    return;
+  }
+
   window.location.reload();
 }

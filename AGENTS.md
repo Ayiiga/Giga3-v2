@@ -43,6 +43,13 @@ Production deployment: **`perfect-lark-521`** (`https://perfect-lark-521.convex.
 - This Cloud Agent VM often **cannot** reach `api.convex.dev` or `*.convex.cloud` (TLS). Use GitHub Actions **Deploy Convex backend** or a local machine for codegen/deploy.
 - If CI fails in ~20s at **Deploy to Convex** after key format validation passes, regenerate `CONVEX_DEPLOY_KEY` (`prod:perfect-lark-521|…`) in Convex Dashboard → production → Settings → Deploy key.
 
+### Chat UI stability
+
+- Chat routes use the `chat-stable` class (`web/app/(app)/chat/layout.tsx`) to disable entrance animations and smooth-scroll jitter.
+- Message list scrolling uses `useStickToBottom` (`web/hooks/useStickToBottom.ts`) — no `behavior: "smooth"` on every Convex update.
+- Pull-to-refresh on `/chat` only updates the service worker (no full `location.reload()`); see `web/lib/refresh.ts`.
+- Media in messages: URLs in assistant replies render with save/share actions (`MessageMediaBlock`). Chat export: header **Chat actions** menu.
+
 ### Frontend HTTP paths (static `frontend/`)
 
 - Mutations: `/mutation/<module>:<name>` (e.g. `users:createUser`)

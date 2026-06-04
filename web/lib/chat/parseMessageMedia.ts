@@ -1,0 +1,51 @@
+const URL_RE = /https?:\/\/[^\s<>"')\]]+/gi;
+
+const IMAGE_PATH = /\.(png|jpe?g|gif|webp|avif|bmp|svg)(\?[^\s]*)?$/i;
+const VIDEO_PATH = /\.(mp4|webm|mov|m4v)(\?[^\s]*)?$/i;
+
+export interface ParsedMessageMedia {
+  text: string;
+  images: string[];
+  videos: string[];
+}
+
+function uniqueUrls(urls: string[]): string[] {
+  return [...new Set(urls.map((u) => u.replace(/[.,;:!?)]+$/, "")))];
+}
+
+function classifyUrl(url: string): "image" | "video" | null {
+  try {
+    const u = new URL(url);
+    const path = u.pathname + u.search;
+    if (IMAGE_PATH.test(path)) return "image";
+    if (VIDEO_PATH.test(path)) return "video";
+    if (/fal\.media|replicate\.delivery|cdn\.|storage\.googleapis/i.test(u.hostname)) {
+      if (path.includes("video") || u.pathname.endsWith(".mp4")) return "video";
+      return "image";
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+/** Split assistant/user text into prose and direct media URLs. */
+export function parseMessageMedia(content: string): ParsedMessageMedia {
+  const urls = uniqueUrls(content.match(URL_RE) ?? []);
+  const images: string[] = [];
+  const videos: string[] = [];
+
+  for (const url of urls) {
+    const kind = classifyUrl(url);
+    if (kind === "image") images.push(url);
+    else if (kind === "video") videos.push(url);
+  }
+
+  let text = content;
+  for (const url of [...images, ...videos]) {
+    text = text.split(url).join("");
+  }
+  text = text.replace(/\n{3,}/g, "\n\n").trim();
+
+  return { text, images, videos };
+}

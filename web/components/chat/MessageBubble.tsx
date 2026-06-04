@@ -1,4 +1,7 @@
+import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
+import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
 import { cn } from "@/lib/utils";
+import { memo, useMemo } from "react";
 
 export interface MessageBubbleProps {
   role: "user" | "assistant";
@@ -7,20 +10,22 @@ export interface MessageBubbleProps {
   pending?: boolean;
 }
 
-export function MessageBubble({ role, content, pending }: MessageBubbleProps) {
+export const MessageBubble = memo(function MessageBubble({
+  role,
+  content,
+  pending,
+}: MessageBubbleProps) {
   const isUser = role === "user";
+  const parsed = useMemo(() => parseMessageMedia(content), [content]);
   const safeContent =
-    typeof content === "string" && content.length > 0
-      ? content
-      : "(Empty message)";
+    parsed.text.length > 0
+      ? parsed.text
+      : parsed.images.length === 0 && parsed.videos.length === 0
+        ? "(Empty message)"
+        : "";
 
   return (
-    <div
-      className={cn(
-        "flex w-full animate-slide-up",
-        isUser ? "justify-end" : "justify-start"
-      )}
-    >
+    <div className={cn("flex w-full", isUser ? "justify-end" : "justify-start")}>
       <div
         className={cn(
           "max-w-[92%] rounded-2xl border px-5 py-4 text-base font-medium leading-relaxed shadow-md sm:max-w-[80%] sm:text-lg",
@@ -30,7 +35,15 @@ export function MessageBubble({ role, content, pending }: MessageBubbleProps) {
           pending && "ring-2 ring-violet-400/50"
         )}
       >
-        <p className="whitespace-pre-wrap break-words text-black">{safeContent}</p>
+        {safeContent && (
+          <p className="whitespace-pre-wrap break-words text-black">{safeContent}</p>
+        )}
+        {parsed.images.map((url) => (
+          <MessageMediaBlock key={url} url={url} kind="image" />
+        ))}
+        {parsed.videos.map((url) => (
+          <MessageMediaBlock key={url} url={url} kind="video" />
+        ))}
         {pending && (
           <p className="mt-2 text-sm font-normal text-zinc-600" aria-live="polite">
             Sending…
@@ -39,4 +52,4 @@ export function MessageBubble({ role, content, pending }: MessageBubbleProps) {
       </div>
     </div>
   );
-}
+});

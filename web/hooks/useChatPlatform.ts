@@ -114,21 +114,20 @@ export function useChatPlatform() {
 
   useEffect(() => {
     if (conversations.length === 0) {
-      if (activeId) setActiveId(null);
+      setActiveId((prev) => (prev ? null : prev));
       return;
     }
-    const activeStillExists =
-      activeId && conversations.some((c) => c._id === activeId);
-    if (!activeStillExists) {
-      setActiveId(conversations[0]._id);
-    }
-  }, [conversations, activeId]);
+    setActiveId((prev) => {
+      if (prev && conversations.some((c) => c._id === prev)) return prev;
+      return conversations[0]._id;
+    });
+  }, [conversations]);
 
   useEffect(() => {
     if (!activeId || !conversations.length) return;
     const conv = conversations.find((c) => c._id === activeId);
     if (conv && isValidMode(conv.mode)) {
-      setMode(conv.mode);
+      setMode((prev) => (prev === conv.mode ? prev : conv.mode));
     }
   }, [activeId, conversations]);
 

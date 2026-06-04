@@ -20,6 +20,7 @@ import {
 } from "@/lib/media/studioTemplates";
 import { canGenerateImage, canGenerateVideo } from "@/lib/credits/rules";
 import { cn } from "@/lib/utils";
+import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
 import { CheckCircle2, ImageIcon, Loader2, Video, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -106,7 +107,7 @@ function MediaStudioContent() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl animate-fade-in space-y-10">
+    <div className="mx-auto max-w-5xl space-y-10">
       <div className="flex flex-wrap items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
@@ -235,14 +236,12 @@ function MediaStudioContent() {
           </div>
         )}
 
-        {phase === "success" && lastOutputUrl && (
-          <div className="overflow-hidden rounded-2xl border border-emerald-500/30">
-            {lastMediaType === "video" ? (
-              <video src={lastOutputUrl} controls className="aspect-video w-full" />
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={lastOutputUrl} alt="Generated" className="aspect-video w-full object-cover" />
-            )}
+        {phase === "success" && lastOutputUrl && lastMediaType && (
+          <div className="rounded-2xl border border-emerald-500/30 bg-white p-3">
+            <MessageMediaBlock
+              url={lastOutputUrl}
+              kind={lastMediaType === "video" ? "video" : "image"}
+            />
           </div>
         )}
 
@@ -334,12 +333,13 @@ function MediaStudioContent() {
                   {job.errorMessage}
                 </div>
               )}
-              {job.outputUrl && job.mediaType === "image" && job.status === "succeeded" && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={job.outputUrl} alt="" className="aspect-video w-full object-cover" />
-              )}
-              {job.outputUrl && job.mediaType === "video" && job.status === "succeeded" && (
-                <video src={job.outputUrl} controls className="aspect-video w-full" />
+              {job.outputUrl && job.status === "succeeded" && (
+                <div className="p-3">
+                  <MessageMediaBlock
+                    url={job.outputUrl}
+                    kind={job.mediaType === "video" ? "video" : "image"}
+                  />
+                </div>
               )}
               <div className="p-4 text-sm sm:text-base">
                 <p className="font-semibold capitalize">
