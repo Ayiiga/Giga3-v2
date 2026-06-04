@@ -1,3 +1,7 @@
+"use client";
+
+import { MediaOutputActions } from "@/components/media/MediaOutputActions";
+import { extractMediaUrls } from "@/lib/chat/mediaUrls";
 import { cn } from "@/lib/utils";
 
 export interface MessageBubbleProps {
@@ -13,11 +17,12 @@ export function MessageBubble({ role, content, pending }: MessageBubbleProps) {
     typeof content === "string" && content.length > 0
       ? content
       : "(Empty message)";
+  const { images, videos } = extractMediaUrls(safeContent);
 
   return (
     <div
       className={cn(
-        "flex w-full animate-slide-up",
+        "flex w-full",
         isUser ? "justify-end" : "justify-start"
       )}
     >
@@ -31,6 +36,34 @@ export function MessageBubble({ role, content, pending }: MessageBubbleProps) {
         )}
       >
         <p className="whitespace-pre-wrap break-words text-black">{safeContent}</p>
+        {(images.length > 0 || videos.length > 0) && (
+          <div className="mt-3 space-y-3 border-t border-zinc-200/80 pt-3">
+            {images.map((url) => (
+              <div key={url} className="space-y-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt="Generated"
+                  className="max-h-64 w-full rounded-xl object-contain bg-zinc-100"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <MediaOutputActions url={url} mediaType="image" compact />
+              </div>
+            ))}
+            {videos.map((url) => (
+              <div key={url} className="space-y-2">
+                <video
+                  src={url}
+                  controls
+                  className="max-h-64 w-full rounded-xl bg-black"
+                  preload="metadata"
+                />
+                <MediaOutputActions url={url} mediaType="video" compact />
+              </div>
+            ))}
+          </div>
+        )}
         {pending && (
           <p className="mt-2 text-sm font-normal text-zinc-600" aria-live="polite">
             Sending…

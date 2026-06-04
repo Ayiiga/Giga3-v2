@@ -150,3 +150,32 @@ button:focus-visible {
     top: 0;
   }
 }
+
+/* Chat / app shell: prevent mobile GPU tearing and layout shake. */
+.chat-stable {
+  isolation: isolate;
+}
+
+.chat-stable .animate-slide-up,
+.chat-stable .animate-fade-in,
+.chat-stable .animate-pulse-soft,
+.chat-stable .animate-pulse {
+  animation: none !important;
+}
+
+@media (max-width: 1023px) {
+  .chat-stable * {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+
+  .chat-stable [class*="hover:-translate"],
+  .chat-stable [class*="hover:translate"] {
+    transform: none !important;
+  }
+}
+
+.chat-stable [data-chat-scroll] {
+  contain: layout style;
+  will-change: auto;
+}

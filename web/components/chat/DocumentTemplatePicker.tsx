@@ -79,7 +79,7 @@ export function DocumentTemplatePicker({
                 onClick={() => insertTemplate(template.id)}
                 className={cn(
                   "saas-card group flex min-h-[5.5rem] items-start gap-3 p-4 text-left transition-all",
-                  "hover:-translate-y-0.5 hover:shadow-xl hover:shadow-violet-500/10",
+                  "pointer-fine:hover:-translate-y-0.5 pointer-fine:hover:shadow-xl pointer-fine:hover:shadow-violet-500/10",
                   disabled && "pointer-events-none opacity-50"
                 )}
               >

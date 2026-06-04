@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 /** Live date/time label for chat chrome — updates every minute. */
 export function ChatDateTimeLabel() {
-  const [label, setLabel] = useState("");
+  const [label, setLabel] = useState<string | null>(null);
 
   useEffect(() => {
     function tick() {
@@ -20,15 +20,14 @@ export function ChatDateTimeLabel() {
     return () => window.clearInterval(id);
   }, []);
 
-  if (!label) return null;
-
   return (
     <time
-      dateTime={new Date().toISOString()}
-      className="hidden text-sm font-medium text-muted md:block"
+      dateTime={label ? new Date().toISOString() : undefined}
+      className="hidden min-w-[10rem] text-sm font-medium text-muted md:inline-block"
       suppressHydrationWarning
+      aria-hidden={!label}
     >
-      {label}
+      {label ?? "\u00a0"}
     </time>
   );
 }

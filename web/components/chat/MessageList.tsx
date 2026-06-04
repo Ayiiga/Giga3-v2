@@ -2,6 +2,7 @@
 
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
+import { ChatLoadingSkeleton } from "@/components/chat/ChatLoadingSkeleton";
 import { DOCUMENT_TEMPLATES } from "@/lib/chat/documentTemplates";
 import { formatCurrentDate, resolveTemplatePlaceholders } from "@/lib/datetime";
 import { PullToRefresh } from "@/components/pwa/PullToRefresh";
@@ -29,9 +30,22 @@ export function MessageList({
 }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messageCountRef = useRef(0);
+  const wasTypingRef = useRef(false);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = bottomRef.current;
+    if (!el) return;
+
+    const countChanged = messages.length !== messageCountRef.current;
+    const typingStarted = isTyping && !wasTypingRef.current;
+
+    if (countChanged || typingStarted) {
+      el.scrollIntoView({ behavior: "auto", block: "end" });
+    }
+
+    messageCountRef.current = messages.length;
+    wasTypingRef.current = isTyping;
   }, [messages, isTyping]);
 
   const todayLabel = (() => {
@@ -42,6 +56,10 @@ export function MessageList({
     }
   })();
 
+  if (isLoading && messages.length === 0) {
+    return <ChatLoadingSkeleton />;
+  }
+
   return (
     <PullToRefresh
       onRefresh={refreshApp}
@@ -51,14 +69,10 @@ export function MessageList({
     >
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto overscroll-y-contain px-3 py-4 sm:px-6"
+        data-chat-scroll
+        className="flex-1 overflow-y-auto overscroll-y-contain px-3 py-4 [-webkit-overflow-scrolling:touch] sm:px-6"
       >
-        {isLoading && messages.length === 0 && (
-          <div className="flex h-full min-h-[200px] flex-col items-center justify-center text-center text-muted">
-            <p className="text-xl font-bold text-foreground">Loading messages…</p>
-          </div>
-        )}
-        {messages.length === 0 && !isTyping && !isLoading && (
+        {messages.length === 0 && !isTyping && (
           <div className="flex h-full min-h-[200px] flex-col items-center justify-center text-center text-muted">
             <p className="text-xl font-bold text-foreground">Start a conversation</p>
             {todayLabel && (
@@ -85,7 +99,7 @@ export function MessageList({
                           /* parent handles errors via insertRef */
                         }
                       }}
-                      className="flex min-h-12 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-left text-xs transition-all hover:border-accent/40 hover:bg-accent/5"
+                      className="flex min-h-12 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-left text-xs hover:border-accent/40 hover:bg-accent/5 pointer-fine:transition-colors"
                     >
                       <Icon className="h-5 w-5 shrink-0 text-accent" aria-hidden />
                       <span className="font-medium text-foreground">{template.title}</span>
@@ -107,12 +121,12 @@ export function MessageList({
           ))}
           {isTyping && (
             <div className="flex justify-start">
-            <div className="rounded-2xl rounded-bl-md border border-zinc-200 bg-white px-4 py-3 shadow-sm">
-              <TypingIndicator />
-            </div>
+              <div className="rounded-2xl rounded-bl-md border border-zinc-200 bg-white px-4 py-3 shadow-sm">
+                <TypingIndicator />
+              </div>
             </div>
           )}
-          <div ref={bottomRef} />
+          <div ref={bottomRef} className="h-px shrink-0" aria-hidden />
         </div>
       </div>
     </PullToRefresh>

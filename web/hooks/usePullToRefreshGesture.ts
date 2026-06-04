@@ -24,9 +24,19 @@ export function usePullToRefreshGesture({
   const isDragging = useRef(false);
   const pullRef = useRef(0);
   const refreshingRef = useRef(false);
+  const rafRef = useRef<number | null>(null);
 
   pullRef.current = pullDistance;
   refreshingRef.current = refreshing;
+
+  const schedulePullDistance = useCallback((next: number) => {
+    pullRef.current = next;
+    if (rafRef.current !== null) return;
+    rafRef.current = window.requestAnimationFrame(() => {
+      rafRef.current = null;
+      setPullDistance(pullRef.current);
+    });
+  }, []);
 
   const isAtScrollTop = useCallback(() => {
     const el = scrollRef?.current;
@@ -37,6 +47,10 @@ export function usePullToRefreshGesture({
   const resetDrag = useCallback(() => {
     isDragging.current = false;
     pullRef.current = 0;
+    if (rafRef.current !== null) {
+      window.cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
     setPullDistance(0);
   }, []);
 
@@ -58,8 +72,7 @@ export function usePullToRefreshGesture({
       if (delta > PULL_ACTIVATION_PX && isAtScrollTop()) {
         if (e.cancelable) e.preventDefault();
         const next = Math.min((delta - PULL_ACTIVATION_PX) * 0.45, MAX_PULL);
-        pullRef.current = next;
-        setPullDistance(next);
+        schedulePullDistance(next);
       } else if (delta <= 0) {
         resetDrag();
       }
@@ -78,8 +91,7 @@ export function usePullToRefreshGesture({
         } finally {
           refreshingRef.current = false;
           setRefreshing(false);
-          pullRef.current = 0;
-          setPullDistance(0);
+          resetDrag();
         }
       } else {
         resetDrag();
@@ -96,8 +108,11 @@ export function usePullToRefreshGesture({
       target.removeEventListener("touchmove", onTouchMove as EventListener);
       target.removeEventListener("touchend", onTouchEnd as EventListener);
       target.removeEventListener("touchcancel", resetDrag as EventListener);
+      if (rafRef.current !== null) {
+        window.cancelAnimationFrame(rafRef.current);
+      }
     };
-  }, [disabled, isAtScrollTop, onRefresh, resetDrag, scrollRef]);
+  }, [disabled, isAtScrollTop, onRefresh, resetDrag, schedulePullDistance, scrollRef]);
 
   const progress = Math.min(pullDistance / PULL_THRESHOLD, 1);
 
