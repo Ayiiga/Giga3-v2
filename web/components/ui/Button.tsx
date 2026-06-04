@@ -13,10 +13,10 @@ const variants: Record<Variant, string> = {
   primary:
     "bg-btn-primary text-white shadow-btn-primary hover:brightness-110 hover:shadow-[0_14px_32px_-8px_rgba(37,99,235,0.6)]",
   secondary:
-    "glass border border-border/80 text-foreground shadow-sm hover:border-white/15 hover:bg-white/[0.07]",
-  ghost: "text-muted hover:bg-white/8 hover:text-foreground",
+    "border-2 border-zinc-300 bg-white font-bold text-foreground shadow-sm hover:border-zinc-400 hover:bg-zinc-50",
+  ghost: "font-semibold text-foreground hover:bg-zinc-100",
   outline:
-    "border-2 border-border text-foreground hover:border-blue-500/40 hover:bg-blue-500/5",
+    "border-2 border-zinc-400 font-bold text-foreground hover:border-violet-500 hover:bg-violet-50",
   image:
     "bg-btn-image text-white shadow-btn-image hover:brightness-110 hover:shadow-[0_14px_32px_-8px_rgba(16,185,129,0.5)]",
   video:

@@ -15,7 +15,7 @@ export function CreditBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 px-2.5 py-1 text-xs font-medium text-violet-200",
+        "inline-flex items-center gap-1.5 rounded-full border border-violet-300 bg-violet-50 px-2.5 py-1 text-xs font-bold text-violet-900",
         className
       )}
     >

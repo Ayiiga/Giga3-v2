@@ -43,7 +43,7 @@ export const listJobs = query({
       .query("mediaJobs")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
       .order("desc")
-      .take(24);
+      .take(50);
     return rows;
   },
 });

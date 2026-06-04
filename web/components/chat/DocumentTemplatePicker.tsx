@@ -45,7 +45,7 @@ export function DocumentTemplatePicker({
   return (
     <div
       className={cn(
-        embedded ? "px-3 py-3 sm:px-4" : "border-b bg-black/20 px-3 py-3 sm:px-4",
+        embedded ? "px-3 py-3 sm:px-4" : "border-b border-border bg-zinc-50 px-3 py-3 sm:px-4",
         !embedded && "border-border"
       )}
     >

@@ -62,7 +62,7 @@ async function generateVideo() {
   setLoading("videoBtn", true);
 
   try {
-    const res = await fetch(`${convexUrl}/action/media:generateVideo`, {
+    const res = await fetch(`${convexUrl}/action/mediaFal:generateVideo`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -98,7 +98,7 @@ async function generateImage() {
   setLoading("imageBtn", true);
 
   try {
-    const res = await fetch(`${convexUrl}/action/media:generateImage`, {
+    const res = await fetch(`${convexUrl}/action/mediaFal:generateImage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, prompt }),

@@ -40,6 +40,8 @@ function ChatShellInner() {
     email,
     user,
     conversations,
+    conversationsLoading,
+    messagesLoading,
     activeId,
     messages,
     mode,
@@ -67,22 +69,14 @@ function ChatShellInner() {
     );
   }
 
-  if (user === undefined) {
-    return (
-      <div className="flex h-[100dvh] flex-col items-center justify-center gap-3 text-muted">
-        <p className="text-base font-medium">Connecting to Giga3…</p>
-        <p className="text-sm text-muted/80">Setting up your account</p>
-      </div>
-    );
-  }
-
   const navLink =
-    "hidden rounded-xl px-3 py-2 text-sm font-semibold text-muted transition-colors hover:bg-white/5 hover:text-foreground sm:inline-flex sm:items-center sm:gap-1.5";
+    "hidden rounded-xl px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-zinc-100 sm:inline-flex sm:items-center sm:gap-1.5";
 
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-background">
       <ChatSidebar
         conversations={conversations}
+        conversationsLoading={conversationsLoading}
         activeId={activeId}
         onSelect={selectConversation}
         onNewChat={() => void startNewChat()}
@@ -96,16 +90,16 @@ function ChatShellInner() {
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex flex-wrap items-center gap-2 border-b border-border/80 bg-black/30 px-3 py-3 backdrop-blur-md sm:gap-3 sm:px-5 sm:py-3.5">
+        <header className="flex flex-wrap items-center gap-2 border-b border-border bg-white px-3 py-3 sm:gap-3 sm:px-5 sm:py-3.5">
           <button
             type="button"
-            className="rounded-xl p-2.5 text-muted hover:bg-white/5 lg:hidden"
+            className="rounded-xl p-2.5 text-foreground hover:bg-zinc-100 lg:hidden"
             onClick={() => setMobileOpen(true)}
             aria-label="Open sidebar"
           >
             <Menu className="h-6 w-6" aria-hidden />
           </button>
-          <Link href="/" className="flex items-center gap-2.5 text-base font-bold sm:text-lg">
+          <Link href="/" className="flex items-center gap-2.5 text-base font-bold text-foreground sm:text-lg">
             <BrandLogo size={32} className="!h-8 !w-8" />
             {siteConfig.name}
           </Link>
@@ -126,7 +120,7 @@ function ChatShellInner() {
           <span className="ml-auto flex items-center gap-2 sm:gap-3">
             <ChatDateTimeLabel />
             {usage && <CreditBadge credits={usage.credits} showLabel={false} />}
-            <span className="rounded-full bg-violet-500/15 px-3 py-1 text-sm font-semibold text-violet-200 ring-1 ring-violet-500/30">
+            <span className="rounded-full bg-violet-100 px-3 py-1 text-sm font-bold text-violet-900 ring-1 ring-violet-300">
               {usage?.credits ?? user?.credits ?? "—"} credits
             </span>
           </span>
@@ -136,7 +130,7 @@ function ChatShellInner() {
               clearUserEmail();
               router.push("/chat/login");
             }}
-            className="rounded-xl px-3 py-2 text-sm font-medium text-muted hover:bg-white/5 hover:text-foreground"
+            className="rounded-xl px-3 py-2 text-sm font-bold text-foreground hover:bg-zinc-100"
           >
             Sign out
           </button>
@@ -172,6 +166,7 @@ function ChatShellInner() {
 
         <MessageList
           messages={messages}
+          isLoading={messagesLoading}
           isTyping={isSending}
           onInsertTemplate={(text) => insertRef.current?.(text)}
         />

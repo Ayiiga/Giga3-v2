@@ -4,7 +4,11 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { UsageTracker } from "@/components/billing/UsageTracker";
 import { Button, ButtonLink } from "@/components/ui/Button";
+import { BillingErrorBanner } from "@/components/billing/BillingErrorBanner";
+import { CheckoutOverlay } from "@/components/billing/CheckoutOverlay";
+import { PaystackModeBadge } from "@/components/billing/PaystackModeBadge";
 import { useBilling } from "@/hooks/useBilling";
+import { paystackButtonLabel } from "@/lib/payments/checkoutLabels";
 import { CREDIT_COSTS } from "@/lib/credits/constants";
 import { CREDIT_PACKS, formatGhs } from "@/lib/payments/plans";
 import { cn } from "@/lib/utils";
@@ -14,7 +18,18 @@ import { useEffect } from "react";
 
 function CreditsPageClientInner() {
   const router = useRouter();
-  const { email, usage, paying, error, checkout } = useBilling();
+  const {
+    email,
+    usage,
+    paying,
+    checkoutPhase,
+    checkoutPreview,
+    error,
+    checkout,
+    paystackMode,
+    inlineEnabled,
+    dismissError,
+  } = useBilling();
 
   useEffect(() => {
     if (!email) router.replace("/chat/login?next=/credits");
@@ -26,12 +41,20 @@ function CreditsPageClientInner() {
 
   return (
     <div className="space-y-8">
+      <CheckoutOverlay
+        phase={checkoutPhase}
+        label={checkoutPreview?.label}
+        amountGhs={checkoutPreview?.amountGhs}
+      />
       <div className="text-center">
-        <h1 className="text-3xl font-bold">Buy credits</h1>
-        <p className="mt-2 text-muted">
+        <h1 className="page-title">Buy credits</h1>
+        <p className="mt-2 text-lg font-medium text-foreground">
           Images cost {CREDIT_COSTS.image} credits · Videos cost{" "}
           {CREDIT_COSTS.video} credits. Payments in GHS via Paystack.
         </p>
+        <div className="mt-3 flex justify-center">
+          <PaystackModeBadge mode={paystackMode} inlineEnabled={inlineEnabled} />
+        </div>
         {usage && (
           <div className="mt-4 flex justify-center">
             <CreditBadge credits={usage.credits} />
@@ -39,7 +62,9 @@ function CreditsPageClientInner() {
         )}
       </div>
       {usage && <UsageTracker usage={usage} />}
-      {error && <p className="text-sm text-red-300">{error}</p>}
+      {error && (
+        <BillingErrorBanner message={error} onDismiss={dismissError} />
+      )}
       <div className="grid gap-8 md:grid-cols-3">
         {CREDIT_PACKS.map((pack) => (
           <article
@@ -60,7 +85,7 @@ function CreditsPageClientInner() {
               onClick={() => void checkout(pack.id)}
               className="mt-8 w-full"
             >
-              Pay with Paystack
+              {paystackButtonLabel(checkoutPhase, "Pay with Paystack")}
             </Button>
           </article>
         ))}

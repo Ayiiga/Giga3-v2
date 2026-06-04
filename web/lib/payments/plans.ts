@@ -1,4 +1,5 @@
 import type { PaymentProduct } from "./types";
+import { CREDIT_PACK_LIST } from "./creditPacksCatalog";
 import { FREE_STARTER_CREDITS, SUBSCRIPTION_PLANS } from "./subscriptionCatalog";
 
 export const SUBSCRIPTION_PRODUCTS: PaymentProduct[] = [
@@ -32,33 +33,15 @@ export const SUBSCRIPTION_PRODUCTS: PaymentProduct[] = [
   },
 ];
 
-export const CREDIT_PACKS: PaymentProduct[] = [
-  {
-    id: "credits_50",
-    label: "50 Credits",
-    description: "Top-up for any plan.",
-    amountGhs: 25,
-    type: "credits",
-    credits: 50,
-  },
-  {
-    id: "credits_150",
-    label: "150 Credits",
-    description: "Best value top-up pack.",
-    amountGhs: 65,
-    type: "credits",
-    credits: 150,
-    highlighted: true,
-  },
-  {
-    id: "credits_500",
-    label: "500 Credits",
-    description: "Studio top-up for heavy usage.",
-    amountGhs: 199,
-    type: "credits",
-    credits: 500,
-  },
-];
+export const CREDIT_PACKS: PaymentProduct[] = CREDIT_PACK_LIST.map((pack) => ({
+  id: pack.id,
+  label: pack.label,
+  description: pack.description,
+  amountGhs: pack.amountGhs,
+  type: "credits" as const,
+  credits: pack.credits,
+  highlighted: pack.highlighted,
+}));
 
 export const FREE_TIER_FEATURES: string[] = [
   `${FREE_STARTER_CREDITS} starter credits`,
