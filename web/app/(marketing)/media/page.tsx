@@ -3,10 +3,10 @@ import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
-const MediaStudioClient = dynamic(
+const MediaPageRoot = dynamic(
   () =>
-    import("@/components/media/MediaStudioClient").then((m) => ({
-      default: m.MediaStudioClient,
+    import("@/components/media/MediaPageRoot").then((m) => ({
+      default: m.MediaPageRoot,
     })),
   { ssr: false, loading: () => <p className="text-center text-muted">Loading…</p> }
 );
@@ -18,10 +18,10 @@ export const metadata: Metadata = {
 
 export default function MediaPage() {
   return (
-    <div className="section-padding pt-28">
+    <div className="media-stable section-padding pt-28">
       <Container>
         <Suspense fallback={<p className="text-center text-muted">Loading studio…</p>}>
-          <MediaStudioClient />
+          <MediaPageRoot />
         </Suspense>
       </Container>
     </div>

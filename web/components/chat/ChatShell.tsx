@@ -2,15 +2,13 @@
 
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ChatDateTimeLabel } from "@/components/chat/ChatDateTimeLabel";
-import { ChatInput } from "@/components/chat/ChatInput";
+import { ChatConversationPane } from "@/components/chat/ChatConversationPane";
 import { ChatErrorBanner } from "@/components/chat/ChatErrorBanner";
 import { ChatProviderBanner } from "@/components/chat/ChatProviderBanner";
 import { ChatWorkspacePanel } from "@/components/chat/ChatWorkspacePanel";
 import { UserLearningBanner } from "@/components/chat/UserLearningBanner";
 import { SlowNetworkBanner } from "@/components/chat/SlowNetworkBanner";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
-import { ChatTypingBar } from "@/components/chat/ChatTypingBar";
-import { MessageList } from "@/components/chat/MessageList";
 import { useChatPlatform } from "@/hooks/useChatPlatform";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { CreditBadge } from "@/components/billing/CreditBadge";
@@ -92,7 +90,7 @@ function ChatShellInner() {
 
   if (!email) {
     return (
-      <div className="flex h-dvh items-center justify-center text-base text-muted">
+      <div className="flex h-full items-center justify-center text-base text-muted">
         Redirecting…
       </div>
     );
@@ -172,7 +170,7 @@ function ChatShellInner() {
         </header>
 
         <SlowNetworkBanner />
-        <UserLearningBanner interestProfileJson={user?.interestProfile} />
+        <UserLearningBanner interestProfileJson={user?.interestProfile ?? null} />
         <ChatProviderBanner label={chatProviderLabel} usedFallback={usedFallback} />
 
         <ChatWorkspacePanel
@@ -192,16 +190,13 @@ function ChatShellInner() {
 
         {error && <ChatErrorBanner message={error} />}
 
-        <MessageList
+        <ChatConversationPane
           messages={messages}
           isLoading={messagesLoading}
-          onInsertTemplate={handleInsertTemplate}
-        />
-        <ChatTypingBar visible={isSending} />
-        <ChatInput
+          isSending={isSending}
           insertRef={insertRef}
           onSend={handleSend}
-          disabled={isSending}
+          onInsertTemplate={handleInsertTemplate}
         />
       </div>
     </div>

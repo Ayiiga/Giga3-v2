@@ -13,6 +13,17 @@ export interface MessageBubbleProps {
   pending?: boolean;
 }
 
+function bubblePropsEqual(
+  prev: MessageBubbleProps,
+  next: MessageBubbleProps
+): boolean {
+  return (
+    prev.role === next.role &&
+    prev.content === next.content &&
+    prev.pending === next.pending
+  );
+}
+
 export const MessageBubble = memo(function MessageBubble({
   role,
   content,
@@ -57,4 +68,4 @@ export const MessageBubble = memo(function MessageBubble({
       </div>
     </div>
   );
-});
+}, bubblePropsEqual);

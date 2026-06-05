@@ -21,12 +21,15 @@ import {
 import { canGenerateImage, canGenerateVideo } from "@/lib/credits/rules";
 import { cn } from "@/lib/utils";
 import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
+import { RecentGenerationsList } from "@/components/media/RecentGenerationsList";
+import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { CheckCircle2, ImageIcon, Loader2, Video, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 function MediaStudioContent() {
+  useRenderDiagnostic("MediaStudioContent");
   const router = useRouter();
   const params = useSearchParams();
   const { email, usage } = useBilling();
@@ -245,40 +248,39 @@ function MediaStudioContent() {
           </div>
         )}
 
-        {loading && (
-          <div
-            role="status"
-            className="rounded-2xl border border-violet-500/30 bg-violet-500/10 px-4 py-4"
-          >
-            <div className="flex items-center gap-3 text-base font-medium text-violet-100">
-              <Loader2 className="h-6 w-6 animate-spin" aria-hidden />
-              Generating your {tab}…
+        <div className="min-h-[5.5rem] space-y-3" aria-live="polite">
+          {loading && (
+            <div
+              role="status"
+              className="rounded-2xl border border-violet-500/30 bg-violet-500/10 px-4 py-4"
+            >
+              <div className="flex items-center gap-3 text-base font-medium text-violet-100">
+                <Loader2 className="h-6 w-6 animate-spin" aria-hidden />
+                Generating your {tab}…
+              </div>
             </div>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-200">
-              <div className="h-full w-2/3 animate-pulse-soft rounded-full bg-gradient-to-r from-violet-500 to-blue-500" />
+          )}
+
+          {phase === "success" && successMessage && !loading && (
+            <div
+              role="status"
+              className="flex items-start gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-4 text-base text-emerald-100"
+            >
+              <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0" aria-hidden />
+              <span>{successMessage}</span>
             </div>
-          </div>
-        )}
+          )}
 
-        {phase === "success" && successMessage && (
-          <div
-            role="status"
-            className="flex items-start gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-4 text-base text-emerald-100"
-          >
-            <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0" aria-hidden />
-            <span>{successMessage}</span>
-          </div>
-        )}
-
-        {error && (
-          <div
-            role="alert"
-            className="flex items-start gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-4 text-base text-red-100"
-          >
-            <XCircle className="mt-0.5 h-6 w-6 shrink-0" aria-hidden />
-            <span>{error}</span>
-          </div>
-        )}
+          {error && !loading && (
+            <div
+              role="alert"
+              className="flex items-start gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-4 text-base text-red-100"
+            >
+              <XCircle className="mt-0.5 h-6 w-6 shrink-0" aria-hidden />
+              <span>{error}</span>
+            </div>
+          )}
+        </div>
 
         {!canGen && usage && (
           <p className="text-base text-amber-200">
@@ -315,42 +317,7 @@ function MediaStudioContent() {
         </Button>
       </div>
 
-      <section className="space-y-6">
-        <h2 className="text-xl font-bold sm:text-2xl">Recent generations</h2>
-        <div className="grid gap-5 sm:grid-cols-2">
-          {jobs.length === 0 && (
-            <p className="text-base text-muted">No media yet — create your first above.</p>
-          )}
-          {jobs.map((job: (typeof jobs)[number]) => (
-            <article key={job._id} className="saas-card overflow-hidden shadow-md">
-              {job.status === "processing" && (
-                <div className="flex aspect-video items-center justify-center bg-black/40 text-muted">
-                  <Loader2 className="h-8 w-8 animate-spin" aria-hidden />
-                </div>
-              )}
-              {job.status === "failed" && job.errorMessage && (
-                <div className="aspect-video bg-red-950/40 p-4 text-sm text-red-100">
-                  {job.errorMessage}
-                </div>
-              )}
-              {job.outputUrl && job.status === "succeeded" && (
-                <div className="p-3">
-                  <MessageMediaBlock
-                    url={job.outputUrl}
-                    kind={job.mediaType === "video" ? "video" : "image"}
-                  />
-                </div>
-              )}
-              <div className="p-4 text-sm sm:text-base">
-                <p className="font-semibold capitalize">
-                  {job.mediaType} · {job.status}
-                </p>
-                <p className="mt-1 line-clamp-2 text-muted">{job.prompt}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+      <RecentGenerationsList jobs={jobs} />
     </div>
   );
 }

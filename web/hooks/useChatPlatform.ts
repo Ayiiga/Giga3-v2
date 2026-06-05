@@ -3,6 +3,7 @@
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
 import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
+import { useStableUser } from "@/hooks/useStableUser";
 import { getUserEmail } from "@/lib/auth";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import { api } from "convex/_generated/api";
@@ -83,6 +84,7 @@ export function useChatPlatform() {
   );
 
   const messages = useStableUiMessages(messagesRaw, pendingUserText);
+  const userSnapshot = useStableUser(user);
 
   useEffect(() => {
     if (!email || user !== null || createUserAttempted.current) return;
@@ -184,12 +186,13 @@ export function useChatPlatform() {
           CHAT_ACTION_TIMEOUT_MS,
           "Chat is taking longer than usual on this connection. Your message was saved — please try sending again in a moment."
         );
-        setChatProviderLabel(
+        const nextLabel =
           typeof result.chatProviderLabel === "string"
             ? result.chatProviderLabel
-            : null
-        );
-        setUsedFallback(Boolean(result.usedFallback));
+            : null;
+        const nextFallback = Boolean(result.usedFallback);
+        setChatProviderLabel((prev) => (prev === nextLabel ? prev : nextLabel));
+        setUsedFallback((prev) => (prev === nextFallback ? prev : nextFallback));
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to send");
         setPendingUserText(null);
@@ -202,7 +205,7 @@ export function useChatPlatform() {
 
   return {
     email,
-    user,
+    user: userSnapshot,
     conversations,
     conversationsLoading,
     messagesLoading,

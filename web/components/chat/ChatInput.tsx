@@ -1,6 +1,7 @@
 "use client";
 
 import { ChatInputToolbar } from "@/components/chat/ChatInputToolbar";
+import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { Button } from "@/components/ui/Button";
 import {
   buildAttachmentMessage,
@@ -11,7 +12,7 @@ import {
   FormEvent,
   KeyboardEvent,
   MutableRefObject,
-  RefObject,
+  memo,
   useCallback,
   useEffect,
   useRef,
@@ -26,12 +27,14 @@ interface ChatInputProps {
   insertRef?: MutableRefObject<((text: string) => void) | null>;
 }
 
-export function ChatInput({
+export const ChatInput = memo(function ChatInput({
   onSend,
   disabled,
   placeholder = "Message Giga3 AI…",
   insertRef,
 }: ChatInputProps) {
+  useRenderDiagnostic("ChatInput");
+
   const [value, setValue] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -135,7 +138,7 @@ export function ChatInput({
       </p>
     </form>
   );
-}
+});
 
 function NoticeBanner({
   message,
