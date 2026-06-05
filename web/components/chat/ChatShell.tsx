@@ -121,10 +121,10 @@ function ChatShellInner({
   }, []);
 
   useEffect(() => {
-    if (!email) router.replace("/chat/login");
-  }, [email, router]);
+    if (mounted && !email) router.replace("/chat/login");
+  }, [mounted, email, router]);
 
-  if (!email) {
+  if (!mounted || !email) {
     return (
       <div className="flex h-full items-center justify-center text-base text-muted">
         Redirecting…
