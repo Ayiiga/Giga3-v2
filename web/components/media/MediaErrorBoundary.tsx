@@ -21,7 +21,7 @@ export class MediaErrorBoundary extends Component<{ children: ReactNode }, State
   render() {
     if (this.state.error) {
       return (
-        <div className="saas-card mx-auto max-w-lg animate-slide-up p-8 text-center">
+        <div className="saas-card mx-auto max-w-lg p-8 text-center">
           <h2 className="text-xl font-bold text-foreground">Media Studio unavailable</h2>
           <p className="mt-3 text-base text-muted">
             Something went wrong loading the studio. Your credits and chat are safe — try again or

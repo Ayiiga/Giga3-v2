@@ -18,20 +18,17 @@
 
 html {
   font-size: 18px;
+  height: 100%;
   overscroll-behavior-y: none;
+  scroll-behavior: auto;
   text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
 }
 
 body {
   @apply bg-background text-base font-medium text-foreground antialiased;
   background-color: var(--background);
+  min-height: 100%;
   touch-action: manipulation;
   overscroll-behavior-y: none;
 }
@@ -206,32 +203,48 @@ button:focus-visible {
   }
 }
 
-/* Media studio: stable cards — no hover translate jitter on mobile PWA. */
-.media-stable {
+/* Media studio + app surfaces: stable cards, no hover translate jitter. */
+.media-stable,
+.pwa-stable-main {
   isolation: isolate;
 }
 
-.media-stable .saas-card {
+.media-stable .saas-card,
+.pwa-stable-main .saas-card {
   contain: layout style;
 }
 
 .media-stable *,
 .media-stable *::before,
-.media-stable *::after {
+.media-stable *::after,
+.pwa-stable-main *,
+.pwa-stable-main *::before,
+.pwa-stable-main *::after {
   transition-property: none !important;
 }
 
-.media-stable .animate-spin {
+.media-stable .animate-spin,
+.pwa-stable-main .animate-spin {
   animation: spin 1s linear infinite !important;
 }
 
 @media (max-width: 1023px) {
-  .media-stable * {
+  .media-stable *,
+  .pwa-stable-main * {
     transition-duration: 0s !important;
     transition-delay: 0s !important;
   }
 
-  .media-stable .hover\:-translate-y-0\.5 {
+  .media-stable .hover\:-translate-y-0\.5,
+  .pwa-stable-main .hover\:-translate-y-0\.5,
+  .media-stable .hover\:-translate-y-0\.5:hover,
+  .pwa-stable-main .hover\:-translate-y-0\.5:hover {
     transform: none !important;
   }
+}
+
+/* Marketing layout: allow spinners inside app surfaces only. */
+.marketing-stable .pwa-stable-main .animate-spin,
+.marketing-stable .media-stable .animate-spin {
+  animation: spin 1s linear infinite !important;
 }

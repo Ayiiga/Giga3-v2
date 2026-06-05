@@ -1,7 +1,7 @@
 "use client";
 
 import { useStableMediaJobs, type MediaJobRow } from "@/hooks/useStableMediaJobs";
-import { hasActiveMediaJobs } from "@/lib/media/stableJobs";
+import { hasActiveMediaJobs, mediaJobsEqual } from "@/lib/media/stableJobs";
 import { api } from "convex/_generated/api";
 import { useConvex } from "convex/react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -27,7 +27,10 @@ export function usePolledMediaJobs(userId: string, mounted: boolean) {
       const rows = (await convex.query(api.mediaQueries.listJobs, {
         userId,
       })) as MediaJobRow[];
-      setRawJobs(rows);
+      setRawJobs((prev) => {
+        if (prev && mediaJobsEqual(prev, rows)) return prev;
+        return rows;
+      });
     } catch {
       /* keep last good snapshot */
     } finally {

@@ -59,8 +59,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-sans">
-        <div className="min-h-dvh">{children}</div>
+      <body className="font-sans min-h-full">
+        <div className="min-h-full">{children}</div>
         <ServiceWorkerRegister />
         <OfflineBanner />
       </body>
