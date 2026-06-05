@@ -1,5 +1,7 @@
 # Convex backend (Giga3 AI)
 
+**Chat stability (Phase 1D):** `users.getChatCredits`, `users.getInterestProfile`, batched `recordChatInteraction` writes.
+
 Production deploy runs via GitHub Actions (**Deploy Convex backend**) on pushes to `main` that touch `convex/`, or locally:
 
 ```bash

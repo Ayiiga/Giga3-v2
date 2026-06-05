@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { useChatCredits } from "@/hooks/useChatCredits";
 import { getModeDefinition, isValidMode, type AiModeId } from "@/lib/aiRouter";
 import { cn } from "@/lib/utils";
 import { Id } from "convex/_generated/dataModel";
@@ -28,8 +29,8 @@ interface ChatSidebarProps {
   onSelect: (id: Id<"conversations">) => void;
   onNewChat: () => void;
   onDelete: (id: Id<"conversations">) => void;
-  credits: number | null;
   email: string;
+  mounted: boolean;
   collapsed: boolean;
   onToggleCollapse: () => void;
   mobileOpen: boolean;
@@ -43,13 +44,15 @@ export function ChatSidebar({
   onSelect,
   onNewChat,
   onDelete,
-  credits,
   email,
+  mounted,
   collapsed,
   onToggleCollapse,
   mobileOpen,
   onCloseMobile,
 }: ChatSidebarProps) {
+  const { credits } = useChatCredits(email, mounted);
+
   return (
     <>
       {mobileOpen && (

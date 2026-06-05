@@ -3,7 +3,6 @@
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
 import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
-import { useStableUser } from "@/hooks/useStableUser";
 import { getUserEmail } from "@/lib/auth";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import { api } from "convex/_generated/api";
@@ -49,7 +48,7 @@ export function useChatPlatform() {
     setEmail(getUserEmail());
   }, []);
 
-  const userQueryArgs = useMemo(
+  const emailQueryArgs = useMemo(
     () => (mounted && email ? { email } : ("skip" as const)),
     [mounted, email]
   );
@@ -65,7 +64,8 @@ export function useChatPlatform() {
     [mounted, email, activeId]
   );
 
-  const user = useQuery(api.users.getUser, userQueryArgs);
+  /** Credits-only probe for user existence — not full getUser (avoids shell churn). */
+  const chatCreditsRow = useQuery(api.users.getChatCredits, emailQueryArgs);
   const conversationsRaw = useQuery(api.conversations.list, conversationsQueryArgs);
   const messagesRaw = useQuery(api.messages.listByConversation, messagesQueryArgs);
 
@@ -84,13 +84,15 @@ export function useChatPlatform() {
   );
 
   const messages = useStableUiMessages(messagesRaw, pendingUserText);
-  const userSnapshot = useStableUser(user);
 
   useEffect(() => {
-    if (!email || user !== null || createUserAttempted.current) return;
+    if (!email || chatCreditsRow === undefined || createUserAttempted.current) {
+      return;
+    }
+    if (chatCreditsRow !== null) return;
     createUserAttempted.current = true;
     void createUser({ email });
-  }, [email, user, createUser]);
+  }, [email, chatCreditsRow, createUser]);
 
   useEffect(() => {
     if (conversations.length === 0) {
@@ -205,7 +207,7 @@ export function useChatPlatform() {
 
   return {
     email,
-    user: userSnapshot,
+    mounted,
     conversations,
     conversationsLoading,
     messagesLoading,
