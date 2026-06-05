@@ -8,10 +8,10 @@ import {
   MEDIA_VIDEO_TIMEOUT_MS,
   withActionTimeout,
 } from "@/lib/media/actionTimeout";
-import { usePolledMediaJobs } from "@/hooks/usePolledMediaJobs";
+import { triggerMediaJobsRefresh } from "@/lib/media/jobsRefresh";
 import { api } from "convex/_generated/api";
 import { useAction } from "convex/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 type MediaActionResult = {
   imageUrl?: string;
@@ -36,13 +36,7 @@ export function useMediaGeneration() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [lastOutputUrl, setLastOutputUrl] = useState<string | null>(null);
   const [lastMediaType, setLastMediaType] = useState<"image" | "video" | null>(null);
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const { jobs, refreshJobs } = usePolledMediaJobs(userId, mounted);
   const generateImage = useAction(api.media.generateImage);
   const generateVideo = useAction(api.media.generateVideo);
 
@@ -74,7 +68,7 @@ export function useMediaGeneration() {
       setLastMediaType("image");
       setPhase("success");
       setSuccessMessage("Image ready — saved to Recent generations.");
-      void refreshJobs();
+      triggerMediaJobsRefresh();
       return result;
     } catch (e) {
       const msg = formatMediaError(e);
@@ -113,7 +107,7 @@ export function useMediaGeneration() {
       setLastMediaType("video");
       setPhase("success");
       setSuccessMessage("Video ready — saved to Recent generations.");
-      void refreshJobs();
+      triggerMediaJobsRefresh();
       return result;
     } catch (e) {
       const msg = formatMediaError(e);
@@ -125,7 +119,6 @@ export function useMediaGeneration() {
 
   return {
     email,
-    jobs,
     loading,
     phase,
     error,
