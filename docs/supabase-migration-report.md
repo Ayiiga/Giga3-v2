@@ -9,13 +9,15 @@ Supabase is integrated as an opt-in data backend for Giga3-v2 while Convex remai
 - `supabase/config.toml` — records linked project ref `bgkkrezloideuwfwkloz`.
 - `supabase/migrations/20260605132000_giga3_initial_schema.sql` — creates `users`, `chats`, `chat_messages`, `generations`, `payments`, `token_transactions`, storage buckets, indexes, triggers, and RLS policies.
 - `scripts/migrate-convex-to-supabase.mjs` — imports Convex export data into Supabase using `SUPABASE_SERVICE_ROLE_KEY`.
-- `package.json` — adds `npm run supabase:migrate:convex`.
+- `scripts/verify-supabase-project.mjs` — verifies Supabase env points at project ref `bgkkrezloideuwfwkloz` and attempts a REST read.
+- `package.json` — adds `npm run supabase:migrate:convex` and `npm run supabase:verify`.
 - `web/.env.local.example` — documents Supabase URL/key/env and the backend feature flag.
 - `web/types/supabase.ts` — typed database access model for Supabase tables.
 - `web/lib/supabase.ts` — typed browser Supabase REST/Auth client.
 - `web/lib/supabase/server.ts` — server-side Supabase client factory with service-role support.
 - `web/lib/supabase/auth.ts` — Supabase magic-link auth helpers and local email sync.
-- `web/lib/supabase/data.ts` — typed Supabase CRUD helpers for users, chats, messages, and generations.
+- `web/lib/supabase/data.ts` — typed Supabase CRUD helpers for users, chats, messages, generations, payments, and token transactions.
+- `web/lib/supabase/storage.ts` — storage bucket names, public URL generation, upload, and removal helpers.
 - `web/lib/dataBackend.ts` — feature flag helper for `convex` vs `supabase`.
 - `web/components/chat/ChatLoginForm.tsx` — supports Supabase magic links and uses Convex HTTP for legacy user creation.
 - `web/components/chat/ChatLoginPageClient.tsx` — removes the Convex React provider requirement from login.
@@ -50,6 +52,13 @@ Convex intentionally remains operational for these paths during migration:
 - Billing and usage: `credits.getUsageSnapshot`, Paystack actions, Paystack webhook fulfillment, subscriptions, and credit grants.
 - Legacy static site APIs in `frontend/`: `users`, `chat`, `aiActions`, `mediaFal`, and Stripe/Paystack compatibility endpoints.
 - Convex deployment/env remains required until AI/media/billing server actions are moved to Supabase-backed infrastructure.
+
+## Missing or blocked environment items
+
+- `NEXT_PUBLIC_SUPABASE_URL` — required for Supabase mode. Provided value should point at `https://bgkkrezloideuwfwkloz.supabase.co`.
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — required for browser Supabase mode. The verification script confirms its JWT `ref` claim is `bgkkrezloideuwfwkloz`.
+- `SUPABASE_SERVICE_ROLE_KEY` — required only for server-side import/admin migration commands.
+- `@supabase/supabase-js` — requested SDK dependency, but this Cloud VM could not install it because npm registry requests failed with `ECONNRESET`. The current implementation uses typed Supabase HTTP APIs so builds stay passing until package installation is available.
 
 ## Stability changes
 

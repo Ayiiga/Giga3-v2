@@ -10,6 +10,9 @@ type UserRow = Database["public"]["Tables"]["users"]["Row"];
 type ChatRow = Database["public"]["Tables"]["chats"]["Row"];
 type MessageRow = Database["public"]["Tables"]["chat_messages"]["Row"];
 type GenerationRow = Database["public"]["Tables"]["generations"]["Row"];
+type PaymentRow = Database["public"]["Tables"]["payments"]["Row"];
+type TokenTransactionRow =
+  Database["public"]["Tables"]["token_transactions"]["Row"];
 
 type SupabaseMessageInput = {
   _id?: string;
@@ -218,5 +221,89 @@ export async function createSupabaseGeneration(args: {
       args.mediaType === "video" ? CREDITS_PER_VIDEO : CREDITS_PER_IMAGE,
     error_message: args.errorMessage ?? null,
   });
+}
+
+export async function listSupabasePayments(email: string): Promise<PaymentRow[]> {
+  const user = await ensureSupabaseUser(email);
+  const params = new URLSearchParams({
+    user_id: eq(user.id),
+    order: "created_at.desc",
+    limit: "50",
+    select: "*",
+  });
+  return await requireSupabaseClient().select("payments", params);
+}
+
+export async function upsertSupabasePayment(args: {
+  email: string;
+  provider?: "paystack" | "stripe";
+  reference: string;
+  productId: string;
+  type: "subscription" | "credits";
+  amountGhs?: number | null;
+  planId?: "free" | "basic" | "pro" | "premium" | null;
+  creditsGranted?: number | null;
+  status?: "pending" | "success" | "failed";
+  providerResponse?: Database["public"]["Tables"]["payments"]["Insert"]["provider_response"];
+  convexPaymentId?: string | null;
+}): Promise<PaymentRow> {
+  const user = await ensureSupabaseUser(args.email);
+  const [row] = await requireSupabaseClient().upsert(
+    "payments",
+    {
+      user_id: user.id,
+      provider: args.provider ?? "paystack",
+      reference: args.reference,
+      product_id: args.productId,
+      type: args.type,
+      amount_ghs: args.amountGhs ?? null,
+      plan_id: args.planId ?? null,
+      credits_granted: args.creditsGranted ?? null,
+      status: args.status ?? "pending",
+      provider_response: args.providerResponse ?? null,
+      convex_payment_id: args.convexPaymentId ?? null,
+    },
+    { onConflict: "reference" }
+  );
+  if (!row) throw new Error("Could not upsert Supabase payment.");
+  return row;
+}
+
+export async function listSupabaseTokenTransactions(
+  email: string
+): Promise<TokenTransactionRow[]> {
+  const user = await ensureSupabaseUser(email);
+  const params = new URLSearchParams({
+    user_id: eq(user.id),
+    order: "created_at.desc",
+    limit: "100",
+    select: "*",
+  });
+  return await requireSupabaseClient().select("token_transactions", params);
+}
+
+export async function createSupabaseTokenTransaction(args: {
+  email: string;
+  amount: number;
+  reference: string;
+  tokens: number;
+  action?: string | null;
+  balanceAfter?: number | null;
+  metadata?: Database["public"]["Tables"]["token_transactions"]["Insert"]["metadata"];
+  convexTransactionId?: string | null;
+}): Promise<TokenTransactionRow> {
+  const user = await ensureSupabaseUser(args.email);
+  const [row] = await requireSupabaseClient().insert("token_transactions", {
+    user_id: user.id,
+    amount: args.amount,
+    reference: args.reference,
+    tokens: args.tokens,
+    action: args.action ?? null,
+    balance_after: args.balanceAfter ?? null,
+    metadata: args.metadata ?? null,
+    convex_transaction_id: args.convexTransactionId ?? null,
+  });
+  if (!row) throw new Error("Could not create Supabase token transaction.");
+  return row;
 }
 

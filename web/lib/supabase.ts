@@ -4,6 +4,7 @@ type TableName = keyof Database["public"]["Tables"];
 type TableRow<T extends TableName> = Database["public"]["Tables"][T]["Row"];
 type TableInsert<T extends TableName> = Database["public"]["Tables"][T]["Insert"];
 type TableUpdate<T extends TableName> = Database["public"]["Tables"][T]["Update"];
+export type SupabaseStorageBucket = "images" | "videos" | "avatars" | "uploads";
 
 export class SupabaseRequestError extends Error {
   constructor(
@@ -158,6 +159,37 @@ export function createSupabaseRestClient(options?: {
       return request<unknown>("/auth/v1/logout", {
         method: "POST",
         headers: { Authorization: `Bearer ${accessToken}` },
+      });
+    },
+    storagePublicUrl(bucket: SupabaseStorageBucket, objectPath: string): string {
+      const cleanPath = objectPath.replace(/^\/+/, "");
+      return `${url}/storage/v1/object/public/${bucket}/${cleanPath}`;
+    },
+    storageUpload(
+      bucket: SupabaseStorageBucket,
+      objectPath: string,
+      body: BodyInit,
+      options?: { contentType?: string; upsert?: boolean }
+    ): Promise<unknown> {
+      const cleanPath = objectPath.replace(/^\/+/, "");
+      return request<unknown>(`/storage/v1/object/${bucket}/${cleanPath}`, {
+        method: "POST",
+        headers: {
+          ...(options?.contentType ? { "Content-Type": options.contentType } : {}),
+          ...(options?.upsert ? { "x-upsert": "true" } : {}),
+        },
+        body,
+      });
+    },
+    storageRemove(
+      bucket: SupabaseStorageBucket,
+      objectPaths: string[]
+    ): Promise<unknown> {
+      return request<unknown>(`/storage/v1/object/${bucket}`, {
+        method: "DELETE",
+        body: JSON.stringify({
+          prefixes: objectPaths.map((objectPath) => objectPath.replace(/^\/+/, "")),
+        }),
       });
     },
   };

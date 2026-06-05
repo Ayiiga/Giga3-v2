@@ -7,6 +7,7 @@
     "convex:codegen": "convex codegen",
     "convex:deploy": "convex deploy --yes",
     "supabase:migrate:convex": "node scripts/migrate-convex-to-supabase.mjs",
+    "supabase:verify": "node scripts/verify-supabase-project.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
