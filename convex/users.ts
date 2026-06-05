@@ -64,6 +64,35 @@ export const getUser = query({
   },
 });
 
+/** Chat header/sidebar — credits only (isolates from interestProfile churn). */
+export const getChatCredits = query({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
+    if (!user) return null;
+    return { credits: user.credits ?? 0 };
+  },
+});
+
+/** Personalization banner — interest profile only. */
+export const getInterestProfile = query({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
+    if (!user) return null;
+    return { interestProfile: user.interestProfile ?? null };
+  },
+});
+
+/** Persist interest profile every N messages to cut client subscription churn. */
+const INTEREST_PROFILE_WRITE_INTERVAL = 5;
+
 /** Updates interest profile from each chat message (consistent users get better personalization). */
 export const recordChatInteraction = mutation({
   args: {
@@ -81,9 +110,16 @@ export const recordChatInteraction = mutation({
     const safeMode = isValidMode(args.mode) ? args.mode : "general";
     const current = parseInterestProfile(user.interestProfile);
     const next = updateInterestProfile(current, safeMode, args.messageContent);
-    await ctx.db.patch(user._id, {
-      interestProfile: serializeInterestProfile(next),
-    });
+    const serialized = serializeInterestProfile(next);
+    const shouldPersist =
+      next.messageCount <= 5 ||
+      next.messageCount % INTEREST_PROFILE_WRITE_INTERVAL === 0 ||
+      serialized !== (user.interestProfile ?? "");
+    if (shouldPersist) {
+      await ctx.db.patch(user._id, {
+        interestProfile: serialized,
+      });
+    }
     return next.messageCount;
   },
 });

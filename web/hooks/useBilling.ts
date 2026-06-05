@@ -2,7 +2,6 @@
 
 import type { CheckoutPhase } from "@/components/billing/CheckoutOverlay";
 import { getUserEmail } from "@/lib/auth";
-import type { UsageSnapshot } from "@/lib/credits/constants";
 import { friendlyPaystackError } from "@/lib/payments/paystackErrors";
 import {
   getPaystackPublicKeyFromBuild,
@@ -18,6 +17,7 @@ import {
 } from "@/lib/payments/paystackService";
 import { api } from "convex/_generated/api";
 import { useAction, useQuery } from "convex/react";
+import { useStableUsage } from "@/hooks/useStableUsage";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -73,20 +73,9 @@ export function useBilling() {
   const inlineEnabled = Boolean(publicKey) || Boolean(paystackConfig?.enabled);
   const keysMismatch = paystackConfig?.enabled && paystackConfig.keyMismatch;
 
-  const usage: UsageSnapshot | null = usageRaw
-    ? {
-        subscriptionPlan:
-          (usageRaw.subscriptionPlan as UsageSnapshot["subscriptionPlan"]) ??
-          "free",
-        subscriptionActive: usageRaw.subscriptionActive,
-        credits: usageRaw.credits,
-        tokens: usageRaw.tokens,
-        subscriptionExpiresAt: usageRaw.subscriptionExpiresAt,
-        planLabel: String(usageRaw.planLabel),
-        canGenerateVideo: usageRaw.canGenerateVideo,
-        creditCosts: usageRaw.creditCosts,
-      }
-    : null;
+  const usage = useStableUsage(
+    usageRaw as Record<string, unknown> | null | undefined
+  );
 
   const clearCheckout = useCallback(() => {
     setCheckoutPhase(null);

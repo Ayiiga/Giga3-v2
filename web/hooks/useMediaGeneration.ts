@@ -8,8 +8,9 @@ import {
   MEDIA_VIDEO_TIMEOUT_MS,
   withActionTimeout,
 } from "@/lib/media/actionTimeout";
+import { usePolledMediaJobs } from "@/hooks/usePolledMediaJobs";
 import { api } from "convex/_generated/api";
-import { useAction, useQuery } from "convex/react";
+import { useAction } from "convex/react";
 import { useCallback, useEffect, useState } from "react";
 
 type MediaActionResult = {
@@ -41,10 +42,7 @@ export function useMediaGeneration() {
     setMounted(true);
   }, []);
 
-  const jobs = useQuery(
-    api.mediaQueries.listJobs,
-    mounted && userId ? { userId } : "skip"
-  );
+  const { jobs, refreshJobs } = usePolledMediaJobs(userId, mounted);
   const generateImage = useAction(api.media.generateImage);
   const generateVideo = useAction(api.media.generateVideo);
 
@@ -76,6 +74,7 @@ export function useMediaGeneration() {
       setLastMediaType("image");
       setPhase("success");
       setSuccessMessage("Image ready — saved to Recent generations.");
+      void refreshJobs();
       return result;
     } catch (e) {
       const msg = formatMediaError(e);
@@ -114,6 +113,7 @@ export function useMediaGeneration() {
       setLastMediaType("video");
       setPhase("success");
       setSuccessMessage("Video ready — saved to Recent generations.");
+      void refreshJobs();
       return result;
     } catch (e) {
       const msg = formatMediaError(e);
@@ -125,7 +125,7 @@ export function useMediaGeneration() {
 
   return {
     email,
-    jobs: jobs ?? [],
+    jobs,
     loading,
     phase,
     error,

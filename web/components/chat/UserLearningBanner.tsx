@@ -36,4 +36,7 @@ function UserLearningBannerInner({
   );
 }
 
-export const UserLearningBanner = memo(UserLearningBannerInner);
+export const UserLearningBanner = memo(
+  UserLearningBannerInner,
+  (prev, next) => prev.interestProfileJson === next.interestProfileJson
+);

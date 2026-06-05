@@ -48,7 +48,7 @@ export function useChatPlatform() {
     setEmail(getUserEmail());
   }, []);
 
-  const userQueryArgs = useMemo(
+  const emailQueryArgs = useMemo(
     () => (mounted && email ? { email } : ("skip" as const)),
     [mounted, email]
   );
@@ -64,7 +64,8 @@ export function useChatPlatform() {
     [mounted, email, activeId]
   );
 
-  const user = useQuery(api.users.getUser, userQueryArgs);
+  /** Credits-only probe for user existence — not full getUser (avoids shell churn). */
+  const chatCreditsRow = useQuery(api.users.getChatCredits, emailQueryArgs);
   const conversationsRaw = useQuery(api.conversations.list, conversationsQueryArgs);
   const messagesRaw = useQuery(api.messages.listByConversation, messagesQueryArgs);
 
@@ -85,10 +86,13 @@ export function useChatPlatform() {
   const messages = useStableUiMessages(messagesRaw, pendingUserText);
 
   useEffect(() => {
-    if (!email || user !== null || createUserAttempted.current) return;
+    if (!email || chatCreditsRow === undefined || createUserAttempted.current) {
+      return;
+    }
+    if (chatCreditsRow !== null) return;
     createUserAttempted.current = true;
     void createUser({ email });
-  }, [email, user, createUser]);
+  }, [email, chatCreditsRow, createUser]);
 
   useEffect(() => {
     if (conversations.length === 0) {
@@ -184,12 +188,13 @@ export function useChatPlatform() {
           CHAT_ACTION_TIMEOUT_MS,
           "Chat is taking longer than usual on this connection. Your message was saved — please try sending again in a moment."
         );
-        setChatProviderLabel(
+        const nextLabel =
           typeof result.chatProviderLabel === "string"
             ? result.chatProviderLabel
-            : null
-        );
-        setUsedFallback(Boolean(result.usedFallback));
+            : null;
+        const nextFallback = Boolean(result.usedFallback);
+        setChatProviderLabel((prev) => (prev === nextLabel ? prev : nextLabel));
+        setUsedFallback((prev) => (prev === nextFallback ? prev : nextFallback));
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to send");
         setPendingUserText(null);
@@ -202,7 +207,7 @@ export function useChatPlatform() {
 
   return {
     email,
-    user,
+    mounted,
     conversations,
     conversationsLoading,
     messagesLoading,

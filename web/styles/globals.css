@@ -205,3 +205,33 @@ button:focus-visible {
     transition-delay: 0s !important;
   }
 }
+
+/* Media studio: stable cards — no hover translate jitter on mobile PWA. */
+.media-stable {
+  isolation: isolate;
+}
+
+.media-stable .saas-card {
+  contain: layout style;
+}
+
+.media-stable *,
+.media-stable *::before,
+.media-stable *::after {
+  transition-property: none !important;
+}
+
+.media-stable .animate-spin {
+  animation: spin 1s linear infinite !important;
+}
+
+@media (max-width: 1023px) {
+  .media-stable * {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+
+  .media-stable .hover\:-translate-y-0\.5 {
+    transform: none !important;
+  }
+}
