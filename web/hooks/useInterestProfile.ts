@@ -1,12 +1,12 @@
 "use client";
 
 import { api } from "convex/_generated/api";
-import { useQuery } from "convex/react";
+import { useProbedQuery } from "@/hooks/useProbedQuery";
 import { useMemo, useRef } from "react";
 
 /** Interest-profile-only subscription for the learning banner. */
 export function useInterestProfile(email: string | null, mounted: boolean) {
-  const raw = useQuery(
+  const raw = useProbedQuery(
     api.users.getInterestProfile,
     mounted && email ? { email } : ("skip" as const)
   );

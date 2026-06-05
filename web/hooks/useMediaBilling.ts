@@ -3,7 +3,7 @@
 import { useStableUsage } from "@/hooks/useStableUsage";
 import { getUserEmail } from "@/lib/auth";
 import { api } from "convex/_generated/api";
-import { useQuery } from "convex/react";
+import { useProbedQuery } from "@/hooks/useProbedQuery";
 import { useEffect, useState } from "react";
 
 /** Media studio billing — usage snapshot only (no Paystack config subscription). */
@@ -15,7 +15,7 @@ export function useMediaBilling() {
     setMounted(true);
   }, []);
 
-  const usageRaw = useQuery(
+  const usageRaw = useProbedQuery(
     api.credits.getUsageSnapshot,
     mounted && email ? { userId: email } : ("skip" as const)
   );
