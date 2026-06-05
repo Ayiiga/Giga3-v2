@@ -1,7 +1,12 @@
 "use client";
 
+import { ConvexDiagnostics } from "@/components/providers/ConvexDiagnostics";
 import { getConvexClient } from "@/lib/convex";
 import { getConvexUrl } from "@/lib/convex/env";
+import {
+  isConvexProbeEnabled,
+  isNoConvexClientEnabled,
+} from "@/lib/debug/convexProbe";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { ReactNode, useLayoutEffect, useState } from "react";
 
@@ -9,7 +14,15 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
   const [client, setClient] = useState<ConvexReactClient | null>(null);
 
   useLayoutEffect(() => {
-    setClient(getConvexClient());
+    const c = getConvexClient();
+    if (!c) {
+      setClient(null);
+      return;
+    }
+    if (isNoConvexClientEnabled()) {
+      void c.close();
+    }
+    setClient(c);
   }, []);
 
   const convexUrl = getConvexUrl();
@@ -33,5 +46,10 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
     );
   }
 
-  return <ConvexProvider client={client}>{children}</ConvexProvider>;
+  return (
+    <ConvexProvider client={client}>
+      {isConvexProbeEnabled() ? <ConvexDiagnostics /> : null}
+      {children}
+    </ConvexProvider>
+  );
 }

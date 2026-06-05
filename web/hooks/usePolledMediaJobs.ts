@@ -1,6 +1,11 @@
 "use client";
 
 import { useStableMediaJobs, type MediaJobRow } from "@/hooks/useStableMediaJobs";
+import {
+  isConvexQueriesDisabled,
+  recordPollError,
+  recordPollExecution,
+} from "@/lib/debug/convexProbe";
 import { hasActiveMediaJobs, mediaJobsEqual } from "@/lib/media/stableJobs";
 import { api } from "convex/_generated/api";
 import { useConvex } from "convex/react";
@@ -21,8 +26,9 @@ export function usePolledMediaJobs(userId: string, mounted: boolean) {
   const inFlightRef = useRef(false);
 
   const fetchJobs = useCallback(async () => {
-    if (!userId || inFlightRef.current) return;
+    if (!userId || inFlightRef.current || isConvexQueriesDisabled()) return;
     inFlightRef.current = true;
+    recordPollExecution();
     try {
       const rows = (await convex.query(api.mediaQueries.listJobs, {
         userId,
@@ -32,6 +38,7 @@ export function usePolledMediaJobs(userId: string, mounted: boolean) {
         return rows;
       });
     } catch {
+      recordPollError();
       /* keep last good snapshot */
     } finally {
       inFlightRef.current = false;
@@ -43,12 +50,12 @@ export function usePolledMediaJobs(userId: string, mounted: boolean) {
   const processing = hasActiveMediaJobs(jobs);
 
   useEffect(() => {
-    if (!mounted || !userId) return;
+    if (!mounted || !userId || isConvexQueriesDisabled()) return;
     void fetchJobs();
   }, [mounted, userId, fetchJobs]);
 
   useEffect(() => {
-    if (!mounted || !userId) return;
+    if (!mounted || !userId || isConvexQueriesDisabled()) return;
     const intervalMs = processing ? POLL_ACTIVE_MS : POLL_IDLE_MS;
     const id = window.setInterval(() => void fetchJobs(), intervalMs);
     return () => window.clearInterval(id);

@@ -1,12 +1,12 @@
 "use client";
 
 import { api } from "convex/_generated/api";
-import { useQuery } from "convex/react";
+import { useProbedQuery } from "@/hooks/useProbedQuery";
 import { useMemo, useRef } from "react";
 
 /** Credits-only Convex subscription for chat chrome (not full user row). */
 export function useChatCredits(email: string | null, mounted: boolean) {
-  const raw = useQuery(
+  const raw = useProbedQuery(
     api.users.getChatCredits,
     mounted && email ? { email } : ("skip" as const)
   );

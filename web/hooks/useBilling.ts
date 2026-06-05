@@ -16,7 +16,8 @@ import {
   verifyPaystackPayment,
 } from "@/lib/payments/paystackService";
 import { api } from "convex/_generated/api";
-import { useAction, useQuery } from "convex/react";
+import { useProbedQuery } from "@/hooks/useProbedQuery";
+import { useAction } from "convex/react";
 import { useStableUsage } from "@/hooks/useStableUsage";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -43,12 +44,12 @@ export function useBilling() {
     return () => resetPaystackCheckoutGuard();
   }, []);
 
-  const paystackConfig = useQuery(
+  const paystackConfig = useProbedQuery(
     api.paystack.getClientConfig,
     mounted ? {} : "skip"
   );
 
-  const usageRaw = useQuery(
+  const usageRaw = useProbedQuery(
     api.credits.getUsageSnapshot,
     mounted && userId ? { userId } : "skip"
   );

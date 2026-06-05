@@ -7,7 +7,8 @@ import { getUserEmail } from "@/lib/auth";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
-import { useAction, useMutation, useQuery } from "convex/react";
+import { useProbedQuery } from "@/hooks/useProbedQuery";
+import { useAction, useMutation } from "convex/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const CHAT_ACTION_TIMEOUT_MS = 75_000;
@@ -65,9 +66,9 @@ export function useChatPlatform() {
   );
 
   /** Credits-only probe for user existence — not full getUser (avoids shell churn). */
-  const chatCreditsRow = useQuery(api.users.getChatCredits, emailQueryArgs);
-  const conversationsRaw = useQuery(api.conversations.list, conversationsQueryArgs);
-  const messagesRaw = useQuery(api.messages.listByConversation, messagesQueryArgs);
+  const chatCreditsRow = useProbedQuery(api.users.getChatCredits, emailQueryArgs);
+  const conversationsRaw = useProbedQuery(api.conversations.list, conversationsQueryArgs);
+  const messagesRaw = useProbedQuery(api.messages.listByConversation, messagesQueryArgs);
 
   const createConversation = useMutation(api.conversations.create);
   const removeConversation = useMutation(api.conversations.remove);
