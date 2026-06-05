@@ -24,6 +24,9 @@ jobs:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
+          NEXT_PUBLIC_GIGA3_DATA_BACKEND: ${{ vars.NEXT_PUBLIC_GIGA3_DATA_BACKEND || secrets.NEXT_PUBLIC_GIGA3_DATA_BACKEND || 'supabase' }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: |
           set -euo pipefail
           missing=0
@@ -33,6 +36,14 @@ jobs:
               missing=1
             fi
           done
+          if [ "${NEXT_PUBLIC_GIGA3_DATA_BACKEND}" = "supabase" ]; then
+            for name in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY; do
+              if [ -z "${!name}" ]; then
+                echo "::error::Missing GitHub secret or variable: $name"
+                missing=1
+              fi
+            done
+          fi
           if [ "$missing" -ne 0 ]; then
             exit 1
           fi
@@ -59,6 +70,9 @@ jobs:
         env:
           NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
           NEXT_PUBLIC_CONVEX_SITE_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_SITE_URL }}
+          NEXT_PUBLIC_GIGA3_DATA_BACKEND: ${{ vars.NEXT_PUBLIC_GIGA3_DATA_BACKEND || secrets.NEXT_PUBLIC_GIGA3_DATA_BACKEND || 'supabase' }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY }}
           NEXT_TELEMETRY_DISABLED: "1"
         run: |
@@ -94,6 +108,13 @@ jobs:
         env:
           NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
         run: node scripts/verify-convex-in-build.mjs
+
+      - name: Verify Supabase configuration
+        working-directory: .
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: npm run supabase:verify
 
       - name: Verify static output
         run: |

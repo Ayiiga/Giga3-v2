@@ -93,6 +93,9 @@ Add these under **Settings → Secrets and variables → Actions → Repository 
 | `CF_ACCOUNT_ID` | **Yes** | Cloudflare account ID (dashboard URL or API) |
 | `NEXT_PUBLIC_CONVEX_URL` | **Yes** | Production Convex URL, e.g. `https://<deployment>.convex.cloud` |
 | `NEXT_PUBLIC_CONVEX_SITE_URL` | Recommended | `https://<deployment>.convex.site` (exported for future use; not required by current UI) |
+| `NEXT_PUBLIC_GIGA3_DATA_BACKEND` | Recommended | `supabase` to store chat/media history in Supabase while Convex remains active for AI/media/billing |
+| `NEXT_PUBLIC_SUPABASE_URL` | Required for Supabase mode | `https://bgkkrezloideuwfwkloz.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Required for Supabase mode | Supabase anon public key for project `bgkkrezloideuwfwkloz` |
 | `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Recommended | Paystack Inline popup (`pk_live_…`); fallback: Convex `PAYSTACK_PUBLIC_KEY` via `paystack.getClientConfig` |
 | ~~`CF_PROJECT_NAME`~~ | **Not used** | Workflow deploys to hardcoded project **`giga3ai`** |
 
@@ -162,6 +165,9 @@ Set in GitHub Actions (or `web/.env.local` for local production builds):
 |----------|---------|--------|
 | `NEXT_PUBLIC_CONVEX_URL` | `web/lib/convex/env.ts` | **Required** — Convex client URL (`.convex.cloud`) |
 | `NEXT_PUBLIC_CONVEX_SITE_URL` | `web/lib/convex/env.ts` | Optional — HTTP actions URL (`.convex.site`) |
+| `NEXT_PUBLIC_GIGA3_DATA_BACKEND` | `web/lib/dataBackend.ts` | `supabase` switches chat/media history reads and writes to Supabase |
+| `NEXT_PUBLIC_SUPABASE_URL` | `web/lib/supabase.ts` | Required when data backend is `supabase` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `web/lib/supabase.ts` | Required when data backend is `supabase` |
 
 **Convention:** This repo is Next.js only. Do **not** use `EXPO_PUBLIC_CONVEX_*` — those names are not read by the app.
 
@@ -173,6 +179,9 @@ If Cloudflare **builds** the site (not only uploads `web/out` from GitHub Action
 |----------|---------|
 | `NEXT_PUBLIC_CONVEX_URL` | `https://perfect-lark-521.convex.cloud` |
 | `NEXT_PUBLIC_CONVEX_SITE_URL` | `https://perfect-lark-521.convex.site` |
+| `NEXT_PUBLIC_GIGA3_DATA_BACKEND` | `supabase` |
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://bgkkrezloideuwfwkloz.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon public key |
 
 When deploy uses **GitHub Actions** (this repo’s default), variables are injected in `.github/workflows/pages.yml` at build time; Cloudflare only hosts static files from `web/out` and does not need them unless you add a CF-native build.
 
