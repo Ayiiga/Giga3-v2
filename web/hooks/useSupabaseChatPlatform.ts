@@ -157,7 +157,8 @@ export function useSupabaseChatPlatform() {
     if (!activeId || !conversations.length) return;
     const conv = conversations.find((c) => c._id === activeId);
     if (conv && isValidMode(conv.mode)) {
-      setMode((prev) => (prev === conv.mode ? prev : conv.mode));
+      const nextMode = conv.mode;
+      setMode((prev) => (prev === nextMode ? prev : nextMode));
     }
   }, [activeId, conversations]);
 

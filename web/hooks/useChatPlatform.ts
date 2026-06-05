@@ -131,14 +131,16 @@ export function useChatPlatform() {
     if (!activeId || !conversations.length) return;
     const conv = conversations.find((c) => c._id === activeId);
     if (conv && isValidMode(conv.mode)) {
-      setMode((prev) => (prev === conv.mode ? prev : conv.mode));
+      const nextMode = conv.mode;
+      setMode((prev) => (prev === nextMode ? prev : nextMode));
     }
   }, [activeId, conversations]);
 
   useEffect(() => {
     if (!pendingUserText || !messagesRaw) return;
     const synced = messagesRaw.some(
-      (m) => m.role === "user" && m.content === pendingUserText
+      (m: { role: string; content: string }) =>
+        m.role === "user" && m.content === pendingUserText
     );
     if (synced) {
       setPendingUserText(null);

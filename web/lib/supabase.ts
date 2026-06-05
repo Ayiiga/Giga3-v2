@@ -16,7 +16,7 @@ export class SupabaseRequestError extends Error {
   }
 }
 
-export type SupabaseRestClient = ReturnType<typeof createSupabaseRestClient>;
+export type SupabaseRestClient = NonNullable<ReturnType<typeof createSupabaseRestClient>>;
 
 const ACCESS_TOKEN_KEY = "giga3_supabase_access_token";
 
