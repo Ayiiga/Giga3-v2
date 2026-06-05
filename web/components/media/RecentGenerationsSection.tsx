@@ -4,7 +4,7 @@ import { RecentGenerationsList } from "@/components/media/RecentGenerationsList"
 import { usePolledMediaJobs } from "@/hooks/usePolledMediaJobs";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { mediaJobsRefreshRef } from "@/lib/media/jobsRefresh";
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 
 interface RecentGenerationsSectionProps {
   userId: string;
@@ -12,7 +12,7 @@ interface RecentGenerationsSectionProps {
 }
 
 /** Polls job history in isolation — does not re-render the generate form. */
-export function RecentGenerationsSection({
+function RecentGenerationsSectionComponent({
   userId,
   mounted,
 }: RecentGenerationsSectionProps) {
@@ -31,3 +31,5 @@ export function RecentGenerationsSection({
 
   return <RecentGenerationsList jobs={jobs} />;
 }
+
+export const RecentGenerationsSection = memo(RecentGenerationsSectionComponent);

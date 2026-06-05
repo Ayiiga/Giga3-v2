@@ -33,7 +33,7 @@ function withClientTimeout<T>(
 
 export function useChatPlatform() {
   const [email, setEmail] = useState<string | null>(null);
-  const [activeId, setActiveId] = useState<Id<"conversations"> | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [mode, setMode] = useState<AiModeId>("general");
   const [isSending, setIsSending] = useState(false);
   const [pendingUserText, setPendingUserText] = useState<string | null>(null);
@@ -42,6 +42,8 @@ export function useChatPlatform() {
   const [usedFallback, setUsedFallback] = useState(false);
   const [mounted, setMounted] = useState(false);
   const createUserAttempted = useRef(false);
+  const creditsCacheRef = useRef<number | null>(null);
+  const interestProfileCacheRef = useRef<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -59,15 +61,35 @@ export function useChatPlatform() {
   const messagesQueryArgs = useMemo(
     () =>
       mounted && email && activeId
-        ? { conversationId: activeId, userId: email }
+        ? { conversationId: activeId as Id<"conversations">, userId: email }
         : ("skip" as const),
     [mounted, email, activeId]
   );
 
   /** Credits-only probe for user existence — not full getUser (avoids shell churn). */
   const chatCreditsRow = useQuery(api.users.getChatCredits, emailQueryArgs);
+  const interestProfileRow = useQuery(api.users.getInterestProfile, emailQueryArgs);
   const conversationsRaw = useQuery(api.conversations.list, conversationsQueryArgs);
   const messagesRaw = useQuery(api.messages.listByConversation, messagesQueryArgs);
+  const credits =
+    chatCreditsRow === undefined
+      ? creditsCacheRef.current
+      : chatCreditsRow === null
+        ? null
+        : chatCreditsRow.credits;
+
+  if (chatCreditsRow !== undefined) {
+    creditsCacheRef.current = credits;
+  }
+
+  const interestProfileJson =
+    interestProfileRow === undefined
+      ? interestProfileCacheRef.current
+      : interestProfileRow?.interestProfile ?? null;
+
+  if (interestProfileRow !== undefined) {
+    interestProfileCacheRef.current = interestProfileJson;
+  }
 
   const createConversation = useMutation(api.conversations.create);
   const removeConversation = useMutation(api.conversations.remove);
@@ -130,16 +152,16 @@ export function useChatPlatform() {
     setActiveId(id);
   }, [email, createConversation, mode]);
 
-  const selectConversation = useCallback((id: Id<"conversations">) => {
+  const selectConversation = useCallback((id: string) => {
     setActiveId(id);
     setError(null);
     setPendingUserText(null);
   }, []);
 
   const deleteConversation = useCallback(
-    async (id: Id<"conversations">) => {
+    async (id: string) => {
       if (!email) return;
-      await removeConversation({ conversationId: id, userId: email });
+      await removeConversation({ conversationId: id as Id<"conversations">, userId: email });
       if (activeId === id) {
         setActiveId(null);
         setPendingUserText(null);
@@ -153,7 +175,7 @@ export function useChatPlatform() {
       setMode(next);
       if (!email || !activeId) return;
       await setConversationMode({
-        conversationId: activeId,
+        conversationId: activeId as Id<"conversations">,
         userId: email,
         mode: next,
       });
@@ -181,7 +203,7 @@ export function useChatPlatform() {
         const result = await withClientTimeout(
           sendMessageAction({
             userId: email,
-            conversationId,
+            conversationId: conversationId as Id<"conversations">,
             content,
             mode,
           }),
@@ -224,5 +246,7 @@ export function useChatPlatform() {
     setActiveId,
     chatProviderLabel,
     usedFallback,
+    credits,
+    interestProfileJson,
   };
 }

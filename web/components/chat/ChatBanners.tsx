@@ -3,7 +3,6 @@
 import { ChatProviderBanner } from "@/components/chat/ChatProviderBanner";
 import { SlowNetworkBanner } from "@/components/chat/SlowNetworkBanner";
 import { UserLearningBanner } from "@/components/chat/UserLearningBanner";
-import { useInterestProfile } from "@/hooks/useInterestProfile";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { memo } from "react";
 
@@ -12,6 +11,7 @@ interface ChatBannersProps {
   mounted: boolean;
   chatProviderLabel: string | null;
   usedFallback: boolean;
+  interestProfileJson: string | null;
 }
 
 function bannersPropsEqual(prev: ChatBannersProps, next: ChatBannersProps): boolean {
@@ -19,20 +19,18 @@ function bannersPropsEqual(prev: ChatBannersProps, next: ChatBannersProps): bool
     prev.email === next.email &&
     prev.mounted === next.mounted &&
     prev.chatProviderLabel === next.chatProviderLabel &&
-    prev.usedFallback === next.usedFallback
+    prev.usedFallback === next.usedFallback &&
+    prev.interestProfileJson === next.interestProfileJson
   );
 }
 
-/** Banners — subscribes to getInterestProfile only (not credits). */
+/** Banners are pure; platform hooks own data subscriptions. */
 export const ChatBanners = memo(function ChatBanners({
-  email,
-  mounted,
   chatProviderLabel,
   usedFallback,
+  interestProfileJson,
 }: ChatBannersProps) {
   useRenderDiagnostic("ChatBanners");
-
-  const interestProfileJson = useInterestProfile(email, mounted);
 
   return (
     <>

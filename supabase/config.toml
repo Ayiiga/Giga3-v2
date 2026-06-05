@@ -1,0 +1,17 @@
+project_id = "bgkkrezloideuwfwkloz"
+
+[api]
+enabled = true
+schemas = ["public", "storage"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+site_url = "https://www.giga3ai.com"
+additional_redirect_urls = ["http://localhost:3000", "http://localhost:3000/chat/login"]
+
+[storage]
+enabled = true
+file_size_limit = "500MiB"
+

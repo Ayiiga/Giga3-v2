@@ -1,18 +1,18 @@
 "use client";
 
 import { useStableMediaJobs, type MediaJobRow } from "@/hooks/useStableMediaJobs";
+import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { hasActiveMediaJobs, mediaJobsEqual } from "@/lib/media/stableJobs";
+import { listSupabaseGenerations } from "@/lib/supabase/data";
 import { api } from "convex/_generated/api";
 import { useConvex } from "convex/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const POLL_IDLE_MS = 30_000;
 const POLL_ACTIVE_MS = 15_000;
 
 /**
- * Polls media job history on an interval instead of a live Convex subscription.
- * Active (processing) jobs poll every 15s; idle lists poll every 30s.
- * Failed/terminal jobs do not trigger faster polling.
+ * Fetches media job history without a live subscription.
+ * Active (processing) jobs poll every 15s; idle lists refresh only on mount/manual trigger.
  */
 export function usePolledMediaJobs(userId: string, mounted: boolean) {
   const convex = useConvex();
@@ -24,9 +24,11 @@ export function usePolledMediaJobs(userId: string, mounted: boolean) {
     if (!userId || inFlightRef.current) return;
     inFlightRef.current = true;
     try {
-      const rows = (await convex.query(api.mediaQueries.listJobs, {
-        userId,
-      })) as MediaJobRow[];
+      const rows = isSupabaseDataBackend()
+        ? await listSupabaseGenerations(userId)
+        : ((await convex.query(api.mediaQueries.listJobs, {
+            userId,
+          })) as MediaJobRow[]);
       setRawJobs((prev) => {
         if (prev && mediaJobsEqual(prev, rows)) return prev;
         return rows;
@@ -48,9 +50,8 @@ export function usePolledMediaJobs(userId: string, mounted: boolean) {
   }, [mounted, userId, fetchJobs]);
 
   useEffect(() => {
-    if (!mounted || !userId) return;
-    const intervalMs = processing ? POLL_ACTIVE_MS : POLL_IDLE_MS;
-    const id = window.setInterval(() => void fetchJobs(), intervalMs);
+    if (!mounted || !userId || !processing) return;
+    const id = window.setInterval(() => void fetchJobs(), POLL_ACTIVE_MS);
     return () => window.clearInterval(id);
   }, [mounted, userId, processing, fetchJobs]);
 

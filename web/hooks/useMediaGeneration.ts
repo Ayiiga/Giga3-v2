@@ -1,6 +1,7 @@
 "use client";
 
 import { getUserEmail } from "@/lib/auth";
+import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { formatMediaError } from "@/lib/media/errors";
 import type { ImageCategoryId, VideoCategoryId } from "@/lib/media/catalog";
 import {
@@ -9,6 +10,7 @@ import {
   withActionTimeout,
 } from "@/lib/media/actionTimeout";
 import { triggerMediaJobsRefresh } from "@/lib/media/jobsRefresh";
+import { createSupabaseGeneration } from "@/lib/supabase/data";
 import { api } from "convex/_generated/api";
 import { useAction } from "convex/react";
 import { useCallback, useState } from "react";
@@ -64,8 +66,18 @@ export function useMediaGeneration() {
         MEDIA_IMAGE_TIMEOUT_MS,
         "Image generation timed out. Please try again with a shorter prompt."
       )) as MediaActionResult;
-      setLastOutputUrl(pickOutputUrl(result, "image"));
+      const outputUrl = pickOutputUrl(result, "image");
+      setLastOutputUrl(outputUrl);
       setLastMediaType("image");
+      if (isSupabaseDataBackend()) {
+        await createSupabaseGeneration({
+          email: userId,
+          mediaType: "image",
+          category,
+          prompt,
+          outputUrl,
+        }).catch(() => null);
+      }
       setPhase("success");
       setSuccessMessage("Image ready — saved to Recent generations.");
       triggerMediaJobsRefresh();
@@ -103,8 +115,18 @@ export function useMediaGeneration() {
         MEDIA_VIDEO_TIMEOUT_MS,
         "Video generation timed out. Try a source image URL or a shorter prompt."
       )) as MediaActionResult;
-      setLastOutputUrl(pickOutputUrl(result, "video"));
+      const outputUrl = pickOutputUrl(result, "video");
+      setLastOutputUrl(outputUrl);
       setLastMediaType("video");
+      if (isSupabaseDataBackend()) {
+        await createSupabaseGeneration({
+          email: userId,
+          mediaType: "video",
+          category,
+          prompt,
+          outputUrl,
+        }).catch(() => null);
+      }
       setPhase("success");
       setSuccessMessage("Video ready — saved to Recent generations.");
       triggerMediaJobsRefresh();

@@ -10,7 +10,8 @@ export function conversationsEqual(
       a[i]._id !== b[i]._id ||
       a[i].title !== b[i].title ||
       a[i].mode !== b[i].mode ||
-      a[i].updatedAt !== b[i].updatedAt
+      a[i].updatedAt !== b[i].updatedAt ||
+      a[i].convexConversationId !== b[i].convexConversationId
     ) {
       return false;
     }

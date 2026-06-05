@@ -4,9 +4,10 @@ import { ChatActionsMenu } from "@/components/chat/ChatActionsMenu";
 import { ChatDateTimeLabel } from "@/components/chat/ChatDateTimeLabel";
 import type { UiMessage } from "@/components/chat/MessageList";
 import { CreditBadge } from "@/components/billing/CreditBadge";
-import { useChatCredits } from "@/hooks/useChatCredits";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { clearUserEmail } from "@/lib/auth";
+import { isSupabaseDataBackend } from "@/lib/dataBackend";
+import { signOutSupabase } from "@/lib/supabase/auth";
 import { siteConfig } from "@/lib/site";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Menu, Sparkles } from "lucide-react";
@@ -20,6 +21,7 @@ interface ChatChromeProps {
   messages: UiMessage[];
   conversationTitle?: string;
   isSending: boolean;
+  credits: number | null;
   onOpenSidebar: () => void;
 }
 
@@ -30,6 +32,7 @@ function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean
     prev.messages === next.messages &&
     prev.conversationTitle === next.conversationTitle &&
     prev.isSending === next.isSending &&
+    prev.credits === next.credits &&
     prev.onOpenSidebar === next.onOpenSidebar
   );
 }
@@ -41,12 +44,12 @@ export const ChatChrome = memo(function ChatChrome({
   messages,
   conversationTitle,
   isSending,
+  credits,
   onOpenSidebar,
 }: ChatChromeProps) {
   useRenderDiagnostic("ChatChrome");
 
   const router = useRouter();
-  const { credits } = useChatCredits(email, mounted);
 
   const navLink =
     "hidden rounded-xl px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-zinc-100 sm:inline-flex sm:items-center sm:gap-1.5";
@@ -95,7 +98,11 @@ export const ChatChrome = memo(function ChatChrome({
       <button
         type="button"
         onClick={() => {
-          clearUserEmail();
+          if (isSupabaseDataBackend()) {
+            void signOutSupabase();
+          } else {
+            clearUserEmail();
+          }
           router.push("/chat/login");
         }}
         className="rounded-xl px-3 py-2 text-sm font-bold text-foreground hover:bg-zinc-100"

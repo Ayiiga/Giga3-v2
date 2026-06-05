@@ -1,10 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { useChatCredits } from "@/hooks/useChatCredits";
 import { getModeDefinition, isValidMode, type AiModeId } from "@/lib/aiRouter";
 import { cn } from "@/lib/utils";
-import { Id } from "convex/_generated/dataModel";
 import {
   Coins,
   MessageSquarePlus,
@@ -14,30 +12,33 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
+import { memo } from "react";
 
 export interface ConversationItem {
-  _id: Id<"conversations">;
+  _id: string;
   title: string;
   mode: string;
   updatedAt: number;
+  convexConversationId?: string | null;
 }
 
 interface ChatSidebarProps {
   conversations: ConversationItem[];
   conversationsLoading?: boolean;
-  activeId: Id<"conversations"> | null;
-  onSelect: (id: Id<"conversations">) => void;
+  activeId: string | null;
+  onSelect: (id: string) => void;
   onNewChat: () => void;
-  onDelete: (id: Id<"conversations">) => void;
+  onDelete: (id: string) => void;
   email: string;
   mounted: boolean;
+  credits: number | null;
   collapsed: boolean;
   onToggleCollapse: () => void;
   mobileOpen: boolean;
   onCloseMobile: () => void;
 }
 
-export function ChatSidebar({
+function ChatSidebarComponent({
   conversations,
   conversationsLoading = false,
   activeId,
@@ -45,14 +46,12 @@ export function ChatSidebar({
   onNewChat,
   onDelete,
   email,
-  mounted,
+  credits,
   collapsed,
   onToggleCollapse,
   mobileOpen,
   onCloseMobile,
 }: ChatSidebarProps) {
-  const { credits } = useChatCredits(email, mounted);
-
   return (
     <>
       {mobileOpen && (
@@ -180,3 +179,23 @@ export function ChatSidebar({
     </>
   );
 }
+
+function sidebarPropsEqual(prev: ChatSidebarProps, next: ChatSidebarProps): boolean {
+  return (
+    prev.conversations === next.conversations &&
+    prev.conversationsLoading === next.conversationsLoading &&
+    prev.activeId === next.activeId &&
+    prev.onSelect === next.onSelect &&
+    prev.onNewChat === next.onNewChat &&
+    prev.onDelete === next.onDelete &&
+    prev.email === next.email &&
+    prev.mounted === next.mounted &&
+    prev.credits === next.credits &&
+    prev.collapsed === next.collapsed &&
+    prev.onToggleCollapse === next.onToggleCollapse &&
+    prev.mobileOpen === next.mobileOpen &&
+    prev.onCloseMobile === next.onCloseMobile
+  );
+}
+
+export const ChatSidebar = memo(ChatSidebarComponent, sidebarPropsEqual);
