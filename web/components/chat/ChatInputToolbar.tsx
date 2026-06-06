@@ -5,17 +5,21 @@ import { buildMediaStudioUrl, MEDIA_STUDIO_TEMPLATES } from "@/lib/media/studioT
 import type { AttachmentKind } from "@/lib/chat/fileAttachments";
 import {
   Camera,
+  ChevronUp,
   Clapperboard,
   FolderOpen,
   ImageIcon,
   Loader2,
+  Paperclip,
   Sparkles,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 
 interface ChatInputToolbarProps {
   disabled?: boolean;
+  expanded: boolean;
+  onToggle: () => void;
   onPickFile: (file: File, kind: AttachmentKind) => void;
   onError: (message: string) => void;
 }
@@ -23,53 +27,30 @@ interface ChatInputToolbarProps {
 const actions: {
   kind: AttachmentKind | "media";
   label: string;
+  shortLabel: string;
   icon: typeof Camera;
-  color: string;
-  gradient: string;
 }[] = [
-  {
-    kind: "camera",
-    label: "Camera",
-    icon: Camera,
-    color: "text-sky-300",
-    gradient: "from-sky-500/30 to-blue-600/20",
-  },
-  {
-    kind: "file",
-    label: "Upload",
-    icon: FolderOpen,
-    color: "text-amber-300",
-    gradient: "from-amber-500/30 to-orange-600/20",
-  },
-  {
-    kind: "image",
-    label: "Image",
-    icon: ImageIcon,
-    color: "text-emerald-300",
-    gradient: "from-emerald-500/30 to-teal-600/20",
-  },
-  {
-    kind: "video",
-    label: "Video",
-    icon: Clapperboard,
-    color: "text-rose-300",
-    gradient: "from-rose-500/30 to-red-600/20",
-  },
+  { kind: "camera", label: "Camera", shortLabel: "Cam", icon: Camera },
+  { kind: "file", label: "Upload file", shortLabel: "File", icon: FolderOpen },
+  { kind: "image", label: "Image", shortLabel: "Img", icon: ImageIcon },
+  { kind: "video", label: "Video", shortLabel: "Vid", icon: Clapperboard },
   {
     kind: "media",
-    label: "Create Media",
+    label: "Media Studio",
+    shortLabel: "Studio",
     icon: Sparkles,
-    color: "text-violet-300",
-    gradient: "from-violet-500/40 to-fuchsia-600/25",
   },
 ];
 
 export function ChatInputToolbar({
   disabled,
+  expanded,
+  onToggle,
   onPickFile,
   onError,
 }: ChatInputToolbarProps) {
   const router = useRouter();
+  const menuId = useId();
   const fileRef = useRef<HTMLInputElement>(null);
   const imageRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
@@ -85,6 +66,7 @@ export function ChatInputToolbar({
     if (!file) return;
     try {
       onPickFile(file, kind);
+      onToggle();
     } catch (err) {
       onError(err instanceof Error ? err.message : "Could not attach file.");
     }
@@ -122,11 +104,7 @@ export function ChatInputToolbar({
   }
 
   return (
-    <div
-      className="rounded-2xl border border-border/80 bg-gradient-to-r from-violet-950/40 via-black/30 to-blue-950/30 p-2.5 shadow-lg shadow-black/20 sm:p-3"
-      role="toolbar"
-      aria-label="Message attachments and media"
-    >
+    <>
       <input
         ref={cameraRef}
         type="file"
@@ -165,37 +143,74 @@ export function ChatInputToolbar({
         onChange={(e) => handleChange(e, "video")}
       />
 
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 sm:gap-2.5">
-        {actions.map((action) => {
-          const Icon = action.icon;
-          const isMedia = action.kind === "media";
-          const loading = isMedia && mediaLoading;
-          return (
-            <button
-              key={action.label}
-              type="button"
-              disabled={disabled || (isMedia && mediaLoading)}
-              title={action.label}
-              aria-label={action.label}
-              onClick={() => triggerInput(action.kind)}
-              className={cn(
-                "flex min-h-[4.5rem] flex-col items-center justify-center gap-1.5 rounded-xl border border-white/10 px-2 py-2.5 transition-all",
-                "bg-gradient-to-br shadow-md hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98]",
-                action.gradient,
-                isMedia && "ring-1 ring-violet-400/40",
-                disabled && "pointer-events-none opacity-50"
-              )}
-            >
-              {loading ? (
-                <Loader2 className="h-8 w-8 animate-spin text-violet-200" aria-hidden />
-              ) : (
-                <Icon className={cn("h-8 w-8", action.color)} aria-hidden />
-              )}
-              <span className="text-xs font-bold text-foreground sm:text-sm">{action.label}</span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
+      <button
+        type="button"
+        disabled={disabled}
+        aria-expanded={expanded}
+        aria-controls={menuId}
+        aria-label={expanded ? "Close attach menu" : "Attach files or media"}
+        title={expanded ? "Close" : "Attach"}
+        onClick={onToggle}
+        className={cn(
+          "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm",
+          "hover:border-violet-300 hover:bg-violet-50 hover:text-violet-800",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2",
+          expanded && "border-violet-300 bg-violet-50 text-violet-800",
+          disabled && "pointer-events-none opacity-50"
+        )}
+      >
+        {expanded ? (
+          <ChevronUp className="h-5 w-5" aria-hidden />
+        ) : (
+          <Paperclip className="h-5 w-5" aria-hidden />
+        )}
+      </button>
+
+      {expanded && (
+        <div
+          id={menuId}
+          role="menu"
+          aria-label="Attach files or open media"
+          className="absolute bottom-full left-0 z-20 mb-2 w-[min(100vw-2rem,22rem)] rounded-2xl border border-zinc-200/90 bg-white p-2 shadow-lg shadow-zinc-900/10"
+        >
+          <p className="px-2 pb-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+            Attach & create
+          </p>
+          <div className="grid grid-cols-5 gap-1">
+            {actions.map((action) => {
+              const Icon = action.icon;
+              const isMedia = action.kind === "media";
+              const loading = isMedia && mediaLoading;
+              return (
+                <button
+                  key={action.label}
+                  type="button"
+                  role="menuitem"
+                  disabled={disabled || (isMedia && mediaLoading)}
+                  title={action.label}
+                  aria-label={action.label}
+                  onClick={() => triggerInput(action.kind)}
+                  className={cn(
+                    "flex min-h-[3.25rem] flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-center",
+                    "text-zinc-700 hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500",
+                    isMedia && "text-violet-700 hover:bg-violet-50",
+                    disabled && "pointer-events-none opacity-50"
+                  )}
+                >
+                  {loading ? (
+                    <Loader2 className="h-5 w-5 animate-spin text-violet-600" aria-hidden />
+                  ) : (
+                    <Icon className="h-5 w-5 shrink-0" aria-hidden />
+                  )}
+                  <span className="text-[10px] font-semibold leading-tight sm:text-[11px]">
+                    {action.shortLabel}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
