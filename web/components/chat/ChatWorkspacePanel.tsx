@@ -8,9 +8,9 @@ import {
 } from "@/lib/media/studioTemplates";
 import type { AiModeId } from "@/lib/aiRouter";
 import { cn } from "@/lib/utils";
-import { FileText, Loader2, MessageCircle, Sparkles } from "lucide-react";
+import { ChevronDown, FileText, Loader2, MessageCircle, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ChatWorkspacePanelProps {
   mode: AiModeId;
@@ -32,8 +32,16 @@ export function ChatWorkspacePanel({
   onError,
 }: ChatWorkspacePanelProps) {
   const router = useRouter();
+  const [open, setOpen] = useState(!hasMessages);
   const [tab, setTab] = useState<WorkspaceTab>(hasMessages ? "modes" : "documents");
   const [mediaNavigating, setMediaNavigating] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!hasMessages) {
+      setOpen(true);
+      setTab("documents");
+    }
+  }, [hasMessages]);
 
   async function openMediaStudio(templateId: string) {
     if (disabled || mediaNavigating) return;
@@ -59,94 +67,120 @@ export function ChatWorkspacePanel({
       disabled={disabled}
       onClick={() => setTab(id)}
       className={cn(
-        "inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all sm:text-base",
+        "inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-semibold sm:min-h-11 sm:gap-2 sm:text-sm",
         tab === id
-          ? "bg-violet-100 font-bold text-violet-900 ring-1 ring-violet-300"
-          : "font-semibold text-foreground hover:bg-zinc-100"
+          ? "bg-white text-violet-900 shadow-sm ring-1 ring-violet-200"
+          : "text-zinc-600 hover:bg-white/60 hover:text-zinc-900"
       )}
     >
-      <Icon className="h-5 w-5 shrink-0" aria-hidden />
-      <span className="hidden xs:inline sm:inline">{label}</span>
+      <Icon className="h-4 w-4 shrink-0" aria-hidden />
+      <span className="truncate">{label}</span>
     </button>
   );
 
   return (
-    <div className="saas-panel shrink-0 border-b border-border/80">
-      <div className="flex gap-1.5 border-b border-border/60 px-3 py-2.5 sm:px-4">
-        {tabBtn("modes", "AI Modes", MessageCircle)}
-        {tabBtn("documents", "Documents", FileText)}
-        {tabBtn("media", "Create Media", Sparkles)}
-      </div>
-
-      <div className="max-h-[200px] overflow-y-auto overscroll-y-contain">
-        {tab === "modes" && (
-          <ToolSelector
-            value={mode}
-            onChange={onModeChange}
-            disabled={disabled}
-            embedded
+    <div className="shrink-0 border-b border-zinc-200/90 bg-zinc-50/80">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full min-h-11 items-center justify-between gap-2 px-3 py-2.5 text-left sm:px-4"
+      >
+        <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+          Workspace
+        </span>
+        <span className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+          {tab === "modes" && "AI modes"}
+          {tab === "documents" && "Templates"}
+          {tab === "media" && "Media studio"}
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 text-zinc-400",
+              open && "rotate-180"
+            )}
+            aria-hidden
           />
-        )}
+        </span>
+      </button>
 
-        {tab === "documents" && (
-          <DocumentTemplatePicker
-            disabled={disabled}
-            compact={hasMessages}
-            embedded
-            defaultOpen={!hasMessages}
-            onInsert={onInsertDocument}
-            onError={onError}
-          />
-        )}
-
-        {tab === "media" && (
-          <div className="space-y-3 px-3 py-4 sm:px-4">
-            <p className="text-sm leading-relaxed text-muted sm:text-base">
-              Launch AI image & video generation with ready-made prompts. Opens Media Studio safely.
-            </p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {MEDIA_STUDIO_TEMPLATES.map((template) => {
-                const Icon = template.icon;
-                const loading = mediaNavigating === template.id;
-                return (
-                  <button
-                    key={template.id}
-                    type="button"
-                    disabled={disabled || Boolean(mediaNavigating)}
-                    onClick={() => void openMediaStudio(template.id)}
-                    className={cn(
-                      "saas-card group flex min-h-[5.5rem] items-start gap-3 p-4 text-left transition-all",
-                      "hover:-translate-y-0.5 hover:shadow-xl hover:shadow-violet-500/10",
-                      loading && "ring-2 ring-violet-500/50"
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br shadow-inner",
-                        template.gradient
-                      )}
-                    >
-                      {loading ? (
-                        <Loader2 className="h-6 w-6 animate-spin text-violet-300" aria-hidden />
-                      ) : (
-                        <Icon className="h-6 w-6 text-white" aria-hidden />
-                      )}
-                    </div>
-                    <span className="min-w-0">
-                      <span className="block text-base font-semibold text-foreground">
-                        {template.title}
-                      </span>
-                      <span className="mt-1 block text-sm leading-snug text-muted">
-                        {template.description}
-                      </span>
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+      {open && (
+        <>
+          <div className="flex gap-1 border-t border-zinc-200/60 px-2 py-2 sm:px-3">
+            {tabBtn("modes", "Modes", MessageCircle)}
+            {tabBtn("documents", "Docs", FileText)}
+            {tabBtn("media", "Media", Sparkles)}
           </div>
-        )}
-      </div>
+
+          <div className="max-h-[180px] overflow-y-auto overscroll-y-contain border-t border-zinc-200/40 bg-white">
+            {tab === "modes" && (
+              <ToolSelector
+                value={mode}
+                onChange={onModeChange}
+                disabled={disabled}
+                embedded
+              />
+            )}
+
+            {tab === "documents" && (
+              <DocumentTemplatePicker
+                disabled={disabled}
+                compact={hasMessages}
+                embedded
+                defaultOpen={!hasMessages}
+                onInsert={onInsertDocument}
+                onError={onError}
+              />
+            )}
+
+            {tab === "media" && (
+              <div className="space-y-2 px-3 py-3 sm:px-4">
+                <p className="text-xs leading-relaxed text-zinc-600 sm:text-sm">
+                  Launch image & video generation with ready-made prompts.
+                </p>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {MEDIA_STUDIO_TEMPLATES.map((template) => {
+                    const Icon = template.icon;
+                    const loading = mediaNavigating === template.id;
+                    return (
+                      <button
+                        key={template.id}
+                        type="button"
+                        disabled={disabled || Boolean(mediaNavigating)}
+                        onClick={() => void openMediaStudio(template.id)}
+                        className={cn(
+                          "flex min-h-[4rem] items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50/50 p-3 text-left",
+                          loading && "ring-2 ring-violet-300"
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br",
+                            template.gradient
+                          )}
+                        >
+                          {loading ? (
+                            <Loader2 className="h-5 w-5 animate-spin text-white" aria-hidden />
+                          ) : (
+                            <Icon className="h-5 w-5 text-white" aria-hidden />
+                          )}
+                        </div>
+                        <span className="min-w-0">
+                          <span className="block text-sm font-semibold text-zinc-900">
+                            {template.title}
+                          </span>
+                          <span className="mt-0.5 block line-clamp-2 text-xs text-zinc-500">
+                            {template.description}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

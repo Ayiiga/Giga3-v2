@@ -1,6 +1,6 @@
 "use client";
 
-import { Info, ShieldCheck } from "lucide-react";
+import { Info } from "lucide-react";
 import { memo } from "react";
 
 interface ChatProviderBannerProps {
@@ -8,28 +8,23 @@ interface ChatProviderBannerProps {
   usedFallback: boolean;
 }
 
+/** Only surfaces provider info when failover occurred — avoids constant status noise. */
 export const ChatProviderBanner = memo(function ChatProviderBanner({
   label,
   usedFallback,
 }: ChatProviderBannerProps) {
-  if (!label) return null;
-
-  if (usedFallback) {
-    return (
-      <div className="flex items-start gap-2 border-b border-amber-500/30 bg-amber-950/40 px-4 py-2 text-xs text-amber-100">
-        <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-        <p>
-          Primary AI was unavailable. Response via <strong>{label}</strong> — your
-          message was not lost.
-        </p>
-      </div>
-    );
-  }
+  if (!label || !usedFallback) return null;
 
   return (
-    <div className="flex items-center gap-2 border-b border-border bg-white/[0.02] px-4 py-1.5 text-xs text-muted">
-      <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" aria-hidden />
-      <span>Connected via {label}</span>
+    <div
+      role="status"
+      className="flex items-start gap-2 border-b border-amber-200/80 bg-amber-50 px-3 py-2 text-xs text-amber-900 sm:px-4 sm:text-sm"
+    >
+      <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-hidden />
+      <p>
+        Primary AI was unavailable. Response via <strong>{label}</strong> — your message
+        was not lost.
+      </p>
     </div>
   );
 });

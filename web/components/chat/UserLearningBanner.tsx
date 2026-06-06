@@ -21,16 +21,13 @@ function UserLearningBannerInner({
 
   return (
     <div
-      className="flex items-start gap-2 border-b border-violet-500/20 bg-gradient-to-r from-violet-500/10 to-blue-500/5 px-4 py-2.5 text-sm text-zinc-800 sm:text-base"
+      className="flex items-center gap-2 border-b border-violet-100 bg-violet-50/50 px-3 py-1.5 text-[11px] text-violet-900/90 sm:px-4 sm:text-xs"
       role="status"
     >
-      <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-violet-600" aria-hidden />
-      <p>
-        <span className="font-semibold text-black">Personalized for you</span>
-        <span className="text-zinc-700">
-          {" "}
-          — Giga3 learns from your chats ({profile.messageCount} messages). {summary}
-        </span>
+      <Sparkles className="h-3.5 w-3.5 shrink-0 text-violet-500" aria-hidden />
+      <p className="min-w-0 truncate leading-snug">
+        <span className="font-semibold">Personalized</span>
+        <span className="text-violet-800/80"> · {summary}</span>
       </p>
     </div>
   );

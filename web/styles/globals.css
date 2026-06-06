@@ -188,6 +188,68 @@ button:focus-visible {
   contain: layout style;
 }
 
+/* Assistant markdown in chat bubbles */
+.chat-markdown {
+  @apply text-zinc-900;
+}
+
+.chat-markdown .chat-md-p {
+  @apply mb-2 last:mb-0 whitespace-pre-wrap break-words leading-relaxed;
+}
+
+.chat-markdown .chat-md-h1 {
+  @apply mb-2 mt-1 text-lg font-bold tracking-tight text-zinc-900;
+}
+
+.chat-markdown .chat-md-h2 {
+  @apply mb-2 mt-2 text-base font-bold text-zinc-900;
+}
+
+.chat-markdown .chat-md-h3 {
+  @apply mb-1.5 mt-2 text-sm font-bold text-zinc-800;
+}
+
+.chat-markdown .chat-md-ul,
+.chat-markdown .chat-md-ol {
+  @apply mb-2 ml-4 space-y-1 last:mb-0;
+}
+
+.chat-markdown .chat-md-ul {
+  @apply list-disc;
+}
+
+.chat-markdown .chat-md-ol {
+  @apply list-decimal;
+}
+
+.chat-markdown .chat-md-strong {
+  @apply font-semibold text-zinc-900;
+}
+
+.chat-markdown .chat-md-em {
+  @apply italic text-zinc-800;
+}
+
+.chat-markdown .chat-md-code {
+  @apply rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[0.85em] text-violet-900;
+}
+
+.chat-markdown .chat-md-pre {
+  @apply relative mb-2 overflow-x-auto rounded-xl border border-zinc-200 bg-zinc-950 px-3 py-3 last:mb-0;
+}
+
+.chat-markdown .chat-md-pre code {
+  @apply block font-mono text-xs leading-relaxed text-zinc-100 whitespace-pre;
+}
+
+.chat-markdown .chat-md-code-lang {
+  @apply mb-2 block text-[10px] font-semibold uppercase tracking-wide text-zinc-500;
+}
+
+.chat-markdown .chat-md-link {
+  @apply font-medium text-violet-700 underline underline-offset-2;
+}
+
 .chat-header-stable {
   flex-shrink: 0;
 }
