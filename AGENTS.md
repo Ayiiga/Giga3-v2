@@ -14,10 +14,17 @@
 
 - Install root: `npm ci --legacy-peer-deps`
 - Install web: `cd web && npm install --legacy-peer-deps`
-- Lint: `npm run lint` (runs `web` ESLint)
-- Build: `npm run build` (static export to `web/out`)
+- Lint: `cd web && npm run lint`
+- Build: `cd web && npm run build` (static export to `web/out`; set `NEXT_PUBLIC_CONVEX_URL` for prod host)
 - Convex codegen: `npx convex codegen`
 - Convex deploy: `npx convex deploy --yes` (requires `CONVEX_DEPLOY_KEY`)
+
+### Local development (two processes)
+
+1. **Convex** (repo root): `npx convex dev` — creates/updates root `.env.local` with `CONVEX_URL=http://127.0.0.1:3210` and dashboard at `http://127.0.0.1:6790`. Set server secrets locally with `npx convex env set OPENAI_API_KEY "…"`.
+2. **Next.js** (`web/`): copy `web/.env.local.example` → `web/.env.local` with `NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3210` and `NEXT_PUBLIC_CONVEX_SITE_URL=http://127.0.0.1:3211`, then `npm run dev` → `http://localhost:3000` (chat login: `/chat/login/`).
+3. **Alternative:** point `web/.env.local` at production (`https://perfect-lark-521.convex.cloud`) and skip `convex dev` if you only need UI work against deployed backend.
+4. **Dev server glitch:** if `/chat/login/` sticks on “Loading sign-in…” with missing webpack chunks, stop Next.js, `rm -rf web/.next`, and restart `npm run dev`.
 
 ### Build-time env (web)
 
