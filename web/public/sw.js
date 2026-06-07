@@ -1,9 +1,16 @@
-const CACHE_NAME = "giga3-shell-v3";
+const CACHE_NAME = "giga3-shell-v4";
 const PRECACHE = [
   "/",
   "/offline/",
   "/manifest.json",
   "/manifest.webmanifest",
+  "/favicon.ico",
+  "/favicon.svg",
+  "/images/logo.png",
+  "/icons/icon-192.png",
+  "/icons/icon-512.png",
+  "/icons/apple-touch-icon.png",
+  "/icons/icon-maskable-512.png",
   "/chat/",
   "/chat/login/",
   "/pricing/",
@@ -48,6 +55,8 @@ self.addEventListener("fetch", (event) => {
   const isStatic =
     url.pathname.startsWith("/_next/") ||
     url.pathname.startsWith("/icons/") ||
+    url.pathname.startsWith("/splash/") ||
+    url.pathname.startsWith("/images/") ||
     /\.(?:js|css|woff2?|png|svg|webp|ico|json|webmanifest)$/.test(url.pathname);
 
   if (isStatic) {

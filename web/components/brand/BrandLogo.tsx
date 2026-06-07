@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { branding } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
 type BrandLogoProps = {
@@ -7,12 +8,12 @@ type BrandLogoProps = {
   priority?: boolean;
 };
 
-/** Giga3 AI mark — replace `public/images/logo.png` with your official asset if needed. */
+/** Giga3 AI mark — generated via `npm run generate:branding`. */
 export function BrandLogo({ size = 36, className, priority }: BrandLogoProps) {
   return (
     <Image
       src="/images/logo.png"
-      alt=""
+      alt={branding.name}
       width={size}
       height={size}
       priority={priority}

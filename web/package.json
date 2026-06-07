@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "generate:branding": "node scripts/generate-branding.mjs",
+    "prebuild": "node scripts/generate-branding.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

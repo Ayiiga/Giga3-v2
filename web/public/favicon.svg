@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Giga3 AI">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5b21b6"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="36" fill="#ffffff"/>
+  <path fill="none" stroke="#ffffff" stroke-width="44" stroke-linecap="round"
+    d="M 318 168 A 92 92 0 1 0 318 344"/>
+  <rect x="250" y="232" width="92" height="44" rx="8" fill="#ffffff"/>
+  <circle cx="218" cy="168" r="18" fill="#ffffff"/>
+  <circle cx="278" cy="152" r="18" fill="#ffffff"/>
+  <circle cx="328" cy="188" r="18" fill="#ffffff"/>
+</svg>
