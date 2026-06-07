@@ -78,13 +78,13 @@ export function DocumentTemplatePicker({
                 disabled={disabled}
                 onClick={() => insertTemplate(template.id)}
                 className={cn(
-                  "saas-card group flex min-h-[5.5rem] items-start gap-3 p-4 text-left transition-all",
-                  "hover:-translate-y-0.5 hover:shadow-xl hover:shadow-violet-500/10",
+                  "saas-card group flex min-h-[5.5rem] items-start gap-3 p-4 text-left",
+                  "hover:border-accent/30 hover:bg-accent-subtle/50",
                   disabled && "pointer-events-none opacity-50"
                 )}
               >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600/30 to-blue-600/20 shadow-inner">
-                  <Icon className="h-6 w-6 text-violet-300" aria-hidden />
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-subtle">
+                  <Icon className="h-5 w-5 text-accent" aria-hidden />
                 </div>
                 <span className="min-w-0">
                   <span className="block text-base font-semibold text-foreground">

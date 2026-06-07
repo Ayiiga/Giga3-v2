@@ -17,10 +17,10 @@ export const MediaStudioHeader = memo(function MediaStudioHeader({
     <>
       <div className="flex flex-wrap items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+          <h1 className="page-title">
             Media Studio
           </h1>
-          <p className="mt-3 text-base text-muted sm:text-lg">
+          <p className="mt-3 text-base text-muted">
             AI images & videos · fal.ai with automatic fallback
           </p>
         </div>

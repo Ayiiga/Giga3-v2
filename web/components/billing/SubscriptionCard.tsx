@@ -25,7 +25,7 @@ export function SubscriptionCard({
     <article
       className={cn(
         "glass flex flex-col rounded-2xl p-8",
-        product.highlighted && "border-violet-500/50 shadow-lg shadow-violet-500/10"
+        product.highlighted && "border-accent/30 shadow-premium"
       )}
     >
       {product.highlighted && (
@@ -33,8 +33,8 @@ export function SubscriptionCard({
           Recommended
         </span>
       )}
-      <h3 className="text-xl font-bold text-foreground">{product.label}</h3>
-      <p className="mt-2 text-3xl font-bold text-foreground">{formatGhs(product.amountGhs)}</p>
+      <h3 className="text-lg font-semibold text-foreground">{product.label}</h3>
+      <p className="mt-2 text-2xl font-semibold text-foreground">{formatGhs(product.amountGhs)}</p>
       <p className="mt-2 text-sm text-muted">{product.description}</p>
       <ul className="mt-6 flex-1 space-y-2">
         {features.map((f) => (

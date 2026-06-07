@@ -12,7 +12,7 @@ export function Pricing() {
           <p className="section-heading text-sm font-medium uppercase tracking-wider text-accent">
             Pricing
           </p>
-          <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 className="page-title mt-4">
             Simple, transparent plans
           </h2>
           <p className="section-lead">
@@ -26,7 +26,7 @@ export function Pricing() {
               key={plan.name}
               className={cn(
                 "glass flex flex-col rounded-2xl p-8 sm:p-10",
-                plan.highlighted && "relative border-violet-500/50 shadow-lg"
+                plan.highlighted && "relative border-accent/30 shadow-premium"
               )}
             >
               {plan.highlighted && (
@@ -36,7 +36,7 @@ export function Pricing() {
               )}
               <h3 className="text-lg font-semibold">{plan.name}</h3>
               <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-4xl font-bold">{plan.price}</span>
+                <span className="text-2xl font-semibold">{plan.price}</span>
                 {plan.period && (
                   <span className="text-sm text-muted">{plan.period}</span>
                 )}

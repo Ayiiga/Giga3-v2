@@ -28,7 +28,7 @@ export function Features() {
           <p className="section-heading text-sm font-medium uppercase tracking-wider text-accent">
             Features
           </p>
-          <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <h2 className="page-title mt-4">
             Everything you need to launch AI chat
           </h2>
           <p className="section-lead">
@@ -45,14 +45,14 @@ export function Features() {
                 key={feature.title}
                 className={cn(
                   "glass rounded-2xl p-8",
-                  i === 0 && "ring-1 ring-violet-500/20 sm:col-span-2 lg:col-span-1"
+                  i === 0 && "ring-1 ring-accent/15 sm:col-span-2 lg:col-span-1"
                 )}
               >
                 <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-accent/15 text-accent">
                   <Icon aria-hidden />
                 </div>
-                <h3 className="text-xl font-semibold">{feature.title}</h3>
-                <p className="mt-3 leading-relaxed text-muted">
+                <h3 className="text-lg font-semibold">{feature.title}</h3>
+                <p className="mt-3 text-base text-muted">
                   {feature.description}
                 </p>
               </article>

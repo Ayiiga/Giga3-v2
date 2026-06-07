@@ -3,22 +3,30 @@
 @tailwind utilities;
 
 :root {
-  --font-geist-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+  --font-inter: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
+  --font-geist-sans: var(--font-inter);
   --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     monospace;
   --background: #ffffff;
-  --foreground: #0a0a0a;
-  --muted: #52525b;
+  --foreground: #171717;
+  --muted: #6b7280;
   --accent: #5b21b6;
   --accent-foreground: #ffffff;
+  --accent-muted: #ede9fe;
+  --accent-subtle: #f5f3ff;
   --card: #fafafa;
-  --border: rgba(0, 0, 0, 0.12);
+  --border: rgba(0, 0, 0, 0.08);
+  --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --chat-max-width: 50rem;
+  --touch-min: 2.75rem;
+  --leading-body: 1.7;
 }
 
 html {
-  font-size: 18px;
+  font-size: 16px;
   height: 100%;
+  overflow-x: clip;
   overscroll-behavior-y: none;
   scroll-behavior: auto;
   text-size-adjust: 100%;
@@ -26,9 +34,13 @@ html {
 }
 
 body {
-  @apply bg-background text-base font-medium text-foreground antialiased;
+  @apply bg-background text-base text-foreground antialiased;
   background-color: var(--background);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-weight: 400;
+  line-height: var(--leading-body);
   min-height: 100%;
+  overflow-x: clip;
   touch-action: manipulation;
   overscroll-behavior-y: none;
 }
@@ -40,35 +52,52 @@ body {
 }
 
 ::selection {
-  background: rgba(91, 33, 182, 0.2);
-  color: #0a0a0a;
+  background: rgba(91, 33, 182, 0.15);
+  color: var(--foreground);
 }
 
 .glass {
-  @apply border border-border bg-white shadow-sm;
+  @apply border border-border bg-white;
+  box-shadow: var(--shadow-subtle);
 }
 
 .section-padding {
-  @apply px-4 py-24 sm:px-6 sm:py-28 lg:px-8 lg:py-36;
+  @apply px-4 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-28;
 }
 
 .section-heading {
-  @apply mb-4 text-sm font-bold uppercase tracking-wider text-accent;
+  @apply mb-3 text-sm font-semibold uppercase tracking-wider text-accent;
 }
 
 .section-lead {
-  @apply mt-5 text-lg font-medium text-foreground;
+  @apply mt-4 text-base font-normal leading-[1.7] text-muted;
 }
 
 .page-title {
-  @apply text-3xl font-bold tracking-tight text-foreground sm:text-4xl;
+  @apply text-2xl font-semibold tracking-tight text-foreground;
 }
 
 .page-subtitle {
-  @apply text-lg font-semibold text-foreground;
+  @apply text-base font-medium text-muted;
 }
 
-/* Lucide icons — minimum 24px touch targets */
+.heading-hero {
+  @apply text-[2rem] font-semibold leading-tight tracking-tight text-foreground sm:text-[2rem];
+}
+
+.chat-container {
+  width: 100%;
+  max-width: var(--chat-max-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.touch-target {
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+}
+
+/* Lucide icons — minimum 24px */
 .lucide {
   width: 1.5rem;
   height: 1.5rem;
@@ -79,15 +108,16 @@ body {
 
 @layer components {
   .btn-media-image-active {
-    @apply bg-btn-image font-bold text-white shadow-btn-image hover:brightness-110;
+    @apply bg-btn-image font-semibold text-white shadow-btn-image hover:brightness-105;
   }
 
   .btn-media-video-active {
-    @apply bg-btn-video font-bold text-white shadow-btn-video hover:brightness-110;
+    @apply bg-btn-video font-semibold text-white shadow-btn-video hover:brightness-105;
   }
 
   .btn-media-inactive {
-    @apply border border-border bg-white font-semibold text-foreground shadow-sm hover:border-zinc-300 hover:bg-zinc-50;
+    @apply border border-border bg-white font-medium text-foreground hover:border-zinc-300 hover:bg-zinc-50;
+    box-shadow: var(--shadow-subtle);
   }
 
   .saas-panel {
@@ -95,7 +125,8 @@ body {
   }
 
   .saas-card {
-    @apply rounded-2xl border border-border bg-white shadow-sm;
+    @apply rounded-2xl border border-border bg-white;
+    box-shadow: var(--shadow-subtle);
   }
 
   .chat-composer {
@@ -103,15 +134,16 @@ body {
   }
 
   .input-surface {
-    @apply w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-base font-medium text-foreground outline-none placeholder:text-zinc-500 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/25;
+    @apply w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-base text-foreground outline-none placeholder:text-zinc-400 focus:border-accent focus:ring-2;
+    line-height: var(--leading-body);
+    --tw-ring-color: rgba(91, 33, 182, 0.2);
   }
 }
 
 .text-gradient {
-  @apply font-bold text-foreground;
+  @apply font-semibold text-foreground;
 }
 
-/* Subtle focus for accessibility */
 a:focus-visible,
 button:focus-visible {
   @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-background;
@@ -128,7 +160,6 @@ button:focus-visible {
   }
 }
 
-/* Marketing/PWA: prevent mobile GPU tearing (ghosting while scrolling). */
 .marketing-stable {
   isolation: isolate;
   overflow-x: clip;
@@ -155,9 +186,9 @@ button:focus-visible {
   }
 }
 
-/* Chat/PWA: stable layout — no entrance animations or page-level smooth scroll. */
 .chat-stable {
   isolation: isolate;
+  overflow-x: clip;
 }
 
 .chat-stable,
@@ -188,30 +219,30 @@ button:focus-visible {
   contain: layout style;
 }
 
-/* Assistant markdown in chat bubbles */
 .chat-markdown {
-  @apply text-zinc-900;
+  @apply text-foreground;
+  line-height: var(--leading-body);
 }
 
 .chat-markdown .chat-md-p {
-  @apply mb-2 last:mb-0 whitespace-pre-wrap break-words leading-relaxed;
+  @apply mb-3 last:mb-0 whitespace-pre-wrap break-words;
 }
 
 .chat-markdown .chat-md-h1 {
-  @apply mb-2 mt-1 text-lg font-bold tracking-tight text-zinc-900;
+  @apply mb-2 mt-3 text-xl font-semibold tracking-tight text-foreground;
 }
 
 .chat-markdown .chat-md-h2 {
-  @apply mb-2 mt-2 text-base font-bold text-zinc-900;
+  @apply mb-2 mt-3 text-lg font-semibold text-foreground;
 }
 
 .chat-markdown .chat-md-h3 {
-  @apply mb-1.5 mt-2 text-sm font-bold text-zinc-800;
+  @apply mb-2 mt-2 text-base font-semibold text-foreground;
 }
 
 .chat-markdown .chat-md-ul,
 .chat-markdown .chat-md-ol {
-  @apply mb-2 ml-4 space-y-1 last:mb-0;
+  @apply mb-3 ml-5 space-y-1.5 last:mb-0;
 }
 
 .chat-markdown .chat-md-ul {
@@ -223,31 +254,31 @@ button:focus-visible {
 }
 
 .chat-markdown .chat-md-strong {
-  @apply font-semibold text-zinc-900;
+  @apply font-semibold text-foreground;
 }
 
 .chat-markdown .chat-md-em {
-  @apply italic text-zinc-800;
+  @apply italic text-muted;
 }
 
 .chat-markdown .chat-md-code {
-  @apply rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[0.85em] text-violet-900;
+  @apply rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[0.875em] text-accent;
 }
 
 .chat-markdown .chat-md-pre {
-  @apply relative mb-2 overflow-x-auto rounded-xl border border-zinc-200 bg-zinc-950 px-3 py-3 last:mb-0;
+  @apply relative mb-3 overflow-x-auto rounded-xl border border-zinc-200 bg-zinc-950 px-4 py-3 last:mb-0;
 }
 
 .chat-markdown .chat-md-pre code {
-  @apply block font-mono text-xs leading-relaxed text-zinc-100 whitespace-pre;
+  @apply block font-mono text-sm leading-relaxed text-zinc-100 whitespace-pre;
 }
 
 .chat-markdown .chat-md-code-lang {
-  @apply mb-2 block text-[10px] font-semibold uppercase tracking-wide text-zinc-500;
+  @apply mb-2 block text-[10px] font-semibold uppercase tracking-wide text-zinc-400;
 }
 
 .chat-markdown .chat-md-link {
-  @apply font-medium text-violet-700 underline underline-offset-2;
+  @apply font-medium text-accent underline underline-offset-2;
 }
 
 .chat-header-stable {
@@ -258,6 +289,14 @@ button:focus-visible {
   flex-shrink: 0;
 }
 
+.notice-slot {
+  min-height: 0;
+}
+
+.notice-slot[data-has-notice="true"] {
+  min-height: 2.75rem;
+}
+
 @media (max-width: 1023px) {
   .chat-stable * {
     transition-duration: 0s !important;
@@ -265,10 +304,10 @@ button:focus-visible {
   }
 }
 
-/* Media studio + app surfaces: stable cards, no hover translate jitter. */
 .media-stable,
 .pwa-stable-main {
   isolation: isolate;
+  overflow-x: clip;
 }
 
 .media-stable .saas-card,
@@ -305,8 +344,14 @@ button:focus-visible {
   }
 }
 
-/* Marketing layout: allow spinners inside app surfaces only. */
 .marketing-stable .pwa-stable-main .animate-spin,
 .marketing-stable .media-stable .animate-spin {
   animation: spin 1s linear infinite !important;
+}
+
+.pwa-install-slot {
+  min-height: var(--touch-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

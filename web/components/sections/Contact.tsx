@@ -23,7 +23,7 @@ export function Contact() {
               <p className="section-heading text-sm font-medium uppercase tracking-wider text-accent">
                 Contact
               </p>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+              <h2 className="page-title mt-4">
                 Let&apos;s build together
               </h2>
               <p className="section-lead">

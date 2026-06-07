@@ -37,7 +37,7 @@ export function UsageTracker({ usage, className }: UsageTrackerProps) {
           <Coins className="h-4 w-4" aria-hidden />
           Credits
         </span>
-        <span className={cn("font-medium", low && "text-amber-300")}>
+        <span className={cn("font-medium", low && "text-amber-600")}>
           {usage.credits}
         </span>
       </div>
@@ -58,7 +58,7 @@ export function UsageTracker({ usage, className }: UsageTrackerProps) {
         · Video {usage.creditCosts.video}
       </p>
       {low && (
-        <p className="text-xs text-amber-300">
+        <p className="text-xs text-amber-700">
           Low credits — subscribe or buy a top-up pack.
         </p>
       )}

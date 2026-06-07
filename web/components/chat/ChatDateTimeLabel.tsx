@@ -3,7 +3,7 @@
 import { formatCurrentDateTime } from "@/lib/datetime";
 import { useEffect, useState } from "react";
 
-/** Live date/time label for chat chrome — updates every minute. */
+/** Live date/time label for chat chrome — reserves width to avoid header shift. */
 export function ChatDateTimeLabel() {
   const [label, setLabel] = useState("");
 
@@ -20,15 +20,14 @@ export function ChatDateTimeLabel() {
     return () => window.clearInterval(id);
   }, []);
 
-  if (!label) return null;
-
   return (
     <time
-      dateTime={label}
-      className="hidden text-sm font-medium text-muted md:block"
+      dateTime={label || undefined}
+      className="hidden min-w-[9.5rem] text-right text-sm text-muted md:block"
       suppressHydrationWarning
+      aria-hidden={!label}
     >
-      {label}
+      {label || "\u00a0"}
     </time>
   );
 }

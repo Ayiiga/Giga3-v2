@@ -70,11 +70,11 @@ function ChatSidebarComponent({
         )}
       >
         <div className="flex items-center justify-between gap-2 border-b border-border/80 p-4">
-          <span className="truncate text-base font-bold">Giga3 AI</span>
+          <span className="truncate text-base font-semibold">Giga3 AI</span>
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="hidden rounded-xl p-2.5 text-foreground hover:bg-zinc-100 lg:inline-flex"
+            className="touch-target hidden rounded-xl text-foreground hover:bg-zinc-100 lg:inline-flex"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? <PanelLeft className="h-5 w-5" aria-hidden /> : <PanelLeftClose className="h-5 w-5" aria-hidden />}
@@ -100,7 +100,7 @@ function ChatSidebarComponent({
             <Link
               href="/media"
               onClick={onCloseMobile}
-              className="saas-card flex min-h-12 items-center justify-center gap-2 rounded-xl px-2 py-2 text-sm font-bold text-violet-800 transition-all hover:bg-violet-50"
+              className="saas-card flex min-h-11 items-center justify-center gap-2 rounded-xl px-2 py-2 text-sm font-medium text-accent hover:bg-accent-subtle"
             >
               <Sparkles className="h-5 w-5" aria-hidden />
               Media
@@ -108,7 +108,7 @@ function ChatSidebarComponent({
             <Link
               href="/credits"
               onClick={onCloseMobile}
-              className="saas-card flex min-h-12 items-center justify-center gap-2 rounded-xl px-2 py-2 text-sm font-bold text-foreground transition-all hover:bg-zinc-50"
+              className="saas-card flex min-h-11 items-center justify-center gap-2 rounded-xl px-2 py-2 text-sm font-medium text-foreground hover:bg-zinc-50"
             >
               <Coins className="h-5 w-5" aria-hidden />
               Credits
@@ -135,8 +135,8 @@ function ChatSidebarComponent({
                     className={cn(
                       "group flex items-center gap-2 rounded-xl border px-3 py-3 transition-all",
                       active
-                        ? "border-violet-400 bg-violet-50"
-                        : "border-transparent hover:border-zinc-200 hover:bg-zinc-50"
+                        ? "border-accent/30 bg-accent-subtle"
+                        : "border-transparent hover:border-border hover:bg-zinc-50"
                     )}
                   >
                     <button
@@ -156,7 +156,7 @@ function ChatSidebarComponent({
                     </button>
                     <button
                       type="button"
-                      className="rounded-lg p-2 text-zinc-600 opacity-0 transition-opacity hover:bg-red-50 hover:text-red-700 group-hover:opacity-100"
+                      className="touch-target rounded-xl text-muted opacity-100 hover:bg-red-50 hover:text-red-700 sm:opacity-0 sm:group-hover:opacity-100"
                       aria-label="Delete conversation"
                       onClick={() => onDelete(c._id)}
                     >

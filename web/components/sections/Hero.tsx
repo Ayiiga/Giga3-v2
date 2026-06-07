@@ -7,26 +7,26 @@ import { ArrowRight, Bot } from "lucide-react";
 
 export function Hero() {
   return (
-    <section className="bg-white pt-10 sm:pt-14">
+    <section className="bg-white pt-12 sm:pt-16">
       <Container>
         <div className="mx-auto max-w-3xl text-center">
-          <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-violet-300 bg-violet-50 px-5 py-2 text-base font-bold text-violet-900 shadow-sm">
-            <BrandLogo size={24} className="shadow-none ring-0" />
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-subtle px-4 py-2 text-sm font-medium text-accent">
+            <BrandLogo size={20} className="shadow-none ring-0" />
             Multi-provider AI · Production-ready PWA
           </div>
 
-          <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+          <h1 className="heading-hero">
             <span className="text-gradient">{siteConfig.name}</span>
             <br />
             <span>{siteConfig.tagline}</span>
           </h1>
 
-          <p className="section-lead mx-auto max-w-2xl text-xl font-medium leading-relaxed text-foreground">
+          <p className="section-lead mx-auto mt-6 max-w-2xl">
             {siteConfig.description} Run multiple chats with automatic AI failover,
             credit-based billing, and a polished mobile experience.
           </p>
 
-          <div className="mx-auto mt-12 grid w-full max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2 lg:max-w-3xl lg:grid-cols-3">
+          <div className="mx-auto mt-10 grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2 lg:max-w-3xl lg:grid-cols-3">
             <ButtonLink href="/chat/login" size="lg" className="w-full">
               Start chatting
               <ArrowRight aria-hidden />
@@ -34,37 +34,39 @@ export function Hero() {
             <ButtonLink href="#multi-chat" variant="secondary" size="lg" className="w-full">
               See multi-AI
             </ButtonLink>
-            <InstallButton size="lg" variant="outline" className="w-full sm:col-span-2 lg:col-span-1" />
+            <div className="pwa-install-slot w-full sm:col-span-2 lg:col-span-1">
+              <InstallButton size="lg" variant="outline" className="w-full" />
+            </div>
           </div>
 
-          <dl className="mx-auto mt-16 grid max-w-lg grid-cols-3 gap-5">
+          <dl className="mx-auto mt-14 grid max-w-lg grid-cols-3 gap-4">
             {heroStats.map((stat) => (
               <div
                 key={stat.label}
                 className="glass rounded-xl px-3 py-4 text-center"
               >
                 <dt className="text-xs text-muted">{stat.label}</dt>
-                <dd className="mt-1 text-xl font-bold text-foreground">{stat.value}</dd>
+                <dd className="mt-1 text-xl font-semibold text-foreground">{stat.value}</dd>
               </div>
             ))}
           </dl>
         </div>
 
-        <div className="relative mx-auto mt-20 max-w-4xl">
-          <div className="glass overflow-hidden rounded-2xl border border-border p-1 shadow-lg">
+        <div className="relative mx-auto mt-16 max-w-4xl">
+          <div className="glass overflow-hidden rounded-2xl p-1 shadow-premium">
             <div className="rounded-xl bg-zinc-50 p-6 sm:p-8">
               <div className="mb-4 flex items-center gap-2 border-b border-border pb-4">
                 <Bot className="text-accent" aria-hidden />
                 <span className="font-medium">Giga3 Assistant</span>
-                <span className="ml-auto rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
+                <span className="ml-auto rounded-full bg-accent-subtle px-2.5 py-0.5 text-xs font-medium text-accent">
                   Failover active
                 </span>
               </div>
-              <div className="space-y-4 text-sm">
-                <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-border bg-white px-4 py-3 text-muted">
+              <div className="space-y-4 text-base leading-[1.7]">
+                <div className="max-w-[85%] rounded-2xl rounded-tl-md bg-white px-4 py-3 text-muted shadow-subtle">
                   What happens if the primary AI provider is down?
                 </div>
-                <div className="ml-auto max-w-[90%] rounded-2xl rounded-tr-sm border border-violet-200 bg-violet-50 px-4 py-3 text-foreground">
+                <div className="ml-auto max-w-[90%] rounded-2xl rounded-tr-md bg-accent-subtle px-4 py-3 text-foreground">
                   Giga3 tries backup models and keys automatically—your team keeps
                   chatting while we surface which provider answered.
                 </div>

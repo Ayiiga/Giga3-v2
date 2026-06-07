@@ -69,7 +69,7 @@ export function ChatWorkspacePanel({
       className={cn(
         "inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-semibold sm:min-h-11 sm:gap-2 sm:text-sm",
         tab === id
-          ? "bg-white text-violet-900 shadow-sm ring-1 ring-violet-200"
+          ? "bg-white text-accent shadow-subtle ring-1 ring-accent/20"
           : "text-zinc-600 hover:bg-white/60 hover:text-zinc-900"
       )}
     >

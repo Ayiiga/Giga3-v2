@@ -17,27 +17,29 @@ export function Header() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-white py-3 shadow-sm">
+    <header className="sticky top-0 z-50 border-b border-border bg-white/95 py-3 backdrop-blur-sm">
       <Container className="flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2.5 text-lg font-bold tracking-tight text-foreground">
-          <BrandLogo size={36} priority className="shadow-none ring-0" />
+        <Link href="/" className="flex items-center gap-2.5 text-base font-semibold text-foreground">
+          <BrandLogo size={32} priority className="shadow-none ring-0" />
           <span>{siteConfig.name}</span>
         </Link>
 
-        <nav className="hidden items-center gap-7 md:flex" aria-label="Main">
+        <nav className="hidden items-center gap-6 md:flex" aria-label="Main">
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-base font-semibold text-foreground hover:text-accent"
+              className="text-base font-medium text-muted hover:text-accent"
             >
               {link.label}
             </a>
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
-          <InstallButton size="sm" variant="ghost" />
+        <div className="hidden items-center gap-2 md:flex">
+          <div className="pwa-install-slot">
+            <InstallButton size="sm" variant="ghost" />
+          </div>
           <ButtonLink href={siteConfig.links.login} variant="ghost" size="sm">
             Log in
           </ButtonLink>
@@ -64,13 +66,15 @@ export function Header() {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-muted hover:text-foreground"
+                className="touch-target flex items-center text-base text-muted hover:text-foreground"
                 onClick={() => setOpen(false)}
               >
                 {link.label}
               </a>
             ))}
-            <InstallButton className="w-full" />
+            <div className="pwa-install-slot w-full justify-start">
+              <InstallButton className="w-full" />
+            </div>
             <ButtonLink href={siteConfig.links.login} variant="secondary" className="w-full">
               Log in
             </ButtonLink>

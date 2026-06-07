@@ -161,9 +161,9 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
           {loading && (
             <div
               role="status"
-              className="rounded-2xl border border-violet-500/30 bg-violet-500/10 px-4 py-4"
+              className="rounded-2xl border border-accent/25 bg-accent-subtle px-4 py-4"
             >
-              <div className="flex items-center gap-3 text-base font-medium text-violet-100">
+              <div className="flex items-center gap-3 text-base font-medium text-accent">
                 <Loader2 className="h-6 w-6 animate-spin" aria-hidden />
                 Generating your {tab}…
               </div>
@@ -173,7 +173,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
           {phase === "success" && successMessage && !loading && (
             <div
               role="status"
-              className="flex items-start gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-4 text-base text-emerald-100"
+              className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-base text-emerald-800"
             >
               <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0" aria-hidden />
               <span>{successMessage}</span>

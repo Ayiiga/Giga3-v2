@@ -82,15 +82,15 @@ function ChatLoginFormInner() {
       <div className="glass w-full max-w-md rounded-2xl p-8 sm:p-10">
         <div className="mb-6 flex items-center justify-center gap-2">
           <BrandLogo size={40} />
-          <h1 className="text-2xl font-bold text-foreground">Sign in to Giga3 AI</h1>
+          <h1 className="page-title">Sign in to Giga3 AI</h1>
         </div>
-        <p className="mb-8 text-center text-base font-medium text-foreground">
+        <p className="mb-8 text-center text-base text-muted">
           Sign up or log in with your email. Chats, credits, and subscriptions sync via
           {usingSupabase ? " Supabase." : " Convex."}
         </p>
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
           <div>
-            <label htmlFor="email" className="mb-1.5 block text-sm font-bold text-foreground">
+            <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
               Email
             </label>
             <input

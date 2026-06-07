@@ -14,8 +14,9 @@
 
 - Install root: `npm ci --legacy-peer-deps`
 - Install web: `cd web && npm install --legacy-peer-deps`
-- Lint: `npm run lint` (runs `web` ESLint)
-- Build: `npm run build` (static export to `web/out`)
+- Lint: `cd web && npm run lint`
+- Build: `cd web && npm run build` (static export to `web/out`)
+- Dev server: `cd web && npm run dev` → `http://localhost:3000` (copy `web/.env.local.example` → `.env.local`, set `NEXT_PUBLIC_CONVEX_URL`). With `output: "export"`, dev mode may 404 `_next/static/chunks/*` — for smoke tests use `npm run build` then `npx serve out -l 3001`.
 - Convex codegen: `npx convex codegen`
 - Convex deploy: `npx convex deploy --yes` (requires `CONVEX_DEPLOY_KEY`)
 
@@ -42,6 +43,13 @@ Production deployment: **`perfect-lark-521`** (`https://perfect-lark-521.convex.
 - `users:getUser` is a **public query** in `convex/users.ts`. If the client reports it is missing, production has not received a successful deploy.
 - This Cloud Agent VM often **cannot** reach `api.convex.dev` or `*.convex.cloud` (TLS). Use GitHub Actions **Deploy Convex backend** or a local machine for codegen/deploy.
 - If CI fails in ~20s at **Deploy to Convex** after key format validation passes, regenerate `CONVEX_DEPLOY_KEY` (`prod:perfect-lark-521|…`) in Convex Dashboard → production → Settings → Deploy key.
+
+### UI design system (`web/`)
+
+- **Font:** Inter via `next/font/google` in `app/layout.tsx`; base **16px** / **1.7** line height in `styles/globals.css`.
+- **Brand color:** `--accent` (`#5b21b6`) — primary buttons, links, focus rings; avoid blue CTA gradients.
+- **Chat column:** `.chat-container` / `max-w-chat` (**800px**) centered in messages, composer, typing bar.
+- **Touch targets:** `.touch-target` / `min-h-11` (44px) on interactive controls.
 
 ### Chat UI stability
 

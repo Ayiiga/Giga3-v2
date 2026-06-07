@@ -153,9 +153,9 @@ export function ChatInputToolbar({
         onClick={onToggle}
         className={cn(
           "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm",
-          "hover:border-violet-300 hover:bg-violet-50 hover:text-violet-800",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2",
-          expanded && "border-violet-300 bg-violet-50 text-violet-800",
+          "hover:border-accent/30 hover:bg-accent-subtle hover:text-accent",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2",
+          expanded && "border-accent/30 bg-accent-subtle text-accent",
           disabled && "pointer-events-none opacity-50"
         )}
       >
@@ -192,13 +192,13 @@ export function ChatInputToolbar({
                   onClick={() => triggerInput(action.kind)}
                   className={cn(
                     "flex min-h-[3.25rem] flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-center",
-                    "text-zinc-700 hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500",
-                    isMedia && "text-violet-700 hover:bg-violet-50",
+                    "text-foreground hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+                    isMedia && "text-accent hover:bg-accent-subtle",
                     disabled && "pointer-events-none opacity-50"
                   )}
                 >
                   {loading ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-violet-600" aria-hidden />
+                    <Loader2 className="h-5 w-5 animate-spin text-accent" aria-hidden />
                   ) : (
                     <Icon className="h-5 w-5 shrink-0" aria-hidden />
                   )}

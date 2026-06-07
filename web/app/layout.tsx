@@ -3,6 +3,13 @@ import { OfflineBanner } from "@/components/pwa/OfflineBanner";
 import { siteConfig } from "@/lib/site";
 import "@/styles/globals.css";
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -58,9 +65,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="font-sans min-h-full">
-        <div className="min-h-full">{children}</div>
+    <html lang="en" className={inter.variable}>
+      <body className="min-h-full font-sans antialiased">
+        <div className="min-h-full overflow-x-clip">{children}</div>
         <ServiceWorkerRegister />
         <OfflineBanner />
       </body>
