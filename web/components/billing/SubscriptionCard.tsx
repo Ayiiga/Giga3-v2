@@ -24,22 +24,22 @@ export function SubscriptionCard({
   return (
     <article
       className={cn(
-        "glass flex flex-col rounded-2xl p-8",
-        product.highlighted && "border-violet-500/50 shadow-lg shadow-violet-500/10"
+        "saas-card flex flex-col p-6 sm:p-8",
+        product.highlighted && "ring-1 ring-accent/25"
       )}
     >
       {product.highlighted && (
-        <span className="mb-3 w-fit rounded-full bg-accent px-3 py-0.5 text-xs font-medium text-accent-foreground">
+        <span className="mb-3 w-fit rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
           Recommended
         </span>
       )}
-      <h3 className="text-xl font-bold text-foreground">{product.label}</h3>
-      <p className="mt-2 text-3xl font-bold text-foreground">{formatGhs(product.amountGhs)}</p>
-      <p className="mt-2 text-sm text-muted">{product.description}</p>
+      <h3 className="text-lg font-semibold text-foreground">{product.label}</h3>
+      <p className="mt-2 text-2xl font-semibold text-foreground">{formatGhs(product.amountGhs)}</p>
+      <p className="mt-2 text-sm leading-[1.7] text-muted">{product.description}</p>
       <ul className="mt-6 flex-1 space-y-2">
         {features.map((f) => (
-          <li key={f} className="flex gap-2 text-sm">
-            <Check className="mt-0.5 shrink-0 text-accent" aria-hidden />
+          <li key={f} className="flex gap-2 text-sm leading-[1.7]">
+            <Check className="mt-1 shrink-0 text-accent" aria-hidden />
             {f}
           </li>
         ))}

@@ -52,55 +52,55 @@ function MessageListInner({
   }, []);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-zinc-50/40">
+    <div className="flex min-h-0 flex-1 flex-col bg-white">
       <div
         ref={scrollRef}
-        className="message-list-scroll flex-1 overflow-y-auto overscroll-y-contain px-3 py-5 sm:px-6 sm:py-6"
+        className="message-list-scroll flex-1 overflow-y-auto overscroll-y-contain px-4 py-6 sm:px-6"
       >
         {isLoading && messages.length === 0 && (
           <div className="flex h-full min-h-[12rem] flex-col items-center justify-center gap-3 text-center">
-            <div className="h-8 w-8 animate-pulse rounded-full bg-violet-200" aria-hidden />
-            <p className="text-sm font-medium text-zinc-600">Loading messages…</p>
+            <div className="h-8 w-8 animate-pulse rounded-full bg-accent/15" aria-hidden />
+            <p className="text-sm text-muted">Loading messages…</p>
           </div>
         )}
 
         {messages.length === 0 && !isLoading && (
-          <div className="mx-auto flex h-full min-h-[14rem] max-w-lg flex-col items-center justify-center px-2 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
-              <MessageSquarePlus className="h-7 w-7" aria-hidden />
+          <div className="chat-rail flex h-full min-h-[14rem] flex-col items-center justify-center px-2 text-center">
+            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 text-accent">
+              <MessageSquarePlus className="h-6 w-6" aria-hidden />
             </div>
-            <h2 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl">
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
               Start a conversation
             </h2>
             {todayLabel && (
-              <p className="mt-1 text-xs text-zinc-500" suppressHydrationWarning>
+              <p className="mt-1 text-sm text-muted" suppressHydrationWarning>
                 {todayLabel}
               </p>
             )}
-            <p className="mt-3 max-w-sm text-sm leading-relaxed text-zinc-600">
-              Ask anything, pick a template from the workspace above, or tap{" "}
-              <span className="font-medium text-zinc-800">Attach</span> to add files.
+            <p className="mt-4 max-w-md text-base leading-[1.7] text-muted">
+              Ask anything, pick a template from the workspace above, or use{" "}
+              <span className="font-medium text-foreground">Attach</span> to add files.
               Chats save automatically.
             </p>
 
             {onInsertTemplate && (
               <>
-                <div className="mt-6 flex w-full flex-wrap justify-center gap-2">
+                <div className="mt-8 flex w-full flex-wrap justify-center gap-2">
                   {QUICK_PROMPTS.map((prompt) => (
                     <button
                       key={prompt}
                       type="button"
                       onClick={() => onInsertTemplate(prompt)}
-                      className="rounded-full border border-zinc-200 bg-white px-3.5 py-2 text-xs font-medium text-zinc-700 shadow-sm hover:border-violet-300 hover:bg-violet-50 hover:text-violet-900 sm:text-sm"
+                      className="min-h-11 rounded-full border border-border bg-white px-4 py-2 text-sm text-foreground shadow-sm hover:border-accent/30 hover:bg-accent/5"
                     >
                       {prompt}
                     </button>
                   ))}
                 </div>
 
-                <div className="mt-6 w-full">
-                  <p className="mb-2 flex items-center justify-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                    <Sparkles className="h-3.5 w-3.5" aria-hidden />
+                <div className="mt-8 w-full">
+                  <p className="mb-3 flex items-center justify-center gap-1.5 text-sm font-medium text-muted">
+                    <Sparkles className="h-4 w-4" aria-hidden />
                     Document templates
                   </p>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -120,11 +120,11 @@ function MessageListInner({
                             }
                           }}
                           className={cn(
-                            "flex min-h-11 items-center gap-2 rounded-xl border border-zinc-200/90 bg-white px-3 py-2.5 text-left",
-                            "text-xs font-medium text-zinc-800 shadow-sm hover:border-violet-200 hover:bg-violet-50/60"
+                            "flex min-h-11 items-center gap-2 rounded-xl border border-border bg-white px-3 py-2.5 text-left",
+                            "text-sm text-foreground shadow-sm hover:border-accent/25 hover:bg-accent/5"
                           )}
                         >
-                          <Icon className="h-4 w-4 shrink-0 text-violet-600" aria-hidden />
+                          <Icon className="h-4 w-4 shrink-0 text-accent" aria-hidden />
                           <span className="line-clamp-2 leading-snug">{template.title}</span>
                         </button>
                       );
@@ -136,7 +136,7 @@ function MessageListInner({
           </div>
         )}
 
-        <div className="mx-auto flex max-w-3xl flex-col gap-5 sm:gap-6">
+        <div className="chat-rail flex flex-col gap-6 sm:gap-8">
           {messages.map((m) => (
             <MessageBubble
               key={m.id}

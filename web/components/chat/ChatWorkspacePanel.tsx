@@ -67,10 +67,10 @@ export function ChatWorkspacePanel({
       disabled={disabled}
       onClick={() => setTab(id)}
       className={cn(
-        "inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-semibold sm:min-h-11 sm:gap-2 sm:text-sm",
+        "inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 text-sm font-medium",
         tab === id
-          ? "bg-white text-violet-900 shadow-sm ring-1 ring-violet-200"
-          : "text-zinc-600 hover:bg-white/60 hover:text-zinc-900"
+          ? "bg-white text-accent shadow-sm ring-1 ring-accent/15"
+          : "text-muted hover:bg-white/60 hover:text-foreground"
       )}
     >
       <Icon className="h-4 w-4 shrink-0" aria-hidden />
@@ -79,23 +79,21 @@ export function ChatWorkspacePanel({
   );
 
   return (
-    <div className="shrink-0 border-b border-zinc-200/90 bg-zinc-50/80">
+    <div className="shrink-0 border-b border-border bg-zinc-50/50">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="flex w-full min-h-11 items-center justify-between gap-2 px-3 py-2.5 text-left sm:px-4"
+        className="flex w-full min-h-11 items-center justify-between gap-2 px-4 py-2.5 text-left"
       >
-        <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-          Workspace
-        </span>
-        <span className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+        <span className="text-sm font-medium text-muted">Workspace</span>
+        <span className="flex items-center gap-2 text-sm text-foreground">
           {tab === "modes" && "AI modes"}
           {tab === "documents" && "Templates"}
           {tab === "media" && "Media studio"}
           <ChevronDown
             className={cn(
-              "h-4 w-4 text-zinc-400",
+              "h-4 w-4 text-muted",
               open && "rotate-180"
             )}
             aria-hidden
@@ -105,13 +103,13 @@ export function ChatWorkspacePanel({
 
       {open && (
         <>
-          <div className="flex gap-1 border-t border-zinc-200/60 px-2 py-2 sm:px-3">
+          <div className="flex gap-1 border-t border-border px-2 py-2">
             {tabBtn("modes", "Modes", MessageCircle)}
             {tabBtn("documents", "Docs", FileText)}
             {tabBtn("media", "Media", Sparkles)}
           </div>
 
-          <div className="max-h-[180px] overflow-y-auto overscroll-y-contain border-t border-zinc-200/40 bg-white">
+          <div className="max-h-[180px] overflow-y-auto overscroll-y-contain border-t border-border bg-white">
             {tab === "modes" && (
               <ToolSelector
                 value={mode}
@@ -134,7 +132,7 @@ export function ChatWorkspacePanel({
 
             {tab === "media" && (
               <div className="space-y-2 px-3 py-3 sm:px-4">
-                <p className="text-xs leading-relaxed text-zinc-600 sm:text-sm">
+                <p className="text-sm leading-[1.7] text-muted">
                   Launch image & video generation with ready-made prompts.
                 </p>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -148,8 +146,8 @@ export function ChatWorkspacePanel({
                         disabled={disabled || Boolean(mediaNavigating)}
                         onClick={() => void openMediaStudio(template.id)}
                         className={cn(
-                          "flex min-h-[4rem] items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50/50 p-3 text-left",
-                          loading && "ring-2 ring-violet-300"
+                          "flex min-h-16 items-center gap-3 rounded-xl border border-border bg-zinc-50/50 p-3 text-left",
+                          loading && "ring-1 ring-accent/30"
                         )}
                       >
                         <div
@@ -165,10 +163,10 @@ export function ChatWorkspacePanel({
                           )}
                         </div>
                         <span className="min-w-0">
-                          <span className="block text-sm font-semibold text-zinc-900">
+                          <span className="block text-sm font-medium text-foreground">
                             {template.title}
                           </span>
-                          <span className="mt-0.5 block line-clamp-2 text-xs text-zinc-500">
+                          <span className="mt-0.5 block line-clamp-2 text-xs text-muted">
                             {template.description}
                           </span>
                         </span>

@@ -101,17 +101,17 @@ export const ChatActionsMenu = memo(function ChatActionsMenu({
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-foreground shadow-sm hover:bg-zinc-50 disabled:opacity-50"
+        className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-white px-3 text-sm font-medium text-foreground shadow-sm hover:bg-zinc-50 disabled:opacity-50"
       >
         <Share2 className="h-4 w-4" aria-hidden />
-        <span className="hidden sm:inline">Chat actions</span>
+        <span className="hidden sm:inline">Actions</span>
         <ChevronDown className="h-4 w-4 opacity-60" aria-hidden />
       </button>
 
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-zinc-200 bg-white py-1 shadow-lg"
+          className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-border bg-white py-1 shadow-lg"
         >
           <MenuItem icon={Copy} label="Copy chat" onClick={() => void runCopy()} />
           <MenuItem icon={Share2} label="Share chat" onClick={() => void runShare()} />
@@ -145,10 +145,10 @@ function MenuItem({
     <button
       type="button"
       role="menuitem"
-      className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm font-medium text-foreground hover:bg-zinc-50"
+      className="flex min-h-11 w-full items-center gap-2 px-3 text-left text-sm text-foreground hover:bg-zinc-50"
       onClick={onClick}
     >
-      <Icon className="h-4 w-4 shrink-0 text-violet-700" aria-hidden />
+      <Icon className="h-4 w-4 shrink-0 text-accent" aria-hidden />
       {label}
     </button>
   );

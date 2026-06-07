@@ -53,7 +53,7 @@ export function DocumentTemplatePicker({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full min-h-12 items-center justify-between gap-2 rounded-xl px-1 text-left text-base font-bold text-foreground hover:text-accent disabled:opacity-50"
+        className="flex w-full min-h-11 items-center justify-between gap-2 rounded-xl px-1 text-left text-base font-medium text-foreground hover:text-accent disabled:opacity-50"
         aria-expanded={open}
       >
         <span className="flex items-center gap-2.5">

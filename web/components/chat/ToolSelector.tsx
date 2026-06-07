@@ -50,7 +50,7 @@ export function ToolSelector({
       )}
     >
       {!embedded && (
-        <label className="mb-3 block text-sm font-bold uppercase tracking-wider text-muted">
+        <label className="mb-3 block text-sm font-medium text-muted">
           AI mode
         </label>
       )}

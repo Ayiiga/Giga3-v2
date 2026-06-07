@@ -17,13 +17,11 @@ export function Contact() {
   return (
     <section id="contact" className="section-padding scroll-mt-24">
       <Container>
-        <div className="glass overflow-hidden rounded-3xl">
+        <div className="saas-card overflow-hidden rounded-2xl">
           <div className="grid lg:grid-cols-2">
-            <div className="p-8 sm:p-12 lg:border-r lg:border-border">
-              <p className="section-heading text-sm font-medium uppercase tracking-wider text-accent">
-                Contact
-              </p>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+            <div className="p-8 sm:p-10 lg:border-r lg:border-border">
+              <p className="section-heading">Contact</p>
+              <h2 className="page-title mt-3">
                 Let&apos;s build together
               </h2>
               <p className="section-lead">
@@ -32,23 +30,23 @@ export function Contact() {
               </p>
               <a
                 href={`mailto:${siteConfig.contact.email}`}
-                className="mt-8 inline-flex items-center gap-2 text-accent hover:underline"
+                className="mt-8 inline-flex min-h-11 items-center gap-2 text-accent hover:underline"
               >
                 <Mail aria-hidden />
                 {siteConfig.contact.email}
               </a>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-8 sm:p-12">
+            <form onSubmit={handleSubmit} className="p-8 sm:p-10">
               {submitted ? (
-                <p className="text-center text-muted" role="status">
+                <p className="text-center leading-[1.7] text-muted" role="status">
                   Thanks! We&apos;ll get back to you soon. For urgent requests, email us
                   directly.
                 </p>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-5">
                   <div>
-                    <label htmlFor="name" className="mb-1.5 block text-sm font-medium">
+                    <label htmlFor="name" className="mb-2 block text-sm font-medium text-foreground">
                       Name
                     </label>
                     <input
@@ -60,7 +58,7 @@ export function Contact() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="email" className="mb-1.5 block text-sm font-medium">
+                    <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
                       Email
                     </label>
                     <input
@@ -73,7 +71,7 @@ export function Contact() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="message" className="mb-1.5 block text-sm font-medium">
+                    <label htmlFor="message" className="mb-2 block text-sm font-medium text-foreground">
                       Message
                     </label>
                     <textarea

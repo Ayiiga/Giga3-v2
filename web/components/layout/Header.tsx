@@ -17,26 +17,26 @@ export function Header() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-white py-3 shadow-sm">
-      <Container className="flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2.5 text-lg font-bold tracking-tight text-foreground">
-          <BrandLogo size={36} priority className="shadow-none ring-0" />
+    <header className="sticky top-0 z-50 border-b border-border bg-white/95 backdrop-blur-sm">
+      <Container className="flex min-h-14 items-center justify-between gap-4 py-2">
+        <Link href="/" className="flex items-center gap-2.5 text-base font-semibold tracking-tight text-foreground">
+          <BrandLogo size={32} priority className="shadow-none ring-0" />
           <span>{siteConfig.name}</span>
         </Link>
 
-        <nav className="hidden items-center gap-7 md:flex" aria-label="Main">
+        <nav className="hidden items-center gap-6 md:flex" aria-label="Main">
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-base font-semibold text-foreground hover:text-accent"
+              className="text-base font-medium text-muted hover:text-foreground"
             >
               {link.label}
             </a>
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-2 md:flex">
           <InstallButton size="sm" variant="ghost" />
           <ButtonLink href={siteConfig.links.login} variant="ghost" size="sm">
             Log in
@@ -59,12 +59,12 @@ export function Header() {
 
       {open && (
         <div className="border-t border-border bg-white md:hidden">
-          <Container className="grid grid-cols-1 gap-3 py-5">
+          <Container className="grid grid-cols-1 gap-1 py-3">
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
-                className="text-muted hover:text-foreground"
+                className="min-h-11 flex items-center px-2 text-base text-muted hover:text-foreground"
                 onClick={() => setOpen(false)}
               >
                 {link.label}

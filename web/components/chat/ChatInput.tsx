@@ -118,14 +118,17 @@ export const ChatInput = memo(function ChatInput({
   return (
     <form
       onSubmit={handleSubmit}
-      className="chat-composer border-t border-zinc-100 bg-zinc-50/80 px-3 py-3 sm:px-5 sm:py-4"
+      className="chat-composer px-4 py-4 sm:px-6"
     >
-      <div className="mx-auto max-w-3xl space-y-2">
+      <div className="chat-rail space-y-2">
         {notice && (
           <NoticeBanner message={notice} onDismiss={() => setNotice(null)} />
         )}
 
-        <div ref={composerRef} className="relative flex items-end gap-2">
+        <div
+          ref={composerRef}
+          className="relative flex items-end gap-2 rounded-2xl border border-border bg-zinc-50/80 p-2 shadow-sm"
+        >
           <ChatInputToolbar
             disabled={inputDisabled}
             expanded={toolbarOpen}
@@ -142,26 +145,26 @@ export const ChatInput = memo(function ChatInput({
             disabled={inputDisabled}
             rows={1}
             placeholder={placeholder}
-            className="max-h-36 min-h-[3rem] flex-1 resize-none overflow-y-auto rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-[0.9375rem] leading-snug text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 disabled:opacity-50 sm:min-h-[3.25rem] sm:px-5 sm:text-base"
+            className="max-h-40 min-h-11 flex-1 resize-none overflow-y-auto border-0 bg-transparent px-2 py-2.5 text-base leading-[1.7] text-foreground outline-none placeholder:text-muted focus:ring-0 disabled:opacity-50"
             aria-label="Chat message"
           />
 
           <Button
             type="submit"
             disabled={inputDisabled || !value.trim()}
-            size="lg"
-            className="min-h-12 min-w-12 shrink-0 rounded-2xl px-4 sm:min-h-[3.25rem] sm:min-w-[3.25rem]"
+            size="md"
+            className="min-h-11 min-w-11 shrink-0 rounded-xl px-3"
             aria-label="Send message"
           >
             <Send className="h-5 w-5" aria-hidden />
           </Button>
         </div>
 
-        <p className="text-center text-[11px] text-zinc-500 sm:text-xs">
+        <p className="text-center text-xs text-muted">
           Enter to send · Shift+Enter for new line ·{" "}
           <button
             type="button"
-            className="font-medium text-violet-700 underline-offset-2 hover:underline"
+            className="font-medium text-accent underline-offset-2 hover:underline"
             onClick={() => setToolbarOpen(true)}
           >
             Attach
@@ -183,12 +186,12 @@ function NoticeBanner({
   return (
     <div
       role="status"
-      className="flex items-start justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 sm:text-sm"
+      className="flex items-start justify-between gap-2 rounded-xl border border-amber-200/80 bg-amber-50 px-3 py-2 text-sm text-amber-900"
     >
       <span>{message}</span>
       <button
         type="button"
-        className="shrink-0 rounded-lg p-1.5 text-amber-800 hover:bg-amber-100"
+        className="touch-target shrink-0 rounded-lg text-amber-800 hover:bg-amber-100"
         aria-label="Dismiss notice"
         onClick={onDismiss}
       >

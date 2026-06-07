@@ -78,19 +78,19 @@ function ChatLoginFormInner() {
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col items-center justify-center px-4">
-      <div className="glass w-full max-w-md rounded-2xl p-8 sm:p-10">
-        <div className="mb-6 flex items-center justify-center gap-2">
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center px-4 py-12">
+      <div className="saas-card w-full max-w-md p-8 sm:p-10">
+        <div className="mb-6 flex flex-col items-center gap-3 text-center">
           <BrandLogo size={40} />
-          <h1 className="text-2xl font-bold text-foreground">Sign in to Giga3 AI</h1>
+          <h1 className="text-2xl font-semibold text-foreground">Sign in to Giga3 AI</h1>
         </div>
-        <p className="mb-8 text-center text-base font-medium text-foreground">
+        <p className="mb-8 text-center text-base leading-[1.7] text-muted">
           Sign up or log in with your email. Chats, credits, and subscriptions sync via
           {usingSupabase ? " Supabase." : " Convex."}
         </p>
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
           <div>
-            <label htmlFor="email" className="mb-1.5 block text-sm font-bold text-foreground">
+            <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
               Email
             </label>
             <input
@@ -104,8 +104,8 @@ function ChatLoginFormInner() {
               placeholder="you@example.com"
             />
           </div>
-          {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
-          {info && <p className="text-sm font-semibold text-emerald-700">{info}</p>}
+          {error && <p className="text-sm font-medium text-red-700">{error}</p>}
+          {info && <p className="text-sm font-medium text-emerald-700">{info}</p>}
           <Button type="submit" className="w-full" size="lg" disabled={submitting}>
             {submitting
               ? "Signing in…"
@@ -114,11 +114,11 @@ function ChatLoginFormInner() {
                 : "Continue"}
           </Button>
         </form>
-        <p className="mt-6 text-center text-[11px] leading-relaxed text-muted">
+        <p className="mt-6 text-center text-xs leading-[1.7] text-muted">
           A product of {siteConfig.founder.organizationShort} · Founded by{" "}
           {siteConfig.founder.name}, {siteConfig.founder.location}
         </p>
-        <p className="mt-6 text-center text-xs text-muted">
+        <p className="mt-6 text-center text-sm text-muted">
           <Link href="/pricing" className="text-accent hover:underline">
             View pricing
           </Link>

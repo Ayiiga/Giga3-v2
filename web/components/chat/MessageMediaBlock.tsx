@@ -39,7 +39,7 @@ function MediaActionButton({
       aria-label={label}
       title={label}
       onClick={onClick}
-      className="inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white px-2 py-1.5 text-xs font-semibold text-zinc-800 shadow-sm hover:bg-zinc-50 disabled:opacity-50"
+      className="touch-target rounded-lg border border-border bg-white px-2 text-sm font-medium text-foreground shadow-sm hover:bg-zinc-50 disabled:opacity-50"
     >
       {children}
     </button>
@@ -75,7 +75,7 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
 
   return (
     <div className={cn("mt-3 space-y-2", className)}>
-      <div className="aspect-video min-h-[12rem] w-full overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100">
+      <div className="aspect-video min-h-[12rem] w-full overflow-hidden rounded-xl border border-border bg-zinc-100">
         {kind === "image" ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -94,6 +94,8 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
             playsInline
             preload="metadata"
             className="h-full w-full bg-black object-contain"
+            width={640}
+            height={360}
           />
         )}
       </div>
@@ -120,7 +122,7 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
         >
           <Share2 className="h-4 w-4" aria-hidden />
         </MediaActionButton>
-        <span className="inline-flex items-center gap-1 text-xs text-zinc-600">
+        <span className="inline-flex items-center gap-1 text-xs text-muted">
           {kind === "image" ? (
             <ImageIcon className="h-3.5 w-3.5" aria-hidden />
           ) : (

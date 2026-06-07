@@ -51,13 +51,13 @@ export const ChatChrome = memo(function ChatChrome({
   const router = useRouter();
 
   const navLink =
-    "hidden rounded-lg px-2.5 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 sm:inline-flex sm:items-center sm:gap-1.5";
+    "hidden min-h-11 items-center rounded-lg px-3 text-sm font-medium text-muted hover:bg-zinc-100 hover:text-foreground sm:inline-flex sm:gap-1.5";
 
   return (
-    <header className="chat-header-stable flex min-h-[3.5rem] flex-wrap items-center gap-2 border-b border-zinc-200/90 bg-white px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
+    <header className="chat-header-stable flex min-h-14 flex-wrap items-center gap-2 border-b border-border bg-white px-4 py-2 sm:gap-3">
       <button
         type="button"
-        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-zinc-700 hover:bg-zinc-100 lg:hidden"
+        className="touch-target rounded-xl text-foreground hover:bg-zinc-100 lg:hidden"
         onClick={onOpenSidebar}
         aria-label="Open sidebar"
       >
@@ -66,14 +66,14 @@ export const ChatChrome = memo(function ChatChrome({
 
       <Link
         href="/"
-        className="flex min-w-0 items-center gap-2 text-sm font-semibold tracking-tight text-zinc-900 sm:text-base"
+        className="flex min-w-0 items-center gap-2 text-base font-semibold tracking-tight text-foreground"
       >
         <BrandLogo size={28} className="!h-7 !w-7 shrink-0" />
         <span className="truncate">{siteConfig.name}</span>
       </Link>
 
       {conversationTitle && (
-        <span className="hidden max-w-[8rem] truncate text-xs text-zinc-500 md:inline lg:max-w-xs">
+        <span className="hidden max-w-[8rem] truncate text-sm text-muted md:inline lg:max-w-xs">
           {conversationTitle}
         </span>
       )}
@@ -91,7 +91,7 @@ export const ChatChrome = memo(function ChatChrome({
         </Link>
       </nav>
 
-      <span className="ml-auto flex items-center gap-2 sm:gap-2.5">
+      <span className="ml-auto flex items-center gap-2">
         <ChatActionsMenu
           messages={messages}
           conversationTitle={conversationTitle}
@@ -117,7 +117,7 @@ export const ChatChrome = memo(function ChatChrome({
           }
           router.push("/chat/login");
         }}
-        className="rounded-lg px-2.5 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+        className="min-h-11 rounded-lg px-3 text-sm font-medium text-muted hover:bg-zinc-100 hover:text-foreground"
       >
         Sign out
       </button>

@@ -30,7 +30,7 @@ export class MediaErrorBoundary extends Component<{ children: ReactNode }, State
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <button
               type="button"
-              className="rounded-xl bg-btn-primary px-6 py-3 text-base font-semibold text-white shadow-btn-primary"
+              className="min-h-11 rounded-xl bg-accent px-6 py-3 text-base font-medium text-accent-foreground shadow-sm"
               onClick={() => this.setState({ error: null })}
             >
               Try again

@@ -20,8 +20,8 @@ export default function PricingPage() {
     <div className="section-padding pt-28">
       <Container>
         <div className="mx-auto max-w-2xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight">Pricing</h1>
-          <p className="mt-4 text-muted">
+          <h1 className="hero-title">Pricing</h1>
+          <p className="mt-4 text-base leading-[1.7] text-muted">
             Pay in <strong className="text-foreground">Ghana Cedis (GHS)</strong> via
             Paystack. Subscription credits refill every billing period.
           </p>
