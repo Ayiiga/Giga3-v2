@@ -71,7 +71,7 @@ function CreditsPageClientInner() {
             key={pack.id}
             className={cn(
               "glass flex flex-col rounded-2xl p-8",
-              pack.highlighted && "border-violet-500/40"
+              pack.highlighted && "border-accent/30"
             )}
           >
             <h3 className="font-semibold">{pack.label}</h3>

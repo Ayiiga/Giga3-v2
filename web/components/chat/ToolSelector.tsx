@@ -50,11 +50,11 @@ export function ToolSelector({
       )}
     >
       {!embedded && (
-        <label className="mb-3 block text-sm font-bold uppercase tracking-wider text-muted">
+        <label className="mb-3 block text-sm font-semibold uppercase tracking-wider text-muted">
           AI mode
         </label>
       )}
-      <div className="grid auto-cols-[minmax(160px,1fr)] grid-flow-col gap-3 overflow-x-auto pb-1 scrollbar-thin">
+      <div className="grid auto-cols-[minmax(160px,1fr)] grid-flow-col gap-2 overflow-x-auto pb-1">
         {AI_MODE_DEFINITIONS.map((mode) => {
           const Icon = ICONS[mode.icon] ?? MessageCircle;
           const active = value === mode.id;
@@ -66,18 +66,18 @@ export function ToolSelector({
               onClick={() => onChange(mode.id)}
               title={mode.description}
               className={cn(
-                "saas-card flex min-h-[3.75rem] shrink-0 items-center gap-3 px-4 py-3.5 text-left transition-all",
+                "saas-card flex min-h-11 shrink-0 items-center gap-3 px-4 py-3 text-left",
                 active
-                  ? "border-violet-500/50 bg-gradient-to-br from-violet-600/25 to-blue-600/15 text-foreground shadow-lg shadow-violet-500/15 ring-1 ring-violet-500/40"
-                  : "text-muted hover:border-violet-500/30 hover:text-foreground",
+                  ? "border-accent/40 bg-accent-subtle text-foreground ring-1 ring-accent/25"
+                  : "text-muted hover:border-accent/20 hover:bg-zinc-50 hover:text-foreground",
                 disabled && "pointer-events-none opacity-50"
               )}
             >
               <Icon
-                className={cn("h-7 w-7 shrink-0", active ? "text-violet-300" : "text-blue-400")}
+                className={cn("h-5 w-5 shrink-0", active ? "text-accent" : "text-muted")}
                 aria-hidden
               />
-              <span className="text-base font-semibold whitespace-nowrap">{mode.label}</span>
+              <span className="text-sm font-medium whitespace-nowrap">{mode.label}</span>
             </button>
           );
         })}

@@ -33,7 +33,7 @@ export function MultiChat() {
           <p className="section-heading text-sm font-medium uppercase tracking-wider text-accent">
             Multi-provider AI
           </p>
-          <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 className="page-title mt-4">
             Chat that keeps going when one AI fails
           </h2>
           <p className="section-lead">
@@ -49,7 +49,7 @@ export function MultiChat() {
             return (
               <article
                 key={step.title}
-                className="glass relative rounded-2xl p-8 transition hover:border-violet-500/30"
+                className="glass relative rounded-2xl p-8 hover:border-accent/20"
               >
                 <span className="absolute right-4 top-4 text-xs font-mono text-muted">
                   {String(i + 1).padStart(2, "0")}

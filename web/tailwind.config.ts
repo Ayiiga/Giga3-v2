@@ -8,7 +8,10 @@ const config: Config = {
   theme: {
     extend: {
       fontSize: {
-        base: ["1.125rem", { lineHeight: "1.75rem" }],
+        base: ["1rem", { lineHeight: "1.7" }],
+      },
+      maxWidth: {
+        chat: "50rem",
       },
       colors: {
         background: "var(--background)",
@@ -16,30 +19,28 @@ const config: Config = {
         muted: "var(--muted)",
         accent: "var(--accent)",
         "accent-foreground": "var(--accent-foreground)",
+        "accent-muted": "var(--accent-muted)",
+        "accent-subtle": "var(--accent-subtle)",
         card: "var(--card)",
         border: "var(--border)",
       },
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
         mono: ["var(--font-geist-mono)", "monospace"],
       },
       backgroundImage: {
-        "grid-pattern":
-          "linear-gradient(to right, rgba(124, 92, 255, 0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(124, 92, 255, 0.06) 1px, transparent 1px)",
-        "hero-glow":
-          "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124, 92, 255, 0.35), transparent)",
-        "btn-primary":
-          "linear-gradient(135deg, #2563eb 0%, #3b82f6 45%, #60a5fa 100%)",
+        "btn-primary": "none",
         "btn-image":
           "linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%)",
         "btn-video":
           "linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #f87171 100%)",
       },
       boxShadow: {
-        "btn-primary": "0 10px 28px -6px rgba(37, 99, 235, 0.55)",
-        "btn-image": "0 10px 28px -6px rgba(16, 185, 129, 0.45)",
-        "btn-video": "0 10px 28px -6px rgba(239, 68, 68, 0.45)",
-        premium: "0 20px 50px -12px rgba(124, 92, 255, 0.25)",
+        "btn-primary": "0 4px 14px -2px rgba(91, 33, 182, 0.35)",
+        "btn-image": "0 4px 14px -2px rgba(16, 185, 129, 0.3)",
+        "btn-video": "0 4px 14px -2px rgba(239, 68, 68, 0.3)",
+        subtle: "0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.04)",
+        premium: "0 8px 30px -8px rgba(91, 33, 182, 0.2)",
       },
       animation: {
         "fade-in": "fadeIn 0.5s ease-out forwards",

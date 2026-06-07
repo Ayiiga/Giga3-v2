@@ -21,10 +21,10 @@ function UserLearningBannerInner({
 
   return (
     <div
-      className="flex items-center gap-2 border-b border-violet-100 bg-violet-50/50 px-3 py-1.5 text-[11px] text-violet-900/90 sm:px-4 sm:text-xs"
+      className="flex items-center gap-2 border-b border-accent/15 bg-accent-subtle/50 px-4 py-2 text-xs text-accent sm:text-sm"
       role="status"
     >
-      <Sparkles className="h-3.5 w-3.5 shrink-0 text-violet-500" aria-hidden />
+      <Sparkles className="h-3.5 w-3.5 shrink-0 text-accent" aria-hidden />
       <p className="min-w-0 truncate leading-snug">
         <span className="font-semibold">Personalized</span>
         <span className="text-violet-800/80"> · {summary}</span>

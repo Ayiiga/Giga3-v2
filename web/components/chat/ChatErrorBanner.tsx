@@ -8,8 +8,8 @@ export function ChatErrorBanner({ message }: { message: string }) {
     message.toLowerCase().includes("credits");
 
   return (
-    <div className="border-b border-red-500/30 bg-red-950/40 px-4 py-3 text-sm text-red-200">
-      <p>{message}</p>
+    <div className="border-b border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+      <p className="leading-[1.7]">{message}</p>
       {lowCredits && (
         <p className="mt-2">
           <Link href="/pricing" className="font-medium text-accent underline">
