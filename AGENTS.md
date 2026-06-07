@@ -14,10 +14,20 @@
 
 - Install root: `npm ci --legacy-peer-deps`
 - Install web: `cd web && npm install --legacy-peer-deps`
-- Lint: `npm run lint` (runs `web` ESLint)
-- Build: `npm run build` (static export to `web/out`)
-- Convex codegen: `npx convex codegen`
+- Lint: `cd web && npm run lint`
+- Build: `cd web && npm run build` (static export to `web/out`)
+- Dev server: `cd web && npm run dev` → `http://localhost:3000`
+- Convex codegen: `CONVEX_DEPLOY_KEY="$CONVEX_DEPLOYMENT_VALUE" npx convex codegen` (or `npx convex dev` locally)
 - Convex deploy: `npx convex deploy --yes` (requires `CONVEX_DEPLOY_KEY`)
+
+### Local dev quick start
+
+1. Install deps (above).
+2. Copy `web/.env.local.example` → `web/.env.local`. For Cloud Agents without `npx convex dev`, point at production:
+   - `NEXT_PUBLIC_CONVEX_URL=https://perfect-lark-521.convex.cloud`
+   - `NEXT_PUBLIC_CONVEX_SITE_URL=https://perfect-lark-521.convex.site`
+3. `cd web && npm run dev` — chat login at `/chat/login/` (email in `localStorage`; calls `users:createUser` on Convex).
+4. No automated test suite in root (`npm test` exits 1). Playwright is in `web/` devDeps; install browsers once with `cd web && npx playwright install chromium`.
 
 ### Build-time env (web)
 
@@ -40,7 +50,7 @@ Set in `web/.env.local` or CI secrets:
 Production deployment: **`perfect-lark-521`** (`https://perfect-lark-521.convex.cloud`).
 
 - `users:getUser` is a **public query** in `convex/users.ts`. If the client reports it is missing, production has not received a successful deploy.
-- This Cloud Agent VM often **cannot** reach `api.convex.dev` or `*.convex.cloud` (TLS). Use GitHub Actions **Deploy Convex backend** or a local machine for codegen/deploy.
+- If `npx convex codegen` fails with “No CONVEX_DEPLOYMENT set”, export `CONVEX_DEPLOY_KEY` from the `CONVEX_DEPLOYMENT_VALUE` secret (same value as CI). Some Cloud Agent VMs cannot reach `api.convex.dev` (TLS); use GitHub Actions **Deploy Convex backend** when deploy fails.
 - If CI fails in ~20s at **Deploy to Convex** after key format validation passes, regenerate `CONVEX_DEPLOY_KEY` (`prod:perfect-lark-521|…`) in Convex Dashboard → production → Settings → Deploy key.
 
 ### Chat UI stability
