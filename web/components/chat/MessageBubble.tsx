@@ -1,5 +1,6 @@
 "use client";
 
+import { MessageBubbleActions } from "@/components/chat/MessageBubbleActions";
 import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
 import { MessageMarkdown } from "@/components/chat/MessageMarkdown";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
@@ -45,7 +46,7 @@ export const MessageBubble = memo(function MessageBubble({
   return (
     <div
       className={cn(
-        "flex w-full gap-3 py-1",
+        "group flex w-full gap-3 py-1",
         isUser ? "flex-row-reverse" : "flex-row"
       )}
     >
@@ -99,6 +100,11 @@ export const MessageBubble = memo(function MessageBubble({
             </p>
           )}
         </div>
+        <MessageBubbleActions
+          role={role}
+          content={content}
+          disabled={pending}
+        />
       </div>
     </div>
   );
