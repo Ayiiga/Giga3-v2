@@ -3,6 +3,7 @@
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ChatBanners } from "@/components/chat/ChatBanners";
 import { ChatChrome } from "@/components/chat/ChatChrome";
+import type { ChatActionsMenuHandle } from "@/components/chat/ChatActionsMenu";
 import { ChatConversationPane } from "@/components/chat/ChatConversationPane";
 import { ChatErrorBanner } from "@/components/chat/ChatErrorBanner";
 import { ChatWorkspacePanel } from "@/components/chat/ChatWorkspacePanel";
@@ -10,6 +11,7 @@ import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { useChatPlatform } from "@/hooks/useChatPlatform";
 import { useSupabaseChatPlatform } from "@/hooks/useSupabaseChatPlatform";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
+import { useChatShareShortcuts } from "@/hooks/useChatShareShortcuts";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
@@ -69,6 +71,7 @@ function ChatShellInner({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [templateNotice, setTemplateNotice] = useState<string | null>(null);
   const insertRef = useRef<((text: string) => void) | null>(null);
+  const chatActionsRef = useRef<ChatActionsMenuHandle | null>(null);
 
   const {
     email,
@@ -156,6 +159,21 @@ function ChatShellInner({
     return makeSetPublicShare(activeId, email);
   }, [makeSetPublicShare, activeId, email]);
 
+  const handleShortcutCopyChat = useCallback(() => {
+    void chatActionsRef.current?.copyChat();
+  }, []);
+
+  const handleShortcutShareChat = useCallback(() => {
+    void chatActionsRef.current?.shareChat();
+  }, []);
+
+  useChatShareShortcuts({
+    enabled: mounted && Boolean(email),
+    hasMessages: messages.length > 0,
+    onCopyChat: handleShortcutCopyChat,
+    onShareChat: handleShortcutShareChat,
+  });
+
   useEffect(() => {
     if (mounted && !email) router.replace("/chat/login");
   }, [mounted, email, router]);
@@ -199,6 +217,7 @@ function ChatShellInner({
           credits={credits}
           onOpenSidebar={handleOpenSidebar}
           onSetPublicShare={onSetPublicShare}
+          chatActionsRef={chatActionsRef}
         />
 
         <ChatBanners

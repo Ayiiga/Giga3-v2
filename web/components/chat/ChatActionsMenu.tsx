@@ -32,7 +32,12 @@ import {
   Printer,
   Share2,
 } from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, forwardRef } from "react";
+
+export type ChatActionsMenuHandle = {
+  copyChat: () => Promise<void>;
+  shareChat: () => Promise<void>;
+};
 
 interface ChatActionsMenuProps {
   messages: UiMessage[];
@@ -48,7 +53,9 @@ interface ChatActionsMenuProps {
   ) => Promise<{ shareToken: string | null; sharePublic: boolean }>;
 }
 
-export const ChatActionsMenu = memo(function ChatActionsMenu({
+export const ChatActionsMenu = memo(
+  forwardRef<ChatActionsMenuHandle, ChatActionsMenuProps>(function ChatActionsMenu(
+  {
   messages,
   conversationTitle,
   conversationId,
@@ -58,14 +65,16 @@ export const ChatActionsMenu = memo(function ChatActionsMenu({
   disabled,
   className,
   onSetPublicShare,
-}: ChatActionsMenuProps) {
+  },
+  ref
+) {
   const [open, setOpen] = useState(false);
   const [localShareToken, setLocalShareToken] = useState<string | null>(
     shareToken ?? null
   );
   const [localSharePublic, setLocalSharePublic] = useState(Boolean(sharePublic));
   const rootRef = useRef<HTMLDivElement>(null);
-  const { feedback, runAction } = useShareAction();
+  const { feedback, runAction, busy } = useShareAction();
 
   useEffect(() => {
     setLocalShareToken(shareToken ?? null);
@@ -213,6 +222,15 @@ export const ChatActionsMenu = memo(function ChatActionsMenu({
 
   const canManageShareLink = Boolean(conversationId && email && onSetPublicShare);
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      copyChat: runCopy,
+      shareChat: runShare,
+    }),
+    [runCopy, runShare]
+  );
+
   return (
     <div ref={rootRef} className={cn("relative", className)}>
       <button
@@ -220,7 +238,7 @@ export const ChatActionsMenu = memo(function ChatActionsMenu({
         disabled={disabled || empty}
         aria-expanded={open}
         aria-haspopup="menu"
-        aria-label="Chat share and export"
+        aria-label="Chat share and export. Shortcuts: Ctrl+Shift+C copy chat, Ctrl+Shift+S share chat"
         onClick={() => setOpen((v) => !v)}
         className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-white px-3 text-sm font-medium text-foreground shadow-sm hover:bg-zinc-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
       >
@@ -235,15 +253,16 @@ export const ChatActionsMenu = memo(function ChatActionsMenu({
           aria-label="Chat actions"
           className="absolute right-0 top-full z-50 mt-2 w-60 rounded-xl border border-border bg-white py-1 shadow-lg"
         >
-          <MenuItem icon={Copy} label="Copy chat" onClick={() => void runCopy()} />
-          <MenuItem icon={Share2} label="Share chat" onClick={() => void runShare()} />
+          <MenuItem icon={Copy} label="Copy chat" disabled={busy} onClick={() => void runCopy()} />
+          <MenuItem icon={Share2} label="Share chat" disabled={busy} onClick={() => void runShare()} />
           <MenuItem
             icon={FileText}
             label="Export chat (Markdown)"
+            disabled={busy}
             onClick={runExportMarkdown}
           />
-          <MenuItem icon={FileText} label="Export chat (TXT)" onClick={runExportTxt} />
-          <MenuItem icon={Printer} label="Export chat (PDF)" onClick={() => void runExportPdf()} />
+          <MenuItem icon={FileText} label="Export chat (TXT)" disabled={busy} onClick={runExportTxt} />
+          <MenuItem icon={Printer} label="Export chat (PDF)" disabled={busy} onClick={() => void runExportPdf()} />
           {canManageShareLink && (
             <>
               <div className="my-1 border-t border-border" role="separator" />
@@ -269,22 +288,26 @@ export const ChatActionsMenu = memo(function ChatActionsMenu({
       <ShareActionFeedback feedback={feedback} align="end" className="right-0" />
     </div>
   );
-});
+})
+);
 
 function MenuItem({
   icon: Icon,
   label,
   onClick,
+  disabled,
 }: {
   icon: typeof Copy;
   label: string;
   onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       role="menuitem"
-      className="flex min-h-11 w-full items-center gap-2 px-3 text-left text-sm text-foreground hover:bg-zinc-50 focus-visible:bg-zinc-50 focus-visible:outline-none"
+      disabled={disabled}
+      className="flex min-h-11 w-full items-center gap-2 px-3 text-left text-sm text-foreground hover:bg-zinc-50 focus-visible:bg-zinc-50 focus-visible:outline-none disabled:opacity-50"
       onClick={onClick}
     >
       <Icon className="h-4 w-4 shrink-0 text-accent" aria-hidden />

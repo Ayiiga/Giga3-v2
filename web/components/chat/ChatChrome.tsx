@@ -1,6 +1,6 @@
 "use client";
 
-import { ChatActionsMenu } from "@/components/chat/ChatActionsMenu";
+import { ChatActionsMenu, type ChatActionsMenuHandle } from "@/components/chat/ChatActionsMenu";
 import { ChatDateTimeLabel } from "@/components/chat/ChatDateTimeLabel";
 import type { UiMessage } from "@/components/chat/MessageList";
 import { CreditBadge } from "@/components/billing/CreditBadge";
@@ -13,7 +13,7 @@ import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Menu, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { memo } from "react";
+import { memo, type RefObject } from "react";
 
 interface ChatChromeProps {
   email: string;
@@ -29,6 +29,7 @@ interface ChatChromeProps {
   onSetPublicShare?: (
     enabled: boolean
   ) => Promise<{ shareToken: string | null; sharePublic: boolean }>;
+  chatActionsRef?: RefObject<ChatActionsMenuHandle | null>;
 }
 
 function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean {
@@ -43,7 +44,8 @@ function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean
     prev.isSending === next.isSending &&
     prev.credits === next.credits &&
     prev.onOpenSidebar === next.onOpenSidebar &&
-    prev.onSetPublicShare === next.onSetPublicShare
+    prev.onSetPublicShare === next.onSetPublicShare &&
+    prev.chatActionsRef === next.chatActionsRef
   );
 }
 
@@ -59,6 +61,7 @@ export const ChatChrome = memo(function ChatChrome({
   credits,
   onOpenSidebar,
   onSetPublicShare,
+  chatActionsRef,
 }: ChatChromeProps) {
   useRenderDiagnostic("ChatChrome");
 
@@ -107,6 +110,7 @@ export const ChatChrome = memo(function ChatChrome({
 
       <span className="ml-auto flex items-center gap-2">
         <ChatActionsMenu
+          ref={chatActionsRef}
           messages={messages}
           conversationTitle={conversationTitle}
           conversationId={conversationId}
