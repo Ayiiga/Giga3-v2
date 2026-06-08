@@ -4,6 +4,7 @@ import { action } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import { completeChatWithFailover, trimChatMessages } from "./chatEngine";
+import { getSystemPrompt } from "./aiModes";
 
 export const askAI = action({
   args: {
@@ -26,7 +27,13 @@ export const askAI = action({
     }
 
     const engineResult = await completeChatWithFailover(
-      trimChatMessages([{ role: "user", content: message }], 4)
+      trimChatMessages(
+        [
+          { role: "system", content: getSystemPrompt("general") },
+          { role: "user", content: message },
+        ],
+        4
+      )
     );
 
     const aiContent = engineResult.content;

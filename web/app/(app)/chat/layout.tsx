@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Chat",
-  description: "Giga3 AI — ChatGPT-style assistant with specialized tools",
+  description: "Giga3 AI — advanced AI for learning, research, coding, creativity, and productivity",
 };
 
 export default function ChatLayout({

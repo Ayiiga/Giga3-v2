@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getSystemPrompt, isValidMode } from "./aiModes";
+import { isValidMode } from "./aiModes";
 import { normalizeUserId } from "./userIds";
 
 async function listConversationsForUser(ctx: { db: any }, userId: string) {

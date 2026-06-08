@@ -2,6 +2,7 @@
 
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import { DOCUMENT_TEMPLATES } from "@/lib/chat/documentTemplates";
+import { GIGA3_CHAT_WELCOME } from "@/lib/assistantIdentity";
 import { formatCurrentDate, resolveTemplatePlaceholders } from "@/lib/datetime";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { useScrollToLatestMessage } from "@/hooks/useScrollToLatestMessage";
@@ -78,7 +79,7 @@ function MessageListInner({
               </p>
             )}
             <p className="mt-4 max-w-md text-base leading-[1.7] text-muted">
-              Ask anything, pick a template from the workspace above, or use{" "}
+              {GIGA3_CHAT_WELCOME} Pick a template from the workspace above, or use{" "}
               <span className="font-medium text-foreground">Attach</span> to add files.
               Chats save automatically.
             </p>
