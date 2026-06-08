@@ -116,7 +116,8 @@ function ChatLoginFormInner() {
         </form>
         <p className="mt-6 text-center text-xs leading-[1.7] text-muted">
           A product of {siteConfig.founder.organizationShort} · Founded by{" "}
-          {siteConfig.founder.name}, {siteConfig.founder.location}
+          {siteConfig.founder.name} ({siteConfig.founder.alias}),{" "}
+          {siteConfig.founder.location}
         </p>
         <p className="mt-6 text-center text-sm text-muted">
           <Link href="/pricing" className="text-accent hover:underline">

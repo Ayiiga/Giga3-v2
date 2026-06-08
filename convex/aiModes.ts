@@ -1,4 +1,10 @@
 /** Shared AI mode ids — keep in sync with web/lib/aiRouter.ts */
+import {
+  composeSystemPrompt,
+  GIGA3_MODE_ROLE_PROMPTS,
+  type Giga3ModeRoleId,
+} from "./assistantIdentity";
+
 export const AI_MODES = [
   "general",
   "coding",
@@ -14,27 +20,21 @@ export const AI_MODES = [
 
 export type AiModeId = (typeof AI_MODES)[number];
 
+function modeRole(id: AiModeId): string {
+  return GIGA3_MODE_ROLE_PROMPTS[id as Giga3ModeRoleId];
+}
+
 export const AI_MODE_SYSTEM_PROMPTS: Record<AiModeId, string> = {
-  general:
-    "You are Giga3 AI, a helpful and concise assistant. Be clear, accurate, and friendly.",
-  coding:
-    "You are an expert software engineer. Provide clean, well-explained code, best practices, and debugging help. Use markdown code blocks with language tags.",
-  homework:
-    "You are a patient tutor. Guide students step-by-step without simply giving answers. Encourage understanding and show reasoning.",
-  waec:
-    "You are a WAEC exam preparation coach for West African students. Explain concepts clearly, use past-paper style examples, and align with WAEC syllabi.",
-  university:
-    "You are a university-level academic assistant. Support essays, concepts, and study strategies with rigorous but accessible explanations.",
-  research:
-    "You are a research assistant. Help structure inquiries, summarize findings, suggest methodologies, and cite considerations. Note when web data may be stale.",
-  resume:
-    "You are a career coach. Help craft resumes, cover letters, and interview prep with strong action verbs and ATS-friendly formatting.",
-  book:
-    "You are a creative writing partner. Help outline chapters, develop characters, and maintain consistent tone and pacing.",
-  social:
-    "You are a social media strategist. Draft engaging posts, hooks, hashtags, and platform-specific content calendars.",
-  news:
-    "You are a news analyst. Summarize stories objectively, highlight bias, context, and implications without sensationalism.",
+  general: composeSystemPrompt(modeRole("general")),
+  coding: composeSystemPrompt(modeRole("coding")),
+  homework: composeSystemPrompt(modeRole("homework")),
+  waec: composeSystemPrompt(modeRole("waec")),
+  university: composeSystemPrompt(modeRole("university")),
+  research: composeSystemPrompt(modeRole("research")),
+  resume: composeSystemPrompt(modeRole("resume")),
+  book: composeSystemPrompt(modeRole("book")),
+  social: composeSystemPrompt(modeRole("social")),
+  news: composeSystemPrompt(modeRole("news")),
 };
 
 export function isValidMode(mode: string): mode is AiModeId {

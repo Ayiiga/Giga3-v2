@@ -2,10 +2,11 @@ export const siteConfig = {
   name: "Giga3 AI",
   tagline: "Intelligent conversations at scale",
   description:
-    "Giga3 AI is a modern AI platform from Ghana for fast, secure chat, writing, and media—built for learners, educators, and creators.",
+    "Giga3 AI is an advanced artificial intelligence platform from Ghana for learning, research, coding, creativity, productivity, content creation, and problem-solving.",
   url: "https://www.giga3ai.com",
   founder: {
     name: "Ayiiga Benard Issaka",
+    alias: "Young Anointed",
     location: "Ghana",
     role: "Basic school educationist",
     organization: "Intelligence Global Arena (GIGA)",
