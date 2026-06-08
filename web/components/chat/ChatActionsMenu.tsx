@@ -104,7 +104,7 @@ export const ChatActionsMenu = memo(function ChatActionsMenu({
         className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-white px-3 text-sm font-medium text-foreground shadow-sm hover:bg-zinc-50 disabled:opacity-50"
       >
         <Share2 className="h-4 w-4" aria-hidden />
-        <span className="hidden sm:inline">Actions</span>
+        <span className="hidden sm:inline">Share</span>
         <ChevronDown className="h-4 w-4 opacity-60" aria-hidden />
       </button>
 
