@@ -120,3 +120,55 @@ export const touch = mutation({
     await ctx.db.patch(args.conversationId, { updatedAt: Date.now() });
   },
 });
+
+function generateShareToken(): string {
+  const bytes = new Uint8Array(12);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+export const setPublicShare = mutation({
+  args: {
+    conversationId: v.id("conversations"),
+    userId: v.string(),
+    enabled: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const conv = await ctx.db.get(args.conversationId);
+    if (!userOwnsConversation(conv, args.userId)) throw new Error("Not found");
+    if (args.enabled) {
+      const token = conv?.shareToken?.trim() || generateShareToken();
+      await ctx.db.patch(args.conversationId, {
+        sharePublic: true,
+        shareToken: token,
+        updatedAt: Date.now(),
+      });
+      return { shareToken: token, sharePublic: true as const };
+    }
+    await ctx.db.patch(args.conversationId, {
+      sharePublic: false,
+      shareToken: undefined,
+      updatedAt: Date.now(),
+    });
+    return { shareToken: null, sharePublic: false as const };
+  },
+});
+
+export const getPublicByShareToken = query({
+  args: { token: v.string() },
+  handler: async (ctx, args) => {
+    const token = args.token.trim();
+    if (!token) return null;
+    const conv = await ctx.db
+      .query("conversations")
+      .withIndex("by_share_token", (q) => q.eq("shareToken", token))
+      .first();
+    if (!conv?.sharePublic) return null;
+    return {
+      title: conv.title,
+      mode: conv.mode,
+      createdAt: conv.createdAt,
+      updatedAt: conv.updatedAt,
+    };
+  },
+});

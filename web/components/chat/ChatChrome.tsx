@@ -20,9 +20,15 @@ interface ChatChromeProps {
   mounted: boolean;
   messages: UiMessage[];
   conversationTitle?: string;
+  conversationId?: string | null;
+  sharePublic?: boolean;
+  shareToken?: string | null;
   isSending: boolean;
   credits: number | null;
   onOpenSidebar: () => void;
+  onSetPublicShare?: (
+    enabled: boolean
+  ) => Promise<{ shareToken: string | null; sharePublic: boolean }>;
 }
 
 function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean {
@@ -31,9 +37,13 @@ function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean
     prev.mounted === next.mounted &&
     prev.messages === next.messages &&
     prev.conversationTitle === next.conversationTitle &&
+    prev.conversationId === next.conversationId &&
+    prev.sharePublic === next.sharePublic &&
+    prev.shareToken === next.shareToken &&
     prev.isSending === next.isSending &&
     prev.credits === next.credits &&
-    prev.onOpenSidebar === next.onOpenSidebar
+    prev.onOpenSidebar === next.onOpenSidebar &&
+    prev.onSetPublicShare === next.onSetPublicShare
   );
 }
 
@@ -42,9 +52,13 @@ export const ChatChrome = memo(function ChatChrome({
   email,
   messages,
   conversationTitle,
+  conversationId,
+  sharePublic,
+  shareToken,
   isSending,
   credits,
   onOpenSidebar,
+  onSetPublicShare,
 }: ChatChromeProps) {
   useRenderDiagnostic("ChatChrome");
 
@@ -95,8 +109,12 @@ export const ChatChrome = memo(function ChatChrome({
         <ChatActionsMenu
           messages={messages}
           conversationTitle={conversationTitle}
+          conversationId={conversationId}
+          sharePublic={sharePublic}
+          shareToken={shareToken}
           email={email}
           disabled={isSending}
+          onSetPublicShare={onSetPublicShare}
         />
         <ChatDateTimeLabel />
         {credits != null && (
