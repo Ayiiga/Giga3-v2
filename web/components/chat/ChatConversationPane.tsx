@@ -12,6 +12,7 @@ interface ChatConversationPaneProps {
   insertRef: MutableRefObject<((text: string) => void) | null>;
   onSend: (msg: string) => void;
   onInsertTemplate: (text: string) => void;
+  onRegenerate?: (messageId: string) => void;
 }
 
 function panePropsEqual(
@@ -24,6 +25,7 @@ function panePropsEqual(
     prev.messages === next.messages &&
     prev.onSend === next.onSend &&
     prev.onInsertTemplate === next.onInsertTemplate &&
+    prev.onRegenerate === next.onRegenerate &&
     prev.insertRef === next.insertRef
   );
 }
@@ -36,6 +38,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   insertRef,
   onSend,
   onInsertTemplate,
+  onRegenerate,
 }: ChatConversationPaneProps) {
   return (
     <>
@@ -43,6 +46,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         messages={messages}
         isLoading={isLoading}
         onInsertTemplate={onInsertTemplate}
+        onRegenerate={onRegenerate}
       />
       <ChatTypingBar visible={isSending} />
       <ChatInput insertRef={insertRef} onSend={onSend} disabled={isSending} />

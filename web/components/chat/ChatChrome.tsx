@@ -2,16 +2,16 @@
 
 import { ChatActionsMenu, type ChatActionsMenuHandle } from "@/components/chat/ChatActionsMenu";
 import { ChatDateTimeLabel } from "@/components/chat/ChatDateTimeLabel";
+import { ModelSelector } from "@/components/chat/ModelSelector";
+import { ThemeToggle } from "@/components/chat/ThemeToggle";
 import type { UiMessage } from "@/components/chat/MessageList";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { clearUserEmail } from "@/lib/auth";
+import type { GigaModelId } from "@/lib/chat/gigaModels";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { signOutSupabase } from "@/lib/supabase/auth";
-import { siteConfig } from "@/lib/site";
-import { BrandLogo } from "@/components/brand/BrandLogo";
-import { Menu, Sparkles } from "lucide-react";
-import Link from "next/link";
+import { Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo, type RefObject } from "react";
 
@@ -25,6 +25,8 @@ interface ChatChromeProps {
   shareToken?: string | null;
   isSending: boolean;
   credits: number | null;
+  modelTier: GigaModelId;
+  onModelTierChange: (id: GigaModelId) => void;
   onOpenSidebar: () => void;
   onSetPublicShare?: (
     enabled: boolean
@@ -43,13 +45,14 @@ function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean
     prev.shareToken === next.shareToken &&
     prev.isSending === next.isSending &&
     prev.credits === next.credits &&
+    prev.modelTier === next.modelTier &&
+    prev.onModelTierChange === next.onModelTierChange &&
     prev.onOpenSidebar === next.onOpenSidebar &&
     prev.onSetPublicShare === next.onSetPublicShare &&
     prev.chatActionsRef === next.chatActionsRef
   );
 }
 
-/** Header + credits — subscribes to getChatCredits only (not interestProfile). */
 export const ChatChrome = memo(function ChatChrome({
   email,
   messages,
@@ -59,6 +62,8 @@ export const ChatChrome = memo(function ChatChrome({
   shareToken,
   isSending,
   credits,
+  modelTier,
+  onModelTierChange,
   onOpenSidebar,
   onSetPublicShare,
   chatActionsRef,
@@ -67,48 +72,35 @@ export const ChatChrome = memo(function ChatChrome({
 
   const router = useRouter();
 
-  const navLink =
-    "hidden min-h-11 items-center rounded-lg px-3 text-sm font-medium text-muted hover:bg-zinc-100 hover:text-foreground sm:inline-flex sm:gap-1.5";
-
   return (
-    <header className="chat-header-stable flex min-h-14 flex-wrap items-center gap-2 border-b border-border bg-white px-4 py-2 sm:gap-3">
+    <header className="chat-header-stable flex min-h-14 flex-wrap items-center gap-2 border-b border-border bg-card px-3 py-2 sm:gap-3 sm:px-4">
       <button
         type="button"
-        className="touch-target rounded-xl text-foreground hover:bg-zinc-100 lg:hidden"
+        className="touch-target rounded-xl text-foreground hover:bg-accent/10 lg:hidden"
         onClick={onOpenSidebar}
         aria-label="Open sidebar"
       >
         <Menu className="h-5 w-5" aria-hidden />
       </button>
 
-      <Link
-        href="/"
-        className="flex min-w-0 items-center gap-2 text-base font-semibold tracking-tight text-foreground"
-      >
-        <BrandLogo size={28} className="!h-7 !w-7 shrink-0" />
-        <span className="truncate">{siteConfig.name}</span>
-      </Link>
-
       {conversationTitle && (
-        <span className="hidden max-w-[8rem] truncate text-sm text-muted md:inline lg:max-w-xs">
+        <span className="hidden max-w-[10rem] truncate text-sm font-medium text-foreground md:inline lg:max-w-xs">
           {conversationTitle}
         </span>
       )}
 
-      <nav className="ml-1 hidden items-center gap-0.5 md:flex" aria-label="Chat navigation">
-        <Link href="/media" className={navLink}>
-          <Sparkles className="h-4 w-4" aria-hidden />
-          Media
-        </Link>
-        <Link href="/pricing" className={navLink}>
-          Pricing
-        </Link>
-        <Link href="/credits" className={navLink}>
-          Credits
-        </Link>
-      </nav>
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none">
+        <ModelSelector
+          value={modelTier}
+          onChange={onModelTierChange}
+          disabled={isSending}
+          compact
+          className="min-w-0"
+        />
+      </div>
 
-      <span className="ml-auto flex items-center gap-2">
+      <span className="ml-auto flex items-center gap-1.5 sm:gap-2">
+        <ThemeToggle className="hidden sm:inline-flex" />
         <ChatActionsMenu
           ref={chatActionsRef}
           messages={messages}
@@ -139,7 +131,7 @@ export const ChatChrome = memo(function ChatChrome({
           }
           router.push("/chat/login");
         }}
-        className="min-h-11 rounded-lg px-3 text-sm font-medium text-muted hover:bg-zinc-100 hover:text-foreground"
+        className="min-h-10 rounded-xl px-3 text-sm font-medium text-muted hover:bg-accent/10 hover:text-foreground"
       >
         Sign out
       </button>

@@ -11,7 +11,7 @@ import {
 import { copyMarkdownToClipboard, shareText } from "@/lib/share/clientShare";
 import { useShareAction } from "@/hooks/useShareAction";
 import { cn } from "@/lib/utils";
-import { Check, Copy, Share2 } from "lucide-react";
+import { Check, Copy, RefreshCw, Share2 } from "lucide-react";
 import { memo, useCallback, useMemo, useState, type ReactNode } from "react";
 
 interface MessageBubbleActionsProps {
@@ -19,6 +19,7 @@ interface MessageBubbleActionsProps {
   content: string;
   disabled?: boolean;
   className?: string;
+  onRegenerate?: () => void;
 }
 
 export const MessageBubbleActions = memo(function MessageBubbleActions({
@@ -26,6 +27,7 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
   content,
   disabled,
   className,
+  onRegenerate,
 }: MessageBubbleActionsProps) {
   const { feedback, runAction, busy } = useShareAction();
   const [copied, setCopied] = useState(false);
@@ -93,6 +95,15 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
         <ActionButton label="Share message" disabled={busy} onClick={() => void runShare()}>
           <Share2 className="h-3.5 w-3.5" aria-hidden />
         </ActionButton>
+        {role === "assistant" && onRegenerate && (
+          <ActionButton
+            label="Regenerate response"
+            disabled={busy || disabled}
+            onClick={onRegenerate}
+          >
+            <RefreshCw className="h-3.5 w-3.5" aria-hidden />
+          </ActionButton>
+        )}
       </div>
     </div>
   );

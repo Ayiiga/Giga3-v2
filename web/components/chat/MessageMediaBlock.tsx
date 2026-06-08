@@ -11,14 +11,18 @@ import {
 import { useShareAction } from "@/hooks/useShareAction";
 import { cn } from "@/lib/utils";
 import { memo, useCallback, type ReactNode } from "react";
+import { buildImageStudioActionUrl } from "@/lib/chat/imageStudioLinks";
 import {
   Copy,
   Download,
   ImageIcon,
   Loader2,
+  Pencil,
   Share2,
   Video,
+  Wand2,
 } from "lucide-react";
+import Link from "next/link";
 
 interface MessageMediaBlockProps {
   url: string;
@@ -71,7 +75,7 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
   return (
     <div className={cn("relative mt-3 space-y-2", className)}>
       <ShareActionFeedback feedback={feedback} />
-      <div className="aspect-video min-h-[12rem] w-full overflow-hidden rounded-xl border border-border bg-zinc-100">
+      <div className="premium-card aspect-video min-h-[12rem] w-full overflow-hidden bg-card">
         {kind === "image" ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -128,6 +132,26 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
         >
           <Copy className="h-4 w-4" aria-hidden />
         </MediaActionButton>
+        {kind === "image" && (
+          <>
+            <Link
+              href={buildImageStudioActionUrl("edit", url)}
+              className="touch-target inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-border bg-card px-2 text-sm font-medium text-foreground shadow-sm hover:bg-accent/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+              aria-label="Edit image in studio"
+              title="Edit in Image Studio"
+            >
+              <Pencil className="h-4 w-4" aria-hidden />
+            </Link>
+            <Link
+              href={buildImageStudioActionUrl("enhance", url)}
+              className="touch-target inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-border bg-card px-2 text-sm font-medium text-foreground shadow-sm hover:bg-accent/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+              aria-label="Enhance image"
+              title="Enhance"
+            >
+              <Wand2 className="h-4 w-4" aria-hidden />
+            </Link>
+          </>
+        )}
         <span className="inline-flex items-center gap-1 text-xs text-muted">
           {kind === "image" ? (
             <ImageIcon className="h-3.5 w-3.5" aria-hidden />

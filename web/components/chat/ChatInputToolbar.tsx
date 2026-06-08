@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { buildMediaStudioUrl, MEDIA_STUDIO_TEMPLATES } from "@/lib/media/studioTemplates";
 import type { AttachmentKind } from "@/lib/chat/fileAttachments";
+import { useVoiceDictation } from "@/hooks/useVoiceDictation";
 import {
   Camera,
   ChevronUp,
@@ -10,6 +11,7 @@ import {
   FolderOpen,
   ImageIcon,
   Loader2,
+  Mic,
   Paperclip,
   Sparkles,
 } from "lucide-react";
@@ -22,6 +24,7 @@ interface ChatInputToolbarProps {
   onToggle: () => void;
   onPickFile: (file: File, kind: AttachmentKind) => void;
   onError: (message: string) => void;
+  onVoiceTranscript?: (text: string) => void;
 }
 
 const actions: {
@@ -48,8 +51,14 @@ export function ChatInputToolbar({
   onToggle,
   onPickFile,
   onError,
+  onVoiceTranscript,
 }: ChatInputToolbarProps) {
   const router = useRouter();
+  const { supported: voiceSupported, listening, toggle: toggleVoice } =
+    useVoiceDictation((text) => {
+      onVoiceTranscript?.(text);
+      if (expanded) onToggle();
+    });
   const menuId = useId();
   const fileRef = useRef<HTMLInputElement>(null);
   const imageRef = useRef<HTMLInputElement>(null);
@@ -143,6 +152,24 @@ export function ChatInputToolbar({
         onChange={(e) => handleChange(e, "video")}
       />
 
+      {voiceSupported && onVoiceTranscript && (
+        <button
+          type="button"
+          disabled={disabled}
+          aria-label={listening ? "Stop voice input" : "Voice input"}
+          title={listening ? "Listening…" : "Voice input"}
+          onClick={toggleVoice}
+          className={cn(
+            "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-foreground shadow-sm",
+            "hover:border-accent/30 hover:bg-accent/5",
+            listening && "border-accent/40 bg-accent/10 text-accent",
+            disabled && "pointer-events-none opacity-50"
+          )}
+        >
+          <Mic className="h-5 w-5" aria-hidden />
+        </button>
+      )}
+
       <button
         type="button"
         disabled={disabled}
@@ -152,10 +179,10 @@ export function ChatInputToolbar({
         title={expanded ? "Close" : "Attach"}
         onClick={onToggle}
         className={cn(
-          "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm",
-          "hover:border-violet-300 hover:bg-violet-50 hover:text-violet-800",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2",
-          expanded && "border-violet-300 bg-violet-50 text-violet-800",
+          "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-foreground shadow-sm",
+          "hover:border-accent/30 hover:bg-accent/5",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40",
+          expanded && "border-accent/30 bg-accent/10 text-accent",
           disabled && "pointer-events-none opacity-50"
         )}
       >
@@ -171,7 +198,7 @@ export function ChatInputToolbar({
           id={menuId}
           role="menu"
           aria-label="Attach files or open media"
-          className="absolute bottom-full left-0 z-20 mb-2 w-[min(100vw-2rem,22rem)] rounded-2xl border border-zinc-200/90 bg-white p-2 shadow-lg shadow-zinc-900/10"
+          className="absolute bottom-full left-0 z-20 mb-2 w-[min(100vw-2rem,22rem)] rounded-2xl border border-border bg-card p-2 shadow-lg"
         >
           <p className="px-2 pb-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
             Attach & create

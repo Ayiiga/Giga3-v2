@@ -17,6 +17,13 @@ import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
+import {
+  getGigaModel,
+  gigaModelForMode,
+  readStoredGigaModel,
+  storeGigaModel,
+  type GigaModelId,
+} from "@/lib/chat/gigaModels";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function ChatShell() {
@@ -70,6 +77,7 @@ function ChatShellInner({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [templateNotice, setTemplateNotice] = useState<string | null>(null);
+  const [modelTier, setModelTier] = useState<GigaModelId>("fast");
   const insertRef = useRef<((text: string) => void) | null>(null);
   const chatActionsRef = useRef<ChatActionsMenuHandle | null>(null);
 
@@ -175,6 +183,42 @@ function ChatShellInner({
   });
 
   useEffect(() => {
+    setModelTier(readStoredGigaModel());
+  }, []);
+
+  useEffect(() => {
+    if (mode) {
+      setModelTier((prev) => {
+        const mapped = gigaModelForMode(mode);
+        return prev === mapped ? prev : mapped;
+      });
+    }
+  }, [mode]);
+
+  const handleModelTierChange = useCallback(
+    (tier: GigaModelId) => {
+      setModelTier(tier);
+      storeGigaModel(tier);
+      void changeMode(getGigaModel(tier).mode);
+    },
+    [changeMode]
+  );
+
+  const handleRegenerate = useCallback(
+    (assistantMessageId: string) => {
+      const idx = messages.findIndex((m) => m.id === assistantMessageId);
+      if (idx < 0) return;
+      for (let i = idx - 1; i >= 0; i--) {
+        if (messages[i].role === "user" && messages[i].id !== "pending-user") {
+          void sendMessage(messages[i].content);
+          return;
+        }
+      }
+    },
+    [messages, sendMessage]
+  );
+
+  useEffect(() => {
     if (mounted && !email) router.replace("/chat/login");
   }, [mounted, email, router]);
 
@@ -215,6 +259,8 @@ function ChatShellInner({
           shareToken={activeConversation?.shareToken}
           isSending={isSending}
           credits={credits}
+          modelTier={modelTier}
+          onModelTierChange={handleModelTierChange}
           onOpenSidebar={handleOpenSidebar}
           onSetPublicShare={onSetPublicShare}
           chatActionsRef={chatActionsRef}
@@ -252,6 +298,7 @@ function ChatShellInner({
           insertRef={insertRef}
           onSend={handleSend}
           onInsertTemplate={handleInsertTemplate}
+          onRegenerate={handleRegenerate}
         />
       </div>
     </div>
