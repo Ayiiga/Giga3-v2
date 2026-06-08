@@ -1,9 +1,11 @@
 import type { UiMessage } from "@/components/chat/MessageList";
 
+const DEFAULT_SHARE_ORIGIN = "https://www.giga3ai.com";
+
 export const SHARE_TEXT_LIMIT = 12_000;
-export const COPY_SUCCESS = "Copied successfully";
-export const SHARE_SUCCESS = "Shared successfully";
-export const EXPORT_SUCCESS = "Export started";
+export const COPY_SUCCESS = "Copied Successfully";
+export const SHARE_SUCCESS = "Shared Successfully";
+export const EXPORT_SUCCESS = "Export Started";
 
 export function roleLabel(
   role: "user" | "assistant" | UiMessage["role"]
@@ -102,9 +104,10 @@ export function conversationExportFilename(
 }
 
 export function buildPublicShareUrl(token: string, origin?: string): string {
-  const base =
+  const base = (
     origin?.replace(/\/$/, "") ||
-    (typeof window !== "undefined" ? window.location.origin : "");
+    (typeof window !== "undefined" ? window.location.origin : DEFAULT_SHARE_ORIGIN)
+  ).replace(/\/$/, "");
   return `${base}/chat/share/?t=${encodeURIComponent(token)}`;
 }
 

@@ -102,7 +102,7 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
           onClick={() =>
             void run(
               () => saveRemoteMediaToDevice(url, kind),
-              "Saved successfully"
+              "Saved Successfully"
             )
           }
         >

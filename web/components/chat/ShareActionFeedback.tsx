@@ -21,8 +21,9 @@ export const ShareActionFeedback = memo(function ShareActionFeedback({
       role="status"
       aria-live="polite"
       aria-atomic="true"
+      aria-hidden={!feedback}
       className={cn(
-        "pointer-events-none absolute bottom-full z-10 mb-1 max-w-[14rem] truncate rounded-lg px-2 py-1 text-xs font-medium shadow-sm",
+        "pointer-events-none absolute bottom-full z-10 mb-1 max-w-[14rem] truncate rounded-lg px-2 py-1 text-xs font-medium shadow-sm transition-opacity",
         align === "end" ? "right-0" : "left-0",
         feedback
           ? feedback.kind === "success"
@@ -32,7 +33,7 @@ export const ShareActionFeedback = memo(function ShareActionFeedback({
         className
       )}
     >
-      {feedback?.message ?? "\u00a0"}
+      {feedback?.message ?? ""}
     </span>
   );
 });

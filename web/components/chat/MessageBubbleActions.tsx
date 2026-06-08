@@ -27,7 +27,7 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
   disabled,
   className,
 }: MessageBubbleActionsProps) {
-  const { feedback, runAction } = useShareAction();
+  const { feedback, runAction, busy } = useShareAction();
   const [copied, setCopied] = useState(false);
 
   const copyText = useMemo(
@@ -81,6 +81,7 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
       >
         <ActionButton
           label={copied ? COPY_SUCCESS : "Copy message"}
+          disabled={busy}
           onClick={() => void runCopy()}
         >
           {copied ? (
@@ -89,7 +90,7 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
             <Copy className="h-3.5 w-3.5" aria-hidden />
           )}
         </ActionButton>
-        <ActionButton label="Share message" onClick={() => void runShare()}>
+        <ActionButton label="Share message" disabled={busy} onClick={() => void runShare()}>
           <Share2 className="h-3.5 w-3.5" aria-hidden />
         </ActionButton>
       </div>
@@ -100,10 +101,12 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
 function ActionButton({
   label,
   onClick,
+  disabled,
   children,
 }: {
   label: string;
   onClick: () => void;
+  disabled?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -111,8 +114,9 @@ function ActionButton({
       type="button"
       aria-label={label}
       title={label}
+      disabled={disabled}
       onClick={onClick}
-      className="touch-target inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-muted hover:bg-zinc-100 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+      className="touch-target inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-muted hover:bg-zinc-100 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:opacity-50"
     >
       {children}
     </button>
