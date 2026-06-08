@@ -1,97 +1,217 @@
 "use client";
 
 import type { UiMessage } from "@/components/chat/MessageList";
+import { ShareActionFeedback } from "@/components/chat/ShareActionFeedback";
 import {
+  COPY_SUCCESS,
+  EXPORT_SUCCESS,
+  SHARE_SUCCESS,
+  buildPublicShareUrl,
+  conversationExportFilename,
+  formatConversationForShare,
+  formatConversationMarkdown,
+} from "@/lib/chat/chatContentFormat";
+import {
+  downloadMarkdownFile,
   downloadTextFile,
-  formatChatAsPlainText,
   openChatPrintView,
 } from "@/lib/chat/exportChat";
-import { copyTextToClipboard, shareText } from "@/lib/share/clientShare";
+import {
+  copyMarkdownToClipboard,
+  copyUrlToClipboard,
+  shareText,
+} from "@/lib/share/clientShare";
+import { useShareAction } from "@/hooks/useShareAction";
 import { cn } from "@/lib/utils";
 import {
   ChevronDown,
   Copy,
   FileText,
+  Link2,
+  Link2Off,
   Printer,
   Share2,
 } from "lucide-react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface ChatActionsMenuProps {
   messages: UiMessage[];
   conversationTitle?: string;
+  conversationId?: string | null;
+  sharePublic?: boolean;
+  shareToken?: string | null;
   email?: string;
   disabled?: boolean;
   className?: string;
+  onSetPublicShare?: (
+    enabled: boolean
+  ) => Promise<{ shareToken: string | null; sharePublic: boolean }>;
 }
 
 export const ChatActionsMenu = memo(function ChatActionsMenu({
   messages,
   conversationTitle,
+  conversationId,
+  sharePublic,
+  shareToken,
   email,
   disabled,
   className,
+  onSetPublicShare,
 }: ChatActionsMenuProps) {
   const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
+  const [localShareToken, setLocalShareToken] = useState<string | null>(
+    shareToken ?? null
+  );
+  const [localSharePublic, setLocalSharePublic] = useState(Boolean(sharePublic));
   const rootRef = useRef<HTMLDivElement>(null);
+  const { feedback, runAction } = useShareAction();
 
-  const plain = formatChatAsPlainText(messages, {
-    title: conversationTitle,
-    email,
-  });
+  useEffect(() => {
+    setLocalShareToken(shareToken ?? null);
+    setLocalSharePublic(Boolean(sharePublic));
+  }, [shareToken, sharePublic]);
+
+  const shareUrl = useMemo(() => {
+    if (!localSharePublic || !localShareToken) return undefined;
+    return buildPublicShareUrl(localShareToken);
+  }, [localSharePublic, localShareToken]);
+
+  const markdown = useMemo(
+    () =>
+      formatConversationMarkdown(messages, {
+        title: conversationTitle,
+        email,
+        shareUrl,
+      }),
+    [messages, conversationTitle, email, shareUrl]
+  );
+
+  const empty = messages.length === 0;
 
   useEffect(() => {
     if (!open) return;
     function onPointerDown(e: MouseEvent) {
       if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
     }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
     document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
   }, [open]);
 
-  const flash = useCallback((msg: string) => {
-    setStatus(msg);
-    const t = window.setTimeout(() => setStatus(null), 2800);
-    return () => window.clearTimeout(t);
-  }, []);
+  const closeMenu = useCallback(() => setOpen(false), []);
 
   const runCopy = useCallback(async () => {
-    const result = await copyTextToClipboard(plain);
-    flash(result.ok ? "Chat copied" : result.reason);
-    setOpen(false);
-  }, [plain, flash]);
+    if (!markdown.trim()) return;
+    await runAction(() => copyMarkdownToClipboard(markdown), COPY_SUCCESS);
+    closeMenu();
+  }, [markdown, runAction, closeMenu]);
 
   const runShare = useCallback(async () => {
-    const result = await shareText({
-      title: conversationTitle || "Giga3 AI chat",
-      text: plain.slice(0, 12_000),
-      url: typeof window !== "undefined" ? window.location.href : undefined,
+    if (!markdown.trim()) return;
+    const payload = formatConversationForShare(messages, {
+      title: conversationTitle,
+      email,
+      shareUrl,
     });
-    flash(result.ok ? "Shared" : result.reason);
-    setOpen(false);
-  }, [plain, conversationTitle, flash]);
+    await runAction(
+      () =>
+        shareText({
+          title: payload.title,
+          text: payload.text,
+          url: payload.url,
+        }),
+      SHARE_SUCCESS
+    );
+    closeMenu();
+  }, [
+    markdown,
+    messages,
+    conversationTitle,
+    email,
+    shareUrl,
+    runAction,
+    closeMenu,
+  ]);
 
-  const runTxt = useCallback(() => {
-    const slug = (conversationTitle || "chat")
-      .replace(/[^\w-]+/g, "-")
-      .slice(0, 40);
-    downloadTextFile(`giga3-${slug || "chat"}.txt`, plain);
-    flash("Downloaded TXT");
-    setOpen(false);
-  }, [plain, conversationTitle, flash]);
+  const runExportMarkdown = useCallback(() => {
+    if (!markdown.trim()) return;
+    downloadMarkdownFile(
+      conversationExportFilename(conversationTitle, "md"),
+      markdown
+    );
+    void runAction(async () => ({ ok: true as const }), EXPORT_SUCCESS);
+    closeMenu();
+  }, [markdown, conversationTitle, runAction, closeMenu]);
 
-  const runPdf = useCallback(() => {
+  const runExportTxt = useCallback(() => {
+    if (!markdown.trim()) return;
+    downloadTextFile(conversationExportFilename(conversationTitle, "txt"), markdown);
+    void runAction(async () => ({ ok: true as const }), EXPORT_SUCCESS);
+    closeMenu();
+  }, [markdown, conversationTitle, runAction, closeMenu]);
+
+  const runExportPdf = useCallback(async () => {
     try {
       openChatPrintView(messages, { title: conversationTitle });
-      flash("Use Print → Save as PDF");
+      await runAction(async () => ({ ok: true as const }), "Use Print → Save as PDF");
     } catch (e) {
-      flash(e instanceof Error ? e.message : "PDF export failed");
+      await runAction(
+        async () => ({
+          ok: false as const,
+          reason: e instanceof Error ? e.message : "PDF export failed",
+        }),
+        EXPORT_SUCCESS
+      );
     }
-    setOpen(false);
-  }, [messages, conversationTitle, flash]);
+    closeMenu();
+  }, [messages, conversationTitle, runAction, closeMenu]);
 
-  const empty = messages.length === 0;
+  const runCopyShareLink = useCallback(async () => {
+    if (!shareUrl) return;
+    await runAction(() => copyUrlToClipboard(shareUrl), COPY_SUCCESS);
+    closeMenu();
+  }, [shareUrl, runAction, closeMenu]);
+
+  const togglePublicShare = useCallback(async () => {
+    if (!conversationId || !email || !onSetPublicShare) return;
+    const enabling = !localSharePublic;
+    try {
+      const result = await onSetPublicShare(enabling);
+      setLocalSharePublic(result.sharePublic);
+      setLocalShareToken(result.shareToken);
+      if (result.sharePublic && result.shareToken) {
+        const url = buildPublicShareUrl(result.shareToken);
+        await runAction(() => copyUrlToClipboard(url), COPY_SUCCESS);
+      } else {
+        await runAction(async () => ({ ok: true as const }), "Public link disabled");
+      }
+    } catch (e) {
+      await runAction(
+        async () => ({
+          ok: false as const,
+          reason: e instanceof Error ? e.message : "Could not update share link",
+        }),
+        COPY_SUCCESS
+      );
+    }
+    closeMenu();
+  }, [
+    conversationId,
+    email,
+    localSharePublic,
+    onSetPublicShare,
+    runAction,
+    closeMenu,
+  ]);
+
+  const canManageShareLink = Boolean(conversationId && email && onSetPublicShare);
 
   return (
     <div ref={rootRef} className={cn("relative", className)}>
@@ -100,8 +220,9 @@ export const ChatActionsMenu = memo(function ChatActionsMenu({
         disabled={disabled || empty}
         aria-expanded={open}
         aria-haspopup="menu"
+        aria-label="Chat share and export"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-white px-3 text-sm font-medium text-foreground shadow-sm hover:bg-zinc-50 disabled:opacity-50"
+        className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-white px-3 text-sm font-medium text-foreground shadow-sm hover:bg-zinc-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
       >
         <Share2 className="h-4 w-4" aria-hidden />
         <span className="hidden sm:inline">Share</span>
@@ -111,23 +232,41 @@ export const ChatActionsMenu = memo(function ChatActionsMenu({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-border bg-white py-1 shadow-lg"
+          aria-label="Chat actions"
+          className="absolute right-0 top-full z-50 mt-2 w-60 rounded-xl border border-border bg-white py-1 shadow-lg"
         >
           <MenuItem icon={Copy} label="Copy chat" onClick={() => void runCopy()} />
           <MenuItem icon={Share2} label="Share chat" onClick={() => void runShare()} />
-          <MenuItem icon={FileText} label="Export as TXT" onClick={runTxt} />
-          <MenuItem icon={Printer} label="Export as PDF" onClick={runPdf} />
+          <MenuItem
+            icon={FileText}
+            label="Export chat (Markdown)"
+            onClick={runExportMarkdown}
+          />
+          <MenuItem icon={FileText} label="Export chat (TXT)" onClick={runExportTxt} />
+          <MenuItem icon={Printer} label="Export chat (PDF)" onClick={() => void runExportPdf()} />
+          {canManageShareLink && (
+            <>
+              <div className="my-1 border-t border-border" role="separator" />
+              {localSharePublic && shareUrl ? (
+                <MenuItem
+                  icon={Link2}
+                  label="Copy public link"
+                  onClick={() => void runCopyShareLink()}
+                />
+              ) : null}
+              <MenuItem
+                icon={localSharePublic ? Link2Off : Link2}
+                label={
+                  localSharePublic ? "Disable public link" : "Enable public link"
+                }
+                onClick={() => void togglePublicShare()}
+              />
+            </>
+          )}
         </div>
       )}
 
-      {status && (
-        <p
-          className="absolute right-0 top-full z-50 mt-1 whitespace-nowrap rounded-lg bg-zinc-900 px-2 py-1 text-xs text-white"
-          role="status"
-        >
-          {status}
-        </p>
-      )}
+      <ShareActionFeedback feedback={feedback} align="end" className="right-0" />
     </div>
   );
 });
@@ -145,7 +284,7 @@ function MenuItem({
     <button
       type="button"
       role="menuitem"
-      className="flex min-h-11 w-full items-center gap-2 px-3 text-left text-sm text-foreground hover:bg-zinc-50"
+      className="flex min-h-11 w-full items-center gap-2 px-3 text-left text-sm text-foreground hover:bg-zinc-50 focus-visible:bg-zinc-50 focus-visible:outline-none"
       onClick={onClick}
     >
       <Icon className="h-4 w-4 shrink-0 text-accent" aria-hidden />

@@ -1,5 +1,7 @@
 /** Clipboard, Web Share, download, and File System Access helpers (PWA-safe). */
 
+import { markdownToSimpleHtml } from "@/lib/chat/chatContentFormat";
+
 export type ShareResult = { ok: true } | { ok: false; reason: string };
 
 function isSecureContext(): boolean {
@@ -14,7 +16,7 @@ export async function copyTextToClipboard(text: string): Promise<ShareResult> {
       return { ok: true };
     }
   } catch {
-    /* fallback */
+    /* fallback below */
   }
   try {
     const ta = document.createElement("textarea");
@@ -32,19 +34,46 @@ export async function copyTextToClipboard(text: string): Promise<ShareResult> {
   }
 }
 
+/** Copy markdown as plain + HTML for rich paste in docs and email clients. */
+export async function copyMarkdownToClipboard(markdown: string): Promise<ShareResult> {
+  if (!markdown.trim()) return { ok: false, reason: "Nothing to copy" };
+  const html = markdownToSimpleHtml(markdown);
+  try {
+    if (
+      typeof ClipboardItem !== "undefined" &&
+      navigator.clipboard?.write
+    ) {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "text/plain": new Blob([markdown], { type: "text/plain" }),
+          "text/html": new Blob([html], { type: "text/html" }),
+        }),
+      ]);
+      return { ok: true };
+    }
+  } catch {
+    /* fall back to plain text */
+  }
+  return copyTextToClipboard(markdown);
+}
+
 export async function shareText(params: {
   title?: string;
   text: string;
   url?: string;
 }): Promise<ShareResult> {
   const { title, text, url } = params;
-  if (navigator.share) {
+  const trimmed = text.trim();
+  if (!trimmed && !url) return { ok: false, reason: "Nothing to share" };
+
+  if (typeof navigator.share === "function") {
     try {
-      await navigator.share({
-        title,
-        text: url ? `${text}\n\n${url}` : text,
-        url: url && !text.includes(url) ? url : undefined,
-      });
+      const payload: ShareData = {};
+      if (title) payload.title = title;
+      if (trimmed) payload.text = trimmed;
+      if (url && !trimmed.includes(url)) payload.url = url;
+      else if (url && !trimmed) payload.url = url;
+      await navigator.share(payload);
       return { ok: true };
     } catch (e) {
       if (e instanceof Error && e.name === "AbortError") {
@@ -52,13 +81,14 @@ export async function shareText(params: {
       }
     }
   }
-  const combined = [title, text, url].filter(Boolean).join("\n\n");
+
+  const combined = [title, trimmed, url].filter(Boolean).join("\n\n");
   return copyTextToClipboard(combined);
 }
 
 export async function shareFiles(
   files: File[],
-  options?: { title?: string; text?: string }
+  options?: { title?: string; text?: string; url?: string }
 ): Promise<ShareResult> {
   if (!files.length) return { ok: false, reason: "No files to share" };
   if (navigator.canShare?.({ files })) {
@@ -71,7 +101,10 @@ export async function shareFiles(
       }
     }
   }
-  return { ok: false, reason: "Sharing files is not supported here — try Save instead" };
+  return {
+    ok: false,
+    reason: "Sharing files is not supported here — try Save instead",
+  };
 }
 
 export function triggerDownload(blob: Blob, filename: string): ShareResult {
@@ -197,4 +230,8 @@ export async function shareRemoteMedia(
   } catch {
     return shareText({ title: `Giga3 AI ${kind}`, text: url });
   }
+}
+
+export async function copyUrlToClipboard(url: string): Promise<ShareResult> {
+  return copyTextToClipboard(url.trim());
 }

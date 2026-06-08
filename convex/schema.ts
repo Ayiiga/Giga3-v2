@@ -105,9 +105,13 @@ export default defineSchema({
     mode: aiModeValidator,
     createdAt: v.number(),
     updatedAt: v.number(),
+    /** When true, `shareToken` exposes read-only chat at /chat/share/?t=… */
+    sharePublic: v.optional(v.boolean()),
+    shareToken: v.optional(v.string()),
   })
     .index("by_user", ["userId"])
-    .index("by_user_updated", ["userId", "updatedAt"]),
+    .index("by_user_updated", ["userId", "updatedAt"])
+    .index("by_share_token", ["shareToken"]),
 
   messages: defineTable({
     conversationId: v.id("conversations"),

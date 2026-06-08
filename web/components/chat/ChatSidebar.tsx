@@ -20,6 +20,8 @@ export interface ConversationItem {
   mode: string;
   updatedAt: number;
   convexConversationId?: string | null;
+  sharePublic?: boolean;
+  shareToken?: string;
 }
 
 interface ChatSidebarProps {

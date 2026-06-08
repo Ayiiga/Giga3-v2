@@ -1,19 +1,24 @@
 "use client";
 
-import { memo, useCallback, useState, type ReactNode } from "react";
+import { ShareActionFeedback } from "@/components/chat/ShareActionFeedback";
+import { COPY_SUCCESS, SHARE_SUCCESS } from "@/lib/chat/chatContentFormat";
 import {
+  copyUrlToClipboard,
+  saveRemoteMediaToDevice,
+  shareRemoteMedia,
+  type ShareResult,
+} from "@/lib/share/clientShare";
+import { useShareAction } from "@/hooks/useShareAction";
+import { cn } from "@/lib/utils";
+import { memo, useCallback, type ReactNode } from "react";
+import {
+  Copy,
   Download,
   ImageIcon,
   Loader2,
   Share2,
   Video,
 } from "lucide-react";
-import {
-  saveRemoteMediaToDevice,
-  shareRemoteMedia,
-  type ShareResult,
-} from "@/lib/share/clientShare";
-import { cn } from "@/lib/utils";
 
 interface MessageMediaBlockProps {
   url: string;
@@ -39,7 +44,7 @@ function MediaActionButton({
       aria-label={label}
       title={label}
       onClick={onClick}
-      className="touch-target rounded-lg border border-border bg-white px-2 text-sm font-medium text-foreground shadow-sm hover:bg-zinc-50 disabled:opacity-50"
+      className="touch-target inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-border bg-white px-2 text-sm font-medium text-foreground shadow-sm hover:bg-zinc-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
     >
       {children}
     </button>
@@ -51,30 +56,21 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
   kind,
   className,
 }: MessageMediaBlockProps) {
-  const [busy, setBusy] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
+  const { feedback, runAction, busy } = useShareAction();
 
   const run = useCallback(
-    async (action: () => Promise<ShareResult>, failLabel: string) => {
-      if (busy) return;
-      setBusy(true);
-      setNotice(null);
-      try {
-        const result = await action();
-        if (!result.ok && result.reason !== "Share cancelled" && result.reason !== "Save cancelled") {
-          setNotice(result.reason || failLabel);
-        }
-      } catch (e) {
-        setNotice(e instanceof Error ? e.message : failLabel);
-      } finally {
-        setBusy(false);
-      }
+    async (
+      action: () => Promise<ShareResult>,
+      successMessage: string
+    ) => {
+      await runAction(action, successMessage);
     },
-    [busy]
+    [runAction]
   );
 
   return (
-    <div className={cn("mt-3 space-y-2", className)}>
+    <div className={cn("relative mt-3 space-y-2", className)}>
+      <ShareActionFeedback feedback={feedback} />
       <div className="aspect-video min-h-[12rem] w-full overflow-hidden rounded-xl border border-border bg-zinc-100">
         {kind === "image" ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -101,10 +97,13 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <MediaActionButton
-          label={kind === "image" ? "Save image to gallery" : "Save video to gallery"}
+          label={kind === "image" ? "Save image" : "Save video"}
           disabled={busy}
           onClick={() =>
-            void run(() => saveRemoteMediaToDevice(url, kind), "Could not save")
+            void run(
+              () => saveRemoteMediaToDevice(url, kind),
+              "Saved successfully"
+            )
           }
         >
           {busy ? (
@@ -117,10 +116,17 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
           label={kind === "image" ? "Share image" : "Share video"}
           disabled={busy}
           onClick={() =>
-            void run(() => shareRemoteMedia(url, kind), "Could not share")
+            void run(() => shareRemoteMedia(url, kind), SHARE_SUCCESS)
           }
         >
           <Share2 className="h-4 w-4" aria-hidden />
+        </MediaActionButton>
+        <MediaActionButton
+          label="Copy media link"
+          disabled={busy}
+          onClick={() => void run(() => copyUrlToClipboard(url), COPY_SUCCESS)}
+        >
+          <Copy className="h-4 w-4" aria-hidden />
         </MediaActionButton>
         <span className="inline-flex items-center gap-1 text-xs text-muted">
           {kind === "image" ? (
@@ -131,11 +137,6 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
           {kind === "image" ? "Image" : "Video"}
         </span>
       </div>
-      {notice && (
-        <p className="text-xs text-amber-800" role="status">
-          {notice}
-        </p>
-      )}
     </div>
   );
 });

@@ -11,6 +11,9 @@ import { useChatPlatform } from "@/hooks/useChatPlatform";
 import { useSupabaseChatPlatform } from "@/hooks/useSupabaseChatPlatform";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
+import { api } from "convex/_generated/api";
+import { Id } from "convex/_generated/dataModel";
+import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -21,15 +24,43 @@ export function ChatShell() {
 
   return (
     <ConvexAppShell>
-      <ChatShellInner usePlatform={useChatPlatform} />
+      <ChatShellWithConvexShare usePlatform={useChatPlatform} />
     </ConvexAppShell>
+  );
+}
+
+function ChatShellWithConvexShare({
+  usePlatform,
+}: {
+  usePlatform: typeof useChatPlatform;
+}) {
+  const setPublicShare = useMutation(api.conversations.setPublicShare);
+
+  return (
+    <ChatShellInner
+      usePlatform={usePlatform}
+      makeSetPublicShare={(conversationId, email) => async (enabled) =>
+        setPublicShare({
+          conversationId: conversationId as Id<"conversations">,
+          userId: email,
+          enabled,
+        })
+      }
+    />
   );
 }
 
 function ChatShellInner({
   usePlatform,
+  makeSetPublicShare,
 }: {
   usePlatform: typeof useChatPlatform;
+  makeSetPublicShare?: (
+    conversationId: string,
+    email: string
+  ) => (
+    enabled: boolean
+  ) => Promise<{ shareToken: string | null; sharePublic: boolean }>;
 }) {
   useRenderDiagnostic("ChatShellInner");
 
@@ -120,6 +151,11 @@ function ChatShellInner({
     setTemplateNotice(msg);
   }, []);
 
+  const onSetPublicShare = useMemo(() => {
+    if (!makeSetPublicShare || !activeId || !email) return undefined;
+    return makeSetPublicShare(activeId, email);
+  }, [makeSetPublicShare, activeId, email]);
+
   useEffect(() => {
     if (mounted && !email) router.replace("/chat/login");
   }, [mounted, email, router]);
@@ -156,9 +192,13 @@ function ChatShellInner({
           mounted={mounted}
           messages={messages}
           conversationTitle={activeConversation?.title}
+          conversationId={activeId}
+          sharePublic={activeConversation?.sharePublic}
+          shareToken={activeConversation?.shareToken}
           isSending={isSending}
           credits={credits}
           onOpenSidebar={handleOpenSidebar}
+          onSetPublicShare={onSetPublicShare}
         />
 
         <ChatBanners

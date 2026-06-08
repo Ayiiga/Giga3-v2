@@ -1,29 +1,36 @@
 import type { UiMessage } from "@/components/chat/MessageList";
+import {
+  conversationExportFilename,
+  formatConversationMarkdown,
+  roleLabel,
+} from "@/lib/chat/chatContentFormat";
 
-function roleLabel(role: UiMessage["role"]): string {
-  return role === "user" ? "You" : "Giga3 AI";
-}
+export {
+  conversationExportFilename,
+  formatConversationMarkdown,
+} from "@/lib/chat/chatContentFormat";
 
+/** @deprecated Use formatConversationMarkdown */
 export function formatChatAsPlainText(
   messages: UiMessage[],
-  meta?: { title?: string; email?: string }
+  meta?: { title?: string; email?: string; shareUrl?: string }
 ): string {
-  const lines: string[] = [];
-  lines.push("Giga3 AI — Chat export");
-  if (meta?.title) lines.push(`Conversation: ${meta.title}`);
-  if (meta?.email) lines.push(`User: ${meta.email}`);
-  lines.push(`Exported: ${new Date().toISOString()}`);
-  lines.push("");
-  for (const m of messages) {
-    lines.push(`--- ${roleLabel(m.role)} ---`);
-    lines.push(m.content);
-    lines.push("");
-  }
-  return lines.join("\n").trimEnd() + "\n";
+  return formatConversationMarkdown(messages, meta);
 }
 
 export function downloadTextFile(filename: string, text: string): void {
+  if (!text.trim()) return;
   const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  triggerDownloadBlob(blob, filename);
+}
+
+export function downloadMarkdownFile(filename: string, markdown: string): void {
+  if (!markdown.trim()) return;
+  const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+  triggerDownloadBlob(blob, filename);
+}
+
+function triggerDownloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -39,7 +46,14 @@ export function openChatPrintView(
   messages: UiMessage[],
   meta?: { title?: string }
 ): void {
-  const body = messages
+  const exportable = messages.filter(
+    (m) => m.role === "user" || m.role === "assistant"
+  );
+  if (exportable.length === 0) {
+    throw new Error("No messages to export");
+  }
+
+  const body = exportable
     .map(
       (m) =>
         `<section style="margin-bottom:1.25rem"><h3 style="margin:0 0 0.35rem;font-size:14px;color:#5b21b6">${roleLabel(
@@ -59,7 +73,9 @@ ${body}
 
   const w = window.open("", "_blank", "noopener,noreferrer");
   if (!w) {
-    throw new Error("Pop-up blocked. Allow pop-ups to export PDF, or use Export TXT.");
+    throw new Error(
+      "Pop-up blocked. Allow pop-ups to export PDF, or use Export chat (Markdown)."
+    );
   }
   w.document.open();
   w.document.write(html);
