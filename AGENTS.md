@@ -43,6 +43,14 @@ Production deployment: **`perfect-lark-521`** (`https://perfect-lark-521.convex.
 - This Cloud Agent VM often **cannot** reach `api.convex.dev` or `*.convex.cloud` (TLS). Use GitHub Actions **Deploy Convex backend** or a local machine for codegen/deploy.
 - If CI fails in ~20s at **Deploy to Convex** after key format validation passes, regenerate `CONVEX_DEPLOY_KEY` (`prod:perfect-lark-521|…`) in Convex Dashboard → production → Settings → Deploy key.
 
+### Marketing / landing page stability
+
+- Marketing layout uses **`marketing-stable`** only — do **not** add `pwa-stable-main` on marketing `<main>` (`contain: layout style` on `.saas-card` causes mobile GPU tearing / overlapping cards).
+- Header must stay **opaque** (`bg-white`) — no `backdrop-blur` or `bg-white/95` on sticky header.
+- On mobile (`max-width: 1023px`), `.marketing-stable` disables transforms, filters, backdrop-filter, and `contain` on all descendants.
+- Media studio page keeps its own **`media-stable`** wrapper inside marketing layout.
+- After deploy: bump `web/public/sw.js` cache name and hard-refresh / clear PWA cache.
+
 ### Chat UI stability
 
 - Chat routes use the `chat-stable` class (`web/app/(app)/chat/layout.tsx`) to disable entrance animations and smooth-scroll jitter.

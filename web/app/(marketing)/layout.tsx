@@ -9,7 +9,7 @@ export default function MarketingLayout({
   return (
     <div data-marketing="true" className="marketing-stable min-h-full bg-white">
       <Header />
-      <main className="pwa-stable-main">{children}</main>
+      <main>{children}</main>
       <Footer />
     </div>
   );

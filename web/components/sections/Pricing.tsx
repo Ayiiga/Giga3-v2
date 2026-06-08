@@ -28,7 +28,7 @@ export function Pricing() {
               )}
             >
               {plan.highlighted && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
+                <span className="absolute -top-3 inset-x-0 mx-auto w-fit rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
                   Popular
                 </span>
               )}

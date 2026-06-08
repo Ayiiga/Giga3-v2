@@ -143,13 +143,9 @@ button:focus-visible {
   }
 }
 
+/* Marketing/PWA landing: prevent mobile GPU tearing (ghosting while scrolling). */
 .marketing-stable {
-  isolation: isolate;
   overflow-x: clip;
-}
-
-.marketing-stable main section {
-  transform: none !important;
 }
 
 .marketing-stable,
@@ -157,15 +153,33 @@ button:focus-visible {
   animation: none !important;
 }
 
+.marketing-stable *,
+.marketing-stable *::before,
+.marketing-stable *::after {
+  transition-property: none !important;
+}
+
+.marketing-stable .saas-card {
+  contain: none;
+}
+
 @media (max-width: 1023px) {
+  .marketing-stable,
   .marketing-stable * {
     transition-duration: 0s !important;
     transition-delay: 0s !important;
+    transform: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    will-change: auto !important;
+    contain: none !important;
   }
 
   .marketing-stable header {
     position: sticky;
     top: 0;
+    z-index: 50;
   }
 }
 
@@ -318,7 +332,6 @@ button:focus-visible {
   }
 }
 
-.marketing-stable .pwa-stable-main .animate-spin,
 .marketing-stable .media-stable .animate-spin {
   animation: spin 1s linear infinite !important;
 }
