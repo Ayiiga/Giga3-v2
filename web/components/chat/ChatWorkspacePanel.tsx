@@ -1,6 +1,7 @@
 "use client";
 
 import { DocumentTemplatePicker } from "@/components/chat/DocumentTemplatePicker";
+import { ImageStudioQuickPanel } from "@/components/chat/ImageStudioQuickPanel";
 import { ToolSelector } from "@/components/chat/ToolSelector";
 import {
   buildMediaStudioUrl,
@@ -69,8 +70,8 @@ export function ChatWorkspacePanel({
       className={cn(
         "inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 text-sm font-medium",
         tab === id
-          ? "bg-white text-accent shadow-sm ring-1 ring-accent/15"
-          : "text-muted hover:bg-white/60 hover:text-foreground"
+          ? "bg-card text-accent shadow-sm ring-1 ring-accent/15"
+          : "text-muted hover:bg-accent/5 hover:text-foreground"
       )}
     >
       <Icon className="h-4 w-4 shrink-0" aria-hidden />
@@ -79,7 +80,7 @@ export function ChatWorkspacePanel({
   );
 
   return (
-    <div className="shrink-0 border-b border-border bg-zinc-50/50">
+    <div id="modes" className="shrink-0 border-b border-border bg-card">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -109,7 +110,7 @@ export function ChatWorkspacePanel({
             {tabBtn("media", "Media", Sparkles)}
           </div>
 
-          <div className="max-h-[180px] overflow-y-auto overscroll-y-contain border-t border-border bg-white">
+          <div className="max-h-[200px] overflow-y-auto overscroll-y-contain border-t border-border bg-background">
             {tab === "modes" && (
               <ToolSelector
                 value={mode}
@@ -120,6 +121,7 @@ export function ChatWorkspacePanel({
             )}
 
             {tab === "documents" && (
+              <div id="files">
               <DocumentTemplatePicker
                 disabled={disabled}
                 compact={hasMessages}
@@ -128,12 +130,14 @@ export function ChatWorkspacePanel({
                 onInsert={onInsertDocument}
                 onError={onError}
               />
+              </div>
             )}
 
             {tab === "media" && (
-              <div className="space-y-2 px-3 py-3 sm:px-4">
+              <div className="space-y-3 px-3 py-3 sm:px-4">
+                <ImageStudioQuickPanel />
                 <p className="text-sm leading-[1.7] text-muted">
-                  Launch image & video generation with ready-made prompts.
+                  Or launch a full studio template:
                 </p>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {MEDIA_STUDIO_TEMPLATES.map((template) => {

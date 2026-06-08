@@ -43,6 +43,14 @@ Production deployment: **`perfect-lark-521`** (`https://perfect-lark-521.convex.
 - This Cloud Agent VM often **cannot** reach `api.convex.dev` or `*.convex.cloud` (TLS). Use GitHub Actions **Deploy Convex backend** or a local machine for codegen/deploy.
 - If CI fails in ~20s at **Deploy to Convex** after key format validation passes, regenerate `CONVEX_DEPLOY_KEY` (`prod:perfect-lark-521|…`) in Convex Dashboard → production → Settings → Deploy key.
 
+### Premium UI / themes
+
+- Chat uses **`ThemeProvider`** (`web/components/providers/ThemeProvider.tsx`) — `dark` class on `<html>`, not hardcoded on chat layout.
+- **Giga3 model tiers** (Fast/Smart/Vision/Creator) map to existing Convex `mode` ids in `web/lib/chat/gigaModels.ts` — no new backend schema.
+- Image Studio deep links from chat: `web/lib/chat/imageStudioLinks.ts` → `/media?…`
+- Voice dictation uses browser `SpeechRecognition`; `_headers` allows `microphone=(self)`.
+- Keep **`chat-stable`** on chat layout; avoid backdrop-blur on sticky marketing header.
+
 ### Marketing / landing page stability
 
 - Marketing layout uses **`marketing-stable`** only — do **not** add `pwa-stable-main` on marketing `<main>` (`contain: layout style` on `.saas-card` causes mobile GPU tearing / overlapping cards).

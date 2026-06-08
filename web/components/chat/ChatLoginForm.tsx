@@ -78,14 +78,23 @@ function ChatLoginFormInner() {
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col items-center justify-center px-4 py-12">
-      <div className="saas-card w-full max-w-md p-8 sm:p-10">
-        <div className="mb-6 flex flex-col items-center gap-3 text-center">
-          <BrandLogo size={40} />
-          <h1 className="text-2xl font-semibold text-foreground">Sign in to Giga3 AI</h1>
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-background px-4 py-12">
+      <div className="premium-card w-full max-w-md p-8 sm:p-10">
+        <div className="mb-6 flex flex-col items-center gap-4 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10">
+            <BrandLogo size={48} className="shadow-none ring-0" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+              Welcome to Giga3 AI
+            </h1>
+            <p className="mt-2 text-sm text-muted">
+              Premium AI for learning, research, creativity, and productivity
+            </p>
+          </div>
         </div>
         <p className="mb-8 text-center text-base leading-[1.7] text-muted">
-          Sign up or log in with your email. Chats, credits, and subscriptions sync via
+          Sign in with your email. Chats, credits, and subscriptions sync via
           {usingSupabase ? " Supabase." : " Convex."}
         </p>
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">

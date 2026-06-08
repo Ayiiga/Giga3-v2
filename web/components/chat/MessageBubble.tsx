@@ -10,10 +10,12 @@ import { Bot, User } from "lucide-react";
 import { memo, useMemo } from "react";
 
 export interface MessageBubbleProps {
+  id?: string;
   role: "user" | "assistant";
   content: string;
   /** Optimistic / in-flight user message */
   pending?: boolean;
+  onRegenerate?: (messageId: string) => void;
 }
 
 function bubblePropsEqual(
@@ -21,16 +23,20 @@ function bubblePropsEqual(
   next: MessageBubbleProps
 ): boolean {
   return (
+    prev.id === next.id &&
     prev.role === next.role &&
     prev.content === next.content &&
-    prev.pending === next.pending
+    prev.pending === next.pending &&
+    prev.onRegenerate === next.onRegenerate
   );
 }
 
 export const MessageBubble = memo(function MessageBubble({
+  id,
   role,
   content,
   pending,
+  onRegenerate,
 }: MessageBubbleProps) {
   useRenderDiagnostic("MessageBubble");
 
@@ -52,10 +58,10 @@ export const MessageBubble = memo(function MessageBubble({
     >
       <div
         className={cn(
-          "mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+          "mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border shadow-sm",
           isUser
-            ? "bg-violet-50 text-accent"
-            : "bg-zinc-100 text-zinc-500"
+            ? "bg-accent/10 text-accent"
+            : "bg-card text-muted"
         )}
         aria-hidden
       >
@@ -76,8 +82,8 @@ export const MessageBubble = memo(function MessageBubble({
           className={cn(
             "rounded-2xl px-4 py-3",
             isUser
-              ? "bg-violet-50 text-foreground"
-              : "bg-transparent px-0 py-1 text-foreground",
+              ? "border border-accent/15 bg-[var(--bubble-user)] text-foreground shadow-sm"
+              : "bg-[var(--bubble-assistant)] px-0 py-1 text-foreground",
             pending && isUser && "ring-1 ring-accent/30"
           )}
         >
@@ -104,6 +110,11 @@ export const MessageBubble = memo(function MessageBubble({
           role={role}
           content={content}
           disabled={pending}
+          onRegenerate={
+            id && onRegenerate && role === "assistant"
+              ? () => onRegenerate(id)
+              : undefined
+          }
         />
       </div>
     </div>

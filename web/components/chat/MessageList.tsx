@@ -20,6 +20,7 @@ interface MessageListProps {
   messages: UiMessage[];
   isLoading?: boolean;
   onInsertTemplate?: (text: string) => void;
+  onRegenerate?: (messageId: string) => void;
 }
 
 const QUICK_PROMPTS = [
@@ -32,6 +33,7 @@ function MessageListInner({
   messages,
   isLoading = false,
   onInsertTemplate,
+  onRegenerate,
 }: MessageListProps) {
   useRenderDiagnostic("MessageList");
 
@@ -53,7 +55,7 @@ function MessageListInner({
   }, []);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-white">
+    <div className="flex min-h-0 flex-1 flex-col bg-background">
       <div
         ref={scrollRef}
         className="message-list-scroll flex-1 overflow-y-auto overscroll-y-contain px-4 py-6 sm:px-6"
@@ -67,11 +69,11 @@ function MessageListInner({
 
         {messages.length === 0 && !isLoading && (
           <div className="chat-rail flex h-full min-h-[14rem] flex-col items-center justify-center px-2 text-center">
-            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 text-accent">
-              <MessageSquarePlus className="h-6 w-6" aria-hidden />
+            <div className="premium-card mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10 text-accent">
+              <MessageSquarePlus className="h-8 w-8" aria-hidden />
             </div>
-            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-              Start a conversation
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+              Welcome to Giga3 AI
             </h2>
             {todayLabel && (
               <p className="mt-1 text-sm text-muted" suppressHydrationWarning>
@@ -141,9 +143,11 @@ function MessageListInner({
           {messages.map((m) => (
             <MessageBubble
               key={m.id}
+              id={m.id}
               role={m.role}
               content={typeof m.content === "string" ? m.content : ""}
               pending={m.id === "pending-user"}
+              onRegenerate={onRegenerate}
             />
           ))}
         </div>
@@ -156,6 +160,7 @@ function propsEqual(prev: MessageListProps, next: MessageListProps): boolean {
   return (
     prev.isLoading === next.isLoading &&
     prev.onInsertTemplate === next.onInsertTemplate &&
+    prev.onRegenerate === next.onRegenerate &&
     prev.messages === next.messages
   );
 }

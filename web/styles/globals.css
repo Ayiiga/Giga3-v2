@@ -15,6 +15,28 @@
   --card: #fafafa;
   --border: rgba(0, 0, 0, 0.08);
   --chat-rail: 50rem;
+  --surface-elevated: #ffffff;
+  --composer-bg: #f4f4f5;
+  --sidebar-bg: #fafafa;
+  --bubble-user: #f5f3ff;
+  --bubble-assistant: transparent;
+  --shadow-premium: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 24px -8px rgba(91, 33, 182, 0.08);
+}
+
+.dark {
+  --background: #0c0c0f;
+  --foreground: #f4f4f5;
+  --muted: #a1a1aa;
+  --accent: #a78bfa;
+  --accent-foreground: #1c1029;
+  --card: #18181b;
+  --border: rgba(255, 255, 255, 0.1);
+  --surface-elevated: #1c1c21;
+  --composer-bg: #18181b;
+  --sidebar-bg: #111114;
+  --bubble-user: #2e1065;
+  --bubble-assistant: transparent;
+  --shadow-premium: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -8px rgba(91, 33, 182, 0.2);
 }
 
 html {
@@ -107,11 +129,25 @@ body {
   }
 
   .saas-card {
-    @apply rounded-xl border border-border bg-white shadow-sm;
+    @apply rounded-xl border border-border bg-card shadow-sm;
+  }
+
+  .premium-card {
+    @apply rounded-2xl border border-border bg-card shadow-sm;
+    box-shadow: var(--shadow-premium);
   }
 
   .chat-composer {
-    @apply border-t border-border bg-white;
+    @apply border-t border-border bg-background;
+  }
+
+  .chat-composer-surface {
+    background: var(--composer-bg);
+    box-shadow: var(--shadow-premium);
+  }
+
+  .chat-sidebar-surface {
+    background: var(--sidebar-bg);
   }
 
   .chat-rail {

@@ -48,6 +48,13 @@ export const ChatInput = memo(function ChatInput({
   }, []);
 
   useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+  }, [value]);
+
+  useEffect(() => {
     if (!insertRef) return;
     insertRef.current = (text: string) => {
       insertText(text);
@@ -127,7 +134,7 @@ export const ChatInput = memo(function ChatInput({
 
         <div
           ref={composerRef}
-          className="relative flex items-end gap-2 rounded-2xl border border-border bg-zinc-50/80 p-2 shadow-sm"
+          className="chat-composer-surface relative flex items-end gap-2 rounded-2xl border border-border p-2"
         >
           <ChatInputToolbar
             disabled={inputDisabled}
@@ -135,6 +142,7 @@ export const ChatInput = memo(function ChatInput({
             onToggle={() => setToolbarOpen((open) => !open)}
             onPickFile={(file, kind) => void handlePickFile(file, kind)}
             onError={(msg) => setNotice(msg)}
+            onVoiceTranscript={(text) => insertText(text)}
           />
 
           <textarea

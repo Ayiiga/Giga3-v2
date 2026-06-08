@@ -1,3 +1,4 @@
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
 import { branding } from "@/lib/branding";
@@ -83,8 +84,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="min-h-full overflow-x-clip font-sans">
-        <div className="min-h-full overflow-x-clip">{children}</div>
+      <body className="min-h-full overflow-x-clip bg-background font-sans text-foreground antialiased">
+        <ThemeProvider>
+          <div className="min-h-full overflow-x-clip">{children}</div>
+        </ThemeProvider>
         <ServiceWorkerRegister />
         <OfflineBanner />
       </body>
