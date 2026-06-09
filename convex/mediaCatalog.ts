@@ -56,8 +56,23 @@ export const REPLICATE_IMAGE_MODEL =
   "black-forest-labs/flux-schnell";
 
 export const REPLICATE_VIDEO_MODEL =
-  process.env.REPLICATE_VIDEO_MODEL ??
-  "minimax/video-01";
+  process.env.REPLICATE_VIDEO_MODEL ?? "bytedance/seedance-2.0";
+
+/** Seedance defaults (override via Convex env). */
+export const REPLICATE_VIDEO_DURATION = Number(
+  process.env.REPLICATE_VIDEO_DURATION ?? 7
+);
+export const REPLICATE_VIDEO_RESOLUTION =
+  process.env.REPLICATE_VIDEO_RESOLUTION?.trim() || "720p";
+export const REPLICATE_VIDEO_GENERATE_AUDIO =
+  process.env.REPLICATE_VIDEO_GENERATE_AUDIO !== "false";
+
+export type SeedanceAspectRatio = "16:9" | "9:16" | "4:3" | "1:1" | "3:4" | "21:9";
+
+export function videoCategoryAspectRatio(category: string): SeedanceAspectRatio {
+  if (category === "social_shorts") return "9:16";
+  return "16:9";
+}
 
 export function buildImagePrompt(category: string, userPrompt: string): string {
   const cat =

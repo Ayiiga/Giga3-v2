@@ -7,6 +7,7 @@
 | Service | Path | Notes |
 |---------|------|--------|
 | Convex backend | `convex/` | Deploy via CI or `npx convex deploy` — see `DEPLOYMENT.md` |
+| Replicate video (backup) | `convex/replicateClient.ts` | Default `bytedance/seedance-2.0` — text-to-video, optional first-frame image, synced audio |
 | Next.js PWA (static export) | `web/` | Output: **`web/out`** (not `.next`) |
 | Legacy static site | `frontend/` | Uses Convex HTTP paths; config in `frontend/assets/js/config.js` |
 

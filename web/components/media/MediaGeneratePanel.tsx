@@ -142,7 +142,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
               type="url"
               value={videoImageUrl}
               onChange={(e) => setVideoImageUrl(e.target.value)}
-              placeholder="https://… — improves quality; text-only uses backup provider"
+              placeholder="https://… — optional first frame for image-to-video (Seedance)"
               className="w-full rounded-xl border border-border bg-black/40 px-4 py-3 text-base outline-none ring-accent focus:ring-2"
             />
           </div>

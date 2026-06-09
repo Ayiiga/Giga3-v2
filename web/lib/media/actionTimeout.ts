@@ -19,4 +19,4 @@ export function withActionTimeout<T>(
 }
 
 export const MEDIA_IMAGE_TIMEOUT_MS = 6 * 60 * 1000;
-export const MEDIA_VIDEO_TIMEOUT_MS = 9 * 60 * 1000;
+export const MEDIA_VIDEO_TIMEOUT_MS = 13 * 60 * 1000;

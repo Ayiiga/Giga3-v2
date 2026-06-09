@@ -86,6 +86,7 @@ export const generateVideo = action({
 
       const result = await generateVideoWithFallback({
         prompt: fullPrompt,
+        category,
         imageUrl: args.imageUrl,
         negativePrompt: args.negativePrompt,
         enablePromptExpansion: args.enablePromptExpansion,

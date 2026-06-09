@@ -64,7 +64,11 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `FAL_IMAGE_MODEL` | No | Image model, default `fal-ai/nano-banana-pro` (see fal.ai docs) |
    | `REPLICATE_API_TOKEN` | For media | Image/video generation |
    | `REPLICATE_IMAGE_MODEL` | No | Default in `mediaCatalog.ts` |
-   | `REPLICATE_VIDEO_MODEL` | No | Default in `mediaCatalog.ts` |
+   | `REPLICATE_VIDEO_MODEL` | No | Default `bytedance/seedance-2.0` (text/image-to-video + audio) |
+   | `REPLICATE_VIDEO_DURATION` | No | Seedance clip length in seconds, default `7` |
+   | `REPLICATE_VIDEO_RESOLUTION` | No | Seedance output, default `720p` |
+   | `REPLICATE_VIDEO_GENERATE_AUDIO` | No | Seedance synced audio, default `true` |
+   | `REPLICATE_VIDEO_MAX_WAIT_MS` | No | Poll timeout; default 12 min for Seedance |
    | `PAYSTACK_SECRET_KEY` | For billing | Paystack server API |
    | `PAYSTACK_PREMIUM_GHS` | No | Default `49` |
    | `PAYSTACK_CREDITS_60_GHS` | No | Default `60` (grants same number of credits) |

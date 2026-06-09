@@ -3,6 +3,7 @@
  */
 
 import { falGenerateImage, falGenerateVideo, getFalApiKey, type FalImageSize } from "./falClient";
+import { videoCategoryAspectRatio } from "./mediaCatalog";
 import {
   getReplicateToken,
   replicateGenerateImage,
@@ -22,6 +23,7 @@ export type ImageGenerateParams = {
 
 export type VideoGenerateParams = {
   prompt: string;
+  category?: string;
   imageUrl?: string;
   negativePrompt?: string;
   enablePromptExpansion?: boolean;
@@ -168,7 +170,11 @@ export async function generateVideoWithFallback(
 
   if (getReplicateToken()) {
     try {
-      const result = await replicateGenerateVideo(input.prompt, imageUrl);
+      const result = await replicateGenerateVideo(input.prompt, {
+        imageUrl,
+        seed: input.seed,
+        aspectRatio: videoCategoryAspectRatio(input.category ?? "anime_videos"),
+      });
       return {
         videoUrl: result.videoUrl,
         provider: "replicate",

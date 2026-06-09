@@ -4,7 +4,14 @@
  */
 
 import { sleep, withRetries } from "./mediaUtils";
-import { REPLICATE_IMAGE_MODEL, REPLICATE_VIDEO_MODEL } from "./mediaCatalog";
+import {
+  REPLICATE_IMAGE_MODEL,
+  REPLICATE_VIDEO_DURATION,
+  REPLICATE_VIDEO_GENERATE_AUDIO,
+  REPLICATE_VIDEO_MODEL,
+  REPLICATE_VIDEO_RESOLUTION,
+  type SeedanceAspectRatio,
+} from "./mediaCatalog";
 
 const REPLICATE_API = "https://api.replicate.com/v1";
 
@@ -31,12 +38,64 @@ type PredictionResponse = {
   error?: string | null;
 };
 
+export type ReplicateVideoOptions = {
+  imageUrl?: string;
+  seed?: number;
+  aspectRatio?: SeedanceAspectRatio;
+  duration?: number;
+  resolution?: string;
+  generateAudio?: boolean;
+};
+
 function modelPath(modelId: string): string {
   const parts = modelId.split("/").filter(Boolean);
   if (parts.length < 2) {
     throw new Error(`Invalid Replicate model id: ${modelId}`);
   }
   return `/models/${parts[0]}/${parts[1]}/predictions`;
+}
+
+function isSeedanceModel(modelId: string): boolean {
+  return modelId.startsWith("bytedance/seedance");
+}
+
+function buildReplicateVideoInput(
+  modelId: string,
+  prompt: string,
+  options?: ReplicateVideoOptions
+): Record<string, unknown> {
+  if (isSeedanceModel(modelId)) {
+    const input: Record<string, unknown> = {
+      prompt,
+      duration: options?.duration ?? REPLICATE_VIDEO_DURATION,
+      resolution: options?.resolution ?? REPLICATE_VIDEO_RESOLUTION,
+      aspect_ratio: options?.aspectRatio ?? "16:9",
+      generate_audio: options?.generateAudio ?? REPLICATE_VIDEO_GENERATE_AUDIO,
+    };
+    if (options?.seed !== undefined) {
+      input.seed = options.seed;
+    }
+    const imageUrl = options?.imageUrl?.trim();
+    if (imageUrl) {
+      input.image = imageUrl;
+    }
+    return input;
+  }
+
+  const legacy: Record<string, unknown> = { prompt };
+  const imageUrl = options?.imageUrl?.trim();
+  if (imageUrl) {
+    legacy.image = imageUrl;
+  }
+  return legacy;
+}
+
+function videoMaxWaitMs(modelId: string): number {
+  const configured = Number(process.env.REPLICATE_VIDEO_MAX_WAIT_MS);
+  if (Number.isFinite(configured) && configured > 0) {
+    return configured;
+  }
+  return isSeedanceModel(modelId) ? 12 * 60 * 1000 : 8 * 60 * 1000;
 }
 
 async function replicateFetch(path: string, init?: RequestInit): Promise<PredictionResponse> {
@@ -115,21 +174,20 @@ export async function replicateGenerateImage(prompt: string): Promise<{
 
 export async function replicateGenerateVideo(
   prompt: string,
-  imageUrl?: string
+  options?: ReplicateVideoOptions
 ): Promise<{ videoUrl: string; predictionId: string }> {
+  const modelId = REPLICATE_VIDEO_MODEL;
   return withRetries(
     "replicate-video",
     async () => {
-      const input: Record<string, unknown> = { prompt };
-      if (imageUrl) input.image = imageUrl;
-
-      const created = await replicateFetch(modelPath(REPLICATE_VIDEO_MODEL), {
+      const input = buildReplicateVideoInput(modelId, prompt, options);
+      const created = await replicateFetch(modelPath(modelId), {
         method: "POST",
         body: JSON.stringify({ input }),
       });
       const done = await pollPrediction(created.id, {
-        maxWaitMs: Number(process.env.REPLICATE_VIDEO_MAX_WAIT_MS ?? 8 * 60 * 1000),
-        pollIntervalMs: 3000,
+        maxWaitMs: videoMaxWaitMs(modelId),
+        pollIntervalMs: isSeedanceModel(modelId) ? 4000 : 3000,
       });
       const videoUrl = extractUrl(done.output);
       if (!videoUrl) {
