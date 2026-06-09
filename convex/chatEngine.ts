@@ -27,6 +27,22 @@ export function getChatProviderLabel(providerId: string): string {
   return PROVIDER_LABELS[providerId] ?? providerId;
 }
 
+/** Gemini REST expects `gemini-2.5-flash`, not `models/...` or image-model ids. */
+export function normalizeGeminiChatModel(raw: string): string {
+  let model = raw.trim();
+  if (!model) return "gemini-2.5-flash";
+  if (model.startsWith("models/")) {
+    model = model.slice("models/".length);
+  }
+  if (model.includes("/")) {
+    model = model.split("/").pop() ?? model;
+  }
+  if (/imagen|flash-image|image-preview/i.test(model)) {
+    return "gemini-2.5-flash";
+  }
+  return model;
+}
+
 function chatConfig() {
   return {
     providerTimeoutMs: Number(process.env.CHAT_PROVIDER_TIMEOUT_MS) || 22_000,
@@ -243,7 +259,9 @@ export async function completeChatWithFailover(
   const fallbackModel = process.env.OPENAI_FALLBACK_MODEL ?? "gpt-3.5-turbo";
   const secondaryKey = process.env.OPENAI_FALLBACK_API_KEY?.trim();
   const geminiKey = process.env.GEMINI_API_KEY?.trim();
-  const geminiModel = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
+  const geminiModel = normalizeGeminiChatModel(
+    process.env.GEMINI_MODEL ?? "gemini-2.5-flash"
+  );
   const falKey = getFalApiKey();
   const falModel =
     process.env.FAL_MODEL ?? process.env.FAL_LLM_MODEL ?? "google/gemini-2.0-flash";
