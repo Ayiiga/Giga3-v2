@@ -16,10 +16,19 @@
 
 - Install root: `npm ci --legacy-peer-deps`
 - Install web: `cd web && npm install --legacy-peer-deps`
-- Lint: `npm run lint` (runs `web` ESLint)
-- Build: `npm run build` (static export to `web/out`)
-- Convex codegen: `npx convex codegen`
+- Lint: `cd web && npm run lint`
+- Build: `cd web && npm run build` (static export to `web/out`)
+- Dev server: `cd web && npm run dev` → `http://localhost:3000`
+- Convex codegen: `export CONVEX_DEPLOY_KEY="$CONVEX_DEPLOYMENT_VALUE"` then `npx convex codegen` (or run `npx convex dev` for a local deployment)
 - Convex deploy: `npx convex deploy --yes` (requires `CONVEX_DEPLOY_KEY`)
+
+### Local web env
+
+Copy `web/.env.local.example` → `web/.env.local` and set `NEXT_PUBLIC_CONVEX_URL` (production: `https://perfect-lark-521.convex.cloud`). Without this file, chat routes show a Convex URL warning and AI calls fail.
+
+### Tests
+
+No automated test suite — root `npm test` is a stub. Use lint + build + manual chat login (`/chat/login/`) for smoke checks.
 
 ### Build-time env (web)
 
