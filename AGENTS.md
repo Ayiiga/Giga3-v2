@@ -14,10 +14,17 @@
 
 - Install root: `npm ci --legacy-peer-deps`
 - Install web: `cd web && npm install --legacy-peer-deps`
-- Lint: `npm run lint` (runs `web` ESLint)
-- Build: `npm run build` (static export to `web/out`)
-- Convex codegen: `npx convex codegen`
+- Lint: `cd web && npm run lint`
+- Build: `cd web && npm run build` (static export to `web/out`)
+- Convex codegen: `npx convex codegen` (requires local `npx convex dev` or `.env.local` with `CONVEX_DEPLOYMENT`)
 - Convex deploy: `npx convex deploy --yes` (requires `CONVEX_DEPLOY_KEY`)
+
+### Local development (two terminals)
+
+1. **Convex** (repo root): `npx convex dev` — creates/updates root `.env.local` (`CONVEX_URL=http://127.0.0.1:3210`). Set chat AI key: `npx convex env set OPENAI_API_KEY "$OPENAI_API_KEY"`.
+2. **Next.js** (`web/`): copy `web/.env.local.example` → `web/.env.local` with `NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3210`, then `npm run dev` → http://localhost:3000.
+
+Run `npx convex codegen` after the first successful `convex dev` start so `convex/_generated` matches the local deployment. If Next dev throws `__webpack_modules__[moduleId] is not a function`, stop dev, delete `web/.next`, and restart (avoid running `npm run build` while dev is using the same cache).
 
 ### Build-time env (web)
 
