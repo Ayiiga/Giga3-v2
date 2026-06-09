@@ -1,6 +1,14 @@
 /** Shared helpers for media generation reliability. */
 
-export type MediaProviderId = "fal" | "replicate" | "gemini";
+export type MediaProviderId = "fal" | "replicate" | "gemini" | "openai";
+
+/** Provider account out of credits / quota — skip sibling retries on the same vendor. */
+export function isMediaProviderBillingError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  return /exhausted balance|insufficient credit|user is locked|quota exceeded|only available on paid plans|billing details|402|429.*quota/i.test(
+    msg
+  );
+}
 
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -63,6 +71,9 @@ export function toUserMediaError(err: unknown, mediaType: "image" | "video"): st
     return "Video generation needs a source image. Add an image in Media Studio or use image mode first.";
   }
   if (/All providers failed/i.test(raw)) {
+    if (isMediaProviderBillingError({ message: raw })) {
+      return `We couldn't generate your ${mediaType} right now. Our image providers (fal.ai, Replicate, Google AI) need billing top-up — OpenAI backup was attempted automatically. Try again in a minute or contact support if this persists.`;
+    }
     return `We couldn't generate your ${mediaType} right now. All providers were busy or unavailable — please try again in a minute.`;
   }
 

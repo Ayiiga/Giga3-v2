@@ -32,6 +32,7 @@ import type * as mediaQueries from "../mediaQueries.js";
 import type * as mediaStorage from "../mediaStorage.js";
 import type * as mediaUtils from "../mediaUtils.js";
 import type * as messages from "../messages.js";
+import type * as openaiImageClient from "../openaiImageClient.js";
 import type * as payments from "../payments.js";
 import type * as paystack from "../paystack.js";
 import type * as paystackConfig from "../paystackConfig.js";
@@ -77,6 +78,7 @@ declare const fullApi: ApiFromModules<{
   mediaStorage: typeof mediaStorage;
   mediaUtils: typeof mediaUtils;
   messages: typeof messages;
+  openaiImageClient: typeof openaiImageClient;
   payments: typeof payments;
   paystack: typeof paystack;
   paystackConfig: typeof paystackConfig;
