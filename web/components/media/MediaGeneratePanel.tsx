@@ -10,6 +10,10 @@ import {
   type ImageCategoryId,
   type VideoCategoryId,
 } from "@/lib/media/catalog";
+import {
+  type ImageStudioActionId,
+  imageStudioActionRequiresSource,
+} from "@/lib/chat/imageStudioLinks";
 import type { UsageSnapshot } from "@/lib/credits/constants";
 import { canGenerateImage, canGenerateVideo } from "@/lib/credits/rules";
 import { cn } from "@/lib/utils";
@@ -23,6 +27,7 @@ interface MediaGeneratePanelProps {
   initialCategory: string;
   initialPrompt: string;
   initialSourceImageUrl?: string;
+  initialAction?: ImageStudioActionId | null;
 }
 
 export const MediaGeneratePanel = memo(function MediaGeneratePanel({
@@ -31,6 +36,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
   initialCategory,
   initialPrompt,
   initialSourceImageUrl = "",
+  initialAction = null,
 }: MediaGeneratePanelProps) {
   useRenderDiagnostic("MediaGeneratePanel");
 
@@ -51,6 +57,12 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
   const [prompt, setPrompt] = useState(initialPrompt);
   const [videoImageUrl, setVideoImageUrl] = useState("");
   const [imageSourceUrl, setImageSourceUrl] = useState(initialSourceImageUrl);
+
+  const editActionActive =
+    tab === "image" &&
+    Boolean(initialAction && imageStudioActionRequiresSource(initialAction));
+  const showImageSourceField =
+    tab === "image" && (Boolean(imageSourceUrl.trim()) || editActionActive);
 
   const categories = tab === "image" ? IMAGE_CATEGORIES : VIDEO_CATEGORIES;
   const canGen =
@@ -111,6 +123,20 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
       </div>
 
       <div className="saas-card space-y-6 p-6 shadow-premium sm:p-8">
+        {editActionActive && initialAction && (
+          <p className="rounded-xl border border-accent/20 bg-accent/5 px-4 py-3 text-sm text-foreground">
+            Image edit mode:{" "}
+            <span className="font-semibold capitalize">
+              {initialAction.replace(/-/g, " ")}
+            </span>
+            {!imageSourceUrl.trim() && (
+              <span className="mt-1 block text-muted">
+                Paste a source image URL below to run this edit.
+              </span>
+            )}
+          </p>
+        )}
+
         <label className="text-sm font-bold uppercase tracking-wide text-muted">
           Category
         </label>
@@ -140,7 +166,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
           className="input-surface sm:text-lg"
         />
 
-        {tab === "image" && imageSourceUrl.trim() && (
+        {showImageSourceField && (
           <div className="space-y-2">
             <label className="text-sm font-bold uppercase tracking-wide text-muted">
               Source image (edit mode — Replicate Kontext + Google AI Studio)
@@ -231,7 +257,12 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
           type="button"
           variant={tab === "video" ? "video" : "image"}
           size="lg"
-          disabled={loading || !canGen || !prompt.trim()}
+          disabled={
+            loading ||
+            !canGen ||
+            !prompt.trim() ||
+            (editActionActive && !imageSourceUrl.trim())
+          }
           onClick={() => void handleGenerate()}
           className="w-full min-h-14 text-lg sm:w-auto"
         >

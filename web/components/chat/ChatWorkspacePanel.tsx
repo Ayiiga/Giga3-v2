@@ -8,6 +8,11 @@ import {
   MEDIA_STUDIO_TEMPLATES,
 } from "@/lib/media/studioTemplates";
 import type { AiModeId } from "@/lib/aiRouter";
+import {
+  WORKSPACE_NAV_EVENT,
+  scrollToChatHistory,
+  type WorkspaceNavTarget,
+} from "@/lib/chat/workspaceNav";
 import { cn } from "@/lib/utils";
 import { ChevronDown, FileText, Loader2, MessageCircle, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -18,6 +23,7 @@ interface ChatWorkspacePanelProps {
   onModeChange: (mode: AiModeId) => void;
   disabled?: boolean;
   hasMessages: boolean;
+  sourceImageUrl?: string;
   onInsertDocument: (text: string) => void;
   onError: (message: string) => void;
 }
@@ -29,6 +35,7 @@ export function ChatWorkspacePanel({
   onModeChange,
   disabled,
   hasMessages,
+  sourceImageUrl,
   onInsertDocument,
   onError,
 }: ChatWorkspacePanelProps) {
@@ -43,6 +50,22 @@ export function ChatWorkspacePanel({
       setTab("documents");
     }
   }, [hasMessages]);
+
+  useEffect(() => {
+    function onWorkspaceNav(event: Event) {
+      const target = (event as CustomEvent<{ target: WorkspaceNavTarget }>).detail
+        ?.target;
+      if (!target) return;
+      if (target === "history") {
+        scrollToChatHistory();
+        return;
+      }
+      setOpen(true);
+      setTab(target);
+    }
+    window.addEventListener(WORKSPACE_NAV_EVENT, onWorkspaceNav);
+    return () => window.removeEventListener(WORKSPACE_NAV_EVENT, onWorkspaceNav);
+  }, []);
 
   async function openMediaStudio(templateId: string) {
     if (disabled || mediaNavigating) return;
@@ -135,7 +158,7 @@ export function ChatWorkspacePanel({
 
             {tab === "media" && (
               <div className="space-y-3 px-3 py-3 sm:px-4">
-                <ImageStudioQuickPanel />
+                <ImageStudioQuickPanel sourceUrl={sourceImageUrl} />
                 <p className="text-sm leading-[1.7] text-muted">
                   Or launch a full studio template:
                 </p>

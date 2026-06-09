@@ -7,6 +7,7 @@ import {
   groupConversationsByDate,
 } from "@/lib/chat/groupConversationsByDate";
 import { getModeDefinition, isValidMode } from "@/lib/aiRouter";
+import { dispatchWorkspaceNav } from "@/lib/chat/workspaceNav";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import {
@@ -58,10 +59,10 @@ const NAV_ITEMS = [
   { href: "/", label: "Home", icon: Home },
   { href: "/media", label: "Image Studio", icon: ImageIcon },
   { href: "/chat", label: "New Chat", icon: MessageSquarePlus, action: "new" as const },
-  { href: "#modes", label: "GigaLearn", icon: GraduationCap },
-  { href: "#files", label: "Files", icon: FolderOpen },
-  { href: "#history", label: "History", icon: Clock },
-  { href: "/credits", label: "Settings", icon: Settings },
+  { hash: "modes" as const, label: "GigaLearn", icon: GraduationCap },
+  { hash: "documents" as const, label: "Files", icon: FolderOpen },
+  { hash: "history" as const, label: "History", icon: Clock },
+  { href: "/credits", label: "Credits", icon: Settings },
 ] as const;
 
 function ChatSidebarComponent({
@@ -174,17 +175,20 @@ function ChatSidebarComponent({
                 </button>
               );
             }
-            if (item.href.startsWith("#")) {
+            if ("hash" in item) {
               return (
-                <a
+                <button
                   key={item.label}
-                  href={item.href}
-                  onClick={onCloseMobile}
-                  className="flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted hover:bg-accent/5 hover:text-foreground"
+                  type="button"
+                  onClick={() => {
+                    dispatchWorkspaceNav(item.hash);
+                    onCloseMobile();
+                  }}
+                  className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-muted hover:bg-accent/5 hover:text-foreground"
                 >
                   <Icon className="h-4 w-4 shrink-0" aria-hidden />
                   {item.label}
-                </a>
+                </button>
               );
             }
             return (

@@ -49,3 +49,14 @@ export function parseMessageMedia(content: string): ParsedMessageMedia {
 
   return { text, images, videos };
 }
+
+/** Last image URL in chat history (newest assistant/user message wins). */
+export function findLatestImageUrlInMessages(
+  messages: { content: string }[]
+): string | undefined {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const { images } = parseMessageMedia(messages[i].content);
+    if (images[0]) return images[0];
+  }
+  return undefined;
+}

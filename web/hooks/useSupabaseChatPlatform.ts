@@ -63,6 +63,23 @@ async function sendConvexMessage(args: {
   );
 }
 
+async function regenerateConvexMessage(args: {
+  userId: string;
+  conversationId: string;
+  assistantMessageId: string;
+  mode: string;
+}) {
+  const convexUrl = getConvexUrl();
+  if (!convexUrl) throw new Error("Convex URL is required while Supabase chat is in migration mode.");
+  return await convexHttpCall<ConvexSendResult>(
+    convexUrl,
+    "action",
+    "platformActions:regenerateMessage",
+    args,
+    { timeoutMs: CHAT_ACTION_TIMEOUT_MS, retries: 1 }
+  );
+}
+
 async function fetchConvexMessages(userId: string, conversationId: string) {
   const convexUrl = getConvexUrl();
   if (!convexUrl) return [];
@@ -283,6 +300,48 @@ export function useSupabaseChatPlatform() {
     [email, activeConversation, mode]
   );
 
+  const regenerateMessage = useCallback(
+    async (assistantMessageId: string) => {
+      if (!email) return;
+      const chat = activeConversation;
+      if (!chat?.convexConversationId) {
+        setError("Conversation is not ready for regenerate yet. Send a message first.");
+        return;
+      }
+      const uiIdx = messages.findIndex((m) => m.id === assistantMessageId);
+      if (uiIdx < 0) return;
+
+      setError(null);
+      setIsSending(true);
+      try {
+        const convexMessages = await fetchConvexMessages(email, chat.convexConversationId);
+        const convexTarget = convexMessages[uiIdx];
+        if (!convexTarget || convexTarget.role !== "assistant") {
+          throw new Error("Could not find assistant message to regenerate.");
+        }
+
+        const result = await regenerateConvexMessage({
+          userId: email,
+          conversationId: chat.convexConversationId,
+          assistantMessageId: convexTarget._id,
+          mode,
+        });
+        const synced = await fetchConvexMessages(email, chat.convexConversationId);
+        await replaceSupabaseMessages(chat._id, synced);
+        setMessagesRaw(await listSupabaseMessages(chat._id));
+        setChatProviderLabel(
+          typeof result.chatProviderLabel === "string" ? result.chatProviderLabel : null
+        );
+        setUsedFallback(Boolean(result.usedFallback));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to regenerate");
+      } finally {
+        setIsSending(false);
+      }
+    },
+    [email, activeConversation, messages, mode]
+  );
+
   return {
     email,
     mounted,
@@ -299,6 +358,7 @@ export function useSupabaseChatPlatform() {
     deleteConversation,
     changeMode,
     sendMessage,
+    regenerateMessage,
     setActiveId,
     chatProviderLabel,
     usedFallback,
