@@ -50,7 +50,11 @@ export function useMediaGeneration() {
     setPhase("idle");
   }, []);
 
-  async function createImage(category: ImageCategoryId, prompt: string) {
+  async function createImage(
+    category: ImageCategoryId,
+    prompt: string,
+    sourceImageUrl?: string
+  ) {
     if (!userId) {
       setError("Sign in required");
       setPhase("error");
@@ -62,7 +66,12 @@ export function useMediaGeneration() {
     setLastOutputUrl(null);
     try {
       const result = (await withActionTimeout(
-        generateImage({ userId, category, prompt }),
+        generateImage({
+          userId,
+          category,
+          prompt,
+          ...(sourceImageUrl?.trim() ? { sourceImageUrl: sourceImageUrl.trim() } : {}),
+        }),
         MEDIA_IMAGE_TIMEOUT_MS,
         "Image generation timed out. Please try again with a shorter prompt."
       )) as MediaActionResult;

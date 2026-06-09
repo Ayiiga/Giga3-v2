@@ -63,7 +63,8 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `FAL_MODEL` | No | Chat LLM on fal OpenRouter / any-llm, default `google/gemini-2.5-flash` |
    | `FAL_IMAGE_MODEL` | No | Image model, default `fal-ai/nano-banana-pro` (see fal.ai docs) |
    | `REPLICATE_API_TOKEN` | For media | Image/video generation |
-   | `REPLICATE_IMAGE_MODEL` | No | Default in `mediaCatalog.ts` |
+   | `REPLICATE_IMAGE_MODEL` | No | Text-to-image backup, default `black-forest-labs/flux-schnell` |
+   | `REPLICATE_IMAGE_EDIT_MODEL` | No | Image editing backup, default `black-forest-labs/flux-kontext-pro` |
    | `REPLICATE_VIDEO_MODEL` | No | Default `bytedance/seedance-2.0` (text/image-to-video + audio) |
    | `REPLICATE_VIDEO_DURATION` | No | Seedance clip length in seconds, default `7` |
    | `REPLICATE_VIDEO_RESOLUTION` | No | Seedance output, default `720p` |

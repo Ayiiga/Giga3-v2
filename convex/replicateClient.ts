@@ -5,6 +5,7 @@
 
 import { sleep, withRetries } from "./mediaUtils";
 import {
+  REPLICATE_IMAGE_EDIT_MODEL,
   REPLICATE_IMAGE_MODEL,
   REPLICATE_VIDEO_DURATION,
   REPLICATE_VIDEO_GENERATE_AUDIO,
@@ -47,6 +48,14 @@ export type ReplicateVideoOptions = {
   generateAudio?: boolean;
 };
 
+export type ReplicateImageOptions = {
+  sourceImageUrl?: string;
+  seed?: number;
+  aspectRatio?: SeedanceAspectRatio;
+  numInferenceSteps?: number;
+  enableSafetyChecker?: boolean;
+};
+
 function modelPath(modelId: string): string {
   const parts = modelId.split("/").filter(Boolean);
   if (parts.length < 2) {
@@ -57,6 +66,57 @@ function modelPath(modelId: string): string {
 
 function isSeedanceModel(modelId: string): boolean {
   return modelId.startsWith("bytedance/seedance");
+}
+
+function isKontextModel(modelId: string): boolean {
+  return modelId.includes("flux-kontext");
+}
+
+function buildReplicateImageInput(
+  modelId: string,
+  prompt: string,
+  options?: ReplicateImageOptions
+): Record<string, unknown> {
+  if (isKontextModel(modelId)) {
+    const sourceImageUrl = options?.sourceImageUrl?.trim();
+    if (!sourceImageUrl) {
+      throw new Error("Replicate image edit requires sourceImageUrl");
+    }
+    const input: Record<string, unknown> = {
+      prompt,
+      input_image: sourceImageUrl,
+      aspect_ratio: "match_input_image",
+      output_format: "jpg",
+      safety_tolerance: 2,
+    };
+    if (options?.seed !== undefined) {
+      input.seed = options.seed;
+    }
+    return input;
+  }
+
+  const input: Record<string, unknown> = {
+    prompt,
+    aspect_ratio: options?.aspectRatio ?? "1:1",
+    num_outputs: 1,
+    go_fast: true,
+    output_format: "webp",
+    output_quality: 90,
+    num_inference_steps: options?.numInferenceSteps ?? 4,
+  };
+  if (options?.seed !== undefined) {
+    input.seed = options.seed;
+  }
+  if (options?.enableSafetyChecker === false) {
+    input.disable_safety_checker = true;
+  }
+  return input;
+}
+
+function replicateImageModel(options?: ReplicateImageOptions): string {
+  return options?.sourceImageUrl?.trim()
+    ? REPLICATE_IMAGE_EDIT_MODEL
+    : REPLICATE_IMAGE_MODEL;
 }
 
 function buildReplicateVideoInput(
@@ -147,20 +207,23 @@ function extractUrl(output: unknown): string | undefined {
   return undefined;
 }
 
-export async function replicateGenerateImage(prompt: string): Promise<{
-  imageUrl: string;
-  predictionId: string;
-}> {
+export async function replicateGenerateImage(
+  prompt: string,
+  options?: ReplicateImageOptions
+): Promise<{ imageUrl: string; predictionId: string }> {
+  const modelId = replicateImageModel(options);
+  const label = isKontextModel(modelId) ? "replicate-image-edit" : "replicate-image";
   return withRetries(
-    "replicate-image",
+    label,
     async () => {
-      const created = await replicateFetch(modelPath(REPLICATE_IMAGE_MODEL), {
+      const input = buildReplicateImageInput(modelId, prompt, options);
+      const created = await replicateFetch(modelPath(modelId), {
         method: "POST",
-        body: JSON.stringify({ input: { prompt } }),
+        body: JSON.stringify({ input }),
       });
       const done = await pollPrediction(created.id, {
         maxWaitMs: Number(process.env.REPLICATE_IMAGE_MAX_WAIT_MS ?? 5 * 60 * 1000),
-        pollIntervalMs: 2500,
+        pollIntervalMs: isKontextModel(modelId) ? 3000 : 2500,
       });
       const imageUrl = extractUrl(done.output);
       if (!imageUrl) {

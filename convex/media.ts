@@ -155,6 +155,7 @@ export const generateImage = action({
     userId: v.optional(v.string()),
     category: v.optional(v.string()),
     prompt: v.string(),
+    sourceImageUrl: v.optional(v.string()),
     negativePrompt: v.optional(v.string()),
     imageSize: imageSizeValidator,
     numInferenceSteps: v.optional(v.number()),
@@ -190,6 +191,8 @@ export const generateImage = action({
 
       const result = await generateImageWithFallback({
         prompt: fullPrompt,
+        category,
+        sourceImageUrl: args.sourceImageUrl,
         negativePrompt: args.negativePrompt,
         imageSize: args.imageSize as FalImageSize | undefined,
         numInferenceSteps: args.numInferenceSteps,

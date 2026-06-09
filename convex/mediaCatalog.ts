@@ -52,8 +52,18 @@ export const FAL_IMAGE_MODEL =
   process.env.FAL_IMAGE_MODEL ?? "fal-ai/nano-banana-pro";
 
 export const REPLICATE_IMAGE_MODEL =
-  process.env.REPLICATE_IMAGE_MODEL ??
-  "black-forest-labs/flux-schnell";
+  process.env.REPLICATE_IMAGE_MODEL ?? "black-forest-labs/flux-schnell";
+
+/** Replicate FLUX Kontext — image editing when a source image URL is provided. */
+export const REPLICATE_IMAGE_EDIT_MODEL =
+  process.env.REPLICATE_IMAGE_EDIT_MODEL?.trim() ||
+  "black-forest-labs/flux-kontext-pro";
+
+export function imageCategoryAspectRatio(category: string): SeedanceAspectRatio {
+  if (category === "cinematic_posters") return "16:9";
+  if (category === "social_graphics") return "1:1";
+  return "1:1";
+}
 
 export const REPLICATE_VIDEO_MODEL =
   process.env.REPLICATE_VIDEO_MODEL ?? "bytedance/seedance-2.0";
