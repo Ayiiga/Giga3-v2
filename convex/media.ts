@@ -9,6 +9,7 @@ import type { FalImageSize } from "./falClient";
 import { buildImagePrompt, buildVideoPrompt } from "./mediaCatalog";
 import { assertCreditsAvailable, chargeCreditsForMedia } from "./mediaCredits";
 import { generateImageWithFallback, generateVideoWithFallback } from "./mediaEngine";
+import { persistImageUrlIfNeeded } from "./mediaStorage";
 import { toUserMediaError } from "./mediaUtils";
 
 const imageSizeValidator = v.optional(
@@ -154,6 +155,7 @@ export const generateImage = action({
     userId: v.optional(v.string()),
     category: v.optional(v.string()),
     prompt: v.string(),
+    sourceImageUrl: v.optional(v.string()),
     negativePrompt: v.optional(v.string()),
     imageSize: imageSizeValidator,
     numInferenceSteps: v.optional(v.number()),
@@ -189,6 +191,7 @@ export const generateImage = action({
 
       const result = await generateImageWithFallback({
         prompt: fullPrompt,
+        sourceImageUrl: args.sourceImageUrl,
         negativePrompt: args.negativePrompt,
         imageSize: args.imageSize as FalImageSize | undefined,
         numInferenceSteps: args.numInferenceSteps,
@@ -196,6 +199,8 @@ export const generateImage = action({
         seed: args.seed,
         enableSafetyChecker: args.enableSafetyChecker,
       });
+
+      const imageUrl = await persistImageUrlIfNeeded(ctx, result.imageUrl);
 
       if (creditMode && jobId) {
         await chargeCreditsForMedia(ctx, email, "image", String(jobId));
@@ -205,7 +210,7 @@ export const generateImage = action({
         await ctx.runMutation(internal.mediaInternal.completeMediaJob, {
           jobId,
           status: "succeeded",
-          outputUrl: result.imageUrl,
+          outputUrl: imageUrl,
           replicatePredictionId:
             result.provider === "replicate" ? result.externalId : undefined,
         });
@@ -220,8 +225,8 @@ export const generateImage = action({
       }
 
       return {
-        imageUrl: result.imageUrl,
-        outputUrl: result.imageUrl,
+        imageUrl,
+        outputUrl: imageUrl,
         requestId: result.externalId,
         provider: result.provider,
         tokens,

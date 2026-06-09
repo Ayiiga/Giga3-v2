@@ -22,6 +22,7 @@ interface MediaGeneratePanelProps {
   initialTab: "image" | "video";
   initialCategory: string;
   initialPrompt: string;
+  initialSourceImageUrl?: string;
 }
 
 export const MediaGeneratePanel = memo(function MediaGeneratePanel({
@@ -29,6 +30,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
   initialTab,
   initialCategory,
   initialPrompt,
+  initialSourceImageUrl = "",
 }: MediaGeneratePanelProps) {
   useRenderDiagnostic("MediaGeneratePanel");
 
@@ -48,6 +50,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
   const [category, setCategory] = useState(initialCategory);
   const [prompt, setPrompt] = useState(initialPrompt);
   const [videoImageUrl, setVideoImageUrl] = useState("");
+  const [imageSourceUrl, setImageSourceUrl] = useState(initialSourceImageUrl);
 
   const categories = tab === "image" ? IMAGE_CATEGORIES : VIDEO_CATEGORIES;
   const canGen =
@@ -58,7 +61,11 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
     const trimmed = prompt.trim();
     if (!trimmed) return;
     if (tab === "image") {
-      await createImage(category as ImageCategoryId, trimmed);
+      await createImage(
+        category as ImageCategoryId,
+        trimmed,
+        imageSourceUrl || undefined
+      );
     } else {
       await createVideo(
         category as VideoCategoryId,
@@ -66,7 +73,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
         videoImageUrl || undefined
       );
     }
-  }, [tab, category, prompt, videoImageUrl, createImage, createVideo]);
+  }, [tab, category, prompt, videoImageUrl, imageSourceUrl, createImage, createVideo]);
 
   return (
     <>
@@ -132,6 +139,24 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
           placeholder={`Describe your ${tab}…`}
           className="input-surface sm:text-lg"
         />
+
+        {tab === "image" && imageSourceUrl.trim() && (
+          <div className="space-y-2">
+            <label className="text-sm font-bold uppercase tracking-wide text-muted">
+              Source image (edit mode)
+            </label>
+            <input
+              type="url"
+              value={imageSourceUrl}
+              onChange={(e) => setImageSourceUrl(e.target.value)}
+              placeholder="https://… — uses Google AI Studio backup for editing"
+              className="w-full rounded-xl border border-border bg-black/40 px-4 py-3 text-base outline-none ring-accent focus:ring-2"
+            />
+            {imageSourceUrl.startsWith("http") && (
+              <MessageMediaBlock url={imageSourceUrl} kind="image" />
+            )}
+          </div>
+        )}
 
         {tab === "video" && (
           <div className="space-y-2">

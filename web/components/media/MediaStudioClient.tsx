@@ -28,6 +28,7 @@ function MediaStudioContent() {
   const initialTab = params.get("tab") === "video" ? "video" : "image";
   const initialCategory = params.get("category") ?? "anime_art";
   const initialPrompt = params.get("prompt") ?? "";
+  const initialSourceImageUrl = params.get("source") ?? "";
 
   const [formRevision, setFormRevision] = useState(0);
   const [formSeed, setFormSeed] = useState<FormSeed>({
@@ -74,6 +75,7 @@ function MediaStudioContent() {
         initialTab={formSeed.tab}
         initialCategory={formSeed.category}
         initialPrompt={formSeed.prompt}
+        initialSourceImageUrl={initialSourceImageUrl}
       />
 
       <RecentGenerationsSection userId={email} mounted={mounted} />

@@ -1,6 +1,6 @@
 /** Shared helpers for media generation reliability. */
 
-export type MediaProviderId = "fal" | "replicate";
+export type MediaProviderId = "fal" | "replicate" | "gemini";
 
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -46,6 +46,9 @@ export function toUserMediaError(err: unknown, mediaType: "image" | "video"): st
   }
   if (/REPLICATE_API_TOKEN|Replicate is not configured/i.test(raw)) {
     return "Backup media provider is not configured. We're retrying with our primary provider.";
+  }
+  if (/GEMINI_API_KEY|Gemini Imagen|Gemini image edit/i.test(raw)) {
+    return "Google AI Studio backup is not configured. Please try again shortly.";
   }
   if (/Insufficient credits|Insufficient tokens/i.test(raw)) {
     return raw;

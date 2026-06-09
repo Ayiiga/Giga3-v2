@@ -16,3 +16,5 @@ Backend: multi-provider failover (chatEngine), platform.sendMessage, conversatio
 
 Failover env: OPENAI_*, GEMINI_API_KEY, GEMINI_MODEL, FAL_KEY, FAL_MODEL.
 
+Media image backup: fal.ai → Replicate → Google AI Studio (`GEMINI_IMAGE_MODEL`, `GEMINI_IMAGE_EDIT_MODEL`).
+

@@ -14,6 +14,12 @@ fi
 if [[ -n "${GEMINI_MODEL:-}" ]]; then
   npx convex env set GEMINI_MODEL "$GEMINI_MODEL"
 fi
+if [[ -n "${GEMINI_IMAGE_MODEL:-}" ]]; then
+  npx convex env set GEMINI_IMAGE_MODEL "$GEMINI_IMAGE_MODEL"
+fi
+if [[ -n "${GEMINI_IMAGE_EDIT_MODEL:-}" ]]; then
+  npx convex env set GEMINI_IMAGE_EDIT_MODEL "$GEMINI_IMAGE_EDIT_MODEL"
+fi
 
 echo "Convex fal/Gemini env updated."
 

@@ -57,8 +57,10 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `OPENAI_MODEL` | No | Default `gpt-4o-mini` |
    | `OPENAI_FALLBACK_MODEL` | No | Backup OpenAI model in failover |
    | `OPENAI_FALLBACK_API_KEY` | No | Optional second OpenAI key |
-   | `GEMINI_API_KEY` | For Gemini failover | Google AI Studio key |
+   | `GEMINI_API_KEY` | For Gemini failover + media backup | Google AI Studio key |
    | `GEMINI_MODEL` | No | Default `gemini-2.5-flash` |
+   | `GEMINI_IMAGE_MODEL` | No | Imagen backup for text-to-image, default `imagen-4.0-fast-generate-001` |
+   | `GEMINI_IMAGE_EDIT_MODEL` | No | Gemini backup for editing + Imagen fallback, default `gemini-2.5-flash-image` |
    | `FAL_KEY` or `FAL_API_KEY` | For fal.ai failover | fal.ai dashboard |
    | `FAL_MODEL` | No | Chat LLM on fal OpenRouter / any-llm, default `google/gemini-2.5-flash` |
    | `FAL_IMAGE_MODEL` | No | Image model, default `fal-ai/nano-banana-pro` (see fal.ai docs) |
