@@ -1,9 +1,14 @@
 /**
- * Media provider orchestration: fal.ai primary, Replicate fallback.
+ * Media provider orchestration: fal.ai primary, Replicate fallback, Google AI Studio backup.
  */
 
 import { falGenerateImage, falGenerateVideo, getFalApiKey, type FalImageSize } from "./falClient";
 import { imageCategoryAspectRatio, videoCategoryAspectRatio } from "./mediaCatalog";
+import {
+  falImageSizeToAspectRatio,
+  geminiImageWithFallback,
+  getGeminiApiKey,
+} from "./geminiImageClient";
 import {
   getReplicateToken,
   replicateGenerateImage,
@@ -116,6 +121,23 @@ export async function generateImageWithFallback(
         imageUrl: result.imageUrl,
         provider: "replicate",
         externalId: result.predictionId,
+      };
+    } catch (err) {
+      errors.push(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  if (getGeminiApiKey()) {
+    try {
+      const result = await geminiImageWithFallback(input.prompt, {
+        sourceImageUrl: input.sourceImageUrl,
+        aspectRatio: falImageSizeToAspectRatio(input.imageSize),
+        seed: input.seed,
+      });
+      return {
+        imageUrl: result.dataUrl,
+        provider: "gemini",
+        externalId: result.requestId,
       };
     } catch (err) {
       errors.push(err instanceof Error ? err.message : String(err));

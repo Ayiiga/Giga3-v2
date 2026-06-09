@@ -49,7 +49,8 @@ Production deployment: **`perfect-lark-521`** (`https://perfect-lark-521.convex.
 
 - Chat uses **`ThemeProvider`** (`web/components/providers/ThemeProvider.tsx`) — `dark` class on `<html>`, not hardcoded on chat layout.
 - **Giga3 model tiers** (Fast/Smart/Vision/Creator) map to existing Convex `mode` ids in `web/lib/chat/gigaModels.ts` — no new backend schema.
-- Image Studio deep links from chat: `web/lib/chat/imageStudioLinks.ts` → `/media?…`
+- Image Studio deep links from chat: `web/lib/chat/imageStudioLinks.ts` → `/media?…` (`source` URL enables edit mode → Google AI Studio backup via `convex/geminiImageClient.ts`)
+- **Media image failover:** fal.ai → Replicate → Google AI Studio (`GEMINI_API_KEY`; Imagen for generation, Gemini for edit-with-source)
 - Voice dictation uses browser `SpeechRecognition`; `_headers` allows `microphone=(self)`.
 - Keep **`chat-stable`** on chat layout; avoid backdrop-blur on sticky marketing header.
 

@@ -143,7 +143,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
         {tab === "image" && imageSourceUrl.trim() && (
           <div className="space-y-2">
             <label className="text-sm font-bold uppercase tracking-wide text-muted">
-              Source image (edit mode — Replicate FLUX Kontext)
+              Source image (edit mode — Replicate Kontext + Google AI Studio)
             </label>
             <input
               type="url"

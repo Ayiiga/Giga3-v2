@@ -14,7 +14,7 @@ const MediaPageRoot = dynamic(
 export const metadata: Metadata = {
   title: "Media Studio",
   description:
-    "Generate and edit images with Giga3 AI — fal.ai primary, Replicate FLUX Schnell + Kontext backup",
+    "Generate and edit images with Giga3 AI — fal.ai primary, Replicate and Google AI Studio backup",
 };
 
 export default function MediaPage() {

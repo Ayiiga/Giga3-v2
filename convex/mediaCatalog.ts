@@ -84,6 +84,14 @@ export function videoCategoryAspectRatio(category: string): SeedanceAspectRatio 
   return "16:9";
 }
 
+/** Google AI Studio Imagen — backup text-to-image (GEMINI_API_KEY). */
+export const GEMINI_IMAGE_MODEL =
+  process.env.GEMINI_IMAGE_MODEL?.trim() || "imagen-4.0-fast-generate-001";
+
+/** Google AI Studio Gemini — backup image editing and native text-to-image fallback. */
+export const GEMINI_IMAGE_EDIT_MODEL =
+  process.env.GEMINI_IMAGE_EDIT_MODEL?.trim() || "gemini-2.5-flash-image";
+
 export function buildImagePrompt(category: string, userPrompt: string): string {
   const cat =
     IMAGE_CATEGORIES[category as ImageCategoryId] ?? IMAGE_CATEGORIES.anime_art;
