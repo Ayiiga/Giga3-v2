@@ -10,6 +10,8 @@ npx convex env set FAL_IMAGE_MODEL "fal-ai/nano-banana-pro"
 
 if [[ -n "${GEMINI_API_KEY:-}" ]]; then
   npx convex env set GEMINI_API_KEY "$GEMINI_API_KEY"
+  npx convex env set GEMINI_IMAGE_MODEL "${GEMINI_IMAGE_MODEL:-imagen-4.0-fast-generate-001}"
+  npx convex env set GEMINI_IMAGE_EDIT_MODEL "${GEMINI_IMAGE_EDIT_MODEL:-gemini-2.5-flash-image}"
 fi
 if [[ -n "${GEMINI_MODEL:-}" ]]; then
   npx convex env set GEMINI_MODEL "$GEMINI_MODEL"
