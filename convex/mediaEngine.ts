@@ -14,7 +14,12 @@ import {
   replicateGenerateImage,
   replicateGenerateVideo,
 } from "./replicateClient";
-import { type MediaProviderId, withRetries } from "./mediaUtils";
+import { openaiGenerateImage, getOpenAiImageApiKey } from "./openaiImageClient";
+import {
+  isMediaProviderBillingError,
+  type MediaProviderId,
+  withRetries,
+} from "./mediaUtils";
 
 export type ImageGenerateParams = {
   prompt: string;
@@ -93,7 +98,10 @@ export async function generateImageWithFallback(
       return { imageUrl: result.imageUrl, provider: "fal", externalId: result.requestId };
     } catch (err) {
       errors.push(err instanceof Error ? err.message : String(err));
-      if (FAL_IMAGE_FALLBACK_MODEL !== primaryModel) {
+      if (
+        !isMediaProviderBillingError(err) &&
+        FAL_IMAGE_FALLBACK_MODEL !== primaryModel
+      ) {
         try {
           const fallback = await falGenerateImageWithModel(FAL_IMAGE_FALLBACK_MODEL, input);
           return {
@@ -137,6 +145,21 @@ export async function generateImageWithFallback(
       return {
         imageUrl: result.dataUrl,
         provider: "gemini",
+        externalId: result.requestId,
+      };
+    } catch (err) {
+      errors.push(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  if (getOpenAiImageApiKey() && !input.sourceImageUrl?.trim()) {
+    try {
+      const result = await openaiGenerateImage(input.prompt, {
+        imageSize: input.imageSize,
+      });
+      return {
+        imageUrl: result.dataUrl,
+        provider: "openai",
         externalId: result.requestId,
       };
     } catch (err) {
