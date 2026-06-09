@@ -95,6 +95,7 @@ export function useChatPlatform() {
   const removeConversation = useMutation(api.conversations.remove);
   const setConversationMode = useMutation(api.conversations.setMode);
   const sendMessageAction = useAction(api.platformActions.sendMessage);
+  const regenerateMessageAction = useAction(api.platformActions.regenerateMessage);
   const createUser = useMutation(api.users.createUser);
 
   const conversationsLoading = conversationsRaw === undefined;
@@ -229,6 +230,38 @@ export function useChatPlatform() {
     [email, activeId, mode, createConversation, sendMessageAction]
   );
 
+  const regenerateMessage = useCallback(
+    async (assistantMessageId: string) => {
+      if (!email || !activeId) return;
+      setError(null);
+      setIsSending(true);
+      try {
+        const result = await withClientTimeout(
+          regenerateMessageAction({
+            userId: email,
+            conversationId: activeId as Id<"conversations">,
+            assistantMessageId: assistantMessageId as Id<"messages">,
+            mode,
+          }),
+          CHAT_ACTION_TIMEOUT_MS,
+          "Regenerate is taking longer than usual. Please try again in a moment."
+        );
+        const nextLabel =
+          typeof result.chatProviderLabel === "string"
+            ? result.chatProviderLabel
+            : null;
+        const nextFallback = Boolean(result.usedFallback);
+        setChatProviderLabel((prev) => (prev === nextLabel ? prev : nextLabel));
+        setUsedFallback((prev) => (prev === nextFallback ? prev : nextFallback));
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Failed to regenerate");
+      } finally {
+        setIsSending(false);
+      }
+    },
+    [email, activeId, mode, regenerateMessageAction]
+  );
+
   return {
     email,
     mounted,
@@ -245,6 +278,7 @@ export function useChatPlatform() {
     deleteConversation,
     changeMode,
     sendMessage,
+    regenerateMessage,
     setActiveId,
     chatProviderLabel,
     usedFallback,

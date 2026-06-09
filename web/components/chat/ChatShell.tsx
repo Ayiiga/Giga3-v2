@@ -24,6 +24,7 @@ import {
   storeGigaModel,
   type GigaModelId,
 } from "@/lib/chat/gigaModels";
+import { findLatestImageUrlInMessages } from "@/lib/chat/parseMessageMedia";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function ChatShell() {
@@ -97,6 +98,7 @@ function ChatShellInner({
     deleteConversation,
     changeMode,
     sendMessage,
+    regenerateMessage,
     chatProviderLabel,
     usedFallback,
     credits,
@@ -204,18 +206,16 @@ function ChatShellInner({
     [changeMode]
   );
 
+  const latestImageUrl = useMemo(
+    () => findLatestImageUrlInMessages(messages),
+    [messages]
+  );
+
   const handleRegenerate = useCallback(
     (assistantMessageId: string) => {
-      const idx = messages.findIndex((m) => m.id === assistantMessageId);
-      if (idx < 0) return;
-      for (let i = idx - 1; i >= 0; i--) {
-        if (messages[i].role === "user" && messages[i].id !== "pending-user") {
-          void sendMessage(messages[i].content);
-          return;
-        }
-      }
+      void regenerateMessage(assistantMessageId);
     },
-    [messages, sendMessage]
+    [regenerateMessage]
   );
 
   useEffect(() => {
@@ -279,6 +279,7 @@ function ChatShellInner({
           onModeChange={handleModeChange}
           disabled={isSending}
           hasMessages={messages.length > 0}
+          sourceImageUrl={latestImageUrl}
           onInsertDocument={handleInsertDocument}
           onError={handleTemplateError}
         />

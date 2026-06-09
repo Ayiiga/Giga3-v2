@@ -27,12 +27,12 @@ export const siteConfig = {
 } as const;
 
 export const navLinks = [
-  { href: "#features", label: "Features" },
-  { href: "#multi-chat", label: "Multi-AI" },
+  { href: "/#features", label: "Features" },
+  { href: "/#multi-chat", label: "Multi-AI" },
   { href: "/pricing", label: "Pricing" },
   { href: "/media", label: "Media" },
   { href: "/chat/login", label: "Chat" },
-  { href: "#contact", label: "Contact" },
+  { href: "/#contact", label: "Contact" },
 ] as const;
 
 export const heroStats = [
@@ -124,7 +124,7 @@ export const pricingPlans = [
       "Invoice billing",
     ],
     cta: "Contact sales",
-    href: "#contact",
+    href: "/#contact",
     highlighted: false,
   },
 ] as const;

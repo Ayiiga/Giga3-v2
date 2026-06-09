@@ -8,6 +8,10 @@ import { MediaStudioHeader } from "@/components/media/MediaStudioHeader";
 import { RecentGenerationsSection } from "@/components/media/RecentGenerationsSection";
 import { useMediaBilling } from "@/hooks/useMediaBilling";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
+import {
+  getImageStudioActionPrompt,
+  parseImageStudioActionId,
+} from "@/lib/chat/imageStudioLinks";
 import { getMediaStudioTemplate } from "@/lib/media/studioTemplates";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -16,6 +20,7 @@ type FormSeed = {
   tab: "image" | "video";
   category: string;
   prompt: string;
+  action: ReturnType<typeof parseImageStudioActionId>;
 };
 
 function MediaStudioContent() {
@@ -27,7 +32,10 @@ function MediaStudioContent() {
 
   const initialTab = params.get("tab") === "video" ? "video" : "image";
   const initialCategory = params.get("category") ?? "anime_art";
-  const initialPrompt = params.get("prompt") ?? "";
+  const initialAction = parseImageStudioActionId(params.get("action"));
+  const initialPrompt =
+    params.get("prompt") ??
+    (initialAction ? getImageStudioActionPrompt(initialAction) : "");
   const initialSourceImageUrl = params.get("source") ?? "";
 
   const [formRevision, setFormRevision] = useState(0);
@@ -35,6 +43,7 @@ function MediaStudioContent() {
     tab: initialTab,
     category: initialCategory,
     prompt: initialPrompt,
+    action: initialAction,
   });
 
   useEffect(() => {
@@ -50,7 +59,21 @@ function MediaStudioContent() {
       tab: template.tab,
       category: template.category,
       prompt: template.prompt,
+      action: null,
     });
+    setFormRevision((r) => r + 1);
+  }, [params]);
+
+  useEffect(() => {
+    const action = parseImageStudioActionId(params.get("action"));
+    const tab = params.get("tab") === "video" ? "video" : "image";
+    const category = params.get("category") ?? "anime_art";
+    const promptParam = params.get("prompt");
+    const hasSource = Boolean(params.get("source"));
+    if (!action && !promptParam && !hasSource) return;
+    const prompt =
+      promptParam ?? (action ? getImageStudioActionPrompt(action) : "");
+    setFormSeed({ tab, category, prompt, action });
     setFormRevision((r) => r + 1);
   }, [params]);
 
@@ -64,7 +87,7 @@ function MediaStudioContent() {
 
       <MediaQuickTemplates
         onApply={(template) => {
-          setFormSeed(template);
+          setFormSeed({ ...template, action: null });
           setFormRevision((r) => r + 1);
         }}
       />
@@ -76,6 +99,7 @@ function MediaStudioContent() {
         initialCategory={formSeed.category}
         initialPrompt={formSeed.prompt}
         initialSourceImageUrl={initialSourceImageUrl}
+        initialAction={formSeed.action}
       />
 
       <RecentGenerationsSection userId={email} mounted={mounted} />

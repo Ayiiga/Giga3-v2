@@ -23,6 +23,34 @@ const ACTION_PROMPTS: Record<ImageStudioActionId, string> = {
   enhance: "Enhance lighting, color balance, and overall image quality for a premium look.",
 };
 
+const ACTION_IDS: ImageStudioActionId[] = [
+  "generate",
+  "edit",
+  "remove-bg",
+  "replace-bg",
+  "upscale",
+  "style",
+  "object-remove",
+  "enhance",
+];
+
+export function parseImageStudioActionId(
+  value: string | null | undefined
+): ImageStudioActionId | null {
+  if (!value) return null;
+  return ACTION_IDS.includes(value as ImageStudioActionId)
+    ? (value as ImageStudioActionId)
+    : null;
+}
+
+export function getImageStudioActionPrompt(action: ImageStudioActionId): string {
+  return ACTION_PROMPTS[action];
+}
+
+export function imageStudioActionRequiresSource(action: ImageStudioActionId): boolean {
+  return action !== "generate";
+}
+
 export function buildImageStudioActionUrl(
   action: ImageStudioActionId,
   sourceUrl?: string
