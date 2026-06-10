@@ -248,49 +248,52 @@ function ChatShellInner({
         onCloseMobile={handleCloseMobile}
       />
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <ChatChrome
-          email={email}
-          mounted={mounted}
-          messages={messages}
-          conversationTitle={activeConversation?.title}
-          conversationId={activeId}
-          sharePublic={activeConversation?.sharePublic}
-          shareToken={activeConversation?.shareToken}
-          isSending={isSending}
-          credits={credits}
-          modelTier={modelTier}
-          onModelTierChange={handleModelTierChange}
-          onOpenSidebar={handleOpenSidebar}
-          onSetPublicShare={onSetPublicShare}
-          chatActionsRef={chatActionsRef}
-        />
+      <div className="chat-main-column relative z-0 grid min-h-0 min-w-0 flex-1 grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
+        <div className="shrink-0">
+          <ChatChrome
+            email={email}
+            mounted={mounted}
+            messages={messages}
+            conversationTitle={activeConversation?.title}
+            conversationId={activeId}
+            sharePublic={activeConversation?.sharePublic}
+            shareToken={activeConversation?.shareToken}
+            isSending={isSending}
+            credits={credits}
+            modelTier={modelTier}
+            onModelTierChange={handleModelTierChange}
+            onOpenSidebar={handleOpenSidebar}
+            onSetPublicShare={onSetPublicShare}
+            chatActionsRef={chatActionsRef}
+          />
 
-        <ChatBanners
-          email={email}
-          mounted={mounted}
-          chatProviderLabel={chatProviderLabel}
-          usedFallback={usedFallback}
-          interestProfileJson={interestProfileJson}
-        />
+          <ChatBanners
+            email={email}
+            mounted={mounted}
+            hasMessages={messages.length > 0}
+            chatProviderLabel={chatProviderLabel}
+            usedFallback={usedFallback}
+            interestProfileJson={interestProfileJson}
+          />
 
-        <ChatWorkspacePanel
-          mode={mode}
-          onModeChange={handleModeChange}
-          disabled={isSending}
-          hasMessages={messages.length > 0}
-          sourceImageUrl={latestImageUrl}
-          onInsertDocument={handleInsertDocument}
-          onError={handleTemplateError}
-        />
+          <ChatWorkspacePanel
+            mode={mode}
+            onModeChange={handleModeChange}
+            disabled={isSending}
+            hasMessages={messages.length > 0}
+            sourceImageUrl={latestImageUrl}
+            onInsertDocument={handleInsertDocument}
+            onError={handleTemplateError}
+          />
 
-        {templateNotice && (
-          <p className="border-b border-red-500/20 bg-red-500/10 px-4 py-2.5 text-center text-sm text-red-200">
-            {templateNotice}
-          </p>
-        )}
+          {templateNotice && (
+            <p className="border-b border-red-500/20 bg-red-500/10 px-4 py-2.5 text-center text-sm text-red-200">
+              {templateNotice}
+            </p>
+          )}
 
-        {error && <ChatErrorBanner message={error} />}
+          {error && <ChatErrorBanner message={error} />}
+        </div>
 
         <ChatConversationPane
           messages={messages}

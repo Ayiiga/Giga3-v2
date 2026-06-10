@@ -73,7 +73,7 @@ export const ChatChrome = memo(function ChatChrome({
   const router = useRouter();
 
   return (
-    <header className="chat-header-stable flex min-h-14 flex-wrap items-center gap-2 border-b border-border bg-card px-3 py-2 sm:gap-3 sm:px-4">
+    <header className="chat-header-stable flex min-h-14 flex-nowrap items-center gap-1.5 overflow-x-auto border-b border-border bg-card px-2 py-2 sm:gap-3 sm:px-4">
       <button
         type="button"
         className="touch-target rounded-xl text-foreground hover:bg-accent/10 lg:hidden"
@@ -131,9 +131,10 @@ export const ChatChrome = memo(function ChatChrome({
           }
           router.push("/chat/login");
         }}
-        className="min-h-10 rounded-xl px-3 text-sm font-medium text-muted hover:bg-accent/10 hover:text-foreground"
+        className="shrink-0 min-h-10 rounded-xl px-2 text-xs font-medium text-muted hover:bg-accent/10 hover:text-foreground sm:px-3 sm:text-sm"
       >
-        Sign out
+        <span className="sm:hidden">Out</span>
+        <span className="hidden sm:inline">Sign out</span>
       </button>
     </header>
   );

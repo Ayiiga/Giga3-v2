@@ -224,6 +224,29 @@ button:focus-visible {
   overflow-x: clip;
 }
 
+.chat-main-column {
+  min-height: 0;
+}
+
+.chat-conversation-grid {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.chat-message-list {
+  min-height: 0;
+  height: 100%;
+}
+
+.chat-message-scroll-region {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .chat-stable,
 .chat-stable .message-list-scroll {
   scroll-behavior: auto;
