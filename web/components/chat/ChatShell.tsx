@@ -248,7 +248,7 @@ function ChatShellInner({
         onCloseMobile={handleCloseMobile}
       />
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <ChatChrome
           email={email}
           mounted={mounted}

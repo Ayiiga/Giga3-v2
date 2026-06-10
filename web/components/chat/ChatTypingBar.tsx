@@ -13,8 +13,8 @@ export const ChatTypingBar = memo(function ChatTypingBar({
   return (
     <div
       className={cn(
-        "chat-typing-bar shrink-0 border-t border-border bg-white px-4 py-2 sm:px-6",
-        !visible && "invisible pointer-events-none"
+        "chat-typing-bar shrink-0 bg-background px-3 py-2 sm:px-6",
+        !visible && "hidden"
       )}
       aria-hidden={!visible}
     >

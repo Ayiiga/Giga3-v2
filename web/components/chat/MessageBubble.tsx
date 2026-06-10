@@ -31,6 +31,7 @@ function bubblePropsEqual(
   );
 }
 
+/** ChatGPT-style turns: user bubble right, assistant prose left — no flex-row-reverse (mobile-safe). */
 export const MessageBubble = memo(function MessageBubble({
   id,
   role,
@@ -50,73 +51,82 @@ export const MessageBubble = memo(function MessageBubble({
         : "";
 
   return (
-    <div
+    <article
       className={cn(
-        "group flex w-full gap-3 py-1",
-        isUser ? "flex-row-reverse" : "flex-row"
+        "group chat-message-turn w-full",
+        isUser ? "chat-message-turn-user" : "chat-message-turn-assistant"
       )}
     >
       <div
         className={cn(
-          "mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border shadow-sm",
-          isUser
-            ? "bg-accent/10 text-accent"
-            : "bg-card text-muted"
+          "chat-rail flex gap-3",
+          isUser ? "justify-end" : "justify-start"
         )}
-        aria-hidden
       >
-        {isUser ? (
-          <User className="h-4 w-4" />
-        ) : (
-          <Bot className="h-4 w-4" />
+        {!isUser && (
+          <div
+            className="mt-0.5 hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted sm:flex"
+            aria-hidden
+          >
+            <Bot className="h-4 w-4" />
+          </div>
         )}
-      </div>
 
-      <div
-        className={cn(
-          "chat-message-bubble min-w-0 flex-1 text-base leading-[1.7]",
-          isUser ? "max-w-[85%]" : "max-w-full"
-        )}
-      >
         <div
           className={cn(
-            "rounded-2xl px-4 py-3",
-            isUser
-              ? "border border-accent/15 bg-[var(--bubble-user)] text-foreground shadow-sm"
-              : "bg-[var(--bubble-assistant)] px-0 py-1 text-foreground",
-            pending && isUser && "ring-1 ring-accent/30"
+            "chat-message-bubble min-w-0",
+            isUser ? "max-w-[min(100%,20rem)] sm:max-w-[min(85%,28rem)]" : "max-w-full flex-1"
           )}
         >
-          {safeContent && (
-            isUser ? (
-              <p className="whitespace-pre-wrap break-words">{safeContent}</p>
-            ) : (
-              <MessageMarkdown content={safeContent} />
-            )
-          )}
-          {parsed.images.map((url) => (
-            <MessageMediaBlock key={url} url={url} kind="image" />
-          ))}
-          {parsed.videos.map((url) => (
-            <MessageMediaBlock key={url} url={url} kind="video" />
-          ))}
-          {pending && (
-            <p className="mt-2 text-sm text-accent/70" aria-live="polite">
-              Sending…
-            </p>
-          )}
+          <div
+            className={cn(
+              isUser
+                ? "rounded-3xl border border-accent/15 bg-[var(--bubble-user)] px-4 py-2.5 text-foreground shadow-sm"
+                : "chat-assistant-body rounded-2xl bg-[var(--bubble-assistant)] px-3 py-2.5 text-foreground sm:bg-transparent sm:px-0 sm:py-1",
+              pending && isUser && "ring-1 ring-accent/30"
+            )}
+          >
+            {safeContent &&
+              (isUser ? (
+                <p className="whitespace-pre-wrap break-words text-[0.9375rem] leading-relaxed sm:text-base">
+                  {safeContent}
+                </p>
+              ) : (
+                <MessageMarkdown content={safeContent} />
+              ))}
+            {parsed.images.map((url) => (
+              <MessageMediaBlock key={url} url={url} kind="image" />
+            ))}
+            {parsed.videos.map((url) => (
+              <MessageMediaBlock key={url} url={url} kind="video" />
+            ))}
+            {pending && (
+              <p className="mt-2 text-sm text-accent/70" aria-live="polite">
+                Sending…
+              </p>
+            )}
+          </div>
+          <MessageBubbleActions
+            role={role}
+            content={content}
+            disabled={pending}
+            onRegenerate={
+              id && onRegenerate && role === "assistant"
+                ? () => onRegenerate(id)
+                : undefined
+            }
+          />
         </div>
-        <MessageBubbleActions
-          role={role}
-          content={content}
-          disabled={pending}
-          onRegenerate={
-            id && onRegenerate && role === "assistant"
-              ? () => onRegenerate(id)
-              : undefined
-          }
-        />
+
+        {isUser && (
+          <div
+            className="mt-0.5 hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-accent/15 bg-accent/10 text-accent sm:flex"
+            aria-hidden
+          >
+            <User className="h-4 w-4" />
+          </div>
+        )}
       </div>
-    </div>
+    </article>
   );
 }, bubblePropsEqual);
