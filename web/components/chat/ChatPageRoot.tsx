@@ -7,7 +7,7 @@ import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 export function ChatPageRoot() {
   useRenderDiagnostic("ChatPage");
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex h-full min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-hidden">
       <ChatShell />
     </div>
   );

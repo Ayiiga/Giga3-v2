@@ -81,7 +81,7 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
           <img
             src={url}
             alt="Generated or shared image"
-            className="h-full max-h-[min(70vh,24rem)] w-full max-w-full object-contain"
+            className="h-auto max-h-[min(70vh,24rem)] w-full max-w-full object-contain"
             loading="lazy"
             decoding="async"
             width={640}
@@ -93,7 +93,7 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
             controls
             playsInline
             preload="metadata"
-            className="h-full w-full bg-black object-contain"
+            className="h-auto max-h-[min(70vh,24rem)] w-full max-w-full bg-black object-contain"
             width={640}
             height={360}
           />

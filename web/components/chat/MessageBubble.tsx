@@ -31,7 +31,7 @@ function bubblePropsEqual(
   );
 }
 
-/** ChatGPT-style: full-width thread column; user bubble right (max 92%), assistant prose left. */
+/** ChatGPT-style thread turns — contained width, user right, assistant full column. */
 export const MessageBubble = memo(function MessageBubble({
   id,
   role,
@@ -76,8 +76,8 @@ export const MessageBubble = memo(function MessageBubble({
 
   if (isUser) {
     return (
-      <article className="group chat-message-turn chat-message-turn-user w-full min-w-0 max-w-full">
-        <div className="chat-message-bubble chat-message-bubble-user min-w-0 max-w-[92%] sm:max-w-[min(85%,28rem)]">
+      <article className="group chat-message-turn chat-message-turn-user">
+        <div className="chat-message-bubble chat-message-bubble-user">
           <div
             className={cn(
               "chat-message-bubble-inner rounded-[1.25rem] bg-violet-100 px-4 py-2.5 text-zinc-900 shadow-sm dark:bg-violet-950/70 dark:text-zinc-100",
@@ -97,7 +97,7 @@ export const MessageBubble = memo(function MessageBubble({
   }
 
   return (
-    <article className="group chat-message-turn chat-message-turn-assistant w-full min-w-0 max-w-full">
+    <article className="group chat-message-turn chat-message-turn-assistant">
       <div className="chat-message-bubble flex w-full min-w-0 max-w-full gap-0 sm:gap-3">
         <div
           className="mt-0.5 hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted sm:flex"
@@ -105,7 +105,7 @@ export const MessageBubble = memo(function MessageBubble({
         >
           <Bot className="h-4 w-4" />
         </div>
-        <div className="min-w-0 w-full max-w-full flex-1 overflow-hidden">
+        <div className="min-w-0 w-full max-w-full flex-1">
           <div className="chat-assistant-body chat-message-bubble-inner rounded-2xl bg-zinc-100 px-4 py-3 text-zinc-900 dark:bg-zinc-800/90 dark:text-zinc-100 sm:bg-transparent sm:px-0 sm:py-1 sm:text-foreground dark:sm:bg-transparent">
             {body}
           </div>
@@ -118,7 +118,6 @@ export const MessageBubble = memo(function MessageBubble({
             }
           />
         </div>
-        <div className="hidden w-8 shrink-0 sm:block" aria-hidden />
       </div>
     </article>
   );

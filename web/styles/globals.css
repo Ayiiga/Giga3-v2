@@ -1,3 +1,5 @@
+@import "./chat-overflow.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -42,7 +44,9 @@
 html {
   font-size: 16px;
   height: 100%;
-  overflow-x: clip;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   overscroll-behavior-y: none;
   scroll-behavior: auto;
   text-size-adjust: 100%;
@@ -53,8 +57,10 @@ body {
   @apply bg-background text-base font-normal text-foreground antialiased;
   background-color: var(--background);
   min-height: 100%;
+  width: 100%;
+  max-width: 100%;
   line-height: 1.7;
-  overflow-x: clip;
+  overflow-x: hidden;
   touch-action: manipulation;
   overscroll-behavior-y: none;
 }
@@ -221,8 +227,6 @@ button:focus-visible {
 
 .chat-stable {
   isolation: isolate;
-  overflow-x: hidden;
-  max-width: 100vw;
 }
 
 .chat-main-column {
@@ -244,38 +248,18 @@ button:focus-visible {
 }
 
 .chat-message-scroll-region {
-  width: 100%;
-  max-width: 100%;
   height: 100%;
   min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-inline: max(1rem, env(safe-area-inset-left, 0px))
-    max(1rem, env(safe-area-inset-right, 0px));
-  box-sizing: border-box;
 }
 
 .chat-message-stack {
   width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
 }
 
 .chat-thread {
   width: 100%;
   max-width: min(100%, 48rem);
   margin-inline: auto;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-.chat-message-bubble-inner {
-  max-width: 100%;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  box-sizing: border-box;
 }
 
 .chat-stable,
@@ -325,12 +309,6 @@ button:focus-visible {
 
 .chat-message-bubble-user {
   flex-shrink: 1;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-.chat-message-bubble {
-  box-sizing: border-box;
 }
 
 .chat-composer-dock {

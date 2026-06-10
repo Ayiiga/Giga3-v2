@@ -60,7 +60,7 @@ function PublicShareInner() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-x-hidden overflow-y-hidden">
       <header className="flex min-h-14 items-center gap-3 border-b border-border bg-white px-4 py-2">
         <Link href="/" className="flex items-center gap-2 font-semibold text-foreground">
           <BrandLogo size={28} className="!h-7 !w-7" />
@@ -74,11 +74,11 @@ function PublicShareInner() {
           Open Giga3 AI
         </Link>
       </header>
-      <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
+      <div className="chat-message-scroll-region flex-1 px-4 py-6 sm:px-6">
         <p className="mb-6 text-center text-sm text-muted">
           Read-only shared conversation · Powered by Giga3 AI
         </p>
-        <div className="chat-rail mx-auto flex max-w-3xl flex-col gap-6">
+        <div className="chat-thread chat-message-stack flex flex-col gap-6">
           {messages.map((m) => (
             <MessageBubble key={m.id} role={m.role} content={m.content} />
           ))}

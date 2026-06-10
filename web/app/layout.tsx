@@ -84,9 +84,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="min-h-full overflow-x-clip bg-background font-sans text-foreground antialiased">
+      <body className="min-h-full w-full max-w-full overflow-x-hidden bg-background font-sans text-foreground antialiased">
         <ThemeProvider>
-          <div className="min-h-full overflow-x-clip">{children}</div>
+          <div className="min-h-full w-full max-w-full overflow-x-hidden">{children}</div>
         </ThemeProvider>
         <ServiceWorkerRegister />
         <OfflineBanner />

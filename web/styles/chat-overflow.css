@@ -1,0 +1,124 @@
+/**
+ * ChatGPT-like horizontal containment for /chat.
+ * Imported from globals.css — keeps message content inside the viewport.
+ */
+
+.chat-stable {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.chat-conversation-grid,
+.chat-message-list,
+.chat-main-column,
+.chat-composer-dock,
+.chat-composer,
+.chat-thread {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.chat-message-scroll-region {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-inline: max(0.75rem, env(safe-area-inset-left, 0px))
+    max(0.75rem, env(safe-area-inset-right, 0px));
+  box-sizing: border-box;
+}
+
+.chat-message-turn,
+.chat-message-bubble,
+.chat-message-bubble-inner,
+.chat-markdown {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.chat-message-bubble-user {
+  max-width: min(88%, 28rem);
+  width: fit-content;
+}
+
+.chat-message-bubble-inner,
+.chat-markdown {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.chat-markdown .chat-md-p {
+  white-space: pre-wrap;
+}
+
+.chat-markdown .chat-md-link {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.chat-markdown .chat-md-pre {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+
+.chat-markdown .chat-md-pre code {
+  display: block;
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  white-space: pre;
+}
+
+.chat-markdown .chat-md-table-wrap {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 0.75rem;
+  box-sizing: border-box;
+}
+
+.chat-markdown .chat-md-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.chat-markdown .chat-md-table th,
+.chat-markdown .chat-md-table td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.chat-markdown .chat-md-table th {
+  background: var(--card);
+  font-weight: 600;
+}
+
+.chat-message-bubble-inner img,
+.chat-message-bubble-inner video,
+.chat-markdown img,
+.chat-markdown video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.chat-message-bubble-inner iframe {
+  max-width: 100%;
+}

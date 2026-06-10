@@ -26,6 +26,24 @@ function parseMarkdownBlocks(text: string): ReactNode[] {
   while (i < lines.length) {
     const line = lines[i];
 
+    if (isMarkdownTableRow(line)) {
+      const tableStart = i;
+      const tableLines: string[] = [];
+      while (
+        i < lines.length &&
+        (isMarkdownTableRow(lines[i]) || isMarkdownTableSeparator(lines[i]))
+      ) {
+        tableLines.push(lines[i]);
+        i += 1;
+      }
+      const tableNode = renderMarkdownTable(tableLines, blockKey++);
+      if (tableNode) {
+        nodes.push(tableNode);
+        continue;
+      }
+      i = tableStart;
+    }
+
     if (line.startsWith("```")) {
       const fenceLang = line.slice(3).trim();
       const codeLines: string[] = [];
@@ -108,6 +126,7 @@ function parseMarkdownBlocks(text: string): ReactNode[] {
       i < lines.length &&
       lines[i].trim() !== "" &&
       !lines[i].startsWith("```") &&
+      !isMarkdownTableRow(lines[i]) &&
       !/^(#{1,3})\s+/.test(lines[i]) &&
       !/^[-*]\s+/.test(lines[i]) &&
       !/^\d+\.\s+/.test(lines[i])
@@ -123,6 +142,59 @@ function parseMarkdownBlocks(text: string): ReactNode[] {
   }
 
   return nodes;
+}
+
+function isMarkdownTableRow(line: string): boolean {
+  const trimmed = line.trim();
+  return trimmed.startsWith("|") && trimmed.endsWith("|") && trimmed.includes("|");
+}
+
+function isMarkdownTableSeparator(line: string): boolean {
+  return /^\|[\s:|\-]+\|$/.test(line.trim());
+}
+
+function parseTableCells(row: string): string[] {
+  return row
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim());
+}
+
+function renderMarkdownTable(lines: string[], key: number): ReactNode | null {
+  if (lines.length < 2) return null;
+  const separatorIndex = lines.findIndex(isMarkdownTableSeparator);
+  if (separatorIndex < 1) return null;
+
+  const headerCells = parseTableCells(lines[0]);
+  const bodyRows = lines
+    .slice(separatorIndex + 1)
+    .filter(isMarkdownTableRow)
+    .map(parseTableCells);
+
+  return (
+    <div key={`table-${key}`} className="chat-md-table-wrap">
+      <table className="chat-md-table">
+        <thead>
+          <tr>
+            {headerCells.map((cell, cellIndex) => (
+              <th key={`th-${cellIndex}`}>{renderInline(cell)}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {bodyRows.map((row, rowIndex) => (
+            <tr key={`tr-${rowIndex}`}>
+              {row.map((cell, cellIndex) => (
+                <td key={`td-${rowIndex}-${cellIndex}`}>{renderInline(cell)}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 function renderInline(text: string): ReactNode[] {
