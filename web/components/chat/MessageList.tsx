@@ -6,6 +6,7 @@ import { GIGA3_CHAT_WELCOME } from "@/lib/assistantIdentity";
 import { formatCurrentDate, resolveTemplatePlaceholders } from "@/lib/datetime";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { useScrollToLatestMessage } from "@/hooks/useScrollToLatestMessage";
+import { messageListScrollKey } from "@/lib/chat/stableMessages";
 import { cn } from "@/lib/utils";
 import { MessageSquarePlus, Sparkles } from "lucide-react";
 import { memo, useMemo, useRef } from "react";
@@ -38,11 +39,11 @@ function MessageListInner({
   useRenderDiagnostic("MessageList");
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const lastMessageId = messages[messages.length - 1]?.id;
+  const scrollKey = useMemo(() => messageListScrollKey(messages), [messages]);
 
   useScrollToLatestMessage({
     scrollRef,
-    lastMessageId,
+    scrollKey,
     enabled: messages.length > 0,
   });
 

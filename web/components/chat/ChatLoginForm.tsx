@@ -78,7 +78,7 @@ function ChatLoginFormInner() {
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-background px-4 py-12">
+    <div className="flex h-full min-h-0 flex-1 flex-col items-center justify-center bg-background px-4 py-12">
       <div className="premium-card w-full max-w-md p-8 sm:p-10">
         <div className="mb-6 flex flex-col items-center gap-4 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10">

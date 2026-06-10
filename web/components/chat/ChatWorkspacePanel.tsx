@@ -16,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ChevronDown, FileText, Loader2, MessageCircle, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 interface ChatWorkspacePanelProps {
   mode: AiModeId;
@@ -30,7 +30,7 @@ interface ChatWorkspacePanelProps {
 
 type WorkspaceTab = "modes" | "documents" | "media";
 
-export function ChatWorkspacePanel({
+function ChatWorkspacePanelComponent({
   mode,
   onModeChange,
   disabled,
@@ -45,10 +45,12 @@ export function ChatWorkspacePanel({
   const [mediaNavigating, setMediaNavigating] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!hasMessages) {
-      setOpen(true);
-      setTab("documents");
+    if (hasMessages) {
+      setOpen(false);
+      return;
     }
+    setOpen(true);
+    setTab("documents");
   }, [hasMessages]);
 
   useEffect(() => {
@@ -209,3 +211,23 @@ export function ChatWorkspacePanel({
     </div>
   );
 }
+
+function workspacePropsEqual(
+  prev: ChatWorkspacePanelProps,
+  next: ChatWorkspacePanelProps
+): boolean {
+  return (
+    prev.mode === next.mode &&
+    prev.onModeChange === next.onModeChange &&
+    prev.disabled === next.disabled &&
+    prev.hasMessages === next.hasMessages &&
+    prev.sourceImageUrl === next.sourceImageUrl &&
+    prev.onInsertDocument === next.onInsertDocument &&
+    prev.onError === next.onError
+  );
+}
+
+export const ChatWorkspacePanel = memo(
+  ChatWorkspacePanelComponent,
+  workspacePropsEqual
+);

@@ -1,20 +1,19 @@
 "use client";
 
 import { WifiOff, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const DISMISS_KEY = "giga3_dismiss_slow_network";
 
 export function SlowNetworkBanner() {
-  const [dismissed, setDismissed] = useState(true);
-
-  useEffect(() => {
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window === "undefined") return true;
     try {
-      setDismissed(sessionStorage.getItem(DISMISS_KEY) === "1");
+      return sessionStorage.getItem(DISMISS_KEY) === "1";
     } catch {
-      setDismissed(false);
+      return true;
     }
-  }, []);
+  });
 
   if (dismissed) return null;
 

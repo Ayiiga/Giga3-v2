@@ -249,7 +249,7 @@ button:focus-visible {
 }
 
 .chat-message-bubble {
-  contain: layout style;
+  contain: none;
 }
 
 .chat-markdown {
@@ -322,6 +322,16 @@ button:focus-visible {
 }
 
 @media (max-width: 1023px) {
+  .chat-stable .saas-card,
+  .chat-stable .chat-message-bubble,
+  .chat-stable #modes,
+  .chat-stable #modes * {
+    transform: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    contain: none !important;
+  }
+
   .chat-stable * {
     transition-duration: 0s !important;
     transition-delay: 0s !important;
