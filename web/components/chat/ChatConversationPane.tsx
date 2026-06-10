@@ -30,7 +30,7 @@ function panePropsEqual(
   );
 }
 
-/** Message list + typing + composer — isolated from header/sidebar Convex churn. */
+/** Message list + composer — flex column with guaranteed scroll region on mobile. */
 export const ChatConversationPane = memo(function ChatConversationPane({
   messages,
   isLoading,
@@ -41,15 +41,17 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onRegenerate,
 }: ChatConversationPaneProps) {
   return (
-    <>
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background">
       <MessageList
         messages={messages}
         isLoading={isLoading}
         onInsertTemplate={onInsertTemplate}
         onRegenerate={onRegenerate}
       />
-      <ChatTypingBar visible={isSending} />
-      <ChatInput insertRef={insertRef} onSend={onSend} disabled={isSending} />
-    </>
+      <div className="chat-composer-dock shrink-0 border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)]">
+        <ChatTypingBar visible={isSending} />
+        <ChatInput insertRef={insertRef} onSend={onSend} disabled={isSending} />
+      </div>
+    </div>
   );
 }, panePropsEqual);

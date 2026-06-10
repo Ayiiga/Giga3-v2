@@ -18,8 +18,8 @@
   --surface-elevated: #ffffff;
   --composer-bg: #f4f4f5;
   --sidebar-bg: #fafafa;
-  --bubble-user: #f5f3ff;
-  --bubble-assistant: transparent;
+  --bubble-user: #ede9fe;
+  --bubble-assistant: #f4f4f5;
   --shadow-premium: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 24px -8px rgba(91, 33, 182, 0.08);
 }
 
@@ -34,8 +34,8 @@
   --surface-elevated: #1c1c21;
   --composer-bg: #18181b;
   --sidebar-bg: #111114;
-  --bubble-user: #2e1065;
-  --bubble-assistant: transparent;
+  --bubble-user: #3b0764;
+  --bubble-assistant: #18181b;
   --shadow-premium: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -8px rgba(91, 33, 182, 0.2);
 }
 
@@ -252,6 +252,30 @@ button:focus-visible {
   contain: none;
 }
 
+.chat-message-turn {
+  width: 100%;
+}
+
+.chat-message-turn-user {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.chat-message-turn-assistant {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.chat-composer-dock {
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .dark .chat-assistant-body {
+    background: transparent;
+  }
+}
+
 .chat-markdown {
   @apply text-foreground;
 }
@@ -323,7 +347,6 @@ button:focus-visible {
 
 @media (max-width: 1023px) {
   .chat-stable .saas-card,
-  .chat-stable .chat-message-bubble,
   .chat-stable #modes,
   .chat-stable #modes * {
     transform: none !important;

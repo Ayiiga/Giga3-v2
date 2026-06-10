@@ -105,7 +105,13 @@ function ChatWorkspacePanelComponent({
   );
 
   return (
-    <div id="modes" className="shrink-0 border-b border-border bg-card">
+    <div
+      id="modes"
+      className={cn(
+        "shrink-0 border-b border-border bg-card",
+        hasMessages && "hidden sm:block"
+      )}
+    >
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
