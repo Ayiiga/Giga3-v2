@@ -41,7 +41,7 @@ export class ChatErrorBoundary extends Component<
       const display = friendlyMessage(raw);
 
       return (
-        <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background p-6 text-center">
+        <div className="flex h-full min-h-0 flex-1 flex-col items-center justify-center gap-4 bg-background p-6 text-center">
           <h1 className="text-lg font-semibold text-foreground">
             Chat could not load
           </h1>

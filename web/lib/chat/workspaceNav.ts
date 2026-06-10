@@ -13,5 +13,7 @@ export function dispatchWorkspaceNav(target: WorkspaceNavTarget) {
 
 export function scrollToChatHistory() {
   if (typeof document === "undefined") return;
-  document.getElementById("history")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const el = document.getElementById("history");
+  if (!el) return;
+  el.scrollIntoView({ behavior: "auto", block: "start" });
 }

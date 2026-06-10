@@ -4,24 +4,30 @@ import { useEffect, useRef, type RefObject } from "react";
 
 interface UseScrollToLatestMessageOptions {
   scrollRef: RefObject<HTMLElement | null>;
-  /** Convex message id or optimistic pending-user id — scroll only when this changes. */
-  lastMessageId: string | undefined;
+  /** Changes when a new user/assistant turn should pin scroll to bottom. */
+  scrollKey: string | undefined;
   enabled?: boolean;
   /** Skip auto-scroll when user is reading older messages (px from bottom). */
   nearBottomThresholdPx?: number;
 }
 
+function scrollToBottom(el: HTMLElement) {
+  const target = el.scrollHeight - el.clientHeight;
+  if (Math.abs(el.scrollTop - target) <= 2) return;
+  el.scrollTop = target;
+}
+
 /**
- * Scrolls once when a new message id appears.
- * Does NOT scroll for typing state, isSending, token chunks, or Convex reference-only updates.
+ * Scrolls once when scrollKey changes (new message turn).
+ * Does NOT scroll for typing state, token chunks, or Convex reference-only updates.
  */
 export function useScrollToLatestMessage({
   scrollRef,
-  lastMessageId,
+  scrollKey,
   enabled = true,
   nearBottomThresholdPx = 96,
 }: UseScrollToLatestMessageOptions) {
-  const prevIdRef = useRef<string | undefined>();
+  const prevKeyRef = useRef<string | undefined>();
   const nearBottomRef = useRef(true);
 
   useEffect(() => {
@@ -39,26 +45,20 @@ export function useScrollToLatestMessage({
   }, [scrollRef, nearBottomThresholdPx]);
 
   useEffect(() => {
-    if (!enabled || !lastMessageId || prevIdRef.current === lastMessageId) {
+    if (!enabled || !scrollKey || prevKeyRef.current === scrollKey) {
       return;
     }
 
-    const isNewMessage = prevIdRef.current !== undefined;
-    prevIdRef.current = lastMessageId;
+    const isNewTurn = prevKeyRef.current !== undefined;
+    prevKeyRef.current = scrollKey;
 
-    if (isNewMessage && !nearBottomRef.current) {
+    if (isNewTurn && !nearBottomRef.current) {
       return;
     }
 
     const el = scrollRef.current;
     if (!el) return;
 
-    const applyScroll = () => {
-      const target = el.scrollHeight - el.clientHeight;
-      if (Math.abs(el.scrollTop - target) <= 2) return;
-      el.scrollTop = target;
-    };
-
-    requestAnimationFrame(applyScroll);
-  }, [scrollRef, lastMessageId, enabled]);
+    requestAnimationFrame(() => scrollToBottom(el));
+  }, [scrollRef, scrollKey, enabled]);
 }

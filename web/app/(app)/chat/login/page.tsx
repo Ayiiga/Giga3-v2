@@ -9,7 +9,7 @@ const ChatLoginPageClient = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex min-h-[100dvh] items-center justify-center text-muted">
+      <div className="flex h-full min-h-0 flex-1 items-center justify-center text-muted">
         Loading sign-in…
       </div>
     ),

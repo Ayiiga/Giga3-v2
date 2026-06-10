@@ -11,7 +11,9 @@ export function conversationsEqual(
       a[i].title !== b[i].title ||
       a[i].mode !== b[i].mode ||
       a[i].updatedAt !== b[i].updatedAt ||
-      a[i].convexConversationId !== b[i].convexConversationId
+      a[i].convexConversationId !== b[i].convexConversationId ||
+      a[i].sharePublic !== b[i].sharePublic ||
+      a[i].shareToken !== b[i].shareToken
     ) {
       return false;
     }
