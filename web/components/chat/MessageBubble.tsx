@@ -75,15 +75,15 @@ export const MessageBubble = memo(function MessageBubble({
         <div
           className={cn(
             "chat-message-bubble min-w-0",
-            isUser ? "max-w-[min(100%,20rem)] sm:max-w-[min(85%,28rem)]" : "max-w-full flex-1"
+            isUser ? "max-w-[min(85%,20rem)] sm:max-w-[min(85%,28rem)]" : "w-full max-w-full"
           )}
         >
           <div
             className={cn(
               isUser
-                ? "rounded-3xl border border-accent/15 bg-[var(--bubble-user)] px-4 py-2.5 text-foreground shadow-sm"
-                : "chat-assistant-body rounded-2xl bg-[var(--bubble-assistant)] px-3 py-2.5 text-foreground sm:bg-transparent sm:px-0 sm:py-1",
-              pending && isUser && "ring-1 ring-accent/30"
+                ? "rounded-[1.25rem] bg-violet-100 px-4 py-2.5 text-zinc-900 shadow-sm dark:bg-violet-950/70 dark:text-zinc-100"
+                : "chat-assistant-body rounded-2xl bg-zinc-100 px-4 py-3 text-zinc-900 dark:bg-zinc-800/90 dark:text-zinc-100 sm:bg-transparent sm:px-0 sm:py-1 sm:text-foreground dark:sm:bg-transparent",
+              pending && isUser && "ring-1 ring-violet-400/40"
             )}
           >
             {safeContent &&

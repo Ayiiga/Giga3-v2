@@ -103,7 +103,9 @@ function ChatSidebarComponent({
       <aside
         className={cn(
           "chat-sidebar-surface fixed inset-y-0 left-0 z-50 flex w-[min(100%,300px)] flex-col border-r border-border lg:static lg:z-0 lg:translate-x-0",
-          mobileOpen ? "translate-x-0" : "-translate-x-full",
+          mobileOpen
+            ? "translate-x-0 pointer-events-auto"
+            : "-translate-x-full pointer-events-none lg:pointer-events-auto",
           collapsed && "lg:w-0 lg:overflow-hidden lg:border-0"
         )}
       >

@@ -41,14 +41,14 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onRegenerate,
 }: ChatConversationPaneProps) {
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background">
+    <div className="chat-conversation-grid min-h-0 overflow-hidden bg-background">
       <MessageList
         messages={messages}
         isLoading={isLoading}
         onInsertTemplate={onInsertTemplate}
         onRegenerate={onRegenerate}
       />
-      <div className="chat-composer-dock shrink-0 border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)]">
+      <div className="chat-composer-dock border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)]">
         <ChatTypingBar visible={isSending} />
         <ChatInput insertRef={insertRef} onSend={onSend} disabled={isSending} />
       </div>
