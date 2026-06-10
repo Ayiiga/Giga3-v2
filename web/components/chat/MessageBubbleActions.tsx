@@ -77,7 +77,7 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
       />
       <div
         className={cn(
-          "flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:transition-opacity",
+          "flex max-w-full flex-wrap items-center gap-0.5 opacity-100 sm:opacity-0 sm:transition-opacity",
           "sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
         )}
       >

@@ -151,7 +151,7 @@ body {
   }
 
   .chat-rail {
-    @apply mx-auto w-full max-w-chat;
+    @apply mx-auto w-full min-w-0 max-w-chat;
   }
 
   .input-surface {
@@ -241,10 +241,23 @@ button:focus-visible {
 }
 
 .chat-message-scroll-region {
+  width: 100%;
+  max-width: 100%;
   height: 100%;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  padding-inline: max(1rem, env(safe-area-inset-left, 0px))
+    max(1rem, env(safe-area-inset-right, 0px));
+  box-sizing: border-box;
+}
+
+.chat-message-stack {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .chat-stable,
@@ -277,6 +290,9 @@ button:focus-visible {
 
 .chat-message-turn {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .chat-message-turn-user {
@@ -287,6 +303,10 @@ button:focus-visible {
 .chat-message-turn-assistant {
   display: flex;
   justify-content: flex-start;
+}
+
+.chat-message-bubble-user {
+  flex-shrink: 1;
 }
 
 .chat-composer-dock {
@@ -300,7 +320,9 @@ button:focus-visible {
 }
 
 .chat-markdown {
-  @apply text-foreground;
+  @apply max-w-full text-foreground;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .chat-markdown .chat-md-p {
@@ -345,7 +367,8 @@ button:focus-visible {
 }
 
 .chat-markdown .chat-md-pre {
-  @apply relative mb-3 overflow-x-auto rounded-xl border border-zinc-200 bg-zinc-950 px-4 py-3 last:mb-0;
+  @apply relative mb-3 max-w-full overflow-x-auto rounded-xl border border-zinc-200 bg-zinc-950 px-4 py-3 last:mb-0;
+  box-sizing: border-box;
 }
 
 .chat-markdown .chat-md-pre code {
