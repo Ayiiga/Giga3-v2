@@ -73,15 +73,15 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
   );
 
   return (
-    <div className={cn("relative mt-3 space-y-2", className)}>
+    <div className={cn("relative mt-3 max-w-full space-y-2 overflow-hidden", className)}>
       <ShareActionFeedback feedback={feedback} />
-      <div className="premium-card aspect-video min-h-[12rem] w-full overflow-hidden bg-card">
+      <div className="premium-card aspect-video min-h-[12rem] w-full max-w-full overflow-hidden bg-card">
         {kind === "image" ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={url}
             alt="Generated or shared image"
-            className="h-full w-full object-contain"
+            className="h-full max-h-[min(70vh,24rem)] w-full max-w-full object-contain"
             loading="lazy"
             decoding="async"
             width={640}

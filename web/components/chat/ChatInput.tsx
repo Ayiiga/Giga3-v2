@@ -118,9 +118,9 @@ export const ChatInput = memo(function ChatInput({
   return (
     <form
       onSubmit={handleSubmit}
-      className="chat-composer px-3 py-3 sm:px-6 sm:py-4"
+      className="chat-composer min-w-0 max-w-full px-3 py-3 sm:px-6 sm:py-4"
     >
-      <div className="chat-rail space-y-2">
+      <div className="chat-thread space-y-2">
         {notice && (
           <NoticeBanner message={notice} onDismiss={() => setNotice(null)} />
         )}

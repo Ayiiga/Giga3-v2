@@ -221,11 +221,14 @@ button:focus-visible {
 
 .chat-stable {
   isolation: isolate;
-  overflow-x: clip;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 .chat-main-column {
   min-height: 0;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .chat-conversation-grid {
@@ -257,6 +260,21 @@ button:focus-visible {
   width: 100%;
   min-width: 0;
   max-width: 100%;
+  box-sizing: border-box;
+}
+
+.chat-thread {
+  width: 100%;
+  max-width: min(100%, 48rem);
+  margin-inline: auto;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.chat-message-bubble-inner {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   box-sizing: border-box;
 }
 
@@ -307,6 +325,12 @@ button:focus-visible {
 
 .chat-message-bubble-user {
   flex-shrink: 1;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.chat-message-bubble {
+  box-sizing: border-box;
 }
 
 .chat-composer-dock {
@@ -363,7 +387,7 @@ button:focus-visible {
 }
 
 .chat-markdown .chat-md-code {
-  @apply rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[0.875em] text-accent;
+  @apply max-w-full break-all rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[0.875em] text-accent;
 }
 
 .chat-markdown .chat-md-pre {

@@ -56,7 +56,7 @@ function MessageListInner({
   }, []);
 
   return (
-    <div className="chat-message-list min-h-0 overflow-hidden bg-background">
+    <div className="chat-message-list min-h-0 min-w-0 max-w-full overflow-x-hidden overflow-y-hidden bg-background">
       <div
         ref={scrollRef}
         className="message-list-scroll chat-message-scroll-region overscroll-y-contain py-3 sm:py-6"
@@ -140,7 +140,7 @@ function MessageListInner({
           </div>
         )}
 
-        <div className="chat-rail chat-message-stack flex min-w-0 max-w-full flex-col gap-3 sm:gap-6">
+        <div className="chat-thread chat-message-stack flex w-full min-w-0 max-w-full flex-col gap-3 sm:gap-6">
           {messages.map((m) => (
             <MessageBubble
               key={m.id}
