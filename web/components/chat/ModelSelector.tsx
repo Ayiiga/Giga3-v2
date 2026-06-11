@@ -55,7 +55,7 @@ export const ModelSelector = memo(function ModelSelector({
         aria-haspopup="listbox"
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          "inline-flex min-h-10 items-center gap-2 rounded-xl border border-border bg-card px-3 text-sm font-medium text-foreground shadow-sm",
+          "inline-flex max-w-full min-h-10 items-center gap-1.5 rounded-xl border border-border bg-card px-2 text-sm font-medium text-foreground shadow-sm sm:gap-2 sm:px-3",
           "hover:border-accent/30 hover:bg-accent/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40",
           compact && "min-h-9 px-2.5",
           disabled && "pointer-events-none opacity-50"

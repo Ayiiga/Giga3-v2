@@ -73,7 +73,7 @@ export const ChatChrome = memo(function ChatChrome({
   const router = useRouter();
 
   return (
-    <header className="chat-header-stable flex min-h-14 min-w-0 max-w-full flex-nowrap items-center gap-1.5 overflow-x-auto border-b border-border bg-card px-2 py-2 sm:gap-3 sm:px-4">
+    <header className="chat-header-stable flex min-h-14 min-w-0 max-w-full flex-nowrap items-center gap-1 overflow-hidden border-b border-border bg-card px-2 py-2 sm:gap-3 sm:px-4">
       <button
         type="button"
         className="touch-target rounded-xl text-foreground hover:bg-accent/10 lg:hidden"
@@ -95,11 +95,11 @@ export const ChatChrome = memo(function ChatChrome({
           onChange={onModelTierChange}
           disabled={isSending}
           compact
-          className="min-w-0"
+          className="min-w-0 max-w-[7.75rem] sm:max-w-none"
         />
       </div>
 
-      <span className="ml-auto flex items-center gap-1.5 sm:gap-2">
+      <span className="ml-auto flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
         <ThemeToggle className="hidden sm:inline-flex" />
         <ChatActionsMenu
           ref={chatActionsRef}
@@ -117,7 +117,11 @@ export const ChatChrome = memo(function ChatChrome({
           <CreditBadge credits={credits} showLabel className="hidden sm:inline-flex" />
         )}
         {credits != null && (
-          <CreditBadge credits={credits} showLabel={false} className="sm:hidden" />
+          <CreditBadge
+            credits={credits}
+            showLabel={false}
+            className="min-h-10 shrink-0 px-2 sm:hidden"
+          />
         )}
       </span>
 
@@ -131,7 +135,7 @@ export const ChatChrome = memo(function ChatChrome({
           }
           router.push("/chat/login");
         }}
-        className="shrink-0 min-h-10 rounded-xl px-2 text-xs font-medium text-muted hover:bg-accent/10 hover:text-foreground sm:px-3 sm:text-sm"
+        className="hidden shrink-0 min-h-10 rounded-xl px-2 text-xs font-medium text-muted hover:bg-accent/10 hover:text-foreground min-[390px]:inline-flex sm:px-3 sm:text-sm"
       >
         <span className="sm:hidden">Out</span>
         <span className="hidden sm:inline">Sign out</span>

@@ -146,7 +146,7 @@ export const ChatInput = memo(function ChatInput({
             disabled={inputDisabled}
             rows={1}
             placeholder={placeholder}
-            className="max-h-40 min-h-11 flex-1 resize-none overflow-y-auto border-0 bg-transparent px-2 py-2.5 text-base leading-[1.7] text-foreground outline-none placeholder:text-muted focus:ring-0 disabled:opacity-50"
+            className="max-h-40 min-h-11 min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-transparent px-2 py-2.5 text-base leading-[1.7] text-foreground outline-none placeholder:text-muted focus:ring-0 disabled:opacity-50"
             aria-label="Chat message"
           />
 

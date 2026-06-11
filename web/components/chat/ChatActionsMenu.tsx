@@ -240,11 +240,11 @@ export const ChatActionsMenu = memo(
         aria-haspopup="menu"
         aria-label="Chat share and export. Shortcuts: Ctrl+Shift+C copy chat, Ctrl+Shift+S share chat"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-white px-3 text-sm font-medium text-foreground shadow-sm hover:bg-zinc-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+        className="inline-flex min-h-10 min-w-10 items-center justify-center gap-0 rounded-xl border border-border bg-white px-2 text-sm font-medium text-foreground shadow-sm hover:bg-zinc-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 sm:min-h-11 sm:gap-1.5 sm:px-3"
       >
         <Share2 className="h-4 w-4" aria-hidden />
         <span className="hidden sm:inline">Share</span>
-        <ChevronDown className="h-4 w-4 opacity-60" aria-hidden />
+        <ChevronDown className="hidden h-4 w-4 opacity-60 sm:block" aria-hidden />
       </button>
 
       {open && (

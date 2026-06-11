@@ -32,6 +32,14 @@
   box-sizing: border-box;
 }
 
+.chat-message-list,
+.message-list-scroll {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 .chat-message-turn {
   width: 100%;
   max-width: 100%;
@@ -45,10 +53,16 @@
 
 .chat-message-bubble,
 .chat-message-bubble-inner,
+.chat-assistant-body,
 .chat-markdown {
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+.chat-message-turn-assistant .chat-message-bubble,
+.chat-message-turn-assistant .chat-assistant-body {
+  width: 100%;
 }
 
 .chat-message-bubble-user {
@@ -163,4 +177,40 @@
 /* Media action rows stay inside the bubble */
 .chat-message-bubble-inner .flex.flex-wrap {
   max-width: 100%;
+}
+
+@media (max-width: 639px) {
+  .chat-message-scroll-region {
+    padding-inline: max(0.5rem, env(safe-area-inset-left, 0px))
+      max(0.5rem, env(safe-area-inset-right, 0px));
+  }
+
+  .chat-thread {
+    max-width: 100%;
+  }
+
+  .chat-message-turn-assistant .chat-message-bubble-inner {
+    padding-inline: 0.875rem;
+  }
+
+  .chat-message-bubble-user {
+    max-width: min(86%, 24rem);
+  }
+
+  .chat-composer {
+    padding-inline: max(0.5rem, env(safe-area-inset-left, 0px))
+      max(0.5rem, env(safe-area-inset-right, 0px));
+  }
+
+  .chat-composer-surface {
+    max-width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  .chat-composer-surface {
+    gap: 0.375rem;
+    padding: 0.375rem;
+  }
 }
