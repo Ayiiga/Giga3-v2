@@ -12,14 +12,26 @@
 | Next.js PWA (static export) | `web/` | Output: **`web/out`** (not `.next`) |
 | Legacy static site | `frontend/` | Uses Convex HTTP paths; config in `frontend/assets/js/config.js` |
 
-### Commands (from repo root)
+### Commands
 
-- Install root: `npm ci --legacy-peer-deps`
-- Install web: `cd web && npm install --legacy-peer-deps`
-- Lint: `npm run lint` (runs `web` ESLint)
-- Build: `npm run build` (static export to `web/out`)
-- Convex codegen: `npx convex codegen`
-- Convex deploy: `npx convex deploy --yes` (requires `CONVEX_DEPLOY_KEY`)
+**Install (repo root, then web):**
+
+- Root (Convex CLI): `npm ci --legacy-peer-deps`
+- Web app: `cd web && npm ci --legacy-peer-deps` (or `npm install --legacy-peer-deps` if lockfile missing)
+
+**Lint / build / dev (run from `web/` — root `package.json` has no lint/build scripts):**
+
+- Lint: `cd web && npm run lint`
+- Build (static export → `web/out`): `cd web && npm run build`
+- Dev server: `cd web && npm run dev` → http://localhost:3000 (chat login: `/chat/login/`)
+- Verify Convex URL in build: `cd web && npm run verify:convex-env` (needs `NEXT_PUBLIC_CONVEX_URL` set)
+
+**Convex (repo root):**
+
+- Codegen: `npx convex codegen` (needs `CONVEX_DEPLOYMENT` and `npx convex dev` login, or use CI/deploy)
+- Deploy: `npx convex deploy --yes` (requires `CONVEX_DEPLOY_KEY`)
+
+**Tests:** No unit/integration test suite; root `npm test` is a placeholder and exits 1.
 
 ### Build-time env (web)
 
