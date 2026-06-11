@@ -16,9 +16,12 @@ const required = [
   "width: 100%",
   "word-break: break-word",
   "overflow-wrap: anywhere",
+  "white-space: pre-wrap",
   "chat-md-table-wrap",
   "chat-md-pre",
   "max-width: 100%",
+  "height: auto",
+  "min-width: 0",
 ];
 
 const missing = required.filter((token) => !css.includes(token));

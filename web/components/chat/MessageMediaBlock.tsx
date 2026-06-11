@@ -73,7 +73,7 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
   );
 
   return (
-    <div className={cn("relative mt-3 max-w-full space-y-2 overflow-hidden", className)}>
+    <div className={cn("relative mt-3 min-w-0 max-w-full space-y-2", className)}>
       <ShareActionFeedback feedback={feedback} />
       <div className="premium-card aspect-video min-h-[12rem] w-full max-w-full overflow-hidden bg-card">
         {kind === "image" ? (

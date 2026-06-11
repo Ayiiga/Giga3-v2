@@ -32,7 +32,17 @@
   box-sizing: border-box;
 }
 
-.chat-message-turn,
+.chat-message-turn {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.chat-message-turn-user {
+  width: 100%;
+}
+
 .chat-message-bubble,
 .chat-message-bubble-inner,
 .chat-markdown {
@@ -46,6 +56,10 @@
   width: fit-content;
 }
 
+.chat-message-bubble-user .chat-message-bubble-inner {
+  max-width: 100%;
+}
+
 .chat-message-bubble-inner,
 .chat-markdown {
   overflow-wrap: anywhere;
@@ -54,6 +68,24 @@
 
 .chat-markdown .chat-md-p {
   white-space: pre-wrap;
+}
+
+.chat-markdown .chat-md-h1,
+.chat-markdown .chat-md-h2,
+.chat-markdown .chat-md-h3,
+.chat-markdown .chat-md-ul,
+.chat-markdown .chat-md-ol,
+.chat-markdown .chat-md-strong,
+.chat-markdown .chat-md-em {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.chat-markdown .chat-md-ul,
+.chat-markdown .chat-md-ol {
+  padding-inline-start: 1.25rem;
+  margin-inline-start: 0;
 }
 
 .chat-markdown .chat-md-link {
@@ -120,5 +152,15 @@
 }
 
 .chat-message-bubble-inner iframe {
+  max-width: 100%;
+}
+
+.chat-message-bubble-actions,
+.chat-message-bubble-actions > div {
+  max-width: 100%;
+}
+
+/* Media action rows stay inside the bubble */
+.chat-message-bubble-inner .flex.flex-wrap {
   max-width: 100%;
 }

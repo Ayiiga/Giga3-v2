@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v14";
+const CACHE_NAME = "giga3-shell-v15";
 const PRECACHE = [
   "/",
   "/offline/",

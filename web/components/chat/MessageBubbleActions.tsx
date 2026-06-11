@@ -66,7 +66,7 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
   return (
     <div
       className={cn(
-        "relative mt-1 min-h-9",
+        "chat-message-bubble-actions relative mt-1 min-h-9 min-w-0 max-w-full",
         role === "user" ? "flex justify-end" : "flex justify-start",
         className
       )}
