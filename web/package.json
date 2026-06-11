@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "generate:branding": "node scripts/generate-branding.mjs",
-    "prebuild": "node scripts/generate-branding.mjs && node scripts/verify-chat-overflow-css.mjs && node scripts/chat-overflow-viewport-test.mjs",
+    "prebuild": "node scripts/generate-branding.mjs && node scripts/verify-chat-overflow-css.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

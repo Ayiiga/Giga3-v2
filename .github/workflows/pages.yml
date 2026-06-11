@@ -66,6 +66,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+
+      - name: Chat overflow viewport audit
+        run: npm run test:chat-overflow
+
       - name: Build static site
         env:
           NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
