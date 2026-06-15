@@ -21,6 +21,29 @@ type MediaActionResult = {
   outputUrl?: string;
 };
 
+export type ImageGenerationOptions = {
+  imageSize?: "square_hd" | "square" | "portrait_4_3" | "portrait_16_9" | "landscape_4_3" | "landscape_16_9";
+  negativePrompt?: string;
+  numInferenceSteps?: number;
+  guidanceScale?: number;
+  seed?: number;
+  enableSafetyChecker?: boolean;
+};
+
+export type VideoGenerationOptions = {
+  imageSize?: ImageGenerationOptions["imageSize"];
+  negativePrompt?: string;
+  numFrames?: number;
+  framesPerSecond?: number;
+  numInferenceSteps?: number;
+  guidanceScale?: number;
+  seed?: number;
+  duration?: number;
+  resolution?: string;
+  generateAudio?: boolean;
+  aspectRatio?: "16:9" | "9:16" | "4:3" | "1:1" | "3:4" | "21:9";
+};
+
 function pickOutputUrl(result: MediaActionResult, kind: "image" | "video"): string | null {
   if (kind === "image") {
     return result.imageUrl ?? result.outputUrl ?? null;
@@ -53,7 +76,8 @@ export function useMediaGeneration() {
   async function createImage(
     category: ImageCategoryId,
     prompt: string,
-    sourceImageUrl?: string
+    sourceImageUrl?: string,
+    options?: ImageGenerationOptions
   ) {
     if (!userId) {
       setError("Sign in required");
@@ -71,6 +95,7 @@ export function useMediaGeneration() {
           category,
           prompt,
           ...(sourceImageUrl?.trim() ? { sourceImageUrl: sourceImageUrl.trim() } : {}),
+          ...(options ?? {}),
         }),
         MEDIA_IMAGE_TIMEOUT_MS,
         "Image generation timed out. Please try again with a shorter prompt."
@@ -102,7 +127,8 @@ export function useMediaGeneration() {
   async function createVideo(
     category: VideoCategoryId,
     prompt: string,
-    imageUrl?: string
+    imageUrl?: string,
+    options?: VideoGenerationOptions
   ) {
     if (!userId) {
       setError("Sign in required");
@@ -120,6 +146,7 @@ export function useMediaGeneration() {
           category,
           prompt,
           ...(imageUrl?.trim() ? { imageUrl: imageUrl.trim() } : {}),
+          ...(options ?? {}),
         }),
         MEDIA_VIDEO_TIMEOUT_MS,
         "Video generation timed out. Try a source image URL or a shorter prompt."

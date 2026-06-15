@@ -7,6 +7,7 @@ import {
   completeChatWithFailover,
   getChatProviderLabel,
   trimChatMessages,
+  type ChatCompletionAttachment,
 } from "./chatEngine";
 import { getSystemPrompt, isValidMode } from "./aiModes";
 import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
@@ -17,6 +18,26 @@ export const sendMessage = action({
     conversationId: v.id("conversations"),
     content: v.string(),
     mode: v.optional(v.string()),
+    attachments: v.optional(
+      v.array(
+        v.object({
+          kind: v.union(
+            v.literal("image"),
+            v.literal("document"),
+            v.literal("archive"),
+            v.literal("spreadsheet"),
+            v.literal("presentation"),
+            v.literal("pdf"),
+            v.literal("text")
+          ),
+          name: v.string(),
+          mimeType: v.optional(v.string()),
+          sizeBytes: v.number(),
+          text: v.optional(v.string()),
+          dataUrl: v.optional(v.string()),
+        })
+      )
+    ),
   },
   handler: async (ctx, args) => {
     const conv = await ctx.runQuery(api.conversations.get, {
@@ -33,6 +54,19 @@ export const sendMessage = action({
 
     const mode =
       args.mode && isValidMode(args.mode) ? args.mode : conv.mode ?? "general";
+    const attachments = (args.attachments ?? []) as ChatCompletionAttachment[];
+
+    if (attachments.length > 0) {
+      await ctx.runMutation(api.uploadLimits.recordUploads, {
+        userId: args.userId,
+        files: attachments.map((attachment) => ({
+          name: attachment.name,
+          sizeBytes: attachment.sizeBytes,
+          mimeType: attachment.mimeType,
+          kind: attachment.kind,
+        })),
+      });
+    }
 
     if (mode !== conv.mode) {
       await ctx.runMutation(api.conversations.setMode, {
@@ -74,6 +108,16 @@ export const sendMessage = action({
         role: m.role as "user" | "assistant",
         content: m.content,
       })),
+      ...(attachments.length
+        ? [
+            {
+              role: "user" as const,
+              content:
+                "Analyze the uploaded attachments in detail. Extract text/OCR where possible, answer the user's request, and when this is an exam or technical question solve it step-by-step with formulas and diagrams when useful.",
+              attachments,
+            },
+          ]
+        : []),
     ]);
 
     const engineResult = await completeChatWithFailover(chatMessages);

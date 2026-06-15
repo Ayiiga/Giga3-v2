@@ -58,6 +58,19 @@ export const generateVideo = action({
     seed: v.optional(v.number()),
     enableSafetyChecker: v.optional(v.boolean()),
     syncMode: v.optional(v.boolean()),
+    duration: v.optional(v.number()),
+    resolution: v.optional(v.string()),
+    generateAudio: v.optional(v.boolean()),
+    aspectRatio: v.optional(
+      v.union(
+        v.literal("16:9"),
+        v.literal("9:16"),
+        v.literal("4:3"),
+        v.literal("1:1"),
+        v.literal("3:4"),
+        v.literal("21:9")
+      )
+    ),
   },
   handler: async (ctx, args) => {
     const email = resolveEmail(args);
@@ -102,6 +115,10 @@ export const generateVideo = action({
         seed: args.seed,
         enableSafetyChecker: args.enableSafetyChecker,
         syncMode: args.syncMode,
+        duration: args.duration,
+        resolution: args.resolution,
+        generateAudio: args.generateAudio,
+        aspectRatio: args.aspectRatio,
       });
 
       if (creditMode && jobId) {

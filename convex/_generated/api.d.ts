@@ -42,6 +42,7 @@ import type * as replicateClient from "../replicateClient.js";
 import type * as stripeActions from "../stripeActions.js";
 import type * as subscriptionPlans from "../subscriptionPlans.js";
 import type * as subscriptions from "../subscriptions.js";
+import type * as uploadLimits from "../uploadLimits.js";
 import type * as userIds from "../userIds.js";
 import type * as userLearning from "../userLearning.js";
 import type * as userStarterCredits from "../userStarterCredits.js";
@@ -88,6 +89,7 @@ declare const fullApi: ApiFromModules<{
   stripeActions: typeof stripeActions;
   subscriptionPlans: typeof subscriptionPlans;
   subscriptions: typeof subscriptions;
+  uploadLimits: typeof uploadLimits;
   userIds: typeof userIds;
   userLearning: typeof userLearning;
   userStarterCredits: typeof userStarterCredits;

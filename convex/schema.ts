@@ -130,7 +130,19 @@ export default defineSchema({
     dateKey: v.string(),
     chatsUsed: v.number(),
     imagesUsed: v.number(),
+    filesUploaded: v.optional(v.number()),
+    uploadImagesUsed: v.optional(v.number()),
+    uploadBytes: v.optional(v.number()),
   }).index("by_user_date", ["userId", "dateKey"]),
+
+  uploadLimitSettings: defineTable({
+    planId: subscriptionPlanValidator,
+    filesPerDay: v.number(),
+    imagesPerDay: v.number(),
+    maxFileBytes: v.number(),
+    updatedAt: v.number(),
+    updatedBy: v.optional(v.string()),
+  }).index("by_plan", ["planId"]),
 
   mediaJobs: defineTable({
     userId: v.string(),

@@ -3,6 +3,8 @@
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatTypingBar } from "@/components/chat/ChatTypingBar";
 import { MessageList, type UiMessage } from "@/components/chat/MessageList";
+import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
+import type { UploadUsageSnapshot } from "@/lib/chat/uploadLimits";
 import { memo, type MutableRefObject } from "react";
 
 interface ChatConversationPaneProps {
@@ -10,9 +12,10 @@ interface ChatConversationPaneProps {
   isLoading: boolean;
   isSending: boolean;
   insertRef: MutableRefObject<((text: string) => void) | null>;
-  onSend: (msg: string) => void;
+  onSend: (msg: string, attachments?: PreparedChatAttachment[]) => void;
   onInsertTemplate: (text: string) => void;
   onRegenerate?: (messageId: string) => void;
+  uploadUsage?: UploadUsageSnapshot | null;
 }
 
 function panePropsEqual(
@@ -26,6 +29,7 @@ function panePropsEqual(
     prev.onSend === next.onSend &&
     prev.onInsertTemplate === next.onInsertTemplate &&
     prev.onRegenerate === next.onRegenerate &&
+    prev.uploadUsage === next.uploadUsage &&
     prev.insertRef === next.insertRef
   );
 }
@@ -39,6 +43,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onSend,
   onInsertTemplate,
   onRegenerate,
+  uploadUsage,
 }: ChatConversationPaneProps) {
   return (
     <div className="chat-conversation-grid min-h-0 min-w-0 max-w-full overflow-x-hidden overflow-y-hidden bg-background">
@@ -50,7 +55,12 @@ export const ChatConversationPane = memo(function ChatConversationPane({
       />
       <div className="chat-composer-dock min-w-0 max-w-full border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)]">
         <ChatTypingBar visible={isSending} />
-        <ChatInput insertRef={insertRef} onSend={onSend} disabled={isSending} />
+        <ChatInput
+          insertRef={insertRef}
+          onSend={onSend}
+          disabled={isSending}
+          uploadUsage={uploadUsage}
+        />
       </div>
     </div>
   );

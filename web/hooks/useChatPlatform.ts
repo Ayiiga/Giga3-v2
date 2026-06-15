@@ -5,6 +5,7 @@ import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
 import { getUserEmail } from "@/lib/auth";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
+import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
@@ -71,6 +72,10 @@ export function useChatPlatform() {
   const interestProfileRow = useQuery(api.users.getInterestProfile, emailQueryArgs);
   const conversationsRaw = useQuery(api.conversations.list, conversationsQueryArgs);
   const messagesRaw = useQuery(api.messages.listByConversation, messagesQueryArgs);
+  const uploadUsage = useQuery(
+    api.uploadLimits.getUploadUsageSnapshot,
+    mounted && email ? { userId: email } : ("skip" as const)
+  );
   const credits =
     chatCreditsRow === undefined
       ? creditsCacheRef.current
@@ -187,7 +192,7 @@ export function useChatPlatform() {
   );
 
   const sendMessage = useCallback(
-    async (content: string) => {
+    async (content: string, attachments?: PreparedChatAttachment[]) => {
       if (!email) {
         setError("Please sign in");
         return;
@@ -209,6 +214,13 @@ export function useChatPlatform() {
             conversationId: conversationId as Id<"conversations">,
             content,
             mode,
+            ...(attachments?.length
+              ? {
+                  attachments: attachments.map(
+                    ({ previewUrl: _previewUrl, ...attachment }) => attachment
+                  ),
+                }
+              : {}),
           }),
           CHAT_ACTION_TIMEOUT_MS,
           "Chat is taking longer than usual on this connection. Your message was saved — please try sending again in a moment."
@@ -284,5 +296,6 @@ export function useChatPlatform() {
     usedFallback,
     credits,
     interestProfileJson,
+    uploadUsage: uploadUsage ?? null,
   };
 }

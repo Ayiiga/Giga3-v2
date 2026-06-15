@@ -2,7 +2,11 @@
 
 import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
 import { Button } from "@/components/ui/Button";
-import { useMediaGeneration } from "@/hooks/useMediaGeneration";
+import {
+  useMediaGeneration,
+  type ImageGenerationOptions,
+  type VideoGenerationOptions,
+} from "@/hooks/useMediaGeneration";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import {
   IMAGE_CATEGORIES,
@@ -57,6 +61,21 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
   const [prompt, setPrompt] = useState(initialPrompt);
   const [videoImageUrl, setVideoImageUrl] = useState("");
   const [imageSourceUrl, setImageSourceUrl] = useState(initialSourceImageUrl);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [imageSize, setImageSize] =
+    useState<NonNullable<ImageGenerationOptions["imageSize"]>>("square_hd");
+  const [imageQuality, setImageQuality] = useState<"standard" | "high" | "ultra">("high");
+  const [transparentBackground, setTransparentBackground] = useState(false);
+  const [negativePrompt, setNegativePrompt] = useState("");
+  const [seed, setSeed] = useState("");
+  const [videoMode, setVideoMode] = useState<
+    "text-to-video" | "image-to-video" | "story-to-video" | "animation" | "talking-avatar"
+  >("text-to-video");
+  const [videoAspectRatio, setVideoAspectRatio] =
+    useState<NonNullable<VideoGenerationOptions["aspectRatio"]>>("16:9");
+  const [videoDuration, setVideoDuration] = useState("7");
+  const [videoResolution, setVideoResolution] = useState("720p");
+  const [videoAudio, setVideoAudio] = useState(true);
 
   const editActionActive =
     tab === "image" &&
@@ -72,20 +91,72 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
   const handleGenerate = useCallback(async () => {
     const trimmed = prompt.trim();
     if (!trimmed) return;
+    const seedValue = Number(seed);
+    const parsedSeed = seed.trim() && Number.isFinite(seedValue) ? seedValue : undefined;
     if (tab === "image") {
+      const qualitySuffix =
+        imageQuality === "ultra"
+          ? " Ultra-realistic 4K detail, refined lighting, accurate text rendering, consistent faces, crisp background quality, transparent background when requested."
+          : imageQuality === "high"
+            ? " High-detail composition, realistic lighting, clean text rendering, consistent subjects, polished background."
+            : "";
+      const imagePrompt = `${trimmed}${qualitySuffix}${transparentBackground ? " Use a clean transparent or isolated background when the provider supports it." : ""}`;
       await createImage(
         category as ImageCategoryId,
-        trimmed,
-        imageSourceUrl || undefined
+        imagePrompt,
+        imageSourceUrl || undefined,
+        {
+          imageSize,
+          negativePrompt: negativePrompt.trim() || undefined,
+          seed: parsedSeed,
+          numInferenceSteps:
+            imageQuality === "ultra" ? 32 : imageQuality === "high" ? 16 : undefined,
+          guidanceScale: imageQuality === "ultra" ? 7.5 : undefined,
+          enableSafetyChecker: true,
+        }
       );
     } else {
+      const modeInstruction = {
+        "text-to-video": "Create a text-to-video clip with coherent motion and cinematic pacing.",
+        "image-to-video": "Animate the source image naturally while preserving identity, composition, and lighting.",
+        "story-to-video": "Convert this story into a concise multi-scene video with clear scene progression.",
+        animation: "Create an AI animation with smooth movement and expressive timing.",
+        "talking-avatar": "Create a talking-avatar style video prompt with presenter framing, lip-sync-ready script beats, and natural gestures.",
+      }[videoMode];
       await createVideo(
         category as VideoCategoryId,
-        trimmed,
-        videoImageUrl || undefined
+        `${modeInstruction} ${trimmed}`,
+        videoImageUrl || undefined,
+        {
+          aspectRatio: videoAspectRatio,
+          duration: Number(videoDuration) || undefined,
+          resolution: videoResolution,
+          generateAudio: videoAudio,
+          negativePrompt: negativePrompt.trim() || undefined,
+          seed: parsedSeed,
+          numInferenceSteps: imageQuality === "ultra" ? 32 : undefined,
+        }
       );
     }
-  }, [tab, category, prompt, videoImageUrl, imageSourceUrl, createImage, createVideo]);
+  }, [
+    tab,
+    category,
+    prompt,
+    videoImageUrl,
+    imageSourceUrl,
+    seed,
+    imageQuality,
+    transparentBackground,
+    imageSize,
+    negativePrompt,
+    videoMode,
+    videoAspectRatio,
+    videoDuration,
+    videoResolution,
+    videoAudio,
+    createImage,
+    createVideo,
+  ]);
 
   return (
     <>
@@ -137,6 +208,24 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
           </p>
         )}
 
+        <button
+          type="button"
+          onClick={() => {
+            setAdvancedOpen(true);
+            requestAnimationFrame(() =>
+              document
+                .getElementById("advanced-creator-controls")
+                ?.scrollIntoView({ behavior: "smooth", block: "start" })
+            );
+          }}
+          className="flex w-full items-center justify-between gap-3 rounded-2xl border border-accent/20 bg-accent/5 px-4 py-3 text-left text-sm font-bold text-foreground"
+        >
+          Advanced Creator controls
+          <span className="text-xs font-medium text-accent">
+            Quality · 4K · formats · video modes
+          </span>
+        </button>
+
         <label className="text-sm font-bold uppercase tracking-wide text-muted">
           Category
         </label>
@@ -165,6 +254,158 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
           placeholder={`Describe your ${tab}…`}
           className="input-surface sm:text-lg"
         />
+
+        <div id="advanced-creator-controls" className="rounded-2xl border border-border bg-card/60">
+          <button
+            type="button"
+            onClick={() => setAdvancedOpen((open) => !open)}
+            className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-bold uppercase tracking-wide text-muted"
+          >
+            Advanced Creator controls
+            <span className="text-xs font-medium normal-case text-accent">
+              {advancedOpen ? "Hide" : "Realism, 4K, formats, video modes"}
+            </span>
+          </button>
+
+          {advancedOpen && (
+            <div className="grid gap-4 border-t border-border p-4 sm:grid-cols-2">
+              <label className="space-y-2 text-sm font-semibold text-foreground">
+                Quality target
+                <select
+                  value={imageQuality}
+                  onChange={(e) =>
+                    setImageQuality(e.target.value as typeof imageQuality)
+                  }
+                  className="input-surface py-2 text-sm"
+                >
+                  <option value="standard">Fast standard</option>
+                  <option value="high">High detail</option>
+                  <option value="ultra">Ultra / 4K-style prompt</option>
+                </select>
+              </label>
+
+              {tab === "image" ? (
+                <label className="space-y-2 text-sm font-semibold text-foreground">
+                  Image format
+                  <select
+                    value={imageSize}
+                    onChange={(e) =>
+                      setImageSize(e.target.value as typeof imageSize)
+                    }
+                    className="input-surface py-2 text-sm"
+                  >
+                    <option value="square_hd">Square HD</option>
+                    <option value="portrait_16_9">Portrait</option>
+                    <option value="landscape_16_9">Landscape</option>
+                    <option value="portrait_4_3">Social portrait</option>
+                    <option value="landscape_4_3">Social landscape</option>
+                  </select>
+                </label>
+              ) : (
+                <label className="space-y-2 text-sm font-semibold text-foreground">
+                  Video mode
+                  <select
+                    value={videoMode}
+                    onChange={(e) =>
+                      setVideoMode(e.target.value as typeof videoMode)
+                    }
+                    className="input-surface py-2 text-sm"
+                  >
+                    <option value="text-to-video">Text-to-video</option>
+                    <option value="image-to-video">Image-to-video</option>
+                    <option value="story-to-video">Story-to-video</option>
+                    <option value="animation">AI animation</option>
+                    <option value="talking-avatar">Talking avatar prompt</option>
+                  </select>
+                </label>
+              )}
+
+              {tab === "video" && (
+                <>
+                  <label className="space-y-2 text-sm font-semibold text-foreground">
+                    Aspect ratio
+                    <select
+                      value={videoAspectRatio}
+                      onChange={(e) =>
+                        setVideoAspectRatio(e.target.value as typeof videoAspectRatio)
+                      }
+                      className="input-surface py-2 text-sm"
+                    >
+                      <option value="16:9">Landscape 16:9</option>
+                      <option value="9:16">Shorts/TikTok 9:16</option>
+                      <option value="1:1">Square 1:1</option>
+                      <option value="4:3">Classic 4:3</option>
+                      <option value="21:9">Cinematic 21:9</option>
+                    </select>
+                  </label>
+                  <label className="space-y-2 text-sm font-semibold text-foreground">
+                    Duration
+                    <select
+                      value={videoDuration}
+                      onChange={(e) => setVideoDuration(e.target.value)}
+                      className="input-surface py-2 text-sm"
+                    >
+                      <option value="5">5 seconds</option>
+                      <option value="7">7 seconds</option>
+                      <option value="10">10 seconds</option>
+                    </select>
+                  </label>
+                  <label className="space-y-2 text-sm font-semibold text-foreground">
+                    Resolution
+                    <select
+                      value={videoResolution}
+                      onChange={(e) => setVideoResolution(e.target.value)}
+                      className="input-surface py-2 text-sm"
+                    >
+                      <option value="720p">720p low-bandwidth</option>
+                      <option value="1080p">1080p HD</option>
+                    </select>
+                  </label>
+                  <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                    <input
+                      type="checkbox"
+                      checked={videoAudio}
+                      onChange={(e) => setVideoAudio(e.target.checked)}
+                    />
+                    Generate synced audio when supported
+                  </label>
+                </>
+              )}
+
+              {tab === "image" && (
+                <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <input
+                    type="checkbox"
+                    checked={transparentBackground}
+                    onChange={(e) => setTransparentBackground(e.target.checked)}
+                  />
+                  Request transparent / isolated background
+                </label>
+              )}
+
+              <label className="space-y-2 text-sm font-semibold text-foreground sm:col-span-2">
+                Negative prompt
+                <input
+                  value={negativePrompt}
+                  onChange={(e) => setNegativePrompt(e.target.value)}
+                  placeholder="Avoid blur, distorted hands, wrong text, low quality..."
+                  className="input-surface py-2 text-sm"
+                />
+              </label>
+
+              <label className="space-y-2 text-sm font-semibold text-foreground">
+                Seed (optional)
+                <input
+                  value={seed}
+                  onChange={(e) => setSeed(e.target.value.replace(/[^\d]/g, ""))}
+                  inputMode="numeric"
+                  placeholder="Reuse for consistency"
+                  className="input-surface py-2 text-sm"
+                />
+              </label>
+            </div>
+          )}
+        </div>
 
         {showImageSourceField && (
           <div className="space-y-2">

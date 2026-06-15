@@ -5,6 +5,7 @@ import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import { getUserEmail } from "@/lib/auth";
+import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import { getConvexUrl } from "@/lib/convex";
 import { convexHttpCall } from "@/lib/network/convexCall";
 import {
@@ -51,6 +52,7 @@ async function sendConvexMessage(args: {
   conversationId: string;
   content: string;
   mode: string;
+  attachments?: Omit<PreparedChatAttachment, "previewUrl">[];
 }) {
   const convexUrl = getConvexUrl();
   if (!convexUrl) throw new Error("Convex URL is required while Supabase chat is in migration mode.");
@@ -233,7 +235,7 @@ export function useSupabaseChatPlatform() {
   );
 
   const sendMessage = useCallback(
-    async (content: string) => {
+    async (content: string, attachments?: PreparedChatAttachment[]) => {
       if (!email) {
         setError("Please sign in");
         return;
@@ -266,6 +268,13 @@ export function useSupabaseChatPlatform() {
           conversationId: convexConversationId,
           content,
           mode,
+          ...(attachments?.length
+            ? {
+                attachments: attachments.map(
+                  ({ previewUrl: _previewUrl, ...attachment }) => attachment
+                ),
+              }
+            : {}),
         });
         const convexMessages = await fetchConvexMessages(email, convexConversationId);
         await replaceSupabaseMessages(chat._id, convexMessages);
@@ -364,6 +373,7 @@ export function useSupabaseChatPlatform() {
     usedFallback,
     credits,
     interestProfileJson,
+    uploadUsage: null,
   };
 }
 

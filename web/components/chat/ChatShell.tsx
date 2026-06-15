@@ -104,6 +104,7 @@ function ChatShellInner({
     usedFallback,
     credits,
     interestProfileJson,
+    uploadUsage,
   } = usePlatform();
 
   const activeConversation = useMemo(
@@ -305,6 +306,7 @@ function ChatShellInner({
           onSend={handleSend}
           onInsertTemplate={handleInsertTemplate}
           onRegenerate={handleRegenerate}
+          uploadUsage={uploadUsage}
         />
       </div>
     </div>

@@ -4,9 +4,15 @@ import { ChatInputToolbar } from "@/components/chat/ChatInputToolbar";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { Button } from "@/components/ui/Button";
 import {
-  buildAttachmentMessage,
+  buildMultimodalPrompt,
+  prepareChatAttachment,
+  type PreparedChatAttachment,
   type AttachmentKind,
-} from "@/lib/chat/fileAttachments";
+} from "@/lib/chat/multimodalAttachments";
+import {
+  formatUploadBytes,
+  type UploadUsageSnapshot,
+} from "@/lib/chat/uploadLimits";
 import { Send, X } from "lucide-react";
 import {
   FormEvent,
@@ -20,11 +26,12 @@ import {
 } from "react";
 
 interface ChatInputProps {
-  onSend: (message: string) => void;
+  onSend: (message: string, attachments?: PreparedChatAttachment[]) => void;
   disabled?: boolean;
   placeholder?: string;
   /** Parent can call `.current(text)` to insert templates into the textarea. */
   insertRef?: MutableRefObject<((text: string) => void) | null>;
+  uploadUsage?: UploadUsageSnapshot | null;
 }
 
 export const ChatInput = memo(function ChatInput({
@@ -32,11 +39,13 @@ export const ChatInput = memo(function ChatInput({
   disabled,
   placeholder = "Message Giga3 AI…",
   insertRef,
+  uploadUsage,
 }: ChatInputProps) {
   useRenderDiagnostic("ChatInput");
 
   const [value, setValue] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<PreparedChatAttachment[]>([]);
   const [busy, setBusy] = useState(false);
   const [toolbarOpen, setToolbarOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -74,11 +83,24 @@ export const ChatInput = memo(function ChatInput({
     };
   }, [toolbarOpen]);
 
+  useEffect(() => {
+    return () => {
+      for (const attachment of attachments) {
+        if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl);
+      }
+    };
+  }, [attachments]);
+
   function submit() {
     const trimmed = value.trim();
-    if (!trimmed || disabled || busy) return;
-    onSend(trimmed);
+    if ((!trimmed && attachments.length === 0) || disabled || busy) return;
+    const prompt = buildMultimodalPrompt(trimmed, attachments);
+    onSend(prompt, attachments);
     setValue("");
+    for (const attachment of attachments) {
+      if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl);
+    }
+    setAttachments([]);
     setNotice(null);
     setToolbarOpen(false);
   }
@@ -98,14 +120,34 @@ export const ChatInput = memo(function ChatInput({
     }
   }
 
-  async function handlePickFile(file: File, kind: AttachmentKind) {
+  async function handlePickFiles(files: File[], kind: AttachmentKind) {
     if (disabled || busy) return;
     setBusy(true);
     setNotice(null);
     try {
-      const prefix = await buildAttachmentMessage(file, kind);
-      insertText(prefix);
-      setNotice(`Attached ${file.name}. Add details below, then send.`);
+      const currentFiles = attachments.length;
+      const currentImages = attachments.filter((a) => a.kind === "image").length;
+      if (uploadUsage) {
+        const nextImages = files.filter((file) => file.type.startsWith("image/")).length;
+        if (currentFiles + files.length > uploadUsage.filesRemaining) {
+          throw new Error(
+            `Only ${uploadUsage.filesRemaining} file upload${uploadUsage.filesRemaining === 1 ? "" : "s"} remaining today.`
+          );
+        }
+        if (currentImages + nextImages > uploadUsage.imagesRemaining) {
+          throw new Error(
+            `Only ${uploadUsage.imagesRemaining} image upload${uploadUsage.imagesRemaining === 1 ? "" : "s"} remaining today.`
+          );
+        }
+      }
+
+      const prepared = await Promise.all(
+        files.map((file) => prepareChatAttachment(file, uploadUsage?.limits))
+      );
+      setAttachments((prev) => [...prev, ...prepared]);
+      setNotice(
+        `Attached ${prepared.length} file${prepared.length === 1 ? "" : "s"}. Ask what you want Giga3 AI to analyze, summarize, solve, compare, or explain.`
+      );
     } catch (err) {
       setNotice(err instanceof Error ? err.message : "Could not attach file.");
     } finally {
@@ -114,6 +156,9 @@ export const ChatInput = memo(function ChatInput({
   }
 
   const inputDisabled = disabled || busy;
+  const remainingLabel = uploadUsage
+    ? `${uploadUsage.filesRemaining} files / ${uploadUsage.imagesRemaining} images left today · max ${formatUploadBytes(uploadUsage.limits.maxFileBytes)}`
+    : "Uploads are checked before analysis";
 
   return (
     <form
@@ -125,6 +170,24 @@ export const ChatInput = memo(function ChatInput({
           <NoticeBanner message={notice} onDismiss={() => setNotice(null)} />
         )}
 
+        {attachments.length > 0 && (
+          <div className="flex max-h-32 flex-wrap gap-2 overflow-y-auto rounded-xl border border-border bg-card p-2">
+            {attachments.map((attachment, index) => (
+              <AttachmentChip
+                key={`${attachment.name}-${index}`}
+                attachment={attachment}
+                onRemove={() => {
+                  setAttachments((prev) => {
+                    const next = prev.filter((_, i) => i !== index);
+                    if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl);
+                    return next;
+                  });
+                }}
+              />
+            ))}
+          </div>
+        )}
+
         <div
           ref={composerRef}
           className="chat-composer-surface relative flex items-end gap-2 rounded-2xl border border-border p-2"
@@ -133,7 +196,7 @@ export const ChatInput = memo(function ChatInput({
             disabled={inputDisabled}
             expanded={toolbarOpen}
             onToggle={() => setToolbarOpen((open) => !open)}
-            onPickFile={(file, kind) => void handlePickFile(file, kind)}
+            onPickFiles={(files, kind) => void handlePickFiles(files, kind)}
             onError={(msg) => setNotice(msg)}
             onVoiceTranscript={(text) => insertText(text)}
           />
@@ -152,7 +215,7 @@ export const ChatInput = memo(function ChatInput({
 
           <Button
             type="submit"
-            disabled={inputDisabled || !value.trim()}
+            disabled={inputDisabled || (!value.trim() && attachments.length === 0)}
             size="md"
             className="min-h-11 min-w-11 shrink-0 rounded-xl px-3"
             aria-label="Send message"
@@ -162,7 +225,10 @@ export const ChatInput = memo(function ChatInput({
         </div>
 
         <p className="text-center text-xs text-muted">
-          Enter to send · Shift+Enter for new line ·{" "}
+          {remainingLabel}
+          <br className="sm:hidden" />
+          <span className="hidden sm:inline"> · </span>
+          Enter to send · Shift+Enter ·{" "}
           <button
             type="button"
             className="font-medium text-accent underline-offset-2 hover:underline"
@@ -199,5 +265,42 @@ function NoticeBanner({
         <X className="h-4 w-4" aria-hidden />
       </button>
     </div>
+  );
+}
+
+function AttachmentChip({
+  attachment,
+  onRemove,
+}: {
+  attachment: PreparedChatAttachment;
+  onRemove: () => void;
+}) {
+  return (
+    <span className="inline-flex max-w-full items-center gap-2 rounded-lg border border-border bg-background px-2 py-1 text-xs text-foreground">
+      {attachment.previewUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={attachment.previewUrl}
+          alt=""
+          className="h-7 w-7 rounded-md object-cover"
+        />
+      ) : null}
+      <span className="min-w-0">
+        <span className="block max-w-[10rem] truncate font-medium">
+          {attachment.name}
+        </span>
+        <span className="block text-muted">
+          {attachment.kind} · {formatUploadBytes(attachment.sizeBytes)}
+        </span>
+      </span>
+      <button
+        type="button"
+        className="rounded-md p-1 text-muted hover:bg-accent/10 hover:text-foreground"
+        aria-label={`Remove ${attachment.name}`}
+        onClick={onRemove}
+      >
+        <X className="h-3.5 w-3.5" aria-hidden />
+      </button>
+    </span>
   );
 }

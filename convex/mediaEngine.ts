@@ -50,6 +50,10 @@ export type VideoGenerateParams = {
   seed?: number;
   enableSafetyChecker?: boolean;
   syncMode?: boolean;
+  duration?: number;
+  resolution?: string;
+  generateAudio?: boolean;
+  aspectRatio?: "16:9" | "9:16" | "4:3" | "1:1" | "3:4" | "21:9";
 };
 
 const FAL_IMAGE_FALLBACK_MODEL =
@@ -226,7 +230,11 @@ export async function generateVideoWithFallback(
       const result = await replicateGenerateVideo(input.prompt, {
         imageUrl,
         seed: input.seed,
-        aspectRatio: videoCategoryAspectRatio(input.category ?? "anime_videos"),
+        aspectRatio:
+          input.aspectRatio ?? videoCategoryAspectRatio(input.category ?? "anime_videos"),
+        duration: input.duration,
+        resolution: input.resolution,
+        generateAudio: input.generateAudio,
       });
       return {
         videoUrl: result.videoUrl,

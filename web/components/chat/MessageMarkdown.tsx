@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { MermaidDiagram } from "@/components/chat/MermaidDiagram";
 import { memo, useMemo, type ReactNode } from "react";
 
 interface MessageMarkdownProps {
@@ -53,6 +54,12 @@ function parseMarkdownBlocks(text: string): ReactNode[] {
         i += 1;
       }
       i += 1;
+      if (/^mermaid$/i.test(fenceLang)) {
+        nodes.push(
+          <MermaidDiagram key={`diagram-${blockKey++}`} code={codeLines.join("\n")} />
+        );
+        continue;
+      }
       nodes.push(
         <pre key={`code-${blockKey++}`} className="chat-md-pre">
           {fenceLang && (
@@ -231,10 +238,16 @@ function renderInline(text: string): ReactNode[] {
     } else if (token.startsWith("[")) {
       const linkMatch = token.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
       if (linkMatch) {
+        const href = safeHref(linkMatch[2]);
+        if (!href) {
+          parts.push(linkMatch[1]);
+          lastIndex = pattern.lastIndex;
+          continue;
+        }
         parts.push(
           <a
             key={`a-${key++}`}
-            href={linkMatch[2]}
+            href={href}
             target="_blank"
             rel="noopener noreferrer"
             className="chat-md-link"
@@ -254,4 +267,16 @@ function renderInline(text: string): ReactNode[] {
   }
 
   return parts.length > 0 ? parts : [text];
+}
+
+function safeHref(raw: string): string | null {
+  try {
+    const url = new URL(raw, "https://www.giga3ai.com");
+    if (url.protocol === "http:" || url.protocol === "https:" || url.protocol === "mailto:") {
+      return raw;
+    }
+  } catch {
+    return null;
+  }
+  return null;
 }

@@ -85,14 +85,18 @@ function extractInlineImagePart(
 async function fetchImageAsBase64(
   imageUrl: string
 ): Promise<{ mimeType: string; data: string }> {
+  const parsed = validateRemoteImageUrl(imageUrl);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30_000);
   try {
-    const res = await fetch(imageUrl, { signal: controller.signal });
+    const res = await fetch(parsed.toString(), { signal: controller.signal });
     if (!res.ok) {
       throw new Error(`Failed to fetch source image (${res.status})`);
     }
     const mimeType = res.headers.get("content-type")?.split(";")[0]?.trim() || "image/jpeg";
+    if (!mimeType.startsWith("image/")) {
+      throw new Error("Source URL did not return an image");
+    }
     const buffer = Buffer.from(await res.arrayBuffer());
     if (buffer.byteLength > 15 * 1024 * 1024) {
       throw new Error("Source image is too large (max 15MB)");
@@ -101,6 +105,29 @@ async function fetchImageAsBase64(
   } finally {
     clearTimeout(timer);
   }
+}
+
+function validateRemoteImageUrl(imageUrl: string): URL {
+  let parsed: URL;
+  try {
+    parsed = new URL(imageUrl);
+  } catch {
+    throw new Error("Source image URL is invalid");
+  }
+  if (parsed.protocol !== "https:") {
+    throw new Error("Source image URL must use https");
+  }
+  const host = parsed.hostname.toLowerCase();
+  if (
+    host === "localhost" ||
+    host.endsWith(".local") ||
+    host === "metadata.google.internal" ||
+    /^(127\.|10\.|0\.|169\.254\.|172\.(1[6-9]|2\d|3[0-1])\.|192\.168\.)/.test(host) ||
+    /^\[?(::1|fc00:|fd00:|fe80:)/i.test(host)
+  ) {
+    throw new Error("Source image URL host is not allowed");
+  }
+  return parsed;
 }
 
 async function geminiGenerateImageViaGenerateContent(

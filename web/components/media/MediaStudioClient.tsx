@@ -85,13 +85,6 @@ function MediaStudioContent() {
     <div className="mx-auto max-w-5xl space-y-10">
       <MediaStudioHeader usage={usage} />
 
-      <MediaQuickTemplates
-        onApply={(template) => {
-          setFormSeed({ ...template, action: null });
-          setFormRevision((r) => r + 1);
-        }}
-      />
-
       <MediaGeneratePanel
         key={formRevision}
         usage={usage}
@@ -100,6 +93,13 @@ function MediaStudioContent() {
         initialPrompt={formSeed.prompt}
         initialSourceImageUrl={initialSourceImageUrl}
         initialAction={formSeed.action}
+      />
+
+      <MediaQuickTemplates
+        onApply={(template) => {
+          setFormSeed({ ...template, action: null });
+          setFormRevision((r) => r + 1);
+        }}
       />
 
       <RecentGenerationsSection userId={email} mounted={mounted} />

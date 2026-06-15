@@ -5,6 +5,16 @@ import { falOpenRouterChatComplete, getFalApiKey } from "./falClient";
 export type ChatCompletionMessage = {
   role: "system" | "user" | "assistant";
   content: string;
+  attachments?: ChatCompletionAttachment[];
+};
+
+export type ChatCompletionAttachment = {
+  kind: "image" | "document" | "archive" | "spreadsheet" | "presentation" | "pdf" | "text";
+  name: string;
+  mimeType?: string;
+  sizeBytes: number;
+  text?: string;
+  dataUrl?: string;
 };
 
 export type ChatEngineResult = {
@@ -64,11 +74,78 @@ export function trimChatMessages(
   let trimmed = dialogue.slice(-maxDialogueMessages);
   while (
     trimmed.length > 2 &&
-    trimmed.reduce((n, m) => n + m.content.length, 0) > maxChars
+    trimmed.reduce((n, m) => n + m.content.length + attachmentTextLength(m), 0) >
+      maxChars
   ) {
     trimmed = trimmed.slice(1);
   }
   return [...system, ...trimmed];
+}
+
+function attachmentTextLength(message: ChatCompletionMessage): number {
+  return (message.attachments ?? []).reduce(
+    (sum, attachment) => sum + (attachment.text?.length ?? 0),
+    0
+  );
+}
+
+function attachmentSummary(attachment: ChatCompletionAttachment): string {
+  const type = attachment.mimeType ? `, type ${attachment.mimeType}` : "";
+  return `${attachment.name} (${attachment.kind}, ${attachment.sizeBytes} bytes${type})`;
+}
+
+function textForFallback(message: ChatCompletionMessage): string {
+  const attachments = message.attachments ?? [];
+  if (!attachments.length) return message.content;
+  const blocks = attachments.map((attachment, index) => {
+    const header = `Attachment ${index + 1}: ${attachmentSummary(attachment)}`;
+    const body = attachment.text?.trim()
+      ? attachment.text.trim()
+      : attachment.dataUrl
+        ? "[Image data attached for vision-capable providers]"
+        : "[No extracted text available]";
+    return `${header}\n${body}`;
+  });
+  return `${message.content}\n\n--- Uploaded context ---\n${blocks.join("\n\n")}\n--- End uploaded context ---`;
+}
+
+function dataUrlToInlineData(dataUrl: string): { mimeType: string; data: string } | null {
+  const match = /^data:([^;,]+);base64,([\s\S]+)$/.exec(dataUrl);
+  if (!match) return null;
+  return { mimeType: match[1], data: match[2] };
+}
+
+function toOpenAiMessages(
+  messages: ChatCompletionMessage[]
+): OpenAI.Chat.ChatCompletionMessageParam[] {
+  return messages.map((message) => {
+    const imageParts = (message.attachments ?? [])
+      .filter((attachment) => attachment.kind === "image" && attachment.dataUrl)
+      .map((attachment) => ({
+        type: "image_url" as const,
+        image_url: { url: attachment.dataUrl as string, detail: "auto" as const },
+      }));
+
+    const text = textForFallback(message);
+    if (message.role === "user" && imageParts.length > 0) {
+      return {
+        role: "user",
+        content: [{ type: "text" as const, text }, ...imageParts],
+      };
+    }
+
+    return {
+      role: message.role,
+      content: text,
+    } as OpenAI.Chat.ChatCompletionMessageParam;
+  });
+}
+
+function toTextOnlyMessages(messages: ChatCompletionMessage[]): ChatCompletionMessage[] {
+  return messages.map((message) => ({
+    role: message.role,
+    content: textForFallback(message),
+  }));
 }
 
 async function withProviderTimeout<T>(
@@ -127,10 +204,29 @@ async function geminiComplete(
 
   const contents = messages
     .filter((m) => m.role !== "system")
-    .map((m) => ({
-      role: m.role === "assistant" ? ("model" as const) : ("user" as const),
-      parts: [{ text: m.content }],
-    }));
+    .map((m) => {
+      const parts: Array<
+        | { text: string }
+        | { inline_data: { mime_type: string; data: string } }
+      > = [{ text: textForFallback(m) }];
+
+      for (const attachment of m.attachments ?? []) {
+        if (attachment.kind !== "image" || !attachment.dataUrl) continue;
+        const inline = dataUrlToInlineData(attachment.dataUrl);
+        if (!inline) continue;
+        parts.push({
+          inline_data: {
+            mime_type: inline.mimeType,
+            data: inline.data,
+          },
+        });
+      }
+
+      return {
+        role: m.role === "assistant" ? ("model" as const) : ("user" as const),
+        parts,
+      };
+    });
 
   if (contents.length === 0) {
     throw new Error("No user/assistant messages for Gemini");
@@ -266,7 +362,8 @@ export async function completeChatWithFailover(
   const falModel =
     process.env.FAL_MODEL ?? process.env.FAL_LLM_MODEL ?? "google/gemini-2.0-flash";
 
-  const asOpenAi = trimmed as OpenAI.Chat.ChatCompletionMessageParam[];
+  const asOpenAi = toOpenAiMessages(trimmed);
+  const textOnly = toTextOnlyMessages(trimmed);
   const timeoutMs = cfg.providerTimeoutMs;
 
   const fastLane: Attempt[] = [];
@@ -305,7 +402,7 @@ export async function completeChatWithFailover(
         openaiComplete(
           apiKey,
           fallbackModel,
-          asOpenAi,
+          toOpenAiMessages(textOnly),
           timeoutMs,
           cfg.maxTokens
         ),
@@ -319,7 +416,7 @@ export async function completeChatWithFailover(
         openaiComplete(
           secondaryKey,
           fallbackModel,
-          asOpenAi,
+          toOpenAiMessages(textOnly),
           timeoutMs,
           cfg.maxTokens
         ),
@@ -332,9 +429,9 @@ export async function completeChatWithFailover(
       run: () =>
         falOpenRouterChatComplete(
           falModel,
-          asOpenAi.map((m) => ({
-            role: String(m.role),
-            content: typeof m.content === "string" ? m.content : "",
+          textOnly.map((m) => ({
+            role: m.role,
+            content: m.content,
           })),
           cfg.falTimeoutMs,
           cfg.maxTokens

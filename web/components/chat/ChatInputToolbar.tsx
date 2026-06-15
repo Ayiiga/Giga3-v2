@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { buildMediaStudioUrl, MEDIA_STUDIO_TEMPLATES } from "@/lib/media/studioTemplates";
-import type { AttachmentKind } from "@/lib/chat/fileAttachments";
+import type { AttachmentKind } from "@/lib/chat/multimodalAttachments";
 import { useVoiceDictation } from "@/hooks/useVoiceDictation";
 import {
   Camera,
@@ -22,7 +22,7 @@ interface ChatInputToolbarProps {
   disabled?: boolean;
   expanded: boolean;
   onToggle: () => void;
-  onPickFile: (file: File, kind: AttachmentKind) => void;
+  onPickFiles: (files: File[], kind: AttachmentKind) => void;
   onError: (message: string) => void;
   onVoiceTranscript?: (text: string) => void;
 }
@@ -49,7 +49,7 @@ export function ChatInputToolbar({
   disabled,
   expanded,
   onToggle,
-  onPickFile,
+  onPickFiles,
   onError,
   onVoiceTranscript,
 }: ChatInputToolbarProps) {
@@ -70,11 +70,11 @@ export function ChatInputToolbar({
     e: React.ChangeEvent<HTMLInputElement>,
     kind: AttachmentKind
   ) {
-    const file = e.target.files?.[0];
+    const files = Array.from(e.target.files ?? []);
     e.target.value = "";
-    if (!file) return;
+    if (files.length === 0) return;
     try {
-      onPickFile(file, kind);
+      onPickFiles(files, kind);
       onToggle();
     } catch (err) {
       onError(err instanceof Error ? err.message : "Could not attach file.");
@@ -119,6 +119,7 @@ export function ChatInputToolbar({
         type="file"
         accept="image/*"
         capture="environment"
+        multiple
         className="sr-only"
         tabIndex={-1}
         aria-hidden
@@ -127,7 +128,8 @@ export function ChatInputToolbar({
       <input
         ref={fileRef}
         type="file"
-        accept=".txt,.md,.markdown,.csv,.json,.xml,.html,.htm,.yaml,.yml,.log,.rtf,.tex,.pdf,.doc,.docx,text/*,application/json,application/pdf"
+        accept=".txt,.md,.markdown,.csv,.json,.xml,.html,.htm,.yaml,.yml,.log,.rtf,.tex,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,text/*,application/json,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/zip"
+        multiple
         className="sr-only"
         tabIndex={-1}
         aria-hidden
@@ -137,6 +139,7 @@ export function ChatInputToolbar({
         ref={imageRef}
         type="file"
         accept="image/*"
+        multiple
         className="sr-only"
         tabIndex={-1}
         aria-hidden
@@ -146,6 +149,7 @@ export function ChatInputToolbar({
         ref={videoRef}
         type="file"
         accept="video/*"
+        multiple
         className="sr-only"
         tabIndex={-1}
         aria-hidden
