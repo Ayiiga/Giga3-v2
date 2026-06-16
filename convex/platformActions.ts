@@ -9,8 +9,22 @@ import {
   trimChatMessages,
   type ChatCompletionAttachment,
 } from "./chatEngine";
-import { getSystemPrompt, isValidMode } from "./aiModes";
+import { getSystemPrompt, isValidMode, type AiModeId } from "./aiModes";
 import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
+import {
+  prepareAnswerQualityContext,
+  recordQualityObservation,
+  toRetrievalSystemMessage,
+  validateAnswerQuality,
+} from "./answerQuality";
+
+function latestUserPrompt(
+  history: Array<{ role: string; content: string }>,
+  fallback: string
+): string {
+  const match = [...history].reverse().find((turn) => turn.role === "user");
+  return match?.content ?? fallback;
+}
 
 export const sendMessage = action({
   args: {
@@ -53,7 +67,7 @@ export const sendMessage = action({
     }
 
     const mode =
-      args.mode && isValidMode(args.mode) ? args.mode : conv.mode ?? "general";
+      (args.mode && isValidMode(args.mode) ? args.mode : conv.mode ?? "general") as AiModeId;
     const attachments = (args.attachments ?? []) as ChatCompletionAttachment[];
 
     if (attachments.length > 0) {
@@ -98,12 +112,25 @@ export const sendMessage = action({
       email: args.userId,
     });
 
+    const qualityContext = prepareAnswerQualityContext({
+      mode,
+      query: args.content,
+      attachments,
+      history: history.map((turn) => ({
+        role: turn.role,
+        content: turn.content,
+      })),
+    });
+
     const systemPrompt =
       getSystemPrompt(mode) +
-      buildInterestSystemAddon(parseInterestProfile(refreshedUser?.interestProfile));
+      buildInterestSystemAddon(parseInterestProfile(refreshedUser?.interestProfile)) +
+      "\n\n" +
+      qualityContext.systemPromptAddon;
 
     const chatMessages = trimChatMessages([
       { role: "system" as const, content: systemPrompt },
+      ...toRetrievalSystemMessage(qualityContext),
       ...history.map((m) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
@@ -121,7 +148,22 @@ export const sendMessage = action({
     ]);
 
     const engineResult = await completeChatWithFailover(chatMessages);
-    const assistantContent = engineResult.content;
+    const validated = validateAnswerQuality({
+      answer: engineResult.content,
+      context: qualityContext,
+    });
+    const assistantContent = validated.content;
+    const qualityMonitoring = recordQualityObservation(validated.report);
+
+    console.info(
+      "[quality.sendMessage]",
+      JSON.stringify({
+        mode,
+        conversationId: args.conversationId,
+        report: validated.report,
+        monitoring: qualityMonitoring,
+      })
+    );
 
     const chargedAi = engineResult.providerId !== "local_fallback";
 
@@ -165,6 +207,8 @@ export const sendMessage = action({
       chatProvider: engineResult.providerId,
       chatProviderLabel: getChatProviderLabel(engineResult.providerId),
       usedFallback: engineResult.usedFallback,
+      quality: validated.report,
+      qualityMonitoring,
     };
   },
 });
@@ -194,7 +238,7 @@ export const regenerateMessage = action({
     }
 
     const mode =
-      args.mode && isValidMode(args.mode) ? args.mode : conv.mode ?? "general";
+      (args.mode && isValidMode(args.mode) ? args.mode : conv.mode ?? "general") as AiModeId;
 
     if (mode !== conv.mode) {
       await ctx.runMutation(api.conversations.setMode, {
@@ -219,12 +263,25 @@ export const regenerateMessage = action({
       email: args.userId,
     });
 
+    const query = latestUserPrompt(historyAfter, "");
+    const qualityContext = prepareAnswerQualityContext({
+      mode,
+      query,
+      history: historyAfter.map((turn) => ({
+        role: turn.role,
+        content: turn.content,
+      })),
+    });
+
     const systemPrompt =
       getSystemPrompt(mode) +
-      buildInterestSystemAddon(parseInterestProfile(refreshedUser?.interestProfile));
+      buildInterestSystemAddon(parseInterestProfile(refreshedUser?.interestProfile)) +
+      "\n\n" +
+      qualityContext.systemPromptAddon;
 
     const chatMessages = trimChatMessages([
       { role: "system" as const, content: systemPrompt },
+      ...toRetrievalSystemMessage(qualityContext),
       ...historyAfter.map((m) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
@@ -232,7 +289,22 @@ export const regenerateMessage = action({
     ]);
 
     const engineResult = await completeChatWithFailover(chatMessages);
-    const assistantContent = engineResult.content;
+    const validated = validateAnswerQuality({
+      answer: engineResult.content,
+      context: qualityContext,
+    });
+    const assistantContent = validated.content;
+    const qualityMonitoring = recordQualityObservation(validated.report);
+
+    console.info(
+      "[quality.regenerateMessage]",
+      JSON.stringify({
+        mode,
+        conversationId: args.conversationId,
+        report: validated.report,
+        monitoring: qualityMonitoring,
+      })
+    );
     const chargedAi = engineResult.providerId !== "local_fallback";
 
     if (chargedAi) {
@@ -261,6 +333,8 @@ export const regenerateMessage = action({
       chatProvider: engineResult.providerId,
       chatProviderLabel: getChatProviderLabel(engineResult.providerId),
       usedFallback: engineResult.usedFallback,
+      quality: validated.report,
+      qualityMonitoring,
     };
   },
 });
