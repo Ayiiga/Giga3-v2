@@ -29,8 +29,11 @@ export type RankedSource = {
 };
 
 export type AnswerQualityContext = {
+  query: string;
   queryClass: QueryClass;
   requiresCitation: boolean;
+  hasImageAttachment: boolean;
+  hasInlineImageData: boolean;
   systemPromptAddon: string;
   retrievalContextBlock: string | null;
   rankedSources: RankedSource[];
@@ -131,6 +134,15 @@ function hasOpinionIntent(query: string): boolean {
   );
 }
 
+function hasImageTextExtractionIntent(query: string): boolean {
+  return /\b(ocr|read|extract|transcribe|write\s*down|copy|detect)\b[\s\S]{0,48}\b(text|words?|letters?|writing)\b/i.test(
+    query
+  ) ||
+    /\b(text|words?|writing)\b[\s\S]{0,48}\b(in|from|on)\b[\s\S]{0,32}\b(image|photo|picture|screenshot|scan|attachment)\b/i.test(
+      query
+    );
+}
+
 function inferQueryClass(mode: AiModeId, query: string): QueryClass {
   if (hasAcademicIntent(query) || mode === "homework" || mode === "waec" || mode === "university") {
     return "academic";
@@ -183,13 +195,13 @@ function buildSourceCandidates(params: {
   }
 
   const historyCandidates = params.history
-    .filter((turn) => turn.role === "user" || turn.role === "assistant")
+    .filter((turn) => turn.role === "user")
     .slice(-MAX_HISTORY_CANDIDATES)
     .map((turn, index) => ({
       kind: "conversation" as const,
       title: `Conversation context ${index + 1} (${turn.role})`,
       excerpt: truncateText(turn.content),
-      baseScore: turn.role === "assistant" ? 0.18 : 0.22,
+      baseScore: 0.22,
     }));
 
   candidates.push(...historyCandidates);
@@ -233,8 +245,11 @@ function buildRetrievalContextBlock(
 }
 
 function buildSystemPromptAddon(params: {
+  query: string;
   queryClass: QueryClass;
   requiresCitation: boolean;
+  hasImageAttachment: boolean;
+  hasInlineImageData: boolean;
   rankedSources: RankedSource[];
 }): string {
   const citationRule = params.requiresCitation
@@ -247,6 +262,13 @@ function buildSystemPromptAddon(params: {
   const transparencyRule =
     "- Separate facts from assumptions when ambiguity exists.\n- Prefer authoritative evidence from provided context. If no evidence is available, say so clearly.\n- Keep answers verifiable and transparent.";
 
+  const ocrRule =
+    params.hasImageAttachment && hasImageTextExtractionIntent(params.query)
+      ? params.hasInlineImageData
+        ? "- OCR/image-text tasks: if text is blurry, occluded, or unreadable, explicitly say the text cannot be read confidently. Never guess missing words."
+        : "- OCR/image-text tasks: no inline image pixel data is available in this request. Do not claim text extraction succeeded; clearly state that OCR could not be verified."
+      : "";
+
   const sourceHint =
     params.rankedSources.length > 0
       ? `- You have ${params.rankedSources.length} ranked context source(s). Use them before relying on unstated memory.`
@@ -258,6 +280,7 @@ function buildSystemPromptAddon(params: {
     citationRule,
     transparencyRule,
     educationRule,
+    ocrRule,
     sourceHint,
   ].join("\n");
 }
@@ -273,16 +296,28 @@ export function prepareAnswerQualityContext(params: {
   const history = params.history ?? [];
   const queryClass = inferQueryClass(params.mode, query);
   const requiresCitation = shouldRequireCitation(params.mode, queryClass);
+  const hasImageAttachment = attachments.some(
+    (attachment) => attachment.kind === "image"
+  );
+  const hasInlineImageData = attachments.some(
+    (attachment) => attachment.kind === "image" && Boolean(attachment.dataUrl)
+  );
 
   const candidates = buildSourceCandidates({ query, attachments, history });
   const rankedSources = rankSources(query, candidates);
 
   return {
+    query,
     queryClass,
     requiresCitation,
+    hasImageAttachment,
+    hasInlineImageData,
     systemPromptAddon: buildSystemPromptAddon({
+      query,
       queryClass,
       requiresCitation,
+      hasImageAttachment,
+      hasInlineImageData,
       rankedSources,
     }),
     retrievalContextBlock: buildRetrievalContextBlock(queryClass, rankedSources),
@@ -350,6 +385,20 @@ function buildVerificationBlock(
   ].join("\n");
 }
 
+function fallbackImageOcrFailureMessage(hasInlineImageData: boolean): string {
+  const reason = hasInlineImageData
+    ? "I couldn't reliably read the words in the uploaded image from this pass."
+    : "I couldn't verify OCR because the image pixel data was not available to the model in this request.";
+  return `${reason}
+
+Please retry with one of these:
+1. Re-upload the image (full resolution, not cropped/compressed).
+2. Use a clearer image with higher contrast and minimal blur.
+3. Send a close-up crop of just the text area.
+
+I won't guess unreadable text.`;
+}
+
 export function validateAnswerQuality(params: {
   answer: string;
   context: AnswerQualityContext;
@@ -361,10 +410,20 @@ export function validateAnswerQuality(params: {
 
   let confidence = 0.68;
   const flags: string[] = [];
+  const rankedSourceIds = new Set(params.context.rankedSources.map((source) => source.id));
+  const rankedAttachmentSourceIds = new Set(
+    params.context.rankedSources
+      .filter((source) => source.kind === "attachment")
+      .map((source) => source.id)
+  );
+  const citedKnownSourceIds = citationIds.filter((id) => rankedSourceIds.has(id));
+  const citedAttachmentSourceIds = citationIds.filter((id) =>
+    rankedAttachmentSourceIds.has(id)
+  );
 
   if (params.context.requiresCitation) {
     confidence -= 0.08;
-    if (citationIds.length === 0) {
+    if (citedKnownSourceIds.length === 0) {
       confidence -= 0.24;
       flags.push("missing_citations");
     }
@@ -375,15 +434,16 @@ export function validateAnswerQuality(params: {
     flags.push("limited_context_sources");
   }
 
-  if (claimDensity > citationIds.length * 3 && params.context.requiresCitation) {
+  if (
+    claimDensity > Math.max(1, citedKnownSourceIds.length) * 3 &&
+    params.context.requiresCitation
+  ) {
     confidence -= 0.15;
     flags.push("high_claim_density_low_evidence");
   }
 
   if (uncertaintyDisclosure) {
     confidence += 0.05;
-  } else if (params.context.requiresCitation && citationIds.length === 0) {
-    flags.push("missing_uncertainty_disclosure");
   }
 
   if (params.context.queryClass === "creative") {
@@ -392,32 +452,57 @@ export function validateAnswerQuality(params: {
 
   confidence = clamp(confidence, 0.05, 0.98);
   const label = confidenceLabel(confidence);
+  const noteNeeded = label === "low" && !uncertaintyDisclosure;
+  if (noteNeeded) {
+    flags.push("missing_uncertainty_disclosure");
+  }
+
+  const isImageTextExtraction =
+    params.context.hasImageAttachment &&
+    hasImageTextExtractionIntent(params.context.query);
+  const claimsImageTextExtraction =
+    /\b(ocr|extracted|words?\s+found|text\s+(?:found|reads?|contains|says)|analy(?:s|z)ed\s+the\s+image)\b/i.test(
+      answer
+    );
+  const ocrNeedsSafeFallback =
+    isImageTextExtraction &&
+    claimsImageTextExtraction &&
+    (label === "low" ||
+      citedAttachmentSourceIds.length === 0 ||
+      !params.context.hasInlineImageData);
+
+  let normalizedAnswer = answer;
+  if (ocrNeedsSafeFallback) {
+    normalizedAnswer = fallbackImageOcrFailureMessage(
+      params.context.hasInlineImageData
+    );
+    confidence = 0.12;
+    flags.push("ocr_not_verified");
+  }
 
   const report: AnswerQualityReport = {
     confidenceScore: Number(confidence.toFixed(3)),
-    confidenceLabel: label,
+    confidenceLabel: confidenceLabel(confidence),
     queryClass: params.context.queryClass,
     requiresCitation: params.context.requiresCitation,
-    citationCount: citationIds.length,
+    citationCount: citedKnownSourceIds.length,
     sourceCount: params.context.rankedSources.length,
     flags,
   };
-
-  const noteNeeded = label === "low" && !uncertaintyDisclosure;
   const transparencyPrefix = noteNeeded
     ? "Transparency note: I may be uncertain about parts of this answer because available evidence is limited. I will clearly flag assumptions and suggest verification steps.\n\n"
     : "";
 
-  const hasVerificationSection = /(^|\n)### Verification\b/.test(answer);
+  const hasVerificationSection = /(^|\n)### Verification\b/.test(normalizedAnswer);
   const shouldAppendVerification =
     !hasVerificationSection &&
-    (params.context.requiresCitation || label !== "high");
+    (params.context.requiresCitation || report.confidenceLabel !== "high");
   const verificationBlock = shouldAppendVerification
     ? `\n\n${buildVerificationBlock(report, params.context.rankedSources)}`
     : "";
 
   return {
-    content: `${transparencyPrefix}${answer}${verificationBlock}`.trim(),
+    content: `${transparencyPrefix}${normalizedAnswer}${verificationBlock}`.trim(),
     report,
   };
 }
