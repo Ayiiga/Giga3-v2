@@ -168,6 +168,12 @@ function hasImageTextExtractionIntent(query: string): boolean {
   );
 }
 
+function hasImageInabilityLanguage(answer: string): boolean {
+  return /\b(cannot|can't|unable|do not|don't)\b[\s\S]{0,24}\b(access|analy[sz]e|view|see|process)\b[\s\S]{0,32}\b(image|photo|picture|visual)\b/i.test(
+    answer
+  ) || /\b(text[- ]based model|can't view images)\b/i.test(answer);
+}
+
 function askedForConfidence(query: string): boolean {
   return /\b(confidence|certainty|certain|how sure|probability|reliability|trust score)\b/i.test(
     query
@@ -623,6 +629,16 @@ export function validateAnswerQuality(params: {
     flags.push("ocr_not_verified");
   }
 
+  const imageCapabilityContradiction =
+    params.context.hasImageAttachment &&
+    hasImageInabilityLanguage(originalAnswer);
+  if (imageCapabilityContradiction) {
+    normalizedAnswer =
+      "Image analysis is currently unavailable. Please try again later or contact support.";
+    confidence = Math.min(confidence, 0.1);
+    flags.push("image_analysis_unavailable");
+  }
+
   const highStakesNeedsFallback =
     params.context.responseMode === "high_stakes" &&
     !ocrNeedsSafeFallback &&
@@ -698,7 +714,8 @@ export function recordQualityObservation(
     report.flags.includes("missing_citations") ||
     report.flags.includes("unsupported_claims") ||
     report.flags.includes("fabricated_citations") ||
-    report.flags.includes("ocr_not_verified")
+    report.flags.includes("ocr_not_verified") ||
+    report.flags.includes("image_analysis_unavailable")
   ) {
     qualityStats.responsesWithHallucinationRisk += 1;
   }

@@ -137,6 +137,15 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_dateKey", ["dateKey"]),
 
+  qualityFeedback: defineTable({
+    dateKey: v.string(),
+    userId: v.optional(v.string()),
+    satisfactionScore: v.number(),
+    usefulnessScore: v.number(),
+    note: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_dateKey", ["dateKey"]),
+
   usageDaily: defineTable({
     userId: v.string(),
     dateKey: v.string(),

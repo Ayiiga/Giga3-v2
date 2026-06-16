@@ -1,4 +1,4 @@
-import { internalMutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 const responseModeValidator = v.union(
@@ -15,6 +15,13 @@ const confidenceLabelValidator = v.union(
 
 function utcDateKey(ts: number): string {
   return new Date(ts).toISOString().slice(0, 10);
+}
+
+function ensureAdminAccess(adminKey: string): void {
+  const requiredKey = process.env.QUALITY_DASHBOARD_ADMIN_KEY?.trim();
+  if (!requiredKey || adminKey !== requiredKey) {
+    throw new Error("Unauthorized");
+  }
 }
 
 export const recordResponseMetric = internalMutation({
@@ -72,10 +79,7 @@ export const getAdminDashboard = query({
     days: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const requiredKey = process.env.QUALITY_DASHBOARD_ADMIN_KEY?.trim();
-    if (!requiredKey || args.adminKey !== requiredKey) {
-      throw new Error("Unauthorized");
-    }
+    ensureAdminAccess(args.adminKey);
 
     const days = Math.max(1, Math.min(90, args.days ?? 30));
     const rows = await ctx.db
@@ -144,6 +148,132 @@ export const getAdminDashboard = query({
             ).toFixed(3)
           ),
         })),
+    };
+  },
+});
+
+export const recordUserFeedback = mutation({
+  args: {
+    userId: v.optional(v.string()),
+    satisfactionScore: v.number(),
+    usefulnessScore: v.number(),
+    note: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const dateKey = utcDateKey(now);
+    const satisfactionScore = Math.max(1, Math.min(5, Math.round(args.satisfactionScore)));
+    const usefulnessScore = Math.max(1, Math.min(5, Math.round(args.usefulnessScore)));
+    return await ctx.db.insert("qualityFeedback", {
+      dateKey,
+      userId: args.userId,
+      satisfactionScore,
+      usefulnessScore,
+      note: args.note?.trim() || undefined,
+      createdAt: now,
+    });
+  },
+});
+
+export const getAdminDashboardV2 = query({
+  args: {
+    adminKey: v.string(),
+    days: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    ensureAdminAccess(args.adminKey);
+    const days = Math.max(1, Math.min(90, args.days ?? 30));
+    const rows = await ctx.db
+      .query("qualityMetricsDaily")
+      .withIndex("by_dateKey")
+      .order("desc")
+      .take(days);
+    const totals = rows.reduce(
+      (acc, row) => {
+        acc.totalResponses += row.totalResponses;
+        acc.highConfidenceResponses += row.highConfidenceResponses;
+        acc.lowConfidenceResponses += row.lowConfidenceResponses;
+        acc.citedResponses += row.citedResponses;
+        acc.hallucinationRiskResponses += row.hallucinationRiskResponses;
+        acc.verificationResponses += row.verificationResponses;
+        acc.verificationPassedResponses += row.verificationPassedResponses;
+        return acc;
+      },
+      {
+        totalResponses: 0,
+        highConfidenceResponses: 0,
+        lowConfidenceResponses: 0,
+        citedResponses: 0,
+        hallucinationRiskResponses: 0,
+        verificationResponses: 0,
+        verificationPassedResponses: 0,
+      }
+    );
+    const total = Math.max(1, totals.totalResponses);
+    const verificationBase = Math.max(1, totals.verificationResponses);
+
+    const feedbackRows = await ctx.db
+      .query("qualityFeedback")
+      .withIndex("by_dateKey")
+      .order("desc")
+      .take(days * 200);
+
+    const feedbackTotals = feedbackRows.reduce(
+      (acc, row) => {
+        acc.count += 1;
+        acc.satisfactionSum += row.satisfactionScore;
+        acc.usefulnessSum += row.usefulnessScore;
+        return acc;
+      },
+      { count: 0, satisfactionSum: 0, usefulnessSum: 0 }
+    );
+
+    return {
+      days,
+      totals,
+      rates: {
+        accuracyRate: Number((totals.highConfidenceResponses / total).toFixed(3)),
+        hallucinationRate: Number(
+          (totals.hallucinationRiskResponses / total).toFixed(3)
+        ),
+        citationAccuracy: Number((totals.citedResponses / total).toFixed(3)),
+        verificationSuccessRate: Number(
+          (totals.verificationPassedResponses / verificationBase).toFixed(3)
+        ),
+      },
+      daily: rows
+        .slice()
+        .reverse()
+        .map((row) => ({
+          dateKey: row.dateKey,
+          totalResponses: row.totalResponses,
+          accuracyRate: Number(
+            (row.highConfidenceResponses / Math.max(1, row.totalResponses)).toFixed(3)
+          ),
+          hallucinationRate: Number(
+            (row.hallucinationRiskResponses / Math.max(1, row.totalResponses)).toFixed(3)
+          ),
+          citationRate: Number(
+            (row.citedResponses / Math.max(1, row.totalResponses)).toFixed(3)
+          ),
+          verificationSuccessRate: Number(
+            (
+              row.verificationPassedResponses /
+              Math.max(1, row.verificationResponses)
+            ).toFixed(3)
+          ),
+        })),
+      feedback: {
+        count: feedbackTotals.count,
+        averageUserSatisfaction:
+          feedbackTotals.count > 0
+            ? Number((feedbackTotals.satisfactionSum / feedbackTotals.count).toFixed(2))
+            : null,
+        averageResponseUsefulness:
+          feedbackTotals.count > 0
+            ? Number((feedbackTotals.usefulnessSum / feedbackTotals.count).toFixed(2))
+            : null,
+      },
     };
   },
 });

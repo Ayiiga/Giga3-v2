@@ -4,6 +4,7 @@ import { action } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import {
+  assessImageProcessingCapability,
   completeChatWithFailover,
   getChatProviderLabel,
   trimChatMessages,
@@ -34,8 +35,22 @@ function hasHallucinationRisk(flags: string[]): boolean {
       "fabricated_citations",
       "high_stakes_unverified",
       "ocr_not_verified",
+      "image_analysis_unavailable",
     ].includes(flag)
   );
+}
+
+function imageCapabilityFailureMessage(
+  status: "analysis_unavailable" | "upload_failed" | "unsupported_format",
+  supportedFormats: string[]
+): string {
+  if (status === "analysis_unavailable") {
+    return "Image analysis is currently unavailable. Please try again later or contact support.";
+  }
+  if (status === "upload_failed") {
+    return "The image upload did not complete successfully. Please upload the image again.";
+  }
+  return `This image format is not currently supported. Supported formats include ${supportedFormats.join(", ")}.`;
 }
 
 export const sendMessage = action({
@@ -81,6 +96,7 @@ export const sendMessage = action({
     const mode =
       (args.mode && isValidMode(args.mode) ? args.mode : conv.mode ?? "general") as AiModeId;
     const attachments = (args.attachments ?? []) as ChatCompletionAttachment[];
+    const imageCapability = assessImageProcessingCapability(attachments);
 
     if (attachments.length > 0) {
       await ctx.runMutation(api.uploadLimits.recordUploads, {
@@ -139,6 +155,59 @@ export const sendMessage = action({
       buildInterestSystemAddon(parseInterestProfile(refreshedUser?.interestProfile)) +
       "\n\n" +
       qualityContext.systemPromptAddon;
+
+    if (
+      imageCapability.status === "analysis_unavailable" ||
+      imageCapability.status === "upload_failed" ||
+      imageCapability.status === "unsupported_format"
+    ) {
+      const failureMessage = imageCapabilityFailureMessage(
+        imageCapability.status,
+        imageCapability.supportedFormats
+      );
+      const failureContext = {
+        ...qualityContext,
+        requiresCitation: false,
+        showConfidenceByDefault: false,
+        showVerificationByDefault: false,
+      };
+      const validatedFailure = validateAnswerQuality({
+        answer: failureMessage,
+        context: failureContext,
+      });
+      const assistantContent = validatedFailure.content;
+      const qualityMonitoring = recordQualityObservation(validatedFailure.report);
+      await ctx.runMutation(internal.qualityDashboard.recordResponseMetric, {
+        responseMode: validatedFailure.report.responseMode,
+        confidenceLabel: validatedFailure.report.confidenceLabel,
+        citationCount: validatedFailure.report.citationCount,
+        verificationVisible: validatedFailure.report.verificationVisible,
+        verificationPassed: !hasHallucinationRisk(validatedFailure.report.flags),
+        hasHallucinationRisk: hasHallucinationRisk(validatedFailure.report.flags),
+      });
+
+      await ctx.runMutation(internal.platform.appendMessage, {
+        conversationId: args.conversationId,
+        userId: args.userId,
+        role: "assistant",
+        content: assistantContent,
+      });
+
+      const updatedUser = await ctx.runQuery(api.users.getUser, {
+        email: args.userId,
+      });
+
+      return {
+        content: assistantContent,
+        credits: updatedUser?.credits ?? 0,
+        mode,
+        chatProvider: "local_fallback",
+        chatProviderLabel: getChatProviderLabel("local_fallback"),
+        usedFallback: true,
+        quality: validatedFailure.report,
+        qualityMonitoring,
+      };
+    }
 
     const chatMessages = trimChatMessages([
       { role: "system" as const, content: systemPrompt },

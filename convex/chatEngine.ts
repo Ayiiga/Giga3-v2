@@ -24,6 +24,18 @@ export type ChatEngineResult = {
   usedFallback: boolean;
 };
 
+export type ImageProcessingCapabilityStatus =
+  | "not_requested"
+  | "available"
+  | "analysis_unavailable"
+  | "upload_failed"
+  | "unsupported_format";
+
+export type ImageProcessingCapability = {
+  status: ImageProcessingCapabilityStatus;
+  supportedFormats: string[];
+};
+
 const PROVIDER_LABELS: Record<string, string> = {
   openai_primary: "Primary AI (OpenAI)",
   openai_fallback_model: "Backup model (OpenAI)",
@@ -35,6 +47,50 @@ const PROVIDER_LABELS: Record<string, string> = {
 
 export function getChatProviderLabel(providerId: string): string {
   return PROVIDER_LABELS[providerId] ?? providerId;
+}
+
+const SUPPORTED_IMAGE_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
+
+export function assessImageProcessingCapability(
+  attachments: ChatCompletionAttachment[]
+): ImageProcessingCapability {
+  const imageAttachments = attachments.filter((a) => a.kind === "image");
+  const supportedFormats = ["JPG", "PNG", "WEBP", "GIF"];
+  if (imageAttachments.length === 0) {
+    return { status: "not_requested", supportedFormats };
+  }
+
+  const hasUnsupportedFormat = imageAttachments.some((attachment) => {
+    const mime = attachment.mimeType?.toLowerCase().trim();
+    if (!mime) return false;
+    return !SUPPORTED_IMAGE_MIME_TYPES.has(mime);
+  });
+  if (hasUnsupportedFormat) {
+    return { status: "unsupported_format", supportedFormats };
+  }
+
+  const hasMissingInlineImage = imageAttachments.some(
+    (attachment) => !attachment.dataUrl
+  );
+  if (hasMissingInlineImage) {
+    return { status: "upload_failed", supportedFormats };
+  }
+
+  const visionEnabled = process.env.CHAT_ENABLE_VISION !== "false";
+  const hasVisionProvider = Boolean(
+    process.env.GEMINI_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim()
+  );
+  if (!visionEnabled || !hasVisionProvider) {
+    return { status: "analysis_unavailable", supportedFormats };
+  }
+
+  return { status: "available", supportedFormats };
 }
 
 /** Gemini REST expects `gemini-2.5-flash`, not `models/...` or image-model ids. */

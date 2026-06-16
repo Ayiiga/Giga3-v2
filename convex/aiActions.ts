@@ -20,6 +20,7 @@ function hasHallucinationRisk(flags: string[]): boolean {
       "fabricated_citations",
       "high_stakes_unverified",
       "ocr_not_verified",
+      "image_analysis_unavailable",
     ].includes(flag)
   );
 }
