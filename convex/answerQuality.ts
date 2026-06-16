@@ -169,7 +169,7 @@ function hasImageTextExtractionIntent(query: string): boolean {
 }
 
 function hasImageInabilityLanguage(answer: string): boolean {
-  return /\b(cannot|can't|unable|do not|don't)\b[\s\S]{0,24}\b(access|analy[sz]e|view|see|process)\b[\s\S]{0,32}\b(image|photo|picture|visual)\b/i.test(
+  return /\b(cannot|can't|unable|do not|don't)\b[\s\S]{0,28}\b(access|analy[sz]e|view|see|process)\b[\s\S]{0,40}\b(images?|photos?|pictures?|visual)\b/i.test(
     answer
   ) || /\b(text[- ]based model|can't view images)\b/i.test(answer);
 }
