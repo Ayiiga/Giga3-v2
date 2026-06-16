@@ -460,13 +460,8 @@ export function validateAnswerQuality(params: {
   const isImageTextExtraction =
     params.context.hasImageAttachment &&
     hasImageTextExtractionIntent(params.context.query);
-  const claimsImageTextExtraction =
-    /\b(ocr|extracted|words?\s+found|text\s+(?:found|reads?|contains|says)|analy(?:s|z)ed\s+the\s+image)\b/i.test(
-      answer
-    );
   const ocrNeedsSafeFallback =
     isImageTextExtraction &&
-    claimsImageTextExtraction &&
     (label === "low" ||
       citedAttachmentSourceIds.length === 0 ||
       !params.context.hasInlineImageData);
