@@ -11,6 +11,9 @@ type QueryClass =
   | "creative"
   | "opinion";
 
+export type ResponseMode = "conversational" | "educational" | "high_stakes";
+
+type LearnerLevel = "basic" | "secondary" | "university" | "professional";
 type SourceKind = "user_prompt" | "attachment" | "conversation";
 
 type SourceCandidate = {
@@ -31,7 +34,13 @@ export type RankedSource = {
 export type AnswerQualityContext = {
   query: string;
   queryClass: QueryClass;
+  responseMode: ResponseMode;
+  learnerLevel: LearnerLevel;
+  isExamQuestion: boolean;
+  confidenceRequested: boolean;
   requiresCitation: boolean;
+  showConfidenceByDefault: boolean;
+  showVerificationByDefault: boolean;
   hasImageAttachment: boolean;
   hasInlineImageData: boolean;
   systemPromptAddon: string;
@@ -42,6 +51,9 @@ export type AnswerQualityContext = {
 export type AnswerQualityReport = {
   confidenceScore: number;
   confidenceLabel: "low" | "medium" | "high";
+  responseMode: ResponseMode;
+  confidenceVisible: boolean;
+  verificationVisible: boolean;
   queryClass: QueryClass;
   requiresCitation: boolean;
   citationCount: number;
@@ -60,11 +72,15 @@ export type QualityMonitoringSnapshot = {
   lowConfidenceRate: number;
   citationCoverageRate: number;
   hallucinationRiskRate: number;
+  verificationRate: number;
 };
 
 const MAX_EXCERPT_LENGTH = 420;
 const MAX_RANKED_SOURCES = 6;
 const MAX_HISTORY_CANDIDATES = 8;
+
+const HIGH_STAKES_MODES = new Set<AiModeId>(["news", "research"]);
+const CONVERSATIONAL_MODES = new Set<AiModeId>(["social", "book", "resume"]);
 
 const qualityStats = {
   totalResponses: 0,
@@ -72,17 +88,8 @@ const qualityStats = {
   lowConfidenceResponses: 0,
   responsesWithCitation: 0,
   responsesWithHallucinationRisk: 0,
+  responsesWithVerification: 0,
 };
-
-const FACT_HEAVY_MODES = new Set<AiModeId>([
-  "general",
-  "coding",
-  "homework",
-  "waec",
-  "university",
-  "research",
-  "news",
-]);
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -117,13 +124,13 @@ function lexicalOverlapScore(queryTokens: string[], text: string): number {
 }
 
 function hasAcademicIntent(query: string): boolean {
-  return /\b(exam|homework|waec|solve|calculate|derive|proof|equation|diagram|show\s+work|step[- ]by[- ]step)\b/i.test(
+  return /\b(exam|homework|waec|bece|sat|igcse|a-?level|solve|calculate|derive|proof|equation|diagram|show\s+work|step[- ]by[- ]step|teach|explain)\b/i.test(
     query
   );
 }
 
 function hasCreativeIntent(query: string): boolean {
-  return /\b(poem|story|lyrics|creative|fiction|brainstorm|caption|post idea|slogan)\b/i.test(
+  return /\b(poem|story|lyrics|creative writing|fiction|brainstorm|caption|slogan|joke)\b/i.test(
     query
   );
 }
@@ -134,20 +141,69 @@ function hasOpinionIntent(query: string): boolean {
   );
 }
 
-function hasImageTextExtractionIntent(query: string): boolean {
-  return /\b(ocr|read|extract|transcribe|write\s*down|copy|detect)\b[\s\S]{0,48}\b(text|words?|letters?|writing)\b/i.test(
+function hasConversationalIntent(query: string): boolean {
+  const compact = query.trim().toLowerCase();
+  return (
+    /^(hi|hello|hey|thanks|thank you|good morning|good afternoon|good evening|how are you|what's up|whats up)[!.?]*$/.test(
+      compact
+    ) ||
+    /\b(casual chat|small talk)\b/i.test(compact)
+  );
+}
+
+function hasHighStakesIntent(query: string): boolean {
+  return /\b(medical|medicine|diagnosis|symptom|treatment|drug|dosage|legal|law|contract|lawsuit|financial|finance|investment|stock|inflation|interest rate|tax|government|policy|election|breaking news|latest news|latest figures|research)\b/i.test(
     query
-  ) ||
+  );
+}
+
+function hasImageTextExtractionIntent(query: string): boolean {
+  return (
+    /\b(ocr|read|extract|transcribe|write\s*down|copy|detect)\b[\s\S]{0,48}\b(text|words?|letters?|writing)\b/i.test(
+      query
+    ) ||
     /\b(text|words?|writing)\b[\s\S]{0,48}\b(in|from|on)\b[\s\S]{0,32}\b(image|photo|picture|screenshot|scan|attachment)\b/i.test(
       query
-    );
+    )
+  );
+}
+
+function askedForConfidence(query: string): boolean {
+  return /\b(confidence|certainty|certain|how sure|probability|reliability|trust score)\b/i.test(
+    query
+  );
+}
+
+function detectLearnerLevel(mode: AiModeId, query: string): LearnerLevel {
+  if (/\b(kid|child|beginner|basic|simple)\b/i.test(query)) return "basic";
+  if (/\b(waec|bece|secondary|high school|igcse|a-?level)\b/i.test(query))
+    return "secondary";
+  if (mode === "university" || /\b(university|college|undergrad|graduate)\b/i.test(query)) {
+    return "university";
+  }
+  if (/\b(professional|industry|workplace|enterprise)\b/i.test(query)) {
+    return "professional";
+  }
+  return "secondary";
+}
+
+function detectExamQuestion(query: string): boolean {
+  return /\b(waec|bece|sat|igcse|a-?level|exam|past question|marking scheme)\b/i.test(
+    query
+  );
 }
 
 function inferQueryClass(mode: AiModeId, query: string): QueryClass {
-  if (hasAcademicIntent(query) || mode === "homework" || mode === "waec" || mode === "university") {
+  if (
+    hasAcademicIntent(query) ||
+    mode === "homework" ||
+    mode === "waec" ||
+    mode === "university" ||
+    mode === "coding"
+  ) {
     return "academic";
   }
-  if (hasCreativeIntent(query) || mode === "book" || mode === "social" || mode === "resume") {
+  if (hasCreativeIntent(query) || CONVERSATIONAL_MODES.has(mode)) {
     return "creative";
   }
   if (hasOpinionIntent(query)) {
@@ -159,10 +215,14 @@ function inferQueryClass(mode: AiModeId, query: string): QueryClass {
   return "factual";
 }
 
-function shouldRequireCitation(mode: AiModeId, queryClass: QueryClass): boolean {
-  if (queryClass === "creative") return false;
-  if (queryClass === "opinion" && !FACT_HEAVY_MODES.has(mode)) return false;
-  return FACT_HEAVY_MODES.has(mode) || queryClass === "factual" || queryClass === "academic";
+function inferResponseMode(mode: AiModeId, query: string): ResponseMode {
+  if (hasConversationalIntent(query) || CONVERSATIONAL_MODES.has(mode)) {
+    return "conversational";
+  }
+  if (HIGH_STAKES_MODES.has(mode) || hasHighStakesIntent(query)) {
+    return "high_stakes";
+  }
+  return "educational";
 }
 
 function buildSourceCandidates(params: {
@@ -175,7 +235,7 @@ function buildSourceCandidates(params: {
       kind: "user_prompt",
       title: "User request",
       excerpt: truncateText(params.query),
-      baseScore: 0.3,
+      baseScore: 0.32,
     },
   ];
 
@@ -190,7 +250,7 @@ function buildSourceCandidates(params: {
           ? attachmentText
           : "Image attachment provided (visual content available)."
       ),
-      baseScore: 0.55,
+      baseScore: 0.62,
     });
   }
 
@@ -199,9 +259,9 @@ function buildSourceCandidates(params: {
     .slice(-MAX_HISTORY_CANDIDATES)
     .map((turn, index) => ({
       kind: "conversation" as const,
-      title: `Conversation context ${index + 1} (${turn.role})`,
+      title: `Conversation context ${index + 1} (user)`,
       excerpt: truncateText(turn.content),
-      baseScore: 0.22,
+      baseScore: 0.24,
     }));
 
   candidates.push(...historyCandidates);
@@ -233,10 +293,11 @@ function rankSources(
 
 function buildRetrievalContextBlock(
   queryClass: QueryClass,
+  responseMode: ResponseMode,
   rankedSources: RankedSource[]
 ): string | null {
   if (rankedSources.length === 0) return null;
-  const header = `Ranked evidence context (${queryClass} query):`;
+  const header = `Ranked evidence context (${responseMode}, ${queryClass} query):`;
   const lines = rankedSources.map(
     (source) =>
       `[${source.id}] (${source.kind}, score=${source.score}) ${source.title}: ${source.excerpt}`
@@ -244,45 +305,92 @@ function buildRetrievalContextBlock(
   return `${header}\n${lines.join("\n")}`;
 }
 
+function learnerInstruction(level: LearnerLevel): string {
+  switch (level) {
+    case "basic":
+      return "- Explain with simple words first, then add one practical example.";
+    case "secondary":
+      return "- Explain for secondary-school learners with clear steps and worked examples.";
+    case "university":
+      return "- Explain with university-level rigor, definitions, derivations, and concise structure.";
+    case "professional":
+      return "- Explain with professional depth, practical trade-offs, and implementation guidance.";
+    default:
+      return "- Explain clearly with examples and practical context.";
+  }
+}
+
 function buildSystemPromptAddon(params: {
   query: string;
   queryClass: QueryClass;
+  responseMode: ResponseMode;
+  learnerLevel: LearnerLevel;
+  isExamQuestion: boolean;
+  confidenceRequested: boolean;
   requiresCitation: boolean;
   hasImageAttachment: boolean;
   hasInlineImageData: boolean;
   rankedSources: RankedSource[];
 }): string {
+  const conversationalRule =
+    params.responseMode === "conversational"
+      ? "- Conversational mode: reply naturally and warmly. Do not include transparency notices, confidence scores, citation panels, verification warnings, or evidence sections."
+      : "";
+
+  const educationalRule =
+    params.responseMode === "educational"
+      ? "- Educational mode: teach with concept explanation, step-by-step method, examples, and practical applications. Use tables or diagrams when they improve clarity."
+      : "";
+
+  const examRule = params.isExamQuestion
+    ? "- Exam solver mode: provide answer, method, full explanation, marking-scheme style steps, and a final answer summary. Include diagrams (Mermaid) when needed for geometry, graphs, circuits, or process flows."
+    : "";
+
+  const highStakesRule =
+    params.responseMode === "high_stakes"
+      ? "- High-stakes mode: verify factual claims against provided evidence before finalizing. Avoid unsupported claims. If evidence is weak, clearly state uncertainty."
+      : "";
+
   const citationRule = params.requiresCitation
-    ? "- For factual or academic claims, cite supporting evidence inline with [S1], [S2], etc. Use only sources that exist in the ranked evidence context.\n- Do not invent citations, URLs, statistics, institutions, people, or events.\n- If evidence is insufficient or uncertain, explicitly state uncertainty and provide the safest interpretation."
-    : "- Keep claims honest and transparent. If a detail is uncertain, state uncertainty instead of guessing.";
+    ? "- For factual claims in high-stakes mode, cite only known ranked evidence sources using [S1], [S2], etc. Never invent citations, sources, statistics, people, organizations, or events."
+    : params.responseMode === "educational"
+      ? "- Citations are optional. Include them only when they improve trustworthiness."
+      : "- Do not force citations for casual conversation, opinions, or creative prompts.";
 
-  const educationRule =
-    "- Use educational structure: concise definitions, clear steps, practical examples, and real-world application when useful.\n- For exam-style questions, show method, formulas/calculations where applicable, then provide the final answer.";
-
-  const transparencyRule =
-    "- Separate facts from assumptions when ambiguity exists.\n- Prefer authoritative evidence from provided context. If no evidence is available, say so clearly.\n- Keep answers verifiable and transparent.";
+  const confidenceRule =
+    params.responseMode === "high_stakes"
+      ? "- Confidence scoring is enabled for high-stakes responses."
+      : params.confidenceRequested
+        ? "- The user requested confidence details; include them briefly if helpful."
+        : "- Hide confidence details unless the user explicitly asks.";
 
   const ocrRule =
     params.hasImageAttachment && hasImageTextExtractionIntent(params.query)
       ? params.hasInlineImageData
-        ? "- OCR/image-text tasks: if text is blurry, occluded, or unreadable, explicitly say the text cannot be read confidently. Never guess missing words."
-        : "- OCR/image-text tasks: no inline image pixel data is available in this request. Do not claim text extraction succeeded; clearly state that OCR could not be verified."
+        ? "- OCR/image-text tasks: if text is blurry, occluded, or unreadable, state that clearly and do not guess."
+        : "- OCR/image-text tasks: no inline image pixels are available. Do not claim successful text extraction."
       : "";
 
   const sourceHint =
     params.rankedSources.length > 0
-      ? `- You have ${params.rankedSources.length} ranked context source(s). Use them before relying on unstated memory.`
-      : "- No ranked context source is available beyond the user query; keep confidence conservative and flag limitations.";
+      ? `- Use the ${params.rankedSources.length} ranked evidence source(s) before relying on unstated memory.`
+      : "- No ranked source context is available beyond the user prompt; keep factual claims conservative.";
 
   return [
     "Accuracy, Authenticity, and Trustworthiness Engine:",
-    "- Prioritize factual correctness and reliability over fluency.",
+    "- Prioritize factual correctness, authenticity, and clarity.",
+    conversationalRule,
+    educationalRule,
+    learnerInstruction(params.learnerLevel),
+    examRule,
+    highStakesRule,
     citationRule,
-    transparencyRule,
-    educationRule,
+    confidenceRule,
     ocrRule,
     sourceHint,
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 export function prepareAnswerQualityContext(params: {
@@ -294,8 +402,14 @@ export function prepareAnswerQualityContext(params: {
   const query = params.query.trim();
   const attachments = params.attachments ?? [];
   const history = params.history ?? [];
+  const responseMode = inferResponseMode(params.mode, query);
   const queryClass = inferQueryClass(params.mode, query);
-  const requiresCitation = shouldRequireCitation(params.mode, queryClass);
+  const learnerLevel = detectLearnerLevel(params.mode, query);
+  const isExamQuestion = detectExamQuestion(query);
+  const confidenceRequested = askedForConfidence(query);
+  const requiresCitation = responseMode === "high_stakes";
+  const showConfidenceByDefault = responseMode === "high_stakes";
+  const showVerificationByDefault = responseMode === "high_stakes";
   const hasImageAttachment = attachments.some(
     (attachment) => attachment.kind === "image"
   );
@@ -309,18 +423,32 @@ export function prepareAnswerQualityContext(params: {
   return {
     query,
     queryClass,
+    responseMode,
+    learnerLevel,
+    isExamQuestion,
+    confidenceRequested,
     requiresCitation,
+    showConfidenceByDefault,
+    showVerificationByDefault,
     hasImageAttachment,
     hasInlineImageData,
     systemPromptAddon: buildSystemPromptAddon({
       query,
       queryClass,
+      responseMode,
+      learnerLevel,
+      isExamQuestion,
+      confidenceRequested,
       requiresCitation,
       hasImageAttachment,
       hasInlineImageData,
       rankedSources,
     }),
-    retrievalContextBlock: buildRetrievalContextBlock(queryClass, rankedSources),
+    retrievalContextBlock: buildRetrievalContextBlock(
+      queryClass,
+      responseMode,
+      rankedSources
+    ),
     rankedSources,
   };
 }
@@ -354,12 +482,21 @@ function hasUncertaintyDisclosure(answer: string): boolean {
   );
 }
 
-function confidenceLabel(
-  score: number
-): "low" | "medium" | "high" {
+function confidenceLabel(score: number): "low" | "medium" | "high" {
   if (score >= 0.75) return "high";
   if (score >= 0.45) return "medium";
   return "low";
+}
+
+function stripVerificationSections(answer: string): string {
+  return answer
+    .replace(/\n+###\s*(Verification|Evidence|Confidence)[\s\S]*$/i, "")
+    .replace(/^Transparency note:[\s\S]*?\n\n/i, "")
+    .trim();
+}
+
+function removeSourceTags(answer: string): string {
+  return answer.replace(/\s*\[S\d+\]/g, "").replace(/\s{2,}/g, " ").trim();
 }
 
 function buildVerificationBlock(
@@ -373,22 +510,23 @@ function buildVerificationBlock(
           .slice(0, 4)
           .map((source) => `[${source.id}] ${source.title}`)
           .join("; ");
-  const flags =
-    report.flags.length === 0 ? "none" : report.flags.join(", ");
-
-  return [
-    "### Verification",
-    `- Confidence: ${report.confidenceLabel} (${report.confidenceScore.toFixed(2)})`,
-    `- Citation count: ${report.citationCount}`,
-    `- Evidence used: ${sourceSummary}`,
-    `- Validation flags: ${flags}`,
-  ].join("\n");
+  const flags = report.flags.length === 0 ? "none" : report.flags.join(", ");
+  const lines = ["### Verification"];
+  if (report.confidenceVisible) {
+    lines.push(
+      `- Confidence: ${report.confidenceLabel} (${report.confidenceScore.toFixed(2)})`
+    );
+  }
+  lines.push(`- Citation count: ${report.citationCount}`);
+  lines.push(`- Evidence used: ${sourceSummary}`);
+  lines.push(`- Validation flags: ${flags}`);
+  return lines.join("\n");
 }
 
 function fallbackImageOcrFailureMessage(hasInlineImageData: boolean): string {
   const reason = hasInlineImageData
     ? "I couldn't reliably read the words in the uploaded image from this pass."
-    : "I couldn't verify OCR because the image pixel data was not available to the model in this request.";
+    : "I couldn't verify OCR because image pixel data was not available in this request.";
   return `${reason}
 
 Please retry with one of these:
@@ -399,18 +537,31 @@ Please retry with one of these:
 I won't guess unreadable text.`;
 }
 
+function fallbackHighStakesUnverified(query: string): string {
+  return `I can't confidently verify this high-stakes request with the evidence currently available.
+
+To keep this accurate and trustworthy, please provide one of the following:
+1. A trusted source excerpt or attachment.
+2. The exact dataset/report you want summarized.
+3. Permission to proceed with a conservative, clearly-labeled estimate.
+
+Request received: "${truncateText(query, 180)}"`;
+}
+
 export function validateAnswerQuality(params: {
   answer: string;
   context: AnswerQualityContext;
 }): ValidatedAnswer {
-  const answer = params.answer.trim();
-  const citationIds = extractCitationIds(answer);
-  const claimDensity = estimateClaimDensity(answer);
-  const uncertaintyDisclosure = hasUncertaintyDisclosure(answer);
+  const originalAnswer = params.answer.trim();
+  const citationIds = extractCitationIds(originalAnswer);
+  const claimDensity = estimateClaimDensity(originalAnswer);
+  const uncertaintyDisclosure = hasUncertaintyDisclosure(originalAnswer);
 
-  let confidence = 0.68;
+  let confidence = 0.7;
   const flags: string[] = [];
-  const rankedSourceIds = new Set(params.context.rankedSources.map((source) => source.id));
+  const rankedSourceIds = new Set(
+    params.context.rankedSources.map((source) => source.id)
+  );
   const rankedAttachmentSourceIds = new Set(
     params.context.rankedSources
       .filter((source) => source.kind === "attachment")
@@ -420,12 +571,23 @@ export function validateAnswerQuality(params: {
   const citedAttachmentSourceIds = citationIds.filter((id) =>
     rankedAttachmentSourceIds.has(id)
   );
+  const invalidCitationIds = citationIds.filter((id) => !rankedSourceIds.has(id));
 
-  if (params.context.requiresCitation) {
-    confidence -= 0.08;
+  if (invalidCitationIds.length > 0) {
+    confidence -= 0.2;
+    flags.push("fabricated_citations");
+  }
+
+  if (params.context.requiresCitation && citedKnownSourceIds.length === 0) {
+    confidence -= 0.22;
+    flags.push("missing_citations");
+  }
+
+  if (params.context.responseMode === "high_stakes" && claimDensity >= 2) {
+    confidence -= 0.1;
     if (citedKnownSourceIds.length === 0) {
-      confidence -= 0.24;
-      flags.push("missing_citations");
+      confidence -= 0.16;
+      flags.push("unsupported_claims");
     }
   }
 
@@ -434,39 +596,25 @@ export function validateAnswerQuality(params: {
     flags.push("limited_context_sources");
   }
 
-  if (
-    claimDensity > Math.max(1, citedKnownSourceIds.length) * 3 &&
-    params.context.requiresCitation
-  ) {
-    confidence -= 0.15;
-    flags.push("high_claim_density_low_evidence");
-  }
-
   if (uncertaintyDisclosure) {
     confidence += 0.05;
   }
 
-  if (params.context.queryClass === "creative") {
+  if (params.context.responseMode === "conversational") {
     confidence += 0.08;
   }
 
   confidence = clamp(confidence, 0.05, 0.98);
-  const label = confidenceLabel(confidence);
-  const noteNeeded = label === "low" && !uncertaintyDisclosure;
-  if (noteNeeded) {
-    flags.push("missing_uncertainty_disclosure");
-  }
+  let normalizedAnswer = originalAnswer;
 
   const isImageTextExtraction =
     params.context.hasImageAttachment &&
     hasImageTextExtractionIntent(params.context.query);
   const ocrNeedsSafeFallback =
     isImageTextExtraction &&
-    (label === "low" ||
+    (confidenceLabel(confidence) === "low" ||
       citedAttachmentSourceIds.length === 0 ||
       !params.context.hasInlineImageData);
-
-  let normalizedAnswer = answer;
   if (ocrNeedsSafeFallback) {
     normalizedAnswer = fallbackImageOcrFailureMessage(
       params.context.hasInlineImageData
@@ -475,26 +623,63 @@ export function validateAnswerQuality(params: {
     flags.push("ocr_not_verified");
   }
 
+  const highStakesNeedsFallback =
+    params.context.responseMode === "high_stakes" &&
+    !ocrNeedsSafeFallback &&
+    (flags.includes("fabricated_citations") || flags.includes("unsupported_claims"));
+  if (highStakesNeedsFallback) {
+    normalizedAnswer = fallbackHighStakesUnverified(params.context.query);
+    confidence = Math.min(confidence, 0.2);
+    flags.push("high_stakes_unverified");
+  }
+
+  const confidenceVisibility =
+    params.context.showConfidenceByDefault ||
+    (params.context.responseMode === "educational" &&
+      params.context.confidenceRequested);
+  const verificationVisibility =
+    params.context.showVerificationByDefault ||
+    (params.context.responseMode === "educational" &&
+      params.context.confidenceRequested);
+
+  if (params.context.responseMode === "conversational") {
+    normalizedAnswer = removeSourceTags(stripVerificationSections(normalizedAnswer));
+  } else if (!verificationVisibility) {
+    normalizedAnswer = stripVerificationSections(normalizedAnswer);
+  }
+
+  const lowConfidence = confidenceLabel(confidence) === "low";
+  const shouldShowTransparencyNote =
+    lowConfidence &&
+    verificationVisibility &&
+    params.context.responseMode !== "conversational" &&
+    !ocrNeedsSafeFallback;
+  if (shouldShowTransparencyNote && !uncertaintyDisclosure) {
+    flags.push("missing_uncertainty_disclosure");
+  }
+
   const report: AnswerQualityReport = {
     confidenceScore: Number(confidence.toFixed(3)),
     confidenceLabel: confidenceLabel(confidence),
+    responseMode: params.context.responseMode,
+    confidenceVisible: confidenceVisibility,
+    verificationVisible: verificationVisibility,
     queryClass: params.context.queryClass,
     requiresCitation: params.context.requiresCitation,
     citationCount: citedKnownSourceIds.length,
     sourceCount: params.context.rankedSources.length,
     flags,
   };
-  const transparencyPrefix = noteNeeded
-    ? "Transparency note: I may be uncertain about parts of this answer because available evidence is limited. I will clearly flag assumptions and suggest verification steps.\n\n"
+
+  const transparencyPrefix = shouldShowTransparencyNote
+    ? "Verification note: confidence is low because available evidence is limited. I am avoiding unsupported claims.\n\n"
     : "";
 
   const hasVerificationSection = /(^|\n)### Verification\b/.test(normalizedAnswer);
-  const shouldAppendVerification =
-    !hasVerificationSection &&
-    (params.context.requiresCitation || report.confidenceLabel !== "high");
-  const verificationBlock = shouldAppendVerification
-    ? `\n\n${buildVerificationBlock(report, params.context.rankedSources)}`
-    : "";
+  const verificationBlock =
+    report.verificationVisible && !hasVerificationSection
+      ? `\n\n${buildVerificationBlock(report, params.context.rankedSources)}`
+      : "";
 
   return {
     content: `${transparencyPrefix}${normalizedAnswer}${verificationBlock}`.trim(),
@@ -511,9 +696,14 @@ export function recordQualityObservation(
   if (report.citationCount > 0) qualityStats.responsesWithCitation += 1;
   if (
     report.flags.includes("missing_citations") ||
-    report.flags.includes("high_claim_density_low_evidence")
+    report.flags.includes("unsupported_claims") ||
+    report.flags.includes("fabricated_citations") ||
+    report.flags.includes("ocr_not_verified")
   ) {
     qualityStats.responsesWithHallucinationRisk += 1;
+  }
+  if (report.verificationVisible) {
+    qualityStats.responsesWithVerification += 1;
   }
 
   const total = Math.max(1, qualityStats.totalResponses);
@@ -530,6 +720,9 @@ export function recordQualityObservation(
     ),
     hallucinationRiskRate: Number(
       (qualityStats.responsesWithHallucinationRisk / total).toFixed(3)
+    ),
+    verificationRate: Number(
+      (qualityStats.responsesWithVerification / total).toFixed(3)
     ),
   };
 }

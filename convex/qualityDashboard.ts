@@ -1,0 +1,149 @@
+import { internalMutation, query } from "./_generated/server";
+import { v } from "convex/values";
+
+const responseModeValidator = v.union(
+  v.literal("conversational"),
+  v.literal("educational"),
+  v.literal("high_stakes")
+);
+
+const confidenceLabelValidator = v.union(
+  v.literal("low"),
+  v.literal("medium"),
+  v.literal("high")
+);
+
+function utcDateKey(ts: number): string {
+  return new Date(ts).toISOString().slice(0, 10);
+}
+
+export const recordResponseMetric = internalMutation({
+  args: {
+    responseMode: responseModeValidator,
+    confidenceLabel: confidenceLabelValidator,
+    citationCount: v.number(),
+    verificationVisible: v.boolean(),
+    verificationPassed: v.boolean(),
+    hasHallucinationRisk: v.boolean(),
+    createdAt: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const ts = args.createdAt ?? Date.now();
+    const dateKey = utcDateKey(ts);
+    const existing = await ctx.db
+      .query("qualityMetricsDaily")
+      .withIndex("by_dateKey", (q) => q.eq("dateKey", dateKey))
+      .first();
+
+    const patch = {
+      totalResponses: (existing?.totalResponses ?? 0) + 1,
+      highConfidenceResponses:
+        (existing?.highConfidenceResponses ?? 0) +
+        (args.confidenceLabel === "high" ? 1 : 0),
+      lowConfidenceResponses:
+        (existing?.lowConfidenceResponses ?? 0) +
+        (args.confidenceLabel === "low" ? 1 : 0),
+      citedResponses: (existing?.citedResponses ?? 0) + (args.citationCount > 0 ? 1 : 0),
+      hallucinationRiskResponses:
+        (existing?.hallucinationRiskResponses ?? 0) + (args.hasHallucinationRisk ? 1 : 0),
+      verificationResponses:
+        (existing?.verificationResponses ?? 0) + (args.verificationVisible ? 1 : 0),
+      verificationPassedResponses:
+        (existing?.verificationPassedResponses ?? 0) +
+        (args.verificationVisible && args.verificationPassed ? 1 : 0),
+      updatedAt: ts,
+    };
+
+    if (existing) {
+      await ctx.db.patch(existing._id, patch);
+      return existing._id;
+    }
+
+    return await ctx.db.insert("qualityMetricsDaily", {
+      dateKey,
+      ...patch,
+    });
+  },
+});
+
+export const getAdminDashboard = query({
+  args: {
+    adminKey: v.string(),
+    days: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const requiredKey = process.env.QUALITY_DASHBOARD_ADMIN_KEY?.trim();
+    if (!requiredKey || args.adminKey !== requiredKey) {
+      throw new Error("Unauthorized");
+    }
+
+    const days = Math.max(1, Math.min(90, args.days ?? 30));
+    const rows = await ctx.db
+      .query("qualityMetricsDaily")
+      .withIndex("by_dateKey")
+      .order("desc")
+      .take(days);
+
+    const totals = rows.reduce(
+      (acc, row) => {
+        acc.totalResponses += row.totalResponses;
+        acc.highConfidenceResponses += row.highConfidenceResponses;
+        acc.lowConfidenceResponses += row.lowConfidenceResponses;
+        acc.citedResponses += row.citedResponses;
+        acc.hallucinationRiskResponses += row.hallucinationRiskResponses;
+        acc.verificationResponses += row.verificationResponses;
+        acc.verificationPassedResponses += row.verificationPassedResponses;
+        return acc;
+      },
+      {
+        totalResponses: 0,
+        highConfidenceResponses: 0,
+        lowConfidenceResponses: 0,
+        citedResponses: 0,
+        hallucinationRiskResponses: 0,
+        verificationResponses: 0,
+        verificationPassedResponses: 0,
+      }
+    );
+
+    const total = Math.max(1, totals.totalResponses);
+    const verificationBase = Math.max(1, totals.verificationResponses);
+
+    return {
+      days,
+      totals,
+      rates: {
+        accuracyRate: Number((totals.highConfidenceResponses / total).toFixed(3)),
+        hallucinationRate: Number(
+          (totals.hallucinationRiskResponses / total).toFixed(3)
+        ),
+        citationAccuracy: Number((totals.citedResponses / total).toFixed(3)),
+        verificationSuccessRate: Number(
+          (totals.verificationPassedResponses / verificationBase).toFixed(3)
+        ),
+      },
+      daily: rows
+        .slice()
+        .reverse()
+        .map((row) => ({
+          dateKey: row.dateKey,
+          totalResponses: row.totalResponses,
+          accuracyRate: Number(
+            (row.highConfidenceResponses / Math.max(1, row.totalResponses)).toFixed(3)
+          ),
+          hallucinationRate: Number(
+            (row.hallucinationRiskResponses / Math.max(1, row.totalResponses)).toFixed(3)
+          ),
+          citationRate: Number(
+            (row.citedResponses / Math.max(1, row.totalResponses)).toFixed(3)
+          ),
+          verificationSuccessRate: Number(
+            (
+              row.verificationPassedResponses /
+              Math.max(1, row.verificationResponses)
+            ).toFixed(3)
+          ),
+        })),
+    };
+  },
+});

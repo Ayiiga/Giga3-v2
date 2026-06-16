@@ -125,6 +125,18 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_conversation", ["conversationId", "createdAt"]),
 
+  qualityMetricsDaily: defineTable({
+    dateKey: v.string(),
+    totalResponses: v.number(),
+    highConfidenceResponses: v.number(),
+    lowConfidenceResponses: v.number(),
+    citedResponses: v.number(),
+    hallucinationRiskResponses: v.number(),
+    verificationResponses: v.number(),
+    verificationPassedResponses: v.number(),
+    updatedAt: v.number(),
+  }).index("by_dateKey", ["dateKey"]),
+
   usageDaily: defineTable({
     userId: v.string(),
     dateKey: v.string(),

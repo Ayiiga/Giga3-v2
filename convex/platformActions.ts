@@ -26,6 +26,18 @@ function latestUserPrompt(
   return match?.content ?? fallback;
 }
 
+function hasHallucinationRisk(flags: string[]): boolean {
+  return flags.some((flag) =>
+    [
+      "missing_citations",
+      "unsupported_claims",
+      "fabricated_citations",
+      "high_stakes_unverified",
+      "ocr_not_verified",
+    ].includes(flag)
+  );
+}
+
 export const sendMessage = action({
   args: {
     userId: v.string(),
@@ -154,6 +166,14 @@ export const sendMessage = action({
     });
     const assistantContent = validated.content;
     const qualityMonitoring = recordQualityObservation(validated.report);
+    await ctx.runMutation(internal.qualityDashboard.recordResponseMetric, {
+      responseMode: validated.report.responseMode,
+      confidenceLabel: validated.report.confidenceLabel,
+      citationCount: validated.report.citationCount,
+      verificationVisible: validated.report.verificationVisible,
+      verificationPassed: !hasHallucinationRisk(validated.report.flags),
+      hasHallucinationRisk: hasHallucinationRisk(validated.report.flags),
+    });
 
     console.info(
       "[quality.sendMessage]",
@@ -295,6 +315,14 @@ export const regenerateMessage = action({
     });
     const assistantContent = validated.content;
     const qualityMonitoring = recordQualityObservation(validated.report);
+    await ctx.runMutation(internal.qualityDashboard.recordResponseMetric, {
+      responseMode: validated.report.responseMode,
+      confidenceLabel: validated.report.confidenceLabel,
+      citationCount: validated.report.citationCount,
+      verificationVisible: validated.report.verificationVisible,
+      verificationPassed: !hasHallucinationRisk(validated.report.flags),
+      hasHallucinationRisk: hasHallucinationRisk(validated.report.flags),
+    });
 
     console.info(
       "[quality.regenerateMessage]",

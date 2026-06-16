@@ -12,6 +12,18 @@ import {
   validateAnswerQuality,
 } from "./answerQuality";
 
+function hasHallucinationRisk(flags: string[]): boolean {
+  return flags.some((flag) =>
+    [
+      "missing_citations",
+      "unsupported_claims",
+      "fabricated_citations",
+      "high_stakes_unverified",
+      "ocr_not_verified",
+    ].includes(flag)
+  );
+}
+
 export const askAI = action({
   args: {
     email: v.string(),
@@ -58,6 +70,14 @@ export const askAI = action({
     });
     const aiContent = validated.content;
     const qualityMonitoring = recordQualityObservation(validated.report);
+    await ctx.runMutation(internal.qualityDashboard.recordResponseMetric, {
+      responseMode: validated.report.responseMode,
+      confidenceLabel: validated.report.confidenceLabel,
+      citationCount: validated.report.citationCount,
+      verificationVisible: validated.report.verificationVisible,
+      verificationPassed: !hasHallucinationRisk(validated.report.flags),
+      hasHallucinationRisk: hasHallucinationRisk(validated.report.flags),
+    });
     const chargedAi = engineResult.providerId !== "local_fallback";
 
     const newTokens = chargedAi ? Math.max(0, user.tokens - 1) : user.tokens;
