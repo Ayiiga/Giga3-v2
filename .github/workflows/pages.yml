@@ -52,7 +52,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install dependencies
         run: |
@@ -141,9 +141,26 @@ jobs:
           fi
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
-          accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          projectName: giga3ai
-          directory: web/out
+        working-directory: .
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          DEPLOY_BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          max_attempts=3
+          attempt=1
+          while [ "$attempt" -le "$max_attempts" ]; do
+            echo "Cloudflare deploy attempt ${attempt}/${max_attempts}"
+            if npx wrangler@4 pages deploy web/out --project-name=giga3ai --branch="$DEPLOY_BRANCH"; then
+              exit 0
+            fi
+            if [ "$attempt" -lt "$max_attempts" ]; then
+              sleep_seconds=$((attempt * 20))
+              echo "Deploy failed; retrying in ${sleep_seconds}s..."
+              sleep "$sleep_seconds"
+            fi
+            attempt=$((attempt + 1))
+          done
+          echo "::error::Cloudflare Pages deployment failed after ${max_attempts} attempts."
+          exit 1
