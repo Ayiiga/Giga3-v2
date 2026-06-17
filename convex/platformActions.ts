@@ -36,6 +36,7 @@ function hasHallucinationRisk(flags: string[]): boolean {
       "high_stakes_unverified",
       "ocr_not_verified",
       "image_analysis_unavailable",
+      "attachment_analysis_unavailable",
     ].includes(flag)
   );
 }
@@ -221,7 +222,7 @@ export const sendMessage = action({
             {
               role: "user" as const,
               content:
-                "Analyze the uploaded attachments in detail. Extract text/OCR where possible, answer the user's request, and when this is an exam or technical question solve it step-by-step with formulas and diagrams when useful.",
+                "Process the uploaded attachments first using this pipeline: input detection -> OCR/handwriting/layout/table extraction -> text normalization -> structured reconstruction -> reasoning. Then answer using this structure when applicable: Summary, Extracted Text (OCR), Cleaned Text, Structured Interpretation, Final Answer. If this is biography generation, include OCR Extracted Text, Cleaned Version, Structured Notes, and Final Biography. Never claim analysis unless extraction actually completed and never invent missing text.",
               attachments,
             },
           ]

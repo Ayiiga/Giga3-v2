@@ -37,11 +37,14 @@ export type AnswerQualityContext = {
   responseMode: ResponseMode;
   learnerLevel: LearnerLevel;
   isExamQuestion: boolean;
+  isBiographyRequest: boolean;
   confidenceRequested: boolean;
   requiresCitation: boolean;
   showConfidenceByDefault: boolean;
   showVerificationByDefault: boolean;
+  hasAnyAttachment: boolean;
   hasImageAttachment: boolean;
+  hasDocumentAttachment: boolean;
   hasInlineImageData: boolean;
   systemPromptAddon: string;
   retrievalContextBlock: string | null;
@@ -168,10 +171,22 @@ function hasImageTextExtractionIntent(query: string): boolean {
   );
 }
 
-function hasImageInabilityLanguage(answer: string): boolean {
-  return /\b(cannot|can't|unable|do not|don't)\b[\s\S]{0,28}\b(access|analy[sz]e|view|see|process)\b[\s\S]{0,40}\b(images?|photos?|pictures?|visual)\b/i.test(
+function hasBiographyIntent(query: string): boolean {
+  return /\b(biograph(?:y|ical)|life story|profile|write .* biography|about this person|personal history)\b/i.test(
+    query
+  );
+}
+
+function hasAttachmentInabilityLanguage(answer: string): boolean {
+  return /\b(cannot|can't|unable|do not|don't)\b[\s\S]{0,28}\b(access|analy[sz]e|view|see|process|read|open)\b[\s\S]{0,52}\b(images?|photos?|pictures?|visual|files?|documents?|pdf|attachments?)\b/i.test(
     answer
   ) || /\b(text[- ]based model|can't view images)\b/i.test(answer);
+}
+
+function hasRetypeInstruction(answer: string): boolean {
+  return /\b(retype|type (it|them|that) again|paste (the )?(text|content)|send (the )?text manually)\b/i.test(
+    answer
+  );
 }
 
 function askedForConfidence(query: string): boolean {
@@ -332,9 +347,12 @@ function buildSystemPromptAddon(params: {
   responseMode: ResponseMode;
   learnerLevel: LearnerLevel;
   isExamQuestion: boolean;
+  isBiographyRequest: boolean;
   confidenceRequested: boolean;
   requiresCitation: boolean;
+  hasAnyAttachment: boolean;
   hasImageAttachment: boolean;
+  hasDocumentAttachment: boolean;
   hasInlineImageData: boolean;
   rankedSources: RankedSource[];
 }): string {
@@ -377,6 +395,30 @@ function buildSystemPromptAddon(params: {
         : "- OCR/image-text tasks: no inline image pixels are available. Do not claim successful text extraction."
       : "";
 
+  const multimodalPipelineRule = params.hasAnyAttachment
+    ? "- For uploaded files, always run this order before final answers: Input Detection -> Visual Extraction (OCR/handwriting/layout/tables) -> Text Normalization -> Structured Reconstruction -> Reasoning."
+    : "";
+
+  const noPretendVisionRule = params.hasAnyAttachment
+    ? "- Never claim you analyzed/read/understood an image or document unless extraction actually completed using the uploaded attachment data."
+    : "";
+
+  const uncertaintyHandlingRule = params.hasAnyAttachment
+    ? "- If handwriting or text is unclear, continue processing, mark unclear parts explicitly, and do not ask the user to retype visible content."
+    : "";
+
+  const documentResponseFormatRule = params.hasAnyAttachment
+    ? "- For document/image task outputs, use sections in this order when applicable: 1) Summary 2) Extracted Text (OCR) 3) Cleaned Text 4) Structured Interpretation 5) Final Answer."
+    : "";
+
+  const documentIntelligenceRule = params.hasDocumentAttachment
+    ? "- Detect and handle document types: academic content (exams/assignments/problems), personal documents (notes/biographies/journals), and administrative files (forms/records)."
+    : "";
+
+  const biographyRule = params.isBiographyRequest
+    ? "- Biography mode (strict): extract names/dates/education/locations/events/achievements; clean grammar and duplicates; organize chronologically (Early Life, Education, Career/Life Journey, Achievements, Personal Details); output OCR Extracted Text, Cleaned Version, Structured Notes, and Final Biography."
+    : "";
+
   const sourceHint =
     params.rankedSources.length > 0
       ? `- Use the ${params.rankedSources.length} ranked evidence source(s) before relying on unstated memory.`
@@ -393,6 +435,12 @@ function buildSystemPromptAddon(params: {
     citationRule,
     confidenceRule,
     ocrRule,
+    multimodalPipelineRule,
+    noPretendVisionRule,
+    uncertaintyHandlingRule,
+    documentResponseFormatRule,
+    documentIntelligenceRule,
+    biographyRule,
     sourceHint,
   ]
     .filter(Boolean)
@@ -412,12 +460,17 @@ export function prepareAnswerQualityContext(params: {
   const queryClass = inferQueryClass(params.mode, query);
   const learnerLevel = detectLearnerLevel(params.mode, query);
   const isExamQuestion = detectExamQuestion(query);
+  const isBiographyRequest = hasBiographyIntent(query);
   const confidenceRequested = askedForConfidence(query);
   const requiresCitation = responseMode === "high_stakes";
   const showConfidenceByDefault = responseMode === "high_stakes";
   const showVerificationByDefault = responseMode === "high_stakes";
+  const hasAnyAttachment = attachments.length > 0;
   const hasImageAttachment = attachments.some(
     (attachment) => attachment.kind === "image"
+  );
+  const hasDocumentAttachment = attachments.some(
+    (attachment) => attachment.kind !== "image"
   );
   const hasInlineImageData = attachments.some(
     (attachment) => attachment.kind === "image" && Boolean(attachment.dataUrl)
@@ -432,11 +485,14 @@ export function prepareAnswerQualityContext(params: {
     responseMode,
     learnerLevel,
     isExamQuestion,
+    isBiographyRequest,
     confidenceRequested,
     requiresCitation,
     showConfidenceByDefault,
     showVerificationByDefault,
+    hasAnyAttachment,
     hasImageAttachment,
+    hasDocumentAttachment,
     hasInlineImageData,
     systemPromptAddon: buildSystemPromptAddon({
       query,
@@ -444,9 +500,12 @@ export function prepareAnswerQualityContext(params: {
       responseMode,
       learnerLevel,
       isExamQuestion,
+      isBiographyRequest,
       confidenceRequested,
       requiresCitation,
+      hasAnyAttachment,
       hasImageAttachment,
+      hasDocumentAttachment,
       hasInlineImageData,
       rankedSources,
     }),
@@ -629,14 +688,26 @@ export function validateAnswerQuality(params: {
     flags.push("ocr_not_verified");
   }
 
-  const imageCapabilityContradiction =
-    params.context.hasImageAttachment &&
-    hasImageInabilityLanguage(originalAnswer);
-  if (imageCapabilityContradiction) {
-    normalizedAnswer =
-      "Image analysis is currently unavailable. Please try again later or contact support.";
+  const attachmentCapabilityContradiction =
+    params.context.hasAnyAttachment &&
+    hasAttachmentInabilityLanguage(originalAnswer);
+  if (attachmentCapabilityContradiction) {
+    normalizedAnswer = params.context.hasImageAttachment
+      ? "Image analysis is currently unavailable. Please try again later or contact support."
+      : "The document upload did not complete successfully. Please upload the document again.";
     confidence = Math.min(confidence, 0.1);
-    flags.push("image_analysis_unavailable");
+    flags.push("attachment_analysis_unavailable");
+  }
+
+  if (
+    params.context.hasAnyAttachment &&
+    hasRetypeInstruction(originalAnswer) &&
+    !attachmentCapabilityContradiction
+  ) {
+    normalizedAnswer =
+      "I processed the uploaded content as far as possible. Some parts are unclear due to handwriting or image quality. Please upload a clearer image/document (or a close-up crop), and I will continue extraction without guessing.";
+    confidence = Math.min(confidence, 0.3);
+    flags.push("retype_request_removed");
   }
 
   const highStakesNeedsFallback =
@@ -715,7 +786,7 @@ export function recordQualityObservation(
     report.flags.includes("unsupported_claims") ||
     report.flags.includes("fabricated_citations") ||
     report.flags.includes("ocr_not_verified") ||
-    report.flags.includes("image_analysis_unavailable")
+    report.flags.includes("attachment_analysis_unavailable")
   ) {
     qualityStats.responsesWithHallucinationRisk += 1;
   }
