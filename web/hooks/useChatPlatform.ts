@@ -6,8 +6,8 @@ import { useStableUiMessages } from "@/hooks/useStableUiMessages";
 import { getUserEmail } from "@/lib/auth";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
-import { api } from "convex/_generated/api";
-import { Id } from "convex/_generated/dataModel";
+import { api } from "@/lib/convexApi";
+import type { Id } from "@/lib/convexDataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 

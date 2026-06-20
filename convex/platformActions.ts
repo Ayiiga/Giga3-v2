@@ -1,6 +1,6 @@
 "use node";
 
-import { action } from "./_generated/server";
+import { action, type ActionCtx } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import {
@@ -18,6 +18,7 @@ import {
   toRetrievalSystemMessage,
   validateAnswerQuality,
 } from "./answerQuality";
+import { CREDIT_COSTS, creditActionForMode } from "./creditsConfig";
 
 function latestUserPrompt(
   history: Array<{ role: string; content: string }>,
@@ -52,6 +53,46 @@ function imageCapabilityFailureMessage(
     return "The image upload did not complete successfully. Please upload the image again.";
   }
   return `This image format is not currently supported. Supported formats include ${supportedFormats.join(", ")}.`;
+}
+
+const APP_TIME_ZONE = process.env.APP_TIME_ZONE?.trim() || "Africa/Accra";
+
+function buildCurrentDateSystemAddon(now = new Date()): string {
+  const humanReadable = new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: APP_TIME_ZONE,
+    timeZoneName: "short",
+  }).format(now);
+  return [
+    "Runtime date context (authoritative for this response):",
+    `- Current date/time (${APP_TIME_ZONE}): ${humanReadable}`,
+    `- Current UTC timestamp: ${now.toISOString()}`,
+    "- If the user asks for today's date/time, use this runtime context and do not guess.",
+  ].join("\n");
+}
+
+async function assertChatCreditsAvailable(
+  ctx: ActionCtx,
+  userId: string,
+  mode: AiModeId
+) {
+  const usage = await ctx.runQuery(api.credits.getUsageSnapshot, { userId });
+  if (!usage) {
+    throw new Error("User not found");
+  }
+  const action = creditActionForMode(mode);
+  const required = CREDIT_COSTS[action];
+  if (usage.credits < required) {
+    throw new Error(
+      `Insufficient credits (${required} required, ${usage.credits} available). Subscribe or renew to refill.`
+    );
+  }
 }
 
 export const sendMessage = action({
@@ -119,6 +160,14 @@ export const sendMessage = action({
       });
     }
 
+    const requiresAiGenerationCharge =
+      imageCapability.status !== "analysis_unavailable" &&
+      imageCapability.status !== "upload_failed" &&
+      imageCapability.status !== "unsupported_format";
+    if (requiresAiGenerationCharge) {
+      await assertChatCreditsAvailable(ctx, args.userId, mode);
+    }
+
     await ctx.runMutation(internal.platform.appendMessage, {
       conversationId: args.conversationId,
       userId: args.userId,
@@ -154,6 +203,8 @@ export const sendMessage = action({
     const systemPrompt =
       getSystemPrompt(mode) +
       buildInterestSystemAddon(parseInterestProfile(refreshedUser?.interestProfile)) +
+      "\n\n" +
+      buildCurrentDateSystemAddon() +
       "\n\n" +
       qualityContext.systemPromptAddon;
 
@@ -338,6 +389,8 @@ export const regenerateMessage = action({
       });
     }
 
+    await assertChatCreditsAvailable(ctx, args.userId, mode);
+
     await ctx.runMutation(internal.platform.removeMessagesFrom, {
       conversationId: args.conversationId,
       userId: args.userId,
@@ -366,6 +419,8 @@ export const regenerateMessage = action({
     const systemPrompt =
       getSystemPrompt(mode) +
       buildInterestSystemAddon(parseInterestProfile(refreshedUser?.interestProfile)) +
+      "\n\n" +
+      buildCurrentDateSystemAddon() +
       "\n\n" +
       qualityContext.systemPromptAddon;
 

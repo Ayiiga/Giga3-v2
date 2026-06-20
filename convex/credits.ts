@@ -1,5 +1,11 @@
 import { internal } from "./_generated/api";
-import { internalMutation, mutation, query } from "./_generated/server";
+import {
+  internalMutation,
+  mutation,
+  query,
+  type MutationCtx,
+  type QueryCtx,
+} from "./_generated/server";
 import { v } from "convex/values";
 import { creditActionValidator } from "./schema";
 import {
@@ -8,18 +14,19 @@ import {
   isSubscriptionActive,
   type CreditAction,
 } from "./creditsConfig";
+import type { SubscriptionPlanId } from "./subscriptionPlans";
 
-type DbCtx = { db: any };
+type AnyDbCtx = Pick<QueryCtx, "db"> | Pick<MutationCtx, "db">;
 
-async function getUserByEmail(ctx: DbCtx, email: string) {
+async function getUserByEmail(ctx: AnyDbCtx, email: string) {
   return await ctx.db
     .query("users")
-    .withIndex("by_email", (q: any) => q.eq("email", email))
+    .withIndex("by_email", (q) => q.eq("email", email))
     .first();
 }
 
 async function logCredit(
-  ctx: DbCtx,
+  ctx: MutationCtx,
   args: {
     userId: string;
     action:
@@ -46,7 +53,7 @@ async function logCredit(
 }
 
 async function performDeduct(
-  ctx: DbCtx,
+  ctx: MutationCtx,
   userId: string,
   action: CreditAction,
   reference?: string,

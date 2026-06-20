@@ -4,7 +4,7 @@ import { useStableMediaJobs, type MediaJobRow } from "@/hooks/useStableMediaJobs
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { hasActiveMediaJobs, mediaJobsEqual } from "@/lib/media/stableJobs";
 import { listSupabaseGenerations } from "@/lib/supabase/data";
-import { api } from "convex/_generated/api";
+import { api } from "@/lib/convexApi";
 import { useConvex } from "convex/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 

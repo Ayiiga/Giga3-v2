@@ -11,7 +11,7 @@ import {
 } from "@/lib/media/actionTimeout";
 import { triggerMediaJobsRefresh } from "@/lib/media/jobsRefresh";
 import { createSupabaseGeneration } from "@/lib/supabase/data";
-import { api } from "convex/_generated/api";
+import { api } from "@/lib/convexApi";
 import { useAction } from "convex/react";
 import { useCallback, useState } from "react";
 

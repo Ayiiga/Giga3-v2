@@ -106,6 +106,12 @@ function paystackKeyMode(key: string): "live" | "test" | "unknown" {
   return "unknown";
 }
 
+async function ensureUserExists(ctx: ActionCtx, email: string): Promise<void> {
+  const existing = await ctx.runQuery(api.users.getUser, { email });
+  if (existing) return;
+  await ctx.runMutation(api.users.createUser, { email });
+}
+
 /** Public checkout config for Paystack Inline (popup). Secret key stays server-only. */
 export const getClientConfig = query({
   args: {},
@@ -219,6 +225,13 @@ export const fulfillPayment = internalMutation({
       const planId = record.planId as PaidPlanId;
       const creditsToGrant =
         record.creditsGranted ?? getPlanMonthlyCredits(planId);
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_email", (q) => q.eq("email", record.userId))
+        .first();
+      if (!user) {
+        throw new Error("User not found for subscription fulfillment");
+      }
       await ctx.runMutation(internal.subscriptions.activateSubscription, {
         userId: record.userId,
         planId: record.planId,
@@ -226,13 +239,16 @@ export const fulfillPayment = internalMutation({
         paymentId: record._id,
         creditsToGrant,
       });
-      await ctx.runMutation(internal.credits.grantCreditsInternal, {
-        userId: record.userId,
-        credits: creditsToGrant,
-        action: "subscription_refill",
-        reference: record.reference,
-        setBalance: true,
-      });
+      const currentCredits = user.credits ?? 0;
+      const refillAmount = Math.max(0, creditsToGrant - currentCredits);
+      if (refillAmount > 0) {
+        await ctx.runMutation(internal.credits.grantCreditsInternal, {
+          userId: record.userId,
+          credits: refillAmount,
+          action: "subscription_refill",
+          reference: record.reference,
+        });
+      }
     } else if (record.type === "credits" && record.creditsGranted) {
       await ctx.runMutation(internal.credits.grantCreditsInternal, {
         userId: record.userId,
@@ -278,6 +294,7 @@ export const initializePayment = action({
     if (!email.includes("@")) {
       throw new Error("A valid email is required for checkout");
     }
+    await ensureUserExists(ctx, userId);
 
     const catalog = getProduct(args.productId);
     if (catalog.amountGhs <= 0) {
@@ -287,16 +304,6 @@ export const initializePayment = action({
     const reference = `giga3_${args.productId}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     const frontend = process.env.FRONTEND_URL ?? "https://www.giga3ai.com";
     const mode = getPaystackMode();
-
-    await ctx.runMutation(internal.paystack.createPendingPayment, {
-      userId,
-      reference,
-      productId: args.productId,
-      type: catalog.type,
-      amountGhs: catalog.amountGhs,
-      planId: catalog.planId,
-      creditsGranted: catalog.credits,
-    });
 
     const init = await paystackPost("/transaction/initialize", {
       email,
@@ -324,6 +331,16 @@ export const initializePayment = action({
     if (!authorizationUrl?.trim()) {
       throw new Error("Paystack did not return a checkout URL. Please try again.");
     }
+
+    await ctx.runMutation(internal.paystack.createPendingPayment, {
+      userId,
+      reference,
+      productId: args.productId,
+      type: catalog.type,
+      amountGhs: catalog.amountGhs,
+      planId: catalog.planId,
+      creditsGranted: catalog.credits,
+    });
 
     return {
       authorizationUrl,
