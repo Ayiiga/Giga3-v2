@@ -17,7 +17,11 @@ export type MediaStudioTemplateId =
   | "thumbnails"
   | "logos"
   | "posters"
-  | "ads";
+  | "ads"
+  | "flyers"
+  | "brochures"
+  | "infographics"
+  | "study-visuals";
 
 export interface MediaStudioTemplate {
   id: MediaStudioTemplateId;
@@ -107,6 +111,50 @@ export const MEDIA_STUDIO_TEMPLATES: MediaStudioTemplate[] = [
     prompt:
       "Conversion-focused ad creative with product focus, CTA space, and clean commercial photography style.",
     gradient: "from-pink-500/20 to-violet-600/10",
+  },
+  {
+    id: "flyers",
+    title: "Flyers",
+    description: "Promotional event and campaign flyers",
+    icon: Megaphone,
+    tab: "image",
+    category: "flyers",
+    prompt:
+      "Professional flyer design with headline area, supporting highlights, CTA block, and high readability.",
+    gradient: "from-orange-500/20 to-amber-600/10",
+  },
+  {
+    id: "brochures",
+    title: "Brochures",
+    description: "Structured brochure-ready creative layouts",
+    icon: LayoutGrid,
+    tab: "image",
+    category: "brochures",
+    prompt:
+      "Modern brochure design with clear sections, concise information hierarchy, and polished business styling.",
+    gradient: "from-sky-500/20 to-cyan-600/10",
+  },
+  {
+    id: "infographics",
+    title: "Infographics",
+    description: "Educational and data storytelling visuals",
+    icon: Sparkles,
+    tab: "image",
+    category: "infographics",
+    prompt:
+      "Professional infographic with iconography, concise labels, visual hierarchy, and teaching-focused layout.",
+    gradient: "from-indigo-500/20 to-violet-600/10",
+  },
+  {
+    id: "study-visuals",
+    title: "Study Visuals",
+    description: "Revision maps and structured study notes",
+    icon: Type,
+    tab: "image",
+    category: "study_visuals",
+    prompt:
+      "Study-note visualization with concept mapping, clear sections, and educational labels for exam revision.",
+    gradient: "from-emerald-500/20 to-lime-600/10",
   },
 ];
 

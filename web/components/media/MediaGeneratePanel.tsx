@@ -34,6 +34,45 @@ interface MediaGeneratePanelProps {
   initialAction?: ImageStudioActionId | null;
 }
 
+type CreatorCanvasSize =
+  | "a4"
+  | "a3"
+  | "facebook"
+  | "instagram"
+  | "tiktok"
+  | "youtube"
+  | "linkedin";
+
+const CREATOR_CANVAS_OPTIONS: Array<{ id: CreatorCanvasSize; label: string }> = [
+  { id: "a4", label: "A4" },
+  { id: "a3", label: "A3" },
+  { id: "facebook", label: "Facebook" },
+  { id: "instagram", label: "Instagram" },
+  { id: "tiktok", label: "TikTok" },
+  { id: "youtube", label: "YouTube Thumbnail" },
+  { id: "linkedin", label: "LinkedIn" },
+];
+
+function imageSizeFromCanvas(
+  size: CreatorCanvasSize
+): NonNullable<ImageGenerationOptions["imageSize"]> {
+  switch (size) {
+    case "a3":
+      return "landscape_4_3";
+    case "facebook":
+    case "linkedin":
+    case "youtube":
+      return "landscape_16_9";
+    case "instagram":
+      return "square_hd";
+    case "tiktok":
+      return "portrait_16_9";
+    case "a4":
+    default:
+      return "portrait_4_3";
+  }
+}
+
 export const MediaGeneratePanel = memo(function MediaGeneratePanel({
   usage,
   initialTab,
@@ -76,6 +115,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
   const [videoDuration, setVideoDuration] = useState("7");
   const [videoResolution, setVideoResolution] = useState("720p");
   const [videoAudio, setVideoAudio] = useState(true);
+  const [creatorCanvasSize, setCreatorCanvasSize] = useState<CreatorCanvasSize>("a4");
 
   const editActionActive =
     tab === "image" &&
@@ -94,19 +134,22 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
     const seedValue = Number(seed);
     const parsedSeed = seed.trim() && Number.isFinite(seedValue) ? seedValue : undefined;
     if (tab === "image") {
+      const canvasLabel =
+        CREATOR_CANVAS_OPTIONS.find((option) => option.id === creatorCanvasSize)
+          ?.label ?? "A4";
       const qualitySuffix =
         imageQuality === "ultra"
           ? " Ultra-realistic 4K detail, refined lighting, accurate text rendering, consistent faces, crisp background quality, transparent background when requested."
           : imageQuality === "high"
             ? " High-detail composition, realistic lighting, clean text rendering, consistent subjects, polished background."
             : "";
-      const imagePrompt = `${trimmed}${qualitySuffix}${transparentBackground ? " Use a clean transparent or isolated background when the provider supports it." : ""}`;
+      const imagePrompt = `${trimmed}${qualitySuffix} Target canvas size: ${canvasLabel}.${transparentBackground ? " Use a clean transparent or isolated background when the provider supports it." : ""}`;
       await createImage(
         category as ImageCategoryId,
         imagePrompt,
         imageSourceUrl || undefined,
         {
-          imageSize,
+          imageSize: imageSizeFromCanvas(creatorCanvasSize) ?? imageSize,
           negativePrompt: negativePrompt.trim() || undefined,
           seed: parsedSeed,
           numInferenceSteps:
@@ -116,6 +159,9 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
         }
       );
     } else {
+      const canvasLabel =
+        CREATOR_CANVAS_OPTIONS.find((option) => option.id === creatorCanvasSize)
+          ?.label ?? "A4";
       const modeInstruction = {
         "text-to-video": "Create a text-to-video clip with coherent motion and cinematic pacing.",
         "image-to-video": "Animate the source image naturally while preserving identity, composition, and lighting.",
@@ -125,7 +171,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
       }[videoMode];
       await createVideo(
         category as VideoCategoryId,
-        `${modeInstruction} ${trimmed}`,
+        `${modeInstruction} ${trimmed} Target output frame: ${canvasLabel}.`,
         videoImageUrl || undefined,
         {
           aspectRatio: videoAspectRatio,
@@ -154,6 +200,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
     videoDuration,
     videoResolution,
     videoAudio,
+    creatorCanvasSize,
     createImage,
     createVideo,
   ]);
@@ -281,6 +328,23 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
                   <option value="standard">Fast standard</option>
                   <option value="high">High detail</option>
                   <option value="ultra">Ultra / 4K-style prompt</option>
+                </select>
+              </label>
+
+              <label className="space-y-2 text-sm font-semibold text-foreground">
+                Canvas / preset size
+                <select
+                  value={creatorCanvasSize}
+                  onChange={(e) =>
+                    setCreatorCanvasSize(e.target.value as CreatorCanvasSize)
+                  }
+                  className="input-surface py-2 text-sm"
+                >
+                  {CREATOR_CANVAS_OPTIONS.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </label>
 

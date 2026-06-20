@@ -1,7 +1,9 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { ChartVisualBlock } from "@/components/chat/ChartVisualBlock";
 import { MermaidDiagram } from "@/components/chat/MermaidDiagram";
+import { VisualContentBlock } from "@/components/chat/VisualContentBlock";
 import { memo, useMemo, type ReactNode } from "react";
 
 interface MessageMarkdownProps {
@@ -57,6 +59,24 @@ function parseMarkdownBlocks(text: string): ReactNode[] {
       if (/^mermaid$/i.test(fenceLang)) {
         nodes.push(
           <MermaidDiagram key={`diagram-${blockKey++}`} code={codeLines.join("\n")} />
+        );
+        continue;
+      }
+      if (/^(giga-visual|visual)$/i.test(fenceLang)) {
+        nodes.push(
+          <VisualContentBlock
+            key={`visual-${blockKey++}`}
+            specJson={codeLines.join("\n")}
+          />
+        );
+        continue;
+      }
+      if (/^(giga-chart|chart)$/i.test(fenceLang)) {
+        nodes.push(
+          <ChartVisualBlock
+            key={`chart-${blockKey++}`}
+            specJson={codeLines.join("\n")}
+          />
         );
         continue;
       }

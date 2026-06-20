@@ -19,6 +19,61 @@ export const IMAGE_CATEGORIES = {
     label: "Social Media Graphics",
     promptSuffix: "social media graphic, clean layout, eye-catching, modern design",
   },
+  infographics: {
+    label: "Infographics",
+    promptSuffix:
+      "professional infographic design, clear visual hierarchy, icons, labeled sections, clean typography",
+  },
+  brochures: {
+    label: "Brochures",
+    promptSuffix:
+      "tri-fold brochure style, information-rich layout, clean sectioning, print-friendly composition",
+  },
+  flyers: {
+    label: "Flyers",
+    promptSuffix:
+      "promotional flyer design, bold headline, call-to-action area, high contrast print-ready layout",
+  },
+  business_presentations: {
+    label: "Business Presentations",
+    promptSuffix:
+      "business presentation slide visual, executive style, data-friendly composition, professional branding",
+  },
+  study_visuals: {
+    label: "Study Visualizations",
+    promptSuffix:
+      "educational study notes visualization, concept map style, labels, learner-friendly visual structure",
+  },
+  marketing_assets: {
+    label: "Marketing Assets",
+    promptSuffix:
+      "marketing campaign creative, brand-safe composition, conversion-focused layout, modern typography",
+  },
+  comparison_tables: {
+    label: "Comparison Tables",
+    promptSuffix:
+      "clear comparison table visual, side-by-side columns, readable labels, structured infographic style",
+  },
+  scientific_illustrations: {
+    label: "Scientific Illustrations",
+    promptSuffix:
+      "scientific illustration, labeled components, educational accuracy, clean diagrammatic style",
+  },
+  circuit_diagrams: {
+    label: "Circuit Diagrams",
+    promptSuffix:
+      "electrical circuit diagram style, clear component symbols, labeled connections, instructional layout",
+  },
+  geometry_drawings: {
+    label: "Geometry Drawings",
+    promptSuffix:
+      "geometry drawing style, precise lines, labeled angles and lengths, educational math illustration",
+  },
+  math_graphs: {
+    label: "Mathematical Graphs",
+    promptSuffix:
+      "mathematical graph visualization, coordinate plane, clean axis labels, function plot styling",
+  },
 } as const;
 
 export const VIDEO_CATEGORIES = {
@@ -61,6 +116,12 @@ export const REPLICATE_IMAGE_EDIT_MODEL =
 
 export function imageCategoryAspectRatio(category: string): SeedanceAspectRatio {
   if (category === "cinematic_posters") return "16:9";
+  if (category === "brochures") return "4:3";
+  if (category === "flyers") return "3:4";
+  if (category === "business_presentations") return "16:9";
+  if (category === "comparison_tables") return "16:9";
+  if (category === "circuit_diagrams") return "4:3";
+  if (category === "geometry_drawings" || category === "math_graphs") return "1:1";
   if (category === "social_graphics") return "1:1";
   return "1:1";
 }

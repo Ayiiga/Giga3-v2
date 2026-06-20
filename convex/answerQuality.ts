@@ -189,6 +189,262 @@ function hasRetypeInstruction(answer: string): boolean {
   );
 }
 
+type AutoVisualKind =
+  | "infographic"
+  | "brochure"
+  | "poster"
+  | "flyer"
+  | "diagram"
+  | "flowchart"
+  | "mind_map"
+  | "timeline"
+  | "process_chart"
+  | "organizational_chart"
+  | "educational_visual"
+  | "business_presentation"
+  | "study_notes_visualization"
+  | "marketing_asset"
+  | "social_media_graphic"
+  | "comparison_table"
+  | "scientific_illustration"
+  | "circuit_diagram"
+  | "geometry_drawing"
+  | "mathematical_graph";
+
+function hasVisualRequestIntent(query: string): boolean {
+  return /\b(infographic|brochure|poster|flyer|diagram|flowchart|mind map|mindmap|timeline|process chart|organizational chart|org chart|presentation|study notes|marketing|social media graphic|comparison table|scientific illustration|circuit diagram|geometry|graph|plot|chart|visuali[sz]ation|advertisement|ad design)\b/i.test(
+    query
+  );
+}
+
+function shouldAutoSuggestEducationalVisual(query: string): boolean {
+  return /\b(explain|how does|how do|process|cycle|steps|photosynthesis|water cycle|ecosystem|cellular respiration|force diagram|electrical circuit|geometry|algebra|calculus|biology|chemistry|physics)\b/i.test(
+    query
+  );
+}
+
+function hasExistingVisualBlock(answer: string): boolean {
+  return /```(?:mermaid|giga-visual|giga-chart|chart)\b/i.test(answer);
+}
+
+function inferAutoVisualKind(query: string): AutoVisualKind {
+  if (/\bbrochure\b/i.test(query)) return "brochure";
+  if (/\bflyer\b/i.test(query)) return "flyer";
+  if (/\bposter\b/i.test(query)) return "poster";
+  if (/\binfographic\b/i.test(query)) return "infographic";
+  if (/\bmind ?map\b/i.test(query)) return "mind_map";
+  if (/\btimeline\b/i.test(query)) return "timeline";
+  if (/\borg(?:anizational)? chart\b/i.test(query)) return "organizational_chart";
+  if (/\bflow ?chart\b/i.test(query)) return "flowchart";
+  if (/\bprocess\b/i.test(query)) return "process_chart";
+  if (/\bpresentation\b/i.test(query)) return "business_presentation";
+  if (/\bstudy notes?\b/i.test(query)) return "study_notes_visualization";
+  if (/\bmarketing|advertisement|ad\b/i.test(query)) return "marketing_asset";
+  if (/\bsocial\b/i.test(query)) return "social_media_graphic";
+  if (/\bcomparison|compare|versus|vs\b/i.test(query)) return "comparison_table";
+  if (/\bcircuit\b/i.test(query)) return "circuit_diagram";
+  if (/\bgeometry|triangle|circle|angle\b/i.test(query)) return "geometry_drawing";
+  if (/\bgraph|plot|function|equation|slope\b/i.test(query))
+    return "mathematical_graph";
+  if (/\bscientific|biology|chemistry|physics\b/i.test(query))
+    return "scientific_illustration";
+  if (/\bdiagram\b/i.test(query)) return "diagram";
+  return "educational_visual";
+}
+
+function inferVisualSize(query: string): string {
+  if (/\ba3\b/i.test(query)) return "A3";
+  if (/\ba4\b/i.test(query)) return "A4";
+  if (/\bfacebook\b/i.test(query)) return "Facebook";
+  if (/\binstagram\b/i.test(query)) return "Instagram";
+  if (/\btiktok\b/i.test(query)) return "TikTok";
+  if (/\byoutube\b/i.test(query)) return "YouTube Thumbnail";
+  if (/\blinkedin\b/i.test(query)) return "LinkedIn";
+  return "A4";
+}
+
+function normalizeVisualLabel(input: string): string {
+  const compact = normalizeWhitespace(input).replace(/[^\w\s:(),.%/-]/g, "");
+  return compact.length > 72 ? `${compact.slice(0, 69)}...` : compact;
+}
+
+function extractVisualHighlights(answer: string, max = 5): string[] {
+  const bulletLines = answer
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => /^[-*]\s+/.test(line))
+    .map((line) => normalizeVisualLabel(line.replace(/^[-*]\s+/, "")));
+  if (bulletLines.length > 0) return bulletLines.slice(0, max);
+
+  const sentences = answer
+    .split(/[.!?]\s+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => normalizeVisualLabel(line));
+  return sentences.slice(0, max);
+}
+
+function inferredVisualTitle(query: string): string {
+  const trimmed = normalizeWhitespace(query).replace(/[?!.]+$/, "");
+  if (!trimmed) return "Visual Summary";
+  return trimmed.length > 80 ? `${trimmed.slice(0, 77)}...` : trimmed;
+}
+
+function buildMermaidForQuery(query: string, highlights: string[]): string {
+  if (/\bphotosynthesis\b/i.test(query)) {
+    return [
+      "flowchart LR",
+      '  A["Sunlight"] --> B["Chlorophyll captures energy"]',
+      '  B --> C["Water + CO₂ intake"]',
+      '  C --> D["Glucose produced"]',
+      '  D --> E["Oxygen released"]',
+    ].join("\n");
+  }
+  if (/\bwater cycle\b/i.test(query)) {
+    return [
+      "flowchart LR",
+      '  A["Evaporation"] --> B["Condensation"]',
+      '  B --> C["Precipitation"]',
+      '  C --> D["Collection"]',
+      '  D --> A',
+    ].join("\n");
+  }
+  if (/\bmind ?map\b/i.test(query)) {
+    const center = inferredVisualTitle(query);
+    const branches = highlights.slice(0, 4);
+    return [
+      "mindmap",
+      `  root((${normalizeVisualLabel(center)}))`,
+      ...branches.map((branch) => `    ${normalizeVisualLabel(branch)}`),
+    ].join("\n");
+  }
+  if (/\btimeline\b/i.test(query)) {
+    const points = highlights.slice(0, 4);
+    return [
+      "timeline",
+      "  title Key Timeline",
+      ...points.map((point, index) => `  ${index + 1} : ${normalizeVisualLabel(point)}`),
+    ].join("\n");
+  }
+  if (/\borg(?:anizational)? chart\b/i.test(query)) {
+    return [
+      "flowchart TD",
+      '  A["Leadership"] --> B["Operations"]',
+      '  A --> C["Product"]',
+      '  A --> D["Finance"]',
+      '  B --> E["Execution Team"]',
+      '  C --> F["Design & Engineering"]',
+    ].join("\n");
+  }
+  if (/\bcircuit\b/i.test(query)) {
+    return [
+      "flowchart LR",
+      '  A["Battery"] --> B["Switch"]',
+      '  B --> C["Resistor"]',
+      '  C --> D["Load / Lamp"]',
+      '  D --> A',
+    ].join("\n");
+  }
+
+  const nodes = highlights.slice(0, 4);
+  const lines = ["flowchart LR"];
+  for (let i = 0; i < nodes.length; i += 1) {
+    lines.push(`  N${i + 1}["${normalizeVisualLabel(nodes[i])}"]`);
+    if (i > 0) lines.push(`  N${i} --> N${i + 1}`);
+  }
+  if (nodes.length === 0) {
+    lines.push('  N1["Key Concept"] --> N2["Main Steps"] --> N3["Outcome"]');
+  }
+  return lines.join("\n");
+}
+
+function buildVisualSpecBlock(
+  query: string,
+  answer: string,
+  highlights: string[]
+): string {
+  const kind = inferAutoVisualKind(query);
+  const spec = {
+    version: "1.0",
+    kind,
+    title: inferredVisualTitle(query),
+    size: inferVisualSize(query),
+    summary: truncateText(answer, 240),
+    exportFormats: ["PNG", "JPG", "SVG", "PDF"],
+    sections: [
+      {
+        heading: "Key points",
+        items: highlights.slice(0, 6),
+      },
+    ],
+  };
+  return ["```giga-visual", JSON.stringify(spec, null, 2), "```"].join("\n");
+}
+
+function buildChartSpecBlock(query: string, highlights: string[]): string | null {
+  if (!/\b(chart|graph|plot|trend|comparison|statistics|data|math|equation)\b/i.test(query)) {
+    return null;
+  }
+  const labels = highlights.slice(0, 5).map((item, index) => {
+    const words = item.split(" ").slice(0, 3).join(" ");
+    return words || `Metric ${index + 1}`;
+  });
+  if (labels.length === 0) return null;
+  const chart = {
+    title: `${inferredVisualTitle(query)} - visualized`,
+    type: "bar",
+    labels,
+    datasets: [
+      {
+        label: "Relative weight",
+        data: labels.map((_, index) => Math.max(1, labels.length - index)),
+      },
+    ],
+  };
+  return ["```giga-chart", JSON.stringify(chart, null, 2), "```"].join("\n");
+}
+
+function shouldAttachAutoVisuals(
+  context: AnswerQualityContext,
+  answer: string,
+  flags: string[]
+): boolean {
+  if (context.responseMode === "conversational") return false;
+  if (hasExistingVisualBlock(answer)) return false;
+  if (
+    flags.includes("ocr_not_verified") ||
+    flags.includes("high_stakes_unverified") ||
+    flags.includes("attachment_analysis_unavailable")
+  ) {
+    return false;
+  }
+  return (
+    hasVisualRequestIntent(context.query) ||
+    shouldAutoSuggestEducationalVisual(context.query) ||
+    context.isExamQuestion
+  );
+}
+
+function buildAutoVisualAugmentation(
+  context: AnswerQualityContext,
+  answer: string
+): string | null {
+  const highlights = extractVisualHighlights(answer);
+  const mermaid = buildMermaidForQuery(context.query, highlights);
+  const visualSpec = buildVisualSpecBlock(context.query, answer, highlights);
+  const chartSpec = buildChartSpecBlock(context.query, highlights);
+  return [
+    "### Visual Aids",
+    "```mermaid",
+    mermaid,
+    "```",
+    visualSpec,
+    chartSpec,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+}
+
 function askedForConfidence(query: string): boolean {
   return /\b(confidence|certainty|certain|how sure|probability|reliability|trust score)\b/i.test(
     query
@@ -419,6 +675,16 @@ function buildSystemPromptAddon(params: {
     ? "- Biography mode (strict): extract names/dates/education/locations/events/achievements; clean grammar and duplicates; organize chronologically (Early Life, Education, Career/Life Journey, Achievements, Personal Details); output OCR Extracted Text, Cleaned Version, Structured Notes, and Final Biography."
     : "";
 
+  const smartVisualRule =
+    params.responseMode !== "conversational"
+      ? "- Smart visual detection: when a visual would improve understanding, include at least one Mermaid diagram and optionally structured blocks using ```giga-visual (JSON) and ```giga-chart (JSON)."
+      : "";
+
+  const visualCoverageRule =
+    params.responseMode !== "conversational"
+      ? "- Support visual outputs for infographics, brochures, posters, flyers, diagrams, flowcharts, mind maps, timelines, process charts, org charts, study visuals, marketing assets, comparison tables, scientific/circuit/geometry illustrations, and mathematical graphs when relevant."
+      : "";
+
   const sourceHint =
     params.rankedSources.length > 0
       ? `- Use the ${params.rankedSources.length} ranked evidence source(s) before relying on unstated memory.`
@@ -441,6 +707,8 @@ function buildSystemPromptAddon(params: {
     documentResponseFormatRule,
     documentIntelligenceRule,
     biographyRule,
+    smartVisualRule,
+    visualCoverageRule,
     sourceHint,
   ]
     .filter(Boolean)
@@ -718,6 +986,17 @@ export function validateAnswerQuality(params: {
     normalizedAnswer = fallbackHighStakesUnverified(params.context.query);
     confidence = Math.min(confidence, 0.2);
     flags.push("high_stakes_unverified");
+  }
+
+  if (shouldAttachAutoVisuals(params.context, normalizedAnswer, flags)) {
+    const visualAugmentation = buildAutoVisualAugmentation(
+      params.context,
+      normalizedAnswer
+    );
+    if (visualAugmentation) {
+      normalizedAnswer = `${normalizedAnswer}\n\n${visualAugmentation}`.trim();
+      flags.push("visual_content_generated");
+    }
   }
 
   const confidenceVisibility =
