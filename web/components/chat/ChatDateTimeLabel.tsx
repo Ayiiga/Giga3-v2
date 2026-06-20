@@ -1,18 +1,22 @@
 "use client";
 
-import { formatCurrentDateTime } from "@/lib/datetime";
+import { formatCurrentDateTime, toIsoDateTime } from "@/lib/datetime";
 import { useEffect, useState } from "react";
 
 /** Live date/time label for chat chrome — updates every minute. */
 export function ChatDateTimeLabel() {
   const [label, setLabel] = useState("");
+  const [isoDateTime, setIsoDateTime] = useState("");
 
   useEffect(() => {
     function tick() {
       try {
-        setLabel(formatCurrentDateTime());
+        const now = new Date();
+        setLabel(formatCurrentDateTime(now));
+        setIsoDateTime(toIsoDateTime(now));
       } catch {
         setLabel("");
+        setIsoDateTime("");
       }
     }
     tick();
@@ -24,7 +28,7 @@ export function ChatDateTimeLabel() {
 
   return (
     <time
-      dateTime={label}
+      dateTime={isoDateTime}
       className="hidden text-sm font-medium text-muted md:block"
       suppressHydrationWarning
     >

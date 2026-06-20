@@ -55,6 +55,28 @@ function imageCapabilityFailureMessage(
   return `This image format is not currently supported. Supported formats include ${supportedFormats.join(", ")}.`;
 }
 
+const APP_TIME_ZONE = process.env.APP_TIME_ZONE?.trim() || "Africa/Accra";
+
+function buildCurrentDateSystemAddon(now = new Date()): string {
+  const humanReadable = new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: APP_TIME_ZONE,
+    timeZoneName: "short",
+  }).format(now);
+  return [
+    "Runtime date context (authoritative for this response):",
+    `- Current date/time (${APP_TIME_ZONE}): ${humanReadable}`,
+    `- Current UTC timestamp: ${now.toISOString()}`,
+    "- If the user asks for today's date/time, use this runtime context and do not guess.",
+  ].join("\n");
+}
+
 async function assertChatCreditsAvailable(
   ctx: ActionCtx,
   userId: string,
@@ -181,6 +203,8 @@ export const sendMessage = action({
     const systemPrompt =
       getSystemPrompt(mode) +
       buildInterestSystemAddon(parseInterestProfile(refreshedUser?.interestProfile)) +
+      "\n\n" +
+      buildCurrentDateSystemAddon() +
       "\n\n" +
       qualityContext.systemPromptAddon;
 
@@ -395,6 +419,8 @@ export const regenerateMessage = action({
     const systemPrompt =
       getSystemPrompt(mode) +
       buildInterestSystemAddon(parseInterestProfile(refreshedUser?.interestProfile)) +
+      "\n\n" +
+      buildCurrentDateSystemAddon() +
       "\n\n" +
       qualityContext.systemPromptAddon;
 

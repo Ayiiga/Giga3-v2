@@ -234,6 +234,21 @@ export async function listSupabasePayments(email: string): Promise<PaymentRow[]>
   return await requireSupabaseClient().select("payments", params);
 }
 
+export async function getSupabasePaymentByReference(
+  email: string,
+  reference: string
+): Promise<PaymentRow | null> {
+  const user = await ensureSupabaseUser(email);
+  const params = new URLSearchParams({
+    user_id: eq(user.id),
+    reference: eq(reference),
+    limit: "1",
+    select: "*",
+  });
+  const rows = await requireSupabaseClient().select("payments", params);
+  return rows[0] ?? null;
+}
+
 export async function upsertSupabasePayment(args: {
   email: string;
   provider?: "paystack" | "stripe";

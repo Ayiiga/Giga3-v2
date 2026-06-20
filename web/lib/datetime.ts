@@ -1,27 +1,36 @@
 /** Locale-aware date/time helpers — no hardcoded calendar values in UI copy. */
 
+const APP_TIME_ZONE = process.env.NEXT_PUBLIC_APP_TIMEZONE?.trim() || "Africa/Accra";
+
 const DATE_OPTS: Intl.DateTimeFormatOptions = {
   weekday: "long",
   year: "numeric",
   month: "long",
   day: "numeric",
+  timeZone: APP_TIME_ZONE,
 };
 
 const DATE_SHORT_OPTS: Intl.DateTimeFormatOptions = {
   year: "numeric",
-  month: "short",
+  month: "long",
   day: "numeric",
+  timeZone: APP_TIME_ZONE,
 };
 
 const TIME_OPTS: Intl.DateTimeFormatOptions = {
   hour: "numeric",
   minute: "2-digit",
   hour12: true,
+  timeZone: APP_TIME_ZONE,
+  timeZoneName: "short",
 };
 
 const DATETIME_OPTS: Intl.DateTimeFormatOptions = {
-  ...DATE_SHORT_OPTS,
-  ...TIME_OPTS,
+  ...DATE_OPTS,
+  hour: "numeric",
+  minute: "2-digit",
+  hour12: true,
+  timeZoneName: "short",
 };
 
 function formatWith(
@@ -50,6 +59,10 @@ export function formatCurrentTime(now = new Date()): string {
 
 export function formatCurrentDateTime(now = new Date()): string {
   return formatWith(now, DATETIME_OPTS);
+}
+
+export function toIsoDateTime(now = new Date()): string {
+  return now.toISOString();
 }
 
 export function getCurrentYear(now = new Date()): number {

@@ -305,16 +305,6 @@ export const initializePayment = action({
     const frontend = process.env.FRONTEND_URL ?? "https://www.giga3ai.com";
     const mode = getPaystackMode();
 
-    await ctx.runMutation(internal.paystack.createPendingPayment, {
-      userId,
-      reference,
-      productId: args.productId,
-      type: catalog.type,
-      amountGhs: catalog.amountGhs,
-      planId: catalog.planId,
-      creditsGranted: catalog.credits,
-    });
-
     const init = await paystackPost("/transaction/initialize", {
       email,
       amount: toPesewas(catalog.amountGhs),
@@ -341,6 +331,16 @@ export const initializePayment = action({
     if (!authorizationUrl?.trim()) {
       throw new Error("Paystack did not return a checkout URL. Please try again.");
     }
+
+    await ctx.runMutation(internal.paystack.createPendingPayment, {
+      userId,
+      reference,
+      productId: args.productId,
+      type: catalog.type,
+      amountGhs: catalog.amountGhs,
+      planId: catalog.planId,
+      creditsGranted: catalog.credits,
+    });
 
     return {
       authorizationUrl,
