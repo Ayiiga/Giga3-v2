@@ -2,7 +2,6 @@
 
 import type { CheckoutPhase } from "@/components/billing/CheckoutOverlay";
 import { getUserEmail } from "@/lib/auth";
-import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { friendlyPaystackError } from "@/lib/payments/paystackErrors";
 import {
   getPaystackPublicKeyFromBuild,
@@ -22,6 +21,7 @@ import {
   getSupabasePaymentByReference,
   upsertSupabasePayment,
 } from "@/lib/supabase/data";
+import { isSupabaseConfigured } from "@/lib/supabase";
 import { useAction, useQuery } from "convex/react";
 import { useStableUsage } from "@/hooks/useStableUsage";
 import { useRouter } from "next/navigation";
@@ -107,7 +107,7 @@ export function useBilling() {
       amountGhs?: number;
       providerResponse?: Record<string, unknown>;
     }) => {
-      if (!email || !isSupabaseDataBackend()) return;
+      if (!email || !isSupabaseConfigured()) return;
 
       try {
         const existing = args.productId
