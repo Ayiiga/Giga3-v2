@@ -33,15 +33,17 @@ export function useScrollToLatestMessage({
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
+    const element = el;
 
     function onScroll() {
-      const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+      const distance =
+        element.scrollHeight - element.scrollTop - element.clientHeight;
       nearBottomRef.current = distance <= nearBottomThresholdPx;
     }
 
     onScroll();
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
+    element.addEventListener("scroll", onScroll, { passive: true });
+    return () => element.removeEventListener("scroll", onScroll);
   }, [scrollRef, nearBottomThresholdPx]);
 
   useEffect(() => {

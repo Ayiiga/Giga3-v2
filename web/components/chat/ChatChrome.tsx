@@ -13,7 +13,7 @@ import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { signOutSupabase } from "@/lib/supabase/auth";
 import { Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { memo, type RefObject } from "react";
+import { memo, type Ref } from "react";
 
 interface ChatChromeProps {
   email: string;
@@ -31,7 +31,7 @@ interface ChatChromeProps {
   onSetPublicShare?: (
     enabled: boolean
   ) => Promise<{ shareToken: string | null; sharePublic: boolean }>;
-  chatActionsRef?: RefObject<ChatActionsMenuHandle | null>;
+  chatActionsRef?: Ref<ChatActionsMenuHandle>;
 }
 
 function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean {

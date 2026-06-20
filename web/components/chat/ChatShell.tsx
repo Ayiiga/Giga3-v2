@@ -14,8 +14,8 @@ import { useSupabaseChatPlatform } from "@/hooks/useSupabaseChatPlatform";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { useChatShareShortcuts } from "@/hooks/useChatShareShortcuts";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
-import { api } from "convex/_generated/api";
-import { Id } from "convex/_generated/dataModel";
+import { api } from "@/lib/convexApi";
+import type { Id } from "@/lib/convexDataModel";
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import {

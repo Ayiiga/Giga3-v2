@@ -15,7 +15,7 @@ import {
   resetPaystackCheckoutGuard,
   verifyPaystackPayment,
 } from "@/lib/payments/paystackService";
-import { api } from "convex/_generated/api";
+import { api } from "@/lib/convexApi";
 import { useAction, useQuery } from "convex/react";
 import { useStableUsage } from "@/hooks/useStableUsage";
 import { useRouter } from "next/navigation";

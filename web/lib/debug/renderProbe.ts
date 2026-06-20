@@ -33,7 +33,7 @@ export function isRenderProbeEnabled(): boolean {
 
 function ensureSnapshotLogger(): void {
   if (snapshotTimer || typeof window === "undefined") return;
-  snapshotTimer = window.setInterval(() => {
+  snapshotTimer = setInterval(() => {
     if (!isRenderProbeEnabled()) return;
     const rows = [...counts.entries()].sort((a, b) => b[1] - a[1]);
     if (rows.length === 0) return;

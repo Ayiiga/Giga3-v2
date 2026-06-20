@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import type { PluginAPI } from "tailwindcss/types/config";
 
 const config: Config = {
   darkMode: "class",
@@ -66,7 +67,7 @@ const config: Config = {
     },
   },
   plugins: [
-    function ({ addVariant }) {
+    function ({ addVariant }: PluginAPI) {
       addVariant("motion-safe", "@media (prefers-reduced-motion: no-preference)");
       addVariant("pointer-fine", "@media (hover: hover) and (pointer: fine)");
     },

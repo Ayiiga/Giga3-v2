@@ -10,7 +10,10 @@ export function toUsageSnapshot(
     subscriptionActive: Boolean(raw.subscriptionActive),
     credits: Number(raw.credits ?? 0),
     tokens: Number(raw.tokens ?? 0),
-    subscriptionExpiresAt: raw.subscriptionExpiresAt as number | undefined,
+    subscriptionExpiresAt:
+      raw.subscriptionExpiresAt == null
+        ? null
+        : Number(raw.subscriptionExpiresAt),
     planLabel: String(raw.planLabel ?? "Free"),
     canGenerateVideo: Boolean(raw.canGenerateVideo),
     creditCosts: raw.creditCosts as UsageSnapshot["creditCosts"],

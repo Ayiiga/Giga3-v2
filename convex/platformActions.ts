@@ -1,6 +1,6 @@
 "use node";
 
-import { action } from "./_generated/server";
+import { action, type ActionCtx } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import {
@@ -18,6 +18,7 @@ import {
   toRetrievalSystemMessage,
   validateAnswerQuality,
 } from "./answerQuality";
+import { CREDIT_COSTS, creditActionForMode } from "./creditsConfig";
 
 function latestUserPrompt(
   history: Array<{ role: string; content: string }>,
@@ -52,6 +53,24 @@ function imageCapabilityFailureMessage(
     return "The image upload did not complete successfully. Please upload the image again.";
   }
   return `This image format is not currently supported. Supported formats include ${supportedFormats.join(", ")}.`;
+}
+
+async function assertChatCreditsAvailable(
+  ctx: ActionCtx,
+  userId: string,
+  mode: AiModeId
+) {
+  const usage = await ctx.runQuery(api.credits.getUsageSnapshot, { userId });
+  if (!usage) {
+    throw new Error("User not found");
+  }
+  const action = creditActionForMode(mode);
+  const required = CREDIT_COSTS[action];
+  if (usage.credits < required) {
+    throw new Error(
+      `Insufficient credits (${required} required, ${usage.credits} available). Subscribe or renew to refill.`
+    );
+  }
 }
 
 export const sendMessage = action({
@@ -117,6 +136,14 @@ export const sendMessage = action({
         userId: args.userId,
         mode,
       });
+    }
+
+    const requiresAiGenerationCharge =
+      imageCapability.status !== "analysis_unavailable" &&
+      imageCapability.status !== "upload_failed" &&
+      imageCapability.status !== "unsupported_format";
+    if (requiresAiGenerationCharge) {
+      await assertChatCreditsAvailable(ctx, args.userId, mode);
     }
 
     await ctx.runMutation(internal.platform.appendMessage, {
@@ -337,6 +364,8 @@ export const regenerateMessage = action({
         mode,
       });
     }
+
+    await assertChatCreditsAvailable(ctx, args.userId, mode);
 
     await ctx.runMutation(internal.platform.removeMessagesFrom, {
       conversationId: args.conversationId,

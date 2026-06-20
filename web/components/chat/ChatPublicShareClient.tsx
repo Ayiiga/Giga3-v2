@@ -3,12 +3,18 @@
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { api } from "@/lib/convexApi";
 import { siteConfig } from "@/lib/site";
-import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo } from "react";
+
+type PublicShareRow = {
+  _id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+};
 
 function PublicShareInner() {
   const params = useSearchParams();
@@ -21,7 +27,7 @@ function PublicShareInner() {
   const rows = useQuery(
     api.messages.listPublicByShareToken,
     token ? { token } : "skip"
-  );
+  ) as PublicShareRow[] | null | undefined;
 
   const messages = useMemo(() => {
     if (!rows) return [];

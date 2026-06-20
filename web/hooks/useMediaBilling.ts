@@ -2,7 +2,7 @@
 
 import { useStableUsage } from "@/hooks/useStableUsage";
 import { getUserEmail } from "@/lib/auth";
-import { api } from "convex/_generated/api";
+import { api } from "@/lib/convexApi";
 import { useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 
