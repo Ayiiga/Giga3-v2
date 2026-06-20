@@ -121,8 +121,10 @@ export const VisualContentBlock = memo(function VisualContentBlock({
         height: png.height,
       });
       const pdfBytes = await pdf.save();
+      const safePdfBytes = new Uint8Array(pdfBytes.length);
+      safePdfBytes.set(pdfBytes);
       return triggerDownload(
-        new Blob([pdfBytes], { type: "application/pdf" }),
+        new Blob([safePdfBytes], { type: "application/pdf" }),
         `${baseName}.pdf`
       );
     }

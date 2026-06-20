@@ -4,7 +4,7 @@ import { ShareActionFeedback } from "@/components/chat/ShareActionFeedback";
 import { useShareAction } from "@/hooks/useShareAction";
 import { shareFiles, shareText, triggerDownload, type ShareResult } from "@/lib/share/clientShare";
 import { Download, Share2 } from "lucide-react";
-import { memo, useEffect, useMemo, useRef, useState, type ComponentType } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 type ChartDataset = {
   label: string;
@@ -20,12 +20,7 @@ type ChartSpec = {
   datasets?: ChartDataset[];
 };
 
-type ChartComponents = {
-  Bar: ComponentType<Record<string, unknown>>;
-  Line: ComponentType<Record<string, unknown>>;
-  Pie: ComponentType<Record<string, unknown>>;
-  Radar: ComponentType<Record<string, unknown>>;
-};
+type ReactChartsModule = Awaited<typeof import("react-chartjs-2")>;
 
 interface ChartVisualBlockProps {
   specJson: string;
@@ -68,7 +63,7 @@ export const ChartVisualBlock = memo(function ChartVisualBlock({
   specJson,
 }: ChartVisualBlockProps) {
   const spec = useMemo(() => parseChartSpec(specJson), [specJson]);
-  const [charts, setCharts] = useState<ChartComponents | null>(null);
+  const [charts, setCharts] = useState<ReactChartsModule | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
   const { runAction, feedback, busy } = useShareAction();
 
@@ -78,12 +73,7 @@ export const ChartVisualBlock = memo(function ChartVisualBlock({
       await import("chart.js/auto");
       const reactCharts = await import("react-chartjs-2");
       if (!cancelled) {
-        setCharts({
-          Bar: reactCharts.Bar,
-          Line: reactCharts.Line,
-          Pie: reactCharts.Pie,
-          Radar: reactCharts.Radar,
-        });
+        setCharts(reactCharts);
       }
     }
     void loadCharts();
@@ -139,8 +129,10 @@ export const ChartVisualBlock = memo(function ChartVisualBlock({
       const page = pdf.addPage([png.width, png.height]);
       page.drawImage(png, { x: 0, y: 0, width: png.width, height: png.height });
       const pdfBytes = await pdf.save();
+      const safePdfBytes = new Uint8Array(pdfBytes.length);
+      safePdfBytes.set(pdfBytes);
       return triggerDownload(
-        new Blob([pdfBytes], { type: "application/pdf" }),
+        new Blob([safePdfBytes], { type: "application/pdf" }),
         `${baseName}.pdf`
       );
     }
@@ -190,16 +182,6 @@ export const ChartVisualBlock = memo(function ChartVisualBlock({
     },
   };
 
-  const ChartComponent = charts
-    ? chartType === "line"
-      ? charts.Line
-      : chartType === "pie"
-        ? charts.Pie
-        : chartType === "radar"
-          ? charts.Radar
-          : charts.Bar
-    : null;
-
   return (
     <div className="chat-md-diagram rounded-2xl border border-accent/20 bg-white p-3 shadow-sm dark:bg-zinc-900">
       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-accent">
@@ -211,8 +193,16 @@ export const ChartVisualBlock = memo(function ChartVisualBlock({
       >
         <h4 className="text-base font-bold">{title}</h4>
         <div className="mt-3 h-64 w-full">
-          {ChartComponent ? (
-            <ChartComponent {...chartProps} />
+          {charts ? (
+            chartType === "line" ? (
+              <charts.Line data={chartData as never} options={chartProps.options as never} />
+            ) : chartType === "pie" ? (
+              <charts.Pie data={chartData as never} options={chartProps.options as never} />
+            ) : chartType === "radar" ? (
+              <charts.Radar data={chartData as never} options={chartProps.options as never} />
+            ) : (
+              <charts.Bar data={chartData as never} options={chartProps.options as never} />
+            )
           ) : (
             <p className="text-sm text-zinc-500">Loading chart renderer…</p>
           )}
