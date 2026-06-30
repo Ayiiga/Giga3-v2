@@ -67,6 +67,7 @@ import type * as userStarterCredits from "../userStarterCredits.js";
 import type * as users from "../users.js";
 import type * as validators from "../validators.js";
 import type * as videoAI from "../videoAI.js";
+import type * as videoAIWorker from "../videoAIWorker.js";
 import type * as videoCatalog from "../videoCatalog.js";
 import type * as videoCredits from "../videoCredits.js";
 import type * as videoCreditsConfig from "../videoCreditsConfig.js";
@@ -141,6 +142,7 @@ declare const fullApi: ApiFromModules<{
   users: typeof users;
   validators: typeof validators;
   videoAI: typeof videoAI;
+  videoAIWorker: typeof videoAIWorker;
   videoCatalog: typeof videoCatalog;
   videoCredits: typeof videoCredits;
   videoCreditsConfig: typeof videoCreditsConfig;

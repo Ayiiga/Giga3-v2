@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v20";
+const CACHE_NAME = "giga3-shell-v22-branding";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
@@ -13,6 +13,16 @@ const PRECACHE = [
   "/icons/icon-512.png",
   "/icons/apple-touch-icon.png",
   "/icons/icon-maskable-512.png",
+  "/splash/iphone-se.png",
+  "/splash/iphone-8.png",
+  "/splash/iphone-8-plus.png",
+  "/splash/iphone-x.png",
+  "/splash/iphone-12.png",
+  "/splash/iphone-14-plus.png",
+  "/splash/iphone-14-pro-max.png",
+  "/splash/ipad.png",
+  "/splash/ipad-pro-11.png",
+  "/splash/ipad-pro-12.png",
   "/pricing/",
   "/subscribe/",
   "/media/",

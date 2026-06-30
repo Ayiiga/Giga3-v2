@@ -1,14 +1,9 @@
-"use node";
-
 import { action } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
-import type { FalImageSize } from "./falClient";
 import { requireSessionWithMonitoring } from "./auth";
-import { generateVideoWithFallback } from "./mediaEngine";
-import { toUserMediaError } from "./mediaUtils";
-import { buildVideoAiPrompt, videoAiAspectRatio } from "./videoCatalog";
+import { buildVideoAiPrompt } from "./videoCatalog";
 import { videoCostForCategory } from "./videoCreditsConfig";
 
 const imageSizeValidator = v.optional(
@@ -23,28 +18,36 @@ const imageSizeValidator = v.optional(
   )
 );
 
+const aspectRatioValidator = v.optional(
+  v.union(
+    v.literal("16:9"),
+    v.literal("9:16"),
+    v.literal("4:3"),
+    v.literal("1:1"),
+    v.literal("3:4"),
+    v.literal("21:9")
+  )
+);
+
+const generateArgs = {
+  sessionToken: v.string(),
+  category: v.string(),
+  prompt: v.string(),
+  imageUrl: v.optional(v.string()),
+  negativePrompt: v.optional(v.string()),
+  imageSize: imageSizeValidator,
+  duration: v.optional(v.number()),
+  resolution: v.optional(v.string()),
+  generateAudio: v.optional(v.boolean()),
+  aspectRatio: aspectRatioValidator,
+};
+
+/**
+ * Queues video generation server-side and returns immediately.
+ * The client polls job status — avoids long HTTP waits on poor mobile networks.
+ */
 export const generate = action({
-  args: {
-    sessionToken: v.string(),
-    category: v.string(),
-    prompt: v.string(),
-    imageUrl: v.optional(v.string()),
-    negativePrompt: v.optional(v.string()),
-    imageSize: imageSizeValidator,
-    duration: v.optional(v.number()),
-    resolution: v.optional(v.string()),
-    generateAudio: v.optional(v.boolean()),
-    aspectRatio: v.optional(
-      v.union(
-        v.literal("16:9"),
-        v.literal("9:16"),
-        v.literal("4:3"),
-        v.literal("1:1"),
-        v.literal("3:4"),
-        v.literal("21:9")
-      )
-    ),
-  },
+  args: generateArgs,
   handler: async (ctx, args) => {
     const email = await requireSessionWithMonitoring(args.sessionToken, ctx);
     const category = args.category || "text_to_video";
@@ -64,70 +67,39 @@ export const generate = action({
       );
     }
 
-    let jobId: Id<"videoJobs"> | undefined;
-
-    try {
-      jobId = await ctx.runMutation(internal.videoInternal.createVideoJob, {
+    const jobId: Id<"videoJobs"> = await ctx.runMutation(
+      internal.videoInternal.createVideoJob,
+      {
         userId: email,
         category,
         mode: category,
         prompt: fullPrompt,
         sourceImageUrl: args.imageUrl,
         videoCreditsCharged: 0,
-      });
-
-      const result = await generateVideoWithFallback({
-        prompt: fullPrompt,
-        category,
-        imageUrl: args.imageUrl,
-        negativePrompt: args.negativePrompt,
-        imageSize: args.imageSize as FalImageSize | undefined,
-        duration: args.duration,
-        resolution: args.resolution,
-        generateAudio: args.generateAudio,
-        aspectRatio: args.aspectRatio ?? videoAiAspectRatio(category),
-      });
-
-      await ctx.runMutation(internal.videoCredits.deductVideoCreditsInternal, {
-        userId: email,
-        amount: cost,
-        category,
-        reference: String(jobId),
-      });
-
-      await ctx.runMutation(internal.videoInternal.completeVideoJob, {
-        jobId,
-        status: "succeeded",
-        outputUrl: result.videoUrl,
-        provider: result.provider,
-        externalId: result.externalId,
-        videoCreditsCharged: cost,
-      });
-
-      const wallet = await ctx.runQuery(api.videoCredits.getVideoWallet, {
-        sessionToken: args.sessionToken,
-      });
-
-      return {
-        videoUrl: result.videoUrl,
-        outputUrl: result.videoUrl,
-        contentType: result.contentType ?? "video/mp4",
-        provider: result.provider,
-        requestId: result.externalId,
-        jobId,
-        videoCredits: wallet.videoCredits,
-        videoCreditsCharged: cost,
-      };
-    } catch (err) {
-      const message = toUserMediaError(err, "video");
-      if (jobId) {
-        await ctx.runMutation(internal.videoInternal.completeVideoJob, {
-          jobId,
-          status: "failed",
-          errorMessage: message,
-        });
       }
-      throw new Error(message);
-    }
+    );
+
+    await ctx.scheduler.runAfter(0, internal.videoAIWorker.processJob, {
+      jobId,
+      userId: email,
+      category,
+      prompt: fullPrompt,
+      imageUrl: args.imageUrl,
+      negativePrompt: args.negativePrompt,
+      imageSize: args.imageSize,
+      duration: args.duration,
+      resolution: args.resolution,
+      generateAudio: args.generateAudio,
+      aspectRatio: args.aspectRatio,
+    });
+
+    return {
+      jobId,
+      status: "processing" as const,
+      videoCredits: walletBefore.videoCredits,
+      videoCreditsCharged: 0,
+      message:
+        "Video is generating in the background. On slow networks you can leave this page and check Recent videos shortly.",
+    };
   },
 });
