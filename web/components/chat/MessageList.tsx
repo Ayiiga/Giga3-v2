@@ -172,6 +172,7 @@ function MessageListInner({
                     createdAt={m.createdAt}
                     pending={m.id === "pending-user"}
                     streaming={
+                      isSending &&
                       m.role === "assistant" &&
                       m.id === lastAssistantId &&
                       m.id !== "pending-user"

@@ -1,8 +1,6 @@
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
-import { SwUpdatePrompt } from "@/components/pwa/SwUpdatePrompt";
-import { OfflineBanner } from "@/components/pwa/OfflineBanner";
-import { GlobalSlowNetworkBanner } from "@/components/pwa/GlobalSlowNetworkBanner";
+import { DeferredPwaChrome } from "@/components/pwa/DeferredPwaChrome";
 import { branding } from "@/lib/branding";
 import { brandingAssetUrl } from "@/lib/brandingAssets";
 import { pwaStartupImages } from "@/lib/pwaSplash";
@@ -92,9 +90,7 @@ export default function RootLayout({
           <div className="min-h-full w-full max-w-full overflow-x-hidden">{children}</div>
         </ThemeProvider>
         <ServiceWorkerRegister />
-        <SwUpdatePrompt />
-        <GlobalSlowNetworkBanner />
-        <OfflineBanner />
+        <DeferredPwaChrome />
       </body>
     </html>
   );

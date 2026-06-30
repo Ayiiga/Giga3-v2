@@ -17,6 +17,7 @@ const nextConfig = {
   },
   experimental: {
     externalDir: true,
+    optimizePackageImports: ["lucide-react"],
   },
   transpilePackages: ["convex"],
   webpack: (config) => {

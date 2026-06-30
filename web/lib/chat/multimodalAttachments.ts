@@ -1,4 +1,4 @@
-import JSZip from "jszip";
+import type JSZip from "jszip";
 import { formatCurrentDateShort } from "@/lib/datetime";
 import {
   DEFAULT_UPLOAD_LIMITS,
@@ -176,7 +176,8 @@ async function extractXlsx(zip: JSZip): Promise<string> {
 }
 
 async function extractZip(file: File, kind: MultimodalAttachmentKind): Promise<string> {
-  const zip = await JSZip.loadAsync(file);
+  const { default: JSZipRuntime } = await import("jszip");
+  const zip = await JSZipRuntime.loadAsync(file);
   if (kind === "document") return truncateText(await extractDocx(zip));
   if (kind === "presentation") return truncateText(await extractPptx(zip));
   if (kind === "spreadsheet") return truncateText(await extractXlsx(zip));

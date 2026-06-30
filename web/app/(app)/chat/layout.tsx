@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "@/styles/chat-bundle.css";
 
 export const metadata: Metadata = {
   title: "Chat",

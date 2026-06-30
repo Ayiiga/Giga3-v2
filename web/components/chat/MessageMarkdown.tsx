@@ -1,11 +1,24 @@
 "use client";
 
 import { CodeBlock } from "@/components/chat/CodeBlock";
-import { ChartVisualBlock } from "@/components/chat/ChartVisualBlock";
-import { MermaidDiagram } from "@/components/chat/MermaidDiagram";
-import { VisualContentBlock } from "@/components/chat/VisualContentBlock";
 import { cn } from "@/lib/utils";
+import dynamic from "next/dynamic";
 import { memo, useMemo, type ReactNode } from "react";
+
+const MermaidDiagram = dynamic(
+  () => import("@/components/chat/MermaidDiagram").then((m) => m.MermaidDiagram),
+  { ssr: false, loading: () => <p className="text-sm text-muted">Loading diagram…</p> }
+);
+
+const ChartVisualBlock = dynamic(
+  () => import("@/components/chat/ChartVisualBlock").then((m) => m.ChartVisualBlock),
+  { ssr: false, loading: () => <p className="text-sm text-muted">Loading chart…</p> }
+);
+
+const VisualContentBlock = dynamic(
+  () => import("@/components/chat/VisualContentBlock").then((m) => m.VisualContentBlock),
+  { ssr: false, loading: () => <p className="text-sm text-muted">Loading visual…</p> }
+);
 
 interface MessageMarkdownProps {
   content: string;

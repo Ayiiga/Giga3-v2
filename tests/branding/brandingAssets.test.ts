@@ -19,9 +19,11 @@ describe("branding assets", () => {
     expect(raw).toBe(BRANDING_ASSET_VERSION);
   });
 
-  it("precaches splash screens in the service worker", () => {
+  it("uses lean install precache for faster PWA startup", () => {
     const sw = readFileSync(join(process.cwd(), "web", "public", "sw.js"), "utf8");
-    expect(sw).toContain("giga3-shell-v22-branding");
-    expect(sw).toContain('"/splash/iphone-12.png"');
+    expect(sw).toContain("giga3-shell-v23-perf");
+    expect(sw).toContain('"/"');
+    expect(sw).not.toContain('"/media/"');
+    expect(sw).not.toContain('"/splash/iphone-12.png"');
   });
 });

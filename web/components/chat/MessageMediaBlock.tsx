@@ -92,7 +92,7 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
             src={url}
             controls
             playsInline
-            preload="metadata"
+            preload="none"
             className="h-auto max-h-[min(70vh,24rem)] w-full max-w-full bg-black object-contain"
             width={640}
             height={360}

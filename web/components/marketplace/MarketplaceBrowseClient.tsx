@@ -8,14 +8,16 @@ import { useQuery } from "convex/react";
 import { BadgeCheck, Search, ShoppingBag, Store } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 export function MarketplaceBrowseClient() {
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(query, 300);
   const [category, setCategory] = useState<string>("");
   const [productType, setProductType] = useState<string>("");
 
   const listings = useQuery(api.marketplace.searchListings, {
-    query: query || undefined,
+    query: debouncedQuery || undefined,
     category: category || undefined,
     productType: (productType || undefined) as any,
     limit: 40,

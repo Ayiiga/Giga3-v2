@@ -1,6 +1,7 @@
 "use client";
 
 import { useConnectionQuality } from "@/hooks/useConnectionQuality";
+import { usePageVisible } from "@/hooks/usePageVisible";
 import { getSessionToken } from "@/lib/auth";
 import { getAdaptivePollIntervalMs } from "@/lib/network/polling";
 import {
@@ -20,6 +21,7 @@ const POLL_ACTIVE_MS = 12_000;
 export function usePolledVideoJobs(mounted: boolean, sessionToken: string | null) {
   const convex = useConvex();
   const { tier } = useConnectionQuality();
+  const pageVisible = usePageVisible();
   const [rawJobs, setRawJobs] = useState<VideoJobRow[] | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const inFlightRef = useRef(false);
@@ -55,10 +57,13 @@ export function usePolledVideoJobs(mounted: boolean, sessionToken: string | null
   }, [mounted, sessionToken, fetchJobs]);
 
   useEffect(() => {
-    if (!mounted || !sessionToken || !processing || pollMs <= 0) return;
-    const id = window.setInterval(() => void fetchJobs(), pollMs);
+    if (!mounted || !sessionToken || !processing || pollMs <= 0 || !pageVisible) return;
+    const id = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      void fetchJobs();
+    }, pollMs);
     return () => window.clearInterval(id);
-  }, [mounted, sessionToken, processing, pollMs, fetchJobs]);
+  }, [mounted, sessionToken, processing, pollMs, pageVisible, fetchJobs]);
 
   return {
     jobs,

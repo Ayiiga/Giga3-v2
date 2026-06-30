@@ -1,6 +1,7 @@
 "use client";
 
 import { useConnectionQuality } from "@/hooks/useConnectionQuality";
+import { usePageVisible } from "@/hooks/usePageVisible";
 import { useStableMediaJobs, type MediaJobRow } from "@/hooks/useStableMediaJobs";
 import { getSessionToken } from "@/lib/auth";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
@@ -20,6 +21,7 @@ const POLL_ACTIVE_MS = 15_000;
 export function usePolledMediaJobs(userId: string, mounted: boolean) {
   const convex = useConvex();
   const { tier } = useConnectionQuality();
+  const pageVisible = usePageVisible();
   const [rawJobs, setRawJobs] = useState<MediaJobRow[] | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const inFlightRef = useRef(false);
@@ -58,10 +60,13 @@ export function usePolledMediaJobs(userId: string, mounted: boolean) {
   }, [mounted, userId, fetchJobs]);
 
   useEffect(() => {
-    if (!mounted || !userId || !processing || pollMs <= 0) return;
-    const id = window.setInterval(() => void fetchJobs(), pollMs);
+    if (!mounted || !userId || !processing || pollMs <= 0 || !pageVisible) return;
+    const id = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      void fetchJobs();
+    }, pollMs);
     return () => window.clearInterval(id);
-  }, [mounted, userId, processing, pollMs, fetchJobs]);
+  }, [mounted, userId, processing, pollMs, pageVisible, fetchJobs]);
 
   return {
     jobs,
