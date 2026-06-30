@@ -1,6 +1,6 @@
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { requireAuthenticatedEmail } from "./auth";
+import { requireSession } from "./auth";
 import type { ValidatedAttachmentFile } from "./attachmentValidation";
 import { isSubscriptionActive } from "./creditsConfig";
 import type { SubscriptionPlanId } from "./subscriptionPlans";
@@ -170,7 +170,7 @@ async function applyUploadRecord(
 export const getUploadUsageSnapshot = query({
   args: { sessionToken: v.string() },
   handler: async (ctx, args) => {
-    const email = await requireAuthenticatedEmail(args.sessionToken);
+    const email = await requireSession(args.sessionToken);
     const user = await getUserByEmail(ctx, email);
     if (!user) {
       const limits = await getLimitForPlan(ctx, "free");
@@ -292,7 +292,7 @@ export const recordUploads = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    await requireAuthenticatedEmail(args.sessionToken);
+    await requireSession(args.sessionToken);
     throw new Error("Upload recording is handled automatically when sending messages.");
   },
 });

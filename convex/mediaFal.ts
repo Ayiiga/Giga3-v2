@@ -4,6 +4,7 @@ import { action } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
 import { falGenerateImage, falGenerateVideo, type FalImageSize } from "./falClient";
+import { requireSessionWithMonitoring } from "./auth";
 
 const imageSizeValidator = v.optional(
   v.union(
@@ -23,7 +24,7 @@ const IMAGE_TOKEN_COST = 2;
 /** Legacy fal.ai video generation (frontend/assets/js/media.js). */
 export const generateVideo = action({
   args: {
-    email: v.string(),
+    sessionToken: v.string(),
     prompt: v.string(),
     imageUrl: v.string(),
     negativePrompt: v.optional(v.string()),
@@ -41,7 +42,11 @@ export const generateVideo = action({
     syncMode: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.runQuery(api.users.getUser, { email: args.email });
+    await requireSessionWithMonitoring(args.sessionToken, ctx);
+
+    const user = await ctx.runQuery(api.users.getUser, {
+      sessionToken: args.sessionToken,
+    });
     if (!user) {
       throw new Error("User not found");
     }
@@ -68,7 +73,7 @@ export const generateVideo = action({
     });
 
     const tokens = await ctx.runMutation(api.users.deductTokens, {
-      email: args.email,
+      sessionToken: args.sessionToken,
       amount: VIDEO_TOKEN_COST,
     });
 
@@ -85,7 +90,7 @@ export const generateVideo = action({
 /** Legacy fal.ai image generation (frontend/assets/js/media.js). */
 export const generateImage = action({
   args: {
-    email: v.string(),
+    sessionToken: v.string(),
     prompt: v.string(),
     negativePrompt: v.optional(v.string()),
     imageSize: imageSizeValidator,
@@ -95,7 +100,11 @@ export const generateImage = action({
     enableSafetyChecker: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.runQuery(api.users.getUser, { email: args.email });
+    await requireSessionWithMonitoring(args.sessionToken, ctx);
+
+    const user = await ctx.runQuery(api.users.getUser, {
+      sessionToken: args.sessionToken,
+    });
     if (!user) {
       throw new Error("User not found");
     }
@@ -114,7 +123,7 @@ export const generateImage = action({
     });
 
     const tokens = await ctx.runMutation(api.users.deductTokens, {
-      email: args.email,
+      sessionToken: args.sessionToken,
       amount: IMAGE_TOKEN_COST,
     });
 

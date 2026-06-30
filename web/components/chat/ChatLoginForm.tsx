@@ -59,14 +59,15 @@ function ChatLoginFormInner() {
       }
       const convexUrl = getConvexUrl();
       if (convexUrl) {
-        const result = await convexHttpCall<{ sessionToken?: string }>(
+        const result = await convexHttpCall<{ email: string; sessionToken: string }>(
           convexUrl,
-          "mutation",
-          "users:createUser",
-          { email: normalized }
+          "action",
+          "authActions:establishSessionFromEmail",
+          { email: normalized },
+          { timeoutMs: 20_000, retries: 1 }
         );
         if (result?.sessionToken) {
-          setAuthSession(normalized, result.sessionToken);
+          setAuthSession(result.email ?? normalized, result.sessionToken);
         } else {
           setAuthSession(normalized, "");
         }

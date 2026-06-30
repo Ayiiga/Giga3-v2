@@ -18,7 +18,9 @@ import {
   toRetrievalSystemMessage,
   validateAnswerQuality,
 } from "./answerQuality";
-import { requireAuthenticatedEmail } from "./auth";
+import { requireSessionWithMonitoring } from "./auth";
+import { logSecurityEvent } from "./securityHelpers";
+import { SECURITY_EVENT_TYPES } from "./securityMonitoring";
 import {
   toUploadRecordFiles,
   validateAttachments,
@@ -63,7 +65,6 @@ function imageCapabilityFailureMessage(
 export const sendMessage = action({
   args: {
     sessionToken: v.string(),
-    userId: v.string(),
     conversationId: v.id("conversations"),
     content: v.string(),
     mode: v.optional(v.string()),
@@ -89,18 +90,22 @@ export const sendMessage = action({
     ),
   },
   handler: async (ctx, args) => {
-    const email = await requireAuthenticatedEmail(args.sessionToken, args.userId);
+    const email = await requireSessionWithMonitoring(args.sessionToken, ctx);
 
     const conv = await ctx.runQuery(api.conversations.get, {
       conversationId: args.conversationId,
-      userId: email,
+      sessionToken: args.sessionToken,
     });
     if (!conv) throw new Error("Conversation not found");
 
-    let user = await ctx.runQuery(api.users.getUser, { email });
+    let user = await ctx.runQuery(api.users.getUser, {
+      sessionToken: args.sessionToken,
+    });
     if (!user) {
       await ctx.runMutation(api.users.createUser, { email });
-      user = await ctx.runQuery(api.users.getUser, { email });
+      user = await ctx.runQuery(api.users.getUser, {
+        sessionToken: args.sessionToken,
+      });
     }
 
     const mode =
@@ -113,20 +118,47 @@ export const sendMessage = action({
       const usage = await ctx.runQuery(api.uploadLimits.getUploadUsageSnapshot, {
         sessionToken: args.sessionToken,
       });
-      const validated = validateAttachments(
-        rawAttachments,
-        usage.limits.maxFileBytes
-      );
-      await ctx.runMutation(internal.uploadLimits.recordUploadsInternal, {
-        userId: email,
-        files: toUploadRecordFiles(validated),
-      });
+      let validated;
+      try {
+        validated = validateAttachments(
+          rawAttachments,
+          usage.limits.maxFileBytes
+        );
+      } catch (validationError) {
+        await logSecurityEvent(ctx, {
+          eventType: SECURITY_EVENT_TYPES.ATTACHMENT_REJECTED,
+          severity: "low",
+          message:
+            validationError instanceof Error
+              ? validationError.message
+              : "Attachment rejected",
+          email,
+        });
+        throw validationError;
+      }
+      try {
+        await ctx.runMutation(internal.uploadLimits.recordUploadsInternal, {
+          userId: email,
+          files: toUploadRecordFiles(validated),
+        });
+      } catch (uploadError) {
+        await logSecurityEvent(ctx, {
+          eventType: SECURITY_EVENT_TYPES.UPLOAD_ABUSE,
+          severity: "medium",
+          message:
+            uploadError instanceof Error
+              ? uploadError.message
+              : "Upload quota exceeded",
+          email,
+        });
+        throw uploadError;
+      }
     }
 
     if (mode !== conv.mode) {
       await ctx.runMutation(api.conversations.setMode, {
         conversationId: args.conversationId,
-        userId: email,
+        sessionToken: args.sessionToken,
         mode,
       });
     }
@@ -139,18 +171,18 @@ export const sendMessage = action({
     });
 
     await ctx.runMutation(api.users.recordChatInteraction, {
-      email,
+      sessionToken: args.sessionToken,
       mode,
       messageContent: args.content,
     });
 
     const history = await ctx.runQuery(api.messages.listByConversation, {
       conversationId: args.conversationId,
-      userId: email,
+      sessionToken: args.sessionToken,
     });
 
     const refreshedUser = await ctx.runQuery(api.users.getUser, {
-      email,
+      sessionToken: args.sessionToken,
     });
 
     const qualityContext = prepareAnswerQualityContext({
@@ -207,7 +239,7 @@ export const sendMessage = action({
       });
 
       const updatedUser = await ctx.runQuery(api.users.getUser, {
-        email,
+        sessionToken: args.sessionToken,
       });
 
       return {
@@ -268,7 +300,7 @@ export const sendMessage = action({
     const chargedAi = engineResult.providerId !== "local_fallback";
 
     if (chargedAi) {
-      await ctx.runMutation(api.credits.deductForChatMode, {
+      await ctx.runMutation(internal.credits.deductForChatModeInternal, {
         userId: email,
         mode,
         reference: args.conversationId,
@@ -283,7 +315,7 @@ export const sendMessage = action({
     });
 
     const updatedUser = await ctx.runQuery(api.users.getUser, {
-      email,
+      sessionToken: args.sessionToken,
     });
 
     const title =
@@ -295,7 +327,7 @@ export const sendMessage = action({
     if (title !== conv.title) {
       await ctx.runMutation(api.conversations.updateTitle, {
         conversationId: args.conversationId,
-        userId: email,
+        sessionToken: args.sessionToken,
         title,
       });
     }
@@ -315,23 +347,22 @@ export const sendMessage = action({
 export const regenerateMessage = action({
   args: {
     sessionToken: v.string(),
-    userId: v.string(),
     conversationId: v.id("conversations"),
     assistantMessageId: v.id("messages"),
     mode: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const email = await requireAuthenticatedEmail(args.sessionToken, args.userId);
+    const email = await requireSessionWithMonitoring(args.sessionToken, ctx);
 
     const conv = await ctx.runQuery(api.conversations.get, {
       conversationId: args.conversationId,
-      userId: email,
+      sessionToken: args.sessionToken,
     });
     if (!conv) throw new Error("Conversation not found");
 
     const history = await ctx.runQuery(api.messages.listByConversation, {
       conversationId: args.conversationId,
-      userId: email,
+      sessionToken: args.sessionToken,
     });
     const targetIdx = history.findIndex((m) => m._id === args.assistantMessageId);
     if (targetIdx < 0) throw new Error("Message not found");
@@ -345,7 +376,7 @@ export const regenerateMessage = action({
     if (mode !== conv.mode) {
       await ctx.runMutation(api.conversations.setMode, {
         conversationId: args.conversationId,
-        userId: email,
+        sessionToken: args.sessionToken,
         mode,
       });
     }
@@ -358,11 +389,11 @@ export const regenerateMessage = action({
 
     const historyAfter = await ctx.runQuery(api.messages.listByConversation, {
       conversationId: args.conversationId,
-      userId: email,
+      sessionToken: args.sessionToken,
     });
 
     const refreshedUser = await ctx.runQuery(api.users.getUser, {
-      email,
+      sessionToken: args.sessionToken,
     });
 
     const query = latestUserPrompt(historyAfter, "");
@@ -417,7 +448,7 @@ export const regenerateMessage = action({
     const chargedAi = engineResult.providerId !== "local_fallback";
 
     if (chargedAi) {
-      await ctx.runMutation(api.credits.deductForChatMode, {
+      await ctx.runMutation(internal.credits.deductForChatModeInternal, {
         userId: email,
         mode,
         reference: args.conversationId,
@@ -432,7 +463,7 @@ export const regenerateMessage = action({
     });
 
     const updatedUser = await ctx.runQuery(api.users.getUser, {
-      email,
+      sessionToken: args.sessionToken,
     });
 
     return {

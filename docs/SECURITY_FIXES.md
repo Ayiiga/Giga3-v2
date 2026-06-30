@@ -67,6 +67,9 @@ Defense-in-depth against XSS if Mermaid output or model-generated diagram syntax
 | Variable | Purpose |
 |----------|---------|
 | `SESSION_SIGNING_SECRET` | HMAC key for session tokens (falls back to `ADMIN_SETTINGS_KEY` in dev only) |
+| `SESSION_SIGNING_SECRET_PREVIOUS` | Previous HMAC key during rotation |
+| `SESSION_SIGNING_KEY_ID` | Optional key id embedded in tokens |
+| `SUPABASE_URL` / `SUPABASE_ANON_KEY` | Magic-link JWT verification |
 
 Set in Convex production:
 
@@ -86,10 +89,11 @@ Covers attachment validation, session auth, auth helpers, and Mermaid SVG saniti
 
 | Risk | Severity | Notes |
 |------|----------|-------|
-| Email-only login without password | Medium | Pre-existing; mitigated by signed session tokens for API calls. Full OAuth/Supabase JWT verification recommended next. |
-| Other Convex queries still accept `email`/`userId` | Medium | Conversations/messages not fully migrated to session auth in this pass. |
-| `quality` per-response report still returned | Low | Per-message metadata, not platform aggregates. |
-| CSP allows `unsafe-inline` / `unsafe-eval` | Low | Required for Next.js static export + Mermaid; tightened where feasible. |
+| Convex-path email login without mailbox proof | Medium | Use Supabase magic-link in production; rate-limited bootstrap |
+| CSP allows `unsafe-inline` scripts/styles | Low | Required for Next.js static export; `unsafe-eval` replaced with `wasm-unsafe-eval` |
+| `quality` per-response report still returned | Low | Per-message metadata, not platform aggregates |
+
+See **`docs/DEPLOYMENT_SECURITY_REPORT.md`** for the full OWASP Top 10 audit and deployment checklist.
 
 ## Backward compatibility
 

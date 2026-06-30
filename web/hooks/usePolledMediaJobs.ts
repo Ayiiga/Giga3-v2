@@ -1,6 +1,7 @@
 "use client";
 
 import { useStableMediaJobs, type MediaJobRow } from "@/hooks/useStableMediaJobs";
+import { getSessionToken } from "@/lib/auth";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { hasActiveMediaJobs, mediaJobsEqual } from "@/lib/media/stableJobs";
 import { listSupabaseGenerations } from "@/lib/supabase/data";
@@ -24,11 +25,14 @@ export function usePolledMediaJobs(userId: string, mounted: boolean) {
     if (!userId || inFlightRef.current) return;
     inFlightRef.current = true;
     try {
+      const sessionToken = getSessionToken();
       const rows = isSupabaseDataBackend()
         ? await listSupabaseGenerations(userId)
-        : ((await convex.query(api.mediaQueries.listJobs, {
-            userId,
-          })) as MediaJobRow[]);
+        : sessionToken
+          ? ((await convex.query(api.mediaQueries.listJobs, {
+              sessionToken,
+            })) as MediaJobRow[])
+          : [];
       setRawJobs((prev) => {
         if (prev && mediaJobsEqual(prev, rows)) return prev;
         return rows;

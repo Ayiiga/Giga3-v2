@@ -1,7 +1,6 @@
 "use node";
 
 import { action } from "./_generated/server";
-import type { ActionCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
@@ -11,6 +10,7 @@ import { assertCreditsAvailable, chargeCreditsForMedia } from "./mediaCredits";
 import { generateImageWithFallback, generateVideoWithFallback } from "./mediaEngine";
 import { persistImageUrlIfNeeded } from "./mediaStorage";
 import { toUserMediaError } from "./mediaUtils";
+import { requireSessionWithMonitoring } from "./auth";
 
 const imageSizeValidator = v.optional(
   v.union(
@@ -27,22 +27,14 @@ const imageSizeValidator = v.optional(
 const VIDEO_TOKEN_COST = 5;
 const IMAGE_TOKEN_COST = 2;
 
-function resolveEmail(args: { email?: string; userId?: string }): string {
-  const email = (args.email ?? args.userId)?.trim().toLowerCase();
-  if (!email) throw new Error("email or userId is required");
-  return email;
-}
-
-/** Web passes userId + category; legacy static site passes email only. */
-function usesCreditBilling(args: { category?: string; userId?: string; email?: string }): boolean {
-  return Boolean(args.category) || Boolean(args.userId && !args.email);
-}
+const sharedMediaArgs = {
+  sessionToken: v.string(),
+  category: v.optional(v.string()),
+};
 
 export const generateVideo = action({
   args: {
-    email: v.optional(v.string()),
-    userId: v.optional(v.string()),
-    category: v.optional(v.string()),
+    ...sharedMediaArgs,
     prompt: v.string(),
     imageUrl: v.optional(v.string()),
     negativePrompt: v.optional(v.string()),
@@ -73,26 +65,27 @@ export const generateVideo = action({
     ),
   },
   handler: async (ctx, args) => {
-    const email = resolveEmail(args);
+    const email = await requireSessionWithMonitoring(args.sessionToken, ctx);
     const category = args.category ?? "anime_videos";
     const fullPrompt = buildVideoPrompt(category, args.prompt);
-    const creditMode = usesCreditBilling(args);
+    const creditMode = Boolean(args.category);
 
-    const user = await ctx.runQuery(api.users.getUser, { email });
+    const user = await ctx.runQuery(api.users.getUser, {
+      sessionToken: args.sessionToken,
+    });
     if (!user) throw new Error("User not found");
 
     let jobId: Id<"mediaJobs"> | undefined;
-    let creditCost = 0;
 
     try {
       if (creditMode) {
-        creditCost = await assertCreditsAvailable(ctx, email, "video");
+        await assertCreditsAvailable(ctx, args.sessionToken, "video");
         jobId = await ctx.runMutation(internal.mediaInternal.createMediaJob, {
           userId: email,
           mediaType: "video",
           category,
           prompt: fullPrompt,
-          creditsCharged: creditCost,
+          creditsCharged: 0,
         });
       } else if ((user.tokens ?? 0) < VIDEO_TOKEN_COST) {
         throw new Error(`Insufficient tokens (need ${VIDEO_TOKEN_COST} for video)`);
@@ -122,7 +115,7 @@ export const generateVideo = action({
       });
 
       if (creditMode && jobId) {
-        await chargeCreditsForMedia(ctx, email, "video", String(jobId));
+        await chargeCreditsForMedia(ctx, args.sessionToken, "video", String(jobId));
       }
 
       if (jobId) {
@@ -138,7 +131,7 @@ export const generateVideo = action({
       let tokens = user.tokens ?? 0;
       if (!creditMode) {
         tokens = await ctx.runMutation(api.users.deductTokens, {
-          email,
+          sessionToken: args.sessionToken,
           amount: VIDEO_TOKEN_COST,
         });
       }
@@ -169,9 +162,7 @@ export const generateVideo = action({
 
 export const generateImage = action({
   args: {
-    email: v.optional(v.string()),
-    userId: v.optional(v.string()),
-    category: v.optional(v.string()),
+    ...sharedMediaArgs,
     prompt: v.string(),
     sourceImageUrl: v.optional(v.string()),
     negativePrompt: v.optional(v.string()),
@@ -182,26 +173,27 @@ export const generateImage = action({
     enableSafetyChecker: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const email = resolveEmail(args);
+    const email = await requireSessionWithMonitoring(args.sessionToken, ctx);
     const category = args.category ?? "anime_art";
     const fullPrompt = buildImagePrompt(category, args.prompt);
-    const creditMode = usesCreditBilling(args);
+    const creditMode = Boolean(args.category);
 
-    const user = await ctx.runQuery(api.users.getUser, { email });
+    const user = await ctx.runQuery(api.users.getUser, {
+      sessionToken: args.sessionToken,
+    });
     if (!user) throw new Error("User not found");
 
     let jobId: Id<"mediaJobs"> | undefined;
-    let creditCost = 0;
 
     try {
       if (creditMode) {
-        creditCost = await assertCreditsAvailable(ctx, email, "image");
+        await assertCreditsAvailable(ctx, args.sessionToken, "image");
         jobId = await ctx.runMutation(internal.mediaInternal.createMediaJob, {
           userId: email,
           mediaType: "image",
           category,
           prompt: fullPrompt,
-          creditsCharged: creditCost,
+          creditsCharged: 0,
         });
       } else if ((user.tokens ?? 0) < IMAGE_TOKEN_COST) {
         throw new Error(`Insufficient tokens (need ${IMAGE_TOKEN_COST} for image)`);
@@ -222,7 +214,7 @@ export const generateImage = action({
       const imageUrl = await persistImageUrlIfNeeded(ctx, result.imageUrl);
 
       if (creditMode && jobId) {
-        await chargeCreditsForMedia(ctx, email, "image", String(jobId));
+        await chargeCreditsForMedia(ctx, args.sessionToken, "image", String(jobId));
       }
 
       if (jobId) {
@@ -238,7 +230,7 @@ export const generateImage = action({
       let tokens = user.tokens ?? 0;
       if (!creditMode) {
         tokens = await ctx.runMutation(api.users.deductTokens, {
-          email,
+          sessionToken: args.sessionToken,
           amount: IMAGE_TOKEN_COST,
         });
       }

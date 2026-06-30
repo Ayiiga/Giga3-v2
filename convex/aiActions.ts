@@ -11,7 +11,7 @@ import {
   toRetrievalSystemMessage,
   validateAnswerQuality,
 } from "./answerQuality";
-import { requireAuthenticatedEmail } from "./auth";
+import { requireSessionWithMonitoring } from "./auth";
 
 function hasHallucinationRisk(flags: string[]): boolean {
   return flags.some((flag) =>
@@ -30,17 +30,20 @@ function hasHallucinationRisk(flags: string[]): boolean {
 export const askAI = action({
   args: {
     sessionToken: v.string(),
-    email: v.string(),
     message: v.string(),
   },
   handler: async (ctx, args) => {
-    const verifiedEmail = await requireAuthenticatedEmail(args.sessionToken, args.email);
+    const verifiedEmail = await requireSessionWithMonitoring(args.sessionToken, ctx);
     const { message } = args;
 
-    let user = await ctx.runQuery(api.users.getUser, { email: verifiedEmail });
+    let user = await ctx.runQuery(api.users.getUser, {
+      sessionToken: args.sessionToken,
+    });
     if (!user) {
       await ctx.runMutation(api.users.createUser, { email: verifiedEmail });
-      user = await ctx.runQuery(api.users.getUser, { email: verifiedEmail });
+      user = await ctx.runQuery(api.users.getUser, {
+        sessionToken: args.sessionToken,
+      });
     }
     if (!user) {
       throw new Error("User not found");

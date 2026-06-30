@@ -1,5 +1,5 @@
 import type { ActionCtx } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import { CREDIT_COSTS } from "./creditsConfig";
 
 export type MediaCreditAction = "image" | "video";
@@ -7,10 +7,10 @@ export type MediaCreditAction = "image" | "video";
 /** Read-only balance check — does not deduct. */
 export async function assertCreditsAvailable(
   ctx: ActionCtx,
-  userId: string,
+  sessionToken: string,
   action: MediaCreditAction
 ): Promise<number> {
-  const usage = await ctx.runQuery(api.credits.getUsageSnapshot, { userId });
+  const usage = await ctx.runQuery(api.credits.getUsageSnapshot, { sessionToken });
   if (!usage) throw new Error("User not found");
   const cost = CREDIT_COSTS[action];
   if (usage.credits < cost) {
@@ -24,12 +24,12 @@ export async function assertCreditsAvailable(
 /** Charge only after media generation succeeded. */
 export async function chargeCreditsForMedia(
   ctx: ActionCtx,
-  userId: string,
+  sessionToken: string,
   action: MediaCreditAction,
   jobId: string
 ): Promise<void> {
   await ctx.runMutation(api.credits.deductCredits, {
-    userId,
+    sessionToken,
     action,
     reference: jobId,
     metadata: JSON.stringify({ source: "media_studio" }),

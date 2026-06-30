@@ -1,6 +1,6 @@
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { requireAuthenticatedEmail } from "./auth";
+import { requireSession } from "./auth";
 import { sanitizeFeedbackNote } from "./attachmentValidation";
 import { RateLimitError } from "./securityErrors";
 
@@ -242,7 +242,7 @@ export const recordUserFeedback = mutation({
 
     let userId: string | undefined;
     if (args.sessionToken?.trim()) {
-      userId = await requireAuthenticatedEmail(args.sessionToken);
+      userId = await requireSession(args.sessionToken);
       await enforceRateLimit(
         ctx,
         `user:${userId}`,

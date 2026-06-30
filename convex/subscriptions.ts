@@ -3,14 +3,17 @@ import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { SUBSCRIPTION_PERIOD_MS } from "./subscriptionPlans";
 import { paidPlanValidator } from "./schema";
+import { requireSession } from "./auth";
+import { sessionArgs } from "./validators";
 
 export const getActiveSubscription = query({
-  args: { userId: v.string() },
+  args: sessionArgs,
   handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
     return await ctx.db
       .query("subscriptions")
       .withIndex("by_user_status", (q) =>
-        q.eq("userId", args.userId).eq("status", "active")
+        q.eq("userId", userId).eq("status", "active")
       )
       .first();
   },

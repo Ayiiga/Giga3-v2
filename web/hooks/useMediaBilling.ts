@@ -1,7 +1,7 @@
 "use client";
 
 import { useStableUsage } from "@/hooks/useStableUsage";
-import { getUserEmail } from "@/lib/auth";
+import { getSessionToken, getUserEmail } from "@/lib/auth";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import { useEffect, useState } from "react";
@@ -10,14 +10,16 @@ import { useEffect, useState } from "react";
 export function useMediaBilling() {
   const email = getUserEmail();
   const [mounted, setMounted] = useState(false);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    setSessionToken(getSessionToken());
   }, []);
 
   const usageRaw = useQuery(
     api.credits.getUsageSnapshot,
-    mounted && email ? { userId: email } : ("skip" as const)
+    mounted && sessionToken ? { sessionToken } : ("skip" as const)
   );
 
   const usage = useStableUsage(

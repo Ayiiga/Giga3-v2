@@ -1,6 +1,6 @@
 "use client";
 
-import { getUserEmail } from "@/lib/auth";
+import { getSessionToken, getUserEmail } from "@/lib/auth";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { formatMediaError } from "@/lib/media/errors";
 import type { ImageCategoryId, VideoCategoryId } from "@/lib/media/catalog";
@@ -55,7 +55,6 @@ export type MediaGenerationPhase = "idle" | "generating" | "success" | "error";
 
 export function useMediaGeneration() {
   const email = getUserEmail();
-  const userId = email ?? "";
   const [phase, setPhase] = useState<MediaGenerationPhase>("idle");
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -73,13 +72,19 @@ export function useMediaGeneration() {
     setPhase("idle");
   }, []);
 
+  function requireSession(): string {
+    const token = getSessionToken();
+    if (!token) throw new Error("Session expired. Please sign in again.");
+    return token;
+  }
+
   async function createImage(
     category: ImageCategoryId,
     prompt: string,
     sourceImageUrl?: string,
     options?: ImageGenerationOptions
   ) {
-    if (!userId) {
+    if (!email) {
       setError("Sign in required");
       setPhase("error");
       return null;
@@ -89,9 +94,10 @@ export function useMediaGeneration() {
     setSuccessMessage(null);
     setLastOutputUrl(null);
     try {
+      const sessionToken = requireSession();
       const result = (await withActionTimeout(
         generateImage({
-          userId,
+          sessionToken,
           category,
           prompt,
           ...(sourceImageUrl?.trim() ? { sourceImageUrl: sourceImageUrl.trim() } : {}),
@@ -105,7 +111,7 @@ export function useMediaGeneration() {
       setLastMediaType("image");
       if (isSupabaseDataBackend()) {
         await createSupabaseGeneration({
-          email: userId,
+          email,
           mediaType: "image",
           category,
           prompt,
@@ -130,7 +136,7 @@ export function useMediaGeneration() {
     imageUrl?: string,
     options?: VideoGenerationOptions
   ) {
-    if (!userId) {
+    if (!email) {
       setError("Sign in required");
       setPhase("error");
       return null;
@@ -140,9 +146,10 @@ export function useMediaGeneration() {
     setSuccessMessage(null);
     setLastOutputUrl(null);
     try {
+      const sessionToken = requireSession();
       const result = (await withActionTimeout(
         generateVideo({
-          userId,
+          sessionToken,
           category,
           prompt,
           ...(imageUrl?.trim() ? { imageUrl: imageUrl.trim() } : {}),
@@ -156,7 +163,7 @@ export function useMediaGeneration() {
       setLastMediaType("video");
       if (isSupabaseDataBackend()) {
         await createSupabaseGeneration({
-          email: userId,
+          email,
           mediaType: "video",
           category,
           prompt,

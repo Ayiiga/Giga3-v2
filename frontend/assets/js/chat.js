@@ -60,7 +60,7 @@ async function send() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         path: "aiActions:askAI",
-        args: { sessionToken, email, message },
+        args: { sessionToken, message },
         format: "json",
       }),
     });

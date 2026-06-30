@@ -53,31 +53,27 @@ export function useChatPlatform() {
     setSessionTokenState(getSessionToken());
   }, []);
 
-  const emailQueryArgs = useMemo(
-    () => (mounted && email ? { email } : ("skip" as const)),
-    [mounted, email]
+  const sessionQueryArgs = useMemo(
+    () => (mounted && sessionToken ? { sessionToken } : ("skip" as const)),
+    [mounted, sessionToken]
   );
-  const conversationsQueryArgs = useMemo(
-    () => (mounted && email ? { userId: email } : ("skip" as const)),
-    [mounted, email]
-  );
+  const conversationsQueryArgs = sessionQueryArgs;
   const messagesQueryArgs = useMemo(
     () =>
-      mounted && email && activeId
-        ? { conversationId: activeId as Id<"conversations">, userId: email }
+      mounted && sessionToken && activeId
+        ? {
+            conversationId: activeId as Id<"conversations">,
+            sessionToken,
+          }
         : ("skip" as const),
-    [mounted, email, activeId]
+    [mounted, sessionToken, activeId]
   );
 
-  /** Credits-only probe for user existence — not full getUser (avoids shell churn). */
-  const chatCreditsRow = useQuery(api.users.getChatCredits, emailQueryArgs);
-  const interestProfileRow = useQuery(api.users.getInterestProfile, emailQueryArgs);
+  const chatCreditsRow = useQuery(api.users.getChatCredits, sessionQueryArgs);
+  const interestProfileRow = useQuery(api.users.getInterestProfile, sessionQueryArgs);
   const conversationsRaw = useQuery(api.conversations.list, conversationsQueryArgs);
   const messagesRaw = useQuery(api.messages.listByConversation, messagesQueryArgs);
-  const uploadUsage = useQuery(
-    api.uploadLimits.getUploadUsageSnapshot,
-    mounted && sessionToken ? { sessionToken } : ("skip" as const)
-  );
+  const uploadUsage = useQuery(api.uploadLimits.getUploadUsageSnapshot, sessionQueryArgs);
   const credits =
     chatCreditsRow === undefined
       ? creditsCacheRef.current
@@ -107,7 +103,7 @@ export function useChatPlatform() {
 
   const conversationsLoading = conversationsRaw === undefined;
   const messagesLoading =
-    Boolean(activeId) && messagesRaw === undefined && mounted && Boolean(email);
+    Boolean(activeId) && messagesRaw === undefined && mounted && Boolean(sessionToken);
 
   const conversations = useStableConversations(
     conversationsRaw as ConversationItem[] | undefined
@@ -116,32 +112,23 @@ export function useChatPlatform() {
   const messages = useStableUiMessages(messagesRaw, pendingUserText);
 
   useEffect(() => {
-    if (!email || chatCreditsRow === undefined || createUserAttempted.current) {
-      return;
-    }
-    if (chatCreditsRow !== null) {
-      if (!getSessionToken()) {
-        void createUser({ email }).then((result) => {
-          const token = (result as { sessionToken?: string }).sessionToken;
-          if (token) {
-            setSessionToken(token);
-            setSessionTokenState(token);
-          }
-        });
-      }
+    if (!email || createUserAttempted.current) return;
+    const token = getSessionToken();
+    if (token) {
+      setSessionTokenState(token);
       return;
     }
     createUserAttempted.current = true;
     void createUser({ email }).then((result) => {
       if (result && typeof result === "object" && "sessionToken" in result) {
-        const token = (result as { sessionToken?: string }).sessionToken;
-        if (token) {
-          setSessionToken(token);
-          setSessionTokenState(token);
+        const next = (result as { sessionToken: string }).sessionToken;
+        if (next) {
+          setSessionToken(next);
+          setSessionTokenState(next);
         }
       }
     });
-  }, [email, chatCreditsRow, createUser]);
+  }, [email, createUser]);
 
   useEffect(() => {
     if (conversations.length === 0) {
@@ -175,11 +162,15 @@ export function useChatPlatform() {
   }, [messagesRaw, pendingUserText]);
 
   const startNewChat = useCallback(async () => {
-    if (!email) return;
+    const token = sessionToken ?? getSessionToken();
+    if (!token) {
+      setError("Session expired. Please sign in again.");
+      return;
+    }
     setError(null);
-    const id = await createConversation({ userId: email, mode });
+    const id = await createConversation({ sessionToken: token, mode });
     setActiveId(id);
-  }, [email, createConversation, mode]);
+  }, [sessionToken, createConversation, mode]);
 
   const selectConversation = useCallback((id: string) => {
     setActiveId(id);
@@ -189,35 +180,36 @@ export function useChatPlatform() {
 
   const deleteConversation = useCallback(
     async (id: string) => {
-      if (!email) return;
-      await removeConversation({ conversationId: id as Id<"conversations">, userId: email });
+      const token = sessionToken ?? getSessionToken();
+      if (!token) return;
+      await removeConversation({
+        conversationId: id as Id<"conversations">,
+        sessionToken: token,
+      });
       if (activeId === id) {
         setActiveId(null);
         setPendingUserText(null);
       }
     },
-    [email, removeConversation, activeId]
+    [sessionToken, removeConversation, activeId]
   );
 
   const changeMode = useCallback(
     async (next: AiModeId) => {
       setMode(next);
-      if (!email || !activeId) return;
+      const token = sessionToken ?? getSessionToken();
+      if (!token || !activeId) return;
       await setConversationMode({
         conversationId: activeId as Id<"conversations">,
-        userId: email,
+        sessionToken: token,
         mode: next,
       });
     },
-    [email, activeId, setConversationMode]
+    [sessionToken, activeId, setConversationMode]
   );
 
   const sendMessage = useCallback(
     async (content: string, attachments?: PreparedChatAttachment[]) => {
-      if (!email) {
-        setError("Please sign in");
-        return;
-      }
       const token = sessionToken ?? getSessionToken();
       if (!token) {
         setError("Session expired. Please sign in again.");
@@ -230,14 +222,13 @@ export function useChatPlatform() {
       try {
         let conversationId = activeId;
         if (!conversationId) {
-          conversationId = await createConversation({ userId: email, mode });
+          conversationId = await createConversation({ sessionToken: token, mode });
           setActiveId(conversationId);
         }
 
         const result = await withClientTimeout(
           sendMessageAction({
             sessionToken: token,
-            userId: email,
             conversationId: conversationId as Id<"conversations">,
             content,
             mode,
@@ -266,24 +257,19 @@ export function useChatPlatform() {
         setIsSending(false);
       }
     },
-    [email, sessionToken, activeId, mode, createConversation, sendMessageAction]
+    [sessionToken, activeId, mode, createConversation, sendMessageAction]
   );
 
   const regenerateMessage = useCallback(
     async (assistantMessageId: string) => {
-      if (!email || !activeId) return;
       const token = sessionToken ?? getSessionToken();
-      if (!token) {
-        setError("Session expired. Please sign in again.");
-        return;
-      }
+      if (!token || !activeId) return;
       setError(null);
       setIsSending(true);
       try {
         const result = await withClientTimeout(
           regenerateMessageAction({
             sessionToken: token,
-            userId: email,
             conversationId: activeId as Id<"conversations">,
             assistantMessageId: assistantMessageId as Id<"messages">,
             mode,
@@ -304,7 +290,7 @@ export function useChatPlatform() {
         setIsSending(false);
       }
     },
-    [email, sessionToken, activeId, mode, regenerateMessageAction]
+    [sessionToken, activeId, mode, regenerateMessageAction]
   );
 
   return {

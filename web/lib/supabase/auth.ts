@@ -1,6 +1,12 @@
 "use client";
 
-import { clearUserEmail, setUserEmail } from "@/lib/auth";
+import {
+  clearUserEmail,
+  setAuthSession,
+  setUserEmail,
+} from "@/lib/auth";
+import { getConvexUrl } from "@/lib/convex";
+import { convexHttpCall } from "@/lib/network/convexCall";
 import { getSupabaseClient } from "@/lib/supabase";
 
 const ACCESS_TOKEN_KEY = "giga3_supabase_access_token";
@@ -24,10 +30,37 @@ export function consumeSupabaseAuthHash(): string | null {
   return accessToken;
 }
 
+async function exchangeSupabaseTokenForGiga3Session(
+  accessToken: string
+): Promise<{ email: string; sessionToken: string } | null> {
+  const convexUrl = getConvexUrl();
+  if (!convexUrl) return null;
+  try {
+    const result = await convexHttpCall<{ email: string; sessionToken: string }>(
+      convexUrl,
+      "action",
+      "authActions:establishSessionFromSupabase",
+      { supabaseAccessToken: accessToken },
+      { timeoutMs: 20_000, retries: 1 }
+    );
+    if (result?.email && result.sessionToken) {
+      setAuthSession(result.email, result.sessionToken);
+      return result;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 export async function syncSupabaseAuthToLocalEmail(): Promise<string | null> {
   const client = getSupabaseClient();
   const accessToken = consumeSupabaseAuthHash() ?? getStoredAccessToken();
   if (!client || !accessToken) return null;
+
+  const exchanged = await exchangeSupabaseTokenForGiga3Session(accessToken);
+  if (exchanged) return exchanged.email;
+
   const { user } = await client.authGetUser(accessToken);
   const email = user?.email?.trim().toLowerCase() ?? null;
   if (email) setUserEmail(email);
@@ -53,3 +86,10 @@ export async function signOutSupabase(): Promise<void> {
   }
 }
 
+/** Refresh Giga3 session token from stored Supabase access token. */
+export async function refreshGiga3SessionFromSupabase(): Promise<string | null> {
+  const accessToken = getStoredAccessToken();
+  if (!accessToken) return null;
+  const result = await exchangeSupabaseTokenForGiga3Session(accessToken);
+  return result?.sessionToken ?? null;
+}
