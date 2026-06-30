@@ -3,7 +3,23 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(self), microphone=(self), geolocation=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://*.convex.cloud https://*.convex.site https://api.paystack.co https://*.supabase.co wss://*.supabase.co; frame-src https://js.paystack.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-site
+  X-Permitted-Cross-Domain-Policies: none
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://*.convex.cloud https://*.convex.site https://api.paystack.co https://*.supabase.co wss://*.supabase.co; frame-src https://js.paystack.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests
+
+/chat/*
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/chat/login/*
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/payment/*
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/marketplace/sell/*
+  Cache-Control: no-store, no-cache, must-revalidate
 
 /manifest.webmanifest
   Content-Type: application/manifest+json

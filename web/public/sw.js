@@ -1,4 +1,6 @@
-const CACHE_NAME = "giga3-shell-v18";
+const CACHE_NAME = "giga3-shell-v19";
+
+/** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
   "/",
   "/offline/",
@@ -11,21 +13,35 @@ const PRECACHE = [
   "/icons/icon-512.png",
   "/icons/apple-touch-icon.png",
   "/icons/icon-maskable-512.png",
-  "/chat/",
-  "/chat/login/",
   "/pricing/",
   "/subscribe/",
   "/media/",
-  "/credits/",
+  "/video/",
+  "/video/plans/",
+  "/marketplace/",
 ];
+
+/** Document paths that must not be stored offline (session / billing / creator tools). */
+function isSensitiveDocumentPath(pathname) {
+  return (
+    pathname.startsWith("/chat/") ||
+    pathname.startsWith("/payment/") ||
+    pathname.startsWith("/credits/") ||
+    pathname.startsWith("/marketplace/sell/") ||
+    pathname.startsWith("/creator/")
+  );
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(PRECACHE))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE))
   );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("activate", (event) => {
@@ -77,20 +93,24 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (isDocument) {
+    const sensitive = isSensitiveDocumentPath(url.pathname);
     event.respondWith(
       fetch(request)
         .then((response) => {
-          if (response.ok) {
+          if (response.ok && !sensitive) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
           return response;
         })
-        .catch(() =>
-          caches
+        .catch(() => {
+          if (sensitive) {
+            return caches.match("/offline/");
+          }
+          return caches
             .match(request)
-            .then((cached) => cached || caches.match("/offline/"))
-        )
+            .then((cached) => cached || caches.match("/offline/"));
+        })
     );
     return;
   }

@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /chat/
+Disallow: /payment/
+Disallow: /marketplace/sell/
 
 Sitemap: https://www.giga3ai.com/sitemap.xml

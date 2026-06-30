@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  clearUserEmail,
+  clearAllClientAuth,
   setAuthSession,
   setUserEmail,
 } from "@/lib/auth";
@@ -79,11 +79,10 @@ export async function signInWithSupabaseOtp(
 export async function signOutSupabase(): Promise<void> {
   const client = getSupabaseClient();
   const accessToken = getStoredAccessToken();
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  clearUserEmail();
   if (client && accessToken) {
     await client.authSignOut(accessToken).catch(() => null);
   }
+  clearAllClientAuth();
 }
 
 /** Refresh Giga3 session token from stored Supabase access token. */

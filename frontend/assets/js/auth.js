@@ -32,6 +32,7 @@ function logout() {
   localStorage.removeItem("user_email");
   localStorage.removeItem("giga3_user_email");
   localStorage.removeItem("giga3_session_token");
+  localStorage.removeItem("giga3_supabase_access_token");
   window.location.href = "index.html";
 }
 

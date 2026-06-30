@@ -1,5 +1,6 @@
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
+import { SwUpdatePrompt } from "@/components/pwa/SwUpdatePrompt";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
 import { branding } from "@/lib/branding";
 import { pwaStartupImages } from "@/lib/pwaSplash";
@@ -69,7 +70,7 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: light)", color: branding.themeColor },
     { media: "(prefers-color-scheme: dark)", color: branding.themeColor },
   ],
-  colorScheme: "light",
+  colorScheme: "light dark",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -83,12 +84,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body className="min-h-full w-full max-w-full overflow-x-hidden bg-background font-sans text-foreground antialiased">
         <ThemeProvider>
           <div className="min-h-full w-full max-w-full overflow-x-hidden">{children}</div>
         </ThemeProvider>
         <ServiceWorkerRegister />
+        <SwUpdatePrompt />
         <OfflineBanner />
       </body>
     </html>

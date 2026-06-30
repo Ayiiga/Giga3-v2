@@ -408,6 +408,29 @@ function buildManifest() {
     dir: "ltr",
     prefer_related_applications: false,
     icons,
+    shortcuts: [
+      {
+        name: "Chat",
+        short_name: "Chat",
+        description: "Open Giga3 AI chat",
+        url: "/chat/",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+      },
+      {
+        name: "Video AI",
+        short_name: "Video",
+        description: "Video AI studio",
+        url: "/video/",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+      },
+      {
+        name: "Marketplace",
+        short_name: "Shop",
+        description: "Digital marketplace",
+        url: "/marketplace/",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+      },
+    ],
   };
 }
 

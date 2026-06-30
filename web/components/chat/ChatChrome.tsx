@@ -7,7 +7,7 @@ import { ThemeToggle } from "@/components/chat/ThemeToggle";
 import type { UiMessage } from "@/components/chat/MessageList";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
-import { clearUserEmail } from "@/lib/auth";
+import { clearAllClientAuth } from "@/lib/auth";
 import type { GigaModelId } from "@/lib/chat/gigaModels";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { signOutSupabase } from "@/lib/supabase/auth";
@@ -131,7 +131,7 @@ export const ChatChrome = memo(function ChatChrome({
           if (isSupabaseDataBackend()) {
             void signOutSupabase();
           } else {
-            clearUserEmail();
+            clearAllClientAuth();
           }
           router.push("/chat/login");
         }}

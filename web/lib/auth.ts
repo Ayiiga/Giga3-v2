@@ -1,5 +1,6 @@
 const STORAGE_KEY = "giga3_user_email";
 const SESSION_KEY = "giga3_session_token";
+const SUPABASE_ACCESS_KEY = "giga3_supabase_access_token";
 
 export function getUserEmail(): string | null {
   if (typeof window === "undefined") return null;
@@ -38,6 +39,18 @@ export function clearUserEmail(): void {
 
 export function clearSessionToken(): void {
   localStorage.removeItem(SESSION_KEY);
+}
+
+/** Clears all client-side auth/session artifacts (Convex + Supabase bridge). */
+export function clearAllClientAuth(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(SUPABASE_ACCESS_KEY);
+}
+
+export function signOutClient(): void {
+  clearAllClientAuth();
 }
 
 export function isValidEmail(email: string): boolean {

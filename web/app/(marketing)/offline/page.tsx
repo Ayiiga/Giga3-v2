@@ -20,8 +20,11 @@ export default function OfflinePage() {
         </div>
         <h1 className="mt-6 text-2xl font-semibold text-foreground">You&apos;re offline</h1>
         <p className="mx-auto mt-3 max-w-md leading-[1.7] text-muted">
-          {branding.name} saved this page for you. Reconnect to load fresh content or
-          return to the home page.
+          {branding.name} can show public pages while offline. Chat, billing, and creator
+          tools require a secure connection and are not cached on this device.
+        </p>
+        <p className="mx-auto mt-2 max-w-md text-sm text-muted">
+          Reconnect to continue signed-in work or browse cached marketing pages.
         </p>
         <ButtonLink href="/" variant="primary" className="mt-8">
           Back to home

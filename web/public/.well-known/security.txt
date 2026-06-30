@@ -1,0 +1,7 @@
+Contact: mailto:hello@giga3ai.com
+Preferred-Languages: en
+Canonical: https://www.giga3ai.com/.well-known/security.txt
+Expires: 2027-06-30T23:59:59.000Z
+
+# Giga3 AI security disclosure
+# Report vulnerabilities responsibly to hello@giga3ai.com
