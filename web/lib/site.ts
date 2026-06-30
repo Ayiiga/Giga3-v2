@@ -19,6 +19,8 @@ export const siteConfig = {
     subscribe: "/subscribe",
     credits: "/credits",
     media: "/media",
+    video: "/video",
+    marketplace: "/marketplace",
     github: "https://github.com/Ayiiga/Giga3-v2",
   },
   contact: {
@@ -31,6 +33,8 @@ export const navLinks = [
   { href: "/#multi-chat", label: "Multi-AI" },
   { href: "/pricing", label: "Pricing" },
   { href: "/media", label: "Media" },
+  { href: "/video", label: "Video AI" },
+  { href: "/marketplace", label: "Marketplace" },
   { href: "/chat/login", label: "Chat" },
   { href: "/#contact", label: "Contact" },
 ] as const;

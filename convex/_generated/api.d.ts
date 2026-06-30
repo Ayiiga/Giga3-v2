@@ -23,6 +23,7 @@ import type * as authRateLimit from "../authRateLimit.js";
 import type * as chat from "../chat.js";
 import type * as chatEngine from "../chatEngine.js";
 import type * as conversations from "../conversations.js";
+import type * as creatorProfiles from "../creatorProfiles.js";
 import type * as creditPacks from "../creditPacks.js";
 import type * as credits from "../credits.js";
 import type * as creditsConfig from "../creditsConfig.js";
@@ -30,6 +31,8 @@ import type * as crons from "../crons.js";
 import type * as falClient from "../falClient.js";
 import type * as geminiImageClient from "../geminiImageClient.js";
 import type * as http from "../http.js";
+import type * as marketplace from "../marketplace.js";
+import type * as marketplacePayments from "../marketplacePayments.js";
 import type * as media from "../media.js";
 import type * as mediaCatalog from "../mediaCatalog.js";
 import type * as mediaCredits from "../mediaCredits.js";
@@ -63,6 +66,13 @@ import type * as userLearning from "../userLearning.js";
 import type * as userStarterCredits from "../userStarterCredits.js";
 import type * as users from "../users.js";
 import type * as validators from "../validators.js";
+import type * as videoAI from "../videoAI.js";
+import type * as videoCatalog from "../videoCatalog.js";
+import type * as videoCredits from "../videoCredits.js";
+import type * as videoCreditsConfig from "../videoCreditsConfig.js";
+import type * as videoInternal from "../videoInternal.js";
+import type * as videoPlans from "../videoPlans.js";
+import type * as videoQueries from "../videoQueries.js";
 import type * as webSearch from "../webSearch.js";
 
 import type {
@@ -87,6 +97,7 @@ declare const fullApi: ApiFromModules<{
   chat: typeof chat;
   chatEngine: typeof chatEngine;
   conversations: typeof conversations;
+  creatorProfiles: typeof creatorProfiles;
   creditPacks: typeof creditPacks;
   credits: typeof credits;
   creditsConfig: typeof creditsConfig;
@@ -94,6 +105,8 @@ declare const fullApi: ApiFromModules<{
   falClient: typeof falClient;
   geminiImageClient: typeof geminiImageClient;
   http: typeof http;
+  marketplace: typeof marketplace;
+  marketplacePayments: typeof marketplacePayments;
   media: typeof media;
   mediaCatalog: typeof mediaCatalog;
   mediaCredits: typeof mediaCredits;
@@ -127,6 +140,13 @@ declare const fullApi: ApiFromModules<{
   userStarterCredits: typeof userStarterCredits;
   users: typeof users;
   validators: typeof validators;
+  videoAI: typeof videoAI;
+  videoCatalog: typeof videoCatalog;
+  videoCredits: typeof videoCredits;
+  videoCreditsConfig: typeof videoCreditsConfig;
+  videoInternal: typeof videoInternal;
+  videoPlans: typeof videoPlans;
+  videoQueries: typeof videoQueries;
   webSearch: typeof webSearch;
 }>;
 

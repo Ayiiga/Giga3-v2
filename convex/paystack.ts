@@ -9,6 +9,7 @@ import type { Doc } from "./_generated/dataModel";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import { getCreditPack } from "./creditPacks";
+import { getVideoCreditPack, getVideoSubscription, VIDEO_SUBSCRIPTION_PERIOD_MS } from "./videoPlans";
 import {
   getPlanMonthlyCredits,
   getPlanPriceGhs,
@@ -91,13 +92,54 @@ function getProduct(productId: string) {
   }
 
   const pack = getCreditPack(productId);
-  if (!pack) throw new Error("Unknown product");
+  if (pack) {
+    return {
+      label: pack.label,
+      amountGhs: pack.amountGhs,
+      type: pack.type,
+      credits: pack.credits,
+      planId: undefined,
+    };
+  }
+
+  const videoSub = getVideoSubscription(productId);
+  if (videoSub) {
+    return {
+      label: videoSub.label,
+      amountGhs: videoSub.amountGhs,
+      type: videoSub.type,
+      videoCredits: videoSub.videoCredits,
+      videoPlanId: videoSub.planId,
+      planId: undefined,
+    };
+  }
+
+  const videoPack = getVideoCreditPack(productId);
+  if (videoPack) {
+    return {
+      label: videoPack.label,
+      amountGhs: videoPack.amountGhs,
+      type: videoPack.type,
+      videoCredits: videoPack.videoCredits,
+      planId: undefined,
+    };
+  }
+
+  throw new Error("Unknown product");
+}
+
+function getMarketplaceProduct(listing: {
+  _id: string;
+  title: string;
+  priceGhs: number;
+  creatorId: string;
+}) {
   return {
-    label: pack.label,
-    amountGhs: pack.amountGhs,
-    type: pack.type,
-    credits: pack.credits,
-    planId: undefined,
+    label: listing.title,
+    amountGhs: listing.priceGhs,
+    type: "marketplace" as const,
+    marketplaceListingId: listing._id,
+    creatorId: listing.creatorId,
   };
 }
 
@@ -165,12 +207,22 @@ export const createPendingPayment = internalMutation({
     userId: v.string(),
     reference: v.string(),
     productId: v.string(),
-    type: v.union(v.literal("subscription"), v.literal("credits")),
+    type: v.union(
+      v.literal("subscription"),
+      v.literal("credits"),
+      v.literal("video_subscription"),
+      v.literal("video_credits"),
+      v.literal("marketplace")
+    ),
     amountGhs: v.number(),
     planId: v.optional(
       v.union(v.literal("basic"), v.literal("pro"), v.literal("premium"))
     ),
     creditsGranted: v.optional(v.number()),
+    videoCreditsGranted: v.optional(v.number()),
+    videoPlanId: v.optional(v.string()),
+    marketplaceListingId: v.optional(v.id("marketplaceListings")),
+    creatorId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("payments", {
@@ -182,6 +234,10 @@ export const createPendingPayment = internalMutation({
       amountGhs: args.amountGhs,
       planId: args.planId,
       creditsGranted: args.creditsGranted,
+      videoCreditsGranted: args.videoCreditsGranted,
+      videoPlanId: args.videoPlanId,
+      marketplaceListingId: args.marketplaceListingId,
+      creatorId: args.creatorId,
       status: "pending",
       createdAt: Date.now(),
     });
@@ -241,6 +297,40 @@ export const fulfillPayment = internalMutation({
         action: "credit_purchase",
         reference: record.reference,
       });
+    } else if (record.type === "video_subscription" && record.videoPlanId) {
+      const videoCredits =
+        record.videoCreditsGranted ??
+        getVideoSubscription(record.videoPlanId)?.videoCredits ??
+        0;
+      await ctx.runMutation(internal.videoInternal.activateVideoSubscriptionInternal, {
+        userId: record.userId,
+        planId: record.videoPlanId,
+        paystackReference: record.reference,
+        paymentId: record._id,
+        videoCreditsToGrant: videoCredits,
+        periodMs: VIDEO_SUBSCRIPTION_PERIOD_MS,
+      });
+      await ctx.runMutation(internal.videoCredits.grantVideoCreditsInternal, {
+        userId: record.userId,
+        credits: videoCredits,
+        action: "video_subscription_refill",
+        reference: record.reference,
+        setBalance: true,
+      });
+    } else if (record.type === "video_credits" && record.videoCreditsGranted) {
+      await ctx.runMutation(internal.videoCredits.grantVideoCreditsInternal, {
+        userId: record.userId,
+        credits: record.videoCreditsGranted,
+        action: "video_pack_purchase",
+        reference: record.reference,
+      });
+    } else if (record.type === "marketplace" && record.marketplaceListingId) {
+      await ctx.runMutation(internal.marketplacePayments.fulfillMarketplacePurchaseInternal, {
+        reference: record.reference,
+        buyerId: record.userId,
+        listingId: record.marketplaceListingId,
+        amountGhs: record.amountGhs,
+      });
     }
 
     return { alreadyFulfilled: false as const };
@@ -297,8 +387,10 @@ export const initializePayment = action({
       productId: args.productId,
       type: catalog.type,
       amountGhs: catalog.amountGhs,
-      planId: catalog.planId,
-      creditsGranted: catalog.credits,
+      planId: "planId" in catalog ? catalog.planId : undefined,
+      creditsGranted: "credits" in catalog ? catalog.credits : undefined,
+      videoCreditsGranted: "videoCredits" in catalog ? catalog.videoCredits : undefined,
+      videoPlanId: "videoPlanId" in catalog ? catalog.videoPlanId : undefined,
     });
 
     const init = await paystackPost("/transaction/initialize", {
@@ -362,6 +454,67 @@ async function verifyAndFulfill(
 
   return await ctx.runQuery(api.paystack.getPaymentByReference, { reference });
 }
+
+export const initializeMarketplacePayment = action({
+  args: {
+    sessionToken: v.string(),
+    listingId: v.id("marketplaceListings"),
+  },
+  handler: async (ctx, args) => {
+    assertPaystackProductionReady();
+    const userId = await requireSession(args.sessionToken);
+    const listing = await ctx.runQuery(api.marketplace.getListing, {
+      listingId: args.listingId,
+    });
+    if (!listing?.listing) throw new Error("Listing not found");
+    if (listing.listing.creatorId === userId) {
+      throw new Error("You cannot purchase your own listing");
+    }
+
+    const user = await ctx.runQuery(api.users.getUser, {
+      sessionToken: args.sessionToken,
+    });
+    const email = (user?.email ?? userId).trim().toLowerCase();
+    const catalog = getMarketplaceProduct(listing.listing);
+    const productId = `marketplace_${args.listingId}`;
+    const reference = `giga3_mk_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    const frontend = process.env.FRONTEND_URL ?? "https://www.giga3ai.com";
+    const mode = getPaystackMode();
+
+    await ctx.runMutation(internal.paystack.createPendingPayment, {
+      userId,
+      reference,
+      productId,
+      type: "marketplace",
+      amountGhs: catalog.amountGhs,
+      marketplaceListingId: args.listingId,
+      creatorId: catalog.creatorId,
+    });
+
+    const init = await paystackPost("/transaction/initialize", {
+      email,
+      amount: toPesewas(catalog.amountGhs),
+      currency: "GHS",
+      reference,
+      callback_url: `${frontend}/payment/success/?reference=${encodeURIComponent(reference)}&marketplace=1`,
+      metadata: {
+        userId,
+        productId,
+        listingId: args.listingId,
+        paystack_mode: mode,
+      },
+    });
+
+    return {
+      authorizationUrl: init.data?.authorization_url as string,
+      accessCode: (init.data?.access_code as string | undefined)?.trim() ?? "",
+      reference,
+      amountGhs: catalog.amountGhs,
+      label: catalog.label,
+      mode,
+    };
+  },
+});
 
 export const verifyPayment = action({
   args: { reference: v.string() },
