@@ -28,6 +28,46 @@ export const creditActionValidator = v.union(
   v.literal("admin_grant")
 );
 
+export const videoCreditActionValidator = v.union(
+  v.literal("video_generation"),
+  v.literal("video_subscription_refill"),
+  v.literal("video_pack_purchase"),
+  v.literal("starter_grant")
+);
+
+export const paymentTypeValidator = v.union(
+  v.literal("subscription"),
+  v.literal("credits"),
+  v.literal("video_subscription"),
+  v.literal("video_credits"),
+  v.literal("marketplace")
+);
+
+export const marketplaceProductTypeValidator = v.union(
+  v.literal("ebook"),
+  v.literal("lesson_notes"),
+  v.literal("sermon"),
+  v.literal("project"),
+  v.literal("research_paper"),
+  v.literal("ai_prompt"),
+  v.literal("template"),
+  v.literal("source_code"),
+  v.literal("poster"),
+  v.literal("flyer"),
+  v.literal("brochure"),
+  v.literal("business_document"),
+  v.literal("educational_resource"),
+  v.literal("motivational_book"),
+  v.literal("other")
+);
+
+export const marketplaceLicenseValidator = v.union(
+  v.literal("personal"),
+  v.literal("commercial"),
+  v.literal("extended"),
+  v.literal("exclusive")
+);
+
 export default defineSchema({
   users: defineTable({
     email: v.string(),
@@ -45,6 +85,10 @@ export default defineSchema({
     name: v.optional(v.string()),
     image: v.optional(v.string()),
     emailVerificationTime: v.optional(v.number()),
+    /** Independent Video AI wallet — never mixed with chat `credits`. */
+    videoCredits: v.optional(v.number()),
+    videoSubscriptionPlan: v.optional(v.string()),
+    videoSubscriptionExpiresAt: v.optional(v.number()),
   }).index("by_email", ["email"]),
 
   subscriptions: defineTable({
@@ -72,10 +116,14 @@ export default defineSchema({
     provider: v.literal("paystack"),
     reference: v.string(),
     productId: v.string(),
-    type: v.union(v.literal("subscription"), v.literal("credits")),
+    type: paymentTypeValidator,
     amountGhs: v.number(),
     planId: v.optional(paidPlanValidator),
     creditsGranted: v.optional(v.number()),
+    videoCreditsGranted: v.optional(v.number()),
+    videoPlanId: v.optional(v.string()),
+    marketplaceListingId: v.optional(v.id("marketplaceListings")),
+    creatorId: v.optional(v.string()),
     status: v.union(
       v.literal("pending"),
       v.literal("success"),
@@ -200,6 +248,149 @@ export default defineSchema({
     errorMessage: v.optional(v.string()),
     createdAt: v.number(),
   }).index("by_user", ["userId"]),
+
+  videoCreditLogs: defineTable({
+    userId: v.string(),
+    action: videoCreditActionValidator,
+    amount: v.number(),
+    balanceAfter: v.number(),
+    category: v.optional(v.string()),
+    reference: v.optional(v.string()),
+    metadata: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_created", ["userId", "createdAt"]),
+
+  videoSubscriptions: defineTable({
+    userId: v.string(),
+    planId: v.string(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("expired"),
+      v.literal("cancelled")
+    ),
+    paystackReference: v.string(),
+    paymentId: v.optional(v.id("payments")),
+    periodStart: v.number(),
+    periodEnd: v.number(),
+    videoCreditsGranted: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_status", ["userId", "status"])
+    .index("by_reference", ["paystackReference"]),
+
+  videoJobs: defineTable({
+    userId: v.string(),
+    category: v.string(),
+    mode: v.string(),
+    prompt: v.string(),
+    sourceImageUrl: v.optional(v.string()),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("processing"),
+      v.literal("succeeded"),
+      v.literal("failed")
+    ),
+    outputUrl: v.optional(v.string()),
+    provider: v.optional(v.string()),
+    externalId: v.optional(v.string()),
+    videoCreditsCharged: v.number(),
+    errorMessage: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_user", ["userId"]),
+
+  creatorProfiles: defineTable({
+    userId: v.string(),
+    displayName: v.string(),
+    handle: v.string(),
+    bio: v.optional(v.string()),
+    avatarUrl: v.optional(v.string()),
+    website: v.optional(v.string()),
+    verified: v.boolean(),
+    totalSales: v.number(),
+    totalEarningsGhs: v.number(),
+    payoutBalanceGhs: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_handle", ["handle"]),
+
+  marketplaceListings: defineTable({
+    creatorId: v.string(),
+    title: v.string(),
+    description: v.string(),
+    category: v.string(),
+    productType: marketplaceProductTypeValidator,
+    priceGhs: v.number(),
+    license: marketplaceLicenseValidator,
+    copyrightNotice: v.optional(v.string()),
+    tags: v.array(v.string()),
+    previewText: v.optional(v.string()),
+    previewUrl: v.optional(v.string()),
+    coverImageUrl: v.optional(v.string()),
+    fileStorageId: v.optional(v.id("_storage")),
+    fileName: v.optional(v.string()),
+    status: v.union(
+      v.literal("draft"),
+      v.literal("published"),
+      v.literal("archived")
+    ),
+    ratingAvg: v.number(),
+    ratingCount: v.number(),
+    purchaseCount: v.number(),
+    viewCount: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_creator", ["creatorId", "updatedAt"])
+    .index("by_status", ["status", "updatedAt"])
+    .index("by_category", ["category", "updatedAt"]),
+
+  marketplacePurchases: defineTable({
+    buyerId: v.string(),
+    listingId: v.id("marketplaceListings"),
+    creatorId: v.string(),
+    amountGhs: v.number(),
+    platformFeeGhs: v.number(),
+    creatorEarningsGhs: v.number(),
+    paymentReference: v.string(),
+    license: marketplaceLicenseValidator,
+    createdAt: v.number(),
+  })
+    .index("by_buyer", ["buyerId", "createdAt"])
+    .index("by_listing", ["listingId"])
+    .index("by_creator", ["creatorId", "createdAt"])
+    .index("by_reference", ["paymentReference"]),
+
+  marketplaceReviews: defineTable({
+    listingId: v.id("marketplaceListings"),
+    buyerId: v.string(),
+    rating: v.number(),
+    comment: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_listing", ["listingId", "createdAt"])
+    .index("by_buyer_listing", ["buyerId", "listingId"]),
+
+  creatorPayouts: defineTable({
+    creatorId: v.string(),
+    amountGhs: v.number(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("processing"),
+      v.literal("paid"),
+      v.literal("failed")
+    ),
+    method: v.optional(v.string()),
+    reference: v.optional(v.string()),
+    note: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_creator", ["creatorId", "createdAt"]),
 
   chats: defineTable({
     userId: v.string(),
