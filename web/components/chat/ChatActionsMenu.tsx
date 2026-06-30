@@ -12,6 +12,7 @@ import {
   formatConversationMarkdown,
 } from "@/lib/chat/chatContentFormat";
 import {
+  downloadDocxFile,
   downloadMarkdownFile,
   downloadTextFile,
   openChatPrintView,
@@ -166,6 +167,13 @@ export const ChatActionsMenu = memo(
     closeMenu();
   }, [markdown, conversationTitle, runAction, closeMenu]);
 
+  const runExportDocx = useCallback(() => {
+    if (!markdown.trim()) return;
+    downloadDocxFile(conversationExportFilename(conversationTitle, "doc"), markdown);
+    void runAction(async () => ({ ok: true as const }), EXPORT_SUCCESS);
+    closeMenu();
+  }, [markdown, conversationTitle, runAction, closeMenu]);
+
   const runExportPdf = useCallback(async () => {
     try {
       openChatPrintView(messages, { title: conversationTitle });
@@ -262,6 +270,7 @@ export const ChatActionsMenu = memo(
             onClick={runExportMarkdown}
           />
           <MenuItem icon={FileText} label="Export chat (TXT)" disabled={busy} onClick={runExportTxt} />
+          <MenuItem icon={FileText} label="Export chat (DOCX)" disabled={busy} onClick={runExportDocx} />
           <MenuItem icon={Printer} label="Export chat (PDF)" disabled={busy} onClick={() => void runExportPdf()} />
           {canManageShareLink && (
             <>

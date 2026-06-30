@@ -18,7 +18,30 @@ async function listConversationsForUser(ctx: { db: any }, userId: string) {
       .withIndex("by_user", (q: any) => q.eq("userId", trimmed))
       .collect();
   }
-  return rows.sort((a: { updatedAt: number }, b: { updatedAt: number }) => b.updatedAt - a.updatedAt);
+  return rows.sort((a: { updatedAt: number; pinned?: boolean }, b: { updatedAt: number; pinned?: boolean }) => {
+    const ap = a.pinned ? 1 : 0;
+    const bp = b.pinned ? 1 : 0;
+    if (ap !== bp) return bp - ap;
+    return b.updatedAt - a.updatedAt;
+  });
+}
+
+async function patchConversationFlag(
+  ctx: { db: any },
+  args: {
+    conversationId: string;
+    userId: string;
+    field: "pinned" | "archived" | "isFavorite";
+    value: boolean;
+  }
+) {
+  const conv = await ctx.db.get(args.conversationId);
+  if (!userOwnsConversation(conv, args.userId)) throw new Error("Not found");
+  await ctx.db.patch(args.conversationId, {
+    [args.field]: args.value,
+    updatedAt: Date.now(),
+  });
+  return { ok: true as const };
 }
 
 function userOwnsConversation(
@@ -163,6 +186,57 @@ export const setPublicShare = mutation({
       updatedAt: Date.now(),
     });
     return { shareToken: null, sharePublic: false as const };
+  },
+});
+
+export const setPinned = mutation({
+  args: {
+    conversationId: v.id("conversations"),
+    ...sessionArgs,
+    pinned: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    return await patchConversationFlag(ctx, {
+      conversationId: args.conversationId,
+      userId,
+      field: "pinned",
+      value: args.pinned,
+    });
+  },
+});
+
+export const setArchived = mutation({
+  args: {
+    conversationId: v.id("conversations"),
+    ...sessionArgs,
+    archived: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    return await patchConversationFlag(ctx, {
+      conversationId: args.conversationId,
+      userId,
+      field: "archived",
+      value: args.archived,
+    });
+  },
+});
+
+export const setFavorite = mutation({
+  args: {
+    conversationId: v.id("conversations"),
+    ...sessionArgs,
+    isFavorite: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    return await patchConversationFlag(ctx, {
+      conversationId: args.conversationId,
+      userId,
+      field: "isFavorite",
+      value: args.isFavorite,
+    });
   },
 });
 

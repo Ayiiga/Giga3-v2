@@ -3,19 +3,23 @@
 import { MessageBubbleActions } from "@/components/chat/MessageBubbleActions";
 import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
 import { MessageMarkdown } from "@/components/chat/MessageMarkdown";
+import { useStreamingReveal } from "@/hooks/useStreamingReveal";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
+import { formatMessageTime } from "@/lib/chat/groupMessagesByDate";
 import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
 import { cn } from "@/lib/utils";
 import { Bot } from "lucide-react";
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 
 export interface MessageBubbleProps {
   id?: string;
   role: "user" | "assistant";
   content: string;
-  /** Optimistic / in-flight user message */
+  createdAt?: number;
   pending?: boolean;
+  streaming?: boolean;
   onRegenerate?: (messageId: string) => void;
+  onEdit?: (messageId: string, content: string) => void;
 }
 
 function bubblePropsEqual(
@@ -26,18 +30,23 @@ function bubblePropsEqual(
     prev.id === next.id &&
     prev.role === next.role &&
     prev.content === next.content &&
+    prev.createdAt === next.createdAt &&
     prev.pending === next.pending &&
-    prev.onRegenerate === next.onRegenerate
+    prev.streaming === next.streaming &&
+    prev.onRegenerate === next.onRegenerate &&
+    prev.onEdit === next.onEdit
   );
 }
 
-/** ChatGPT-style thread turns — contained width, user right, assistant full column. */
 export const MessageBubble = memo(function MessageBubble({
   id,
   role,
   content,
+  createdAt,
   pending,
+  streaming,
   onRegenerate,
+  onEdit,
 }: MessageBubbleProps) {
   useRenderDiagnostic("MessageBubble");
 
@@ -50,25 +59,79 @@ export const MessageBubble = memo(function MessageBubble({
         ? "(Empty message)"
         : "";
 
+  const revealed = useStreamingReveal(
+    safeContent,
+    Boolean(!isUser && streaming && safeContent.length > 0)
+  );
+
+  const displayContent = !isUser && streaming ? revealed : safeContent;
+  const timeLabel = formatMessageTime(createdAt);
+
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(safeContent);
+
   const body = (
     <>
-      {safeContent &&
-        (isUser ? (
-          <p className="whitespace-pre-wrap break-words text-[0.9375rem] leading-relaxed sm:text-base">
-            {safeContent}
-          </p>
-        ) : (
-          <MessageMarkdown content={safeContent} />
-        ))}
-      {parsed.images.map((url) => (
-        <MessageMediaBlock key={url} url={url} kind="image" />
-      ))}
-      {parsed.videos.map((url) => (
-        <MessageMediaBlock key={url} url={url} kind="video" />
-      ))}
+      {editing && isUser ? (
+        <div className="space-y-2">
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-accent/30"
+            rows={4}
+            aria-label="Edit message"
+          />
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted hover:bg-accent/10"
+              onClick={() => {
+                setEditing(false);
+                setDraft(safeContent);
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white"
+              onClick={() => {
+                if (id && onEdit && draft.trim()) {
+                  onEdit(id, draft.trim());
+                  setEditing(false);
+                }
+              }}
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {displayContent &&
+            (isUser ? (
+              <p className="whitespace-pre-wrap break-words text-[0.9375rem] leading-relaxed sm:text-base">
+                {displayContent}
+              </p>
+            ) : (
+              <MessageMarkdown content={displayContent} />
+            ))}
+          {parsed.images.map((url) => (
+            <MessageMediaBlock key={url} url={url} kind="image" />
+          ))}
+          {parsed.videos.map((url) => (
+            <MessageMediaBlock key={url} url={url} kind="video" />
+          ))}
+        </>
+      )}
       {pending && (
         <p className="mt-2 text-sm text-accent/70" aria-live="polite">
           Sending…
+        </p>
+      )}
+      {timeLabel && !editing && (
+        <p className="mt-1 text-[11px] text-muted/80" suppressHydrationWarning>
+          {timeLabel}
         </p>
       )}
     </>
@@ -87,9 +150,11 @@ export const MessageBubble = memo(function MessageBubble({
             {body}
           </div>
           <MessageBubbleActions
+            messageId={id}
             role={role}
             content={content}
             disabled={pending}
+            onEdit={id && onEdit ? () => setEditing(true) : undefined}
           />
         </div>
       </article>
@@ -110,9 +175,10 @@ export const MessageBubble = memo(function MessageBubble({
             {body}
           </div>
           <MessageBubbleActions
+            messageId={id}
             role={role}
             content={content}
-            disabled={pending}
+            disabled={pending || streaming}
             onRegenerate={
               id && onRegenerate ? () => onRegenerate(id) : undefined
             }

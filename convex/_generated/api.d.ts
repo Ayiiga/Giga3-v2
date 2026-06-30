@@ -11,7 +11,12 @@
 import type * as ai from "../ai.js";
 import type * as aiActions from "../aiActions.js";
 import type * as aiModes from "../aiModes.js";
+import type * as answerQuality from "../answerQuality.js";
 import type * as assistantIdentity from "../assistantIdentity.js";
+import type * as attachmentValidation from "../attachmentValidation.js";
+import type * as auth from "../auth.js";
+import type * as authActions from "../authActions.js";
+import type * as authRateLimit from "../authRateLimit.js";
 import type * as chat from "../chat.js";
 import type * as chatEngine from "../chatEngine.js";
 import type * as conversations from "../conversations.js";
@@ -38,15 +43,22 @@ import type * as paystack from "../paystack.js";
 import type * as paystackConfig from "../paystackConfig.js";
 import type * as platform from "../platform.js";
 import type * as platformActions from "../platformActions.js";
+import type * as qualityDashboard from "../qualityDashboard.js";
 import type * as replicateClient from "../replicateClient.js";
+import type * as securityErrors from "../securityErrors.js";
+import type * as securityHelpers from "../securityHelpers.js";
+import type * as securityMonitoring from "../securityMonitoring.js";
+import type * as sessionAuth from "../sessionAuth.js";
 import type * as stripeActions from "../stripeActions.js";
 import type * as subscriptionPlans from "../subscriptionPlans.js";
 import type * as subscriptions from "../subscriptions.js";
+import type * as supabaseAuth from "../supabaseAuth.js";
 import type * as uploadLimits from "../uploadLimits.js";
 import type * as userIds from "../userIds.js";
 import type * as userLearning from "../userLearning.js";
 import type * as userStarterCredits from "../userStarterCredits.js";
 import type * as users from "../users.js";
+import type * as validators from "../validators.js";
 
 import type {
   ApiFromModules,
@@ -58,7 +70,12 @@ declare const fullApi: ApiFromModules<{
   ai: typeof ai;
   aiActions: typeof aiActions;
   aiModes: typeof aiModes;
+  answerQuality: typeof answerQuality;
   assistantIdentity: typeof assistantIdentity;
+  attachmentValidation: typeof attachmentValidation;
+  auth: typeof auth;
+  authActions: typeof authActions;
+  authRateLimit: typeof authRateLimit;
   chat: typeof chat;
   chatEngine: typeof chatEngine;
   conversations: typeof conversations;
@@ -85,15 +102,22 @@ declare const fullApi: ApiFromModules<{
   paystackConfig: typeof paystackConfig;
   platform: typeof platform;
   platformActions: typeof platformActions;
+  qualityDashboard: typeof qualityDashboard;
   replicateClient: typeof replicateClient;
+  securityErrors: typeof securityErrors;
+  securityHelpers: typeof securityHelpers;
+  securityMonitoring: typeof securityMonitoring;
+  sessionAuth: typeof sessionAuth;
   stripeActions: typeof stripeActions;
   subscriptionPlans: typeof subscriptionPlans;
   subscriptions: typeof subscriptions;
+  supabaseAuth: typeof supabaseAuth;
   uploadLimits: typeof uploadLimits;
   userIds: typeof userIds;
   userLearning: typeof userLearning;
   userStarterCredits: typeof userStarterCredits;
   users: typeof users;
+  validators: typeof validators;
 }>;
 
 /**

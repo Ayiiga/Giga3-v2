@@ -15,6 +15,7 @@ interface ChatConversationPaneProps {
   onSend: (msg: string, attachments?: PreparedChatAttachment[]) => void;
   onInsertTemplate: (text: string) => void;
   onRegenerate?: (messageId: string) => void;
+  onEditMessage?: (messageId: string, content: string) => void;
   uploadUsage?: UploadUsageSnapshot | null;
 }
 
@@ -29,6 +30,7 @@ function panePropsEqual(
     prev.onSend === next.onSend &&
     prev.onInsertTemplate === next.onInsertTemplate &&
     prev.onRegenerate === next.onRegenerate &&
+    prev.onEditMessage === next.onEditMessage &&
     prev.uploadUsage === next.uploadUsage &&
     prev.insertRef === next.insertRef
   );
@@ -43,6 +45,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onSend,
   onInsertTemplate,
   onRegenerate,
+  onEditMessage,
   uploadUsage,
 }: ChatConversationPaneProps) {
   return (
@@ -50,8 +53,10 @@ export const ChatConversationPane = memo(function ChatConversationPane({
       <MessageList
         messages={messages}
         isLoading={isLoading}
+        isSending={isSending}
         onInsertTemplate={onInsertTemplate}
         onRegenerate={onRegenerate}
+        onEditMessage={onEditMessage}
       />
       <div className="chat-composer-dock min-w-0 max-w-full border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)]">
         <ChatTypingBar visible={isSending} />

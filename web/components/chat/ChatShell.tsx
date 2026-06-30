@@ -102,6 +102,10 @@ function ChatShellInner({
     changeMode,
     sendMessage,
     regenerateMessage,
+    pinConversation,
+    archiveConversation,
+    favoriteConversation,
+    editMessage,
     chatProviderLabel,
     usedFallback,
     credits,
@@ -128,8 +132,8 @@ function ChatShellInner({
   }, []);
 
   const handleSend = useCallback(
-    (msg: string) => {
-      void sendMessage(msg);
+    (msg: string, attachments?: import("@/lib/chat/multimodalAttachments").PreparedChatAttachment[]) => {
+      void sendMessage(msg, attachments);
     },
     [sendMessage]
   );
@@ -222,6 +226,13 @@ function ChatShellInner({
     [regenerateMessage]
   );
 
+  const handleEditMessage = useCallback(
+    (messageId: string, content: string) => {
+      void editMessage(messageId, content);
+    },
+    [editMessage]
+  );
+
   useEffect(() => {
     if (mounted && !email) router.replace("/chat/login");
   }, [mounted, email, router]);
@@ -244,6 +255,9 @@ function ChatShellInner({
         onSelect={selectConversation}
         onNewChat={handleNewChat}
         onDelete={handleDeleteConversation}
+        onPin={(id, pinned) => void pinConversation(id, pinned)}
+        onArchive={(id, archived) => void archiveConversation(id, archived)}
+        onFavorite={(id, fav) => void favoriteConversation(id, fav)}
         email={email}
         mounted={mounted}
         credits={credits}
@@ -308,6 +322,7 @@ function ChatShellInner({
           onSend={handleSend}
           onInsertTemplate={handleInsertTemplate}
           onRegenerate={handleRegenerate}
+          onEditMessage={handleEditMessage}
           uploadUsage={uploadUsage}
         />
       </div>

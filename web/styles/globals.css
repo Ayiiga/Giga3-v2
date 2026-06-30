@@ -1,4 +1,5 @@
 @import "./chat-overflow.css";
+@import "./chat-premium.css";
 
 @tailwind base;
 @tailwind components;

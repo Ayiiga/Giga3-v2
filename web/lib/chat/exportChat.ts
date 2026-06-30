@@ -42,6 +42,18 @@ function triggerDownloadBlob(blob: Blob, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
+export function downloadDocxFile(filename: string, markdown: string): void {
+  if (!markdown.trim()) return;
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.5">
+<h1>Giga3 AI Chat Export</h1>
+<pre style="white-space:pre-wrap;font-family:Calibri,Arial,sans-serif">${escapeHtml(markdown)}</pre>
+</body></html>`;
+  const blob = new Blob(["\ufeff", html], {
+    type: "application/msword;charset=utf-8",
+  });
+  triggerDownloadBlob(blob, filename.endsWith(".doc") ? filename : `${filename}.doc`);
+}
+
 export function openChatPrintView(
   messages: UiMessage[],
   meta?: { title?: string }

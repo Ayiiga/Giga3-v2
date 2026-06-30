@@ -1,9 +1,10 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { CodeBlock } from "@/components/chat/CodeBlock";
 import { ChartVisualBlock } from "@/components/chat/ChartVisualBlock";
 import { MermaidDiagram } from "@/components/chat/MermaidDiagram";
 import { VisualContentBlock } from "@/components/chat/VisualContentBlock";
+import { cn } from "@/lib/utils";
 import { memo, useMemo, type ReactNode } from "react";
 
 interface MessageMarkdownProps {
@@ -81,14 +82,7 @@ function parseMarkdownBlocks(text: string): ReactNode[] {
         continue;
       }
       nodes.push(
-        <pre key={`code-${blockKey++}`} className="chat-md-pre">
-          {fenceLang && (
-            <span className="chat-md-code-lang" aria-hidden>
-              {fenceLang}
-            </span>
-          )}
-          <code>{codeLines.join("\n")}</code>
-        </pre>
+        <CodeBlock key={`code-${blockKey++}`} code={codeLines.join("\n")} language={fenceLang || undefined} />
       );
       continue;
     }

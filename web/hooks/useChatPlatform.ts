@@ -97,6 +97,10 @@ export function useChatPlatform() {
   const createConversation = useMutation(api.conversations.create);
   const removeConversation = useMutation(api.conversations.remove);
   const setConversationMode = useMutation(api.conversations.setMode);
+  const setPinnedMutation = useMutation(api.conversations.setPinned);
+  const setArchivedMutation = useMutation(api.conversations.setArchived);
+  const setFavoriteMutation = useMutation(api.conversations.setFavorite);
+  const updateUserMessage = useMutation(api.messages.updateUserMessage);
   const sendMessageAction = useAction(api.platformActions.sendMessage);
   const regenerateMessageAction = useAction(api.platformActions.regenerateMessage);
   const createUser = useMutation(api.users.createUser);
@@ -293,6 +297,61 @@ export function useChatPlatform() {
     [sessionToken, activeId, mode, regenerateMessageAction]
   );
 
+  const pinConversation = useCallback(
+    async (conversationId: string, pinned: boolean) => {
+      const token = sessionToken ?? getSessionToken();
+      if (!token) return;
+      await setPinnedMutation({
+        sessionToken: token,
+        conversationId: conversationId as Id<"conversations">,
+        pinned,
+      });
+    },
+    [sessionToken, setPinnedMutation]
+  );
+
+  const archiveConversation = useCallback(
+    async (conversationId: string, archived: boolean) => {
+      const token = sessionToken ?? getSessionToken();
+      if (!token) return;
+      await setArchivedMutation({
+        sessionToken: token,
+        conversationId: conversationId as Id<"conversations">,
+        archived,
+      });
+      if (archived && activeId === conversationId) {
+        setActiveId(null);
+      }
+    },
+    [sessionToken, activeId, setArchivedMutation]
+  );
+
+  const favoriteConversation = useCallback(
+    async (conversationId: string, isFavorite: boolean) => {
+      const token = sessionToken ?? getSessionToken();
+      if (!token) return;
+      await setFavoriteMutation({
+        sessionToken: token,
+        conversationId: conversationId as Id<"conversations">,
+        isFavorite,
+      });
+    },
+    [sessionToken, setFavoriteMutation]
+  );
+
+  const editMessage = useCallback(
+    async (messageId: string, content: string) => {
+      const token = sessionToken ?? getSessionToken();
+      if (!token) return;
+      await updateUserMessage({
+        sessionToken: token,
+        messageId: messageId as Id<"messages">,
+        content,
+      });
+    },
+    [sessionToken, updateUserMessage]
+  );
+
   return {
     email,
     mounted,
@@ -310,6 +369,10 @@ export function useChatPlatform() {
     changeMode,
     sendMessage,
     regenerateMessage,
+    pinConversation,
+    archiveConversation,
+    favoriteConversation,
+    editMessage,
     setActiveId,
     chatProviderLabel,
     usedFallback,

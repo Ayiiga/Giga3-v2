@@ -6,7 +6,9 @@ import { GIGA3_CHAT_WELCOME } from "@/lib/assistantIdentity";
 import { formatCurrentDate, resolveTemplatePlaceholders } from "@/lib/datetime";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { useScrollToLatestMessage } from "@/hooks/useScrollToLatestMessage";
+import { ScrollToLatestButton } from "@/components/chat/ScrollToLatestButton";
 import { messageListScrollKey } from "@/lib/chat/stableMessages";
+import { groupMessagesByDate } from "@/lib/chat/groupMessagesByDate";
 import { cn } from "@/lib/utils";
 import { MessageSquarePlus, Sparkles } from "lucide-react";
 import { memo, useMemo, useRef } from "react";
@@ -15,13 +17,17 @@ export interface UiMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
+  createdAt?: number;
 }
 
 interface MessageListProps {
   messages: UiMessage[];
   isLoading?: boolean;
+  isSending?: boolean;
+  streamingMessageId?: string | null;
   onInsertTemplate?: (text: string) => void;
   onRegenerate?: (messageId: string) => void;
+  onEditMessage?: (messageId: string, content: string) => void;
 }
 
 const QUICK_PROMPTS = [
@@ -33,15 +39,24 @@ const QUICK_PROMPTS = [
 function MessageListInner({
   messages,
   isLoading = false,
+  isSending = false,
   onInsertTemplate,
   onRegenerate,
+  onEditMessage,
 }: MessageListProps) {
   useRenderDiagnostic("MessageList");
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollKey = useMemo(() => messageListScrollKey(messages), [messages]);
+  const messageGroups = useMemo(() => groupMessagesByDate(messages), [messages]);
+  const lastAssistantId = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      if (messages[i].role === "assistant") return messages[i].id;
+    }
+    return null;
+  }, [messages]);
 
-  useScrollToLatestMessage({
+  const { showScrollButton, scrollToLatest } = useScrollToLatestMessage({
     scrollRef,
     scrollKey,
     enabled: messages.length > 0,
@@ -56,7 +71,7 @@ function MessageListInner({
   }, []);
 
   return (
-    <div className="chat-message-list min-h-0 min-w-0 max-w-full overflow-x-hidden overflow-y-hidden bg-background">
+    <div className="chat-message-list relative min-h-0 min-w-0 max-w-full overflow-x-hidden overflow-y-hidden bg-background">
       <div
         ref={scrollRef}
         className="message-list-scroll chat-message-scroll-region overscroll-y-contain py-3 sm:py-6"
@@ -141,18 +156,37 @@ function MessageListInner({
         )}
 
         <div className="chat-thread chat-message-stack flex w-full min-w-0 max-w-full flex-col gap-3 sm:gap-6">
-          {messages.map((m) => (
-            <MessageBubble
-              key={m.id}
-              id={m.id}
-              role={m.role}
-              content={typeof m.content === "string" ? m.content : ""}
-              pending={m.id === "pending-user"}
-              onRegenerate={onRegenerate}
-            />
+          {messageGroups.map((group) => (
+            <section key={group.label} aria-label={group.label}>
+              <div className="chat-date-divider my-2 flex items-center gap-3 px-2 sm:px-0">
+                <span className="h-px flex-1 bg-border" aria-hidden />
+                <span className="text-xs font-medium text-muted">{group.label}</span>
+                <span className="h-px flex-1 bg-border" aria-hidden />
+              </div>
+              <div className="flex flex-col gap-3 sm:gap-6">
+                {group.messages.map((m) => (
+                  <MessageBubble
+                    key={m.id}
+                    id={m.id}
+                    role={m.role}
+                    content={typeof m.content === "string" ? m.content : ""}
+                    createdAt={m.createdAt}
+                    pending={m.id === "pending-user"}
+                    streaming={
+                      m.role === "assistant" &&
+                      m.id === lastAssistantId &&
+                      m.id !== "pending-user"
+                    }
+                    onRegenerate={onRegenerate}
+                    onEdit={onEditMessage}
+                  />
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       </div>
+      <ScrollToLatestButton visible={showScrollButton} onClick={scrollToLatest} />
     </div>
   );
 }
@@ -160,8 +194,10 @@ function MessageListInner({
 function propsEqual(prev: MessageListProps, next: MessageListProps): boolean {
   return (
     prev.isLoading === next.isLoading &&
+    prev.isSending === next.isSending &&
     prev.onInsertTemplate === next.onInsertTemplate &&
     prev.onRegenerate === next.onRegenerate &&
+    prev.onEditMessage === next.onEditMessage &&
     prev.messages === next.messages
   );
 }

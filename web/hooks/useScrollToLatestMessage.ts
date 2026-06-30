@@ -1,26 +1,18 @@
 "use client";
 
-import { useEffect, useRef, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 
 interface UseScrollToLatestMessageOptions {
   scrollRef: RefObject<HTMLElement | null>;
-  /** Changes when a new user/assistant turn should pin scroll to bottom. */
   scrollKey: string | undefined;
   enabled?: boolean;
-  /** Skip auto-scroll when user is reading older messages (px from bottom). */
   nearBottomThresholdPx?: number;
 }
 
-function scrollToBottom(el: HTMLElement) {
-  const target = el.scrollHeight - el.clientHeight;
-  if (Math.abs(el.scrollTop - target) <= 2) return;
-  el.scrollTop = target;
+function scrollToBottom(el: HTMLElement, behavior: ScrollBehavior = "auto") {
+  el.scrollTo({ top: el.scrollHeight, behavior });
 }
 
-/**
- * Scrolls once when scrollKey changes (new message turn).
- * Does NOT scroll for typing state, token chunks, or Convex reference-only updates.
- */
 export function useScrollToLatestMessage({
   scrollRef,
   scrollKey,
@@ -29,6 +21,7 @@ export function useScrollToLatestMessage({
 }: UseScrollToLatestMessageOptions) {
   const prevKeyRef = useRef<string | undefined>();
   const nearBottomRef = useRef(true);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -36,13 +29,15 @@ export function useScrollToLatestMessage({
 
     function onScroll() {
       const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
-      nearBottomRef.current = distance <= nearBottomThresholdPx;
+      const near = distance <= nearBottomThresholdPx;
+      nearBottomRef.current = near;
+      setShowScrollButton(!near && el.scrollHeight > el.clientHeight + 120);
     }
 
     onScroll();
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
-  }, [scrollRef, nearBottomThresholdPx]);
+  }, [scrollRef, nearBottomThresholdPx, scrollKey]);
 
   useEffect(() => {
     if (!enabled || !scrollKey || prevKeyRef.current === scrollKey) {
@@ -53,12 +48,25 @@ export function useScrollToLatestMessage({
     prevKeyRef.current = scrollKey;
 
     if (isNewTurn && !nearBottomRef.current) {
+      setShowScrollButton(true);
       return;
     }
 
     const el = scrollRef.current;
     if (!el) return;
 
-    requestAnimationFrame(() => scrollToBottom(el));
+    requestAnimationFrame(() => {
+      scrollToBottom(el, "smooth");
+      setShowScrollButton(false);
+    });
   }, [scrollRef, scrollKey, enabled]);
+
+  const scrollToLatest = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    scrollToBottom(el, "smooth");
+    setShowScrollButton(false);
+  }, [scrollRef]);
+
+  return { showScrollButton, scrollToLatest };
 }

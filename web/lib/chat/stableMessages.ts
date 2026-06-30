@@ -1,7 +1,7 @@
 import type { UiMessage } from "@/components/chat/MessageList";
 
 export function toUiMessages(
-  rows: { _id: string; role: string; content: string }[]
+  rows: { _id: string; role: string; content: string; createdAt?: number }[]
 ): UiMessage[] {
   return rows
     .filter((r) => r.role === "user" || r.role === "assistant")
@@ -9,6 +9,7 @@ export function toUiMessages(
       id: r._id,
       role: r.role as "user" | "assistant",
       content: r.content,
+      createdAt: r.createdAt,
     }));
 }
 
@@ -18,7 +19,8 @@ export function messagesEqual(a: UiMessage[], b: UiMessage[]): boolean {
     if (
       a[i].id !== b[i].id ||
       a[i].role !== b[i].role ||
-      a[i].content !== b[i].content
+      a[i].content !== b[i].content ||
+      a[i].createdAt !== b[i].createdAt
     ) {
       return false;
     }
@@ -42,7 +44,7 @@ export function messageListScrollKey(
 }
 
 export function buildUiMessages(
-  messagesRaw: { _id: string; role: string; content: string }[] | undefined,
+  messagesRaw: { _id: string; role: string; content: string; createdAt?: number }[] | undefined,
   pendingUserText: string | null
 ): UiMessage[] {
   const base = toUiMessages(messagesRaw ?? []);
@@ -57,6 +59,7 @@ export function buildUiMessages(
       id: "pending-user",
       role: "user" as const,
       content: pendingUserText,
+      createdAt: Date.now(),
     },
   ];
 }

@@ -1,6 +1,6 @@
 "use client";
 
-/** Static typing UI — no setInterval (avoids 1 Hz re-renders and layout churn). */
+/** Typing indicator with subtle pulse (respects reduced motion via CSS). */
 export function TypingIndicator() {
   return (
     <div
@@ -10,11 +10,11 @@ export function TypingIndicator() {
     >
       <div className="flex items-center gap-2.5">
         <span className="inline-flex items-center gap-1" aria-hidden>
-          <span className="h-1.5 w-1.5 rounded-full bg-violet-500 opacity-90" />
-          <span className="h-1.5 w-1.5 rounded-full bg-violet-500 opacity-65" />
-          <span className="h-1.5 w-1.5 rounded-full bg-violet-500 opacity-40" />
+          <span className="chat-typing-dot h-1.5 w-1.5 rounded-full bg-violet-500" />
+          <span className="chat-typing-dot h-1.5 w-1.5 rounded-full bg-violet-500" />
+          <span className="chat-typing-dot h-1.5 w-1.5 rounded-full bg-violet-500" />
         </span>
-        <span className="text-sm font-medium text-zinc-600">Thinking…</span>
+        <span className="text-sm font-medium text-muted">Giga3 is thinking…</span>
       </div>
     </div>
   );

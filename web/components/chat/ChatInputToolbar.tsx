@@ -12,7 +12,7 @@ import {
   ImageIcon,
   Loader2,
   Mic,
-  Paperclip,
+  Plus,
   Sparkles,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -179,8 +179,8 @@ export function ChatInputToolbar({
         disabled={disabled}
         aria-expanded={expanded}
         aria-controls={menuId}
-        aria-label={expanded ? "Close attach menu" : "Attach files or media"}
-        title={expanded ? "Close" : "Attach"}
+        aria-label={expanded ? "Close attach menu" : "Add attachment"}
+        title={expanded ? "Close" : "Add"}
         onClick={onToggle}
         className={cn(
           "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-foreground shadow-sm",
@@ -193,7 +193,7 @@ export function ChatInputToolbar({
         {expanded ? (
           <ChevronUp className="h-5 w-5" aria-hidden />
         ) : (
-          <Paperclip className="h-5 w-5" aria-hidden />
+          <Plus className="h-5 w-5" aria-hidden />
         )}
       </button>
 

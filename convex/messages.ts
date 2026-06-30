@@ -1,4 +1,4 @@
-import { query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
@@ -35,6 +35,26 @@ export const listByConversation = query({
     return rows
       .filter((m) => m.role !== "system")
       .sort((a, b) => a.createdAt - b.createdAt);
+  },
+});
+
+export const updateUserMessage = mutation({
+  args: {
+    messageId: v.id("messages"),
+    ...sessionArgs,
+    content: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    const message = await ctx.db.get(args.messageId);
+    if (!message || message.role !== "user") throw new Error("Message not found");
+    const conv = await ctx.db.get(message.conversationId);
+    if (!userOwnsConversation(conv, userId)) throw new Error("Forbidden");
+    const content = args.content.trim();
+    if (!content) throw new Error("Message cannot be empty");
+    await ctx.db.patch(args.messageId, { content: content.slice(0, 50_000) });
+    await ctx.db.patch(message.conversationId, { updatedAt: Date.now() });
+    return { ok: true as const };
   },
 });
 

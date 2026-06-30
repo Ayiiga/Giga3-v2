@@ -1,6 +1,7 @@
 "use client";
 
 import { ChatInputToolbar } from "@/components/chat/ChatInputToolbar";
+import { EmojiPicker } from "@/components/chat/EmojiPicker";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { Button } from "@/components/ui/Button";
 import {
@@ -13,7 +14,8 @@ import {
   formatUploadBytes,
   type UploadUsageSnapshot,
 } from "@/lib/chat/uploadLimits";
-import { Send, X } from "lucide-react";
+import { Send, Smile, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   FormEvent,
   KeyboardEvent,
@@ -48,6 +50,8 @@ export const ChatInput = memo(function ChatInput({
   const [attachments, setAttachments] = useState<PreparedChatAttachment[]>([]);
   const [busy, setBusy] = useState(false);
   const [toolbarOpen, setToolbarOpen] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const composerRef = useRef<HTMLDivElement>(null);
 
@@ -84,12 +88,21 @@ export const ChatInput = memo(function ChatInput({
   }, [toolbarOpen]);
 
   useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+  }, [value]);
+
+  useEffect(() => {
     return () => {
       for (const attachment of attachments) {
         if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl);
       }
     };
   }, [attachments]);
+
+  const canSend = Boolean(value.trim() || attachments.length > 0);
 
   function submit() {
     const trimmed = value.trim();
@@ -103,6 +116,7 @@ export const ChatInput = memo(function ChatInput({
     setAttachments([]);
     setNotice(null);
     setToolbarOpen(false);
+    setEmojiOpen(false);
   }
 
   function handleSubmit(e: FormEvent) {
@@ -190,34 +204,74 @@ export const ChatInput = memo(function ChatInput({
 
         <div
           ref={composerRef}
-          className="chat-composer-surface relative flex items-end gap-2 rounded-2xl border border-border p-2"
+          className={cn(
+            "chat-composer-surface relative flex items-end gap-2 rounded-2xl border p-2 transition-colors",
+            dragOver ? "border-accent/50 bg-accent/5" : "border-border"
+          )}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            const files = Array.from(e.dataTransfer.files ?? []);
+            if (files.length) void handlePickFiles(files, "file");
+          }}
         >
           <ChatInputToolbar
             disabled={inputDisabled}
             expanded={toolbarOpen}
-            onToggle={() => setToolbarOpen((open) => !open)}
+            onToggle={() => {
+              setToolbarOpen((open) => !open);
+              setEmojiOpen(false);
+            }}
             onPickFiles={(files, kind) => void handlePickFiles(files, kind)}
             onError={(msg) => setNotice(msg)}
             onVoiceTranscript={(text) => insertText(text)}
           />
 
-          <textarea
-            ref={textareaRef}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            onKeyDown={handleKeyDown}
+          <div className="relative min-w-0 flex-1">
+            <EmojiPicker
+              open={emojiOpen}
+              onClose={() => setEmojiOpen(false)}
+              onPick={(emoji) => setValue((prev) => prev + emoji)}
+            />
+            <textarea
+              ref={textareaRef}
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={inputDisabled}
+              rows={1}
+              placeholder={placeholder}
+              className="chat-composer-textarea max-h-40 min-h-11 w-full resize-none overflow-y-auto border-0 bg-transparent px-2 py-2.5 text-base leading-[1.7] text-foreground outline-none placeholder:text-muted focus:ring-0 disabled:opacity-50"
+              aria-label="Chat message"
+            />
+          </div>
+
+          <button
+            type="button"
             disabled={inputDisabled}
-            rows={1}
-            placeholder={placeholder}
-            className="max-h-40 min-h-11 min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-transparent px-2 py-2.5 text-base leading-[1.7] text-foreground outline-none placeholder:text-muted focus:ring-0 disabled:opacity-50"
-            aria-label="Chat message"
-          />
+            aria-label="Insert emoji"
+            onClick={() => {
+              setEmojiOpen((open) => !open);
+              setToolbarOpen(false);
+            }}
+            className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl text-muted hover:bg-accent/10"
+          >
+            <Smile className="h-5 w-5" aria-hidden />
+          </button>
 
           <Button
             type="submit"
-            disabled={inputDisabled || (!value.trim() && attachments.length === 0)}
+            disabled={inputDisabled || !canSend}
             size="md"
-            className="min-h-11 min-w-11 shrink-0 rounded-xl px-3"
+            className={cn(
+              "min-h-11 shrink-0 rounded-xl px-3 transition-all",
+              canSend ? "min-w-11" : "min-w-11 opacity-80"
+            )}
             aria-label="Send message"
           >
             <Send className="h-5 w-5" aria-hidden />

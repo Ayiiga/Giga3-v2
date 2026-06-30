@@ -8,29 +8,37 @@ import {
   formatMessageForShare,
   messageHasCopyableContent,
 } from "@/lib/chat/chatContentFormat";
+import { isMessageFavorite, toggleMessageFavorite } from "@/lib/chat/messageFavorites";
 import { copyMarkdownToClipboard, shareText } from "@/lib/share/clientShare";
 import { useShareAction } from "@/hooks/useShareAction";
 import { cn } from "@/lib/utils";
-import { Check, Copy, RefreshCw, Share2 } from "lucide-react";
+import { Check, Copy, Pencil, RefreshCw, Share2, Star } from "lucide-react";
 import { memo, useCallback, useMemo, useState, type ReactNode } from "react";
 
 interface MessageBubbleActionsProps {
+  messageId?: string;
   role: "user" | "assistant";
   content: string;
   disabled?: boolean;
   className?: string;
   onRegenerate?: () => void;
+  onEdit?: () => void;
 }
 
 export const MessageBubbleActions = memo(function MessageBubbleActions({
+  messageId,
   role,
   content,
   disabled,
   className,
   onRegenerate,
+  onEdit,
 }: MessageBubbleActionsProps) {
   const { feedback, runAction, busy } = useShareAction();
   const [copied, setCopied] = useState(false);
+  const [favorited, setFavorited] = useState(
+    messageId ? isMessageFavorite(messageId) : false
+  );
 
   const copyText = useMemo(
     () => formatMessageForCopy(role, content),
@@ -60,6 +68,11 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
       SHARE_SUCCESS
     );
   }, [copyText, content, role, runAction]);
+
+  const runFavorite = useCallback(() => {
+    if (!messageId) return;
+    setFavorited(toggleMessageFavorite(messageId));
+  }, [messageId]);
 
   if (!messageHasCopyableContent(content) || disabled) return null;
 
@@ -95,6 +108,23 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
         <ActionButton label="Share message" disabled={busy} onClick={() => void runShare()}>
           <Share2 className="h-3.5 w-3.5" aria-hidden />
         </ActionButton>
+        {messageId && (
+          <ActionButton
+            label={favorited ? "Remove favorite" : "Favorite message"}
+            disabled={busy}
+            onClick={runFavorite}
+          >
+            <Star
+              className={cn("h-3.5 w-3.5", favorited && "fill-amber-400 text-amber-500")}
+              aria-hidden
+            />
+          </ActionButton>
+        )}
+        {role === "user" && onEdit && (
+          <ActionButton label="Edit message" disabled={busy} onClick={onEdit}>
+            <Pencil className="h-3.5 w-3.5" aria-hidden />
+          </ActionButton>
+        )}
         {role === "assistant" && onRegenerate && (
           <ActionButton
             label="Regenerate response"
@@ -127,7 +157,7 @@ function ActionButton({
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className="touch-target inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-muted hover:bg-zinc-100 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:opacity-50"
+      className="touch-target inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-muted hover:bg-zinc-100 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:opacity-50 dark:hover:bg-zinc-800"
     >
       {children}
     </button>

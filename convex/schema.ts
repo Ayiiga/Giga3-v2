@@ -108,6 +108,9 @@ export default defineSchema({
     /** When true, `shareToken` exposes read-only chat at /chat/share/?t=… */
     sharePublic: v.optional(v.boolean()),
     shareToken: v.optional(v.string()),
+    pinned: v.optional(v.boolean()),
+    archived: v.optional(v.boolean()),
+    isFavorite: v.optional(v.boolean()),
   })
     .index("by_user", ["userId"])
     .index("by_user_updated", ["userId", "updatedAt"])
