@@ -62,7 +62,7 @@ function VideoPlansInner() {
       <div className="text-center">
         <h1 className="page-title">Video AI Plans</h1>
         <p className="mt-2 text-muted">
-          Independent video subscriptions and credit packs (~$10–$100). Never mixed with chat credits.
+          Independent video subscriptions and credit packs (~$15–$300). Never mixed with chat credits.
         </p>
         <p className="mt-3 text-sm">
           Balance: <strong>{wallet?.videoCredits ?? 0}</strong> video credits

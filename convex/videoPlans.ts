@@ -1,5 +1,5 @@
 /**
- * Independent Video AI billing — subscriptions and credit packs ($10–$100 USD equivalents in GHS).
+ * Independent Video AI billing — subscriptions and credit packs ($15–$300 USD equivalents in GHS).
  * Configure via PAYSTACK_VIDEO_* env vars on Convex.
  */
 
@@ -12,14 +12,22 @@ export const VIDEO_SUBSCRIPTION_IDS = [
 ] as const;
 
 export const VIDEO_PACK_IDS = [
-  "video_pack_10",
-  "video_pack_25",
+  "video_pack_15",
   "video_pack_50",
-  "video_pack_100",
+  "video_pack_150",
+  "video_pack_300",
 ] as const;
 
 export type VideoSubscriptionId = (typeof VIDEO_SUBSCRIPTION_IDS)[number];
 export type VideoPackId = (typeof VIDEO_PACK_IDS)[number];
+
+/** Legacy Paystack product ids from the previous $10–$100 catalog. */
+const LEGACY_PACK_ALIASES: Record<string, VideoPackId> = {
+  video_pack_10: "video_pack_15",
+  video_pack_25: "video_pack_50",
+  video_pack_50: "video_pack_150",
+  video_pack_100: "video_pack_300",
+};
 
 type VideoSubDef = {
   id: VideoSubscriptionId;
@@ -45,8 +53,8 @@ const VIDEO_SUBS: VideoSubDef[] = [
   {
     id: "video_sub_creator",
     label: "Video Creator",
-    usdPrice: 10,
-    videoCredits: 40,
+    usdPrice: 15,
+    videoCredits: 50,
     periodDays: 30,
     description: "Monthly video credits for reels, ads, and social clips.",
     envKey: "PAYSTACK_VIDEO_SUB_CREATOR_GHS",
@@ -54,8 +62,8 @@ const VIDEO_SUBS: VideoSubDef[] = [
   {
     id: "video_sub_pro",
     label: "Video Pro",
-    usdPrice: 50,
-    videoCredits: 250,
+    usdPrice: 75,
+    videoCredits: 280,
     periodDays: 30,
     description: "Professional video generation for campaigns and education.",
     envKey: "PAYSTACK_VIDEO_SUB_PRO_GHS",
@@ -63,8 +71,8 @@ const VIDEO_SUBS: VideoSubDef[] = [
   {
     id: "video_sub_studio",
     label: "Video Studio",
-    usdPrice: 100,
-    videoCredits: 600,
+    usdPrice: 300,
+    videoCredits: 1200,
     periodDays: 30,
     description: "Studio-grade volume for agencies and cinematic storytelling.",
     envKey: "PAYSTACK_VIDEO_SUB_STUDIO_GHS",
@@ -73,40 +81,40 @@ const VIDEO_SUBS: VideoSubDef[] = [
 
 const VIDEO_PACKS: VideoPackDef[] = [
   {
-    id: "video_pack_10",
-    label: "Video Pack $10",
-    usdPrice: 10,
-    videoCredits: 35,
+    id: "video_pack_15",
+    label: "Video Pack $15",
+    usdPrice: 15,
+    videoCredits: 50,
     expiryDays: 90,
-    description: "One-time video credits (~$10). Valid 90 days.",
-    envKey: "PAYSTACK_VIDEO_PACK_10_GHS",
-  },
-  {
-    id: "video_pack_25",
-    label: "Video Pack $25",
-    usdPrice: 25,
-    videoCredits: 100,
-    expiryDays: 120,
-    description: "One-time video credits (~$25). Valid 120 days.",
-    envKey: "PAYSTACK_VIDEO_PACK_25_GHS",
+    description: "One-time video credits (~$15). Valid 90 days.",
+    envKey: "PAYSTACK_VIDEO_PACK_15_GHS",
   },
   {
     id: "video_pack_50",
     label: "Video Pack $50",
     usdPrice: 50,
-    videoCredits: 220,
-    expiryDays: 180,
-    description: "One-time video credits (~$50). Valid 180 days.",
+    videoCredits: 180,
+    expiryDays: 120,
+    description: "One-time video credits (~$50). Valid 120 days.",
     envKey: "PAYSTACK_VIDEO_PACK_50_GHS",
   },
   {
-    id: "video_pack_100",
-    label: "Video Pack $100",
-    usdPrice: 100,
-    videoCredits: 500,
+    id: "video_pack_150",
+    label: "Video Pack $150",
+    usdPrice: 150,
+    videoCredits: 550,
+    expiryDays: 180,
+    description: "One-time video credits (~$150). Valid 180 days.",
+    envKey: "PAYSTACK_VIDEO_PACK_150_GHS",
+  },
+  {
+    id: "video_pack_300",
+    label: "Video Pack $300",
+    usdPrice: 300,
+    videoCredits: 1200,
     expiryDays: 365,
-    description: "One-time video credits (~$100). Valid 1 year.",
-    envKey: "PAYSTACK_VIDEO_PACK_100_GHS",
+    description: "One-time video credits (~$300). Valid 1 year.",
+    envKey: "PAYSTACK_VIDEO_PACK_300_GHS",
   },
 ];
 
@@ -117,6 +125,13 @@ function amountFromEnv(envKey: string, usdFallback: number): number {
     if (Number.isFinite(n) && n > 0) return n;
   }
   return Math.round(usdFallback * USD_TO_GHS);
+}
+
+function resolvePackId(productId: string): VideoPackId | null {
+  if ((VIDEO_PACK_IDS as readonly string[]).includes(productId)) {
+    return productId as VideoPackId;
+  }
+  return LEGACY_PACK_ALIASES[productId] ?? null;
 }
 
 export function getVideoSubscription(productId: string) {
@@ -134,7 +149,9 @@ export function getVideoSubscription(productId: string) {
 }
 
 export function getVideoCreditPack(productId: string) {
-  const pack = VIDEO_PACKS.find((p) => p.id === productId);
+  const packId = resolvePackId(productId);
+  if (!packId) return null;
+  const pack = VIDEO_PACKS.find((p) => p.id === packId);
   if (!pack) return null;
   return {
     label: pack.label,
@@ -143,6 +160,7 @@ export function getVideoCreditPack(productId: string) {
     expiryDays: pack.expiryDays,
     usdPrice: pack.usdPrice,
     type: "video_credits" as const,
+    productId: pack.id,
   };
 }
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v19";
+const CACHE_NAME = "giga3-shell-v20";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

@@ -26,30 +26,30 @@ export const VIDEO_SUBSCRIPTIONS = [
   {
     id: "video_sub_creator",
     label: "Video Creator",
-    usdPrice: 10,
-    videoCredits: 40,
+    usdPrice: 15,
+    videoCredits: 50,
     description: "Monthly video credits for reels and social clips.",
   },
   {
     id: "video_sub_pro",
     label: "Video Pro",
-    usdPrice: 50,
-    videoCredits: 250,
+    usdPrice: 75,
+    videoCredits: 280,
     description: "Professional campaigns and education.",
     highlighted: true,
   },
   {
     id: "video_sub_studio",
     label: "Video Studio",
-    usdPrice: 100,
-    videoCredits: 600,
+    usdPrice: 300,
+    videoCredits: 1200,
     description: "Studio volume for agencies and cinematic work.",
   },
 ] as const;
 
 export const VIDEO_PACKS = [
-  { id: "video_pack_10", label: "Pack $10", usdPrice: 10, videoCredits: 35, expiryDays: 90 },
-  { id: "video_pack_25", label: "Pack $25", usdPrice: 25, videoCredits: 100, expiryDays: 120 },
-  { id: "video_pack_50", label: "Pack $50", usdPrice: 50, videoCredits: 220, expiryDays: 180 },
-  { id: "video_pack_100", label: "Pack $100", usdPrice: 100, videoCredits: 500, expiryDays: 365 },
+  { id: "video_pack_15", label: "Pack $15", usdPrice: 15, videoCredits: 50, expiryDays: 90 },
+  { id: "video_pack_50", label: "Pack $50", usdPrice: 50, videoCredits: 180, expiryDays: 120 },
+  { id: "video_pack_150", label: "Pack $150", usdPrice: 150, videoCredits: 550, expiryDays: 180 },
+  { id: "video_pack_300", label: "Pack $300", usdPrice: 300, videoCredits: 1200, expiryDays: 365 },
 ] as const;
