@@ -7,6 +7,17 @@ import {
 } from "./userLearning";
 import { isValidMode } from "./aiModes";
 import { grantStarterCreditsIfNeeded } from "./userStarterCredits";
+import { requireAuthenticatedEmail } from "./auth";
+import { createSessionToken } from "./sessionAuth";
+import { UnauthorizedError } from "./securityErrors";
+
+async function attachSessionToken<T extends Record<string, unknown>>(
+  email: string,
+  user: T
+): Promise<T & { sessionToken: string }> {
+  const sessionToken = await createSessionToken(email);
+  return { ...user, sessionToken };
+}
 
 export const createUser = mutation({
   args: { email: v.string() },
@@ -17,7 +28,8 @@ export const createUser = mutation({
       .withIndex("by_email", (q) => q.eq("email", email))
       .first();
     if (existing) {
-      return await grantStarterCreditsIfNeeded(ctx, email, existing);
+      const user = await grantStarterCreditsIfNeeded(ctx, email, existing);
+      return await attachSessionToken(email, user);
     }
 
     const userId = await ctx.db.insert("users", {
@@ -33,7 +45,23 @@ export const createUser = mutation({
     if (!user) {
       throw new Error("Failed to create user");
     }
-    return await grantStarterCreditsIfNeeded(ctx, email, user);
+    const granted = await grantStarterCreditsIfNeeded(ctx, email, user);
+    return await attachSessionToken(email, granted);
+  },
+});
+
+/** Rotate an existing session token. */
+export const refreshSession = mutation({
+  args: { sessionToken: v.string() },
+  handler: async (ctx, args) => {
+    const email = await requireAuthenticatedEmail(args.sessionToken);
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    if (!user) throw new UnauthorizedError();
+    const sessionToken = await createSessionToken(email);
+    return { sessionToken };
   },
 });
 

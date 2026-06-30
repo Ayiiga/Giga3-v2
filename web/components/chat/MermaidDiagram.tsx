@@ -1,5 +1,6 @@
 "use client";
 
+import { sanitizeMermaidSvg } from "@/lib/security/sanitizeMermaidSvg";
 import { useEffect, useId, useRef, useState } from "react";
 
 export function MermaidDiagram({ code }: { code: string }) {
@@ -25,8 +26,19 @@ export function MermaidDiagram({ code }: { code: string }) {
           },
         });
         const { svg } = await mermaid.render(`giga3-diagram-${id}`, code);
+        const safeSvg = sanitizeMermaidSvg(svg);
+        if (!safeSvg) {
+          throw new Error("Could not render diagram safely.");
+        }
         if (!cancelled && ref.current) {
-          ref.current.innerHTML = svg;
+          ref.current.replaceChildren();
+          const template = document.createElement("template");
+          template.innerHTML = safeSvg;
+          const svgNode = template.content.firstElementChild;
+          if (!svgNode) {
+            throw new Error("Could not render diagram safely.");
+          }
+          ref.current.appendChild(svgNode);
           setError(null);
         }
       } catch (err) {

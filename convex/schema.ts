@@ -146,6 +146,12 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_dateKey", ["dateKey"]),
 
+  feedbackRateLimits: defineTable({
+    bucketKey: v.string(),
+    windowStartMs: v.number(),
+    count: v.number(),
+  }).index("by_bucket", ["bucketKey"]),
+
   usageDaily: defineTable({
     userId: v.string(),
     dateKey: v.string(),

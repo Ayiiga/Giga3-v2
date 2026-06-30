@@ -4,7 +4,7 @@ import type { ConversationItem } from "@/components/chat/ChatSidebar";
 import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
-import { getUserEmail } from "@/lib/auth";
+import { getSessionToken, getUserEmail } from "@/lib/auth";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import { getConvexUrl } from "@/lib/convex";
 import { convexHttpCall } from "@/lib/network/convexCall";
@@ -48,6 +48,7 @@ async function createConvexConversation(userId: string, mode: string): Promise<s
 }
 
 async function sendConvexMessage(args: {
+  sessionToken: string;
   userId: string;
   conversationId: string;
   content: string;
@@ -66,6 +67,7 @@ async function sendConvexMessage(args: {
 }
 
 async function regenerateConvexMessage(args: {
+  sessionToken: string;
   userId: string;
   conversationId: string;
   assistantMessageId: string;
@@ -240,6 +242,11 @@ export function useSupabaseChatPlatform() {
         setError("Please sign in");
         return;
       }
+      const sessionToken = getSessionToken();
+      if (!sessionToken) {
+        setError("Session expired. Please sign in again.");
+        return;
+      }
       setError(null);
       setPendingUserText(content);
       setIsSending(true);
@@ -264,6 +271,7 @@ export function useSupabaseChatPlatform() {
         }
 
         const result = await sendConvexMessage({
+          sessionToken,
           userId: email,
           conversationId: convexConversationId,
           content,
@@ -312,6 +320,11 @@ export function useSupabaseChatPlatform() {
   const regenerateMessage = useCallback(
     async (assistantMessageId: string) => {
       if (!email) return;
+      const sessionToken = getSessionToken();
+      if (!sessionToken) {
+        setError("Session expired. Please sign in again.");
+        return;
+      }
       const chat = activeConversation;
       if (!chat?.convexConversationId) {
         setError("Conversation is not ready for regenerate yet. Send a message first.");
@@ -330,6 +343,7 @@ export function useSupabaseChatPlatform() {
         }
 
         const result = await regenerateConvexMessage({
+          sessionToken,
           userId: email,
           conversationId: chat.convexConversationId,
           assistantMessageId: convexTarget._id,

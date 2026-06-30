@@ -1,5 +1,8 @@
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { requireAuthenticatedEmail } from "./auth";
+import { sanitizeFeedbackNote } from "./attachmentValidation";
+import { RateLimitError } from "./securityErrors";
 
 const responseModeValidator = v.union(
   v.literal("conversational"),
@@ -13,6 +16,11 @@ const confidenceLabelValidator = v.union(
   v.literal("high")
 );
 
+const FEEDBACK_WINDOW_MS = 60 * 60 * 1000;
+const MAX_FEEDBACK_PER_USER_PER_HOUR = 12;
+const MAX_ANON_FEEDBACK_PER_IP_PER_HOUR = 6;
+const DUPLICATE_WINDOW_MS = 5 * 60 * 1000;
+
 function utcDateKey(ts: number): string {
   return new Date(ts).toISOString().slice(0, 10);
 }
@@ -21,6 +29,71 @@ function ensureAdminAccess(adminKey: string): void {
   const requiredKey = process.env.QUALITY_DASHBOARD_ADMIN_KEY?.trim();
   if (!requiredKey || adminKey !== requiredKey) {
     throw new Error("Unauthorized");
+  }
+}
+
+async function enforceRateLimit(
+  ctx: { db: any },
+  bucketKey: string,
+  maxPerWindow: number
+): Promise<void> {
+  const now = Date.now();
+  const existing = await ctx.db
+    .query("feedbackRateLimits")
+    .withIndex("by_bucket", (q: any) => q.eq("bucketKey", bucketKey))
+    .first();
+
+  if (!existing || now - existing.windowStartMs >= FEEDBACK_WINDOW_MS) {
+    if (existing) {
+      await ctx.db.patch(existing._id, { windowStartMs: now, count: 1 });
+    } else {
+      await ctx.db.insert("feedbackRateLimits", {
+        bucketKey,
+        windowStartMs: now,
+        count: 1,
+      });
+    }
+    return;
+  }
+
+  if (existing.count >= maxPerWindow) {
+    console.warn("[security.feedback] rate limit exceeded", { bucketKey });
+    throw new RateLimitError();
+  }
+
+  await ctx.db.patch(existing._id, { count: existing.count + 1 });
+}
+
+async function rejectDuplicateFeedback(
+  ctx: { db: any },
+  userId: string | undefined,
+  satisfactionScore: number,
+  usefulnessScore: number,
+  note: string | undefined
+): Promise<void> {
+  const since = Date.now() - DUPLICATE_WINDOW_MS;
+  const recent = await ctx.db
+    .query("qualityFeedback")
+    .withIndex("by_dateKey")
+    .order("desc")
+    .take(40);
+
+  const duplicate = recent.find(
+    (row: {
+      userId?: string;
+      satisfactionScore: number;
+      usefulnessScore: number;
+      note?: string;
+      createdAt: number;
+    }) =>
+      row.createdAt >= since &&
+      row.userId === userId &&
+      row.satisfactionScore === satisfactionScore &&
+      row.usefulnessScore === usefulnessScore &&
+      (row.note ?? "") === (note ?? "")
+  );
+  if (duplicate) {
+    throw new RateLimitError("Duplicate feedback");
   }
 }
 
@@ -154,7 +227,8 @@ export const getAdminDashboard = query({
 
 export const recordUserFeedback = mutation({
   args: {
-    userId: v.optional(v.string()),
+    sessionToken: v.optional(v.string()),
+    clientIpHash: v.optional(v.string()),
     satisfactionScore: v.number(),
     usefulnessScore: v.number(),
     note: v.optional(v.string()),
@@ -164,12 +238,39 @@ export const recordUserFeedback = mutation({
     const dateKey = utcDateKey(now);
     const satisfactionScore = Math.max(1, Math.min(5, Math.round(args.satisfactionScore)));
     const usefulnessScore = Math.max(1, Math.min(5, Math.round(args.usefulnessScore)));
-    return await ctx.db.insert("qualityFeedback", {
-      dateKey,
-      userId: args.userId,
+    const note = sanitizeFeedbackNote(args.note);
+
+    let userId: string | undefined;
+    if (args.sessionToken?.trim()) {
+      userId = await requireAuthenticatedEmail(args.sessionToken);
+      await enforceRateLimit(
+        ctx,
+        `user:${userId}`,
+        MAX_FEEDBACK_PER_USER_PER_HOUR
+      );
+    } else {
+      const ipKey = args.clientIpHash?.trim().slice(0, 64) || "anon:unknown";
+      await enforceRateLimit(
+        ctx,
+        `ip:${ipKey}`,
+        MAX_ANON_FEEDBACK_PER_IP_PER_HOUR
+      );
+    }
+
+    await rejectDuplicateFeedback(
+      ctx,
+      userId,
       satisfactionScore,
       usefulnessScore,
-      note: args.note?.trim() || undefined,
+      note
+    );
+
+    return await ctx.db.insert("qualityFeedback", {
+      dateKey,
+      userId,
+      satisfactionScore,
+      usefulnessScore,
+      note,
       createdAt: now,
     });
   },

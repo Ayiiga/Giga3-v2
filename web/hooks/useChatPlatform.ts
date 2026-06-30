@@ -3,7 +3,7 @@
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
 import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
-import { getUserEmail } from "@/lib/auth";
+import { getSessionToken, getUserEmail, setSessionToken } from "@/lib/auth";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import { api } from "convex/_generated/api";
@@ -42,6 +42,7 @@ export function useChatPlatform() {
   const [chatProviderLabel, setChatProviderLabel] = useState<string | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [sessionToken, setSessionTokenState] = useState<string | null>(null);
   const createUserAttempted = useRef(false);
   const creditsCacheRef = useRef<number | null>(null);
   const interestProfileCacheRef = useRef<string | null>(null);
@@ -49,6 +50,7 @@ export function useChatPlatform() {
   useEffect(() => {
     setMounted(true);
     setEmail(getUserEmail());
+    setSessionTokenState(getSessionToken());
   }, []);
 
   const emailQueryArgs = useMemo(
@@ -74,7 +76,7 @@ export function useChatPlatform() {
   const messagesRaw = useQuery(api.messages.listByConversation, messagesQueryArgs);
   const uploadUsage = useQuery(
     api.uploadLimits.getUploadUsageSnapshot,
-    mounted && email ? { userId: email } : ("skip" as const)
+    mounted && sessionToken ? { sessionToken } : ("skip" as const)
   );
   const credits =
     chatCreditsRow === undefined
@@ -117,9 +119,28 @@ export function useChatPlatform() {
     if (!email || chatCreditsRow === undefined || createUserAttempted.current) {
       return;
     }
-    if (chatCreditsRow !== null) return;
+    if (chatCreditsRow !== null) {
+      if (!getSessionToken()) {
+        void createUser({ email }).then((result) => {
+          const token = (result as { sessionToken?: string }).sessionToken;
+          if (token) {
+            setSessionToken(token);
+            setSessionTokenState(token);
+          }
+        });
+      }
+      return;
+    }
     createUserAttempted.current = true;
-    void createUser({ email });
+    void createUser({ email }).then((result) => {
+      if (result && typeof result === "object" && "sessionToken" in result) {
+        const token = (result as { sessionToken?: string }).sessionToken;
+        if (token) {
+          setSessionToken(token);
+          setSessionTokenState(token);
+        }
+      }
+    });
   }, [email, chatCreditsRow, createUser]);
 
   useEffect(() => {
@@ -197,6 +218,11 @@ export function useChatPlatform() {
         setError("Please sign in");
         return;
       }
+      const token = sessionToken ?? getSessionToken();
+      if (!token) {
+        setError("Session expired. Please sign in again.");
+        return;
+      }
       setError(null);
       setPendingUserText(content);
       setIsSending(true);
@@ -210,6 +236,7 @@ export function useChatPlatform() {
 
         const result = await withClientTimeout(
           sendMessageAction({
+            sessionToken: token,
             userId: email,
             conversationId: conversationId as Id<"conversations">,
             content,
@@ -239,17 +266,23 @@ export function useChatPlatform() {
         setIsSending(false);
       }
     },
-    [email, activeId, mode, createConversation, sendMessageAction]
+    [email, sessionToken, activeId, mode, createConversation, sendMessageAction]
   );
 
   const regenerateMessage = useCallback(
     async (assistantMessageId: string) => {
       if (!email || !activeId) return;
+      const token = sessionToken ?? getSessionToken();
+      if (!token) {
+        setError("Session expired. Please sign in again.");
+        return;
+      }
       setError(null);
       setIsSending(true);
       try {
         const result = await withClientTimeout(
           regenerateMessageAction({
+            sessionToken: token,
             userId: email,
             conversationId: activeId as Id<"conversations">,
             assistantMessageId: assistantMessageId as Id<"messages">,
@@ -271,7 +304,7 @@ export function useChatPlatform() {
         setIsSending(false);
       }
     },
-    [email, activeId, mode, regenerateMessageAction]
+    [email, sessionToken, activeId, mode, regenerateMessageAction]
   );
 
   return {
