@@ -5,10 +5,13 @@ import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import {
   assessImageProcessingCapability,
+  buildRoutingContextFromUser,
   completeChatWithFailover,
   getChatProviderLabel,
   trimChatMessages,
   type ChatCompletionAttachment,
+  type ChatEngineResult,
+  type ChatRoutingContext,
 } from "./chatEngine";
 import { getSystemPrompt, isValidMode, type AiModeId } from "./aiModes";
 import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
@@ -26,6 +29,13 @@ import {
   validateAttachments,
   type RawAttachmentInput,
 } from "./attachmentValidation";
+import {
+  buildChatRoutePlan,
+  buildPromptCacheKey,
+  shouldUseResponseCache,
+} from "./providerRouter";
+import { openaiGenerateImage } from "./openaiImageClient";
+import type { ActionCtx } from "./_generated/server";
 
 function latestUserPrompt(
   history: Array<{ role: string; content: string }>,
@@ -60,6 +70,162 @@ function imageCapabilityFailureMessage(
     return "The image upload did not complete successfully. Please upload the image again.";
   }
   return `This image format is not currently supported. Supported formats include ${supportedFormats.join(", ")}.`;
+}
+
+async function resolveRoutingContext(
+  ctx: ActionCtx,
+  email: string,
+  user: {
+    subscriptionPlan?: string;
+    subscriptionExpiresAt?: number | null;
+  },
+  mode: AiModeId,
+  query: string
+): Promise<ChatRoutingContext> {
+  const hasPurchasedCredits = await ctx.runQuery(
+    internal.credits.userHasPurchasedCreditsInternal,
+    { userId: email }
+  );
+  return buildRoutingContextFromUser({
+    subscriptionPlan: user.subscriptionPlan ?? "free",
+    subscriptionExpiresAt: user.subscriptionExpiresAt,
+    hasPurchasedCredits,
+    mode,
+    query,
+  });
+}
+
+async function runHybridAiEngine(
+  ctx: ActionCtx,
+  args: {
+    email: string;
+    mode: AiModeId;
+    query: string;
+    systemPrompt: string;
+    chatMessages: ReturnType<typeof trimChatMessages>;
+    routing: ChatRoutingContext;
+    hasAttachments: boolean;
+    conversationId: string;
+  }
+): Promise<ChatEngineResult & { cached: boolean }> {
+  const routePlan = buildChatRoutePlan({
+    tier: args.routing.tier,
+    mode: args.mode,
+    query: args.query,
+    hasAttachments: args.hasAttachments,
+  });
+
+  await ctx.runMutation(internal.aiRateLimit.consumeAiRateLimitInternal, {
+    userId: args.email,
+    tier: args.routing.tier,
+  });
+
+  if (routePlan.requestKind === "image_generation") {
+    const started = Date.now();
+    const image = await openaiGenerateImage(args.query);
+    const content = `Here is your generated image:\n\n${image.dataUrl}`;
+    const result: ChatEngineResult & { cached: boolean } = {
+      content,
+      providerId: "openai_image",
+      usedFallback: false,
+      latencyMs: Date.now() - started,
+      cached: false,
+    };
+    await recordAiUsage(ctx, {
+      email: args.email,
+      mode: args.mode,
+      routing: args.routing,
+      engineResult: result,
+      requestKind: "image_generation",
+      cached: false,
+      conversationId: args.conversationId,
+    });
+    return result;
+  }
+
+  const cacheEligible = shouldUseResponseCache({
+    hasAttachments: args.hasAttachments,
+    queryLength: args.query.length,
+  });
+  const promptHash = buildPromptCacheKey({
+    mode: args.mode,
+    tier: args.routing.tier,
+    systemPrompt: args.systemPrompt,
+    query: args.query,
+  });
+
+  if (cacheEligible) {
+    const cached = await ctx.runQuery(internal.aiResponseCache.readCachedResponseInternal, {
+      promptHash,
+    });
+    if (cached) {
+      const result: ChatEngineResult & { cached: boolean } = {
+        content: cached.content,
+        providerId: cached.providerId,
+        usedFallback: false,
+        latencyMs: 0,
+        cached: true,
+      };
+      await recordAiUsage(ctx, {
+        email: args.email,
+        mode: args.mode,
+        routing: args.routing,
+        engineResult: result,
+        requestKind: "text_chat",
+        cached: true,
+        conversationId: args.conversationId,
+      });
+      return result;
+    }
+  }
+
+  const engineResult = await completeChatWithFailover(args.chatMessages, args.routing);
+
+  if (cacheEligible && engineResult.providerId !== "local_fallback") {
+    await ctx.runMutation(internal.aiResponseCache.writeCachedResponseInternal, {
+      promptHash,
+      content: engineResult.content,
+      providerId: engineResult.providerId,
+    });
+  }
+
+  await recordAiUsage(ctx, {
+    email: args.email,
+    mode: args.mode,
+    routing: args.routing,
+    engineResult,
+    requestKind: "text_chat",
+    cached: false,
+    conversationId: args.conversationId,
+  });
+
+  return { ...engineResult, cached: false };
+}
+
+async function recordAiUsage(
+  ctx: ActionCtx,
+  args: {
+    email: string;
+    mode: AiModeId;
+    routing: ChatRoutingContext;
+    engineResult: ChatEngineResult;
+    requestKind: "text_chat" | "image_generation";
+    cached: boolean;
+    conversationId: string;
+  }
+) {
+  await ctx.runMutation(internal.aiUsageAnalytics.recordAiUsageInternal, {
+    userId: args.email,
+    providerId: args.engineResult.providerId,
+    requestKind: args.requestKind,
+    mode: args.mode,
+    tier: args.routing.tier,
+    latencyMs: args.engineResult.latencyMs ?? 0,
+    usedFallback: args.engineResult.usedFallback,
+    cached: args.cached,
+    usedWebSearch: args.engineResult.usedWebSearch ?? false,
+    conversationId: args.conversationId,
+  });
 }
 
 export const sendMessage = action({
@@ -272,7 +438,24 @@ export const sendMessage = action({
         : []),
     ]);
 
-    const engineResult = await completeChatWithFailover(chatMessages);
+    const routing = await resolveRoutingContext(
+      ctx,
+      email,
+      refreshedUser ?? { subscriptionPlan: "free" },
+      mode,
+      args.content
+    );
+
+    const engineResult = await runHybridAiEngine(ctx, {
+      email,
+      mode,
+      query: args.content,
+      systemPrompt,
+      chatMessages,
+      routing,
+      hasAttachments: attachments.length > 0,
+      conversationId: args.conversationId,
+    });
     const validated = validateAnswerQuality({
       answer: engineResult.content,
       context: qualityContext,
@@ -300,11 +483,19 @@ export const sendMessage = action({
     const chargedAi = engineResult.providerId !== "local_fallback";
 
     if (chargedAi) {
-      await ctx.runMutation(internal.credits.deductForChatModeInternal, {
-        userId: email,
-        mode,
-        reference: args.conversationId,
-      });
+      if (engineResult.providerId === "openai_image") {
+        await ctx.runMutation(internal.credits.deductCreditsInternal, {
+          userId: email,
+          action: "image",
+          reference: args.conversationId,
+        });
+      } else {
+        await ctx.runMutation(internal.credits.deductForChatModeInternal, {
+          userId: email,
+          mode,
+          reference: args.conversationId,
+        });
+      }
     }
 
     await ctx.runMutation(internal.platform.appendMessage, {
@@ -421,7 +612,24 @@ export const regenerateMessage = action({
       })),
     ]);
 
-    const engineResult = await completeChatWithFailover(chatMessages);
+    const routing = await resolveRoutingContext(
+      ctx,
+      email,
+      refreshedUser ?? { subscriptionPlan: "free" },
+      mode,
+      query
+    );
+
+    const engineResult = await runHybridAiEngine(ctx, {
+      email,
+      mode,
+      query,
+      systemPrompt,
+      chatMessages,
+      routing,
+      hasAttachments: false,
+      conversationId: args.conversationId,
+    });
     const validated = validateAnswerQuality({
       answer: engineResult.content,
       context: qualityContext,
@@ -448,11 +656,19 @@ export const regenerateMessage = action({
     const chargedAi = engineResult.providerId !== "local_fallback";
 
     if (chargedAi) {
-      await ctx.runMutation(internal.credits.deductForChatModeInternal, {
-        userId: email,
-        mode,
-        reference: args.conversationId,
-      });
+      if (engineResult.providerId === "openai_image") {
+        await ctx.runMutation(internal.credits.deductCreditsInternal, {
+          userId: email,
+          action: "image",
+          reference: args.conversationId,
+        });
+      } else {
+        await ctx.runMutation(internal.credits.deductForChatModeInternal, {
+          userId: email,
+          mode,
+          reference: args.conversationId,
+        });
+      }
     }
 
     await ctx.runMutation(internal.platform.appendMessage, {

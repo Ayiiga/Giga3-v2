@@ -3,7 +3,11 @@
 import { action } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
-import { completeChatWithFailover, trimChatMessages } from "./chatEngine";
+import {
+  buildRoutingContextFromUser,
+  completeChatWithFailover,
+  trimChatMessages,
+} from "./chatEngine";
 import { getSystemPrompt } from "./aiModes";
 import {
   prepareAnswerQualityContext,
@@ -58,6 +62,18 @@ export const askAI = action({
       history: [{ role: "user", content: message }],
     });
 
+    const hasPurchasedCredits = await ctx.runQuery(
+      internal.credits.userHasPurchasedCreditsInternal,
+      { userId: verifiedEmail }
+    );
+    const routing = buildRoutingContextFromUser({
+      subscriptionPlan: user.subscriptionPlan ?? "free",
+      subscriptionExpiresAt: user.subscriptionExpiresAt,
+      hasPurchasedCredits,
+      mode: "general",
+      query: message,
+    });
+
     const engineResult = await completeChatWithFailover(
       trimChatMessages(
         [
@@ -69,7 +85,8 @@ export const askAI = action({
           { role: "user", content: message },
         ],
         4
-      )
+      ),
+      routing
     );
 
     const validated = validateAnswerQuality({

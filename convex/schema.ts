@@ -174,6 +174,44 @@ export default defineSchema({
     uploadBytes: v.optional(v.number()),
   }).index("by_user_date", ["userId", "dateKey"]),
 
+  aiUsageEvents: defineTable({
+    userId: v.string(),
+    providerId: v.string(),
+    requestKind: v.string(),
+    mode: v.string(),
+    tier: v.string(),
+    latencyMs: v.number(),
+    usedFallback: v.boolean(),
+    cached: v.boolean(),
+    usedWebSearch: v.boolean(),
+    estimatedTokens: v.optional(v.number()),
+    conversationId: v.optional(v.string()),
+    dateKey: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_dateKey", ["dateKey"]),
+
+  aiUsageDaily: defineTable({
+    dateKey: v.string(),
+    providerId: v.string(),
+    requestCount: v.number(),
+    fallbackCount: v.number(),
+    cacheHitCount: v.number(),
+    totalLatencyMs: v.number(),
+    updatedAt: v.number(),
+  }).index("by_dateKey_provider", ["dateKey", "providerId"]),
+
+  aiResponseCache: defineTable({
+    promptHash: v.string(),
+    content: v.string(),
+    providerId: v.string(),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_promptHash", ["promptHash"])
+    .index("by_expiresAt", ["expiresAt"]),
+
   uploadLimitSettings: defineTable({
     planId: subscriptionPlanValidator,
     filesPerDay: v.number(),
