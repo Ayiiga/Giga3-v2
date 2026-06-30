@@ -2,6 +2,7 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { SwUpdatePrompt } from "@/components/pwa/SwUpdatePrompt";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
+import { GlobalSlowNetworkBanner } from "@/components/pwa/GlobalSlowNetworkBanner";
 import { branding } from "@/lib/branding";
 import { pwaStartupImages } from "@/lib/pwaSplash";
 import { siteConfig } from "@/lib/site";
@@ -91,6 +92,7 @@ export default function RootLayout({
         </ThemeProvider>
         <ServiceWorkerRegister />
         <SwUpdatePrompt />
+        <GlobalSlowNetworkBanner />
         <OfflineBanner />
       </body>
     </html>

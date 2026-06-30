@@ -1,7 +1,13 @@
 /** Client-side Convex HTTP calls with timeout + retry for high-latency networks. */
 
+import {
+  connectionTierFromInfo,
+  readConnectionInfo,
+} from "@/lib/network/connectionQuality";
+import { getConvexRetryCount } from "@/lib/network/polling";
+
 const DEFAULT_TIMEOUT_MS = 90_000;
-const MAX_RETRIES = 1;
+const SLOW_NETWORK_TIMEOUT_MS = 120_000;
 
 function isRetryableNetworkError(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : String(err);
@@ -15,6 +21,20 @@ function isRetryableNetworkError(err: unknown): boolean {
   );
 }
 
+function resolveCallOptions(options?: { timeoutMs?: number; retries?: number }) {
+  const info = readConnectionInfo();
+  const tier = connectionTierFromInfo(
+    typeof navigator !== "undefined" ? navigator.onLine : true,
+    info
+  );
+  const slow = tier === "slow";
+  return {
+    timeoutMs:
+      options?.timeoutMs ?? (slow ? SLOW_NETWORK_TIMEOUT_MS : DEFAULT_TIMEOUT_MS),
+    retries: options?.retries ?? getConvexRetryCount(tier),
+  };
+}
+
 export async function convexHttpCall<T>(
   baseUrl: string,
   endpoint: "query" | "mutation" | "action",
@@ -22,8 +42,7 @@ export async function convexHttpCall<T>(
   args: Record<string, unknown>,
   options?: { timeoutMs?: number; retries?: number }
 ): Promise<T> {
-  const timeoutMs = options?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  const retries = options?.retries ?? MAX_RETRIES;
+  const { timeoutMs, retries } = resolveCallOptions(options);
   const url = `${baseUrl.replace(/\/$/, "")}/api/${endpoint}`;
 
   let lastError: unknown;
@@ -45,12 +64,12 @@ export async function convexHttpCall<T>(
     } catch (err) {
       lastError = err;
       if (attempt < retries && isRetryableNetworkError(err)) {
-        await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
         continue;
       }
       if (controller.signal.aborted) {
         throw new Error(
-          "Request timed out. On slower mobile networks, wait a moment and try again — your message may still be processing."
+          "Request timed out. On slower mobile networks, wait a moment and try again — your message or video job may still be processing."
         );
       }
       throw err;

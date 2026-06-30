@@ -14,7 +14,7 @@ export function OfflineBanner() {
       role="status"
     >
       <WifiOff className="h-4 w-4 shrink-0" aria-hidden />
-      You&apos;re offline. Cached pages and assets remain available.
+      You&apos;re offline. Cached pages stay available — reconnect to continue chat, billing, and video generation.
     </div>
   );
 }

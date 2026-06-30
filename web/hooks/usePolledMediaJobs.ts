@@ -1,9 +1,11 @@
 "use client";
 
+import { useConnectionQuality } from "@/hooks/useConnectionQuality";
 import { useStableMediaJobs, type MediaJobRow } from "@/hooks/useStableMediaJobs";
 import { getSessionToken } from "@/lib/auth";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { hasActiveMediaJobs, mediaJobsEqual } from "@/lib/media/stableJobs";
+import { getAdaptivePollIntervalMs } from "@/lib/network/polling";
 import { listSupabaseGenerations } from "@/lib/supabase/data";
 import { api } from "convex/_generated/api";
 import { useConvex } from "convex/react";
@@ -17,6 +19,7 @@ const POLL_ACTIVE_MS = 15_000;
  */
 export function usePolledMediaJobs(userId: string, mounted: boolean) {
   const convex = useConvex();
+  const { tier } = useConnectionQuality();
   const [rawJobs, setRawJobs] = useState<MediaJobRow[] | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const inFlightRef = useRef(false);
@@ -47,6 +50,7 @@ export function usePolledMediaJobs(userId: string, mounted: boolean) {
 
   const jobs = useStableMediaJobs(rawJobs);
   const processing = hasActiveMediaJobs(jobs);
+  const pollMs = getAdaptivePollIntervalMs(tier, POLL_ACTIVE_MS);
 
   useEffect(() => {
     if (!mounted || !userId) return;
@@ -54,10 +58,10 @@ export function usePolledMediaJobs(userId: string, mounted: boolean) {
   }, [mounted, userId, fetchJobs]);
 
   useEffect(() => {
-    if (!mounted || !userId || !processing) return;
-    const id = window.setInterval(() => void fetchJobs(), POLL_ACTIVE_MS);
+    if (!mounted || !userId || !processing || pollMs <= 0) return;
+    const id = window.setInterval(() => void fetchJobs(), pollMs);
     return () => window.clearInterval(id);
-  }, [mounted, userId, processing, fetchJobs]);
+  }, [mounted, userId, processing, pollMs, fetchJobs]);
 
   return {
     jobs,
