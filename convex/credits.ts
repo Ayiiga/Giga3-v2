@@ -1,5 +1,5 @@
 import { internal } from "./_generated/api";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
@@ -20,6 +20,18 @@ async function getUserByEmail(ctx: DbCtx, email: string) {
     .withIndex("by_email", (q: any) => q.eq("email", email))
     .first();
 }
+
+export const userHasPurchasedCreditsInternal = internalQuery({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const logs = await ctx.db
+      .query("creditLogs")
+      .withIndex("by_user_created", (q) => q.eq("userId", args.userId))
+      .order("desc")
+      .take(40);
+    return logs.some((row) => row.action === "credit_purchase");
+  },
+});
 
 async function logCredit(
   ctx: DbCtx,

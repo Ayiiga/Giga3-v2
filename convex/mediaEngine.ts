@@ -95,6 +95,22 @@ export async function generateImageWithFallback(
 ): Promise<{ imageUrl: string; provider: MediaProviderId; externalId: string }> {
   const errors: string[] = [];
 
+  // Image requests route exclusively to OpenAI first; other providers are failover only.
+  if (getOpenAiImageApiKey() && !input.sourceImageUrl?.trim()) {
+    try {
+      const result = await openaiGenerateImage(input.prompt, {
+        imageSize: input.imageSize,
+      });
+      return {
+        imageUrl: result.dataUrl,
+        provider: "openai",
+        externalId: result.requestId,
+      };
+    } catch (err) {
+      errors.push(err instanceof Error ? err.message : String(err));
+    }
+  }
+
   if (getFalApiKey()) {
     const primaryModel = process.env.FAL_IMAGE_MODEL?.trim() || "fal-ai/nano-banana-pro";
     try {
@@ -149,21 +165,6 @@ export async function generateImageWithFallback(
       return {
         imageUrl: result.dataUrl,
         provider: "gemini",
-        externalId: result.requestId,
-      };
-    } catch (err) {
-      errors.push(err instanceof Error ? err.message : String(err));
-    }
-  }
-
-  if (getOpenAiImageApiKey() && !input.sourceImageUrl?.trim()) {
-    try {
-      const result = await openaiGenerateImage(input.prompt, {
-        imageSize: input.imageSize,
-      });
-      return {
-        imageUrl: result.dataUrl,
-        provider: "openai",
         externalId: result.requestId,
       };
     } catch (err) {

@@ -1,6 +1,17 @@
 
 import OpenAI from "openai";
 import { falOpenRouterChatComplete, getFalApiKey } from "./falClient";
+import {
+  appendGroundingCitations,
+  geminiGenerateWithGrounding,
+} from "./webSearch";
+import {
+  buildChatRoutePlan,
+  resolveAiProviderTier,
+  type AiProviderTier,
+  type ChatProviderId,
+  type ChatRoutePlan,
+} from "./providerRouter";
 
 export type ChatCompletionMessage = {
   role: "system" | "user" | "assistant";
@@ -17,11 +28,19 @@ export type ChatCompletionAttachment = {
   dataUrl?: string;
 };
 
+export type ChatRoutingContext = {
+  tier: AiProviderTier;
+  mode: string;
+  query: string;
+};
+
 export type ChatEngineResult = {
   content: string;
   providerId: string;
-  /** True if not the primary OpenAI model path */
+  /** True if not the tier's primary provider path */
   usedFallback: boolean;
+  usedWebSearch?: boolean;
+  latencyMs?: number;
 };
 
 export type ImageProcessingCapabilityStatus =
@@ -37,10 +56,11 @@ export type ImageProcessingCapability = {
 };
 
 const PROVIDER_LABELS: Record<string, string> = {
-  openai_primary: "Primary AI (OpenAI)",
-  openai_fallback_model: "Backup model (OpenAI)",
-  openai_secondary_key: "Secondary API key (OpenAI)",
-  gemini: "Google Gemini",
+  openai_primary: "OpenAI (Premium)",
+  openai_fallback_model: "OpenAI (backup model)",
+  openai_secondary_key: "OpenAI (secondary key)",
+  openai_image: "OpenAI Images",
+  gemini: "Google Gemini (Free)",
   fal_ai: "fal.ai (OpenRouter)",
   local_fallback: "Service notice",
 };
@@ -251,8 +271,31 @@ async function geminiComplete(
   model: string,
   messages: ChatCompletionMessage[],
   timeoutMs: number,
-  maxTokens: number
-): Promise<string> {
+  maxTokens: number,
+  enableWebSearch: boolean
+): Promise<{ text: string; usedWebSearch: boolean }> {
+  if (enableWebSearch) {
+    try {
+      const grounded = await geminiGenerateWithGrounding({
+        apiKey,
+        model,
+        messages: messages.map((m) => ({
+          role: m.role,
+          content: textForFallback(m),
+        })),
+        timeoutMs,
+        maxTokens,
+        enableWebSearch: true,
+      });
+      return {
+        text: appendGroundingCitations(grounded.text, grounded.sources),
+        usedWebSearch: grounded.usedGrounding,
+      };
+    } catch (err) {
+      console.warn("[chatEngine] Gemini grounding failed, falling back:", err);
+    }
+  }
+
   const systemText = messages
     .filter((m) => m.role === "system")
     .map((m) => m.content)
@@ -334,63 +377,141 @@ async function geminiComplete(
   if (!text) {
     throw new Error("Empty response from Gemini");
   }
-  return text;
+  return { text, usedWebSearch: false };
 }
 
-type Attempt = { id: string; run: () => Promise<string> };
+type Attempt = {
+  id: ChatProviderId;
+  run: () => Promise<{ content: string; usedWebSearch?: boolean }>;
+};
 
-async function raceFirstSuccess(
-  attempts: Attempt[],
-  timeoutMs: number
-): Promise<ChatEngineResult | null> {
-  if (attempts.length === 0) return null;
+function buildProviderAttempts(args: {
+  plan: ChatRoutePlan;
+  trimmed: ChatCompletionMessage[];
+  textOnly: ChatCompletionMessage[];
+  asOpenAi: OpenAI.Chat.ChatCompletionMessageParam[];
+  timeoutMs: number;
+  maxTokens: number;
+  apiKey?: string;
+  primaryModel: string;
+  fallbackModel: string;
+  secondaryKey?: string;
+  geminiKey?: string;
+  geminiModel: string;
+  falKey?: string;
+  falModel: string;
+  falTimeoutMs: number;
+  enableFalChat: boolean;
+}): Attempt[] {
+  const attempts: Attempt[] = [];
 
-  return new Promise((resolve) => {
-    let settled = false;
-    let failures = 0;
-
-    const finishFailure = (id: string, err: unknown) => {
-      if (settled) return;
-      failures += 1;
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error(`[chatEngine] ${id} failed:`, msg);
-      if (failures >= attempts.length) {
-        settled = true;
-        resolve(null);
-      }
-    };
-
-    for (const attempt of attempts) {
-      void withProviderTimeout(attempt.id, timeoutMs, attempt.run)
-        .then((content) => {
-          if (settled) return;
-          settled = true;
-          resolve({
-            content,
-            providerId: attempt.id,
-            usedFallback: attempt.id !== "openai_primary",
-          });
-        })
-        .catch((err) => finishFailure(attempt.id, err));
+  for (const providerId of args.plan.failoverOrder) {
+    if (providerId === "gemini" && args.geminiKey) {
+      attempts.push({
+        id: "gemini",
+        run: async () => {
+          const result = await geminiComplete(
+            args.geminiKey as string,
+            args.geminiModel,
+            args.trimmed,
+            args.timeoutMs,
+            args.maxTokens,
+            args.plan.enableWebSearch
+          );
+          return { content: result.text, usedWebSearch: result.usedWebSearch };
+        },
+      });
+      continue;
     }
-  });
+
+    if (providerId === "openai_primary" && args.apiKey) {
+      attempts.push({
+        id: "openai_primary",
+        run: async () => ({
+          content: await openaiComplete(
+            args.apiKey as string,
+            args.primaryModel,
+            args.asOpenAi,
+            args.timeoutMs,
+            args.maxTokens
+          ),
+        }),
+      });
+      continue;
+    }
+
+    if (providerId === "openai_fallback_model" && args.apiKey && args.fallbackModel !== args.primaryModel) {
+      attempts.push({
+        id: "openai_fallback_model",
+        run: async () => ({
+          content: await openaiComplete(
+            args.apiKey as string,
+            args.fallbackModel,
+            toOpenAiMessages(args.textOnly),
+            args.timeoutMs,
+            args.maxTokens
+          ),
+        }),
+      });
+      continue;
+    }
+
+    if (
+      providerId === "openai_secondary_key" &&
+      args.secondaryKey &&
+      args.secondaryKey !== args.apiKey
+    ) {
+      attempts.push({
+        id: "openai_secondary_key",
+        run: async () => ({
+          content: await openaiComplete(
+            args.secondaryKey as string,
+            args.fallbackModel,
+            toOpenAiMessages(args.textOnly),
+            args.timeoutMs,
+            args.maxTokens
+          ),
+        }),
+      });
+      continue;
+    }
+
+    if (providerId === "fal_ai" && args.enableFalChat && args.falKey) {
+      attempts.push({
+        id: "fal_ai",
+        run: async () => ({
+          content: await falOpenRouterChatComplete(
+            args.falModel,
+            args.textOnly.map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+            args.falTimeoutMs,
+            args.maxTokens
+          ),
+        }),
+      });
+    }
+  }
+
+  return attempts;
 }
 
-async function runSequential(
+async function runSequentialPlan(
   attempts: Attempt[],
+  primaryProvider: ChatProviderId,
   timeoutMs: number
 ): Promise<ChatEngineResult | null> {
   for (const attempt of attempts) {
     try {
-      const content = await withProviderTimeout(
-        attempt.id,
-        timeoutMs,
-        attempt.run
-      );
+      const started = Date.now();
+      const result = await withProviderTimeout(attempt.id, timeoutMs, attempt.run);
       return {
-        content,
+        content: result.content,
         providerId: attempt.id,
-        usedFallback: attempt.id !== "openai_primary",
+        usedFallback: attempt.id !== primaryProvider,
+        usedWebSearch: result.usedWebSearch,
+        latencyMs: Date.now() - started,
       };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -401,13 +522,33 @@ async function runSequential(
 }
 
 export async function completeChatWithFailover(
-  messages: ChatCompletionMessage[]
+  messages: ChatCompletionMessage[],
+  routing?: ChatRoutingContext
 ): Promise<ChatEngineResult> {
+  const started = Date.now();
   const cfg = chatConfig();
   const trimmed = trimChatMessages(messages, cfg.maxDialogueMessages);
 
+  const query =
+    routing?.query ??
+    [...trimmed].reverse().find((m) => m.role === "user")?.content ??
+    "";
+
+  const hasAttachments = trimmed.some((m) => (m.attachments?.length ?? 0) > 0);
+  const tier = routing?.tier ?? "free";
+  const mode = routing?.mode ?? "general";
+
+  const plan = buildChatRoutePlan({
+    tier,
+    mode,
+    query,
+    hasAttachments,
+  });
+
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   const primaryModel = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
+  const premiumModel = process.env.OPENAI_PREMIUM_MODEL?.trim() || "gpt-4o";
+  const openAiModel = tier === "premium" ? premiumModel : primaryModel;
   const fallbackModel = process.env.OPENAI_FALLBACK_MODEL ?? "gpt-3.5-turbo";
   const secondaryKey = process.env.OPENAI_FALLBACK_API_KEY?.trim();
   const geminiKey = process.env.GEMINI_API_KEY?.trim();
@@ -418,84 +559,31 @@ export async function completeChatWithFailover(
   const falModel =
     process.env.FAL_MODEL ?? process.env.FAL_LLM_MODEL ?? "google/gemini-2.0-flash";
 
+  const maxTokens = Math.round(cfg.maxTokens * plan.maxTokensMultiplier);
   const asOpenAi = toOpenAiMessages(trimmed);
   const textOnly = toTextOnlyMessages(trimmed);
   const timeoutMs = cfg.providerTimeoutMs;
 
-  const fastLane: Attempt[] = [];
+  const attempts = buildProviderAttempts({
+    plan,
+    trimmed,
+    textOnly,
+    asOpenAi,
+    timeoutMs,
+    maxTokens,
+    apiKey,
+    primaryModel: openAiModel,
+    fallbackModel,
+    secondaryKey,
+    geminiKey,
+    geminiModel,
+    falKey,
+    falModel,
+    falTimeoutMs: cfg.falTimeoutMs,
+    enableFalChat: cfg.enableFalChat,
+  });
 
-  if (geminiKey) {
-    fastLane.push({
-      id: "gemini",
-      run: () =>
-        geminiComplete(geminiKey, geminiModel, trimmed, timeoutMs, cfg.maxTokens),
-    });
-  }
-
-  if (apiKey) {
-    fastLane.push({
-      id: "openai_primary",
-      run: () =>
-        openaiComplete(
-          apiKey,
-          primaryModel,
-          asOpenAi,
-          timeoutMs,
-          cfg.maxTokens
-        ),
-    });
-  }
-
-  const raced = await raceFirstSuccess(fastLane, timeoutMs);
-  if (raced) return raced;
-
-  const backupLane: Attempt[] = [];
-
-  if (apiKey && fallbackModel !== primaryModel) {
-    backupLane.push({
-      id: "openai_fallback_model",
-      run: () =>
-        openaiComplete(
-          apiKey,
-          fallbackModel,
-          toOpenAiMessages(textOnly),
-          timeoutMs,
-          cfg.maxTokens
-        ),
-    });
-  }
-
-  if (secondaryKey && secondaryKey !== apiKey) {
-    backupLane.push({
-      id: "openai_secondary_key",
-      run: () =>
-        openaiComplete(
-          secondaryKey,
-          fallbackModel,
-          toOpenAiMessages(textOnly),
-          timeoutMs,
-          cfg.maxTokens
-        ),
-    });
-  }
-
-  if (cfg.enableFalChat && falKey) {
-    backupLane.push({
-      id: "fal_ai",
-      run: () =>
-        falOpenRouterChatComplete(
-          falModel,
-          textOnly.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          cfg.falTimeoutMs,
-          cfg.maxTokens
-        ),
-    });
-  }
-
-  const sequential = await runSequential(backupLane, timeoutMs);
+  const sequential = await runSequentialPlan(attempts, plan.primaryProvider, timeoutMs);
   if (sequential) return sequential;
 
   return {
@@ -504,5 +592,24 @@ export async function completeChatWithFailover(
       "On slower mobile networks, replies usually arrive within a minute when the connection is stable.",
     providerId: "local_fallback",
     usedFallback: true,
+    latencyMs: Date.now() - started,
+  };
+}
+
+export function buildRoutingContextFromUser(args: {
+  subscriptionPlan: string;
+  subscriptionExpiresAt?: number | null;
+  hasPurchasedCredits?: boolean;
+  mode: string;
+  query: string;
+}): ChatRoutingContext {
+  return {
+    tier: resolveAiProviderTier({
+      subscriptionPlan: args.subscriptionPlan,
+      subscriptionExpiresAt: args.subscriptionExpiresAt,
+      hasPurchasedCredits: args.hasPurchasedCredits,
+    }),
+    mode: args.mode,
+    query: args.query,
   };
 }
