@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { getUserEmail, isValidEmail, setUserEmail } from "@/lib/auth";
+import { getSessionToken, getUserEmail, isValidEmail, setAuthSession } from "@/lib/auth";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { getConvexUrl } from "@/lib/convex";
 import { convexHttpCall } from "@/lib/network/convexCall";
@@ -59,18 +59,28 @@ function ChatLoginFormInner() {
       }
       const convexUrl = getConvexUrl();
       if (convexUrl) {
-        await convexHttpCall(convexUrl, "mutation", "users:createUser", {
-          email: normalized,
-        });
+        const result = await convexHttpCall<{ email: string; sessionToken: string }>(
+          convexUrl,
+          "action",
+          "authActions:establishSessionFromEmail",
+          { email: normalized },
+          { timeoutMs: 20_000, retries: 1 }
+        );
+        if (result?.sessionToken) {
+          setAuthSession(result.email ?? normalized, result.sessionToken);
+        } else {
+          setAuthSession(normalized, "");
+        }
+      } else {
+        setAuthSession(normalized, "");
       }
-      setUserEmail(normalized);
       router.push(nextPath.startsWith("/") ? nextPath : "/chat");
     } catch (err) {
       if (usingSupabase && isSupabaseConfigured()) {
         setError(err instanceof Error ? err.message : "Could not send magic link.");
         return;
       }
-      setUserEmail(normalized);
+      setAuthSession(normalized, getSessionToken() ?? "");
       router.push(nextPath.startsWith("/") ? nextPath : "/chat");
     } finally {
       setSubmitting(false);

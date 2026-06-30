@@ -9,6 +9,24 @@ function appendMessage(text, role = "assistant") {
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
+async function ensureLegacySession(email) {
+  let token = localStorage.getItem("giga3_session_token");
+  if (token) return token;
+  const res = await fetch(`${convexUrl}/api/mutation`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      path: "users:createUser",
+      args: { email },
+      format: "json",
+    }),
+  });
+  const data = await res.json();
+  token = data.value?.sessionToken;
+  if (token) localStorage.setItem("giga3_session_token", token);
+  return token;
+}
+
 async function send() {
   const input = document.getElementById("message");
   const sendBtn = document.getElementById("sendBtn");
@@ -34,18 +52,25 @@ async function send() {
   sendBtn.disabled = true;
 
   try {
-    const res = await fetch(`${convexUrl}/action/aiActions:askAI`, {
+    const sessionToken = await ensureLegacySession(email);
+    if (!sessionToken) throw new Error("Session expired. Please sign in again.");
+
+    const res = await fetch(`${convexUrl}/api/action`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, message }),
+      body: JSON.stringify({
+        path: "aiActions:askAI",
+        args: { sessionToken, message },
+        format: "json",
+      }),
     });
 
-    if (!res.ok) {
-      const txt = await res.text();
-      throw new Error(txt || "Server error");
+    const payload = await res.json();
+    if (payload.status === "error") {
+      throw new Error(payload.errorMessage || "Server error");
     }
+    const data = payload.value ?? payload;
 
-    const data = await res.json();
     loadingWrap.remove();
     appendMessage(data.content || "(no reply)", "assistant");
     document.getElementById("tokenCount").innerText = data.tokens ?? "-";
@@ -55,51 +80,5 @@ async function send() {
     appendMessage("Error: " + (err.message || err), "assistant");
   } finally {
     sendBtn.disabled = false;
-  }
-}
-
-function ensureUser() {
-  const email = localStorage.getItem("user_email");
-  if (!email) {
-    window.location.href = "login.html";
-    return null;
-  }
-  document.getElementById("userEmail").innerText = email;
-  document.getElementById("tokenCount").innerText = "-";
-  return email;
-}
-
-document.addEventListener("DOMContentLoaded", async () => {
-  const email = ensureUser();
-  if (!email) return;
-  await loadMessages(email);
-});
-
-async function loadMessages(email) {
-  try {
-    const res = await fetch(`${convexUrl}/query/chat:getMessages`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: email }),
-    });
-    if (!res.ok) return;
-    const msgs = await res.json();
-    const messagesDiv = document.getElementById("messages");
-    messagesDiv.innerHTML = "";
-    msgs.forEach((m) => {
-      appendMessage(m.message, m.role === "user" ? "user" : "assistant");
-    });
-
-    const userRes = await fetch(`${convexUrl}/query/users:getUser`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    if (userRes.ok) {
-      const user = await userRes.json();
-      document.getElementById("tokenCount").innerText = user?.tokens ?? "-";
-    }
-  } catch (err) {
-    console.warn("loadMessages error", err);
   }
 }

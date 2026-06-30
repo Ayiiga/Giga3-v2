@@ -1,4 +1,4 @@
-import { mutation } from "./_generated/server";
+import { internalMutation, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
 const newPaidUserFields = {
@@ -8,27 +8,15 @@ const newPaidUserFields = {
   starterCreditsGranted: false,
 };
 
+/** @deprecated Use internal grant — not callable from clients. */
 export const addTokens = mutation({
   args: { email: v.string(), tokens: v.number() },
-  handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.email))
-      .first();
-    if (!user) {
-      throw new Error("User not found");
-    }
-    await ctx.db.patch(user._id, { tokens: (user.tokens ?? 0) + args.tokens });
-    await ctx.db.insert("transactions", {
-      userId: args.email,
-      amount: args.tokens,
-      reference: "manual_add",
-      tokens: args.tokens,
-    });
+  handler: async () => {
+    throw new Error("Direct token grants are disabled. Use payment fulfillment.");
   },
 });
 
-export const grantPurchaseTokens = mutation({
+export const grantPurchaseTokensInternal = internalMutation({
   args: { email: v.string(), tokens: v.number(), reference: v.string() },
   handler: async (ctx, args) => {
     let user = await ctx.db

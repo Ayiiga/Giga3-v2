@@ -1,7 +1,7 @@
 "use client";
 
 import type { CheckoutPhase } from "@/components/billing/CheckoutOverlay";
-import { getUserEmail } from "@/lib/auth";
+import { getSessionToken, getUserEmail } from "@/lib/auth";
 import { friendlyPaystackError } from "@/lib/payments/paystackErrors";
 import {
   getPaystackPublicKeyFromBuild,
@@ -24,7 +24,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 export function useBilling() {
   const router = useRouter();
   const email = getUserEmail();
-  const userId = email ?? "";
   const [checkoutPhase, setCheckoutPhase] = useState<CheckoutPhase>(null);
   const [checkoutActive, setCheckoutActive] = useState(false);
   const [checkoutPreview, setCheckoutPreview] = useState<{
@@ -33,12 +32,14 @@ export function useBilling() {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
   const checkoutLock = useRef(false);
 
   const paying = checkoutActive || checkoutPhase !== null;
 
   useEffect(() => {
     setMounted(true);
+    setSessionToken(getSessionToken());
     preloadPaystackInline();
     return () => resetPaystackCheckoutGuard();
   }, []);
@@ -50,7 +51,7 @@ export function useBilling() {
 
   const usageRaw = useQuery(
     api.credits.getUsageSnapshot,
-    mounted && userId ? { userId } : "skip"
+    mounted && sessionToken ? { sessionToken } : "skip"
   );
 
   const initPayment = useAction(api.paystack.initializePayment);
@@ -87,7 +88,7 @@ export function useBilling() {
 
   const checkout = useCallback(
     async (productId: string) => {
-      if (!email) throw new Error("Sign in required");
+      if (!email || !sessionToken) throw new Error("Sign in required");
       if (checkoutLock.current) return;
 
       if (keysMismatch) {
@@ -104,8 +105,7 @@ export function useBilling() {
 
       try {
         const result = await initializePaystackPayment(initPayment, {
-          userId: email,
-          email,
+          sessionToken,
           productId,
         });
 

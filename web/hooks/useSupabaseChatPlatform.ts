@@ -4,7 +4,7 @@ import type { ConversationItem } from "@/components/chat/ChatSidebar";
 import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
-import { getUserEmail } from "@/lib/auth";
+import { getSessionToken, getUserEmail } from "@/lib/auth";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import { getConvexUrl } from "@/lib/convex";
 import { convexHttpCall } from "@/lib/network/convexCall";
@@ -35,20 +35,20 @@ function makeTitle(content: string): string {
   return trimmed.slice(0, 48) + (trimmed.length > 48 ? "…" : "");
 }
 
-async function createConvexConversation(userId: string, mode: string): Promise<string> {
+async function createConvexConversation(sessionToken: string, mode: string): Promise<string> {
   const convexUrl = getConvexUrl();
   if (!convexUrl) throw new Error("Convex URL is required while Supabase chat is in migration mode.");
   return await convexHttpCall<string>(
     convexUrl,
     "mutation",
     "conversations:create",
-    { userId, mode },
+    { sessionToken, mode },
     { timeoutMs: 20_000, retries: 1 }
   );
 }
 
 async function sendConvexMessage(args: {
-  userId: string;
+  sessionToken: string;
   conversationId: string;
   content: string;
   mode: string;
@@ -66,7 +66,7 @@ async function sendConvexMessage(args: {
 }
 
 async function regenerateConvexMessage(args: {
-  userId: string;
+  sessionToken: string;
   conversationId: string;
   assistantMessageId: string;
   mode: string;
@@ -82,14 +82,14 @@ async function regenerateConvexMessage(args: {
   );
 }
 
-async function fetchConvexMessages(userId: string, conversationId: string) {
+async function fetchConvexMessages(sessionToken: string, conversationId: string) {
   const convexUrl = getConvexUrl();
   if (!convexUrl) return [];
   return await convexHttpCall<MessageRow[]>(
     convexUrl,
     "query",
     "messages:listByConversation",
-    { userId, conversationId },
+    { sessionToken, conversationId },
     { timeoutMs: 20_000, retries: 1 }
   );
 }
@@ -240,6 +240,11 @@ export function useSupabaseChatPlatform() {
         setError("Please sign in");
         return;
       }
+      const sessionToken = getSessionToken();
+      if (!sessionToken) {
+        setError("Session expired. Please sign in again.");
+        return;
+      }
       setError(null);
       setPendingUserText(content);
       setIsSending(true);
@@ -256,7 +261,7 @@ export function useSupabaseChatPlatform() {
 
         let convexConversationId = chat.convexConversationId ?? null;
         if (!convexConversationId) {
-          convexConversationId = await createConvexConversation(email, mode);
+          convexConversationId = await createConvexConversation(sessionToken, mode);
           const updated = await updateSupabaseChat(chat._id, {
             convexConversationId,
           });
@@ -264,7 +269,7 @@ export function useSupabaseChatPlatform() {
         }
 
         const result = await sendConvexMessage({
-          userId: email,
+          sessionToken,
           conversationId: convexConversationId,
           content,
           mode,
@@ -276,7 +281,7 @@ export function useSupabaseChatPlatform() {
               }
             : {}),
         });
-        const convexMessages = await fetchConvexMessages(email, convexConversationId);
+        const convexMessages = await fetchConvexMessages(sessionToken, convexConversationId);
         await replaceSupabaseMessages(chat._id, convexMessages);
 
         const title =
@@ -312,6 +317,11 @@ export function useSupabaseChatPlatform() {
   const regenerateMessage = useCallback(
     async (assistantMessageId: string) => {
       if (!email) return;
+      const sessionToken = getSessionToken();
+      if (!sessionToken) {
+        setError("Session expired. Please sign in again.");
+        return;
+      }
       const chat = activeConversation;
       if (!chat?.convexConversationId) {
         setError("Conversation is not ready for regenerate yet. Send a message first.");
@@ -323,19 +333,19 @@ export function useSupabaseChatPlatform() {
       setError(null);
       setIsSending(true);
       try {
-        const convexMessages = await fetchConvexMessages(email, chat.convexConversationId);
+        const convexMessages = await fetchConvexMessages(sessionToken, chat.convexConversationId);
         const convexTarget = convexMessages[uiIdx];
         if (!convexTarget || convexTarget.role !== "assistant") {
           throw new Error("Could not find assistant message to regenerate.");
         }
 
         const result = await regenerateConvexMessage({
-          userId: email,
+          sessionToken,
           conversationId: chat.convexConversationId,
           assistantMessageId: convexTarget._id,
           mode,
         });
-        const synced = await fetchConvexMessages(email, chat.convexConversationId);
+        const synced = await fetchConvexMessages(sessionToken, chat.convexConversationId);
         await replaceSupabaseMessages(chat._id, synced);
         setMessagesRaw(await listSupabaseMessages(chat._id));
         setChatProviderLabel(

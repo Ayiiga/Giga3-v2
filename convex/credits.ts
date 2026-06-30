@@ -1,6 +1,8 @@
 import { internal } from "./_generated/api";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { requireSession } from "./auth";
+import { sessionArgs } from "./validators";
 import { creditActionValidator } from "./schema";
 import {
   CREDIT_COSTS,
@@ -8,8 +10,9 @@ import {
   isSubscriptionActive,
   type CreditAction,
 } from "./creditsConfig";
+import type { SubscriptionPlanId } from "./subscriptionPlans";
 
-type DbCtx = { db: any };
+type DbCtx = { db: any; runMutation: any };
 
 async function getUserByEmail(ctx: DbCtx, email: string) {
   return await ctx.db
@@ -112,7 +115,7 @@ export const grantCreditsInternal = internalMutation({
   },
 });
 
-export const deductCredits = mutation({
+export const deductCreditsInternal = internalMutation({
   args: {
     userId: v.string(),
     action: creditActionValidator,
@@ -130,7 +133,7 @@ export const deductCredits = mutation({
   },
 });
 
-export const deductForChatMode = mutation({
+export const deductForChatModeInternal = internalMutation({
   args: {
     userId: v.string(),
     mode: v.string(),
@@ -148,10 +151,49 @@ export const deductForChatMode = mutation({
   },
 });
 
-export const getUsageSnapshot = query({
-  args: { userId: v.string() },
+export const deductCredits = mutation({
+  args: {
+    ...sessionArgs,
+    action: creditActionValidator,
+    reference: v.optional(v.string()),
+    metadata: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
-    const user = await getUserByEmail(ctx, args.userId);
+    const userId = await requireSession(args.sessionToken);
+    return await performDeduct(
+      ctx,
+      userId,
+      args.action as CreditAction,
+      args.reference,
+      args.metadata
+    );
+  },
+});
+
+export const deductForChatMode = mutation({
+  args: {
+    ...sessionArgs,
+    mode: v.string(),
+    reference: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    const action = creditActionForMode(args.mode);
+    return await performDeduct(
+      ctx,
+      userId,
+      action,
+      args.reference,
+      JSON.stringify({ mode: args.mode })
+    );
+  },
+});
+
+export const getUsageSnapshot = query({
+  args: sessionArgs,
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    const user = await getUserByEmail(ctx, userId);
     if (!user) return null;
 
     const plan = (user.subscriptionPlan ?? "free") as SubscriptionPlanId;
@@ -160,7 +202,7 @@ export const getUsageSnapshot = query({
     const subscription = await ctx.db
       .query("subscriptions")
       .withIndex("by_user_status", (q) =>
-        q.eq("userId", args.userId).eq("status", "active")
+        q.eq("userId", userId).eq("status", "active")
       )
       .first();
 
@@ -178,58 +220,46 @@ export const getUsageSnapshot = query({
 });
 
 export const listCreditLogs = query({
-  args: { userId: v.string(), limit: v.optional(v.number()) },
+  args: { ...sessionArgs, limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
     const cap = args.limit ?? 50;
     const rows = await ctx.db
       .query("creditLogs")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .order("desc")
       .take(cap);
     return rows;
   },
 });
 
-/** @deprecated use deductCredits — kept for media module compatibility */
+/** @deprecated use deductCredits — session required */
 export const assertCanGenerateImage = mutation({
-  args: { userId: v.string() },
+  args: sessionArgs,
   handler: async (ctx, args) => {
-    const result = await performDeduct(ctx, args.userId, "image");
+    const userId = await requireSession(args.sessionToken);
+    const result = await performDeduct(ctx, userId, "image");
     return { chargedCredits: result.charged };
   },
 });
 
 /** @deprecated use deductCredits */
 export const assertCanGenerateVideo = mutation({
-  args: { userId: v.string() },
+  args: sessionArgs,
   handler: async (ctx, args) => {
-    const result = await performDeduct(ctx, args.userId, "video");
+    const userId = await requireSession(args.sessionToken);
+    const result = await performDeduct(ctx, userId, "video");
     return { chargedCredits: result.charged };
   },
 });
 
 /** @deprecated use deductForChatMode */
 export const assertCanChat = mutation({
-  args: { userId: v.string(), mode: v.optional(v.string()) },
+  args: { ...sessionArgs, mode: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
     const action = creditActionForMode(args.mode ?? "general");
-    await performDeduct(ctx, args.userId, action);
+    await performDeduct(ctx, userId, action);
     return { allowed: true as const };
-  },
-});
-
-export const grantCredits = mutation({
-  args: {
-    userId: v.string(),
-    credits: v.number(),
-    reference: v.string(),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.runMutation(internal.credits.grantCreditsInternal, {
-      userId: args.userId,
-      credits: args.credits,
-      action: "admin_grant",
-      reference: args.reference,
-    });
   },
 });

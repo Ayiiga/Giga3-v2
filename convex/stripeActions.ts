@@ -3,18 +3,21 @@
 import { action } from "./_generated/server";
 import { v } from "convex/values";
 import Stripe from "stripe";
-import { api } from "./_generated/api";
+import { internal } from "./_generated/api";
+import { requireSession } from "./auth";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2022-11-15",
 });
 
 export const createCheckout = action({
-  args: { email: v.string(), tokens: v.number() },
-  handler: async (_, args) => {
+  args: { sessionToken: v.string(), tokens: v.number() },
+  handler: async (ctx, args) => {
     if (!process.env.STRIPE_SECRET_KEY) {
       throw new Error("Stripe secret not configured");
     }
+
+    const email = await requireSession(args.sessionToken);
 
     const unitAmount = Math.max(100, Math.round(args.tokens * 100));
     const frontendUrl = process.env.FRONTEND_URL || "https://www.giga3ai.com";
@@ -31,10 +34,10 @@ export const createCheckout = action({
           quantity: 1,
         },
       ],
-      customer_email: args.email,
+      customer_email: email,
       success_url: `${frontendUrl}/payment-success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${frontendUrl}/pricing.html`,
-      metadata: { email: args.email, tokens: String(args.tokens) },
+      metadata: { email, tokens: String(args.tokens) },
     });
 
     return { url: session.url };
@@ -60,7 +63,7 @@ export const confirmPurchase = action({
     const tokens = Number((session.metadata as { tokens?: string })?.tokens || 0);
     if (!email || tokens <= 0) throw new Error("Invalid session metadata");
 
-    const balance = await ctx.runMutation(api.payments.grantPurchaseTokens, {
+    const balance = await ctx.runMutation(internal.payments.grantPurchaseTokensInternal, {
       email,
       tokens,
       reference: args.sessionId,

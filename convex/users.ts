@@ -7,17 +7,48 @@ import {
 } from "./userLearning";
 import { isValidMode } from "./aiModes";
 import { grantStarterCreditsIfNeeded } from "./userStarterCredits";
+import { requireSession } from "./auth";
+import { sessionArgs } from "./validators";
+import { createSessionToken } from "./sessionAuth";
+import { consumeAuthRateLimit } from "./authRateLimit";
+import { SECURITY_EVENT_TYPES } from "./securityMonitoring";
+import { RateLimitError, UnauthorizedError } from "./securityErrors";
 
+async function attachSessionToken<T extends Record<string, unknown>>(
+  email: string,
+  user: T
+): Promise<T & { sessionToken: string }> {
+  const sessionToken = await createSessionToken(email);
+  return { ...user, sessionToken };
+}
+
+/** Bootstrap login — issues session token. Email verified via magic link when using Supabase. */
 export const createUser = mutation({
   args: { email: v.string() },
   handler: async (ctx, args) => {
     const email = args.email.trim().toLowerCase();
+    try {
+      await consumeAuthRateLimit(ctx, `auth:create:${email}`);
+    } catch (error) {
+      if (error instanceof RateLimitError) {
+        await ctx.db.insert("securityEvents", {
+          eventType: SECURITY_EVENT_TYPES.RATE_LIMIT,
+          severity: "medium",
+          message: "Auth bootstrap rate limit exceeded",
+          emailHash: email.slice(0, 64),
+          dateKey: new Date().toISOString().slice(0, 10),
+          createdAt: Date.now(),
+        });
+      }
+      throw error;
+    }
     const existing = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", email))
       .first();
     if (existing) {
-      return await grantStarterCreditsIfNeeded(ctx, email, existing);
+      const user = await grantStarterCreditsIfNeeded(ctx, email, existing);
+      return await attachSessionToken(email, user);
     }
 
     const userId = await ctx.db.insert("users", {
@@ -33,11 +64,25 @@ export const createUser = mutation({
     if (!user) {
       throw new Error("Failed to create user");
     }
-    return await grantStarterCreditsIfNeeded(ctx, email, user);
+    const granted = await grantStarterCreditsIfNeeded(ctx, email, user);
+    return await attachSessionToken(email, granted);
   },
 });
 
-/** One-time backfill for users created without starter credits (e.g. legacy paths). */
+export const refreshSession = mutation({
+  args: sessionArgs,
+  handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken);
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    if (!user) throw new UnauthorizedError();
+    const sessionToken = await createSessionToken(email);
+    return { sessionToken };
+  },
+});
+
 export const backfillMissingStarterCredits = mutation({
   args: { limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
@@ -55,55 +100,55 @@ export const backfillMissingStarterCredits = mutation({
 });
 
 export const getUser = query({
-  args: { email: v.string() },
+  args: sessionArgs,
   handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken);
     return await ctx.db
       .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .withIndex("by_email", (q) => q.eq("email", email))
       .first();
   },
 });
 
-/** Chat header/sidebar — credits only (isolates from interestProfile churn). */
 export const getChatCredits = query({
-  args: { email: v.string() },
+  args: sessionArgs,
   handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken);
     const user = await ctx.db
       .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .withIndex("by_email", (q) => q.eq("email", email))
       .first();
     if (!user) return null;
     return { credits: user.credits ?? 0 };
   },
 });
 
-/** Personalization banner — interest profile only. */
 export const getInterestProfile = query({
-  args: { email: v.string() },
+  args: sessionArgs,
   handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken);
     const user = await ctx.db
       .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .withIndex("by_email", (q) => q.eq("email", email))
       .first();
     if (!user) return null;
     return { interestProfile: user.interestProfile ?? null };
   },
 });
 
-/** Persist interest profile every N messages to cut client subscription churn. */
 const INTEREST_PROFILE_WRITE_INTERVAL = 5;
 
-/** Updates interest profile from each chat message (consistent users get better personalization). */
 export const recordChatInteraction = mutation({
   args: {
-    email: v.string(),
+    ...sessionArgs,
     mode: v.string(),
     messageContent: v.string(),
   },
   handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken);
     const user = await ctx.db
       .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .withIndex("by_email", (q) => q.eq("email", email))
       .first();
     if (!user) return null;
 
@@ -125,11 +170,12 @@ export const recordChatInteraction = mutation({
 });
 
 export const deductTokens = mutation({
-  args: { email: v.string(), amount: v.number() },
+  args: { ...sessionArgs, amount: v.number() },
   handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken);
     const user = await ctx.db
       .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .withIndex("by_email", (q) => q.eq("email", email))
       .first();
     if (!user) {
       throw new Error("User not found");

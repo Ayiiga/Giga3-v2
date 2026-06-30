@@ -1,5 +1,7 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { requireSession } from "./auth";
+import { sessionArgs } from "./validators";
 import { normalizeUserId } from "./userIds";
 
 function userOwnsConversation(
@@ -18,11 +20,12 @@ function userOwnsConversation(
 export const listByConversation = query({
   args: {
     conversationId: v.id("conversations"),
-    userId: v.string(),
+    ...sessionArgs,
   },
   handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
     const conv = await ctx.db.get(args.conversationId);
-    if (!userOwnsConversation(conv, args.userId)) return [];
+    if (!userOwnsConversation(conv, userId)) return [];
     const rows = await ctx.db
       .query("messages")
       .withIndex("by_conversation", (q) =>

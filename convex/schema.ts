@@ -146,6 +146,24 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_dateKey", ["dateKey"]),
 
+  feedbackRateLimits: defineTable({
+    bucketKey: v.string(),
+    windowStartMs: v.number(),
+    count: v.number(),
+  }).index("by_bucket", ["bucketKey"]),
+
+  securityEvents: defineTable({
+    eventType: v.string(),
+    severity: v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
+    message: v.string(),
+    emailHash: v.optional(v.string()),
+    metadata: v.optional(v.string()),
+    dateKey: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_createdAt", ["createdAt"])
+    .index("by_dateKey", ["dateKey"]),
+
   usageDaily: defineTable({
     userId: v.string(),
     dateKey: v.string(),

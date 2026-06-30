@@ -14,6 +14,7 @@ import { useSupabaseChatPlatform } from "@/hooks/useSupabaseChatPlatform";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { useChatShareShortcuts } from "@/hooks/useChatShareShortcuts";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
+import { getSessionToken } from "@/lib/auth";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation } from "convex/react";
@@ -50,13 +51,15 @@ function ChatShellWithConvexShare({
   return (
     <ChatShellInner
       usePlatform={usePlatform}
-      makeSetPublicShare={(conversationId, email) => async (enabled) =>
-        setPublicShare({
+      makeSetPublicShare={(conversationId) => async (enabled) => {
+        const token = getSessionToken();
+        if (!token) throw new Error("Session expired");
+        return setPublicShare({
           conversationId: conversationId as Id<"conversations">,
-          userId: email,
+          sessionToken: token,
           enabled,
-        })
-      }
+        });
+      }}
     />
   );
 }
@@ -67,8 +70,7 @@ function ChatShellInner({
 }: {
   usePlatform: typeof useChatPlatform;
   makeSetPublicShare?: (
-    conversationId: string,
-    email: string
+    conversationId: string
   ) => (
     enabled: boolean
   ) => Promise<{ shareToken: string | null; sharePublic: boolean }>;
@@ -167,9 +169,9 @@ function ChatShellInner({
   }, []);
 
   const onSetPublicShare = useMemo(() => {
-    if (!makeSetPublicShare || !activeId || !email) return undefined;
-    return makeSetPublicShare(activeId, email);
-  }, [makeSetPublicShare, activeId, email]);
+    if (!makeSetPublicShare || !activeId) return undefined;
+    return makeSetPublicShare(activeId);
+  }, [makeSetPublicShare, activeId]);
 
   const handleShortcutCopyChat = useCallback(() => {
     void chatActionsRef.current?.copyChat();

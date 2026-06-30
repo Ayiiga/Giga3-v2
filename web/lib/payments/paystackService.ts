@@ -22,11 +22,10 @@ async function getPaystackPop() {
 
 export async function initializePaystackPayment(
   runAction: (args: {
-    userId: string;
-    email: string;
+    sessionToken: string;
     productId: string;
   }) => Promise<InitializePaymentResult>,
-  args: { userId: string; email: string; productId: string }
+  args: { sessionToken: string; productId: string }
 ): Promise<InitializePaymentResult> {
   return runAction(args);
 }

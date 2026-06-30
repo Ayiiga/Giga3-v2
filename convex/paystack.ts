@@ -22,6 +22,7 @@ import {
   getPaystackSecret,
   parsePaystackAmountPesewas,
 } from "./paystackConfig";
+import { requireSession } from "./auth";
 
 const PAYSTACK_BASE = "https://api.paystack.co";
 
@@ -267,14 +268,16 @@ export const markPaymentFailed = internalMutation({
 
 export const initializePayment = action({
   args: {
-    userId: v.string(),
-    email: v.string(),
+    sessionToken: v.string(),
     productId: v.string(),
   },
   handler: async (ctx, args) => {
     assertPaystackProductionReady();
-    const email = args.email.trim().toLowerCase();
-    const userId = args.userId.trim().toLowerCase();
+    const userId = await requireSession(args.sessionToken);
+    const user = await ctx.runQuery(api.users.getUser, {
+      sessionToken: args.sessionToken,
+    });
+    const email = (user?.email ?? userId).trim().toLowerCase();
     if (!email.includes("@")) {
       throw new Error("A valid email is required for checkout");
     }

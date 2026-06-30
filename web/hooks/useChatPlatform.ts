@@ -3,7 +3,7 @@
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
 import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
-import { getUserEmail } from "@/lib/auth";
+import { getSessionToken, getUserEmail, setSessionToken } from "@/lib/auth";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import { api } from "convex/_generated/api";
@@ -42,6 +42,7 @@ export function useChatPlatform() {
   const [chatProviderLabel, setChatProviderLabel] = useState<string | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [sessionToken, setSessionTokenState] = useState<string | null>(null);
   const createUserAttempted = useRef(false);
   const creditsCacheRef = useRef<number | null>(null);
   const interestProfileCacheRef = useRef<string | null>(null);
@@ -49,33 +50,30 @@ export function useChatPlatform() {
   useEffect(() => {
     setMounted(true);
     setEmail(getUserEmail());
+    setSessionTokenState(getSessionToken());
   }, []);
 
-  const emailQueryArgs = useMemo(
-    () => (mounted && email ? { email } : ("skip" as const)),
-    [mounted, email]
+  const sessionQueryArgs = useMemo(
+    () => (mounted && sessionToken ? { sessionToken } : ("skip" as const)),
+    [mounted, sessionToken]
   );
-  const conversationsQueryArgs = useMemo(
-    () => (mounted && email ? { userId: email } : ("skip" as const)),
-    [mounted, email]
-  );
+  const conversationsQueryArgs = sessionQueryArgs;
   const messagesQueryArgs = useMemo(
     () =>
-      mounted && email && activeId
-        ? { conversationId: activeId as Id<"conversations">, userId: email }
+      mounted && sessionToken && activeId
+        ? {
+            conversationId: activeId as Id<"conversations">,
+            sessionToken,
+          }
         : ("skip" as const),
-    [mounted, email, activeId]
+    [mounted, sessionToken, activeId]
   );
 
-  /** Credits-only probe for user existence — not full getUser (avoids shell churn). */
-  const chatCreditsRow = useQuery(api.users.getChatCredits, emailQueryArgs);
-  const interestProfileRow = useQuery(api.users.getInterestProfile, emailQueryArgs);
+  const chatCreditsRow = useQuery(api.users.getChatCredits, sessionQueryArgs);
+  const interestProfileRow = useQuery(api.users.getInterestProfile, sessionQueryArgs);
   const conversationsRaw = useQuery(api.conversations.list, conversationsQueryArgs);
   const messagesRaw = useQuery(api.messages.listByConversation, messagesQueryArgs);
-  const uploadUsage = useQuery(
-    api.uploadLimits.getUploadUsageSnapshot,
-    mounted && email ? { userId: email } : ("skip" as const)
-  );
+  const uploadUsage = useQuery(api.uploadLimits.getUploadUsageSnapshot, sessionQueryArgs);
   const credits =
     chatCreditsRow === undefined
       ? creditsCacheRef.current
@@ -105,7 +103,7 @@ export function useChatPlatform() {
 
   const conversationsLoading = conversationsRaw === undefined;
   const messagesLoading =
-    Boolean(activeId) && messagesRaw === undefined && mounted && Boolean(email);
+    Boolean(activeId) && messagesRaw === undefined && mounted && Boolean(sessionToken);
 
   const conversations = useStableConversations(
     conversationsRaw as ConversationItem[] | undefined
@@ -114,13 +112,23 @@ export function useChatPlatform() {
   const messages = useStableUiMessages(messagesRaw, pendingUserText);
 
   useEffect(() => {
-    if (!email || chatCreditsRow === undefined || createUserAttempted.current) {
+    if (!email || createUserAttempted.current) return;
+    const token = getSessionToken();
+    if (token) {
+      setSessionTokenState(token);
       return;
     }
-    if (chatCreditsRow !== null) return;
     createUserAttempted.current = true;
-    void createUser({ email });
-  }, [email, chatCreditsRow, createUser]);
+    void createUser({ email }).then((result) => {
+      if (result && typeof result === "object" && "sessionToken" in result) {
+        const next = (result as { sessionToken: string }).sessionToken;
+        if (next) {
+          setSessionToken(next);
+          setSessionTokenState(next);
+        }
+      }
+    });
+  }, [email, createUser]);
 
   useEffect(() => {
     if (conversations.length === 0) {
@@ -154,11 +162,15 @@ export function useChatPlatform() {
   }, [messagesRaw, pendingUserText]);
 
   const startNewChat = useCallback(async () => {
-    if (!email) return;
+    const token = sessionToken ?? getSessionToken();
+    if (!token) {
+      setError("Session expired. Please sign in again.");
+      return;
+    }
     setError(null);
-    const id = await createConversation({ userId: email, mode });
+    const id = await createConversation({ sessionToken: token, mode });
     setActiveId(id);
-  }, [email, createConversation, mode]);
+  }, [sessionToken, createConversation, mode]);
 
   const selectConversation = useCallback((id: string) => {
     setActiveId(id);
@@ -168,33 +180,39 @@ export function useChatPlatform() {
 
   const deleteConversation = useCallback(
     async (id: string) => {
-      if (!email) return;
-      await removeConversation({ conversationId: id as Id<"conversations">, userId: email });
+      const token = sessionToken ?? getSessionToken();
+      if (!token) return;
+      await removeConversation({
+        conversationId: id as Id<"conversations">,
+        sessionToken: token,
+      });
       if (activeId === id) {
         setActiveId(null);
         setPendingUserText(null);
       }
     },
-    [email, removeConversation, activeId]
+    [sessionToken, removeConversation, activeId]
   );
 
   const changeMode = useCallback(
     async (next: AiModeId) => {
       setMode(next);
-      if (!email || !activeId) return;
+      const token = sessionToken ?? getSessionToken();
+      if (!token || !activeId) return;
       await setConversationMode({
         conversationId: activeId as Id<"conversations">,
-        userId: email,
+        sessionToken: token,
         mode: next,
       });
     },
-    [email, activeId, setConversationMode]
+    [sessionToken, activeId, setConversationMode]
   );
 
   const sendMessage = useCallback(
     async (content: string, attachments?: PreparedChatAttachment[]) => {
-      if (!email) {
-        setError("Please sign in");
+      const token = sessionToken ?? getSessionToken();
+      if (!token) {
+        setError("Session expired. Please sign in again.");
         return;
       }
       setError(null);
@@ -204,13 +222,13 @@ export function useChatPlatform() {
       try {
         let conversationId = activeId;
         if (!conversationId) {
-          conversationId = await createConversation({ userId: email, mode });
+          conversationId = await createConversation({ sessionToken: token, mode });
           setActiveId(conversationId);
         }
 
         const result = await withClientTimeout(
           sendMessageAction({
-            userId: email,
+            sessionToken: token,
             conversationId: conversationId as Id<"conversations">,
             content,
             mode,
@@ -239,18 +257,19 @@ export function useChatPlatform() {
         setIsSending(false);
       }
     },
-    [email, activeId, mode, createConversation, sendMessageAction]
+    [sessionToken, activeId, mode, createConversation, sendMessageAction]
   );
 
   const regenerateMessage = useCallback(
     async (assistantMessageId: string) => {
-      if (!email || !activeId) return;
+      const token = sessionToken ?? getSessionToken();
+      if (!token || !activeId) return;
       setError(null);
       setIsSending(true);
       try {
         const result = await withClientTimeout(
           regenerateMessageAction({
-            userId: email,
+            sessionToken: token,
             conversationId: activeId as Id<"conversations">,
             assistantMessageId: assistantMessageId as Id<"messages">,
             mode,
@@ -271,7 +290,7 @@ export function useChatPlatform() {
         setIsSending(false);
       }
     },
-    [email, activeId, mode, regenerateMessageAction]
+    [sessionToken, activeId, mode, regenerateMessageAction]
   );
 
   return {

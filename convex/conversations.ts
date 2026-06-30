@@ -1,6 +1,8 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { isValidMode } from "./aiModes";
+import { requireSession } from "./auth";
+import { sessionArgs } from "./validators";
 import { normalizeUserId } from "./userIds";
 
 async function listConversationsForUser(ctx: { db: any }, userId: string) {
@@ -19,13 +21,6 @@ async function listConversationsForUser(ctx: { db: any }, userId: string) {
   return rows.sort((a: { updatedAt: number }, b: { updatedAt: number }) => b.updatedAt - a.updatedAt);
 }
 
-export const list = query({
-  args: { userId: v.string() },
-  handler: async (ctx, args) => {
-    return await listConversationsForUser(ctx, args.userId);
-  },
-});
-
 function userOwnsConversation(
   conv: { userId: string } | null,
   userId: string
@@ -39,27 +34,37 @@ function userOwnsConversation(
   );
 }
 
-export const get = query({
-  args: { conversationId: v.id("conversations"), userId: v.string() },
+export const list = query({
+  args: sessionArgs,
   handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    return await listConversationsForUser(ctx, userId);
+  },
+});
+
+export const get = query({
+  args: { conversationId: v.id("conversations"), ...sessionArgs },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
     const conv = await ctx.db.get(args.conversationId);
-    if (!userOwnsConversation(conv, args.userId)) return null;
+    if (!userOwnsConversation(conv, userId)) return null;
     return conv;
   },
 });
 
 export const create = mutation({
   args: {
-    userId: v.string(),
+    ...sessionArgs,
     mode: v.string(),
     title: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
     const mode = isValidMode(args.mode) ? args.mode : "general";
     const now = Date.now();
     const title = args.title?.trim() || "New chat";
     return await ctx.db.insert("conversations", {
-      userId: normalizeUserId(args.userId),
+      userId: normalizeUserId(userId),
       title: title.slice(0, 80),
       mode,
       createdAt: now,
@@ -71,12 +76,13 @@ export const create = mutation({
 export const updateTitle = mutation({
   args: {
     conversationId: v.id("conversations"),
-    userId: v.string(),
+    ...sessionArgs,
     title: v.string(),
   },
   handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
     const conv = await ctx.db.get(args.conversationId);
-    if (!userOwnsConversation(conv, args.userId)) throw new Error("Not found");
+    if (!userOwnsConversation(conv, userId)) throw new Error("Not found");
     await ctx.db.patch(args.conversationId, {
       title: args.title.slice(0, 120),
       updatedAt: Date.now(),
@@ -87,22 +93,24 @@ export const updateTitle = mutation({
 export const setMode = mutation({
   args: {
     conversationId: v.id("conversations"),
-    userId: v.string(),
+    ...sessionArgs,
     mode: v.string(),
   },
   handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
     const conv = await ctx.db.get(args.conversationId);
-    if (!userOwnsConversation(conv, args.userId)) throw new Error("Not found");
+    if (!userOwnsConversation(conv, userId)) throw new Error("Not found");
     const mode = isValidMode(args.mode) ? args.mode : "general";
     await ctx.db.patch(args.conversationId, { mode, updatedAt: Date.now() });
   },
 });
 
 export const remove = mutation({
-  args: { conversationId: v.id("conversations"), userId: v.string() },
+  args: { conversationId: v.id("conversations"), ...sessionArgs },
   handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
     const conv = await ctx.db.get(args.conversationId);
-    if (!userOwnsConversation(conv, args.userId)) throw new Error("Not found");
+    if (!userOwnsConversation(conv, userId)) throw new Error("Not found");
     const msgs = await ctx.db
       .query("messages")
       .withIndex("by_conversation", (q) =>
@@ -115,8 +123,11 @@ export const remove = mutation({
 });
 
 export const touch = mutation({
-  args: { conversationId: v.id("conversations") },
+  args: { conversationId: v.id("conversations"), ...sessionArgs },
   handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    const conv = await ctx.db.get(args.conversationId);
+    if (!userOwnsConversation(conv, userId)) throw new Error("Not found");
     await ctx.db.patch(args.conversationId, { updatedAt: Date.now() });
   },
 });
@@ -130,12 +141,13 @@ function generateShareToken(): string {
 export const setPublicShare = mutation({
   args: {
     conversationId: v.id("conversations"),
-    userId: v.string(),
+    ...sessionArgs,
     enabled: v.boolean(),
   },
   handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
     const conv = await ctx.db.get(args.conversationId);
-    if (!userOwnsConversation(conv, args.userId)) throw new Error("Not found");
+    if (!userOwnsConversation(conv, userId)) throw new Error("Not found");
     if (args.enabled) {
       const token = conv?.shareToken?.trim() || generateShareToken();
       await ctx.db.patch(args.conversationId, {

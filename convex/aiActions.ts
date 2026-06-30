@@ -11,6 +11,7 @@ import {
   toRetrievalSystemMessage,
   validateAnswerQuality,
 } from "./answerQuality";
+import { requireSessionWithMonitoring } from "./auth";
 
 function hasHallucinationRisk(flags: string[]): boolean {
   return flags.some((flag) =>
@@ -28,16 +29,21 @@ function hasHallucinationRisk(flags: string[]): boolean {
 
 export const askAI = action({
   args: {
-    email: v.string(),
+    sessionToken: v.string(),
     message: v.string(),
   },
   handler: async (ctx, args) => {
-    const { email, message } = args;
+    const verifiedEmail = await requireSessionWithMonitoring(args.sessionToken, ctx);
+    const { message } = args;
 
-    let user = await ctx.runQuery(api.users.getUser, { email });
+    let user = await ctx.runQuery(api.users.getUser, {
+      sessionToken: args.sessionToken,
+    });
     if (!user) {
-      await ctx.runMutation(api.users.createUser, { email });
-      user = await ctx.runQuery(api.users.getUser, { email });
+      await ctx.runMutation(api.users.createUser, { email: verifiedEmail });
+      user = await ctx.runQuery(api.users.getUser, {
+        sessionToken: args.sessionToken,
+      });
     }
     if (!user) {
       throw new Error("User not found");
@@ -71,7 +77,7 @@ export const askAI = action({
       context: qualityContext,
     });
     const aiContent = validated.content;
-    const qualityMonitoring = recordQualityObservation(validated.report);
+    recordQualityObservation(validated.report);
     await ctx.runMutation(internal.qualityDashboard.recordResponseMetric, {
       responseMode: validated.report.responseMode,
       confidenceLabel: validated.report.confidenceLabel,
@@ -85,7 +91,7 @@ export const askAI = action({
     const newTokens = chargedAi ? Math.max(0, user.tokens - 1) : user.tokens;
 
     await ctx.runMutation(internal.ai.persistLegacyChat, {
-      email,
+      email: verifiedEmail,
       userMessage: message,
       assistantMessage: aiContent,
       newTokens,
@@ -97,7 +103,6 @@ export const askAI = action({
       usedFallback: engineResult.usedFallback,
       chatProvider: engineResult.providerId,
       quality: validated.report,
-      qualityMonitoring,
     };
   },
 });

@@ -1,5 +1,7 @@
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { requireSession } from "./auth";
+import type { ValidatedAttachmentFile } from "./attachmentValidation";
 import { isSubscriptionActive } from "./creditsConfig";
 import type { SubscriptionPlanId } from "./subscriptionPlans";
 
@@ -116,16 +118,66 @@ function snapshotFrom(
   };
 }
 
+async function applyUploadRecord(
+  ctx: DbCtx,
+  userId: string,
+  files: ValidatedAttachmentFile[]
+) {
+  if (files.length === 0) return null;
+  const { planId, limits } = await getPlanAndLimits(ctx, userId);
+  const row = await getUsageRow(ctx, userId);
+  const filesUsed = row?.filesUploaded ?? 0;
+  const imagesUsed = row?.uploadImagesUsed ?? 0;
+  const bytesUsed = row?.uploadBytes ?? 0;
+
+  const requestedFiles = files.length;
+  const requestedImages = files.filter((file) => file.kind === "image").length;
+  const requestedBytes = files.reduce((sum, file) => sum + file.sizeBytes, 0);
+  const tooLarge = files.find((file) => file.sizeBytes > limits.maxFileBytes);
+  if (tooLarge) {
+    throw new Error(
+      `${tooLarge.name} exceeds your ${limits.label} plan file-size limit.`
+    );
+  }
+  if (filesUsed + requestedFiles > limits.filesPerDay) {
+    throw new Error(
+      `Daily upload limit reached (${limits.filesPerDay} files/day on ${limits.label}).`
+    );
+  }
+  if (imagesUsed + requestedImages > limits.imagesPerDay) {
+    throw new Error(
+      `Daily image upload limit reached (${limits.imagesPerDay} images/day on ${limits.label}).`
+    );
+  }
+
+  const key = dateKey();
+  const patch = {
+    userId,
+    dateKey: key,
+    chatsUsed: row?.chatsUsed ?? 0,
+    imagesUsed: row?.imagesUsed ?? 0,
+    filesUploaded: filesUsed + requestedFiles,
+    uploadImagesUsed: imagesUsed + requestedImages,
+    uploadBytes: bytesUsed + requestedBytes,
+  };
+
+  if (row) await ctx.db.patch(row._id, patch);
+  else await ctx.db.insert("usageDaily", patch);
+
+  return snapshotFrom(planId, limits, patch);
+}
+
 export const getUploadUsageSnapshot = query({
-  args: { userId: v.string() },
+  args: { sessionToken: v.string() },
   handler: async (ctx, args) => {
-    const user = await getUserByEmail(ctx, args.userId);
+    const email = await requireSession(args.sessionToken);
+    const user = await getUserByEmail(ctx, email);
     if (!user) {
       const limits = await getLimitForPlan(ctx, "free");
       return snapshotFrom("free", limits, null);
     }
-    const { planId, limits } = await getPlanAndLimits(ctx, args.userId);
-    const row = await getUsageRow(ctx, args.userId);
+    const { planId, limits } = await getPlanAndLimits(ctx, email);
+    const row = await getUsageRow(ctx, email);
     return snapshotFrom(planId, limits, row);
   },
 });
@@ -192,7 +244,8 @@ export const updateUploadLimitSetting = mutation({
   },
 });
 
-export const recordUploads = mutation({
+/** Called from authenticated actions after server-side attachment validation. */
+export const recordUploadsInternal = internalMutation({
   args: {
     userId: v.string(),
     files: v.array(
@@ -213,47 +266,33 @@ export const recordUploads = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    if (args.files.length === 0) return null;
-    const { planId, limits } = await getPlanAndLimits(ctx, args.userId);
-    const row = await getUsageRow(ctx, args.userId);
-    const filesUsed = row?.filesUploaded ?? 0;
-    const imagesUsed = row?.uploadImagesUsed ?? 0;
-    const bytesUsed = row?.uploadBytes ?? 0;
+    return await applyUploadRecord(ctx, args.userId, args.files);
+  },
+});
 
-    const requestedFiles = args.files.length;
-    const requestedImages = args.files.filter((file) => file.kind === "image").length;
-    const requestedBytes = args.files.reduce((sum, file) => sum + file.sizeBytes, 0);
-    const tooLarge = args.files.find((file) => file.sizeBytes > limits.maxFileBytes);
-    if (tooLarge) {
-      throw new Error(
-        `${tooLarge.name} exceeds your ${limits.label} plan file-size limit.`
-      );
-    }
-    if (filesUsed + requestedFiles > limits.filesPerDay) {
-      throw new Error(
-        `Daily upload limit reached (${limits.filesPerDay} files/day on ${limits.label}).`
-      );
-    }
-    if (imagesUsed + requestedImages > limits.imagesPerDay) {
-      throw new Error(
-        `Daily image upload limit reached (${limits.imagesPerDay} images/day on ${limits.label}).`
-      );
-    }
-
-    const key = dateKey();
-    const patch = {
-      userId: args.userId,
-      dateKey: key,
-      chatsUsed: row?.chatsUsed ?? 0,
-      imagesUsed: row?.imagesUsed ?? 0,
-      filesUploaded: filesUsed + requestedFiles,
-      uploadImagesUsed: imagesUsed + requestedImages,
-      uploadBytes: bytesUsed + requestedBytes,
-    };
-
-    if (row) await ctx.db.patch(row._id, patch);
-    else await ctx.db.insert("usageDaily", patch);
-
-    return snapshotFrom(planId, limits, patch);
+/** @deprecated Direct client calls are blocked — uploads are recorded via platformActions. */
+export const recordUploads = mutation({
+  args: {
+    sessionToken: v.string(),
+    files: v.array(
+      v.object({
+        name: v.string(),
+        sizeBytes: v.number(),
+        mimeType: v.optional(v.string()),
+        kind: v.union(
+          v.literal("image"),
+          v.literal("document"),
+          v.literal("archive"),
+          v.literal("spreadsheet"),
+          v.literal("presentation"),
+          v.literal("pdf"),
+          v.literal("text")
+        ),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    await requireSession(args.sessionToken);
+    throw new Error("Upload recording is handled automatically when sending messages.");
   },
 });
