@@ -4,7 +4,7 @@
  *
  * Run: node scripts/generate-branding.mjs
  */
-import { mkdir, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import zlib from "node:zlib";
@@ -14,6 +14,11 @@ const publicDir = join(__dirname, "..", "public");
 const iconsDir = join(publicDir, "icons");
 const splashDir = join(publicDir, "splash");
 const imagesDir = join(publicDir, "images");
+const frontendIconsDir = join(__dirname, "..", "..", "frontend", "assets", "icons");
+const frontendImagesDir = join(__dirname, "..", "..", "frontend", "assets", "images");
+
+/** Bump when icons/splash change — keeps browsers and PWAs off stale assets. */
+const BRAND_ASSET_VERSION = "20260630";
 
 const BRAND = {
   name: "Giga3 AI",
@@ -265,7 +270,7 @@ function encodePngRect(width, height, pixelBuffer) {
 function renderSplash(width, height) {
   const pixels = Buffer.alloc(width * height * 4);
   const cx = width / 2;
-  const cy = height * 0.42;
+  const cy = height * 0.38;
   const markScale = Math.min(width, height) * 0.2;
 
   for (let y = 0; y < height; y++) {
@@ -298,7 +303,76 @@ function renderSplash(width, height) {
     }
   }
 
+  const textScale = Math.max(3, Math.round(Math.min(width, height) / 220));
+  const titleY = cy + markScale * 1.35;
+  drawText(pixels, width, height, "Giga3 AI", cx, titleY, textScale, BRAND.primary);
+
+  const tagScale = Math.max(2, textScale - 1);
+  const tagY = titleY + textScale * 10;
+  drawText(
+    pixels,
+    width,
+    height,
+    "Intelligent AI",
+    cx,
+    tagY,
+    tagScale,
+    lerpColor(BRAND.primary, BRAND.secondary, 0.35)
+  );
+
   return pixels;
+}
+
+/** 5x7 bitmap glyphs (5 bits per row, MSB left). */
+const FONT_5X7 = {
+  " ": [0, 0, 0, 0, 0, 0, 0],
+  A: [0x0e, 0x11, 0x11, 0x1f, 0x11, 0x11, 0x11],
+  G: [0x0f, 0x10, 0x17, 0x11, 0x11, 0x11, 0x0f],
+  I: [0x1f, 0x04, 0x04, 0x04, 0x04, 0x04, 0x1f],
+  a: [0x00, 0x00, 0x0e, 0x01, 0x0f, 0x11, 0x0f],
+  g: [0x00, 0x0f, 0x11, 0x11, 0x0f, 0x01, 0x0e],
+  i: [0x04, 0x00, 0x0c, 0x04, 0x04, 0x04, 0x0e],
+  l: [0x0c, 0x04, 0x04, 0x04, 0x04, 0x04, 0x0e],
+  n: [0x00, 0x00, 0x16, 0x19, 0x11, 0x11, 0x11],
+  t: [0x04, 0x04, 0x0e, 0x04, 0x04, 0x04, 0x03],
+  e: [0x00, 0x00, 0x0e, 0x11, 0x1f, 0x10, 0x0e],
+  3: [0x0e, 0x11, 0x02, 0x04, 0x02, 0x11, 0x0e],
+};
+
+function drawGlyph(pixels, width, height, originX, originY, scale, glyph, color) {
+  const rows = FONT_5X7[glyph];
+  if (!rows) return;
+  for (let row = 0; row < rows.length; row++) {
+    const bits = rows[row];
+    for (let col = 0; col < 5; col++) {
+      if ((bits >> (4 - col)) & 1) {
+        const x0 = Math.floor(originX + col * scale);
+        const y0 = Math.floor(originY + row * scale);
+        for (let dy = 0; dy < scale; dy++) {
+          for (let dx = 0; dx < scale; dx++) {
+            const x = x0 + dx;
+            const y = y0 + dy;
+            if (x < 0 || y < 0 || x >= width || y >= height) continue;
+            const i = (y * width + x) * 4;
+            pixels[i] = color[0];
+            pixels[i + 1] = color[1];
+            pixels[i + 2] = color[2];
+            pixels[i + 3] = 255;
+          }
+        }
+      }
+    }
+  }
+}
+
+function drawText(pixels, width, height, text, centerX, baseY, scale, color) {
+  const charAdvance = 6 * scale;
+  const totalWidth = text.length * charAdvance - scale;
+  let x = centerX - totalWidth / 2;
+  for (const ch of text) {
+    drawGlyph(pixels, width, height, x, baseY, scale, ch, color);
+    x += charAdvance;
+  }
 }
 
 function writeIco(png16, png32) {
@@ -476,9 +550,28 @@ const manifestJson = JSON.stringify(manifest, null, 2) + "\n";
 await writeFile(join(publicDir, "manifest.json"), manifestJson);
 await writeFile(join(publicDir, "manifest.webmanifest"), manifestJson);
 
+await mkdir(frontendIconsDir, { recursive: true });
+await mkdir(frontendImagesDir, { recursive: true });
+const logoPath = join(imagesDir, "logo.png");
+await copyFile(logoPath, join(frontendImagesDir, "logo.png"));
+await copyFile(logoPath, join(frontendImagesDir, "logo-square.png"));
+await copyFile(join(iconsDir, "icon-192.png"), join(frontendIconsDir, "icon-192.png"));
+await copyFile(join(iconsDir, "icon-512.png"), join(frontendIconsDir, "icon-512.png"));
+await copyFile(
+  join(iconsDir, "apple-touch-icon.png"),
+  join(frontendIconsDir, "apple-touch-icon.png")
+);
+
+await writeFile(
+  join(publicDir, "branding-version.txt"),
+  `${BRAND_ASSET_VERSION}\n`
+);
+
 console.log("Generated Giga3 AI branding assets:");
+console.log(`  version: ${BRAND_ASSET_VERSION}`);
 console.log(`  icons: ${ICON_SIZES.length + 2} PNGs in public/icons/`);
 console.log("  logo: public/images/logo.png");
 console.log("  favicon: public/favicon.ico, favicon.svg");
 console.log(`  splash: ${SPLASH_SCREENS.length} screens in public/splash/`);
 console.log("  manifest: public/manifest.json");
+console.log("  legacy frontend: frontend/assets/{images,icons}/ synced");

@@ -4,6 +4,7 @@ import { SwUpdatePrompt } from "@/components/pwa/SwUpdatePrompt";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
 import { GlobalSlowNetworkBanner } from "@/components/pwa/GlobalSlowNetworkBanner";
 import { branding } from "@/lib/branding";
+import { brandingAssetUrl } from "@/lib/brandingAssets";
 import { pwaStartupImages } from "@/lib/pwaSplash";
 import { siteConfig } from "@/lib/site";
 import "@/styles/globals.css";
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
   formatDetection: { telephone: false },
   openGraph: {
     type: "website",
-    images: [{ url: "/images/logo.png", width: 512, height: 512, alt: branding.name }],
+    images: [{ url: brandingAssetUrl("/images/logo.png"), width: 512, height: 512, alt: branding.name }],
     locale: "en_US",
     url: siteConfig.url,
     siteName: branding.name,
@@ -47,20 +48,20 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: branding.name,
     description: branding.description,
-    images: ["/images/logo.png"],
+    images: [brandingAssetUrl("/images/logo.png")],
   },
   manifest: "/manifest.json",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
       { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/icons/favicon-16.png", sizes: "16x16", type: "image/png" },
-      { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
-      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: brandingAssetUrl("/icons/favicon-16.png"), sizes: "16x16", type: "image/png" },
+      { url: brandingAssetUrl("/icons/favicon-32.png"), sizes: "32x32", type: "image/png" },
+      { url: brandingAssetUrl("/icons/icon-192.png"), sizes: "192x192", type: "image/png" },
+      { url: brandingAssetUrl("/icons/icon-512.png"), sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: brandingAssetUrl("/icons/apple-touch-icon.png"), sizes: "180x180", type: "image/png" },
     ],
     shortcut: ["/favicon.ico"],
   },

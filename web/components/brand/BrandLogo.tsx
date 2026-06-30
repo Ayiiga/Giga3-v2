@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { brandingAssetUrl } from "@/lib/brandingAssets";
 import { branding } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +13,7 @@ type BrandLogoProps = {
 export function BrandLogo({ size = 36, className, priority }: BrandLogoProps) {
   return (
     <Image
-      src="/images/logo.png"
+      src={brandingAssetUrl("/images/logo.png")}
       alt={branding.name}
       width={size}
       height={size}
