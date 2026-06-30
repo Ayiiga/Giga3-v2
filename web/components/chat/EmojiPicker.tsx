@@ -57,6 +57,7 @@ export const EmojiPicker = memo(function EmojiPicker({
           key={emoji}
           type="button"
           role="option"
+          aria-selected={false}
           aria-label={`Insert ${emoji}`}
           className="flex h-9 w-9 items-center justify-center rounded-lg text-lg hover:bg-accent/10"
           onClick={() => {

@@ -24,7 +24,6 @@ interface MessageListProps {
   messages: UiMessage[];
   isLoading?: boolean;
   isSending?: boolean;
-  streamingMessageId?: string | null;
   onInsertTemplate?: (text: string) => void;
   onRegenerate?: (messageId: string) => void;
   onEditMessage?: (messageId: string, content: string) => void;
