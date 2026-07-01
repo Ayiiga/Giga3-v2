@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v27-production-chat";
+const CACHE_NAME = "giga3-shell-v28-instant-chat";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
@@ -15,6 +15,7 @@ const PRECACHE = [
   "/icons/icon-maskable-512.png",
   "/pricing/",
   "/subscribe/",
+  "/chat/login/",
 ];
 
 /** Document paths that must not be stored offline (session / billing / creator tools). */

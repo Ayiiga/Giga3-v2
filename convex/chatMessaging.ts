@@ -18,7 +18,7 @@ import {
   validateAttachments,
   type RawAttachmentInput,
 } from "./attachmentValidation";
-import { grantStarterCreditsIfNeeded } from "./userStarterCredits";
+import { normalizeUserId } from "./userIds";
 
 const attachmentValidator = v.optional(
   v.array(
@@ -69,15 +69,15 @@ function hasHallucinationRisk(flags: string[]): boolean {
 }
 
 async function ensureChatUser(
-  ctx: { db: any; runMutation: any },
+  ctx: { db: any; scheduler: any },
   email: string
-) {
-  let user = await ctx.db
+): Promise<void> {
+  const user = await ctx.db
     .query("users")
     .withIndex("by_email", (q: any) => q.eq("email", email))
     .first();
   if (!user) {
-    const userId = await ctx.db.insert("users", {
+    await ctx.db.insert("users", {
       email,
       tokens: 12,
       plan: "free",
@@ -86,14 +86,11 @@ async function ensureChatUser(
       credits: 0,
       starterCreditsGranted: false,
     });
-    await ctx.runMutation(internal.platformStats.incrementRegisteredUserInternal, {});
-    const created = await ctx.db.get(userId);
-    if (!created) throw new Error("Failed to create user");
-    user = await grantStarterCreditsIfNeeded(ctx, email, created);
-  } else {
-    await grantStarterCreditsIfNeeded(ctx, email, user);
+    await ctx.scheduler.runAfter(0, internal.platformStats.incrementRegisteredUserInternal, {});
   }
-  return user;
+  await ctx.scheduler.runAfter(0, internal.userStarterCredits.ensureStarterCredits, {
+    email,
+  });
 }
 
 /**
@@ -103,7 +100,7 @@ async function ensureChatUser(
 export const acceptMessage = mutation({
   args: {
     sessionToken: v.string(),
-    conversationId: v.id("conversations"),
+    conversationId: v.optional(v.id("conversations")),
     content: v.string(),
     mode: v.optional(v.string()),
     attachments: attachmentValidator,
@@ -111,40 +108,68 @@ export const acceptMessage = mutation({
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken);
+    const normalizedEmail = normalizeUserId(email);
+    const now = Date.now();
 
-    const conv = await ctx.db.get(args.conversationId);
-    if (!conv || conv.userId !== email) {
-      throw new Error("Conversation not found");
+    let conversationId = args.conversationId;
+    let conv = conversationId ? await ctx.db.get(conversationId) : null;
+
+    if (conversationId) {
+      if (!conv || conv.userId !== email) {
+        throw new Error("Conversation not found");
+      }
+    } else {
+      const mode =
+        (args.mode && isValidMode(args.mode) ? args.mode : "general") as AiModeId;
+      conversationId = await ctx.db.insert("conversations", {
+        userId: normalizedEmail,
+        title: "New chat",
+        mode,
+        createdAt: now,
+        updatedAt: now,
+      });
+      conv = await ctx.db.get(conversationId);
+      await ctx.scheduler.runAfter(
+        0,
+        internal.platformStatsRecorder.recordConversationCreatedInternal,
+        {}
+      );
     }
 
     await ensureChatUser(ctx, email);
 
     const mode =
-      (args.mode && isValidMode(args.mode) ? args.mode : conv.mode ?? "general") as AiModeId;
+      (args.mode && isValidMode(args.mode) ? args.mode : conv?.mode ?? "general") as AiModeId;
     const rawAttachments = (args.attachments ?? []) as RawAttachmentInput[];
     const attachments = rawAttachments as ChatCompletionAttachment[];
     const imageCapability = assessImageProcessingCapability(attachments);
 
     if (attachments.length > 0) {
-      const usage = await ctx.runQuery(api.uploadLimits.getUploadUsageSnapshot, {
-        sessionToken: args.sessionToken,
-      });
-      const validated = validateAttachments(rawAttachments, usage.limits.maxFileBytes);
-      await ctx.runMutation(internal.uploadLimits.recordUploadsInternal, {
+      const maxFileBytes = await ctx.runQuery(
+        internal.uploadLimitsInternal.getMaxFileBytesForUserInternal,
+        { userId: email }
+      );
+      const validated = validateAttachments(rawAttachments, maxFileBytes);
+      await ctx.scheduler.runAfter(0, internal.uploadLimits.recordUploadsInternal, {
         userId: email,
         files: toUploadRecordFiles(validated),
       });
     }
 
-    if (mode !== conv.mode) {
-      await ctx.db.patch(args.conversationId, { mode, updatedAt: Date.now() });
+    if (conv && mode !== conv.mode) {
+      await ctx.db.patch(conversationId!, { mode, updatedAt: now });
     }
 
-    await ctx.runMutation(internal.platform.appendMessage, {
-      conversationId: args.conversationId,
-      userId: email,
+    await ctx.db.insert("messages", {
+      conversationId: conversationId!,
+      userId: normalizedEmail,
       role: "user",
       content: args.content,
+      createdAt: now,
+    });
+    await ctx.db.patch(conversationId!, { updatedAt: now });
+    await ctx.scheduler.runAfter(0, internal.platformStatsRecorder.recordMessageInternal, {
+      role: "user",
     });
 
     await ctx.scheduler.runAfter(0, api.users.recordChatInteraction, {
@@ -172,7 +197,7 @@ export const acceptMessage = mutation({
         }),
       });
       recordQualityObservation(validatedFailure.report);
-      await ctx.runMutation(internal.qualityDashboard.recordResponseMetric, {
+      await ctx.scheduler.runAfter(0, internal.qualityDashboard.recordResponseMetric, {
         responseMode: validatedFailure.report.responseMode,
         confidenceLabel: validatedFailure.report.confidenceLabel,
         citationCount: validatedFailure.report.citationCount,
@@ -180,22 +205,45 @@ export const acceptMessage = mutation({
         verificationPassed: !hasHallucinationRisk(validatedFailure.report.flags),
         hasHallucinationRisk: hasHallucinationRisk(validatedFailure.report.flags),
       });
-      await ctx.runMutation(internal.platform.appendMessage, {
-        conversationId: args.conversationId,
-        userId: email,
+      await ctx.db.insert("messages", {
+        conversationId: conversationId!,
+        userId: normalizedEmail,
         role: "assistant",
         content: validatedFailure.content,
+        createdAt: Date.now(),
+      });
+      await ctx.scheduler.runAfter(0, internal.platformStatsRecorder.recordMessageInternal, {
+        role: "assistant",
       });
       return {
         status: "complete" as const,
+        conversationId: conversationId!,
         content: validatedFailure.content,
         chatProviderLabel: getChatProviderLabel("local_fallback"),
         usedFallback: true,
       };
     }
 
-    const jobId = await ctx.runMutation(internal.chatReplyJobs.createJob, {
-      conversationId: args.conversationId,
+    if (args.clientRequestId) {
+      const existing = await ctx.db
+        .query("chatReplyJobs")
+        .withIndex("by_clientRequest", (q) =>
+          q.eq("clientRequestId", args.clientRequestId)
+        )
+        .first();
+      if (existing && existing.status !== "failed" && existing.status !== "cancelled") {
+        return {
+          status: "processing" as const,
+          conversationId: conversationId!,
+          jobId: existing._id,
+          chatProviderLabel: getChatProviderLabel("gemini"),
+          usedFallback: false,
+        };
+      }
+    }
+
+    const jobId = await ctx.db.insert("chatReplyJobs", {
+      conversationId: conversationId!,
       userId: email,
       mode,
       content: args.content,
@@ -203,6 +251,9 @@ export const acceptMessage = mutation({
         attachments.length > 0 ? JSON.stringify(attachments) : undefined,
       kind: "reply",
       clientRequestId: args.clientRequestId,
+      cancelled: false,
+      status: "pending",
+      createdAt: now,
     });
 
     await ctx.scheduler.runAfter(0, internal.chatReplyWorker.processJob, {
@@ -211,6 +262,7 @@ export const acceptMessage = mutation({
 
     return {
       status: "processing" as const,
+      conversationId: conversationId!,
       jobId,
       chatProviderLabel: getChatProviderLabel("gemini"),
       usedFallback: false,

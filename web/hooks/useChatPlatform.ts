@@ -16,17 +16,22 @@ import {
   removeOutbox,
   type OutboxEntry,
 } from "@/lib/chat/offlineOutbox";
+import {
+  readCachedMessages,
+  writeCachedMessages,
+} from "@/lib/chat/messageCache";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /** Fast ack — save message + queue AI worker (not full reply). */
-const CHAT_ACCEPT_TIMEOUT_MS = 45_000;
+const CHAT_ACCEPT_TIMEOUT_MS = 60_000;
 const CHAT_REPLY_WAIT_MS = 120_000;
 const CHAT_REPLY_WAIT_SLOW_MS = 180_000;
-const MAX_SEND_RETRIES = 3;
-const RETRY_BASE_MS = 1_500;
+const MAX_SEND_RETRIES = 4;
+const RETRY_BASE_MS = 800;
+const SYNC_INDICATOR_DELAY_MS = 700;
 
 function withClientTimeout<T>(
   promise: Promise<T>,
@@ -64,6 +69,7 @@ export function useChatPlatform() {
   const [isSending, setIsSending] = useState(false);
   const [awaitingReply, setAwaitingReply] = useState(false);
   const [pendingUserText, setPendingUserText] = useState<string | null>(null);
+  const [showSyncIndicator, setShowSyncIndicator] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [chatProviderLabel, setChatProviderLabel] = useState<string | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
@@ -75,7 +81,13 @@ export function useChatPlatform() {
   const interestProfileCacheRef = useRef<string | null>(null);
   const assistantBaselineRef = useRef(0);
   const syncingOutboxRef = useRef(false);
+  const syncIndicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { isSlowNetwork } = useConnectionQuality();
+
+  const cachedMessageFallback = useMemo(
+    () => (activeId ? readCachedMessages(activeId) : null),
+    [activeId]
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -144,7 +156,24 @@ export function useChatPlatform() {
     conversationsRaw as ConversationItem[] | undefined
   );
 
-  const messages = useStableUiMessages(messagesRaw, pendingUserText);
+  const messages = useStableUiMessages(
+    messagesRaw,
+    pendingUserText,
+    cachedMessageFallback
+  );
+
+  useEffect(() => {
+    if (!activeId || !messagesRaw?.length) return;
+    writeCachedMessages(
+      activeId,
+      messagesRaw.map((m: { _id: string; role: string; content: string; createdAt?: number }) => ({
+        id: m._id,
+        role: m.role as "user" | "assistant",
+        content: m.content,
+        createdAt: m.createdAt,
+      }))
+    );
+  }, [activeId, messagesRaw]);
 
   const refreshOutboxCount = useCallback(async () => {
     const rows = await listOutbox();
@@ -154,7 +183,7 @@ export function useChatPlatform() {
   const dispatchAccept = useCallback(
     async (
       token: string,
-      conversationId: string,
+      conversationId: string | null,
       content: string,
       attachments: PreparedChatAttachment[] | undefined,
       clientRequestId: string,
@@ -169,7 +198,9 @@ export function useChatPlatform() {
         const result = await withClientTimeout(
           acceptMessageMutation({
             sessionToken: token,
-            conversationId: conversationId as Id<"conversations">,
+            ...(conversationId
+              ? { conversationId: conversationId as Id<"conversations"> }
+              : {}),
             content,
             mode,
             clientRequestId,
@@ -188,6 +219,16 @@ export function useChatPlatform() {
             : "Could not reach the server on this connection. Check your signal and try again."
         );
 
+        if (syncIndicatorTimerRef.current) {
+          clearTimeout(syncIndicatorTimerRef.current);
+          syncIndicatorTimerRef.current = null;
+        }
+        setShowSyncIndicator(false);
+
+        if (result.conversationId && result.conversationId !== conversationId) {
+          setActiveId(result.conversationId);
+        }
+
         const nextLabel =
           typeof result.chatProviderLabel === "string"
             ? result.chatProviderLabel
@@ -200,15 +241,20 @@ export function useChatPlatform() {
           setPendingUserText(null);
           setIsSending(false);
           setAwaitingReply(true);
-          return { ok: true as const };
+          return { ok: true as const, conversationId: result.conversationId };
         }
 
         setIsSending(false);
+        setAwaitingReply(false);
         setPendingUserText(null);
-        return { ok: true as const };
+        return { ok: true as const, conversationId: result.conversationId };
       } catch (e) {
         const message = e instanceof Error ? e.message : "Failed to send";
-        if (attempt < MAX_SEND_RETRIES - 1 && typeof navigator !== "undefined" && navigator.onLine) {
+        const shouldRetry =
+          attempt < MAX_SEND_RETRIES - 1 &&
+          typeof navigator !== "undefined" &&
+          navigator.onLine;
+        if (shouldRetry) {
           await sleep(RETRY_BASE_MS * 2 ** attempt);
           return dispatchAccept(
             token,
@@ -422,8 +468,16 @@ export function useChatPlatform() {
       }
       setError(null);
       setPendingUserText(content);
-      setIsSending(true);
-      setAwaitingReply(false);
+      setIsSending(false);
+      setAwaitingReply(true);
+      setShowSyncIndicator(false);
+
+      if (syncIndicatorTimerRef.current) {
+        clearTimeout(syncIndicatorTimerRef.current);
+      }
+      syncIndicatorTimerRef.current = setTimeout(() => {
+        setShowSyncIndicator(true);
+      }, SYNC_INDICATOR_DELAY_MS);
 
       assistantBaselineRef.current = countAssistantMessages(messagesRaw);
       const clientRequestId = newClientRequestId();
@@ -445,41 +499,29 @@ export function useChatPlatform() {
         await enqueueOutbox(entry);
         registerChatOutboxSync();
         await refreshOutboxCount();
-        setIsSending(false);
+        setAwaitingReply(false);
+        if (syncIndicatorTimerRef.current) {
+          clearTimeout(syncIndicatorTimerRef.current);
+        }
+        setShowSyncIndicator(false);
         setError("Offline — message queued and will send when you're back online.");
         return;
       }
 
-      try {
-        let conversationId = activeId;
-        if (!conversationId) {
-          conversationId = await createConversation({ sessionToken: token, mode });
-          setActiveId(conversationId);
+      void dispatchAccept(token, activeId, content, attachments, clientRequestId).catch(
+        (e) => {
+          if (syncIndicatorTimerRef.current) {
+            clearTimeout(syncIndicatorTimerRef.current);
+          }
+          setShowSyncIndicator(false);
+          setError(e instanceof Error ? e.message : "Failed to send");
+          setPendingUserText(null);
+          setIsSending(false);
+          setAwaitingReply(false);
         }
-
-        await dispatchAccept(
-          token,
-          conversationId,
-          content,
-          attachments,
-          clientRequestId
-        );
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to send");
-        setPendingUserText(null);
-        setIsSending(false);
-        setAwaitingReply(false);
-      }
+      );
     },
-    [
-      sessionToken,
-      activeId,
-      mode,
-      createConversation,
-      dispatchAccept,
-      messagesRaw,
-      refreshOutboxCount,
-    ]
+    [sessionToken, activeId, mode, dispatchAccept, messagesRaw, refreshOutboxCount]
   );
 
   const stopGenerating = useCallback(async () => {
@@ -606,7 +648,7 @@ export function useChatPlatform() {
     mode,
     isSending,
     awaitingReply,
-    isAcceptingMessage: isSending && !awaitingReply,
+    isAcceptingMessage: showSyncIndicator,
     isSlowNetwork,
     outboxCount,
     error,

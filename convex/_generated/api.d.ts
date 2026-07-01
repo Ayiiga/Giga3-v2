@@ -67,6 +67,7 @@ import type * as subscriptionPlans from "../subscriptionPlans.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as supabaseAuth from "../supabaseAuth.js";
 import type * as uploadLimits from "../uploadLimits.js";
+import type * as uploadLimitsInternal from "../uploadLimitsInternal.js";
 import type * as userIds from "../userIds.js";
 import type * as userLearning from "../userLearning.js";
 import type * as userStarterCredits from "../userStarterCredits.js";
@@ -148,6 +149,7 @@ declare const fullApi: ApiFromModules<{
   subscriptions: typeof subscriptions;
   supabaseAuth: typeof supabaseAuth;
   uploadLimits: typeof uploadLimits;
+  uploadLimitsInternal: typeof uploadLimitsInternal;
   userIds: typeof userIds;
   userLearning: typeof userLearning;
   userStarterCredits: typeof userStarterCredits;

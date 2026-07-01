@@ -2,6 +2,7 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { DeferredPwaChrome } from "@/components/pwa/DeferredPwaChrome";
 import { PlatformAnalyticsHost } from "@/components/analytics/PlatformAnalyticsHost";
+import { GlobalChatPrefetch } from "@/components/chat/GlobalChatPrefetch";
 import { branding } from "@/lib/branding";
 import { brandingAssetUrl } from "@/lib/brandingAssets";
 import { pwaStartupImages } from "@/lib/pwaSplash";
@@ -91,6 +92,7 @@ export default function RootLayout({
           <div className="min-h-full w-full max-w-full overflow-x-hidden">{children}</div>
         </ThemeProvider>
         <ServiceWorkerRegister />
+        <GlobalChatPrefetch />
         <PlatformAnalyticsHost />
         <DeferredPwaChrome />
       </body>
