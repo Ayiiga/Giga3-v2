@@ -99,7 +99,7 @@ jobs:
           PAYSTACK_PUBLIC_KEY: ${{ secrets.PAYSTACK_PUBLIC_KEY }}
         run: |
           set -euo pipefail
-          npx convex env set CHAT_PROVIDER_TIMEOUT_MS "22000"
+          npx convex env set CHAT_PROVIDER_TIMEOUT_MS "45000"
           npx convex env set CHAT_MAX_TOKENS "1024"
           npx convex env set CHAT_MAX_HISTORY_TURNS "12"
           npx convex env set CHAT_ENABLE_FAL "false"
