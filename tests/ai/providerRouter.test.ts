@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildChatRoutePlan,
   classifyRequestKind,
+  enhanceImageGenerationPrompt,
+  imageAssetOrientation,
   resolveAiProviderTier,
   shouldEnableWebSearch,
   shouldStartFailoverAttempt,
@@ -49,6 +51,72 @@ describe("classifyRequestKind", () => {
   it("keeps normal chat as text", () => {
     expect(classifyRequestKind("Explain photosynthesis", "homework")).toBe(
       "text_chat"
+    );
+  });
+
+  it("detects a broad range of visual-asset phrasings", () => {
+    const prompts = [
+      "make me a poster for a coffee shop grand opening",
+      "I need a flyer for my shop",
+      "design a logo for my bakery",
+      "create an infographic about climate change",
+      "draw a banner for my youtube channel",
+      "generate a business card",
+      "can you make a birthday invitation",
+      "I want a book cover for my novel",
+      "produce a thumbnail for this video",
+    ];
+    for (const p of prompts) {
+      expect(classifyRequestKind(p, "general")).toBe("image_generation");
+    }
+  });
+
+  it("routes diagrams/flowcharts to text (native Mermaid), not raster images", () => {
+    for (const p of [
+      "draw a flowchart of the user login process",
+      "create a diagram of the water cycle",
+      "make a mind map for my study plan",
+      "generate a sequence diagram for checkout",
+    ]) {
+      expect(classifyRequestKind(p, "general")).toBe("text_chat");
+    }
+  });
+
+  it("does not misclassify ordinary requests as image generation", () => {
+    for (const p of [
+      "make a plan for my week",
+      "draw a conclusion from this data",
+      "design a database schema",
+      "create a function that sorts an array",
+    ]) {
+      expect(classifyRequestKind(p, "general")).toBe("text_chat");
+    }
+  });
+});
+
+describe("imageAssetOrientation", () => {
+  it("uses portrait for posters/flyers/certificates", () => {
+    expect(imageAssetOrientation("a poster for my event")).toBe("portrait");
+    expect(imageAssetOrientation("design a flyer")).toBe("portrait");
+  });
+  it("uses landscape for banners/thumbnails", () => {
+    expect(imageAssetOrientation("a banner for my channel")).toBe("landscape");
+    expect(imageAssetOrientation("make a thumbnail")).toBe("landscape");
+  });
+  it("defaults to square for generic images", () => {
+    expect(imageAssetOrientation("a photo of a cat")).toBe("square");
+  });
+});
+
+describe("enhanceImageGenerationPrompt", () => {
+  it("adds design guidance for text-bearing assets", () => {
+    const out = enhanceImageGenerationPrompt("make a poster for a sale");
+    expect(out).toContain("make a poster for a sale");
+    expect(out.toLowerCase()).toContain("legibl");
+  });
+  it("leaves plain image prompts unchanged", () => {
+    expect(enhanceImageGenerationPrompt("a photo of a cat")).toBe(
+      "a photo of a cat"
     );
   });
 });
