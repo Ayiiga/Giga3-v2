@@ -7,8 +7,10 @@ import { memo } from "react";
 /** Fixed-height typing row — always reserved so isSending does not shrink the message list. */
 export const ChatTypingBar = memo(function ChatTypingBar({
   visible,
+  slowNetwork = false,
 }: {
   visible: boolean;
+  slowNetwork?: boolean;
 }) {
   return (
     <div
@@ -20,7 +22,7 @@ export const ChatTypingBar = memo(function ChatTypingBar({
     >
       <div className="chat-rail">
         <div className="inline-flex min-h-11 items-center rounded-2xl px-1 py-1">
-          {visible ? <TypingIndicator /> : null}
+          {visible ? <TypingIndicator slowNetwork={slowNetwork} /> : null}
         </div>
       </div>
     </div>

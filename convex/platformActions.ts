@@ -34,7 +34,6 @@ import {
   buildPromptCacheKey,
   shouldUseResponseCache,
 } from "./providerRouter";
-import { buildMultimodalPrompt } from "./multimodalPrompt";
 import { openaiGenerateImage } from "./openaiImageClient";
 import type { ActionCtx } from "./_generated/server";
 
@@ -350,10 +349,6 @@ export const sendMessage = action({
       sessionToken: args.sessionToken,
     });
 
-    const refreshedUser = await ctx.runQuery(api.users.getUser, {
-      sessionToken: args.sessionToken,
-    });
-
     const qualityContext = prepareAnswerQualityContext({
       mode,
       query: args.content,
@@ -363,12 +358,6 @@ export const sendMessage = action({
         content: turn.content,
       })),
     });
-
-    const systemPrompt =
-      getSystemPrompt(mode) +
-      buildInterestSystemAddon(parseInterestProfile(refreshedUser?.interestProfile)) +
-      "\n\n" +
-      qualityContext.systemPromptAddon;
 
     if (
       imageCapability.status === "analysis_unavailable" ||
@@ -412,6 +401,7 @@ export const sendMessage = action({
       });
 
       return {
+        status: "complete" as const,
         content: assistantContent,
         credits: updatedUser?.credits ?? 0,
         mode,
@@ -422,116 +412,30 @@ export const sendMessage = action({
       };
     }
 
-    const chatMessages = trimChatMessages([
-      { role: "system" as const, content: systemPrompt },
-      ...toRetrievalSystemMessage(qualityContext),
-      ...history.slice(0, -1).map((m) => ({
-        role: m.role as "user" | "assistant",
-        content: m.content,
-      })),
-      {
-        role: "user" as const,
-        content: attachments.length
-          ? buildMultimodalPrompt(args.content, attachments)
-          : args.content,
-        ...(attachments.length ? { attachments } : {}),
-      },
-    ]);
-
-    const routing = await resolveRoutingContext(
-      ctx,
-      email,
-      refreshedUser ?? { subscriptionPlan: "free" },
-      mode,
-      args.content
-    );
-
-    const engineResult = await runHybridAiEngine(ctx, {
-      email,
-      mode,
-      query: args.content,
-      systemPrompt,
-      chatMessages,
-      routing,
-      hasAttachments: attachments.length > 0,
-      hasImageAttachment: attachments.some((a) => a.kind === "image"),
-      conversationId: args.conversationId,
-    });
-    const validated = validateAnswerQuality({
-      answer: engineResult.content,
-      context: qualityContext,
-    });
-    const assistantContent = validated.content;
-    recordQualityObservation(validated.report);
-    await ctx.runMutation(internal.qualityDashboard.recordResponseMetric, {
-      responseMode: validated.report.responseMode,
-      confidenceLabel: validated.report.confidenceLabel,
-      citationCount: validated.report.citationCount,
-      verificationVisible: validated.report.verificationVisible,
-      verificationPassed: !hasHallucinationRisk(validated.report.flags),
-      hasHallucinationRisk: hasHallucinationRisk(validated.report.flags),
-    });
-
-    console.info(
-      "[quality.sendMessage]",
-      JSON.stringify({
-        mode,
-        conversationId: args.conversationId,
-        report: validated.report,
-      })
-    );
-
-    const chargedAi = engineResult.providerId !== "local_fallback";
-
-    if (chargedAi) {
-      if (engineResult.providerId === "openai_image") {
-        await ctx.runMutation(internal.credits.deductCreditsInternal, {
-          userId: email,
-          action: "image",
-          reference: args.conversationId,
-        });
-      } else {
-        await ctx.runMutation(internal.credits.deductForChatModeInternal, {
-          userId: email,
-          mode,
-          reference: args.conversationId,
-        });
-      }
-    }
-
-    await ctx.runMutation(internal.platform.appendMessage, {
+    const jobId = await ctx.runMutation(internal.chatReplyJobs.createJob, {
       conversationId: args.conversationId,
       userId: email,
-      role: "assistant",
-      content: assistantContent,
+      mode,
+      content: args.content,
+      attachmentsJson:
+        attachments.length > 0 ? JSON.stringify(attachments) : undefined,
+    });
+
+    await ctx.scheduler.runAfter(0, internal.chatReplyWorker.processJob, {
+      jobId,
     });
 
     const updatedUser = await ctx.runQuery(api.users.getUser, {
       sessionToken: args.sessionToken,
     });
 
-    const title =
-      conv.title === "New chat" || conv.title.endsWith("…")
-        ? args.content.slice(0, 48).trim() +
-          (args.content.length > 48 ? "…" : "")
-        : conv.title;
-
-    if (title !== conv.title) {
-      await ctx.runMutation(api.conversations.updateTitle, {
-        conversationId: args.conversationId,
-        sessionToken: args.sessionToken,
-        title,
-      });
-    }
-
     return {
-      content: assistantContent,
+      status: "processing" as const,
+      jobId,
       credits: updatedUser?.credits ?? 0,
       mode,
-      chatProvider: engineResult.providerId,
-      chatProviderLabel: getChatProviderLabel(engineResult.providerId),
-      usedFallback: engineResult.usedFallback,
-      quality: validated.report,
+      chatProviderLabel: getChatProviderLabel("gemini"),
+      usedFallback: false,
     };
   },
 });

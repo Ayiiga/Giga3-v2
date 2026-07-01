@@ -95,6 +95,7 @@ function ChatShellInner({
     messages,
     mode,
     isSending,
+    isSlowNetwork,
     error,
     startNewChat,
     selectConversation,
@@ -318,6 +319,7 @@ function ChatShellInner({
           messages={messages}
           isLoading={messagesLoading}
           isSending={isSending}
+          isSlowNetwork={isSlowNetwork}
           insertRef={insertRef}
           onSend={handleSend}
           onInsertTemplate={handleInsertTemplate}

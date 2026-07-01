@@ -433,6 +433,22 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_creator", ["creatorId", "createdAt"]),
 
+  /** Queued chat AI replies — client returns immediately on slow networks. */
+  chatReplyJobs: defineTable({
+    conversationId: v.id("conversations"),
+    userId: v.string(),
+    mode: v.string(),
+    content: v.string(),
+    attachmentsJson: v.optional(v.string()),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("processing"),
+      v.literal("done"),
+      v.literal("failed")
+    ),
+    createdAt: v.number(),
+  }).index("by_conversation", ["conversationId", "createdAt"]),
+
   chats: defineTable({
     userId: v.string(),
     message: v.string(),

@@ -3,6 +3,7 @@
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
 import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
+import { useConnectionQuality } from "@/hooks/useConnectionQuality";
 import { getSessionToken, getUserEmail, setSessionToken } from "@/lib/auth";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
@@ -11,7 +12,10 @@ import { Id } from "convex/_generated/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-const CHAT_ACTION_TIMEOUT_MS = 75_000;
+/** Fast ack — save message + queue AI worker (not full reply). */
+const CHAT_ACCEPT_TIMEOUT_MS = 45_000;
+const CHAT_REPLY_WAIT_MS = 120_000;
+const CHAT_REPLY_WAIT_SLOW_MS = 180_000;
 
 function withClientTimeout<T>(
   promise: Promise<T>,
@@ -32,11 +36,18 @@ function withClientTimeout<T>(
   });
 }
 
+function countAssistantMessages(
+  rows: { role: string }[] | undefined
+): number {
+  return rows?.filter((m) => m.role === "assistant").length ?? 0;
+}
+
 export function useChatPlatform() {
   const [email, setEmail] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [mode, setMode] = useState<AiModeId>("general");
   const [isSending, setIsSending] = useState(false);
+  const [awaitingReply, setAwaitingReply] = useState(false);
   const [pendingUserText, setPendingUserText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [chatProviderLabel, setChatProviderLabel] = useState<string | null>(null);
@@ -46,6 +57,8 @@ export function useChatPlatform() {
   const createUserAttempted = useRef(false);
   const creditsCacheRef = useRef<number | null>(null);
   const interestProfileCacheRef = useRef<string | null>(null);
+  const assistantBaselineRef = useRef(0);
+  const { isSlowNetwork } = useConnectionQuality();
 
   useEffect(() => {
     setMounted(true);
@@ -165,6 +178,29 @@ export function useChatPlatform() {
     }
   }, [messagesRaw, pendingUserText]);
 
+  useEffect(() => {
+    if (!awaitingReply || !messagesRaw) return;
+    const assistants = countAssistantMessages(messagesRaw);
+    if (assistants > assistantBaselineRef.current) {
+      setAwaitingReply(false);
+      setIsSending(false);
+      setPendingUserText(null);
+    }
+  }, [messagesRaw, awaitingReply]);
+
+  useEffect(() => {
+    if (!awaitingReply) return;
+    const waitMs = isSlowNetwork ? CHAT_REPLY_WAIT_SLOW_MS : CHAT_REPLY_WAIT_MS;
+    const timer = setTimeout(() => {
+      setAwaitingReply(false);
+      setIsSending(false);
+      setError(
+        "Reply is taking longer on this connection. Your message was saved — please wait a moment or try again when the signal is stronger."
+      );
+    }, waitMs);
+    return () => clearTimeout(timer);
+  }, [awaitingReply, isSlowNetwork]);
+
   const startNewChat = useCallback(async () => {
     const token = sessionToken ?? getSessionToken();
     if (!token) {
@@ -180,6 +216,8 @@ export function useChatPlatform() {
     setActiveId(id);
     setError(null);
     setPendingUserText(null);
+    setAwaitingReply(false);
+    setIsSending(false);
   }, []);
 
   const deleteConversation = useCallback(
@@ -193,6 +231,8 @@ export function useChatPlatform() {
       if (activeId === id) {
         setActiveId(null);
         setPendingUserText(null);
+        setAwaitingReply(false);
+        setIsSending(false);
       }
     },
     [sessionToken, removeConversation, activeId]
@@ -222,11 +262,13 @@ export function useChatPlatform() {
       setError(null);
       setPendingUserText(content);
       setIsSending(true);
+      setAwaitingReply(false);
 
       const hasImages = attachments?.some((a) => a.kind === "image") ?? false;
-      const actionTimeoutMs = hasImages
-        ? CHAT_ACTION_TIMEOUT_MS * 2
-        : CHAT_ACTION_TIMEOUT_MS;
+      const acceptTimeoutMs = hasImages
+        ? CHAT_ACCEPT_TIMEOUT_MS * 2
+        : CHAT_ACCEPT_TIMEOUT_MS;
+      assistantBaselineRef.current = countAssistantMessages(messagesRaw);
 
       try {
         let conversationId = activeId;
@@ -250,11 +292,12 @@ export function useChatPlatform() {
                 }
               : {}),
           }),
-          actionTimeoutMs,
+          acceptTimeoutMs,
           hasImages
             ? "Image upload is taking longer on this connection. Please wait or try again on Wi‑Fi."
-            : "Chat is taking longer than usual on this connection. Your message was saved — please try sending again in a moment."
+            : "Could not reach the server on this connection. Check your signal and try again."
         );
+
         const nextLabel =
           typeof result.chatProviderLabel === "string"
             ? result.chatProviderLabel
@@ -262,14 +305,22 @@ export function useChatPlatform() {
         const nextFallback = Boolean(result.usedFallback);
         setChatProviderLabel((prev) => (prev === nextLabel ? prev : nextLabel));
         setUsedFallback((prev) => (prev === nextFallback ? prev : nextFallback));
+
+        if (result.status === "processing") {
+          setAwaitingReply(true);
+          return;
+        }
+
+        setIsSending(false);
+        setPendingUserText(null);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to send");
         setPendingUserText(null);
-      } finally {
         setIsSending(false);
+        setAwaitingReply(false);
       }
     },
-    [sessionToken, activeId, mode, createConversation, sendMessageAction]
+    [sessionToken, activeId, mode, createConversation, sendMessageAction, messagesRaw]
   );
 
   const regenerateMessage = useCallback(
@@ -278,6 +329,8 @@ export function useChatPlatform() {
       if (!token || !activeId) return;
       setError(null);
       setIsSending(true);
+      setAwaitingReply(false);
+      assistantBaselineRef.current = countAssistantMessages(messagesRaw);
       try {
         const result = await withClientTimeout(
           regenerateMessageAction({
@@ -286,7 +339,7 @@ export function useChatPlatform() {
             assistantMessageId: assistantMessageId as Id<"messages">,
             mode,
           }),
-          CHAT_ACTION_TIMEOUT_MS,
+          CHAT_REPLY_WAIT_SLOW_MS,
           "Regenerate is taking longer than usual. Please try again in a moment."
         );
         const nextLabel =
@@ -302,7 +355,7 @@ export function useChatPlatform() {
         setIsSending(false);
       }
     },
-    [sessionToken, activeId, mode, regenerateMessageAction]
+    [sessionToken, activeId, mode, regenerateMessageAction, messagesRaw]
   );
 
   const pinConversation = useCallback(
@@ -370,6 +423,7 @@ export function useChatPlatform() {
     messages,
     mode,
     isSending,
+    isSlowNetwork,
     error,
     startNewChat,
     selectConversation,

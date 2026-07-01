@@ -1,4 +1,4 @@
-import { internalMutation } from "./_generated/server";
+import { internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { normalizeUserId } from "./userIds";
 
@@ -35,6 +35,41 @@ export const appendMessage = internalMutation({
       createdAt: Date.now(),
     });
     await ctx.db.patch(args.conversationId, { updatedAt: Date.now() });
+  },
+});
+
+export const listConversationMessagesInternal = internalQuery({
+  args: { conversationId: v.id("conversations") },
+  handler: async (ctx, args) => {
+    const rows = await ctx.db
+      .query("messages")
+      .withIndex("by_conversation", (q) =>
+        q.eq("conversationId", args.conversationId)
+      )
+      .collect();
+    return rows
+      .filter((m) => m.role !== "system")
+      .sort((a, b) => a.createdAt - b.createdAt);
+  },
+});
+
+export const getConversationInternal = internalQuery({
+  args: { conversationId: v.id("conversations") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.conversationId);
+  },
+});
+
+export const updateConversationTitleInternal = internalMutation({
+  args: {
+    conversationId: v.id("conversations"),
+    title: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.conversationId, {
+      title: args.title.slice(0, 120),
+      updatedAt: Date.now(),
+    });
   },
 });
 

@@ -1,7 +1,7 @@
 "use client";
 
 /** Typing indicator with subtle pulse (respects reduced motion via CSS). */
-export function TypingIndicator() {
+export function TypingIndicator({ slowNetwork = false }: { slowNetwork?: boolean }) {
   return (
     <div
       className="min-h-[24px]"
@@ -14,7 +14,11 @@ export function TypingIndicator() {
           <span className="chat-typing-dot h-1.5 w-1.5 rounded-full bg-violet-500" />
           <span className="chat-typing-dot h-1.5 w-1.5 rounded-full bg-violet-500" />
         </span>
-        <span className="text-sm font-medium text-muted">Giga3 is thinking…</span>
+        <span className="text-sm font-medium text-muted">
+          {slowNetwork
+            ? "Giga3 is thinking… (slow connection — this can take a minute)"
+            : "Giga3 is thinking…"}
+        </span>
       </div>
     </div>
   );

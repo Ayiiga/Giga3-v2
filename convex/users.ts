@@ -1,4 +1,4 @@
-import { mutation, query } from "./_generated/server";
+import { internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import {
   parseInterestProfile,
@@ -183,5 +183,15 @@ export const deductTokens = mutation({
     const tokens = Math.max(0, (user.tokens ?? 0) - args.amount);
     await ctx.db.patch(user._id, { tokens });
     return tokens;
+  },
+});
+
+export const getUserByEmailInternal = internalQuery({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
   },
 });

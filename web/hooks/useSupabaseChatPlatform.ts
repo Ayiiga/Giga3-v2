@@ -20,15 +20,25 @@ import {
   updateSupabaseChat,
 } from "@/lib/supabase/data";
 import { syncSupabaseAuthToLocalEmail } from "@/lib/supabase/auth";
+import { useConnectionQuality } from "@/hooks/useConnectionQuality";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-const CHAT_ACTION_TIMEOUT_MS = 75_000;
+const CHAT_ACCEPT_TIMEOUT_MS = 45_000;
+const CHAT_REPLY_POLL_MS = 2_000;
+const CHAT_REPLY_WAIT_MS = 120_000;
+const CHAT_REPLY_WAIT_SLOW_MS = 180_000;
+const CHAT_REGENERATE_TIMEOUT_MS = 180_000;
 
 type MessageRow = { _id: string; role: string; content: string; createdAt?: number };
 type ConvexSendResult = {
+  status?: "processing" | "complete";
   chatProviderLabel?: string;
   usedFallback?: boolean;
 };
+
+function countAssistantMessages(rows: MessageRow[] | undefined): number {
+  return rows?.filter((m) => m.role === "assistant").length ?? 0;
+}
 
 function makeTitle(content: string): string {
   const trimmed = content.trim();
@@ -61,7 +71,24 @@ async function sendConvexMessage(args: {
     "action",
     "platformActions:sendMessage",
     args,
-    { timeoutMs: CHAT_ACTION_TIMEOUT_MS, retries: 1 }
+    { timeoutMs: CHAT_ACCEPT_TIMEOUT_MS, retries: 1 }
+  );
+}
+
+async function waitForAssistantReply(
+  sessionToken: string,
+  conversationId: string,
+  baselineAssistants: number,
+  maxWaitMs: number
+): Promise<MessageRow[]> {
+  const started = Date.now();
+  while (Date.now() - started < maxWaitMs) {
+    const messages = await fetchConvexMessages(sessionToken, conversationId);
+    if (countAssistantMessages(messages) > baselineAssistants) return messages;
+    await new Promise((resolve) => setTimeout(resolve, CHAT_REPLY_POLL_MS));
+  }
+  throw new Error(
+    "Reply is taking longer on this connection. Your message was saved — please wait or try again."
   );
 }
 
@@ -78,7 +105,7 @@ async function regenerateConvexMessage(args: {
     "action",
     "platformActions:regenerateMessage",
     args,
-    { timeoutMs: CHAT_ACTION_TIMEOUT_MS, retries: 1 }
+    { timeoutMs: CHAT_REGENERATE_TIMEOUT_MS, retries: 1 }
   );
 }
 
@@ -102,6 +129,7 @@ export function useSupabaseChatPlatform() {
   const [pendingUserText, setPendingUserText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [chatProviderLabel, setChatProviderLabel] = useState<string | null>(null);
+  const { isSlowNetwork } = useConnectionQuality();
   const [usedFallback, setUsedFallback] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
   const [interestProfileJson, setInterestProfileJson] = useState<string | null>(null);
@@ -268,6 +296,10 @@ export function useSupabaseChatPlatform() {
           if (updated) chat = updated;
         }
 
+        const assistantBaseline = countAssistantMessages(
+          await fetchConvexMessages(sessionToken, convexConversationId)
+        );
+
         const result = await sendConvexMessage({
           sessionToken,
           conversationId: convexConversationId,
@@ -282,7 +314,16 @@ export function useSupabaseChatPlatform() {
               }
             : {}),
         });
-        const convexMessages = await fetchConvexMessages(sessionToken, convexConversationId);
+
+        let convexMessages =
+          result.status === "processing"
+            ? await waitForAssistantReply(
+                sessionToken,
+                convexConversationId,
+                assistantBaseline,
+                isSlowNetwork ? CHAT_REPLY_WAIT_SLOW_MS : CHAT_REPLY_WAIT_MS
+              )
+            : await fetchConvexMessages(sessionToken, convexConversationId);
         await replaceSupabaseMessages(chat._id, convexMessages);
 
         const title =
@@ -312,7 +353,7 @@ export function useSupabaseChatPlatform() {
         setIsSending(false);
       }
     },
-    [email, activeConversation, mode]
+    [email, activeConversation, mode, isSlowNetwork]
   );
 
   const regenerateMessage = useCallback(
@@ -372,6 +413,7 @@ export function useSupabaseChatPlatform() {
     messages,
     mode,
     isSending,
+    isSlowNetwork,
     error,
     startNewChat,
     selectConversation,
