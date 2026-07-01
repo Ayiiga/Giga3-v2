@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { isValidMode } from "./aiModes";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
@@ -86,13 +87,15 @@ export const create = mutation({
     const mode = isValidMode(args.mode) ? args.mode : "general";
     const now = Date.now();
     const title = args.title?.trim() || "New chat";
-    return await ctx.db.insert("conversations", {
+    const id = await ctx.db.insert("conversations", {
       userId: normalizeUserId(userId),
       title: title.slice(0, 80),
       mode,
       createdAt: now,
       updatedAt: now,
     });
+    await ctx.runMutation(internal.platformStatsRecorder.recordConversationCreatedInternal, {});
+    return id;
   },
 });
 

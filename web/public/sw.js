@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v26-fast-chat";
+const CACHE_NAME = "giga3-shell-v27-production-chat";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
@@ -113,5 +113,17 @@ self.addEventListener("fetch", (event) => {
 
   event.respondWith(
     fetch(request).catch(() => caches.match(request))
+  );
+});
+
+/** Background Sync — nudge open chat clients to flush IndexedDB outbox. */
+self.addEventListener("sync", (event) => {
+  if (event.tag !== "giga3-chat-outbox") return;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        client.postMessage({ type: "GIGA3_FLUSH_OUTBOX" });
+      }
+    })
   );
 });

@@ -11,6 +11,7 @@ interface ChatConversationPaneProps {
   messages: UiMessage[];
   isLoading: boolean;
   isSending: boolean;
+  awaitingReply?: boolean;
   isAcceptingMessage?: boolean;
   isSlowNetwork?: boolean;
   insertRef: MutableRefObject<((text: string) => void) | null>;
@@ -18,6 +19,7 @@ interface ChatConversationPaneProps {
   onInsertTemplate: (text: string) => void;
   onRegenerate?: (messageId: string) => void;
   onEditMessage?: (messageId: string, content: string) => void;
+  onStopGenerating?: () => void;
   uploadUsage?: UploadUsageSnapshot | null;
 }
 
@@ -28,6 +30,7 @@ function panePropsEqual(
   return (
     prev.isLoading === next.isLoading &&
     prev.isSending === next.isSending &&
+    prev.awaitingReply === next.awaitingReply &&
     prev.isAcceptingMessage === next.isAcceptingMessage &&
     prev.isSlowNetwork === next.isSlowNetwork &&
     prev.messages === next.messages &&
@@ -35,6 +38,7 @@ function panePropsEqual(
     prev.onInsertTemplate === next.onInsertTemplate &&
     prev.onRegenerate === next.onRegenerate &&
     prev.onEditMessage === next.onEditMessage &&
+    prev.onStopGenerating === next.onStopGenerating &&
     prev.uploadUsage === next.uploadUsage &&
     prev.insertRef === next.insertRef
   );
@@ -45,6 +49,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   messages,
   isLoading,
   isSending,
+  awaitingReply = false,
   isAcceptingMessage,
   isSlowNetwork,
   insertRef,
@@ -52,8 +57,12 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onInsertTemplate,
   onRegenerate,
   onEditMessage,
+  onStopGenerating,
   uploadUsage,
 }: ChatConversationPaneProps) {
+  const composerBusy = Boolean(isAcceptingMessage);
+  const showTyping = awaitingReply || isSending;
+
   return (
     <div className="chat-conversation-grid min-h-0 min-w-0 max-w-full overflow-x-hidden overflow-y-hidden bg-background">
       <MessageList
@@ -61,16 +70,21 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         isLoading={isLoading}
         isSending={isSending}
         isAcceptingMessage={isAcceptingMessage}
+        awaitingReply={awaitingReply}
         onInsertTemplate={onInsertTemplate}
         onRegenerate={onRegenerate}
         onEditMessage={onEditMessage}
       />
       <div className="chat-composer-dock min-w-0 max-w-full border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)]">
-        <ChatTypingBar visible={isSending} slowNetwork={isSlowNetwork} />
+        <ChatTypingBar
+          visible={showTyping}
+          slowNetwork={isSlowNetwork}
+          onStop={awaitingReply ? onStopGenerating : undefined}
+        />
         <ChatInput
           insertRef={insertRef}
           onSend={onSend}
-          disabled={isSending}
+          disabled={composerBusy}
           uploadUsage={uploadUsage}
         />
       </div>

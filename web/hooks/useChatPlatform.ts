@@ -7,15 +7,26 @@ import { useConnectionQuality } from "@/hooks/useConnectionQuality";
 import { getSessionToken, getUserEmail, setSessionToken } from "@/lib/auth";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
+import {
+  bumpOutboxAttempt,
+  enqueueOutbox,
+  listOutbox,
+  newClientRequestId,
+  registerChatOutboxSync,
+  removeOutbox,
+  type OutboxEntry,
+} from "@/lib/chat/offlineOutbox";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
-import { useAction, useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /** Fast ack — save message + queue AI worker (not full reply). */
 const CHAT_ACCEPT_TIMEOUT_MS = 45_000;
 const CHAT_REPLY_WAIT_MS = 120_000;
 const CHAT_REPLY_WAIT_SLOW_MS = 180_000;
+const MAX_SEND_RETRIES = 3;
+const RETRY_BASE_MS = 1_500;
 
 function withClientTimeout<T>(
   promise: Promise<T>,
@@ -42,6 +53,10 @@ function countAssistantMessages(
   return rows?.filter((m) => m.role === "assistant").length ?? 0;
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export function useChatPlatform() {
   const [email, setEmail] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -54,10 +69,12 @@ export function useChatPlatform() {
   const [usedFallback, setUsedFallback] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [sessionToken, setSessionTokenState] = useState<string | null>(null);
+  const [outboxCount, setOutboxCount] = useState(0);
   const createUserAttempted = useRef(false);
   const creditsCacheRef = useRef<number | null>(null);
   const interestProfileCacheRef = useRef<string | null>(null);
   const assistantBaselineRef = useRef(0);
+  const syncingOutboxRef = useRef(false);
   const { isSlowNetwork } = useConnectionQuality();
 
   useEffect(() => {
@@ -113,9 +130,10 @@ export function useChatPlatform() {
   const setPinnedMutation = useMutation(api.conversations.setPinned);
   const setArchivedMutation = useMutation(api.conversations.setArchived);
   const setFavoriteMutation = useMutation(api.conversations.setFavorite);
-  const updateUserMessage = useMutation(api.messages.updateUserMessage);
-  const sendMessageAction = useMutation(api.chatMessaging.acceptMessage);
-  const regenerateMessageAction = useAction(api.platformActions.regenerateMessage);
+  const acceptMessageMutation = useMutation(api.chatMessaging.acceptMessage);
+  const cancelReplyMutation = useMutation(api.chatMessaging.cancelReply);
+  const regenerateMessageMutation = useMutation(api.chatMessaging.regenerateMessage);
+  const editAndResendMutation = useMutation(api.chatMessaging.editAndResend);
   const createUser = useMutation(api.users.createUser);
 
   const conversationsLoading = conversationsRaw === undefined;
@@ -127,6 +145,127 @@ export function useChatPlatform() {
   );
 
   const messages = useStableUiMessages(messagesRaw, pendingUserText);
+
+  const refreshOutboxCount = useCallback(async () => {
+    const rows = await listOutbox();
+    setOutboxCount(rows.length);
+  }, []);
+
+  const dispatchAccept = useCallback(
+    async (
+      token: string,
+      conversationId: string,
+      content: string,
+      attachments: PreparedChatAttachment[] | undefined,
+      clientRequestId: string,
+      attempt = 0
+    ) => {
+      const hasImages = attachments?.some((a) => a.kind === "image") ?? false;
+      const acceptTimeoutMs = hasImages
+        ? CHAT_ACCEPT_TIMEOUT_MS * 2
+        : CHAT_ACCEPT_TIMEOUT_MS;
+
+      try {
+        const result = await withClientTimeout(
+          acceptMessageMutation({
+            sessionToken: token,
+            conversationId: conversationId as Id<"conversations">,
+            content,
+            mode,
+            clientRequestId,
+            ...(attachments?.length
+              ? {
+                  attachments: attachments.map(
+                    ({ previewUrl: _previewUrl, thumbDataUrl: _thumb, ...attachment }) =>
+                      attachment
+                  ),
+                }
+              : {}),
+          }),
+          acceptTimeoutMs,
+          hasImages
+            ? "Image upload is taking longer on this connection. Please wait or try again on Wi‑Fi."
+            : "Could not reach the server on this connection. Check your signal and try again."
+        );
+
+        const nextLabel =
+          typeof result.chatProviderLabel === "string"
+            ? result.chatProviderLabel
+            : null;
+        const nextFallback = Boolean(result.usedFallback);
+        setChatProviderLabel((prev) => (prev === nextLabel ? prev : nextLabel));
+        setUsedFallback((prev) => (prev === nextFallback ? prev : nextFallback));
+
+        if (result.status === "processing") {
+          setPendingUserText(null);
+          setIsSending(false);
+          setAwaitingReply(true);
+          return { ok: true as const };
+        }
+
+        setIsSending(false);
+        setPendingUserText(null);
+        return { ok: true as const };
+      } catch (e) {
+        const message = e instanceof Error ? e.message : "Failed to send";
+        if (attempt < MAX_SEND_RETRIES - 1 && typeof navigator !== "undefined" && navigator.onLine) {
+          await sleep(RETRY_BASE_MS * 2 ** attempt);
+          return dispatchAccept(
+            token,
+            conversationId,
+            content,
+            attachments,
+            clientRequestId,
+            attempt + 1
+          );
+        }
+        throw new Error(message);
+      }
+    },
+    [acceptMessageMutation, mode]
+  );
+
+  const flushOutbox = useCallback(async () => {
+    if (syncingOutboxRef.current || typeof navigator === "undefined" || !navigator.onLine) {
+      return;
+    }
+    syncingOutboxRef.current = true;
+    try {
+      const rows = await listOutbox();
+      setOutboxCount(rows.length);
+      for (const row of rows) {
+        const token = row.sessionToken || getSessionToken();
+        if (!token) continue;
+        try {
+          let conversationId = row.conversationId;
+          if (!conversationId) {
+            conversationId = await createConversation({
+              sessionToken: token,
+              mode: row.mode as AiModeId,
+            });
+          }
+          await dispatchAccept(
+            token,
+            conversationId,
+            row.content,
+            row.attachments as PreparedChatAttachment[] | undefined,
+            row.clientRequestId
+          );
+          await removeOutbox(row.id);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : "Sync failed";
+          await bumpOutboxAttempt(row.id, msg);
+          if (row.attempts + 1 >= MAX_SEND_RETRIES) {
+            await removeOutbox(row.id);
+            setError(msg);
+          }
+        }
+      }
+      await refreshOutboxCount();
+    } finally {
+      syncingOutboxRef.current = false;
+    }
+  }, [createConversation, dispatchAccept, refreshOutboxCount]);
 
   useEffect(() => {
     if (!email || createUserAttempted.current) return;
@@ -201,6 +340,28 @@ export function useChatPlatform() {
     return () => clearTimeout(timer);
   }, [awaitingReply, isSlowNetwork]);
 
+  useEffect(() => {
+    void refreshOutboxCount();
+    const onOnline = () => {
+      registerChatOutboxSync();
+      void flushOutbox();
+    };
+    const onSwMessage = (event: MessageEvent) => {
+      if (event.data?.type === "GIGA3_FLUSH_OUTBOX") {
+        void flushOutbox();
+      }
+    };
+    window.addEventListener("online", onOnline);
+    navigator.serviceWorker?.addEventListener("message", onSwMessage);
+    if (typeof navigator !== "undefined" && navigator.onLine) {
+      void flushOutbox();
+    }
+    return () => {
+      window.removeEventListener("online", onOnline);
+      navigator.serviceWorker?.removeEventListener("message", onSwMessage);
+    };
+  }, [flushOutbox, refreshOutboxCount]);
+
   const startNewChat = useCallback(async () => {
     const token = sessionToken ?? getSessionToken();
     if (!token) {
@@ -264,11 +425,30 @@ export function useChatPlatform() {
       setIsSending(true);
       setAwaitingReply(false);
 
-      const hasImages = attachments?.some((a) => a.kind === "image") ?? false;
-      const acceptTimeoutMs = hasImages
-        ? CHAT_ACCEPT_TIMEOUT_MS * 2
-        : CHAT_ACCEPT_TIMEOUT_MS;
       assistantBaselineRef.current = countAssistantMessages(messagesRaw);
+      const clientRequestId = newClientRequestId();
+
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        const entry: OutboxEntry = {
+          id: clientRequestId,
+          clientRequestId,
+          conversationId: activeId,
+          content,
+          mode,
+          attachments: attachments?.map(
+            ({ previewUrl: _p, thumbDataUrl: _t, ...rest }) => rest
+          ),
+          sessionToken: token,
+          attempts: 0,
+          createdAt: Date.now(),
+        };
+        await enqueueOutbox(entry);
+        registerChatOutboxSync();
+        await refreshOutboxCount();
+        setIsSending(false);
+        setError("Offline — message queued and will send when you're back online.");
+        return;
+      }
 
       try {
         let conversationId = activeId;
@@ -277,43 +457,13 @@ export function useChatPlatform() {
           setActiveId(conversationId);
         }
 
-        const result = await withClientTimeout(
-          sendMessageAction({
-            sessionToken: token,
-            conversationId: conversationId as Id<"conversations">,
-            content,
-            mode,
-            ...(attachments?.length
-              ? {
-                  attachments: attachments.map(
-                    ({ previewUrl: _previewUrl, thumbDataUrl: _thumb, ...attachment }) =>
-                      attachment
-                  ),
-                }
-              : {}),
-          }),
-          acceptTimeoutMs,
-          hasImages
-            ? "Image upload is taking longer on this connection. Please wait or try again on Wi‑Fi."
-            : "Could not reach the server on this connection. Check your signal and try again."
+        await dispatchAccept(
+          token,
+          conversationId,
+          content,
+          attachments,
+          clientRequestId
         );
-
-        const nextLabel =
-          typeof result.chatProviderLabel === "string"
-            ? result.chatProviderLabel
-            : null;
-        const nextFallback = Boolean(result.usedFallback);
-        setChatProviderLabel((prev) => (prev === nextLabel ? prev : nextLabel));
-        setUsedFallback((prev) => (prev === nextFallback ? prev : nextFallback));
-
-        if (result.status === "processing") {
-          setPendingUserText(null);
-          setAwaitingReply(true);
-          return;
-        }
-
-        setIsSending(false);
-        setPendingUserText(null);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to send");
         setPendingUserText(null);
@@ -321,42 +471,62 @@ export function useChatPlatform() {
         setAwaitingReply(false);
       }
     },
-    [sessionToken, activeId, mode, createConversation, sendMessageAction, messagesRaw]
+    [
+      sessionToken,
+      activeId,
+      mode,
+      createConversation,
+      dispatchAccept,
+      messagesRaw,
+      refreshOutboxCount,
+    ]
   );
+
+  const stopGenerating = useCallback(async () => {
+    const token = sessionToken ?? getSessionToken();
+    if (!token || !activeId) return;
+    try {
+      await cancelReplyMutation({
+        sessionToken: token,
+        conversationId: activeId as Id<"conversations">,
+      });
+      setAwaitingReply(false);
+      setIsSending(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not stop generation");
+    }
+  }, [sessionToken, activeId, cancelReplyMutation]);
 
   const regenerateMessage = useCallback(
     async (assistantMessageId: string) => {
       const token = sessionToken ?? getSessionToken();
       if (!token || !activeId) return;
       setError(null);
-      setIsSending(true);
       setAwaitingReply(false);
       assistantBaselineRef.current = countAssistantMessages(messagesRaw);
+
       try {
-        const result = await withClientTimeout(
-          regenerateMessageAction({
-            sessionToken: token,
-            conversationId: activeId as Id<"conversations">,
-            assistantMessageId: assistantMessageId as Id<"messages">,
-            mode,
-          }),
-          CHAT_REPLY_WAIT_SLOW_MS,
-          "Regenerate is taking longer than usual. Please try again in a moment."
-        );
+        const result = await regenerateMessageMutation({
+          sessionToken: token,
+          conversationId: activeId as Id<"conversations">,
+          assistantMessageId: assistantMessageId as Id<"messages">,
+          mode,
+          clientRequestId: newClientRequestId(),
+        });
         const nextLabel =
           typeof result.chatProviderLabel === "string"
             ? result.chatProviderLabel
             : null;
-        const nextFallback = Boolean(result.usedFallback);
         setChatProviderLabel((prev) => (prev === nextLabel ? prev : nextLabel));
-        setUsedFallback((prev) => (prev === nextFallback ? prev : nextFallback));
+        setUsedFallback(Boolean(result.usedFallback));
+        if (result.status === "processing") {
+          setAwaitingReply(true);
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to regenerate");
-      } finally {
-        setIsSending(false);
       }
     },
-    [sessionToken, activeId, mode, regenerateMessageAction, messagesRaw]
+    [sessionToken, activeId, mode, regenerateMessageMutation, messagesRaw]
   );
 
   const pinConversation = useCallback(
@@ -405,13 +575,24 @@ export function useChatPlatform() {
     async (messageId: string, content: string) => {
       const token = sessionToken ?? getSessionToken();
       if (!token) return;
-      await updateUserMessage({
-        sessionToken: token,
-        messageId: messageId as Id<"messages">,
-        content,
-      });
+      setError(null);
+      assistantBaselineRef.current = countAssistantMessages(messagesRaw);
+      try {
+        const result = await editAndResendMutation({
+          sessionToken: token,
+          messageId: messageId as Id<"messages">,
+          content,
+          mode,
+          clientRequestId: newClientRequestId(),
+        });
+        if (result.status === "processing") {
+          setAwaitingReply(true);
+        }
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Failed to edit message");
+      }
     },
-    [sessionToken, updateUserMessage]
+    [sessionToken, mode, editAndResendMutation, messagesRaw]
   );
 
   return {
@@ -424,14 +605,17 @@ export function useChatPlatform() {
     messages,
     mode,
     isSending,
+    awaitingReply,
     isAcceptingMessage: isSending && !awaitingReply,
     isSlowNetwork,
+    outboxCount,
     error,
     startNewChat,
     selectConversation,
     deleteConversation,
     changeMode,
     sendMessage,
+    stopGenerating,
     regenerateMessage,
     pinConversation,
     archiveConversation,

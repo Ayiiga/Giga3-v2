@@ -23,6 +23,7 @@ export function PlatformAnalytics() {
         clientId,
         isPwa,
         sessionToken: getSessionToken() ?? undefined,
+        userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
       }).catch(() => null);
     };
 

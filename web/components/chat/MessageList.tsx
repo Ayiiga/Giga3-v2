@@ -25,6 +25,7 @@ interface MessageListProps {
   isLoading?: boolean;
   isSending?: boolean;
   isAcceptingMessage?: boolean;
+  awaitingReply?: boolean;
   onInsertTemplate?: (text: string) => void;
   onRegenerate?: (messageId: string) => void;
   onEditMessage?: (messageId: string, content: string) => void;
@@ -41,6 +42,7 @@ function MessageListInner({
   isLoading = false,
   isSending = false,
   isAcceptingMessage = false,
+  awaitingReply = false,
   onInsertTemplate,
   onRegenerate,
   onEditMessage,
@@ -175,7 +177,7 @@ function MessageListInner({
                     pending={m.id === "pending-user"}
                     showSending={m.id === "pending-user" && isAcceptingMessage}
                     streaming={
-                      isSending &&
+                      awaitingReply &&
                       m.role === "assistant" &&
                       m.id === lastAssistantId &&
                       m.id !== "pending-user"
@@ -199,6 +201,7 @@ function propsEqual(prev: MessageListProps, next: MessageListProps): boolean {
     prev.isLoading === next.isLoading &&
     prev.isSending === next.isSending &&
     prev.isAcceptingMessage === next.isAcceptingMessage &&
+    prev.awaitingReply === next.awaitingReply &&
     prev.onInsertTemplate === next.onInsertTemplate &&
     prev.onRegenerate === next.onRegenerate &&
     prev.onEditMessage === next.onEditMessage &&

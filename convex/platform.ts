@@ -1,5 +1,6 @@
 import { internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { normalizeUserId } from "./userIds";
 
 function userOwnsConversation(
@@ -35,6 +36,11 @@ export const appendMessage = internalMutation({
       createdAt: Date.now(),
     });
     await ctx.db.patch(args.conversationId, { updatedAt: Date.now() });
+    if (args.role === "user" || args.role === "assistant") {
+      await ctx.runMutation(internal.platformStatsRecorder.recordMessageInternal, {
+        role: args.role,
+      });
+    }
   },
 });
 

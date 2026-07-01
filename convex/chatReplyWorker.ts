@@ -206,7 +206,7 @@ export const processJob = internalAction({
     const job = await ctx.runQuery(internal.chatReplyJobs.getJob, {
       jobId: args.jobId,
     });
-    if (!job || job.status === "done") return;
+    if (!job || job.status === "done" || job.cancelled) return;
 
     await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
       jobId: args.jobId,
@@ -219,7 +219,22 @@ export const processJob = internalAction({
       ? (JSON.parse(job.attachmentsJson) as ChatCompletionAttachment[])
       : [];
 
+    const isCancelled = async () => {
+      const fresh = await ctx.runQuery(internal.chatReplyJobs.getJob, {
+        jobId: args.jobId,
+      });
+      return !fresh || fresh.cancelled || fresh.status === "cancelled";
+    };
+
     try {
+      if (await isCancelled()) {
+        await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
+          jobId: args.jobId,
+          status: "cancelled",
+        });
+        return;
+      }
+
       const conv = await ctx.runQuery(internal.platform.getConversationInternal, {
         conversationId: job.conversationId,
       });
@@ -231,6 +246,19 @@ export const processJob = internalAction({
         internal.platform.listConversationMessagesInternal,
         { conversationId: job.conversationId }
       );
+
+      const last = history[history.length - 1];
+      if (
+        last?.role === "assistant" &&
+        last.createdAt >= job.createdAt &&
+        job.kind !== "regenerate"
+      ) {
+        await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
+          jobId: args.jobId,
+          status: "done",
+        });
+        return;
+      }
 
       const refreshedUser = await ctx.runQuery(internal.users.getUserByEmailInternal, {
         email,
@@ -276,6 +304,7 @@ export const processJob = internalAction({
         job.content
       );
 
+      const started = Date.now();
       const engineResult = await runHybridAiEngine(ctx, {
         email,
         mode,
@@ -287,6 +316,15 @@ export const processJob = internalAction({
         hasImageAttachment: attachments.some((a) => a.kind === "image"),
         conversationId: job.conversationId,
       });
+      const latencyMs = engineResult.latencyMs ?? Date.now() - started;
+
+      if (await isCancelled()) {
+        await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
+          jobId: args.jobId,
+          status: "cancelled",
+        });
+        return;
+      }
 
       const validated = validateAnswerQuality({
         answer: engineResult.content,
@@ -327,6 +365,11 @@ export const processJob = internalAction({
         content: assistantContent,
       });
 
+      await ctx.runMutation(internal.platformStatsRecorder.recordAiRequestInternal, {
+        latencyMs,
+        failed: false,
+      });
+
       const title =
         conv.title === "New chat" || conv.title.endsWith("…")
           ? job.content.slice(0, 48).trim() + (job.content.length > 48 ? "…" : "")
@@ -345,16 +388,21 @@ export const processJob = internalAction({
       });
     } catch (err) {
       console.error("[chatReplyWorker] failed:", err);
-      await ctx.runMutation(internal.platform.appendMessage, {
-        conversationId: job.conversationId,
-        userId: email,
-        role: "assistant",
-        content: FALLBACK_REPLY,
-      });
-      await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
-        jobId: args.jobId,
-        status: "failed",
-      });
+      if (!(await isCancelled())) {
+        await ctx.runMutation(internal.platform.appendMessage, {
+          conversationId: job.conversationId,
+          userId: email,
+          role: "assistant",
+          content: FALLBACK_REPLY,
+        });
+        await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
+          jobId: args.jobId,
+          status: "failed",
+        });
+        await ctx.runMutation(internal.platformStatsRecorder.recordAiRequestInternal, {
+          failed: true,
+        });
+      }
     } finally {
       await ctx.runMutation(internal.chatReplyJobs.deleteJob, {
         jobId: args.jobId,

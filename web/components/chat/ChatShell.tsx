@@ -96,6 +96,7 @@ function ChatShellInner({
     mode,
     isSending,
     isAcceptingMessage,
+    awaitingReply,
     isSlowNetwork,
     error,
     startNewChat,
@@ -103,6 +104,7 @@ function ChatShellInner({
     deleteConversation,
     changeMode,
     sendMessage,
+    stopGenerating,
     regenerateMessage,
     pinConversation,
     archiveConversation,
@@ -300,7 +302,7 @@ function ChatShellInner({
           <ChatWorkspacePanel
             mode={mode}
             onModeChange={handleModeChange}
-            disabled={isSending}
+            disabled={isSending || awaitingReply}
             hasMessages={messages.length > 0}
             sourceImageUrl={latestImageUrl}
             onInsertDocument={handleInsertDocument}
@@ -320,6 +322,7 @@ function ChatShellInner({
           messages={messages}
           isLoading={messagesLoading}
           isSending={isSending}
+          awaitingReply={awaitingReply}
           isAcceptingMessage={isAcceptingMessage}
           isSlowNetwork={isSlowNetwork}
           insertRef={insertRef}
@@ -327,6 +330,7 @@ function ChatShellInner({
           onInsertTemplate={handleInsertTemplate}
           onRegenerate={handleRegenerate}
           onEditMessage={handleEditMessage}
+          onStopGenerating={() => void stopGenerating()}
           uploadUsage={uploadUsage}
         />
       </div>

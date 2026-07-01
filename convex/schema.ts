@@ -182,9 +182,34 @@ export default defineSchema({
     userId: v.optional(v.string()),
     isPwa: v.boolean(),
     lastSeenAt: v.number(),
+    deviceType: v.optional(v.string()),
+    browser: v.optional(v.string()),
+    os: v.optional(v.string()),
+    country: v.optional(v.string()),
   })
     .index("by_client", ["clientId"])
     .index("by_lastSeen", ["lastSeenAt"]),
+
+  /** Per-user daily activity for DAU / retention. */
+  userActivityDaily: defineTable({
+    userId: v.string(),
+    dateKey: v.string(),
+    lastSeenAt: v.number(),
+  }).index("by_date_user", ["dateKey", "userId"]),
+
+  /** Rolling platform metrics bucketed by UTC date. */
+  platformStatsDaily: defineTable({
+    dateKey: v.string(),
+    messages: v.number(),
+    conversations: v.number(),
+    aiRequests: v.number(),
+    aiFailures: v.number(),
+    newUsers: v.number(),
+    totalLatencyMs: v.number(),
+    latencySamples: v.number(),
+    peakConcurrent: v.number(),
+    updatedAt: v.number(),
+  }).index("by_dateKey", ["dateKey"]),
 
   platformCounters: defineTable({
     key: v.string(),
@@ -456,14 +481,23 @@ export default defineSchema({
     mode: v.string(),
     content: v.string(),
     attachmentsJson: v.optional(v.string()),
+    kind: v.optional(
+      v.union(v.literal("reply"), v.literal("regenerate"))
+    ),
+    regenerateFromMessageId: v.optional(v.id("messages")),
+    clientRequestId: v.optional(v.string()),
+    cancelled: v.optional(v.boolean()),
     status: v.union(
       v.literal("pending"),
       v.literal("processing"),
       v.literal("done"),
-      v.literal("failed")
+      v.literal("failed"),
+      v.literal("cancelled")
     ),
     createdAt: v.number(),
-  }).index("by_conversation", ["conversationId", "createdAt"]),
+  })
+    .index("by_conversation", ["conversationId", "createdAt"])
+    .index("by_clientRequest", ["clientRequestId"]),
 
   chats: defineTable({
     userId: v.string(),
