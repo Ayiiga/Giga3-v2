@@ -219,6 +219,22 @@ export function isGeminiFriendlyMode(mode: string): boolean {
   return GEMINI_MODES.has(mode);
 }
 
+/**
+ * Whether the failover chain should start another provider attempt. The primary
+ * attempt always runs; subsequent attempts are skipped once the overall
+ * wall-clock budget is spent, bounding worst-case latency so a reply (real or
+ * fallback) is persisted before the client's spinner deadline.
+ */
+export function shouldStartFailoverAttempt(args: {
+  elapsedMs: number;
+  budgetMs: number;
+  isPrimary: boolean;
+}): boolean {
+  if (args.isPrimary) return true;
+  if (!Number.isFinite(args.budgetMs)) return true;
+  return args.elapsedMs < args.budgetMs;
+}
+
 export function getFreeChatSystemLabel(chatSystem: string): string {
   switch (chatSystem) {
     case "smart":

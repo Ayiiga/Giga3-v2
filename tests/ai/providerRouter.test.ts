@@ -4,6 +4,7 @@ import {
   classifyRequestKind,
   resolveAiProviderTier,
   shouldEnableWebSearch,
+  shouldStartFailoverAttempt,
 } from "../../convex/providerRouter";
 
 describe("resolveAiProviderTier", () => {
@@ -112,5 +113,38 @@ describe("shouldEnableWebSearch", () => {
 
   it("enables search for current-events phrasing", () => {
     expect(shouldEnableWebSearch("Latest AI news", "general")).toBe(true);
+  });
+});
+
+describe("shouldStartFailoverAttempt", () => {
+  it("always runs the primary attempt regardless of elapsed time", () => {
+    expect(
+      shouldStartFailoverAttempt({ elapsedMs: 999_999, budgetMs: 1000, isPrimary: true })
+    ).toBe(true);
+  });
+
+  it("runs fallback attempts while under budget", () => {
+    expect(
+      shouldStartFailoverAttempt({ elapsedMs: 40_000, budgetMs: 100_000, isPrimary: false })
+    ).toBe(true);
+  });
+
+  it("skips fallback attempts once the budget is spent", () => {
+    expect(
+      shouldStartFailoverAttempt({ elapsedMs: 100_000, budgetMs: 100_000, isPrimary: false })
+    ).toBe(false);
+    expect(
+      shouldStartFailoverAttempt({ elapsedMs: 120_000, budgetMs: 100_000, isPrimary: false })
+    ).toBe(false);
+  });
+
+  it("treats an infinite budget as unlimited", () => {
+    expect(
+      shouldStartFailoverAttempt({
+        elapsedMs: 999_999,
+        budgetMs: Number.POSITIVE_INFINITY,
+        isPrimary: false,
+      })
+    ).toBe(true);
   });
 });

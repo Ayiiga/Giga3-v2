@@ -26,10 +26,13 @@ import { generateFreeImageForChat } from "./mediaEngine";
 import { openaiGenerateImage } from "./openaiImageClient";
 import { logChatReply } from "./chatReplyLog";
 
+// Kept below the client reply-wait deadline (CHAT_REPLY_WAIT_MS = 150s) so the
+// worker persists a real or fallback reply — clearing "Thinking…" gracefully via
+// the live query — before the client's own failsafe error fires.
 const WORKER_TEXT_TIMEOUT_MS =
-  Number(process.env.CHAT_WORKER_TIMEOUT_MS) || 240_000;
+  Number(process.env.CHAT_WORKER_TIMEOUT_MS) || 120_000;
 const WORKER_IMAGE_TIMEOUT_MS =
-  Number(process.env.CHAT_WORKER_IMAGE_TIMEOUT_MS) || 300_000;
+  Number(process.env.CHAT_WORKER_IMAGE_TIMEOUT_MS) || 150_000;
 
 function withWorkerTimeout<T>(
   promise: Promise<T>,
