@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v28-instant-chat";
+const CACHE_NAME = "giga3-shell-v29-no-sending-stuck";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

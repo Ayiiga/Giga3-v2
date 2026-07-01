@@ -60,7 +60,6 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onStopGenerating,
   uploadUsage,
 }: ChatConversationPaneProps) {
-  const composerBusy = Boolean(isAcceptingMessage);
   const showTyping = awaitingReply || isSending;
 
   return (
@@ -69,7 +68,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         messages={messages}
         isLoading={isLoading}
         isSending={isSending}
-        isAcceptingMessage={isAcceptingMessage}
+        isAcceptingMessage={false}
         awaitingReply={awaitingReply}
         onInsertTemplate={onInsertTemplate}
         onRegenerate={onRegenerate}
@@ -84,7 +83,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         <ChatInput
           insertRef={insertRef}
           onSend={onSend}
-          disabled={composerBusy}
+          disabled={false}
           uploadUsage={uploadUsage}
         />
       </div>

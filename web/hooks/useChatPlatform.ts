@@ -27,12 +27,14 @@ import { useMutation, useQuery } from "convex/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /** Fast ack — save message + queue AI worker (not full reply). */
-const CHAT_ACCEPT_TIMEOUT_MS = 60_000;
+const CHAT_ACCEPT_TIMEOUT_MS = 45_000;
+const CHAT_ACCEPT_TIMEOUT_SLOW_MS = 18_000;
+const CHAT_ACCEPT_TIMEOUT_IMAGE_MS = 120_000;
 const CHAT_REPLY_WAIT_MS = 120_000;
-const CHAT_REPLY_WAIT_SLOW_MS = 180_000;
-const MAX_SEND_RETRIES = 4;
-const RETRY_BASE_MS = 800;
-const SYNC_INDICATOR_DELAY_MS = 700;
+const CHAT_REPLY_WAIT_SLOW_MS = 300_000;
+const MAX_SEND_RETRIES = 3;
+const MAX_SEND_RETRIES_SLOW = 1;
+const RETRY_BASE_MS = 600;
 
 function withClientTimeout<T>(
   promise: Promise<T>,
@@ -70,7 +72,6 @@ export function useChatPlatform() {
   const [isSending, setIsSending] = useState(false);
   const [awaitingReply, setAwaitingReply] = useState(false);
   const [pendingUserText, setPendingUserText] = useState<string | null>(null);
-  const [showSyncIndicator, setShowSyncIndicator] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [chatProviderLabel, setChatProviderLabel] = useState<string | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
@@ -82,9 +83,12 @@ export function useChatPlatform() {
   const interestProfileCacheRef = useRef<string | null>(null);
   const assistantBaselineRef = useRef(0);
   const syncingOutboxRef = useRef(false);
-  const syncIndicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastChatSystemRef = useRef<GigaModelId>("fast");
   const { isSlowNetwork } = useConnectionQuality();
+
+  const clearPendingSyncUi = useCallback(() => {
+    setIsSending(false);
+  }, []);
 
   const cachedMessageFallback = useMemo(
     () => (activeId ? readCachedMessages(activeId) : null),
@@ -197,12 +201,16 @@ export function useChatPlatform() {
       attachments: PreparedChatAttachment[] | undefined,
       clientRequestId: string,
       chatSystem: GigaModelId,
+      slowNetwork: boolean,
       attempt = 0
     ) => {
       const hasImages = attachments?.some((a) => a.kind === "image") ?? false;
+      const maxRetries = slowNetwork ? MAX_SEND_RETRIES_SLOW : MAX_SEND_RETRIES;
       const acceptTimeoutMs = hasImages
-        ? CHAT_ACCEPT_TIMEOUT_MS * 2
-        : CHAT_ACCEPT_TIMEOUT_MS;
+        ? CHAT_ACCEPT_TIMEOUT_IMAGE_MS
+        : slowNetwork
+          ? CHAT_ACCEPT_TIMEOUT_SLOW_MS
+          : CHAT_ACCEPT_TIMEOUT_MS;
 
       try {
         const result = await withClientTimeout(
@@ -230,12 +238,6 @@ export function useChatPlatform() {
             : "Could not reach the server on this connection. Check your signal and try again."
         );
 
-        if (syncIndicatorTimerRef.current) {
-          clearTimeout(syncIndicatorTimerRef.current);
-          syncIndicatorTimerRef.current = null;
-        }
-        setShowSyncIndicator(false);
-
         if (result.conversationId && result.conversationId !== conversationId) {
           setActiveId(result.conversationId);
         }
@@ -249,7 +251,6 @@ export function useChatPlatform() {
         setUsedFallback((prev) => (prev === nextFallback ? prev : nextFallback));
 
         if (result.status === "processing") {
-          setPendingUserText(null);
           setIsSending(false);
           setAwaitingReply(true);
           return { ok: true as const, conversationId: result.conversationId };
@@ -262,7 +263,7 @@ export function useChatPlatform() {
       } catch (e) {
         const message = e instanceof Error ? e.message : "Failed to send";
         const shouldRetry =
-          attempt < MAX_SEND_RETRIES - 1 &&
+          attempt < maxRetries - 1 &&
           typeof navigator !== "undefined" &&
           navigator.onLine;
         if (shouldRetry) {
@@ -274,6 +275,7 @@ export function useChatPlatform() {
             attachments,
             clientRequestId,
             chatSystem,
+            slowNetwork,
             attempt + 1
           );
         }
@@ -308,7 +310,8 @@ export function useChatPlatform() {
             row.content,
             row.attachments as PreparedChatAttachment[] | undefined,
             row.clientRequestId,
-            chatSystemForModel(gigaModelForMode(row.mode as AiModeId), hasOpenAiAccess)
+            chatSystemForModel(gigaModelForMode(row.mode as AiModeId), hasOpenAiAccess),
+            isSlowNetwork
           );
           await removeOutbox(row.id);
         } catch (e) {
@@ -324,7 +327,7 @@ export function useChatPlatform() {
     } finally {
       syncingOutboxRef.current = false;
     }
-  }, [createConversation, dispatchAccept, refreshOutboxCount, hasOpenAiAccess]);
+  }, [createConversation, dispatchAccept, refreshOutboxCount, hasOpenAiAccess, isSlowNetwork]);
 
   useEffect(() => {
     if (!email || createUserAttempted.current) return;
@@ -373,31 +376,41 @@ export function useChatPlatform() {
     );
     if (synced) {
       setPendingUserText(null);
+      clearPendingSyncUi();
     }
-  }, [messagesRaw, pendingUserText]);
+  }, [messagesRaw, pendingUserText, clearPendingSyncUi]);
 
   useEffect(() => {
     if (!awaitingReply || !messagesRaw) return;
     const assistants = countAssistantMessages(messagesRaw);
     if (assistants > assistantBaselineRef.current) {
       setAwaitingReply(false);
-      setIsSending(false);
       setPendingUserText(null);
+      clearPendingSyncUi();
     }
-  }, [messagesRaw, awaitingReply]);
+  }, [messagesRaw, awaitingReply, clearPendingSyncUi]);
 
   useEffect(() => {
     if (!awaitingReply) return;
     const waitMs = isSlowNetwork ? CHAT_REPLY_WAIT_SLOW_MS : CHAT_REPLY_WAIT_MS;
     const timer = setTimeout(() => {
       setAwaitingReply(false);
-      setIsSending(false);
+      clearPendingSyncUi();
+      const savedOnServer = messagesRaw?.some(
+        (m: { role: string; content: string }) =>
+          m.role === "user" &&
+          (m.content === pendingUserText ||
+            messagesRaw?.[messagesRaw.length - 1]?.role === "user")
+      );
+      if (savedOnServer) {
+        setPendingUserText(null);
+      }
       setError(
         "Reply is taking longer on this connection. Your message was saved — please wait a moment or try again when the signal is stronger."
       );
     }, waitMs);
     return () => clearTimeout(timer);
-  }, [awaitingReply, isSlowNetwork]);
+  }, [awaitingReply, isSlowNetwork, messagesRaw, pendingUserText, clearPendingSyncUi]);
 
   useEffect(() => {
     void refreshOutboxCount();
@@ -489,14 +502,6 @@ export function useChatPlatform() {
       setPendingUserText(content);
       setIsSending(false);
       setAwaitingReply(true);
-      setShowSyncIndicator(false);
-
-      if (syncIndicatorTimerRef.current) {
-        clearTimeout(syncIndicatorTimerRef.current);
-      }
-      syncIndicatorTimerRef.current = setTimeout(() => {
-        setShowSyncIndicator(true);
-      }, SYNC_INDICATOR_DELAY_MS);
 
       assistantBaselineRef.current = countAssistantMessages(messagesRaw);
       const clientRequestId = newClientRequestId();
@@ -519,28 +524,60 @@ export function useChatPlatform() {
         registerChatOutboxSync();
         await refreshOutboxCount();
         setAwaitingReply(false);
-        if (syncIndicatorTimerRef.current) {
-          clearTimeout(syncIndicatorTimerRef.current);
-        }
-        setShowSyncIndicator(false);
         setError("Offline — message queued and will send when you're back online.");
         return;
       }
 
-      void dispatchAccept(token, activeId, content, attachments, clientRequestId, chatSystem).catch(
-        (e) => {
-          if (syncIndicatorTimerRef.current) {
-            clearTimeout(syncIndicatorTimerRef.current);
-          }
-          setShowSyncIndicator(false);
-          setError(e instanceof Error ? e.message : "Failed to send");
-          setPendingUserText(null);
-          setIsSending(false);
-          setAwaitingReply(false);
+      void dispatchAccept(
+        token,
+        activeId,
+        content,
+        attachments,
+        clientRequestId,
+        chatSystem,
+        isSlowNetwork
+      ).catch(async (e) => {
+        const entry: OutboxEntry = {
+          id: clientRequestId,
+          clientRequestId,
+          conversationId: activeId,
+          content,
+          mode,
+          attachments: attachments?.map(
+            ({ previewUrl: _p, thumbDataUrl: _t, ...rest }) => rest
+          ),
+          sessionToken: token,
+          attempts: 0,
+          createdAt: Date.now(),
+        };
+        try {
+          await enqueueOutbox(entry);
+          registerChatOutboxSync();
+          await refreshOutboxCount();
+        } catch {
+          /* ignore */
         }
-      );
+        setAwaitingReply(false);
+        setPendingUserText(null);
+        clearPendingSyncUi();
+        setError(
+          e instanceof Error
+            ? `${e.message} Message queued — we'll retry when your connection is stronger.`
+            : "Message queued — we'll retry when your connection is stronger."
+        );
+      });
     },
-    [sessionToken, activeId, mode, dispatchAccept, messagesRaw, refreshOutboxCount, hasOpenAiAccess]
+    [
+      sessionToken,
+      activeId,
+      mode,
+      dispatchAccept,
+      messagesRaw,
+      refreshOutboxCount,
+      hasOpenAiAccess,
+      isSlowNetwork,
+      clearPendingSyncUi,
+    ]
   );
 
   const stopGenerating = useCallback(async () => {
@@ -669,7 +706,7 @@ export function useChatPlatform() {
     mode,
     isSending,
     awaitingReply,
-    isAcceptingMessage: showSyncIndicator,
+    isAcceptingMessage: false,
     isSlowNetwork,
     outboxCount,
     error,

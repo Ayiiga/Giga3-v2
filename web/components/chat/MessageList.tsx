@@ -175,7 +175,7 @@ function MessageListInner({
                     content={typeof m.content === "string" ? m.content : ""}
                     createdAt={m.createdAt}
                     pending={m.id === "pending-user"}
-                    showSending={m.id === "pending-user" && isAcceptingMessage}
+                    showSending={false}
                     streaming={
                       awaitingReply &&
                       m.role === "assistant" &&
