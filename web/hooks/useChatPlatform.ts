@@ -21,6 +21,11 @@ import {
   writeCachedMessages,
 } from "@/lib/chat/messageCache";
 import { chatSystemForModel, gigaModelForMode, type GigaModelId } from "@/lib/chat/gigaModels";
+import {
+  fingerprintLastAssistant,
+  isNewAssistantReply,
+  type AssistantFingerprint,
+} from "@/lib/chat/replyDetection";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -30,8 +35,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 const CHAT_ACCEPT_TIMEOUT_MS = 45_000;
 const CHAT_ACCEPT_TIMEOUT_SLOW_MS = 18_000;
 const CHAT_ACCEPT_TIMEOUT_IMAGE_MS = 120_000;
-const CHAT_REPLY_WAIT_MS = 120_000;
-const CHAT_REPLY_WAIT_SLOW_MS = 120_000;
+const CHAT_REPLY_WAIT_MS = 150_000;
+const CHAT_REPLY_WAIT_SLOW_MS = 180_000;
 const MAX_SEND_RETRIES = 3;
 const MAX_SEND_RETRIES_SLOW = 1;
 const RETRY_BASE_MS = 600;
@@ -82,6 +87,8 @@ export function useChatPlatform() {
   const creditsCacheRef = useRef<number | null>(null);
   const interestProfileCacheRef = useRef<string | null>(null);
   const assistantBaselineRef = useRef(0);
+  const replyWaitStartedAtRef = useRef(0);
+  const assistantFingerprintBeforeRef = useRef<AssistantFingerprint>(null);
   const syncingOutboxRef = useRef(false);
   const lastChatSystemRef = useRef<GigaModelId>("fast");
   const { isSlowNetwork } = useConnectionQuality();
@@ -89,6 +96,15 @@ export function useChatPlatform() {
   const clearPendingSyncUi = useCallback(() => {
     setIsSending(false);
   }, []);
+
+  const beginReplyWait = useCallback(
+    (rows: { _id: string; role: string; content: string; createdAt?: number }[] | undefined) => {
+      replyWaitStartedAtRef.current = Date.now();
+      assistantFingerprintBeforeRef.current = fingerprintLastAssistant(rows);
+      assistantBaselineRef.current = countAssistantMessages(rows);
+    },
+    []
+  );
 
   const cachedMessageFallback = useMemo(
     () => (activeId ? readCachedMessages(activeId) : null),
@@ -121,6 +137,17 @@ export function useChatPlatform() {
   const interestProfileRow = useQuery(api.users.getInterestProfile, sessionQueryArgs);
   const conversationsRaw = useQuery(api.conversations.list, conversationsQueryArgs);
   const messagesRaw = useQuery(api.messages.listByConversation, messagesQueryArgs);
+  const replyStatusQueryArgs = useMemo(
+    () =>
+      mounted && sessionToken && activeId && awaitingReply
+        ? {
+            sessionToken,
+            conversationId: activeId as Id<"conversations">,
+          }
+        : ("skip" as const),
+    [mounted, sessionToken, activeId, awaitingReply]
+  );
+  const replyStatus = useQuery(api.chatMessaging.getReplyStatus, replyStatusQueryArgs);
   const uploadUsage = useQuery(api.uploadLimits.getUploadUsageSnapshot, sessionQueryArgs);
   const credits =
     chatCreditsRow === undefined
@@ -382,35 +409,66 @@ export function useChatPlatform() {
 
   useEffect(() => {
     if (!awaitingReply || !messagesRaw) return;
+    const after = fingerprintLastAssistant(messagesRaw);
+    const before = assistantFingerprintBeforeRef.current;
+    const waitStartedAt = replyWaitStartedAtRef.current;
+
+    if (isNewAssistantReply(before, after, waitStartedAt)) {
+      setAwaitingReply(false);
+      setPendingUserText(null);
+      clearPendingSyncUi();
+      setError(null);
+      return;
+    }
+
     const assistants = countAssistantMessages(messagesRaw);
     if (assistants > assistantBaselineRef.current) {
       setAwaitingReply(false);
       setPendingUserText(null);
       clearPendingSyncUi();
+      setError(null);
     }
   }, [messagesRaw, awaitingReply, clearPendingSyncUi]);
 
   useEffect(() => {
-    if (!awaitingReply) return;
-    const waitMs = isSlowNetwork ? CHAT_REPLY_WAIT_SLOW_MS : CHAT_REPLY_WAIT_MS;
-    const timer = setTimeout(() => {
+    if (!awaitingReply || replyStatus === undefined) return;
+    if (replyStatus.active) return;
+
+    const elapsed = Date.now() - replyWaitStartedAtRef.current;
+    if (elapsed < 4000) return;
+
+    const after = fingerprintLastAssistant(messagesRaw);
+    if (
+      !isNewAssistantReply(
+        assistantFingerprintBeforeRef.current,
+        after,
+        replyWaitStartedAtRef.current
+      )
+    ) {
       setAwaitingReply(false);
       clearPendingSyncUi();
-      const savedOnServer = messagesRaw?.some(
-        (m: { role: string; content: string }) =>
-          m.role === "user" &&
-          (m.content === pendingUserText ||
-            messagesRaw?.[messagesRaw.length - 1]?.role === "user")
-      );
-      if (savedOnServer) {
-        setPendingUserText(null);
-      }
+      setPendingUserText(null);
       setError(
-        "Reply is taking longer on this connection. Your message was saved — please wait a moment or try again when the signal is stronger."
+        "AI could not complete this reply. Your message was saved — please try again."
+      );
+    }
+  }, [replyStatus, awaitingReply, messagesRaw, clearPendingSyncUi]);
+
+  useEffect(() => {
+    if (!awaitingReply) return;
+    const waitMs = isSlowNetwork ? CHAT_REPLY_WAIT_SLOW_MS : CHAT_REPLY_WAIT_MS;
+    const waitToken = replyWaitStartedAtRef.current;
+    const timer = setTimeout(() => {
+      if (replyWaitStartedAtRef.current !== waitToken) return;
+      setAwaitingReply(false);
+      clearPendingSyncUi();
+      setPendingUserText(null);
+      setError(
+        "Reply is taking longer than expected. Your message was saved — please try again or check your connection."
       );
     }, waitMs);
     return () => clearTimeout(timer);
-  }, [awaitingReply, isSlowNetwork, messagesRaw, pendingUserText, clearPendingSyncUi]);
+  }, [awaitingReply, isSlowNetwork, clearPendingSyncUi]);
 
   useEffect(() => {
     void refreshOutboxCount();
@@ -502,8 +560,7 @@ export function useChatPlatform() {
       setPendingUserText(content);
       setIsSending(false);
       setAwaitingReply(true);
-
-      assistantBaselineRef.current = countAssistantMessages(messagesRaw);
+      beginReplyWait(messagesRaw);
       const clientRequestId = newClientRequestId();
 
       if (typeof navigator !== "undefined" && !navigator.onLine) {
@@ -577,6 +634,7 @@ export function useChatPlatform() {
       hasOpenAiAccess,
       isSlowNetwork,
       clearPendingSyncUi,
+      beginReplyWait,
     ]
   );
 
@@ -601,7 +659,6 @@ export function useChatPlatform() {
       if (!token || !activeId) return;
       setError(null);
       setAwaitingReply(false);
-      assistantBaselineRef.current = countAssistantMessages(messagesRaw);
 
       try {
         const result = await regenerateMessageMutation({
@@ -619,13 +676,14 @@ export function useChatPlatform() {
         setChatProviderLabel((prev) => (prev === nextLabel ? prev : nextLabel));
         setUsedFallback(Boolean(result.usedFallback));
         if (result.status === "processing") {
+          beginReplyWait(messagesRaw);
           setAwaitingReply(true);
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to regenerate");
       }
     },
-    [sessionToken, activeId, mode, regenerateMessageMutation, messagesRaw]
+    [sessionToken, activeId, mode, regenerateMessageMutation, messagesRaw, beginReplyWait]
   );
 
   const pinConversation = useCallback(
@@ -675,7 +733,7 @@ export function useChatPlatform() {
       const token = sessionToken ?? getSessionToken();
       if (!token) return;
       setError(null);
-      assistantBaselineRef.current = countAssistantMessages(messagesRaw);
+      beginReplyWait(messagesRaw);
       try {
         const result = await editAndResendMutation({
           sessionToken: token,
@@ -692,7 +750,7 @@ export function useChatPlatform() {
         setError(e instanceof Error ? e.message : "Failed to edit message");
       }
     },
-    [sessionToken, mode, editAndResendMutation, messagesRaw]
+    [sessionToken, mode, editAndResendMutation, messagesRaw, beginReplyWait]
   );
 
   return {

@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v30-no-sending-stuck";
+const CACHE_NAME = "giga3-shell-v31-thinking-hang-fix";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

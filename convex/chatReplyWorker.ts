@@ -24,6 +24,34 @@ import type { ChatEngineResult, ChatRoutingContext } from "./chatEngine";
 import { buildChatRoutePlan, buildPromptCacheKey, shouldUseResponseCache } from "./providerRouter";
 import { generateFreeImageForChat } from "./mediaEngine";
 import { openaiGenerateImage } from "./openaiImageClient";
+import { logChatReply } from "./chatReplyLog";
+
+const WORKER_TEXT_TIMEOUT_MS =
+  Number(process.env.CHAT_WORKER_TIMEOUT_MS) || 240_000;
+const WORKER_IMAGE_TIMEOUT_MS =
+  Number(process.env.CHAT_WORKER_IMAGE_TIMEOUT_MS) || 300_000;
+
+function withWorkerTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  label: string
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`${label} timed out after ${ms}ms`)),
+      ms
+    );
+    promise
+      .then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+  });
+}
 
 function hasHallucinationRisk(flags: string[]): boolean {
   return flags.some((flag) =>
@@ -199,7 +227,13 @@ async function runHybridAiEngine(
     }
   }
 
-  const engineResult = await completeChatWithFailover(args.chatMessages, args.routing);
+  const engineResult = await withWorkerTimeout(
+    completeChatWithFailover(args.chatMessages, args.routing),
+    args.hasAttachments || args.hasImageAttachment
+      ? WORKER_IMAGE_TIMEOUT_MS
+      : WORKER_TEXT_TIMEOUT_MS,
+    "completeChatWithFailover"
+  );
 
   if (cacheEligible && engineResult.providerId !== "local_fallback") {
     await ctx.runMutation(internal.aiResponseCache.writeCachedResponseInternal, {
@@ -232,7 +266,32 @@ export const processJob = internalAction({
     const job = await ctx.runQuery(internal.chatReplyJobs.getJob, {
       jobId: args.jobId,
     });
-    if (!job || job.status === "done" || job.cancelled) return;
+
+    if (!job) return;
+
+    if (job.cancelled || job.status === "cancelled") {
+      await ctx.runMutation(internal.chatReplyJobs.deleteJob, {
+        jobId: args.jobId,
+      });
+      return;
+    }
+
+    if (job.status === "done") {
+      await ctx.runMutation(internal.chatReplyJobs.deleteJob, {
+        jobId: args.jobId,
+      });
+      return;
+    }
+
+    const workerStarted = Date.now();
+    logChatReply("worker_start", {
+      jobId: args.jobId,
+      conversationId: job.conversationId,
+      userId: job.userId,
+      kind: job.kind ?? "reply",
+      chatSystem: job.chatSystem ?? null,
+      mode: job.mode,
+    });
 
     await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
       jobId: args.jobId,
@@ -331,6 +390,15 @@ export const processJob = internalAction({
         job.chatSystem
       );
 
+      logChatReply("worker_routing", {
+        jobId: args.jobId,
+        conversationId: job.conversationId,
+        userId: email,
+        tier: routing.tier,
+        chatSystem: routing.chatSystem ?? null,
+        providerPlan: routing.tier === "premium" ? "openai_first" : "gemini_first",
+      });
+
       const started = Date.now();
       const engineResult = await runHybridAiEngine(ctx, {
         email,
@@ -344,6 +412,17 @@ export const processJob = internalAction({
         conversationId: job.conversationId,
       });
       const latencyMs = engineResult.latencyMs ?? Date.now() - started;
+
+      logChatReply("worker_provider_done", {
+        jobId: args.jobId,
+        conversationId: job.conversationId,
+        userId: email,
+        providerId: engineResult.providerId,
+        tier: routing.tier,
+        latencyMs,
+        cached: engineResult.cached,
+        usedFallback: engineResult.usedFallback,
+      });
 
       if (await isCancelled()) {
         await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
@@ -369,21 +448,6 @@ export const processJob = internalAction({
       });
 
       const chargedAi = engineResult.providerId !== "local_fallback";
-      if (chargedAi) {
-        if (engineResult.providerId === "openai_image") {
-          await ctx.runMutation(internal.credits.deductCreditsInternal, {
-            userId: email,
-            action: "image",
-            reference: job.conversationId,
-          });
-        } else {
-          await ctx.runMutation(internal.credits.deductForChatModeInternal, {
-            userId: email,
-            mode,
-            reference: job.conversationId,
-          });
-        }
-      }
 
       await ctx.runMutation(internal.platform.appendMessage, {
         conversationId: job.conversationId,
@@ -391,6 +455,32 @@ export const processJob = internalAction({
         role: "assistant",
         content: assistantContent,
       });
+
+      if (chargedAi) {
+        try {
+          if (engineResult.providerId === "openai_image") {
+            await ctx.runMutation(internal.credits.deductCreditsInternal, {
+              userId: email,
+              action: "image",
+              reference: job.conversationId,
+            });
+          } else {
+            await ctx.runMutation(internal.credits.deductForChatModeInternal, {
+              userId: email,
+              mode,
+              reference: job.conversationId,
+            });
+          }
+        } catch (deductErr) {
+          logChatReply("worker_credit_deduct_failed", {
+            jobId: args.jobId,
+            conversationId: job.conversationId,
+            userId: email,
+            error:
+              deductErr instanceof Error ? deductErr.message : String(deductErr),
+          });
+        }
+      }
 
       await ctx.runMutation(internal.platformStatsRecorder.recordAiRequestInternal, {
         latencyMs,
@@ -413,7 +503,22 @@ export const processJob = internalAction({
         jobId: args.jobId,
         status: "done",
       });
+
+      logChatReply("worker_done", {
+        jobId: args.jobId,
+        conversationId: job.conversationId,
+        userId: email,
+        durationMs: Date.now() - workerStarted,
+      });
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      logChatReply("worker_failed", {
+        jobId: args.jobId,
+        conversationId: job.conversationId,
+        userId: email,
+        error: message,
+        durationMs: Date.now() - workerStarted,
+      });
       console.error("[chatReplyWorker] failed:", err);
       if (!(await isCancelled())) {
         await ctx.runMutation(internal.platform.appendMessage, {

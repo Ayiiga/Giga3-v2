@@ -513,20 +513,50 @@ async function runSequentialPlan(
   primaryProvider: ChatProviderId,
   timeoutMs: number
 ): Promise<ChatEngineResult | null> {
+  const planStarted = Date.now();
   for (const attempt of attempts) {
+    const attemptStarted = Date.now();
+    console.log(
+      JSON.stringify({
+        service: "giga3-chat-engine",
+        event: "provider_attempt_start",
+        providerId: attempt.id,
+        timeoutMs,
+        ts: attemptStarted,
+      })
+    );
     try {
-      const started = Date.now();
       const result = await withProviderTimeout(attempt.id, timeoutMs, attempt.run);
+      const latencyMs = Date.now() - attemptStarted;
+      console.log(
+        JSON.stringify({
+          service: "giga3-chat-engine",
+          event: "provider_attempt_success",
+          providerId: attempt.id,
+          latencyMs,
+          totalMs: Date.now() - planStarted,
+          ts: Date.now(),
+        })
+      );
       return {
         content: result.content,
         providerId: attempt.id,
         usedFallback: attempt.id !== primaryProvider,
         usedWebSearch: result.usedWebSearch,
-        latencyMs: Date.now() - started,
+        latencyMs,
       };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.error(`[chatEngine] ${attempt.id} failed:`, msg);
+      console.error(
+        JSON.stringify({
+          service: "giga3-chat-engine",
+          event: "provider_attempt_failed",
+          providerId: attempt.id,
+          error: msg,
+          latencyMs: Date.now() - attemptStarted,
+          ts: Date.now(),
+        })
+      );
     }
   }
   return null;

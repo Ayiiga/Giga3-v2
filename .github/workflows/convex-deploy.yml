@@ -100,6 +100,8 @@ jobs:
         run: |
           set -euo pipefail
           npx convex env set CHAT_PROVIDER_TIMEOUT_MS "45000"
+          npx convex env set CHAT_WORKER_TIMEOUT_MS "240000"
+          npx convex env set CHAT_WORKER_IMAGE_TIMEOUT_MS "300000"
           npx convex env set CHAT_MAX_TOKENS "1024"
           npx convex env set CHAT_MAX_HISTORY_TURNS "12"
           npx convex env set CHAT_ENABLE_FAL "false"

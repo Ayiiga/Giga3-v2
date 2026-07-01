@@ -1,4 +1,4 @@
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import {
@@ -67,6 +67,8 @@ function hasHallucinationRisk(flags: string[]): boolean {
     ].includes(flag)
   );
 }
+
+const STUCK_JOB_RESCHEDULE_MS = 45_000;
 
 async function ensureChatUser(
   ctx: { db: any; scheduler: any },
@@ -233,6 +235,37 @@ export const acceptMessage = mutation({
         )
         .first();
       if (existing && existing.status !== "failed" && existing.status !== "cancelled") {
+        const messageRows = await ctx.db
+          .query("messages")
+          .withIndex("by_conversation", (q) =>
+            q.eq("conversationId", conversationId!)
+          )
+          .collect();
+        const sortedMessages = messageRows.sort((a, b) => a.createdAt - b.createdAt);
+        const lastMessage = sortedMessages[sortedMessages.length - 1];
+        if (
+          lastMessage?.role === "assistant" &&
+          lastMessage.createdAt >= existing.createdAt
+        ) {
+          return {
+            status: "complete" as const,
+            conversationId: conversationId!,
+            content: lastMessage.content,
+            chatProviderLabel: getChatProviderLabel("gemini"),
+            usedFallback: false,
+          };
+        }
+
+        const jobAge = Date.now() - existing.createdAt;
+        const shouldReschedule =
+          existing.status === "pending" ||
+          (existing.status === "processing" && jobAge > STUCK_JOB_RESCHEDULE_MS);
+        if (shouldReschedule) {
+          await ctx.scheduler.runAfter(0, internal.chatReplyWorker.processJob, {
+            jobId: existing._id,
+          });
+        }
+
         return {
           status: "processing" as const,
           conversationId: conversationId!,
@@ -268,6 +301,45 @@ export const acceptMessage = mutation({
       jobId,
       chatProviderLabel: getChatProviderLabel("gemini"),
       usedFallback: false,
+    };
+  },
+});
+
+/** Lightweight status for the client to clear stuck "Thinking…" when a job ends without a message. */
+export const getReplyStatus = query({
+  args: {
+    sessionToken: v.string(),
+    conversationId: v.id("conversations"),
+  },
+  handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken);
+    const conv = await ctx.db.get(args.conversationId);
+    if (!conv || conv.userId !== email) {
+      return { active: false as const };
+    }
+
+    const rows = await ctx.db
+      .query("chatReplyJobs")
+      .withIndex("by_conversation", (q) =>
+        q.eq("conversationId", args.conversationId)
+      )
+      .order("desc")
+      .take(3);
+
+    const active =
+      rows.find(
+        (row) => row.status === "pending" || row.status === "processing"
+      ) ?? null;
+
+    if (!active) {
+      return { active: false as const };
+    }
+
+    return {
+      active: true as const,
+      status: active.status,
+      createdAt: active.createdAt,
+      cancelled: active.cancelled,
     };
   },
 });
