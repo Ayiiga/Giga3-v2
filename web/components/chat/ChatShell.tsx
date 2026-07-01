@@ -113,6 +113,7 @@ function ChatShellInner({
     chatProviderLabel,
     usedFallback,
     credits,
+    hasOpenAiAccess,
     interestProfileJson,
     uploadUsage,
   } = usePlatform();
@@ -137,9 +138,9 @@ function ChatShellInner({
 
   const handleSend = useCallback(
     (msg: string, attachments?: import("@/lib/chat/multimodalAttachments").PreparedChatAttachment[]) => {
-      void sendMessage(msg, attachments);
+      void sendMessage(msg, attachments, modelTier);
     },
-    [sendMessage]
+    [sendMessage, modelTier]
   );
 
   const handleOpenSidebar = useCallback(() => {
@@ -199,6 +200,14 @@ function ChatShellInner({
   useEffect(() => {
     setModelTier(readStoredGigaModel());
   }, []);
+
+  useEffect(() => {
+    if (!hasOpenAiAccess && modelTier === "pro") {
+      setModelTier("fast");
+      storeGigaModel("fast");
+      void changeMode(getGigaModel("fast").mode);
+    }
+  }, [hasOpenAiAccess, modelTier, changeMode]);
 
   useEffect(() => {
     if (mode) {
@@ -283,6 +292,7 @@ function ChatShellInner({
             shareToken={activeConversation?.shareToken}
             isSending={isSending}
             credits={credits}
+            hasOpenAiAccess={hasOpenAiAccess}
             modelTier={modelTier}
             onModelTierChange={handleModelTierChange}
             onOpenSidebar={handleOpenSidebar}

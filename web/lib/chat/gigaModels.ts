@@ -1,16 +1,22 @@
 import type { AiModeId } from "@/lib/aiRouter";
-import { Bolt, Brain, Eye, Palette, type LucideIcon } from "lucide-react";
+import { Bolt, Brain, Crown, Eye, Palette, type LucideIcon } from "lucide-react";
 
-export type GigaModelId = "fast" | "smart" | "vision" | "creator";
+export type GigaModelId = "fast" | "smart" | "vision" | "creator" | "pro";
+
+export type ChatEngineId = "gemini" | "fal_ai" | "openai";
 
 export interface GigaModelDefinition {
   id: GigaModelId;
   label: string;
   shortLabel: string;
   description: string;
+  engine: ChatEngineId;
+  engineLabel: string;
   icon: LucideIcon;
   /** Maps to existing Convex AI mode — no backend schema changes. */
   mode: AiModeId;
+  /** OpenAI path — subscribers and credit-pack purchasers only. */
+  requiresPremium?: boolean;
 }
 
 export const GIGA_MODELS: GigaModelDefinition[] = [
@@ -18,7 +24,9 @@ export const GIGA_MODELS: GigaModelDefinition[] = [
     id: "fast",
     label: "Giga3 Fast",
     shortLabel: "Fast",
-    description: "Quick replies for everyday chat",
+    description: "Quick everyday chat",
+    engine: "gemini",
+    engineLabel: "Gemini",
     icon: Bolt,
     mode: "general",
   },
@@ -26,7 +34,9 @@ export const GIGA_MODELS: GigaModelDefinition[] = [
     id: "smart",
     label: "Giga3 Smart",
     shortLabel: "Smart",
-    description: "Deeper reasoning and research",
+    description: "Deeper reasoning via fal.ai",
+    engine: "fal_ai",
+    engineLabel: "fal.ai",
     icon: Brain,
     mode: "research",
   },
@@ -35,6 +45,8 @@ export const GIGA_MODELS: GigaModelDefinition[] = [
     label: "Giga3 Vision",
     shortLabel: "Vision",
     description: "Images, files, and visual tasks",
+    engine: "gemini",
+    engineLabel: "Gemini Vision",
     icon: Eye,
     mode: "general",
   },
@@ -42,9 +54,22 @@ export const GIGA_MODELS: GigaModelDefinition[] = [
     id: "creator",
     label: "Giga3 Creator",
     shortLabel: "Creator",
-    description: "Writing, social content, and media",
+    description: "Writing and creative content",
+    engine: "fal_ai",
+    engineLabel: "fal.ai",
     icon: Palette,
     mode: "social",
+  },
+  {
+    id: "pro",
+    label: "Giga3 Pro",
+    shortLabel: "Pro",
+    description: "OpenAI GPT-4 — subscribers & credits",
+    engine: "openai",
+    engineLabel: "OpenAI",
+    icon: Crown,
+    mode: "general",
+    requiresPremium: true,
   },
 ];
 
@@ -59,8 +84,12 @@ export function isValidGigaModel(id: string): id is GigaModelId {
 }
 
 export function gigaModelForMode(mode: AiModeId): GigaModelId {
-  const match = GIGA_MODELS.find((m) => m.mode === mode);
+  const match = GIGA_MODELS.find((m) => m.mode === mode && !m.requiresPremium);
   return match?.id ?? "fast";
+}
+
+export function modelsForAccess(hasOpenAiAccess: boolean): GigaModelDefinition[] {
+  return GIGA_MODELS.filter((m) => !m.requiresPremium || hasOpenAiAccess);
 }
 
 export function readStoredGigaModel(): GigaModelId {
@@ -79,4 +108,14 @@ export function storeGigaModel(id: GigaModelId): void {
   } catch {
     /* ignore quota */
   }
+}
+
+/** Chat system id sent to Convex — free models map 1:1; pro uses fast routing with premium tier. */
+export function chatSystemForModel(
+  id: GigaModelId,
+  hasOpenAiAccess: boolean
+): GigaModelId {
+  if (id === "pro" && hasOpenAiAccess) return "pro";
+  if (id === "pro" && !hasOpenAiAccess) return "fast";
+  return id;
 }

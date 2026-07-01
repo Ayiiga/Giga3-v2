@@ -25,6 +25,7 @@ interface ChatChromeProps {
   shareToken?: string | null;
   isSending: boolean;
   credits: number | null;
+  hasOpenAiAccess: boolean;
   modelTier: GigaModelId;
   onModelTierChange: (id: GigaModelId) => void;
   onOpenSidebar: () => void;
@@ -45,6 +46,7 @@ function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean
     prev.shareToken === next.shareToken &&
     prev.isSending === next.isSending &&
     prev.credits === next.credits &&
+    prev.hasOpenAiAccess === next.hasOpenAiAccess &&
     prev.modelTier === next.modelTier &&
     prev.onModelTierChange === next.onModelTierChange &&
     prev.onOpenSidebar === next.onOpenSidebar &&
@@ -62,6 +64,7 @@ export const ChatChrome = memo(function ChatChrome({
   shareToken,
   isSending,
   credits,
+  hasOpenAiAccess,
   modelTier,
   onModelTierChange,
   onOpenSidebar,
@@ -93,6 +96,7 @@ export const ChatChrome = memo(function ChatChrome({
         <ModelSelector
           value={modelTier}
           onChange={onModelTierChange}
+          hasOpenAiAccess={hasOpenAiAccess}
           disabled={isSending}
           compact
           className="min-w-0 max-w-[7.75rem] sm:max-w-none"

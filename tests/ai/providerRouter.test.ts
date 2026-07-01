@@ -60,7 +60,19 @@ describe("buildChatRoutePlan", () => {
       query: "Hello",
     });
     expect(plan.primaryProvider).toBe("gemini");
+    expect(plan.failoverOrder).not.toContain("openai_primary");
     expect(plan.requestKind).toBe("text_chat");
+  });
+
+  it("routes free Smart system to fal.ai first", () => {
+    const plan = buildChatRoutePlan({
+      tier: "free",
+      mode: "research",
+      query: "Explain quantum computing",
+      chatSystem: "smart",
+    });
+    expect(plan.primaryProvider).toBe("fal_ai");
+    expect(plan.failoverOrder).not.toContain("openai_primary");
   });
 
   it("uses OpenAI first for premium text chat", () => {
@@ -72,9 +84,19 @@ describe("buildChatRoutePlan", () => {
     expect(plan.primaryProvider).toBe("openai_primary");
   });
 
-  it("routes image prompts to OpenAI images", () => {
+  it("routes free image prompts away from OpenAI", () => {
     const plan = buildChatRoutePlan({
       tier: "free",
+      mode: "social",
+      query: "Create a flyer for my event",
+    });
+    expect(plan.requestKind).toBe("image_generation");
+    expect(plan.primaryProvider).not.toBe("openai_image");
+  });
+
+  it("routes premium image prompts to OpenAI", () => {
+    const plan = buildChatRoutePlan({
+      tier: "premium",
       mode: "social",
       query: "Create a flyer for my event",
     });

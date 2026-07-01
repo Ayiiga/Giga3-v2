@@ -20,6 +20,7 @@ import {
   readCachedMessages,
   writeCachedMessages,
 } from "@/lib/chat/messageCache";
+import { chatSystemForModel, gigaModelForMode, type GigaModelId } from "@/lib/chat/gigaModels";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -82,6 +83,7 @@ export function useChatPlatform() {
   const assistantBaselineRef = useRef(0);
   const syncingOutboxRef = useRef(false);
   const syncIndicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastChatSystemRef = useRef<GigaModelId>("fast");
   const { isSlowNetwork } = useConnectionQuality();
 
   const cachedMessageFallback = useMemo(
@@ -122,6 +124,13 @@ export function useChatPlatform() {
       : chatCreditsRow === null
         ? null
         : chatCreditsRow.credits;
+
+  const hasOpenAiAccess =
+    chatCreditsRow === undefined
+      ? false
+      : chatCreditsRow === null
+        ? false
+        : Boolean(chatCreditsRow.hasOpenAiAccess);
 
   if (chatCreditsRow !== undefined) {
     creditsCacheRef.current = credits;
@@ -187,6 +196,7 @@ export function useChatPlatform() {
       content: string,
       attachments: PreparedChatAttachment[] | undefined,
       clientRequestId: string,
+      chatSystem: GigaModelId,
       attempt = 0
     ) => {
       const hasImages = attachments?.some((a) => a.kind === "image") ?? false;
@@ -204,6 +214,7 @@ export function useChatPlatform() {
             content,
             mode,
             clientRequestId,
+            chatSystem,
             ...(attachments?.length
               ? {
                   attachments: attachments.map(
@@ -262,6 +273,7 @@ export function useChatPlatform() {
             content,
             attachments,
             clientRequestId,
+            chatSystem,
             attempt + 1
           );
         }
@@ -295,7 +307,8 @@ export function useChatPlatform() {
             conversationId,
             row.content,
             row.attachments as PreparedChatAttachment[] | undefined,
-            row.clientRequestId
+            row.clientRequestId,
+            chatSystemForModel(gigaModelForMode(row.mode as AiModeId), hasOpenAiAccess)
           );
           await removeOutbox(row.id);
         } catch (e) {
@@ -311,7 +324,7 @@ export function useChatPlatform() {
     } finally {
       syncingOutboxRef.current = false;
     }
-  }, [createConversation, dispatchAccept, refreshOutboxCount]);
+  }, [createConversation, dispatchAccept, refreshOutboxCount, hasOpenAiAccess]);
 
   useEffect(() => {
     if (!email || createUserAttempted.current) return;
@@ -460,7 +473,13 @@ export function useChatPlatform() {
   );
 
   const sendMessage = useCallback(
-    async (content: string, attachments?: PreparedChatAttachment[]) => {
+    async (
+      content: string,
+      attachments?: PreparedChatAttachment[],
+      modelTier: GigaModelId = "fast"
+    ) => {
+      const chatSystem = chatSystemForModel(modelTier, hasOpenAiAccess);
+      lastChatSystemRef.current = chatSystem;
       const token = sessionToken ?? getSessionToken();
       if (!token) {
         setError("Session expired. Please sign in again.");
@@ -508,7 +527,7 @@ export function useChatPlatform() {
         return;
       }
 
-      void dispatchAccept(token, activeId, content, attachments, clientRequestId).catch(
+      void dispatchAccept(token, activeId, content, attachments, clientRequestId, chatSystem).catch(
         (e) => {
           if (syncIndicatorTimerRef.current) {
             clearTimeout(syncIndicatorTimerRef.current);
@@ -521,7 +540,7 @@ export function useChatPlatform() {
         }
       );
     },
-    [sessionToken, activeId, mode, dispatchAccept, messagesRaw, refreshOutboxCount]
+    [sessionToken, activeId, mode, dispatchAccept, messagesRaw, refreshOutboxCount, hasOpenAiAccess]
   );
 
   const stopGenerating = useCallback(async () => {
@@ -554,6 +573,7 @@ export function useChatPlatform() {
           assistantMessageId: assistantMessageId as Id<"messages">,
           mode,
           clientRequestId: newClientRequestId(),
+          chatSystem: lastChatSystemRef.current,
         });
         const nextLabel =
           typeof result.chatProviderLabel === "string"
@@ -626,6 +646,7 @@ export function useChatPlatform() {
           content,
           mode,
           clientRequestId: newClientRequestId(),
+          chatSystem: lastChatSystemRef.current,
         });
         if (result.status === "processing") {
           setAwaitingReply(true);
@@ -667,6 +688,7 @@ export function useChatPlatform() {
     chatProviderLabel,
     usedFallback,
     credits,
+    hasOpenAiAccess,
     interestProfileJson,
     uploadUsage: uploadUsage ?? null,
   };

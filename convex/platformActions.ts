@@ -35,6 +35,7 @@ import {
   shouldUseResponseCache,
 } from "./providerRouter";
 import { openaiGenerateImage } from "./openaiImageClient";
+import { generateFreeImageForChat } from "./mediaEngine";
 import type { ActionCtx } from "./_generated/server";
 
 function latestUserPrompt(
@@ -115,6 +116,7 @@ async function runHybridAiEngine(
     query: args.query,
     hasAttachments: args.hasAttachments,
     hasImageAttachment: args.hasImageAttachment,
+    chatSystem: args.routing.chatSystem,
   });
 
   await ctx.runMutation(internal.aiRateLimit.consumeAiRateLimitInternal, {
@@ -124,11 +126,33 @@ async function runHybridAiEngine(
 
   if (routePlan.requestKind === "image_generation") {
     const started = Date.now();
-    const image = await openaiGenerateImage(args.query);
-    const content = `Here is your generated image:\n\n${image.dataUrl}`;
+    if (args.routing.tier === "premium") {
+      const image = await openaiGenerateImage(args.query);
+      const content = `Here is your generated image:\n\n${image.dataUrl}`;
+      const result: ChatEngineResult & { cached: boolean } = {
+        content,
+        providerId: "openai_image",
+        usedFallback: false,
+        latencyMs: Date.now() - started,
+        cached: false,
+      };
+      await recordAiUsage(ctx, {
+        email: args.email,
+        mode: args.mode,
+        routing: args.routing,
+        engineResult: result,
+        requestKind: "image_generation",
+        cached: false,
+        conversationId: args.conversationId,
+      });
+      return result;
+    }
+
+    const image = await generateFreeImageForChat(args.query);
+    const content = `Here is your generated image:\n\n${image.imageUrl}`;
     const result: ChatEngineResult & { cached: boolean } = {
       content,
-      providerId: "openai_image",
+      providerId: image.provider,
       usedFallback: false,
       latencyMs: Date.now() - started,
       cached: false,

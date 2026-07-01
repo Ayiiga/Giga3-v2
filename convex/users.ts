@@ -14,6 +14,7 @@ import { createSessionToken } from "./sessionAuth";
 import { consumeAuthRateLimit } from "./authRateLimit";
 import { SECURITY_EVENT_TYPES } from "./securityMonitoring";
 import { RateLimitError, UnauthorizedError } from "./securityErrors";
+import { resolveAiProviderTier } from "./providerRouter";
 
 async function attachSessionToken<T extends Record<string, unknown>>(
   email: string,
@@ -121,7 +122,25 @@ export const getChatCredits = query({
       .withIndex("by_email", (q) => q.eq("email", email))
       .first();
     if (!user) return null;
-    return { credits: user.credits ?? 0 };
+
+    const hasPurchasedCredits = await ctx.db
+      .query("creditLogs")
+      .withIndex("by_user_created", (q) => q.eq("userId", email))
+      .order("desc")
+      .take(50)
+      .then((rows) => rows.some((row) => row.action === "credit_purchase"));
+
+    const aiTier = resolveAiProviderTier({
+      subscriptionPlan: user.subscriptionPlan ?? "free",
+      subscriptionExpiresAt: user.subscriptionExpiresAt,
+      hasPurchasedCredits,
+    });
+
+    return {
+      credits: user.credits ?? 0,
+      aiTier,
+      hasOpenAiAccess: aiTier === "premium",
+    };
   },
 });
 

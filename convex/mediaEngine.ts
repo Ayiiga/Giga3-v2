@@ -175,6 +175,67 @@ export async function generateImageWithFallback(
   throw new Error(`All providers failed for image: ${errors.join(" | ") || "no providers configured"}`);
 }
 
+/** Free-tier chat image generation — fal / Replicate / Gemini only (no OpenAI). */
+export async function generateFreeImageForChat(
+  prompt: string
+): Promise<{ imageUrl: string; provider: MediaProviderId; externalId: string }> {
+  const errors: string[] = [];
+
+  if (getFalApiKey()) {
+    const primaryModel = process.env.FAL_IMAGE_MODEL?.trim() || "fal-ai/flux/schnell";
+    try {
+      const result = await falGenerateImageWithModel(primaryModel, { prompt });
+      return { imageUrl: result.imageUrl, provider: "fal", externalId: result.requestId };
+    } catch (err) {
+      errors.push(err instanceof Error ? err.message : String(err));
+      if (FAL_IMAGE_FALLBACK_MODEL !== primaryModel) {
+        try {
+          const fallback = await falGenerateImageWithModel(FAL_IMAGE_FALLBACK_MODEL, { prompt });
+          return {
+            imageUrl: fallback.imageUrl,
+            provider: "fal",
+            externalId: fallback.requestId,
+          };
+        } catch (err2) {
+          errors.push(err2 instanceof Error ? err2.message : String(err2));
+        }
+      }
+    }
+  }
+
+  if (getReplicateToken()) {
+    try {
+      const result = await replicateGenerateImage(prompt, {
+        aspectRatio: imageCategoryAspectRatio("anime_art"),
+      });
+      return {
+        imageUrl: result.imageUrl,
+        provider: "replicate",
+        externalId: result.predictionId,
+      };
+    } catch (err) {
+      errors.push(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  if (getGeminiApiKey()) {
+    try {
+      const result = await geminiImageWithFallback(prompt, {});
+      return {
+        imageUrl: result.dataUrl,
+        provider: "gemini",
+        externalId: result.requestId,
+      };
+    } catch (err) {
+      errors.push(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  throw new Error(
+    `Free image generation unavailable: ${errors.join(" | ") || "no providers configured"}`
+  );
+}
+
 export async function generateVideoWithFallback(
   input: VideoGenerateParams
 ): Promise<{

@@ -32,6 +32,7 @@ export type ChatRoutingContext = {
   tier: AiProviderTier;
   mode: string;
   query: string;
+  chatSystem?: string;
 };
 
 export type ChatEngineResult = {
@@ -555,6 +556,7 @@ export async function completeChatWithFailover(
     query,
     hasAttachments,
     hasImageAttachment,
+    chatSystem: routing?.chatSystem,
   });
 
   const apiKey = process.env.OPENAI_API_KEY?.trim();
@@ -616,6 +618,7 @@ export function buildRoutingContextFromUser(args: {
   hasPurchasedCredits?: boolean;
   mode: string;
   query: string;
+  chatSystem?: string;
 }): ChatRoutingContext {
   return {
     tier: resolveAiProviderTier({
@@ -625,5 +628,6 @@ export function buildRoutingContextFromUser(args: {
     }),
     mode: args.mode,
     query: args.query,
+    chatSystem: args.chatSystem,
   };
 }

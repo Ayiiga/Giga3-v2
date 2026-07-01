@@ -486,6 +486,7 @@ export default defineSchema({
     ),
     regenerateFromMessageId: v.optional(v.id("messages")),
     clientRequestId: v.optional(v.string()),
+    chatSystem: v.optional(v.string()),
     cancelled: v.optional(v.boolean()),
     status: v.union(
       v.literal("pending"),

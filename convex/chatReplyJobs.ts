@@ -11,6 +11,7 @@ export const createJob = internalMutation({
     kind: v.optional(v.union(v.literal("reply"), v.literal("regenerate"))),
     regenerateFromMessageId: v.optional(v.id("messages")),
     clientRequestId: v.optional(v.string()),
+    chatSystem: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     if (args.clientRequestId) {
@@ -34,6 +35,7 @@ export const createJob = internalMutation({
       kind: args.kind ?? "reply",
       regenerateFromMessageId: args.regenerateFromMessageId,
       clientRequestId: args.clientRequestId,
+      chatSystem: args.chatSystem,
       cancelled: false,
       status: "pending",
       createdAt: Date.now(),

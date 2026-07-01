@@ -38,7 +38,34 @@ export type RoutingInput = {
   query: string;
   hasAttachments?: boolean;
   hasImageAttachment?: boolean;
+  /** Free-tier switchable chat system (maps to Giga3 Fast/Smart/Vision/Creator). */
+  chatSystem?: string;
 };
+
+/** Free user chat systems — each maps to a distinct provider priority. */
+export const FREE_CHAT_SYSTEM_IDS = [
+  "fast",
+  "smart",
+  "vision",
+  "creator",
+] as const;
+
+export type FreeChatSystemId = (typeof FREE_CHAT_SYSTEM_IDS)[number];
+
+export function isValidFreeChatSystem(id: string): id is FreeChatSystemId {
+  return (FREE_CHAT_SYSTEM_IDS as readonly string[]).includes(id);
+}
+
+const OPENAI_PROVIDER_IDS: ChatProviderId[] = [
+  "openai_primary",
+  "openai_fallback_model",
+  "openai_secondary_key",
+  "openai_image",
+];
+
+export function isOpenAiProvider(providerId: ChatProviderId): boolean {
+  return OPENAI_PROVIDER_IDS.includes(providerId);
+}
 
 export type ChatRoutePlan = {
   tier: AiProviderTier;
@@ -119,14 +146,20 @@ export function shouldEnableWebSearch(
   return CURRENT_INFO_RE.test(query);
 }
 
-function freeTierFailover(): ChatProviderId[] {
-  return [
-    "gemini",
-    "openai_primary",
-    "openai_fallback_model",
-    "openai_secondary_key",
-    "fal_ai",
-  ];
+function freeTierFailover(chatSystem?: string): ChatProviderId[] {
+  const system: FreeChatSystemId =
+    chatSystem && isValidFreeChatSystem(chatSystem) ? chatSystem : "fast";
+  switch (system) {
+    case "smart":
+      return ["fal_ai", "gemini"];
+    case "vision":
+      return ["gemini", "fal_ai"];
+    case "creator":
+      return ["fal_ai", "gemini"];
+    case "fast":
+    default:
+      return ["gemini", "fal_ai"];
+  }
 }
 
 function premiumTierFailover(): ChatProviderId[] {
@@ -143,18 +176,30 @@ export function buildChatRoutePlan(input: RoutingInput): ChatRoutePlan {
   const requestKind = classifyRequestKind(input.query, input.mode, input.hasAttachments);
 
   if (requestKind === "image_generation") {
+    if (input.tier === "premium") {
+      return {
+        tier: input.tier,
+        requestKind,
+        primaryProvider: "openai_image",
+        failoverOrder: ["openai_image"],
+        enableWebSearch: false,
+        maxTokensMultiplier: 1,
+      };
+    }
     return {
       tier: input.tier,
       requestKind,
-      primaryProvider: "openai_image",
-      failoverOrder: ["openai_image"],
+      primaryProvider: "gemini",
+      failoverOrder: ["gemini", "fal_ai"],
       enableWebSearch: false,
       maxTokensMultiplier: 1,
     };
   }
 
   const failoverOrder =
-    input.tier === "premium" ? premiumTierFailover() : freeTierFailover();
+    input.tier === "premium"
+      ? premiumTierFailover()
+      : freeTierFailover(input.chatSystem);
 
   return {
     tier: input.tier,
@@ -174,8 +219,22 @@ export function isGeminiFriendlyMode(mode: string): boolean {
   return GEMINI_MODES.has(mode);
 }
 
+export function getFreeChatSystemLabel(chatSystem: string): string {
+  switch (chatSystem) {
+    case "smart":
+      return "fal.ai";
+    case "vision":
+      return "Gemini Vision";
+    case "creator":
+      return "fal.ai Creative";
+    case "fast":
+    default:
+      return "Gemini";
+  }
+}
+
 export function getTierProviderLabel(tier: AiProviderTier): string {
-  return tier === "premium" ? "OpenAI (Premium)" : "Google Gemini (Free)";
+  return tier === "premium" ? "OpenAI (Premium)" : "Multi-engine (Free)";
 }
 
 export function buildPromptCacheKey(parts: {

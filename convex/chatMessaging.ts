@@ -105,6 +105,7 @@ export const acceptMessage = mutation({
     mode: v.optional(v.string()),
     attachments: attachmentValidator,
     clientRequestId: v.optional(v.string()),
+    chatSystem: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken);
@@ -251,6 +252,7 @@ export const acceptMessage = mutation({
         attachments.length > 0 ? JSON.stringify(attachments) : undefined,
       kind: "reply",
       clientRequestId: args.clientRequestId,
+      chatSystem: args.chatSystem,
       cancelled: false,
       status: "pending",
       createdAt: now,
@@ -301,6 +303,7 @@ export const regenerateMessage = mutation({
     assistantMessageId: v.id("messages"),
     mode: v.optional(v.string()),
     clientRequestId: v.optional(v.string()),
+    chatSystem: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken);
@@ -350,6 +353,7 @@ export const regenerateMessage = mutation({
       kind: "regenerate",
       regenerateFromMessageId: args.assistantMessageId,
       clientRequestId: args.clientRequestId,
+      chatSystem: args.chatSystem,
     });
 
     await ctx.scheduler.runAfter(0, internal.chatReplyWorker.processJob, {
@@ -373,6 +377,7 @@ export const editAndResend = mutation({
     content: v.string(),
     mode: v.optional(v.string()),
     clientRequestId: v.optional(v.string()),
+    chatSystem: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken);
@@ -410,6 +415,7 @@ export const editAndResend = mutation({
       content,
       kind: "reply",
       clientRequestId: args.clientRequestId,
+      chatSystem: args.chatSystem,
     });
 
     await ctx.scheduler.runAfter(0, internal.chatReplyWorker.processJob, {
