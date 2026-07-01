@@ -68,8 +68,8 @@ async function sendConvexMessage(args: {
   if (!convexUrl) throw new Error("Convex URL is required while Supabase chat is in migration mode.");
   return await convexHttpCall<ConvexSendResult>(
     convexUrl,
-    "action",
-    "platformActions:sendMessage",
+    "mutation",
+    "chatMessaging:acceptMessage",
     args,
     { timeoutMs: CHAT_ACCEPT_TIMEOUT_MS, retries: 1 }
   );
@@ -413,6 +413,7 @@ export function useSupabaseChatPlatform() {
     messages,
     mode,
     isSending,
+    isAcceptingMessage: false,
     isSlowNetwork,
     error,
     startNewChat,

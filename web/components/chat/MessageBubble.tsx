@@ -17,6 +17,7 @@ export interface MessageBubbleProps {
   content: string;
   createdAt?: number;
   pending?: boolean;
+  showSending?: boolean;
   streaming?: boolean;
   onRegenerate?: (messageId: string) => void;
   onEdit?: (messageId: string, content: string) => void;
@@ -32,6 +33,7 @@ function bubblePropsEqual(
     prev.content === next.content &&
     prev.createdAt === next.createdAt &&
     prev.pending === next.pending &&
+    prev.showSending === next.showSending &&
     prev.streaming === next.streaming &&
     prev.onRegenerate === next.onRegenerate &&
     prev.onEdit === next.onEdit
@@ -44,6 +46,7 @@ export const MessageBubble = memo(function MessageBubble({
   content,
   createdAt,
   pending,
+  showSending,
   streaming,
   onRegenerate,
   onEdit,
@@ -124,7 +127,7 @@ export const MessageBubble = memo(function MessageBubble({
           ))}
         </>
       )}
-      {pending && (
+      {showSending && (
         <p className="mt-2 text-sm text-accent/70" aria-live="polite">
           Sending…
         </p>

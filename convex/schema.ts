@@ -176,6 +176,22 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_conversation", ["conversationId", "createdAt"]),
 
+  /** Active visitors — heartbeat for online-now counts. */
+  presenceSessions: defineTable({
+    clientId: v.string(),
+    userId: v.optional(v.string()),
+    isPwa: v.boolean(),
+    lastSeenAt: v.number(),
+  })
+    .index("by_client", ["clientId"])
+    .index("by_lastSeen", ["lastSeenAt"]),
+
+  platformCounters: defineTable({
+    key: v.string(),
+    value: v.number(),
+    updatedAt: v.number(),
+  }).index("by_key", ["key"]),
+
   qualityMetricsDaily: defineTable({
     dateKey: v.string(),
     totalResponses: v.number(),

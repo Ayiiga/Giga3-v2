@@ -114,7 +114,7 @@ export function useChatPlatform() {
   const setArchivedMutation = useMutation(api.conversations.setArchived);
   const setFavoriteMutation = useMutation(api.conversations.setFavorite);
   const updateUserMessage = useMutation(api.messages.updateUserMessage);
-  const sendMessageAction = useAction(api.platformActions.sendMessage);
+  const sendMessageAction = useMutation(api.chatMessaging.acceptMessage);
   const regenerateMessageAction = useAction(api.platformActions.regenerateMessage);
   const createUser = useMutation(api.users.createUser);
 
@@ -307,6 +307,7 @@ export function useChatPlatform() {
         setUsedFallback((prev) => (prev === nextFallback ? prev : nextFallback));
 
         if (result.status === "processing") {
+          setPendingUserText(null);
           setAwaitingReply(true);
           return;
         }
@@ -423,6 +424,7 @@ export function useChatPlatform() {
     messages,
     mode,
     isSending,
+    isAcceptingMessage: isSending && !awaitingReply,
     isSlowNetwork,
     error,
     startNewChat,

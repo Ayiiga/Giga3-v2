@@ -24,6 +24,7 @@ interface MessageListProps {
   messages: UiMessage[];
   isLoading?: boolean;
   isSending?: boolean;
+  isAcceptingMessage?: boolean;
   onInsertTemplate?: (text: string) => void;
   onRegenerate?: (messageId: string) => void;
   onEditMessage?: (messageId: string, content: string) => void;
@@ -39,6 +40,7 @@ function MessageListInner({
   messages,
   isLoading = false,
   isSending = false,
+  isAcceptingMessage = false,
   onInsertTemplate,
   onRegenerate,
   onEditMessage,
@@ -171,6 +173,7 @@ function MessageListInner({
                     content={typeof m.content === "string" ? m.content : ""}
                     createdAt={m.createdAt}
                     pending={m.id === "pending-user"}
+                    showSending={m.id === "pending-user" && isAcceptingMessage}
                     streaming={
                       isSending &&
                       m.role === "assistant" &&
@@ -195,6 +198,7 @@ function propsEqual(prev: MessageListProps, next: MessageListProps): boolean {
   return (
     prev.isLoading === next.isLoading &&
     prev.isSending === next.isSending &&
+    prev.isAcceptingMessage === next.isAcceptingMessage &&
     prev.onInsertTemplate === next.onInsertTemplate &&
     prev.onRegenerate === next.onRegenerate &&
     prev.onEditMessage === next.onEditMessage &&

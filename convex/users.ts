@@ -1,4 +1,5 @@
 import { internalQuery, mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import {
   parseInterestProfile,
@@ -60,6 +61,7 @@ export const createUser = mutation({
       credits: 0,
       starterCreditsGranted: false,
     });
+    await ctx.runMutation(internal.platformStats.incrementRegisteredUserInternal, {});
     const user = await ctx.db.get(userId);
     if (!user) {
       throw new Error("Failed to create user");

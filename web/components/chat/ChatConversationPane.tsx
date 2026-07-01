@@ -11,6 +11,7 @@ interface ChatConversationPaneProps {
   messages: UiMessage[];
   isLoading: boolean;
   isSending: boolean;
+  isAcceptingMessage?: boolean;
   isSlowNetwork?: boolean;
   insertRef: MutableRefObject<((text: string) => void) | null>;
   onSend: (msg: string, attachments?: PreparedChatAttachment[]) => void;
@@ -27,6 +28,7 @@ function panePropsEqual(
   return (
     prev.isLoading === next.isLoading &&
     prev.isSending === next.isSending &&
+    prev.isAcceptingMessage === next.isAcceptingMessage &&
     prev.isSlowNetwork === next.isSlowNetwork &&
     prev.messages === next.messages &&
     prev.onSend === next.onSend &&
@@ -43,6 +45,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   messages,
   isLoading,
   isSending,
+  isAcceptingMessage,
   isSlowNetwork,
   insertRef,
   onSend,
@@ -57,6 +60,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         messages={messages}
         isLoading={isLoading}
         isSending={isSending}
+        isAcceptingMessage={isAcceptingMessage}
         onInsertTemplate={onInsertTemplate}
         onRegenerate={onRegenerate}
         onEditMessage={onEditMessage}
