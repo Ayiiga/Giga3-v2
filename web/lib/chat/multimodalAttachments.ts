@@ -1,6 +1,10 @@
 import type JSZip from "jszip";
 import { formatCurrentDateShort } from "@/lib/datetime";
 import {
+  blobToDataUrl,
+  compressImageFile,
+} from "@/lib/chat/imageCompress";
+import {
   DEFAULT_UPLOAD_LIMITS,
   formatUploadBytes,
   type UploadLimitConfig,
@@ -9,6 +13,14 @@ import {
 const MAX_EXTRACTED_CHARS_PER_FILE = 18_000;
 const MAX_ARCHIVE_ENTRIES = 12;
 const MAX_INLINE_IMAGE_BYTES = 12 * 1024 * 1024;
+/** Vision payload sent to Convex — keep small for slow mobile uploads. */
+const MAX_CHAT_IMAGE_BYTES = 480 * 1024;
+const CHAT_IMAGE_MAX_DIMENSION = 1600;
+const CHAT_IMAGE_QUALITY = 0.82;
+/** Tiny preview embedded in stored chat message for history UI. */
+const THUMB_MAX_DIMENSION = 480;
+const THUMB_QUALITY = 0.72;
+const THUMB_MAX_BYTES = 48 * 1024;
 
 const TEXT_EXTENSIONS =
   /\.(txt|md|markdown|csv|json|xml|html|htm|yaml|yml|log|rtf|tex)$/i;
@@ -33,6 +45,8 @@ export interface PreparedChatAttachment {
   sizeBytes: number;
   text?: string;
   dataUrl?: string;
+  /** Small data URL for chat history display (images only). */
+  thumbDataUrl?: string;
   previewUrl?: string;
 }
 
@@ -90,21 +104,6 @@ function readTextFile(file: File): Promise<string> {
     };
     reader.onerror = () => reject(new Error("Failed to read file."));
     reader.readAsText(file);
-  });
-}
-
-function readDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result !== "string") {
-        reject(new Error("Could not read image data."));
-        return;
-      }
-      resolve(reader.result);
-    };
-    reader.onerror = () => reject(new Error("Failed to read image."));
-    reader.readAsDataURL(file);
   });
 }
 
@@ -209,11 +208,37 @@ export async function prepareChatAttachment(
   };
 
   if (kind === "image") {
-    const canInline = file.size <= Math.min(limits?.maxFileBytes ?? MAX_INLINE_IMAGE_BYTES, MAX_INLINE_IMAGE_BYTES);
+    const maxFileBytes = Math.min(
+      limits?.maxFileBytes ?? MAX_INLINE_IMAGE_BYTES,
+      MAX_INLINE_IMAGE_BYTES
+    );
+    if (file.size > maxFileBytes) {
+      throw new Error(
+        `${name} is ${formatUploadBytes(file.size)}. Your ${limits?.label ?? "Free"} plan allows ${formatUploadBytes(maxFileBytes)} per file.`
+      );
+    }
+
+    const compressed = await compressImageFile(file, {
+      maxDimension: CHAT_IMAGE_MAX_DIMENSION,
+      quality: CHAT_IMAGE_QUALITY,
+      maxBytes: MAX_CHAT_IMAGE_BYTES,
+    });
+    const dataUrl = await blobToDataUrl(compressed.blob);
+    const thumb = await compressImageFile(file, {
+      maxDimension: THUMB_MAX_DIMENSION,
+      quality: THUMB_QUALITY,
+      maxBytes: THUMB_MAX_BYTES,
+      mimeType: "image/jpeg",
+    });
+    const thumbDataUrl = await blobToDataUrl(thumb.blob);
+
     return {
       ...base,
-      dataUrl: canInline ? await readDataUrl(file) : undefined,
-      previewUrl: URL.createObjectURL(file),
+      mimeType: compressed.mimeType,
+      sizeBytes: compressed.blob.size,
+      dataUrl,
+      thumbDataUrl,
+      previewUrl: URL.createObjectURL(compressed.blob),
       text:
         "Image attached for visual analysis, OCR, object/scene detection, diagrams, charts, handwritten notes, screenshots, scanned documents, and comparisons.",
     };
@@ -245,6 +270,36 @@ export async function prepareChatAttachment(
         ? `${name} PDF attached. Extract visible text/OCR where supported; if scanned, analyze as a scanned document and solve/summarize from available content.`
         : `${name} attached for multimodal analysis.`,
   };
+}
+
+/** User-visible chat text — short caption plus optional inline thumbnails. */
+export function buildUserDisplayContent(
+  message: string,
+  attachments: PreparedChatAttachment[]
+): string {
+  const trimmed = message.trim();
+  const imageLines = attachments
+    .filter((a) => a.kind === "image" && a.thumbDataUrl)
+    .map((a) => `![${a.name}](${a.thumbDataUrl})`);
+  const fileNames = attachments
+    .filter((a) => a.kind !== "image")
+    .map((a) => a.name);
+
+  const parts: string[] = [];
+  if (trimmed) parts.push(trimmed);
+  else if (attachments.some((a) => a.kind === "image")) {
+    parts.push("Analyze this image.");
+  } else if (attachments.length > 0) {
+    parts.push("Analyze the uploaded files.");
+  }
+
+  if (fileNames.length) {
+    parts.push(`Attached: ${fileNames.join(", ")}`);
+  }
+  if (imageLines.length) {
+    parts.push(imageLines.join("\n\n"));
+  }
+  return parts.join("\n\n").trim();
 }
 
 export function buildMultimodalPrompt(

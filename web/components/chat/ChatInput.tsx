@@ -5,7 +5,7 @@ import { EmojiPicker } from "@/components/chat/EmojiPicker";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { Button } from "@/components/ui/Button";
 import {
-  buildMultimodalPrompt,
+  buildUserDisplayContent,
   prepareChatAttachment,
   type PreparedChatAttachment,
   type AttachmentKind,
@@ -107,8 +107,8 @@ export const ChatInput = memo(function ChatInput({
   function submit() {
     const trimmed = value.trim();
     if ((!trimmed && attachments.length === 0) || disabled || busy) return;
-    const prompt = buildMultimodalPrompt(trimmed, attachments);
-    onSend(prompt, attachments);
+    const displayContent = buildUserDisplayContent(trimmed, attachments);
+    onSend(displayContent, attachments);
     setValue("");
     for (const attachment of attachments) {
       if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl);

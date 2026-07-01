@@ -223,6 +223,11 @@ export function useChatPlatform() {
       setPendingUserText(content);
       setIsSending(true);
 
+      const hasImages = attachments?.some((a) => a.kind === "image") ?? false;
+      const actionTimeoutMs = hasImages
+        ? CHAT_ACTION_TIMEOUT_MS * 2
+        : CHAT_ACTION_TIMEOUT_MS;
+
       try {
         let conversationId = activeId;
         if (!conversationId) {
@@ -239,13 +244,16 @@ export function useChatPlatform() {
             ...(attachments?.length
               ? {
                   attachments: attachments.map(
-                    ({ previewUrl: _previewUrl, ...attachment }) => attachment
+                    ({ previewUrl: _previewUrl, thumbDataUrl: _thumb, ...attachment }) =>
+                      attachment
                   ),
                 }
               : {}),
           }),
-          CHAT_ACTION_TIMEOUT_MS,
-          "Chat is taking longer than usual on this connection. Your message was saved — please try sending again in a moment."
+          actionTimeoutMs,
+          hasImages
+            ? "Image upload is taking longer on this connection. Please wait or try again on Wi‑Fi."
+            : "Chat is taking longer than usual on this connection. Your message was saved — please try sending again in a moment."
         );
         const nextLabel =
           typeof result.chatProviderLabel === "string"

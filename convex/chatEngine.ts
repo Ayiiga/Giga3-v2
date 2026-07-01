@@ -266,6 +266,14 @@ async function openaiComplete(
   return text;
 }
 
+function hasInlineImageAttachments(messages: ChatCompletionMessage[]): boolean {
+  return messages.some((message) =>
+    (message.attachments ?? []).some(
+      (attachment) => attachment.kind === "image" && Boolean(attachment.dataUrl)
+    )
+  );
+}
+
 async function geminiComplete(
   apiKey: string,
   model: string,
@@ -274,7 +282,9 @@ async function geminiComplete(
   maxTokens: number,
   enableWebSearch: boolean
 ): Promise<{ text: string; usedWebSearch: boolean }> {
-  if (enableWebSearch) {
+  const hasVisionImages = hasInlineImageAttachments(messages);
+
+  if (enableWebSearch && !hasVisionImages) {
     try {
       const grounded = await geminiGenerateWithGrounding({
         apiKey,
@@ -535,6 +545,7 @@ export async function completeChatWithFailover(
     "";
 
   const hasAttachments = trimmed.some((m) => (m.attachments?.length ?? 0) > 0);
+  const hasImageAttachment = hasInlineImageAttachments(trimmed);
   const tier = routing?.tier ?? "free";
   const mode = routing?.mode ?? "general";
 
@@ -543,6 +554,7 @@ export async function completeChatWithFailover(
     mode,
     query,
     hasAttachments,
+    hasImageAttachment,
   });
 
   const apiKey = process.env.OPENAI_API_KEY?.trim();
@@ -562,7 +574,9 @@ export async function completeChatWithFailover(
   const maxTokens = Math.round(cfg.maxTokens * plan.maxTokensMultiplier);
   const asOpenAi = toOpenAiMessages(trimmed);
   const textOnly = toTextOnlyMessages(trimmed);
-  const timeoutMs = cfg.providerTimeoutMs;
+  const timeoutMs = hasImageAttachment
+    ? Math.max(cfg.providerTimeoutMs, 45_000)
+    : cfg.providerTimeoutMs;
 
   const attempts = buildProviderAttempts({
     plan,

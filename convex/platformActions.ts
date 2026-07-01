@@ -34,6 +34,7 @@ import {
   buildPromptCacheKey,
   shouldUseResponseCache,
 } from "./providerRouter";
+import { buildMultimodalPrompt } from "./multimodalPrompt";
 import { openaiGenerateImage } from "./openaiImageClient";
 import type { ActionCtx } from "./_generated/server";
 
@@ -105,6 +106,7 @@ async function runHybridAiEngine(
     chatMessages: ReturnType<typeof trimChatMessages>;
     routing: ChatRoutingContext;
     hasAttachments: boolean;
+    hasImageAttachment?: boolean;
     conversationId: string;
   }
 ): Promise<ChatEngineResult & { cached: boolean }> {
@@ -113,6 +115,7 @@ async function runHybridAiEngine(
     mode: args.mode,
     query: args.query,
     hasAttachments: args.hasAttachments,
+    hasImageAttachment: args.hasImageAttachment,
   });
 
   await ctx.runMutation(internal.aiRateLimit.consumeAiRateLimitInternal, {
@@ -422,20 +425,17 @@ export const sendMessage = action({
     const chatMessages = trimChatMessages([
       { role: "system" as const, content: systemPrompt },
       ...toRetrievalSystemMessage(qualityContext),
-      ...history.map((m) => ({
+      ...history.slice(0, -1).map((m) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
       })),
-      ...(attachments.length
-        ? [
-            {
-              role: "user" as const,
-              content:
-                "Process the uploaded attachments first using this pipeline: input detection -> OCR/handwriting/layout/table extraction -> text normalization -> structured reconstruction -> reasoning. Then answer using this structure when applicable: Summary, Extracted Text (OCR), Cleaned Text, Structured Interpretation, Final Answer. If this is biography generation, include OCR Extracted Text, Cleaned Version, Structured Notes, and Final Biography. Never claim analysis unless extraction actually completed and never invent missing text.",
-              attachments,
-            },
-          ]
-        : []),
+      {
+        role: "user" as const,
+        content: attachments.length
+          ? buildMultimodalPrompt(args.content, attachments)
+          : args.content,
+        ...(attachments.length ? { attachments } : {}),
+      },
     ]);
 
     const routing = await resolveRoutingContext(
@@ -454,6 +454,7 @@ export const sendMessage = action({
       chatMessages,
       routing,
       hasAttachments: attachments.length > 0,
+      hasImageAttachment: attachments.some((a) => a.kind === "image"),
       conversationId: args.conversationId,
     });
     const validated = validateAnswerQuality({

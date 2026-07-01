@@ -276,7 +276,8 @@ export function useSupabaseChatPlatform() {
           ...(attachments?.length
             ? {
                 attachments: attachments.map(
-                  ({ previewUrl: _previewUrl, ...attachment }) => attachment
+                  ({ previewUrl: _previewUrl, thumbDataUrl: _thumb, ...attachment }) =>
+                    attachment
                 ),
               }
             : {}),

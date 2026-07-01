@@ -37,6 +37,7 @@ export type RoutingInput = {
   mode: AiModeId | string;
   query: string;
   hasAttachments?: boolean;
+  hasImageAttachment?: boolean;
 };
 
 export type ChatRoutePlan = {
@@ -107,7 +108,12 @@ export function classifyRequestKind(
   return "text_chat";
 }
 
-export function shouldEnableWebSearch(query: string, mode: string): boolean {
+export function shouldEnableWebSearch(
+  query: string,
+  mode: string,
+  hasImageAttachment?: boolean
+): boolean {
+  if (hasImageAttachment) return false;
   if (RESEARCH_MODES.has(mode)) return true;
   if (mode === "news") return true;
   return CURRENT_INFO_RE.test(query);
@@ -155,7 +161,11 @@ export function buildChatRoutePlan(input: RoutingInput): ChatRoutePlan {
     requestKind,
     primaryProvider: failoverOrder[0],
     failoverOrder,
-    enableWebSearch: shouldEnableWebSearch(input.query, input.mode),
+    enableWebSearch: shouldEnableWebSearch(
+      input.query,
+      input.mode,
+      input.hasImageAttachment
+    ),
     maxTokensMultiplier: input.tier === "premium" ? 1.25 : 1,
   };
 }

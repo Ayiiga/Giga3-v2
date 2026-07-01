@@ -1,4 +1,6 @@
 const URL_RE = /https?:\/\/[^\s<>"')\]]+/gi;
+const DATA_IMAGE_MD_RE = /!\[[^\]]*\]\((data:image\/[^)]+)\)/gi;
+const DATA_IMAGE_RAW_RE = /(data:image\/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=\s]+)/gi;
 
 const IMAGE_PATH = /\.(png|jpe?g|gif|webp|avif|bmp|svg)(\?[^\s]*)?$/i;
 const VIDEO_PATH = /\.(mp4|webm|mov|m4v)(\?[^\s]*)?$/i;
@@ -32,22 +34,37 @@ function classifyUrl(url: string): "image" | "video" | null {
 /** Split assistant/user text into prose and direct media URLs. */
 export function parseMessageMedia(content: string): ParsedMessageMedia {
   const urls = uniqueUrls(content.match(URL_RE) ?? []);
+  const markdownDataImages = uniqueUrls(
+    [...content.matchAll(DATA_IMAGE_MD_RE)].map((m) => m[1].trim())
+  );
+  const rawDataImages = uniqueUrls(
+    [...content.matchAll(DATA_IMAGE_RAW_RE)].map((m) => m[1].trim())
+  );
   const images: string[] = [];
   const videos: string[] = [];
 
-  for (const url of urls) {
+  for (const url of [...markdownDataImages, ...rawDataImages, ...urls]) {
+    if (url.startsWith("data:image/")) {
+      images.push(url);
+      continue;
+    }
     const kind = classifyUrl(url);
     if (kind === "image") images.push(url);
     else if (kind === "video") videos.push(url);
   }
 
   let text = content;
+  for (const match of content.matchAll(DATA_IMAGE_MD_RE)) {
+    text = text.replace(match[0], "");
+  }
   for (const url of [...images, ...videos]) {
-    text = text.split(url).join("");
+    if (!url.startsWith("data:image/")) {
+      text = text.split(url).join("");
+    }
   }
   text = text.replace(/\n{3,}/g, "\n\n").trim();
 
-  return { text, images, videos };
+  return { text, images: uniqueUrls(images), videos };
 }
 
 /** Last image URL in chat history (newest assistant/user message wins). */
