@@ -153,6 +153,10 @@ jobs:
           while [ "$attempt" -le "$max_attempts" ]; do
             echo "Cloudflare deploy attempt ${attempt}/${max_attempts}"
             if npx wrangler@4 pages deploy web/out --project-name=giga3ai --branch="$DEPLOY_BRANCH"; then
+              SHORT_SHA="${GITHUB_SHA::7}"
+              SUBJECT="$(git log -1 --pretty=%s)"
+              echo "GIGA3_DEPLOY_READY ${SHORT_SHA}|${SUBJECT}"
+              echo "${SHORT_SHA}|${SUBJECT}"
               exit 0
             fi
             if [ "$attempt" -lt "$max_attempts" ]; then

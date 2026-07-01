@@ -146,3 +146,7 @@ jobs:
           echo "### Convex deploy" >> "$GITHUB_STEP_SUMMARY"
           echo "Backend deployed. CHAT_* latency defaults applied." >> "$GITHUB_STEP_SUMMARY"
           echo "Add GitHub secrets OPENAI_API_KEY, GEMINI_API_KEY, FAL_KEY (optional) to sync provider keys on each deploy." >> "$GITHUB_STEP_SUMMARY"
+          SHORT_SHA="${GITHUB_SHA::7}"
+          SUBJECT="$(git log -1 --pretty=%s)"
+          echo "GIGA3_DEPLOY_READY ${SHORT_SHA}|${SUBJECT}"
+          echo "${SHORT_SHA}|${SUBJECT}"
