@@ -16,10 +16,16 @@
 
 - Install root: `npm ci --legacy-peer-deps`
 - Install web: `cd web && npm install --legacy-peer-deps`
-- Lint: `npm run lint` (runs `web` ESLint)
-- Build: `npm run build` (static export to `web/out`)
-- Convex codegen: `npx convex codegen`
+- Dev server: `cd web && npm run dev` → `http://localhost:3000` (requires `web/.env.local`; copy from `web/.env.local.example`)
+- Lint: `cd web && npm run lint`
+- Build: `cd web && npm run build` (static export to `web/out`)
+- Verify build env: `cd web && NEXT_PUBLIC_CONVEX_URL=… npm run verify:convex-env` (after build)
+- Convex codegen: `npx convex codegen` (needs `npx convex dev` login or committed `convex/_generated/*`)
 - Convex deploy: `npx convex deploy --yes` (requires `CONVEX_DEPLOY_KEY`)
+
+### Local dev without `convex dev`
+
+`npx convex dev` requires interactive login in this environment. For frontend-only dev, point `web/.env.local` at production (`https://perfect-lark-521.convex.cloud`). Committed `convex/_generated/*` is enough for `web` build/lint; redeploy backend via CI when Convex functions change.
 
 ### Build-time env (web)
 
