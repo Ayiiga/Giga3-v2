@@ -25,6 +25,8 @@ import type * as chatEngine from "../chatEngine.js";
 import type * as chatMessaging from "../chatMessaging.js";
 import type * as chatReplyJobs from "../chatReplyJobs.js";
 import type * as chatReplyLog from "../chatReplyLog.js";
+import type * as chatReplyRecovery from "../chatReplyRecovery.js";
+import type * as chatReplyRecoveryPolicy from "../chatReplyRecoveryPolicy.js";
 import type * as chatReplyWorker from "../chatReplyWorker.js";
 import type * as conversations from "../conversations.js";
 import type * as creatorProfiles from "../creatorProfiles.js";
@@ -108,6 +110,8 @@ declare const fullApi: ApiFromModules<{
   chatMessaging: typeof chatMessaging;
   chatReplyJobs: typeof chatReplyJobs;
   chatReplyLog: typeof chatReplyLog;
+  chatReplyRecovery: typeof chatReplyRecovery;
+  chatReplyRecoveryPolicy: typeof chatReplyRecoveryPolicy;
   chatReplyWorker: typeof chatReplyWorker;
   conversations: typeof conversations;
   creatorProfiles: typeof creatorProfiles;
