@@ -5,32 +5,38 @@ import {
 } from "../../web/lib/chat/loadingStatus";
 
 describe("chatLoadingStageLabel", () => {
-  it("starts with Connecting…", () => {
-    expect(chatLoadingStageLabel(0)).toBe("Connecting…");
-    expect(chatLoadingStageLabel(1499)).toBe("Connecting…");
+  it("starts with Connecting… while sending", () => {
+    expect(chatLoadingStageLabel(0, false, "sending")).toBe("Connecting…");
+    expect(chatLoadingStageLabel(1499, false, "sending")).toBe("Connecting…");
   });
 
-  it("advances through the stages as time passes", () => {
-    expect(chatLoadingStageLabel(0)).toBe("Connecting…");
-    expect(chatLoadingStageLabel(1500)).toBe("Sending your message…");
-    expect(chatLoadingStageLabel(4000)).toBe("Waiting for Giga3…");
-    expect(chatLoadingStageLabel(9000)).toBe("Generating response…");
-    expect(chatLoadingStageLabel(60_000)).toBe("Generating response…");
+  it("advances through sending stages without reaching Generating", () => {
+    expect(chatLoadingStageLabel(0, false, "sending")).toBe("Connecting…");
+    expect(chatLoadingStageLabel(1500, false, "sending")).toBe("Sending your message…");
+    expect(chatLoadingStageLabel(4000, false, "sending")).toBe("Waiting for Giga3…");
+    expect(chatLoadingStageLabel(60_000, false, "sending")).toBe("Waiting for Giga3…");
   });
 
-  it("appends a slow-connection hint on the final stage only", () => {
-    expect(chatLoadingStageLabel(1500, true)).toBe("Sending your message…");
-    expect(chatLoadingStageLabel(9000, true)).toContain("Generating response…");
-    expect(chatLoadingStageLabel(9000, true)).toContain("slow connection");
+  it("shows Generating only in replying phase", () => {
+    expect(chatLoadingStageLabel(0, false, "replying")).toBe("Generating response…");
+    expect(chatLoadingStageLabel(60_000, false, "replying")).toBe("Generating response…");
+  });
+
+  it("appends slow hints per phase", () => {
+    expect(chatLoadingStageLabel(1500, true, "sending")).toBe("Sending your message…");
+    expect(chatLoadingStageLabel(4000, true, "sending")).toContain("still sending");
+    expect(chatLoadingStageLabel(0, true, "replying")).toContain("Generating response…");
+    expect(chatLoadingStageLabel(0, true, "replying")).toContain("slow connection");
   });
 
   it("never returns an empty label (no blank spinner)", () => {
     for (const ms of [-100, 0, 100, 3000, 50_000]) {
-      expect(chatLoadingStageLabel(ms).length).toBeGreaterThan(0);
+      expect(chatLoadingStageLabel(ms, false, "sending").length).toBeGreaterThan(0);
+      expect(chatLoadingStageLabel(ms, false, "replying").length).toBeGreaterThan(0);
     }
   });
 
-  it("exposes boundaries that match the stage transitions", () => {
-    expect(CHAT_LOADING_STAGE_BOUNDARIES).toEqual([1500, 4000, 9000]);
+  it("exposes boundaries for the sending stages", () => {
+    expect(CHAT_LOADING_STAGE_BOUNDARIES).toEqual([1500, 4000]);
   });
 });

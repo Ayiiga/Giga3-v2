@@ -9,10 +9,12 @@ import { memo } from "react";
 export const ChatTypingBar = memo(function ChatTypingBar({
   visible,
   slowNetwork = false,
+  phase = "replying",
   onStop,
 }: {
   visible: boolean;
   slowNetwork?: boolean;
+  phase?: "sending" | "replying";
   onStop?: () => void;
 }) {
   return (
@@ -25,7 +27,7 @@ export const ChatTypingBar = memo(function ChatTypingBar({
     >
       <div className="chat-rail flex items-center justify-between gap-3">
         <div className="inline-flex min-h-11 items-center rounded-2xl px-1 py-1">
-          {visible ? <TypingIndicator slowNetwork={slowNetwork} /> : null}
+          {visible ? <TypingIndicator slowNetwork={slowNetwork} phase={phase} /> : null}
         </div>
         {visible && onStop ? (
           <button

@@ -21,6 +21,15 @@ export type PolledMessageRow = {
   createdAt?: number;
 };
 
+type ReplyStatusSnapshot =
+  | { active: false }
+  | { active: true; status: string; createdAt: number; cancelled: boolean };
+
+export type ChatReplyPollSnapshot = {
+  messages: PolledMessageRow[] | undefined;
+  replyActive: boolean | undefined;
+};
+
 /**
  * HTTP fallback while sending or awaiting a reply. Convex live queries and
  * websocket mutations stall on real 2G/3G; one-shot HTTP fetches still work.
@@ -30,26 +39,41 @@ export function useChatReplyPolling(
   sessionToken: string | null,
   conversationId: string | null,
   mounted: boolean
-): PolledMessageRow[] | undefined {
+): ChatReplyPollSnapshot {
   const { tier } = useConnectionQuality();
   const pageVisible = usePageVisible();
   const [polled, setPolled] = useState<PolledMessageRow[] | undefined>(undefined);
+  const [replyActive, setReplyActive] = useState<boolean | undefined>(undefined);
   const inFlightRef = useRef(false);
   const pollMs = tier === "slow" ? POLL_SLOW_MS : POLL_NORMAL_MS;
 
-  const fetchMessages = useCallback(async () => {
+  const fetchSnapshot = useCallback(async () => {
     const convexUrl = getConvexUrl();
     if (!convexUrl || !sessionToken || !conversationId || inFlightRef.current) return;
     inFlightRef.current = true;
     try {
-      const rows = await convexHttpCall<PolledMessageRow[]>(
-        convexUrl,
-        "query",
-        "messages:listByConversation",
-        { sessionToken, conversationId },
-        { timeoutMs: tier === "slow" ? 30_000 : 20_000, retries: tier === "slow" ? 2 : 1 }
-      );
+      const httpOpts = {
+        timeoutMs: tier === "slow" ? 30_000 : 20_000,
+        retries: tier === "slow" ? 2 : 1,
+      };
+      const [rows, status] = await Promise.all([
+        convexHttpCall<PolledMessageRow[]>(
+          convexUrl,
+          "query",
+          "messages:listByConversation",
+          { sessionToken, conversationId },
+          httpOpts
+        ),
+        convexHttpCall<ReplyStatusSnapshot>(
+          convexUrl,
+          "query",
+          "chatMessaging:getReplyStatus",
+          { sessionToken, conversationId },
+          httpOpts
+        ),
+      ]);
       setPolled(rows);
+      setReplyActive(status.active);
     } catch {
       /* keep last good snapshot */
     } finally {
@@ -60,17 +84,18 @@ export function useChatReplyPolling(
   useEffect(() => {
     if (!active) {
       setPolled(undefined);
+      setReplyActive(undefined);
       return;
     }
     if (!mounted || !sessionToken || !conversationId || !pageVisible) return;
 
-    void fetchMessages();
+    void fetchSnapshot();
     const id = window.setInterval(() => {
       if (document.visibilityState !== "visible") return;
-      void fetchMessages();
+      void fetchSnapshot();
     }, pollMs);
-    return () => window.clearInterval(id);
-  }, [active, mounted, sessionToken, conversationId, pageVisible, pollMs, fetchMessages]);
+    return () => clearInterval(id);
+  }, [active, mounted, sessionToken, conversationId, pageVisible, pollMs, fetchSnapshot]);
 
-  return polled;
+  return { messages: polled, replyActive };
 }

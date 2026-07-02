@@ -157,13 +157,16 @@ export function useChatPlatform() {
   const interestProfileRow = useQuery(api.users.getInterestProfile, sessionQueryArgs);
   const conversationsRaw = useQuery(api.conversations.list, conversationsQueryArgs);
   const messagesRaw = useQuery(api.messages.listByConversation, messagesQueryArgs);
-  const polledMessages = useChatReplyPolling(
+  const [pollConversationId, setPollConversationId] = useState<string | null>(null);
+  const pollTargetId = pollConversationId ?? activeId;
+  const pollSnapshot = useChatReplyPolling(
     isSending || awaitingReply,
     sessionToken,
-    activeId,
+    pollTargetId,
     mounted
   );
-  const effectiveMessagesRaw = polledMessages ?? messagesRaw;
+  const effectiveMessagesRaw = pollSnapshot.messages ?? messagesRaw;
+  const polledReplyActive = pollSnapshot.replyActive;
   const messagesRawRef = useRef(effectiveMessagesRaw);
   messagesRawRef.current = effectiveMessagesRaw;
   const replyStatusQueryArgs = useMemo(
@@ -304,6 +307,7 @@ export function useChatPlatform() {
         );
 
         if (result.conversationId && result.conversationId !== conversationId) {
+          setPollConversationId(result.conversationId);
           setActiveId(result.conversationId);
         }
 
@@ -498,6 +502,48 @@ export function useChatPlatform() {
   }, [replyStatus, awaitingReply, effectiveMessagesRaw, clearPendingSyncUi]);
 
   useEffect(() => {
+    if (!awaitingReply || polledReplyActive !== false) return;
+
+    const elapsed = Date.now() - replyWaitStartedAtRef.current;
+    if (elapsed < 4000) return;
+
+    const after = fingerprintLastAssistant(effectiveMessagesRaw);
+    if (
+      !isNewAssistantReply(
+        assistantFingerprintBeforeRef.current,
+        after,
+        replyWaitStartedAtRef.current
+      )
+    ) {
+      setAwaitingReply(false);
+      clearPendingSyncUi();
+      setPendingUserText(null);
+      setPollConversationId(null);
+      setError(
+        "AI could not complete this reply. Your message was saved — please try again."
+      );
+    }
+  }, [polledReplyActive, awaitingReply, effectiveMessagesRaw, clearPendingSyncUi]);
+
+  useEffect(() => {
+    if (!isSending) return;
+    const started = Date.now();
+    const slow = isSlowNetworkRef.current;
+    const maxMs =
+      acceptTimeoutMs(slow) * (slow ? MAX_SEND_RETRIES_SLOW : MAX_SEND_RETRIES) + 15_000;
+    const interval = setInterval(() => {
+      if (Date.now() - started < maxMs) return;
+      setIsSending(false);
+      setPendingUserText(null);
+      setPollConversationId(null);
+      setError(
+        "Could not send on this connection. Check your signal and try again."
+      );
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [isSending]);
+
+  useEffect(() => {
     if (!awaitingReply) {
       replyDeadlineRef.current = 0;
       return;
@@ -560,6 +606,7 @@ export function useChatPlatform() {
 
   const selectConversation = useCallback((id: string) => {
     setActiveId(id);
+    setPollConversationId(null);
     setError(null);
     setPendingUserText(null);
     setAwaitingReply(false);
@@ -615,6 +662,7 @@ export function useChatPlatform() {
       setPendingUserText(content);
       setIsSending(true);
       setAwaitingReply(false);
+      setPollConversationId(activeId);
       const clientRequestId = newClientRequestId();
 
       if (typeof navigator !== "undefined" && !navigator.onLine) {
