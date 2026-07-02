@@ -15,7 +15,7 @@ import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export function MarketplaceSellClient() {
+function MarketplaceSellInner() {
   const router = useRouter();
   const [sessionToken, setSessionToken] = useState<string | null>(null);
 
@@ -48,13 +48,14 @@ export function MarketplaceSellClient() {
   const [bio, setBio] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState(MARKETPLACE_CATEGORIES[0]);
-  const [productType, setProductType] = useState(PRODUCT_TYPES[0].id);
+  const [category, setCategory] = useState<string>(MARKETPLACE_CATEGORIES[0]);
+  const [productType, setProductType] = useState<string>(PRODUCT_TYPES[0].id);
   const [priceGhs, setPriceGhs] = useState(20);
   const [license, setLicense] = useState("personal");
   const [tags, setTags] = useState("");
   const [previewText, setPreviewText] = useState("");
   const [copyrightNotice, setCopyrightNotice] = useState("");
+  const [coverImageUrl, setCoverImageUrl] = useState("");
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -93,9 +94,12 @@ export function MarketplaceSellClient() {
       copyrightNotice: copyrightNotice || undefined,
       tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
       previewText: previewText || undefined,
+      coverImageUrl: coverImageUrl.trim() || undefined,
       publish: true,
     });
-    setMessage(`Published listing ${listingId}`);
+    setMessage(
+      "Published! Now attach the downloadable file below — buyers can't purchase until a file is attached."
+    );
     setTitle("");
     setDescription("");
   }
@@ -118,8 +122,7 @@ export function MarketplaceSellClient() {
   }
 
   return (
-    <ConvexAppShell>
-      <div className="mx-auto max-w-5xl space-y-10">
+    <div className="mx-auto max-w-5xl space-y-10">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="page-title">Creator dashboard</h1>
@@ -257,6 +260,16 @@ export function MarketplaceSellClient() {
               placeholder="Copyright notice"
               className="rounded-xl border px-4 py-3"
             />
+            <input
+              value={coverImageUrl}
+              onChange={(e) => setCoverImageUrl(e.target.value)}
+              placeholder="Cover image URL (optional)"
+              className="rounded-xl border px-4 py-3"
+            />
+            <p className="text-sm text-muted">
+              After publishing, upload the downloadable file under “Your listings”.
+              Buyers cannot purchase a listing until its file is attached.
+            </p>
             <Button onClick={publishListing}>Publish listing</Button>
           </div>
         </section>
@@ -265,13 +278,24 @@ export function MarketplaceSellClient() {
           <section>
             <h2 className="mb-4 text-lg font-semibold">Your listings</h2>
             <div className="space-y-4">
-              {listings.map((listing) => (
+              {listings.map((listing: NonNullable<typeof listings>[number]) => (
                 <article key={listing._id} className="rounded-2xl border bg-card p-5">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <h3 className="font-semibold">{listing.title}</h3>
                       <p className="text-sm text-muted">
                         {listing.status} · {formatGhs(listing.priceGhs)} · {listing.purchaseCount} sales
+                      </p>
+                      <p className="mt-1 text-xs">
+                        {listing.fileStorageId ? (
+                          <span className="text-emerald-600">
+                            ✓ File attached — ready to sell
+                          </span>
+                        ) : (
+                          <span className="text-amber-600">
+                            ⚠ No file yet — not purchasable until you attach one
+                          </span>
+                        )}
                       </p>
                     </div>
                     <label className="cursor-pointer rounded-xl border px-4 py-2 text-sm">
@@ -292,6 +316,13 @@ export function MarketplaceSellClient() {
           </section>
         )}
       </div>
+  );
+}
+
+export function MarketplaceSellClient() {
+  return (
+    <ConvexAppShell>
+      <MarketplaceSellInner />
     </ConvexAppShell>
   );
 }

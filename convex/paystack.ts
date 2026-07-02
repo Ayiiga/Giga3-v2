@@ -470,6 +470,18 @@ export const initializeMarketplacePayment = action({
     if (listing.listing.creatorId === userId) {
       throw new Error("You cannot purchase your own listing");
     }
+    if (!listing.listing.fileStorageId) {
+      throw new Error(
+        "This product isn't ready for purchase yet — the creator hasn't uploaded the file. Please check back soon."
+      );
+    }
+    const alreadyOwned = await ctx.runQuery(
+      internal.marketplace.isListingPurchasedInternal,
+      { buyerId: userId, listingId: args.listingId }
+    );
+    if (alreadyOwned) {
+      throw new Error("You already own this product. Find it in My purchases.");
+    }
 
     const user = await ctx.runQuery(api.users.getUser, {
       sessionToken: args.sessionToken,

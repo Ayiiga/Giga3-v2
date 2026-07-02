@@ -74,7 +74,7 @@ const PRIMARY_NAV = [
   { href: "/", label: "Home", icon: Home },
   { hash: "modes" as const, label: "AI Tools", icon: Wand2 },
   { hash: "documents" as const, label: "My Documents", icon: FileText },
-  { href: "/media", label: "Marketplace", icon: LayoutGrid },
+  { href: "/marketplace", label: "Marketplace", icon: LayoutGrid },
 ] as const;
 
 const ACCOUNT_NAV = [

@@ -20,6 +20,17 @@ export const fulfillMarketplacePurchaseInternal = internalMutation({
       .first();
     if (existing) return { alreadyFulfilled: true as const };
 
+    // Guard against double-counting a listing the buyer already owns (e.g. a
+    // second payment slipped past the checkout ownership check). Access is
+    // already granted by the first purchase, so just no-op here.
+    const buyerPurchases = await ctx.db
+      .query("marketplacePurchases")
+      .withIndex("by_buyer", (q) => q.eq("buyerId", args.buyerId))
+      .collect();
+    if (buyerPurchases.some((p) => p.listingId === args.listingId)) {
+      return { alreadyFulfilled: true as const };
+    }
+
     const listing = await ctx.db.get(args.listingId);
     if (!listing || listing.status !== "published") {
       throw new Error("Listing unavailable");

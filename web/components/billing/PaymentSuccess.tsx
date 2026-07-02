@@ -5,12 +5,20 @@ interface PaymentSuccessProps {
   title?: string;
   message: string;
   reference?: string;
+  primaryHref?: string;
+  primaryLabel?: string;
+  secondaryHref?: string;
+  secondaryLabel?: string;
 }
 
 export function PaymentSuccess({
   title = "Payment successful",
   message,
   reference,
+  primaryHref = "/chat",
+  primaryLabel = "Open chat",
+  secondaryHref = "/media",
+  secondaryLabel = "Create media",
 }: PaymentSuccessProps) {
   return (
     <div className="glass mx-auto max-w-md rounded-2xl p-8 text-center">
@@ -21,11 +29,11 @@ export function PaymentSuccess({
         <p className="mt-2 font-mono text-xs text-muted">Ref: {reference}</p>
       )}
       <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <ButtonLink href="/chat" size="lg" className="w-full">
-          Open chat
+        <ButtonLink href={primaryHref} size="lg" className="w-full">
+          {primaryLabel}
         </ButtonLink>
-        <ButtonLink href="/media" variant="secondary" size="lg" className="w-full">
-          Create media
+        <ButtonLink href={secondaryHref} variant="secondary" size="lg" className="w-full">
+          {secondaryLabel}
         </ButtonLink>
       </div>
     </div>
