@@ -77,14 +77,73 @@ export type ChatRoutePlan = {
   maxTokensMultiplier: number;
 };
 
-const IMAGE_GENERATION_RE =
-  /\b(generate|create|make|design|draw|render|produce)\s+(an?\s+)?(image|picture|photo|illustration|logo|poster|flyer|brochure|infographic|diagram|graphic|banner|thumbnail|mockup|avatar|icon)\b/i;
+/**
+ * Visual asset nouns that mean "produce a rendered image" (posters, flyers,
+ * logos, etc.). Diagrams/flowcharts/charts are intentionally NOT here — those
+ * render natively as editable Mermaid/chart blocks, so they stay text_chat.
+ */
+const IMAGE_ASSET_NOUN =
+  "images?|pictures?|photos?|photographs?|illustrations?|logos?|posters?|flyers?|leaflets?|brochures?|pamphlets?|infographics?|graphics?|banners?|thumbnails?|mock-?ups?|avatars?|icons?|stickers?|wallpapers?|business cards?|invitations?|certificates?|greeting cards?|book covers?|album covers?|cover art|album art|memes?|portraits?|artworks?|drawings?|sketches|cartoons?|concept art|profile pictures?|pfps?";
 
-const IMAGE_ASSET_RE =
-  /\b(logo|poster|flyer|brochure|infographic|diagram|presentation slide|marketing (asset|material)|social media (post|graphic|content)|advertisement|ad creative)\b/i;
+const IMAGE_VERB =
+  "generate|create|make|design|draw|render|produce|paint|illustrate|sketch|craft|whip up|come up with";
+
+/** Strong design-asset nouns (used for looser "a poster for …" phrasing). */
+const STRONG_IMAGE_ASSET =
+  "logos?|posters?|flyers?|leaflets?|brochures?|pamphlets?|infographics?|banners?|thumbnails?|avatars?|icons?|stickers?|wallpapers?|business cards?|invitations?|certificates?|greeting cards?|book covers?|album covers?";
+
+const IMAGE_GENERATION_RE = new RegExp(
+  `\\b(?:${IMAGE_VERB})\\b(?:\\s+(?:me|us))?(?:\\s+[\\w'-]+){0,3}?\\s+(?:${IMAGE_ASSET_NOUN})\\b`,
+  "i"
+);
+
+const IMAGE_NEED_RE = new RegExp(
+  `\\b(?:i|we)\\s+(?:need|want|would like|'?d like)\\b(?:\\s+\\w+){0,4}?\\s+(?:${IMAGE_ASSET_NOUN})\\b`,
+  "i"
+);
+
+const IMAGE_FOR_RE = new RegExp(
+  `\\b(?:a|an|some|my|our)\\s+(?:${STRONG_IMAGE_ASSET})\\s+(?:for|of|about|showing|featuring|to)\\b`,
+  "i"
+);
+
+const IMAGE_ASSET_RE = new RegExp(
+  `\\b(?:${STRONG_IMAGE_ASSET}|marketing (?:asset|material)|social media (?:post|graphic|content)|advertisement|ad creative)\\b`,
+  "i"
+);
 
 const IMAGE_REQUEST_RE =
-  /\b(image of|picture of|visual of|graphic (for|of)|illustration (of|for)|design (a|an|me))\b/i;
+  /\b(image of|picture of|photo of|visual of|graphic (for|of)|illustration (of|for)|design (a|an|me))\b/i;
+
+/** Design assets that benefit from a portrait / landscape canvas. */
+const PORTRAIT_ASSET_RE =
+  /\b(posters?|flyers?|leaflets?|brochures?|pamphlets?|invitations?|certificates?|book covers?|menus?|portraits?)\b/i;
+const LANDSCAPE_ASSET_RE =
+  /\b(banners?|thumbnails?|cover art|album covers?|album art|business cards?|wallpapers?|landscape)\b/i;
+
+/** Requests that should include rendered text / a designed layout. */
+const DESIGN_ASSET_RE =
+  /\b(posters?|flyers?|leaflets?|brochures?|pamphlets?|infographics?|banners?|thumbnails?|business cards?|invitations?|certificates?|greeting cards?|book covers?|album covers?|menus?|advertisements?|ad creative|marketing)\b/i;
+
+export type ImageOrientation = "portrait" | "landscape" | "square";
+
+/** Suggested canvas orientation for a generated visual asset. */
+export function imageAssetOrientation(query: string): ImageOrientation {
+  if (PORTRAIT_ASSET_RE.test(query)) return "portrait";
+  if (LANDSCAPE_ASSET_RE.test(query)) return "landscape";
+  return "square";
+}
+
+/**
+ * Enrich a design-asset prompt so the image model renders legible text and a
+ * polished, print-ready layout (posters/flyers/etc.). Plain image prompts are
+ * returned unchanged.
+ */
+export function enhanceImageGenerationPrompt(query: string): string {
+  const q = query.trim();
+  if (!DESIGN_ASSET_RE.test(q)) return q;
+  return `${q}\n\nProduce a polished, professional, high-resolution design. Render any requested text clearly and legibly with strong typography, a balanced layout, harmonious colors, and a clean, print-ready composition.`;
+}
 
 const CURRENT_INFO_RE =
   /\b(today|tonight|yesterday|this week|this month|this year|latest|current|recent|news|now|202[4-9]|stock price|weather|score|election|who is (the )?president)\b/i;
@@ -129,6 +188,8 @@ export function classifyRequestKind(
   if (!compact) return "text_chat";
   if (mode === "social" && IMAGE_ASSET_RE.test(compact)) return "image_generation";
   if (IMAGE_GENERATION_RE.test(compact)) return "image_generation";
+  if (IMAGE_NEED_RE.test(compact)) return "image_generation";
+  if (IMAGE_FOR_RE.test(compact)) return "image_generation";
   if (IMAGE_REQUEST_RE.test(compact) && IMAGE_ASSET_RE.test(compact)) {
     return "image_generation";
   }
@@ -217,6 +278,22 @@ export function buildChatRoutePlan(input: RoutingInput): ChatRoutePlan {
 
 export function isGeminiFriendlyMode(mode: string): boolean {
   return GEMINI_MODES.has(mode);
+}
+
+/**
+ * Whether the failover chain should start another provider attempt. The primary
+ * attempt always runs; subsequent attempts are skipped once the overall
+ * wall-clock budget is spent, bounding worst-case latency so a reply (real or
+ * fallback) is persisted before the client's spinner deadline.
+ */
+export function shouldStartFailoverAttempt(args: {
+  elapsedMs: number;
+  budgetMs: number;
+  isPrimary: boolean;
+}): boolean {
+  if (args.isPrimary) return true;
+  if (!Number.isFinite(args.budgetMs)) return true;
+  return args.elapsedMs < args.budgetMs;
 }
 
 export function getFreeChatSystemLabel(chatSystem: string): string {

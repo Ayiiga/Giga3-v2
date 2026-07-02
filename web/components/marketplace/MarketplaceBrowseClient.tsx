@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
-export function MarketplaceBrowseClient() {
+function MarketplaceBrowseInner() {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 300);
   const [category, setCategory] = useState<string>("");
@@ -29,8 +29,7 @@ export function MarketplaceBrowseClient() {
   }, []);
 
   return (
-    <ConvexAppShell>
-      <div className="mx-auto max-w-6xl space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-700 dark:text-emerald-300">
@@ -42,10 +41,15 @@ export function MarketplaceBrowseClient() {
               eBooks, templates, prompts, research, design assets, and more from verified creators.
             </p>
           </div>
-          <ButtonLink href="/marketplace/sell">
-            <ShoppingBag className="mr-2 h-4 w-4" aria-hidden />
-            Sell on Giga3
-          </ButtonLink>
+          <div className="flex flex-wrap gap-2">
+            <ButtonLink href="/marketplace/purchases" variant="secondary">
+              My purchases
+            </ButtonLink>
+            <ButtonLink href="/marketplace/sell">
+              <ShoppingBag className="mr-2 h-4 w-4" aria-hidden />
+              Sell on Giga3
+            </ButtonLink>
+          </div>
         </div>
 
         <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto]">
@@ -94,7 +98,7 @@ export function MarketplaceBrowseClient() {
           </p>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {listings.map((item) => (
+            {listings.map((item: NonNullable<typeof listings>[number]) => (
               <Link
                 key={item._id}
                 href={`/marketplace/item/?id=${item._id}`}
@@ -137,7 +141,14 @@ export function MarketplaceBrowseClient() {
             ))}
           </div>
         )}
-      </div>
+    </div>
+  );
+}
+
+export function MarketplaceBrowseClient() {
+  return (
+    <ConvexAppShell>
+      <MarketplaceBrowseInner />
     </ConvexAppShell>
   );
 }

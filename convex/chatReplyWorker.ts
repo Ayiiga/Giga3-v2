@@ -21,15 +21,27 @@ import {
 import { buildMultimodalPrompt } from "./multimodalPrompt";
 import type { ActionCtx } from "./_generated/server";
 import type { ChatEngineResult, ChatRoutingContext } from "./chatEngine";
-import { buildChatRoutePlan, buildPromptCacheKey, shouldUseResponseCache } from "./providerRouter";
+import {
+  buildChatRoutePlan,
+  buildPromptCacheKey,
+  enhanceImageGenerationPrompt,
+  imageAssetOrientation,
+  shouldUseResponseCache,
+  type RequestKind,
+} from "./providerRouter";
 import { generateFreeImageForChat } from "./mediaEngine";
 import { openaiGenerateImage } from "./openaiImageClient";
+import { persistImageUrlIfNeeded } from "./mediaStorage";
+import type { FalImageSize } from "./falClient";
 import { logChatReply } from "./chatReplyLog";
 
+// Kept below the client reply-wait deadline (CHAT_REPLY_WAIT_MS = 150s) so the
+// worker persists a real or fallback reply — clearing "Thinking…" gracefully via
+// the live query — before the client's own failsafe error fires.
 const WORKER_TEXT_TIMEOUT_MS =
-  Number(process.env.CHAT_WORKER_TIMEOUT_MS) || 240_000;
+  Number(process.env.CHAT_WORKER_TIMEOUT_MS) || 120_000;
 const WORKER_IMAGE_TIMEOUT_MS =
-  Number(process.env.CHAT_WORKER_IMAGE_TIMEOUT_MS) || 300_000;
+  Number(process.env.CHAT_WORKER_IMAGE_TIMEOUT_MS) || 150_000;
 
 function withWorkerTimeout<T>(
   promise: Promise<T>,
@@ -131,7 +143,7 @@ async function runHybridAiEngine(
     hasImageAttachment?: boolean;
     conversationId: string;
   }
-): Promise<ChatEngineResult & { cached: boolean }> {
+): Promise<ChatEngineResult & { cached: boolean; requestKind: RequestKind }> {
   const routePlan = buildChatRoutePlan({
     tier: args.routing.tier,
     mode: args.mode,
@@ -148,36 +160,55 @@ async function runHybridAiEngine(
 
   if (routePlan.requestKind === "image_generation") {
     const started = Date.now();
+    const orientation = imageAssetOrientation(args.query);
+    const imageSize: FalImageSize =
+      orientation === "portrait"
+        ? "portrait_4_3"
+        : orientation === "landscape"
+          ? "landscape_4_3"
+          : "square_hd";
+    const imagePrompt = enhanceImageGenerationPrompt(args.query);
+
+    let rawUrl: string;
+    let providerId: string;
+    let usedFallback = false;
+
     if (args.routing.tier === "premium") {
-      const image = await openaiGenerateImage(args.query);
-      const content = `Here is your generated image:\n\n${image.dataUrl}`;
-      const result: ChatEngineResult & { cached: boolean } = {
-        content,
-        providerId: "openai_image",
-        usedFallback: false,
-        latencyMs: Date.now() - started,
-        cached: false,
-      };
-      await recordAiUsage(ctx, {
-        email: args.email,
-        mode: args.mode,
-        routing: args.routing,
-        engineResult: result,
-        requestKind: "image_generation",
-        cached: false,
-        conversationId: args.conversationId,
-      });
-      return result;
+      try {
+        const image = await openaiGenerateImage(imagePrompt, { imageSize });
+        rawUrl = image.dataUrl;
+        providerId = "openai_image";
+      } catch (err) {
+        // Never fail a premium visual request outright — fall back to the
+        // free multi-provider image pipeline (fal → Replicate → Google).
+        logChatReply("image_openai_failed", {
+          conversationId: args.conversationId,
+          userId: args.email,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        const fallback = await generateFreeImageForChat(imagePrompt);
+        rawUrl = fallback.imageUrl;
+        providerId = fallback.provider;
+        usedFallback = true;
+      }
+    } else {
+      const image = await generateFreeImageForChat(imagePrompt);
+      rawUrl = image.imageUrl;
+      providerId = image.provider;
     }
 
-    const image = await generateFreeImageForChat(args.query);
-    const content = `Here is your generated image:\n\n${image.imageUrl}`;
-    const result: ChatEngineResult & { cached: boolean } = {
+    // Persist base64 data URLs (gpt-image-1, Gemini) to Convex file storage so
+    // the assistant message stays small — a raw data URL exceeds Convex's value
+    // size limit and would fail the insert, leaving chat stuck on a fallback.
+    const imageUrl = await persistImageUrlIfNeeded(ctx, rawUrl);
+    const content = `Here is your generated image:\n\n${imageUrl}`;
+    const result: ChatEngineResult & { cached: boolean; requestKind: RequestKind } = {
       content,
-      providerId: image.provider,
-      usedFallback: false,
+      providerId,
+      usedFallback,
       latencyMs: Date.now() - started,
       cached: false,
+      requestKind: "image_generation",
     };
     await recordAiUsage(ctx, {
       email: args.email,
@@ -207,12 +238,13 @@ async function runHybridAiEngine(
       promptHash,
     });
     if (cached) {
-      const result: ChatEngineResult & { cached: boolean } = {
+      const result: ChatEngineResult & { cached: boolean; requestKind: RequestKind } = {
         content: cached.content,
         providerId: cached.providerId,
         usedFallback: false,
         latencyMs: 0,
         cached: true,
+        requestKind: "text_chat",
       };
       await recordAiUsage(ctx, {
         email: args.email,
@@ -253,7 +285,7 @@ async function runHybridAiEngine(
     conversationId: args.conversationId,
   });
 
-  return { ...engineResult, cached: false };
+  return { ...engineResult, cached: false, requestKind: "text_chat" };
 }
 
 const FALLBACK_REPLY =
@@ -432,20 +464,28 @@ export const processJob = internalAction({
         return;
       }
 
-      const validated = validateAnswerQuality({
-        answer: engineResult.content,
-        context: qualityContext,
-      });
-      const assistantContent = validated.content;
-      recordQualityObservation(validated.report);
-      await ctx.runMutation(internal.qualityDashboard.recordResponseMetric, {
-        responseMode: validated.report.responseMode,
-        confidenceLabel: validated.report.confidenceLabel,
-        citationCount: validated.report.citationCount,
-        verificationVisible: validated.report.verificationVisible,
-        verificationPassed: !hasHallucinationRisk(validated.report.flags),
-        hasHallucinationRisk: hasHallucinationRisk(validated.report.flags),
-      });
+      // Image generations already returned the finished asset URL — skip the
+      // answer-quality/auto-visual augmentation (it would append a broken
+      // Mermaid block wrapping the image URL and redundant visual specs).
+      let assistantContent: string;
+      if (engineResult.requestKind === "image_generation") {
+        assistantContent = engineResult.content;
+      } else {
+        const validated = validateAnswerQuality({
+          answer: engineResult.content,
+          context: qualityContext,
+        });
+        assistantContent = validated.content;
+        recordQualityObservation(validated.report);
+        await ctx.runMutation(internal.qualityDashboard.recordResponseMetric, {
+          responseMode: validated.report.responseMode,
+          confidenceLabel: validated.report.confidenceLabel,
+          citationCount: validated.report.citationCount,
+          verificationVisible: validated.report.verificationVisible,
+          verificationPassed: !hasHallucinationRisk(validated.report.flags),
+          hasHallucinationRisk: hasHallucinationRisk(validated.report.flags),
+        });
+      }
 
       const chargedAi = engineResult.providerId !== "local_fallback";
 

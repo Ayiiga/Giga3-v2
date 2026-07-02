@@ -8,6 +8,7 @@ import {
 import {
   buildChatRoutePlan,
   resolveAiProviderTier,
+  shouldStartFailoverAttempt,
   type AiProviderTier,
   type ChatProviderId,
   type ChatRoutePlan,
@@ -137,6 +138,11 @@ function chatConfig() {
     maxDialogueMessages: Number(process.env.CHAT_MAX_HISTORY_TURNS) || 12,
     enableFalChat: process.env.CHAT_ENABLE_FAL !== "false",
     falTimeoutMs: Number(process.env.CHAT_FAL_TIMEOUT_MS) || 12_000,
+    // Overall wall-clock budget for the whole failover chain. Bounds worst-case
+    // latency (sequential providers × per-provider timeout) so a reply — real or
+    // graceful fallback — is always persisted well before the client's spinner
+    // deadline. Keep this comfortably below CHAT_REPLY_WAIT_MS on the client.
+    totalBudgetMs: Number(process.env.CHAT_TOTAL_BUDGET_MS) || 100_000,
   };
 }
 
@@ -511,10 +517,32 @@ function buildProviderAttempts(args: {
 async function runSequentialPlan(
   attempts: Attempt[],
   primaryProvider: ChatProviderId,
-  timeoutMs: number
+  timeoutMs: number,
+  budgetMs = Number.POSITIVE_INFINITY
 ): Promise<ChatEngineResult | null> {
   const planStarted = Date.now();
   for (const attempt of attempts) {
+    // Stop starting new provider attempts once the overall budget is spent so
+    // the worker returns a fallback instead of stacking timeouts for minutes.
+    if (
+      !shouldStartFailoverAttempt({
+        elapsedMs: Date.now() - planStarted,
+        budgetMs,
+        isPrimary: attempt.id === primaryProvider,
+      })
+    ) {
+      console.warn(
+        JSON.stringify({
+          service: "giga3-chat-engine",
+          event: "failover_budget_exhausted",
+          skippedProviderId: attempt.id,
+          budgetMs,
+          totalMs: Date.now() - planStarted,
+          ts: Date.now(),
+        })
+      );
+      break;
+    }
     const attemptStarted = Date.now();
     console.log(
       JSON.stringify({
@@ -629,7 +657,12 @@ export async function completeChatWithFailover(
     enableFalChat: cfg.enableFalChat,
   });
 
-  const sequential = await runSequentialPlan(attempts, plan.primaryProvider, timeoutMs);
+  const sequential = await runSequentialPlan(
+    attempts,
+    plan.primaryProvider,
+    timeoutMs,
+    cfg.totalBudgetMs
+  );
   if (sequential) return sequential;
 
   return {

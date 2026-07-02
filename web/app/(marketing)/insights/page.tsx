@@ -35,6 +35,15 @@ ChartJS.register(
 
 const REFRESH_MS = 30_000;
 
+type DailyTrendPoint = { dateKey: string; messages: number; aiRequests: number };
+type NamedValue = { name: string; value: number };
+type AiModelUsageRow = {
+  provider: string;
+  requests: number;
+  avgLatencyMs: number;
+  fallbacks: number;
+};
+
 function formatTime(ts: number): string {
   try {
     return new Date(ts).toLocaleString();
@@ -71,11 +80,11 @@ function InsightsInner() {
   const activityChart = useMemo(() => {
     if (!stats?.dailyTrend?.length) return null;
     return {
-      labels: stats.dailyTrend.map((d) => d.dateKey.slice(5)),
+      labels: stats.dailyTrend.map((d: DailyTrendPoint) => d.dateKey.slice(5)),
       datasets: [
         {
           label: "Messages",
-          data: stats.dailyTrend.map((d) => d.messages),
+          data: stats.dailyTrend.map((d: DailyTrendPoint) => d.messages),
           borderColor: "#7c3aed",
           backgroundColor: "rgba(124, 58, 237, 0.12)",
           fill: true,
@@ -83,7 +92,7 @@ function InsightsInner() {
         },
         {
           label: "AI requests",
-          data: stats.dailyTrend.map((d) => d.aiRequests),
+          data: stats.dailyTrend.map((d: DailyTrendPoint) => d.aiRequests),
           borderColor: "#0ea5e9",
           backgroundColor: "rgba(14, 165, 233, 0.08)",
           fill: false,
@@ -97,10 +106,10 @@ function InsightsInner() {
     const devices = stats?.breakdown?.devices ?? [];
     if (!devices.length) return null;
     return {
-      labels: devices.map((d) => d.name),
+      labels: devices.map((d: NamedValue) => d.name),
       datasets: [
         {
-          data: devices.map((d) => d.value),
+          data: devices.map((d: NamedValue) => d.value),
           backgroundColor: ["#7c3aed", "#0ea5e9", "#22c55e", "#f59e0b", "#94a3b8"],
         },
       ],
@@ -111,11 +120,11 @@ function InsightsInner() {
     const rows = stats?.breakdown?.browsers?.slice(0, 6) ?? [];
     if (!rows.length) return null;
     return {
-      labels: rows.map((d) => d.name),
+      labels: rows.map((d: NamedValue) => d.name),
       datasets: [
         {
           label: "Sessions",
-          data: rows.map((d) => d.value),
+          data: rows.map((d: NamedValue) => d.value),
           backgroundColor: "#7c3aed",
           borderRadius: 8,
         },
@@ -149,11 +158,22 @@ function InsightsInner() {
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-2">
       <header className="rounded-2xl border bg-gradient-to-br from-violet-600 to-indigo-700 p-8 text-white shadow-lg">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Giga3 AI Platform Insights</h1>
-        <p className="mt-2 text-sm text-violet-100">
-          Live analytics · refreshed every 30s · last update {formatTime(stats.asOf)}
-          {tick > 0 ? "" : ""}
-        </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Giga3 AI Platform Insights</h1>
+            <p className="mt-2 text-sm text-violet-100">
+              Live analytics · refreshed every 30s · last update {formatTime(stats.asOf)}
+            </p>
+          </div>
+          {adminKey && (
+            <a
+              href={`/admin/?key=${encodeURIComponent(adminKey)}`}
+              className="rounded-full bg-white/15 px-4 py-2 text-sm font-medium text-white hover:bg-white/25"
+            >
+              Revenue &amp; marketplace admin →
+            </a>
+          )}
+        </div>
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -233,7 +253,7 @@ function InsightsInner() {
             {stats.aiModelUsage.length === 0 ? (
               <li className="text-sm text-muted">No AI usage recorded today.</li>
             ) : (
-              stats.aiModelUsage.map((row) => (
+              stats.aiModelUsage.map((row: AiModelUsageRow) => (
                 <li
                   key={row.provider}
                   className="flex items-center justify-between rounded-xl border border-border px-4 py-3 text-sm"

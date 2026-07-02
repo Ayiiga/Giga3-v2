@@ -88,10 +88,13 @@ export function useChatPlatform() {
   const interestProfileCacheRef = useRef<string | null>(null);
   const assistantBaselineRef = useRef(0);
   const replyWaitStartedAtRef = useRef(0);
+  const replyDeadlineRef = useRef(0);
   const assistantFingerprintBeforeRef = useRef<AssistantFingerprint>(null);
   const syncingOutboxRef = useRef(false);
   const lastChatSystemRef = useRef<GigaModelId>("fast");
   const { isSlowNetwork } = useConnectionQuality();
+  const isSlowNetworkRef = useRef(isSlowNetwork);
+  isSlowNetworkRef.current = isSlowNetwork;
 
   const clearPendingSyncUi = useCallback(() => {
     setIsSending(false);
@@ -99,7 +102,13 @@ export function useChatPlatform() {
 
   const beginReplyWait = useCallback(
     (rows: { _id: string; role: string; content: string; createdAt?: number }[] | undefined) => {
-      replyWaitStartedAtRef.current = Date.now();
+      const now = Date.now();
+      replyWaitStartedAtRef.current = now;
+      // Fix a stuck-forever "Thinking…": the deadline is captured once, at wait
+      // start, so later connection-quality flips cannot keep resetting the
+      // failsafe timer and leave the spinner running indefinitely.
+      replyDeadlineRef.current =
+        now + (isSlowNetworkRef.current ? CHAT_REPLY_WAIT_SLOW_MS : CHAT_REPLY_WAIT_MS);
       assistantFingerprintBeforeRef.current = fingerprintLastAssistant(rows);
       assistantBaselineRef.current = countAssistantMessages(rows);
     },
@@ -456,19 +465,28 @@ export function useChatPlatform() {
 
   useEffect(() => {
     if (!awaitingReply) return;
-    const waitMs = isSlowNetwork ? CHAT_REPLY_WAIT_SLOW_MS : CHAT_REPLY_WAIT_MS;
+    // Guarantee the spinner always ends: a fixed deadline (set in beginReplyWait)
+    // is polled by a single interval. Crucially this effect depends only on
+    // awaitingReply — connection-quality changes no longer restart the timer,
+    // which previously let "Thinking…" run forever on flaky mobile networks.
+    if (replyDeadlineRef.current === 0) {
+      replyDeadlineRef.current =
+        Date.now() +
+        (isSlowNetworkRef.current ? CHAT_REPLY_WAIT_SLOW_MS : CHAT_REPLY_WAIT_MS);
+    }
     const waitToken = replyWaitStartedAtRef.current;
-    const timer = setTimeout(() => {
+    const interval = setInterval(() => {
       if (replyWaitStartedAtRef.current !== waitToken) return;
+      if (Date.now() < replyDeadlineRef.current) return;
       setAwaitingReply(false);
       clearPendingSyncUi();
       setPendingUserText(null);
       setError(
         "Reply is taking longer than expected. Your message was saved — please try again or check your connection."
       );
-    }, waitMs);
-    return () => clearTimeout(timer);
-  }, [awaitingReply, isSlowNetwork, clearPendingSyncUi]);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [awaitingReply, clearPendingSyncUi]);
 
   useEffect(() => {
     void refreshOutboxCount();

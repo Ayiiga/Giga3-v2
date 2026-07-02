@@ -3,52 +3,25 @@
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { CheckoutOverlay } from "@/components/billing/CheckoutOverlay";
 import { Button, ButtonLink } from "@/components/ui/Button";
+import { useBilling } from "@/hooks/useBilling";
 import { useVideoWallet } from "@/hooks/useVideoAI";
-import { friendlyPaystackError } from "@/lib/payments/paystackErrors";
-import {
-  openPaystackCheckout,
-  verifyPaystackPayment,
-} from "@/lib/payments/paystackService";
-import { getPaystackPublicKeyFromBuild } from "@/lib/payments/paystackConfig";
 import { VIDEO_PACKS, VIDEO_SUBSCRIPTIONS } from "@/lib/video/catalog";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+
+type VideoCatalogEntry = { id: string; amountGhs: number };
 
 function VideoPlansInner() {
   const router = useRouter();
-  const { mounted, sessionToken, wallet, purchaseProduct } = useVideoWallet();
-  const [paying, setPaying] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { mounted, sessionToken, wallet } = useVideoWallet();
+  const { checkout, paying, checkoutPhase, checkoutPreview, error } = useBilling();
 
   useEffect(() => {
     if (mounted && !sessionToken) {
       router.replace("/chat/login?next=/video/plans");
     }
   }, [mounted, sessionToken, router]);
-
-  async function checkout(productId: string, label: string) {
-    setPaying(true);
-    setError(null);
-    try {
-      const init = await purchaseProduct(productId);
-      const publicKey = getPaystackPublicKeyFromBuild();
-      if (!publicKey) throw new Error("Paystack is not configured");
-      await openPaystackCheckout({
-        publicKey,
-        email: "",
-        amount: init.amountGhs * 100,
-        reference: init.reference,
-        accessCode: init.accessCode,
-      });
-      await verifyPaystackPayment(init.reference);
-      router.push(`/payment/success/?reference=${encodeURIComponent(init.reference)}`);
-    } catch (err) {
-      setError(friendlyPaystackError(err));
-    } finally {
-      setPaying(false);
-    }
-  }
 
   if (!mounted || !sessionToken) {
     return <p className="text-center text-muted">Redirecting…</p>;
@@ -58,7 +31,11 @@ function VideoPlansInner() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-10">
-      <CheckoutOverlay phase={paying ? "processing" : null} />
+      <CheckoutOverlay
+        phase={checkoutPhase}
+        label={checkoutPreview?.label}
+        amountGhs={checkoutPreview?.amountGhs}
+      />
       <div className="text-center">
         <h1 className="page-title">Video AI Plans</h1>
         <p className="mt-2 text-muted">
@@ -76,7 +53,9 @@ function VideoPlansInner() {
         <h2 className="mb-4 text-xl font-semibold">Monthly subscriptions</h2>
         <div className="grid gap-6 md:grid-cols-3">
           {VIDEO_SUBSCRIPTIONS.map((plan) => {
-            const live = catalog?.subscriptions.find((s) => s.id === plan.id);
+            const live = catalog?.subscriptions.find(
+              (s: VideoCatalogEntry) => s.id === plan.id
+            );
             return (
               <article
                 key={plan.id}
@@ -98,7 +77,7 @@ function VideoPlansInner() {
                 <Button
                   className="mt-4 w-full"
                   disabled={paying}
-                  onClick={() => checkout(plan.id, plan.label)}
+                  onClick={() => void checkout(plan.id)}
                 >
                   Subscribe
                 </Button>
@@ -112,7 +91,9 @@ function VideoPlansInner() {
         <h2 className="mb-4 text-xl font-semibold">One-time credit packs</h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {VIDEO_PACKS.map((pack) => {
-            const live = catalog?.packs.find((p) => p.id === pack.id);
+            const live = catalog?.packs.find(
+              (p: VideoCatalogEntry) => p.id === pack.id
+            );
             return (
               <article key={pack.id} className="flex flex-col rounded-2xl border bg-card p-6">
                 <h3 className="font-semibold">{pack.label}</h3>
@@ -125,7 +106,7 @@ function VideoPlansInner() {
                   className="mt-4 w-full"
                   variant="secondary"
                   disabled={paying}
-                  onClick={() => checkout(pack.id, pack.label)}
+                  onClick={() => void checkout(pack.id)}
                 >
                   Buy pack
                 </Button>

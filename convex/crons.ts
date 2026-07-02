@@ -10,4 +10,12 @@ crons.daily(
   {}
 );
 
+// Safety net so chat never stays stuck: reschedule/finalize orphaned reply jobs.
+crons.interval(
+  "recover stuck chat reply jobs",
+  { seconds: 60 },
+  internal.chatReplyRecovery.recoverStuckJobs,
+  {}
+);
+
 export default crons;

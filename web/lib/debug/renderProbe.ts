@@ -9,8 +9,8 @@ declare global {
 }
 
 const counts = new Map<string, number>();
-let flushTimer: ReturnType<typeof setTimeout> | null = null;
-let snapshotTimer: ReturnType<typeof setInterval> | null = null;
+let flushTimer: number | null = null;
+let snapshotTimer: number | null = null;
 const lastSnapshotCounts = new Map<string, number>();
 
 function syncToWindow(): void {
@@ -57,7 +57,7 @@ export function probeRender(component: string): void {
   syncToWindow();
   ensureSnapshotLogger();
   if (flushTimer) return;
-  flushTimer = setTimeout(() => {
+  flushTimer = window.setTimeout(() => {
     flushTimer = null;
     const rows = [...counts.entries()].sort((a, b) => b[1] - a[1]);
     console.table(rows.map(([name, count]) => ({ component: name, renders: count })));
