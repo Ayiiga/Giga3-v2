@@ -11,6 +11,16 @@
 | Replicate image (backup) | `convex/replicateClient.ts` | `flux-schnell` generation; `flux-kontext-pro` when `sourceImageUrl` / `?source=` edit links |
 | Next.js PWA (static export) | `web/` | Output: **`web/out`** (not `.next`) |
 | Legacy static site | `frontend/` | Uses Convex HTTP paths; config in `frontend/assets/js/config.js` |
+| Supabase (optional) | `web/lib/supabase/` | Chat/media history when `NEXT_PUBLIC_GIGA3_DATA_BACKEND=supabase` |
+
+### Dual backend (Convex + Supabase)
+
+Giga3 uses **both** Convex and Supabase in production-capable configs:
+
+- **`NEXT_PUBLIC_GIGA3_DATA_BACKEND=convex`** (default): chat history + AI in Convex (`useChatPlatform`).
+- **`NEXT_PUBLIC_GIGA3_DATA_BACKEND=supabase`**: chat history in Supabase, but **AI send/reply still goes through Convex HTTP** (`useSupabaseChatPlatform` → `chatMessaging:acceptMessage`). Convex also handles billing, media jobs, Paystack.
+
+When fixing chat reliability on slow mobile networks, update **both** `web/hooks/useChatPlatform.ts` and `web/hooks/useSupabaseChatPlatform.ts`, plus shared timings in `web/lib/chat/chatNetwork.ts`.
 
 ### Commands (from repo root)
 

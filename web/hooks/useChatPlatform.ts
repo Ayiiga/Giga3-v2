@@ -22,6 +22,15 @@ import {
   writeCachedMessages,
 } from "@/lib/chat/messageCache";
 import { chatSystemForModel, gigaModelForMode, type GigaModelId } from "@/lib/chat/gigaModels";
+import {
+  acceptTimeoutMs,
+  CHAT_REPLY_WAIT_MS,
+  CHAT_REPLY_WAIT_SLOW_MS,
+  MAX_SEND_RETRIES,
+  MAX_SEND_RETRIES_SLOW,
+  RETRY_BASE_MS,
+  RETRY_BASE_SLOW_MS,
+} from "@/lib/chat/chatNetwork";
 import { getConvexUrl } from "@/lib/convex";
 import {
   fingerprintLastAssistant,
@@ -33,20 +42,6 @@ import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-/** Fast ack — save message + queue AI worker (not full reply). */
-const CHAT_ACCEPT_TIMEOUT_MS = 45_000;
-// Slow links need a longer window than normal — websocket reconnect + mutation
-// round-trips on 3G regularly exceed 45s. Convex mutations dedupe by
-// clientRequestId, so extra time and retries are safe.
-const CHAT_ACCEPT_TIMEOUT_SLOW_MS = 90_000;
-const CHAT_ACCEPT_TIMEOUT_IMAGE_MS = 120_000;
-const CHAT_REPLY_WAIT_MS = 150_000;
-const CHAT_REPLY_WAIT_SLOW_MS = 180_000;
-const MAX_SEND_RETRIES = 3;
-const MAX_SEND_RETRIES_SLOW = 4;
-const RETRY_BASE_MS = 600;
-const RETRY_BASE_SLOW_MS = 1_200;
 
 type AcceptMessageResult = {
   status: "processing" | "complete";
@@ -266,11 +261,7 @@ export function useChatPlatform() {
     ) => {
       const hasImages = attachments?.some((a) => a.kind === "image") ?? false;
       const maxRetries = slowNetwork ? MAX_SEND_RETRIES_SLOW : MAX_SEND_RETRIES;
-      const acceptTimeoutMs = hasImages
-        ? CHAT_ACCEPT_TIMEOUT_IMAGE_MS
-        : slowNetwork
-          ? CHAT_ACCEPT_TIMEOUT_SLOW_MS
-          : CHAT_ACCEPT_TIMEOUT_MS;
+      const acceptTimeoutMsValue = acceptTimeoutMs(slowNetwork, hasImages);
 
       try {
         const convexUrl = getConvexUrl();
@@ -304,9 +295,9 @@ export function useChatPlatform() {
             "mutation",
             "chatMessaging:acceptMessage",
             mutationArgs,
-            { timeoutMs: acceptTimeoutMs, retries: 0 }
+            { timeoutMs: acceptTimeoutMsValue, retries: 0 }
           ),
-          acceptTimeoutMs,
+          acceptTimeoutMsValue,
           hasImages
             ? "Image upload is taking longer on this connection. Please wait or try again on Wi‑Fi."
             : "Could not reach the server on this connection. Check your signal and try again."

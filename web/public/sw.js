@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v36-http-chat-3g";
+const CACHE_NAME = "giga3-shell-v37-dual-backend-chat";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
