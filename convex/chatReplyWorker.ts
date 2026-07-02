@@ -291,6 +291,16 @@ async function runHybridAiEngine(
 const FALLBACK_REPLY =
   "I'm Giga3 AI — I'm having trouble reaching our AI services on this connection. Your message was saved — please tap send again. On slower mobile networks, replies usually arrive within a minute when the connection is stable.";
 
+/** Clear, honest reply when the user hit the AI rate limit (not a service outage). */
+function rateLimitReply(message: string): string {
+  return `${message}\n\nYour message was saved. You can also upgrade on the Subscription page or buy credits for higher limits.`;
+}
+
+function isRateLimitError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  return err.name === "RateLimitError" || /rate limit/i.test(err.message);
+}
+
 /** Background worker — generates the assistant reply after the client gets a fast ack. */
 export const processJob = internalAction({
   args: { jobId: v.id("chatReplyJobs") },
@@ -565,7 +575,7 @@ export const processJob = internalAction({
           conversationId: job.conversationId,
           userId: email,
           role: "assistant",
-          content: FALLBACK_REPLY,
+          content: isRateLimitError(err) ? rateLimitReply(message) : FALLBACK_REPLY,
         });
         await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
           jobId: args.jobId,

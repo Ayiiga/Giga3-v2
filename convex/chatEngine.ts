@@ -115,6 +115,28 @@ export function assessImageProcessingCapability(
   return { status: "available", supportedFormats };
 }
 
+/**
+ * Sanity-check an OpenAI model id from env. Misconfigured deployments have
+ * shipped pasted secrets (e.g. "domain_pk_…", "sk-…") in OPENAI_FALLBACK_MODEL,
+ * which makes every failover attempt fail with model_not_found and wastes
+ * failover budget while a user is waiting. Reject anything that looks like a
+ * key/secret rather than a model id.
+ */
+export function looksLikeOpenAiModel(raw: string | undefined): boolean {
+  const model = raw?.trim() ?? "";
+  if (!model || model.length > 64) return false;
+  if (/^(sk|pk|rk)[-_]/i.test(model)) return false;
+  if (/_(pk|sk)_/i.test(model)) return false;
+  if (/^domain[-_]/i.test(model)) return false;
+  return /^[a-z0-9][a-z0-9._:/-]*$/i.test(model);
+}
+
+/** OpenAI API keys start with "sk-"; anything else is a misconfiguration. */
+export function looksLikeOpenAiApiKey(raw: string | undefined): boolean {
+  const key = raw?.trim() ?? "";
+  return key.startsWith("sk-") && key.length >= 20;
+}
+
 /** Gemini REST expects `gemini-2.5-flash`, not `models/...` or image-model ids. */
 export function normalizeGeminiChatModel(raw: string): string {
   let model = raw.trim();
@@ -292,6 +314,14 @@ async function geminiComplete(
   const hasVisionImages = hasInlineImageAttachments(messages);
 
   if (enableWebSearch && !hasVisionImages) {
+    // Bound the grounded (web search) attempt so a slow grounding call cannot
+    // consume the whole provider budget — the plain completion below must still
+    // have time to run, otherwise the entire Gemini attempt times out and the
+    // user waits through another failover (or gets the fallback message).
+    const groundingTimeoutMs = Math.min(
+      Number(process.env.CHAT_WEB_SEARCH_TIMEOUT_MS) || 12_000,
+      Math.floor(timeoutMs * 0.55)
+    );
     try {
       const grounded = await geminiGenerateWithGrounding({
         apiKey,
@@ -300,7 +330,7 @@ async function geminiComplete(
           role: m.role,
           content: textForFallback(m),
         })),
-        timeoutMs,
+        timeoutMs: groundingTimeoutMs,
         maxTokens,
         enableWebSearch: true,
       });
@@ -618,11 +648,20 @@ export async function completeChatWithFailover(
   });
 
   const apiKey = process.env.OPENAI_API_KEY?.trim();
-  const primaryModel = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
-  const premiumModel = process.env.OPENAI_PREMIUM_MODEL?.trim() || "gpt-4o";
+  const primaryModel = looksLikeOpenAiModel(process.env.OPENAI_MODEL)
+    ? (process.env.OPENAI_MODEL as string).trim()
+    : "gpt-4o-mini";
+  const premiumModel = looksLikeOpenAiModel(process.env.OPENAI_PREMIUM_MODEL)
+    ? (process.env.OPENAI_PREMIUM_MODEL as string).trim()
+    : "gpt-4o";
   const openAiModel = tier === "premium" ? premiumModel : primaryModel;
-  const fallbackModel = process.env.OPENAI_FALLBACK_MODEL ?? "gpt-3.5-turbo";
-  const secondaryKey = process.env.OPENAI_FALLBACK_API_KEY?.trim();
+  const fallbackModel = looksLikeOpenAiModel(process.env.OPENAI_FALLBACK_MODEL)
+    ? (process.env.OPENAI_FALLBACK_MODEL as string).trim()
+    : "gpt-3.5-turbo";
+  const secondaryKeyRaw = process.env.OPENAI_FALLBACK_API_KEY?.trim();
+  const secondaryKey = looksLikeOpenAiApiKey(secondaryKeyRaw)
+    ? secondaryKeyRaw
+    : undefined;
   const geminiKey = process.env.GEMINI_API_KEY?.trim();
   const geminiModel = normalizeGeminiChatModel(
     process.env.GEMINI_MODEL ?? "gemini-2.5-flash"
