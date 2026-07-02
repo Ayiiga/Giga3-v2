@@ -24,6 +24,7 @@ export function SwUpdatePrompt() {
         worker.addEventListener("statechange", () => {
           if (worker.state === "installed" && navigator.serviceWorker.controller) {
             waitingRef.current = worker;
+            worker.postMessage({ type: "SKIP_WAITING" });
             setVisible(true);
           }
         });
@@ -31,6 +32,7 @@ export function SwUpdatePrompt() {
 
       if (registration.waiting && navigator.serviceWorker.controller) {
         waitingRef.current = registration.waiting;
+        registration.waiting.postMessage({ type: "SKIP_WAITING" });
         setVisible(true);
       }
     });

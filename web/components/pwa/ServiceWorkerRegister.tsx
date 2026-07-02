@@ -7,9 +7,23 @@ export function ServiceWorkerRegister() {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
     if (process.env.NODE_ENV !== "production") return;
 
-    navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch((err) => {
-      console.warn("SW registration failed", err);
-    });
+    let interval: ReturnType<typeof setInterval> | undefined;
+
+    navigator.serviceWorker
+      .register("/sw.js", { scope: "/", updateViaCache: "none" })
+      .then((registration) => {
+        void registration.update();
+        interval = window.setInterval(() => {
+          void registration.update();
+        }, 60 * 60 * 1000);
+      })
+      .catch((err) => {
+        console.warn("SW registration failed", err);
+      });
+
+    return () => {
+      if (interval) window.clearInterval(interval);
+    };
   }, []);
 
   return null;

@@ -2,14 +2,13 @@
 
 import { useConnectionQuality } from "@/hooks/useConnectionQuality";
 import { usePageVisible } from "@/hooks/usePageVisible";
-import { api } from "convex/_generated/api";
-import { Id } from "convex/_generated/dataModel";
-import { useConvex } from "convex/react";
+import { getConvexUrl } from "@/lib/convex";
+import { convexHttpCall } from "@/lib/network/convexCall";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /** Poll faster on slow links — websocket subscriptions often stall on 3G. */
-const POLL_SLOW_MS = 3_000;
-const POLL_NORMAL_MS = 6_000;
+const POLL_SLOW_MS = 2_000;
+const POLL_NORMAL_MS = 5_000;
 
 export type PolledMessageRow = {
   _id: string;
@@ -19,18 +18,15 @@ export type PolledMessageRow = {
 };
 
 /**
- * HTTP fallback while awaiting an assistant reply. Convex live queries depend on
- * a healthy websocket; on flaky mobile networks the server may finish but the
- * client never receives the push update — this keeps chat from freezing on
- * "Generating response…".
+ * HTTP fallback while sending or awaiting a reply. Convex live queries and
+ * websocket mutations stall on real 2G/3G; one-shot HTTP fetches still work.
  */
 export function useChatReplyPolling(
-  awaitingReply: boolean,
+  active: boolean,
   sessionToken: string | null,
-  activeId: string | null,
+  conversationId: string | null,
   mounted: boolean
 ): PolledMessageRow[] | undefined {
-  const convex = useConvex();
   const { tier } = useConnectionQuality();
   const pageVisible = usePageVisible();
   const [polled, setPolled] = useState<PolledMessageRow[] | undefined>(undefined);
@@ -38,27 +34,31 @@ export function useChatReplyPolling(
   const pollMs = tier === "slow" ? POLL_SLOW_MS : POLL_NORMAL_MS;
 
   const fetchMessages = useCallback(async () => {
-    if (!sessionToken || !activeId || inFlightRef.current) return;
+    const convexUrl = getConvexUrl();
+    if (!convexUrl || !sessionToken || !conversationId || inFlightRef.current) return;
     inFlightRef.current = true;
     try {
-      const rows = await convex.query(api.messages.listByConversation, {
-        sessionToken,
-        conversationId: activeId as Id<"conversations">,
-      });
-      setPolled(rows as PolledMessageRow[]);
+      const rows = await convexHttpCall<PolledMessageRow[]>(
+        convexUrl,
+        "query",
+        "messages:listByConversation",
+        { sessionToken, conversationId },
+        { timeoutMs: tier === "slow" ? 30_000 : 20_000, retries: tier === "slow" ? 2 : 1 }
+      );
+      setPolled(rows);
     } catch {
       /* keep last good snapshot */
     } finally {
       inFlightRef.current = false;
     }
-  }, [convex, sessionToken, activeId]);
+  }, [sessionToken, conversationId, tier]);
 
   useEffect(() => {
-    if (!awaitingReply) {
+    if (!active) {
       setPolled(undefined);
       return;
     }
-    if (!mounted || !sessionToken || !activeId || !pageVisible) return;
+    if (!mounted || !sessionToken || !conversationId || !pageVisible) return;
 
     void fetchMessages();
     const id = window.setInterval(() => {
@@ -66,7 +66,7 @@ export function useChatReplyPolling(
       void fetchMessages();
     }, pollMs);
     return () => window.clearInterval(id);
-  }, [awaitingReply, mounted, sessionToken, activeId, pageVisible, pollMs, fetchMessages]);
+  }, [active, mounted, sessionToken, conversationId, pageVisible, pollMs, fetchMessages]);
 
   return polled;
 }

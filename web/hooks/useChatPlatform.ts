@@ -22,11 +22,13 @@ import {
   writeCachedMessages,
 } from "@/lib/chat/messageCache";
 import { chatSystemForModel, gigaModelForMode, type GigaModelId } from "@/lib/chat/gigaModels";
+import { getConvexUrl } from "@/lib/convex";
 import {
   fingerprintLastAssistant,
   isNewAssistantReply,
   type AssistantFingerprint,
 } from "@/lib/chat/replyDetection";
+import { convexHttpCall } from "@/lib/network/convexCall";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -45,6 +47,15 @@ const MAX_SEND_RETRIES = 3;
 const MAX_SEND_RETRIES_SLOW = 4;
 const RETRY_BASE_MS = 600;
 const RETRY_BASE_SLOW_MS = 1_200;
+
+type AcceptMessageResult = {
+  status: "processing" | "complete";
+  conversationId: string;
+  content?: string;
+  chatProviderLabel?: string;
+  usedFallback?: boolean;
+  jobId?: string;
+};
 
 function withClientTimeout<T>(
   promise: Promise<T>,
@@ -152,7 +163,7 @@ export function useChatPlatform() {
   const conversationsRaw = useQuery(api.conversations.list, conversationsQueryArgs);
   const messagesRaw = useQuery(api.messages.listByConversation, messagesQueryArgs);
   const polledMessages = useChatReplyPolling(
-    awaitingReply,
+    isSending || awaitingReply,
     sessionToken,
     activeId,
     mounted
@@ -205,7 +216,6 @@ export function useChatPlatform() {
   const setPinnedMutation = useMutation(api.conversations.setPinned);
   const setArchivedMutation = useMutation(api.conversations.setArchived);
   const setFavoriteMutation = useMutation(api.conversations.setFavorite);
-  const acceptMessageMutation = useMutation(api.chatMessaging.acceptMessage);
   const cancelReplyMutation = useMutation(api.chatMessaging.cancelReply);
   const regenerateMessageMutation = useMutation(api.chatMessaging.regenerateMessage);
   const editAndResendMutation = useMutation(api.chatMessaging.editAndResend);
@@ -263,25 +273,39 @@ export function useChatPlatform() {
           : CHAT_ACCEPT_TIMEOUT_MS;
 
       try {
+        const convexUrl = getConvexUrl();
+        if (!convexUrl) {
+          throw new Error("Chat backend is not configured.");
+        }
+
+        const mutationArgs = {
+          sessionToken: token,
+          ...(conversationId
+            ? { conversationId: conversationId as Id<"conversations"> }
+            : {}),
+          content,
+          mode,
+          clientRequestId,
+          chatSystem,
+          ...(attachments?.length
+            ? {
+                attachments: attachments.map(
+                  ({ previewUrl: _previewUrl, thumbDataUrl: _thumb, ...attachment }) =>
+                    attachment
+                ),
+              }
+            : {}),
+        };
+
+        // HTTP POST — reliable on 2G/3G. Websocket mutations often never ack.
         const result = await withClientTimeout(
-          acceptMessageMutation({
-            sessionToken: token,
-            ...(conversationId
-              ? { conversationId: conversationId as Id<"conversations"> }
-              : {}),
-            content,
-            mode,
-            clientRequestId,
-            chatSystem,
-            ...(attachments?.length
-              ? {
-                  attachments: attachments.map(
-                    ({ previewUrl: _previewUrl, thumbDataUrl: _thumb, ...attachment }) =>
-                      attachment
-                  ),
-                }
-              : {}),
-          }),
+          convexHttpCall<AcceptMessageResult>(
+            convexUrl,
+            "mutation",
+            "chatMessaging:acceptMessage",
+            mutationArgs,
+            { timeoutMs: acceptTimeoutMs, retries: 0 }
+          ),
           acceptTimeoutMs,
           hasImages
             ? "Image upload is taking longer on this connection. Please wait or try again on Wi‑Fi."
@@ -334,7 +358,7 @@ export function useChatPlatform() {
         throw new Error(message);
       }
     },
-    [acceptMessageMutation, mode, beginReplyWait]
+    [mode, beginReplyWait]
   );
 
   const flushOutbox = useCallback(async () => {
