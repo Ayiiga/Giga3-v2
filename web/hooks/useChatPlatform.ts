@@ -1,6 +1,7 @@
 "use client";
 
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
+import { useChatReplyPolling } from "@/hooks/useChatReplyPolling";
 import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
 import { useConnectionQuality } from "@/hooks/useConnectionQuality";
@@ -150,8 +151,15 @@ export function useChatPlatform() {
   const interestProfileRow = useQuery(api.users.getInterestProfile, sessionQueryArgs);
   const conversationsRaw = useQuery(api.conversations.list, conversationsQueryArgs);
   const messagesRaw = useQuery(api.messages.listByConversation, messagesQueryArgs);
-  const messagesRawRef = useRef(messagesRaw);
-  messagesRawRef.current = messagesRaw;
+  const polledMessages = useChatReplyPolling(
+    awaitingReply,
+    sessionToken,
+    activeId,
+    mounted
+  );
+  const effectiveMessagesRaw = polledMessages ?? messagesRaw;
+  const messagesRawRef = useRef(effectiveMessagesRaw);
+  messagesRawRef.current = effectiveMessagesRaw;
   const replyStatusQueryArgs = useMemo(
     () =>
       mounted && sessionToken && activeId && awaitingReply
@@ -212,7 +220,7 @@ export function useChatPlatform() {
   );
 
   const messages = useStableUiMessages(
-    messagesRaw,
+    effectiveMessagesRaw,
     pendingUserText,
     cachedMessageFallback
   );
@@ -428,8 +436,8 @@ export function useChatPlatform() {
   }, [messagesRaw, pendingUserText, clearPendingSyncUi]);
 
   useEffect(() => {
-    if (!awaitingReply || !messagesRaw) return;
-    const after = fingerprintLastAssistant(messagesRaw);
+    if (!awaitingReply || !effectiveMessagesRaw) return;
+    const after = fingerprintLastAssistant(effectiveMessagesRaw);
     const before = assistantFingerprintBeforeRef.current;
     const waitStartedAt = replyWaitStartedAtRef.current;
 
@@ -441,14 +449,14 @@ export function useChatPlatform() {
       return;
     }
 
-    const assistants = countAssistantMessages(messagesRaw);
+    const assistants = countAssistantMessages(effectiveMessagesRaw);
     if (assistants > assistantBaselineRef.current) {
       setAwaitingReply(false);
       setPendingUserText(null);
       clearPendingSyncUi();
       setError(null);
     }
-  }, [messagesRaw, awaitingReply, clearPendingSyncUi]);
+  }, [effectiveMessagesRaw, awaitingReply, clearPendingSyncUi]);
 
   useEffect(() => {
     if (!awaitingReply || replyStatus === undefined) return;
@@ -457,7 +465,7 @@ export function useChatPlatform() {
     const elapsed = Date.now() - replyWaitStartedAtRef.current;
     if (elapsed < 4000) return;
 
-    const after = fingerprintLastAssistant(messagesRaw);
+    const after = fingerprintLastAssistant(effectiveMessagesRaw);
     if (
       !isNewAssistantReply(
         assistantFingerprintBeforeRef.current,
@@ -472,10 +480,13 @@ export function useChatPlatform() {
         "AI could not complete this reply. Your message was saved — please try again."
       );
     }
-  }, [replyStatus, awaitingReply, messagesRaw, clearPendingSyncUi]);
+  }, [replyStatus, awaitingReply, effectiveMessagesRaw, clearPendingSyncUi]);
 
   useEffect(() => {
-    if (!awaitingReply) return;
+    if (!awaitingReply) {
+      replyDeadlineRef.current = 0;
+      return;
+    }
     // Guarantee the spinner always ends: a fixed deadline (set in beginReplyWait)
     // is polled by a single interval. Crucially this effect depends only on
     // awaitingReply — connection-quality changes no longer restart the timer,

@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v34-hide-slow-network-banner";
+const CACHE_NAME = "giga3-shell-v35-chat-reply-polling";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

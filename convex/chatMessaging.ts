@@ -163,6 +163,56 @@ export const acceptMessage = mutation({
       await ctx.db.patch(conversationId!, { mode, updatedAt: now });
     }
 
+    // Dedupe client retries before inserting another user row.
+    if (args.clientRequestId) {
+      const existing = await ctx.db
+        .query("chatReplyJobs")
+        .withIndex("by_clientRequest", (q) =>
+          q.eq("clientRequestId", args.clientRequestId)
+        )
+        .first();
+      if (existing && existing.status !== "failed" && existing.status !== "cancelled") {
+        const messageRows = await ctx.db
+          .query("messages")
+          .withIndex("by_conversation", (q) =>
+            q.eq("conversationId", conversationId!)
+          )
+          .collect();
+        const sortedMessages = messageRows.sort((a, b) => a.createdAt - b.createdAt);
+        const lastMessage = sortedMessages[sortedMessages.length - 1];
+        if (
+          lastMessage?.role === "assistant" &&
+          lastMessage.createdAt >= existing.createdAt
+        ) {
+          return {
+            status: "complete" as const,
+            conversationId: conversationId!,
+            content: lastMessage.content,
+            chatProviderLabel: getChatProviderLabel("gemini"),
+            usedFallback: false,
+          };
+        }
+
+        const jobAge = Date.now() - existing.createdAt;
+        const shouldReschedule =
+          existing.status === "pending" ||
+          (existing.status === "processing" && jobAge > STUCK_JOB_RESCHEDULE_MS);
+        if (shouldReschedule) {
+          await ctx.scheduler.runAfter(0, internal.chatReplyWorker.processJob, {
+            jobId: existing._id,
+          });
+        }
+
+        return {
+          status: "processing" as const,
+          conversationId: conversationId!,
+          jobId: existing._id,
+          chatProviderLabel: getChatProviderLabel("gemini"),
+          usedFallback: false,
+        };
+      }
+    }
+
     await ctx.db.insert("messages", {
       conversationId: conversationId!,
       userId: normalizedEmail,
@@ -225,55 +275,6 @@ export const acceptMessage = mutation({
         chatProviderLabel: getChatProviderLabel("local_fallback"),
         usedFallback: true,
       };
-    }
-
-    if (args.clientRequestId) {
-      const existing = await ctx.db
-        .query("chatReplyJobs")
-        .withIndex("by_clientRequest", (q) =>
-          q.eq("clientRequestId", args.clientRequestId)
-        )
-        .first();
-      if (existing && existing.status !== "failed" && existing.status !== "cancelled") {
-        const messageRows = await ctx.db
-          .query("messages")
-          .withIndex("by_conversation", (q) =>
-            q.eq("conversationId", conversationId!)
-          )
-          .collect();
-        const sortedMessages = messageRows.sort((a, b) => a.createdAt - b.createdAt);
-        const lastMessage = sortedMessages[sortedMessages.length - 1];
-        if (
-          lastMessage?.role === "assistant" &&
-          lastMessage.createdAt >= existing.createdAt
-        ) {
-          return {
-            status: "complete" as const,
-            conversationId: conversationId!,
-            content: lastMessage.content,
-            chatProviderLabel: getChatProviderLabel("gemini"),
-            usedFallback: false,
-          };
-        }
-
-        const jobAge = Date.now() - existing.createdAt;
-        const shouldReschedule =
-          existing.status === "pending" ||
-          (existing.status === "processing" && jobAge > STUCK_JOB_RESCHEDULE_MS);
-        if (shouldReschedule) {
-          await ctx.scheduler.runAfter(0, internal.chatReplyWorker.processJob, {
-            jobId: existing._id,
-          });
-        }
-
-        return {
-          status: "processing" as const,
-          conversationId: conversationId!,
-          jobId: existing._id,
-          chatProviderLabel: getChatProviderLabel("gemini"),
-          usedFallback: false,
-        };
-      }
     }
 
     const jobId = await ctx.db.insert("chatReplyJobs", {

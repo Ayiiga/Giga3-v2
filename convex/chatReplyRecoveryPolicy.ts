@@ -32,8 +32,8 @@ export type JobRecoveryConfig = {
 };
 
 export const DEFAULT_JOB_RECOVERY_CONFIG: JobRecoveryConfig = {
-  rescheduleAfterMs: Number(process.env.CHAT_JOB_RESCHEDULE_AFTER_MS) || 60_000,
-  giveUpAfterMs: Number(process.env.CHAT_JOB_GIVE_UP_AFTER_MS) || 150_000,
+  rescheduleAfterMs: Number(process.env.CHAT_JOB_RESCHEDULE_AFTER_MS) || 30_000,
+  giveUpAfterMs: Number(process.env.CHAT_JOB_GIVE_UP_AFTER_MS) || 90_000,
 };
 
 export function decideJobRecovery(
