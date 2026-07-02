@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as adminMarketplace from "../adminMarketplace.js";
 import type * as ai from "../ai.js";
 import type * as aiActions from "../aiActions.js";
 import type * as aiModes from "../aiModes.js";
@@ -93,6 +94,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  adminMarketplace: typeof adminMarketplace;
   ai: typeof ai;
   aiActions: typeof aiActions;
   aiModes: typeof aiModes;
