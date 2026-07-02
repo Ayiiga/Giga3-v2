@@ -6,6 +6,13 @@ import { useStableUiMessages } from "@/hooks/useStableUiMessages";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import { getSessionToken, getUserEmail } from "@/lib/auth";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
+import {
+  acceptTimeoutMs,
+  CHAT_REGENERATE_TIMEOUT_MS,
+  CHAT_REPLY_POLL_MS,
+  CHAT_REPLY_POLL_SLOW_MS,
+  replyWaitMs,
+} from "@/lib/chat/chatNetwork";
 import { getConvexUrl } from "@/lib/convex";
 import { convexHttpCall } from "@/lib/network/convexCall";
 import {
@@ -22,12 +29,6 @@ import {
 import { syncSupabaseAuthToLocalEmail } from "@/lib/supabase/auth";
 import { useConnectionQuality } from "@/hooks/useConnectionQuality";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-const CHAT_ACCEPT_TIMEOUT_MS = 45_000;
-const CHAT_REPLY_POLL_MS = 2_000;
-const CHAT_REPLY_WAIT_MS = 120_000;
-const CHAT_REPLY_WAIT_SLOW_MS = 180_000;
-const CHAT_REGENERATE_TIMEOUT_MS = 180_000;
 
 type MessageRow = { _id: string; role: string; content: string; createdAt?: number };
 type ConvexSendResult = {
@@ -57,21 +58,28 @@ async function createConvexConversation(sessionToken: string, mode: string): Pro
   );
 }
 
-async function sendConvexMessage(args: {
-  sessionToken: string;
-  conversationId: string;
-  content: string;
-  mode: string;
-  attachments?: Omit<PreparedChatAttachment, "previewUrl">[];
-}) {
+async function sendConvexMessage(
+  args: {
+    sessionToken: string;
+    conversationId: string;
+    content: string;
+    mode: string;
+    attachments?: Omit<PreparedChatAttachment, "previewUrl">[];
+  },
+  slowNetwork: boolean
+) {
   const convexUrl = getConvexUrl();
   if (!convexUrl) throw new Error("Convex URL is required while Supabase chat is in migration mode.");
+  const hasImages = args.attachments?.some((a) => a.kind === "image") ?? false;
   return await convexHttpCall<ConvexSendResult>(
     convexUrl,
     "mutation",
     "chatMessaging:acceptMessage",
     args,
-    { timeoutMs: CHAT_ACCEPT_TIMEOUT_MS, retries: 1 }
+    {
+      timeoutMs: acceptTimeoutMs(slowNetwork, hasImages),
+      retries: slowNetwork ? 2 : 1,
+    }
   );
 }
 
@@ -79,13 +87,15 @@ async function waitForAssistantReply(
   sessionToken: string,
   conversationId: string,
   baselineAssistants: number,
-  maxWaitMs: number
+  maxWaitMs: number,
+  slowNetwork: boolean
 ): Promise<MessageRow[]> {
   const started = Date.now();
+  const pollMs = slowNetwork ? CHAT_REPLY_POLL_SLOW_MS : CHAT_REPLY_POLL_MS;
   while (Date.now() - started < maxWaitMs) {
-    const messages = await fetchConvexMessages(sessionToken, conversationId);
+    const messages = await fetchConvexMessages(sessionToken, conversationId, slowNetwork);
     if (countAssistantMessages(messages) > baselineAssistants) return messages;
-    await new Promise((resolve) => setTimeout(resolve, CHAT_REPLY_POLL_MS));
+    await new Promise((resolve) => setTimeout(resolve, pollMs));
   }
   throw new Error(
     "Reply is taking longer on this connection. Your message was saved — please wait or try again."
@@ -109,7 +119,11 @@ async function regenerateConvexMessage(args: {
   );
 }
 
-async function fetchConvexMessages(sessionToken: string, conversationId: string) {
+async function fetchConvexMessages(
+  sessionToken: string,
+  conversationId: string,
+  slowNetwork = false
+) {
   const convexUrl = getConvexUrl();
   if (!convexUrl) return [];
   return await convexHttpCall<MessageRow[]>(
@@ -117,7 +131,7 @@ async function fetchConvexMessages(sessionToken: string, conversationId: string)
     "query",
     "messages:listByConversation",
     { sessionToken, conversationId },
-    { timeoutMs: 20_000, retries: 1 }
+    { timeoutMs: slowNetwork ? 30_000 : 20_000, retries: slowNetwork ? 2 : 1 }
   );
 }
 
@@ -297,23 +311,26 @@ export function useSupabaseChatPlatform() {
         }
 
         const assistantBaseline = countAssistantMessages(
-          await fetchConvexMessages(sessionToken, convexConversationId)
+          await fetchConvexMessages(sessionToken, convexConversationId, isSlowNetwork)
         );
 
-        const result = await sendConvexMessage({
-          sessionToken,
-          conversationId: convexConversationId,
-          content,
-          mode,
-          ...(attachments?.length
-            ? {
-                attachments: attachments.map(
-                  ({ previewUrl: _previewUrl, thumbDataUrl: _thumb, ...attachment }) =>
-                    attachment
-                ),
-              }
-            : {}),
-        });
+        const result = await sendConvexMessage(
+          {
+            sessionToken,
+            conversationId: convexConversationId,
+            content,
+            mode,
+            ...(attachments?.length
+              ? {
+                  attachments: attachments.map(
+                    ({ previewUrl: _previewUrl, thumbDataUrl: _thumb, ...attachment }) =>
+                      attachment
+                  ),
+                }
+              : {}),
+          },
+          isSlowNetwork
+        );
 
         let convexMessages =
           result.status === "processing"
@@ -321,9 +338,10 @@ export function useSupabaseChatPlatform() {
                 sessionToken,
                 convexConversationId,
                 assistantBaseline,
-                isSlowNetwork ? CHAT_REPLY_WAIT_SLOW_MS : CHAT_REPLY_WAIT_MS
+                replyWaitMs(isSlowNetwork),
+                isSlowNetwork
               )
-            : await fetchConvexMessages(sessionToken, convexConversationId);
+            : await fetchConvexMessages(sessionToken, convexConversationId, isSlowNetwork);
         await replaceSupabaseMessages(chat._id, convexMessages);
 
         const title =
@@ -375,7 +393,11 @@ export function useSupabaseChatPlatform() {
       setError(null);
       setIsSending(true);
       try {
-        const convexMessages = await fetchConvexMessages(sessionToken, chat.convexConversationId);
+        const convexMessages = await fetchConvexMessages(
+          sessionToken,
+          chat.convexConversationId,
+          isSlowNetwork
+        );
         const convexTarget = convexMessages[uiIdx];
         if (!convexTarget || convexTarget.role !== "assistant") {
           throw new Error("Could not find assistant message to regenerate.");
@@ -387,7 +409,11 @@ export function useSupabaseChatPlatform() {
           assistantMessageId: convexTarget._id,
           mode,
         });
-        const synced = await fetchConvexMessages(sessionToken, chat.convexConversationId);
+        const synced = await fetchConvexMessages(
+          sessionToken,
+          chat.convexConversationId,
+          isSlowNetwork
+        );
         await replaceSupabaseMessages(chat._id, synced);
         setMessagesRaw(await listSupabaseMessages(chat._id));
         setChatProviderLabel(
@@ -400,7 +426,7 @@ export function useSupabaseChatPlatform() {
         setIsSending(false);
       }
     },
-    [email, activeConversation, messages, mode]
+    [email, activeConversation, messages, mode, isSlowNetwork]
   );
 
   return {

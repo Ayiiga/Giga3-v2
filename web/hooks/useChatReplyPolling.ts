@@ -2,13 +2,17 @@
 
 import { useConnectionQuality } from "@/hooks/useConnectionQuality";
 import { usePageVisible } from "@/hooks/usePageVisible";
+import {
+  CHAT_REPLY_POLL_NORMAL_MS,
+  CHAT_REPLY_POLL_SLOW_MS,
+} from "@/lib/chat/chatNetwork";
 import { getConvexUrl } from "@/lib/convex";
 import { convexHttpCall } from "@/lib/network/convexCall";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /** Poll faster on slow links — websocket subscriptions often stall on 3G. */
-const POLL_SLOW_MS = 2_000;
-const POLL_NORMAL_MS = 5_000;
+const POLL_SLOW_MS = CHAT_REPLY_POLL_SLOW_MS;
+const POLL_NORMAL_MS = CHAT_REPLY_POLL_NORMAL_MS;
 
 export type PolledMessageRow = {
   _id: string;
