@@ -2,6 +2,59 @@ import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 
+async function getUserByEmail(ctx: { db: any }, email: string) {
+  return await ctx.db
+    .query("users")
+    .withIndex("by_email", (q: any) => q.eq("email", email))
+    .first();
+}
+
+export const createVideoJobWithReservation = internalMutation({
+  args: {
+    userId: v.string(),
+    category: v.string(),
+    mode: v.string(),
+    prompt: v.string(),
+    sourceImageUrl: v.optional(v.string()),
+    cost: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getUserByEmail(ctx, args.userId);
+    if (!user) throw new Error("User not found");
+    const balance = user.videoCredits ?? 0;
+    if (balance < args.cost) {
+      throw new Error(
+        `Insufficient video credits (${args.cost} required, ${balance} available). Buy a Video AI pack at /video/plans.`
+      );
+    }
+
+    const jobId: Id<"videoJobs"> = await ctx.db.insert("videoJobs", {
+      userId: args.userId,
+      category: args.category,
+      mode: args.mode,
+      prompt: args.prompt,
+      sourceImageUrl: args.sourceImageUrl,
+      status: "processing",
+      videoCreditsCharged: args.cost,
+      createdAt: Date.now(),
+    });
+
+    const balanceAfter = balance - args.cost;
+    await ctx.db.patch(user._id, { videoCredits: balanceAfter });
+    await ctx.db.insert("videoCreditLogs", {
+      userId: args.userId,
+      action: "video_generation",
+      amount: -args.cost,
+      balanceAfter,
+      category: args.category,
+      reference: String(jobId),
+      createdAt: Date.now(),
+    });
+
+    return jobId;
+  },
+});
+
 export const createVideoJob = internalMutation({
   args: {
     userId: v.string(),

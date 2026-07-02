@@ -61,13 +61,6 @@ export const processJob = internalAction({
         aspectRatio: args.aspectRatio ?? videoAiAspectRatio(args.category),
       });
 
-      await ctx.runMutation(internal.videoCredits.deductVideoCreditsInternal, {
-        userId: args.userId,
-        amount: cost,
-        category: args.category,
-        reference: String(args.jobId),
-      });
-
       await ctx.runMutation(internal.videoInternal.completeVideoJob, {
         jobId: args.jobId,
         status: "succeeded",
@@ -78,10 +71,17 @@ export const processJob = internalAction({
       });
     } catch (err) {
       const message = toUserMediaError(err, "video");
+      await ctx.runMutation(internal.videoCredits.refundVideoCreditsInternal, {
+        userId: args.userId,
+        amount: cost,
+        category: args.category,
+        reference: String(args.jobId),
+      });
       await ctx.runMutation(internal.videoInternal.completeVideoJob, {
         jobId: args.jobId,
         status: "failed",
         errorMessage: message,
+        videoCreditsCharged: 0,
       });
     }
   },

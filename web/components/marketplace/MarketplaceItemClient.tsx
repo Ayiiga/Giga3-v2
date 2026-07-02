@@ -149,7 +149,7 @@ function MarketplaceItemInner() {
             >
               Download
             </a>
-          ) : !listing.fileStorageId ? (
+          ) : !listing.hasFile ? (
             <p className="mt-4 rounded-xl border border-dashed border-border px-4 py-3 text-center text-sm text-muted">
               Not available for purchase yet — the creator hasn&apos;t uploaded the file.
             </p>

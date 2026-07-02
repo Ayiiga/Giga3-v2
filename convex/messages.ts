@@ -2,7 +2,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
-import { normalizeUserId } from "./userIds";
+import { sanitizePublicShareMessageContent } from "./publicShareSanitizer";
 
 function userOwnsConversation(
   conv: { userId: string } | null,
@@ -80,7 +80,7 @@ export const listPublicByShareToken = query({
       .map((m) => ({
         _id: m._id,
         role: m.role,
-        content: m.content,
+        content: sanitizePublicShareMessageContent(m.content),
         createdAt: m.createdAt,
       }));
   },

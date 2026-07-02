@@ -3,18 +3,10 @@ import { v } from "convex/values";
 import { requireSession } from "./auth";
 import { todayKey } from "./creditsConfig";
 import { internal } from "./_generated/api";
+import { adminCredentialArgs, ensureAdminAccess } from "./adminAccess";
 
 const ONLINE_WINDOW_MS = 3 * 60 * 1000;
 const MS_PER_DAY = 86_400_000;
-
-function ensureStatsAdminAccess(adminKey: string): void {
-  const requiredKey =
-    process.env.PLATFORM_STATS_ADMIN_KEY?.trim() ||
-    process.env.QUALITY_DASHBOARD_ADMIN_KEY?.trim();
-  if (!requiredKey || adminKey !== requiredKey) {
-    throw new Error("Unauthorized");
-  }
-}
 
 function parseClientHints(userAgent: string | undefined): {
   deviceType: string;
@@ -233,10 +225,10 @@ export const incrementUserCount = mutation({
 });
 
 export const getDashboard = query({
-  args: { adminKey: v.string() },
+  args: adminCredentialArgs,
   handler: async (ctx, args) => {
     try {
-      ensureStatsAdminAccess(args.adminKey);
+      await ensureAdminAccess(args);
     } catch {
       return null;
     }

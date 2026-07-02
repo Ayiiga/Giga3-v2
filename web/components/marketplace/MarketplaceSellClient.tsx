@@ -287,7 +287,7 @@ function MarketplaceSellInner() {
                         {listing.status} · {formatGhs(listing.priceGhs)} · {listing.purchaseCount} sales
                       </p>
                       <p className="mt-1 text-xs">
-                        {listing.fileStorageId ? (
+                        {listing.hasFile ? (
                           <span className="text-emerald-600">
                             ✓ File attached — ready to sell
                           </span>

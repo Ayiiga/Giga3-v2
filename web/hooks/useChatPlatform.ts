@@ -334,7 +334,7 @@ export function useChatPlatform() {
       const rows = await listOutbox();
       setOutboxCount(rows.length);
       for (const row of rows) {
-        const token = row.sessionToken || getSessionToken();
+        const token = getSessionToken();
         if (!token) continue;
         try {
           let conversationId = row.conversationId;
@@ -595,7 +595,6 @@ export function useChatPlatform() {
           attachments: attachments?.map(
             ({ previewUrl: _p, thumbDataUrl: _t, ...rest }) => rest
           ),
-          sessionToken: token,
           attempts: 0,
           createdAt: Date.now(),
         };
@@ -625,7 +624,6 @@ export function useChatPlatform() {
           attachments: attachments?.map(
             ({ previewUrl: _p, thumbDataUrl: _t, ...rest }) => rest
           ),
-          sessionToken: token,
           attempts: 0,
           createdAt: Date.now(),
         };

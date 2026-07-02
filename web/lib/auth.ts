@@ -47,6 +47,11 @@ export function clearAllClientAuth(): void {
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(SESSION_KEY);
   localStorage.removeItem(SUPABASE_ACCESS_KEY);
+  try {
+    sessionStorage.removeItem("giga3_admin_session");
+  } catch {
+    /* ignore */
+  }
 }
 
 export function signOutClient(): void {

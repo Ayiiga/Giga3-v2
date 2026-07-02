@@ -68,14 +68,14 @@ export const generate = action({
     }
 
     const jobId: Id<"videoJobs"> = await ctx.runMutation(
-      internal.videoInternal.createVideoJob,
+      internal.videoInternal.createVideoJobWithReservation,
       {
         userId: email,
         category,
         mode: category,
         prompt: fullPrompt,
         sourceImageUrl: args.imageUrl,
-        videoCreditsCharged: 0,
+        cost,
       }
     );
 
@@ -96,8 +96,8 @@ export const generate = action({
     return {
       jobId,
       status: "processing" as const,
-      videoCredits: walletBefore.videoCredits,
-      videoCreditsCharged: 0,
+      videoCredits: walletBefore.videoCredits - cost,
+      videoCreditsCharged: cost,
       message:
         "Video is generating in the background. On slow networks you can leave this page and check Recent videos shortly.",
     };

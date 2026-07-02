@@ -1,6 +1,6 @@
 const DB_NAME = "giga3-chat-outbox";
 const STORE = "pending";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export type OutboxAttachment = {
   kind: string;
@@ -18,7 +18,6 @@ export type OutboxEntry = {
   content: string;
   mode: string;
   attachments?: OutboxAttachment[];
-  sessionToken: string;
   attempts: number;
   createdAt: number;
   lastError?: string;
@@ -28,8 +27,11 @@ function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onerror = () => reject(req.error ?? new Error("IndexedDB open failed"));
-    req.onupgradeneeded = () => {
+    req.onupgradeneeded = (event) => {
       const db = req.result;
+      if (event.oldVersion < 2 && db.objectStoreNames.contains(STORE)) {
+        db.deleteObjectStore(STORE);
+      }
       if (!db.objectStoreNames.contains(STORE)) {
         db.createObjectStore(STORE, { keyPath: "id" });
       }

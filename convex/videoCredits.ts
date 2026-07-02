@@ -67,6 +67,48 @@ export const grantVideoStarterCreditsInternal = internalMutation({
   },
 });
 
+export const refundVideoCreditsInternal = internalMutation({
+  args: {
+    userId: v.string(),
+    amount: v.number(),
+    category: v.optional(v.string()),
+    reference: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    if (args.amount <= 0) return { refunded: false as const };
+
+    if (args.reference) {
+      const priorRefund = await ctx.db
+        .query("videoCreditLogs")
+        .withIndex("by_user", (q: any) => q.eq("userId", args.userId))
+        .collect();
+      const alreadyRefunded = priorRefund.some(
+        (row) =>
+          row.action === "video_generation_refund" &&
+          row.reference === args.reference
+      );
+      if (alreadyRefunded) {
+        return { refunded: false as const, reason: "already_refunded" as const };
+      }
+    }
+
+    const user = await getUserByEmail(ctx, args.userId);
+    if (!user) throw new Error("User not found");
+    const balance = user.videoCredits ?? 0;
+    const balanceAfter = balance + args.amount;
+    await ctx.db.patch(user._id, { videoCredits: balanceAfter });
+    await logVideoCredit(ctx, {
+      userId: args.userId,
+      action: "video_generation_refund",
+      amount: args.amount,
+      balanceAfter,
+      category: args.category,
+      reference: args.reference,
+    });
+    return { refunded: true as const, balanceAfter };
+  },
+});
+
 export const deductVideoCreditsInternal = internalMutation({
   args: {
     userId: v.string(),
