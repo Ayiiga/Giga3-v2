@@ -61,6 +61,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   uploadUsage,
 }: ChatConversationPaneProps) {
   const showTyping = awaitingReply || isSending;
+  const typingPhase = awaitingReply ? "replying" : "sending";
 
   return (
     <div className="chat-conversation-grid min-h-0 min-w-0 max-w-full overflow-x-hidden overflow-y-hidden bg-background">
@@ -78,6 +79,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         <ChatTypingBar
           visible={showTyping}
           slowNetwork={isSlowNetwork}
+          phase={typingPhase}
           onStop={awaitingReply ? onStopGenerating : undefined}
         />
         <ChatInput
