@@ -30,6 +30,7 @@ export const creditActionValidator = v.union(
 
 export const videoCreditActionValidator = v.union(
   v.literal("video_generation"),
+  v.literal("video_generation_refund"),
   v.literal("video_subscription_refill"),
   v.literal("video_pack_purchase"),
   v.literal("starter_grant")

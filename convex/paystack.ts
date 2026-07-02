@@ -2,6 +2,7 @@ import {
   action,
   httpAction,
   internalMutation,
+  internalQuery,
   query,
 } from "./_generated/server";
 import type { ActionCtx } from "./_generated/server";
@@ -24,6 +25,8 @@ import {
   parsePaystackAmountPesewas,
 } from "./paystackConfig";
 import { requireSession } from "./auth";
+import { sessionArgs } from "./validators";
+import { toClientPaymentView } from "./paymentViews";
 
 const PAYSTACK_BASE = "https://api.paystack.co";
 
@@ -175,13 +178,30 @@ export const getClientConfig = query({
   },
 });
 
-export const getPaymentByReference = query({
+export const getPaymentByReferenceInternal = internalQuery({
   args: { reference: v.string() },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("payments")
       .withIndex("by_reference", (q) => q.eq("reference", args.reference))
       .first();
+  },
+});
+
+/** Authenticated — returns only the caller's payment with client-safe fields. */
+export const getPaymentByReference = query({
+  args: {
+    reference: v.string(),
+    ...sessionArgs,
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    const record = await ctx.db
+      .query("payments")
+      .withIndex("by_reference", (q) => q.eq("reference", args.reference))
+      .first();
+    if (!record || record.userId !== userId) return null;
+    return toClientPaymentView(record);
   },
 });
 
@@ -452,7 +472,9 @@ async function verifyAndFulfill(
     paystackResponse: JSON.stringify(verified.data),
   });
 
-  return await ctx.runQuery(api.paystack.getPaymentByReference, { reference });
+  return await ctx.runQuery(internal.paystack.getPaymentByReferenceInternal, {
+    reference,
+  });
 }
 
 export const initializeMarketplacePayment = action({
@@ -470,7 +492,7 @@ export const initializeMarketplacePayment = action({
     if (listing.listing.creatorId === userId) {
       throw new Error("You cannot purchase your own listing");
     }
-    if (!listing.listing.fileStorageId) {
+    if (!listing.listing.hasFile) {
       throw new Error(
         "This product isn't ready for purchase yet — the creator hasn't uploaded the file. Please check back soon."
       );
@@ -529,8 +551,20 @@ export const initializeMarketplacePayment = action({
 });
 
 export const verifyPayment = action({
-  args: { reference: v.string() },
+  args: {
+    reference: v.string(),
+    ...sessionArgs,
+  },
   handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    const existing = await ctx.runQuery(
+      internal.paystack.getPaymentByReferenceInternal,
+      { reference: args.reference }
+    );
+    if (!existing || existing.userId !== userId) {
+      throw new Error("Payment reference not found");
+    }
+
     const record = await verifyAndFulfill(ctx, args.reference);
 
     return {
@@ -544,12 +578,19 @@ export const verifyPayment = action({
 
 /** Re-run Paystack verify for a pending payment (recovery after client/network errors). */
 export const reconcilePayment = action({
-  args: { reference: v.string() },
+  args: {
+    reference: v.string(),
+    ...sessionArgs,
+  },
   handler: async (ctx, args) => {
-    const existing = await ctx.runQuery(api.paystack.getPaymentByReference, {
-      reference: args.reference,
-    });
-    if (!existing) throw new Error("Payment reference not found");
+    const userId = await requireSession(args.sessionToken);
+    const existing = await ctx.runQuery(
+      internal.paystack.getPaymentByReferenceInternal,
+      { reference: args.reference }
+    );
+    if (!existing || existing.userId !== userId) {
+      throw new Error("Payment reference not found");
+    }
     if (existing.status === "success") {
       return { status: "success" as const, alreadyFulfilled: true };
     }

@@ -18,7 +18,9 @@ import {
 } from "chart.js";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { Bar, Doughnut, Line } from "react-chartjs-2";
-import { useSearchParams } from "next/navigation";
+import { AdminKeyGate } from "@/components/admin/AdminKeyGate";
+import { useAdminSession } from "@/hooks/useAdminSession";
+import { getAdminSessionToken } from "@/lib/adminAuth";
 
 ChartJS.register(
   CategoryScale,
@@ -63,8 +65,11 @@ function StatCard({ label, value, hint }: { label: string; value: string | numbe
 }
 
 function InsightsInner() {
-  const params = useSearchParams();
-  const adminKey = params.get("key")?.trim() ?? "";
+  const admin = useAdminSession();
+  const adminCreds = useMemo(() => {
+    const token = getAdminSessionToken();
+    return token ? { adminSessionToken: token } : null;
+  }, [admin.authorized, admin.ready]);
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -74,7 +79,7 @@ function InsightsInner() {
 
   const stats = useQuery(
     api.platformStats.getDashboard,
-    adminKey ? { adminKey } : "skip"
+    adminCreds ?? "skip"
   );
 
   const activityChart = useMemo(() => {
@@ -132,15 +137,22 @@ function InsightsInner() {
     };
   }, [stats]);
 
-  if (!adminKey) {
+  if (!admin.authorized) {
     return (
-      <div className="mx-auto max-w-lg rounded-2xl border bg-card p-8 text-center">
-        <h1 className="text-2xl font-semibold">Giga3 AI Insights</h1>
-        <p className="mt-3 text-sm text-muted">
-          Add your admin key to the URL: <code className="text-foreground">/insights/?key=YOUR_KEY</code>
-        </p>
-      </div>
+      <AdminKeyGate
+        ready={admin.ready}
+        authorized={admin.authorized}
+        error={admin.error}
+        pendingKey={admin.pendingKey}
+        onPendingKeyChange={admin.setPendingKey}
+        onSubmit={() => void admin.submitKey()}
+        title="Giga3 AI Insights"
+      />
     );
+  }
+
+  if (!adminCreds) {
+    return <p className="text-center text-muted">Session expired. Sign in again.</p>;
   }
 
   if (stats === undefined) {
@@ -165,9 +177,9 @@ function InsightsInner() {
               Live analytics · refreshed every 30s · last update {formatTime(stats.asOf)}
             </p>
           </div>
-          {adminKey && (
+          {admin.authorized && (
             <a
-              href={`/admin/?key=${encodeURIComponent(adminKey)}`}
+              href="/admin/"
               className="rounded-full bg-white/15 px-4 py-2 text-sm font-medium text-white hover:bg-white/25"
             >
               Revenue &amp; marketplace admin →

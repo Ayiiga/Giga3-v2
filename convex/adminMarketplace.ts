@@ -1,15 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-
-/** Admin gate — reuses the platform stats admin key. */
-function ensureAdmin(adminKey: string): void {
-  const required =
-    process.env.PLATFORM_STATS_ADMIN_KEY?.trim() ||
-    process.env.QUALITY_DASHBOARD_ADMIN_KEY?.trim();
-  if (!required || adminKey !== required) {
-    throw new Error("Unauthorized");
-  }
-}
+import { adminCredentialArgs, ensureAdminAccess } from "./adminAccess";
 
 const PAYMENT_SAMPLE = 2000;
 const LISTING_SAMPLE = 100;
@@ -17,9 +8,13 @@ const PAYOUT_SAMPLE = 200;
 
 /** Revenue, payouts and marketplace moderation snapshot for the admin dashboard. */
 export const getAdminOverview = query({
-  args: { adminKey: v.string() },
+  args: adminCredentialArgs,
   handler: async (ctx, args) => {
-    ensureAdmin(args.adminKey);
+    try {
+      await ensureAdminAccess(args);
+    } catch {
+      return null;
+    }
 
     const payments = await ctx.db.query("payments").order("desc").take(PAYMENT_SAMPLE);
     const successful = payments.filter((p) => p.status === "success");
@@ -98,7 +93,7 @@ export const getAdminOverview = query({
 /** Advance a creator payout through its lifecycle. Refunds balance if failed. */
 export const setPayoutStatus = mutation({
   args: {
-    adminKey: v.string(),
+    ...adminCredentialArgs,
     payoutId: v.id("creatorPayouts"),
     status: v.union(
       v.literal("processing"),
@@ -108,7 +103,7 @@ export const setPayoutStatus = mutation({
     reference: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    ensureAdmin(args.adminKey);
+    await ensureAdminAccess(args);
     const payout = await ctx.db.get(args.payoutId);
     if (!payout) throw new Error("Payout not found");
 
@@ -138,7 +133,7 @@ export const setPayoutStatus = mutation({
 /** Moderate a listing (publish / archive / draft). */
 export const setListingStatus = mutation({
   args: {
-    adminKey: v.string(),
+    ...adminCredentialArgs,
     listingId: v.id("marketplaceListings"),
     status: v.union(
       v.literal("draft"),
@@ -147,7 +142,7 @@ export const setListingStatus = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    ensureAdmin(args.adminKey);
+    await ensureAdminAccess(args);
     const listing = await ctx.db.get(args.listingId);
     if (!listing) throw new Error("Listing not found");
     await ctx.db.patch(args.listingId, {

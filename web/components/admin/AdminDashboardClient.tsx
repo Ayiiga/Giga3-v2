@@ -1,13 +1,15 @@
 "use client";
 
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
+import { AdminKeyGate } from "@/components/admin/AdminKeyGate";
 import { Button, ButtonLink } from "@/components/ui/Button";
+import { useAdminSession } from "@/hooks/useAdminSession";
+import { getAdminSessionToken } from "@/lib/adminAuth";
 import { formatGhs } from "@/lib/marketplace/catalog";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 
 const REVENUE_LABELS: Record<string, string> = {
   subscription: "Subscriptions",
@@ -17,11 +19,15 @@ const REVENUE_LABELS: Record<string, string> = {
 };
 
 function AdminInner() {
-  const params = useSearchParams();
-  const adminKey = params.get("key") ?? "";
+  const admin = useAdminSession();
+  const adminCreds = useMemo(() => {
+    const token = getAdminSessionToken();
+    return token ? { adminSessionToken: token } : null;
+  }, [admin.authorized, admin.ready]);
+
   const overview = useQuery(
     api.adminMarketplace.getAdminOverview,
-    adminKey ? { adminKey } : "skip"
+    adminCreds ?? "skip"
   );
   const setPayoutStatus = useMutation(api.adminMarketplace.setPayoutStatus);
   const setListingStatus = useMutation(api.adminMarketplace.setListingStatus);
@@ -43,12 +49,22 @@ function AdminInner() {
     }
   }
 
-  if (!adminKey) {
+  if (!admin.authorized) {
     return (
-      <p className="rounded-2xl border border-red-300 bg-red-50 p-6 text-center text-red-700">
-        Add your admin key to the URL: <code>/admin/?key=YOUR_KEY</code>
-      </p>
+      <AdminKeyGate
+        ready={admin.ready}
+        authorized={admin.authorized}
+        error={admin.error}
+        pendingKey={admin.pendingKey}
+        onPendingKeyChange={admin.setPendingKey}
+        onSubmit={() => void admin.submitKey()}
+        title="Admin dashboard"
+      />
     );
+  }
+
+  if (!adminCreds) {
+    return <p className="text-center text-muted">Session expired. Sign in again.</p>;
   }
 
   if (overview === undefined) {
@@ -70,7 +86,7 @@ function AdminInner() {
           <h1 className="page-title">Admin dashboard</h1>
           <p className="mt-2 text-muted">Revenue, creator payouts, and marketplace moderation.</p>
         </div>
-        <ButtonLink href={`/insights/?key=${encodeURIComponent(adminKey)}`} variant="ghost">
+        <ButtonLink href="/insights/" variant="ghost">
           Platform analytics →
         </ButtonLink>
       </div>
@@ -134,7 +150,7 @@ function AdminInner() {
                           p._id,
                           () =>
                             setPayoutStatus({
-                              adminKey,
+                              ...adminCreds,
                               payoutId: p._id as Id<"creatorPayouts">,
                               status: "paid",
                             }),
@@ -153,7 +169,7 @@ function AdminInner() {
                           p._id,
                           () =>
                             setPayoutStatus({
-                              adminKey,
+                              ...adminCreds,
                               payoutId: p._id as Id<"creatorPayouts">,
                               status: "failed",
                             }),
@@ -205,7 +221,7 @@ function AdminInner() {
                           l._id,
                           () =>
                             setListingStatus({
-                              adminKey,
+                              ...adminCreds,
                               listingId: l._id as Id<"marketplaceListings">,
                               status: "archived",
                             }),
@@ -224,7 +240,7 @@ function AdminInner() {
                           l._id,
                           () =>
                             setListingStatus({
-                              adminKey,
+                              ...adminCreds,
                               listingId: l._id as Id<"marketplaceListings">,
                               status: "published",
                             }),

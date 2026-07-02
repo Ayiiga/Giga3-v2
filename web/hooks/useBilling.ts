@@ -122,7 +122,10 @@ export function useBilling() {
           onSuccess: async (reference) => {
             setCheckoutPhase("verifying");
             try {
-              await verifyPaystackPayment(verifyPayment, reference);
+              const token = sessionToken ?? getSessionToken();
+              if (token) {
+                await verifyPaystackPayment(verifyPayment, reference, token);
+              }
             } catch {
               /* Webhook may still fulfill; success page retries */
             }
@@ -162,16 +165,20 @@ export function useBilling() {
 
   const verify = useCallback(
     async (reference: string) => {
-      return verifyPaystackPayment(verifyPayment, reference);
+      const token = sessionToken ?? getSessionToken();
+      if (!token) throw new Error("Sign in required");
+      return verifyPaystackPayment(verifyPayment, reference, token);
     },
-    [verifyPayment]
+    [verifyPayment, sessionToken]
   );
 
   const reconcile = useCallback(
     async (reference: string) => {
-      return reconcilePayment({ reference });
+      const token = sessionToken ?? getSessionToken();
+      if (!token) throw new Error("Sign in required");
+      return reconcilePayment({ reference, sessionToken: token });
     },
-    [reconcilePayment]
+    [reconcilePayment, sessionToken]
   );
 
   const dismissError = useCallback(() => setError(null), []);

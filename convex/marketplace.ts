@@ -6,6 +6,11 @@ import {
   marketplaceLicenseValidator,
   marketplaceProductTypeValidator,
 } from "./schema";
+import {
+  toCreatorListing,
+  toPublicListing,
+  toPublicReview,
+} from "./marketplaceViews";
 
 const MARKETPLACE_CATEGORIES = [
   "Education",
@@ -69,7 +74,7 @@ export const searchListings = query({
     }
 
     return rows.slice(0, cap).map((listing) => ({
-      ...listing,
+      ...toPublicListing(listing),
       creator: creators.get(listing.creatorId) ?? null,
     }));
   },
@@ -89,7 +94,11 @@ export const getListing = query({
       .withIndex("by_listing", (q) => q.eq("listingId", args.listingId))
       .order("desc")
       .take(20);
-    return { listing, creator, reviews };
+    return {
+      listing: toPublicListing(listing),
+      creator,
+      reviews: reviews.map(toPublicReview),
+    };
   },
 });
 
@@ -97,11 +106,12 @@ export const getMyListings = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken);
-    return await ctx.db
+    return (await ctx.db
       .query("marketplaceListings")
       .withIndex("by_creator", (q) => q.eq("creatorId", email))
       .order("desc")
-      .take(100);
+      .take(100)
+    ).map(toCreatorListing);
   },
 });
 

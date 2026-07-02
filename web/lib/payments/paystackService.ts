@@ -31,10 +31,14 @@ export async function initializePaystackPayment(
 }
 
 export async function verifyPaystackPayment(
-  runAction: (args: { reference: string }) => Promise<unknown>,
-  reference: string
+  runAction: (args: {
+    reference: string;
+    sessionToken: string;
+  }) => Promise<unknown>,
+  reference: string,
+  sessionToken: string
 ) {
-  return runAction({ reference });
+  return runAction({ reference, sessionToken });
 }
 
 export function redirectToPaystack(authorizationUrl: string): void {
