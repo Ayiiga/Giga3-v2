@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v35-chat-reply-polling";
+const CACHE_NAME = "giga3-shell-v36-http-chat-3g";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
@@ -30,6 +30,7 @@ function isSensitiveDocumentPath(pathname) {
 }
 
 self.addEventListener("install", (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE))
   );
