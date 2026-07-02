@@ -5,8 +5,8 @@ import {
 } from "../../convex/chatReplyRecoveryPolicy";
 
 const cfg: JobRecoveryConfig = {
-  rescheduleAfterMs: 60_000,
-  giveUpAfterMs: 150_000,
+  rescheduleAfterMs: 30_000,
+  giveUpAfterMs: 90_000,
 };
 
 const now = 1_000_000_000;
@@ -43,7 +43,7 @@ describe("decideJobRecovery", () => {
   it("reschedules pending jobs that were never picked up", () => {
     expect(
       decideJobRecovery(
-        { status: "pending", createdAt: now - 61_000 },
+        { status: "pending", createdAt: now - 31_000 },
         now,
         cfg
       )
@@ -53,7 +53,7 @@ describe("decideJobRecovery", () => {
   it("does NOT reschedule a processing job (avoids duplicate workers)", () => {
     expect(
       decideJobRecovery(
-        { status: "processing", createdAt: now - 61_000 },
+        { status: "processing", createdAt: now - 31_000 },
         now,
         cfg
       )
@@ -63,7 +63,7 @@ describe("decideJobRecovery", () => {
   it("finalizes jobs that blew past the give-up window", () => {
     expect(
       decideJobRecovery(
-        { status: "pending", createdAt: now - 151_000 },
+        { status: "pending", createdAt: now - 91_000 },
         now,
         cfg
       )
