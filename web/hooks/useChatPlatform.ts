@@ -33,17 +33,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /** Fast ack — save message + queue AI worker (not full reply). */
 const CHAT_ACCEPT_TIMEOUT_MS = 45_000;
-// 3G/2G round-trips (including websocket reconnects) regularly exceed 18s; a
-// single short attempt surfaced "Could not reach the server" toasts even though
-// the connection would have recovered. Convex mutations are idempotent here via
-// clientRequestId, so a longer window + one extra retry is safe.
-const CHAT_ACCEPT_TIMEOUT_SLOW_MS = 30_000;
+// Slow links need a longer window than normal — websocket reconnect + mutation
+// round-trips on 3G regularly exceed 45s. Convex mutations dedupe by
+// clientRequestId, so extra time and retries are safe.
+const CHAT_ACCEPT_TIMEOUT_SLOW_MS = 90_000;
 const CHAT_ACCEPT_TIMEOUT_IMAGE_MS = 120_000;
 const CHAT_REPLY_WAIT_MS = 150_000;
 const CHAT_REPLY_WAIT_SLOW_MS = 180_000;
 const MAX_SEND_RETRIES = 3;
-const MAX_SEND_RETRIES_SLOW = 2;
+const MAX_SEND_RETRIES_SLOW = 4;
 const RETRY_BASE_MS = 600;
+const RETRY_BASE_SLOW_MS = 1_200;
 
 function withClientTimeout<T>(
   promise: Promise<T>,
@@ -150,6 +150,8 @@ export function useChatPlatform() {
   const interestProfileRow = useQuery(api.users.getInterestProfile, sessionQueryArgs);
   const conversationsRaw = useQuery(api.conversations.list, conversationsQueryArgs);
   const messagesRaw = useQuery(api.messages.listByConversation, messagesQueryArgs);
+  const messagesRawRef = useRef(messagesRaw);
+  messagesRawRef.current = messagesRaw;
   const replyStatusQueryArgs = useMemo(
     () =>
       mounted && sessionToken && activeId && awaitingReply
@@ -292,6 +294,7 @@ export function useChatPlatform() {
 
         if (result.status === "processing") {
           setIsSending(false);
+          beginReplyWait(messagesRawRef.current);
           setAwaitingReply(true);
           return { ok: true as const, conversationId: result.conversationId };
         }
@@ -307,7 +310,8 @@ export function useChatPlatform() {
           typeof navigator !== "undefined" &&
           navigator.onLine;
         if (shouldRetry) {
-          await sleep(RETRY_BASE_MS * 2 ** attempt);
+          const retryBase = slowNetwork ? RETRY_BASE_SLOW_MS : RETRY_BASE_MS;
+          await sleep(retryBase * 2 ** attempt);
           return dispatchAccept(
             token,
             conversationId,
@@ -322,7 +326,7 @@ export function useChatPlatform() {
         throw new Error(message);
       }
     },
-    [acceptMessageMutation, mode]
+    [acceptMessageMutation, mode, beginReplyWait]
   );
 
   const flushOutbox = useCallback(async () => {
@@ -357,7 +361,10 @@ export function useChatPlatform() {
         } catch (e) {
           const msg = e instanceof Error ? e.message : "Sync failed";
           await bumpOutboxAttempt(row.id, msg);
-          if (row.attempts + 1 >= MAX_SEND_RETRIES) {
+          const maxOutboxAttempts = isSlowNetwork
+            ? MAX_SEND_RETRIES_SLOW
+            : MAX_SEND_RETRIES;
+          if (row.attempts + 1 >= maxOutboxAttempts) {
             await removeOutbox(row.id);
             setError(msg);
           }
@@ -580,9 +587,8 @@ export function useChatPlatform() {
       }
       setError(null);
       setPendingUserText(content);
-      setIsSending(false);
-      setAwaitingReply(true);
-      beginReplyWait(messagesRaw);
+      setIsSending(true);
+      setAwaitingReply(false);
       const clientRequestId = newClientRequestId();
 
       if (typeof navigator !== "undefined" && !navigator.onLine) {
@@ -654,7 +660,6 @@ export function useChatPlatform() {
       hasOpenAiAccess,
       isSlowNetwork,
       clearPendingSyncUi,
-      beginReplyWait,
     ]
   );
 
