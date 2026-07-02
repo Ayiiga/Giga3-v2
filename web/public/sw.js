@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v32-marketplace-slow-net-fix";
+const CACHE_NAME = "giga3-shell-v33-slow-3g-chat-fix";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

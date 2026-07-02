@@ -13,13 +13,17 @@ describe("connectionQuality", () => {
     expect(connectionTierFromInfo(false, { effectiveType: "4g" })).toBe("offline");
   });
 
-  it("marks slow on 2g and save-data", () => {
+  it("marks slow on 2g/3g and save-data", () => {
     expect(connectionTierFromInfo(true, { effectiveType: "2g" })).toBe("slow");
     expect(connectionTierFromInfo(true, { effectiveType: "slow-2g" })).toBe("slow");
+    expect(connectionTierFromInfo(true, { effectiveType: "3g" })).toBe("slow");
     expect(connectionTierFromInfo(true, { effectiveType: "4g", saveData: true })).toBe(
       "slow"
     );
     expect(connectionTierFromInfo(true, { effectiveType: "4g", downlink: 0.2 })).toBe(
+      "slow"
+    );
+    expect(connectionTierFromInfo(true, { effectiveType: "4g", downlink: 1.2 })).toBe(
       "slow"
     );
   });

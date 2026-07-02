@@ -25,9 +25,9 @@ export function connectionTierFromInfo(
 ): ConnectionTier {
   if (!online) return "offline";
   const et = info.effectiveType?.toLowerCase();
-  if (et === "slow-2g" || et === "2g") return "slow";
+  if (et === "slow-2g" || et === "2g" || et === "3g") return "slow";
   if (info.saveData) return "slow";
-  if (typeof info.downlink === "number" && info.downlink > 0 && info.downlink < 0.5) {
+  if (typeof info.downlink === "number" && info.downlink > 0 && info.downlink < 1.5) {
     return "slow";
   }
   return "normal";
