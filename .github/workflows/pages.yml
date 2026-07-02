@@ -18,12 +18,47 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Resolve Convex URL (health-checked)
+        working-directory: .
+        env:
+          SECRET_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
+          SECRET_CONVEX_SITE_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_SITE_URL }}
+        run: |
+          set -euo pipefail
+          # Production Convex deployment (see AGENTS.md). Used when the
+          # NEXT_PUBLIC_CONVEX_URL secret is missing or points at a dead
+          # deployment — a stale secret once shipped a bundle wired to a
+          # deleted instance, breaking every backend feature on the live site.
+          FALLBACK_URL="https://perfect-lark-521.convex.cloud"
+          FALLBACK_SITE_URL="https://perfect-lark-521.convex.site"
+          RESOLVED="${SECRET_CONVEX_URL:-}"
+          RESOLVED_SITE="${SECRET_CONVEX_SITE_URL:-}"
+          healthy() {
+            curl -fsS -o /dev/null --max-time 15 "$1"
+          }
+          if [ -z "$RESOLVED" ]; then
+            echo "::warning::NEXT_PUBLIC_CONVEX_URL secret is not set — using ${FALLBACK_URL}"
+            RESOLVED="$FALLBACK_URL"
+            RESOLVED_SITE="$FALLBACK_SITE_URL"
+          elif ! healthy "$RESOLVED"; then
+            echo "::warning::NEXT_PUBLIC_CONVEX_URL (${RESOLVED}) is not responding — it likely points at a deleted Convex deployment. Falling back to ${FALLBACK_URL}. Update the GitHub secret NEXT_PUBLIC_CONVEX_URL."
+            RESOLVED="$FALLBACK_URL"
+            RESOLVED_SITE="$FALLBACK_SITE_URL"
+          fi
+          if ! healthy "$RESOLVED"; then
+            echo "::error::Convex deployment ${RESOLVED} is unreachable — aborting deploy."
+            exit 1
+          fi
+          echo "Resolved Convex URL: ${RESOLVED}"
+          echo "RESOLVED_CONVEX_URL=${RESOLVED}" >> "$GITHUB_ENV"
+          echo "RESOLVED_CONVEX_SITE_URL=${RESOLVED_SITE}" >> "$GITHUB_ENV"
+
       - name: Validate deployment secrets
         working-directory: .
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
+          NEXT_PUBLIC_CONVEX_URL: ${{ env.RESOLVED_CONVEX_URL }}
           NEXT_PUBLIC_GIGA3_DATA_BACKEND: ${{ vars.NEXT_PUBLIC_GIGA3_DATA_BACKEND || secrets.NEXT_PUBLIC_GIGA3_DATA_BACKEND || 'convex' }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -74,8 +109,8 @@ jobs:
 
       - name: Build static site
         env:
-          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
-          NEXT_PUBLIC_CONVEX_SITE_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_SITE_URL }}
+          NEXT_PUBLIC_CONVEX_URL: ${{ env.RESOLVED_CONVEX_URL }}
+          NEXT_PUBLIC_CONVEX_SITE_URL: ${{ env.RESOLVED_CONVEX_SITE_URL }}
           NEXT_PUBLIC_GIGA3_DATA_BACKEND: ${{ vars.NEXT_PUBLIC_GIGA3_DATA_BACKEND || secrets.NEXT_PUBLIC_GIGA3_DATA_BACKEND || 'convex' }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -112,7 +147,7 @@ jobs:
 
       - name: Verify Convex URL in static bundle
         env:
-          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
+          NEXT_PUBLIC_CONVEX_URL: ${{ env.RESOLVED_CONVEX_URL }}
         run: node scripts/verify-convex-in-build.mjs
 
       - name: Verify Supabase configuration
