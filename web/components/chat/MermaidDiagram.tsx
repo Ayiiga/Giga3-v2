@@ -17,6 +17,10 @@ export function MermaidDiagram({ code }: { code: string }) {
           startOnLoad: false,
           securityLevel: "strict",
           theme: "base",
+          // Render labels as native SVG <text> (not HTML <foreignObject>) so
+          // they survive SVG sanitization and display correctly.
+          htmlLabels: false,
+          flowchart: { htmlLabels: false, useMaxWidth: true },
           themeVariables: {
             primaryColor: "#ede9fe",
             primaryTextColor: "#171717",
@@ -63,7 +67,11 @@ export function MermaidDiagram({ code }: { code: string }) {
           <code>{code}</code>
         </pre>
       ) : (
-        <div ref={ref} className="overflow-x-auto" aria-label="Generated diagram" />
+        <div
+          ref={ref}
+          className="overflow-x-auto [&_svg]:mx-auto [&_svg]:h-auto [&_svg]:max-w-full"
+          aria-label="Generated diagram"
+        />
       )}
     </div>
   );

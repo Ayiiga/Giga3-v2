@@ -20,7 +20,9 @@ function CreatorProfileInner() {
   if (!profile) return <p className="text-center text-muted">Creator not found.</p>;
 
   const creatorListings =
-    listings?.filter((l) => l.creatorId === profile.userId) ?? [];
+    listings?.filter(
+      (l: NonNullable<typeof listings>[number]) => l.creatorId === profile.userId
+    ) ?? [];
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
@@ -41,7 +43,7 @@ function CreatorProfileInner() {
       <section>
         <h2 className="mb-4 text-xl font-semibold">Listings</h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          {creatorListings.map((item) => (
+          {creatorListings.map((item: NonNullable<typeof listings>[number]) => (
             <Link
               key={item._id}
               href={`/marketplace/item/?id=${item._id}`}

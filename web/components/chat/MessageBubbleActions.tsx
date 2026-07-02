@@ -9,11 +9,16 @@ import {
   messageHasCopyableContent,
 } from "@/lib/chat/chatContentFormat";
 import { isMessageFavorite, toggleMessageFavorite } from "@/lib/chat/messageFavorites";
+import { openMessagePrintView } from "@/lib/chat/exportChat";
+import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
 import { copyMarkdownToClipboard, shareText } from "@/lib/share/clientShare";
 import { useShareAction } from "@/hooks/useShareAction";
 import { cn } from "@/lib/utils";
-import { Check, Copy, Pencil, RefreshCw, Share2, Star } from "lucide-react";
+import { Check, Copy, FileDown, Pencil, RefreshCw, Share2, Star } from "lucide-react";
 import { memo, useCallback, useMemo, useState, type ReactNode } from "react";
+
+/** Assistant replies with enough prose are treated as downloadable documents. */
+const DOCUMENT_MIN_CHARS = 200;
 
 interface MessageBubbleActionsProps {
   messageId?: string;
@@ -74,6 +79,21 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
     setFavorited(toggleMessageFavorite(messageId));
   }, [messageId]);
 
+  const canDownloadPdf = useMemo(() => {
+    if (role !== "assistant") return false;
+    const { text } = parseMessageMedia(content);
+    return text.trim().length >= DOCUMENT_MIN_CHARS;
+  }, [role, content]);
+
+  const runDownloadPdf = useCallback(() => {
+    try {
+      const { text } = parseMessageMedia(content);
+      openMessagePrintView(text || content);
+    } catch {
+      /* pop-up blocked — user can copy instead */
+    }
+  }, [content]);
+
   if (!messageHasCopyableContent(content) || disabled) return null;
 
   return (
@@ -123,6 +143,11 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
         {role === "user" && onEdit && (
           <ActionButton label="Edit message" disabled={busy} onClick={onEdit}>
             <Pencil className="h-3.5 w-3.5" aria-hidden />
+          </ActionButton>
+        )}
+        {canDownloadPdf && (
+          <ActionButton label="Download as PDF" disabled={busy} onClick={runDownloadPdf}>
+            <FileDown className="h-3.5 w-3.5" aria-hidden />
           </ActionButton>
         )}
         {role === "assistant" && onRegenerate && (

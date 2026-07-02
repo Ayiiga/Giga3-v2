@@ -1,4 +1,4 @@
-import { internalMutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, query } from "./_generated/server";
 import { v } from "convex/values";
 import type { AiProviderTier, ChatProviderId, RequestKind } from "./providerRouter";
 import { todayKey } from "./creditsConfig";
@@ -78,6 +78,28 @@ export const getUserHasPurchasedCredits = query({
       .order("desc")
       .take(50);
     return log.some((row) => row.action === "credit_purchase");
+  },
+});
+
+/** Observability: per-provider AI usage totals for a day (defaults to today). */
+export const getDailyProviderUsageInternal = internalQuery({
+  args: { dateKey: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const dateKey = args.dateKey ?? todayKey();
+    const rows = await ctx.db
+      .query("aiUsageDaily")
+      .withIndex("by_dateKey_provider", (q) => q.eq("dateKey", dateKey))
+      .collect();
+    return rows.map((row) => ({
+      providerId: row.providerId,
+      requestCount: row.requestCount,
+      fallbackCount: row.fallbackCount,
+      cacheHitCount: row.cacheHitCount,
+      avgLatencyMs:
+        row.requestCount > 0
+          ? Math.round(row.totalLatencyMs / row.requestCount)
+          : 0,
+    }));
   },
 });
 

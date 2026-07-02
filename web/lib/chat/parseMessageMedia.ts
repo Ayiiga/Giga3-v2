@@ -21,6 +21,12 @@ function classifyUrl(url: string): "image" | "video" | null {
     const path = u.pathname + u.search;
     if (IMAGE_PATH.test(path)) return "image";
     if (VIDEO_PATH.test(path)) return "video";
+    // Convex file storage serves generated media without a file extension
+    // (e.g. https://<deployment>.convex.cloud/api/storage/<id>). Chat image
+    // generation stores images here, so treat storage URLs as images.
+    if (/\.convex\.(cloud|site)$/i.test(u.hostname) && /\/(api\/)?storage\//i.test(u.pathname)) {
+      return u.pathname.includes("video") ? "video" : "image";
+    }
     if (/fal\.media|replicate\.delivery|cdn\.|storage\.googleapis/i.test(u.hostname)) {
       if (path.includes("video") || u.pathname.endsWith(".mp4")) return "video";
       return "image";

@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v31-thinking-hang-fix";
+const CACHE_NAME = "giga3-shell-v32-marketplace-slow-net-fix";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

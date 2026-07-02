@@ -2,12 +2,7 @@
 
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
-import {
-  LICENSE_TYPES,
-  MARKETPLACE_CATEGORIES,
-  PRODUCT_TYPES,
-  formatGhs,
-} from "@/lib/marketplace/catalog";
+import { formatGhs } from "@/lib/marketplace/catalog";
 import { getSessionToken } from "@/lib/auth";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
@@ -37,6 +32,9 @@ function MarketplaceItemInner() {
   const [error, setError] = useState<string | null>(null);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
+  const [reviewMessage, setReviewMessage] = useState<string | null>(null);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   useEffect(() => {
     if (listingId) void recordView({ listingId });
@@ -74,20 +72,35 @@ function MarketplaceItemInner() {
   async function handleReview() {
     const token = getSessionToken();
     if (!token) return;
-    await addReview({
-      sessionToken: token,
-      listingId: listingId!,
-      rating,
-      comment: comment.trim() || undefined,
-    });
-    setComment("");
+    setSubmittingReview(true);
+    setReviewError(null);
+    setReviewMessage(null);
+    try {
+      await addReview({
+        sessionToken: token,
+        listingId: listingId!,
+        rating,
+        comment: comment.trim() || undefined,
+      });
+      setComment("");
+      setReviewMessage("Thanks! Your review has been posted.");
+    } catch (err) {
+      setReviewError(err instanceof Error ? err.message : "Could not submit review.");
+    } finally {
+      setSubmittingReview(false);
+    }
   }
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
-      <ButtonLink href="/marketplace" variant="ghost" size="sm">
-        ← Marketplace
-      </ButtonLink>
+      <div className="flex items-center justify-between gap-3">
+        <ButtonLink href="/marketplace" variant="ghost" size="sm">
+          ← Marketplace
+        </ButtonLink>
+        <ButtonLink href="/marketplace/purchases" variant="ghost" size="sm">
+          My purchases
+        </ButtonLink>
+      </div>
 
       <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
         <div>
@@ -136,13 +149,17 @@ function MarketplaceItemInner() {
             >
               Download
             </a>
+          ) : !listing.fileStorageId ? (
+            <p className="mt-4 rounded-xl border border-dashed border-border px-4 py-3 text-center text-sm text-muted">
+              Not available for purchase yet — the creator hasn&apos;t uploaded the file.
+            </p>
           ) : (
             <Button className="mt-4 w-full" onClick={handleBuy} disabled={buying}>
               {buying ? "Redirecting…" : "Buy now"}
             </Button>
           )}
           <div className="mt-4 flex flex-wrap gap-2">
-            {listing.tags.map((tag) => (
+            {listing.tags.map((tag: string) => (
               <span key={tag} className="rounded-full bg-accent/10 px-2.5 py-1 text-xs">
                 {tag}
               </span>
@@ -178,9 +195,18 @@ function MarketplaceItemInner() {
             placeholder="Optional comment"
             className="mt-3 w-full rounded-xl border border-border px-4 py-3"
           />
-          <Button className="mt-3" variant="secondary" onClick={handleReview}>
-            Submit review
+          <Button
+            className="mt-3"
+            variant="secondary"
+            onClick={handleReview}
+            disabled={submittingReview}
+          >
+            {submittingReview ? "Submitting…" : "Submit review"}
           </Button>
+          {reviewMessage && (
+            <p className="mt-3 text-sm text-emerald-600">{reviewMessage}</p>
+          )}
+          {reviewError && <p className="mt-3 text-sm text-red-600">{reviewError}</p>}
         </section>
       )}
 
@@ -188,7 +214,7 @@ function MarketplaceItemInner() {
         <section>
           <h2 className="mb-4 text-lg font-semibold">Reviews</h2>
           <div className="space-y-3">
-            {reviews.map((review) => (
+            {reviews.map((review: NonNullable<typeof reviews>[number]) => (
               <article key={review._id} className="rounded-xl border border-border p-4">
                 <div className="font-medium">{"★".repeat(review.rating)}</div>
                 {review.comment && <p className="mt-2 text-sm text-muted">{review.comment}</p>}

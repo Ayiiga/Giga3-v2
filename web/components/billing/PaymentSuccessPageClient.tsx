@@ -26,6 +26,9 @@ function PaymentSuccessPageContent() {
   const { verify, reconcile } = useBilling();
   const [message, setMessage] = useState("Confirming your payment…");
   const [failed, setFailed] = useState(false);
+  const [isMarketplace, setIsMarketplace] = useState(
+    params.get("marketplace") === "1"
+  );
   const started = useRef(false);
 
   useEffect(() => {
@@ -50,7 +53,12 @@ function PaymentSuccessPageContent() {
           res.status === "success" ||
           ("alreadyFulfilled" in res && Boolean(res.alreadyFulfilled));
         if (ok) {
-          if (res.type === "credits") {
+          if (res.type === "marketplace") {
+            setIsMarketplace(true);
+            setMessage(
+              "Purchase confirmed. Your download is ready in My purchases."
+            );
+          } else if (res.type === "credits") {
             setMessage(
               `Payment confirmed${
                 res.creditsGranted ? ` — ${res.creditsGranted} credits added` : ""
@@ -61,7 +69,7 @@ function PaymentSuccessPageContent() {
               `${planDisplayName(res.planId)} subscription activated. Credits refilled.`
             );
           } else {
-            setMessage("Payment confirmed. Credits refilled.");
+            setMessage("Payment confirmed.");
           }
           setFailed(false);
           return;
@@ -93,6 +101,20 @@ function PaymentSuccessPageContent() {
         title="Verification issue"
         message={message}
         reference={reference}
+      />
+    );
+  }
+
+  if (isMarketplace) {
+    return (
+      <PaymentSuccess
+        title="Purchase successful"
+        message={message}
+        reference={reference}
+        primaryHref="/marketplace/purchases"
+        primaryLabel="Go to My purchases"
+        secondaryHref="/marketplace"
+        secondaryLabel="Browse marketplace"
       />
     );
   }

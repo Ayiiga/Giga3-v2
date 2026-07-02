@@ -1,4 +1,4 @@
-import { mutation, query } from "./_generated/server";
+import { internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
@@ -308,6 +308,18 @@ export const getDownloadAccess = query({
       license: listing.license,
       copyrightNotice: listing.copyrightNotice ?? null,
     };
+  },
+});
+
+/** Checkout gate: whether a buyer already owns a listing (avoids double purchase). */
+export const isListingPurchasedInternal = internalQuery({
+  args: { buyerId: v.string(), listingId: v.id("marketplaceListings") },
+  handler: async (ctx, args) => {
+    const purchases = await ctx.db
+      .query("marketplacePurchases")
+      .withIndex("by_buyer", (q) => q.eq("buyerId", args.buyerId))
+      .collect();
+    return purchases.some((p) => p.listingId === args.listingId);
   },
 });
 
