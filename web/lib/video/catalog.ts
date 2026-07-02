@@ -29,6 +29,7 @@ export const VIDEO_SUBSCRIPTIONS = [
     usdPrice: 15,
     videoCredits: 50,
     description: "Monthly video credits for reels and social clips.",
+    highlighted: false,
   },
   {
     id: "video_sub_pro",
@@ -44,6 +45,7 @@ export const VIDEO_SUBSCRIPTIONS = [
     usdPrice: 300,
     videoCredits: 1200,
     description: "Studio volume for agencies and cinematic work.",
+    highlighted: false,
   },
 ] as const;
 

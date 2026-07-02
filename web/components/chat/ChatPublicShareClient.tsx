@@ -25,7 +25,7 @@ function PublicShareInner() {
 
   const messages = useMemo(() => {
     if (!rows) return [];
-    return rows.map((m) => ({
+    return rows.map((m: NonNullable<typeof rows>[number]) => ({
       id: String(m._id),
       role: m.role as "user" | "assistant",
       content: m.content,
@@ -79,7 +79,7 @@ function PublicShareInner() {
           Read-only shared conversation · Powered by Giga3 AI
         </p>
         <div className="chat-thread chat-message-stack flex flex-col gap-6">
-          {messages.map((m) => (
+          {messages.map((m: { id: string; role: "user" | "assistant"; content: string }) => (
             <MessageBubble key={m.id} role={m.role} content={m.content} />
           ))}
         </div>

@@ -28,10 +28,12 @@ export function useScrollToLatestMessage({
     if (!el) return;
 
     function onScroll() {
-      const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+      const node = scrollRef.current;
+      if (!node) return;
+      const distance = node.scrollHeight - node.scrollTop - node.clientHeight;
       const near = distance <= nearBottomThresholdPx;
       nearBottomRef.current = near;
-      setShowScrollButton(!near && el.scrollHeight > el.clientHeight + 120);
+      setShowScrollButton(!near && node.scrollHeight > node.clientHeight + 120);
     }
 
     onScroll();

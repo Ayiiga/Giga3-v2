@@ -66,7 +66,7 @@ const config: Config = {
     },
   },
   plugins: [
-    function ({ addVariant }) {
+    function ({ addVariant }: { addVariant: (name: string, definition: string) => void }) {
       addVariant("motion-safe", "@media (prefers-reduced-motion: no-preference)");
       addVariant("pointer-fine", "@media (hover: hover) and (pointer: fine)");
     },
