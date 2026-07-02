@@ -33,12 +33,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /** Fast ack — save message + queue AI worker (not full reply). */
 const CHAT_ACCEPT_TIMEOUT_MS = 45_000;
-const CHAT_ACCEPT_TIMEOUT_SLOW_MS = 18_000;
+// 3G/2G round-trips (including websocket reconnects) regularly exceed 18s; a
+// single short attempt surfaced "Could not reach the server" toasts even though
+// the connection would have recovered. Convex mutations are idempotent here via
+// clientRequestId, so a longer window + one extra retry is safe.
+const CHAT_ACCEPT_TIMEOUT_SLOW_MS = 30_000;
 const CHAT_ACCEPT_TIMEOUT_IMAGE_MS = 120_000;
 const CHAT_REPLY_WAIT_MS = 150_000;
 const CHAT_REPLY_WAIT_SLOW_MS = 180_000;
 const MAX_SEND_RETRIES = 3;
-const MAX_SEND_RETRIES_SLOW = 1;
+const MAX_SEND_RETRIES_SLOW = 2;
 const RETRY_BASE_MS = 600;
 
 function withClientTimeout<T>(
