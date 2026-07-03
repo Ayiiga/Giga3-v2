@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v41-chat-hardening";
+const CACHE_NAME = "giga3-shell-v42-free-openai";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

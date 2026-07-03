@@ -114,6 +114,8 @@ function ChatShellInner({
     usedFallback,
     credits,
     hasOpenAiAccess,
+    isPremium,
+    freeOpenAiRemaining,
     interestProfileJson,
     uploadUsage,
   } = usePlatform();
@@ -293,6 +295,8 @@ function ChatShellInner({
             isSending={isSending}
             credits={credits}
             hasOpenAiAccess={hasOpenAiAccess}
+            isPremium={isPremium}
+            freeOpenAiRemaining={freeOpenAiRemaining}
             modelTier={modelTier}
             onModelTierChange={handleModelTierChange}
             onOpenSidebar={handleOpenSidebar}

@@ -3,6 +3,7 @@
 import {
   GIGA_MODELS,
   getGigaModel,
+  isProModelLocked,
   modelsForAccess,
   type GigaModelId,
 } from "@/lib/chat/gigaModels";
@@ -14,6 +15,8 @@ interface ModelSelectorProps {
   value: GigaModelId;
   onChange: (id: GigaModelId) => void;
   hasOpenAiAccess?: boolean;
+  freeOpenAiRemaining?: number;
+  isPremium?: boolean;
   disabled?: boolean;
   compact?: boolean;
   className?: string;
@@ -23,6 +26,8 @@ export const ModelSelector = memo(function ModelSelector({
   value,
   onChange,
   hasOpenAiAccess = false,
+  freeOpenAiRemaining = 0,
+  isPremium = false,
   disabled,
   compact,
   className,
@@ -32,7 +37,7 @@ export const ModelSelector = memo(function ModelSelector({
   const rootRef = useRef<HTMLDivElement>(null);
   const current = getGigaModel(value);
   const Icon = current.icon;
-  const availableModels = modelsForAccess(hasOpenAiAccess);
+  const availableModels = modelsForAccess();
 
   useEffect(() => {
     if (!open) return;
@@ -80,7 +85,11 @@ export const ModelSelector = memo(function ModelSelector({
           {availableModels.map((model) => {
             const ModelIcon = model.icon;
             const selected = model.id === value;
-            const locked = Boolean(model.requiresPremium && !hasOpenAiAccess);
+            const locked = isProModelLocked(model.id, hasOpenAiAccess);
+            const proHint =
+              model.id === "pro" && !isPremium && !locked
+                ? `${freeOpenAiRemaining} free today`
+                : null;
             return (
               <li key={model.id} role="option" aria-selected={selected}>
                 <button
@@ -112,7 +121,7 @@ export const ModelSelector = memo(function ModelSelector({
                       {model.description}
                     </span>
                     <span className="mt-1 inline-block rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-accent">
-                      {model.engineLabel}
+                      {proHint ?? model.engineLabel}
                     </span>
                   </span>
                 </button>

@@ -3,8 +3,7 @@
 import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
-import {
-  buildRoutingContextFromUser,
+import { buildRoutingContextFromUser,
   completeChatWithFailover,
   getChatProviderLabel,
   trimChatMessages,
@@ -94,7 +93,7 @@ async function resolveRoutingContext(
     internal.credits.userHasPurchasedCreditsInternal,
     { userId: email }
   );
-  return buildRoutingContextFromUser({
+  const base = buildRoutingContextFromUser({
     subscriptionPlan: user.subscriptionPlan ?? "free",
     subscriptionExpiresAt: user.subscriptionExpiresAt,
     hasPurchasedCredits,
@@ -102,6 +101,23 @@ async function resolveRoutingContext(
     query,
     chatSystem,
   });
+
+  if (base.tier === "premium" || chatSystem !== "pro") {
+    return base;
+  }
+
+  const snapshot = await ctx.runQuery(internal.freeOpenAiQuota.getSnapshotInternal, {
+    userId: email,
+  });
+  if (snapshot.remaining > 0) {
+    return {
+      ...base,
+      tier: "premium",
+      usingFreeOpenAiQuota: true,
+    };
+  }
+
+  return base;
 }
 
 async function recordAiUsage(
@@ -152,6 +168,48 @@ async function runHybridAiEngine(
     hasImageAttachment: args.hasImageAttachment,
     chatSystem: args.routing.chatSystem,
   });
+
+  if (
+    args.routing.tier === "free" &&
+    args.routing.chatSystem === "pro" &&
+    routePlan.requestKind === "text_chat"
+  ) {
+    const exhausted: ChatEngineResult & { cached: boolean; requestKind: RequestKind } = {
+      content:
+        `You've used all ${process.env.FREE_OPENAI_DAILY_LIMIT ?? "5"} free OpenAI messages for today. ` +
+        "Subscribe or buy credits for unlimited Giga3 Pro, or switch to Fast / Smart / Creator free models.",
+      providerId: "local_fallback",
+      usedFallback: true,
+      latencyMs: 0,
+      cached: false,
+      requestKind: "text_chat",
+    };
+    return exhausted;
+  }
+
+  if (args.routing.usingFreeOpenAiQuota) {
+    const consumed = await ctx.runMutation(internal.freeOpenAiQuota.tryConsumeInternal, {
+      userId: args.email,
+    });
+    if (!consumed.ok) {
+      const exhausted: ChatEngineResult & { cached: boolean; requestKind: RequestKind } = {
+        content:
+          `You've used all ${consumed.snapshot.limit} free OpenAI messages for today. ` +
+          "Subscribe or buy credits for unlimited Giga3 Pro, or switch to another model.",
+        providerId: "local_fallback",
+        usedFallback: true,
+        latencyMs: 0,
+        cached: false,
+        requestKind: "text_chat",
+      };
+      return exhausted;
+    }
+    logChatReply("free_openai_quota_used", {
+      conversationId: args.conversationId,
+      userId: args.email,
+      remaining: consumed.snapshot.remaining,
+    });
+  }
 
   await ctx.runMutation(internal.aiRateLimit.consumeAiRateLimitInternal, {
     userId: args.email,
