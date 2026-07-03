@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v42-free-openai";
+const CACHE_NAME = "giga3-shell-v43-password-auth";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
