@@ -185,6 +185,18 @@ export function useChatPlatform() {
         ? false
         : Boolean(chatCreditsRow.hasOpenAiAccess);
 
+  const isPremium =
+    chatCreditsRow === undefined
+      ? false
+      : chatCreditsRow === null
+        ? false
+        : Boolean(chatCreditsRow.isPremium);
+
+  const freeOpenAiRemaining =
+    chatCreditsRow === undefined || chatCreditsRow === null
+      ? 0
+      : chatCreditsRow.freeOpenAiRemaining ?? 0;
+
   if (chatCreditsRow !== undefined) {
     creditsCacheRef.current = credits;
   }
@@ -380,7 +392,7 @@ export function useChatPlatform() {
             row.content,
             row.attachments as PreparedChatAttachment[] | undefined,
             row.clientRequestId,
-            chatSystemForModel(gigaModelForMode(row.mode as AiModeId), hasOpenAiAccess),
+            chatSystemForModel(gigaModelForMode(row.mode as AiModeId)),
             isSlowNetwork
           );
           await removeOutbox(row.id);
@@ -672,7 +684,7 @@ export function useChatPlatform() {
       attachments?: PreparedChatAttachment[],
       modelTier: GigaModelId = "fast"
     ) => {
-      const chatSystem = chatSystemForModel(modelTier, hasOpenAiAccess);
+      const chatSystem = chatSystemForModel(modelTier);
       lastChatSystemRef.current = chatSystem;
       const token = sessionToken ?? getSessionToken();
       if (!token) {
@@ -760,6 +772,8 @@ export function useChatPlatform() {
       messagesRaw,
       refreshOutboxCount,
       hasOpenAiAccess,
+    isPremium,
+    freeOpenAiRemaining,
       isSlowNetwork,
       clearPendingSyncUi,
     ]
@@ -949,6 +963,8 @@ export function useChatPlatform() {
     usedFallback,
     credits,
     hasOpenAiAccess,
+    isPremium,
+    freeOpenAiRemaining,
     interestProfileJson,
     uploadUsage: uploadUsage ?? null,
   };

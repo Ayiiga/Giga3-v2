@@ -15,6 +15,7 @@ import { consumeAuthRateLimit } from "./authRateLimit";
 import { SECURITY_EVENT_TYPES } from "./securityMonitoring";
 import { RateLimitError, UnauthorizedError } from "./securityErrors";
 import { resolveAiProviderTier } from "./providerRouter";
+import { getFreeOpenAiSnapshotDb } from "./freeOpenAiQuota";
 
 async function attachSessionToken<T extends Record<string, unknown>>(
   email: string,
@@ -136,10 +137,17 @@ export const getChatCredits = query({
       hasPurchasedCredits,
     });
 
+    const freeOpenAi = await getFreeOpenAiSnapshotDb(ctx, email);
+    const isPremium = aiTier === "premium";
+
     return {
       credits: user.credits ?? 0,
       aiTier,
-      hasOpenAiAccess: aiTier === "premium",
+      isPremium,
+      freeOpenAiRemaining: isPremium ? freeOpenAi.limit : freeOpenAi.remaining,
+      freeOpenAiLimit: freeOpenAi.limit,
+      freeOpenAiResetsAt: freeOpenAi.resetsAt,
+      hasOpenAiAccess: isPremium || freeOpenAi.remaining > 0,
     };
   },
 });

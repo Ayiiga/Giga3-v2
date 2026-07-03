@@ -64,12 +64,12 @@ export const GIGA_MODELS: GigaModelDefinition[] = [
     id: "pro",
     label: "Giga3 Pro",
     shortLabel: "Pro",
-    description: "OpenAI GPT-4 — subscribers & credits",
+    description: "OpenAI GPT-4 — 5 free/day, unlimited for subscribers",
     engine: "openai",
     engineLabel: "OpenAI",
     icon: Crown,
     mode: "general",
-    requiresPremium: true,
+    requiresPremium: false,
   },
 ];
 
@@ -88,8 +88,15 @@ export function gigaModelForMode(mode: AiModeId): GigaModelId {
   return match?.id ?? "fast";
 }
 
-export function modelsForAccess(hasOpenAiAccess: boolean): GigaModelDefinition[] {
-  return GIGA_MODELS.filter((m) => !m.requiresPremium || hasOpenAiAccess);
+export function modelsForAccess(_hasOpenAiAccess?: boolean): GigaModelDefinition[] {
+  return GIGA_MODELS;
+}
+
+export function isProModelLocked(
+  modelId: GigaModelId,
+  hasOpenAiAccess: boolean
+): boolean {
+  return modelId === "pro" && !hasOpenAiAccess;
 }
 
 export function readStoredGigaModel(): GigaModelId {
@@ -110,12 +117,7 @@ export function storeGigaModel(id: GigaModelId): void {
   }
 }
 
-/** Chat system id sent to Convex — free models map 1:1; pro uses fast routing with premium tier. */
-export function chatSystemForModel(
-  id: GigaModelId,
-  hasOpenAiAccess: boolean
-): GigaModelId {
-  if (id === "pro" && hasOpenAiAccess) return "pro";
-  if (id === "pro" && !hasOpenAiAccess) return "fast";
+/** Chat system id sent to Convex — pro always maps to OpenAI routing (quota checked server-side). */
+export function chatSystemForModel(id: GigaModelId): GigaModelId {
   return id;
 }

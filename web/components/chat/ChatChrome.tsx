@@ -26,6 +26,8 @@ interface ChatChromeProps {
   isSending: boolean;
   credits: number | null;
   hasOpenAiAccess: boolean;
+  isPremium?: boolean;
+  freeOpenAiRemaining?: number;
   modelTier: GigaModelId;
   onModelTierChange: (id: GigaModelId) => void;
   onOpenSidebar: () => void;
@@ -47,6 +49,8 @@ function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean
     prev.isSending === next.isSending &&
     prev.credits === next.credits &&
     prev.hasOpenAiAccess === next.hasOpenAiAccess &&
+    prev.isPremium === next.isPremium &&
+    prev.freeOpenAiRemaining === next.freeOpenAiRemaining &&
     prev.modelTier === next.modelTier &&
     prev.onModelTierChange === next.onModelTierChange &&
     prev.onOpenSidebar === next.onOpenSidebar &&
@@ -65,6 +69,8 @@ export const ChatChrome = memo(function ChatChrome({
   isSending,
   credits,
   hasOpenAiAccess,
+  isPremium = false,
+  freeOpenAiRemaining = 0,
   modelTier,
   onModelTierChange,
   onOpenSidebar,
@@ -97,6 +103,8 @@ export const ChatChrome = memo(function ChatChrome({
           value={modelTier}
           onChange={onModelTierChange}
           hasOpenAiAccess={hasOpenAiAccess}
+          isPremium={isPremium}
+          freeOpenAiRemaining={freeOpenAiRemaining}
           disabled={isSending}
           compact
           className="min-w-0 max-w-[7.75rem] sm:max-w-none"

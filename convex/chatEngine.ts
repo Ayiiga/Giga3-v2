@@ -34,6 +34,8 @@ export type ChatRoutingContext = {
   mode: string;
   query: string;
   chatSystem?: string;
+  /** Free user burning a daily OpenAI quota message (chatSystem pro). */
+  usingFreeOpenAiQuota?: boolean;
 };
 
 export type ChatEngineResult = {

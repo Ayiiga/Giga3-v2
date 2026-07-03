@@ -39,6 +39,7 @@ import type * as credits from "../credits.js";
 import type * as creditsConfig from "../creditsConfig.js";
 import type * as crons from "../crons.js";
 import type * as falClient from "../falClient.js";
+import type * as freeOpenAiQuota from "../freeOpenAiQuota.js";
 import type * as geminiImageClient from "../geminiImageClient.js";
 import type * as http from "../http.js";
 import type * as marketplace from "../marketplace.js";
@@ -131,6 +132,7 @@ declare const fullApi: ApiFromModules<{
   creditsConfig: typeof creditsConfig;
   crons: typeof crons;
   falClient: typeof falClient;
+  freeOpenAiQuota: typeof freeOpenAiQuota;
   geminiImageClient: typeof geminiImageClient;
   http: typeof http;
   marketplace: typeof marketplace;
