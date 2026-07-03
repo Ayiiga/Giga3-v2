@@ -207,6 +207,34 @@ export function shouldEnableWebSearch(
   return CURRENT_INFO_RE.test(query);
 }
 
+/**
+ * Per-chat-system generation profile — makes each free chat system a genuinely
+ * different AI experience (speed vs depth vs creativity), independent of which
+ * provider ends up serving the request.
+ */
+export type ChatSystemProfile = {
+  temperature: number;
+  maxTokensMultiplier: number;
+};
+
+export function chatSystemProfile(chatSystem?: string): ChatSystemProfile {
+  switch (chatSystem) {
+    case "smart":
+      // Deeper reasoning: lower temperature, longer answers.
+      return { temperature: 0.35, maxTokensMultiplier: 1.5 };
+    case "creator":
+      // Creative writing: higher temperature.
+      return { temperature: 0.95, maxTokensMultiplier: 1.25 };
+    case "vision":
+      return { temperature: 0.6, maxTokensMultiplier: 1 };
+    case "pro":
+      return { temperature: 0.7, maxTokensMultiplier: 1.25 };
+    case "fast":
+    default:
+      return { temperature: 0.7, maxTokensMultiplier: 1 };
+  }
+}
+
 function freeTierFailover(chatSystem?: string): ChatProviderId[] {
   const system: FreeChatSystemId =
     chatSystem && isValidFreeChatSystem(chatSystem) ? chatSystem : "fast";
@@ -262,6 +290,10 @@ export function buildChatRoutePlan(input: RoutingInput): ChatRoutePlan {
       ? premiumTierFailover()
       : freeTierFailover(input.chatSystem);
 
+  const profile = chatSystemProfile(
+    input.tier === "premium" ? "pro" : input.chatSystem
+  );
+
   return {
     tier: input.tier,
     requestKind,
@@ -272,7 +304,10 @@ export function buildChatRoutePlan(input: RoutingInput): ChatRoutePlan {
       input.mode,
       input.hasImageAttachment
     ),
-    maxTokensMultiplier: input.tier === "premium" ? 1.25 : 1,
+    maxTokensMultiplier: Math.max(
+      profile.maxTokensMultiplier,
+      input.tier === "premium" ? 1.25 : 1
+    ),
   };
 }
 
@@ -299,14 +334,14 @@ export function shouldStartFailoverAttempt(args: {
 export function getFreeChatSystemLabel(chatSystem: string): string {
   switch (chatSystem) {
     case "smart":
-      return "fal.ai";
+      return "Giga3 Smart (Reasoning)";
     case "vision":
-      return "Gemini Vision";
+      return "Giga3 Vision";
     case "creator":
-      return "fal.ai Creative";
+      return "Giga3 Creator";
     case "fast":
     default:
-      return "Gemini";
+      return "Giga3 Fast";
   }
 }
 

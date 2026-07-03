@@ -11,6 +11,7 @@ import {
   type ChatCompletionAttachment,
 } from "./chatEngine";
 import { getSystemPrompt, isValidMode, type AiModeId } from "./aiModes";
+import { chatSystemStyleAddon } from "./assistantIdentity";
 import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
 import {
   prepareAnswerQualityContext,
@@ -403,6 +404,7 @@ export const processJob = internalAction({
 
       const systemPrompt =
         getSystemPrompt(mode) +
+        chatSystemStyleAddon(job.chatSystem) +
         buildInterestSystemAddon(parseInterestProfile(refreshedUser?.interestProfile)) +
         "\n\n" +
         qualityContext.systemPromptAddon;

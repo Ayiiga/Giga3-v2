@@ -1,7 +1,6 @@
 "use client";
 
 import { ChatProviderBanner } from "@/components/chat/ChatProviderBanner";
-import { SlowNetworkBanner } from "@/components/chat/SlowNetworkBanner";
 import { UserLearningBanner } from "@/components/chat/UserLearningBanner";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { cn } from "@/lib/utils";
@@ -39,7 +38,6 @@ export const ChatBanners = memo(function ChatBanners({
   return (
     <div className="shrink-0">
       <div className={cn(hasMessages && "hidden sm:block")}>
-        <SlowNetworkBanner />
         <UserLearningBanner interestProfileJson={interestProfileJson} />
       </div>
       <ChatProviderBanner label={chatProviderLabel} usedFallback={usedFallback} />

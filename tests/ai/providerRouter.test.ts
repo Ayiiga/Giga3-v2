@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   buildChatRoutePlan,
+  chatSystemProfile,
   classifyRequestKind,
   enhanceImageGenerationPrompt,
+  getFreeChatSystemLabel,
   imageAssetOrientation,
   resolveAiProviderTier,
   shouldEnableWebSearch,
@@ -181,6 +183,42 @@ describe("shouldEnableWebSearch", () => {
 
   it("enables search for current-events phrasing", () => {
     expect(shouldEnableWebSearch("Latest AI news", "general")).toBe(true);
+  });
+});
+
+describe("chatSystemProfile", () => {
+  it("gives smart a lower temperature and longer answers", () => {
+    expect(chatSystemProfile("smart")).toEqual({
+      temperature: 0.35,
+      maxTokensMultiplier: 1.5,
+    });
+  });
+
+  it("gives creator a higher temperature for creative writing", () => {
+    expect(chatSystemProfile("creator")).toEqual({
+      temperature: 0.95,
+      maxTokensMultiplier: 1.25,
+    });
+  });
+
+  it("defaults unknown systems to fast profile", () => {
+    expect(chatSystemProfile(undefined)).toEqual({
+      temperature: 0.7,
+      maxTokensMultiplier: 1,
+    });
+    expect(chatSystemProfile("unknown")).toEqual({
+      temperature: 0.7,
+      maxTokensMultiplier: 1,
+    });
+  });
+});
+
+describe("getFreeChatSystemLabel", () => {
+  it("returns descriptive labels for each free chat system", () => {
+    expect(getFreeChatSystemLabel("smart")).toBe("Giga3 Smart (Reasoning)");
+    expect(getFreeChatSystemLabel("vision")).toBe("Giga3 Vision");
+    expect(getFreeChatSystemLabel("creator")).toBe("Giga3 Creator");
+    expect(getFreeChatSystemLabel("fast")).toBe("Giga3 Fast");
   });
 });
 
