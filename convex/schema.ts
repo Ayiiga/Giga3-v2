@@ -92,6 +92,16 @@ export default defineSchema({
     videoSubscriptionExpiresAt: v.optional(v.number()),
   }).index("by_email", ["email"]),
 
+  /** Email + password credentials (scrypt hash). Separate from users for security. */
+  userCredentials: defineTable({
+    email: v.string(),
+    passwordHash: v.string(),
+    passwordResetTokenHash: v.optional(v.string()),
+    passwordResetExpiresAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_email", ["email"]),
+
   subscriptions: defineTable({
     userId: v.string(),
     planId: paidPlanValidator,

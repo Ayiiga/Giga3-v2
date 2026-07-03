@@ -1,42 +1,37 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { getSessionToken, getUserEmail, isValidEmail, setAuthSession } from "@/lib/auth";
-import { isSupabaseDataBackend } from "@/lib/dataBackend";
-import { getConvexUrl } from "@/lib/convex";
-import { convexHttpCall } from "@/lib/network/convexCall";
+import { getUserEmail, isValidEmail } from "@/lib/auth";
 import {
-  signInWithSupabaseOtp,
-  syncSupabaseAuthToLocalEmail,
-} from "@/lib/supabase/auth";
-import { isSupabaseConfigured } from "@/lib/supabase";
+  requestPasswordReset,
+  resetPasswordWithToken,
+  signInWithPassword,
+  signUpWithPassword,
+} from "@/lib/authPassword";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { siteConfig } from "@/lib/site";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useEffect, useState } from "react";
 
+type AuthMode = "signin" | "signup" | "forgot";
+
 function ChatLoginFormInner() {
   const router = useRouter();
   const params = useSearchParams();
   const nextPath = params.get("next") || "/chat";
+  const [mode, setMode] = useState<AuthMode>("signin");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const usingSupabase = isSupabaseDataBackend();
 
   useEffect(() => {
-    if (usingSupabase && isSupabaseConfigured()) {
-      void syncSupabaseAuthToLocalEmail()
-        .then((syncedEmail) => {
-          if (syncedEmail) router.replace(nextPath.startsWith("/") ? nextPath : "/chat");
-        })
-        .catch(() => null);
-    }
     const existing = getUserEmail();
     if (existing) router.replace(nextPath.startsWith("/") ? nextPath : "/chat");
-  }, [router, nextPath, usingSupabase]);
+  }, [router, nextPath]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -48,40 +43,34 @@ function ChatLoginFormInner() {
     setInfo(null);
     setSubmitting(true);
     const normalized = email.trim().toLowerCase();
+
     try {
-      if (usingSupabase && isSupabaseConfigured()) {
-        await signInWithSupabaseOtp(
-          normalized,
-          `${window.location.origin}${nextPath.startsWith("/") ? nextPath : "/chat"}`
-        );
-        setInfo("Magic link sent. Open it to finish Supabase sign in.");
+      if (mode === "forgot") {
+        const resetBase = `${window.location.origin}/chat/login/reset`;
+        const result = await requestPasswordReset(normalized, resetBase);
+        if (result.emailed) {
+          setInfo("Password reset link sent. Check your email.");
+        } else {
+          setInfo(
+            "If an account exists for this email, you will receive reset instructions when email delivery is configured."
+          );
+        }
         return;
       }
-      const convexUrl = getConvexUrl();
-      if (convexUrl) {
-        const result = await convexHttpCall<{ email: string; sessionToken: string }>(
-          convexUrl,
-          "action",
-          "authActions:establishSessionFromEmail",
-          { email: normalized },
-          { timeoutMs: 20_000, retries: 1 }
-        );
-        if (result?.sessionToken) {
-          setAuthSession(result.email ?? normalized, result.sessionToken);
-        } else {
-          setAuthSession(normalized, "");
+
+      if (mode === "signup") {
+        if (password !== confirmPassword) {
+          setError("Passwords do not match.");
+          return;
         }
+        await signUpWithPassword(normalized, password);
       } else {
-        setAuthSession(normalized, "");
+        await signInWithPassword(normalized, password);
       }
+
       router.push(nextPath.startsWith("/") ? nextPath : "/chat");
     } catch (err) {
-      if (usingSupabase && isSupabaseConfigured()) {
-        setError(err instanceof Error ? err.message : "Could not send magic link.");
-        return;
-      }
-      setAuthSession(normalized, getSessionToken() ?? "");
-      router.push(nextPath.startsWith("/") ? nextPath : "/chat");
+      setError(err instanceof Error ? err.message : "Could not complete sign in.");
     } finally {
       setSubmitting(false);
     }
@@ -99,14 +88,38 @@ function ChatLoginFormInner() {
               Welcome to Giga3 AI
             </h1>
             <p className="mt-2 text-sm text-muted">
-              Premium AI for learning, research, creativity, and productivity
+              Sign in or create an account with email and password
             </p>
           </div>
         </div>
-        <p className="mb-8 text-center text-base leading-[1.7] text-muted">
-          Sign in with your email. Chats, credits, and subscriptions sync via
-          {usingSupabase ? " Supabase." : " Convex."}
-        </p>
+
+        <div className="mb-6 flex rounded-xl border border-border bg-muted/30 p-1">
+          {(
+            [
+              ["signin", "Sign in"],
+              ["signup", "Sign up"],
+              ["forgot", "Forgot password"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => {
+                setMode(id);
+                setError(null);
+                setInfo(null);
+              }}
+              className={`flex-1 rounded-lg px-2 py-2 text-xs font-medium sm:text-sm ${
+                mode === id
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted hover:text-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
           <div>
             <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
@@ -123,22 +136,70 @@ function ChatLoginFormInner() {
               placeholder="you@example.com"
             />
           </div>
+
+          {mode !== "forgot" && (
+            <div>
+              <label
+                htmlFor="password"
+                className="mb-2 block text-sm font-medium text-foreground"
+              >
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                required
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                minLength={8}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input-surface"
+                placeholder="At least 8 characters"
+              />
+            </div>
+          )}
+
+          {mode === "signup" && (
+            <div>
+              <label
+                htmlFor="confirmPassword"
+                className="mb-2 block text-sm font-medium text-foreground"
+              >
+                Confirm password
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                required
+                autoComplete="new-password"
+                minLength={8}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="input-surface"
+                placeholder="Repeat password"
+              />
+            </div>
+          )}
+
           {error && <p className="text-sm font-medium text-red-700">{error}</p>}
           {info && <p className="text-sm font-medium text-emerald-700">{info}</p>}
+
           <Button type="submit" className="w-full" size="lg" disabled={submitting}>
             {submitting
-              ? "Signing in…"
-              : usingSupabase && isSupabaseConfigured()
-                ? "Send magic link"
-                : "Continue"}
+              ? "Please wait…"
+              : mode === "signin"
+                ? "Sign in"
+                : mode === "signup"
+                  ? "Create account"
+                  : "Send reset link"}
           </Button>
         </form>
+
         <p className="mt-6 text-center text-xs leading-[1.7] text-muted">
           A product of {siteConfig.founder.organizationShort} · Founded by{" "}
-          {siteConfig.founder.name} ({siteConfig.founder.alias}),{" "}
-          {siteConfig.founder.location}
+          {siteConfig.founder.name}
         </p>
-        <p className="mt-6 text-center text-sm text-muted">
+        <p className="mt-4 text-center text-sm text-muted">
           <Link href="/pricing" className="text-accent hover:underline">
             View pricing
           </Link>

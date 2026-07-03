@@ -6,6 +6,7 @@ import { v } from "convex/values";
 import { createSessionToken } from "./sessionAuth";
 import { verifySupabaseAccessToken } from "./supabaseAuth";
 import { UnauthorizedError } from "./securityErrors";
+import { internal } from "./_generated/api";
 
 /** Exchange a verified Supabase magic-link/OAuth token for a Giga3 session token. */
 export const establishSessionFromSupabase = action({
@@ -24,6 +25,16 @@ export const establishSessionFromEmail = action({
   handler: async (ctx, args) => {
     const email = args.email.trim().toLowerCase();
     if (!email.includes("@")) throw new UnauthorizedError();
+
+    const hasCredentials = await ctx.runQuery(
+      internal.passwordAuth.hasCredentialsInternal,
+      { email }
+    );
+    if (hasCredentials) {
+      throw new UnauthorizedError(
+        "This account uses a password. Sign in with your password instead."
+      );
+    }
 
     const created = await ctx.runMutation(api.users.createUser, { email });
     const sessionToken =
