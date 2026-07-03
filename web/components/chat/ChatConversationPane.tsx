@@ -85,7 +85,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         <ChatInput
           insertRef={insertRef}
           onSend={onSend}
-          disabled={false}
+          disabled={isSending || awaitingReply}
           uploadUsage={uploadUsage}
         />
       </div>

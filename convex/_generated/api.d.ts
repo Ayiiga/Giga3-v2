@@ -8,7 +8,10 @@
  * @module
  */
 
+import type * as adminAccess from "../adminAccess.js";
+import type * as adminAuth from "../adminAuth.js";
 import type * as adminMarketplace from "../adminMarketplace.js";
+import type * as adminSessionAuth from "../adminSessionAuth.js";
 import type * as ai from "../ai.js";
 import type * as aiActions from "../aiActions.js";
 import type * as aiModes from "../aiModes.js";
@@ -40,6 +43,7 @@ import type * as geminiImageClient from "../geminiImageClient.js";
 import type * as http from "../http.js";
 import type * as marketplace from "../marketplace.js";
 import type * as marketplacePayments from "../marketplacePayments.js";
+import type * as marketplaceViews from "../marketplaceViews.js";
 import type * as media from "../media.js";
 import type * as mediaCatalog from "../mediaCatalog.js";
 import type * as mediaCredits from "../mediaCredits.js";
@@ -52,6 +56,7 @@ import type * as mediaUtils from "../mediaUtils.js";
 import type * as messages from "../messages.js";
 import type * as multimodalPrompt from "../multimodalPrompt.js";
 import type * as openaiImageClient from "../openaiImageClient.js";
+import type * as paymentViews from "../paymentViews.js";
 import type * as payments from "../payments.js";
 import type * as paystack from "../paystack.js";
 import type * as paystackConfig from "../paystackConfig.js";
@@ -60,6 +65,7 @@ import type * as platformActions from "../platformActions.js";
 import type * as platformStats from "../platformStats.js";
 import type * as platformStatsRecorder from "../platformStatsRecorder.js";
 import type * as providerRouter from "../providerRouter.js";
+import type * as publicShareSanitizer from "../publicShareSanitizer.js";
 import type * as qualityDashboard from "../qualityDashboard.js";
 import type * as replicateClient from "../replicateClient.js";
 import type * as securityErrors from "../securityErrors.js";
@@ -94,7 +100,10 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  adminAccess: typeof adminAccess;
+  adminAuth: typeof adminAuth;
   adminMarketplace: typeof adminMarketplace;
+  adminSessionAuth: typeof adminSessionAuth;
   ai: typeof ai;
   aiActions: typeof aiActions;
   aiModes: typeof aiModes;
@@ -126,6 +135,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   marketplace: typeof marketplace;
   marketplacePayments: typeof marketplacePayments;
+  marketplaceViews: typeof marketplaceViews;
   media: typeof media;
   mediaCatalog: typeof mediaCatalog;
   mediaCredits: typeof mediaCredits;
@@ -138,6 +148,7 @@ declare const fullApi: ApiFromModules<{
   messages: typeof messages;
   multimodalPrompt: typeof multimodalPrompt;
   openaiImageClient: typeof openaiImageClient;
+  paymentViews: typeof paymentViews;
   payments: typeof payments;
   paystack: typeof paystack;
   paystackConfig: typeof paystackConfig;
@@ -146,6 +157,7 @@ declare const fullApi: ApiFromModules<{
   platformStats: typeof platformStats;
   platformStatsRecorder: typeof platformStatsRecorder;
   providerRouter: typeof providerRouter;
+  publicShareSanitizer: typeof publicShareSanitizer;
   qualityDashboard: typeof qualityDashboard;
   replicateClient: typeof replicateClient;
   securityErrors: typeof securityErrors;

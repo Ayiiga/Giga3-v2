@@ -499,12 +499,24 @@ export const processJob = internalAction({
 
       const chargedAi = engineResult.providerId !== "local_fallback";
 
-      await ctx.runMutation(internal.platform.appendMessage, {
-        conversationId: job.conversationId,
-        userId: email,
-        role: "assistant",
-        content: assistantContent,
-      });
+      const replyExists = await ctx.runQuery(
+        internal.chatReplyJobs.hasAssistantReplySince,
+        { conversationId: job.conversationId, since: job.createdAt }
+      );
+      if (replyExists) {
+        logChatReply("worker_skip_duplicate_reply", {
+          jobId: args.jobId,
+          conversationId: job.conversationId,
+          userId: email,
+        });
+      } else {
+        await ctx.runMutation(internal.platform.appendMessage, {
+          conversationId: job.conversationId,
+          userId: email,
+          role: "assistant",
+          content: assistantContent,
+        });
+      }
 
       if (chargedAi) {
         try {
@@ -571,12 +583,18 @@ export const processJob = internalAction({
       });
       console.error("[chatReplyWorker] failed:", err);
       if (!(await isCancelled())) {
-        await ctx.runMutation(internal.platform.appendMessage, {
-          conversationId: job.conversationId,
-          userId: email,
-          role: "assistant",
-          content: isRateLimitError(err) ? rateLimitReply(message) : FALLBACK_REPLY,
-        });
+        const replyExists = await ctx.runQuery(
+          internal.chatReplyJobs.hasAssistantReplySince,
+          { conversationId: job.conversationId, since: job.createdAt }
+        );
+        if (!replyExists) {
+          await ctx.runMutation(internal.platform.appendMessage, {
+            conversationId: job.conversationId,
+            userId: email,
+            role: "assistant",
+            content: isRateLimitError(err) ? rateLimitReply(message) : FALLBACK_REPLY,
+          });
+        }
         await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
           jobId: args.jobId,
           status: "failed",
