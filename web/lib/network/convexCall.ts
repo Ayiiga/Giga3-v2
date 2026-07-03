@@ -56,6 +56,12 @@ export async function convexHttpCall<T>(
         body: JSON.stringify({ path, args, format: "json" }),
         signal: controller.signal,
       });
+      const contentType = res.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/json")) {
+        throw new Error(
+          `Server returned ${res.status} (expected JSON). Check your connection or try again.`
+        );
+      }
       const data = await res.json();
       if (data.status === "error") {
         throw new Error(data.errorMessage || "Convex request failed");

@@ -106,3 +106,22 @@ export const deleteJob = internalMutation({
     await ctx.db.delete(args.jobId);
   },
 });
+
+/** True when an assistant message already exists for this job's turn. */
+export const hasAssistantReplySince = internalQuery({
+  args: {
+    conversationId: v.id("conversations"),
+    since: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const rows = await ctx.db
+      .query("messages")
+      .withIndex("by_conversation", (q) =>
+        q.eq("conversationId", args.conversationId)
+      )
+      .collect();
+    return rows.some(
+      (m) => m.role === "assistant" && m.createdAt >= args.since
+    );
+  },
+});

@@ -6,6 +6,7 @@ import {
   CHAT_REPLY_POLL_NORMAL_MS,
   CHAT_REPLY_POLL_SLOW_MS,
 } from "@/lib/chat/chatNetwork";
+import { logChatClient } from "@/lib/chat/chatLog";
 import { getConvexUrl } from "@/lib/convex";
 import { convexHttpCall } from "@/lib/network/convexCall";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -16,6 +17,9 @@ const POLL_NORMAL_MS = CHAT_REPLY_POLL_NORMAL_MS;
 
 /** Burst schedule for the first ~30s on slow networks, then steady polling. */
 const SLOW_BURST_DELAYS_MS = [0, 700, 1400, 2200, 3200, 4500, 6000, 8000, 10_000, 13_000, 17_000, 22_000, 28_000];
+
+/** Surface a user-visible hint when HTTP polling fails repeatedly. */
+export const POLL_FAIL_HINT_THRESHOLD = 4;
 
 export type PolledMessageRow = {
   _id: string;
@@ -31,6 +35,7 @@ type ReplyStatusSnapshot =
 export type ChatReplyPollSnapshot = {
   messages: PolledMessageRow[] | undefined;
   replyActive: boolean | undefined;
+  pollFailures: number;
 };
 
 /**
@@ -47,6 +52,7 @@ export function useChatReplyPolling(
   const pageVisible = usePageVisible();
   const [polled, setPolled] = useState<PolledMessageRow[] | undefined>(undefined);
   const [replyActive, setReplyActive] = useState<boolean | undefined>(undefined);
+  const [pollFailures, setPollFailures] = useState(0);
   const inFlightRef = useRef(false);
   const pollMs = tier === "slow" ? POLL_SLOW_MS : POLL_NORMAL_MS;
 
@@ -77,8 +83,22 @@ export function useChatReplyPolling(
       ]);
       setPolled(rows);
       setReplyActive(status.active);
-    } catch {
-      /* keep last good snapshot */
+      setPollFailures(0);
+      logChatClient("poll_ok", {
+        conversationId,
+        messageCount: rows.length,
+        replyActive: status.active,
+      });
+    } catch (err) {
+      setPollFailures((n) => {
+        const next = n + 1;
+        logChatClient("poll_fail", {
+          conversationId,
+          attempt: next,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        return next;
+      });
     } finally {
       inFlightRef.current = false;
     }
@@ -88,6 +108,7 @@ export function useChatReplyPolling(
     if (!active) {
       setPolled(undefined);
       setReplyActive(undefined);
+      setPollFailures(0);
       return;
     }
     if (!mounted || !sessionToken || !conversationId || !pageVisible) return;
@@ -118,5 +139,5 @@ export function useChatReplyPolling(
     return () => clearInterval(id);
   }, [active, mounted, sessionToken, conversationId, pageVisible, pollMs, fetchSnapshot, tier]);
 
-  return { messages: polled, replyActive };
+  return { messages: polled, replyActive, pollFailures };
 }

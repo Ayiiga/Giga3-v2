@@ -33,7 +33,9 @@ export type JobRecoveryConfig = {
 
 export const DEFAULT_JOB_RECOVERY_CONFIG: JobRecoveryConfig = {
   rescheduleAfterMs: Number(process.env.CHAT_JOB_RESCHEDULE_AFTER_MS) || 30_000,
-  giveUpAfterMs: Number(process.env.CHAT_JOB_GIVE_UP_AFTER_MS) || 90_000,
+  // Must exceed CHAT_WORKER_TIMEOUT_MS (120s) so recovery does not write a
+  // fallback reply while the worker is still legitimately running.
+  giveUpAfterMs: Number(process.env.CHAT_JOB_GIVE_UP_AFTER_MS) || 125_000,
 };
 
 export function decideJobRecovery(

@@ -1,12 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
+  DEFAULT_JOB_RECOVERY_CONFIG,
   decideJobRecovery,
-  type JobRecoveryConfig,
 } from "../../convex/chatReplyRecoveryPolicy";
+
+import type { JobRecoveryConfig } from "../../convex/chatReplyRecoveryPolicy";
+
+describe("DEFAULT_JOB_RECOVERY_CONFIG", () => {
+  it("gives up after the worker timeout budget", () => {
+    expect(DEFAULT_JOB_RECOVERY_CONFIG.giveUpAfterMs).toBeGreaterThanOrEqual(125_000);
+  });
+});
 
 const cfg: JobRecoveryConfig = {
   rescheduleAfterMs: 30_000,
-  giveUpAfterMs: 90_000,
+  giveUpAfterMs: 125_000,
 };
 
 const now = 1_000_000_000;
@@ -63,7 +71,7 @@ describe("decideJobRecovery", () => {
   it("finalizes jobs that blew past the give-up window", () => {
     expect(
       decideJobRecovery(
-        { status: "pending", createdAt: now - 91_000 },
+        { status: "pending", createdAt: now - 126_000 },
         now,
         cfg
       )
