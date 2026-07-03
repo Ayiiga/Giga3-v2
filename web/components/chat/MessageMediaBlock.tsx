@@ -48,7 +48,7 @@ function MediaActionButton({
       aria-label={label}
       title={label}
       onClick={onClick}
-      className="touch-target inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-border bg-white px-2 text-sm font-medium text-foreground shadow-sm hover:bg-zinc-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+      className="inline-flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-medium text-foreground hover:bg-zinc-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
     >
       {children}
     </button>

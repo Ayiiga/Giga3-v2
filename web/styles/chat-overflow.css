@@ -68,7 +68,7 @@
 }
 
 .chat-message-bubble-user {
-  max-width: min(88%, 28rem);
+  max-width: min(85%, 32rem);
   width: fit-content;
 }
 
@@ -192,11 +192,11 @@
   }
 
   .chat-message-turn-assistant .chat-message-bubble-inner {
-    padding-inline: 0.875rem;
+    padding-inline: 0;
   }
 
   .chat-message-bubble-user {
-    max-width: min(86%, 24rem);
+    max-width: min(88%, 28rem);
   }
 
   .chat-composer {

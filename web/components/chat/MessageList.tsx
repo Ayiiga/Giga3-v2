@@ -158,7 +158,7 @@ function MessageListInner({
           </div>
         )}
 
-        <div className="chat-thread chat-message-stack flex w-full min-w-0 max-w-full flex-col gap-3 sm:gap-6">
+        <div className="chat-thread chat-message-stack flex w-full min-w-0 max-w-full flex-col gap-4 sm:gap-5">
           {messageGroups.map((group) => (
             <section key={group.label} aria-label={group.label}>
               <div className="chat-date-divider my-2 flex items-center gap-3 px-2 sm:px-0">
@@ -166,7 +166,7 @@ function MessageListInner({
                 <span className="text-xs font-medium text-muted">{group.label}</span>
                 <span className="h-px flex-1 bg-border" aria-hidden />
               </div>
-              <div className="flex flex-col gap-3 sm:gap-6">
+              <div className="flex flex-col gap-4 sm:gap-5">
                 {group.messages.map((m) => (
                   <MessageBubble
                     key={m.id}

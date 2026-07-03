@@ -1,6 +1,7 @@
 "use client";
 
 import { ChatInput } from "@/components/chat/ChatInput";
+import { ChatErrorBanner } from "@/components/chat/ChatErrorBanner";
 import { ChatTypingBar } from "@/components/chat/ChatTypingBar";
 import { MessageList, type UiMessage } from "@/components/chat/MessageList";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
@@ -21,6 +22,8 @@ interface ChatConversationPaneProps {
   onEditMessage?: (messageId: string, content: string) => void;
   onStopGenerating?: () => void;
   uploadUsage?: UploadUsageSnapshot | null;
+  error?: string | null;
+  onDismissError?: () => void;
 }
 
 function panePropsEqual(
@@ -40,6 +43,8 @@ function panePropsEqual(
     prev.onEditMessage === next.onEditMessage &&
     prev.onStopGenerating === next.onStopGenerating &&
     prev.uploadUsage === next.uploadUsage &&
+    prev.error === next.error &&
+    prev.onDismissError === next.onDismissError &&
     prev.insertRef === next.insertRef
   );
 }
@@ -59,6 +64,8 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onEditMessage,
   onStopGenerating,
   uploadUsage,
+  error,
+  onDismissError,
 }: ChatConversationPaneProps) {
   const showTyping = awaitingReply || isSending;
   const typingPhase = awaitingReply ? "replying" : "sending";
@@ -76,6 +83,9 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         onEditMessage={onEditMessage}
       />
       <div className="chat-composer-dock min-w-0 max-w-full border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)]">
+        {error && (
+          <ChatErrorBanner message={error} onDismiss={onDismissError} />
+        )}
         <ChatTypingBar
           visible={showTyping}
           slowNetwork={isSlowNetwork}
