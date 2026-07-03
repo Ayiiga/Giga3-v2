@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v38-sending-phase-fix";
+const CACHE_NAME = "giga3-shell-v40-network-first-chunks";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
@@ -29,6 +29,26 @@ function isSensitiveDocumentPath(pathname) {
   );
 }
 
+function isNextChunk(pathname) {
+  return pathname.startsWith("/_next/");
+}
+
+/** Drop stale JS/CSS bundles so a deleted Convex URL cannot linger in cache. */
+async function purgeNextChunks() {
+  const keys = await caches.keys();
+  await Promise.all(
+    keys.map(async (key) => {
+      const cache = await caches.open(key);
+      const requests = await cache.keys();
+      await Promise.all(
+        requests
+          .filter((req) => isNextChunk(new URL(req.url).pathname))
+          .map((req) => cache.delete(req))
+      );
+    })
+  );
+}
+
 self.addEventListener("install", (event) => {
   self.skipWaiting();
   event.waitUntil(
@@ -51,6 +71,7 @@ self.addEventListener("activate", (event) => {
           keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
         )
       )
+      .then(() => purgeNextChunks())
       .then(() => self.clients.claim())
   );
 });
@@ -67,11 +88,27 @@ self.addEventListener("fetch", (event) => {
     request.headers.get("accept")?.includes("text/html");
 
   const isStatic =
-    url.pathname.startsWith("/_next/") ||
+    isNextChunk(url.pathname) ||
     url.pathname.startsWith("/icons/") ||
     url.pathname.startsWith("/splash/") ||
     url.pathname.startsWith("/images/") ||
     /\.(?:js|css|woff2?|png|svg|webp|ico|json|webmanifest)$/.test(url.pathname);
+
+  if (isNextChunk(url.pathname)) {
+    // Network-first for app bundles — cache only as offline fallback.
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
 
   if (isStatic) {
     event.respondWith(

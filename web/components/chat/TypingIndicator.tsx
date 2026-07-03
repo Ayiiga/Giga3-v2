@@ -2,6 +2,7 @@
 
 import {
   CHAT_LOADING_STAGE_BOUNDARIES,
+  CHAT_REPLYING_STAGE_BOUNDARIES,
   chatLoadingStageLabel,
   type ChatLoadingPhase,
 } from "@/lib/chat/loadingStatus";
@@ -10,7 +11,7 @@ import { useEffect, useState } from "react";
 /**
  * Typing indicator with subtle pulse (respects reduced motion via CSS).
  * Sending phase: Connecting → Sending → Waiting (never "Generating…").
- * Replying phase: Generating response… (after server accepted the message).
+ * Replying phase: progressive labels so long 3G waits never look frozen.
  */
 export function TypingIndicator({
   slowNetwork = false,
@@ -24,7 +25,11 @@ export function TypingIndicator({
   useEffect(() => {
     const start = Date.now();
     setElapsedMs(0);
-    const timers = CHAT_LOADING_STAGE_BOUNDARIES.map((boundary) =>
+    const boundaries =
+      phase === "replying"
+        ? CHAT_REPLYING_STAGE_BOUNDARIES
+        : CHAT_LOADING_STAGE_BOUNDARIES;
+    const timers = boundaries.map((boundary) =>
       setTimeout(() => setElapsedMs(Date.now() - start), boundary + 30)
     );
     return () => timers.forEach(clearTimeout);
