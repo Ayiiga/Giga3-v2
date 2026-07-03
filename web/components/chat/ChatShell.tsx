@@ -5,7 +5,6 @@ import { ChatBanners } from "@/components/chat/ChatBanners";
 import { ChatChrome } from "@/components/chat/ChatChrome";
 import type { ChatActionsMenuHandle } from "@/components/chat/ChatActionsMenu";
 import { ChatConversationPane } from "@/components/chat/ChatConversationPane";
-import { ChatErrorBanner } from "@/components/chat/ChatErrorBanner";
 import { ChatOverflowProbe } from "@/components/chat/ChatOverflowProbe";
 import { ChatWorkspacePanel } from "@/components/chat/ChatWorkspacePanel";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
@@ -81,6 +80,7 @@ function ChatShellInner({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [templateNotice, setTemplateNotice] = useState<string | null>(null);
+  const [dismissedError, setDismissedError] = useState<string | null>(null);
   const [modelTier, setModelTier] = useState<GigaModelId>("fast");
   const insertRef = useRef<((text: string) => void) | null>(null);
   const chatActionsRef = useRef<ChatActionsMenuHandle | null>(null);
@@ -252,6 +252,12 @@ function ChatShellInner({
     if (mounted && !email) router.replace("/chat/login");
   }, [mounted, email, router]);
 
+  useEffect(() => {
+    setDismissedError(null);
+  }, [error]);
+
+  const visibleError = error && error !== dismissedError ? error : null;
+
   if (!mounted || !email) {
     return (
       <div className="flex h-full items-center justify-center text-base text-muted">
@@ -328,8 +334,6 @@ function ChatShellInner({
               {templateNotice}
             </p>
           )}
-
-          {error && <ChatErrorBanner message={error} />}
         </div>
 
         <ChatConversationPane
@@ -346,6 +350,8 @@ function ChatShellInner({
           onEditMessage={handleEditMessage}
           onStopGenerating={() => void stopGenerating()}
           uploadUsage={uploadUsage}
+          error={visibleError}
+          onDismissError={() => setDismissedError(error)}
         />
       </div>
     </div>

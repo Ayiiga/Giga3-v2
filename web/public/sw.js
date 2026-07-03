@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v43-password-auth";
+const CACHE_NAME = "giga3-shell-v44-chatgpt-ui";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

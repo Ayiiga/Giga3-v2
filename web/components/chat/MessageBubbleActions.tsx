@@ -99,7 +99,7 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
   return (
     <div
       className={cn(
-        "chat-message-bubble-actions relative mt-1 min-h-9 min-w-0 max-w-full",
+        "chat-message-bubble-actions relative mt-0.5 min-w-0 max-w-full",
         role === "user" ? "flex justify-end" : "flex justify-start",
         className
       )}
@@ -110,8 +110,10 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
       />
       <div
         className={cn(
-          "flex max-w-full flex-wrap items-center gap-0.5 opacity-100 sm:opacity-0 sm:transition-opacity",
-          "sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
+          "flex max-w-full flex-wrap items-center gap-0",
+          "opacity-0 transition-opacity duration-150",
+          "group-hover:opacity-100 group-focus-within:opacity-100",
+          "max-sm:opacity-40 max-sm:group-active:opacity-100"
         )}
       >
         <ActionButton
@@ -120,34 +122,45 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
           onClick={() => void runCopy()}
         >
           {copied ? (
-            <Check className="h-3.5 w-3.5 text-emerald-600" aria-hidden />
+            <Check className="h-3 w-3 text-emerald-600" aria-hidden />
           ) : (
-            <Copy className="h-3.5 w-3.5" aria-hidden />
+            <Copy className="h-3 w-3" aria-hidden />
           )}
         </ActionButton>
-        <ActionButton label="Share message" disabled={busy} onClick={() => void runShare()}>
-          <Share2 className="h-3.5 w-3.5" aria-hidden />
+        <ActionButton
+          label="Share message"
+          disabled={busy}
+          onClick={() => void runShare()}
+          className="hidden sm:inline-flex"
+        >
+          <Share2 className="h-3 w-3" aria-hidden />
         </ActionButton>
         {messageId && (
           <ActionButton
             label={favorited ? "Remove favorite" : "Favorite message"}
             disabled={busy}
             onClick={runFavorite}
+            className="hidden md:inline-flex"
           >
             <Star
-              className={cn("h-3.5 w-3.5", favorited && "fill-amber-400 text-amber-500")}
+              className={cn("h-3 w-3", favorited && "fill-amber-400 text-amber-500")}
               aria-hidden
             />
           </ActionButton>
         )}
         {role === "user" && onEdit && (
           <ActionButton label="Edit message" disabled={busy} onClick={onEdit}>
-            <Pencil className="h-3.5 w-3.5" aria-hidden />
+            <Pencil className="h-3 w-3" aria-hidden />
           </ActionButton>
         )}
         {canDownloadPdf && (
-          <ActionButton label="Download as PDF" disabled={busy} onClick={runDownloadPdf}>
-            <FileDown className="h-3.5 w-3.5" aria-hidden />
+          <ActionButton
+            label="Download as PDF"
+            disabled={busy}
+            onClick={runDownloadPdf}
+            className="hidden sm:inline-flex"
+          >
+            <FileDown className="h-3 w-3" aria-hidden />
           </ActionButton>
         )}
         {role === "assistant" && onRegenerate && (
@@ -156,7 +169,7 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
             disabled={busy || disabled}
             onClick={onRegenerate}
           >
-            <RefreshCw className="h-3.5 w-3.5" aria-hidden />
+            <RefreshCw className="h-3 w-3" aria-hidden />
           </ActionButton>
         )}
       </div>
@@ -169,11 +182,13 @@ function ActionButton({
   onClick,
   disabled,
   children,
+  className,
 }: {
   label: string;
   onClick: () => void;
   disabled?: boolean;
   children: ReactNode;
+  className?: string;
 }) {
   return (
     <button
@@ -182,7 +197,10 @@ function ActionButton({
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className="touch-target inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-muted hover:bg-zinc-100 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:opacity-50 dark:hover:bg-zinc-800"
+      className={cn(
+        "inline-flex h-7 w-7 items-center justify-center rounded-md text-muted/80 hover:bg-zinc-100 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:opacity-50 dark:hover:bg-zinc-800",
+        className
+      )}
     >
       {children}
     </button>

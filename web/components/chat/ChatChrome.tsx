@@ -1,7 +1,6 @@
 "use client";
 
 import { ChatActionsMenu, type ChatActionsMenuHandle } from "@/components/chat/ChatActionsMenu";
-import { ChatDateTimeLabel } from "@/components/chat/ChatDateTimeLabel";
 import { ModelSelector } from "@/components/chat/ModelSelector";
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
 import type { UiMessage } from "@/components/chat/MessageList";
@@ -124,7 +123,6 @@ export const ChatChrome = memo(function ChatChrome({
           disabled={isSending}
           onSetPublicShare={onSetPublicShare}
         />
-        <ChatDateTimeLabel />
         {credits != null && (
           <CreditBadge credits={credits} showLabel className="hidden sm:inline-flex" />
         )}

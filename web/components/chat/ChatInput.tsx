@@ -170,14 +170,15 @@ export const ChatInput = memo(function ChatInput({
   }
 
   const inputDisabled = disabled || busy;
-  const remainingLabel = uploadUsage
-    ? `${uploadUsage.filesRemaining} files / ${uploadUsage.imagesRemaining} images left today · max ${formatUploadBytes(uploadUsage.limits.maxFileBytes)}`
-    : "Uploads are checked before analysis";
+  const showUploadHint =
+    attachments.length > 0 ||
+    (uploadUsage != null &&
+      (uploadUsage.filesRemaining < 20 || uploadUsage.imagesRemaining < 10));
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="chat-composer min-w-0 max-w-full px-3 py-3 sm:px-6 sm:py-4"
+      className="chat-composer min-w-0 max-w-full px-3 py-2 sm:px-4 sm:py-3"
     >
       <div className="chat-thread space-y-2">
         {notice && (
@@ -205,7 +206,7 @@ export const ChatInput = memo(function ChatInput({
         <div
           ref={composerRef}
           className={cn(
-            "chat-composer-surface relative flex items-end gap-2 rounded-2xl border p-2 transition-colors",
+            "chat-composer-surface relative flex items-end gap-1.5 rounded-[1.75rem] border bg-card p-1.5 shadow-sm transition-colors sm:gap-2 sm:p-2",
             dragOver ? "border-accent/50 bg-accent/5" : "border-border"
           )}
           onDragOver={(e) => {
@@ -246,7 +247,7 @@ export const ChatInput = memo(function ChatInput({
               disabled={inputDisabled}
               rows={1}
               placeholder={placeholder}
-              className="chat-composer-textarea max-h-40 min-h-11 w-full resize-none overflow-y-auto border-0 bg-transparent px-2 py-2.5 text-base leading-[1.7] text-foreground outline-none placeholder:text-muted focus:ring-0 disabled:opacity-50"
+              className="chat-composer-textarea max-h-40 min-h-10 w-full resize-none overflow-y-auto border-0 bg-transparent px-2 py-2 text-base leading-[1.5] text-foreground outline-none placeholder:text-muted focus:ring-0 disabled:opacity-50"
               aria-label="Chat message"
             />
           </div>
@@ -259,7 +260,7 @@ export const ChatInput = memo(function ChatInput({
               setEmojiOpen((open) => !open);
               setToolbarOpen(false);
             }}
-            className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl text-muted hover:bg-accent/10"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted hover:bg-accent/10"
           >
             <Smile className="h-5 w-5" aria-hidden />
           </button>
@@ -269,29 +270,24 @@ export const ChatInput = memo(function ChatInput({
             disabled={inputDisabled || !canSend}
             size="md"
             className={cn(
-              "min-h-11 shrink-0 rounded-xl px-3 transition-all",
-              canSend ? "min-w-11" : "min-w-11 opacity-80"
+              "h-10 shrink-0 rounded-full px-3 transition-all",
+              canSend ? "w-10 min-w-10" : "w-10 min-w-10 opacity-50"
             )}
             aria-label="Send message"
           >
-            <Send className="h-5 w-5" aria-hidden />
+            <Send className="h-4 w-4" aria-hidden />
           </Button>
         </div>
 
-        <p className="text-center text-xs text-muted">
-          {remainingLabel}
-          <br className="sm:hidden" />
-          <span className="hidden sm:inline"> · </span>
-          Enter to send · Shift+Enter ·{" "}
-          <button
-            type="button"
-            className="font-medium text-accent underline-offset-2 hover:underline"
-            onClick={() => setToolbarOpen(true)}
-          >
-            Attach
-          </button>{" "}
-          for files & media
+        <p className="hidden px-2 text-center text-[11px] leading-relaxed text-muted/70 sm:block">
+          Giga3 AI can make mistakes. Check important information.
         </p>
+        {showUploadHint && uploadUsage && (
+          <p className="px-2 text-center text-[11px] text-muted/70">
+            {uploadUsage.filesRemaining} files · {uploadUsage.imagesRemaining} images left today
+            {attachments.length > 0 ? ` · max ${formatUploadBytes(uploadUsage.limits.maxFileBytes)}` : ""}
+          </p>
+        )}
       </div>
     </form>
   );

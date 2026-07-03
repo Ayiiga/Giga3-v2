@@ -132,60 +132,60 @@ export const MessageBubble = memo(function MessageBubble({
           Sending…
         </p>
       )}
-      {timeLabel && !editing && (
-        <p className="mt-1 text-[11px] text-muted/80" suppressHydrationWarning>
-          {timeLabel}
-        </p>
-      )}
     </>
   );
 
+  const bubbleActions = !editing ? (
+    <MessageBubbleActions
+      messageId={id}
+      role={role}
+      content={content}
+      disabled={pending || (!isUser && streaming)}
+      onEdit={isUser && id && onEdit ? () => setEditing(true) : undefined}
+      onRegenerate={
+        !isUser && id && onRegenerate ? () => onRegenerate(id) : undefined
+      }
+    />
+  ) : null;
+
   if (isUser) {
     return (
-      <article className="group chat-message-turn chat-message-turn-user">
+      <article
+        className="group chat-message-turn chat-message-turn-user"
+        title={timeLabel || undefined}
+      >
         <div className="chat-message-bubble chat-message-bubble-user">
           <div
             className={cn(
-              "chat-message-bubble-inner rounded-[1.25rem] bg-violet-100 px-4 py-2.5 text-zinc-900 shadow-sm dark:bg-violet-950/70 dark:text-zinc-100",
-              pending && "ring-1 ring-violet-400/40"
+              "chat-message-bubble-inner rounded-3xl bg-zinc-200/90 px-4 py-2.5 text-zinc-900 dark:bg-zinc-700/90 dark:text-zinc-50",
+              pending && "opacity-80"
             )}
           >
             {body}
           </div>
-          <MessageBubbleActions
-            messageId={id}
-            role={role}
-            content={content}
-            disabled={pending}
-            onEdit={id && onEdit ? () => setEditing(true) : undefined}
-          />
+          {bubbleActions}
         </div>
       </article>
     );
   }
 
   return (
-    <article className="group chat-message-turn chat-message-turn-assistant">
+    <article
+      className="group chat-message-turn chat-message-turn-assistant"
+      title={timeLabel || undefined}
+    >
       <div className="chat-message-bubble flex w-full min-w-0 max-w-full gap-0 sm:gap-3">
         <div
-          className="mt-0.5 hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted sm:flex"
+          className="mt-0.5 hidden h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 sm:flex"
           aria-hidden
         >
-          <Bot className="h-4 w-4" />
+          <Bot className="h-3.5 w-3.5" />
         </div>
         <div className="min-w-0 w-full max-w-full flex-1">
-          <div className="chat-assistant-body chat-message-bubble-inner rounded-2xl bg-zinc-100 px-4 py-3 text-zinc-900 dark:bg-zinc-800/90 dark:text-zinc-100 sm:bg-transparent sm:px-0 sm:py-1 sm:text-foreground dark:sm:bg-transparent">
+          <div className="chat-assistant-body chat-message-bubble-inner px-0 py-0.5 text-foreground sm:py-1">
             {body}
           </div>
-          <MessageBubbleActions
-            messageId={id}
-            role={role}
-            content={content}
-            disabled={pending || streaming}
-            onRegenerate={
-              id && onRegenerate ? () => onRegenerate(id) : undefined
-            }
-          />
+          {bubbleActions}
         </div>
       </div>
     </article>
