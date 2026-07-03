@@ -1,5 +1,6 @@
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { MarketingScrollFix } from "@/components/marketing/MarketingScrollFix";
 
 export default function MarketingLayout({
   children,
@@ -8,8 +9,9 @@ export default function MarketingLayout({
 }) {
   return (
     <div data-marketing="true" className="marketing-stable min-h-full bg-white">
+      <MarketingScrollFix />
       <Header />
-      <main>{children}</main>
+      <main className="pb-[max(1.5rem,env(safe-area-inset-bottom))]">{children}</main>
       <Footer />
     </div>
   );

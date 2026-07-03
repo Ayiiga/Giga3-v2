@@ -2,6 +2,7 @@
 
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
+import { Container } from "@/components/ui/Container";
 import { formatGhs } from "@/lib/marketplace/catalog";
 import { getSessionToken } from "@/lib/auth";
 import { api } from "convex/_generated/api";
@@ -92,7 +93,8 @@ function MarketplaceItemInner() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
+    <Container className="py-8 sm:py-12">
+      <div className="mx-auto max-w-4xl space-y-8">
       <div className="flex items-center justify-between gap-3">
         <ButtonLink href="/marketplace" variant="ghost" size="sm">
           ← Marketplace
@@ -223,7 +225,8 @@ function MarketplaceItemInner() {
           </div>
         </section>
       )}
-    </div>
+      </div>
+    </Container>
   );
 }
 

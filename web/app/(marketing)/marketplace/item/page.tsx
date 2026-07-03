@@ -9,9 +9,5 @@ const MarketplaceItemClient = dynamic(
 );
 
 export default function MarketplaceItemPage() {
-  return (
-    <div className="marketing-stable py-8 sm:py-12">
-      <MarketplaceItemClient />
-    </div>
-  );
+  return <MarketplaceItemClient />;
 }
