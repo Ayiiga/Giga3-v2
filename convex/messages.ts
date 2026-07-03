@@ -4,15 +4,17 @@ import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { sanitizePublicShareMessageContent } from "./publicShareSanitizer";
 
-function userOwnsConversation(
+/** Verified session email from requireSession — never trust client-supplied ids. */
+function conversationOwnerMatches(
   conv: { userId: string } | null,
   userId: string
 ): boolean {
-  if (!conv) return false;
-  const normalized = normalizeUserId(userId);
+  if (!conv || !userId) return false;
+  const trimmed = userId.trim();
+  const lowered = trimmed.toLowerCase();
   return (
-    conv.userId === normalized ||
-    conv.userId === userId.trim() ||
+    conv.userId === lowered ||
+    conv.userId === trimmed ||
     conv.userId === userId
   );
 }
@@ -25,7 +27,7 @@ export const listByConversation = query({
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
     const conv = await ctx.db.get(args.conversationId);
-    if (!userOwnsConversation(conv, userId)) return [];
+    if (!conversationOwnerMatches(conv, userId)) return [];
     const rows = await ctx.db
       .query("messages")
       .withIndex("by_conversation", (q) =>
@@ -49,7 +51,7 @@ export const updateUserMessage = mutation({
     const message = await ctx.db.get(args.messageId);
     if (!message || message.role !== "user") throw new Error("Message not found");
     const conv = await ctx.db.get(message.conversationId);
-    if (!userOwnsConversation(conv, userId)) throw new Error("Forbidden");
+    if (!conversationOwnerMatches(conv, userId)) throw new Error("Forbidden");
     const content = args.content.trim();
     if (!content) throw new Error("Message cannot be empty");
     await ctx.db.patch(args.messageId, { content: content.slice(0, 50_000) });
