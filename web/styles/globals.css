@@ -41,14 +41,16 @@
 
 html {
   font-size: 16px;
-  height: 100%;
+  min-height: 100%;
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  overflow-y: auto;
   overscroll-behavior-y: none;
   scroll-behavior: auto;
   text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
@@ -59,8 +61,10 @@ body {
   max-width: 100%;
   line-height: 1.7;
   overflow-x: hidden;
+  overflow-y: visible;
   touch-action: manipulation;
   overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 .message-list-scroll,
@@ -185,7 +189,8 @@ button:focus-visible {
 
 /* Marketing/PWA landing: prevent mobile GPU tearing (ghosting while scrolling). */
 .marketing-stable {
-  overflow-x: clip;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 .marketing-stable,

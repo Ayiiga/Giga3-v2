@@ -9,9 +9,5 @@ const MarketplacePurchasesClient = dynamic(
 );
 
 export default function MarketplacePurchasesPage() {
-  return (
-    <div className="marketing-stable py-8 sm:py-12">
-      <MarketplacePurchasesClient />
-    </div>
-  );
+  return <MarketplacePurchasesClient />;
 }

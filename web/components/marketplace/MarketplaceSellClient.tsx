@@ -2,6 +2,7 @@
 
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
+import { Container } from "@/components/ui/Container";
 import {
   LICENSE_TYPES,
   MARKETPLACE_CATEGORIES,
@@ -13,15 +14,31 @@ import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+function RevenueStatsSkeleton() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-3" aria-hidden>
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="min-h-[5.5rem] rounded-2xl border bg-card p-5">
+          <div className="h-4 w-24 rounded bg-border" />
+          <div className="mt-3 h-8 w-20 rounded bg-border" />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function MarketplaceSellInner() {
   const router = useRouter();
-  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [sessionToken] = useState<string | null>(() => getSessionToken());
+  const profileHydrated = useRef(false);
 
   useEffect(() => {
-    setSessionToken(getSessionToken());
-  }, []);
+    if (!sessionToken) {
+      router.replace("/chat/login?next=/marketplace/sell");
+    }
+  }, [sessionToken, router]);
 
   const profile = useQuery(
     api.creatorProfiles.getMyProfile,
@@ -59,15 +76,11 @@ function MarketplaceSellInner() {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!sessionToken) router.replace("/chat/login?next=/marketplace/sell");
-  }, [sessionToken, router]);
-
-  useEffect(() => {
-    if (profile) {
-      setDisplayName(profile.displayName);
-      setHandle(profile.handle);
-      setBio(profile.bio ?? "");
-    }
+    if (!profile || profileHydrated.current) return;
+    setDisplayName(profile.displayName);
+    setHandle(profile.handle);
+    setBio(profile.bio ?? "");
+    profileHydrated.current = true;
   }, [profile]);
 
   if (!sessionToken) return <p className="text-center text-muted">Redirecting…</p>;
@@ -122,7 +135,8 @@ function MarketplaceSellInner() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-10">
+    <Container className="py-8 sm:py-12">
+      <div className="mx-auto max-w-5xl space-y-10">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="page-title">Creator dashboard</h1>
@@ -137,7 +151,7 @@ function MarketplaceSellInner() {
           <p className="rounded-xl bg-emerald-500/10 px-4 py-3 text-sm text-emerald-800">{message}</p>
         )}
 
-        {revenue?.profile && (
+        {revenue?.profile ? (
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border bg-card p-5">
               <div className="text-sm text-muted">Payout balance</div>
@@ -152,7 +166,9 @@ function MarketplaceSellInner() {
               <div className="text-2xl font-bold">{formatGhs(revenue.profile.totalEarningsGhs)}</div>
             </div>
           </div>
-        )}
+        ) : sessionToken ? (
+          <RevenueStatsSkeleton />
+        ) : null}
 
         <section className="rounded-2xl border bg-card p-6">
           <h2 className="text-lg font-semibold">Creator profile</h2>
@@ -316,6 +332,7 @@ function MarketplaceSellInner() {
           </section>
         )}
       </div>
+    </Container>
   );
 }
 

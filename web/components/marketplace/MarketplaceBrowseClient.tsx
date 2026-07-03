@@ -2,6 +2,7 @@
 
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ButtonLink } from "@/components/ui/Button";
+import { Container } from "@/components/ui/Container";
 import { MARKETPLACE_CATEGORIES, PRODUCT_TYPES, formatGhs } from "@/lib/marketplace/catalog";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -29,7 +30,8 @@ function MarketplaceBrowseInner() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <Container className="py-8 sm:py-12">
+      <div className="mx-auto max-w-6xl space-y-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-700 dark:text-emerald-300">
@@ -53,8 +55,8 @@ function MarketplaceBrowseInner() {
         </div>
 
         <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto]">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+          <div className="relative flex items-center">
+            <Search className="pointer-events-none absolute left-3 h-4 w-4 text-muted" aria-hidden />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -102,7 +104,7 @@ function MarketplaceBrowseInner() {
               <Link
                 key={item._id}
                 href={`/marketplace/item/?id=${item._id}`}
-                className="group rounded-2xl border border-border bg-card p-5 transition-shadow hover:shadow-md"
+                className="group rounded-2xl border border-border bg-card p-5 hover:border-accent/30"
               >
                 {item.coverImageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -141,7 +143,8 @@ function MarketplaceBrowseInner() {
             ))}
           </div>
         )}
-    </div>
+      </div>
+    </Container>
   );
 }
 
