@@ -18,7 +18,7 @@ const frontendIconsDir = join(__dirname, "..", "..", "frontend", "assets", "icon
 const frontendImagesDir = join(__dirname, "..", "..", "frontend", "assets", "images");
 
 /** Bump when icons/splash change — keeps browsers and PWAs off stale assets. */
-const BRAND_ASSET_VERSION = "20260630";
+const BRAND_ASSET_VERSION = "20260703";
 
 const BRAND = {
   name: "Giga3 AI",
@@ -27,9 +27,8 @@ const BRAND = {
     "Intelligent conversations at scale — modern AI chat, writing, and media with credits & subscriptions.",
   themeColor: "#5b21b6",
   backgroundColor: "#ffffff",
-  primary: [91, 33, 182],
-  secondary: [124, 58, 237],
-  highlight: [196, 181, 253],
+  /** Solid violet — single background color for app icons. */
+  violet: [91, 33, 182],
   white: [255, 255, 255],
   splashTop: [250, 250, 252],
   splashBottom: [245, 243, 255],
@@ -81,31 +80,34 @@ function isInRoundedRect(x, y, w, h, r) {
   return true;
 }
 
-function isOnGiga3Mark(nx, ny) {
+/** Bold sans-serif capital G in normalized coords (origin at center). */
+function isOnBoldG(nx, ny) {
   const r = Math.hypot(nx, ny);
-  const angle = Math.atan2(ny, nx);
-  const deg = (angle * 180) / Math.PI;
+  const deg = (Math.atan2(ny, nx) * 180) / Math.PI;
 
-  const innerR = 0.34;
-  const outerR = 0.52;
-  const inRing = r >= innerR && r <= outerR;
-  const inGArc = deg >= 35 && deg <= 325;
-  const onGArc = inRing && inGArc;
+  const innerR = 0.27;
+  const outerR = 0.5;
+  const onArc = r >= innerR && r <= outerR && deg >= 45 && deg <= 315;
 
-  const onBar = nx >= -0.02 && nx <= 0.38 && Math.abs(ny) <= 0.1;
+  const onBar = nx >= -0.1 && nx <= 0.34 && Math.abs(ny) <= 0.13;
 
-  const dotR = 0.065;
-  const dots = [
-    [0.12, -0.44],
-    [0.34, -0.38],
-    [0.48, -0.22],
-  ];
-  const onDot = dots.some(([dx, dy]) => dist(nx, ny, dx, dy) <= dotR);
+  const onStem = nx >= 0.2 && nx <= 0.5 && ny >= -0.08 && ny <= 0.38;
 
-  const coreR = 0.14;
-  const onCore = dist(nx, ny, 0, 0) <= coreR;
+  return onArc || onBar || onStem;
+}
 
-  return onGArc || onBar || onDot || onCore;
+function setSolidViolet(pixels, i) {
+  pixels[i] = BRAND.violet[0];
+  pixels[i + 1] = BRAND.violet[1];
+  pixels[i + 2] = BRAND.violet[2];
+  pixels[i + 3] = 255;
+}
+
+function setWhite(pixels, i) {
+  pixels[i] = BRAND.white[0];
+  pixels[i + 1] = BRAND.white[1];
+  pixels[i + 2] = BRAND.white[2];
+  pixels[i + 3] = 255;
 }
 
 function renderIcon(size, { maskable = false, splash = false } = {}) {
@@ -113,7 +115,7 @@ function renderIcon(size, { maskable = false, splash = false } = {}) {
   const pad = maskable ? size * 0.1 : 0;
   const cx = size / 2;
   const cy = size / 2;
-  const markScale = size * (maskable ? 0.34 : splash ? 0.22 : 0.4);
+  const markScale = size * (maskable ? 0.36 : splash ? 0.22 : 0.42);
   const cornerR = size * (splash ? 0 : 0.22);
 
   for (let y = 0; y < size; y++) {
@@ -130,8 +132,12 @@ function renderIcon(size, { maskable = false, splash = false } = {}) {
 
         const nx = (x - cx) / markScale;
         const ny = (y - cy) / markScale;
-        if (isOnGiga3Mark(nx, ny) || isOnGiga3MarkBackground(nx, ny, size, markScale)) {
-          setMarkPixel(pixels, i, nx, ny, size, maskable, splash);
+        const r = Math.hypot(nx, ny);
+        if (r <= 0.58) {
+          setSolidViolet(pixels, i);
+        }
+        if (isOnBoldG(nx, ny)) {
+          setWhite(pixels, i);
         }
         continue;
       }
@@ -149,62 +155,22 @@ function renderIcon(size, { maskable = false, splash = false } = {}) {
         const inSafe =
           x >= pad && y >= pad && x < size - pad && y < size - pad;
         if (!inSafe) {
-          pixels[i] = BRAND.white[0];
-          pixels[i + 1] = BRAND.white[1];
-          pixels[i + 2] = BRAND.white[2];
-          pixels[i + 3] = 255;
+          setWhite(pixels, i);
           continue;
         }
       }
 
-      const t = (x + y) / (2 * size);
-      const bg = lerpColor(BRAND.primary, BRAND.secondary, t);
-      pixels[i] = bg[0];
-      pixels[i + 1] = bg[1];
-      pixels[i + 2] = bg[2];
-      pixels[i + 3] = 255;
+      setSolidViolet(pixels, i);
 
       const nx = (x - cx) / markScale;
       const ny = (y - cy) / markScale;
-      if (isOnGiga3Mark(nx, ny)) {
-        pixels[i] = BRAND.white[0];
-        pixels[i + 1] = BRAND.white[1];
-        pixels[i + 2] = BRAND.white[2];
-        pixels[i + 3] = 255;
+      if (isOnBoldG(nx, ny)) {
+        setWhite(pixels, i);
       }
     }
   }
 
   return pixels;
-}
-
-function isOnGiga3MarkBackground(nx, ny, size, markScale) {
-  void size;
-  void markScale;
-  const r = Math.hypot(nx, ny);
-  return r <= 0.56;
-}
-
-function setMarkPixel(pixels, i, nx, ny, size, maskable, splash) {
-  void maskable;
-  void splash;
-  const t = (nx + ny + 2) / 4;
-  const bg = lerpColor(BRAND.primary, BRAND.secondary, Math.min(1, Math.max(0, t)));
-  const r = Math.hypot(nx, ny);
-
-  if (r <= 0.56) {
-    pixels[i] = bg[0];
-    pixels[i + 1] = bg[1];
-    pixels[i + 2] = bg[2];
-    pixels[i + 3] = 255;
-  }
-
-  if (isOnGiga3Mark(nx, ny)) {
-    pixels[i] = BRAND.white[0];
-    pixels[i + 1] = BRAND.white[1];
-    pixels[i + 2] = BRAND.white[2];
-    pixels[i + 3] = 255;
-  }
 }
 
 function encodePng(size, pixelBuffer) {
@@ -288,14 +254,12 @@ function renderSplash(width, height) {
       const r = Math.hypot(nx, ny);
 
       if (r <= 0.58) {
-        const gt = (nx + ny + 2) / 4;
-        const gbg = lerpColor(BRAND.primary, BRAND.secondary, Math.min(1, Math.max(0, gt)));
-        pixels[i] = gbg[0];
-        pixels[i + 1] = gbg[1];
-        pixels[i + 2] = gbg[2];
+        pixels[i] = BRAND.violet[0];
+        pixels[i + 1] = BRAND.violet[1];
+        pixels[i + 2] = BRAND.violet[2];
       }
 
-      if (isOnGiga3Mark(nx, ny)) {
+      if (isOnBoldG(nx, ny)) {
         pixels[i] = BRAND.white[0];
         pixels[i + 1] = BRAND.white[1];
         pixels[i + 2] = BRAND.white[2];
@@ -305,20 +269,11 @@ function renderSplash(width, height) {
 
   const textScale = Math.max(3, Math.round(Math.min(width, height) / 220));
   const titleY = cy + markScale * 1.35;
-  drawText(pixels, width, height, "Giga3 AI", cx, titleY, textScale, BRAND.primary);
+  drawText(pixels, width, height, "Giga3 AI", cx, titleY, textScale, BRAND.violet);
 
   const tagScale = Math.max(2, textScale - 1);
   const tagY = titleY + textScale * 10;
-  drawText(
-    pixels,
-    width,
-    height,
-    "Intelligent AI",
-    cx,
-    tagY,
-    tagScale,
-    lerpColor(BRAND.primary, BRAND.secondary, 0.35)
-  );
+  drawText(pixels, width, height, "Intelligent AI", cx, tagY, tagScale, BRAND.violet);
 
   return pixels;
 }
@@ -423,20 +378,8 @@ const SPLASH_SCREENS = [
 
 const FAVICON_SVG = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Giga3 AI">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#5b21b6"/>
-      <stop offset="100%" stop-color="#7c3aed"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
-  <circle cx="256" cy="256" r="36" fill="#ffffff"/>
-  <path fill="none" stroke="#ffffff" stroke-width="44" stroke-linecap="round"
-    d="M 318 168 A 92 92 0 1 0 318 344"/>
-  <rect x="250" y="232" width="92" height="44" rx="8" fill="#ffffff"/>
-  <circle cx="218" cy="168" r="18" fill="#ffffff"/>
-  <circle cx="278" cy="152" r="18" fill="#ffffff"/>
-  <circle cx="328" cy="188" r="18" fill="#ffffff"/>
+  <rect width="512" height="512" rx="112" fill="#5b21b6"/>
+  <path fill="#ffffff" d="M 356 178 A 104 104 0 1 0 356 334 L 300 334 A 48 48 0 0 1 300 256 L 356 256 L 356 226 L 268 226 A 88 88 0 0 1 268 178 Z"/>
 </svg>
 `;
 
