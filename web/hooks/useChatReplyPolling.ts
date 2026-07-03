@@ -14,6 +14,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 const POLL_SLOW_MS = CHAT_REPLY_POLL_SLOW_MS;
 const POLL_NORMAL_MS = CHAT_REPLY_POLL_NORMAL_MS;
 
+/** Burst schedule for the first ~30s on slow networks, then steady polling. */
+const SLOW_BURST_DELAYS_MS = [0, 700, 1400, 2200, 3200, 4500, 6000, 8000, 10_000, 13_000, 17_000, 22_000, 28_000];
+
 export type PolledMessageRow = {
   _id: string;
   role: string;
@@ -90,12 +93,30 @@ export function useChatReplyPolling(
     if (!mounted || !sessionToken || !conversationId || !pageVisible) return;
 
     void fetchSnapshot();
+
+    if (tier === "slow") {
+      const burstTimers = SLOW_BURST_DELAYS_MS.map((delay) =>
+        window.setTimeout(() => {
+          if (document.visibilityState !== "visible") return;
+          void fetchSnapshot();
+        }, delay)
+      );
+      const steady = window.setInterval(() => {
+        if (document.visibilityState !== "visible") return;
+        void fetchSnapshot();
+      }, pollMs);
+      return () => {
+        burstTimers.forEach(clearTimeout);
+        clearInterval(steady);
+      };
+    }
+
     const id = window.setInterval(() => {
       if (document.visibilityState !== "visible") return;
       void fetchSnapshot();
     }, pollMs);
     return () => clearInterval(id);
-  }, [active, mounted, sessionToken, conversationId, pageVisible, pollMs, fetchSnapshot]);
+  }, [active, mounted, sessionToken, conversationId, pageVisible, pollMs, fetchSnapshot, tier]);
 
   return { messages: polled, replyActive };
 }

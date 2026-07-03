@@ -36,6 +36,16 @@ jobs:
           healthy() {
             curl -fsS -o /dev/null --max-time 15 "$1"
           }
+          remap_retired() {
+            case "$1" in
+              *happy-otter-123.convex.cloud*)
+                echo "::warning::NEXT_PUBLIC_CONVEX_URL points at retired deployment — remapping to ${FALLBACK_URL}"
+                echo "$FALLBACK_URL"
+                return 0
+                ;;
+            esac
+            echo "$1"
+          }
           if [ -z "$RESOLVED" ]; then
             echo "::warning::NEXT_PUBLIC_CONVEX_URL secret is not set — using ${FALLBACK_URL}"
             RESOLVED="$FALLBACK_URL"
@@ -44,6 +54,11 @@ jobs:
             echo "::warning::NEXT_PUBLIC_CONVEX_URL (${RESOLVED}) is not responding — it likely points at a deleted Convex deployment. Falling back to ${FALLBACK_URL}. Update the GitHub secret NEXT_PUBLIC_CONVEX_URL."
             RESOLVED="$FALLBACK_URL"
             RESOLVED_SITE="$FALLBACK_SITE_URL"
+          else
+            RESOLVED="$(remap_retired "$RESOLVED")"
+            if [ "$RESOLVED" = "$FALLBACK_URL" ]; then
+              RESOLVED_SITE="$FALLBACK_SITE_URL"
+            fi
           fi
           if ! healthy "$RESOLVED"; then
             echo "::error::Convex deployment ${RESOLVED} is unreachable — aborting deploy."

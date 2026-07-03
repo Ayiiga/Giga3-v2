@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   CHAT_LOADING_STAGE_BOUNDARIES,
+  CHAT_REPLYING_STAGE_BOUNDARIES,
   chatLoadingStageLabel,
 } from "../../web/lib/chat/loadingStatus";
 
@@ -17,16 +18,21 @@ describe("chatLoadingStageLabel", () => {
     expect(chatLoadingStageLabel(60_000, false, "sending")).toBe("Waiting for Giga3…");
   });
 
-  it("shows Generating only in replying phase", () => {
+  it("shows Generating only in replying phase at first", () => {
     expect(chatLoadingStageLabel(0, false, "replying")).toBe("Generating response…");
-    expect(chatLoadingStageLabel(60_000, false, "replying")).toBe("Generating response…");
+    expect(chatLoadingStageLabel(11_999, false, "replying")).toBe("Generating response…");
   });
 
-  it("appends slow hints per phase", () => {
-    expect(chatLoadingStageLabel(1500, true, "sending")).toBe("Sending your message…");
-    expect(chatLoadingStageLabel(4000, true, "sending")).toContain("still sending");
-    expect(chatLoadingStageLabel(0, true, "replying")).toContain("Generating response…");
-    expect(chatLoadingStageLabel(0, true, "replying")).toContain("slow connection");
+  it("advances through replying stages on long waits", () => {
+    expect(chatLoadingStageLabel(12_000, false, "replying")).toBe("Still working on it…");
+    expect(chatLoadingStageLabel(30_000, false, "replying")).toBe("Taking a bit longer…");
+    expect(chatLoadingStageLabel(60_000, false, "replying")).toBe("Almost there…");
+  });
+
+  it("does not append slow-network suffix text", () => {
+    expect(chatLoadingStageLabel(4000, true, "sending")).toBe("Waiting for Giga3…");
+    expect(chatLoadingStageLabel(0, true, "replying")).toBe("Generating response…");
+    expect(chatLoadingStageLabel(30_000, true, "replying")).toBe("Taking a bit longer…");
   });
 
   it("never returns an empty label (no blank spinner)", () => {
@@ -36,7 +42,8 @@ describe("chatLoadingStageLabel", () => {
     }
   });
 
-  it("exposes boundaries for the sending stages", () => {
+  it("exposes boundaries for the sending and replying stages", () => {
     expect(CHAT_LOADING_STAGE_BOUNDARIES).toEqual([1500, 4000]);
+    expect(CHAT_REPLYING_STAGE_BOUNDARIES).toEqual([12_000, 30_000, 60_000]);
   });
 });

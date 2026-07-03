@@ -11,6 +11,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const outDir = path.resolve(__dirname, "../out");
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
 
+const RETIRED_CONVEX_HOSTS = ["happy-otter-123.convex.cloud"];
+
 if (!convexUrl) {
   console.error(
     "verify-convex-in-build: NEXT_PUBLIC_CONVEX_URL is not set — cannot verify production bundle."
@@ -42,9 +44,16 @@ function walk(dir, files = []) {
 
 const files = walk(outDir);
 let hits = 0;
+const retiredHits = [];
+
 for (const file of files) {
   const text = fs.readFileSync(file, "utf8");
   if (text.includes(host) || text.includes(convexUrl)) hits++;
+  for (const retired of RETIRED_CONVEX_HOSTS) {
+    if (text.includes(retired)) {
+      retiredHits.push({ file, host: retired });
+    }
+  }
 }
 
 if (hits === 0) {
@@ -52,6 +61,16 @@ if (hits === 0) {
     `verify-convex-in-build: no file under out/ contains Convex host "${host}". ` +
       "The client was likely built without NEXT_PUBLIC_CONVEX_URL."
   );
+  process.exit(1);
+}
+
+if (retiredHits.length > 0) {
+  console.error(
+    "verify-convex-in-build: bundle still references retired Convex deployment(s):"
+  );
+  for (const hit of retiredHits.slice(0, 10)) {
+    console.error(`  - ${hit.host} in ${path.relative(outDir, hit.file)}`);
+  }
   process.exit(1);
 }
 

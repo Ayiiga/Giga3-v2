@@ -21,13 +21,21 @@ export const CHAT_SENDING_STAGES: ChatLoadingStage[] = [
   { atMs: 4000, label: "Waiting for Giga3…" },
 ];
 
+/** Stages after the server accepted the message and AI work started. */
+export const CHAT_REPLYING_STAGES: ChatLoadingStage[] = [
+  { atMs: 0, label: "Generating response…" },
+  { atMs: 12_000, label: "Still working on it…" },
+  { atMs: 30_000, label: "Taking a bit longer…" },
+  { atMs: 60_000, label: "Almost there…" },
+];
+
 /** Shown only after the server accepted the message and AI work started. */
-export const CHAT_REPLYING_LABEL = "Generating response…";
+export const CHAT_REPLYING_LABEL = CHAT_REPLYING_STAGES[0].label;
 
 /** @deprecated use CHAT_SENDING_STAGES — kept for tests that reference all stages */
 export const CHAT_LOADING_STAGES: ChatLoadingStage[] = [
   ...CHAT_SENDING_STAGES,
-  { atMs: 9000, label: CHAT_REPLYING_LABEL },
+  ...CHAT_REPLYING_STAGES.slice(1),
 ];
 
 /** Elapsed thresholds (ms) at which the visible label changes — used to schedule minimal re-renders. */
@@ -35,10 +43,9 @@ export const CHAT_LOADING_STAGE_BOUNDARIES: number[] = CHAT_SENDING_STAGES.slice
   (stage) => stage.atMs
 );
 
-export const CHAT_REPLYING_STAGE_BOUNDARIES: number[] = [];
-
-const SLOW_REPLY_SUFFIX = " (slow connection — this can take a minute)";
-const SLOW_SEND_SUFFIX = " (slow connection — still sending…)";
+export const CHAT_REPLYING_STAGE_BOUNDARIES: number[] = CHAT_REPLYING_STAGES.slice(1).map(
+  (stage) => stage.atMs
+);
 
 function stageForElapsed(
   stages: ChatLoadingStage[],
@@ -58,19 +65,9 @@ function stageForElapsed(
 /** Returns the status label for the current elapsed wait time. */
 export function chatLoadingStageLabel(
   elapsedMs: number,
-  slowNetwork = false,
+  _slowNetwork = false,
   phase: ChatLoadingPhase = "replying"
 ): string {
-  if (phase === "replying") {
-    return slowNetwork
-      ? CHAT_REPLYING_LABEL + SLOW_REPLY_SUFFIX
-      : CHAT_REPLYING_LABEL;
-  }
-
-  const active = stageForElapsed(CHAT_SENDING_STAGES, elapsedMs);
-  const isLastSending = active === CHAT_SENDING_STAGES[CHAT_SENDING_STAGES.length - 1];
-  if (slowNetwork && isLastSending) {
-    return active.label + SLOW_SEND_SUFFIX;
-  }
-  return active.label;
+  const stages = phase === "replying" ? CHAT_REPLYING_STAGES : CHAT_SENDING_STAGES;
+  return stageForElapsed(stages, elapsedMs).label;
 }

@@ -1,3 +1,4 @@
+import { ConvexRuntimeBootstrap } from "@/components/providers/ConvexRuntimeBootstrap";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { DeferredPwaChrome } from "@/components/pwa/DeferredPwaChrome";
@@ -88,6 +89,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body className="min-h-full w-full max-w-full overflow-x-hidden bg-background font-sans text-foreground antialiased">
+        <ConvexRuntimeBootstrap />
         <ThemeProvider>
           <div className="min-h-full w-full max-w-full overflow-x-hidden">{children}</div>
         </ThemeProvider>
