@@ -2,6 +2,7 @@ import { internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { normalizeUserId } from "./userIds";
+import { SEGMENT_RECAP_PREFIX } from "./chatSegmentation";
 
 function userOwnsConversation(
   conv: { userId: string } | null,
@@ -56,6 +57,23 @@ export const listConversationMessagesInternal = internalQuery({
     return rows
       .filter((m) => m.role !== "system")
       .sort((a, b) => a.createdAt - b.createdAt);
+  },
+});
+
+export const listSegmentRecapInternal = internalQuery({
+  args: { conversationId: v.id("conversations") },
+  handler: async (ctx, args) => {
+    const rows = await ctx.db
+      .query("messages")
+      .withIndex("by_conversation", (q) =>
+        q.eq("conversationId", args.conversationId)
+      )
+      .collect();
+    const recap = rows.find(
+      (m) => m.role === "system" && m.content.startsWith(SEGMENT_RECAP_PREFIX)
+    );
+    if (!recap) return null;
+    return recap.content.slice(SEGMENT_RECAP_PREFIX.length);
   },
 });
 

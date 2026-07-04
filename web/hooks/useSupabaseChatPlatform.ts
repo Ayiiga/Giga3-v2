@@ -27,14 +27,19 @@ import {
   updateSupabaseChat,
 } from "@/lib/supabase/data";
 import { syncSupabaseAuthToLocalEmail } from "@/lib/supabase/auth";
-import { useConnectionQuality } from "@/hooks/useConnectionQuality";
+import {
+  CHAT_SEGMENT_NOTICE,
+  continuedConversationTitle,
+} from "@/lib/chat/chatSegmentation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type MessageRow = { _id: string; role: string; content: string; createdAt?: number };
 type ConvexSendResult = {
   status?: "processing" | "complete";
+  conversationId?: string;
   chatProviderLabel?: string;
   usedFallback?: boolean;
+  segmented?: boolean;
 };
 
 function countAssistantMessages(rows: MessageRow[] | undefined): number {
@@ -150,6 +155,7 @@ export function useSupabaseChatPlatform() {
   const [mounted, setMounted] = useState(false);
   const [conversationsRaw, setConversationsRaw] = useState<ConversationItem[] | undefined>();
   const [messagesRaw, setMessagesRaw] = useState<MessageRow[] | undefined>();
+  const [segmentNotice, setSegmentNotice] = useState<string | null>(null);
   const loadingConversationsRef = useRef(false);
   const loadingMessagesRef = useRef(false);
 
@@ -231,6 +237,12 @@ export function useSupabaseChatPlatform() {
     if (synced) setPendingUserText(null);
   }, [messagesRaw, pendingUserText]);
 
+  useEffect(() => {
+    if (!segmentNotice) return;
+    const timer = window.setTimeout(() => setSegmentNotice(null), 8_000);
+    return () => window.clearTimeout(timer);
+  }, [segmentNotice]);
+
   const activeConversation = useMemo(
     () => conversations.find((c) => c._id === activeId) ?? null,
     [conversations, activeId]
@@ -248,6 +260,7 @@ export function useSupabaseChatPlatform() {
     setActiveId(id);
     setError(null);
     setPendingUserText(null);
+    setSegmentNotice(null);
   }, []);
 
   const deleteConversation = useCallback(
@@ -332,25 +345,55 @@ export function useSupabaseChatPlatform() {
           isSlowNetwork
         );
 
+        let activeChat = chat;
+        let activeConvexId = convexConversationId;
+
+        if (
+          result.segmented &&
+          result.conversationId &&
+          result.conversationId !== convexConversationId
+        ) {
+          const oldMessages = await listSupabaseMessages(chat._id);
+          const trimmedOld = oldMessages.filter(
+            (m, idx, arr) =>
+              !(
+                idx === arr.length - 1 &&
+                m.role === "user" &&
+                m.content === content
+              )
+          );
+          await replaceSupabaseMessages(chat._id, trimmedOld);
+
+          const continued = await createSupabaseChat(email, mode);
+          activeChat =
+            (await updateSupabaseChat(continued._id, {
+              title: continuedConversationTitle(chat.title),
+              convexConversationId: result.conversationId,
+            })) ?? continued;
+          activeConvexId = result.conversationId;
+          setActiveId(activeChat._id);
+          setSegmentNotice(CHAT_SEGMENT_NOTICE);
+        }
+
         let convexMessages =
           result.status === "processing"
             ? await waitForAssistantReply(
                 sessionToken,
-                convexConversationId,
+                activeConvexId,
                 assistantBaseline,
                 replyWaitMs(isSlowNetwork),
                 isSlowNetwork
               )
-            : await fetchConvexMessages(sessionToken, convexConversationId, isSlowNetwork);
-        await replaceSupabaseMessages(chat._id, convexMessages);
+            : await fetchConvexMessages(sessionToken, activeConvexId, isSlowNetwork);
+        await replaceSupabaseMessages(activeChat._id, convexMessages);
 
         const title =
-          chat.title === "New chat" || chat.title.endsWith("…")
+          activeChat.title === "New chat" || activeChat.title.endsWith("…")
             ? makeTitle(content)
-            : chat.title;
-        const updated = await updateSupabaseChat(chat._id, {
+            : activeChat.title;
+        const updated = await updateSupabaseChat(activeChat._id, {
           title,
-          convexConversationId,
+          convexConversationId: activeConvexId,
         });
         if (updated) {
           setConversationsRaw((prev) =>
@@ -458,6 +501,7 @@ export function useSupabaseChatPlatform() {
     setActiveId,
     chatProviderLabel,
     usedFallback,
+    segmentNotice,
     credits,
     hasOpenAiAccess: false,
     interestProfileJson,

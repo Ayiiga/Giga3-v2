@@ -466,6 +466,11 @@ export const processJob = internalAction({
         { conversationId: job.conversationId }
       );
 
+      const segmentRecap = await ctx.runQuery(
+        internal.platform.listSegmentRecapInternal,
+        { conversationId: job.conversationId }
+      );
+
       const last = history[history.length - 1];
       if (
         last?.role === "assistant" &&
@@ -500,6 +505,9 @@ export const processJob = internalAction({
         qualityContext.systemPromptAddon;
 
       let systemPrompt = systemPromptBase;
+      if (segmentRecap) {
+        systemPrompt += `\n\n${segmentRecap}`;
+      }
       if (
         isLiveNewsEnabled() &&
         shouldEnableWebSearch(
