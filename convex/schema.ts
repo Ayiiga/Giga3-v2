@@ -543,4 +543,28 @@ export default defineSchema({
     reference: v.string(),
     tokens: v.number(),
   }),
+
+  /** Cached headlines per category — refreshed daily by cron (live news module). */
+  liveNewsCache: defineTable({
+    category: v.string(),
+    itemsJson: v.string(),
+    fetchedAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_category", ["category"])
+    .index("by_expiresAt", ["expiresAt"]),
+
+  /** Web push endpoints for news/sports alerts (optional, feature-flagged). */
+  pushSubscriptions: defineTable({
+    userId: v.string(),
+    endpoint: v.string(),
+    p256dh: v.string(),
+    auth: v.string(),
+    newsAlerts: v.boolean(),
+    sportsAlerts: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_endpoint", ["endpoint"]),
 });

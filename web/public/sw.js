@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v50-sports-desk";
+const CACHE_NAME = "giga3-shell-v51-live-news-premium-push";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
@@ -163,6 +163,38 @@ self.addEventListener("sync", (event) => {
       for (const client of clients) {
         client.postMessage({ type: "GIGA3_FLUSH_OUTBOX" });
       }
+    })
+  );
+});
+
+self.addEventListener("push", (event) => {
+  let payload = { title: "Giga3 AI", body: "New update available.", url: "/chat/" };
+  try {
+    payload = { ...payload, ...(event.data ? event.data.json() : {}) };
+  } catch {
+    /* ignore malformed payloads */
+  }
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      data: { url: payload.url || "/chat/" },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = event.notification.data?.url || "/chat/";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if ("focus" in client) {
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow(target);
     })
   );
 });

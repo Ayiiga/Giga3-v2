@@ -32,11 +32,21 @@ import {
 import {
   buildChatRoutePlan,
   buildPromptCacheKey,
+  enhanceImageGenerationPrompt,
+  imageAssetOrientation,
+  shouldEnableWebSearch,
   shouldUseResponseCache,
 } from "./providerRouter";
 import { openaiGenerateImage } from "./openaiImageClient";
 import { generateFreeImageForChat } from "./mediaEngine";
 import type { ActionCtx } from "./_generated/server";
+import type { FalImageSize } from "./falClient";
+import { persistImageUrlIfNeeded } from "./mediaStorage";
+import { isLiveNewsEnabled } from "./featureFlags";
+import {
+  IMAGE_UPGRADE_MARKDOWN,
+  resolveImageGenerationDecision,
+} from "./premiumImage";
 
 function latestUserPrompt(
   history: Array<{ role: string; content: string }>,
@@ -108,6 +118,8 @@ async function runHybridAiEngine(
     hasAttachments: boolean;
     hasImageAttachment?: boolean;
     conversationId: string;
+    subscriptionPlan: string;
+    subscriptionExpiresAt?: number | null;
   }
 ): Promise<ChatEngineResult & { cached: boolean }> {
   const routePlan = buildChatRoutePlan({
@@ -126,12 +138,15 @@ async function runHybridAiEngine(
 
   if (routePlan.requestKind === "image_generation") {
     const started = Date.now();
-    if (args.routing.tier === "premium") {
-      const image = await openaiGenerateImage(args.query);
-      const content = `Here is your generated image:\n\n${image.dataUrl}`;
+    const imageDecision = resolveImageGenerationDecision(
+      args.subscriptionPlan,
+      args.subscriptionExpiresAt
+    );
+
+    if (imageDecision.action === "upgrade") {
       const result: ChatEngineResult & { cached: boolean } = {
-        content,
-        providerId: "openai_image",
+        content: IMAGE_UPGRADE_MARKDOWN,
+        providerId: "policy",
         usedFallback: false,
         latencyMs: Date.now() - started,
         cached: false,
@@ -148,8 +163,64 @@ async function runHybridAiEngine(
       return result;
     }
 
-    const image = await generateFreeImageForChat(args.query);
-    const content = `Here is your generated image:\n\n${image.imageUrl}`;
+    const orientation = imageAssetOrientation(args.query);
+    const imageSize: FalImageSize =
+      orientation === "portrait"
+        ? "portrait_4_3"
+        : orientation === "landscape"
+          ? "landscape_4_3"
+          : "square_hd";
+    const imagePrompt = enhanceImageGenerationPrompt(args.query);
+
+    if (imageDecision.action === "openai") {
+      try {
+        const image = await openaiGenerateImage(imagePrompt, { imageSize });
+        const imageUrl = await persistImageUrlIfNeeded(ctx, image.dataUrl);
+        const content = `Here is your generated image:\n\n${imageUrl}`;
+        const result: ChatEngineResult & { cached: boolean } = {
+          content,
+          providerId: "openai_image",
+          usedFallback: false,
+          latencyMs: Date.now() - started,
+          cached: false,
+        };
+        await recordAiUsage(ctx, {
+          email: args.email,
+          mode: args.mode,
+          routing: args.routing,
+          engineResult: result,
+          requestKind: "image_generation",
+          cached: false,
+          conversationId: args.conversationId,
+        });
+        return result;
+      } catch {
+        const fallback = await generateFreeImageForChat(imagePrompt);
+        const imageUrl = await persistImageUrlIfNeeded(ctx, fallback.imageUrl);
+        const content = `Here is your generated image:\n\n${imageUrl}`;
+        const result: ChatEngineResult & { cached: boolean } = {
+          content,
+          providerId: fallback.provider,
+          usedFallback: true,
+          latencyMs: Date.now() - started,
+          cached: false,
+        };
+        await recordAiUsage(ctx, {
+          email: args.email,
+          mode: args.mode,
+          routing: args.routing,
+          engineResult: result,
+          requestKind: "image_generation",
+          cached: false,
+          conversationId: args.conversationId,
+        });
+        return result;
+      }
+    }
+
+    const image = await generateFreeImageForChat(imagePrompt);
+    const imageUrl = await persistImageUrlIfNeeded(ctx, image.imageUrl);
+    const content = `Here is your generated image:\n\n${imageUrl}`;
     const result: ChatEngineResult & { cached: boolean } = {
       content,
       providerId: image.provider,
@@ -526,11 +597,19 @@ export const regenerateMessage = action({
       })),
     });
 
-    const systemPrompt =
+    const systemPromptBase =
       getSystemPrompt(mode) +
       buildInterestSystemAddon(parseInterestProfile(refreshedUser?.interestProfile)) +
       "\n\n" +
       qualityContext.systemPromptAddon;
+
+    let systemPrompt = systemPromptBase;
+    if (isLiveNewsEnabled() && shouldEnableWebSearch(query, mode)) {
+      const briefing = await ctx.runQuery(internal.liveNewsInternal.getBriefingInternal, {});
+      if (briefing) {
+        systemPrompt += `\n\n${briefing}`;
+      }
+    }
 
     const chatMessages = trimChatMessages([
       { role: "system" as const, content: systemPrompt },
@@ -558,6 +637,8 @@ export const regenerateMessage = action({
       routing,
       hasAttachments: false,
       conversationId: args.conversationId,
+      subscriptionPlan: refreshedUser?.subscriptionPlan ?? "free",
+      subscriptionExpiresAt: refreshedUser?.subscriptionExpiresAt,
     });
     const validated = validateAnswerQuality({
       answer: engineResult.content,

@@ -18,4 +18,18 @@ crons.interval(
   {}
 );
 
+crons.daily(
+  "refresh live news cache",
+  { hourUTC: 5, minuteUTC: 30 },
+  internal.liveNews.refreshLiveNewsCache,
+  {}
+);
+
+crons.daily(
+  "sports live score push digest",
+  { hourUTC: 18, minuteUTC: 0 },
+  internal.sportsScores.notifyLiveSportsDigest,
+  {}
+);
+
 export default crons;

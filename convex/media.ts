@@ -11,6 +11,7 @@ import { generateImageWithFallback, generateVideoWithFallback } from "./mediaEng
 import { persistImageUrlIfNeeded } from "./mediaStorage";
 import { toUserMediaError } from "./mediaUtils";
 import { requireSessionWithMonitoring } from "./auth";
+import { shouldOfferOpenAiImageGeneration } from "./premiumImage";
 
 const imageSizeValidator = v.optional(
   v.union(
@@ -199,17 +200,25 @@ export const generateImage = action({
         throw new Error(`Insufficient tokens (need ${IMAGE_TOKEN_COST} for image)`);
       }
 
-      const result = await generateImageWithFallback({
-        prompt: fullPrompt,
-        category,
-        sourceImageUrl: args.sourceImageUrl,
-        negativePrompt: args.negativePrompt,
-        imageSize: args.imageSize as FalImageSize | undefined,
-        numInferenceSteps: args.numInferenceSteps,
-        guidanceScale: args.guidanceScale,
-        seed: args.seed,
-        enableSafetyChecker: args.enableSafetyChecker,
-      });
+      const allowOpenAi = shouldOfferOpenAiImageGeneration(
+        user.subscriptionPlan ?? "free",
+        user.subscriptionExpiresAt
+      );
+
+      const result = await generateImageWithFallback(
+        {
+          prompt: fullPrompt,
+          category,
+          sourceImageUrl: args.sourceImageUrl,
+          negativePrompt: args.negativePrompt,
+          imageSize: args.imageSize as FalImageSize | undefined,
+          numInferenceSteps: args.numInferenceSteps,
+          guidanceScale: args.guidanceScale,
+          seed: args.seed,
+          enableSafetyChecker: args.enableSafetyChecker,
+        },
+        { allowOpenAi }
+      );
 
       const imageUrl = await persistImageUrlIfNeeded(ctx, result.imageUrl);
 

@@ -115,7 +115,7 @@ export function SportsDeskPanel({
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {["", "Football", "Basketball", "American Football", "Baseball"].map((sport) => (
+        {["", "Football", "Premier League", "La Liga", "Champions League", "NBA", "NFL", "MLB", "NHL"].map((sport) => (
           <button
             key={sport || "all"}
             type="button"

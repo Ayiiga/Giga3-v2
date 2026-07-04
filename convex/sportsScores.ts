@@ -1,6 +1,7 @@
 "use node";
 
-import { action } from "./_generated/server";
+import { action, internalAction } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { requireSessionWithMonitoring } from "./auth";
 
@@ -28,11 +29,16 @@ export type SportsUpdateItem = {
   source: string;
 };
 
-const ESPN_SCOREBOARDS: Array<{ sport: string; path: string }> = [
-  { sport: "Football", path: "/sports/soccer/all/scoreboard" },
-  { sport: "Basketball", path: "/sports/basketball/nba/scoreboard" },
-  { sport: "American Football", path: "/sports/football/nfl/scoreboard" },
-  { sport: "Baseball", path: "/sports/baseball/mlb/scoreboard" },
+const ESPN_SCOREBOARDS: Array<{ sport: string; league: string; path: string }> = [
+  { sport: "Football", league: "All soccer", path: "/sports/soccer/all/scoreboard" },
+  { sport: "Football", league: "Premier League", path: "/sports/soccer/eng.1/scoreboard" },
+  { sport: "Football", league: "La Liga", path: "/sports/soccer/esp.1/scoreboard" },
+  { sport: "Football", league: "Champions League", path: "/sports/soccer/uefa.champions/scoreboard" },
+  { sport: "Football", league: "World Cup", path: "/sports/soccer/fifa.world/scoreboard" },
+  { sport: "Basketball", league: "NBA", path: "/sports/basketball/nba/scoreboard" },
+  { sport: "American Football", league: "NFL", path: "/sports/football/nfl/scoreboard" },
+  { sport: "Baseball", league: "MLB", path: "/sports/baseball/mlb/scoreboard" },
+  { sport: "Hockey", league: "NHL", path: "/sports/hockey/nhl/scoreboard" },
 ];
 
 const SPORT_NEWS_FEEDS: Array<{ url: string; source: string }> = [
@@ -196,7 +202,11 @@ async function fetchEspnBoard(
     });
     if (!res.ok) return [];
     const json = (await res.json()) as { events?: EspnEvent[] };
-    return parseEspnScoreboard(json, board.sport);
+    const matches = parseEspnScoreboard(json, board.sport);
+    return matches.map((match) => ({
+      ...match,
+      league: match.league === board.sport ? board.league : `${board.league} · ${match.league}`,
+    }));
   } catch {
     return [];
   } finally {
@@ -241,7 +251,11 @@ export const fetchLiveSports = action({
     const filter = args.sportFilter?.trim().toLowerCase();
 
     const boards = filter
-      ? ESPN_SCOREBOARDS.filter((b) => b.sport.toLowerCase().includes(filter))
+      ? ESPN_SCOREBOARDS.filter(
+          (b) =>
+            b.sport.toLowerCase().includes(filter) ||
+            b.league.toLowerCase().includes(filter)
+        )
       : ESPN_SCOREBOARDS;
 
     const [matchBatches, updateBatches] = await Promise.all([
@@ -256,7 +270,7 @@ export const fetchLiveSports = action({
         if (rank !== 0) return rank;
         return Date.parse(b.startTime) - Date.parse(a.startTime);
       })
-      .slice(0, 40);
+      .slice(0, 48);
 
     const seen = new Set<string>();
     const updates: SportsUpdateItem[] = [];
@@ -274,5 +288,22 @@ export const fetchLiveSports = action({
       updates: updates.slice(0, 12),
       sources: ["ESPN Scoreboard", ...SPORT_NEWS_FEEDS.map((f) => f.source)],
     };
+  },
+});
+
+/** Daily digest push for live matches (cron; feature-flagged). */
+export const notifyLiveSportsDigest = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    const boards = ESPN_SCOREBOARDS.slice(0, 4);
+    const batches = await Promise.all(boards.map((board) => fetchEspnBoard(board)));
+    const live = batches.flat().filter((m) => m.status === "live");
+    if (live.length === 0) return { sent: 0 };
+
+    const sample = live[0];
+    return await ctx.runAction(internal.pushAlerts.notifySportsLive, {
+      title: `${live.length} live match${live.length === 1 ? "" : "es"} now`,
+      body: `${sample.homeTeam} ${sample.homeScore ?? "-"} – ${sample.awayScore ?? "-"} ${sample.awayTeam} · ${sample.league}`,
+    });
   },
 });

@@ -16,6 +16,14 @@ import { SECURITY_EVENT_TYPES } from "./securityMonitoring";
 import { RateLimitError, UnauthorizedError } from "./securityErrors";
 import { resolveAiProviderTier } from "./providerRouter";
 import { getFreeOpenAiSnapshotDb } from "./freeOpenAiQuota";
+import { isSubscriptionActive } from "./creditsConfig";
+import {
+  isFreeImageGenerationEnabled,
+  isLiveNewsEnabled,
+  isPushAlertsEnabled,
+  openAiImageRequiresSubscription,
+} from "./featureFlags";
+import { shouldOfferOpenAiImageGeneration } from "./premiumImage";
 
 async function attachSessionToken<T extends Record<string, unknown>>(
   email: string,
@@ -139,11 +147,26 @@ export const getChatCredits = query({
 
     const freeOpenAi = await getFreeOpenAiSnapshotDb(ctx, email);
     const isPremium = aiTier === "premium";
+    const subscriptionActive = isSubscriptionActive(
+      user.subscriptionPlan ?? "free",
+      user.subscriptionExpiresAt
+    );
 
     return {
       credits: user.credits ?? 0,
       aiTier,
       isPremium,
+      subscriptionActive,
+      canUseOpenAiImage: shouldOfferOpenAiImageGeneration(
+        user.subscriptionPlan ?? "free",
+        user.subscriptionExpiresAt
+      ),
+      freeImageGenerationEnabled: isFreeImageGenerationEnabled(),
+      features: {
+        liveNews: isLiveNewsEnabled(),
+        pushAlerts: isPushAlertsEnabled(),
+        openAiImageRequiresSubscription: openAiImageRequiresSubscription(),
+      },
       freeOpenAiRemaining: isPremium ? freeOpenAi.limit : freeOpenAi.remaining,
       freeOpenAiLimit: freeOpenAi.limit,
       freeOpenAiResetsAt: freeOpenAi.resetsAt,
