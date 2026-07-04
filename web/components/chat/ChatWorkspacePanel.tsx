@@ -3,6 +3,8 @@
 import { DocumentTemplatePicker } from "@/components/chat/DocumentTemplatePicker";
 import { ImageStudioQuickPanel } from "@/components/chat/ImageStudioQuickPanel";
 import { ToolSelector } from "@/components/chat/ToolSelector";
+import { NewsDeskPanel } from "@/components/news/NewsDeskPanel";
+import { getSessionToken } from "@/lib/auth";
 import {
   buildMediaStudioUrl,
   MEDIA_STUDIO_TEMPLATES,
@@ -14,7 +16,7 @@ import {
   type WorkspaceNavTarget,
 } from "@/lib/chat/workspaceNav";
 import { cn } from "@/lib/utils";
-import { ChevronDown, FileText, Loader2, MessageCircle, Sparkles } from "lucide-react";
+import { ChevronDown, FileText, Loader2, MessageCircle, Newspaper, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo, useEffect, useState } from "react";
 
@@ -28,7 +30,7 @@ interface ChatWorkspacePanelProps {
   onError: (message: string) => void;
 }
 
-type WorkspaceTab = "modes" | "documents" | "media";
+type WorkspaceTab = "modes" | "documents" | "media" | "news";
 
 function ChatWorkspacePanelComponent({
   mode,
@@ -40,9 +42,17 @@ function ChatWorkspacePanelComponent({
   onError,
 }: ChatWorkspacePanelProps) {
   const router = useRouter();
+  const [sessionToken] = useState(() => getSessionToken());
   const [open, setOpen] = useState(!hasMessages);
   const [tab, setTab] = useState<WorkspaceTab>(hasMessages ? "modes" : "documents");
   const [mediaNavigating, setMediaNavigating] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (mode === "news") {
+      setOpen(true);
+      setTab("news");
+    }
+  }, [mode]);
 
   useEffect(() => {
     if (hasMessages) {
@@ -50,8 +60,10 @@ function ChatWorkspacePanelComponent({
       return;
     }
     setOpen(true);
-    setTab("documents");
-  }, [hasMessages]);
+    if (mode !== "news") {
+      setTab("documents");
+    }
+  }, [hasMessages, mode]);
 
   useEffect(() => {
     function onWorkspaceNav(event: Event) {
@@ -62,8 +74,10 @@ function ChatWorkspacePanelComponent({
         scrollToChatHistory();
         return;
       }
-      setOpen(true);
-      setTab(target);
+      if (target === "modes" || target === "documents" || target === "media" || target === "news") {
+        setOpen(true);
+        setTab(target);
+      }
     }
     window.addEventListener(WORKSPACE_NAV_EVENT, onWorkspaceNav);
     return () => window.removeEventListener(WORKSPACE_NAV_EVENT, onWorkspaceNav);
@@ -123,6 +137,7 @@ function ChatWorkspacePanelComponent({
           {tab === "modes" && "AI modes"}
           {tab === "documents" && "Templates"}
           {tab === "media" && "Media studio"}
+          {tab === "news" && "News desk"}
           <ChevronDown
             className={cn(
               "h-4 w-4 text-muted",
@@ -138,10 +153,16 @@ function ChatWorkspacePanelComponent({
           <div className="flex gap-1 border-t border-border px-2 py-2">
             {tabBtn("modes", "Modes", MessageCircle)}
             {tabBtn("documents", "Docs", FileText)}
+            {tabBtn("news", "News", Newspaper)}
             {tabBtn("media", "Media", Sparkles)}
           </div>
 
-          <div className="max-h-[200px] overflow-y-auto overscroll-y-contain border-t border-border bg-background">
+          <div
+            className={cn(
+              "overflow-y-auto overscroll-y-contain border-t border-border bg-background",
+              tab === "news" ? "max-h-[min(50vh,420px)]" : "max-h-[200px]"
+            )}
+          >
             {tab === "modes" && (
               <ToolSelector
                 value={mode}
@@ -161,6 +182,18 @@ function ChatWorkspacePanelComponent({
                 onInsert={onInsertDocument}
                 onError={onError}
               />
+              </div>
+            )}
+
+            {tab === "news" && (
+              <div id="news">
+                {sessionToken ? (
+                  <NewsDeskPanel sessionToken={sessionToken} variant="chat" />
+                ) : (
+                  <p className="px-4 py-6 text-sm text-muted">
+                    Sign in to load headlines and verify news claims.
+                  </p>
+                )}
               </div>
             )}
 

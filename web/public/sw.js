@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v48-marketplace-news-upload";
+const CACHE_NAME = "giga3-shell-v49-chat-news-desk";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

@@ -182,6 +182,12 @@ describe("shouldEnableWebSearch", () => {
   it("enables search for current-events phrasing", () => {
     expect(shouldEnableWebSearch("Latest AI news", "general")).toBe(true);
   });
+
+  it("enables search for fact-check phrasing", () => {
+    expect(shouldEnableWebSearch("Is this fake news about the election?", "general")).toBe(
+      true
+    );
+  });
 });
 
 describe("shouldStartFailoverAttempt", () => {

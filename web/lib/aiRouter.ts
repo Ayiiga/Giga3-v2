@@ -78,7 +78,7 @@ export const AI_MODE_DEFINITIONS: AiModeDefinition[] = [
   {
     id: "news",
     label: "News Analysis",
-    description: "Summarize and contextualize news",
+    description: "Latest headlines, fact-checks, and source verification",
     icon: "Newspaper",
     systemPrompt: getSystemPrompt("news"),
   },
