@@ -1,5 +1,6 @@
 import { Container } from "@/components/ui/Container";
 import { navLinks, siteConfig } from "@/lib/site";
+import { legalNavLinks } from "@/lib/legal/content";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import Link from "next/link";
 
@@ -9,7 +10,7 @@ export function Footer() {
   return (
     <footer className="border-t border-border bg-zinc-50">
       <Container className="section-padding !py-14">
-        <div className="grid gap-10 md:grid-cols-4">
+        <div className="grid gap-10 md:grid-cols-5">
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-2.5 font-semibold">
               <BrandLogo size={36} />
@@ -41,6 +42,19 @@ export function Footer() {
                   App pricing
                 </a>
               </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">Legal</h3>
+            <ul className="mt-4 space-y-2 text-sm text-muted">
+              {legalNavLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="hover:text-foreground">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

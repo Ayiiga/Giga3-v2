@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v51-live-news-premium-push";
+const CACHE_NAME = "giga3-shell-v52-legal-policies";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
