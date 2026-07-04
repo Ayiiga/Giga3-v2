@@ -301,7 +301,7 @@ export const notifyLiveSportsDigest = internalAction({
     if (live.length === 0) return { sent: 0 };
 
     const sample = live[0];
-    return await ctx.runAction(internal.pushAlerts.notifySportsLive, {
+    return await ctx.runAction(internal.pushAlertsActions.notifySportsLive, {
       title: `${live.length} live match${live.length === 1 ? "" : "es"} now`,
       body: `${sample.homeTeam} ${sample.homeScore ?? "-"} – ${sample.awayScore ?? "-"} ${sample.awayTeam} · ${sample.league}`,
     });
