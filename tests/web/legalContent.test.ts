@@ -5,6 +5,7 @@ describe("legal content", () => {
   it("includes all required policy documents", () => {
     expect(legalDocuments.map((doc) => doc.slug)).toEqual([
       "terms",
+      "privacy",
       "cookies",
       "refunds",
       "acceptable-use",
@@ -20,5 +21,10 @@ describe("legal content", () => {
   it("exposes terms with 14 sections", () => {
     expect(legalDocumentBySlug.terms.sections).toHaveLength(14);
     expect(legalDocumentBySlug.terms.sections[0]?.title).toContain("Acceptance");
+  });
+
+  it("exposes privacy with key sections", () => {
+    expect(legalDocumentBySlug.privacy.sections).toHaveLength(11);
+    expect(legalDocumentBySlug.privacy.sections[0]?.title).toBe("Information We Collect");
   });
 });

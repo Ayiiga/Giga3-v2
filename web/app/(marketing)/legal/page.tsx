@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Legal",
-  description: "Giga3 AI legal policies — Terms of Service, Cookie Policy, Refund Policy, and Acceptable Use.",
+  description: "Giga3 AI legal policies — Terms of Service, Privacy Policy, Cookie Policy, Refund Policy, and Acceptable Use.",
 };
 
 export default function LegalIndexPage() {

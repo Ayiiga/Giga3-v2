@@ -1,5 +1,6 @@
 import { Container } from "@/components/ui/Container";
 import { navLinks, siteConfig } from "@/lib/site";
+import { legalNavLinks } from "@/lib/legal/content";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import Link from "next/link";
 
@@ -47,26 +48,13 @@ export function Footer() {
           <div>
             <h3 className="text-sm font-semibold text-foreground">Legal</h3>
             <ul className="mt-4 space-y-2 text-sm text-muted">
-              <li>
-                <Link href="/legal/terms/" className="hover:text-foreground">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link href="/legal/cookies/" className="hover:text-foreground">
-                  Cookie Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/legal/refunds/" className="hover:text-foreground">
-                  Refund Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/legal/acceptable-use/" className="hover:text-foreground">
-                  Acceptable Use
-                </Link>
-              </li>
+              {legalNavLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="hover:text-foreground">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
