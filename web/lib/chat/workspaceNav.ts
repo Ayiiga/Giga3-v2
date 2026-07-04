@@ -9,6 +9,14 @@ export function dispatchWorkspaceNav(target: WorkspaceNavTarget) {
   window.dispatchEvent(
     new CustomEvent(WORKSPACE_NAV_EVENT, { detail: { target } })
   );
+  if (target === "history") {
+    scrollToChatHistory();
+    return;
+  }
+  requestAnimationFrame(() => {
+    const workspace = document.getElementById("modes");
+    workspace?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 }
 
 export function scrollToChatHistory() {

@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v52-legal-policies";
+const CACHE_NAME = "giga3-shell-v53-sidebar-nav-fee";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

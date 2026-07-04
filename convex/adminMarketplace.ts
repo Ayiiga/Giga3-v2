@@ -20,9 +20,11 @@ export const getAdminOverview = query({
     const successful = payments.filter((p) => p.status === "success");
     const byType: Record<string, number> = {};
     let totalRevenueGhs = 0;
+    let platformFeeGhs = 0;
     for (const p of successful) {
       byType[p.type] = (byType[p.type] ?? 0) + p.amountGhs;
       totalRevenueGhs += p.amountGhs;
+      platformFeeGhs += p.platformFeeGhs ?? 0;
     }
 
     const payouts = await ctx.db
@@ -41,6 +43,7 @@ export const getAdminOverview = query({
     return {
       revenue: {
         totalRevenueGhs,
+        platformFeeGhs,
         byType,
         successfulCount: successful.length,
         sampleSize: payments.length,

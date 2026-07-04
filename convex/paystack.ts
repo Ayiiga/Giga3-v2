@@ -32,6 +32,10 @@ import {
   normalizeSubscriberEmail,
   SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE,
 } from "./subscriptionPolicy";
+import {
+  appliesPlatformFee,
+  computePlatformFeeGhs,
+} from "./platformRevenue";
 
 const PAYSTACK_BASE = "https://api.paystack.co";
 
@@ -295,6 +299,9 @@ export const fulfillPayment = internalMutation({
     await ctx.db.patch(record._id, {
       status: "success",
       paystackResponse: args.paystackResponse,
+      ...(appliesPlatformFee(record.type)
+        ? { platformFeeGhs: computePlatformFeeGhs(record.amountGhs) }
+        : {}),
     });
 
     if (record.type === "subscription" && record.planId) {
