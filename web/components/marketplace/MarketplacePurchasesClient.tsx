@@ -4,6 +4,7 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { formatGhs } from "@/lib/marketplace/catalog";
+import { formatTimestampDateTime } from "@/lib/datetime";
 import { getSessionToken } from "@/lib/auth";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -73,7 +74,7 @@ function MarketplacePurchasesInner() {
                     </Link>
                     <p className="mt-1 text-sm text-muted">
                       {formatGhs(row.purchase.amountGhs)} ·{" "}
-                      {new Date(row.purchase.createdAt).toLocaleDateString()} ·{" "}
+                      {formatTimestampDateTime(row.purchase.createdAt)} ·{" "}
                       <span className="capitalize">
                         {row.purchase.license.replace(/_/g, " ")} license
                       </span>

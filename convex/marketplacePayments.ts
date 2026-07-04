@@ -71,9 +71,6 @@ export const fulfillMarketplacePurchaseInternal = internalMutation({
         payoutBalanceGhs: creator.payoutBalanceGhs + creatorEarningsGhs,
         updatedAt: Date.now(),
       });
-      if (creator.totalSales + 1 >= 3 && !creator.verified) {
-        await ctx.db.patch(creator._id, { verified: true });
-      }
     }
 
     return { alreadyFulfilled: false as const, creatorEarningsGhs };

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  toPublicCreatorProfile,
   toPublicListing,
   toPublicReview,
 } from "../../convex/marketplaceViews";
@@ -47,5 +48,37 @@ describe("marketplaceViews", () => {
     });
     expect(pub.rating).toBe(5);
     expect(pub).not.toHaveProperty("buyerId");
+  });
+
+  it("strips PII from public creator profiles", () => {
+    const pub = toPublicCreatorProfile({
+      _id: "creatorProfiles:1" as any,
+      _creationTime: 0,
+      userId: "creator@example.com",
+      displayName: "Ada",
+      handle: "ada",
+      bio: "Maker",
+      avatarUrl: undefined,
+      website: undefined,
+      verified: true,
+      verificationStatus: "approved",
+      nationalIdNumber: "GHA-123456789-0",
+      idDocumentStorageId: "_storage:secret" as any,
+      idDocumentFileName: "id.jpg",
+      latitude: 5.6,
+      longitude: -0.18,
+      locationCapturedAt: 1,
+      locationAccuracyMeters: 12,
+      verificationSubmittedAt: 1,
+      totalSales: 2,
+      totalEarningsGhs: 40,
+      payoutBalanceGhs: 10,
+      createdAt: 1,
+      updatedAt: 1,
+    });
+    expect(pub.displayName).toBe("Ada");
+    expect(pub).not.toHaveProperty("nationalIdNumber");
+    expect(pub).not.toHaveProperty("latitude");
+    expect(pub).not.toHaveProperty("userId");
   });
 });

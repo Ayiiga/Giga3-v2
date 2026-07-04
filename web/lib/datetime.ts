@@ -1,5 +1,7 @@
 /** Locale-aware date/time helpers — no hardcoded calendar values in UI copy. */
 
+export const PRODUCT_LOCALE = "en-GH";
+
 const DATE_OPTS: Intl.DateTimeFormatOptions = {
   weekday: "long",
   year: "numeric",
@@ -27,13 +29,27 @@ const DATETIME_OPTS: Intl.DateTimeFormatOptions = {
 function formatWith(
   date: Date,
   options: Intl.DateTimeFormatOptions,
-  locale = "en-US"
+  locale = PRODUCT_LOCALE
 ): string {
   try {
     return new Intl.DateTimeFormat(locale, options).format(date);
   } catch {
     return date.toISOString().slice(0, 10);
   }
+}
+
+export function formatTimestamp(
+  ms: number,
+  locale = PRODUCT_LOCALE
+): string {
+  return formatWith(new Date(ms), DATE_SHORT_OPTS, locale);
+}
+
+export function formatTimestampDateTime(
+  ms: number,
+  locale = PRODUCT_LOCALE
+): string {
+  return formatWith(new Date(ms), DATETIME_OPTS, locale);
 }
 
 export function formatCurrentDate(now = new Date()): string {

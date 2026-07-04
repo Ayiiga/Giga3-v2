@@ -1,5 +1,6 @@
 import { internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { verificationStatusOf } from "./creatorProfiles";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import {
@@ -8,6 +9,7 @@ import {
 } from "./schema";
 import {
   toCreatorListing,
+  toPublicCreatorProfile,
   toPublicListing,
   toPublicReview,
 } from "./marketplaceViews";
@@ -96,7 +98,7 @@ export const getListing = query({
       .take(20);
     return {
       listing: toPublicListing(listing),
-      creator,
+      creator: creator ? toPublicCreatorProfile(creator) : null,
       reviews: reviews.map(toPublicReview),
     };
   },
@@ -138,6 +140,13 @@ export const createListing = mutation({
       .withIndex("by_user", (q) => q.eq("userId", email))
       .first();
     if (!profile) throw new Error("Create a creator profile before listing products.");
+
+    const verification = verificationStatusOf(profile);
+    if (verification !== "pending" && verification !== "approved") {
+      throw new Error(
+        "Submit national ID verification and GPS location before creating listings."
+      );
+    }
 
     const title = args.title.trim().slice(0, 120);
     const description = args.description.trim().slice(0, 4000);
