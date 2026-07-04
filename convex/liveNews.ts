@@ -34,7 +34,7 @@ export const refreshLiveNewsCache = internalAction({
       refreshed += 1;
     }
 
-    await ctx.runAction(internal.pushAlerts.notifyFromLiveNewsRefresh, {});
+    await ctx.runAction(internal.pushAlertsActions.notifyFromLiveNewsRefresh, {});
     return { refreshed };
   },
 });

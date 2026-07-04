@@ -21,7 +21,7 @@ export function PushAlertsPanel({ embedded = true }: { embedded?: boolean }) {
   const pushConfig = useQuery(api.pushAlerts.getPushConfig);
   const savePushSubscription = useMutation(api.pushAlerts.savePushSubscription);
   const updatePushPreferences = useMutation(api.pushAlerts.updatePushPreferences);
-  const sendTestPush = useAction(api.pushAlerts.sendTestPush);
+  const sendTestPush = useAction(api.pushAlertsActions.sendTestPush);
 
   const [sessionToken] = useState(() => getSessionToken());
   const [endpoint, setEndpoint] = useState<string | null>(null);
