@@ -1,6 +1,10 @@
 import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
+import {
+  isBlockedFromNewSubscription,
+  SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE,
+} from "./subscriptionPolicy";
 
 async function getUserByEmail(ctx: { db: any }, email: string) {
   return await ctx.db
@@ -118,6 +122,10 @@ export const activateVideoSubscriptionInternal = internalMutation({
       .withIndex("by_email", (q) => q.eq("email", args.userId))
       .first();
     if (!user) throw new Error("User not found");
+
+    if (isBlockedFromNewSubscription(user.email)) {
+      throw new Error(SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE);
+    }
 
     const currentEnd = user.videoSubscriptionExpiresAt ?? 0;
     const periodStart = currentEnd > now ? currentEnd : now;
