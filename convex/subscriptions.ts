@@ -5,6 +5,13 @@ import { SUBSCRIPTION_PERIOD_MS } from "./subscriptionPlans";
 import { paidPlanValidator } from "./schema";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
+import {
+  GRANDFATHERED_SUBSCRIBER_EMAIL,
+  isBlockedFromNewSubscription,
+  isGrandfatheredSubscriber,
+  normalizeSubscriberEmail,
+  SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE,
+} from "./subscriptionPolicy";
 
 export const getActiveSubscription = query({
   args: sessionArgs,
@@ -33,6 +40,10 @@ export const activateSubscription = internalMutation({
       .withIndex("by_email", (q) => q.eq("email", args.userId))
       .first();
     if (!user) throw new Error("User not found");
+
+    if (isBlockedFromNewSubscription(user.email)) {
+      throw new Error(SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE);
+    }
 
     const now = Date.now();
     const base = Math.max(user.subscriptionExpiresAt ?? now, now);
@@ -123,5 +134,76 @@ export const runExpiryCheck = mutation({
       internal.subscriptions.expireStaleSubscriptions,
       {}
     );
+  },
+});
+
+/** Revoke all active chat/video subscriptions except the grandfathered account. */
+export const revokeLegacySubscribersExceptGrandfathered = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const users = await ctx.db.query("users").collect();
+    let revokedChat = 0;
+    let revokedVideo = 0;
+    let preserved = false;
+
+    for (const user of users) {
+      const email = normalizeSubscriberEmail(user.email);
+      if (isGrandfatheredSubscriber(email)) {
+        preserved = true;
+        continue;
+      }
+
+      const activeChatSubs = await ctx.db
+        .query("subscriptions")
+        .withIndex("by_user_status", (q) =>
+          q.eq("userId", user.email).eq("status", "active")
+        )
+        .collect();
+
+      const hasPaidChat =
+        user.subscriptionPlan !== "free" || activeChatSubs.length > 0;
+
+      if (hasPaidChat) {
+        for (const sub of activeChatSubs) {
+          await ctx.db.patch(sub._id, { status: "cancelled", updatedAt: now });
+        }
+        await ctx.db.patch(user._id, {
+          subscriptionPlan: "free",
+          plan: "free",
+          tier: "free",
+          subscriptionExpiresAt: undefined,
+        });
+        revokedChat += 1;
+      }
+
+      const activeVideoSubs = await ctx.db
+        .query("videoSubscriptions")
+        .withIndex("by_user_status", (q) =>
+          q.eq("userId", user.email).eq("status", "active")
+        )
+        .collect();
+
+      const hasPaidVideo =
+        Boolean(user.videoSubscriptionPlan) || activeVideoSubs.length > 0;
+
+      if (hasPaidVideo) {
+        for (const sub of activeVideoSubs) {
+          await ctx.db.patch(sub._id, { status: "cancelled", updatedAt: now });
+        }
+        await ctx.db.patch(user._id, {
+          videoSubscriptionPlan: undefined,
+          videoSubscriptionExpiresAt: undefined,
+        });
+        revokedVideo += 1;
+      }
+    }
+
+    return {
+      revokedChat,
+      revokedVideo,
+      preservedGrandfathered: preserved,
+      grandfatheredEmail: GRANDFATHERED_SUBSCRIBER_EMAIL,
+    };
   },
 });

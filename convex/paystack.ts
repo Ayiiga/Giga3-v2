@@ -27,6 +27,11 @@ import {
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { toClientPaymentView } from "./paymentViews";
+import {
+  isBlockedFromNewSubscription,
+  normalizeSubscriberEmail,
+  SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE,
+} from "./subscriptionPolicy";
 
 const PAYSTACK_BASE = "https://api.paystack.co";
 
@@ -293,6 +298,9 @@ export const fulfillPayment = internalMutation({
     });
 
     if (record.type === "subscription" && record.planId) {
+      if (isBlockedFromNewSubscription(normalizeSubscriberEmail(record.userId))) {
+        throw new Error(SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE);
+      }
       const planId = record.planId as PaidPlanId;
       const creditsToGrant =
         record.creditsGranted ?? getPlanMonthlyCredits(planId);
@@ -318,6 +326,9 @@ export const fulfillPayment = internalMutation({
         reference: record.reference,
       });
     } else if (record.type === "video_subscription" && record.videoPlanId) {
+      if (isBlockedFromNewSubscription(normalizeSubscriberEmail(record.userId))) {
+        throw new Error(SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE);
+      }
       const videoCredits =
         record.videoCreditsGranted ??
         getVideoSubscription(record.videoPlanId)?.videoCredits ??
@@ -395,6 +406,13 @@ export const initializePayment = action({
     const catalog = getProduct(args.productId);
     if (catalog.amountGhs <= 0) {
       throw new Error("Invalid product price");
+    }
+
+    if (
+      (catalog.type === "subscription" || catalog.type === "video_subscription") &&
+      isBlockedFromNewSubscription(email)
+    ) {
+      throw new Error(SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE);
     }
 
     const reference = `giga3_${args.productId}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
