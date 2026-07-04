@@ -141,6 +141,8 @@ export default defineSchema({
       v.literal("failed")
     ),
     paystackResponse: v.optional(v.string()),
+    /** Internal platform revenue — admin only; not shown in client payment views. */
+    platformFeeGhs: v.optional(v.number()),
     createdAt: v.number(),
   })
     .index("by_reference", ["reference"])

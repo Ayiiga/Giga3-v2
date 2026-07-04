@@ -47,6 +47,7 @@ function ChatWorkspacePanelComponent({
   const [sessionToken] = useState(() => getSessionToken());
   const [open, setOpen] = useState(!hasMessages);
   const [tab, setTab] = useState<WorkspaceTab>(hasMessages ? "modes" : "documents");
+  const [navigatedOpen, setNavigatedOpen] = useState(false);
   const [mediaNavigating, setMediaNavigating] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,15 +58,17 @@ function ChatWorkspacePanelComponent({
   }, [mode]);
 
   useEffect(() => {
-    if (hasMessages) {
+    if (hasMessages && !navigatedOpen) {
       setOpen(false);
       return;
     }
-    setOpen(true);
-    if (mode !== "news") {
-      setTab("documents");
+    if (!hasMessages) {
+      setOpen(true);
+      if (mode !== "news") {
+        setTab("documents");
+      }
     }
-  }, [hasMessages, mode]);
+  }, [hasMessages, mode, navigatedOpen]);
 
   useEffect(() => {
     function onWorkspaceNav(event: Event) {
@@ -77,6 +80,7 @@ function ChatWorkspacePanelComponent({
         return;
       }
       if (target === "modes" || target === "documents" || target === "media" || target === "news" || target === "sports" || target === "alerts") {
+        setNavigatedOpen(true);
         setOpen(true);
         setTab(target);
       }
@@ -125,12 +129,18 @@ function ChatWorkspacePanelComponent({
       id="modes"
       className={cn(
         "shrink-0 border-b border-border bg-card",
-        hasMessages && "hidden sm:block"
+        hasMessages && !open && "hidden sm:block"
       )}
     >
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          setOpen((v) => {
+            const next = !v;
+            setNavigatedOpen(next);
+            return next;
+          });
+        }}
         aria-expanded={open}
         className="flex w-full min-h-11 items-center justify-between gap-2 px-4 py-2.5 text-left"
       >
