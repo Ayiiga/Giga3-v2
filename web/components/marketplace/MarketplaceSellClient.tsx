@@ -21,6 +21,7 @@ import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { CreatorNewsHub } from "@/components/marketplace/CreatorNewsHub";
 
 function RevenueStatsSkeleton() {
   return (
@@ -79,6 +80,9 @@ function MarketplaceSellInner() {
   const [previewText, setPreviewText] = useState("");
   const [copyrightNotice, setCopyrightNotice] = useState("");
   const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [productFile, setProductFile] = useState<File | null>(null);
+  const [publishing, setPublishing] = useState(false);
   const [nationalIdNumber, setNationalIdNumber] = useState("");
   const [idDocumentFile, setIdDocumentFile] = useState<File | null>(null);
   const [coordinates, setCoordinates] = useState<CapturedCoordinates | null>(null);
@@ -119,7 +123,7 @@ function MarketplaceSellInner() {
     setMessage("Profile saved.");
   }
 
-  async function uploadIdDocument(file: File): Promise<Id<"_storage">> {
+  async function uploadToStorage(file: File): Promise<Id<"_storage">> {
     const uploadUrl = await generateUploadUrl({ sessionToken });
     const res = await fetch(uploadUrl, {
       method: "POST",
@@ -128,6 +132,10 @@ function MarketplaceSellInner() {
     });
     const { storageId } = await res.json();
     return storageId as Id<"_storage">;
+  }
+
+  async function uploadIdDocument(file: File): Promise<Id<"_storage">> {
+    return uploadToStorage(file);
   }
 
   async function handleCaptureLocation() {
@@ -186,35 +194,58 @@ function MarketplaceSellInner() {
   }
 
   async function publishListing() {
-    const listingId = await createListing({
-      sessionToken,
-      title,
-      description,
-      category,
-      productType: productType as any,
-      priceGhs,
-      license: license as any,
-      copyrightNotice: copyrightNotice || undefined,
-      tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
-      previewText: previewText || undefined,
-      coverImageUrl: coverImageUrl.trim() || undefined,
-      publish: true,
-    });
-    setMessage(
-      "Published! Now attach the downloadable file below — buyers can't purchase until a file is attached."
-    );
-    setTitle("");
-    setDescription("");
+    setError(null);
+    setPublishing(true);
+    try {
+      let coverStorageId: Id<"_storage"> | undefined;
+      if (coverImageFile) {
+        coverStorageId = await uploadToStorage(coverImageFile);
+      }
+
+      const listingId = await createListing({
+        sessionToken,
+        title,
+        description,
+        category,
+        productType: productType as any,
+        priceGhs,
+        license: license as any,
+        copyrightNotice: copyrightNotice || undefined,
+        tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+        previewText: previewText || undefined,
+        coverImageUrl: coverImageUrl.trim() || undefined,
+        coverStorageId,
+        publish: true,
+      });
+
+      if (productFile) {
+        await attachFile({
+          sessionToken,
+          listingId,
+          storageId: await uploadToStorage(productFile),
+          fileName: productFile.name,
+        });
+        setMessage("Published with product file attached — ready to sell.");
+      } else {
+        setMessage(
+          "Published! Attach the downloadable file under “Your listings” if you have not uploaded one yet."
+        );
+      }
+
+      setTitle("");
+      setDescription("");
+      setCoverImageFile(null);
+      setProductFile(null);
+      setCoverImageUrl("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not publish listing.");
+    } finally {
+      setPublishing(false);
+    }
   }
 
   async function uploadFile(listingId: Id<"marketplaceListings">, file: File) {
-    const uploadUrl = await generateUploadUrl({ sessionToken });
-    const res = await fetch(uploadUrl, {
-      method: "POST",
-      headers: { "Content-Type": file.type || "application/octet-stream" },
-      body: file,
-    });
-    const { storageId } = await res.json();
+    const storageId = await uploadToStorage(file);
     await attachFile({
       sessionToken,
       listingId,
@@ -384,8 +415,13 @@ function MarketplaceSellInner() {
           )}
         </section>
 
+        <CreatorNewsHub sessionToken={sessionToken} />
+
         <section className="rounded-2xl border bg-card p-6">
           <h2 className="text-lg font-semibold">New listing</h2>
+          <p className="mt-2 text-sm text-muted">
+            Upload a cover image and product file when you publish, or attach the file later.
+          </p>
           {(verificationStatus !== "pending" && verificationStatus !== "approved") && (
             <p className="mt-2 text-sm text-amber-700">
               Complete identity verification above before publishing products.
@@ -455,15 +491,42 @@ function MarketplaceSellInner() {
               placeholder="Cover image URL (optional)"
               className="rounded-xl border px-4 py-3"
             />
+            <label className="flex cursor-pointer flex-col gap-2 rounded-xl border border-dashed px-4 py-4 text-sm">
+              <span className="font-medium">Cover image upload (optional)</span>
+              <span className="text-muted">
+                {coverImageFile?.name ?? "JPG or PNG for your listing card"}
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => setCoverImageFile(e.target.files?.[0] ?? null)}
+              />
+            </label>
+            <label className="flex cursor-pointer flex-col gap-2 rounded-xl border border-dashed px-4 py-4 text-sm">
+              <span className="font-medium">Product file upload</span>
+              <span className="text-muted">
+                {productFile?.name ??
+                  "eBook, template, audio, or zip — attach now or after publishing"}
+              </span>
+              <input
+                type="file"
+                className="hidden"
+                onChange={(e) => setProductFile(e.target.files?.[0] ?? null)}
+              />
+            </label>
             <p className="text-sm text-muted">
-              After publishing, upload the downloadable file under “Your listings”.
-              Buyers cannot purchase a listing until its file is attached.
+              Upload your product file here or attach it later under “Your listings”.
+              Buyers cannot purchase until a file is attached.
             </p>
             <Button
               onClick={publishListing}
-              disabled={verificationStatus !== "pending" && verificationStatus !== "approved"}
+              disabled={
+                publishing ||
+                (verificationStatus !== "pending" && verificationStatus !== "approved")
+              }
             >
-              Publish listing
+              {publishing ? "Publishing…" : "Publish listing"}
             </Button>
           </div>
         </section>
