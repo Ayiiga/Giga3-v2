@@ -23,6 +23,7 @@ import {
   MessageSquarePlus,
   Newspaper,
   PanelLeft,
+  Trophy,
   PanelLeftClose,
   Pin,
   Search,
@@ -75,6 +76,7 @@ const PRIMARY_NAV = [
   { href: "/", label: "Home", icon: Home },
   { hash: "modes" as const, label: "AI Tools", icon: Wand2 },
   { hash: "news" as const, label: "News desk", icon: Newspaper },
+  { hash: "sports" as const, label: "Sports desk", icon: Trophy },
   { hash: "documents" as const, label: "My Documents", icon: FileText },
   { href: "/marketplace", label: "Marketplace", icon: LayoutGrid },
 ] as const;

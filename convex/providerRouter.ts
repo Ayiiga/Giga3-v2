@@ -151,6 +151,9 @@ const CURRENT_INFO_RE =
 const FACT_CHECK_RE =
   /\b(fact[- ]?check|verify|true or false|fake news|misinformation|disinformation|authentic|rumou?r|hoax|debunk|is this (true|real|fake)|did this (happen|really))\b/i;
 
+const SPORTS_SCORES_RE =
+  /\b(live score|sports score|match score|fixture|standings|who won|final score|half[- ]?time|full[- ]?time|premier league|la liga|champions league|world cup|black stars|ghana vs|nba|nfl|mlb|football score|basketball score)\b/i;
+
 const RESEARCH_MODES = new Set<string>(["research", "news", "university", "waec"]);
 
 const GEMINI_MODES = new Set<string>([
@@ -208,6 +211,7 @@ export function shouldEnableWebSearch(
   if (RESEARCH_MODES.has(mode)) return true;
   if (mode === "news") return true;
   if (FACT_CHECK_RE.test(query)) return true;
+  if (SPORTS_SCORES_RE.test(query)) return true;
   return CURRENT_INFO_RE.test(query);
 }
 
