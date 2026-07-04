@@ -21,6 +21,7 @@ import {
   readCachedMessages,
   writeCachedMessages,
 } from "@/lib/chat/messageCache";
+import { CHAT_SEGMENT_NOTICE } from "@/lib/chat/chatSegmentation";
 import { chatSystemForModel, gigaModelForMode, type GigaModelId } from "@/lib/chat/gigaModels";
 import {
   acceptTimeoutMs,
@@ -58,6 +59,7 @@ type ProcessingMutationResult = {
   chatProviderLabel?: string;
   usedFallback?: boolean;
   jobId?: string;
+  segmented?: boolean;
 };
 
 function countAssistantMessages(
@@ -83,6 +85,7 @@ export function useChatPlatform() {
   const [mounted, setMounted] = useState(false);
   const [sessionToken, setSessionTokenState] = useState<string | null>(null);
   const [outboxCount, setOutboxCount] = useState(0);
+  const [segmentNotice, setSegmentNotice] = useState<string | null>(null);
   const createUserAttempted = useRef(false);
   const creditsCacheRef = useRef<number | null>(null);
   const interestProfileCacheRef = useRef<string | null>(null);
@@ -245,6 +248,12 @@ export function useChatPlatform() {
     );
   }, [activeId, messagesRaw]);
 
+  useEffect(() => {
+    if (!segmentNotice) return;
+    const timer = window.setTimeout(() => setSegmentNotice(null), 8_000);
+    return () => window.clearTimeout(timer);
+  }, [segmentNotice]);
+
   const refreshOutboxCount = useCallback(async () => {
     const rows = await listOutbox();
     setOutboxCount(rows.length);
@@ -308,6 +317,9 @@ export function useChatPlatform() {
         if (result.conversationId && result.conversationId !== conversationId) {
           setPollConversationId(result.conversationId);
           setActiveId(result.conversationId);
+        }
+        if (result.segmented) {
+          setSegmentNotice(CHAT_SEGMENT_NOTICE);
         }
 
         const nextLabel =
@@ -644,6 +656,7 @@ export function useChatPlatform() {
     setPendingUserText(null);
     setAwaitingReply(false);
     setIsSending(false);
+    setSegmentNotice(null);
   }, []);
 
   const deleteConversation = useCallback(
@@ -961,6 +974,7 @@ export function useChatPlatform() {
     setActiveId,
     chatProviderLabel,
     usedFallback,
+    segmentNotice,
     credits,
     hasOpenAiAccess,
     isPremium,

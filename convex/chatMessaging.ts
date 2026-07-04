@@ -19,6 +19,13 @@ import {
   type RawAttachmentInput,
 } from "./attachmentValidation";
 import { normalizeUserId } from "./userIds";
+import {
+  buildSegmentContinuityRecap,
+  continuedConversationTitle,
+  getSegmentExchangeLimit,
+  SEGMENT_RECAP_PREFIX,
+  shouldSegmentConversation,
+} from "./chatSegmentation";
 
 const attachmentValidator = v.optional(
   v.array(
@@ -163,6 +170,45 @@ export const acceptMessage = mutation({
       await ctx.db.patch(conversationId!, { mode, updatedAt: now });
     }
 
+    let segmented = false;
+    const segmentLimit = getSegmentExchangeLimit();
+    if (conversationId && conv && segmentLimit > 0) {
+      const existingRows = await ctx.db
+        .query("messages")
+        .withIndex("by_conversation", (q) =>
+          q.eq("conversationId", conversationId!)
+        )
+        .collect();
+      const sortedRows = existingRows.sort((a, b) => a.createdAt - b.createdAt);
+      if (shouldSegmentConversation(sortedRows, segmentLimit)) {
+        const recap = buildSegmentContinuityRecap(sortedRows);
+        const nextTitle = continuedConversationTitle(conv.title);
+        conversationId = await ctx.db.insert("conversations", {
+          userId: normalizedEmail,
+          title: nextTitle,
+          mode,
+          createdAt: now,
+          updatedAt: now,
+        });
+        conv = await ctx.db.get(conversationId);
+        if (recap) {
+          await ctx.db.insert("messages", {
+            conversationId: conversationId!,
+            userId: normalizedEmail,
+            role: "system",
+            content: `${SEGMENT_RECAP_PREFIX}${recap}`,
+            createdAt: now,
+          });
+        }
+        segmented = true;
+        await ctx.scheduler.runAfter(
+          0,
+          internal.platformStatsRecorder.recordConversationCreatedInternal,
+          {}
+        );
+      }
+    }
+
     // Dedupe client retries before inserting another user row.
     if (args.clientRequestId) {
       const existing = await ctx.db
@@ -190,6 +236,7 @@ export const acceptMessage = mutation({
             content: lastMessage.content,
             chatProviderLabel: getChatProviderLabel("gemini"),
             usedFallback: false,
+            segmented,
           };
         }
 
@@ -209,6 +256,7 @@ export const acceptMessage = mutation({
           jobId: existing._id,
           chatProviderLabel: getChatProviderLabel("gemini"),
           usedFallback: false,
+          segmented,
         };
       }
     }
@@ -274,6 +322,7 @@ export const acceptMessage = mutation({
         content: validatedFailure.content,
         chatProviderLabel: getChatProviderLabel("local_fallback"),
         usedFallback: true,
+        segmented,
       };
     }
 
@@ -302,6 +351,7 @@ export const acceptMessage = mutation({
       jobId,
       chatProviderLabel: getChatProviderLabel("gemini"),
       usedFallback: false,
+      segmented,
     };
   },
 });

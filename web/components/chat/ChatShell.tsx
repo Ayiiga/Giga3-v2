@@ -1,6 +1,7 @@
 "use client";
 
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
+import { ChatSegmentNotice } from "@/components/chat/ChatSegmentNotice";
 import { ChatBanners } from "@/components/chat/ChatBanners";
 import { ChatChrome } from "@/components/chat/ChatChrome";
 import type { ChatActionsMenuHandle } from "@/components/chat/ChatActionsMenu";
@@ -112,6 +113,7 @@ function ChatShellInner({
     editMessage,
     chatProviderLabel,
     usedFallback,
+    segmentNotice,
     credits,
     hasOpenAiAccess,
     isPremium,
@@ -318,6 +320,8 @@ function ChatShellInner({
             usedFallback={usedFallback}
             interestProfileJson={interestProfileJson}
           />
+
+          <ChatSegmentNotice message={segmentNotice ?? null} />
 
           <ChatWorkspacePanel
             mode={mode}
