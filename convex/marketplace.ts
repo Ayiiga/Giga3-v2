@@ -131,6 +131,7 @@ export const createListing = mutation({
     previewText: v.optional(v.string()),
     previewUrl: v.optional(v.string()),
     coverImageUrl: v.optional(v.string()),
+    coverStorageId: v.optional(v.id("_storage")),
     publish: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -153,6 +154,12 @@ export const createListing = mutation({
     if (!title || !description) throw new Error("Title and description are required.");
     if (args.priceGhs < 1) throw new Error("Minimum price is GHS 1.");
 
+    let coverImageUrl = args.coverImageUrl?.trim();
+    if (args.coverStorageId) {
+      const storedUrl = await ctx.storage.getUrl(args.coverStorageId);
+      if (storedUrl) coverImageUrl = storedUrl;
+    }
+
     const now = Date.now();
     return await ctx.db.insert("marketplaceListings", {
       creatorId: email,
@@ -166,7 +173,7 @@ export const createListing = mutation({
       tags: args.tags.map((t) => t.trim().slice(0, 40)).filter(Boolean).slice(0, 12),
       previewText: args.previewText?.trim().slice(0, 2000),
       previewUrl: args.previewUrl,
-      coverImageUrl: args.coverImageUrl,
+      coverImageUrl,
       status: args.publish ? "published" : "draft",
       ratingAvg: 0,
       ratingCount: 0,
