@@ -4,6 +4,7 @@ import { DocumentTemplatePicker } from "@/components/chat/DocumentTemplatePicker
 import { ImageStudioQuickPanel } from "@/components/chat/ImageStudioQuickPanel";
 import { ToolSelector } from "@/components/chat/ToolSelector";
 import { NewsDeskPanel } from "@/components/news/NewsDeskPanel";
+import { PushAlertsPanel } from "@/components/pwa/PushAlertsPanel";
 import { SportsDeskPanel } from "@/components/sports/SportsDeskPanel";
 import { getSessionToken } from "@/lib/auth";
 import {
@@ -17,7 +18,7 @@ import {
   type WorkspaceNavTarget,
 } from "@/lib/chat/workspaceNav";
 import { cn } from "@/lib/utils";
-import { ChevronDown, FileText, Loader2, MessageCircle, Newspaper, Sparkles, Trophy } from "lucide-react";
+import { Bell, ChevronDown, FileText, Loader2, MessageCircle, Newspaper, Sparkles, Trophy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo, useEffect, useState } from "react";
 
@@ -31,7 +32,7 @@ interface ChatWorkspacePanelProps {
   onError: (message: string) => void;
 }
 
-type WorkspaceTab = "modes" | "documents" | "media" | "news" | "sports";
+type WorkspaceTab = "modes" | "documents" | "media" | "news" | "sports" | "alerts";
 
 function ChatWorkspacePanelComponent({
   mode,
@@ -75,7 +76,7 @@ function ChatWorkspacePanelComponent({
         scrollToChatHistory();
         return;
       }
-      if (target === "modes" || target === "documents" || target === "media" || target === "news" || target === "sports") {
+      if (target === "modes" || target === "documents" || target === "media" || target === "news" || target === "sports" || target === "alerts") {
         setOpen(true);
         setTab(target);
       }
@@ -140,6 +141,7 @@ function ChatWorkspacePanelComponent({
           {tab === "media" && "Media studio"}
           {tab === "news" && "News desk"}
           {tab === "sports" && "Sports desk"}
+          {tab === "alerts" && "Push alerts"}
           <ChevronDown
             className={cn(
               "h-4 w-4 text-muted",
@@ -157,13 +159,14 @@ function ChatWorkspacePanelComponent({
             {tabBtn("documents", "Docs", FileText)}
             {tabBtn("news", "News", Newspaper)}
             {tabBtn("sports", "Sports", Trophy)}
+            {tabBtn("alerts", "Alerts", Bell)}
             {tabBtn("media", "Media", Sparkles)}
           </div>
 
           <div
             className={cn(
               "overflow-y-auto overscroll-y-contain border-t border-border bg-background",
-              tab === "news" || tab === "sports"
+              tab === "news" || tab === "sports" || tab === "alerts"
                 ? "max-h-[min(50vh,420px)]"
                 : "max-h-[200px]"
             )}
@@ -211,6 +214,12 @@ function ChatWorkspacePanelComponent({
                     Sign in to load live sports scores and updates.
                   </p>
                 )}
+              </div>
+            )}
+
+            {tab === "alerts" && (
+              <div id="alerts">
+                <PushAlertsPanel embedded />
               </div>
             )}
 

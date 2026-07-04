@@ -91,12 +91,14 @@ async function falGenerateImageWithModel(
 }
 
 export async function generateImageWithFallback(
-  input: ImageGenerateParams
+  input: ImageGenerateParams,
+  options?: { allowOpenAi?: boolean }
 ): Promise<{ imageUrl: string; provider: MediaProviderId; externalId: string }> {
   const errors: string[] = [];
+  const allowOpenAi = options?.allowOpenAi !== false;
 
-  // Image requests route exclusively to OpenAI first; other providers are failover only.
-  if (getOpenAiImageApiKey() && !input.sourceImageUrl?.trim()) {
+  // OpenAI first when allowed (Premium subscription on server); other providers are failover.
+  if (allowOpenAi && getOpenAiImageApiKey() && !input.sourceImageUrl?.trim()) {
     try {
       const result = await openaiGenerateImage(input.prompt, {
         imageSize: input.imageSize,

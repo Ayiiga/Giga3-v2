@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { formatTimestampDateTime } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
-import { useAction } from "convex/react";
+import { useAction, useQuery } from "convex/react";
 import { ExternalLink, Newspaper, RefreshCw, ShieldCheck } from "lucide-react";
 import { useCallback, useState } from "react";
 
@@ -37,6 +37,17 @@ const VERDICT_CLASS: Record<VerificationResult["verdict"], string> = {
   misinformation: "text-red-700 bg-red-500/10",
 };
 
+const LIVE_NEWS_CATEGORIES = [
+  { id: "", label: "All topics" },
+  { id: "politics", label: "Politics" },
+  { id: "world", label: "World" },
+  { id: "business", label: "Business" },
+  { id: "technology", label: "Technology" },
+  { id: "sports", label: "Sports" },
+  { id: "entertainment", label: "Entertainment" },
+  { id: "health", label: "Health" },
+] as const;
+
 export function NewsDeskPanel({
   sessionToken,
   variant = "marketplace",
@@ -45,12 +56,15 @@ export function NewsDeskPanel({
   variant?: "marketplace" | "chat";
 }) {
   const fetchLatestNews = useAction(api.creatorNews.fetchLatestNews);
+  const fetchLiveHeadlines = useAction(api.liveNews.fetchHeadlines);
   const verifyNewsClaim = useAction(api.creatorNews.verifyNewsClaim);
+  const credits = useQuery(api.users.getChatCredits, { sessionToken });
   const embedded = variant === "chat";
 
   const [headlines, setHeadlines] = useState<NewsHeadline[]>([]);
   const [fetchedAt, setFetchedAt] = useState<number | null>(null);
   const [loadingNews, setLoadingNews] = useState(false);
+  const [category, setCategory] = useState("");
   const [claim, setClaim] = useState("");
   const [sourceUrl, setSourceUrl] = useState("");
   const [verifying, setVerifying] = useState(false);
@@ -61,15 +75,33 @@ export function NewsDeskPanel({
     setError(null);
     setLoadingNews(true);
     try {
-      const result = await fetchLatestNews({ sessionToken, limitPerFeed: 3 });
-      setHeadlines(result.headlines as NewsHeadline[]);
-      setFetchedAt(result.fetchedAt);
+      const useLiveNews = credits?.features?.liveNews !== false;
+      if (useLiveNews) {
+        const result = await fetchLiveHeadlines({
+          sessionToken,
+          category: category || undefined,
+        });
+        setHeadlines(
+          (result.headlines as Array<NewsHeadline & { category?: string }>).map((h) => ({
+            title: h.title,
+            link: h.link,
+            publishedAt: h.publishedAt,
+            source: h.category ? `${h.source} · ${h.category}` : h.source,
+            platform: h.platform,
+          }))
+        );
+        setFetchedAt(result.fetchedAt);
+      } else {
+        const result = await fetchLatestNews({ sessionToken, limitPerFeed: 3 });
+        setHeadlines(result.headlines as NewsHeadline[]);
+        setFetchedAt(result.fetchedAt);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load news.");
     } finally {
       setLoadingNews(false);
     }
-  }, [fetchLatestNews, sessionToken]);
+  }, [category, credits?.features?.liveNews, fetchLatestNews, fetchLiveHeadlines, sessionToken]);
 
   async function runVerification(headline: string, link?: string) {
     setError(null);
@@ -95,7 +127,7 @@ export function NewsDeskPanel({
     variant === "chat" ? "Latest news & fact-check" : "Latest news & social headlines";
   const subtitle =
     variant === "chat"
-      ? "Load headlines from news and social feeds, then verify claims before you share or cite them."
+      ? "Load trusted headlines by topic (politics, world, business, tech, sports, and more). Verify claims before you share or cite them."
       : "Read headlines from major news outlets and social discussion feeds. Verify claims before you reference them in your products.";
 
   return (
@@ -139,6 +171,26 @@ export function NewsDeskPanel({
           {loadingNews ? "Loading…" : "Load latest"}
         </Button>
       </div>
+
+      {credits?.features?.liveNews !== false && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {LIVE_NEWS_CATEGORIES.map((cat) => (
+            <button
+              key={cat.id || "all"}
+              type="button"
+              onClick={() => setCategory(cat.id)}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-medium",
+                category === cat.id
+                  ? "bg-accent text-white"
+                  : "bg-accent/10 text-accent hover:bg-accent/20"
+              )}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {error && (
         <p className="mt-4 rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-700">{error}</p>

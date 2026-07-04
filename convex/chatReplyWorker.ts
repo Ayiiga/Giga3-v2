@@ -25,6 +25,7 @@ import {
   buildPromptCacheKey,
   enhanceImageGenerationPrompt,
   imageAssetOrientation,
+  shouldEnableWebSearch,
   shouldUseResponseCache,
   type RequestKind,
 } from "./providerRouter";
@@ -33,6 +34,11 @@ import { openaiGenerateImage } from "./openaiImageClient";
 import { persistImageUrlIfNeeded } from "./mediaStorage";
 import type { FalImageSize } from "./falClient";
 import { logChatReply } from "./chatReplyLog";
+import { isLiveNewsEnabled } from "./featureFlags";
+import {
+  IMAGE_UPGRADE_MARKDOWN,
+  resolveImageGenerationDecision,
+} from "./premiumImage";
 
 // Kept below the client reply-wait deadline (CHAT_REPLY_WAIT_MS = 150s) so the
 // worker persists a real or fallback reply — clearing "Thinking…" gracefully via
@@ -158,6 +164,8 @@ async function runHybridAiEngine(
     hasAttachments: boolean;
     hasImageAttachment?: boolean;
     conversationId: string;
+    subscriptionPlan: string;
+    subscriptionExpiresAt?: number | null;
   }
 ): Promise<ChatEngineResult & { cached: boolean; requestKind: RequestKind }> {
   const routePlan = buildChatRoutePlan({
@@ -227,11 +235,37 @@ async function runHybridAiEngine(
           : "square_hd";
     const imagePrompt = enhanceImageGenerationPrompt(args.query);
 
+    const imageDecision = resolveImageGenerationDecision(
+      args.subscriptionPlan,
+      args.subscriptionExpiresAt
+    );
+
+    if (imageDecision.action === "upgrade") {
+      const result: ChatEngineResult & { cached: boolean; requestKind: RequestKind } = {
+        content: IMAGE_UPGRADE_MARKDOWN,
+        providerId: "policy",
+        usedFallback: false,
+        latencyMs: Date.now() - started,
+        cached: false,
+        requestKind: "image_generation",
+      };
+      await recordAiUsage(ctx, {
+        email: args.email,
+        mode: args.mode,
+        routing: args.routing,
+        engineResult: result,
+        requestKind: "image_generation",
+        cached: false,
+        conversationId: args.conversationId,
+      });
+      return result;
+    }
+
     let rawUrl: string;
     let providerId: string;
     let usedFallback = false;
 
-    if (args.routing.tier === "premium") {
+    if (imageDecision.action === "openai") {
       try {
         const image = await openaiGenerateImage(imagePrompt, { imageSize });
         rawUrl = image.dataUrl;
@@ -459,11 +493,26 @@ export const processJob = internalAction({
         })),
       });
 
-      const systemPrompt =
+      const systemPromptBase =
         getSystemPrompt(mode) +
         buildInterestSystemAddon(parseInterestProfile(refreshedUser?.interestProfile)) +
         "\n\n" +
         qualityContext.systemPromptAddon;
+
+      let systemPrompt = systemPromptBase;
+      if (
+        isLiveNewsEnabled() &&
+        shouldEnableWebSearch(
+          job.content,
+          mode,
+          attachments.some((a) => a.kind === "image")
+        )
+      ) {
+        const briefing = await ctx.runQuery(internal.liveNewsInternal.getBriefingInternal, {});
+        if (briefing) {
+          systemPrompt += `\n\n${briefing}`;
+        }
+      }
 
       const chatMessages = trimChatMessages([
         { role: "system" as const, content: systemPrompt },
@@ -510,6 +559,8 @@ export const processJob = internalAction({
         hasAttachments: attachments.length > 0,
         hasImageAttachment: attachments.some((a) => a.kind === "image"),
         conversationId: job.conversationId,
+        subscriptionPlan: refreshedUser?.subscriptionPlan ?? "free",
+        subscriptionExpiresAt: refreshedUser?.subscriptionExpiresAt,
       });
       const latencyMs = engineResult.latencyMs ?? Date.now() - started;
 
