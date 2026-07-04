@@ -21,6 +21,7 @@ import {
   ImageIcon,
   LayoutGrid,
   MessageSquarePlus,
+  Newspaper,
   PanelLeft,
   PanelLeftClose,
   Pin,
@@ -73,6 +74,7 @@ type SidebarView = "active" | "archived" | "favorites";
 const PRIMARY_NAV = [
   { href: "/", label: "Home", icon: Home },
   { hash: "modes" as const, label: "AI Tools", icon: Wand2 },
+  { hash: "news" as const, label: "News desk", icon: Newspaper },
   { hash: "documents" as const, label: "My Documents", icon: FileText },
   { href: "/marketplace", label: "Marketplace", icon: LayoutGrid },
 ] as const;

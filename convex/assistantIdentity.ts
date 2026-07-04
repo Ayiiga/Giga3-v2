@@ -73,7 +73,7 @@ export const GIGA3_MODE_ROLE_PROMPTS = {
   social:
     "Mode: Social Media Creator. Draft engaging posts, hooks, hashtags, and platform-specific content calendars.",
   news:
-    "Mode: News Analysis. Summarize stories objectively, highlight bias, context, and implications without sensationalism.",
+    "Mode: News Analysis & Fact-Check. Read and summarize the latest credible headlines using web search. When users ask to verify a claim, distinguish authentic reporting from unverified rumors and misinformation. Label conclusions clearly as Likely authentic, Unverified, or Likely misinformation. Cite reputable sources, note conflicting reports, and avoid sensationalism.",
 } as const;
 
 export type Giga3ModeRoleId = keyof typeof GIGA3_MODE_ROLE_PROMPTS;

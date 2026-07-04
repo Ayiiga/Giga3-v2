@@ -148,6 +148,9 @@ export function enhanceImageGenerationPrompt(query: string): string {
 const CURRENT_INFO_RE =
   /\b(today|tonight|yesterday|this week|this month|this year|latest|current|recent|news|now|202[4-9]|stock price|weather|score|election|who is (the )?president)\b/i;
 
+const FACT_CHECK_RE =
+  /\b(fact[- ]?check|verify|true or false|fake news|misinformation|disinformation|authentic|rumou?r|hoax|debunk|is this (true|real|fake)|did this (happen|really))\b/i;
+
 const RESEARCH_MODES = new Set<string>(["research", "news", "university", "waec"]);
 
 const GEMINI_MODES = new Set<string>([
@@ -204,6 +207,7 @@ export function shouldEnableWebSearch(
   if (hasImageAttachment) return false;
   if (RESEARCH_MODES.has(mode)) return true;
   if (mode === "news") return true;
+  if (FACT_CHECK_RE.test(query)) return true;
   return CURRENT_INFO_RE.test(query);
 }
 
