@@ -9,7 +9,7 @@ export function Footer() {
   return (
     <footer className="border-t border-border bg-zinc-50">
       <Container className="section-padding !py-14">
-        <div className="grid gap-10 md:grid-cols-4">
+        <div className="grid gap-10 md:grid-cols-5">
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-2.5 font-semibold">
               <BrandLogo size={36} />
@@ -40,6 +40,32 @@ export function Footer() {
                 <a href="/pricing" className="hover:text-foreground">
                   App pricing
                 </a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">Legal</h3>
+            <ul className="mt-4 space-y-2 text-sm text-muted">
+              <li>
+                <Link href="/legal/terms/" className="hover:text-foreground">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link href="/legal/cookies/" className="hover:text-foreground">
+                  Cookie Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/legal/refunds/" className="hover:text-foreground">
+                  Refund Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/legal/acceptable-use/" className="hover:text-foreground">
+                  Acceptable Use
+                </Link>
               </li>
             </ul>
           </div>
