@@ -10,11 +10,17 @@ import {
   formatGhs,
 } from "@/lib/marketplace/catalog";
 import { getSessionToken } from "@/lib/auth";
+import { formatCurrentDateTime, formatTimestampDateTime } from "@/lib/datetime";
+import {
+  captureCoordinates,
+  formatCoordinates,
+  type CapturedCoordinates,
+} from "@/lib/geolocation";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 
 function RevenueStatsSkeleton() {
   return (
@@ -54,10 +60,10 @@ function MarketplaceSellInner() {
   );
 
   const upsertProfile = useMutation(api.creatorProfiles.upsertProfile);
+  const submitCreatorVerification = useMutation(api.creatorProfiles.submitCreatorVerification);
   const createListing = useMutation(api.marketplace.createListing);
   const attachFile = useMutation(api.marketplace.attachListingFile);
   const generateUploadUrl = useMutation(api.marketplace.generateUploadUrl);
-  const requestVerification = useMutation(api.creatorProfiles.requestVerification);
   const requestPayout = useMutation(api.marketplace.requestPayout);
 
   const [displayName, setDisplayName] = useState("");
@@ -73,19 +79,37 @@ function MarketplaceSellInner() {
   const [previewText, setPreviewText] = useState("");
   const [copyrightNotice, setCopyrightNotice] = useState("");
   const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [nationalIdNumber, setNationalIdNumber] = useState("");
+  const [idDocumentFile, setIdDocumentFile] = useState<File | null>(null);
+  const [coordinates, setCoordinates] = useState<CapturedCoordinates | null>(null);
+  const [capturingLocation, setCapturingLocation] = useState(false);
+  const [submittingVerification, setSubmittingVerification] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const verificationStatus =
+    profile?.verificationStatus ?? "none";
 
   useEffect(() => {
     if (!profile || profileHydrated.current) return;
     setDisplayName(profile.displayName);
     setHandle(profile.handle);
     setBio(profile.bio ?? "");
+    if (profile.latitude != null && profile.longitude != null) {
+      setCoordinates({
+        latitude: profile.latitude,
+        longitude: profile.longitude,
+        accuracyMeters: profile.locationAccuracyMeters ?? undefined,
+        capturedAt: profile.locationCapturedAt ?? Date.now(),
+      });
+    }
     profileHydrated.current = true;
   }, [profile]);
 
   if (!sessionToken) return <p className="text-center text-muted">Redirecting…</p>;
 
   async function saveProfile() {
+    setError(null);
     await upsertProfile({
       sessionToken,
       displayName,
@@ -93,6 +117,72 @@ function MarketplaceSellInner() {
       bio,
     });
     setMessage("Profile saved.");
+  }
+
+  async function uploadIdDocument(file: File): Promise<Id<"_storage">> {
+    const uploadUrl = await generateUploadUrl({ sessionToken });
+    const res = await fetch(uploadUrl, {
+      method: "POST",
+      headers: { "Content-Type": file.type || "application/octet-stream" },
+      body: file,
+    });
+    const { storageId } = await res.json();
+    return storageId as Id<"_storage">;
+  }
+
+  async function handleCaptureLocation() {
+    setError(null);
+    setCapturingLocation(true);
+    try {
+      const coords = await captureCoordinates();
+      setCoordinates(coords);
+      setMessage("Location captured.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not capture location.");
+    } finally {
+      setCapturingLocation(false);
+    }
+  }
+
+  async function handleSubmitVerification() {
+    setError(null);
+    if (!nationalIdNumber.trim()) {
+      setError("Enter your national ID number.");
+      return;
+    }
+    if (!idDocumentFile) {
+      setError("Upload a photo of your national ID.");
+      return;
+    }
+    if (!coordinates) {
+      setError("Capture your GPS location to complete registration.");
+      return;
+    }
+
+    setSubmittingVerification(true);
+    try {
+      const storageId = await uploadIdDocument(idDocumentFile);
+      const result = await submitCreatorVerification({
+        sessionToken,
+        nationalIdNumber,
+        idDocumentStorageId: storageId,
+        idDocumentFileName: idDocumentFile.name,
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+        locationAccuracyMeters: coordinates.accuracyMeters,
+      });
+      setMessage(result.message ?? "Verification submitted.");
+      setIdDocumentFile(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Verification submission failed.");
+    } finally {
+      setSubmittingVerification(false);
+    }
+  }
+
+  function handleIdDocumentChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null;
+    setIdDocumentFile(file);
   }
 
   async function publishListing() {
@@ -141,6 +231,9 @@ function MarketplaceSellInner() {
           <div>
             <h1 className="page-title">Creator dashboard</h1>
             <p className="mt-2 text-muted">Publish digital products and manage earnings.</p>
+            <p className="mt-1 text-xs text-muted">
+              {formatCurrentDateTime()}
+            </p>
           </div>
           <ButtonLink href="/marketplace" variant="ghost">
             Browse marketplace
@@ -149,6 +242,9 @@ function MarketplaceSellInner() {
 
         {message && (
           <p className="rounded-xl bg-emerald-500/10 px-4 py-3 text-sm text-emerald-800">{message}</p>
+        )}
+        {error && (
+          <p className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-700">{error}</p>
         )}
 
         {revenue?.profile ? (
@@ -195,12 +291,6 @@ function MarketplaceSellInner() {
           />
           <div className="mt-4 flex flex-wrap gap-3">
             <Button onClick={saveProfile}>Save profile</Button>
-            <Button
-              variant="secondary"
-              onClick={() => requestVerification({ sessionToken }).then((r) => setMessage(r.message ?? "Verification updated"))}
-            >
-              Request verification
-            </Button>
             {revenue?.profile && revenue.profile.payoutBalanceGhs >= 50 && (
               <Button
                 variant="secondary"
@@ -217,7 +307,90 @@ function MarketplaceSellInner() {
         </section>
 
         <section className="rounded-2xl border bg-card p-6">
+          <h2 className="text-lg font-semibold">Identity verification</h2>
+          <p className="mt-2 text-sm text-muted">
+            Marketplace registration requires a national ID and your current GPS coordinates.
+          </p>
+          <p className="mt-2 text-sm font-medium capitalize text-foreground">
+            Status: {verificationStatus.replace(/_/g, " ")}
+            {profile?.verificationSubmittedAt
+              ? ` · submitted ${formatTimestampDateTime(profile.verificationSubmittedAt)}`
+              : ""}
+          </p>
+          {profile?.nationalIdMasked && (
+            <p className="mt-1 text-sm text-muted">ID on file: {profile.nationalIdMasked}</p>
+          )}
+
+          {(verificationStatus === "none" || verificationStatus === "rejected") && (
+            <div className="mt-4 grid gap-4">
+              <input
+                value={nationalIdNumber}
+                onChange={(e) => setNationalIdNumber(e.target.value)}
+                placeholder="National ID number"
+                className="rounded-xl border px-4 py-3"
+                autoComplete="off"
+              />
+              <label className="flex cursor-pointer flex-col gap-2 rounded-xl border border-dashed px-4 py-4 text-sm">
+                <span className="font-medium">National ID document (photo or scan)</span>
+                <span className="text-muted">
+                  {idDocumentFile?.name ?? "Tap to choose a JPG, PNG, or PDF"}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  className="hidden"
+                  onChange={handleIdDocumentChange}
+                />
+              </label>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleCaptureLocation}
+                  disabled={capturingLocation}
+                >
+                  {capturingLocation ? "Capturing location…" : "Capture GPS location"}
+                </Button>
+                {coordinates && (
+                  <p className="text-sm text-muted">
+                    {formatCoordinates(
+                      coordinates.latitude,
+                      coordinates.longitude,
+                      coordinates.accuracyMeters
+                    )}
+                  </p>
+                )}
+              </div>
+              <Button
+                type="button"
+                onClick={handleSubmitVerification}
+                disabled={submittingVerification}
+              >
+                {submittingVerification ? "Submitting…" : "Submit verification"}
+              </Button>
+            </div>
+          )}
+
+          {verificationStatus === "pending" && (
+            <p className="mt-4 text-sm text-muted">
+              Your documents and coordinates are under review. You can create draft listings once approved.
+            </p>
+          )}
+
+          {verificationStatus === "approved" && (
+            <p className="mt-4 text-sm text-emerald-700">
+              Verified creator — you can publish listings on the marketplace.
+            </p>
+          )}
+        </section>
+
+        <section className="rounded-2xl border bg-card p-6">
           <h2 className="text-lg font-semibold">New listing</h2>
+          {(verificationStatus !== "pending" && verificationStatus !== "approved") && (
+            <p className="mt-2 text-sm text-amber-700">
+              Complete identity verification above before publishing products.
+            </p>
+          )}
           <div className="mt-4 grid gap-4">
             <input
               value={title}
@@ -286,7 +459,12 @@ function MarketplaceSellInner() {
               After publishing, upload the downloadable file under “Your listings”.
               Buyers cannot purchase a listing until its file is attached.
             </p>
-            <Button onClick={publishListing}>Publish listing</Button>
+            <Button
+              onClick={publishListing}
+              disabled={verificationStatus !== "pending" && verificationStatus !== "approved"}
+            >
+              Publish listing
+            </Button>
           </div>
         </section>
 
@@ -301,6 +479,9 @@ function MarketplaceSellInner() {
                       <h3 className="font-semibold">{listing.title}</h3>
                       <p className="text-sm text-muted">
                         {listing.status} · {formatGhs(listing.priceGhs)} · {listing.purchaseCount} sales
+                        {listing.updatedAt
+                          ? ` · updated ${formatTimestampDateTime(listing.updatedAt)}`
+                          : ""}
                       </p>
                       <p className="mt-1 text-xs">
                         {listing.hasFile ? (

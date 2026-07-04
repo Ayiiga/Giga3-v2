@@ -4,6 +4,7 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { formatGhs } from "@/lib/marketplace/catalog";
+import { formatTimestampDateTime } from "@/lib/datetime";
 import { getSessionToken } from "@/lib/auth";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
@@ -218,7 +219,12 @@ function MarketplaceItemInner() {
           <div className="space-y-3">
             {reviews.map((review: NonNullable<typeof reviews>[number]) => (
               <article key={review._id} className="rounded-xl border border-border p-4">
-                <div className="font-medium">{"★".repeat(review.rating)}</div>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="font-medium">{"★".repeat(review.rating)}</div>
+                  <time className="text-xs text-muted" dateTime={new Date(review.createdAt).toISOString()}>
+                    {formatTimestampDateTime(review.createdAt)}
+                  </time>
+                </div>
                 {review.comment && <p className="mt-2 text-sm text-muted">{review.comment}</p>}
               </article>
             ))}

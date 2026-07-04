@@ -403,6 +403,24 @@ export default defineSchema({
     avatarUrl: v.optional(v.string()),
     website: v.optional(v.string()),
     verified: v.boolean(),
+    verificationStatus: v.optional(
+      v.union(
+        v.literal("none"),
+        v.literal("pending"),
+        v.literal("approved"),
+        v.literal("rejected")
+      )
+    ),
+    nationalIdNumber: v.optional(v.string()),
+    idDocumentStorageId: v.optional(v.id("_storage")),
+    idDocumentFileName: v.optional(v.string()),
+    latitude: v.optional(v.number()),
+    longitude: v.optional(v.number()),
+    locationCapturedAt: v.optional(v.number()),
+    locationAccuracyMeters: v.optional(v.number()),
+    verificationSubmittedAt: v.optional(v.number()),
+    verificationReviewedAt: v.optional(v.number()),
+    verificationRejectionReason: v.optional(v.string()),
     totalSales: v.number(),
     totalEarningsGhs: v.number(),
     payoutBalanceGhs: v.number(),
@@ -410,7 +428,8 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_user", ["userId"])
-    .index("by_handle", ["handle"]),
+    .index("by_handle", ["handle"])
+    .index("by_verification_status", ["verificationStatus"]),
 
   marketplaceListings: defineTable({
     creatorId: v.string(),

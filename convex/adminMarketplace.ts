@@ -45,6 +45,22 @@ export const getAdminOverview = query({
         successfulCount: successful.length,
         sampleSize: payments.length,
       },
+      pendingVerifications: (
+        await ctx.db
+          .query("creatorProfiles")
+          .withIndex("by_verification_status", (q) =>
+            q.eq("verificationStatus", "pending")
+          )
+          .take(50)
+      ).map((p) => ({
+        _id: p._id,
+        displayName: p.displayName,
+        handle: p.handle,
+        userId: p.userId,
+        verificationSubmittedAt: p.verificationSubmittedAt ?? null,
+        locationCapturedAt: p.locationCapturedAt ?? null,
+        idDocumentFileName: p.idDocumentFileName ?? null,
+      })),
       pendingPayouts: pendingPayouts.map((p) => ({
         _id: p._id,
         creatorId: p.creatorId,
@@ -149,6 +165,43 @@ export const setListingStatus = mutation({
       status: args.status,
       updatedAt: Date.now(),
     });
+    return { ok: true as const };
+  },
+});
+
+/** Approve or reject a creator identity verification submission. */
+export const setCreatorVerificationStatus = mutation({
+  args: {
+    ...adminCredentialArgs,
+    profileId: v.id("creatorProfiles"),
+    status: v.union(v.literal("approved"), v.literal("rejected")),
+    rejectionReason: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    const profile = await ctx.db.get(args.profileId);
+    if (!profile) throw new Error("Creator profile not found");
+
+    const now = Date.now();
+    if (args.status === "approved") {
+      await ctx.db.patch(args.profileId, {
+        verificationStatus: "approved",
+        verified: true,
+        verificationReviewedAt: now,
+        verificationRejectionReason: undefined,
+        updatedAt: now,
+      });
+    } else {
+      await ctx.db.patch(args.profileId, {
+        verificationStatus: "rejected",
+        verified: false,
+        verificationReviewedAt: now,
+        verificationRejectionReason:
+          args.rejectionReason?.trim().slice(0, 500) ||
+          "Verification could not be confirmed.",
+        updatedAt: now,
+      });
+    }
     return { ok: true as const };
   },
 });

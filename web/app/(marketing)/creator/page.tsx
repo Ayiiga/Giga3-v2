@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { formatGhs } from "@/lib/marketplace/catalog";
+import { formatTimestamp } from "@/lib/datetime";
 
 function CreatorProfileInner() {
   const params = useSearchParams();
@@ -21,7 +22,7 @@ function CreatorProfileInner() {
 
   const creatorListings =
     listings?.filter(
-      (l: NonNullable<typeof listings>[number]) => l.creatorId === profile.userId
+      (l: NonNullable<typeof listings>[number]) => l.creator?.handle === profile.handle
     ) ?? [];
 
   return (
@@ -36,7 +37,8 @@ function CreatorProfileInner() {
         <p className="mt-1 text-muted">@{profile.handle}</p>
         {profile.bio && <p className="mt-4 text-foreground/90">{profile.bio}</p>}
         <p className="mt-4 text-sm text-muted">
-          {profile.totalSales} sales · {formatGhs(profile.totalEarningsGhs)} earned
+          {profile.totalSales} sales
+          {profile.createdAt ? ` · joined ${formatTimestamp(profile.createdAt)}` : ""}
         </p>
       </div>
 
@@ -47,7 +49,7 @@ function CreatorProfileInner() {
             <Link
               key={item._id}
               href={`/marketplace/item/?id=${item._id}`}
-              className="rounded-2xl border bg-card p-5 hover:shadow-md"
+              className="rounded-2xl border bg-card p-5 hover:border-accent/30"
             >
               <h3 className="font-semibold">{item.title}</h3>
               <p className="mt-1 text-sm text-muted line-clamp-2">{item.description}</p>
