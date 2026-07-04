@@ -1,6 +1,6 @@
 /** Sidebar / hash links open the chat workspace panel without full-page navigation. */
 
-export type WorkspaceNavTarget = "modes" | "documents" | "media" | "news" | "history";
+export type WorkspaceNavTarget = "modes" | "documents" | "media" | "news" | "sports" | "history";
 
 export const WORKSPACE_NAV_EVENT = "giga3:workspace-nav";
 

@@ -188,6 +188,12 @@ describe("shouldEnableWebSearch", () => {
       true
     );
   });
+
+  it("enables search for sports score phrasing", () => {
+    expect(shouldEnableWebSearch("What is the live score for Ghana vs Colombia?", "general")).toBe(
+      true
+    );
+  });
 });
 
 describe("shouldStartFailoverAttempt", () => {

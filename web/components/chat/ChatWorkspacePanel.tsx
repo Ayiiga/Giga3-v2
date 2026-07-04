@@ -4,6 +4,7 @@ import { DocumentTemplatePicker } from "@/components/chat/DocumentTemplatePicker
 import { ImageStudioQuickPanel } from "@/components/chat/ImageStudioQuickPanel";
 import { ToolSelector } from "@/components/chat/ToolSelector";
 import { NewsDeskPanel } from "@/components/news/NewsDeskPanel";
+import { SportsDeskPanel } from "@/components/sports/SportsDeskPanel";
 import { getSessionToken } from "@/lib/auth";
 import {
   buildMediaStudioUrl,
@@ -16,7 +17,7 @@ import {
   type WorkspaceNavTarget,
 } from "@/lib/chat/workspaceNav";
 import { cn } from "@/lib/utils";
-import { ChevronDown, FileText, Loader2, MessageCircle, Newspaper, Sparkles } from "lucide-react";
+import { ChevronDown, FileText, Loader2, MessageCircle, Newspaper, Sparkles, Trophy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo, useEffect, useState } from "react";
 
@@ -30,7 +31,7 @@ interface ChatWorkspacePanelProps {
   onError: (message: string) => void;
 }
 
-type WorkspaceTab = "modes" | "documents" | "media" | "news";
+type WorkspaceTab = "modes" | "documents" | "media" | "news" | "sports";
 
 function ChatWorkspacePanelComponent({
   mode,
@@ -74,7 +75,7 @@ function ChatWorkspacePanelComponent({
         scrollToChatHistory();
         return;
       }
-      if (target === "modes" || target === "documents" || target === "media" || target === "news") {
+      if (target === "modes" || target === "documents" || target === "media" || target === "news" || target === "sports") {
         setOpen(true);
         setTab(target);
       }
@@ -138,6 +139,7 @@ function ChatWorkspacePanelComponent({
           {tab === "documents" && "Templates"}
           {tab === "media" && "Media studio"}
           {tab === "news" && "News desk"}
+          {tab === "sports" && "Sports desk"}
           <ChevronDown
             className={cn(
               "h-4 w-4 text-muted",
@@ -154,13 +156,16 @@ function ChatWorkspacePanelComponent({
             {tabBtn("modes", "Modes", MessageCircle)}
             {tabBtn("documents", "Docs", FileText)}
             {tabBtn("news", "News", Newspaper)}
+            {tabBtn("sports", "Sports", Trophy)}
             {tabBtn("media", "Media", Sparkles)}
           </div>
 
           <div
             className={cn(
               "overflow-y-auto overscroll-y-contain border-t border-border bg-background",
-              tab === "news" ? "max-h-[min(50vh,420px)]" : "max-h-[200px]"
+              tab === "news" || tab === "sports"
+                ? "max-h-[min(50vh,420px)]"
+                : "max-h-[200px]"
             )}
           >
             {tab === "modes" && (
@@ -192,6 +197,18 @@ function ChatWorkspacePanelComponent({
                 ) : (
                   <p className="px-4 py-6 text-sm text-muted">
                     Sign in to load headlines and verify news claims.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {tab === "sports" && (
+              <div id="sports">
+                {sessionToken ? (
+                  <SportsDeskPanel sessionToken={sessionToken} variant="chat" />
+                ) : (
+                  <p className="px-4 py-6 text-sm text-muted">
+                    Sign in to load live sports scores and updates.
                   </p>
                 )}
               </div>
