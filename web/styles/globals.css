@@ -378,6 +378,15 @@ button:focus-visible {
   @apply list-decimal;
 }
 
+.chat-markdown .chat-md-nested {
+  @apply mt-1.5;
+}
+
+.chat-markdown .chat-md-nested > .chat-md-ul,
+.chat-markdown .chat-md-nested > .chat-md-ol {
+  @apply mb-0;
+}
+
 .chat-markdown .chat-md-strong {
   @apply font-semibold text-foreground;
 }

@@ -2,6 +2,11 @@
 
 import { CodeBlock } from "@/components/chat/CodeBlock";
 import { cn } from "@/lib/utils";
+import {
+  parseMarkdownDocument,
+  type MarkdownBlock,
+  type MarkdownListItem,
+} from "@/lib/chat/messageMarkdownParser";
 import dynamic from "next/dynamic";
 import { memo, useMemo, type ReactNode } from "react";
 
@@ -30,205 +35,93 @@ export const MessageMarkdown = memo(function MessageMarkdown({
   content,
   className,
 }: MessageMarkdownProps) {
-  const blocks = useMemo(() => parseMarkdownBlocks(content), [content]);
+  const blocks = useMemo(() => renderMarkdownBlocks(parseMarkdownDocument(content)), [content]);
   return <div className={cn("chat-markdown", className)}>{blocks}</div>;
 });
 
-function parseMarkdownBlocks(text: string): ReactNode[] {
-  const lines = text.split("\n");
-  const nodes: ReactNode[] = [];
-  let i = 0;
-  let blockKey = 0;
+function renderMarkdownBlocks(blocks: MarkdownBlock[]): ReactNode[] {
+  return blocks.map((block, index) => renderMarkdownBlock(block, index));
+}
 
-  while (i < lines.length) {
-    const line = lines[i];
-
-    if (isMarkdownTableRow(line)) {
-      const tableStart = i;
-      const tableLines: string[] = [];
-      while (
-        i < lines.length &&
-        (isMarkdownTableRow(lines[i]) || isMarkdownTableSeparator(lines[i]))
-      ) {
-        tableLines.push(lines[i]);
-        i += 1;
-      }
-      const tableNode = renderMarkdownTable(tableLines, blockKey++);
-      if (tableNode) {
-        nodes.push(tableNode);
-        continue;
-      }
-      i = tableStart;
-    }
-
-    if (line.startsWith("```")) {
-      const fenceLang = line.slice(3).trim();
-      const codeLines: string[] = [];
-      i += 1;
-      while (i < lines.length && !lines[i].startsWith("```")) {
-        codeLines.push(lines[i]);
-        i += 1;
-      }
-      i += 1;
-      if (/^mermaid$/i.test(fenceLang)) {
-        nodes.push(
-          <MermaidDiagram key={`diagram-${blockKey++}`} code={codeLines.join("\n")} />
-        );
-        continue;
-      }
-      if (/^(giga-visual|visual)$/i.test(fenceLang)) {
-        nodes.push(
-          <VisualContentBlock
-            key={`visual-${blockKey++}`}
-            specJson={codeLines.join("\n")}
-          />
-        );
-        continue;
-      }
-      if (/^(giga-chart|chart)$/i.test(fenceLang)) {
-        nodes.push(
-          <ChartVisualBlock
-            key={`chart-${blockKey++}`}
-            specJson={codeLines.join("\n")}
-          />
-        );
-        continue;
-      }
-      nodes.push(
-        <CodeBlock key={`code-${blockKey++}`} code={codeLines.join("\n")} language={fenceLang || undefined} />
-      );
-      continue;
-    }
-
-    const heading = line.match(/^(#{1,3})\s+(.+)$/);
-    if (heading) {
-      const level = heading[1].length;
-      const Tag = (`h${level}` as "h1" | "h2" | "h3");
-      nodes.push(
-        <Tag key={`h-${blockKey++}`} className={`chat-md-h${level}`}>
-          {renderInline(heading[2])}
+function renderMarkdownBlock(block: MarkdownBlock, key: number): ReactNode {
+  switch (block.type) {
+    case "heading": {
+      const Tag = `h${block.level}` as "h1" | "h2" | "h3";
+      return (
+        <Tag key={key} className={`chat-md-h${block.level}`}>
+          {renderInline(block.text)}
         </Tag>
       );
-      i += 1;
-      continue;
     }
-
-    if (/^[-*]\s+/.test(line)) {
-      const items: ReactNode[] = [];
-      while (i < lines.length && /^[-*]\s+/.test(lines[i])) {
-        items.push(
-          <li key={`li-${blockKey}-${items.length}`}>
-            {renderInline(lines[i].replace(/^[-*]\s+/, ""))}
-          </li>
-        );
-        i += 1;
-      }
-      nodes.push(
-        <ul key={`ul-${blockKey++}`} className="chat-md-ul">
-          {items}
+    case "paragraph":
+      return (
+        <p key={key} className="chat-md-p">
+          {renderInline(block.text)}
+        </p>
+      );
+    case "code":
+      return (
+        <CodeBlock
+          key={key}
+          code={block.code}
+          language={block.language || undefined}
+        />
+      );
+    case "mermaid":
+      return <MermaidDiagram key={key} code={block.code} />;
+    case "visual":
+      return <VisualContentBlock key={key} specJson={block.specJson} />;
+    case "chart":
+      return <ChartVisualBlock key={key} specJson={block.specJson} />;
+    case "ul":
+      return (
+        <ul key={key} className="chat-md-ul">
+          {renderListItems(block.items)}
         </ul>
       );
-      continue;
-    }
-
-    if (/^\d+\.\s+/.test(line)) {
-      const items: ReactNode[] = [];
-      while (i < lines.length && /^\d+\.\s+/.test(lines[i])) {
-        items.push(
-          <li key={`oli-${blockKey}-${items.length}`}>
-            {renderInline(lines[i].replace(/^\d+\.\s+/, ""))}
-          </li>
-        );
-        i += 1;
-      }
-      nodes.push(
-        <ol key={`ol-${blockKey++}`} className="chat-md-ol">
-          {items}
+    case "ol":
+      return (
+        <ol key={key} className="chat-md-ol">
+          {renderListItems(block.items)}
         </ol>
       );
-      continue;
-    }
-
-    if (line.trim() === "") {
-      i += 1;
-      continue;
-    }
-
-    const paraLines: string[] = [line];
-    i += 1;
-    while (
-      i < lines.length &&
-      lines[i].trim() !== "" &&
-      !lines[i].startsWith("```") &&
-      !isMarkdownTableRow(lines[i]) &&
-      !/^(#{1,3})\s+/.test(lines[i]) &&
-      !/^[-*]\s+/.test(lines[i]) &&
-      !/^\d+\.\s+/.test(lines[i])
-    ) {
-      paraLines.push(lines[i]);
-      i += 1;
-    }
-    nodes.push(
-      <p key={`p-${blockKey++}`} className="chat-md-p">
-        {renderInline(paraLines.join("\n"))}
-      </p>
-    );
-  }
-
-  return nodes;
-}
-
-function isMarkdownTableRow(line: string): boolean {
-  const trimmed = line.trim();
-  return trimmed.startsWith("|") && trimmed.endsWith("|") && trimmed.includes("|");
-}
-
-function isMarkdownTableSeparator(line: string): boolean {
-  return /^\|[\s:|\-]+\|$/.test(line.trim());
-}
-
-function parseTableCells(row: string): string[] {
-  return row
-    .trim()
-    .replace(/^\|/, "")
-    .replace(/\|$/, "")
-    .split("|")
-    .map((cell) => cell.trim());
-}
-
-function renderMarkdownTable(lines: string[], key: number): ReactNode | null {
-  if (lines.length < 2) return null;
-  const separatorIndex = lines.findIndex(isMarkdownTableSeparator);
-  if (separatorIndex < 1) return null;
-
-  const headerCells = parseTableCells(lines[0]);
-  const bodyRows = lines
-    .slice(separatorIndex + 1)
-    .filter(isMarkdownTableRow)
-    .map(parseTableCells);
-
-  return (
-    <div key={`table-${key}`} className="chat-md-table-wrap">
-      <table className="chat-md-table">
-        <thead>
-          <tr>
-            {headerCells.map((cell, cellIndex) => (
-              <th key={`th-${cellIndex}`}>{renderInline(cell)}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {bodyRows.map((row, rowIndex) => (
-            <tr key={`tr-${rowIndex}`}>
-              {row.map((cell, cellIndex) => (
-                <td key={`td-${rowIndex}-${cellIndex}`}>{renderInline(cell)}</td>
+    case "table":
+      return (
+        <div key={key} className="chat-md-table-wrap">
+          <table className="chat-md-table">
+            <thead>
+              <tr>
+                {block.headers.map((cell, cellIndex) => (
+                  <th key={`th-${cellIndex}`}>{renderInline(cell)}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {block.rows.map((row, rowIndex) => (
+                <tr key={`tr-${rowIndex}`}>
+                  {row.map((cell, cellIndex) => (
+                    <td key={`td-${rowIndex}-${cellIndex}`}>{renderInline(cell)}</td>
+                  ))}
+                </tr>
               ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+            </tbody>
+          </table>
+        </div>
+      );
+    default:
+      return null;
+  }
+}
+
+function renderListItems(items: MarkdownListItem[]): ReactNode[] {
+  return items.map((item, index) => (
+    <li key={index}>
+      {renderInline(item.content)}
+      {item.children?.length ? (
+        <div className="chat-md-nested">{renderMarkdownBlocks(item.children)}</div>
+      ) : null}
+    </li>
+  ));
 }
 
 function renderInline(text: string): ReactNode[] {

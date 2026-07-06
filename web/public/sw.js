@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v54-chat-segmentation";
+const CACHE_NAME = "giga3-shell-v55-markdown-lists";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
