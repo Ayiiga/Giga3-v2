@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v59-brain-core-upgrade";
+const CACHE_NAME = "giga3-shell-v60-creator-studio";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
@@ -25,6 +25,7 @@ function isSensitiveDocumentPath(pathname) {
     pathname.startsWith("/payment/") ||
     pathname.startsWith("/credits/") ||
     pathname.startsWith("/marketplace/sell/") ||
+    pathname.startsWith("/creator-studio/") ||
     pathname.startsWith("/creator/")
   );
 }

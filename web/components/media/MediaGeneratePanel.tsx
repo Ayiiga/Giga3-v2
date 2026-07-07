@@ -34,6 +34,7 @@ interface MediaGeneratePanelProps {
   initialPrompt: string;
   initialSourceImageUrl?: string;
   initialAction?: ImageStudioActionId | null;
+  initialImageSize?: NonNullable<ImageGenerationOptions["imageSize"]>;
 }
 
 type CreatorCanvasSize =
@@ -82,6 +83,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
   initialPrompt,
   initialSourceImageUrl = "",
   initialAction = null,
+  initialImageSize = "square_hd",
 }: MediaGeneratePanelProps) {
   useRenderDiagnostic("MediaGeneratePanel");
 
@@ -106,7 +108,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
   const [imageSourceUrl, setImageSourceUrl] = useState(initialSourceImageUrl);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [imageSize, setImageSize] =
-    useState<NonNullable<ImageGenerationOptions["imageSize"]>>("square_hd");
+    useState<NonNullable<ImageGenerationOptions["imageSize"]>>(initialImageSize);
   const [imageQuality, setImageQuality] = useState<"standard" | "high" | "ultra">("high");
   const [transparentBackground, setTransparentBackground] = useState(false);
   const [negativePrompt, setNegativePrompt] = useState("");

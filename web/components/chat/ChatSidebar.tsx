@@ -80,6 +80,7 @@ const PRIMARY_NAV = [
   { hash: "sports" as const, label: "Sports desk", icon: Trophy },
   { hash: "documents" as const, label: "My Documents", icon: FileText },
   { href: "/marketplace/", label: "Marketplace", icon: LayoutGrid },
+  { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
 ] as const;
 
 const ACCOUNT_NAV = [

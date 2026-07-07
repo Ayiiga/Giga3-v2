@@ -13,7 +13,7 @@ export type CreditAction = keyof typeof CREDIT_COSTS;
 
 /** Map chat mode → credit action category */
 export function creditActionForMode(mode: string): CreditAction {
-  const writingModes = new Set(["homework", "resume", "book", "social"]);
+  const writingModes = new Set(["homework", "resume", "book", "social", "gigalearn"]);
   const researchModes = new Set(["research", "university", "waec", "news"]);
   if (writingModes.has(mode)) return "writing";
   if (researchModes.has(mode)) return "research";
