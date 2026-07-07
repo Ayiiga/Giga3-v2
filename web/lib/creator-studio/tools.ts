@@ -174,13 +174,13 @@ export function getCreatorTool(id: string): CreatorToolDefinition | undefined {
 }
 
 export const IMAGE_STYLES = [
+  { id: "social_graphics", label: "Social graphic" },
+  { id: "flyers", label: "Poster / flyer" },
+  { id: "marketing_assets", label: "Logo / marketing" },
+  { id: "study_visuals", label: "Educational visual" },
+  { id: "cinematic_posters", label: "Cinematic poster" },
+  { id: "infographics", label: "Infographic" },
   { id: "anime_art", label: "Anime art" },
-  { id: "realistic_photo", label: "Realistic photo" },
-  { id: "digital_art", label: "Digital art" },
-  { id: "logo_design", label: "Logo design" },
-  { id: "poster_flyer", label: "Poster / flyer" },
-  { id: "educational", label: "Educational visual" },
-  { id: "social_graphic", label: "Social graphic" },
 ] as const;
 
 export const IMAGE_ASPECT_RATIOS = [
