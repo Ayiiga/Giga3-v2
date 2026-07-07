@@ -1,5 +1,6 @@
 "use client";
 
+import { GenerationProgressStrip } from "@/components/generation/GenerationProgressStrip";
 import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
 import { Button } from "@/components/ui/Button";
 import {
@@ -7,6 +8,7 @@ import {
   type ImageGenerationOptions,
   type VideoGenerationOptions,
 } from "@/hooks/useMediaGeneration";
+import { useGenerationStages } from "@/hooks/useGenerationStages";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import {
   IMAGE_CATEGORIES,
@@ -94,6 +96,8 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
     createImage,
     createVideo,
   } = useMediaGeneration();
+
+  const generationStage = useGenerationStages(loading, tab);
 
   const [tab, setTab] = useState<"image" | "video">(initialTab);
   const [category, setCategory] = useState(initialCategory);
@@ -515,15 +519,11 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
 
         <div className="min-h-[5.5rem] space-y-3" aria-live="polite">
           {loading && (
-            <div
-              role="status"
-              className="rounded-2xl border border-violet-500/30 bg-violet-500/10 px-4 py-4"
-            >
-              <div className="flex items-center gap-3 text-base font-medium text-violet-100">
-                <Loader2 className="h-6 w-6 animate-spin" aria-hidden />
-                Generating your {tab}…
-              </div>
-            </div>
+            <GenerationProgressStrip
+              label={generationStage.label}
+              progress={generationStage.progress}
+              state="processing"
+            />
           )}
 
           {phase === "success" && successMessage && !loading && (

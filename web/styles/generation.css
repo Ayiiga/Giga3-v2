@@ -1,0 +1,40 @@
+.generation-toast {
+  animation: generation-toast-in 280ms ease-out;
+}
+
+.generation-progress-fill {
+  transition: width 600ms ease-out;
+}
+
+.generation-progress-indeterminate .generation-progress-fill {
+  animation: generation-progress-slide 1.4s ease-in-out infinite;
+}
+
+@keyframes generation-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes generation-progress-slide {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(360%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .generation-toast,
+  .generation-progress-fill,
+  .generation-progress-indeterminate .generation-progress-fill {
+    animation: none !important;
+    transition: none !important;
+  }
+}

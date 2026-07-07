@@ -37,4 +37,14 @@ describe("replyDetection", () => {
     ]);
     expect(isNewAssistantReply(before, after, 5000)).toBe(false);
   });
+
+  it("detects in-place streaming content changes", () => {
+    const before = fingerprintLastAssistant([
+      { _id: "a1", role: "assistant", content: "", createdAt: 4000 },
+    ]);
+    const after = fingerprintLastAssistant([
+      { _id: "a1", role: "assistant", content: "Hello", createdAt: 4000 },
+    ]);
+    expect(isNewAssistantReply(before, after, 3000)).toBe(true);
+  });
 });
