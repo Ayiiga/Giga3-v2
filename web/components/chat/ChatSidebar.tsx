@@ -81,6 +81,7 @@ const PRIMARY_NAV = [
   { hash: "documents" as const, label: "My Documents", icon: FileText },
   { href: "/marketplace/", label: "Marketplace", icon: LayoutGrid },
   { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
+  { href: "/gigalearn/", label: "GigaLearn", icon: BookOpen },
 ] as const;
 
 const ACCOUNT_NAV = [

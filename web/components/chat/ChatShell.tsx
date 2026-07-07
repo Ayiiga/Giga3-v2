@@ -27,6 +27,8 @@ import {
   type GigaModelId,
 } from "@/lib/chat/gigaModels";
 import { findLatestImageUrlInMessages } from "@/lib/chat/parseMessageMedia";
+import { consumeGigaLearnChatHandoff } from "@/lib/gigalearn/chatHandoff";
+import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function ChatShell() {
@@ -83,6 +85,7 @@ function ChatShellInner({
   const [templateNotice, setTemplateNotice] = useState<string | null>(null);
   const [dismissedError, setDismissedError] = useState<string | null>(null);
   const [modelTier, setModelTier] = useState<GigaModelId>("fast");
+  const [handoffAttachments, setHandoffAttachments] = useState<PreparedChatAttachment[]>([]);
   const insertRef = useRef<((text: string) => void) | null>(null);
   const chatActionsRef = useRef<ChatActionsMenuHandle | null>(null);
 
@@ -224,6 +227,33 @@ function ChatShellInner({
   useEffect(() => {
     setModelTier(readStoredGigaModel());
   }, []);
+
+  useEffect(() => {
+    if (!mounted || !email) return;
+    const handoff = consumeGigaLearnChatHandoff();
+    if (!handoff) return;
+
+    void changeMode("gigalearn");
+    setModelTier("vision");
+    storeGigaModel("vision");
+
+    if (handoff.attachment) {
+      setHandoffAttachments([handoff.attachment]);
+    }
+
+    const applyPrompt = () => {
+      if (handoff.prompt) {
+        insertRef.current?.(handoff.prompt);
+      }
+    };
+
+    if (insertRef.current) {
+      applyPrompt();
+    } else {
+      const timer = window.setTimeout(applyPrompt, 120);
+      return () => window.clearTimeout(timer);
+    }
+  }, [mounted, email, changeMode]);
 
   useEffect(() => {
     if (!hasOpenAiAccess && modelTier === "pro") {
@@ -381,6 +411,7 @@ function ChatShellInner({
           onDismissError={() => setDismissedError(error)}
           onAttachmentsChange={handleAttachmentsChange}
           onSuggestVisionTier={handleSuggestVisionTier}
+          initialAttachments={handoffAttachments}
         />
       </div>
     </div>

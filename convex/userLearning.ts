@@ -5,6 +5,13 @@ export type InterestProfile = {
   modes: Record<string, number>;
   topics: string[];
   lastUpdated: number;
+  /** Optional GigaLearn fields — stored in same JSON blob, no schema migration. */
+  education?: {
+    role?: string;
+    examBoard?: string;
+    level?: string;
+    subjects?: string[];
+  };
 };
 
 const STOP_WORDS = new Set([

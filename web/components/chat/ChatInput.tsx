@@ -36,6 +36,8 @@ interface ChatInputProps {
   uploadUsage?: UploadUsageSnapshot | null;
   onAttachmentsChange?: (attachments: PreparedChatAttachment[]) => void;
   onSuggestVisionTier?: () => void;
+  /** One-shot attachments from GigaLearn homework handoff. */
+  initialAttachments?: PreparedChatAttachment[];
 }
 
 export const ChatInput = memo(function ChatInput({
@@ -46,6 +48,7 @@ export const ChatInput = memo(function ChatInput({
   uploadUsage,
   onAttachmentsChange,
   onSuggestVisionTier,
+  initialAttachments,
 }: ChatInputProps) {
   useRenderDiagnostic("ChatInput");
 
@@ -101,6 +104,12 @@ export const ChatInput = memo(function ChatInput({
   useEffect(() => {
     onAttachmentsChange?.(attachments);
   }, [attachments, onAttachmentsChange]);
+
+  useEffect(() => {
+    if (!initialAttachments?.length) return;
+    setAttachments(initialAttachments);
+    setNotice("Homework image attached — review and send when ready.");
+  }, [initialAttachments]);
 
   useEffect(() => {
     const hasVisual = attachments.some(
