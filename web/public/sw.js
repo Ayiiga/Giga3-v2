@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v60-creator-studio";
+const CACHE_NAME = "giga3-shell-v61-mobile-keyboard-composer";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

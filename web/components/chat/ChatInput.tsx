@@ -284,6 +284,11 @@ export const ChatInput = memo(function ChatInput({
               value={value}
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={handleKeyDown}
+              onFocus={() => {
+                requestAnimationFrame(() => {
+                  textareaRef.current?.scrollIntoView({ block: "end", behavior: "auto" });
+                });
+              }}
               disabled={inputDisabled}
               rows={1}
               placeholder={placeholder}
