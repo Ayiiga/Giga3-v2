@@ -35,6 +35,8 @@ function resolveCallOptions(options?: { timeoutMs?: number; retries?: number }) 
   };
 }
 
+import { sanitizeUrlString } from "@/lib/sanitizeUrl";
+
 export async function convexHttpCall<T>(
   baseUrl: string,
   endpoint: "query" | "mutation" | "action",
@@ -43,7 +45,11 @@ export async function convexHttpCall<T>(
   options?: { timeoutMs?: number; retries?: number }
 ): Promise<T> {
   const { timeoutMs, retries } = resolveCallOptions(options);
-  const url = `${baseUrl.replace(/\/$/, "")}/api/${endpoint}`;
+  const cleanedBase = sanitizeUrlString(baseUrl);
+  if (!cleanedBase) {
+    throw new Error("Convex URL is not configured.");
+  }
+  const url = `${cleanedBase.replace(/\/$/, "")}/api/${endpoint}`;
 
   let lastError: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {

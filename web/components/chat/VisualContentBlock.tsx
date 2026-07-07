@@ -187,10 +187,10 @@ export const VisualContentBlock = memo(function VisualContentBlock({
 
         <div className="mt-3 space-y-3">
           {sections.map((section, index) => (
-            <section key={`${section.heading}-${index}`}>
+            <section key={`${section.heading ?? "section"}-${index}`}>
               <h5 className="text-sm font-semibold text-zinc-900">{section.heading}</h5>
               <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-zinc-800">
-                {section.items.map((item, itemIndex) => (
+                {(section.items ?? []).map((item, itemIndex) => (
                   <li key={`${item}-${itemIndex}`}>{item}</li>
                 ))}
               </ul>
@@ -204,18 +204,18 @@ export const VisualContentBlock = memo(function VisualContentBlock({
               <thead>
                 <tr>
                   <th className="border border-zinc-300 bg-zinc-100 px-2 py-1 text-left">
-                    {spec.comparison.headers[0]}
+                    {spec.comparison.headers?.[0] ?? ""}
                   </th>
                   <th className="border border-zinc-300 bg-zinc-100 px-2 py-1 text-left">
-                    {spec.comparison.headers[1]}
+                    {spec.comparison.headers?.[1] ?? ""}
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {spec.comparison.rows.map((row, index) => (
-                  <tr key={`${row[0]}-${index}`}>
-                    <td className="border border-zinc-300 px-2 py-1">{row[0]}</td>
-                    <td className="border border-zinc-300 px-2 py-1">{row[1]}</td>
+                {(spec.comparison.rows ?? []).map((row, index) => (
+                  <tr key={`${row?.[0] ?? "row"}-${index}`}>
+                    <td className="border border-zinc-300 px-2 py-1">{row?.[0] ?? ""}</td>
+                    <td className="border border-zinc-300 px-2 py-1">{row?.[1] ?? ""}</td>
                   </tr>
                 ))}
               </tbody>

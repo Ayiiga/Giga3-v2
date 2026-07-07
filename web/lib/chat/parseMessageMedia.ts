@@ -38,13 +38,14 @@ function classifyUrl(url: string): "image" | "video" | null {
 }
 
 /** Split assistant/user text into prose and direct media URLs. */
-export function parseMessageMedia(content: string): ParsedMessageMedia {
-  const urls = uniqueUrls(content.match(URL_RE) ?? []);
+export function parseMessageMedia(content: unknown): ParsedMessageMedia {
+  const text = typeof content === "string" ? content : content == null ? "" : String(content);
+  const urls = uniqueUrls(text.match(URL_RE) ?? []);
   const markdownDataImages = uniqueUrls(
-    [...content.matchAll(DATA_IMAGE_MD_RE)].map((m) => m[1].trim())
+    [...text.matchAll(DATA_IMAGE_MD_RE)].map((m) => m[1].trim())
   );
   const rawDataImages = uniqueUrls(
-    [...content.matchAll(DATA_IMAGE_RAW_RE)].map((m) => m[1].trim())
+    [...text.matchAll(DATA_IMAGE_RAW_RE)].map((m) => m[1].trim())
   );
   const images: string[] = [];
   const videos: string[] = [];
@@ -59,18 +60,18 @@ export function parseMessageMedia(content: string): ParsedMessageMedia {
     else if (kind === "video") videos.push(url);
   }
 
-  let text = content;
-  for (const match of content.matchAll(DATA_IMAGE_MD_RE)) {
-    text = text.replace(match[0], "");
+  let prose = text;
+  for (const match of text.matchAll(DATA_IMAGE_MD_RE)) {
+    prose = prose.replace(match[0], "");
   }
   for (const url of [...images, ...videos]) {
     if (!url.startsWith("data:image/")) {
-      text = text.split(url).join("");
+      prose = prose.split(url).join("");
     }
   }
-  text = text.replace(/\n{3,}/g, "\n\n").trim();
+  prose = prose.replace(/\n{3,}/g, "\n\n").trim();
 
-  return { text, images: uniqueUrls(images), videos };
+  return { text: prose, images: uniqueUrls(images), videos };
 }
 
 /** Last image URL in chat history (newest assistant/user message wins). */

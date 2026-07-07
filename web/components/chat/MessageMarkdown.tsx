@@ -3,7 +3,7 @@
 import { CodeBlock } from "@/components/chat/CodeBlock";
 import { cn } from "@/lib/utils";
 import {
-  parseMarkdownDocument,
+  safeParseMarkdownDocument,
   type MarkdownBlock,
   type MarkdownListItem,
 } from "@/lib/chat/messageMarkdownParser";
@@ -35,7 +35,10 @@ export const MessageMarkdown = memo(function MessageMarkdown({
   content,
   className,
 }: MessageMarkdownProps) {
-  const blocks = useMemo(() => renderMarkdownBlocks(parseMarkdownDocument(content)), [content]);
+  const blocks = useMemo(
+    () => renderMarkdownBlocks(safeParseMarkdownDocument(content)),
+    [content]
+  );
   return <div className={cn("chat-markdown", className)}>{blocks}</div>;
 });
 
@@ -91,15 +94,15 @@ function renderMarkdownBlock(block: MarkdownBlock, key: number): ReactNode {
           <table className="chat-md-table">
             <thead>
               <tr>
-                {block.headers.map((cell, cellIndex) => (
+                {(block.headers ?? []).map((cell, cellIndex) => (
                   <th key={`th-${cellIndex}`}>{renderInline(cell)}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {block.rows.map((row, rowIndex) => (
+              {(block.rows ?? []).map((row, rowIndex) => (
                 <tr key={`tr-${rowIndex}`}>
-                  {row.map((cell, cellIndex) => (
+                  {(row ?? []).map((cell, cellIndex) => (
                     <td key={`td-${rowIndex}-${cellIndex}`}>{renderInline(cell)}</td>
                   ))}
                 </tr>
@@ -113,8 +116,8 @@ function renderMarkdownBlock(block: MarkdownBlock, key: number): ReactNode {
   }
 }
 
-function renderListItems(items: MarkdownListItem[]): ReactNode[] {
-  return items.map((item, index) => (
+function renderListItems(items: MarkdownListItem[] | undefined): ReactNode[] {
+  return (items ?? []).map((item, index) => (
     <li key={index}>
       {renderInline(item.content)}
       {item.children?.length ? (

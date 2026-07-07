@@ -11,8 +11,9 @@ export function ChatErrorBanner({
   onDismiss?: () => void;
 }) {
   const lowCredits =
-    message.toLowerCase().includes("insufficient credits") ||
-    message.toLowerCase().includes("credits");
+    typeof message === "string" &&
+    (message.toLowerCase().includes("insufficient credits") ||
+      message.toLowerCase().includes("credits"));
 
   return (
     <div
@@ -20,7 +21,7 @@ export function ChatErrorBanner({
       className="mx-3 mt-2 flex items-start gap-2 rounded-xl border border-amber-200/80 bg-amber-50/95 px-3 py-2.5 text-sm text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-100 sm:mx-4"
     >
       <div className="min-w-0 flex-1">
-        <p className="leading-snug">{message}</p>
+        <p className="leading-snug">{typeof message === "string" ? message : "Something went wrong."}</p>
         {lowCredits && (
           <p className="mt-2 text-xs">
             <Link href="/pricing" className="font-medium text-accent underline">

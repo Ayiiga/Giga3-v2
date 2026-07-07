@@ -1,14 +1,19 @@
 import type { UiMessage } from "@/components/chat/MessageList";
 
 export function toUiMessages(
-  rows: { _id: string; role: string; content: string; createdAt?: number }[]
+  rows: { _id: string; role: string; content?: unknown; createdAt?: number }[]
 ): UiMessage[] {
   return rows
     .filter((r) => r.role === "user" || r.role === "assistant")
     .map((r) => ({
       id: r._id,
       role: r.role as "user" | "assistant",
-      content: r.content,
+      content:
+        typeof r.content === "string"
+          ? r.content
+          : r.content == null
+            ? ""
+            : String(r.content),
       createdAt: r.createdAt,
     }));
 }
