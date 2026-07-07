@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v58-sync-snapshot-fix";
+const CACHE_NAME = "giga3-shell-v59-brain-core-upgrade";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
