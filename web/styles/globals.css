@@ -333,7 +333,8 @@ button:focus-visible {
   flex-shrink: 1;
 }
 
-.chat-composer-dock {
+.chat-composer-dock,
+.chat-composer-stack {
   flex-shrink: 0;
 }
 

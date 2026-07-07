@@ -8,6 +8,7 @@ import { MessageList, type UiMessage } from "@/components/chat/MessageList";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import type { UploadUsageSnapshot } from "@/lib/chat/uploadLimits";
 import type { AiModeId } from "@/lib/aiRouter";
+import { useMobileKeyboardInset } from "@/hooks/useMobileKeyboardInset";
 import { memo, type MutableRefObject } from "react";
 
 interface ChatConversationPaneProps {
@@ -83,6 +84,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
 }: ChatConversationPaneProps) {
   const showTyping = awaitingReply || isSending;
   const typingPhase = awaitingReply ? "replying" : "sending";
+  const keyboardInset = useMobileKeyboardInset();
 
   return (
     <div className="chat-conversation-grid min-h-0 min-w-0 max-w-full overflow-x-hidden overflow-y-hidden bg-background">
@@ -97,12 +99,16 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         onRegenerate={onRegenerate}
         onEditMessage={onEditMessage}
       />
-      <ChatCategorySwitcher
-        mode={mode}
-        onModeChange={onModeChange}
-        disabled={isSending || awaitingReply}
-      />
-      <div className="chat-composer-dock min-w-0 max-w-full border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)]">
+      <div
+        className="chat-composer-stack min-w-0 max-w-full shrink-0"
+            style={keyboardInset > 0 ? { marginBottom: keyboardInset } : undefined}
+      >
+        <ChatCategorySwitcher
+          mode={mode}
+          onModeChange={onModeChange}
+          disabled={isSending || awaitingReply}
+        />
+        <div className="chat-composer-dock min-w-0 max-w-full border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)]">
         {error && (
           <ChatErrorBanner message={error} onDismiss={onDismissError} />
         )}
@@ -120,6 +126,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           onAttachmentsChange={onAttachmentsChange}
           onSuggestVisionTier={onSuggestVisionTier}
         />
+      </div>
       </div>
     </div>
   );
