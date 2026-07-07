@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v63-gigalearn-ecosystem";
+const CACHE_NAME = "giga3-shell-v64-image-gen-tab-fix";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

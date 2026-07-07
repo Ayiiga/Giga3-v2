@@ -2,7 +2,8 @@
 
 import { ShareActionFeedback } from "@/components/chat/ShareActionFeedback";
 import { Button } from "@/components/ui/Button";
-import { COPY_SUCCESS, shareText, copyMarkdownToClipboard } from "@/lib/share/clientShare";
+import { COPY_SUCCESS } from "@/lib/chat/chatContentFormat";
+import { shareText, copyMarkdownToClipboard } from "@/lib/share/clientShare";
 import { useShareAction } from "@/hooks/useShareAction";
 import { cn } from "@/lib/utils";
 import { Check, Copy, RefreshCw, Share2, Star } from "lucide-react";
@@ -39,7 +40,7 @@ export const CreatorResultPanel = memo(function CreatorResultPanel({
 
   const runShare = useCallback(async () => {
     if (!content?.trim()) return;
-    await shareText(content.slice(0, 8000), "Giga3 AI Creator");
+    await shareText({ title: "Giga3 AI Creator", text: content.slice(0, 8000) });
   }, [content]);
 
   if (loading) {
