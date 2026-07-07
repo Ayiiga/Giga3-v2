@@ -2,6 +2,12 @@ import { describe, expect, it } from "vitest";
 import { generationCoordinator } from "../../web/lib/generation/coordinator";
 
 describe("generationCoordinator", () => {
+  it("returns stable snapshot references for useSyncExternalStore", () => {
+    const first = generationCoordinator.getToasts();
+    const second = generationCoordinator.getToasts();
+    expect(first).toBe(second);
+  });
+
   it("dedupes completion notifications for the same task", () => {
     const id = "test:chat:1";
     generationCoordinator.start({
