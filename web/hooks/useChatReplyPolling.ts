@@ -81,6 +81,9 @@ export function useChatReplyPolling(
           httpOpts
         ),
       ]);
+      if (!Array.isArray(rows)) {
+        throw new Error("Invalid messages response");
+      }
       setPolled(rows);
       setReplyActive(status.active);
       setPollFailures(0);

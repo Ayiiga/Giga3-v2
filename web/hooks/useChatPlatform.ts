@@ -157,7 +157,11 @@ export function useChatPlatform() {
     pollTargetId,
     mounted
   );
-  const effectiveMessagesRaw = pollSnapshot.messages ?? messagesRaw;
+  const effectiveMessagesRaw = Array.isArray(pollSnapshot.messages)
+    ? pollSnapshot.messages
+    : Array.isArray(messagesRaw)
+      ? messagesRaw
+      : undefined;
   const polledReplyActive = pollSnapshot.replyActive;
   const pollFailures = pollSnapshot.pollFailures;
   const messagesRawRef = useRef(effectiveMessagesRaw);

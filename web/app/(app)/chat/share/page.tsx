@@ -1,4 +1,5 @@
 import dynamic from "next/dynamic";
+import { ChatErrorBoundary } from "@/components/chat/ChatErrorBoundary";
 
 const ChatPublicShareRoot = dynamic(
   () =>
@@ -16,5 +17,9 @@ const ChatPublicShareRoot = dynamic(
 );
 
 export default function ChatSharePage() {
-  return <ChatPublicShareRoot />;
+  return (
+    <ChatErrorBoundary>
+      <ChatPublicShareRoot />
+    </ChatErrorBoundary>
+  );
 }

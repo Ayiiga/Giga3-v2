@@ -9,9 +9,18 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const outDir = path.resolve(__dirname, "../out");
-const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL?.replace(
+  /[\u200B-\u200D\uFEFF\u2060\u00AD]/g,
+  ""
+).trim();
 
 const RETIRED_CONVEX_HOSTS = new Set(["happy-otter-123.convex.cloud"]);
+
+if (convexUrl !== process.env.NEXT_PUBLIC_CONVEX_URL?.trim()) {
+  console.warn(
+    "verify-convex-in-build: NEXT_PUBLIC_CONVEX_URL contained invisible characters — they were stripped for verification."
+  );
+}
 
 if (!convexUrl) {
   console.error(

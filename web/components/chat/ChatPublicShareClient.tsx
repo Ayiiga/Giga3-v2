@@ -28,7 +28,12 @@ function PublicShareInner() {
     return rows.map((m: NonNullable<typeof rows>[number]) => ({
       id: String(m._id),
       role: m.role as "user" | "assistant",
-      content: m.content,
+      content:
+        typeof m.content === "string"
+          ? m.content
+          : m.content == null
+            ? ""
+            : String(m.content),
     }));
   }, [rows]);
 

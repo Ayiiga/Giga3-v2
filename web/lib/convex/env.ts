@@ -8,6 +8,8 @@
  * or web/.env.local for local production builds.
  */
 
+import { sanitizeUrlString } from "../sanitizeUrl";
+
 const CONVEX_URL_KEY = "NEXT_PUBLIC_CONVEX_URL" as const;
 const CONVEX_SITE_URL_KEY = "NEXT_PUBLIC_CONVEX_SITE_URL" as const;
 
@@ -28,7 +30,7 @@ declare global {
 
 /** Remap known-dead deployment URLs to production. Safe on server and client. */
 export function normalizeConvexUrl(url: string | undefined): string | undefined {
-  const trimmed = url?.trim();
+  const trimmed = sanitizeUrlString(url);
   if (!trimmed) return undefined;
   try {
     const host = new URL(trimmed).host;
@@ -51,7 +53,7 @@ export function getConvexUrl(): string | undefined {
 }
 
 export function getConvexSiteUrl(): string | undefined {
-  const url = process.env.NEXT_PUBLIC_CONVEX_SITE_URL?.trim();
+  const url = sanitizeUrlString(process.env.NEXT_PUBLIC_CONVEX_SITE_URL);
   if (!url) {
     if (getConvexUrl() === CANONICAL_PRODUCTION_CONVEX_URL) {
       return "https://perfect-lark-521.convex.site";

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
+import { ChatErrorBoundary } from "@/components/chat/ChatErrorBoundary";
 
 const ChatLoginPageClient = dynamic(
   () =>
@@ -22,5 +23,9 @@ export const metadata: Metadata = {
 };
 
 export default function ChatLoginPage() {
-  return <ChatLoginPageClient />;
+  return (
+    <ChatErrorBoundary>
+      <ChatLoginPageClient />
+    </ChatErrorBoundary>
+  );
 }

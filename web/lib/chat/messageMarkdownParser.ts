@@ -80,6 +80,7 @@ function parseNestedLists(
     if (!marker || marker.indent <= baseIndent) break;
 
     const nested = parseListBlock(lines, i);
+    if (!nested) break;
     parent.children = parent.children ?? [];
     parent.children.push(nested.block);
     i = nested.next;
@@ -90,10 +91,10 @@ function parseNestedLists(
 function parseListBlock(
   lines: string[],
   start: number
-): { block: Extract<MarkdownBlock, { type: "ul" | "ol" }>; next: number } {
+): { block: Extract<MarkdownBlock, { type: "ul" | "ol" }>; next: number } | null {
   const first = parseListItemMarker(lines[start]);
   if (!first) {
-    throw new Error("parseListBlock called on non-list line");
+    return null;
   }
 
   const kind = first.kind;
@@ -223,9 +224,11 @@ export function parseMarkdownDocument(text: string): MarkdownBlock[] {
     const listMarker = parseListItemMarker(line);
     if (listMarker) {
       const list = parseListBlock(lines, i);
-      blocks.push(list.block);
-      i = list.next;
-      continue;
+      if (list) {
+        blocks.push(list.block);
+        i = list.next;
+        continue;
+      }
     }
 
     if (line.trim() === "") {
@@ -250,4 +253,15 @@ export function parseMarkdownDocument(text: string): MarkdownBlock[] {
   }
 
   return blocks;
+}
+
+/** Parse markdown without throwing — malformed assistant output falls back to a paragraph. */
+export function safeParseMarkdownDocument(text: unknown): MarkdownBlock[] {
+  const source = typeof text === "string" ? text : text == null ? "" : String(text);
+  try {
+    return parseMarkdownDocument(source);
+  } catch {
+    const trimmed = source.trim();
+    return trimmed ? [{ type: "paragraph", text: trimmed }] : [];
+  }
 }

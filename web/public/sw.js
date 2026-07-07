@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v55-markdown-lists";
+const CACHE_NAME = "giga3-shell-v56-client-exception-fix";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

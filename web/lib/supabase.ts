@@ -22,7 +22,21 @@ export type SupabaseRestClient = NonNullable<ReturnType<typeof createSupabaseRes
 const ACCESS_TOKEN_KEY = "giga3_supabase_access_token";
 
 function getSupabaseUrl(): string | null {
-  return process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "") || null;
+  const raw = sanitizeUrlString(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  if (!raw) return null;
+  try {
+    const host = new URL(raw).hostname;
+    if (
+      !host.endsWith(".supabase.co") &&
+      host !== "localhost" &&
+      host !== "127.0.0.1"
+    ) {
+      return null;
+    }
+    return raw;
+  } catch {
+    return null;
+  }
 }
 
 function getSupabaseAnonKey(): string | null {
