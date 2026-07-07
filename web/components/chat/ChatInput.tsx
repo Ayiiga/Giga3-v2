@@ -34,6 +34,8 @@ interface ChatInputProps {
   /** Parent can call `.current(text)` to insert templates into the textarea. */
   insertRef?: MutableRefObject<((text: string) => void) | null>;
   uploadUsage?: UploadUsageSnapshot | null;
+  onAttachmentsChange?: (attachments: PreparedChatAttachment[]) => void;
+  onSuggestVisionTier?: () => void;
 }
 
 export const ChatInput = memo(function ChatInput({
@@ -42,6 +44,8 @@ export const ChatInput = memo(function ChatInput({
   placeholder = "Message Giga3 AI…",
   insertRef,
   uploadUsage,
+  onAttachmentsChange,
+  onSuggestVisionTier,
 }: ChatInputProps) {
   useRenderDiagnostic("ChatInput");
 
@@ -95,6 +99,77 @@ export const ChatInput = memo(function ChatInput({
   }, [value]);
 
   useEffect(() => {
+    onAttachmentsChange?.(attachments);
+  }, [attachments, onAttachmentsChange]);
+
+  useEffect(() => {
+    const hasVisual = attachments.some(
+      (a) => a.kind === "image" || a.kind === "pdf" || a.kind === "document"
+    );
+    if (hasVisual) onSuggestVisionTier?.();
+  }, [attachments, onSuggestVisionTier]);
+
+  async function handlePickFiles(files: File[], kind: AttachmentKind) {
+    if (disabled || busy) return;
+    setBusy(true);
+    setNotice(null);
+    try {
+      const currentFiles = attachments.length;
+      const currentImages = attachments.filter((a) => a.kind === "image").length;
+      if (uploadUsage) {
+        const nextImages = files.filter((file) => file.type.startsWith("image/")).length;
+        if (currentFiles + files.length > uploadUsage.filesRemaining) {
+          throw new Error(
+            `Only ${uploadUsage.filesRemaining} file upload${uploadUsage.filesRemaining === 1 ? "" : "s"} remaining today.`
+          );
+        }
+        if (currentImages + nextImages > uploadUsage.imagesRemaining) {
+          throw new Error(
+            `Only ${uploadUsage.imagesRemaining} image upload${uploadUsage.imagesRemaining === 1 ? "" : "s"} remaining today.`
+          );
+        }
+      }
+
+      const prepared = await Promise.all(
+        files.map((file) => prepareChatAttachment(file, uploadUsage?.limits))
+      );
+      setAttachments((prev) => [...prev, ...prepared]);
+      setNotice(
+        `Attached ${prepared.length} file${prepared.length === 1 ? "" : "s"}. Ask what you want Giga3 AI to analyze, summarize, solve, compare, or explain.`
+      );
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : "Could not attach file.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const handlePickFilesRef = useRef(handlePickFiles);
+  handlePickFilesRef.current = handlePickFiles;
+
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    function onPaste(e: ClipboardEvent) {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      const imageFiles: File[] = [];
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) imageFiles.push(file);
+        }
+      }
+      if (imageFiles.length > 0) {
+        e.preventDefault();
+        void handlePickFilesRef.current(imageFiles, "image");
+      }
+    }
+    el.addEventListener("paste", onPaste);
+    return () => el.removeEventListener("paste", onPaste);
+  }, []);
+
+  useEffect(() => {
     return () => {
       for (const attachment of attachments) {
         if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl);
@@ -131,41 +206,6 @@ export const ChatInput = memo(function ChatInput({
     }
     if (e.key === "Escape" && toolbarOpen) {
       setToolbarOpen(false);
-    }
-  }
-
-  async function handlePickFiles(files: File[], kind: AttachmentKind) {
-    if (disabled || busy) return;
-    setBusy(true);
-    setNotice(null);
-    try {
-      const currentFiles = attachments.length;
-      const currentImages = attachments.filter((a) => a.kind === "image").length;
-      if (uploadUsage) {
-        const nextImages = files.filter((file) => file.type.startsWith("image/")).length;
-        if (currentFiles + files.length > uploadUsage.filesRemaining) {
-          throw new Error(
-            `Only ${uploadUsage.filesRemaining} file upload${uploadUsage.filesRemaining === 1 ? "" : "s"} remaining today.`
-          );
-        }
-        if (currentImages + nextImages > uploadUsage.imagesRemaining) {
-          throw new Error(
-            `Only ${uploadUsage.imagesRemaining} image upload${uploadUsage.imagesRemaining === 1 ? "" : "s"} remaining today.`
-          );
-        }
-      }
-
-      const prepared = await Promise.all(
-        files.map((file) => prepareChatAttachment(file, uploadUsage?.limits))
-      );
-      setAttachments((prev) => [...prev, ...prepared]);
-      setNotice(
-        `Attached ${prepared.length} file${prepared.length === 1 ? "" : "s"}. Ask what you want Giga3 AI to analyze, summarize, solve, compare, or explain.`
-      );
-    } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Could not attach file.");
-    } finally {
-      setBusy(false);
     }
   }
 

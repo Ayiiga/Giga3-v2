@@ -82,6 +82,13 @@ export const AI_MODE_DEFINITIONS: AiModeDefinition[] = [
     icon: "Newspaper",
     systemPrompt: getSystemPrompt("news"),
   },
+  {
+    id: "gigalearn",
+    label: "GigaLearn",
+    description: "Education, quizzes, and homework help",
+    icon: "BookMarked",
+    systemPrompt: getSystemPrompt("gigalearn"),
+  },
 ];
 
 export function getModeDefinition(mode: string): AiModeDefinition {

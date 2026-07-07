@@ -2,7 +2,10 @@
 
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import { DOCUMENT_TEMPLATES } from "@/lib/chat/documentTemplates";
+import { getCategoryForMode } from "@/lib/chat/chatCategories";
+import { getSuggestedPrompts } from "@/lib/chat/suggestedPrompts";
 import { GIGA3_CHAT_WELCOME } from "@/lib/assistantIdentity";
+import type { AiModeId } from "@/lib/aiRouter";
 import { formatCurrentDate, resolveTemplatePlaceholders } from "@/lib/datetime";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { useScrollToLatestMessage } from "@/hooks/useScrollToLatestMessage";
@@ -22,6 +25,7 @@ export interface UiMessage {
 
 interface MessageListProps {
   messages: UiMessage[];
+  mode?: AiModeId;
   isLoading?: boolean;
   isSending?: boolean;
   isAcceptingMessage?: boolean;
@@ -31,7 +35,7 @@ interface MessageListProps {
   onEditMessage?: (messageId: string, content: string) => void;
 }
 
-const QUICK_PROMPTS = [
+const QUICK_PROMPTS_FALLBACK = [
   "Help me draft a professional email",
   "Explain this concept simply",
   "Summarize the key points",
@@ -39,6 +43,7 @@ const QUICK_PROMPTS = [
 
 function MessageListInner({
   messages,
+  mode = "general",
   isLoading = false,
   isSending = false,
   isAcceptingMessage = false,
@@ -73,6 +78,9 @@ function MessageListInner({
     }
   }, []);
 
+  const category = useMemo(() => getCategoryForMode(mode), [mode]);
+  const suggestedPrompts = useMemo(() => getSuggestedPrompts(mode, 4), [mode]);
+
   return (
     <div className="chat-message-list relative min-h-0 min-w-0 max-w-full overflow-x-hidden overflow-y-hidden bg-background">
       <div
@@ -94,31 +102,47 @@ function MessageListInner({
             <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
               Welcome to Giga3 AI
             </h2>
+            <p className="mt-2 text-sm font-medium text-accent">
+              {category.emoji} {category.label} mode
+            </p>
             {todayLabel && (
               <p className="mt-1 text-sm text-muted" suppressHydrationWarning>
                 {todayLabel}
               </p>
             )}
             <p className="mt-4 max-w-md text-base leading-[1.7] text-muted">
-              {GIGA3_CHAT_WELCOME} Pick a template from the workspace above, or use{" "}
-              <span className="font-medium text-foreground">Attach</span> to add files.
-              Chats save automatically.
+              {GIGA3_CHAT_WELCOME} Pick a suggested prompt below, attach files for
+              analysis, or explore templates in the workspace.
             </p>
 
             {onInsertTemplate && (
               <>
                 <div className="mt-8 flex w-full flex-wrap justify-center gap-2">
-                  {QUICK_PROMPTS.map((prompt) => (
+                  {suggestedPrompts.map((prompt) => (
                     <button
-                      key={prompt}
+                      key={prompt.label}
                       type="button"
-                      onClick={() => onInsertTemplate(prompt)}
+                      onClick={() => onInsertTemplate(prompt.text)}
                       className="min-h-11 rounded-full border border-border bg-white px-4 py-2 text-sm text-foreground shadow-sm hover:border-accent/30 hover:bg-accent/5"
                     >
-                      {prompt}
+                      {prompt.label}
                     </button>
                   ))}
                 </div>
+                {suggestedPrompts.length === 0 && (
+                  <div className="mt-8 flex w-full flex-wrap justify-center gap-2">
+                    {QUICK_PROMPTS_FALLBACK.map((prompt) => (
+                      <button
+                        key={prompt}
+                        type="button"
+                        onClick={() => onInsertTemplate(prompt)}
+                        className="min-h-11 rounded-full border border-border bg-white px-4 py-2 text-sm text-foreground shadow-sm hover:border-accent/30 hover:bg-accent/5"
+                      >
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 <div className="mt-8 w-full">
                   <p className="mb-3 flex items-center justify-center gap-1.5 text-sm font-medium text-muted">
@@ -198,6 +222,7 @@ function MessageListInner({
 
 function propsEqual(prev: MessageListProps, next: MessageListProps): boolean {
   return (
+    prev.mode === next.mode &&
     prev.isLoading === next.isLoading &&
     prev.isSending === next.isSending &&
     prev.isAcceptingMessage === next.isAcceptingMessage &&

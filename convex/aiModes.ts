@@ -16,6 +16,7 @@ export const AI_MODES = [
   "book",
   "social",
   "news",
+  "gigalearn",
 ] as const;
 
 export type AiModeId = (typeof AI_MODES)[number];
@@ -35,6 +36,7 @@ export const AI_MODE_SYSTEM_PROMPTS: Record<AiModeId, string> = {
   book: composeSystemPrompt(modeRole("book")),
   social: composeSystemPrompt(modeRole("social")),
   news: composeSystemPrompt(modeRole("news")),
+  gigalearn: composeSystemPrompt(modeRole("gigalearn")),
 };
 
 export function isValidMode(mode: string): mode is AiModeId {

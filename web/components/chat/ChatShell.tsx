@@ -147,6 +147,26 @@ function ChatShellInner({
     [sendMessage, modelTier]
   );
 
+  const handleSuggestVisionTier = useCallback(() => {
+    if (modelTier !== "vision") {
+      setModelTier("vision");
+      storeGigaModel("vision");
+    }
+  }, [modelTier]);
+
+  const handleAttachmentsChange = useCallback(
+    (attachments: import("@/lib/chat/multimodalAttachments").PreparedChatAttachment[]) => {
+      const hasVisual =
+        attachments.some((a) => a.kind === "image" || a.kind === "pdf") ||
+        attachments.length > 0;
+      if (hasVisual && modelTier !== "vision" && modelTier !== "pro") {
+        setModelTier("vision");
+        storeGigaModel("vision");
+      }
+    },
+    [modelTier]
+  );
+
   const handleOpenSidebar = useCallback(() => {
     setMobileOpen(true);
   }, []);
@@ -288,6 +308,7 @@ function ChatShellInner({
         onToggleCollapse={handleToggleSidebar}
         mobileOpen={mobileOpen}
         onCloseMobile={handleCloseMobile}
+        onInsertPrompt={handleInsertTemplate}
       />
 
       <div className="chat-main-column relative z-0 grid min-h-0 min-w-0 flex-1 grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
@@ -342,6 +363,8 @@ function ChatShellInner({
 
         <ChatConversationPane
           messages={messages}
+          mode={mode}
+          onModeChange={handleModeChange}
           isLoading={messagesLoading}
           isSending={isSending}
           awaitingReply={awaitingReply}
@@ -356,6 +379,8 @@ function ChatShellInner({
           uploadUsage={uploadUsage}
           error={visibleError}
           onDismissError={() => setDismissedError(error)}
+          onAttachmentsChange={handleAttachmentsChange}
+          onSuggestVisionTier={handleSuggestVisionTier}
         />
       </div>
     </div>

@@ -1,15 +1,19 @@
 "use client";
 
+import { ChatCategorySwitcher } from "@/components/chat/ChatCategorySwitcher";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatErrorBanner } from "@/components/chat/ChatErrorBanner";
 import { ChatTypingBar } from "@/components/chat/ChatTypingBar";
 import { MessageList, type UiMessage } from "@/components/chat/MessageList";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import type { UploadUsageSnapshot } from "@/lib/chat/uploadLimits";
+import type { AiModeId } from "@/lib/aiRouter";
 import { memo, type MutableRefObject } from "react";
 
 interface ChatConversationPaneProps {
   messages: UiMessage[];
+  mode: AiModeId;
+  onModeChange: (mode: AiModeId) => void;
   isLoading: boolean;
   isSending: boolean;
   awaitingReply?: boolean;
@@ -24,6 +28,8 @@ interface ChatConversationPaneProps {
   uploadUsage?: UploadUsageSnapshot | null;
   error?: string | null;
   onDismissError?: () => void;
+  onAttachmentsChange?: (attachments: PreparedChatAttachment[]) => void;
+  onSuggestVisionTier?: () => void;
 }
 
 function panePropsEqual(
@@ -31,6 +37,8 @@ function panePropsEqual(
   next: ChatConversationPaneProps
 ): boolean {
   return (
+    prev.mode === next.mode &&
+    prev.onModeChange === next.onModeChange &&
     prev.isLoading === next.isLoading &&
     prev.isSending === next.isSending &&
     prev.awaitingReply === next.awaitingReply &&
@@ -45,6 +53,8 @@ function panePropsEqual(
     prev.uploadUsage === next.uploadUsage &&
     prev.error === next.error &&
     prev.onDismissError === next.onDismissError &&
+    prev.onAttachmentsChange === next.onAttachmentsChange &&
+    prev.onSuggestVisionTier === next.onSuggestVisionTier &&
     prev.insertRef === next.insertRef
   );
 }
@@ -52,6 +62,8 @@ function panePropsEqual(
 /** Message list + composer — flex column with guaranteed scroll region on mobile. */
 export const ChatConversationPane = memo(function ChatConversationPane({
   messages,
+  mode,
+  onModeChange,
   isLoading,
   isSending,
   awaitingReply = false,
@@ -66,6 +78,8 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   uploadUsage,
   error,
   onDismissError,
+  onAttachmentsChange,
+  onSuggestVisionTier,
 }: ChatConversationPaneProps) {
   const showTyping = awaitingReply || isSending;
   const typingPhase = awaitingReply ? "replying" : "sending";
@@ -74,6 +88,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
     <div className="chat-conversation-grid min-h-0 min-w-0 max-w-full overflow-x-hidden overflow-y-hidden bg-background">
       <MessageList
         messages={messages}
+        mode={mode}
         isLoading={isLoading}
         isSending={isSending}
         isAcceptingMessage={false}
@@ -81,6 +96,11 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         onInsertTemplate={onInsertTemplate}
         onRegenerate={onRegenerate}
         onEditMessage={onEditMessage}
+      />
+      <ChatCategorySwitcher
+        mode={mode}
+        onModeChange={onModeChange}
+        disabled={isSending || awaitingReply}
       />
       <div className="chat-composer-dock min-w-0 max-w-full border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)]">
         {error && (
@@ -97,6 +117,8 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           onSend={onSend}
           disabled={isSending || awaitingReply}
           uploadUsage={uploadUsage}
+          onAttachmentsChange={onAttachmentsChange}
+          onSuggestVisionTier={onSuggestVisionTier}
         />
       </div>
     </div>

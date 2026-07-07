@@ -4,6 +4,7 @@ import { AI_MODE_DEFINITIONS, type AiModeId } from "@/lib/aiRouter";
 import { cn } from "@/lib/utils";
 import {
   BookOpen,
+  BookMarked,
   Code2,
   FileText,
   GraduationCap,
@@ -21,6 +22,7 @@ const ICONS: Record<string, LucideIcon> = {
   Code2,
   GraduationCap,
   BookOpen,
+  BookMarked,
   School,
   Search,
   FileText,

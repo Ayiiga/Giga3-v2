@@ -84,6 +84,9 @@ export function isValidGigaModel(id: string): id is GigaModelId {
 }
 
 export function gigaModelForMode(mode: AiModeId): GigaModelId {
+  if (mode === "gigalearn" || mode === "homework" || mode === "waec" || mode === "university") {
+    return "fast";
+  }
   const match = GIGA_MODELS.find((m) => m.mode === mode && !m.requiresPremium);
   return match?.id ?? "fast";
 }
