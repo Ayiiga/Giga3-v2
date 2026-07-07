@@ -54,8 +54,15 @@ function defaultCompleteToast(kind: GenerationKind): Pick<GenerationToast, "titl
 class GenerationCoordinator {
   private tasks = new Map<string, GenerationTask>();
   private toasts: GenerationToast[] = [];
+  private tasksSnapshot: GenerationTask[] = [];
+  private toastsSnapshot: GenerationToast[] = [];
   private listeners = new Set<Listener>();
   private tabActiveIds = new Set<string>();
+
+  private syncSnapshots(): void {
+    this.toastsSnapshot = this.toasts;
+    this.tasksSnapshot = [...this.tasks.values()].sort((a, b) => b.startedAt - a.startedAt);
+  }
 
   subscribe(listener: Listener): () => void {
     this.listeners.add(listener);
@@ -63,15 +70,16 @@ class GenerationCoordinator {
   }
 
   private emit(): void {
+    this.syncSnapshots();
     for (const listener of this.listeners) listener();
   }
 
   getTasks(): GenerationTask[] {
-    return [...this.tasks.values()].sort((a, b) => b.startedAt - a.startedAt);
+    return this.tasksSnapshot;
   }
 
   getToasts(): GenerationToast[] {
-    return [...this.toasts];
+    return this.toastsSnapshot;
   }
 
   dismissToast(id: string): void {
