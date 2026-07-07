@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v61-mobile-keyboard-composer";
+const CACHE_NAME = "giga3-shell-v62-keyboard-viewport-sync";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

@@ -117,6 +117,13 @@
   );
 }
 
+@media (max-width: 1023px) {
+  .chat-composer-dock {
+    position: relative;
+    bottom: auto;
+  }
+}
+
 .chat-stable .chat-typing-dot,
 .chat-stable .chat-scroll-fab {
   animation: none;
