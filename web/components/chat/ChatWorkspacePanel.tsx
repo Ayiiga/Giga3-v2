@@ -4,6 +4,7 @@ import { DocumentTemplatePicker } from "@/components/chat/DocumentTemplatePicker
 import { ImageStudioQuickPanel } from "@/components/chat/ImageStudioQuickPanel";
 import { ToolSelector } from "@/components/chat/ToolSelector";
 import { NewsDeskPanel } from "@/components/news/NewsDeskPanel";
+import { GenerationAlertsPanel } from "@/components/generation/GenerationAlertsPanel";
 import { PushAlertsPanel } from "@/components/pwa/PushAlertsPanel";
 import { SportsDeskPanel } from "@/components/sports/SportsDeskPanel";
 import { getSessionToken } from "@/lib/auth";
@@ -228,7 +229,8 @@ function ChatWorkspacePanelComponent({
             )}
 
             {tab === "alerts" && (
-              <div id="alerts">
+              <div id="alerts" className="space-y-3 p-3 sm:p-4">
+                <GenerationAlertsPanel embedded />
                 <PushAlertsPanel embedded />
               </div>
             )}

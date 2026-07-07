@@ -41,9 +41,19 @@ import {
 import { getConvexUrl } from "@/lib/convex";
 import {
   fingerprintLastAssistant,
-  isNewAssistantReply,
   type AssistantFingerprint,
 } from "@/lib/chat/replyDetection";
+import {
+  assessReplyFromMessages,
+} from "@/lib/generation/replyOutcome";
+import {
+  chatGenerationTaskId,
+  generationCoordinator,
+} from "@/lib/generation/coordinator";
+import {
+  CHAT_REPLY_INCOMPLETE_ERROR,
+  CHAT_REPLY_TIMEOUT_ERROR,
+} from "@/lib/generation/types";
 import { convexHttpCall } from "@/lib/network/convexCall";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
@@ -93,6 +103,9 @@ export function useChatPlatform() {
   const replyWaitStartedAtRef = useRef(0);
   const replyDeadlineRef = useRef(0);
   const assistantFingerprintBeforeRef = useRef<AssistantFingerprint>(null);
+  const replyOutcomeRef = useRef<"pending" | "success" | "failed" | "cancelled">("pending");
+  const replyFailureTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activeGenTaskIdRef = useRef<string | null>(null);
   const syncingOutboxRef = useRef(false);
   const lastChatSystemRef = useRef<GigaModelId>("fast");
   const { isSlowNetwork } = useConnectionQuality();
@@ -103,10 +116,94 @@ export function useChatPlatform() {
     setIsSending(false);
   }, []);
 
+  const clearReplyFailureTimer = useCallback(() => {
+    if (replyFailureTimerRef.current) {
+      clearTimeout(replyFailureTimerRef.current);
+      replyFailureTimerRef.current = null;
+    }
+  }, []);
+
+  const completeReplySuccess = useCallback(
+    (via: string) => {
+      if (replyOutcomeRef.current === "success") return true;
+      replyOutcomeRef.current = "success";
+      clearReplyFailureTimer();
+      setAwaitingReply(false);
+      setPendingUserText(null);
+      clearPendingSyncUi();
+      setError(null);
+      setPollConversationId(null);
+      const taskId = activeGenTaskIdRef.current;
+      if (taskId) {
+        generationCoordinator.complete(taskId);
+        activeGenTaskIdRef.current = null;
+      }
+      logChatClient("reply_detected", { via });
+      return true;
+    },
+    [clearPendingSyncUi, clearReplyFailureTimer]
+  );
+
+  const tryResolveReplyFromMessages = useCallback(
+    (via: string): boolean => {
+      const assessment = assessReplyFromMessages(
+        messagesRawRef.current,
+        assistantFingerprintBeforeRef.current,
+        replyWaitStartedAtRef.current,
+        assistantBaselineRef.current
+      );
+      if (assessment === "success" || assessment === "partial") {
+        return completeReplySuccess(via);
+      }
+      return false;
+    },
+    [completeReplySuccess]
+  );
+
+  const scheduleReplyFailureCheck = useCallback(
+    (source: string, message: string) => {
+      clearReplyFailureTimer();
+      replyFailureTimerRef.current = setTimeout(() => {
+        replyFailureTimerRef.current = null;
+        if (replyOutcomeRef.current !== "pending") return;
+        if (tryResolveReplyFromMessages(`${source}_deferred`)) return;
+        replyOutcomeRef.current = "failed";
+        setAwaitingReply(false);
+        clearPendingSyncUi();
+        setPendingUserText(null);
+        setPollConversationId(null);
+        const taskId = activeGenTaskIdRef.current;
+        if (taskId) {
+          generationCoordinator.fail(taskId);
+          activeGenTaskIdRef.current = null;
+        }
+        logChatClient("reply_status_inactive", { via: source });
+        setError(message);
+      }, 2800);
+    },
+    [clearPendingSyncUi, clearReplyFailureTimer, tryResolveReplyFromMessages]
+  );
+
+  const trackChatGeneration = useCallback((conversationId: string | null | undefined) => {
+    if (!conversationId) return;
+    const waitToken = replyWaitStartedAtRef.current;
+    const taskId = chatGenerationTaskId(conversationId, waitToken);
+    activeGenTaskIdRef.current = taskId;
+    generationCoordinator.start({
+      id: taskId,
+      kind: "chat",
+      label: "Generating response…",
+      stage: "Generating response…",
+      state: "processing",
+    });
+  }, []);
+
   const beginReplyWait = useCallback(
     (rows: { _id: string; role: string; content: string; createdAt?: number }[] | undefined) => {
       const now = Date.now();
       replyWaitStartedAtRef.current = now;
+      replyOutcomeRef.current = "pending";
+      clearReplyFailureTimer();
       // Fix a stuck-forever "Thinking…": the deadline is captured once, at wait
       // start, so later connection-quality flips cannot keep resetting the
       // failsafe timer and leave the spinner running indefinitely.
@@ -115,7 +212,7 @@ export function useChatPlatform() {
       assistantFingerprintBeforeRef.current = fingerprintLastAssistant(rows);
       assistantBaselineRef.current = countAssistantMessages(rows);
     },
-    []
+    [clearReplyFailureTimer]
   );
 
   const cachedMessageFallback = useMemo(
@@ -338,6 +435,7 @@ export function useChatPlatform() {
           setIsSending(false);
           beginReplyWait(messagesRawRef.current);
           setAwaitingReply(true);
+          trackChatGeneration(result.conversationId ?? conversationId);
           logChatClient("send_ack", {
             conversationId: result.conversationId,
             status: "processing",
@@ -348,6 +446,14 @@ export function useChatPlatform() {
         setIsSending(false);
         setAwaitingReply(false);
         setPendingUserText(null);
+        const inlineTaskId = `chat:inline:${clientRequestId}`;
+        generationCoordinator.start({
+          id: inlineTaskId,
+          kind: "chat",
+          label: "Generating response…",
+          state: "processing",
+        });
+        generationCoordinator.complete(inlineTaskId);
         logChatClient("send_ack", {
           conversationId: result.conversationId,
           status: "complete",
@@ -376,7 +482,7 @@ export function useChatPlatform() {
         throw new Error(message);
       }
     },
-    [mode, beginReplyWait]
+    [mode, beginReplyWait, trackChatGeneration]
   );
 
   const flushOutbox = useCallback(async () => {
@@ -490,78 +596,38 @@ export function useChatPlatform() {
 
   useEffect(() => {
     if (!awaitingReply || !effectiveMessagesRaw) return;
-    const after = fingerprintLastAssistant(effectiveMessagesRaw);
-    const before = assistantFingerprintBeforeRef.current;
-    const waitStartedAt = replyWaitStartedAtRef.current;
-
-    if (isNewAssistantReply(before, after, waitStartedAt)) {
-      setAwaitingReply(false);
-      setPendingUserText(null);
-      clearPendingSyncUi();
-      setError(null);
-      logChatClient("reply_detected", { via: "fingerprint" });
-      return;
-    }
-
-    const assistants = countAssistantMessages(effectiveMessagesRaw);
-    if (assistants > assistantBaselineRef.current) {
-      setAwaitingReply(false);
-      setPendingUserText(null);
-      clearPendingSyncUi();
-      setError(null);
-      logChatClient("reply_detected", { via: "count" });
-    }
-  }, [effectiveMessagesRaw, awaitingReply, clearPendingSyncUi]);
+    tryResolveReplyFromMessages("messages");
+  }, [effectiveMessagesRaw, awaitingReply, tryResolveReplyFromMessages]);
 
   useEffect(() => {
-    if (!awaitingReply || replyStatus === undefined) return;
-    if (replyStatus.active) return;
+    if (!awaitingReply) return;
+    const statusInactive = replyStatus !== undefined && !replyStatus.active;
+    const pollInactive = polledReplyActive === false;
+    if (!statusInactive && !pollInactive) return;
 
     const elapsed = Date.now() - replyWaitStartedAtRef.current;
     if (elapsed < 4000) return;
 
-    const after = fingerprintLastAssistant(effectiveMessagesRaw);
-    if (
-      !isNewAssistantReply(
-        assistantFingerprintBeforeRef.current,
-        after,
-        replyWaitStartedAtRef.current
-      )
-    ) {
-      setAwaitingReply(false);
-      clearPendingSyncUi();
-      setPendingUserText(null);
-      logChatClient("reply_status_inactive", { elapsedMs: elapsed });
-      setError(
-        "AI could not complete this reply. Your message was saved — please try again."
-      );
-    }
-  }, [replyStatus, awaitingReply, effectiveMessagesRaw, clearPendingSyncUi]);
+    if (tryResolveReplyFromMessages(statusInactive ? "reply_status" : "poll")) return;
+
+    scheduleReplyFailureCheck(
+      statusInactive ? "reply_status" : "poll",
+      CHAT_REPLY_INCOMPLETE_ERROR
+    );
+  }, [
+    replyStatus,
+    polledReplyActive,
+    awaitingReply,
+    tryResolveReplyFromMessages,
+    scheduleReplyFailureCheck,
+  ]);
 
   useEffect(() => {
-    if (!awaitingReply || polledReplyActive !== false) return;
-
-    const elapsed = Date.now() - replyWaitStartedAtRef.current;
-    if (elapsed < 4000) return;
-
-    const after = fingerprintLastAssistant(effectiveMessagesRaw);
-    if (
-      !isNewAssistantReply(
-        assistantFingerprintBeforeRef.current,
-        after,
-        replyWaitStartedAtRef.current
-      )
-    ) {
-      setAwaitingReply(false);
-      clearPendingSyncUi();
-      setPendingUserText(null);
-      setPollConversationId(null);
-      logChatClient("reply_status_inactive", { elapsedMs: elapsed, via: "poll" });
-      setError(
-        "AI could not complete this reply. Your message was saved — please try again."
-      );
+    if (replyOutcomeRef.current !== "failed" || !effectiveMessagesRaw) return;
+    if (tryResolveReplyFromMessages("late_recovery")) {
+      setError(null);
     }
-  }, [polledReplyActive, awaitingReply, effectiveMessagesRaw, clearPendingSyncUi]);
+  }, [effectiveMessagesRaw, error, tryResolveReplyFromMessages]);
 
   useEffect(() => {
     if (!isSending) return;
@@ -584,6 +650,7 @@ export function useChatPlatform() {
   useEffect(() => {
     if (!awaitingReply) {
       replyDeadlineRef.current = 0;
+      clearReplyFailureTimer();
       return;
     }
     // Guarantee the spinner always ends: a fixed deadline (set in beginReplyWait)
@@ -599,21 +666,27 @@ export function useChatPlatform() {
     const interval = setInterval(() => {
       if (replyWaitStartedAtRef.current !== waitToken) return;
       if (Date.now() < replyDeadlineRef.current) return;
+      if (tryResolveReplyFromMessages("timeout")) return;
+      replyOutcomeRef.current = "failed";
       setAwaitingReply(false);
       clearPendingSyncUi();
       setPendingUserText(null);
+      const taskId = activeGenTaskIdRef.current;
+      if (taskId) {
+        generationCoordinator.fail(taskId);
+        activeGenTaskIdRef.current = null;
+      }
       logChatClient("reply_timeout", {
         elapsedMs: Date.now() - replyWaitStartedAtRef.current,
       });
-      setError(
-        "Reply is taking longer than expected. Your message was saved — please try again or check your connection."
-      );
+      setError(CHAT_REPLY_TIMEOUT_ERROR);
     }, 1000);
     return () => clearInterval(interval);
-  }, [awaitingReply, clearPendingSyncUi]);
+  }, [awaitingReply, clearPendingSyncUi, clearReplyFailureTimer, tryResolveReplyFromMessages]);
 
   useEffect(() => {
     if (!awaitingReply || pollFailures < POLL_FAIL_HINT_THRESHOLD) return;
+    if (replyOutcomeRef.current === "success") return;
     setError((prev) =>
       prev ??
       "Having trouble checking for your reply on this connection. Still trying — or tap send again."
@@ -654,6 +727,12 @@ export function useChatPlatform() {
   }, [sessionToken, createConversation, mode]);
 
   const selectConversation = useCallback((id: string) => {
+    clearReplyFailureTimer();
+    replyOutcomeRef.current = "pending";
+    if (activeGenTaskIdRef.current) {
+      generationCoordinator.cancel(activeGenTaskIdRef.current);
+      activeGenTaskIdRef.current = null;
+    }
     setActiveId(id);
     setPollConversationId(null);
     setError(null);
@@ -661,7 +740,7 @@ export function useChatPlatform() {
     setAwaitingReply(false);
     setIsSending(false);
     setSegmentNotice(null);
-  }, []);
+  }, [clearReplyFailureTimer]);
 
   const deleteConversation = useCallback(
     async (id: string) => {
@@ -812,12 +891,18 @@ export function useChatPlatform() {
           timeoutMessage: "Could not stop generation — please wait or refresh.",
         }
       );
+      clearReplyFailureTimer();
+      replyOutcomeRef.current = "cancelled";
+      if (activeGenTaskIdRef.current) {
+        generationCoordinator.cancel(activeGenTaskIdRef.current);
+        activeGenTaskIdRef.current = null;
+      }
       setAwaitingReply(false);
       setIsSending(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not stop generation");
     }
-  }, [sessionToken, activeId]);
+  }, [sessionToken, activeId, clearReplyFailureTimer]);
 
   const regenerateMessage = useCallback(
     async (assistantMessageId: string) => {
@@ -828,6 +913,7 @@ export function useChatPlatform() {
       setAwaitingReply(true);
       beginReplyWait(messagesRawRef.current);
       setPollConversationId(activeId);
+      trackChatGeneration(activeId);
       logChatClient("regenerate_start", { assistantMessageId });
 
       try {
@@ -863,7 +949,7 @@ export function useChatPlatform() {
         setError(e instanceof Error ? e.message : "Failed to regenerate");
       }
     },
-    [sessionToken, activeId, mode, beginReplyWait]
+    [sessionToken, activeId, mode, beginReplyWait, trackChatGeneration]
   );
 
   const pinConversation = useCallback(
@@ -917,6 +1003,7 @@ export function useChatPlatform() {
       setAwaitingReply(true);
       beginReplyWait(messagesRawRef.current);
       setPollConversationId(activeId);
+      trackChatGeneration(activeId);
       logChatClient("edit_start", { messageId });
 
       try {
@@ -946,7 +1033,7 @@ export function useChatPlatform() {
         setError(e instanceof Error ? e.message : "Failed to edit message");
       }
     },
-    [sessionToken, activeId, mode, beginReplyWait]
+    [sessionToken, activeId, mode, beginReplyWait, trackChatGeneration]
   );
 
   return {

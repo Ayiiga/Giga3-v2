@@ -1,3 +1,4 @@
+import { GenerationToastHost } from "@/components/generation/GenerationToastHost";
 import { ConvexRuntimeBootstrap } from "@/components/providers/ConvexRuntimeBootstrap";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
@@ -9,6 +10,7 @@ import { brandingAssetUrl } from "@/lib/brandingAssets";
 import { pwaStartupImages } from "@/lib/pwaSplash";
 import { siteConfig } from "@/lib/site";
 import "@/styles/globals.css";
+import "@/styles/generation.css";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 
@@ -97,6 +99,7 @@ export default function RootLayout({
         <GlobalChatPrefetch />
         <PlatformAnalyticsHost />
         <DeferredPwaChrome />
+        <GenerationToastHost />
       </body>
     </html>
   );

@@ -11,9 +11,13 @@ import {
 } from "@/lib/media/actionTimeout";
 import { triggerMediaJobsRefresh } from "@/lib/media/jobsRefresh";
 import { createSupabaseGeneration } from "@/lib/supabase/data";
+import {
+  generationCoordinator,
+  mediaGenerationTaskId,
+} from "@/lib/generation/coordinator";
 import { api } from "convex/_generated/api";
 import { useAction } from "convex/react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 type MediaActionResult = {
   imageUrl?: string;
@@ -60,23 +64,95 @@ export function useMediaGeneration() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [lastOutputUrl, setLastOutputUrl] = useState<string | null>(null);
   const [lastMediaType, setLastMediaType] = useState<"image" | "video" | null>(null);
+  const activeTaskRef = useRef<string | null>(null);
+  const stageTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const generateImage = useAction(api.media.generateImage);
   const generateVideo = useAction(api.media.generateVideo);
 
   const loading = phase === "generating";
 
+  const clearStageTimer = useCallback(() => {
+    if (stageTimerRef.current) {
+      clearInterval(stageTimerRef.current);
+      stageTimerRef.current = null;
+    }
+  }, []);
+
   const clearStatus = useCallback(() => {
+    clearStageTimer();
+    if (activeTaskRef.current) {
+      generationCoordinator.cancel(activeTaskRef.current);
+      activeTaskRef.current = null;
+    }
     setError(null);
     setSuccessMessage(null);
     setPhase("idle");
-  }, []);
+  }, [clearStageTimer]);
 
   function requireSession(): string {
     const token = getSessionToken();
     if (!token) throw new Error("Session expired. Please sign in again.");
     return token;
   }
+
+  const beginMediaTask = useCallback(
+    (kind: "image" | "video") => {
+      const nonce = Date.now();
+      const taskId = mediaGenerationTaskId(kind, nonce);
+      activeTaskRef.current = taskId;
+      generationCoordinator.start({
+        id: taskId,
+        kind,
+        label: kind === "image" ? "Generating image…" : "Rendering video…",
+        stage: kind === "image" ? "Preparing…" : "Preparing assets…",
+        state: "processing",
+        progress: 8,
+      });
+      clearStageTimer();
+      const started = Date.now();
+      stageTimerRef.current = setInterval(() => {
+        const elapsed = Date.now() - started;
+        const stages =
+          kind === "image"
+            ? [
+                { atMs: 0, label: "Preparing…", progress: 8 },
+                { atMs: 2500, label: "Generating image…", progress: 35 },
+                { atMs: 12_000, label: "Enhancing quality…", progress: 72 },
+                { atMs: 28_000, label: "Finalizing…", progress: 92 },
+              ]
+            : [
+                { atMs: 0, label: "Preparing assets…", progress: 6 },
+                { atMs: 4000, label: "Rendering…", progress: 40 },
+                { atMs: 25_000, label: "Encoding…", progress: 78 },
+                { atMs: 55_000, label: "Finalizing…", progress: 94 },
+              ];
+        let active = stages[0];
+        for (const stage of stages) {
+          if (elapsed >= stage.atMs) active = stage;
+          else break;
+        }
+        generationCoordinator.updateStage(taskId, active.label, active.progress);
+      }, 1200);
+      return taskId;
+    },
+    [clearStageTimer]
+  );
+
+  const finishMediaTask = useCallback(
+    (taskId: string, kind: "image" | "video", success: boolean) => {
+      clearStageTimer();
+      if (success) {
+        generationCoordinator.complete(taskId);
+      } else {
+        generationCoordinator.fail(taskId);
+      }
+      if (activeTaskRef.current === taskId) {
+        activeTaskRef.current = null;
+      }
+    },
+    [clearStageTimer]
+  );
 
   async function createImage(
     category: ImageCategoryId,
@@ -93,6 +169,7 @@ export function useMediaGeneration() {
     setError(null);
     setSuccessMessage(null);
     setLastOutputUrl(null);
+    const taskId = beginMediaTask("image");
     try {
       const sessionToken = requireSession();
       const result = (await withActionTimeout(
@@ -120,12 +197,14 @@ export function useMediaGeneration() {
       }
       setPhase("success");
       setSuccessMessage("Image ready — saved to Recent generations.");
+      finishMediaTask(taskId, "image", true);
       triggerMediaJobsRefresh();
       return result;
     } catch (e) {
       const msg = formatMediaError(e);
       setError(msg);
       setPhase("error");
+      finishMediaTask(taskId, "image", false);
       return null;
     }
   }
@@ -145,6 +224,7 @@ export function useMediaGeneration() {
     setError(null);
     setSuccessMessage(null);
     setLastOutputUrl(null);
+    const taskId = beginMediaTask("video");
     try {
       const sessionToken = requireSession();
       const result = (await withActionTimeout(
@@ -172,12 +252,14 @@ export function useMediaGeneration() {
       }
       setPhase("success");
       setSuccessMessage("Video ready — saved to Recent generations.");
+      finishMediaTask(taskId, "video", true);
       triggerMediaJobsRefresh();
       return result;
     } catch (e) {
       const msg = formatMediaError(e);
       setError(msg);
       setPhase("error");
+      finishMediaTask(taskId, "video", false);
       return null;
     }
   }
