@@ -131,7 +131,6 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
           label="Share message"
           disabled={busy}
           onClick={() => void runShare()}
-          className="hidden sm:inline-flex"
         >
           <Share2 className="h-3 w-3" aria-hidden />
         </ActionButton>

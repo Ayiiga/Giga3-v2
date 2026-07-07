@@ -475,6 +475,7 @@ function inferQueryClass(mode: AiModeId, query: string): QueryClass {
     hasAcademicIntent(query) ||
     mode === "homework" ||
     mode === "waec" ||
+    mode === "gigalearn" ||
     mode === "university" ||
     mode === "coding"
   ) {

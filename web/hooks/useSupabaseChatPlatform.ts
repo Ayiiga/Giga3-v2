@@ -3,7 +3,9 @@
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
 import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
+import { useConnectionQuality } from "@/hooks/useConnectionQuality";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
+import { chatSystemForModel, type GigaModelId } from "@/lib/chat/gigaModels";
 import { getSessionToken, getUserEmail } from "@/lib/auth";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import {
@@ -69,6 +71,7 @@ async function sendConvexMessage(
     conversationId: string;
     content: string;
     mode: string;
+    chatSystem?: GigaModelId;
     attachments?: Omit<PreparedChatAttachment, "previewUrl">[];
   },
   slowNetwork: boolean
@@ -145,6 +148,7 @@ export function useSupabaseChatPlatform() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [mode, setMode] = useState<AiModeId>("general");
   const [isSending, setIsSending] = useState(false);
+  const [awaitingReply, setAwaitingReply] = useState(false);
   const [pendingUserText, setPendingUserText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [chatProviderLabel, setChatProviderLabel] = useState<string | null>(null);
@@ -290,7 +294,11 @@ export function useSupabaseChatPlatform() {
   );
 
   const sendMessage = useCallback(
-    async (content: string, attachments?: PreparedChatAttachment[]) => {
+    async (
+      content: string,
+      attachments?: PreparedChatAttachment[],
+      modelTier: GigaModelId = "fast"
+    ) => {
       if (!email) {
         setError("Please sign in");
         return;
@@ -303,6 +311,7 @@ export function useSupabaseChatPlatform() {
       setError(null);
       setPendingUserText(content);
       setIsSending(true);
+      setAwaitingReply(false);
       try {
         let chat = activeConversation;
         if (!chat) {
@@ -333,6 +342,7 @@ export function useSupabaseChatPlatform() {
             conversationId: convexConversationId,
             content,
             mode,
+            chatSystem: chatSystemForModel(modelTier),
             ...(attachments?.length
               ? {
                   attachments: attachments.map(
@@ -344,6 +354,9 @@ export function useSupabaseChatPlatform() {
           },
           isSlowNetwork
         );
+
+        setIsSending(false);
+        setAwaitingReply(result.status === "processing");
 
         let activeChat = chat;
         let activeConvexId = convexConversationId;
@@ -412,6 +425,7 @@ export function useSupabaseChatPlatform() {
         setPendingUserText(null);
       } finally {
         setIsSending(false);
+        setAwaitingReply(false);
       }
     },
     [email, activeConversation, mode, isSlowNetwork]
@@ -482,8 +496,8 @@ export function useSupabaseChatPlatform() {
     messages,
     mode,
     isSending,
-    awaitingReply: isSending,
-    isAcceptingMessage: false,
+    awaitingReply,
+    isAcceptingMessage: isSending,
     isSlowNetwork,
     outboxCount: 0,
     error,

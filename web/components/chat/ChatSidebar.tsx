@@ -68,6 +68,7 @@ interface ChatSidebarProps {
   onToggleCollapse: () => void;
   mobileOpen: boolean;
   onCloseMobile: () => void;
+  onInsertPrompt?: (text: string) => void;
 }
 
 type SidebarView = "active" | "archived" | "favorites";
@@ -103,6 +104,7 @@ function ChatSidebarComponent({
   onToggleCollapse,
   mobileOpen,
   onCloseMobile,
+  onInsertPrompt,
 }: ChatSidebarProps) {
   const [search, setSearch] = useState("");
   const [view, setView] = useState<SidebarView>("active");
@@ -211,7 +213,12 @@ function ChatSidebarComponent({
 
           <SidebarSection title="Prompts">
             {savedPrompts.slice(0, 3).map((prompt) => (
-              <SavedPromptRow key={prompt.id} prompt={prompt} onClose={onCloseMobile} />
+              <SavedPromptRow
+                key={prompt.id}
+                prompt={prompt}
+                onClose={onCloseMobile}
+                onInsert={onInsertPrompt}
+              />
             ))}
             <Link
               href="/chat"
@@ -410,16 +417,23 @@ function SidebarNavItem({
 function SavedPromptRow({
   prompt,
   onClose,
+  onInsert,
 }: {
   prompt: SavedPrompt;
   onClose: () => void;
+  onInsert?: (text: string) => void;
 }) {
   return (
     <button
       type="button"
       onClick={() => {
-        dispatchWorkspaceNav("documents");
-        onClose();
+        if (onInsert) {
+          onInsert(prompt.body);
+          onClose();
+        } else {
+          dispatchWorkspaceNav("documents");
+          onClose();
+        }
       }}
       className="flex min-h-9 w-full items-center gap-2 rounded-xl px-3 text-left text-xs text-muted hover:bg-accent/5 hover:text-foreground"
       title={prompt.body}
@@ -579,7 +593,8 @@ function sidebarPropsEqual(prev: ChatSidebarProps, next: ChatSidebarProps): bool
     prev.collapsed === next.collapsed &&
     prev.onToggleCollapse === next.onToggleCollapse &&
     prev.mobileOpen === next.mobileOpen &&
-    prev.onCloseMobile === next.onCloseMobile
+    prev.onCloseMobile === next.onCloseMobile &&
+    prev.onInsertPrompt === next.onInsertPrompt
   );
 }
 
