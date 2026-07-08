@@ -1,4 +1,5 @@
 import type { Database } from "@/types/supabase";
+import { sanitizeUrlString } from "@/lib/sanitizeUrl";
 
 type TableName = keyof Database["public"]["Tables"];
 type TableRow<T extends TableName> = Database["public"]["Tables"][T]["Row"];
