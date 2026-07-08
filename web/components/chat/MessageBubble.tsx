@@ -6,7 +6,7 @@ import { MessageMarkdown } from "@/components/chat/MessageMarkdown";
 import { useStreamingReveal } from "@/hooks/useStreamingReveal";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { formatMessageTime } from "@/lib/chat/groupMessagesByDate";
-import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
+import { splitAssistantResponseDisplay } from "@/lib/chat/deriveResponseDisplay";
 import { cn } from "@/lib/utils";
 import { Bot } from "lucide-react";
 import { memo, useMemo, useState } from "react";
@@ -68,6 +68,10 @@ export const MessageBubble = memo(function MessageBubble({
   );
 
   const displayContent = !isUser && streaming ? revealed : safeContent;
+  const assistantDisplay = useMemo(() => {
+    if (isUser || streaming) return null;
+    return splitAssistantResponseDisplay(displayContent);
+  }, [isUser, displayContent, streaming]);
   const timeLabel = formatMessageTime(createdAt);
 
   const [editing, setEditing] = useState(false);
@@ -117,7 +121,12 @@ export const MessageBubble = memo(function MessageBubble({
                 {displayContent}
               </p>
             ) : (
-              <MessageMarkdown content={displayContent} />
+              <>
+                {assistantDisplay?.title ? (
+                  <h2 className="chat-response-title">{assistantDisplay.title}</h2>
+                ) : null}
+                <MessageMarkdown content={assistantDisplay?.content ?? displayContent} />
+              </>
             ))}
           {parsed.images.map((url) => (
             <MessageMediaBlock key={url} url={url} kind="image" />

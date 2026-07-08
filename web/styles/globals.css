@@ -355,15 +355,27 @@ button:focus-visible {
 }
 
 .chat-markdown .chat-md-h1 {
-  @apply mb-3 mt-4 text-xl font-semibold tracking-tight text-foreground;
+  @apply mb-3 mt-4 text-xl font-bold tracking-tight text-foreground sm:text-2xl;
 }
 
 .chat-markdown .chat-md-h2 {
-  @apply mb-2 mt-4 text-lg font-semibold text-foreground;
+  @apply mb-2 mt-4 text-lg font-bold text-foreground sm:text-xl;
 }
 
 .chat-markdown .chat-md-h3 {
-  @apply mb-2 mt-3 text-base font-semibold text-foreground;
+  @apply mb-2 mt-3 text-base font-semibold text-foreground sm:text-lg;
+}
+
+.chat-response-title {
+  @apply mb-3 text-lg font-bold tracking-tight text-foreground sm:mb-4 sm:text-xl lg:text-2xl;
+}
+
+.gigasocial-post-title {
+  @apply text-lg font-bold tracking-tight text-foreground sm:text-xl;
+}
+
+.gigasocial-post-description {
+  @apply whitespace-pre-wrap text-sm leading-relaxed text-foreground;
 }
 
 .chat-markdown .chat-md-ul,

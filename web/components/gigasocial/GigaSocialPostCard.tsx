@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import type { SocialPost } from "@/lib/gigasocial/types";
+import { splitPostDisplay } from "@/lib/gigasocial/postDisplay";
 import { formatRelativeTime } from "@/lib/datetime";
 import {
   Bookmark,
@@ -11,7 +12,7 @@ import {
   Share2,
   Trash2,
 } from "lucide-react";
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { GigaSocialCommentThread } from "@/components/gigasocial/GigaSocialCommentThread";
 
 interface GigaSocialPostCardProps {
@@ -40,6 +41,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const display = useMemo(() => splitPostDisplay(post.body), [post.body]);
 
   async function handleLike() {
     if (!sessionToken || busy) return;
@@ -112,9 +114,16 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
         </span>
       </header>
 
-      <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-        {post.body}
-      </p>
+      {display.title ? (
+        <>
+          <h2 className="gigasocial-post-title mt-4">{display.title}</h2>
+          {display.description ? (
+            <p className="gigasocial-post-description mt-2">{display.description}</p>
+          ) : null}
+        </>
+      ) : (
+        <p className="gigasocial-post-description mt-3">{display.description}</p>
+      )}
 
       {post.mediaUrl && (
         // eslint-disable-next-line @next/next/no-img-element

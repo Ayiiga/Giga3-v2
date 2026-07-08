@@ -111,6 +111,12 @@
   text-wrap: balance;
 }
 
+.chat-response-title,
+.gigasocial-post-title {
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
 .chat-composer-dock {
   position: sticky;
   bottom: 0;
