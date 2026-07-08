@@ -58,6 +58,7 @@ export const GIGASOCIAL_SECTIONS: GigaSocialSectionDefinition[] = [
 export const POST_TYPE_OPTIONS = [
   { id: "text", label: "Text" },
   { id: "image", label: "Image" },
+  { id: "video", label: "Video" },
   { id: "ai", label: "AI" },
   { id: "education", label: "Education" },
   { id: "creator", label: "Creator" },

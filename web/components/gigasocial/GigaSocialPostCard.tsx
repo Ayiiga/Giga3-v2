@@ -8,6 +8,7 @@ import { formatRelativeTime } from "@/lib/datetime";
 import { shareText } from "@/lib/share/clientShare";
 import {
   Bookmark,
+  Eye,
   Heart,
   MessageCircle,
   Share2,
@@ -15,6 +16,8 @@ import {
 } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 import { GigaSocialCommentThread } from "@/components/gigasocial/GigaSocialCommentThread";
+import { GigaSocialPostMedia } from "@/components/gigasocial/GigaSocialPostMedia";
+import { renderCaptionWithHashtags } from "@/lib/gigasocial/hashtags";
 
 interface GigaSocialPostCardProps {
   post: SocialPost;
@@ -43,6 +46,10 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const display = useMemo(() => splitPostDisplay(post.body), [post.body]);
+  const captionParts = useMemo(
+    () => renderCaptionWithHashtags(display.description),
+    [display.description]
+  );
 
   async function handleLike() {
     if (!sessionToken || busy) return;
@@ -120,25 +127,47 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
         <>
           <h2 className="gigasocial-post-title mt-4">{display.title}</h2>
           {display.description ? (
-            <p className="gigasocial-post-description mt-2">{display.description}</p>
+            <p className="gigasocial-post-description mt-2 whitespace-pre-wrap">
+              {captionParts.map((part, index) =>
+                part.type === "hashtag" ? (
+                  <span key={`${part.value}-${index}`} className="text-accent">
+                    {part.value}
+                  </span>
+                ) : (
+                  <span key={`${part.value}-${index}`}>{part.value}</span>
+                )
+              )}
+            </p>
           ) : null}
         </>
       ) : (
-        <p className="gigasocial-post-description mt-3">{display.description}</p>
+        <p className="gigasocial-post-description mt-3 whitespace-pre-wrap">
+          {captionParts.map((part, index) =>
+            part.type === "hashtag" ? (
+              <span key={`${part.value}-${index}`} className="text-accent">
+                {part.value}
+              </span>
+            ) : (
+              <span key={`${part.value}-${index}`}>{part.value}</span>
+            )
+          )}
+        </p>
       )}
 
-      {post.mediaUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={post.mediaUrl}
-          alt={display.title ? `Image for ${display.title}` : "Post attachment"}
-          className="mt-3 max-h-80 w-full rounded-xl border border-border object-contain"
-          loading="lazy"
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = "none";
-          }}
-        />
-      )}
+      {post.hashtags && post.hashtags.length > 0 ? (
+        <div className="mt-2 flex flex-wrap gap-2" aria-label="Post hashtags">
+          {post.hashtags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent"
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      <GigaSocialPostMedia post={post} />
 
       {error && (
         <p className="mt-2 text-xs text-red-700" role="alert">
@@ -172,6 +201,12 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           onClick={() => void handleBookmark()}
           disabled={!sessionToken || busy}
         />
+        {typeof post.viewCount === "number" ? (
+          <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-muted">
+            <Eye className="h-4 w-4" aria-hidden />
+            {post.viewCount}
+          </span>
+        ) : null}
         {canDelete && onDelete && (
           <Button
             type="button"

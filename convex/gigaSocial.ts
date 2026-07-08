@@ -2,7 +2,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
-import { socialPostTypeValidator } from "./schema";
+import { socialPostMediaItemValidator, socialPostTypeValidator } from "./schema";
 import {
   getCommunityBySlug,
   SOCIAL_COMMUNITIES,
@@ -10,13 +10,20 @@ import {
 import {
   awardXp,
   defaultGamificationJson,
+  extractHashtags,
+  extractMentions,
+  inferMediaType,
+  inferPostTypeFromMedia,
   normalizeSocialHandle,
   parseGamification,
+  parseMediaMetaJson,
   sanitizeBio,
   sanitizeSocialText,
+  serializeMediaMeta,
   toPublicAuthor,
   toPublicComment,
   toPublicPost,
+  type SocialPostMediaItem,
 } from "./gigaSocialViews";
 import type { Id } from "./_generated/dataModel";
 
@@ -252,7 +259,11 @@ export const listDiscover = query({
 
     const q = args.query?.trim().toLowerCase();
     if (q) {
-      rows = rows.filter((r) => r.body.toLowerCase().includes(q));
+      rows = rows.filter(
+        (r) =>
+          r.body.toLowerCase().includes(q) ||
+          (r.hashtags?.some((tag) => tag.includes(q.replace(/^#/, ""))) ?? false)
+      );
     }
 
     const slice = rows.slice(0, cap);
@@ -487,12 +498,54 @@ export const createPost = mutation({
     body: v.string(),
     postType: socialPostTypeValidator,
     mediaUrl: v.optional(v.string()),
+    mediaItems: v.optional(v.array(socialPostMediaItemValidator)),
     communitySlug: v.optional(v.string()),
+    visibility: v.optional(v.union(v.literal("public"), v.literal("followers"))),
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
     const body = sanitizeSocialText(args.body);
-    if (!body && !args.mediaUrl?.trim()) {
+    const hashtags = extractHashtags(body);
+    const mentions = extractMentions(body);
+
+    let mediaItems: SocialPostMediaItem[] = [];
+    if (args.mediaItems?.length) {
+      if (args.mediaItems.length > 10) {
+        throw new Error("A post can include at most 10 media items.");
+      }
+      const hasVideo = args.mediaItems.some((m) => m.type === "video");
+      if (hasVideo && args.mediaItems.length > 1) {
+        throw new Error("A post can include one video or multiple photos, not both.");
+      }
+      for (const item of args.mediaItems) {
+        const url = item.url.trim().slice(0, 2000);
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+          throw new Error("Invalid media URL.");
+        }
+        if (item.type === "video") {
+          const duration = item.durationSec ?? 0;
+          if (duration <= 0 || duration > 40) {
+            throw new Error("Videos must be 40 seconds or shorter.");
+          }
+        }
+        mediaItems.push({
+          url,
+          type: item.type,
+          durationSec: item.durationSec,
+          thumbnailUrl: item.thumbnailUrl?.trim().slice(0, 2000),
+          storagePath: item.storagePath?.trim().slice(0, 500),
+          storageBucket: item.storageBucket?.trim().slice(0, 64),
+        });
+      }
+    } else if (args.mediaUrl?.trim()) {
+      const url = args.mediaUrl.trim().slice(0, 2000);
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        throw new Error("Invalid media URL.");
+      }
+      mediaItems = [{ url, type: "image" }];
+    }
+
+    if (!body && mediaItems.length === 0) {
       throw new Error("Post must include text or media.");
     }
 
@@ -510,11 +563,25 @@ export const createPost = mutation({
 
     const profile = await getOrCreateProfile(ctx, userId);
     const now = Date.now();
+    const mediaUrls = mediaItems.map((m) => m.url);
+    const primaryVideo = mediaItems.find((m) => m.type === "video");
+    const postType = inferPostTypeFromMedia(mediaItems, args.postType);
+    const mediaType = inferMediaType(mediaItems);
+
     const postId = await ctx.db.insert("socialPosts", {
       authorId: userId,
       body,
-      mediaUrl: args.mediaUrl?.trim().slice(0, 500),
-      postType: args.postType,
+      mediaUrl: mediaUrls[0],
+      mediaUrls: mediaUrls.length ? mediaUrls : undefined,
+      mediaType: mediaType === "none" ? undefined : mediaType,
+      videoDurationSec: primaryVideo?.durationSec,
+      videoThumbnailUrl: primaryVideo?.thumbnailUrl,
+      hashtags: hashtags.length ? hashtags : undefined,
+      mentions: mentions.length ? mentions : undefined,
+      mediaMetaJson: mediaItems.length ? serializeMediaMeta(mediaItems) : undefined,
+      visibility: args.visibility ?? "public",
+      viewCount: 0,
+      postType,
       communitySlug: args.communitySlug,
       likeCount: 0,
       commentCount: 0,
@@ -774,6 +841,39 @@ export const deletePost = mutation({
     const post = await ctx.db.get(args.postId);
     if (!post || post.deletedAt) throw new Error("Post not found.");
     if (post.authorId !== userId) throw new Error("Not allowed.");
+
+    const mediaItems = parseMediaMetaJson(post.mediaMetaJson);
+    if (mediaItems.length) {
+      const baseUrl = process.env.SUPABASE_URL?.trim()?.replace(/\/$/, "");
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+      if (baseUrl && serviceKey) {
+        const byBucket = new Map<string, string[]>();
+        for (const item of mediaItems) {
+          if (!item.storagePath || !item.storageBucket) continue;
+          const paths = byBucket.get(item.storageBucket) ?? [];
+          paths.push(item.storagePath);
+          byBucket.set(item.storageBucket, paths);
+        }
+        await Promise.all(
+          [...byBucket.entries()].map(async ([bucket, paths]) => {
+            try {
+              await fetch(`${baseUrl}/storage/v1/object/${bucket}`, {
+                method: "DELETE",
+                headers: {
+                  Authorization: `Bearer ${serviceKey}`,
+                  apikey: serviceKey,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ prefixes: paths }),
+              });
+            } catch {
+              /* best-effort cleanup */
+            }
+          })
+        );
+      }
+    }
+
     await ctx.db.patch(args.postId, { deletedAt: Date.now() });
     return { ok: true };
   },
