@@ -448,6 +448,13 @@ function buildManifest() {
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
       },
       {
+        name: "GigaLearn",
+        short_name: "Learn",
+        description: "AI learning studio for students and teachers",
+        url: "/gigalearn/",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+      },
+      {
         name: "GigaSocial",
         short_name: "Social",
         description: "AI-powered community feed",
