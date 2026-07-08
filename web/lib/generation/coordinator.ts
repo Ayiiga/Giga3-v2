@@ -45,6 +45,8 @@ function defaultCompleteToast(kind: GenerationKind): Pick<GenerationToast, "titl
       return { title: "Code generation complete", emoji: "💻" };
     case "analysis":
       return { title: "Analysis complete", emoji: "📊" };
+    case "automation":
+      return { title: "Workflow complete", emoji: "⚡" };
     case "chat":
     default:
       return { title: "Generation complete", emoji: "✅" };

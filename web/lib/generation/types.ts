@@ -5,6 +5,7 @@ export type GenerationKind =
   | "document"
   | "code"
   | "analysis"
+  | "automation"
   | "audio";
 
 export type GenerationState =

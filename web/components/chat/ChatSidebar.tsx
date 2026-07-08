@@ -33,6 +33,7 @@ import {
   Trash2,
   User,
   UsersRound,
+  Workflow,
   Wand2,
   X,
 } from "lucide-react";
@@ -84,6 +85,7 @@ const PRIMARY_NAV = [
   { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
   { href: "/marketplace/", label: "Marketplace", icon: LayoutGrid },
   { hash: "modes" as const, label: "AI Tools", icon: Wand2 },
+  { hash: "automation" as const, label: "Automation", icon: Workflow },
   { hash: "news" as const, label: "News desk", icon: Newspaper },
   { hash: "sports" as const, label: "Sports desk", icon: Trophy },
 ] as const;
