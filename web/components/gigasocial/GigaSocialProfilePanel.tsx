@@ -1,0 +1,190 @@
+"use client";
+
+import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
+import { Button } from "@/components/ui/Button";
+import { BADGE_LABELS } from "@/lib/gigasocial/sections";
+import { api } from "convex/_generated/api";
+import type { Id } from "convex/_generated/dataModel";
+import { useMutation, useQuery } from "convex/react";
+import { Award, Loader2 } from "lucide-react";
+import { memo, useState } from "react";
+
+export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
+  sessionToken,
+}: {
+  sessionToken: string;
+}) {
+  const data = useQuery(api.gigaSocial.getMyProfile, { sessionToken });
+  const upsert = useMutation(api.gigaSocial.upsertMyProfile);
+  const toggleLike = useMutation(api.gigaSocial.toggleLike);
+  const toggleBookmark = useMutation(api.gigaSocial.toggleBookmark);
+  const recordShare = useMutation(api.gigaSocial.recordShare);
+  const deletePost = useMutation(api.gigaSocial.deletePost);
+
+  const [editing, setEditing] = useState(false);
+  const [displayName, setDisplayName] = useState("");
+  const [handle, setHandle] = useState("");
+  const [bio, setBio] = useState("");
+  const [skills, setSkills] = useState("");
+  const [interests, setInterests] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (data === undefined) {
+    return (
+      <div className="flex min-h-40 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted" aria-hidden />
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  const { profile, recentPosts } = data;
+  const gamification = profile.gamification;
+
+  function startEdit() {
+    setDisplayName(profile.displayName);
+    setHandle(profile.handle);
+    setBio(profile.bio);
+    setSkills(profile.skills.join(", "));
+    setInterests(profile.interests.join(", "));
+    setEditing(true);
+  }
+
+  async function saveProfile() {
+    setBusy(true);
+    setError(null);
+    try {
+      await upsert({
+        sessionToken,
+        displayName,
+        handle,
+        bio,
+        skills: skills.split(",").map((s) => s.trim()).filter(Boolean),
+        interests: interests.split(",").map((s) => s.trim()).filter(Boolean),
+      });
+      setEditing(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not save profile.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="saas-card rounded-2xl border border-border p-4 sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10 text-2xl font-bold text-accent">
+              {profile.displayName.slice(0, 1).toUpperCase()}
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-foreground">{profile.displayName}</h3>
+              <p className="text-sm text-muted">@{profile.handle}</p>
+              {gamification && (
+                <p className="mt-1 text-xs text-muted">
+                  Level {gamification.level} · {gamification.xp} XP · {gamification.streakDays}-day streak
+                </p>
+              )}
+            </div>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => (editing ? setEditing(false) : startEdit())}>
+            {editing ? "Cancel" : "Edit profile"}
+          </Button>
+        </div>
+
+        {editing ? (
+          <div className="mt-4 space-y-3">
+            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full rounded-xl border border-border px-3 py-2 text-sm" placeholder="Display name" />
+            <input value={handle} onChange={(e) => setHandle(e.target.value)} className="w-full rounded-xl border border-border px-3 py-2 text-sm" placeholder="Handle" />
+            <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="w-full rounded-xl border border-border px-3 py-2 text-sm" placeholder="Bio" />
+            <input value={skills} onChange={(e) => setSkills(e.target.value)} className="w-full rounded-xl border border-border px-3 py-2 text-sm" placeholder="Skills (comma-separated)" />
+            <input value={interests} onChange={(e) => setInterests(e.target.value)} className="w-full rounded-xl border border-border px-3 py-2 text-sm" placeholder="Interests (comma-separated)" />
+            <Button type="button" disabled={busy} onClick={() => void saveProfile()} className="min-h-10">
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+            </Button>
+            {error && <p className="text-xs text-red-700">{error}</p>}
+          </div>
+        ) : (
+          <>
+            {profile.bio && <p className="mt-4 text-sm text-foreground">{profile.bio}</p>}
+            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+              <div>
+                <dt className="text-muted">Posts</dt>
+                <dd className="font-medium">{profile.postCount ?? 0}</dd>
+              </div>
+              <div>
+                <dt className="text-muted">Communities</dt>
+                <dd className="font-medium">{profile.communityCount ?? 0}</dd>
+              </div>
+              {profile.skills.length > 0 && (
+                <div className="sm:col-span-2">
+                  <dt className="text-muted">Skills</dt>
+                  <dd className="font-medium">{profile.skills.join(", ")}</dd>
+                </div>
+              )}
+              {profile.interests.length > 0 && (
+                <div className="sm:col-span-2">
+                  <dt className="text-muted">Interests</dt>
+                  <dd className="font-medium">{profile.interests.join(", ")}</dd>
+                </div>
+              )}
+            </dl>
+          </>
+        )}
+      </div>
+
+      {gamification && gamification.badges.length > 0 && (
+        <section>
+          <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+            <Award className="h-4 w-4 text-accent" aria-hidden />
+            Achievements
+          </h4>
+          <ul className="flex flex-wrap gap-2">
+            {gamification.badges.map((badge) => (
+              <li
+                key={badge}
+                className="rounded-full border border-accent/30 bg-accent/5 px-3 py-1 text-xs font-medium text-foreground"
+              >
+                {BADGE_LABELS[badge] ?? badge}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <section>
+        <h4 className="mb-3 text-sm font-semibold text-foreground">Your posts</h4>
+        {recentPosts.length === 0 ? (
+          <p className="text-sm text-muted">You have not posted yet.</p>
+        ) : (
+          <ul className="space-y-4">
+            {recentPosts.map((post) => (
+              <li key={post._id}>
+                <GigaSocialPostCard
+                  post={post}
+                  sessionToken={sessionToken}
+                  canDelete
+                  onLike={async (postId) => {
+                    await toggleLike({ sessionToken, postId: postId as Id<"socialPosts"> });
+                  }}
+                  onBookmark={async (postId) => {
+                    await toggleBookmark({ sessionToken, postId: postId as Id<"socialPosts"> });
+                  }}
+                  onShare={async (postId) => {
+                    await recordShare({ sessionToken, postId: postId as Id<"socialPosts"> });
+                  }}
+                  onDelete={async (postId) => {
+                    await deletePost({ sessionToken, postId: postId as Id<"socialPosts"> });
+                  }}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
+  );
+});

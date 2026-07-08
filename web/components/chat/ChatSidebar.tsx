@@ -32,6 +32,7 @@ import {
   Star,
   Trash2,
   User,
+  UsersRound,
   Wand2,
   X,
 } from "lucide-react";
@@ -81,6 +82,7 @@ const PRIMARY_NAV = [
   { hash: "documents" as const, label: "My Documents", icon: FileText },
   { href: "/marketplace/", label: "Marketplace", icon: LayoutGrid },
   { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
+  { href: "/gigasocial/", label: "GigaSocial", icon: UsersRound },
 ] as const;
 
 const ACCOUNT_NAV = [
