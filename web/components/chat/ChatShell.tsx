@@ -4,6 +4,7 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ChatSegmentNotice } from "@/components/chat/ChatSegmentNotice";
 import { ChatBanners } from "@/components/chat/ChatBanners";
 import { ChatChrome } from "@/components/chat/ChatChrome";
+import { ChatConversationSearch } from "@/components/chat/ChatConversationSearch";
 import type { ChatActionsMenuHandle } from "@/components/chat/ChatActionsMenu";
 import { ChatConversationPane } from "@/components/chat/ChatConversationPane";
 import { ChatOverflowProbe } from "@/components/chat/ChatOverflowProbe";
@@ -86,6 +87,7 @@ function ChatShellInner({
   const [dismissedError, setDismissedError] = useState<string | null>(null);
   const [modelTier, setModelTier] = useState<GigaModelId>("fast");
   const [handoffAttachments, setHandoffAttachments] = useState<PreparedChatAttachment[]>([]);
+  const [conversationSearch, setConversationSearch] = useState("");
   const insertRef = useRef<((text: string) => void) | null>(null);
   const chatActionsRef = useRef<ChatActionsMenuHandle | null>(null);
 
@@ -339,6 +341,8 @@ function ChatShellInner({
         mobileOpen={mobileOpen}
         onCloseMobile={handleCloseMobile}
         onInsertPrompt={handleInsertTemplate}
+        search={conversationSearch}
+        onSearchChange={setConversationSearch}
       />
 
       <div className="chat-main-column relative z-0 grid min-h-0 min-w-0 flex-1 grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
@@ -362,6 +366,19 @@ function ChatShellInner({
             onSetPublicShare={onSetPublicShare}
             chatActionsRef={chatActionsRef}
           />
+
+          <div className="border-b border-border bg-card px-2 py-2 sm:px-4">
+            <ChatConversationSearch
+              value={conversationSearch}
+              onChange={setConversationSearch}
+              conversations={conversations}
+              activeId={activeId}
+              onSelect={(id) => {
+                selectConversation(id);
+                handleCloseMobile();
+              }}
+            />
+          </div>
 
           <ChatBanners
             email={email}
