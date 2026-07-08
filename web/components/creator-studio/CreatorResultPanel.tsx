@@ -3,7 +3,7 @@
 import { ShareActionFeedback } from "@/components/chat/ShareActionFeedback";
 import { Button } from "@/components/ui/Button";
 import { COPY_SUCCESS } from "@/lib/chat/chatContentFormat";
-import { shareText, copyMarkdownToClipboard } from "@/lib/share/clientShare";
+import { shareText, copyMarkdownToClipboard, type ShareResult } from "@/lib/share/clientShare";
 import { useShareAction } from "@/hooks/useShareAction";
 import { cn } from "@/lib/utils";
 import { Check, Copy, RefreshCw, Share2, Star } from "lucide-react";
@@ -31,16 +31,19 @@ export const CreatorResultPanel = memo(function CreatorResultPanel({
   const { feedback, runAction, busy } = useShareAction();
   const [copied, setCopied] = useState(false);
 
-  const runCopy = useCallback(async () => {
-    if (!content?.trim()) return;
-    await copyMarkdownToClipboard(content);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
+  const runCopy = useCallback(async (): Promise<ShareResult> => {
+    if (!content?.trim()) return { ok: false, reason: "Nothing to copy" };
+    const result = await copyMarkdownToClipboard(content);
+    if (result.ok) {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    }
+    return result;
   }, [content]);
 
-  const runShare = useCallback(async () => {
-    if (!content?.trim()) return;
-    await shareText({ title: "Giga3 AI Creator", text: content.slice(0, 8000) });
+  const runShare = useCallback(async (): Promise<ShareResult> => {
+    if (!content?.trim()) return { ok: false, reason: "Nothing to share" };
+    return shareText({ title: "Giga3 AI Creator", text: content.slice(0, 8000) });
   }, [content]);
 
   if (loading) {
@@ -97,7 +100,7 @@ export const CreatorResultPanel = memo(function CreatorResultPanel({
             size="sm"
             variant="ghost"
             disabled={busy}
-            onClick={() => void runAction(runCopy)}
+            onClick={() => void runAction(runCopy, COPY_SUCCESS)}
             className="min-h-9"
           >
             {copied ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
@@ -108,7 +111,7 @@ export const CreatorResultPanel = memo(function CreatorResultPanel({
             size="sm"
             variant="ghost"
             disabled={busy}
-            onClick={() => void runAction(runShare)}
+            onClick={() => void runAction(runShare, "Shared")}
             className="min-h-9"
           >
             <Share2 className="h-4 w-4" aria-hidden />

@@ -43,9 +43,13 @@ function scrollComposerIntoView() {
   const rect = composer.getBoundingClientRect();
   const visibleBottom = vv.offsetTop + vv.height;
   const overflow = rect.bottom - visibleBottom + 8;
-  if (overflow > 0) {
-    window.scrollBy({ top: overflow, behavior: "auto" });
+  if (overflow <= 0) return;
+  const scrollRegion = document.querySelector<HTMLElement>(".chat-message-scroll-region");
+  if (scrollRegion) {
+    scrollRegion.scrollTop += overflow;
+    return;
   }
+  window.scrollBy({ top: overflow, behavior: "auto" });
 }
 
 function isMobileChatComposerTarget(target: EventTarget | null): target is HTMLElement {

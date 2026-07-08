@@ -4,7 +4,7 @@ import { CreatorImagePanel } from "@/components/creator-studio/CreatorImagePanel
 import { CreatorTextToolPanel } from "@/components/creator-studio/CreatorTextToolPanel";
 import { CreatorWorkspacePanel } from "@/components/creator-studio/CreatorWorkspacePanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
-import { Button } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { useMediaBilling } from "@/hooks/useMediaBilling";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import {
@@ -161,12 +161,12 @@ function CreatorStudioContent() {
       </section>
 
       <div className="flex flex-wrap gap-3">
-        <Button asChild variant="outline" className="min-h-11">
-          <Link href={siteConfig.links.media}>Open Media Studio</Link>
-        </Button>
-        <Button asChild variant="outline" className="min-h-11">
-          <Link href="/marketplace/sell/">Creator dashboard</Link>
-        </Button>
+        <ButtonLink href={siteConfig.links.media} variant="outline" className="min-h-11">
+          Open Media Studio
+        </ButtonLink>
+        <ButtonLink href="/marketplace/sell/" variant="outline" className="min-h-11">
+          Creator dashboard
+        </ButtonLink>
       </div>
     </div>
   );
