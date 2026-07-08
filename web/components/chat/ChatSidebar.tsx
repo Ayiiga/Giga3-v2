@@ -75,14 +75,14 @@ interface ChatSidebarProps {
 type SidebarView = "active" | "archived" | "favorites";
 
 const PRIMARY_NAV = [
+  { href: "/gigasocial/", label: "GigaSocial", icon: UsersRound },
+  { hash: "documents" as const, label: "My Documents", icon: FileText },
+  { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
+  { href: "/marketplace/", label: "Marketplace", icon: LayoutGrid },
   { href: "/chat", label: "Home", icon: Home },
   { hash: "modes" as const, label: "AI Tools", icon: Wand2 },
   { hash: "news" as const, label: "News desk", icon: Newspaper },
   { hash: "sports" as const, label: "Sports desk", icon: Trophy },
-  { hash: "documents" as const, label: "My Documents", icon: FileText },
-  { href: "/marketplace/", label: "Marketplace", icon: LayoutGrid },
-  { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
-  { href: "/gigasocial/", label: "GigaSocial", icon: UsersRound },
 ] as const;
 
 const ACCOUNT_NAV = [
@@ -207,7 +207,7 @@ function ChatSidebarComponent({
           </Button>
         </div>
 
-        <nav className="space-y-4 overflow-y-auto px-2 pb-2" aria-label="Chat navigation">
+        <nav className="shrink-0 space-y-4 px-2 pb-2" aria-label="Chat navigation">
           <SidebarSection title="Workspace">
             {PRIMARY_NAV.map((item) => (
               <SidebarNavItem key={item.label} item={item} onNavigate={onCloseMobile} />
@@ -232,7 +232,12 @@ function ChatSidebarComponent({
               Browse saved prompts
             </Link>
           </SidebarSection>
+        </nav>
 
+        <div
+          id="history"
+          className="flex min-h-0 flex-1 flex-col overflow-hidden border-t border-border px-2 pb-3 pt-2"
+        >
           <SidebarSection title="Chat History">
             <div className="mb-2 flex gap-1 px-1">
               {(
@@ -272,9 +277,8 @@ function ChatSidebarComponent({
               />
             </div>
           </SidebarSection>
-        </nav>
 
-        <div id="history" className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-2">
           {conversationsLoading && (
             <p className="px-2 py-4 text-sm text-muted">Loading chats…</p>
           )}
@@ -315,9 +319,10 @@ function ChatSidebarComponent({
               onFavorite={onFavorite}
             />
           ))}
+          </div>
         </div>
 
-        <div className="border-t border-border bg-card/80 p-3">
+        <div className="shrink-0 border-t border-border bg-card/80 p-3">
           <SidebarSection title="Account">
             {ACCOUNT_NAV.map((item) => (
               <Link
