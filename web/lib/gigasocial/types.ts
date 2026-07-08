@@ -19,7 +19,15 @@ export type SocialPost = {
   _id: string;
   body: string;
   mediaUrl?: string;
-  postType: "text" | "image" | "ai" | "education" | "creator";
+  mediaUrls?: string[];
+  mediaType?: "none" | "image" | "video" | "gallery";
+  videoDurationSec?: number;
+  videoThumbnailUrl?: string;
+  hashtags?: string[];
+  mentions?: string[];
+  visibility?: "public" | "followers";
+  viewCount?: number;
+  postType: "text" | "image" | "video" | "ai" | "education" | "creator";
   communitySlug?: string;
   likeCount: number;
   commentCount: number;
@@ -28,15 +36,6 @@ export type SocialPost = {
   author: SocialAuthor;
   likedByMe?: boolean;
   bookmarkedByMe?: boolean;
-};
-
-export type SocialComment = {
-  _id: string;
-  postId: string;
-  body: string;
-  parentId?: string;
-  createdAt: number;
-  author: SocialAuthor;
 };
 
 export type SocialCommunity = {

@@ -47,6 +47,7 @@ import type * as enterpriseClassrooms from "../enterpriseClassrooms.js";
 import type * as enterpriseOrgs from "../enterpriseOrgs.js";
 import type * as geminiImageClient from "../geminiImageClient.js";
 import type * as gigaSocial from "../gigaSocial.js";
+import type * as gigaSocialStorage from "../gigaSocialStorage.js";
 import type * as gigaWallet from "../gigaWallet.js";
 import type * as http from "../http.js";
 import type * as marketplace from "../marketplace.js";
@@ -149,6 +150,7 @@ declare const fullApi: ApiFromModules<{
   enterpriseOrgs: typeof enterpriseOrgs;
   geminiImageClient: typeof geminiImageClient;
   gigaSocial: typeof gigaSocial;
+  gigaSocialStorage: typeof gigaSocialStorage;
   gigaWallet: typeof gigaWallet;
   http: typeof http;
   marketplace: typeof marketplace;

@@ -72,10 +72,27 @@ export const marketplaceLicenseValidator = v.union(
 export const socialPostTypeValidator = v.union(
   v.literal("text"),
   v.literal("image"),
+  v.literal("video"),
   v.literal("ai"),
   v.literal("education"),
   v.literal("creator")
 );
+
+export const socialMediaTypeValidator = v.union(
+  v.literal("none"),
+  v.literal("image"),
+  v.literal("video"),
+  v.literal("gallery")
+);
+
+export const socialPostMediaItemValidator = v.object({
+  url: v.string(),
+  type: v.union(v.literal("image"), v.literal("video")),
+  durationSec: v.optional(v.number()),
+  thumbnailUrl: v.optional(v.string()),
+  storagePath: v.optional(v.string()),
+  storageBucket: v.optional(v.string()),
+});
 
 export const socialNotificationTypeValidator = v.union(
   v.literal("like"),
@@ -650,6 +667,15 @@ export default defineSchema({
     authorId: v.string(),
     body: v.string(),
     mediaUrl: v.optional(v.string()),
+    mediaUrls: v.optional(v.array(v.string())),
+    mediaType: v.optional(socialMediaTypeValidator),
+    videoDurationSec: v.optional(v.number()),
+    videoThumbnailUrl: v.optional(v.string()),
+    hashtags: v.optional(v.array(v.string())),
+    mentions: v.optional(v.array(v.string())),
+    mediaMetaJson: v.optional(v.string()),
+    visibility: v.optional(v.union(v.literal("public"), v.literal("followers"))),
+    viewCount: v.optional(v.number()),
     postType: socialPostTypeValidator,
     communitySlug: v.optional(v.string()),
     likeCount: v.number(),

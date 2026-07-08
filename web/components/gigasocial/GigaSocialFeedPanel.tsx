@@ -7,6 +7,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
+import type { SocialPostMediaItemInput } from "@/lib/gigasocial/constants";
+import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { useMutation, useQuery } from "convex/react";
 import { MessageCircle } from "lucide-react";
@@ -40,8 +42,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const handleCreate = useCallback(
     async (args: {
       body: string;
-      postType: "text" | "image" | "ai" | "education" | "creator";
-      mediaUrl?: string;
+      postType: SocialPostTypeId;
+      mediaItems?: SocialPostMediaItemInput[];
       communitySlug?: string;
     }) => {
       if (!sessionToken) throw new Error("Sign in to post.");
@@ -49,7 +51,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         sessionToken,
         body: args.body,
         postType: args.postType,
-        mediaUrl: args.mediaUrl,
+        mediaItems: args.mediaItems,
         communitySlug: args.communitySlug,
       });
     },
@@ -70,6 +72,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     <div className="space-y-4">
       {sessionToken && (
         <GigaSocialComposer
+          sessionToken={sessionToken}
           communitySlug={communitySlug}
           onSubmit={handleCreate}
         />

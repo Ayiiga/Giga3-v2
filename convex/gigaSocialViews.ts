@@ -14,6 +14,14 @@ export type PublicSocialPost = {
   _id: Id<"socialPosts">;
   body: string;
   mediaUrl?: string;
+  mediaUrls?: string[];
+  mediaType?: PostDoc["mediaType"];
+  videoDurationSec?: number;
+  videoThumbnailUrl?: string;
+  hashtags?: string[];
+  mentions?: string[];
+  visibility?: "public" | "followers";
+  viewCount?: number;
   postType: PostDoc["postType"];
   communitySlug?: string;
   likeCount: number;
@@ -37,6 +45,90 @@ export type PublicSocialComment = {
 const MAX_BODY = 4000;
 const MAX_BIO = 600;
 const MAX_HANDLE = 32;
+const MAX_HASHTAGS = 30;
+const MAX_MENTIONS = 20;
+const MAX_MEDIA_ITEMS = 10;
+
+const HASHTAG_RE = /#([\p{L}\p{N}_]{1,64})/gu;
+const MENTION_RE = /@([\p{L}\p{N}_-]{1,32})/gu;
+
+export function extractHashtags(raw: string): string[] {
+  const tags = new Set<string>();
+  for (const match of raw.matchAll(HASHTAG_RE)) {
+    const tag = match[1]?.toLowerCase();
+    if (tag) tags.add(tag);
+    if (tags.size >= MAX_HASHTAGS) break;
+  }
+  return [...tags];
+}
+
+/** Future-ready mention parsing — stored separately from body. */
+export function extractMentions(raw: string): string[] {
+  const mentions = new Set<string>();
+  for (const match of raw.matchAll(MENTION_RE)) {
+    const handle = match[1]?.toLowerCase();
+    if (handle) mentions.add(handle);
+    if (mentions.size >= MAX_MENTIONS) break;
+  }
+  return [...mentions];
+}
+
+export type SocialPostMediaItem = {
+  url: string;
+  type: "image" | "video";
+  durationSec?: number;
+  thumbnailUrl?: string;
+  storagePath?: string;
+  storageBucket?: string;
+};
+
+export function parseMediaMetaJson(raw: string | undefined | null): SocialPostMediaItem[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (item): item is SocialPostMediaItem =>
+          typeof item === "object" &&
+          item !== null &&
+          typeof (item as SocialPostMediaItem).url === "string" &&
+          ((item as SocialPostMediaItem).type === "image" ||
+            (item as SocialPostMediaItem).type === "video")
+      )
+      .slice(0, MAX_MEDIA_ITEMS);
+  } catch {
+    return [];
+  }
+}
+
+export function serializeMediaMeta(items: SocialPostMediaItem[]): string {
+  return JSON.stringify(items.slice(0, MAX_MEDIA_ITEMS));
+}
+
+export function inferMediaType(
+  items: SocialPostMediaItem[]
+): "none" | "image" | "video" | "gallery" {
+  if (!items.length) return "none";
+  const hasVideo = items.some((i) => i.type === "video");
+  const imageCount = items.filter((i) => i.type === "image").length;
+  if (hasVideo) return "video";
+  if (imageCount > 1) return "gallery";
+  return "image";
+}
+
+export function inferPostTypeFromMedia(
+  items: SocialPostMediaItem[],
+  requested?: PostDoc["postType"]
+): PostDoc["postType"] {
+  if (items.some((i) => i.type === "video")) return "video";
+  if (items.some((i) => i.type === "image")) {
+    return requested && requested !== "text" && requested !== "video"
+      ? requested
+      : "image";
+  }
+  return requested ?? "text";
+}
 
 export function sanitizeSocialText(
   raw: string,
@@ -79,10 +171,25 @@ export function toPublicPost(
   author: PublicSocialAuthor,
   extras?: { likedByMe?: boolean; bookmarkedByMe?: boolean }
 ): PublicSocialPost {
+  const mediaUrls =
+    post.mediaUrls && post.mediaUrls.length > 0
+      ? post.mediaUrls
+      : post.mediaUrl
+        ? [post.mediaUrl]
+        : undefined;
+
   return {
     _id: post._id,
     body: post.body,
-    mediaUrl: post.mediaUrl,
+    mediaUrl: post.mediaUrl ?? mediaUrls?.[0],
+    mediaUrls,
+    mediaType: post.mediaType,
+    videoDurationSec: post.videoDurationSec,
+    videoThumbnailUrl: post.videoThumbnailUrl,
+    hashtags: post.hashtags,
+    mentions: post.mentions,
+    visibility: post.visibility,
+    viewCount: post.viewCount,
     postType: post.postType,
     communitySlug: post.communitySlug,
     likeCount: post.likeCount,

@@ -7,7 +7,9 @@ export const SUPABASE_STORAGE_BUCKETS = {
   videos: "videos",
   avatars: "avatars",
   uploads: "uploads",
-} as const satisfies Record<SupabaseStorageBucket, SupabaseStorageBucket>;
+  socialImages: "social-images",
+  socialVideos: "social-videos",
+} as const satisfies Record<string, SupabaseStorageBucket>;
 
 function cleanSegment(value: string): string {
   return value.trim().replace(/^\/+|\/+$/g, "").replace(/[^a-zA-Z0-9._-]+/g, "-");
