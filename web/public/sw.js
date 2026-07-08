@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v66-gigasocial-pwa-shortcut";
+const CACHE_NAME = "giga3-shell-v67-chat-search-sidebar";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
