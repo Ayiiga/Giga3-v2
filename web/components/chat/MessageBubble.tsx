@@ -7,6 +7,7 @@ import { useStreamingReveal } from "@/hooks/useStreamingReveal";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { formatMessageTime } from "@/lib/chat/groupMessagesByDate";
 import { splitAssistantResponseDisplay } from "@/lib/chat/deriveResponseDisplay";
+import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
 import { cn } from "@/lib/utils";
 import { Bot } from "lucide-react";
 import { memo, useMemo, useState } from "react";
