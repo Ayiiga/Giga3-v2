@@ -129,7 +129,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={post.mediaUrl}
-          alt=""
+          alt={display.title ? `Image for ${display.title}` : "Post attachment"}
           className="mt-3 max-h-80 w-full rounded-xl border border-border object-contain"
           loading="lazy"
           onError={(e) => {

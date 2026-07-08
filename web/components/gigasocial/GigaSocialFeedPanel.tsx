@@ -3,11 +3,13 @@
 import { GigaSocialComposer } from "@/components/gigasocial/GigaSocialComposer";
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { LoadingState } from "@/components/ui/LoadingState";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { useMutation, useQuery } from "convex/react";
-import { Loader2 } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 
 export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
@@ -61,11 +63,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   }, [feed]);
 
   if (feed === undefined) {
-    return (
-      <div className="flex min-h-40 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted" aria-hidden />
-      </div>
-    );
+    return <LoadingState label="Loading feed…" />;
   }
 
   return (
@@ -78,11 +76,11 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       )}
 
       {posts.length === 0 ? (
-        <div className="saas-card rounded-2xl border border-dashed border-border p-8 text-center">
-          <p className="text-sm text-muted">
-            No posts yet. Be the first to share something with the community.
-          </p>
-        </div>
+        <EmptyState
+          icon={MessageCircle}
+          title="No posts yet"
+          description="Be the first to share something with the community."
+        />
       ) : (
         <ul className="space-y-4">
           {posts.map((post) => (

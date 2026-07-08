@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { LoadingState } from "@/components/ui/LoadingState";
 import type { SocialCommunity } from "@/lib/gigasocial/types";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
@@ -24,11 +25,7 @@ export const GigaSocialCommunitiesPanel = memo(function GigaSocialCommunitiesPan
   const [error, setError] = useState<string | null>(null);
 
   if (data === undefined) {
-    return (
-      <div className="flex min-h-40 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted" aria-hidden />
-      </div>
-    );
+    return <LoadingState label="Loading communities…" />;
   }
 
   const communities = data as SocialCommunity[];
@@ -89,7 +86,7 @@ export const GigaSocialCommunitiesPanel = memo(function GigaSocialCommunitiesPan
               <Button
                 type="button"
                 size="sm"
-                variant={community.joined ? "outline" : "default"}
+                variant={community.joined ? "outline" : "primary"}
                 disabled={busySlug === community.slug}
                 onClick={() => void toggleJoin(community)}
                 className="min-h-9"

@@ -8,6 +8,12 @@ interface State {
 }
 
 function friendlyMessage(message: string): string {
+  if (message.includes("is not defined") || message.includes("ReferenceError")) {
+    return (
+      "Chat hit a temporary loading error. Please refresh the page. " +
+      "If this continues, clear your browser cache or reinstall the PWA."
+    );
+  }
   if (message.includes("Could not find public function")) {
     return (
       "The chat backend is still updating. This usually means the latest Convex deploy " +

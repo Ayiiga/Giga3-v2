@@ -10,6 +10,7 @@ import { formatCurrentDate, resolveTemplatePlaceholders } from "@/lib/datetime";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { useScrollToLatestMessage } from "@/hooks/useScrollToLatestMessage";
 import { ScrollToLatestButton } from "@/components/chat/ScrollToLatestButton";
+import { LoadingState } from "@/components/ui/LoadingState";
 import { messageListScrollKey } from "@/lib/chat/stableMessages";
 import { groupMessagesByDate } from "@/lib/chat/groupMessagesByDate";
 import { cn } from "@/lib/utils";
@@ -88,10 +89,7 @@ function MessageListInner({
         className="message-list-scroll chat-message-scroll-region overscroll-y-contain py-3 sm:py-6"
       >
         {isLoading && messages.length === 0 && (
-          <div className="flex h-full min-h-[12rem] flex-col items-center justify-center gap-3 text-center">
-            <div className="h-8 w-8 animate-pulse rounded-full bg-accent/15" aria-hidden />
-            <p className="text-sm text-muted">Loading messages…</p>
-          </div>
+          <LoadingState label="Loading messages…" className="h-full min-h-[12rem]" />
         )}
 
         {messages.length === 0 && !isLoading && (

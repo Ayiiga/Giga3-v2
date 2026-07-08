@@ -1,13 +1,15 @@
 "use client";
 
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { LoadingState } from "@/components/ui/LoadingState";
 import { DISCOVER_FILTERS, type DiscoverFilterId } from "@/lib/gigasocial/sections";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { Loader2, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { memo, useState } from "react";
 
 export const GigaSocialDiscoverPanel = memo(function GigaSocialDiscoverPanel({
@@ -30,11 +32,7 @@ export const GigaSocialDiscoverPanel = memo(function GigaSocialDiscoverPanel({
   const recordShare = useMutation(api.gigaSocial.recordShare);
 
   if (data === undefined) {
-    return (
-      <div className="flex min-h-40 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted" aria-hidden />
-      </div>
-    );
+    return <LoadingState label="Discovering posts…" />;
   }
 
   const posts = (data.posts ?? []) as SocialPost[];
@@ -65,14 +63,17 @@ export const GigaSocialDiscoverPanel = memo(function GigaSocialDiscoverPanel({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search posts, topics, prompts…"
+          aria-label="Search posts"
           className="w-full rounded-xl border border-border bg-white py-2.5 pl-10 pr-3 text-sm"
         />
       </div>
 
       {posts.length === 0 ? (
-        <div className="saas-card rounded-2xl border border-dashed border-border p-8 text-center">
-          <p className="text-sm text-muted">No results. Try another filter or search term.</p>
-        </div>
+        <EmptyState
+          icon={Search}
+          title="No results"
+          description="Try another filter or search term."
+        />
       ) : (
         <ul className="space-y-4">
           {posts.map((post) => (

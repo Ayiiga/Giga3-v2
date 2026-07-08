@@ -105,7 +105,11 @@ html.marketing-route body {
 }
 
 .page-title {
-  @apply text-2xl font-semibold tracking-tight text-foreground;
+  @apply text-2xl font-bold tracking-tight text-foreground sm:text-3xl;
+}
+
+.platform-section-title {
+  @apply text-sm font-semibold tracking-tight text-foreground sm:text-base;
 }
 
 .page-subtitle {

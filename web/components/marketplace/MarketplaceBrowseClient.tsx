@@ -3,6 +3,8 @@
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { LoadingState } from "@/components/ui/LoadingState";
 import { MARKETPLACE_CATEGORIES, PRODUCT_TYPES, formatGhs } from "@/lib/marketplace/catalog";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -61,6 +63,7 @@ function MarketplaceBrowseInner() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search titles, tags, descriptions…"
+              aria-label="Search marketplace listings"
               className="w-full rounded-xl border border-border bg-card py-3 pl-10 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/30"
             />
           </div>
@@ -93,11 +96,13 @@ function MarketplaceBrowseInner() {
         </div>
 
         {!listings ? (
-          <p className="text-center text-muted">Loading marketplace…</p>
+          <LoadingState label="Loading marketplace…" />
         ) : listings.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-border p-10 text-center text-muted">
-            No listings yet. Be the first creator on Giga3.
-          </p>
+          <EmptyState
+            icon={Store}
+            title="No listings found"
+            description="Try a different search or be the first creator on Giga3."
+          />
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {listings.map((item: NonNullable<typeof listings>[number]) => (
@@ -110,7 +115,7 @@ function MarketplaceBrowseInner() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={item.coverImageUrl}
-                    alt=""
+                    alt={item.title}
                     className="mb-4 aspect-video w-full rounded-xl object-cover"
                   />
                 ) : (

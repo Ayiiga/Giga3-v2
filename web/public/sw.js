@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v72-parse-message-media-fix";
+const CACHE_NAME = "giga3-shell-v73-platform-refinement";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

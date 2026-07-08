@@ -2,7 +2,9 @@
 
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
 import { Button } from "@/components/ui/Button";
+import { LoadingState } from "@/components/ui/LoadingState";
 import { BADGE_LABELS } from "@/lib/gigasocial/sections";
+import type { SocialPost } from "@/lib/gigasocial/types";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -31,16 +33,13 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
   const [error, setError] = useState<string | null>(null);
 
   if (data === undefined) {
-    return (
-      <div className="flex min-h-40 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted" aria-hidden />
-      </div>
-    );
+    return <LoadingState label="Loading profile…" />;
   }
 
   if (!data) return null;
 
   const { profile, recentPosts } = data;
+  const posts = recentPosts as SocialPost[];
   const gamification = profile.gamification;
 
   function startEdit() {
@@ -138,12 +137,12 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
 
       {gamification && gamification.badges.length > 0 && (
         <section>
-          <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+          <h4 className="platform-section-title mb-3 flex items-center gap-2">
             <Award className="h-4 w-4 text-accent" aria-hidden />
             Achievements
           </h4>
           <ul className="flex flex-wrap gap-2">
-            {gamification.badges.map((badge) => (
+            {gamification.badges.map((badge: string) => (
               <li
                 key={badge}
                 className="rounded-full border border-accent/30 bg-accent/5 px-3 py-1 text-xs font-medium text-foreground"
@@ -156,12 +155,12 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
       )}
 
       <section>
-        <h4 className="mb-3 text-sm font-semibold text-foreground">Your posts</h4>
-        {recentPosts.length === 0 ? (
+        <h4 className="platform-section-title mb-3">Your posts</h4>
+        {posts.length === 0 ? (
           <p className="text-sm text-muted">You have not posted yet.</p>
         ) : (
           <ul className="space-y-4">
-            {recentPosts.map((post) => (
+            {posts.map((post) => (
               <li key={post._id}>
                 <GigaSocialPostCard
                   post={post}
