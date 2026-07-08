@@ -461,6 +461,13 @@ function buildManifest() {
         url: "/gigasocial/",
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
       },
+      {
+        name: "GigaWallet",
+        short_name: "Wallet",
+        description: "Credits, subscriptions, and billing",
+        url: "/wallet/",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+      },
     ],
   };
 }

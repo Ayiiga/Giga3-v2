@@ -41,6 +41,8 @@ import type * as crons from "../crons.js";
 import type * as falClient from "../falClient.js";
 import type * as freeOpenAiQuota from "../freeOpenAiQuota.js";
 import type * as geminiImageClient from "../geminiImageClient.js";
+import type * as gigaSocial from "../gigaSocial.js";
+import type * as gigaWallet from "../gigaWallet.js";
 import type * as http from "../http.js";
 import type * as marketplace from "../marketplace.js";
 import type * as marketplacePayments from "../marketplacePayments.js";
@@ -134,6 +136,8 @@ declare const fullApi: ApiFromModules<{
   falClient: typeof falClient;
   freeOpenAiQuota: typeof freeOpenAiQuota;
   geminiImageClient: typeof geminiImageClient;
+  gigaSocial: typeof gigaSocial;
+  gigaWallet: typeof gigaWallet;
   http: typeof http;
   marketplace: typeof marketplace;
   marketplacePayments: typeof marketplacePayments;

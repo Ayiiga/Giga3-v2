@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import {
   Archive,
   BookOpen,
+  Coins,
   CreditCard,
   FileText,
   HelpCircle,
@@ -89,8 +90,9 @@ const PRIMARY_NAV = [
 ] as const;
 
 const ACCOUNT_NAV = [
+  { href: "/wallet", label: "GigaWallet", icon: CreditCard },
   { href: "/subscribe", label: "Subscription", icon: Sparkles },
-  { href: "/credits", label: "Credits", icon: CreditCard },
+  { href: "/credits", label: "Credits", icon: Coins },
   { href: "/chat", label: "Settings", icon: Settings },
 ] as const;
 

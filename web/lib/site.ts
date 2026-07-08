@@ -16,6 +16,7 @@ export const siteConfig = {
     login: "/chat/login",
     dashboard: "/chat",
     pricing: "/pricing",
+    wallet: "/wallet",
     subscribe: "/subscribe",
     credits: "/credits",
     media: "/media",

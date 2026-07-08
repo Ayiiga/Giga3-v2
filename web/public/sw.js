@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v74-chat-search-bar";
+const CACHE_NAME = "giga3-shell-v75-gigawallet";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
