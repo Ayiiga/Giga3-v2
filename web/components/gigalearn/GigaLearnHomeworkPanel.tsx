@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import {
   EDUCATION_LEVELS,
   EXAM_BOARDS,
@@ -70,7 +70,7 @@ export const GigaLearnHomeworkPanel = memo(function GigaLearnHomeworkPanel() {
     setBusy(true);
     setError(null);
     try {
-      const attachment = await prepareChatAttachment(selectedFile, "image");
+      const attachment = await prepareChatAttachment(selectedFile);
       const prompt = buildHomeworkChatPrompt({
         curriculum,
         subject,
@@ -220,11 +220,13 @@ export const GigaLearnHomeworkPanel = memo(function GigaLearnHomeworkPanel() {
             )}
             Solve in chat
           </Button>
-          <Button asChild variant="outline" className="min-h-11">
-            <Link href={`${siteConfig.links.dashboard}?category=education`}>
-              Open education chat
-            </Link>
-          </Button>
+          <ButtonLink
+            href={`${siteConfig.links.dashboard}?category=education`}
+            variant="outline"
+            className="min-h-11"
+          >
+            Open education chat
+          </ButtonLink>
         </div>
       </div>
 

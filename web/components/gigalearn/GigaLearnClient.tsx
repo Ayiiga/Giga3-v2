@@ -4,7 +4,7 @@ import { GigaLearnHomeworkPanel } from "@/components/gigalearn/GigaLearnHomework
 import { GigaLearnToolPanel } from "@/components/gigalearn/GigaLearnToolPanel";
 import { GigaLearnWorkspacePanel } from "@/components/gigalearn/GigaLearnWorkspacePanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
-import { Button } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { useMediaBilling } from "@/hooks/useMediaBilling";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import {
@@ -199,12 +199,12 @@ function GigaLearnContent() {
       </section>
 
       <div className="flex flex-wrap gap-3">
-        <Button asChild variant="outline" className="min-h-11">
-          <Link href={siteConfig.links.dashboard}>Open AI tutor chat</Link>
-        </Button>
-        <Button asChild variant="outline" className="min-h-11">
-          <Link href={siteConfig.links.creatorStudio}>Creator Studio</Link>
-        </Button>
+        <ButtonLink href={siteConfig.links.dashboard} variant="outline" className="min-h-11">
+          Open AI tutor chat
+        </ButtonLink>
+        <ButtonLink href={siteConfig.links.creatorStudio} variant="outline" className="min-h-11">
+          Creator Studio
+        </ButtonLink>
       </div>
     </div>
   );

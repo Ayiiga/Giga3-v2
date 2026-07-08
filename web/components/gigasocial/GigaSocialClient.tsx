@@ -6,7 +6,7 @@ import { GigaSocialFeedPanel } from "@/components/gigasocial/GigaSocialFeedPanel
 import { GigaSocialNotificationsPanel } from "@/components/gigasocial/GigaSocialNotificationsPanel";
 import { GigaSocialProfilePanel } from "@/components/gigasocial/GigaSocialProfilePanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
-import { Button } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { getSessionToken } from "@/lib/auth";
 import {
@@ -203,12 +203,12 @@ function GigaSocialContent() {
       </section>
 
       <div className="flex flex-wrap gap-3">
-        <Button asChild variant="outline" className="min-h-11">
-          <Link href={siteConfig.links.creatorStudio}>Creator Studio</Link>
-        </Button>
-        <Button asChild variant="outline" className="min-h-11">
-          <Link href={siteConfig.links.dashboard}>Open chat</Link>
-        </Button>
+        <ButtonLink href={siteConfig.links.creatorStudio} variant="outline" className="min-h-11">
+          Creator Studio
+        </ButtonLink>
+        <ButtonLink href={siteConfig.links.dashboard} variant="outline" className="min-h-11">
+          Open chat
+        </ButtonLink>
       </div>
     </div>
   );

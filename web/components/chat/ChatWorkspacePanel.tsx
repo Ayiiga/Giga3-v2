@@ -18,8 +18,9 @@ import {
   scrollToChatHistory,
   type WorkspaceNavTarget,
 } from "@/lib/chat/workspaceNav";
+import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
-import { Bell, ChevronDown, FileText, Loader2, MessageCircle, Newspaper, Sparkles, Trophy } from "lucide-react";
+import { Bell, BookOpen, ChevronDown, FileText, Loader2, MessageCircle, Newspaper, Sparkles, Trophy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo, useEffect, useState } from "react";
 
@@ -179,16 +180,36 @@ function ChatWorkspacePanelComponent({
               "overflow-y-auto overscroll-y-contain border-t border-border bg-background",
               tab === "news" || tab === "sports" || tab === "alerts"
                 ? "max-h-[min(50vh,420px)]"
-                : "max-h-[200px]"
+                : tab === "modes"
+                  ? "max-h-[min(42vh,300px)]"
+                  : "max-h-[200px]"
             )}
           >
             {tab === "modes" && (
-              <ToolSelector
-                value={mode}
-                onChange={onModeChange}
-                disabled={disabled}
-                embedded
-              />
+              <div className="space-y-3 px-3 py-3 sm:px-4">
+                <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => router.push(`${siteConfig.links.gigalearn}/`)}
+                  className="flex min-h-16 w-full items-center gap-3 rounded-xl border border-border bg-zinc-50/50 p-3 text-left hover:border-accent/25 hover:bg-accent/5"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600">
+                    <BookOpen className="h-5 w-5 text-white" aria-hidden />
+                  </div>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-medium text-foreground">GigaLearn</span>
+                    <span className="mt-0.5 block line-clamp-2 text-xs text-muted">
+                      AI learning studio — homework help, quizzes, lesson notes, and study plans.
+                    </span>
+                  </span>
+                </button>
+                <ToolSelector
+                  value={mode}
+                  onChange={onModeChange}
+                  disabled={disabled}
+                  embedded
+                />
+              </div>
             )}
 
             {tab === "documents" && (
