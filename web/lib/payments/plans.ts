@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/lib/locale";
 import type { PaymentProduct } from "./types";
 import { CREDIT_PACK_LIST } from "./creditPacksCatalog";
 import { FREE_STARTER_CREDITS, SUBSCRIPTION_PLANS } from "./subscriptionCatalog";
@@ -62,9 +63,5 @@ export function getProductById(id: string): PaymentProduct | undefined {
 }
 
 export function formatGhs(amount: number): string {
-  return new Intl.NumberFormat("en-GH", {
-    style: "currency",
-    currency: "GHS",
-    minimumFractionDigits: 2,
-  }).format(amount);
+  return formatCurrency(amount);
 }

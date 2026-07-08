@@ -7,6 +7,7 @@ import { PlatformAnalyticsHost } from "@/components/analytics/PlatformAnalyticsH
 import { GlobalChatPrefetch } from "@/components/chat/GlobalChatPrefetch";
 import { branding } from "@/lib/branding";
 import { brandingAssetUrl } from "@/lib/brandingAssets";
+import { DEFAULT_HTML_LANG, DEFAULT_OG_LOCALE } from "@/lib/locale";
 import { pwaStartupImages } from "@/lib/pwaSplash";
 import { siteConfig } from "@/lib/site";
 import "@/styles/globals.css";
@@ -41,7 +42,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     images: [{ url: brandingAssetUrl("/images/logo.png"), width: 512, height: 512, alt: branding.name }],
-    locale: "en_US",
+    locale: DEFAULT_OG_LOCALE,
     url: siteConfig.url,
     siteName: branding.name,
     title: branding.name,
@@ -89,7 +90,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang={DEFAULT_HTML_LANG} className={inter.variable} suppressHydrationWarning>
       <body className="min-h-full w-full max-w-full overflow-x-hidden bg-background font-sans text-foreground antialiased">
         <ConvexRuntimeBootstrap />
         <ThemeProvider>

@@ -36,6 +36,7 @@ import {
   appliesPlatformFee,
   computePlatformFeeGhs,
 } from "./platformRevenue";
+import { withRetries } from "./mediaUtils";
 
 const PAYSTACK_BASE = "https://api.paystack.co";
 
@@ -64,30 +65,42 @@ function toPesewas(ghs: number): number {
 }
 
 async function paystackPost(path: string, body: unknown) {
-  const res = await fetch(`${PAYSTACK_BASE}${path}`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${paystackSecret()}`,
-      "Content-Type": "application/json",
+  return withRetries(
+    `paystack POST ${path}`,
+    async () => {
+      const res = await fetch(`${PAYSTACK_BASE}${path}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${paystackSecret()}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.status) {
+        throw new Error(data.message ?? "Paystack request failed");
+      }
+      return data;
     },
-    body: JSON.stringify(body),
-  });
-  const data = await res.json();
-  if (!res.ok || !data.status) {
-    throw new Error(data.message ?? "Paystack request failed");
-  }
-  return data;
+    { attempts: 3, baseDelayMs: 600 }
+  );
 }
 
 async function paystackGet(path: string) {
-  const res = await fetch(`${PAYSTACK_BASE}${path}`, {
-    headers: { Authorization: `Bearer ${paystackSecret()}` },
-  });
-  const data = await res.json();
-  if (!res.ok || !data.status) {
-    throw new Error(data.message ?? "Paystack verify failed");
-  }
-  return data;
+  return withRetries(
+    `paystack GET ${path}`,
+    async () => {
+      const res = await fetch(`${PAYSTACK_BASE}${path}`, {
+        headers: { Authorization: `Bearer ${paystackSecret()}` },
+      });
+      const data = await res.json();
+      if (!res.ok || !data.status) {
+        throw new Error(data.message ?? "Paystack verify failed");
+      }
+      return data;
+    },
+    { attempts: 3, baseDelayMs: 600 }
+  );
 }
 
 function getProduct(productId: string) {

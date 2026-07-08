@@ -211,6 +211,21 @@ The job applies `CHAT_*` latency defaults after each successful deploy.
 
 ---
 
+## Health monitoring (Step 9)
+
+Production liveness probe (no authentication, no PII):
+
+```bash
+curl -s https://perfect-lark-521.convex.site/health
+# {"ok":true,"service":"giga3-convex","version":1,"ts":...}
+```
+
+Wire uptime monitors to this URL. Implementation: `convex/health.ts` routed in `convex/http.ts`.
+
+Static sitemap is generated at build time (`web/app/sitemap.ts` → `https://www.giga3ai.com/sitemap.xml`). See `docs/STEP_9_GLOBAL_PLATFORM.md` for the full Step 9 release report.
+
+---
+
 ## Known blockers and fixes
 
 | Blocker | Impact | Fix |

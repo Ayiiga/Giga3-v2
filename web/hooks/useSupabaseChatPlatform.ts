@@ -13,8 +13,12 @@ import {
   CHAT_REGENERATE_TIMEOUT_MS,
   CHAT_REPLY_POLL_MS,
   CHAT_REPLY_POLL_SLOW_MS,
+  maxSendRetries,
   replyWaitMs,
+  RETRY_BASE_MS,
+  RETRY_BASE_SLOW_MS,
 } from "@/lib/chat/chatNetwork";
+import { toUserFacingError } from "@/lib/errors/userMessage";
 import { getConvexUrl } from "@/lib/convex";
 import { convexHttpCall } from "@/lib/network/convexCall";
 import {
@@ -89,6 +93,28 @@ async function sendConvexMessage(
       retries: slowNetwork ? 2 : 1,
     }
   );
+}
+
+async function sendConvexMessageWithRetry(
+  args: Parameters<typeof sendConvexMessage>[0],
+  slowNetwork: boolean,
+  attempt = 0
+): Promise<ConvexSendResult> {
+  try {
+    return await sendConvexMessage(args, slowNetwork);
+  } catch (e) {
+    const maxRetries = maxSendRetries(slowNetwork);
+    const shouldRetry =
+      attempt < maxRetries - 1 &&
+      typeof navigator !== "undefined" &&
+      navigator.onLine;
+    if (shouldRetry) {
+      const retryBase = slowNetwork ? RETRY_BASE_SLOW_MS : RETRY_BASE_MS;
+      await new Promise((resolve) => setTimeout(resolve, retryBase * 2 ** attempt));
+      return sendConvexMessageWithRetry(args, slowNetwork, attempt + 1);
+    }
+    throw e;
+  }
 }
 
 async function waitForAssistantReply(
@@ -336,7 +362,7 @@ export function useSupabaseChatPlatform() {
           await fetchConvexMessages(sessionToken, convexConversationId, isSlowNetwork)
         );
 
-        const result = await sendConvexMessage(
+        const result = await sendConvexMessageWithRetry(
           {
             sessionToken,
             conversationId: convexConversationId,
@@ -421,7 +447,7 @@ export function useSupabaseChatPlatform() {
         );
         setUsedFallback(Boolean(result.usedFallback));
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to send");
+        setError(toUserFacingError(err, "Failed to send"));
         setPendingUserText(null);
       } finally {
         setIsSending(false);

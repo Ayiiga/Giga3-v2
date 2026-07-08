@@ -1,6 +1,8 @@
 /** Locale-aware date/time helpers — no hardcoded calendar values in UI copy. */
 
-export const PRODUCT_LOCALE = "en-GH";
+import { DEFAULT_LOCALE, PRODUCT_LOCALE } from "@/lib/locale";
+
+export { PRODUCT_LOCALE };
 
 const DATE_OPTS: Intl.DateTimeFormatOptions = {
   weekday: "long",
