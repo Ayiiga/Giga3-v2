@@ -99,18 +99,18 @@ function MessageListInner({
             <div className="premium-card mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10 text-accent">
               <MessageSquarePlus className="h-8 w-8" aria-hidden />
             </div>
-            <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            <h2 className="chat-welcome-title text-3xl font-bold tracking-tight text-foreground sm:text-4xl sm:leading-[1.12] lg:text-[2.75rem] lg:leading-[1.1]">
               Welcome to Giga3 AI
             </h2>
-            <p className="mt-2 text-sm font-medium text-accent">
+            <p className="mt-3 text-sm font-semibold tracking-wide text-accent sm:mt-4 sm:text-base">
               {category.emoji} {category.label} mode
             </p>
             {todayLabel && (
-              <p className="mt-1 text-sm text-muted" suppressHydrationWarning>
+              <p className="mt-2 text-sm leading-relaxed text-muted sm:mt-2.5" suppressHydrationWarning>
                 {todayLabel}
               </p>
             )}
-            <p className="mt-4 max-w-md text-base leading-[1.7] text-muted">
+            <p className="mt-5 max-w-md text-base leading-[1.75] text-muted sm:mt-6 sm:text-[1.0625rem] sm:leading-[1.8]">
               {GIGA3_CHAT_WELCOME} Pick a suggested prompt below, attach files for
               analysis, or explore templates in the workspace.
             </p>

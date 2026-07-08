@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v68-sidebar-home-first";
+const CACHE_NAME = "giga3-shell-v69-safe-upgrade-gigalearn";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
@@ -26,6 +26,7 @@ function isSensitiveDocumentPath(pathname) {
     pathname.startsWith("/credits/") ||
     pathname.startsWith("/marketplace/sell/") ||
     pathname.startsWith("/creator-studio/") ||
+    pathname.startsWith("/gigalearn/") ||
     pathname.startsWith("/gigasocial/") ||
     pathname.startsWith("/creator/")
   );

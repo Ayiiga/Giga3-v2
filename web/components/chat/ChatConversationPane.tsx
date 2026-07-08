@@ -30,6 +30,7 @@ interface ChatConversationPaneProps {
   onDismissError?: () => void;
   onAttachmentsChange?: (attachments: PreparedChatAttachment[]) => void;
   onSuggestVisionTier?: () => void;
+  initialAttachments?: PreparedChatAttachment[];
 }
 
 function panePropsEqual(
@@ -55,6 +56,7 @@ function panePropsEqual(
     prev.onDismissError === next.onDismissError &&
     prev.onAttachmentsChange === next.onAttachmentsChange &&
     prev.onSuggestVisionTier === next.onSuggestVisionTier &&
+    prev.initialAttachments === next.initialAttachments &&
     prev.insertRef === next.insertRef
   );
 }
@@ -80,6 +82,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onDismissError,
   onAttachmentsChange,
   onSuggestVisionTier,
+  initialAttachments,
 }: ChatConversationPaneProps) {
   const showTyping = awaitingReply || isSending;
   const typingPhase = awaitingReply ? "replying" : "sending";
@@ -120,6 +123,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           uploadUsage={uploadUsage}
           onAttachmentsChange={onAttachmentsChange}
           onSuggestVisionTier={onSuggestVisionTier}
+          initialAttachments={initialAttachments}
         />
       </div>
       </div>

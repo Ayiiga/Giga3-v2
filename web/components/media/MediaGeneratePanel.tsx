@@ -99,9 +99,9 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
     createVideo,
   } = useMediaGeneration();
 
+  const [tab, setTab] = useState<"image" | "video">(initialTab);
   const generationStage = useGenerationStages(loading, tab);
 
-  const [tab, setTab] = useState<"image" | "video">(initialTab);
   const [category, setCategory] = useState(initialCategory);
   const [prompt, setPrompt] = useState(initialPrompt);
   const [videoImageUrl, setVideoImageUrl] = useState("");

@@ -76,6 +76,7 @@ type SidebarView = "active" | "archived" | "favorites";
 
 const PRIMARY_NAV = [
   { href: "/chat", label: "Home", icon: Home },
+  { href: "/gigalearn/", label: "GigaLearn", icon: BookOpen },
   { href: "/gigasocial/", label: "GigaSocial", icon: UsersRound },
   { hash: "documents" as const, label: "My Documents", icon: FileText },
   { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
