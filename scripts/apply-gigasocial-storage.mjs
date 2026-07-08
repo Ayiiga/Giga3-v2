@@ -8,10 +8,13 @@
 const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "")
   .trim()
   .replace(/\/$/, "");
-const serviceKey =
+const serviceKey = (
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
   process.env.ANON_SERVICE_ROLE ||
-  "";
+  ""
+)
+  .trim()
+  .replace(/[\u200B-\u200D\uFEFF]/g, "");
 
 if (!url || !serviceKey) {
   console.error("Requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.");
