@@ -75,11 +75,11 @@ interface ChatSidebarProps {
 type SidebarView = "active" | "archived" | "favorites";
 
 const PRIMARY_NAV = [
+  { href: "/chat", label: "Home", icon: Home },
   { href: "/gigasocial/", label: "GigaSocial", icon: UsersRound },
   { hash: "documents" as const, label: "My Documents", icon: FileText },
   { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
   { href: "/marketplace/", label: "Marketplace", icon: LayoutGrid },
-  { href: "/chat", label: "Home", icon: Home },
   { hash: "modes" as const, label: "AI Tools", icon: Wand2 },
   { hash: "news" as const, label: "News desk", icon: Newspaper },
   { hash: "sports" as const, label: "Sports desk", icon: Trophy },
