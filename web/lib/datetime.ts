@@ -52,6 +52,18 @@ export function formatTimestampDateTime(
   return formatWith(new Date(ms), DATETIME_OPTS, locale);
 }
 
+export function formatRelativeTime(ms: number, now = Date.now()): string {
+  const diff = Math.max(0, now - ms);
+  const minutes = Math.floor(diff / 60_000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return formatTimestamp(ms);
+}
+
 export function formatCurrentDate(now = new Date()): string {
   return formatWith(now, DATE_OPTS);
 }

@@ -69,6 +69,25 @@ export const marketplaceLicenseValidator = v.union(
   v.literal("exclusive")
 );
 
+export const socialPostTypeValidator = v.union(
+  v.literal("text"),
+  v.literal("image"),
+  v.literal("ai"),
+  v.literal("education"),
+  v.literal("creator")
+);
+
+export const socialNotificationTypeValidator = v.union(
+  v.literal("like"),
+  v.literal("comment"),
+  v.literal("reply"),
+  v.literal("mention"),
+  v.literal("follow"),
+  v.literal("community"),
+  v.literal("learning"),
+  v.literal("creator")
+);
+
 export default defineSchema({
   users: defineTable({
     email: v.string(),
@@ -569,4 +588,97 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_endpoint", ["endpoint"]),
+
+  /** GigaSocial — user profiles (additive; separate from users / creatorProfiles). */
+  socialProfiles: defineTable({
+    userId: v.string(),
+    displayName: v.string(),
+    handle: v.string(),
+    bio: v.optional(v.string()),
+    avatarUrl: v.optional(v.string()),
+    skills: v.array(v.string()),
+    interests: v.array(v.string()),
+    achievementsJson: v.optional(v.string()),
+    gamificationJson: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_handle", ["handle"]),
+
+  socialPosts: defineTable({
+    authorId: v.string(),
+    body: v.string(),
+    mediaUrl: v.optional(v.string()),
+    postType: socialPostTypeValidator,
+    communitySlug: v.optional(v.string()),
+    likeCount: v.number(),
+    commentCount: v.number(),
+    shareCount: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_created", ["createdAt"])
+    .index("by_author_created", ["authorId", "createdAt"])
+    .index("by_community_created", ["communitySlug", "createdAt"]),
+
+  socialComments: defineTable({
+    postId: v.id("socialPosts"),
+    authorId: v.string(),
+    body: v.string(),
+    parentId: v.optional(v.id("socialComments")),
+    createdAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_post_created", ["postId", "createdAt"])
+    .index("by_parent", ["parentId"]),
+
+  socialReactions: defineTable({
+    postId: v.id("socialPosts"),
+    userId: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_post", ["postId"])
+    .index("by_post_user", ["postId", "userId"])
+    .index("by_user", ["userId"]),
+
+  socialBookmarks: defineTable({
+    postId: v.id("socialPosts"),
+    userId: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_post_user", ["postId", "userId"]),
+
+  socialCommunityMembers: defineTable({
+    communitySlug: v.string(),
+    userId: v.string(),
+    joinedAt: v.number(),
+  })
+    .index("by_slug", ["communitySlug"])
+    .index("by_user", ["userId"])
+    .index("by_slug_user", ["communitySlug", "userId"]),
+
+  socialNotifications: defineTable({
+    recipientId: v.string(),
+    type: socialNotificationTypeValidator,
+    actorId: v.optional(v.string()),
+    postId: v.optional(v.id("socialPosts")),
+    communitySlug: v.optional(v.string()),
+    message: v.string(),
+    read: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_recipient_created", ["recipientId", "createdAt"])
+    .index("by_recipient_read", ["recipientId", "read"]),
+
+  socialFollows: defineTable({
+    followerId: v.string(),
+    followingId: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_follower", ["followerId"])
+    .index("by_following", ["followingId"])
+    .index("by_pair", ["followerId", "followingId"]),
 });
