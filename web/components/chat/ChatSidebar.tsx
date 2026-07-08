@@ -70,6 +70,8 @@ interface ChatSidebarProps {
   mobileOpen: boolean;
   onCloseMobile: () => void;
   onInsertPrompt?: (text: string) => void;
+  search: string;
+  onSearchChange: (value: string) => void;
 }
 
 type SidebarView = "active" | "archived" | "favorites";
@@ -109,8 +111,9 @@ function ChatSidebarComponent({
   mobileOpen,
   onCloseMobile,
   onInsertPrompt,
+  search,
+  onSearchChange,
 }: ChatSidebarProps) {
-  const [search, setSearch] = useState("");
   const [view, setView] = useState<SidebarView>("active");
   const savedPrompts = useMemo(() => listSavedPrompts(), []);
 
@@ -192,7 +195,7 @@ function ChatSidebarComponent({
           </button>
         </div>
 
-        <div className="p-3">
+        <div className="space-y-3 px-3 pb-2">
           <Button
             type="button"
             variant="primary"
@@ -206,6 +209,21 @@ function ChatSidebarComponent({
             <MessageSquarePlus className="h-5 w-5" aria-hidden />
             New Chat
           </Button>
+
+          <div className="relative lg:hidden">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+              aria-hidden
+            />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Search conversations…"
+              aria-label="Search conversations"
+              className="input-surface min-h-11 w-full rounded-xl py-2.5 pl-10 pr-3 text-sm shadow-sm"
+            />
+          </div>
         </div>
 
         <nav className="shrink-0 space-y-4 px-2 pb-2" aria-label="Chat navigation">
@@ -262,20 +280,6 @@ function ChatSidebarComponent({
                   {label}
                 </button>
               ))}
-            </div>
-            <div className="relative px-1">
-              <Search
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
-                aria-hidden
-              />
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search conversations…"
-                aria-label="Search conversations"
-                className="input-surface min-h-10 w-full py-2 pl-9 pr-3 text-sm"
-              />
             </div>
           </SidebarSection>
 
