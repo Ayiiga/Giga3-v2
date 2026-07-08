@@ -99,6 +99,9 @@ jobs:
           PAYSTACK_PUBLIC_KEY: ${{ secrets.PAYSTACK_PUBLIC_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           AUTH_FROM_EMAIL: ${{ secrets.AUTH_FROM_EMAIL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           set -euo pipefail
           # Keep the whole failover chain (CHAT_TOTAL_BUDGET_MS) and the worker
@@ -131,6 +134,15 @@ jobs:
           fi
           if [ -n "${RESEND_API_KEY:-}" ]; then
             npx convex env set RESEND_API_KEY "${RESEND_API_KEY}"
+          fi
+          if [ -n "${NEXT_PUBLIC_SUPABASE_URL:-}" ]; then
+            npx convex env set SUPABASE_URL "${NEXT_PUBLIC_SUPABASE_URL}"
+          fi
+          if [ -n "${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}" ]; then
+            npx convex env set SUPABASE_ANON_KEY "${NEXT_PUBLIC_SUPABASE_ANON_KEY}"
+          fi
+          if [ -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
+            npx convex env set SUPABASE_SERVICE_ROLE_KEY "${SUPABASE_SERVICE_ROLE_KEY}"
           fi
           npx convex env set AUTH_FROM_EMAIL "${AUTH_FROM_EMAIL:-Giga3 AI <noreply@giga3ai.com>}"
           echo "Chat latency env applied (CHAT_*). Optional secrets synced if present."
