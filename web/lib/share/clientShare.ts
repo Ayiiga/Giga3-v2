@@ -1,8 +1,17 @@
 /** Clipboard, Web Share, download, and File System Access helpers (PWA-safe). */
 
 import { markdownToSimpleHtml } from "@/lib/chat/chatContentFormat";
+import {
+  GIGA3_APP_URL,
+  GIGA3_ATTRIBUTION_LINE,
+  appendGiga3Attribution,
+  giga3ShareDefaults,
+  prepareImageForGallery,
+} from "@/lib/share/giga3Attribution";
 
 export type ShareResult = { ok: true } | { ok: false; reason: string };
+
+export { GIGA3_APP_URL, GIGA3_ATTRIBUTION_LINE, appendGiga3Attribution };
 
 function isSecureContext(): boolean {
   return typeof window !== "undefined" && window.isSecureContext;
@@ -37,7 +46,8 @@ export async function copyTextToClipboard(text: string): Promise<ShareResult> {
 /** Copy markdown as plain + HTML for rich paste in docs and email clients. */
 export async function copyMarkdownToClipboard(markdown: string): Promise<ShareResult> {
   if (!markdown.trim()) return { ok: false, reason: "Nothing to copy" };
-  const html = markdownToSimpleHtml(markdown);
+  const withAttribution = appendGiga3Attribution(markdown);
+  const html = markdownToSimpleHtml(withAttribution);
   try {
     if (
       typeof ClipboardItem !== "undefined" &&
@@ -45,7 +55,7 @@ export async function copyMarkdownToClipboard(markdown: string): Promise<ShareRe
     ) {
       await navigator.clipboard.write([
         new ClipboardItem({
-          "text/plain": new Blob([markdown], { type: "text/plain" }),
+          "text/plain": new Blob([withAttribution], { type: "text/plain" }),
           "text/html": new Blob([html], { type: "text/html" }),
         }),
       ]);
@@ -54,7 +64,7 @@ export async function copyMarkdownToClipboard(markdown: string): Promise<ShareRe
   } catch {
     /* fall back to plain text */
   }
-  return copyTextToClipboard(markdown);
+  return copyTextToClipboard(withAttribution);
 }
 
 export async function shareText(params: {
@@ -62,17 +72,11 @@ export async function shareText(params: {
   text: string;
   url?: string;
 }): Promise<ShareResult> {
-  const { title, text, url } = params;
-  const trimmed = text.trim();
-  if (!trimmed && !url) return { ok: false, reason: "Nothing to share" };
+  const { title, text, url } = giga3ShareDefaults(params);
 
   if (typeof navigator.share === "function") {
     try {
-      const payload: ShareData = {};
-      if (title) payload.title = title;
-      if (trimmed) payload.text = trimmed;
-      if (url && !trimmed.includes(url)) payload.url = url;
-      else if (url && !trimmed) payload.url = url;
+      const payload: ShareData = { title, text, url };
       await navigator.share(payload);
       return { ok: true };
     } catch (e) {
@@ -82,8 +86,7 @@ export async function shareText(params: {
     }
   }
 
-  const combined = [title, trimmed, url].filter(Boolean).join("\n\n");
-  return copyTextToClipboard(combined);
+  return copyTextToClipboard([title, text, url].filter(Boolean).join("\n\n"));
 }
 
 export async function shareFiles(
@@ -91,9 +94,10 @@ export async function shareFiles(
   options?: { title?: string; text?: string; url?: string }
 ): Promise<ShareResult> {
   if (!files.length) return { ok: false, reason: "No files to share" };
+  const shareMeta = giga3ShareDefaults(options);
   if (navigator.canShare?.({ files })) {
     try {
-      await navigator.share({ files, ...options });
+      await navigator.share({ files, ...shareMeta });
       return { ok: true };
     } catch (e) {
       if (e instanceof Error && e.name === "AbortError") {
@@ -124,6 +128,15 @@ export function triggerDownload(blob: Blob, filename: string): ShareResult {
   }
 }
 
+/** Download raster images with a Giga3 watermark for gallery saves. */
+export async function triggerAttributedImageDownload(
+  blob: Blob,
+  filename: string
+): Promise<ShareResult> {
+  const prepared = await prepareImageForGallery(blob);
+  return triggerDownload(prepared, filename);
+}
+
 export async function fetchAsBlob(url: string): Promise<Blob> {
   const res = await fetch(url, { mode: "cors" });
   if (!res.ok) throw new Error(`Could not fetch media (${res.status})`);
@@ -145,14 +158,14 @@ export async function saveRemoteMediaToDevice(
   kind: "image" | "video"
 ): Promise<ShareResult> {
   if (!isSecureContext()) {
-    return triggerDownload(
-      new Blob([url], { type: "text/plain" }),
-      `giga3-${kind}-link.txt`
-    );
+    return copyTextToClipboard(appendGiga3Attribution(url));
   }
 
   try {
-    const blob = await fetchAsBlob(url);
+    let blob = await fetchAsBlob(url);
+    if (kind === "image") {
+      blob = await prepareImageForGallery(blob);
+    }
     const ext = extensionFromMime(blob.type, kind === "video" ? "mp4" : "png");
     const file = new File([blob], `giga3-${kind}-${Date.now()}.${ext}`, {
       type: blob.type || (kind === "video" ? "video/mp4" : "image/png"),
@@ -193,6 +206,10 @@ export async function saveRemoteMediaToDevice(
 
     const fileShare = await shareFiles([file], {
       title: kind === "video" ? "Giga3 AI video" : "Giga3 AI image",
+      text:
+        kind === "video"
+          ? "Video from Giga3 AI"
+          : "Image from Giga3 AI",
     });
     if (fileShare.ok) return fileShare;
 
@@ -216,22 +233,31 @@ export async function shareRemoteMedia(
     });
   }
   try {
-    const blob = await fetchAsBlob(url);
+    let blob = await fetchAsBlob(url);
+    if (kind === "image") {
+      blob = await prepareImageForGallery(blob);
+    }
     const ext = extensionFromMime(blob.type, kind === "video" ? "mp4" : "png");
     const file = new File([blob], `giga3-share.${ext}`, {
       type: blob.type || (kind === "video" ? "video/mp4" : "image/png"),
     });
     const shared = await shareFiles([file], {
       title: `Giga3 AI ${kind}`,
-      text: url,
+      text: `${kind === "video" ? "Video" : "Image"} from Giga3 AI`,
     });
     if (shared.ok) return shared;
-    return shareText({ title: `Giga3 AI ${kind}`, text: url });
+    return shareText({
+      title: `Giga3 AI ${kind}`,
+      text: url,
+    });
   } catch {
-    return shareText({ title: `Giga3 AI ${kind}`, text: url });
+    return shareText({
+      title: `Giga3 AI ${kind}`,
+      text: url,
+    });
   }
 }
 
 export async function copyUrlToClipboard(url: string): Promise<ShareResult> {
-  return copyTextToClipboard(url.trim());
+  return copyTextToClipboard(appendGiga3Attribution(url.trim()));
 }

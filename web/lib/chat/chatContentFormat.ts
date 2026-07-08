@@ -1,6 +1,7 @@
 import type { UiMessage } from "@/components/chat/MessageList";
+import { GIGA3_APP_URL, GIGA3_ATTRIBUTION_LINE } from "@/lib/share/giga3Attribution";
 
-const DEFAULT_SHARE_ORIGIN = "https://www.giga3ai.com";
+const DEFAULT_SHARE_ORIGIN = GIGA3_APP_URL;
 
 export const SHARE_TEXT_LIMIT = 12_000;
 export const COPY_SUCCESS = "Copied Successfully";
@@ -76,6 +77,7 @@ export function formatConversationMarkdown(
     lines.push(formatMessageForCopy(m.role, m.content));
     lines.push("");
   }
+  lines.push("---", "", GIGA3_ATTRIBUTION_LINE, "");
   return lines.join("\n").trimEnd() + "\n";
 }
 
@@ -88,7 +90,7 @@ export function formatConversationForShare(
   return {
     title,
     text: truncateText(md, SHARE_TEXT_LIMIT),
-    url: meta?.shareUrl,
+    url: meta?.shareUrl ?? GIGA3_APP_URL,
   };
 }
 

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { splitPostDisplay } from "@/lib/gigasocial/postDisplay";
 import { formatRelativeTime } from "@/lib/datetime";
+import { shareText } from "@/lib/share/clientShare";
 import {
   Bookmark,
   Heart,
@@ -79,14 +80,15 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
     if (!sessionToken || busy) return;
     setBusy(true);
     try {
-      const text = `${post.author.displayName}: ${post.body.slice(0, 200)}`;
-      if (navigator.share) {
-        await navigator.share({ title: "GigaSocial", text });
-      } else {
-        await navigator.clipboard.writeText(text);
+      const excerpt = `${post.author.displayName}: ${post.body.slice(0, 200)}`;
+      const result = await shareText({
+        title: "GigaSocial on Giga3 AI",
+        text: excerpt,
+      });
+      if (result.ok) {
+        setShareCount((c) => c + 1);
+        await onShare(post._id);
       }
-      setShareCount((c) => c + 1);
-      await onShare(post._id);
     } catch {
       /* cancelled */
     } finally {

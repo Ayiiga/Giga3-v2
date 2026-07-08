@@ -2,7 +2,7 @@
 
 import { ShareActionFeedback } from "@/components/chat/ShareActionFeedback";
 import { useShareAction } from "@/hooks/useShareAction";
-import { shareFiles, shareText, triggerDownload, type ShareResult } from "@/lib/share/clientShare";
+import { shareFiles, shareText, triggerAttributedImageDownload, triggerDownload, type ShareResult } from "@/lib/share/clientShare";
 import { cn } from "@/lib/utils";
 import { Download, Share2 } from "lucide-react";
 import { memo, useMemo, useRef } from "react";
@@ -132,12 +132,12 @@ export const VisualContentBlock = memo(function VisualContentBlock({
     if (format === "jpg") {
       const dataUrl = await htmlToImage.toJpeg(node, { ...options, quality: 0.95 });
       const blob = await dataUrlToBlob(dataUrl);
-      return triggerDownload(blob, `${baseName}.jpg`);
+      return triggerAttributedImageDownload(blob, `${baseName}.jpg`);
     }
 
     const dataUrl = await htmlToImage.toPng(node, options);
     const blob = await dataUrlToBlob(dataUrl);
-    return triggerDownload(blob, `${baseName}.png`);
+    return triggerAttributedImageDownload(blob, `${baseName}.png`);
   };
 
   const shareVisual = async (): Promise<ShareResult> => {

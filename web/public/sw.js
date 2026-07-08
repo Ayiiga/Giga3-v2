@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v81-stability-audit";
+const CACHE_NAME = "giga3-shell-v82-share-attribution";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

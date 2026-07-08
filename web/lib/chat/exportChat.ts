@@ -4,6 +4,7 @@ import {
   formatConversationMarkdown,
   roleLabel,
 } from "@/lib/chat/chatContentFormat";
+import { GIGA3_ATTRIBUTION_LINE } from "@/lib/share/giga3Attribution";
 
 export {
   conversationExportFilename,
@@ -80,6 +81,7 @@ export function openChatPrintView(
 <h1 style="font-size:20px;margin:0 0 8px">Giga3 AI — Chat</h1>
 ${meta?.title ? `<p style="margin:0 0 16px;color:#52525b">${escapeHtml(meta.title)}</p>` : ""}
 ${body}
+<p style="margin-top:24px;padding-top:16px;border-top:1px solid #e4e4e7;font-size:12px;color:#71717a">${escapeHtml(GIGA3_ATTRIBUTION_LINE)}</p>
 <script>window.onload=function(){window.print();}</script>
 </body></html>`;
 

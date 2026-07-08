@@ -2,7 +2,7 @@
 
 import { ShareActionFeedback } from "@/components/chat/ShareActionFeedback";
 import { useShareAction } from "@/hooks/useShareAction";
-import { shareFiles, shareText, triggerDownload, type ShareResult } from "@/lib/share/clientShare";
+import { shareFiles, shareText, triggerAttributedImageDownload, triggerDownload, type ShareResult } from "@/lib/share/clientShare";
 import { Download, Share2 } from "lucide-react";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 
@@ -146,7 +146,7 @@ export const ChartVisualBlock = memo(function ChartVisualBlock({
         ? await htmlToImage.toJpeg(node, { ...options, quality: 0.95 })
         : await htmlToImage.toPng(node, options);
     const blob = await dataUrlToBlob(dataUrl);
-    return triggerDownload(blob, `${baseName}.${format}`);
+    return triggerAttributedImageDownload(blob, `${baseName}.${format}`);
   };
 
   const shareChart = async (): Promise<ShareResult> => {
