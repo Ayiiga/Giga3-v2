@@ -5,16 +5,19 @@
  * via Supabase Dashboard → SQL Editor or `supabase db push` when linked.
  */
 
-const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "")
-  .trim()
-  .replace(/\/$/, "");
-const serviceKey = (
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.ANON_SERVICE_ROLE ||
-  ""
-)
-  .trim()
-  .replace(/[\u200B-\u200D\uFEFF]/g, "");
+function cleanEnv(value) {
+  return value
+    .trim()
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .replace(/[^\x20-\x7E]/g, "");
+}
+
+const url = cleanEnv(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || ""
+).replace(/\/$/, "");
+const serviceKey = cleanEnv(
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.ANON_SERVICE_ROLE || ""
+);
 
 if (!url || !serviceKey) {
   console.error("Requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.");
