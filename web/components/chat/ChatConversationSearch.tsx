@@ -2,6 +2,7 @@
 
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
 import { filterConversations } from "@/lib/chat/groupConversationsByDate";
+import { isValidMode, getModeDefinition } from "@/lib/aiRouter";
 import { cn } from "@/lib/utils";
 import { Search, X } from "lucide-react";
 import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
@@ -128,7 +129,11 @@ export const ChatConversationSearch = memo(function ChatConversationSearch({
                   <span className="line-clamp-1 font-medium text-foreground">
                     {conversation.title || "Untitled chat"}
                   </span>
-                  <span className="mt-0.5 text-xs capitalize text-muted">{conversation.mode}</span>
+                  <span className="mt-0.5 text-xs text-muted">
+                    {isValidMode(conversation.mode)
+                      ? getModeDefinition(conversation.mode).label
+                      : conversation.mode}
+                  </span>
                 </button>
               </li>
             ))

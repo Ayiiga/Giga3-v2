@@ -81,7 +81,7 @@ export const ChatChrome = memo(function ChatChrome({
   const router = useRouter();
 
   return (
-    <header className="chat-header-stable flex min-h-14 min-w-0 max-w-full flex-nowrap items-center gap-1 overflow-hidden border-b border-border bg-card px-2 py-2 sm:gap-3 sm:px-4">
+    <header className="chat-header-stable relative z-20 flex min-h-14 min-w-0 max-w-full flex-nowrap items-center gap-1 overflow-visible border-b border-border bg-card px-2 py-2 sm:gap-3 sm:px-4">
       <button
         type="button"
         className="touch-target rounded-xl text-foreground hover:bg-accent/10 lg:hidden"

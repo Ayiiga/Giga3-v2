@@ -3,6 +3,7 @@
 export type WorkspaceNavTarget = "modes" | "documents" | "media" | "news" | "sports" | "alerts" | "automation" | "history";
 
 export const WORKSPACE_NAV_EVENT = "giga3:workspace-nav";
+export const OPEN_SIDEBAR_EVENT = "giga3:open-sidebar";
 
 export function dispatchWorkspaceNav(target: WorkspaceNavTarget) {
   if (typeof window === "undefined") return;
@@ -20,8 +21,10 @@ export function dispatchWorkspaceNav(target: WorkspaceNavTarget) {
 }
 
 export function scrollToChatHistory() {
-  if (typeof document === "undefined") return;
-  const el = document.getElementById("history");
-  if (!el) return;
-  el.scrollIntoView({ behavior: "auto", block: "start" });
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(OPEN_SIDEBAR_EVENT));
+  requestAnimationFrame(() => {
+    const el = document.getElementById("history");
+    el?.scrollIntoView({ behavior: "auto", block: "nearest" });
+  });
 }

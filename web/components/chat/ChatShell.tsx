@@ -29,6 +29,7 @@ import {
 } from "@/lib/chat/gigaModels";
 import { findLatestImageUrlInMessages } from "@/lib/chat/parseMessageMedia";
 import { consumeGigaLearnChatHandoff } from "@/lib/gigalearn/chatHandoff";
+import { OPEN_SIDEBAR_EVENT } from "@/lib/chat/workspaceNav";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -178,6 +179,14 @@ function ChatShellInner({
 
   const handleCloseMobile = useCallback(() => {
     setMobileOpen(false);
+  }, []);
+
+  useEffect(() => {
+    function onOpenSidebar() {
+      setMobileOpen(true);
+    }
+    window.addEventListener(OPEN_SIDEBAR_EVENT, onOpenSidebar);
+    return () => window.removeEventListener(OPEN_SIDEBAR_EVENT, onOpenSidebar);
   }, []);
 
   const handleToggleSidebar = useCallback(() => {

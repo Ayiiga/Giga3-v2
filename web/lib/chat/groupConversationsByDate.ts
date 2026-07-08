@@ -1,4 +1,5 @@
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
+import { getModeDefinition, isValidMode } from "@/lib/aiRouter";
 
 export interface ConversationDateGroup {
   label: string;
@@ -50,7 +51,10 @@ export function filterConversations(
   if (!q) return conversations;
   return conversations.filter((c) => {
     const title = (c.title || "Untitled").toLowerCase();
-    const mode = c.mode.toLowerCase();
-    return title.includes(q) || mode.includes(q);
+    const modeId = c.mode.toLowerCase();
+    const modeLabel = isValidMode(c.mode)
+      ? getModeDefinition(c.mode).label.toLowerCase()
+      : modeId;
+    return title.includes(q) || modeId.includes(q) || modeLabel.includes(q);
   });
 }

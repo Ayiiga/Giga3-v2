@@ -41,17 +41,13 @@ export const ModelSelector = memo(function ModelSelector({
 
   useEffect(() => {
     if (!open) return;
-    function onPointerDown(e: MouseEvent | TouchEvent) {
+    function onPointerDown(e: PointerEvent) {
       if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     }
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("touchstart", onPointerDown);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("touchstart", onPointerDown);
-    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [open]);
 
   return (
@@ -80,7 +76,7 @@ export const ModelSelector = memo(function ModelSelector({
           id={menuId}
           role="listbox"
           aria-label="Giga3 model"
-          className="absolute bottom-full left-0 z-30 mb-2 w-[min(100vw-2rem,18rem)] overflow-hidden rounded-xl border border-border bg-card py-1 shadow-lg"
+          className="absolute left-0 top-full z-50 mt-2 w-[min(100vw-2rem,18rem)] overflow-hidden rounded-xl border border-border bg-card py-1 shadow-lg"
         >
           {availableModels.map((model) => {
             const ModelIcon = model.icon;

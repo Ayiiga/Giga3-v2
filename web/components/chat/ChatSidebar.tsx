@@ -164,7 +164,7 @@ function ChatSidebarComponent({
       )}
       <aside
         className={cn(
-          "chat-sidebar-surface fixed inset-y-0 left-0 z-50 flex w-[min(100%,320px)] flex-col border-r border-border bg-card/95 backdrop-blur-sm lg:static lg:z-0 lg:translate-x-0",
+          "chat-sidebar-surface fixed inset-y-0 left-0 z-50 flex w-[min(100%,320px)] flex-col border-r border-border bg-card lg:static lg:z-0 lg:translate-x-0",
           mobileOpen
             ? "translate-x-0 pointer-events-auto"
             : "-translate-x-full pointer-events-none lg:pointer-events-auto",
@@ -231,104 +231,106 @@ function ChatSidebarComponent({
           </div>
         </div>
 
-        <nav className="shrink-0 space-y-4 px-2 pb-2" aria-label="Chat navigation">
-          <SidebarSection title="Workspace">
-            {PRIMARY_NAV.map((item) => (
-              <SidebarNavItem key={item.label} item={item} onNavigate={onCloseMobile} />
-            ))}
-          </SidebarSection>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className="chat-sidebar-scroll min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
+            <nav className="space-y-4 px-2 pb-2 pt-1" aria-label="Chat navigation">
+              <SidebarSection title="Workspace">
+                {PRIMARY_NAV.map((item) => (
+                  <SidebarNavItem key={item.label} item={item} onNavigate={onCloseMobile} />
+                ))}
+              </SidebarSection>
 
-          <SidebarSection title="Prompts">
-            {savedPrompts.slice(0, 3).map((prompt) => (
-              <SavedPromptRow
-                key={prompt.id}
-                prompt={prompt}
-                onClose={onCloseMobile}
-                onInsert={onInsertPrompt}
-              />
-            ))}
-            <Link
-              href="/chat"
-              onClick={onCloseMobile}
-              className="flex min-h-9 items-center gap-2 rounded-xl px-3 text-xs font-medium text-accent hover:bg-accent/5"
-            >
-              <BookOpen className="h-3.5 w-3.5" aria-hidden />
-              Browse saved prompts
-            </Link>
-          </SidebarSection>
-        </nav>
-
-        <div
-          id="history"
-          className="flex min-h-0 flex-1 flex-col overflow-hidden border-t border-border px-2 pb-3 pt-2"
-        >
-          <SidebarSection title="Chat History">
-            <div className="mb-2 flex gap-1 px-1">
-              {(
-                [
-                  ["active", "Chats"],
-                  ["favorites", "Favorites"],
-                  ["archived", "Archived"],
-                ] as const
-              ).map(([key, label]) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setView(key)}
-                  className={cn(
-                    "rounded-lg px-2.5 py-1 text-[11px] font-semibold",
-                    view === key
-                      ? "bg-accent/15 text-accent"
-                      : "text-muted hover:bg-accent/5"
-                  )}
+              <SidebarSection title="Prompts">
+                {savedPrompts.slice(0, 3).map((prompt) => (
+                  <SavedPromptRow
+                    key={prompt.id}
+                    prompt={prompt}
+                    onClose={onCloseMobile}
+                    onInsert={onInsertPrompt}
+                  />
+                ))}
+                <Link
+                  href="/chat"
+                  onClick={onCloseMobile}
+                  className="flex min-h-9 items-center gap-2 rounded-xl px-3 text-xs font-medium text-accent hover:bg-accent/5"
                 >
-                  {label}
-                </button>
+                  <BookOpen className="h-3.5 w-3.5" aria-hidden />
+                  Browse saved prompts
+                </Link>
+              </SidebarSection>
+            </nav>
+
+            <div
+              id="history"
+              className="border-t border-border px-2 pb-3 pt-2"
+            >
+              <SidebarSection title="Chat History">
+                <div className="mb-2 flex gap-1 px-1">
+                  {(
+                    [
+                      ["active", "Chats"],
+                      ["favorites", "Favorites"],
+                      ["archived", "Archived"],
+                    ] as const
+                  ).map(([key, label]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setView(key)}
+                      className={cn(
+                        "rounded-lg px-2.5 py-1 text-[11px] font-semibold",
+                        view === key
+                          ? "bg-accent/15 text-accent"
+                          : "text-muted hover:bg-accent/5"
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </SidebarSection>
+
+              {conversationsLoading && (
+                <p className="px-2 py-4 text-sm text-muted">Loading chats…</p>
+              )}
+              {!conversationsLoading && filtered.length === 0 && (
+                <div className="premium-card mx-1 p-4 text-center">
+                  <BookOpen className="mx-auto h-6 w-6 text-accent" aria-hidden />
+                  <p className="mt-2 text-sm text-muted">
+                    {search ? "No matches found." : "No conversations yet."}
+                  </p>
+                </div>
+              )}
+
+              {pinned.length > 0 && (
+                <ConversationBlock
+                  label="Pinned"
+                  conversations={pinned}
+                  activeId={activeId}
+                  onSelect={onSelect}
+                  onCloseMobile={onCloseMobile}
+                  onDelete={onDelete}
+                  onPin={onPin}
+                  onArchive={onArchive}
+                  onFavorite={onFavorite}
+                />
+              )}
+
+              {groups.map((group) => (
+                <ConversationBlock
+                  key={group.label}
+                  label={group.label}
+                  conversations={group.conversations}
+                  activeId={activeId}
+                  onSelect={onSelect}
+                  onCloseMobile={onCloseMobile}
+                  onDelete={onDelete}
+                  onPin={onPin}
+                  onArchive={onArchive}
+                  onFavorite={onFavorite}
+                />
               ))}
             </div>
-          </SidebarSection>
-
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-2">
-          {conversationsLoading && (
-            <p className="px-2 py-4 text-sm text-muted">Loading chats…</p>
-          )}
-          {!conversationsLoading && filtered.length === 0 && (
-            <div className="premium-card mx-1 p-4 text-center">
-              <BookOpen className="mx-auto h-6 w-6 text-accent" aria-hidden />
-              <p className="mt-2 text-sm text-muted">
-                {search ? "No matches found." : "No conversations yet."}
-              </p>
-            </div>
-          )}
-
-          {pinned.length > 0 && (
-            <ConversationBlock
-              label="Pinned"
-              conversations={pinned}
-              activeId={activeId}
-              onSelect={onSelect}
-              onCloseMobile={onCloseMobile}
-              onDelete={onDelete}
-              onPin={onPin}
-              onArchive={onArchive}
-              onFavorite={onFavorite}
-            />
-          )}
-
-          {groups.map((group) => (
-            <ConversationBlock
-              key={group.label}
-              label={group.label}
-              conversations={group.conversations}
-              activeId={activeId}
-              onSelect={onSelect}
-              onCloseMobile={onCloseMobile}
-              onDelete={onDelete}
-              onPin={onPin}
-              onArchive={onArchive}
-              onFavorite={onFavorite}
-            />
-          ))}
           </div>
         </div>
 
@@ -612,7 +614,9 @@ function sidebarPropsEqual(prev: ChatSidebarProps, next: ChatSidebarProps): bool
     prev.onToggleCollapse === next.onToggleCollapse &&
     prev.mobileOpen === next.mobileOpen &&
     prev.onCloseMobile === next.onCloseMobile &&
-    prev.onInsertPrompt === next.onInsertPrompt
+    prev.onInsertPrompt === next.onInsertPrompt &&
+    prev.search === next.search &&
+    prev.onSearchChange === next.onSearchChange
   );
 }
 

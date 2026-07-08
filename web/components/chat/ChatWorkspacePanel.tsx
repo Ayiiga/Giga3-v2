@@ -168,7 +168,7 @@ function ChatWorkspacePanelComponent({
 
       {open && (
         <>
-          <div className="flex gap-1 border-t border-border px-2 py-2">
+          <div className="flex gap-1 overflow-x-auto overscroll-x-contain border-t border-border px-2 py-2">
             {tabBtn("modes", "Modes", MessageCircle)}
             {tabBtn("documents", "Docs", FileText)}
             {tabBtn("news", "News", Newspaper)}

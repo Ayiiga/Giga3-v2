@@ -13,7 +13,10 @@ export function conversationsEqual(
       a[i].updatedAt !== b[i].updatedAt ||
       a[i].convexConversationId !== b[i].convexConversationId ||
       a[i].sharePublic !== b[i].sharePublic ||
-      a[i].shareToken !== b[i].shareToken
+      a[i].shareToken !== b[i].shareToken ||
+      a[i].pinned !== b[i].pinned ||
+      a[i].archived !== b[i].archived ||
+      a[i].isFavorite !== b[i].isFavorite
     ) {
       return false;
     }
