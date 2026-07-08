@@ -5,14 +5,22 @@ import { useEffect, useRef } from "react";
 
 const MOBILE_MAX_WIDTH = 1023;
 
+function keyboardInsetPx(): number {
+  const vv = window.visualViewport;
+  if (!vv) return 0;
+  return Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+}
+
 function syncShellToVisualViewport(shell: HTMLElement) {
   const vv = window.visualViewport;
   if (!vv) return;
+  const inset = keyboardInsetPx();
   shell.style.top = `${vv.offsetTop}px`;
   shell.style.left = `${vv.offsetLeft}px`;
   shell.style.width = `${vv.width}px`;
   shell.style.height = `${vv.height}px`;
   shell.style.maxHeight = `${vv.height}px`;
+  shell.style.setProperty("--chat-keyboard-inset", `${inset}px`);
 }
 
 function clearShellViewport(shell: HTMLElement) {
@@ -21,18 +29,23 @@ function clearShellViewport(shell: HTMLElement) {
   shell.style.width = "";
   shell.style.height = "";
   shell.style.maxHeight = "";
+  shell.style.removeProperty("--chat-keyboard-inset");
 }
 
-function setViewportResizesContent(meta: HTMLMetaElement, enable: boolean, original: string) {
-  const current = meta.getAttribute("content") ?? "";
-  if (enable) {
-    const next = current.includes("interactive-widget=")
-      ? current.replace(/interactive-widget=\S+/g, "interactive-widget=resizes-content")
-      : `${current}, interactive-widget=resizes-content`.replace(/^,\s*/, "");
-    if (next !== current) meta.setAttribute("content", next);
+function scrollComposerIntoView() {
+  const composer = document.querySelector<HTMLElement>(".chat-composer-dock");
+  if (!composer) return;
+  const vv = window.visualViewport;
+  if (!vv) {
+    composer.scrollIntoView({ block: "end", behavior: "auto" });
     return;
   }
-  meta.setAttribute("content", original);
+  const rect = composer.getBoundingClientRect();
+  const visibleBottom = vv.offsetTop + vv.height;
+  const overflow = rect.bottom - visibleBottom + 8;
+  if (overflow > 0) {
+    window.scrollBy({ top: overflow, behavior: "auto" });
+  }
 }
 
 function isMobileChatComposerTarget(target: EventTarget | null): target is HTMLElement {
@@ -51,39 +64,50 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
     if (!shell || typeof window === "undefined") return;
 
     const vv = window.visualViewport;
-    const meta = document.querySelector('meta[name="viewport"]');
-    const originalViewport = meta?.getAttribute("content") ?? "";
-    let composerFocused = false;
+    const isMobile = () => window.innerWidth <= MOBILE_MAX_WIDTH;
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    const prevBodyPosition = body.style.position;
+    const prevBodyWidth = body.style.width;
+    const prevBodyTop = body.style.top;
+
+    if (isMobile()) {
+      html.style.overflow = "hidden";
+      body.style.overflow = "hidden";
+      body.style.position = "fixed";
+      body.style.width = "100%";
+      body.style.top = "0";
+    }
 
     let raf = 0;
     const scheduleSync = () => {
+      if (!isMobile()) return;
       cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => syncShellToVisualViewport(shell));
+      raf = requestAnimationFrame(() => {
+        syncShellToVisualViewport(shell);
+        scrollComposerIntoView();
+      });
     };
 
     const delayedSync = () => {
       scheduleSync();
-      for (const ms of [50, 120, 250, 400]) {
+      for (const ms of [50, 120, 250, 400, 600]) {
         window.setTimeout(scheduleSync, ms);
       }
     };
 
     const onComposerFocus = (e: FocusEvent) => {
-      if (!isMobileChatComposerTarget(e.target)) return;
-      composerFocused = true;
-      if (meta && window.innerWidth <= MOBILE_MAX_WIDTH) {
-        setViewportResizesContent(meta, true, originalViewport);
-      }
+      if (!isMobile() || !isMobileChatComposerTarget(e.target)) return;
       delayedSync();
     };
 
     const onComposerBlur = (e: FocusEvent) => {
-      if (!isMobileChatComposerTarget(e.target)) return;
+      if (!isMobile() || !isMobileChatComposerTarget(e.target)) return;
       window.setTimeout(() => {
         const active = document.activeElement;
         if (isMobileChatComposerTarget(active)) return;
-        composerFocused = false;
-        if (meta) setViewportResizesContent(meta, false, originalViewport);
         scheduleSync();
       }, 120);
     };
@@ -92,6 +116,7 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
       vv.addEventListener("resize", scheduleSync);
       vv.addEventListener("scroll", scheduleSync);
     }
+    window.addEventListener("resize", scheduleSync);
     window.addEventListener("orientationchange", delayedSync);
     document.addEventListener("focusin", onComposerFocus);
     document.addEventListener("focusout", onComposerBlur);
@@ -103,12 +128,15 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
         vv.removeEventListener("resize", scheduleSync);
         vv.removeEventListener("scroll", scheduleSync);
       }
+      window.removeEventListener("resize", scheduleSync);
       window.removeEventListener("orientationchange", delayedSync);
       document.removeEventListener("focusin", onComposerFocus);
       document.removeEventListener("focusout", onComposerBlur);
-      if (meta && composerFocused) {
-        setViewportResizesContent(meta, false, originalViewport);
-      }
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+      body.style.position = prevBodyPosition;
+      body.style.width = prevBodyWidth;
+      body.style.top = prevBodyTop;
       clearShellViewport(shell);
     };
   }, []);
@@ -116,7 +144,7 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
   return (
     <div
       ref={shellRef}
-      className="chat-stable fixed z-0 flex w-full max-w-full flex-col overflow-hidden bg-background text-foreground"
+      className="chat-stable chat-keyboard-shell fixed z-0 flex w-full max-w-full flex-col overflow-hidden bg-background text-foreground"
     >
       <ChatBundlePrefetch />
       <div className="flex min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-hidden">
