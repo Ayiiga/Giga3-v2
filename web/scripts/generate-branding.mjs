@@ -447,6 +447,13 @@ function buildManifest() {
         url: "/marketplace/",
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
       },
+      {
+        name: "GigaSocial",
+        short_name: "Social",
+        description: "AI-powered community feed",
+        url: "/gigasocial/",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+      },
     ],
   };
 }
