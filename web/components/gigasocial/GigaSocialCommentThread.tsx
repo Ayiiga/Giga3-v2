@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import type { SocialComment } from "@/lib/gigasocial/types";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -25,7 +26,7 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const comments = data?.comments ?? [];
+  const comments = (data?.comments ?? []) as SocialComment[];
 
   async function submit() {
     const trimmed = body.trim();
@@ -88,9 +89,16 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder="Write a comment…"
+          aria-label="Comment text"
           className="min-h-10 flex-1 rounded-xl border border-border px-3 py-2 text-sm"
         />
-        <Button type="button" disabled={busy || !body.trim()} onClick={() => void submit()} className="min-h-10">
+        <Button
+          type="button"
+          disabled={busy || !body.trim()}
+          onClick={() => void submit()}
+          className="min-h-10"
+          aria-label="Post comment"
+        >
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </Button>
       </div>

@@ -90,7 +90,7 @@ function renderMarkdownBlock(block: MarkdownBlock, key: number): ReactNode {
       );
     case "table":
       return (
-        <div key={key} className="chat-md-table-wrap">
+        <div key={key} className="chat-md-table-wrap" role="region" aria-label="Data table">
           <table className="chat-md-table">
             <thead>
               <tr>

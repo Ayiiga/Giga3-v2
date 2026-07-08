@@ -6,6 +6,15 @@ export type SocialAuthor = {
   avatarUrl?: string;
 };
 
+export type SocialComment = {
+  _id: string;
+  postId: string;
+  body: string;
+  parentId?: string;
+  createdAt: number;
+  author: SocialAuthor;
+};
+
 export type SocialPost = {
   _id: string;
   body: string;

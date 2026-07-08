@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingState } from "@/components/ui/LoadingState";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import dynamic from "next/dynamic";
 
@@ -8,7 +9,7 @@ const GigaSocialClient = dynamic(
     import("@/components/gigasocial/GigaSocialClient").then((m) => ({
       default: m.GigaSocialClient,
     })),
-  { ssr: false, loading: () => <p className="text-center text-muted">Loading…</p> }
+  { ssr: false, loading: () => <LoadingState label="Loading GigaSocial…" /> }
 );
 
 export function GigaSocialPageRoot() {
