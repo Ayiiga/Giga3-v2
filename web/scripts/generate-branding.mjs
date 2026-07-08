@@ -475,6 +475,13 @@ function buildManifest() {
         url: "/workspace/",
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
       },
+      {
+        name: "Automation",
+        short_name: "Auto",
+        description: "AI workflows and intelligent automation",
+        url: "/automation/",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+      },
     ],
   };
 }

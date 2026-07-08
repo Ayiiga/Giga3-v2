@@ -1,5 +1,6 @@
 "use client";
 
+import { AutomationPanel } from "@/components/automation/AutomationPanel";
 import { DocumentTemplatePicker } from "@/components/chat/DocumentTemplatePicker";
 import { ImageStudioQuickPanel } from "@/components/chat/ImageStudioQuickPanel";
 import { ToolSelector } from "@/components/chat/ToolSelector";
@@ -20,7 +21,7 @@ import {
 } from "@/lib/chat/workspaceNav";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
-import { Bell, BookOpen, ChevronDown, FileText, Loader2, MessageCircle, Newspaper, Sparkles, Trophy } from "lucide-react";
+import { Bell, BookOpen, ChevronDown, FileText, Loader2, MessageCircle, Newspaper, Sparkles, Trophy, Workflow } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo, useEffect, useState } from "react";
 
@@ -34,7 +35,7 @@ interface ChatWorkspacePanelProps {
   onError: (message: string) => void;
 }
 
-type WorkspaceTab = "modes" | "documents" | "media" | "news" | "sports" | "alerts";
+type WorkspaceTab = "modes" | "documents" | "media" | "news" | "sports" | "alerts" | "automation";
 
 function ChatWorkspacePanelComponent({
   mode,
@@ -81,7 +82,7 @@ function ChatWorkspacePanelComponent({
         scrollToChatHistory();
         return;
       }
-      if (target === "modes" || target === "documents" || target === "media" || target === "news" || target === "sports" || target === "alerts") {
+      if (target === "modes" || target === "documents" || target === "media" || target === "news" || target === "sports" || target === "alerts" || target === "automation") {
         setNavigatedOpen(true);
         setOpen(true);
         setTab(target);
@@ -154,6 +155,7 @@ function ChatWorkspacePanelComponent({
           {tab === "news" && "News desk"}
           {tab === "sports" && "Sports desk"}
           {tab === "alerts" && "Push alerts"}
+          {tab === "automation" && "Automation"}
           <ChevronDown
             className={cn(
               "h-4 w-4 text-muted",
@@ -172,13 +174,14 @@ function ChatWorkspacePanelComponent({
             {tabBtn("news", "News", Newspaper)}
             {tabBtn("sports", "Sports", Trophy)}
             {tabBtn("alerts", "Alerts", Bell)}
+            {tabBtn("automation", "Auto", Workflow)}
             {tabBtn("media", "Media", Sparkles)}
           </div>
 
           <div
             className={cn(
               "overflow-y-auto overscroll-y-contain border-t border-border bg-background",
-              tab === "news" || tab === "sports" || tab === "alerts"
+              tab === "news" || tab === "sports" || tab === "alerts" || tab === "automation"
                 ? "max-h-[min(50vh,420px)]"
                 : tab === "modes"
                   ? "max-h-[min(42vh,300px)]"
@@ -253,6 +256,16 @@ function ChatWorkspacePanelComponent({
               <div id="alerts" className="space-y-3 p-3 sm:p-4">
                 <GenerationAlertsPanel embedded />
                 <PushAlertsPanel embedded />
+              </div>
+            )}
+
+            {tab === "automation" && (
+              <div id="automation">
+                <AutomationPanel
+                  embedded
+                  disabled={disabled}
+                  onInsertChat={onInsertDocument}
+                />
               </div>
             )}
 

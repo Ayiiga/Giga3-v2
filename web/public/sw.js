@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v78-steps-6-7-merge";
+const CACHE_NAME = "giga3-shell-v79-steps-6-7-8-deploy";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
