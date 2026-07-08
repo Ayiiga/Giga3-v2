@@ -88,6 +88,46 @@ export const socialNotificationTypeValidator = v.union(
   v.literal("creator")
 );
 
+/** Enterprise / education workspace — isolated from consumer users table. */
+export const orgTypeValidator = v.union(
+  v.literal("school"),
+  v.literal("enterprise")
+);
+
+export const orgRoleValidator = v.union(
+  v.literal("org_admin"),
+  v.literal("school_admin"),
+  v.literal("teacher"),
+  v.literal("parent"),
+  v.literal("student"),
+  v.literal("creator"),
+  v.literal("standard_user")
+);
+
+export const orgMemberStatusValidator = v.union(
+  v.literal("active"),
+  v.literal("invited"),
+  v.literal("removed")
+);
+
+export const orgClassStatusValidator = v.union(
+  v.literal("active"),
+  v.literal("archived")
+);
+
+export const orgAssignmentStatusValidator = v.union(
+  v.literal("draft"),
+  v.literal("published"),
+  v.literal("closed")
+);
+
+export const orgSubmissionStatusValidator = v.union(
+  v.literal("pending"),
+  v.literal("submitted"),
+  v.literal("graded"),
+  v.literal("late")
+);
+
 export default defineSchema({
   users: defineTable({
     email: v.string(),
@@ -681,4 +721,117 @@ export default defineSchema({
     .index("by_follower", ["followerId"])
     .index("by_following", ["followingId"])
     .index("by_pair", ["followerId", "followingId"]),
+
+  /** Enterprise & education — org-scoped data isolated from consumer chat history. */
+  organizations: defineTable({
+    slug: v.string(),
+    name: v.string(),
+    type: orgTypeValidator,
+    description: v.optional(v.string()),
+    settingsJson: v.optional(v.string()),
+    creditPool: v.number(),
+    status: v.union(v.literal("active"), v.literal("suspended")),
+    createdBy: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_slug", ["slug"]),
+
+  orgMembers: defineTable({
+    orgId: v.id("organizations"),
+    userId: v.string(),
+    role: orgRoleValidator,
+    status: orgMemberStatusValidator,
+    displayName: v.optional(v.string()),
+    invitedBy: v.optional(v.string()),
+    joinedAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_user", ["userId"])
+    .index("by_org_user", ["orgId", "userId"])
+    .index("by_org_role", ["orgId", "role"]),
+
+  orgClasses: defineTable({
+    orgId: v.id("organizations"),
+    name: v.string(),
+    subject: v.optional(v.string()),
+    gradeLevel: v.optional(v.string()),
+    teacherId: v.string(),
+    description: v.optional(v.string()),
+    academicYear: v.optional(v.string()),
+    status: orgClassStatusValidator,
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_teacher", ["teacherId"])
+    .index("by_org_teacher", ["orgId", "teacherId"]),
+
+  orgEnrollments: defineTable({
+    orgId: v.id("organizations"),
+    classId: v.id("orgClasses"),
+    studentId: v.string(),
+    parentId: v.optional(v.string()),
+    status: v.union(v.literal("active"), v.literal("withdrawn")),
+    enrolledAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_class", ["classId"])
+    .index("by_student", ["studentId"])
+    .index("by_org_student", ["orgId", "studentId"])
+    .index("by_parent", ["parentId"])
+    .index("by_class_student", ["classId", "studentId"]),
+
+  orgAssignments: defineTable({
+    orgId: v.id("organizations"),
+    classId: v.id("orgClasses"),
+    teacherId: v.string(),
+    title: v.string(),
+    description: v.string(),
+    dueAt: v.optional(v.number()),
+    status: orgAssignmentStatusValidator,
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_class", ["classId"])
+    .index("by_org", ["orgId"])
+    .index("by_teacher", ["teacherId"])
+    .index("by_org_status", ["orgId", "status"]),
+
+  orgAssignmentSubmissions: defineTable({
+    orgId: v.id("organizations"),
+    assignmentId: v.id("orgAssignments"),
+    studentId: v.string(),
+    content: v.optional(v.string()),
+    status: orgSubmissionStatusValidator,
+    score: v.optional(v.number()),
+    feedback: v.optional(v.string()),
+    submittedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_assignment", ["assignmentId"])
+    .index("by_student", ["studentId"])
+    .index("by_assignment_student", ["assignmentId", "studentId"])
+    .index("by_org", ["orgId"]),
+
+  orgAuditLogs: defineTable({
+    orgId: v.id("organizations"),
+    actorId: v.string(),
+    action: v.string(),
+    targetType: v.optional(v.string()),
+    targetId: v.optional(v.string()),
+    metadataJson: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_org_created", ["orgId", "createdAt"]),
+
+  orgUsageDaily: defineTable({
+    orgId: v.id("organizations"),
+    dateKey: v.string(),
+    aiRequests: v.number(),
+    learningSessions: v.number(),
+    assignmentsSubmitted: v.number(),
+    creditsUsed: v.number(),
+    updatedAt: v.number(),
+  }).index("by_org_date", ["orgId", "dateKey"]),
 });

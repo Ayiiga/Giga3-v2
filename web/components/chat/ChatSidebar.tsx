@@ -91,6 +91,7 @@ const PRIMARY_NAV = [
 
 const ACCOUNT_NAV = [
   { href: "/wallet", label: "GigaWallet", icon: CreditCard },
+  { href: "/workspace", label: "Workspace", icon: UsersRound },
   { href: "/subscribe", label: "Subscription", icon: Sparkles },
   { href: "/credits", label: "Credits", icon: Coins },
   { href: "/chat", label: "Settings", icon: Settings },

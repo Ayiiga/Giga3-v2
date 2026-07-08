@@ -468,6 +468,13 @@ function buildManifest() {
         url: "/wallet/",
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
       },
+      {
+        name: "Workspace",
+        short_name: "Workspace",
+        description: "School and organization dashboards",
+        url: "/workspace/",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+      },
     ],
   };
 }
