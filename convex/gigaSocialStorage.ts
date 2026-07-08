@@ -2,6 +2,7 @@ import { action, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
 import { requireSession } from "./auth";
+import { sanitizeHttpHeaderValue } from "./sanitizeHttpHeader";
 import { sessionArgs } from "./validators";
 
 const SOCIAL_IMAGE_BUCKET = "social-images";
@@ -99,7 +100,7 @@ export const prepareMediaUpload = action({
     const objectPath = buildSocialObjectPath(userId, args.fileName);
 
     const baseUrl = process.env.SUPABASE_URL?.trim()?.replace(/\/$/, "");
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+    const serviceKey = sanitizeHttpHeaderValue(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
     if (baseUrl && serviceKey) {
       const signRes = await fetch(
