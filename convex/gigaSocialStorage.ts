@@ -103,37 +103,41 @@ export const prepareMediaUpload = action({
     const serviceKey = sanitizeHttpHeaderValue(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
     if (baseUrl && serviceKey) {
-      const signRes = await fetch(
-        `${baseUrl}/storage/v1/object/upload/sign/${bucket}/${objectPath}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${serviceKey}`,
-            apikey: serviceKey,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ expiresIn: 3600 }),
-        }
-      );
+      try {
+        const signRes = await fetch(
+          `${baseUrl}/storage/v1/object/upload/sign/${bucket}/${objectPath}`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${serviceKey}`,
+              apikey: serviceKey,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ expiresIn: 3600 }),
+          }
+        );
 
-      if (signRes.ok) {
-        const signed = (await signRes.json()) as {
-          url?: string;
-          token?: string;
-          path?: string;
-        };
-        if (signed.url && signed.token) {
-          const publicUrl = `${baseUrl}/storage/v1/object/public/${bucket}/${objectPath}`;
-          return {
-            provider: "supabase" as const,
-            bucket,
-            objectPath,
-            uploadUrl: signed.url,
-            uploadToken: signed.token,
-            publicUrl,
-            contentType: args.contentType,
+        if (signRes.ok) {
+          const signed = (await signRes.json()) as {
+            url?: string;
+            token?: string;
+            path?: string;
           };
+          if (signed.url && signed.token) {
+            const publicUrl = `${baseUrl}/storage/v1/object/public/${bucket}/${objectPath}`;
+            return {
+              provider: "supabase" as const,
+              bucket,
+              objectPath,
+              uploadUrl: signed.url,
+              uploadToken: signed.token,
+              publicUrl,
+              contentType: args.contentType,
+            };
+          }
         }
+      } catch {
+        /* Supabase unreachable — fall through to Convex storage */
       }
     }
 
