@@ -177,6 +177,8 @@ export const listFeed = query({
       rows = rows.filter((r) => r.createdAt < args.cursor!);
     }
 
+    rows.sort((a, b) => b.createdAt - a.createdAt);
+
     const slice = rows.slice(0, cap);
     const authorCache = new Map<string, ReturnType<typeof toPublicAuthor>>();
 
