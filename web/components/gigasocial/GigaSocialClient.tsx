@@ -36,6 +36,7 @@ function GigaSocialContent() {
   const [communitySlug, setCommunitySlug] = useState<string | undefined>(
     params.get("community") ?? undefined
   );
+  const highlightPostId = params.get("highlight")?.trim() || undefined;
 
   const notifications = useQuery(
     api.gigaSocial.listNotifications,
@@ -60,7 +61,9 @@ function GigaSocialContent() {
     }
     const community = params.get("community");
     if (community) setCommunitySlug(community);
-  }, [params]);
+    const highlight = params.get("highlight");
+    if (highlight && section !== "feed") setSection("feed");
+  }, [params, section]);
 
   if (!mounted || !sessionToken) {
     return <p className="text-center text-base text-muted">Redirecting…</p>;
@@ -151,6 +154,7 @@ function GigaSocialContent() {
             <GigaSocialFeedPanel
               sessionToken={sessionToken}
               communitySlug={communitySlug}
+              highlightPostId={highlightPostId}
             />
           </>
         )}

@@ -12,14 +12,16 @@ import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { useMutation, useQuery } from "convex/react";
 import { MessageCircle } from "lucide-react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   sessionToken,
   communitySlug,
+  highlightPostId,
 }: {
   sessionToken: string | null;
   communitySlug?: string;
+  highlightPostId?: string;
 }) {
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [extraPosts, setExtraPosts] = useState<SocialPost[]>([]);
@@ -37,7 +39,18 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const recordShare = useMutation(api.gigaSocial.recordShare);
   const deletePost = useMutation(api.gigaSocial.deletePost);
 
-  const posts = [...(cursor ? extraPosts : []), ...(feed?.posts ?? [])] as SocialPost[];
+  const posts = useMemo(
+    () => [...(cursor ? extraPosts : []), ...(feed?.posts ?? [])] as SocialPost[],
+    [cursor, extraPosts, feed?.posts]
+  );
+
+  useEffect(() => {
+    if (!highlightPostId || !posts.length) return;
+    const el = document.getElementById(`gigasocial-post-${highlightPostId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [highlightPostId, posts]);
 
   const handleCreate = useCallback(
     async (args: {
@@ -87,7 +100,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       ) : (
         <ul className="space-y-4">
           {posts.map((post) => (
-            <li key={post._id}>
+            <li key={post._id} id={`gigasocial-post-${post._id}`}>
               <GigaSocialPostCard
                 post={post}
                 sessionToken={sessionToken}
