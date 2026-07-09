@@ -86,7 +86,7 @@ export const ChatChrome = memo(function ChatChrome({
   const router = useRouter();
 
   return (
-    <header className="chat-header-stable relative z-20 flex min-h-14 min-w-0 max-w-full flex-nowrap items-center gap-1 overflow-visible border-b border-border bg-card px-2 py-2 sm:gap-3 sm:px-4">
+    <header className="chat-header-stable relative z-20 flex min-h-14 min-w-0 max-w-full flex-nowrap items-center gap-1 overflow-x-clip border-b border-border bg-card px-2 py-2 sm:gap-3 sm:px-4">
       <button
         type="button"
         className="touch-target rounded-xl text-foreground hover:bg-accent/10 lg:hidden"
@@ -115,9 +115,9 @@ export const ChatChrome = memo(function ChatChrome({
         />
       </div>
 
-      <span className="ml-auto flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
+      <span className="ml-auto flex min-w-0 shrink items-center gap-0.5 sm:gap-2">
         <GigaSocialChatButton />
-        <PlatformChromeHost conversations={searchConversations} compact />
+        <PlatformChromeHost conversations={searchConversations} compact ultraCompact />
         <ThemeToggle className="hidden sm:inline-flex" />
         <ChatActionsMenu
           ref={chatActionsRef}

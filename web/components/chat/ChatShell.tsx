@@ -388,7 +388,7 @@ function ChatShellInner({
       />
 
       <div className="chat-main-column relative z-0 grid min-h-0 min-w-0 flex-1 grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
-        <div className="shrink-0">
+        <div className="chat-header-band min-w-0 max-w-full shrink-0 overflow-x-clip">
           <ChatChrome
             email={email}
             mounted={mounted}

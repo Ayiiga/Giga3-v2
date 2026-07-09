@@ -433,7 +433,10 @@ button:focus-visible {
 
 .chat-markdown .chat-md-ul,
 .chat-markdown .chat-md-ol {
-  @apply mb-3 ml-5 space-y-1.5 last:mb-0;
+  @apply mb-3 space-y-1.5 last:mb-0;
+  padding-inline-start: 1.25rem;
+  margin-inline-start: 0;
+  max-width: 100%;
 }
 
 .chat-markdown .chat-md-ul {

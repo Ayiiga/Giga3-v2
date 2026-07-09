@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v89-dashboard-stable";
+const CACHE_NAME = "giga3-shell-v90-chat-dashboard-fix";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

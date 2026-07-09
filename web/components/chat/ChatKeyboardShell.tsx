@@ -148,7 +148,7 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
   return (
     <div
       ref={shellRef}
-      className="chat-stable chat-keyboard-shell fixed z-0 flex w-full max-w-full flex-col overflow-hidden bg-background text-foreground"
+      className="chat-stable chat-keyboard-shell fixed z-0 flex w-full max-w-full flex-col overflow-x-clip overflow-y-hidden bg-background text-foreground"
     >
       <ChatBundlePrefetch />
       <div className="flex min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-hidden">
