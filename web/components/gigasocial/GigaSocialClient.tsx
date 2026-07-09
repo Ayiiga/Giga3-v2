@@ -148,8 +148,8 @@ function GigaSocialContent() {
         {section === "feed" && (
           <>
             <SectionIntro
-              title={communitySlug ? `Community: ${communitySlug}` : "Social feed"}
-              description="Text, images, AI content, education, and creator posts from the community."
+              title={communitySlug ? `Community: ${communitySlug}` : "Latest posts"}
+              description="Newest community posts first — tap the pen icon to share something."
             />
             <GigaSocialFeedPanel
               sessionToken={sessionToken}

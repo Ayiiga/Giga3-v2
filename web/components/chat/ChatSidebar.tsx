@@ -172,12 +172,23 @@ function ChatSidebarComponent({
         )}
       >
         <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
-          <Link href="/" onClick={onCloseMobile} className="flex min-w-0 items-center gap-2.5">
-            <BrandLogo size={28} className="shrink-0 shadow-none ring-0" />
-            <span className="truncate text-base font-semibold text-foreground">
-              {siteConfig.name}
-            </span>
-          </Link>
+          <div className="flex min-w-0 items-center gap-2">
+            <Link href="/" onClick={onCloseMobile} className="flex min-w-0 items-center gap-2.5">
+              <BrandLogo size={28} className="shrink-0 shadow-none ring-0" />
+              <span className="truncate text-base font-semibold text-foreground">
+                {siteConfig.name}
+              </span>
+            </Link>
+            <Link
+              href={siteConfig.links.gigasocial}
+              onClick={onCloseMobile}
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-card text-muted hover:border-accent/30 hover:bg-accent/5 hover:text-accent"
+              aria-label="Open GigaSocial feed"
+              title="GigaSocial"
+            >
+              <UsersRound className="h-4 w-4" aria-hidden />
+            </Link>
+          </div>
           <button
             type="button"
             onClick={onCloseMobile}

@@ -42,6 +42,7 @@ interface GigaSocialComposerProps {
   communitySlug?: string;
   disabled?: boolean;
   sessionToken: string;
+  onPosted?: () => void;
   onSubmit: (args: {
     body: string;
     postType: SocialPostTypeId;
@@ -54,6 +55,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   communitySlug,
   disabled,
   sessionToken,
+  onPosted,
   onSubmit,
 }: GigaSocialComposerProps) {
   const [body, setBody] = useState("");
@@ -222,6 +224,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       clearPendingMedia();
       setPostType("text");
       setSuccess("Post published successfully.");
+      onPosted?.();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not create post.");
     } finally {

@@ -5,7 +5,7 @@ import { Container } from "@/components/ui/Container";
 import { InstallButton } from "@/components/pwa/InstallButton";
 import { navLinks, siteConfig } from "@/lib/site";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import { Menu, X } from "lucide-react";
+import { Menu, UsersRound, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -19,10 +19,20 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-white">
       <Container className="flex min-h-14 items-center justify-between gap-4 py-2">
-        <Link href="/" className="flex items-center gap-2.5 text-base font-semibold tracking-tight text-foreground">
-          <BrandLogo size={32} priority className="shadow-none ring-0" />
-          <span>{siteConfig.name}</span>
-        </Link>
+        <div className="flex min-w-0 items-center gap-2">
+          <Link href="/" className="flex min-w-0 items-center gap-2.5 text-base font-semibold tracking-tight text-foreground">
+            <BrandLogo size={32} priority className="shadow-none ring-0" />
+            <span>{siteConfig.name}</span>
+          </Link>
+          <Link
+            href={siteConfig.links.gigasocial}
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-white text-muted hover:border-accent/30 hover:bg-accent/5 hover:text-accent"
+            aria-label="Open GigaSocial feed"
+            title="GigaSocial"
+          >
+            <UsersRound className="h-4 w-4" aria-hidden />
+          </Link>
+        </div>
 
         <nav className="hidden items-center gap-6 md:flex" aria-label="Main">
           {navLinks.map((link) => (
