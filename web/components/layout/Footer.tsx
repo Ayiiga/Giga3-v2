@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/Container";
+import { VisionTagline } from "@/components/vision/VisionTagline";
 import { navLinks, siteConfig } from "@/lib/site";
 import { legalNavLinks } from "@/lib/legal/content";
 import { BrandLogo } from "@/components/brand/BrandLogo";
@@ -17,6 +18,7 @@ export function Footer() {
               {siteConfig.name}
             </Link>
             <p className="mt-4 max-w-sm text-sm text-muted">{siteConfig.description}</p>
+            <VisionTagline className="mt-3 max-w-sm" variant="subtle" />
             <p className="mt-3 max-w-sm text-xs leading-relaxed text-muted">
               Designed and founded by{" "}
               <span className="text-foreground">

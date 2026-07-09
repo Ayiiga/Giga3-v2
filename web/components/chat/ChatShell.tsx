@@ -30,12 +30,19 @@ import {
 import { findLatestImageUrlInMessages } from "@/lib/chat/parseMessageMedia";
 import { consumeGigaLearnChatHandoff } from "@/lib/gigalearn/chatHandoff";
 import { OPEN_SIDEBAR_EVENT } from "@/lib/chat/workspaceNav";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { usePlatformProfile } from "@/hooks/usePlatformProfile";
+import { useRemoteConfig } from "@/hooks/useRemoteConfig";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function ChatShell() {
   if (isSupabaseDataBackend()) {
-    return <ChatShellInner usePlatform={useSupabaseChatPlatform} />;
+    return (
+      <ConvexAppShell>
+        <ChatShellInner usePlatform={useSupabaseChatPlatform} />
+      </ConvexAppShell>
+    );
   }
 
   return (
@@ -89,6 +96,7 @@ function ChatShellInner({
   const [modelTier, setModelTier] = useState<GigaModelId>("fast");
   const [handoffAttachments, setHandoffAttachments] = useState<PreparedChatAttachment[]>([]);
   const [conversationSearch, setConversationSearch] = useState("");
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const insertRef = useRef<((text: string) => void) | null>(null);
   const chatActionsRef = useRef<ChatActionsMenuHandle | null>(null);
 
@@ -127,6 +135,30 @@ function ChatShellInner({
     interestProfileJson,
     uploadUsage,
   } = usePlatform();
+
+  const { needsOnboarding, completeOnboarding, trackDailyActivity } = usePlatformProfile();
+  const { isEnabled } = useRemoteConfig();
+  const syncAchievements = useMutation(api.platformGrowth.syncAchievements);
+
+  useEffect(() => {
+    const token = getSessionToken();
+    if (!token) return;
+    void trackDailyActivity();
+    void syncAchievements({ sessionToken: token });
+  }, [trackDailyActivity, syncAchievements]);
+
+  const searchConversations = useMemo(
+    () =>
+      conversations.map((c) => ({
+        id: c._id,
+        title: c.title,
+        mode: c.mode,
+      })),
+    [conversations]
+  );
+
+  const showOnboarding =
+    isEnabled("onboarding.enabled") && needsOnboarding && !onboardingDismissed;
 
   const activeConversation = useMemo(
     () => conversations.find((c) => c._id === activeId),
@@ -330,6 +362,7 @@ function ChatShellInner({
   }
 
   return (
+    <>
     <div className="flex h-full min-h-0 min-w-0 max-w-full flex-1 overflow-hidden bg-background">
       <ChatOverflowProbe messageCount={messages.length} />
       <ChatSidebar
@@ -374,6 +407,7 @@ function ChatShellInner({
             onOpenSidebar={handleOpenSidebar}
             onSetPublicShare={onSetPublicShare}
             chatActionsRef={chatActionsRef}
+            searchConversations={searchConversations}
           />
 
           <div className="border-b border-border bg-card px-2 py-2 sm:px-4">
@@ -441,5 +475,15 @@ function ChatShellInner({
         />
       </div>
     </div>
+
+    {showOnboarding && (
+      <OnboardingWizard
+        onComplete={(role, stepsSeen) => {
+          void completeOnboarding(role, stepsSeen);
+        }}
+        onDismiss={() => setOnboardingDismissed(true)}
+      />
+    )}
+    </>
   );
 }

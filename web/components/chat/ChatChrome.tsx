@@ -3,6 +3,7 @@
 import { ChatActionsMenu, type ChatActionsMenuHandle } from "@/components/chat/ChatActionsMenu";
 import { ModelSelector } from "@/components/chat/ModelSelector";
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
+import { PlatformChromeHost } from "@/components/platform/PlatformChromeHost";
 import type { UiMessage } from "@/components/chat/MessageList";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
@@ -34,6 +35,7 @@ interface ChatChromeProps {
     enabled: boolean
   ) => Promise<{ shareToken: string | null; sharePublic: boolean }>;
   chatActionsRef?: Ref<ChatActionsMenuHandle>;
+  searchConversations?: { id: string; title: string; mode: string }[];
 }
 
 function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean {
@@ -54,7 +56,8 @@ function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean
     prev.onModelTierChange === next.onModelTierChange &&
     prev.onOpenSidebar === next.onOpenSidebar &&
     prev.onSetPublicShare === next.onSetPublicShare &&
-    prev.chatActionsRef === next.chatActionsRef
+    prev.chatActionsRef === next.chatActionsRef &&
+    prev.searchConversations === next.searchConversations
   );
 }
 
@@ -75,6 +78,7 @@ export const ChatChrome = memo(function ChatChrome({
   onOpenSidebar,
   onSetPublicShare,
   chatActionsRef,
+  searchConversations,
 }: ChatChromeProps) {
   useRenderDiagnostic("ChatChrome");
 
@@ -111,6 +115,7 @@ export const ChatChrome = memo(function ChatChrome({
       </div>
 
       <span className="ml-auto flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
+        <PlatformChromeHost conversations={searchConversations} compact />
         <ThemeToggle className="hidden sm:inline-flex" />
         <ChatActionsMenu
           ref={chatActionsRef}

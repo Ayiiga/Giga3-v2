@@ -1,6 +1,7 @@
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { VisionTagline } from "@/components/vision/VisionTagline";
 import { branding } from "@/lib/branding";
 import { WifiOff } from "lucide-react";
 
@@ -26,6 +27,7 @@ export default function OfflinePage() {
         <p className="mx-auto mt-2 max-w-md text-sm text-muted">
           Reconnect to continue signed-in work or browse cached marketing pages.
         </p>
+        <VisionTagline className="mx-auto mt-4 max-w-md" variant="subtle" />
         <ButtonLink href="/" variant="primary" className="mt-8">
           Back to home
         </ButtonLink>

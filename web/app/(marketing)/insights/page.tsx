@@ -205,6 +205,10 @@ function InsightsInner() {
         <StatCard label="Install conversion" value={`${stats.installConversionRate}%`} />
         <StatCard label="Online registered" value={stats.onlineRegisteredUsers} />
         <StatCard label="Online PWA" value={stats.onlinePwaSessions} />
+        <StatCard label="Credits used today" value={stats.creditsUsedToday ?? 0} />
+        <StatCard label="Marketplace revenue today" value={`GHS ${stats.marketplaceRevenueToday ?? 0}`} />
+        <StatCard label="Active subscriptions" value={stats.activeSubscriptions ?? 0} />
+        <StatCard label="Open feedback" value={stats.openFeedbackCount ?? 0} />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-2">

@@ -1,0 +1,23 @@
+
+/* Accessibility — v1.0.1 platform enhancements */
+html.giga3-large-text {
+  font-size: 112.5%;
+}
+
+html.giga3-reduced-motion *,
+html.giga3-reduced-motion *::before,
+html.giga3-reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:not(.giga3-reduced-motion) *,
+  html:not(.giga3-reduced-motion) *::before,
+  html:not(.giga3-reduced-motion) *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

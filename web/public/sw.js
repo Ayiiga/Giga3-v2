@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v84-sanitize-url-fix";
+const CACHE_NAME = "giga3-shell-v85-vision-growth";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

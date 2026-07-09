@@ -145,6 +145,44 @@ export const orgSubmissionStatusValidator = v.union(
   v.literal("late")
 );
 
+export const userRoleValidator = v.union(
+  v.literal("student"),
+  v.literal("teacher"),
+  v.literal("parent"),
+  v.literal("creator"),
+  v.literal("business"),
+  v.literal("developer"),
+  v.literal("enterprise"),
+  v.literal("general")
+);
+
+export const platformNotificationCategoryValidator = v.union(
+  v.literal("ai_task"),
+  v.literal("marketplace"),
+  v.literal("wallet"),
+  v.literal("learning"),
+  v.literal("creator"),
+  v.literal("system"),
+  v.literal("security"),
+  v.literal("social"),
+  v.literal("announcement")
+);
+
+export const feedbackSubmissionTypeValidator = v.union(
+  v.literal("general"),
+  v.literal("bug"),
+  v.literal("feature"),
+  v.literal("ai_rating"),
+  v.literal("incorrect_info")
+);
+
+export const feedbackSubmissionStatusValidator = v.union(
+  v.literal("open"),
+  v.literal("reviewing"),
+  v.literal("resolved"),
+  v.literal("closed")
+);
+
 export default defineSchema({
   users: defineTable({
     email: v.string(),
@@ -166,7 +204,20 @@ export default defineSchema({
     videoCredits: v.optional(v.number()),
     videoSubscriptionPlan: v.optional(v.string()),
     videoSubscriptionExpiresAt: v.optional(v.number()),
-  }).index("by_email", ["email"]),
+    /** Platform v1.0.1 — user role for onboarding & personalization */
+    userRole: v.optional(userRoleValidator),
+    /** JSON OnboardingState */
+    onboardingState: v.optional(v.string()),
+    /** JSON UserPreferences — privacy-respecting personalization */
+    userPreferences: v.optional(v.string()),
+    onboardingCompletedAt: v.optional(v.number()),
+    referralCode: v.optional(v.string()),
+    referredByUserId: v.optional(v.string()),
+    learningStreakDays: v.optional(v.number()),
+    lastActiveDateKey: v.optional(v.string()),
+  })
+    .index("by_email", ["email"])
+    .index("by_referralCode", ["referralCode"]),
 
   /** Email + password credentials (scrypt hash). Separate from users for security. */
   userCredentials: defineTable({
@@ -860,4 +911,71 @@ export default defineSchema({
     creditsUsed: v.number(),
     updatedAt: v.number(),
   }).index("by_org_date", ["orgId", "dateKey"]),
+
+  platformNotifications: defineTable({
+    userId: v.string(),
+    category: platformNotificationCategoryValidator,
+    title: v.string(),
+    body: v.string(),
+    href: v.optional(v.string()),
+    read: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_user_read", ["userId", "read"]),
+
+  userFeedbackSubmissions: defineTable({
+    userId: v.optional(v.string()),
+    type: feedbackSubmissionTypeValidator,
+    status: feedbackSubmissionStatusValidator,
+    title: v.string(),
+    body: v.string(),
+    screenshotDataUrl: v.optional(v.string()),
+    messageId: v.optional(v.string()),
+    conversationId: v.optional(v.string()),
+    rating: v.optional(v.number()),
+    adminNote: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_status", ["status", "createdAt"]),
+
+  userAchievements: defineTable({
+    userId: v.string(),
+    badgeId: v.string(),
+    label: v.string(),
+    description: v.string(),
+    earnedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_badge", ["userId", "badgeId"]),
+
+  referralEvents: defineTable({
+    referrerUserId: v.string(),
+    referredUserId: v.string(),
+    referralCode: v.string(),
+    rewardCredits: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_referrer", ["referrerUserId"])
+    .index("by_referred", ["referredUserId"]),
+
+  remoteConfigEntries: defineTable({
+    key: v.string(),
+    value: v.string(),
+    description: v.optional(v.string()),
+    enabled: v.boolean(),
+    rolloutPercent: v.number(),
+    updatedAt: v.number(),
+  }).index("by_key", ["key"]),
+
+  systemHealthSnapshots: defineTable({
+    service: v.string(),
+    status: v.union(v.literal("healthy"), v.literal("degraded"), v.literal("down")),
+    latencyMs: v.optional(v.number()),
+    errorRate: v.optional(v.number()),
+    message: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_service_created", ["service", "createdAt"]),
 });

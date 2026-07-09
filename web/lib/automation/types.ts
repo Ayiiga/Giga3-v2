@@ -113,7 +113,11 @@ export type SearchResultKind =
   | "learning_artifact"
   | "creator_artifact"
   | "conversation"
-  | "community";
+  | "community"
+  | "ai_tool"
+  | "settings"
+  | "wallet"
+  | "marketplace";
 
 export type PlatformSearchResult = {
   id: string;
