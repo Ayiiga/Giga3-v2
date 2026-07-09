@@ -739,6 +739,35 @@ export const toggleBookmark = mutation({
   },
 });
 
+export const getPublicPost = query({
+  args: {
+    postId: v.id("socialPosts"),
+  },
+  handler: async (ctx, args) => {
+    const post = await ctx.db.get(args.postId);
+    if (!post || post.deletedAt) return null;
+    if (post.visibility === "followers") return null;
+
+    const author = await resolveAuthor(ctx, post.authorId);
+    return toPublicPost(post, author);
+  },
+});
+
+export const recordPostView = mutation({
+  args: {
+    postId: v.id("socialPosts"),
+  },
+  handler: async (ctx, args) => {
+    const post = await ctx.db.get(args.postId);
+    if (!post || post.deletedAt) return { ok: false };
+    if (post.visibility === "followers") return { ok: false };
+
+    const viewCount = (post.viewCount ?? 0) + 1;
+    await ctx.db.patch(args.postId, { viewCount, updatedAt: Date.now() });
+    return { ok: true, viewCount };
+  },
+});
+
 export const recordShare = mutation({
   args: {
     sessionToken: v.string(),

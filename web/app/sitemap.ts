@@ -13,6 +13,7 @@ const PUBLIC_PATHS = [
   "/workspace/",
   "/automation/",
   "/gigasocial/",
+  "/gigasocial/post/",
   "/media/",
   "/video/",
   "/video/plans/",
