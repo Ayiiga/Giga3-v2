@@ -28,7 +28,7 @@ function ChatCategorySwitcherInner({
   return (
     <div
       className={cn(
-        "chat-rail flex min-w-0 gap-1.5 overflow-x-auto overscroll-x-contain px-3 py-2 sm:px-4",
+        "chat-category-switcher flex min-w-0 max-w-full gap-1.5 py-2",
         className
       )}
       role="tablist"

@@ -83,7 +83,7 @@ function MessageListInner({
   const suggestedPrompts = useMemo(() => getSuggestedPrompts(mode, 4), [mode]);
 
   return (
-    <div className="chat-message-list relative min-h-0 min-w-0 max-w-full overflow-x-hidden overflow-y-hidden bg-background">
+    <div className="chat-message-list relative min-h-0 min-w-0 max-w-full overflow-x-clip overflow-y-hidden bg-background">
       <div
         ref={scrollRef}
         className="message-list-scroll chat-message-scroll-region overscroll-y-contain py-3 sm:py-6"

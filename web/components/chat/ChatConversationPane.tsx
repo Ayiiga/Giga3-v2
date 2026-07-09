@@ -88,7 +88,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   const typingPhase = awaitingReply ? "replying" : "sending";
 
   return (
-    <div className="chat-conversation-grid min-h-0 min-w-0 max-w-full overflow-x-hidden overflow-y-hidden bg-background">
+    <div className="chat-conversation-grid min-h-0 min-w-0 max-w-full overflow-x-clip overflow-y-hidden bg-background">
       <MessageList
         messages={messages}
         mode={mode}
