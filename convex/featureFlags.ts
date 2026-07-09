@@ -23,3 +23,16 @@ export function openAiImageRequiresSubscription(): boolean {
 export function getVapidPublicKey(): string | undefined {
   return process.env.VAPID_PUBLIC_KEY?.trim() || undefined;
 }
+
+/** Remote config defaults — overridable via remoteConfigEntries table. */
+export function isOnboardingEnabled(): boolean {
+  return process.env.GIGA3_ONBOARDING_ENABLED !== "false";
+}
+
+export function isReferralProgramEnabled(): boolean {
+  return process.env.GIGA3_REFERRALS_ENABLED !== "false";
+}
+
+export function isGlobalSearchEnabled(): boolean {
+  return process.env.GIGA3_GLOBAL_SEARCH_ENABLED !== "false";
+}

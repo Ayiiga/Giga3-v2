@@ -338,6 +338,30 @@ export const getDashboard = query({
         ? Number(((pwaInstalls / siteVisits) * 100).toFixed(1))
         : 0;
 
+    const creditLogsToday = await ctx.db
+      .query("creditLogs")
+      .order("desc")
+      .take(500);
+    const creditsUsedToday = creditLogsToday
+      .filter((l) => new Date(l.createdAt).toISOString().slice(0, 10) === today && l.amount < 0)
+      .reduce((s, l) => s + Math.abs(l.amount), 0);
+
+    const marketplacePurchases = await ctx.db
+      .query("marketplacePurchases")
+      .order("desc")
+      .take(200);
+    const marketplaceRevenueToday = marketplacePurchases
+      .filter((p) => new Date(p.createdAt).toISOString().slice(0, 10) === today)
+      .reduce((s, p) => s + (p.amountGhs ?? 0), 0);
+
+    const openFeedback = await ctx.db
+      .query("userFeedbackSubmissions")
+      .withIndex("by_status", (q) => q.eq("status", "open"))
+      .take(100);
+
+    const subscriptions = await ctx.db.query("subscriptions").collect();
+    const activeSubscriptions = subscriptions.filter((s) => s.status === "active").length;
+
     return {
       totalRegisteredUsers: users.length,
       pwaInstalls,
@@ -367,6 +391,10 @@ export const getDashboard = query({
       estimatedAiCostUsd,
       installConversionRate,
       sessionDurationMinutes: 0,
+      creditsUsedToday,
+      marketplaceRevenueToday,
+      activeSubscriptions,
+      openFeedbackCount: openFeedback.length,
       breakdown,
       dailyTrend,
       asOf: now,

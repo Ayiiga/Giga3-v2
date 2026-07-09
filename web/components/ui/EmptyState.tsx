@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { VisionTagline } from "@/components/vision/VisionTagline";
 import type { LucideIcon } from "lucide-react";
 
 interface EmptyStateProps {
@@ -6,10 +7,11 @@ interface EmptyStateProps {
   description: string;
   icon?: LucideIcon;
   className?: string;
+  showVision?: boolean;
 }
 
 /** Consistent empty-state card for lists and panels. */
-export function EmptyState({ title, description, icon: Icon, className }: EmptyStateProps) {
+export function EmptyState({ title, description, icon: Icon, className, showVision = false }: EmptyStateProps) {
   return (
     <div
       className={cn(
@@ -28,6 +30,7 @@ export function EmptyState({ title, description, icon: Icon, className }: EmptyS
       <p className={cn("text-sm leading-relaxed text-muted", title || Icon ? "mt-1.5" : "")}>
         {description}
       </p>
+      {showVision ? <VisionTagline className="mt-4" variant="subtle" /> : null}
     </div>
   );
 }

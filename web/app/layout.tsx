@@ -1,4 +1,5 @@
 import { GenerationToastHost } from "@/components/generation/GenerationToastHost";
+import { AccessibilityBootstrap } from "@/components/a11y/AccessibilityBootstrap";
 import { ConvexRuntimeBootstrap } from "@/components/providers/ConvexRuntimeBootstrap";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
@@ -11,6 +12,7 @@ import { DEFAULT_HTML_LANG, DEFAULT_OG_LOCALE } from "@/lib/locale";
 import { pwaStartupImages } from "@/lib/pwaSplash";
 import { siteConfig } from "@/lib/site";
 import "@/styles/globals.css";
+import "@/styles/a11y.css";
 import "@/styles/generation.css";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
@@ -96,6 +98,7 @@ export default function RootLayout({
         <ThemeProvider>
           <div className="min-h-full w-full max-w-full overflow-x-hidden">{children}</div>
         </ThemeProvider>
+        <AccessibilityBootstrap />
         <ServiceWorkerRegister />
         <GlobalChatPrefetch />
         <PlatformAnalyticsHost />

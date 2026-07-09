@@ -14,6 +14,10 @@ const KIND_LABELS: Record<PlatformSearchResult["kind"], string> = {
   creator_artifact: "Creator",
   conversation: "Chat",
   community: "Community",
+  ai_tool: "AI tool",
+  settings: "Page",
+  wallet: "Wallet",
+  marketplace: "Marketplace",
 };
 
 export function PlatformSearchPanel() {

@@ -1,8 +1,9 @@
 "use client";
 
+import { InstallButton } from "@/components/pwa/InstallButton";
+import { MarketingPlatformChrome } from "@/components/platform/PlatformChromeHost";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { InstallButton } from "@/components/pwa/InstallButton";
 import { navLinks, siteConfig } from "@/lib/site";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Menu, UsersRound, X } from "lucide-react";
@@ -47,6 +48,7 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          <MarketingPlatformChrome compact />
           <InstallButton size="sm" variant="ghost" />
           <ButtonLink href={siteConfig.links.login} variant="ghost" size="sm">
             Log in

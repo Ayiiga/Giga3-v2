@@ -9,6 +9,7 @@ import {
   signUpWithPassword,
 } from "@/lib/authPassword";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { VisionTagline } from "@/components/vision/VisionTagline";
 import { siteConfig } from "@/lib/site";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -90,6 +91,7 @@ function ChatLoginFormInner() {
             <p className="mt-2 text-sm text-muted">
               Sign in or create an account with email and password
             </p>
+            <VisionTagline className="mt-3" variant="subtle" />
           </div>
         </div>
 

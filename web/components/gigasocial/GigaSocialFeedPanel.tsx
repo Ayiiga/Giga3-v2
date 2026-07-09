@@ -1,6 +1,7 @@
 "use client";
 
 import { GigaSocialComposer } from "@/components/gigasocial/GigaSocialComposer";
+import { GigaSocialFeedHero } from "@/components/gigasocial/GigaSocialFeedHero";
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -9,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import type { SocialPostMediaItemInput } from "@/lib/gigasocial/constants";
-import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
+import { POST_TYPE_OPTIONS, type SocialPostTypeId } from "@/lib/gigasocial/sections";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { useMutation, useQuery } from "convex/react";
 import { MessageCircle, SquarePen, X } from "lucide-react";
@@ -27,6 +28,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [extraPosts, setExtraPosts] = useState<SocialPost[]>([]);
   const [composerOpen, setComposerOpen] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<"all" | SocialPostTypeId>("all");
 
   const feed = useQuery(api.gigaSocial.listFeed, {
     sessionToken: sessionToken ?? undefined,
@@ -43,8 +45,10 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 
   const posts = useMemo(() => {
     const merged = [...(cursor ? extraPosts : []), ...(feed?.posts ?? [])] as SocialPost[];
-    return [...merged].sort((a, b) => b.createdAt - a.createdAt);
-  }, [cursor, extraPosts, feed?.posts]);
+    const sorted = [...merged].sort((a, b) => b.createdAt - a.createdAt);
+    if (typeFilter === "all") return sorted;
+    return sorted.filter((p) => p.postType === typeFilter);
+  }, [cursor, extraPosts, feed?.posts, typeFilter]);
 
   const resetFeedPagination = useCallback(() => {
     setCursor(undefined);
@@ -91,6 +95,22 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 
   return (
     <div className="space-y-4">
+      <GigaSocialFeedHero postCount={posts.length} />
+
+      <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter feed by post type">
+        <FilterChip active={typeFilter === "all"} onClick={() => setTypeFilter("all")} label="All" />
+        {POST_TYPE_OPTIONS.filter((t) =>
+          ["education", "creator", "ai", "image"].includes(t.id)
+        ).map((t) => (
+          <FilterChip
+            key={t.id}
+            active={typeFilter === t.id}
+            onClick={() => setTypeFilter(t.id)}
+            label={t.label}
+          />
+        ))}
+      </div>
+
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-medium text-muted">Latest posts</p>
         {sessionToken ? (
@@ -125,8 +145,13 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       {posts.length === 0 ? (
         <EmptyState
           icon={MessageCircle}
-          title="No posts yet"
-          description="Be the first to share something with the community."
+          title={typeFilter === "all" ? "No posts yet" : `No ${typeFilter} posts yet`}
+          description={
+            typeFilter === "all"
+              ? "Be the first to share something with the community."
+              : "Try another filter or be the first to post in this category."
+          }
+          showVision
         />
       ) : (
         <ul className="space-y-4">
@@ -180,3 +205,30 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     </div>
   );
 });
+
+function FilterChip({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={cn(
+        "min-h-9 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+        active
+          ? "border-accent/40 bg-accent/10 text-foreground"
+          : "border-border bg-white text-muted hover:border-accent/25 hover:text-foreground"
+      )}
+    >
+      {label}
+    </button>
+  );
+}

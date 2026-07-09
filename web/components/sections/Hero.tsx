@@ -1,6 +1,7 @@
 import { InstallButton } from "@/components/pwa/InstallButton";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { VisionTagline } from "@/components/vision/VisionTagline";
 import { heroStats, siteConfig } from "@/lib/site";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { ArrowRight, Bot } from "lucide-react";
@@ -25,6 +26,8 @@ export function Hero() {
             {siteConfig.description} Run multiple chats with automatic AI failover,
             credit-based billing, and a polished mobile experience.
           </p>
+
+          <VisionTagline className="mx-auto mt-5 max-w-md text-center" variant="subtle" />
 
           <div className="mx-auto mt-10 grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2 lg:max-w-3xl lg:grid-cols-3">
             <ButtonLink href="/chat/login" size="lg" className="w-full">

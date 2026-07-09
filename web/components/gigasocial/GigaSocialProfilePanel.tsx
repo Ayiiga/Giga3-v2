@@ -8,8 +8,8 @@ import type { SocialPost } from "@/lib/gigasocial/types";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { Award, Loader2 } from "lucide-react";
-import { memo, useState } from "react";
+import { Award, Check, Loader2 } from "lucide-react";
+import { memo, useEffect, useState } from "react";
 
 export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
   sessionToken,
@@ -31,39 +31,70 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
   const [interests, setInterests] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  if (data === undefined) {
-    return <LoadingState label="Loading profile…" />;
-  }
+  const profile = data?.profile;
+  const posts = (data?.recentPosts ?? []) as SocialPost[];
+  const gamification = profile?.gamification;
 
-  if (!data) return null;
-
-  const { profile, recentPosts } = data;
-  const posts = recentPosts as SocialPost[];
-  const gamification = profile.gamification;
-
-  function startEdit() {
+  useEffect(() => {
+    if (!profile || editing) return;
     setDisplayName(profile.displayName);
     setHandle(profile.handle);
     setBio(profile.bio);
     setSkills(profile.skills.join(", "));
     setInterests(profile.interests.join(", "));
+  }, [profile, editing]);
+
+  if (data === undefined) {
+    return <LoadingState label="Loading profile…" />;
+  }
+
+  if (!data || !profile) return null;
+
+  function startEdit() {
+    setDisplayName(profile!.displayName);
+    setHandle(profile!.handle);
+    setBio(profile!.bio);
+    setSkills(profile!.skills.join(", "));
+    setInterests(profile!.interests.join(", "));
+    setError(null);
+    setSuccess(null);
     setEditing(true);
   }
 
   async function saveProfile() {
+    const trimmedName = displayName.trim();
+    const trimmedHandle = handle.trim();
+    if (!trimmedName) {
+      setError("Display name is required.");
+      return;
+    }
+    if (!trimmedHandle) {
+      setError("Handle is required.");
+      return;
+    }
+
     setBusy(true);
     setError(null);
+    setSuccess(null);
     try {
       await upsert({
         sessionToken,
-        displayName,
-        handle,
-        bio,
-        skills: skills.split(",").map((s) => s.trim()).filter(Boolean),
-        interests: interests.split(",").map((s) => s.trim()).filter(Boolean),
+        displayName: trimmedName,
+        handle: trimmedHandle,
+        bio: bio.trim(),
+        skills: skills
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
+        interests: interests
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
       });
       setEditing(false);
+      setSuccess("Profile updated.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save profile.");
     } finally {
@@ -76,7 +107,7 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
       <div className="saas-card rounded-2xl border border-border p-4 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10 text-2xl font-bold text-accent">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-2xl font-bold text-white shadow-sm">
               {profile.displayName.slice(0, 1).toUpperCase()}
             </div>
             <div>
@@ -89,23 +120,86 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
               )}
             </div>
           </div>
-          <Button type="button" variant="outline" size="sm" onClick={() => (editing ? setEditing(false) : startEdit())}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={busy}
+            onClick={() => {
+              if (editing) {
+                setEditing(false);
+                setError(null);
+              } else {
+                startEdit();
+              }
+            }}
+          >
             {editing ? "Cancel" : "Edit profile"}
           </Button>
         </div>
 
+        {success && !editing && (
+          <p className="mt-3 flex items-center gap-1.5 text-sm text-emerald-700" role="status">
+            <Check className="h-4 w-4" aria-hidden />
+            {success}
+          </p>
+        )}
+
         {editing ? (
-          <div className="mt-4 space-y-3">
-            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full rounded-xl border border-border px-3 py-2 text-sm" placeholder="Display name" />
-            <input value={handle} onChange={(e) => setHandle(e.target.value)} className="w-full rounded-xl border border-border px-3 py-2 text-sm" placeholder="Handle" />
-            <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="w-full rounded-xl border border-border px-3 py-2 text-sm" placeholder="Bio" />
-            <input value={skills} onChange={(e) => setSkills(e.target.value)} className="w-full rounded-xl border border-border px-3 py-2 text-sm" placeholder="Skills (comma-separated)" />
-            <input value={interests} onChange={(e) => setInterests(e.target.value)} className="w-full rounded-xl border border-border px-3 py-2 text-sm" placeholder="Interests (comma-separated)" />
-            <Button type="button" disabled={busy} onClick={() => void saveProfile()} className="min-h-10">
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+          <form
+            className="mt-4 space-y-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void saveProfile();
+            }}
+          >
+            <input
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="input-surface w-full"
+              placeholder="Display name"
+              required
+              disabled={busy}
+            />
+            <input
+              value={handle}
+              onChange={(e) => setHandle(e.target.value.replace(/\s+/g, ""))}
+              className="input-surface w-full"
+              placeholder="Handle (no spaces)"
+              required
+              disabled={busy}
+            />
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              rows={3}
+              className="input-surface w-full resize-none"
+              placeholder="Bio"
+              disabled={busy}
+            />
+            <input
+              value={skills}
+              onChange={(e) => setSkills(e.target.value)}
+              className="input-surface w-full"
+              placeholder="Skills (comma-separated)"
+              disabled={busy}
+            />
+            <input
+              value={interests}
+              onChange={(e) => setInterests(e.target.value)}
+              className="input-surface w-full"
+              placeholder="Interests (comma-separated)"
+              disabled={busy}
+            />
+            <Button type="submit" disabled={busy} className="min-h-10">
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : "Save profile"}
             </Button>
-            {error && <p className="text-xs text-red-700">{error}</p>}
-          </div>
+            {error && (
+              <p className="text-xs text-red-700" role="alert">
+                {error}
+              </p>
+            )}
+          </form>
         ) : (
           <>
             {profile.bio && <p className="mt-4 text-sm text-foreground">{profile.bio}</p>}

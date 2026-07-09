@@ -83,7 +83,7 @@ function GigaSocialContent() {
             Back to chat
           </Link>
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 text-accent">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-md">
               <UsersRound className="h-6 w-6" aria-hidden />
             </div>
             <div>
