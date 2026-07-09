@@ -14,6 +14,7 @@ type PlatformChromeHostProps = {
   conversations?: { id: string; title: string; mode: string }[];
   showNotifications?: boolean;
   compact?: boolean;
+  ultraCompact?: boolean;
 };
 
 function NotificationBellWithCount({ onClick }: { onClick: () => void }) {
@@ -32,6 +33,7 @@ export function PlatformChromeHost({
   conversations,
   showNotifications = true,
   compact = false,
+  ultraCompact = false,
 }: PlatformChromeHostProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -69,15 +71,17 @@ export function PlatformChromeHost({
           <NotificationBellWithCount onClick={() => setNotifOpen(true)} />
         )}
 
-        <button
-          type="button"
-          onClick={() => setFeedbackOpen(true)}
-          className="rounded-xl p-2 text-muted hover:bg-accent/10 hover:text-foreground"
-          aria-label="Send feedback"
-          title="Send feedback"
-        >
-          <MessageSquarePlus className="h-4 w-4" aria-hidden />
-        </button>
+        {!ultraCompact && (
+          <button
+            type="button"
+            onClick={() => setFeedbackOpen(true)}
+            className="rounded-xl p-2 text-muted hover:bg-accent/10 hover:text-foreground"
+            aria-label="Send feedback"
+            title="Send feedback"
+          >
+            <MessageSquarePlus className="h-4 w-4" aria-hidden />
+          </button>
+        )}
       </div>
 
       <GlobalSearchModal

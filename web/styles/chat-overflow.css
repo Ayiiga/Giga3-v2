@@ -3,28 +3,39 @@
  * Imported from globals.css — keeps message content inside the viewport.
  */
 
-.chat-stable {
+.chat-stable,
+.chat-keyboard-shell {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .chat-conversation-grid,
 .chat-message-list,
 .chat-main-column,
+.chat-header-band,
+.chat-composer-stack,
 .chat-composer-dock,
 .chat-composer,
-.chat-thread {
+.chat-thread,
+.chat-category-switcher {
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+.chat-main-column,
+.chat-conversation-grid,
+.chat-composer-stack,
+.chat-header-band {
+  overflow-x: clip;
 }
 
 .chat-message-scroll-region {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  overflow-x: hidden;
+  overflow-x: clip;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding-inline: max(0.75rem, env(safe-area-inset-left, 0px))
@@ -45,8 +56,13 @@
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  content-visibility: auto;
-  contain-intrinsic-size: auto 120px;
+}
+
+@media (min-width: 1024px) {
+  .chat-message-turn {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 120px;
+  }
 }
 
 .chat-message-turn-user {
@@ -102,6 +118,29 @@
 .chat-markdown .chat-md-ol {
   padding-inline-start: 1.25rem;
   margin-inline-start: 0;
+}
+
+.chat-markdown .chat-md-ul > li,
+.chat-markdown .chat-md-ol > li,
+.chat-markdown .chat-md-nested {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.chat-category-switcher {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  padding-inline: max(0.5rem, env(safe-area-inset-left, 0px))
+    max(0.5rem, env(safe-area-inset-right, 0px));
+}
+
+.chat-category-switcher::-webkit-scrollbar {
+  display: none;
 }
 
 .chat-markdown .chat-md-link {
@@ -183,16 +222,27 @@
 
 @media (max-width: 639px) {
   .chat-message-scroll-region {
-    padding-inline: max(0.5rem, env(safe-area-inset-left, 0px))
-      max(0.5rem, env(safe-area-inset-right, 0px));
+    padding-inline: max(0.625rem, env(safe-area-inset-left, 0px))
+      max(0.625rem, env(safe-area-inset-right, 0px));
   }
 
   .chat-thread {
+    width: 100%;
     max-width: 100%;
   }
 
+  .chat-message-turn-assistant .chat-message-bubble,
+  .chat-message-turn-assistant .chat-assistant-body,
   .chat-message-turn-assistant .chat-message-bubble-inner {
+    width: 100%;
+    max-width: 100%;
     padding-inline: 0;
+  }
+
+  .chat-markdown .chat-md-ul,
+  .chat-markdown .chat-md-ol {
+    margin-inline-start: 0;
+    padding-inline-start: 1.125rem;
   }
 
   .chat-message-bubble-user {
@@ -207,6 +257,10 @@
   .chat-composer-surface {
     max-width: 100%;
     min-width: 0;
+  }
+
+  .chat-header-stable {
+    overflow-x: clip;
   }
 }
 
