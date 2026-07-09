@@ -1,11 +1,14 @@
 "use client";
 
 import { GigaSocialComposer } from "@/components/gigasocial/GigaSocialComposer";
+import { GigaSocialFeaturedPlayer } from "@/components/gigasocial/GigaSocialFeaturedPlayer";
 import { GigaSocialFeedHero } from "@/components/gigasocial/GigaSocialFeedHero";
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { useGigaSocialFeedAutoplay } from "@/hooks/useGigaSocialFeedAutoplay";
+import { findFeaturedMediaPost } from "@/lib/gigasocial/postMedia";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
@@ -49,6 +52,18 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     if (typeFilter === "all") return sorted;
     return sorted.filter((p) => p.postType === typeFilter);
   }, [cursor, extraPosts, feed?.posts, typeFilter]);
+
+  const { autoPlay, paused, pause, toggle, hydrated } = useGigaSocialFeedAutoplay();
+
+  const featuredPost = useMemo(
+    () => findFeaturedMediaPost(posts, highlightPostId),
+    [posts, highlightPostId]
+  );
+
+  const feedPosts = useMemo(() => {
+    if (!featuredPost) return posts;
+    return posts.filter((post) => post._id !== featuredPost._id);
+  }, [featuredPost, posts]);
 
   const resetFeedPagination = useCallback(() => {
     setCursor(undefined);
@@ -95,7 +110,17 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 
   return (
     <div className="space-y-4">
-      <GigaSocialFeedHero postCount={posts.length} />
+      {featuredPost && hydrated ? (
+        <GigaSocialFeaturedPlayer
+          post={featuredPost}
+          autoPlay={autoPlay}
+          paused={paused}
+          onPause={pause}
+          onTogglePause={toggle}
+        />
+      ) : (
+        <GigaSocialFeedHero postCount={posts.length} />
+      )}
 
       <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter feed by post type">
         <FilterChip active={typeFilter === "all"} onClick={() => setTypeFilter("all")} label="All" />
@@ -142,20 +167,22 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         />
       ) : null}
 
-      {posts.length === 0 ? (
+      {feedPosts.length === 0 ? (
         <EmptyState
           icon={MessageCircle}
           title={typeFilter === "all" ? "No posts yet" : `No ${typeFilter} posts yet`}
           description={
             typeFilter === "all"
-              ? "Be the first to share something with the community."
+              ? featuredPost
+                ? "More posts will appear here as the community shares."
+                : "Be the first to share something with the community."
               : "Try another filter or be the first to post in this category."
           }
           showVision
         />
       ) : (
         <ul className="space-y-4">
-          {posts.map((post) => (
+          {feedPosts.map((post) => (
             <li key={post._id} id={`gigasocial-post-${post._id}`}>
               <GigaSocialPostCard
                 post={post}
