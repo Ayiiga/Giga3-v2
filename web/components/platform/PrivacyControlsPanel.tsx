@@ -1,24 +1,38 @@
 "use client";
 
 import { usePlatformProfile } from "@/hooks/usePlatformProfile";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function PrivacyControlsPanel() {
-  const { preferences, updatePreferences } = usePlatformProfile();
+  const { isLoading, preferences, updatePreferences } = usePlatformProfile();
+  const [privacyShare, setPrivacyShare] = useState(preferences.privacyShareUsage);
   const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPrivacyShare(preferences.privacyShareUsage);
+  }, [preferences.privacyShareUsage]);
 
   async function togglePrivacyShare() {
+    const next = !privacyShare;
+    setPrivacyShare(next);
     setSaving(true);
-    try {
-      await updatePreferences({ privacyShareUsage: !preferences.privacyShareUsage });
-    } finally {
-      setSaving(false);
+    setMessage(null);
+    setError(null);
+    const result = await updatePreferences({ privacyShareUsage: next });
+    setSaving(false);
+    if (result.ok) {
+      setMessage("Preference updated.");
+    } else {
+      setPrivacyShare(!next);
+      setError(result.error);
     }
   }
 
   return (
     <div className="saas-card space-y-3 rounded-2xl p-5">
-      <h3 className="font-semibold">Privacy & personalization</h3>
+      <h3 className="font-semibold">Privacy &amp; personalization</h3>
       <p className="text-sm text-muted">
         Giga3 learns your preferences over time to improve recommendations. You control what is stored.
       </p>
@@ -29,12 +43,22 @@ export function PrivacyControlsPanel() {
         </div>
         <input
           type="checkbox"
-          checked={preferences.privacyShareUsage}
-          disabled={saving}
+          checked={privacyShare}
+          disabled={saving || isLoading}
           onChange={() => void togglePrivacyShare()}
           className="mt-1 h-4 w-4 accent-accent"
         />
       </label>
+      {message && (
+        <p className="text-xs text-emerald-700" role="status">
+          {message}
+        </p>
+      )}
+      {error && (
+        <p className="text-xs text-red-700" role="alert">
+          {error}
+        </p>
+      )}
       <p className="text-xs text-muted">
         Interest profiles are built from chat history. Disable to stop new learning; existing data is retained until you contact support.
       </p>

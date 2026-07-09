@@ -2,21 +2,41 @@
 
 import { saveA11yPrefs, getA11yPrefs } from "@/components/a11y/AccessibilityBootstrap";
 import { usePlatformProfile } from "@/hooks/usePlatformProfile";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function AccessibilitySettings() {
-  const { preferences, updatePreferences } = usePlatformProfile();
-  const [local, setLocal] = useState(() => ({
-    ...getA11yPrefs(),
-    largeText: preferences.largeText,
-    reducedMotion: preferences.reducedMotion,
-  }));
+  const { isLoading, preferences, updatePreferences } = usePlatformProfile();
+  const [largeText, setLargeText] = useState(preferences.largeText);
+  const [reducedMotion, setReducedMotion] = useState(preferences.reducedMotion);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
-  function toggle(key: "largeText" | "reducedMotion") {
-    const next = { ...local, [key]: !local[key] };
-    setLocal(next);
-    saveA11yPrefs({ largeText: next.largeText, reducedMotion: next.reducedMotion });
-    void updatePreferences({ largeText: next.largeText, reducedMotion: next.reducedMotion });
+  useEffect(() => {
+    setLargeText(preferences.largeText);
+    setReducedMotion(preferences.reducedMotion);
+  }, [preferences.largeText, preferences.reducedMotion]);
+
+  async function toggle(key: "largeText" | "reducedMotion") {
+    const nextLarge = key === "largeText" ? !largeText : largeText;
+    const nextMotion = key === "reducedMotion" ? !reducedMotion : reducedMotion;
+    setLargeText(nextLarge);
+    setReducedMotion(nextMotion);
+    saveA11yPrefs({ largeText: nextLarge, reducedMotion: nextMotion });
+    setSaving(true);
+    setMessage(null);
+    const result = await updatePreferences({
+      largeText: nextLarge,
+      reducedMotion: nextMotion,
+    });
+    setSaving(false);
+    if (result.ok) {
+      setMessage("Accessibility preference saved.");
+    } else {
+      const fallback = getA11yPrefs();
+      setLargeText(fallback.largeText);
+      setReducedMotion(fallback.reducedMotion);
+      saveA11yPrefs(fallback);
+    }
   }
 
   return (
@@ -26,8 +46,9 @@ export function AccessibilitySettings() {
         <span>Large text</span>
         <input
           type="checkbox"
-          checked={local.largeText}
-          onChange={() => toggle("largeText")}
+          checked={largeText}
+          disabled={saving || isLoading}
+          onChange={() => void toggle("largeText")}
           className="h-4 w-4 accent-accent"
         />
       </label>
@@ -35,11 +56,17 @@ export function AccessibilitySettings() {
         <span>Reduced motion</span>
         <input
           type="checkbox"
-          checked={local.reducedMotion}
-          onChange={() => toggle("reducedMotion")}
+          checked={reducedMotion}
+          disabled={saving || isLoading}
+          onChange={() => void toggle("reducedMotion")}
           className="h-4 w-4 accent-accent"
         />
       </label>
+      {message && (
+        <p className="text-xs text-emerald-700" role="status">
+          {message}
+        </p>
+      )}
       <p className="text-xs text-muted">
         Supports screen readers, keyboard navigation, and responsive layouts across the platform.
       </p>

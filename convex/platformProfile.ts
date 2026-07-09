@@ -101,7 +101,35 @@ export const saveUserPreferences = mutation({
 
     JSON.parse(args.preferencesJson);
     await ctx.db.patch(user._id, { userPreferences: args.preferencesJson });
-    return { ok: true };
+    return { ok: true as const };
+  },
+});
+
+export const updateUserRole = mutation({
+  args: {
+    ...sessionArgs,
+    role: userRoleValidator,
+  },
+  handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken);
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    if (!user) throw new Error("User not found");
+
+    const existing = parseJson(user.onboardingState, {
+      completed: Boolean(user.onboardingCompletedAt),
+      role: user.userRole ?? "general",
+      stepsSeen: [],
+      dismissedTips: [],
+    });
+
+    await ctx.db.patch(user._id, {
+      userRole: args.role,
+      onboardingState: JSON.stringify({ ...existing, role: args.role }),
+    });
+    return { ok: true as const };
   },
 });
 

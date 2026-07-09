@@ -5,6 +5,7 @@ import { AccessibilitySettings } from "@/components/a11y/AccessibilitySettings";
 import { HomeDashboardPanel } from "@/components/dashboard/HomeDashboardPanel";
 import { ReferralCard } from "@/components/growth/ReferralCard";
 import { PrivacyControlsPanel } from "@/components/platform/PrivacyControlsPanel";
+import { PlatformSettingsPanel } from "@/components/platform/PlatformSettingsPanel";
 import { VisionTagline } from "@/components/vision/VisionTagline";
 import { Container } from "@/components/ui/Container";
 import { siteConfig } from "@/lib/site";
@@ -22,6 +23,7 @@ export default function HomeDashboardPage() {
             </p>
             <div className="mt-8 space-y-6">
               <HomeDashboardPanel />
+              <PlatformSettingsPanel />
               <div className="grid gap-6 lg:grid-cols-2">
                 <ReferralCard />
                 <PrivacyControlsPanel />

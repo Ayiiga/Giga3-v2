@@ -1,13 +1,13 @@
 import Link from "next/link";
 
-/** First focus target for keyboard and screen-reader users. */
+/** Screen-reader only until keyboard focus — never visible on screen otherwise. */
 export function SkipToContent() {
   return (
-    <a
+    <Link
       href="#main-content"
-      className="absolute left-4 top-0 z-[100] -translate-y-full rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background focus:translate-y-4 focus:outline-none focus:ring-2 focus:ring-ring"
+      className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-foreground focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-background focus:outline-none focus:ring-2 focus:ring-ring"
     >
       Skip to main content
-    </a>
+    </Link>
   );
 }
