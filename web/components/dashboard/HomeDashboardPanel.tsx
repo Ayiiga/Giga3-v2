@@ -13,6 +13,7 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { memo } from "react";
 import { LoadingState } from "@/components/ui/LoadingState";
 
 export function HomeDashboardPanel() {
@@ -44,7 +45,7 @@ export function HomeDashboardPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="dashboard-stat-grid">
         <StatCard icon={Zap} label="Today's AI usage" value={dashboard.todayUsage.aiRequests} />
         <StatCard icon={MessageSquare} label="Chats today" value={dashboard.todayUsage.chats} />
         <StatCard icon={Flame} label="Learning streak" value={`${dashboard.streakDays}d`} />
@@ -54,7 +55,7 @@ export function HomeDashboardPanel() {
       {dashboard.continueChat && (
         <Link
           href={`/chat?c=${dashboard.continueChat.id}`}
-          className="saas-card flex items-center justify-between rounded-xl px-4 py-3 hover:border-accent/30"
+          className="dashboard-panel-card saas-card flex items-center justify-between rounded-xl px-4 py-3 hover:border-accent/30"
         >
           <div>
             <p className="text-xs font-medium text-accent">Continue where you stopped</p>
@@ -64,7 +65,7 @@ export function HomeDashboardPanel() {
         </Link>
       )}
 
-      <div className="saas-card rounded-xl p-4">
+      <div className="dashboard-panel-card saas-card rounded-xl p-4">
         <div className="flex items-center justify-between text-sm">
           <span className="font-medium">Daily goal</span>
           <span className="text-muted">
@@ -72,7 +73,10 @@ export function HomeDashboardPanel() {
           </span>
         </div>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted/30">
-          <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${goalProgress}%` }} />
+          <div
+            className="dashboard-progress-fill h-full rounded-full bg-accent"
+            style={{ width: `${goalProgress}%` }}
+          />
         </div>
       </div>
 
@@ -152,7 +156,7 @@ export function HomeDashboardPanel() {
   );
 }
 
-function StatCard({
+const StatCard = memo(function StatCard({
   icon: Icon,
   label,
   value,
@@ -162,7 +166,7 @@ function StatCard({
   value: string | number;
 }) {
   return (
-    <div className="saas-card rounded-xl px-4 py-3">
+    <div className="dashboard-stat-card saas-card rounded-xl px-4 py-3">
       <div className="flex items-center gap-2 text-muted">
         <Icon className="h-4 w-4" aria-hidden />
         <span className="text-xs">{label}</span>
@@ -170,4 +174,4 @@ function StatCard({
       <p className="mt-1 text-xl font-semibold tabular-nums">{value}</p>
     </div>
   );
-}
+});

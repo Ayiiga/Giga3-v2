@@ -13,26 +13,24 @@ import { siteConfig } from "@/lib/site";
 export default function HomeDashboardPage() {
   return (
     <ConvexAppShell>
-      <div className="marketing-stable min-h-full bg-white">
-        <Container className="section-padding">
-          <div className="mx-auto max-w-4xl">
-            <h1 className="page-title">Your dashboard</h1>
-            <VisionTagline className="mt-2" variant="subtle" />
-            <p className="mt-2 text-sm text-muted">
-              Personalized overview for {siteConfig.name} — activity, goals, and recommendations.
-            </p>
-            <div className="mt-8 space-y-6">
-              <HomeDashboardPanel />
-              <PlatformSettingsPanel />
-              <div className="grid gap-6 lg:grid-cols-2">
-                <ReferralCard />
-                <PrivacyControlsPanel />
-              </div>
-              <AccessibilitySettings />
+      <Container className="section-padding">
+        <div className="dashboard-stable mx-auto max-w-4xl">
+          <h1 className="page-title">Your dashboard</h1>
+          <VisionTagline className="mt-2" variant="subtle" />
+          <p className="mt-2 text-sm text-muted">
+            Personalized overview for {siteConfig.name} — activity, goals, and recommendations.
+          </p>
+          <div className="mt-8 space-y-6">
+            <HomeDashboardPanel />
+            <PlatformSettingsPanel />
+            <div className="grid gap-6 lg:grid-cols-2">
+              <ReferralCard />
+              <PrivacyControlsPanel />
             </div>
+            <AccessibilitySettings />
           </div>
-        </Container>
-      </div>
+        </div>
+      </Container>
     </ConvexAppShell>
   );
 }
