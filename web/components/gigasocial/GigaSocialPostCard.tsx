@@ -100,10 +100,10 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   }
 
   return (
-    <article className="saas-card rounded-2xl border border-border p-4">
+    <article className="saas-card rounded-2xl border border-border p-4 transition-colors hover:border-accent/25">
       <header className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-sm font-semibold text-accent">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 text-sm font-semibold text-white shadow-sm">
             {post.author.displayName.slice(0, 1).toUpperCase()}
           </div>
           <div>
