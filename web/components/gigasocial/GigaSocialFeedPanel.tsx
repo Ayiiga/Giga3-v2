@@ -45,6 +45,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const [feedCategory, setFeedCategory] = useState<FeedCategoryId>("for-you");
   const [composeAction, setComposeAction] = useState<GigaCreateActionId | undefined>();
   const [remixSource, setRemixSource] = useState<SocialPost | null>(null);
+  const [errorToast, setErrorToast] = useState<string | null>(null);
 
   const feed = useQuery(api.gigaSocial.listFeed, {
     sessionToken: sessionToken ?? undefined,
@@ -109,8 +110,6 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     },
     [openComposer]
   );
-
-  const [errorToast, setErrorToast] = useState<string | null>(null);
 
   useEffect(() => {
     if (!highlightPostId || !posts.length) return;
