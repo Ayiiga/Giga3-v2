@@ -96,7 +96,7 @@ export default function RootLayout({
       <body className="min-h-full w-full max-w-full overflow-x-hidden bg-background font-sans text-foreground antialiased">
         <ConvexRuntimeBootstrap />
         <ThemeProvider>
-          <div className="min-h-full w-full max-w-full overflow-x-hidden">{children}</div>
+          <div className="min-h-full w-full max-w-full overflow-x-hidden overflow-y-visible">{children}</div>
         </ThemeProvider>
         <AccessibilityBootstrap />
         <ServiceWorkerRegister />
