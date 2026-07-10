@@ -1,0 +1,53 @@
+/* GigaSocial professional upgrade — presentation layer only (stable on mobile). */
+
+.gigasocial-pro .gigasocial-post-card {
+  border-color: rgba(91, 33, 182, 0.12);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.98));
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.gigasocial-pro .gigasocial-feed-skeleton {
+  animation: gigasocial-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes gigasocial-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.65;
+  }
+}
+
+.gigasocial-create-fab-button {
+  transition: transform 160ms ease, opacity 160ms ease;
+}
+
+.gigasocial-create-menu {
+  contain: layout style;
+}
+
+@media (max-width: 1023px) {
+  .gigasocial-pro .gigasocial-post-card {
+    box-shadow: none;
+  }
+
+  .gigasocial-create-fab-button {
+    transform: none !important;
+  }
+
+  .gigasocial-create-fab-button.rotate-45 {
+    transform: rotate(45deg) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gigasocial-feed-skeleton {
+    animation: none;
+  }
+
+  .gigasocial-create-fab-button {
+    transition: none;
+  }
+}

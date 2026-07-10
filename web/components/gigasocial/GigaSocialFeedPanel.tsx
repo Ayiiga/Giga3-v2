@@ -1,13 +1,22 @@
 "use client";
 
+import type { GigaCreateLaunch } from "@/components/gigasocial/create/GigaCreateButton";
+import { GigaCreateButton } from "@/components/gigasocial/create/GigaCreateButton";
+import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
+import { FeedCategoryBar } from "@/components/gigasocial/feed/FeedCategoryBar";
+import { FeedSkeletonList } from "@/components/gigasocial/feed/FeedPostSkeleton";
 import { GigaSocialComposer } from "@/components/gigasocial/GigaSocialComposer";
 import { GigaSocialFeaturedPlayer } from "@/components/gigasocial/GigaSocialFeaturedPlayer";
 import { GigaSocialFeedHero } from "@/components/gigasocial/GigaSocialFeedHero";
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { LoadingState } from "@/components/ui/LoadingState";
 import { useGigaSocialFeedAutoplay } from "@/hooks/useGigaSocialFeedAutoplay";
+import {
+  filterPostsByFeedCategory,
+  type FeedCategoryId,
+} from "@/lib/gigasocial/feedCategories";
+import { getGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { findFeaturedMediaPost } from "@/lib/gigasocial/postMedia";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
@@ -28,10 +37,14 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   communitySlug?: string;
   highlightPostId?: string;
 }) {
+  const features = useMemo(() => getGigaSocialFeatures(), []);
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [extraPosts, setExtraPosts] = useState<SocialPost[]>([]);
   const [composerOpen, setComposerOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<"all" | SocialPostTypeId>("all");
+  const [feedCategory, setFeedCategory] = useState<FeedCategoryId>("for-you");
+  const [composeAction, setComposeAction] = useState<GigaCreateActionId | undefined>();
+  const [remixSource, setRemixSource] = useState<SocialPost | null>(null);
 
   const feed = useQuery(api.gigaSocial.listFeed, {
     sessionToken: sessionToken ?? undefined,
@@ -40,7 +53,14 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     limit: 15,
   });
 
+  const myProfile = useQuery(
+    api.gigaSocial.getMyProfile,
+    sessionToken ? { sessionToken } : "skip"
+  );
+  const myHandle = myProfile?.profile?.handle;
+
   const createPost = useMutation(api.gigaSocial.createPost);
+  const updatePost = useMutation(api.gigaSocial.updatePost);
   const toggleLike = useMutation(api.gigaSocial.toggleLike);
   const toggleBookmark = useMutation(api.gigaSocial.toggleBookmark);
   const recordShare = useMutation(api.gigaSocial.recordShare);
@@ -49,9 +69,12 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const posts = useMemo(() => {
     const merged = [...(cursor ? extraPosts : []), ...(feed?.posts ?? [])] as SocialPost[];
     const sorted = [...merged].sort((a, b) => b.createdAt - a.createdAt);
-    if (typeFilter === "all") return sorted;
-    return sorted.filter((p) => p.postType === typeFilter);
-  }, [cursor, extraPosts, feed?.posts, typeFilter]);
+    const typed =
+      typeFilter === "all" ? sorted : sorted.filter((p) => p.postType === typeFilter);
+    return features.enableFeedCategories
+      ? filterPostsByFeedCategory(typed, feedCategory)
+      : typed;
+  }, [cursor, extraPosts, feed?.posts, typeFilter, feedCategory, features.enableFeedCategories]);
 
   const { autoPlay, paused, pause, toggle, hydrated } = useGigaSocialFeedAutoplay();
 
@@ -69,6 +92,25 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setCursor(undefined);
     setExtraPosts([]);
   }, []);
+
+  const openComposer = useCallback((action?: GigaCreateActionId, source?: SocialPost | null) => {
+    setComposeAction(action);
+    setRemixSource(source ?? null);
+    setComposerOpen(true);
+  }, []);
+
+  const handleGigaCreate = useCallback(
+    (launch: GigaCreateLaunch) => {
+      if (launch.action === "remix") {
+        setErrorToast("Choose a post and tap Remix to start a remix chain.");
+        return;
+      }
+      openComposer(launch.action);
+    },
+    [openComposer]
+  );
+
+  const [errorToast, setErrorToast] = useState<string | null>(null);
 
   useEffect(() => {
     if (!highlightPostId || !posts.length) return;
@@ -94,8 +136,23 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         communitySlug: args.communitySlug,
       });
       resetFeedPagination();
+      setComposeAction(undefined);
+      setRemixSource(null);
     },
     [createPost, resetFeedPagination, sessionToken]
+  );
+
+  const handleEditPost = useCallback(
+    async (postId: string, args: { body: string; postType: SocialPostTypeId }) => {
+      if (!sessionToken) throw new Error("Sign in to edit.");
+      await updatePost({
+        sessionToken,
+        postId: postId as Id<"socialPosts">,
+        body: args.body,
+        postType: args.postType,
+      });
+    },
+    [sessionToken, updatePost]
   );
 
   const loadMore = useCallback(() => {
@@ -105,11 +162,19 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   }, [feed]);
 
   if (feed === undefined) {
-    return <LoadingState label="Loading feed…" />;
+    return <FeedSkeletonList count={3} />;
   }
 
+  const useGigaCreateFab = features.enableGigaCreate && Boolean(sessionToken);
+
   return (
-    <div className="space-y-4">
+    <div className="gigasocial-pro space-y-4 pb-24">
+      {errorToast ? (
+        <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900" role="status">
+          {errorToast}
+        </p>
+      ) : null}
+
       {featuredPost && hydrated ? (
         <GigaSocialFeaturedPlayer
           post={featuredPost}
@@ -121,6 +186,10 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       ) : (
         <GigaSocialFeedHero postCount={posts.length} />
       )}
+
+      {features.enableFeedCategories ? (
+        <FeedCategoryBar value={feedCategory} onChange={setFeedCategory} />
+      ) : null}
 
       <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter feed by post type">
         <FilterChip active={typeFilter === "all"} onClick={() => setTypeFilter("all")} label="All" />
@@ -138,7 +207,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-medium text-muted">Latest posts</p>
-        {sessionToken ? (
+        {sessionToken && !useGigaCreateFab ? (
           <button
             type="button"
             onClick={() => setComposerOpen((open) => !open)}
@@ -162,6 +231,10 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         <GigaSocialComposer
           sessionToken={sessionToken}
           communitySlug={communitySlug}
+          initialAction={composeAction}
+          remixSource={remixSource ?? undefined}
+          enableAIAssistant={features.enableAIEditing}
+          enableMediaStudio={features.enableMediaStudio}
           onSubmit={handleCreate}
           onPosted={() => setComposerOpen(false)}
         />
@@ -187,7 +260,15 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
               <GigaSocialPostCard
                 post={post}
                 sessionToken={sessionToken}
-                canDelete={false}
+                canDelete={Boolean(myHandle && post.author.handle === myHandle)}
+                enableRemix={features.enableGigaRemix}
+                enableEdit={features.enableAIEditing}
+                onEdit={handleEditPost}
+                onRemix={
+                  features.enableGigaRemix
+                    ? (source) => openComposer("remix", source)
+                    : undefined
+                }
                 onLike={async (postId) => {
                   if (!sessionToken) return;
                   await toggleLike({
@@ -229,6 +310,13 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
           </Button>
         </div>
       )}
+
+      {useGigaCreateFab ? (
+        <GigaCreateButton
+          disabled={!sessionToken}
+          onSelect={handleGigaCreate}
+        />
+      ) : null}
     </div>
   );
 });

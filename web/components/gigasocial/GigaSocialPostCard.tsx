@@ -1,16 +1,21 @@
 "use client";
 
+import { GigaSocialPostEditor } from "@/components/gigasocial/editor/GigaSocialPostEditor";
+import { GigaRemixBadge, GigaRemixButton } from "@/components/gigasocial/remix/GigaRemixButton";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { splitPostDisplay } from "@/lib/gigasocial/postDisplay";
 import { formatRelativeTime } from "@/lib/datetime";
 import { shareGigaSocialPost } from "@/lib/gigasocial/sharePost";
+import { stripRemixMarker } from "@/lib/gigasocial/remixMeta";
+import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
 import {
   Bookmark,
   Eye,
   Heart,
   MessageCircle,
+  Pencil,
   Share2,
   Trash2,
 } from "lucide-react";
@@ -27,7 +32,11 @@ interface GigaSocialPostCardProps {
   onBookmark: (postId: string, bookmarked: boolean) => Promise<void>;
   onShare: (postId: string) => Promise<void>;
   onDelete?: (postId: string) => Promise<void>;
+  onEdit?: (postId: string, args: { body: string; postType: SocialPostTypeId }) => Promise<void>;
+  onRemix?: (post: SocialPost) => void;
   canDelete?: boolean;
+  enableEdit?: boolean;
+  enableRemix?: boolean;
 }
 
 export const GigaSocialPostCard = memo(function GigaSocialPostCard({
@@ -37,16 +46,23 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   onBookmark,
   onShare,
   onDelete,
-  canDelete,
+  onEdit,
+  onRemix,
+  canDelete = false,
+  enableEdit = false,
+  enableRemix = false,
 }: GigaSocialPostCardProps) {
   const [liked, setLiked] = useState(Boolean(post.likedByMe));
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [bookmarked, setBookmarked] = useState(Boolean(post.bookmarkedByMe));
   const [shareCount, setShareCount] = useState(post.shareCount);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const display = useMemo(() => splitPostDisplay(post.body), [post.body]);
+
+  const displayBody = useMemo(() => stripRemixMarker(post.body), [post.body]);
+  const display = useMemo(() => splitPostDisplay(displayBody), [displayBody]);
   const captionParts = useMemo(
     () => renderCaptionWithHashtags(display.description),
     [display.description]
@@ -101,7 +117,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   }
 
   return (
-    <article className="saas-card rounded-2xl border border-border p-4 transition-colors hover:border-accent/25">
+    <article className="gigasocial-post-card saas-card rounded-2xl border border-border p-4 transition-colors hover:border-accent/25">
       <header className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <SocialAvatar
@@ -121,6 +137,8 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           {post.postType}
         </span>
       </header>
+
+      <GigaRemixBadge post={post} />
 
       {display.title ? (
         <>
@@ -200,24 +218,55 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           onClick={() => void handleBookmark()}
           disabled={!sessionToken || busy}
         />
+        {enableRemix && onRemix ? (
+          <GigaRemixButton
+            disabled={!sessionToken || busy}
+            onRemix={() => onRemix(post)}
+          />
+        ) : null}
         {typeof post.viewCount === "number" ? (
           <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-muted">
             <Eye className="h-4 w-4" aria-hidden />
             {post.viewCount}
           </span>
         ) : null}
-        {canDelete && onDelete && (
+        {canDelete && enableEdit && onEdit ? (
           <Button
             type="button"
             size="sm"
             variant="ghost"
-            className="ml-auto min-h-9 text-red-700"
+            className="ml-auto min-h-9 text-muted"
+            onClick={() => setEditorOpen(true)}
+            aria-label="Edit post"
+          >
+            <Pencil className="h-4 w-4" aria-hidden />
+          </Button>
+        ) : null}
+        {canDelete && onDelete ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className={cn("min-h-9 text-red-700", !(enableEdit && onEdit) && "ml-auto")}
             onClick={() => void onDelete(post._id)}
           >
             <Trash2 className="h-4 w-4" aria-hidden />
           </Button>
-        )}
+        ) : null}
       </div>
+
+      {editorOpen && onEdit ? (
+        <div className="mt-4">
+          <GigaSocialPostEditor
+            post={{ ...post, body: displayBody }}
+            onClose={() => setEditorOpen(false)}
+            onSave={async (args) => {
+              await onEdit(post._id, args);
+              setEditorOpen(false);
+            }}
+          />
+        </div>
+      ) : null}
 
       {commentsOpen && sessionToken && (
         <GigaSocialCommentThread postId={post._id} sessionToken={sessionToken} />

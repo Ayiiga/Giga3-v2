@@ -1,9 +1,11 @@
 "use client";
 
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
+import { GigaSocialCreatorStudio } from "@/components/gigasocial/studio/GigaSocialCreatorStudio";
 import { SocialAvatar } from "@/components/gigasocial/SocialAvatar";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { getGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { BADGE_LABELS } from "@/lib/gigasocial/sections";
 import { SOCIAL_AVATAR_ACCEPT } from "@/lib/gigasocial/constants";
 import { uploadSocialAvatar } from "@/lib/gigasocial/mediaUpload";
@@ -13,6 +15,7 @@ import type { Id } from "convex/_generated/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { Award, Camera, Check, Loader2, X } from "lucide-react";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
+import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
 
 export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
   sessionToken,
@@ -20,7 +23,9 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
   sessionToken: string;
 }) {
   const data = useQuery(api.gigaSocial.getMyProfile, { sessionToken });
+  const features = useMemo(() => getGigaSocialFeatures(), []);
   const upsert = useMutation(api.gigaSocial.upsertMyProfile);
+  const updatePost = useMutation(api.gigaSocial.updatePost);
   const toggleLike = useMutation(api.gigaSocial.toggleLike);
   const toggleBookmark = useMutation(api.gigaSocial.toggleBookmark);
   const recordShare = useMutation(api.gigaSocial.recordShare);
@@ -372,6 +377,10 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
         </section>
       )}
 
+      {features.enableCreatorStudio ? (
+        <GigaSocialCreatorStudio profile={profile} posts={posts} />
+      ) : null}
+
       <section>
         <h4 className="platform-section-title mb-3">Your posts</h4>
         {posts.length === 0 ? (
@@ -384,6 +393,15 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
                   post={post}
                   sessionToken={sessionToken}
                   canDelete
+                  enableEdit={features.enableAIEditing}
+                  onEdit={async (postId, args: { body: string; postType: SocialPostTypeId }) => {
+                    await updatePost({
+                      sessionToken,
+                      postId: postId as Id<"socialPosts">,
+                      body: args.body,
+                      postType: args.postType,
+                    });
+                  }}
                   onLike={async (postId) => {
                     await toggleLike({ sessionToken, postId: postId as Id<"socialPosts"> });
                   }}

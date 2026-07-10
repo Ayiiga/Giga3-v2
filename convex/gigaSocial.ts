@@ -604,6 +604,38 @@ export const createPost = mutation({
   },
 });
 
+export const updatePost = mutation({
+  args: {
+    sessionToken: v.string(),
+    postId: v.id("socialPosts"),
+    body: v.optional(v.string()),
+    postType: v.optional(socialPostTypeValidator),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    const post = await ctx.db.get(args.postId);
+    if (!post || post.deletedAt) throw new Error("Post not found.");
+    if (post.authorId !== userId) throw new Error("You can only edit your own posts.");
+
+    const body =
+      args.body !== undefined ? sanitizeSocialText(args.body) : sanitizeSocialText(post.body);
+    if (!body.trim()) throw new Error("Post caption cannot be empty.");
+
+    const hashtags = extractHashtags(body);
+    const mentions = extractMentions(body);
+
+    await ctx.db.patch(args.postId, {
+      body,
+      hashtags: hashtags.length ? hashtags : undefined,
+      mentions: mentions.length ? mentions : undefined,
+      postType: args.postType ?? post.postType,
+      updatedAt: Date.now(),
+    });
+
+    return { ok: true };
+  },
+});
+
 export const toggleLike = mutation({
   args: {
     sessionToken: v.string(),

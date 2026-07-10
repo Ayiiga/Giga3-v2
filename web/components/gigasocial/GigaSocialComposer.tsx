@@ -17,11 +17,19 @@ import {
   uploadSocialVideo,
   type SocialMediaUploadDeps,
 } from "@/lib/gigasocial/mediaUpload";
+import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
+import { GigaSocialAIAssistant } from "@/components/gigasocial/ai/GigaSocialAIAssistant";
+import { GigaSocialMediaStudio } from "@/components/gigasocial/studio/GigaSocialMediaStudio";
+import {
+  appendRemixMarker,
+  buildRemixBodyPrefix,
+} from "@/lib/gigasocial/remixMeta";
 import { POST_TYPE_OPTIONS, type SocialPostTypeId } from "@/lib/gigasocial/sections";
+import type { SocialPost } from "@/lib/gigasocial/types";
 import { api } from "convex/_generated/api";
 import { useAction, useMutation } from "convex/react";
 import { Camera, ImagePlus, Loader2, Send, Video, X } from "lucide-react";
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface PendingImage {
   id: string;
@@ -42,6 +50,10 @@ interface GigaSocialComposerProps {
   communitySlug?: string;
   disabled?: boolean;
   sessionToken: string;
+  initialAction?: GigaCreateActionId;
+  remixSource?: SocialPost;
+  enableAIAssistant?: boolean;
+  enableMediaStudio?: boolean;
   onPosted?: () => void;
   onSubmit: (args: {
     body: string;
@@ -55,6 +67,10 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   communitySlug,
   disabled,
   sessionToken,
+  initialAction,
+  remixSource,
+  enableAIAssistant = false,
+  enableMediaStudio = false,
   onPosted,
   onSubmit,
 }: GigaSocialComposerProps) {
@@ -67,6 +83,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [studioOpen, setStudioOpen] = useState(false);
+  const [previewFilter, setPreviewFilter] = useState<string>("none");
   const uploadAbortRef = useRef<AbortController | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -85,6 +103,50 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   );
 
   const detectedHashtags = useMemo(() => extractHashtagsFromText(body), [body]);
+
+  const studioPreviewUrl = pendingImages[0]?.previewUrl ?? null;
+
+  useEffect(() => {
+    if (!initialAction && !remixSource) return;
+    if (remixSource) {
+      const prefix = buildRemixBodyPrefix({
+        sourcePostId: remixSource._id,
+        sourceAuthorHandle: remixSource.author.handle,
+        sourceAuthorName: remixSource.author.displayName,
+      });
+      setBody(`${prefix}My take: `);
+      setPostType(remixSource.postType);
+      return;
+    }
+    switch (initialAction) {
+      case "video-studio":
+        setPostType("video");
+        queueMicrotask(() => videoInputRef.current?.click());
+        break;
+      case "photo-studio":
+        setPostType("image");
+        queueMicrotask(() => imageInputRef.current?.click());
+        setStudioOpen(true);
+        break;
+      case "text-post":
+        setPostType("text");
+        break;
+      case "learning-post":
+        setPostType("education");
+        break;
+      case "product-post":
+        setPostType("creator");
+        setBody((value) => value || "🛒 Product showcase\n\n");
+        break;
+      case "ai-enhance":
+        break;
+      case "live-content":
+        setError("Live content is coming soon to GigaSocial.");
+        break;
+      default:
+        break;
+    }
+  }, [initialAction, remixSource]);
 
   const hasMedia = pendingImages.length > 0 || Boolean(pendingVideo);
   const canPost = Boolean(body.trim() || hasMedia);
@@ -213,8 +275,13 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         );
       }
 
+      let finalBody = body.trim();
+      if (remixSource) {
+        finalBody = appendRemixMarker(finalBody, remixSource._id);
+      }
+
       await onSubmit({
-        body,
+        body: finalBody,
         postType,
         mediaItems,
         communitySlug,
@@ -268,9 +335,25 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         ) : null}
       </div>
 
+      {enableAIAssistant ? (
+        <div className="mt-3">
+          <GigaSocialAIAssistant
+            body={body}
+            postType={postType}
+            onApplyCaption={setBody}
+            onApplyHashtags={(tags) => {
+              const suffix = tags.map((tag) => `#${tag}`).join(" ");
+              setBody((value) => `${value.trim()}\n\n${suffix}`.trim());
+            }}
+            onApplyCategory={setPostType}
+          />
+        </div>
+      ) : null}
+
       <GigaSocialPendingMediaPreview
         images={pendingImages}
         video={pendingVideo ?? undefined}
+        imageFilter={previewFilter}
         onRemoveImage={(id) => {
           setPendingImages((prev) => {
             const target = prev.find((image) => image.id === id);
@@ -283,6 +366,16 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           setPendingVideo(null);
         }}
       />
+
+      {enableMediaStudio && studioOpen && studioPreviewUrl ? (
+        <div className="mt-3">
+          <GigaSocialMediaStudio
+            previewUrl={studioPreviewUrl}
+            onClose={() => setStudioOpen(false)}
+            onApplyFilter={(filterCss) => setPreviewFilter(filterCss)}
+          />
+        </div>
+      ) : null}
 
       {dragActive ? (
         <p className="mt-2 rounded-xl border border-dashed border-accent/40 bg-accent/5 px-3 py-2 text-xs text-accent">

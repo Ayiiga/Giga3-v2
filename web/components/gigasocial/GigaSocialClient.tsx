@@ -9,6 +9,7 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { getSessionToken } from "@/lib/auth";
+import { getGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import {
   GIGASOCIAL_SECTIONS,
   type GigaSocialSection,
@@ -70,6 +71,7 @@ function GigaSocialContent() {
   }
 
   const unread = notifications?.unreadCount ?? 0;
+  const features = getGigaSocialFeatures();
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
@@ -149,7 +151,11 @@ function GigaSocialContent() {
           <>
             <SectionIntro
               title={communitySlug ? `Community: ${communitySlug}` : "Latest posts"}
-              description="Newest community posts first — tap the pen icon to share something."
+              description={
+                features.enableGigaCreate
+                  ? "Newest community posts first — tap GigaCreate to share video, photos, learning content, and more."
+                  : "Newest community posts first — tap the pen icon to share something."
+              }
             />
             <GigaSocialFeedPanel
               sessionToken={sessionToken}
