@@ -25,7 +25,12 @@
 }
 
 .gigasocial-create-menu {
-  contain: layout style;
+  contain: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gigasocial-create-overlay {
+  touch-action: none;
 }
 
 @media (max-width: 1023px) {

@@ -38,7 +38,7 @@ export const GIGA_CREATE_MENU: GigaCreateMenuItem[] = [
     id: "remix",
     label: "Remix Content",
     emoji: "🎵",
-    description: "Respond with your perspective",
+    description: "Tap Remix on a post in your feed",
   },
   {
     id: "ai-enhance",
