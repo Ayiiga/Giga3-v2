@@ -1,4 +1,4 @@
-import { mutation, query } from "./_generated/server";
+import { internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
@@ -755,6 +755,23 @@ export const getPublicPost = query({
 
     const author = await resolveAuthor(ctx, post.authorId);
     return toPublicPost(post, author);
+  },
+});
+
+export const getPublicPostOgBundle = internalQuery({
+  args: {
+    postId: v.id("socialPosts"),
+  },
+  handler: async (ctx, args) => {
+    const post = await ctx.db.get(args.postId);
+    if (!post || post.deletedAt) return null;
+    if (post.visibility === "followers") return null;
+
+    const author = await resolveAuthor(ctx, post.authorId);
+    return {
+      post: toPublicPost(post, author),
+      mediaMetaJson: post.mediaMetaJson,
+    };
   },
 });
 
