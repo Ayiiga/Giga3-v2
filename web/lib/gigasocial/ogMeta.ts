@@ -1,7 +1,7 @@
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { siteConfig } from "@/lib/site";
 import { splitPostDisplay } from "@/lib/gigasocial/postDisplay";
-import { buildGigaSocialPostUrl } from "@/lib/gigasocial/shareLinks";
+import { buildGigaSocialSharePreviewUrl } from "@/lib/gigasocial/shareLinks";
 
 const DEFAULT_OG_IMAGE = `${siteConfig.url.replace(/\/$/, "")}/images/logo.png`;
 
@@ -61,7 +61,7 @@ export function buildGigaSocialShareCopy(post: SocialPost): {
   text: string;
   url: string;
 } {
-  const url = buildGigaSocialPostUrl(post._id);
+  const url = buildGigaSocialSharePreviewUrl(post._id);
   const title = buildGigaSocialOgTitle(post);
   const description = buildGigaSocialOgDescription(post);
   return {

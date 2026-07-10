@@ -189,11 +189,15 @@ jobs:
             ls -la out 2>/dev/null || ls -la
             exit 1
           fi
-          if [ ! -f out/_worker.js ]; then
-            echo "::error::Missing out/_worker.js — GigaSocial OG worker was not copied"
+          if [ ! -f functions/_middleware.js ]; then
+            echo "::error::Missing functions/_middleware.js — GigaSocial OG middleware was not found"
             exit 1
           fi
-          echo "Found out/_worker.js for GigaSocial link previews"
+          if [ -f out/_worker.js ]; then
+            echo "::error::out/_worker.js must not be deployed — use functions/_middleware.js instead"
+            exit 1
+          fi
+          echo "Found functions/_middleware.js for GigaSocial link previews"
 
       - name: Deploy to Cloudflare Pages
         working-directory: web
