@@ -189,6 +189,11 @@ jobs:
             ls -la out 2>/dev/null || ls -la
             exit 1
           fi
+          if [ ! -f out/_worker.js ]; then
+            echo "::error::Missing out/_worker.js — GigaSocial OG worker was not copied"
+            exit 1
+          fi
+          echo "Found out/_worker.js for GigaSocial link previews"
 
       - name: Deploy to Cloudflare Pages
         working-directory: .

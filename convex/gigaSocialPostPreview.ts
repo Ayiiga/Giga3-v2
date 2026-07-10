@@ -1,5 +1,5 @@
 import { httpAction } from "./_generated/server";
-import { api } from "./_generated/api";
+import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import type { PublicSocialPost } from "./gigaSocialViews";
 import {
@@ -8,6 +8,11 @@ import {
   renderGigaSocialUnavailableHtml,
 } from "./gigaSocialOg";
 
+type PublicPostOgBundle = {
+  post: PublicSocialPost;
+  mediaMetaJson?: string;
+};
+
 export const gigaSocialPostPreview = httpAction(async (ctx, request) => {
   const url = new URL(request.url);
   const postId = url.searchParams.get("id")?.trim();
@@ -15,16 +20,16 @@ export const gigaSocialPostPreview = httpAction(async (ctx, request) => {
     return new Response("Missing id query parameter", { status: 400 });
   }
 
-  let post: PublicSocialPost | null = null;
+  let bundle: PublicPostOgBundle | null = null;
   try {
-    post = await ctx.runQuery(api.gigaSocial.getPublicPost, {
+    bundle = await ctx.runQuery(internal.gigaSocial.getPublicPostOgBundle, {
       postId: postId as Id<"socialPosts">,
     });
   } catch {
-    post = null;
+    bundle = null;
   }
 
-  if (!post) {
+  if (!bundle) {
     const html = renderGigaSocialUnavailableHtml(postId);
     return new Response(html, {
       status: 404,
@@ -35,8 +40,8 @@ export const gigaSocialPostPreview = httpAction(async (ctx, request) => {
     });
   }
 
-  const meta = buildGigaSocialOgMeta(post);
-  const html = renderGigaSocialPreviewHtml(meta, post.author);
+  const meta = buildGigaSocialOgMeta(bundle.post, undefined, bundle.mediaMetaJson);
+  const html = renderGigaSocialPreviewHtml(meta, bundle.post.author);
   return new Response(html, {
     status: 200,
     headers: {

@@ -1,4 +1,5 @@
 import type { PublicSocialAuthor, PublicSocialPost } from "./gigaSocialViews";
+import { parseMediaMetaJson } from "./gigaSocialViews";
 
 const DEFAULT_ORIGIN = "https://www.giga3ai.com";
 const DEFAULT_OG_IMAGE = `${DEFAULT_ORIGIN}/images/logo.png`;
@@ -69,12 +70,22 @@ function primaryMediaUrl(post: PublicSocialPost): string | undefined {
   return post.mediaUrls?.[0] ?? post.mediaUrl;
 }
 
-function previewImageUrl(post: PublicSocialPost): string {
+function previewImageUrl(post: PublicSocialPost, mediaMetaJson?: string | null): string {
   if (post.videoThumbnailUrl) return post.videoThumbnailUrl;
+
+  const mediaItems = parseMediaMetaJson(mediaMetaJson);
+  const videoThumb = mediaItems.find((item) => item.type === "video" && item.thumbnailUrl)
+    ?.thumbnailUrl;
+  if (videoThumb) return videoThumb;
+
+  const imageFromMeta = mediaItems.find((item) => item.type === "image")?.url;
+  if (imageFromMeta) return imageFromMeta;
+
   const mediaUrl = primaryMediaUrl(post);
   if (mediaUrl && post.mediaType !== "video" && post.postType !== "video") {
     return mediaUrl;
   }
+
   return DEFAULT_OG_IMAGE;
 }
 
@@ -85,7 +96,8 @@ export function buildGigaSocialPostUrl(postId: string, origin?: string): string 
 
 export function buildGigaSocialOgMeta(
   post: PublicSocialPost,
-  origin?: string
+  origin?: string,
+  mediaMetaJson?: string | null
 ): GigaSocialOgMeta {
   const display = splitPostDisplay(post.body);
   const views = post.viewCount ?? 0;
@@ -96,7 +108,7 @@ export function buildGigaSocialOgMeta(
   const excerpt = (display.title || display.description || post.body).replace(/\s+/g, " ").trim();
   const description = excerpt.slice(0, 240);
   const canonicalUrl = buildGigaSocialPostUrl(String(post._id), origin);
-  const imageUrl = previewImageUrl(post);
+  const imageUrl = previewImageUrl(post, mediaMetaJson);
   const videoUrl =
     post.mediaType === "video" || post.postType === "video"
       ? primaryMediaUrl(post)
