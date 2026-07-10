@@ -182,6 +182,16 @@ export function renderGigaSocialPreviewHtml(
 <html lang="en">
   <head>
     ${tags.join("\n    ")}
+    <script>
+      (function () {
+        var ua = navigator.userAgent || "";
+        if (/bot|crawl|spider|facebook|whatsapp|slack|twitter|telegram|linkedin|preview|embedly/i.test(ua)) return;
+        location.replace(${JSON.stringify(meta.canonicalUrl)});
+      })();
+    </script>
+    <noscript>
+      <meta http-equiv="refresh" content="0;url=${escapeHtml(meta.canonicalUrl)}" />
+    </noscript>
   </head>
   <body>
     <p><a href="${escapeHtml(meta.canonicalUrl)}">View on GigaSocial</a></p>
