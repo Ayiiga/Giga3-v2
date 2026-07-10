@@ -246,6 +246,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
 interface PendingMediaPreviewProps {
   images: Array<{ id: string; previewUrl: string; name: string }>;
   video?: { previewUrl: string; name: string; durationSec: number; thumbnailUrl?: string };
+  imageFilter?: string;
   onRemoveImage: (id: string) => void;
   onRemoveVideo: () => void;
 }
@@ -253,6 +254,7 @@ interface PendingMediaPreviewProps {
 export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMediaPreview({
   images,
   video,
+  imageFilter = "none",
   onRemoveImage,
   onRemoveVideo,
 }: PendingMediaPreviewProps) {
@@ -306,6 +308,7 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
                 src={image.previewUrl}
                 alt={image.name}
                 className="h-28 w-full object-cover"
+                style={{ filter: imageFilter === "none" ? undefined : imageFilter }}
               />
               <button
                 type="button"

@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v97-gigasocial-og-middleware";
+const CACHE_NAME = "giga3-shell-v98-gigasocial-pro-upgrade";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
