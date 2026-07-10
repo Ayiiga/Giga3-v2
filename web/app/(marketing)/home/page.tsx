@@ -4,6 +4,7 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { AccessibilitySettings } from "@/components/a11y/AccessibilitySettings";
 import { HomeDashboardPanel } from "@/components/dashboard/HomeDashboardPanel";
 import { ReferralCard } from "@/components/growth/ReferralCard";
+import { PlatformProfileProvider } from "@/components/platform/PlatformProfileProvider";
 import { PrivacyControlsPanel } from "@/components/platform/PrivacyControlsPanel";
 import { PlatformSettingsPanel } from "@/components/platform/PlatformSettingsPanel";
 import { VisionTagline } from "@/components/vision/VisionTagline";
@@ -13,24 +14,26 @@ import { siteConfig } from "@/lib/site";
 export default function HomeDashboardPage() {
   return (
     <ConvexAppShell>
-      <Container className="section-padding">
-        <div className="dashboard-stable mx-auto max-w-4xl">
-          <h1 className="page-title">Your dashboard</h1>
-          <VisionTagline className="mt-2" variant="subtle" />
-          <p className="mt-2 text-sm text-muted">
-            Personalized overview for {siteConfig.name} — activity, goals, and recommendations.
-          </p>
-          <div className="mt-8 space-y-6">
-            <HomeDashboardPanel />
-            <PlatformSettingsPanel />
-            <div className="grid gap-6 lg:grid-cols-2">
-              <ReferralCard />
-              <PrivacyControlsPanel />
+      <PlatformProfileProvider>
+        <Container className="section-padding">
+          <div className="dashboard-stable mx-auto max-w-4xl">
+            <h1 className="page-title">Your dashboard</h1>
+            <VisionTagline className="mt-2" variant="subtle" />
+            <p className="mt-2 text-sm text-muted">
+              Personalized overview for {siteConfig.name} — activity, goals, and recommendations.
+            </p>
+            <div className="mt-8 space-y-6">
+              <HomeDashboardPanel />
+              <PlatformSettingsPanel />
+              <div className="grid gap-6 lg:grid-cols-2">
+                <ReferralCard />
+                <PrivacyControlsPanel />
+              </div>
+              <AccessibilitySettings />
             </div>
-            <AccessibilitySettings />
           </div>
-        </div>
-      </Container>
+        </Container>
+      </PlatformProfileProvider>
     </ConvexAppShell>
   );
 }

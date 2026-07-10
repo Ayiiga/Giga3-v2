@@ -2,6 +2,14 @@
 
 import { useEffect } from "react";
 
+const STABLE_ROUTES = ["/home", "/wallet", "/subscribe", "/credits", "/gigasocial"];
+
+function routeUsesStableViewport(pathname: string): boolean {
+  return STABLE_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
+}
+
 /**
  * Marketing routes use long forms (marketplace sell, pricing). The root viewport
  * sets interactive-widget=overlays-content for chat stability; on marketing pages
@@ -9,6 +17,10 @@ import { useEffect } from "react";
  */
 export function MarketingScrollFix() {
   useEffect(() => {
+    if (routeUsesStableViewport(window.location.pathname)) {
+      return;
+    }
+
     const root = document.documentElement;
     const meta = document.querySelector('meta[name="viewport"]');
     const previousClass = root.classList.contains("marketing-route");

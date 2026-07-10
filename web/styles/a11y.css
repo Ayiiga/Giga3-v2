@@ -1,6 +1,7 @@
 
 /* Accessibility — v1.0.1 platform enhancements */
-html.giga3-large-text {
+#main-content.giga3-large-text-scope,
+.giga3-large-text-scope {
   font-size: 112.5%;
 }
 

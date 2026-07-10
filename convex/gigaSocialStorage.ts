@@ -7,6 +7,8 @@ import { sessionArgs } from "./validators";
 
 const SOCIAL_IMAGE_BUCKET = "social-images";
 const SOCIAL_VIDEO_BUCKET = "social-videos";
+const SOCIAL_AVATAR_BUCKET = "avatars";
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 
 type PrepareMediaUploadResult =
   | {
@@ -138,6 +140,77 @@ export const prepareMediaUpload = action({
         }
       } catch {
         /* Supabase unreachable — fall through to Convex storage */
+      }
+    }
+
+    const convexUploadUrl: string = await ctx.runMutation(api.gigaSocialStorage.generateUploadUrl, {
+      sessionToken: args.sessionToken,
+    });
+    return {
+      provider: "convex" as const,
+      uploadUrl: convexUploadUrl,
+      objectPath,
+      contentType: args.contentType,
+    };
+  },
+});
+
+/** Prepare avatar upload (Supabase avatars bucket or Convex fallback). */
+export const prepareAvatarUpload = action({
+  args: {
+    sessionToken: v.string(),
+    fileName: v.string(),
+    contentType: v.string(),
+    sizeBytes: v.number(),
+  },
+  handler: async (ctx, args): Promise<PrepareMediaUploadResult> => {
+    const userId = await requireSession(args.sessionToken);
+    validateMimeAndSize(args.contentType, args.sizeBytes, "image");
+    if (args.sizeBytes > MAX_AVATAR_BYTES) {
+      throw new Error("Avatar image is too large. Maximum size is 2 MB.");
+    }
+
+    const bucket = SOCIAL_AVATAR_BUCKET;
+    const objectPath = `${cleanSegment(userId)}/avatar-${Date.now()}-${cleanSegment(args.fileName)}`;
+
+    const baseUrl = process.env.SUPABASE_URL?.trim()?.replace(/\/$/, "");
+    const serviceKey = sanitizeHttpHeaderValue(process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+    if (baseUrl && serviceKey) {
+      try {
+        const signRes = await fetch(
+          `${baseUrl}/storage/v1/object/upload/sign/${bucket}/${objectPath}`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${serviceKey}`,
+              apikey: serviceKey,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ expiresIn: 3600 }),
+          }
+        );
+
+        if (signRes.ok) {
+          const signed = (await signRes.json()) as {
+            url?: string;
+            token?: string;
+          };
+          if (signed.url && signed.token) {
+            const publicUrl = `${baseUrl}/storage/v1/object/public/${bucket}/${objectPath}`;
+            return {
+              provider: "supabase" as const,
+              bucket,
+              objectPath,
+              uploadUrl: signed.url,
+              uploadToken: signed.token,
+              publicUrl,
+              contentType: args.contentType,
+            };
+          }
+        }
+      } catch {
+        /* fall through */
       }
     }
 

@@ -12,8 +12,10 @@ import {
 } from "@/lib/supabase/storage";
 import type { Id } from "convex/_generated/dataModel";
 import {
+  SOCIAL_AVATAR_BUCKETS,
   SOCIAL_IMAGE_BUCKETS,
   SOCIAL_IMAGE_MIME_TYPES,
+  SOCIAL_MAX_AVATAR_BYTES,
   SOCIAL_MAX_IMAGE_BYTES,
   SOCIAL_MAX_PHOTOS_PER_POST,
   SOCIAL_MAX_VIDEO_BYTES,
@@ -187,7 +189,10 @@ async function uploadWithProgress(
 }
 
 async function tryDirectSupabaseUpload(args: {
-  bucket: (typeof SOCIAL_IMAGE_BUCKETS)[number] | (typeof SOCIAL_VIDEO_BUCKETS)[number];
+  bucket:
+    | (typeof SOCIAL_IMAGE_BUCKETS)[number]
+    | (typeof SOCIAL_VIDEO_BUCKETS)[number]
+    | (typeof SOCIAL_AVATAR_BUCKETS)[number];
   objectPath: string;
   body: BodyInit;
   contentType: string;
@@ -396,4 +401,98 @@ export async function uploadSocialVideo(
     onProgress: options?.onProgress,
     signal: options?.signal,
   });
+}
+
+export type SocialAvatarUploadDeps = {
+  prepareAvatarUpload: (args: {
+    sessionToken: string;
+    fileName: string;
+    contentType: string;
+    sizeBytes: number;
+  }) => Promise<PrepareUploadResult>;
+  resolveStorageUrl: SocialMediaUploadDeps["resolveStorageUrl"];
+  sessionToken: string;
+};
+
+export async function uploadSocialAvatar(
+  deps: SocialAvatarUploadDeps,
+  file: File,
+  options?: {
+    onProgress?: (progress: SocialUploadProgress) => void;
+    signal?: AbortSignal;
+  }
+): Promise<string> {
+  if (!SOCIAL_IMAGE_MIME_TYPES.has(file.type)) {
+    throw new Error("Unsupported image type. Use JPG, PNG, or WEBP.");
+  }
+  if (file.size > SOCIAL_MAX_AVATAR_BYTES) {
+    throw new Error("Avatar is too large. Maximum size is 2 MB.");
+  }
+
+  const compressed = await compressImageFile(file, {
+    maxDimension: 512,
+    quality: 0.88,
+    maxBytes: SOCIAL_MAX_AVATAR_BYTES,
+  });
+
+  const client = isSupabaseConfigured() ? requireSupabaseClient() : null;
+  const supabaseUid = client ? await getSupabaseUserId(client) : null;
+
+  if (client && supabaseUid) {
+    const objectPath = `${cleanSegment(supabaseUid)}/avatar-${Date.now()}-${cleanSegment(file.name)}`;
+    const bucket = SOCIAL_AVATAR_BUCKETS[0];
+    const directUrl = await tryDirectSupabaseUpload({
+      bucket,
+      objectPath,
+      body: compressed.blob,
+      contentType: compressed.mimeType,
+    });
+    if (directUrl) {
+      options?.onProgress?.({ loaded: 1, total: 1, percent: 100 });
+      return directUrl;
+    }
+  }
+
+  const prepared = await deps.prepareAvatarUpload({
+    sessionToken: deps.sessionToken,
+    fileName: file.name,
+    contentType: compressed.mimeType,
+    sizeBytes: compressed.blob.size,
+  });
+
+  if (prepared.provider === "supabase") {
+    const res = await uploadWithProgress(
+      prepared.uploadUrl,
+      compressed.blob,
+      compressed.mimeType,
+      options?.onProgress,
+      options?.signal,
+      {
+        Authorization: `Bearer ${prepared.uploadToken}`,
+        "x-upsert": "true",
+      },
+      "PUT"
+    );
+    if (!res.ok) throw new Error("Avatar upload failed. Please try again.");
+    return prepared.publicUrl;
+  }
+
+  const res = await uploadWithProgress(
+    prepared.uploadUrl,
+    new File([compressed.blob], file.name, { type: compressed.mimeType }),
+    prepared.contentType,
+    options?.onProgress,
+    options?.signal
+  );
+  if (!res.ok) throw new Error("Avatar upload failed. Please try again.");
+  const { storageId } = (await res.json()) as { storageId: Id<"_storage"> };
+  const { url } = await deps.resolveStorageUrl({
+    sessionToken: deps.sessionToken,
+    storageId,
+  });
+  return url;
+}
+
+function cleanSegment(value: string): string {
+  return value.trim().replace(/^\/+|\/+$/g, "").replace(/[^a-zA-Z0-9._@-]+/g, "-");
 }

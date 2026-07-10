@@ -17,6 +17,7 @@ import {
 import { memo, useMemo, useState } from "react";
 import { GigaSocialCommentThread } from "@/components/gigasocial/GigaSocialCommentThread";
 import { GigaSocialPostMedia } from "@/components/gigasocial/GigaSocialPostMedia";
+import { SocialAvatar } from "@/components/gigasocial/SocialAvatar";
 import { renderCaptionWithHashtags } from "@/lib/gigasocial/hashtags";
 
 interface GigaSocialPostCardProps {
@@ -103,9 +104,11 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
     <article className="saas-card rounded-2xl border border-border p-4 transition-colors hover:border-accent/25">
       <header className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 text-sm font-semibold text-white shadow-sm">
-            {post.author.displayName.slice(0, 1).toUpperCase()}
-          </div>
+          <SocialAvatar
+            name={post.author.displayName}
+            avatarUrl={post.author.avatarUrl}
+            size="md"
+          />
           <div>
             <p className="text-sm font-semibold text-foreground">{post.author.displayName}</p>
             <p className="text-xs text-muted">
