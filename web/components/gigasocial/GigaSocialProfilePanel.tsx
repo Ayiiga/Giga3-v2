@@ -1,15 +1,18 @@
 "use client";
 
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
+import { SocialAvatar } from "@/components/gigasocial/SocialAvatar";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { BADGE_LABELS } from "@/lib/gigasocial/sections";
+import { SOCIAL_AVATAR_ACCEPT } from "@/lib/gigasocial/constants";
+import { uploadSocialAvatar } from "@/lib/gigasocial/mediaUpload";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
-import { Award, Check, Loader2 } from "lucide-react";
-import { memo, useEffect, useState } from "react";
+import { useAction, useMutation, useQuery } from "convex/react";
+import { Award, Camera, Check, Loader2, X } from "lucide-react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
   sessionToken,
@@ -22,6 +25,8 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
   const toggleBookmark = useMutation(api.gigaSocial.toggleBookmark);
   const recordShare = useMutation(api.gigaSocial.recordShare);
   const deletePost = useMutation(api.gigaSocial.deletePost);
+  const prepareAvatarUpload = useAction(api.gigaSocialStorage.prepareAvatarUpload);
+  const resolveStorageUrl = useMutation(api.gigaSocialStorage.resolveStorageUrl);
 
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState("");
@@ -29,9 +34,24 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
   const [bio, setBio] = useState("");
   const [skills, setSkills] = useState("");
   const [interests, setInterests] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>();
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
+  const [removeAvatar, setRemoveAvatar] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [uploadPercent, setUploadPercent] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadDeps = useMemo(
+    () => ({
+      prepareAvatarUpload,
+      resolveStorageUrl,
+      sessionToken,
+    }),
+    [prepareAvatarUpload, resolveStorageUrl, sessionToken]
+  );
 
   const profile = data?.profile;
   const posts = (data?.recentPosts ?? []) as SocialPost[];
@@ -44,7 +64,19 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
     setBio(profile.bio);
     setSkills(profile.skills.join(", "));
     setInterests(profile.interests.join(", "));
+    setAvatarUrl(profile.avatarUrl);
+    setAvatarPreview(null);
+    setPendingAvatarFile(null);
+    setRemoveAvatar(false);
   }, [profile, editing]);
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreview?.startsWith("blob:")) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+    };
+  }, [avatarPreview]);
 
   if (data === undefined) {
     return <LoadingState label="Loading profile…" />;
@@ -58,9 +90,24 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
     setBio(profile!.bio);
     setSkills(profile!.skills.join(", "));
     setInterests(profile!.interests.join(", "));
+    setAvatarUrl(profile!.avatarUrl);
+    setAvatarPreview(null);
+    setPendingAvatarFile(null);
+    setRemoveAvatar(false);
     setError(null);
     setSuccess(null);
     setEditing(true);
+  }
+
+  function onAvatarSelected(file: File | null) {
+    if (!file) return;
+    if (avatarPreview?.startsWith("blob:")) {
+      URL.revokeObjectURL(avatarPreview);
+    }
+    setPendingAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+    setRemoveAvatar(false);
+    if (avatarInputRef.current) avatarInputRef.current.value = "";
   }
 
   async function saveProfile() {
@@ -78,7 +125,19 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
     setBusy(true);
     setError(null);
     setSuccess(null);
+    setUploadPercent(null);
+
     try {
+      let nextAvatarUrl: string | undefined = avatarUrl;
+
+      if (removeAvatar) {
+        nextAvatarUrl = "";
+      } else if (pendingAvatarFile) {
+        nextAvatarUrl = await uploadSocialAvatar(uploadDeps, pendingAvatarFile, {
+          onProgress: (progress) => setUploadPercent(progress.percent),
+        });
+      }
+
       await upsert({
         sessionToken,
         displayName: trimmedName,
@@ -92,23 +151,48 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean),
+        avatarUrl: nextAvatarUrl,
       });
       setEditing(false);
+      setAvatarPreview(null);
+      setPendingAvatarFile(null);
+      setRemoveAvatar(false);
       setSuccess("Profile updated.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save profile.");
     } finally {
       setBusy(false);
+      setUploadPercent(null);
     }
   }
+
+  const shownAvatarUrl = removeAvatar
+    ? undefined
+    : avatarPreview ?? avatarUrl ?? profile.avatarUrl;
 
   return (
     <div className="space-y-6">
       <div className="saas-card rounded-2xl border border-border p-4 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-2xl font-bold text-white shadow-sm">
-              {profile.displayName.slice(0, 1).toUpperCase()}
+            <div className="relative">
+              <SocialAvatar
+                name={displayName || profile.displayName}
+                avatarUrl={shownAvatarUrl}
+                size="lg"
+                square
+              />
+              {editing ? (
+                <button
+                  type="button"
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="absolute -bottom-1 -right-1 inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-foreground shadow-sm"
+                  aria-label="Change profile photo"
+                  disabled={busy}
+                >
+                  <Camera className="h-4 w-4" aria-hidden />
+                </button>
+              ) : null}
             </div>
             <div>
               <h3 className="text-xl font-bold text-foreground">{profile.displayName}</h3>
@@ -129,6 +213,9 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
               if (editing) {
                 setEditing(false);
                 setError(null);
+                setAvatarPreview(null);
+                setPendingAvatarFile(null);
+                setRemoveAvatar(false);
               } else {
                 startEdit();
               }
@@ -153,6 +240,43 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
               void saveProfile();
             }}
           >
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept={SOCIAL_AVATAR_ACCEPT}
+              className="sr-only"
+              onChange={(e) => onAvatarSelected(e.target.files?.[0] ?? null)}
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={busy}
+                onClick={() => avatarInputRef.current?.click()}
+              >
+                {shownAvatarUrl ? "Change photo" : "Upload photo"}
+              </Button>
+              {(shownAvatarUrl || profile.avatarUrl) && !removeAvatar ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={busy}
+                  onClick={() => {
+                    setRemoveAvatar(true);
+                    setAvatarPreview(null);
+                    setPendingAvatarFile(null);
+                  }}
+                >
+                  <X className="mr-1 h-3.5 w-3.5" aria-hidden />
+                  Remove photo
+                </Button>
+              ) : null}
+              {uploadPercent != null ? (
+                <span className="text-xs text-muted">Uploading {uploadPercent}%</span>
+              ) : null}
+            </div>
             <input
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}

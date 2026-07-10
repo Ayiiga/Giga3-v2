@@ -484,7 +484,10 @@ export const upsertMyProfile = mutation({
       displayName: args.displayName?.trim().slice(0, 80) ?? profile.displayName,
       handle,
       bio: args.bio !== undefined ? sanitizeBio(args.bio) : profile.bio,
-      avatarUrl: args.avatarUrl?.trim().slice(0, 500) ?? profile.avatarUrl,
+      avatarUrl:
+        args.avatarUrl !== undefined
+          ? args.avatarUrl.trim().slice(0, 500)
+          : profile.avatarUrl,
       skills: args.skills?.map((s) => s.trim().slice(0, 40)).filter(Boolean).slice(0, 12) ?? profile.skills,
       interests: args.interests?.map((s) => s.trim().slice(0, 40)).filter(Boolean).slice(0, 12) ?? profile.interests,
       updatedAt: now,

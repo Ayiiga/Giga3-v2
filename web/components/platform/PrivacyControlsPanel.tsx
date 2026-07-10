@@ -1,10 +1,11 @@
 "use client";
 
-import { usePlatformProfile } from "@/hooks/usePlatformProfile";
+import { usePlatformProfileContext } from "@/components/platform/PlatformProfileProvider";
+import { SettingsPanelSkeleton } from "@/components/platform/SettingsPanelSkeleton";
 import { useEffect, useState } from "react";
 
 export function PrivacyControlsPanel() {
-  const { isLoading, preferences, updatePreferences } = usePlatformProfile();
+  const { isLoading, preferences, updatePreferences } = usePlatformProfileContext();
   const [privacyShare, setPrivacyShare] = useState(preferences.privacyShareUsage);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -30,8 +31,12 @@ export function PrivacyControlsPanel() {
     }
   }
 
+  if (isLoading) {
+    return <SettingsPanelSkeleton title="privacy settings" />;
+  }
+
   return (
-    <div className="saas-card space-y-3 rounded-2xl p-5">
+    <div className="settings-panel-card saas-card space-y-3 rounded-2xl p-5">
       <h3 className="font-semibold">Privacy &amp; personalization</h3>
       <p className="text-sm text-muted">
         Giga3 learns your preferences over time to improve recommendations. You control what is stored.

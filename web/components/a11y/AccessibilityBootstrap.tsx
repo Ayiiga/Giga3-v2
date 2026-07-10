@@ -18,10 +18,16 @@ function loadPrefs(): A11yPrefs {
   }
 }
 
+function getScopeElement(): HTMLElement | null {
+  if (typeof document === "undefined") return null;
+  return document.getElementById("main-content");
+}
+
 function applyPrefs(prefs: A11yPrefs) {
   const root = document.documentElement;
-  root.classList.toggle("giga3-large-text", prefs.largeText);
+  const scope = getScopeElement();
   root.classList.toggle("giga3-reduced-motion", prefs.reducedMotion);
+  scope?.classList.toggle("giga3-large-text-scope", prefs.largeText);
 }
 
 /** Applies persisted accessibility preferences on mount. */

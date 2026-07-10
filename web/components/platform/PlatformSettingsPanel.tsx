@@ -1,14 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { LoadingState } from "@/components/ui/LoadingState";
-import { usePlatformProfile } from "@/hooks/usePlatformProfile";
+import { SettingsPanelSkeleton } from "@/components/platform/SettingsPanelSkeleton";
+import { usePlatformProfileContext } from "@/components/platform/PlatformProfileProvider";
 import { USER_ROLES, type UserRoleId } from "@/lib/vision";
 import { useEffect, useState } from "react";
 
 export function PlatformSettingsPanel() {
   const { isLoading, userRole, preferences, saveUserRole, updatePreferences } =
-    usePlatformProfile();
+    usePlatformProfileContext();
   const [role, setRole] = useState<UserRoleId>(userRole);
   const [writingStyle, setWritingStyle] = useState(preferences.preferredWritingStyle);
   const [language, setLanguage] = useState(preferences.preferredLanguage);
@@ -25,7 +25,7 @@ export function PlatformSettingsPanel() {
   }, [userRole, preferences]);
 
   if (isLoading) {
-    return <LoadingState label="Loading settings…" />;
+    return <SettingsPanelSkeleton title="settings" />;
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -56,7 +56,7 @@ export function PlatformSettingsPanel() {
   }
 
   return (
-    <form onSubmit={(e) => void handleSave(e)} className="saas-card space-y-4 rounded-2xl p-5">
+    <form onSubmit={(e) => void handleSave(e)} className="settings-panel-card saas-card space-y-4 rounded-2xl p-5">
       <div>
         <h3 className="font-semibold">Profile &amp; settings</h3>
         <p className="mt-1 text-sm text-muted">
