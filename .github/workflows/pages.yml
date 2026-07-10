@@ -196,7 +196,7 @@ jobs:
           echo "Found out/_worker.js for GigaSocial link previews"
 
       - name: Deploy to Cloudflare Pages
-        working-directory: .
+        working-directory: web
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -207,7 +207,7 @@ jobs:
           attempt=1
           while [ "$attempt" -le "$max_attempts" ]; do
             echo "Cloudflare deploy attempt ${attempt}/${max_attempts}"
-            if npx wrangler@4 pages deploy web/out --project-name=giga3ai --branch="$DEPLOY_BRANCH"; then
+            if npx wrangler@4 pages deploy --project-name=giga3ai --branch="$DEPLOY_BRANCH"; then
               SHORT_SHA="${GITHUB_SHA::7}"
               SUBJECT="$(git log -1 --pretty=%s)"
               echo "GIGA3_DEPLOY_READY ${SHORT_SHA}|${SUBJECT}"
