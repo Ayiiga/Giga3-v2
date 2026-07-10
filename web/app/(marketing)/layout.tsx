@@ -1,6 +1,7 @@
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { MarketingScrollFix } from "@/components/marketing/MarketingScrollFix";
+import { MarketingBodyScrollUnlock } from "@/components/marketing/MarketingBodyScrollUnlock";
 import { SkipToContent } from "@/components/a11y/SkipToContent";
 import { JsonLd } from "@/components/seo/JsonLd";
 
@@ -14,12 +15,13 @@ export default function MarketingLayout({
       <JsonLd type="WebSite" />
       <JsonLd type="Organization" />
       <SkipToContent />
+      <MarketingBodyScrollUnlock />
       <MarketingScrollFix />
       <Header />
       <main
         id="main-content"
         tabIndex={-1}
-        className="pb-[max(1.5rem,env(safe-area-inset-bottom))] focus:outline-none"
+        className="marketing-scroll-main pb-[max(1.5rem,env(safe-area-inset-bottom))] focus:outline-none"
       >
         {children}
       </main>

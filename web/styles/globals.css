@@ -211,6 +211,37 @@ button:focus-visible {
 
 .marketing-stable main {
   overflow-x: clip;
+  overflow-y: visible;
+  touch-action: pan-y;
+  overscroll-behavior-y: auto;
+}
+
+.marketing-scroll-main {
+  overflow-x: clip;
+  overflow-y: visible;
+  touch-action: pan-y;
+  overscroll-behavior-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* GigaSocial feed — ensure page scroll works with featured autoplay media. */
+.gigasocial-stable {
+  overflow-x: clip;
+  overflow-y: visible;
+  touch-action: pan-y;
+  overscroll-behavior-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gigasocial-stable .gigasocial-featured-media,
+.gigasocial-stable .gigasocial-featured-media video {
+  touch-action: pan-y;
+}
+
+@media (max-width: 1023px) {
+  .gigasocial-stable .saas-card {
+    box-shadow: none !important;
+  }
 }
 
 .marketing-stable input,

@@ -63,6 +63,7 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
         paused={paused}
         featured
         onUserPaused={onPause}
+        className="gigasocial-featured-media"
       />
 
       {preview ? (

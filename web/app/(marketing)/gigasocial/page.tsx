@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function GigaSocialPage() {
   return (
-    <div className="marketing-stable section-padding pt-28">
+    <div className="gigasocial-stable section-padding pt-28">
       <Container>
         <Suspense fallback={<p className="text-center text-muted">Loading GigaSocial…</p>}>
           <GigaSocialPageRoot />

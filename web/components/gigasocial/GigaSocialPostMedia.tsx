@@ -15,6 +15,7 @@ interface GigaSocialPostMediaProps {
   autoPlay?: boolean;
   paused?: boolean;
   featured?: boolean;
+  className?: string;
   onUserPaused?: () => void;
 }
 
@@ -25,6 +26,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   autoPlay = false,
   paused = false,
   featured = false,
+  className,
   onUserPaused,
 }: GigaSocialPostMediaProps) {
   const mediaUrls = useMemo(() => getPostMediaUrls(post), [post]);
@@ -89,7 +91,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
 
   if (mediaKind === "video") {
     return (
-      <div className={cn("relative overflow-hidden", featured ? "" : "mt-3 rounded-xl border border-border")}>
+      <div className={cn("relative overflow-hidden", featured ? className : "mt-3 rounded-xl border border-border")}>
         <video
           ref={videoRef}
           src={mediaUrls[0]}
