@@ -7,6 +7,7 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { renderCaptionWithHashtags } from "@/lib/gigasocial/hashtags";
 import { buildGigaSocialFeedPostUrl } from "@/lib/gigasocial/shareLinks";
 import { splitPostDisplay } from "@/lib/gigasocial/postDisplay";
+import { formatCompactCount, formatVideoDuration } from "@/lib/gigasocial/ogMeta";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { formatRelativeTime } from "@/lib/datetime";
 import { siteConfig } from "@/lib/site";
@@ -48,9 +49,12 @@ function PublicPostInner() {
     if (!post) return;
     const displayParts = splitPostDisplay(post.body);
     const label = displayParts.title || displayParts.description.slice(0, 60);
+    const views = post.viewCount ?? 0;
+    const likes = post.likeCount ?? 0;
+    const stats = `${formatCompactCount(views)} views • ${formatCompactCount(likes)} likes`;
     document.title = label
-      ? `${post.author.displayName}: ${label} | GigaSocial`
-      : `${post.author.displayName} on GigaSocial | Giga3 AI`;
+      ? `${stats} | ${post.author.displayName}: ${label} | GigaSocial`
+      : `${stats} | ${post.author.displayName} on GigaSocial | Giga3 AI`;
   }, [post]);
 
   if (!postId) {
@@ -81,6 +85,9 @@ function PublicPostInner() {
   }
 
   const feedUrl = buildGigaSocialFeedPostUrl(post._id);
+  const durationLabel = formatVideoDuration(post.videoDurationSec);
+  const views = post.viewCount ?? 0;
+  const likes = post.likeCount ?? 0;
 
   return (
     <div className="marketing-stable mx-auto max-w-2xl space-y-6">
@@ -140,6 +147,17 @@ function PublicPostInner() {
         )}
 
         <GigaSocialPostMedia post={post as SocialPost} />
+
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 text-xs text-muted">
+          <p>
+            {formatCompactCount(views)} views · {formatCompactCount(likes)} likes
+            {durationLabel ? ` · ${durationLabel}` : ""}
+          </p>
+          <p className="inline-flex items-center gap-1.5">
+            <UsersRound className="h-3.5 w-3.5" aria-hidden />
+            {siteConfig.url.replace(/^https?:\/\//, "")}
+          </p>
+        </div>
       </article>
 
       <div className="saas-card rounded-2xl border border-accent/20 bg-accent/5 p-4 sm:p-5">
