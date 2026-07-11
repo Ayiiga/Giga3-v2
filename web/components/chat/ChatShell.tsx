@@ -214,6 +214,15 @@ function ChatShellInner({
   }, []);
 
   useEffect(() => {
+    if (!mobileOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [mobileOpen]);
+
+  useEffect(() => {
     function onOpenSidebar() {
       setMobileOpen(true);
     }

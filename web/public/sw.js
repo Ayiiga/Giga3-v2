@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v117-stability-audit";
+const CACHE_NAME = "giga3-shell-v118-chat-sidebar-mobile-fix";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

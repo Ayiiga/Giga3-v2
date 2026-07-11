@@ -668,17 +668,13 @@ button:focus-visible {
 }
 
 @media (max-width: 1023px) {
-  .chat-stable,
-  .chat-stable * {
-    transform: none !important;
-    filter: none !important;
-    backdrop-filter: none !important;
-    contain: none !important;
-  }
-
   .chat-stable .saas-card,
   .chat-stable #modes,
-  .chat-stable #modes * {
+  .chat-stable #modes *,
+  .chat-stable .chat-message-bubble,
+  .chat-stable .hover\:-translate-y-0\.5,
+  .chat-stable .hover\:-translate-y-0\.5:hover,
+  .chat-stable [class*="backdrop-blur"] {
     transform: none !important;
     filter: none !important;
     backdrop-filter: none !important;

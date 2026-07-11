@@ -154,20 +154,18 @@ function ChatSidebarComponent({
 
   return (
     <>
-      {mobileOpen && (
+      {mobileOpen ? (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          className="chat-sidebar-backdrop fixed inset-0 z-40 bg-black/40 lg:hidden"
           aria-label="Close sidebar"
           onClick={onCloseMobile}
         />
-      )}
+      ) : null}
       <aside
         className={cn(
-          "chat-sidebar-surface fixed inset-y-0 left-0 z-50 flex w-[min(100%,320px)] flex-col border-r border-border bg-card lg:static lg:z-0 lg:translate-x-0",
-          mobileOpen
-            ? "translate-x-0 pointer-events-auto"
-            : "-translate-x-full pointer-events-none lg:pointer-events-auto",
+          "chat-sidebar-surface fixed inset-y-0 left-0 z-50 flex w-full max-w-[min(100vw,20rem)] flex-col border-r border-border bg-card lg:static lg:z-0 lg:w-[min(100%,320px)] lg:max-w-none lg:translate-x-0",
+          mobileOpen ? "max-lg:flex" : "max-lg:hidden",
           collapsed && "lg:w-0 lg:overflow-hidden lg:border-0"
         )}
       >
