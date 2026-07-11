@@ -24,6 +24,7 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
   sessionToken: string;
 }) {
   const data = useQuery(api.gigaSocial.getMyProfile, { sessionToken });
+  const ensureMyProfile = useMutation(api.gigaSocial.ensureMyProfile);
   const features = useMemo(() => getGigaSocialFeatures(), []);
   const upsert = useMutation(api.gigaSocial.upsertMyProfile);
   const updatePost = useMutation(api.gigaSocial.updatePost);
@@ -88,7 +89,25 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
     return <LoadingState label="Loading profile…" />;
   }
 
-  if (!data || !profile) return null;
+  if (data === null) {
+    return (
+      <div className="saas-card rounded-2xl border border-border p-6 text-center">
+        <p className="text-sm text-muted">
+          We couldn&apos;t load your profile right now. You can still browse the feed — tap below to
+          finish setup.
+        </p>
+        <Button
+          type="button"
+          className="mt-4"
+          onClick={() => void ensureMyProfile({ sessionToken })}
+        >
+          Set up profile
+        </Button>
+      </div>
+    );
+  }
+
+  if (!profile) return null;
 
   function startEdit() {
     setDisplayName(profile!.displayName);

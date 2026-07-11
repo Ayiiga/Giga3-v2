@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v114-gigasocial-profile-fix";
+const CACHE_NAME = "giga3-shell-v115-gigasocial-profile-hardening";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

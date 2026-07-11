@@ -18,6 +18,7 @@ import {
   type FeedCategoryId,
 } from "@/lib/gigasocial/feedCategories";
 import { getGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
+import { handleFromEmail } from "@/lib/gigasocial/handleFromEmail";
 import { findFeaturedMediaPost } from "@/lib/gigasocial/postMedia";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
@@ -26,6 +27,7 @@ import type { SocialPostMediaItemInput } from "@/lib/gigasocial/constants";
 import { POST_TYPE_OPTIONS, type SocialPostTypeId } from "@/lib/gigasocial/sections";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { useMutation, useQuery } from "convex/react";
+import { getUserEmail } from "@/lib/auth";
 import { MessageCircle, SquarePen, X } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
@@ -57,11 +59,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     limit: 15,
   });
 
-  const myProfile = useQuery(
-    api.gigaSocial.getMyProfile,
-    sessionToken ? { sessionToken } : "skip"
-  );
-  const myHandle = myProfile?.profile?.handle;
+  const myHandle = useMemo(() => handleFromEmail(getUserEmail()), []);
 
   const createPost = useMutation(api.gigaSocial.createPost);
   const updatePost = useMutation(api.gigaSocial.updatePost);

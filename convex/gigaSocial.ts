@@ -353,73 +353,99 @@ export const listDiscover = query({
 export const getMyProfile = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
-    const profile = await getProfileDoc(ctx, userId);
-
-    if (!profile) {
-      return {
-        profile: defaultProfileView(userId),
-        recentPosts: [],
-      };
-    }
-
-    const posts = await ctx.db
-      .query("socialPosts")
-      .withIndex("by_author_created", (q) => q.eq("authorId", userId))
-      .order("desc")
-      .take(20);
-    const visiblePosts = posts.filter((p) => !p.deletedAt);
-    const gamification = parseGamification(profile.gamificationJson);
-
-    let communityCount = 0;
     try {
-      const memberships = await ctx.db
-        .query("socialCommunityMembers")
-        .withIndex("by_user", (q) => q.eq("userId", userId))
-        .collect();
-      communityCount = memberships.length;
-    } catch {
-      communityCount = 0;
-    }
-
-    let fanCount = 0;
-    let supportingCount = 0;
-    try {
-      const counts = await getFanCounts(ctx, userId);
-      fanCount = counts.fanCount;
-      supportingCount = counts.supportingCount;
-    } catch {
-      fanCount = 0;
-      supportingCount = 0;
-    }
-
-    const author = toPublicAuthor(profile, userId);
-    const recentPosts = [];
-    for (const post of visiblePosts) {
+      let userId: string;
       try {
-        recentPosts.push(await toPublicPost(post, author));
+        userId = await requireSession(args.sessionToken);
       } catch {
-        /* skip posts that fail to serialize */
+        return null;
       }
-    }
 
-    return {
-      profile: {
-        displayName: profile.displayName,
-        handle: profile.handle,
-        bio: profile.bio ?? "",
-        avatarUrl: profile.avatarUrl,
-        skills: profile.skills ?? [],
-        interests: profile.interests ?? [],
-        achievements: parseAchievementsJson(profile.achievementsJson),
-        gamification,
-        communityCount,
-        postCount: visiblePosts.length,
-        fanCount,
-        supportingCount,
-      },
-      recentPosts,
-    };
+      let profile;
+      try {
+        profile = await getProfileDoc(ctx, userId);
+      } catch {
+        return {
+          profile: defaultProfileView(userId),
+          recentPosts: [],
+        };
+      }
+
+      if (!profile) {
+        return {
+          profile: defaultProfileView(userId),
+          recentPosts: [],
+        };
+      }
+
+      let visiblePosts: Doc<"socialPosts">[] = [];
+      try {
+        const posts = await ctx.db
+          .query("socialPosts")
+          .withIndex("by_author_created", (q) => q.eq("authorId", userId))
+          .order("desc")
+          .take(20);
+        visiblePosts = posts.filter((p) => !p.deletedAt);
+      } catch {
+        visiblePosts = [];
+      }
+
+      const gamification = parseGamification(profile.gamificationJson);
+      const fallback = defaultProfileView(userId);
+
+      let communityCount = 0;
+      try {
+        const memberships = await ctx.db
+          .query("socialCommunityMembers")
+          .withIndex("by_user", (q) => q.eq("userId", userId))
+          .collect();
+        communityCount = memberships.length;
+      } catch {
+        communityCount = 0;
+      }
+
+      let fanCount = 0;
+      let supportingCount = 0;
+      try {
+        const counts = await getFanCounts(ctx, userId);
+        fanCount = counts.fanCount;
+        supportingCount = counts.supportingCount;
+      } catch {
+        fanCount = 0;
+        supportingCount = 0;
+      }
+
+      const author = toPublicAuthor(profile, userId);
+      const recentPosts = [];
+      for (const post of visiblePosts) {
+        try {
+          recentPosts.push(await toPublicPost(post, author));
+        } catch {
+          /* skip posts that fail to serialize */
+        }
+      }
+
+      return {
+        profile: {
+          displayName: profile.displayName?.trim() || fallback.displayName,
+          handle: profile.handle?.trim() || fallback.handle,
+          bio: profile.bio ?? "",
+          avatarUrl: profile.avatarUrl,
+          skills: Array.isArray(profile.skills) ? profile.skills : [],
+          interests: Array.isArray(profile.interests) ? profile.interests : [],
+          achievements: parseAchievementsJson(profile.achievementsJson),
+          gamification,
+          communityCount,
+          postCount: visiblePosts.length,
+          fanCount,
+          supportingCount,
+        },
+        recentPosts,
+      };
+    } catch (error) {
+      console.error("getMyProfile failed:", error);
+      return null;
+    }
   },
 });
 
@@ -520,40 +546,56 @@ export const listNotifications = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
-    const cap = Math.min(args.limit ?? 30, 60);
-    const rows = await ctx.db
-      .query("socialNotifications")
-      .withIndex("by_recipient_created", (q) => q.eq("recipientId", userId))
-      .order("desc")
-      .take(cap);
+    try {
+      let userId: string;
+      try {
+        userId = await requireSession(args.sessionToken);
+      } catch {
+        return { notifications: [], unreadCount: 0 };
+      }
 
-    const enriched = await Promise.all(
-      rows.map(async (n) => {
-        const actor = n.actorId ? await resolveAuthor(ctx, n.actorId) : null;
-        return {
-          _id: n._id,
-          type: n.type,
-          message: n.message,
-          read: n.read,
-          createdAt: n.createdAt,
-          postId: n.postId,
-          communitySlug: n.communitySlug,
-          actor,
-        };
-      })
-    );
-
-    const unreadCount = (
-      await ctx.db
+      const cap = Math.min(args.limit ?? 30, 60);
+      const rows = await ctx.db
         .query("socialNotifications")
-        .withIndex("by_recipient_read", (q) =>
-          q.eq("recipientId", userId).eq("read", false)
-        )
-        .collect()
-    ).length;
+        .withIndex("by_recipient_created", (q) => q.eq("recipientId", userId))
+        .order("desc")
+        .take(cap);
 
-    return { notifications: enriched, unreadCount };
+      const enriched = await Promise.all(
+        rows.map(async (n) => {
+          const actor = n.actorId ? await resolveAuthor(ctx, n.actorId) : null;
+          return {
+            _id: n._id,
+            type: n.type,
+            message: n.message,
+            read: n.read,
+            createdAt: n.createdAt,
+            postId: n.postId,
+            communitySlug: n.communitySlug,
+            actor,
+          };
+        })
+      );
+
+      let unreadCount = 0;
+      try {
+        unreadCount = (
+          await ctx.db
+            .query("socialNotifications")
+            .withIndex("by_recipient_read", (q) =>
+              q.eq("recipientId", userId).eq("read", false)
+            )
+            .collect()
+        ).length;
+      } catch {
+        unreadCount = 0;
+      }
+
+      return { notifications: enriched, unreadCount };
+    } catch (error) {
+      console.error("listNotifications failed:", error);
+      return { notifications: [], unreadCount: 0 };
+    }
   },
 });
 
