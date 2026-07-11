@@ -235,14 +235,68 @@ button:focus-visible {
   -webkit-overflow-scrolling: touch;
 }
 
+.gigasocial-stable,
+.gigasocial-stable * {
+  animation: none !important;
+}
+
+.gigasocial-stable *,
+.gigasocial-stable *::before,
+.gigasocial-stable *::after {
+  transition-property: none !important;
+}
+
 .gigasocial-stable .gigasocial-featured-media,
 .gigasocial-stable .gigasocial-featured-media video {
   touch-action: pan-y;
 }
 
+.gigasocial-stable .saas-card,
+.gigasocial-pro .saas-card,
+.gigasocial-pro .gigasocial-post-card,
+.gigasocial-pro .gigasocial-creator-studio {
+  contain: none;
+}
+
 @media (max-width: 1023px) {
   .gigasocial-stable .saas-card {
     box-shadow: none !important;
+  }
+
+  .gigasocial-stable,
+  .gigasocial-stable *,
+  .gigasocial-pro,
+  .gigasocial-pro * {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    transform: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    will-change: auto !important;
+    contain: none !important;
+  }
+
+  .gigasocial-stable .saas-card,
+  .gigasocial-pro .saas-card,
+  .gigasocial-pro .gigasocial-post-card,
+  .gigasocial-pro .gigasocial-creator-studio {
+    box-shadow: none !important;
+    background-image: none !important;
+  }
+
+  .gigasocial-pro .gigasocial-post-card,
+  .gigasocial-pro .gigasocial-creator-studio {
+    background: #fff !important;
+  }
+
+  .gigasocial-feed-hero {
+    background-image: none !important;
+    background-color: rgb(91 33 182) !important;
+  }
+
+  .gigasocial-feed-hero [aria-hidden="true"] {
+    display: none !important;
   }
 }
 
