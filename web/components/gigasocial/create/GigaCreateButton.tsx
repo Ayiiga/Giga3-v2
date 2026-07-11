@@ -99,18 +99,25 @@ export const GigaCreateButton = memo(function GigaCreateButton({
             >
               {GIGA_CREATE_MENU.map((item) => {
                 const isSecondary = item.id === "remix" || item.id === "live-content";
+                const isDisabled = item.disabled === true;
                 return (
                   <button
                     key={item.id}
                     type="button"
                     role="menuitem"
+                    disabled={isDisabled}
+                    aria-disabled={isDisabled}
                     className={cn(
                       "flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left",
-                      isSecondary
-                        ? "bg-slate-50 hover:bg-slate-100"
-                        : "hover:bg-accent/5 active:bg-accent/10"
+                      isSecondary && "bg-slate-50",
+                      isDisabled
+                        ? "cursor-not-allowed opacity-60"
+                        : isSecondary
+                          ? "hover:bg-slate-100 active:bg-slate-100"
+                          : "hover:bg-accent/5 active:bg-accent/10"
                     )}
                     onClick={() => {
+                      if (isDisabled) return;
                       onSelect({ action: item.id });
                       close();
                     }}

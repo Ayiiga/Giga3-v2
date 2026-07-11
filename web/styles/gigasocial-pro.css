@@ -33,6 +33,15 @@
   touch-action: none;
 }
 
+.gigasocial-composer-overlay {
+  touch-action: none;
+}
+
+.gigasocial-composer-sheet {
+  contain: none;
+  -webkit-overflow-scrolling: touch;
+}
+
 @media (max-width: 1023px) {
   .gigasocial-pro .gigasocial-post-card {
     box-shadow: none;

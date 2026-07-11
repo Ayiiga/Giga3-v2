@@ -6,6 +6,7 @@ import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCrea
 import { FeedCategoryBar } from "@/components/gigasocial/feed/FeedCategoryBar";
 import { FeedSkeletonList } from "@/components/gigasocial/feed/FeedPostSkeleton";
 import { GigaSocialComposer } from "@/components/gigasocial/GigaSocialComposer";
+import { GigaSocialComposerSheet } from "@/components/gigasocial/GigaSocialComposerSheet";
 import { GigaSocialFeaturedPlayer } from "@/components/gigasocial/GigaSocialFeaturedPlayer";
 import { GigaSocialFeedHero } from "@/components/gigasocial/GigaSocialFeedHero";
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
@@ -98,18 +99,41 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setComposeAction(action);
     setRemixSource(source ?? null);
     setComposerOpen(true);
+    setErrorToast(null);
+  }, []);
+
+  const closeComposer = useCallback(() => {
+    setComposerOpen(false);
+    setComposeAction(undefined);
+    setRemixSource(null);
   }, []);
 
   const handleGigaCreate = useCallback(
     (launch: GigaCreateLaunch) => {
+      if (launch.action === "live-content") {
+        setErrorToast("Live content is coming soon to GigaSocial.");
+        return;
+      }
       if (launch.action === "remix") {
-        setErrorToast("Choose a post and tap Remix to start a remix chain.");
+        setErrorToast("Choose a post below and tap Remix to start a remix chain.");
+        queueMicrotask(() => {
+          document.getElementById("gigasocial-feed-posts")?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        });
         return;
       }
       openComposer(launch.action);
     },
     [openComposer]
   );
+
+  useEffect(() => {
+    if (!errorToast) return;
+    const timer = window.setTimeout(() => setErrorToast(null), 6000);
+    return () => window.clearTimeout(timer);
+  }, [errorToast]);
 
   useEffect(() => {
     if (!highlightPostId || !posts.length) return;
@@ -165,6 +189,17 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   }
 
   const useGigaCreateFab = features.enableGigaCreate && Boolean(sessionToken);
+
+  const composerProps = {
+    sessionToken: sessionToken!,
+    communitySlug,
+    initialAction: composeAction,
+    remixSource: remixSource ?? undefined,
+    enableAIAssistant: features.enableAIEditing,
+    enableMediaStudio: features.enableMediaStudio,
+    onSubmit: handleCreate,
+    onPosted: closeComposer,
+  };
 
   return (
     <div className="gigasocial-pro space-y-4 pb-24">
@@ -226,21 +261,17 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         ) : null}
       </div>
 
-      {sessionToken && composerOpen ? (
-        <GigaSocialComposer
-          sessionToken={sessionToken}
-          communitySlug={communitySlug}
-          initialAction={composeAction}
-          remixSource={remixSource ?? undefined}
-          enableAIAssistant={features.enableAIEditing}
-          enableMediaStudio={features.enableMediaStudio}
-          onSubmit={handleCreate}
-          onPosted={() => setComposerOpen(false)}
-        />
+      {sessionToken && composerOpen && !useGigaCreateFab ? (
+        <GigaSocialComposer {...composerProps} />
+      ) : null}
+
+      {sessionToken && useGigaCreateFab ? (
+        <GigaSocialComposerSheet open={composerOpen} onClose={closeComposer} {...composerProps} />
       ) : null}
 
       {feedPosts.length === 0 ? (
-        <EmptyState
+        <div id="gigasocial-feed-posts">
+          <EmptyState
           icon={MessageCircle}
           title={typeFilter === "all" ? "No posts yet" : `No ${typeFilter} posts yet`}
           description={
@@ -252,8 +283,9 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
           }
           showVision
         />
+        </div>
       ) : (
-        <ul className="space-y-4">
+        <ul id="gigasocial-feed-posts" className="space-y-4">
           {feedPosts.map((post) => (
             <li key={post._id} id={`gigasocial-post-${post._id}`}>
               <GigaSocialPostCard
