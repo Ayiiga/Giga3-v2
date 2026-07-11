@@ -519,8 +519,19 @@ export const createPost = mutation({
         throw new Error("A post can include at most 10 media items.");
       }
       const hasVideo = args.mediaItems.some((m) => m.type === "video");
+      const hasAudio = args.mediaItems.some((m) => m.type === "audio");
+      const imageCount = args.mediaItems.filter((m) => m.type === "image").length;
       if (hasVideo && args.mediaItems.length > 1) {
         throw new Error("A post can include one video or multiple photos, not both.");
+      }
+      if (hasAudio && hasVideo) {
+        throw new Error("Audio tracks can be added to photo posts only.");
+      }
+      if (hasAudio && imageCount === 0) {
+        throw new Error("Add a photo before attaching music.");
+      }
+      if (hasAudio && args.mediaItems.filter((m) => m.type === "audio").length > 1) {
+        throw new Error("A post can include one music track.");
       }
       for (const item of args.mediaItems) {
         const url = item.url.trim().slice(0, 2000);
@@ -533,6 +544,12 @@ export const createPost = mutation({
             throw new Error("Videos must be 40 seconds or shorter.");
           }
         }
+        if (item.type === "audio") {
+          const duration = item.durationSec ?? 0;
+          if (duration <= 0 || duration > 300) {
+            throw new Error("Music tracks must be 5 minutes or shorter.");
+          }
+        }
         mediaItems.push({
           url,
           type: item.type,
@@ -540,6 +557,7 @@ export const createPost = mutation({
           thumbnailUrl: item.thumbnailUrl?.trim().slice(0, 2000),
           storagePath: item.storagePath?.trim().slice(0, 500),
           storageBucket: item.storageBucket?.trim().slice(0, 64),
+          filterId: item.filterId?.trim().slice(0, 32),
         });
       }
     } else if (args.mediaUrl?.trim()) {

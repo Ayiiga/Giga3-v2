@@ -3,16 +3,20 @@
 import { Button } from "@/components/ui/Button";
 import { GigaSocialPendingMediaPreview } from "@/components/gigasocial/GigaSocialPostMedia";
 import {
+  SOCIAL_AUDIO_ACCEPT,
   SOCIAL_CAPTION_MAX_LENGTH,
   SOCIAL_IMAGE_ACCEPT,
   SOCIAL_MAX_PHOTOS_PER_POST,
   SOCIAL_VIDEO_ACCEPT,
   type SocialPostMediaItemInput,
 } from "@/lib/gigasocial/constants";
+import type { CameraFilterId } from "@/lib/gigasocial/cameraFilters";
 import { extractHashtagsFromText } from "@/lib/gigasocial/hashtags";
 import {
+  getAudioDuration,
   getVideoDuration,
   generateVideoThumbnail,
+  uploadSocialAudio,
   uploadSocialImages,
   uploadSocialVideo,
   type SocialMediaUploadDeps,
@@ -28,7 +32,7 @@ import { POST_TYPE_OPTIONS, type SocialPostTypeId } from "@/lib/gigasocial/secti
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { api } from "convex/_generated/api";
 import { useAction, useMutation } from "convex/react";
-import { Camera, ImagePlus, Loader2, Send, Video, X } from "lucide-react";
+import { Camera, ImagePlus, Loader2, Music2, Send, Video, X } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface PendingImage {
@@ -44,6 +48,12 @@ interface PendingVideo {
   name: string;
   durationSec: number;
   thumbnailUrl?: string;
+}
+
+interface PendingAudio {
+  file: File;
+  name: string;
+  durationSec: number;
 }
 
 interface GigaSocialComposerProps {
@@ -78,16 +88,18 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const [postType, setPostType] = useState<SocialPostTypeId>("text");
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [pendingVideo, setPendingVideo] = useState<PendingVideo | null>(null);
+  const [pendingAudio, setPendingAudio] = useState<PendingAudio | null>(null);
   const [busy, setBusy] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [studioOpen, setStudioOpen] = useState(false);
-  const [previewFilter, setPreviewFilter] = useState<string>("none");
+  const [previewFilterId, setPreviewFilterId] = useState<CameraFilterId>("none");
   const uploadAbortRef = useRef<AbortController | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const captionRef = useRef<HTMLTextAreaElement>(null);
 
@@ -153,7 +165,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     }
   }, [initialAction, remixSource]);
 
-  const hasMedia = pendingImages.length > 0 || Boolean(pendingVideo);
+  const hasMedia = pendingImages.length > 0 || Boolean(pendingVideo) || Boolean(pendingAudio);
   const canPost = Boolean(body.trim() || hasMedia);
 
   const revokePreview = useCallback((previewUrl: string) => {
@@ -167,6 +179,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     if (pendingVideo) revokePreview(pendingVideo.previewUrl);
     setPendingImages([]);
     setPendingVideo(null);
+    setPendingAudio(null);
+    setPreviewFilterId("none");
   }, [pendingImages, pendingVideo, revokePreview]);
 
   const addImageFiles = useCallback(
@@ -199,8 +213,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   );
 
   const addVideoFile = useCallback(async (file: File) => {
-    if (pendingImages.length) {
-      setError("Remove photos before adding a video.");
+    if (pendingImages.length || pendingAudio) {
+      setError("Remove photos and music before adding a video.");
       return;
     }
     try {
@@ -224,7 +238,29 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not read video.");
     }
-  }, [pendingImages.length]);
+  }, [pendingAudio, pendingImages.length]);
+
+  const addAudioFile = useCallback(async (file: File) => {
+    if (pendingVideo) {
+      setError("Remove the video before adding music.");
+      return;
+    }
+    if (!pendingImages.length) {
+      setError("Add a photo first, then attach music.");
+      return;
+    }
+    try {
+      const durationSec = await getAudioDuration(file);
+      setPendingAudio({
+        file,
+        name: file.name,
+        durationSec,
+      });
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not read audio.");
+    }
+  }, [pendingImages.length, pendingVideo]);
 
   const handleDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
@@ -270,14 +306,23 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         });
         mediaItems = [uploaded];
       } else if (pendingImages.length) {
-        mediaItems = await uploadSocialImages(
+        const uploadedImages = await uploadSocialImages(
           uploadDeps,
           pendingImages.map((image) => image.file),
           {
+            filterId: previewFilterId === "none" ? undefined : previewFilterId,
             signal: controller.signal,
             onProgress: (_index, progress) => setUploadPercent(progress.percent),
           }
         );
+        mediaItems = [...uploadedImages];
+        if (pendingAudio) {
+          const uploadedAudio = await uploadSocialAudio(uploadDeps, pendingAudio.file, {
+            signal: controller.signal,
+            onProgress: (progress) => setUploadPercent(progress.percent),
+          });
+          mediaItems.push(uploadedAudio);
+        }
       }
 
       let finalBody = body.trim();
@@ -360,18 +405,22 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       <GigaSocialPendingMediaPreview
         images={pendingImages}
         video={pendingVideo ?? undefined}
-        imageFilter={previewFilter}
+        audio={pendingAudio ?? undefined}
+        imageFilterId={previewFilterId}
         onRemoveImage={(id) => {
           setPendingImages((prev) => {
             const target = prev.find((image) => image.id === id);
             if (target) revokePreview(target.previewUrl);
-            return prev.filter((image) => image.id !== id);
+            const next = prev.filter((image) => image.id !== id);
+            if (next.length === 0) setPendingAudio(null);
+            return next;
           });
         }}
         onRemoveVideo={() => {
           if (pendingVideo) revokePreview(pendingVideo.previewUrl);
           setPendingVideo(null);
         }}
+        onRemoveAudio={() => setPendingAudio(null)}
       />
 
       {enableMediaStudio && studioOpen && studioPreviewUrl ? (
@@ -379,7 +428,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           <GigaSocialMediaStudio
             previewUrl={studioPreviewUrl}
             onClose={() => setStudioOpen(false)}
-            onApplyFilter={(filterCss) => setPreviewFilter(filterCss)}
+            onApplyFilter={(filterId) => setPreviewFilterId(filterId)}
           />
         </div>
       ) : null}
@@ -446,6 +495,17 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
             event.target.value = "";
           }}
         />
+        <input
+          ref={audioInputRef}
+          type="file"
+          accept={SOCIAL_AUDIO_ACCEPT}
+          className="sr-only"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) void addAudioFile(file);
+            event.target.value = "";
+          }}
+        />
 
         <Button
           type="button"
@@ -468,6 +528,17 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         >
           <Video className="h-4 w-4" aria-hidden />
           Video
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={disabled || busy || Boolean(pendingVideo) || pendingImages.length === 0}
+          onClick={() => audioInputRef.current?.click()}
+          aria-label="Add music"
+        >
+          <Music2 className="h-4 w-4" aria-hidden />
+          Music
         </Button>
         <Button
           type="button"

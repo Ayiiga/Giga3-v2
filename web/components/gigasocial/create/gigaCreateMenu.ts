@@ -27,7 +27,7 @@ export const GIGA_CREATE_MENU: GigaCreateMenuItem[] = [
     id: "photo-studio",
     label: "Photo Studio",
     emoji: "📸",
-    description: "Share photos with filters",
+    description: "Share photos with camera filters and optional music",
   },
   {
     id: "text-post",

@@ -50,10 +50,22 @@ function buildSocialObjectPath(userId: string, fileName: string): string {
   return `${cleanSegment(userId)}/${date}/${Date.now()}-${cleanSegment(fileName)}`;
 }
 
+const AUDIO_MIME = new Set([
+  "audio/mpeg",
+  "audio/mp4",
+  "audio/wav",
+  "audio/ogg",
+  "audio/aac",
+  "audio/webm",
+]);
+
+const MAX_AUDIO_BYTES = 15 * 1024 * 1024;
+const SOCIAL_AUDIO_BUCKET = "social-audio";
+
 function validateMimeAndSize(
   contentType: string,
   sizeBytes: number,
-  kind: "image" | "video"
+  kind: "image" | "video" | "audio"
 ): void {
   if (kind === "image") {
     if (!IMAGE_MIME.has(contentType)) {
@@ -61,6 +73,15 @@ function validateMimeAndSize(
     }
     if (sizeBytes > MAX_IMAGE_BYTES) {
       throw new Error("Image is too large. Maximum size is 15 MB.");
+    }
+    return;
+  }
+  if (kind === "audio") {
+    if (!AUDIO_MIME.has(contentType)) {
+      throw new Error("Unsupported audio type. Use MP3, M4A, WAV, or OGG.");
+    }
+    if (sizeBytes > MAX_AUDIO_BYTES) {
+      throw new Error("Audio is too large. Maximum size is 15 MB.");
     }
     return;
   }
@@ -91,14 +112,18 @@ export const prepareMediaUpload = action({
     fileName: v.string(),
     contentType: v.string(),
     sizeBytes: v.number(),
-    kind: v.union(v.literal("image"), v.literal("video")),
+    kind: v.union(v.literal("image"), v.literal("video"), v.literal("audio")),
   },
   handler: async (ctx, args): Promise<PrepareMediaUploadResult> => {
     const userId = await requireSession(args.sessionToken);
     validateMimeAndSize(args.contentType, args.sizeBytes, args.kind);
 
     const bucket =
-      args.kind === "image" ? SOCIAL_IMAGE_BUCKET : SOCIAL_VIDEO_BUCKET;
+      args.kind === "image"
+        ? SOCIAL_IMAGE_BUCKET
+        : args.kind === "video"
+          ? SOCIAL_VIDEO_BUCKET
+          : SOCIAL_AUDIO_BUCKET;
     const objectPath = buildSocialObjectPath(userId, args.fileName);
 
     const baseUrl = process.env.SUPABASE_URL?.trim()?.replace(/\/$/, "");

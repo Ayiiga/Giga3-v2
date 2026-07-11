@@ -11,6 +11,7 @@ export const SOCIAL_AVATAR_ACCEPT = "image/jpeg,image/png,image/webp,.jpg,.jpeg,
 
 export const SOCIAL_IMAGE_ACCEPT = "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp";
 export const SOCIAL_VIDEO_ACCEPT = "video/mp4,video/webm,video/quicktime,.mp4,.mov,.webm";
+export const SOCIAL_AUDIO_ACCEPT = "audio/mpeg,audio/mp4,audio/wav,audio/ogg,audio/aac,audio/webm,.mp3,.m4a,.wav,.ogg,.aac";
 
 export const SOCIAL_IMAGE_MIME_TYPES = new Set([
   "image/jpeg",
@@ -24,11 +25,24 @@ export const SOCIAL_VIDEO_MIME_TYPES = new Set([
   "video/quicktime",
 ]);
 
+export const SOCIAL_AUDIO_MIME_TYPES = new Set([
+  "audio/mpeg",
+  "audio/mp4",
+  "audio/wav",
+  "audio/ogg",
+  "audio/aac",
+  "audio/webm",
+]);
+
+export const SOCIAL_MAX_AUDIO_BYTES = 15 * 1024 * 1024;
+export const SOCIAL_MAX_AUDIO_DURATION_SEC = 300;
+
 export const SOCIAL_IMAGE_BUCKETS = ["social-images", "images"] as const;
 export const SOCIAL_VIDEO_BUCKETS = ["social-videos", "videos"] as const;
+export const SOCIAL_AUDIO_BUCKETS = ["social-audio", "audio"] as const;
 export const SOCIAL_AVATAR_BUCKETS = ["avatars", "social-images"] as const;
 
-export type SocialMediaKind = "image" | "video";
+export type SocialMediaKind = "image" | "video" | "audio";
 
 export type SocialPostMediaItemInput = {
   url: string;
@@ -37,6 +51,7 @@ export type SocialPostMediaItemInput = {
   thumbnailUrl?: string;
   storagePath?: string;
   storageBucket?: string;
+  filterId?: string;
 };
 
 export type SocialUploadProgress = {
