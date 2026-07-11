@@ -19,7 +19,7 @@ import {
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { ArrowLeft, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -45,11 +45,19 @@ function GigaSocialContent() {
     api.gigaSocial.listNotifications,
     sessionToken ? { sessionToken, limit: 1 } : "skip"
   );
+  const ensureMyProfile = useMutation(api.gigaSocial.ensureMyProfile);
 
   useEffect(() => {
     setMounted(true);
     setSessionToken(getSessionToken());
   }, []);
+
+  useEffect(() => {
+    if (!sessionToken) return;
+    void ensureMyProfile({ sessionToken }).catch(() => {
+      /* Profile bootstrap is best-effort; feed must still load if this fails. */
+    });
+  }, [ensureMyProfile, sessionToken]);
 
   useEffect(() => {
     if (mounted && !sessionToken) {

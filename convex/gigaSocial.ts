@@ -29,14 +29,21 @@ import type { Id } from "./_generated/dataModel";
 
 const SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC = 15;
 
-async function getOrCreateProfile(
+async function getProfileDoc(
   ctx: { db: import("./_generated/server").QueryCtx["db"] },
   userId: string
 ) {
-  const existing = await ctx.db
+  return ctx.db
     .query("socialProfiles")
     .withIndex("by_user", (q) => q.eq("userId", userId))
     .first();
+}
+
+async function getOrCreateProfile(
+  ctx: { db: import("./_generated/server").MutationCtx["db"] },
+  userId: string
+) {
+  const existing = await getProfileDoc(ctx, userId);
   if (existing) return existing;
 
   const local = userId.split("@")[0] ?? "user";
@@ -55,6 +62,37 @@ async function getOrCreateProfile(
     updatedAt: now,
   });
   return (await ctx.db.get(id))!;
+}
+
+function defaultProfileView(userId: string) {
+  const local = userId.split("@")[0] ?? "user";
+  const handle = normalizeSocialHandle(local) || `user-${userId.slice(0, 8)}`;
+  return {
+    displayName: local.slice(0, 80),
+    handle,
+    bio: "",
+    avatarUrl: undefined as string | undefined,
+    skills: [] as string[],
+    interests: [] as string[],
+    achievements: [] as string[],
+    gamification: parseGamification(null),
+    communityCount: 0,
+    postCount: 0,
+    fanCount: 0,
+    supportingCount: 0,
+  };
+}
+
+function parseAchievementsJson(raw: string | undefined | null): string[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed)
+      ? parsed.filter((item): item is string => typeof item === "string")
+      : [];
+  } catch {
+    return [];
+  }
 }
 
 async function resolveAuthor(
@@ -316,7 +354,15 @@ export const getMyProfile = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
-    const profile = await getOrCreateProfile(ctx, userId);
+    const profile = await getProfileDoc(ctx, userId);
+
+    if (!profile) {
+      return {
+        profile: defaultProfileView(userId),
+        recentPosts: [],
+      };
+    }
+
     const posts = await ctx.db
       .query("socialPosts")
       .withIndex("by_author_created", (q) => q.eq("authorId", userId))
@@ -324,11 +370,38 @@ export const getMyProfile = query({
       .take(20);
     const visiblePosts = posts.filter((p) => !p.deletedAt);
     const gamification = parseGamification(profile.gamificationJson);
-    const memberships = await ctx.db
-      .query("socialCommunityMembers")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .collect();
-    const { fanCount, supportingCount } = await getFanCounts(ctx, userId);
+
+    let communityCount = 0;
+    try {
+      const memberships = await ctx.db
+        .query("socialCommunityMembers")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect();
+      communityCount = memberships.length;
+    } catch {
+      communityCount = 0;
+    }
+
+    let fanCount = 0;
+    let supportingCount = 0;
+    try {
+      const counts = await getFanCounts(ctx, userId);
+      fanCount = counts.fanCount;
+      supportingCount = counts.supportingCount;
+    } catch {
+      fanCount = 0;
+      supportingCount = 0;
+    }
+
+    const author = toPublicAuthor(profile, userId);
+    const recentPosts = [];
+    for (const post of visiblePosts) {
+      try {
+        recentPosts.push(await toPublicPost(post, author));
+      } catch {
+        /* skip posts that fail to serialize */
+      }
+    }
 
     return {
       profile: {
@@ -336,23 +409,27 @@ export const getMyProfile = query({
         handle: profile.handle,
         bio: profile.bio ?? "",
         avatarUrl: profile.avatarUrl,
-        skills: profile.skills,
-        interests: profile.interests,
-        achievements: profile.achievementsJson
-          ? (JSON.parse(profile.achievementsJson) as string[])
-          : [],
+        skills: profile.skills ?? [],
+        interests: profile.interests ?? [],
+        achievements: parseAchievementsJson(profile.achievementsJson),
         gamification,
-        communityCount: memberships.length,
+        communityCount,
         postCount: visiblePosts.length,
         fanCount,
         supportingCount,
       },
-      recentPosts: await Promise.all(
-        visiblePosts.map(async (post) =>
-          toPublicPost(post, toPublicAuthor(profile, userId))
-        )
-      ),
+      recentPosts,
     };
+  },
+});
+
+/** Creates a social profile on first visit — safe to call from mutations / client bootstrap. */
+export const ensureMyProfile = mutation({
+  args: sessionArgs,
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    const profile = await getOrCreateProfile(ctx, userId);
+    return { handle: profile.handle, displayName: profile.displayName };
   },
 });
 
