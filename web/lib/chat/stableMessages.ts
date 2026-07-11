@@ -21,6 +21,12 @@ export function toUiMessages(
 export function messagesEqual(a: UiMessage[], b: UiMessage[]): boolean {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
+    if (a[i].id === "pending-user" && b[i].id === "pending-user") {
+      if (a[i].role !== b[i].role || a[i].content !== b[i].content) {
+        return false;
+      }
+      continue;
+    }
     if (
       a[i].id !== b[i].id ||
       a[i].role !== b[i].role ||

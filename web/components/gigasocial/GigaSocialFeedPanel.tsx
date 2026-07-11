@@ -20,7 +20,7 @@ import {
   filterPostsByFeedCategory,
   type FeedCategoryId,
 } from "@/lib/gigasocial/feedCategories";
-import { getGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
+import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { handleFromEmail } from "@/lib/gigasocial/handleFromEmail";
 import { findFeaturedMediaPost } from "@/lib/gigasocial/postMedia";
 import { cn } from "@/lib/utils";
@@ -32,7 +32,7 @@ import type { SocialPost } from "@/lib/gigasocial/types";
 import { useMutation, useQuery } from "convex/react";
 import { getUserEmail } from "@/lib/auth";
 import { MessageCircle, SquarePen, X } from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   sessionToken,
@@ -45,7 +45,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   highlightPostId?: string;
   onOpenLive?: () => void;
 }) {
-  const features = useMemo(() => getGigaSocialFeatures(), []);
+  const features = useGigaSocialFeatures();
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [extraPosts, setExtraPosts] = useState<SocialPost[]>([]);
   const [composerOpen, setComposerOpen] = useState(false);
@@ -54,6 +54,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const [composeAction, setComposeAction] = useState<GigaCreateActionId | undefined>();
   const [remixSource, setRemixSource] = useState<SocialPost | null>(null);
   const [errorToast, setErrorToast] = useState<string | null>(null);
+  const highlightScrolledRef = useRef<string | null>(null);
 
   const feed = useQuery(api.gigaSocial.listFeed, {
     sessionToken: sessionToken ?? undefined,
@@ -132,8 +133,9 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       if (launch.action === "remix") {
         setErrorToast("Choose a post below and tap Remix to start a remix chain.");
         queueMicrotask(() => {
+          const behavior = window.matchMedia("(max-width: 1023px)").matches ? "auto" : "smooth";
           document.getElementById("gigasocial-feed-posts")?.scrollIntoView({
-            behavior: "smooth",
+            behavior,
             block: "start",
           });
         });
@@ -151,12 +153,18 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   }, [errorToast]);
 
   useEffect(() => {
+    resetFeedPagination();
+  }, [communitySlug, resetFeedPagination]);
+
+  useEffect(() => {
     if (!highlightPostId || !posts.length) return;
+    if (highlightScrolledRef.current === highlightPostId) return;
     const el = document.getElementById(`gigasocial-post-${highlightPostId}`);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  }, [highlightPostId, posts]);
+    if (!el) return;
+    highlightScrolledRef.current = highlightPostId;
+    const behavior = window.matchMedia("(max-width: 1023px)").matches ? "auto" : "smooth";
+    el.scrollIntoView({ behavior, block: "center" });
+  }, [highlightPostId, posts.length]);
 
   const handleCreate = useCallback(
     async (args: {
@@ -224,14 +232,21 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         </p>
       ) : null}
 
-      {featuredPost && hydrated ? (
-        <GigaSocialFeaturedPlayer
-          post={featuredPost}
-          autoPlay={autoPlay}
-          paused={paused}
-          onPause={pause}
-          onTogglePause={toggle}
-        />
+      {featuredPost ? (
+        hydrated ? (
+          <GigaSocialFeaturedPlayer
+            post={featuredPost}
+            autoPlay={autoPlay}
+            paused={paused}
+            onPause={pause}
+            onTogglePause={toggle}
+          />
+        ) : (
+          <div
+            className="gigasocial-featured-slot min-h-[14rem] rounded-2xl border border-accent/20 bg-card sm:min-h-[16rem]"
+            aria-hidden
+          />
+        )
       ) : (
         <GigaSocialFeedHero postCount={posts.length} />
       )}

@@ -107,7 +107,23 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
     );
   }
 
-  if (!profile) return null;
+  if (!profile) {
+    return (
+      <div className="saas-card rounded-2xl border border-border p-6 text-center">
+        <p className="text-sm text-muted">
+          We couldn&apos;t load your profile right now. You can still browse the feed — tap below to
+          finish setup.
+        </p>
+        <Button
+          type="button"
+          className="mt-4"
+          onClick={() => void ensureMyProfile({ sessionToken })}
+        >
+          Set up profile
+        </Button>
+      </div>
+    );
+  }
 
   function startEdit() {
     setDisplayName(profile!.displayName);

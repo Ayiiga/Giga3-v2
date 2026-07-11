@@ -58,7 +58,7 @@ export function useScrollToLatestMessage({
     if (!el) return;
 
     requestAnimationFrame(() => {
-      scrollToBottom(el, "smooth");
+      scrollToBottom(el, "auto");
       setShowScrollButton(false);
     });
   }, [scrollRef, scrollKey, enabled]);
@@ -66,7 +66,7 @@ export function useScrollToLatestMessage({
   const scrollToLatest = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
-    scrollToBottom(el, "smooth");
+    scrollToBottom(el, "auto");
     setShowScrollButton(false);
   }, [scrollRef]);
 

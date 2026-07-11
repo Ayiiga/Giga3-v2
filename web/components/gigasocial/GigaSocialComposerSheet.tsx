@@ -46,12 +46,12 @@ export const GigaSocialComposerSheet = memo(function GigaSocialComposerSheet({
   return createPortal(
     <>
       <div
-        className="gigasocial-composer-overlay fixed inset-0 z-[60] bg-black/45"
+        className="gigasocial-stable gigasocial-composer-overlay fixed inset-0 z-[60] bg-black/45"
         aria-hidden
         onClick={onClose}
       />
       <div
-        className="gigasocial-composer-sheet fixed inset-x-0 bottom-0 z-[61] flex max-h-[min(92dvh,48rem)] flex-col border-t border-border bg-white shadow-2xl"
+        className="gigasocial-stable gigasocial-composer-sheet fixed inset-x-0 bottom-0 z-[61] flex max-h-[min(92dvh,48rem)] flex-col border-t border-border bg-white shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-label="Create post"

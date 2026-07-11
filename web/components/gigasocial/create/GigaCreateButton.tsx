@@ -75,13 +75,13 @@ export const GigaCreateButton = memo(function GigaCreateButton({
     <>
       {open ? (
         <div
-          className="gigasocial-create-overlay fixed inset-0 z-[60] bg-black/45"
+          className="gigasocial-stable gigasocial-create-overlay fixed inset-0 z-[60] bg-black/45"
           aria-hidden
           onClick={close}
         />
       ) : null}
 
-      <div className="gigasocial-create-fab pointer-events-none fixed inset-x-0 bottom-0 z-[61] flex flex-col items-stretch justify-end pb-[env(safe-area-inset-bottom)]">
+      <div className="gigasocial-stable gigasocial-create-fab pointer-events-none fixed inset-x-0 bottom-0 z-[61] flex flex-col items-stretch justify-end pb-[env(safe-area-inset-bottom)]">
         {open ? (
           <div
             className="gigasocial-create-menu pointer-events-auto border-t border-border bg-white shadow-2xl"
@@ -146,7 +146,7 @@ export const GigaCreateButton = memo(function GigaCreateButton({
             <div className="flex justify-end border-t border-border/60 p-4">{fab}</div>
           </div>
         ) : (
-          <div className="pointer-events-auto flex justify-end p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="gigasocial-stable pointer-events-auto flex justify-end p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             {fab}
           </div>
         )}

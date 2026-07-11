@@ -95,13 +95,6 @@ export const ChatInput = memo(function ChatInput({
   }, [toolbarOpen]);
 
   useEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
-  }, [value]);
-
-  useEffect(() => {
     onAttachmentsChange?.(attachments);
   }, [attachments, onAttachmentsChange]);
 
@@ -293,13 +286,6 @@ export const ChatInput = memo(function ChatInput({
               value={value}
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              onFocus={() => {
-                requestAnimationFrame(() => {
-                  const composer = composerRef.current?.closest(".chat-composer-dock");
-                  composer?.scrollIntoView({ block: "end", behavior: "auto" });
-                  textareaRef.current?.scrollIntoView({ block: "nearest", behavior: "auto" });
-                });
-              }}
               disabled={inputDisabled}
               rows={1}
               placeholder={placeholder}
