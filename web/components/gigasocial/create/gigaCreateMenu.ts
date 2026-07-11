@@ -13,6 +13,7 @@ export type GigaCreateMenuItem = {
   label: string;
   emoji: string;
   description: string;
+  disabled?: boolean;
 };
 
 export const GIGA_CREATE_MENU: GigaCreateMenuItem[] = [
@@ -38,7 +39,7 @@ export const GIGA_CREATE_MENU: GigaCreateMenuItem[] = [
     id: "remix",
     label: "Remix Content",
     emoji: "🎵",
-    description: "Respond with your perspective",
+    description: "Tap Remix on a post in your feed",
   },
   {
     id: "ai-enhance",
@@ -63,5 +64,6 @@ export const GIGA_CREATE_MENU: GigaCreateMenuItem[] = [
     label: "Live Content",
     emoji: "🔴",
     description: "Go live (coming soon)",
+    disabled: true,
   },
 ];

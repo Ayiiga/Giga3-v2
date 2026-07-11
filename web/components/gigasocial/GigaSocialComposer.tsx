@@ -89,6 +89,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const captionRef = useRef<HTMLTextAreaElement>(null);
 
   const prepareUpload = useAction(api.gigaSocialStorage.prepareMediaUpload);
   const resolveStorageUrl = useMutation(api.gigaSocialStorage.resolveStorageUrl);
@@ -130,18 +131,22 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         break;
       case "text-post":
         setPostType("text");
+        queueMicrotask(() => captionRef.current?.focus());
         break;
       case "learning-post":
         setPostType("education");
+        setBody((value) => value.trim() || "📚 What I learned today\n\n");
+        queueMicrotask(() => captionRef.current?.focus());
         break;
       case "product-post":
         setPostType("creator");
-        setBody((value) => value || "🛒 Product showcase\n\n");
+        setBody((value) => value.trim() || "🛒 Product showcase\n\n");
+        queueMicrotask(() => captionRef.current?.focus());
         break;
       case "ai-enhance":
-        break;
-      case "live-content":
-        setError("Live content is coming soon to GigaSocial.");
+        setPostType("text");
+        setBody((value) => value.trim() || "Sharing an update with the Giga3 community…\n\n");
+        queueMicrotask(() => captionRef.current?.focus());
         break;
       default:
         break;
@@ -303,6 +308,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
 
   return (
     <div
+      id="gigasocial-composer"
       className="saas-card rounded-2xl border border-border p-4"
       onDragOver={(event) => {
         event.preventDefault();
@@ -316,6 +322,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       </label>
       <textarea
         id="gigasocial-caption"
+        ref={captionRef}
         value={body}
         onChange={(e) => setBody(e.target.value)}
         rows={4}
