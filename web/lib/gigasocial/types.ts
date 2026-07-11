@@ -79,4 +79,8 @@ export type SocialProfileView = {
   gamification?: SocialGamification;
   communityCount?: number;
   postCount?: number;
+  fanCount?: number;
+  supportingCount?: number;
+  supporting?: boolean;
+  userId?: string;
 };

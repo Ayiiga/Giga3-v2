@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { formatRelativeTime } from "@/lib/datetime";
+import { fanNotificationMessage } from "@/lib/gigasocial/fanBranding";
 import type { SocialNotification } from "@/lib/gigasocial/types";
 import { api } from "convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
@@ -50,7 +51,7 @@ export const GigaSocialNotificationsPanel = memo(function GigaSocialNotification
       {notifications.length === 0 ? (
         <div className="saas-card flex min-h-40 flex-col items-center justify-center rounded-2xl border border-dashed border-border p-8 text-center">
           <Bell className="mb-2 h-8 w-8 text-muted" aria-hidden />
-          <p className="text-sm text-muted">Notifications about likes, comments, and communities appear here.</p>
+          <p className="text-sm text-muted">Notifications about likes, comments, fans, and communities appear here.</p>
         </div>
       ) : (
         <ul className="space-y-2">
@@ -67,7 +68,9 @@ export const GigaSocialNotificationsPanel = memo(function GigaSocialNotification
                 ) : (
                   <span className="font-medium">GigaSocial</span>
                 )}{" "}
-                <span className="text-muted">{n.message}</span>
+                <span className="text-muted">
+                  {fanNotificationMessage(n.type, n.message)}
+                </span>
               </p>
               <p className="mt-1 text-xs text-muted">{formatRelativeTime(n.createdAt)}</p>
             </li>

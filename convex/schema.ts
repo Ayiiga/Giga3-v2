@@ -800,6 +800,43 @@ export default defineSchema({
     .index("by_following", ["followingId"])
     .index("by_pair", ["followerId", "followingId"]),
 
+  socialLiveStreams: defineTable({
+    hostId: v.string(),
+    title: v.string(),
+    mode: v.union(v.literal("video"), v.literal("audio"), v.literal("screen")),
+    status: v.union(v.literal("scheduled"), v.literal("live"), v.literal("ended")),
+    scheduledAt: v.optional(v.number()),
+    startedAt: v.optional(v.number()),
+    endedAt: v.optional(v.number()),
+    viewerCount: v.number(),
+    peakViewers: v.number(),
+    coHostIds: v.optional(v.array(v.string())),
+    mutedUserIds: v.optional(v.array(v.string())),
+    reactionCountsJson: v.optional(v.string()),
+    captionLinesJson: v.optional(v.string()),
+    replayUrl: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_status_created", ["status", "createdAt"])
+    .index("by_host_created", ["hostId", "createdAt"]),
+
+  socialLiveChat: defineTable({
+    streamId: v.id("socialLiveStreams"),
+    authorId: v.string(),
+    body: v.string(),
+    deletedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  }).index("by_stream_created", ["streamId", "createdAt"]),
+
+  socialLiveGifts: defineTable({
+    streamId: v.id("socialLiveStreams"),
+    senderId: v.string(),
+    giftType: v.string(),
+    amount: v.number(),
+    createdAt: v.number(),
+  }).index("by_stream_created", ["streamId", "createdAt"]),
+
   /** Enterprise & education — org-scoped data isolated from consumer chat history. */
   organizations: defineTable({
     slug: v.string(),

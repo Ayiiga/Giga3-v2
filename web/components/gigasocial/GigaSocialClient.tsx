@@ -3,6 +3,7 @@
 import { GigaSocialCommunitiesPanel } from "@/components/gigasocial/GigaSocialCommunitiesPanel";
 import { GigaSocialDiscoverPanel } from "@/components/gigasocial/GigaSocialDiscoverPanel";
 import { GigaSocialFeedPanel } from "@/components/gigasocial/GigaSocialFeedPanel";
+import { GigaSocialLivePanel } from "@/components/gigasocial/live/GigaSocialLivePanel";
 import { GigaSocialNotificationsPanel } from "@/components/gigasocial/GigaSocialNotificationsPanel";
 import { GigaSocialProfilePanel } from "@/components/gigasocial/GigaSocialProfilePanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
@@ -116,7 +117,9 @@ function GigaSocialContent() {
         className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1"
         aria-label="GigaSocial sections"
       >
-        {GIGASOCIAL_SECTIONS.map((item) => {
+        {GIGASOCIAL_SECTIONS.filter((item) =>
+          item.id === "live" ? features.enableGigaLive : true
+        ).map((item) => {
           const Icon = item.icon;
           const active = section === item.id;
           return (
@@ -161,6 +164,7 @@ function GigaSocialContent() {
               sessionToken={sessionToken}
               communitySlug={communitySlug}
               highlightPostId={highlightPostId}
+              onOpenLive={features.enableGigaLive ? () => setSection("live") : undefined}
             />
           </>
         )}
@@ -188,6 +192,16 @@ function GigaSocialContent() {
                 setSection("feed");
               }}
             />
+          </>
+        )}
+
+        {section === "live" && features.enableGigaLive && (
+          <>
+            <SectionIntro
+              title="Live"
+              description="Go live with video, audio, or screen sharing — chat, reactions, gifts, and replays."
+            />
+            <GigaSocialLivePanel sessionToken={sessionToken} />
           </>
         )}
 
