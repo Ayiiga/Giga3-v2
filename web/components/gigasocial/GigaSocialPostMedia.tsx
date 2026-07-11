@@ -45,7 +45,9 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
 
   const shouldPlay = autoPlay && !paused;
   const frameClass = featured
-    ? "w-full bg-black object-contain aspect-[4/5] max-h-[min(70vh,32rem)] sm:aspect-video sm:max-h-[min(60vh,28rem)]"
+    ? mediaKind === "video"
+      ? "w-full bg-black object-contain aspect-[9/16] max-h-[min(85vh,44rem)]"
+      : "w-full bg-black object-cover aspect-[4/5] max-h-[min(78vh,40rem)]"
     : "gigasocial-feed-media-frame w-full bg-black";
 
   const feedMediaWrapperClass = featured
@@ -54,7 +56,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
         "gigasocial-feed-media relative mt-3 overflow-hidden rounded-xl border border-border",
         mediaKind === "video" && "gigasocial-feed-media--video",
         mediaKind === "gallery" && "gigasocial-feed-media--gallery",
-        mediaKind === "photo-music" && "gigasocial-feed-media--gallery",
+        mediaKind === "photo-music" && "gigasocial-feed-media--photo-music gigasocial-feed-media--gallery",
         className
       );
 
@@ -67,7 +69,8 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   }, [post._id]);
 
   useEffect(() => {
-    if (!shouldPlay || mediaKind !== "gallery" || mediaUrls.length < 2) return;
+    if (!shouldPlay || mediaUrls.length < 2) return;
+    if (mediaKind !== "gallery" && mediaKind !== "photo-music") return;
     const timer = window.setInterval(() => {
       setActiveImage((index) => (index + 1) % mediaUrls.length);
     }, SLIDESHOW_MS);
@@ -108,31 +111,96 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
 
   if (mediaKind === "photo-music") {
     const audioUrl = getPostAudioUrl(post);
-    return (
-      <div className={feedMediaWrapperClass}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={mediaUrls[0]}
-          alt="Photo with music"
-          className={featured ? frameClass : "gigasocial-feed-media-frame"}
-          style={imageFilterStyle}
-          loading={featured && shouldPlay ? "eager" : "lazy"}
+    const imageClass = featured ? frameClass : "gigasocial-feed-media-frame";
+    const audioBar = audioUrl ? (
+      <div className="flex items-center gap-3 border-t border-border bg-violet-50/80 px-3 py-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+          <Music2 className="h-5 w-5" aria-hidden />
+        </div>
+        <audio
+          ref={audioRef}
+          src={audioUrl}
+          controls
+          preload="metadata"
+          className="min-w-0 flex-1"
+          aria-label="Post music"
         />
-        {audioUrl ? (
-          <div className="flex items-center gap-3 border-t border-border bg-violet-50/80 px-3 py-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
-              <Music2 className="h-5 w-5" aria-hidden />
+      </div>
+    ) : null;
+
+    if (mediaUrls.length === 1) {
+      return (
+        <div className={feedMediaWrapperClass}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={mediaUrls[0]}
+            alt="Photo with music"
+            className={imageClass}
+            style={imageFilterStyle}
+            loading={featured && shouldPlay ? "eager" : "lazy"}
+          />
+          {audioBar}
+        </div>
+      );
+    }
+
+    return (
+      <div className={cn(featured ? "space-y-2" : "mt-3 space-y-2")}>
+        <div className={feedMediaWrapperClass}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={mediaUrls[activeImage]}
+            alt={`Photo with music ${activeImage + 1} of ${mediaUrls.length}`}
+            className={imageClass}
+            style={imageFilterStyle}
+            loading={featured && shouldPlay ? "eager" : "lazy"}
+          />
+          {shouldPlay && mediaUrls.length > 1 ? (
+            <div className="absolute bottom-3 left-1/2 flex gap-1.5">
+              {mediaUrls.map((_, index) => (
+                <span
+                  key={index}
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    index === activeImage ? "bg-white" : "bg-white/40"
+                  )}
+                  aria-hidden
+                />
+              ))}
             </div>
-            <audio
-              ref={audioRef}
-              src={audioUrl}
-              controls
-              preload="metadata"
-              className="min-w-0 flex-1"
-              aria-label="Post music"
-            />
-          </div>
-        ) : null}
+          ) : null}
+          {audioBar}
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-1" role="list" aria-label="Photo gallery">
+          {mediaUrls.map((url, index) => (
+            <button
+              key={`${url}-${index}`}
+              type="button"
+              role="listitem"
+              aria-label={`Show photo ${index + 1}`}
+              aria-current={index === activeImage}
+              onClick={() => setActiveImage(index)}
+              className={cn(
+                "relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border sm:h-16 sm:w-16",
+                index === activeImage ? "border-accent ring-2 ring-accent/30" : "border-border"
+              )}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={url}
+                alt=""
+                className="h-full w-full object-cover"
+                style={imageFilterStyle}
+                loading="lazy"
+              />
+              {index === 0 ? (
+                <span className="absolute bottom-0 right-0 rounded-tl bg-black/60 px-1 text-[10px] text-white">
+                  {mediaUrls.length}
+                </span>
+              ) : null}
+            </button>
+          ))}
+        </div>
       </div>
     );
   }
@@ -331,12 +399,12 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
             <img
               src={video.thumbnailUrl}
               alt="Video preview"
-              className="max-h-48 w-full object-contain"
+              className="max-h-64 w-full object-contain"
             />
           ) : (
             <video
               src={video.previewUrl}
-              className="max-h-48 w-full object-contain"
+              className="max-h-64 w-full object-contain"
               muted
               playsInline
             />
@@ -389,7 +457,7 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
               <img
                 src={image.previewUrl}
                 alt={image.name}
-                className="h-28 w-full object-cover"
+                className="aspect-[4/5] max-h-44 w-full object-cover"
                 style={imageFilterStyle}
               />
               <button

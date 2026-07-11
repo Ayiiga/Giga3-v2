@@ -10,39 +10,48 @@
   animation: gigasocial-skeleton-pulse 1.4s ease-in-out infinite;
 }
 
-/* Feed media — larger, phone-friendly sizing */
+/* Feed media — larger, phone-friendly sizing (portrait-first; no layout transforms) */
 .gigasocial-feed-media img,
 .gigasocial-feed-media video {
   display: block;
   width: 100%;
   aspect-ratio: 4 / 5;
-  max-height: min(72vh, 30rem);
+  max-height: min(78vh, 36rem);
   object-fit: cover;
   background: #000;
 }
 
 .gigasocial-feed-media--video video {
   aspect-ratio: 9 / 16;
-  max-height: min(75vh, 32rem);
+  max-height: min(85vh, 44rem);
   object-fit: contain;
 }
 
-.gigasocial-feed-media--gallery img {
+.gigasocial-feed-media--gallery img,
+.gigasocial-feed-media--photo-music img {
   aspect-ratio: 4 / 5;
+  max-height: min(78vh, 36rem);
   object-fit: cover;
 }
 
 @media (min-width: 640px) {
-  .gigasocial-feed-media img,
-  .gigasocial-feed-media video {
-    aspect-ratio: 16 / 9;
-    max-height: min(60vh, 28rem);
+  .gigasocial-feed-media img {
+    aspect-ratio: 4 / 5;
+    max-height: min(74vh, 40rem);
+    object-fit: cover;
+  }
+
+  .gigasocial-feed-media--video video {
+    aspect-ratio: 9 / 16;
+    max-height: min(82vh, 44rem);
     object-fit: contain;
   }
 
-  .gigasocial-feed-media--gallery img {
-    aspect-ratio: 16 / 9;
-    object-fit: contain;
+  .gigasocial-feed-media--gallery img,
+  .gigasocial-feed-media--photo-music img {
+    aspect-ratio: 4 / 5;
+    max-height: min(74vh, 40rem);
+    object-fit: cover;
   }
 }
 

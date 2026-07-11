@@ -251,7 +251,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       return;
     }
     if (!pendingImages.length) {
-      setError("Add a photo first, then attach music.");
+      setError("Add one or more photos first, then attach music.");
       return;
     }
     try {
@@ -270,22 +270,77 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     }
   }, [pendingImages.length, pendingVideo]);
 
+  const addDroppedFiles = useCallback(
+    async (files: FileList | File[]) => {
+      const list = Array.from(files);
+      const imageFiles = list.filter((file) => file.type.startsWith("image/"));
+      const audioFile = list.find((file) => file.type.startsWith("audio/"));
+      const videoFile = list.find((file) => file.type.startsWith("video/"));
+
+      if (videoFile && !imageFiles.length && !audioFile) {
+        await addVideoFile(videoFile);
+        return;
+      }
+
+      if (imageFiles.length) {
+        if (pendingVideo) {
+          setError("Remove the video before adding photos.");
+          return;
+        }
+        const remaining = SOCIAL_MAX_PHOTOS_PER_POST - pendingImages.length;
+        if (remaining <= 0) {
+          setError(`You can attach up to ${SOCIAL_MAX_PHOTOS_PER_POST} photos.`);
+          return;
+        }
+        const next = imageFiles.slice(0, remaining).map((file) => ({
+          id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
+          file,
+          previewUrl: URL.createObjectURL(file),
+          name: file.name,
+        }));
+        setPendingImages((prev) => [...prev, ...next]);
+        setPostType("image");
+        setError(null);
+
+        if (audioFile) {
+          try {
+            const prepared = await prepareAudioForPhotoPost(
+              audioFile,
+              SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC
+            );
+            setPendingAudio({
+              file: prepared.file,
+              name: prepared.file.name,
+              durationSec: prepared.durationSec,
+            });
+            if (prepared.trimmed) {
+              setSuccess(
+                `Music trimmed to ${SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC} seconds for photo posts.`
+              );
+            }
+          } catch (e) {
+            setError(e instanceof Error ? e.message : "Could not read audio.");
+          }
+        }
+        return;
+      }
+
+      if (audioFile) {
+        await addAudioFile(audioFile);
+      }
+    },
+    [addAudioFile, addVideoFile, pendingImages.length, pendingVideo]
+  );
+
   const handleDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
       setDragActive(false);
       if (disabled || busy) return;
-      const file = event.dataTransfer.files?.[0];
-      if (!file) return;
-      if (file.type.startsWith("video/")) {
-        void addVideoFile(file);
-        return;
-      }
-      if (file.type.startsWith("image/")) {
-        void addImageFiles(event.dataTransfer.files);
-      }
+      if (!event.dataTransfer.files?.length) return;
+      void addDroppedFiles(event.dataTransfer.files);
     },
-    [addImageFiles, addVideoFile, busy, disabled]
+    [addDroppedFiles, busy, disabled]
   );
 
   function handleCancelUpload() {
@@ -447,9 +502,13 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
 
       {dragActive ? (
         <p className="mt-2 rounded-xl border border-dashed border-accent/40 bg-accent/5 px-3 py-2 text-xs text-accent">
-          Drop photos or a short video here
+          Drop one or more photos (optional music), or a short video
         </p>
-      ) : null}
+      ) : (
+        <p className="mt-2 text-xs text-muted">
+          Add multiple photos, then attach music (up to {SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC}s). Videos up to 40s.
+        </p>
+      )}
 
       {uploadPercent !== null && busy ? (
         <div className="mt-3 space-y-2" role="status" aria-live="polite">
