@@ -3,7 +3,7 @@ import { Sparkles, UsersRound } from "lucide-react";
 
 export function GigaSocialFeedHero({ postCount }: { postCount?: number }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-accent/15 bg-gradient-to-br from-violet-600 via-indigo-600 to-violet-700 p-5 text-white shadow-sm sm:p-6">
+    <div className="gigasocial-feed-hero relative overflow-hidden rounded-2xl border border-accent/15 bg-gradient-to-br from-violet-600 via-indigo-600 to-violet-700 p-5 text-white shadow-sm sm:p-6">
       <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10" aria-hidden />
       <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-white/5" aria-hidden />
       <div className="relative flex flex-wrap items-start justify-between gap-4">

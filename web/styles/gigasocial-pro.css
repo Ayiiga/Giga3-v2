@@ -10,6 +10,42 @@
   animation: gigasocial-skeleton-pulse 1.4s ease-in-out infinite;
 }
 
+/* Feed media — larger, phone-friendly sizing */
+.gigasocial-feed-media img,
+.gigasocial-feed-media video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  max-height: min(72vh, 30rem);
+  object-fit: cover;
+  background: #000;
+}
+
+.gigasocial-feed-media--video video {
+  aspect-ratio: 9 / 16;
+  max-height: min(75vh, 32rem);
+  object-fit: contain;
+}
+
+.gigasocial-feed-media--gallery img {
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+
+@media (min-width: 640px) {
+  .gigasocial-feed-media img,
+  .gigasocial-feed-media video {
+    aspect-ratio: 16 / 9;
+    max-height: min(60vh, 28rem);
+    object-fit: contain;
+  }
+
+  .gigasocial-feed-media--gallery img {
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+  }
+}
+
 @keyframes gigasocial-skeleton-pulse {
   0%,
   100% {
@@ -42,9 +78,34 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.gigasocial-creator-studio .gigasocial-creator-stat-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .gigasocial-creator-studio .gigasocial-creator-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .gigasocial-creator-studio .gigasocial-creator-stat-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1023px) {
   .gigasocial-pro .gigasocial-post-card {
     box-shadow: none;
+    background: #fff;
+  }
+
+  .gigasocial-pro .gigasocial-creator-studio {
+    background: #fff;
   }
 
   .gigasocial-create-fab-button {

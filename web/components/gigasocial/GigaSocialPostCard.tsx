@@ -117,7 +117,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   }
 
   return (
-    <article className="gigasocial-post-card saas-card rounded-2xl border border-border p-4 transition-colors hover:border-accent/25">
+    <article className="gigasocial-post-card saas-card rounded-2xl border border-border p-4 hover:border-accent/25">
       <header className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <SocialAvatar

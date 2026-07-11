@@ -40,7 +40,16 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   const shouldPlay = autoPlay && !paused;
   const frameClass = featured
     ? "w-full bg-black object-contain aspect-[4/5] max-h-[min(70vh,32rem)] sm:aspect-video sm:max-h-[min(60vh,28rem)]"
-    : "max-h-96 w-full bg-black object-contain";
+    : "gigasocial-feed-media-frame w-full bg-black";
+
+  const feedMediaWrapperClass = featured
+    ? cn("relative overflow-hidden", className)
+    : cn(
+        "gigasocial-feed-media relative mt-3 overflow-hidden rounded-xl border border-border",
+        mediaKind === "video" && "gigasocial-feed-media--video",
+        mediaKind === "gallery" && "gigasocial-feed-media--gallery",
+        className
+      );
 
   const notifyUserPaused = useCallback(() => {
     onUserPaused?.();
@@ -91,7 +100,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
 
   if (mediaKind === "video") {
     return (
-      <div className={cn("relative overflow-hidden", featured ? className : "mt-3 rounded-xl border border-border")}>
+      <div className={feedMediaWrapperClass}>
         <video
           ref={videoRef}
           src={mediaUrls[0]}
@@ -100,7 +109,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
           preload={shouldPlay ? "auto" : "metadata"}
           poster={post.videoThumbnailUrl}
           muted={muted}
-          className={frameClass}
+          className={featured ? frameClass : "gigasocial-feed-media-frame"}
           aria-label="Post video"
           onPause={(event) => {
             if (!event.currentTarget.ended && shouldPlay) notifyUserPaused();
@@ -178,12 +187,12 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
 
   if (mediaKind === "image") {
     return (
-      <div className={cn("overflow-hidden", featured ? "" : "mt-3 rounded-xl border border-border")}>
+      <div className={feedMediaWrapperClass}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={mediaUrls[0]}
           alt="Post image"
-          className={featured ? frameClass : "max-h-96 w-full object-contain"}
+          className={featured ? frameClass : "gigasocial-feed-media-frame"}
           loading={featured && shouldPlay ? "eager" : "lazy"}
         />
       </div>
@@ -192,12 +201,12 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
 
   return (
     <div className={cn(featured ? "space-y-2" : "mt-3 space-y-2")}>
-      <div className={cn("relative overflow-hidden", featured ? "" : "rounded-xl border border-border")}>
+      <div className={feedMediaWrapperClass}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={mediaUrls[activeImage]}
           alt={`Post image ${activeImage + 1} of ${mediaUrls.length}`}
-          className={featured ? frameClass : "max-h-96 w-full object-contain"}
+          className={featured ? frameClass : "gigasocial-feed-media-frame"}
           loading={featured && shouldPlay ? "eager" : "lazy"}
         />
         {shouldPlay && mediaUrls.length > 1 ? (
@@ -225,7 +234,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
             aria-current={index === activeImage}
             onClick={() => setActiveImage(index)}
             className={cn(
-              "relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border",
+              "relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border sm:h-16 sm:w-16",
               index === activeImage ? "border-accent ring-2 ring-accent/30" : "border-border"
             )}
           >
