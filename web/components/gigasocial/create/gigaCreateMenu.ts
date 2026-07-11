@@ -61,9 +61,8 @@ export const GIGA_CREATE_MENU: GigaCreateMenuItem[] = [
   },
   {
     id: "live-content",
-    label: "Live Content",
+    label: "Live Stream",
     emoji: "🔴",
-    description: "Go live (coming soon)",
-    disabled: true,
+    description: "Go live with video, audio, or screen share",
   },
 ];

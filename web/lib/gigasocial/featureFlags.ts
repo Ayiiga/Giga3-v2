@@ -7,6 +7,8 @@ export type GigaSocialFeatureFlags = {
   enableCreatorStudio: boolean;
   enableMediaStudio: boolean;
   enableFeedCategories: boolean;
+  enableGigaLive: boolean;
+  enableGigaFans: boolean;
 };
 
 const STORAGE_KEY = "giga3_gigasocial_flags";
@@ -24,6 +26,8 @@ export const GIGASOCIAL_FEATURE_DEFAULTS: GigaSocialFeatureFlags = {
   enableCreatorStudio: envFlag("NEXT_PUBLIC_GIGASOCIAL_CREATOR_STUDIO", true),
   enableMediaStudio: envFlag("NEXT_PUBLIC_GIGASOCIAL_MEDIA_STUDIO", true),
   enableFeedCategories: envFlag("NEXT_PUBLIC_GIGASOCIAL_FEED_CATEGORIES", true),
+  enableGigaLive: envFlag("NEXT_PUBLIC_GIGASOCIAL_LIVE", true),
+  enableGigaFans: envFlag("NEXT_PUBLIC_GIGASOCIAL_FANS", true),
 };
 
 export function readGigaSocialFeatureOverrides(): Partial<GigaSocialFeatureFlags> {

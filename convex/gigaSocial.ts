@@ -66,6 +66,36 @@ async function resolveAuthor(
   return toPublicAuthor(profile, userId);
 }
 
+async function getFanCounts(
+  ctx: { db: import("./_generated/server").QueryCtx["db"] },
+  userId: string
+) {
+  const fans = await ctx.db
+    .query("socialFollows")
+    .withIndex("by_following", (q) => q.eq("followingId", userId))
+    .collect();
+  const supporting = await ctx.db
+    .query("socialFollows")
+    .withIndex("by_follower", (q) => q.eq("followerId", userId))
+    .collect();
+  return { fanCount: fans.length, supportingCount: supporting.length };
+}
+
+async function isSupporting(
+  ctx: { db: import("./_generated/server").QueryCtx["db"] },
+  viewerId: string | null,
+  creatorId: string
+) {
+  if (!viewerId || viewerId === creatorId) return false;
+  const row = await ctx.db
+    .query("socialFollows")
+    .withIndex("by_pair", (q) =>
+      q.eq("followerId", viewerId).eq("followingId", creatorId)
+    )
+    .first();
+  return Boolean(row);
+}
+
 async function notifyUser(
   ctx: { db: import("./_generated/server").MutationCtx["db"] },
   args: {
@@ -296,6 +326,7 @@ export const getMyProfile = query({
       .query("socialCommunityMembers")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
+    const { fanCount, supportingCount } = await getFanCounts(ctx, userId);
 
     return {
       profile: {
@@ -311,6 +342,8 @@ export const getMyProfile = query({
         gamification,
         communityCount: memberships.length,
         postCount: visiblePosts.length,
+        fanCount,
+        supportingCount,
       },
       recentPosts: await Promise.all(
         visiblePosts.map(async (post) =>
@@ -322,10 +355,21 @@ export const getMyProfile = query({
 });
 
 export const getProfileByHandle = query({
-  args: { handle: v.string() },
+  args: {
+    handle: v.string(),
+    sessionToken: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
     const handle = normalizeSocialHandle(args.handle);
     if (!handle) return null;
+    let viewerId: string | null = null;
+    if (args.sessionToken) {
+      try {
+        viewerId = await requireSession(args.sessionToken);
+      } catch {
+        viewerId = null;
+      }
+    }
     const profile = await ctx.db
       .query("socialProfiles")
       .withIndex("by_handle", (q) => q.eq("handle", handle))
@@ -338,6 +382,8 @@ export const getProfileByHandle = query({
       .order("desc")
       .take(12);
     const visiblePosts = posts.filter((p) => !p.deletedAt);
+    const { fanCount, supportingCount } = await getFanCounts(ctx, profile.userId);
+    const supporting = await isSupporting(ctx, viewerId, profile.userId);
 
     return {
       profile: {
@@ -349,6 +395,10 @@ export const getProfileByHandle = query({
         interests: profile.interests,
         gamification: parseGamification(profile.gamificationJson),
         postCount: visiblePosts.length,
+        fanCount,
+        supportingCount,
+        supporting,
+        userId: profile.userId,
       },
       posts: await Promise.all(
         visiblePosts.map(async (post) =>
@@ -977,5 +1027,53 @@ export const deletePost = mutation({
 
     await ctx.db.patch(args.postId, { deletedAt: Date.now() });
     return { ok: true };
+  },
+});
+
+export const toggleFan = mutation({
+  args: {
+    sessionToken: v.string(),
+    creatorId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    if (userId === args.creatorId) {
+      throw new Error("You cannot fan yourself.");
+    }
+    const existing = await ctx.db
+      .query("socialFollows")
+      .withIndex("by_pair", (q) =>
+        q.eq("followerId", userId).eq("followingId", args.creatorId)
+      )
+      .first();
+    if (existing) {
+      await ctx.db.delete(existing._id);
+      return { supporting: false };
+    }
+    await ctx.db.insert("socialFollows", {
+      followerId: userId,
+      followingId: args.creatorId,
+      createdAt: Date.now(),
+    });
+    await notifyUser(ctx, {
+      recipientId: args.creatorId,
+      type: "follow",
+      actorId: userId,
+      message: "became your fan",
+    });
+    return { supporting: true };
+  },
+});
+
+export const getFanRelationship = query({
+  args: {
+    sessionToken: v.string(),
+    creatorId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    const { fanCount, supportingCount } = await getFanCounts(ctx, args.creatorId);
+    const supporting = await isSupporting(ctx, userId, args.creatorId);
+    return { fanCount, supportingCount, supporting };
   },
 });

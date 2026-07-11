@@ -98,7 +98,7 @@ export const GigaCreateButton = memo(function GigaCreateButton({
               role="menu"
             >
               {GIGA_CREATE_MENU.map((item) => {
-                const isSecondary = item.id === "remix" || item.id === "live-content";
+                const isSecondary = item.id === "remix";
                 const isDisabled = item.disabled === true;
                 return (
                   <button

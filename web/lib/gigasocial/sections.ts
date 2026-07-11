@@ -3,6 +3,7 @@ import {
   Compass,
   LayoutGrid,
   MessageCircle,
+  Radio,
   User,
   Users,
 } from "lucide-react";
@@ -12,6 +13,7 @@ export type GigaSocialSection =
   | "feed"
   | "discover"
   | "communities"
+  | "live"
   | "profile"
   | "notifications";
 
@@ -40,6 +42,12 @@ export const GIGASOCIAL_SECTIONS: GigaSocialSectionDefinition[] = [
     label: "Communities",
     description: "Join topic groups across Africa",
     icon: Users,
+  },
+  {
+    id: "live",
+    label: "Live",
+    description: "Live video, audio, screen share, and replays",
+    icon: Radio,
   },
   {
     id: "profile",

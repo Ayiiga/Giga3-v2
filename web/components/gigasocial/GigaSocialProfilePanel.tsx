@@ -2,6 +2,7 @@
 
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
 import { GigaSocialCreatorStudio } from "@/components/gigasocial/studio/GigaSocialCreatorStudio";
+import { FAN_LABELS } from "@/lib/gigasocial/fanBranding";
 import { SocialAvatar } from "@/components/gigasocial/SocialAvatar";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -336,6 +337,14 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
               <div>
                 <dt className="text-muted">Posts</dt>
                 <dd className="font-medium">{profile.postCount ?? 0}</dd>
+              </div>
+              <div>
+                <dt className="text-muted">{FAN_LABELS.fans}</dt>
+                <dd className="font-medium">{profile.fanCount ?? 0}</dd>
+              </div>
+              <div>
+                <dt className="text-muted">{FAN_LABELS.supporting}</dt>
+                <dd className="font-medium">{profile.supportingCount ?? 0}</dd>
               </div>
               <div>
                 <dt className="text-muted">Communities</dt>

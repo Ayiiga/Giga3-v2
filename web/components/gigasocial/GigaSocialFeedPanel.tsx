@@ -33,10 +33,12 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   sessionToken,
   communitySlug,
   highlightPostId,
+  onOpenLive,
 }: {
   sessionToken: string | null;
   communitySlug?: string;
   highlightPostId?: string;
+  onOpenLive?: () => void;
 }) {
   const features = useMemo(() => getGigaSocialFeatures(), []);
   const [cursor, setCursor] = useState<number | undefined>(undefined);
@@ -111,7 +113,11 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const handleGigaCreate = useCallback(
     (launch: GigaCreateLaunch) => {
       if (launch.action === "live-content") {
-        setErrorToast("Live content is coming soon to GigaSocial.");
+        if (onOpenLive) {
+          onOpenLive();
+          return;
+        }
+        setErrorToast("Open the Live tab to start streaming.");
         return;
       }
       if (launch.action === "remix") {
@@ -126,7 +132,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       }
       openComposer(launch.action);
     },
-    [openComposer]
+    [onOpenLive, openComposer]
   );
 
   useEffect(() => {
