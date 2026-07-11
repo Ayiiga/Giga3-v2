@@ -1,13 +1,15 @@
 import { Container } from "@/components/ui/Container";
-import { dynamicWithChunkRetry } from "@/lib/pwa/dynamicWithChunkRetry";
+import { withChunkRetryLoader } from "@/lib/pwa/dynamicWithChunkRetry";
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
-const GigaSocialPublicPostRoot = dynamicWithChunkRetry(
-  () =>
+const GigaSocialPublicPostRoot = dynamic(
+  withChunkRetryLoader(() =>
     import("@/components/gigasocial/GigaSocialPublicPostClient").then((m) => ({
       default: m.GigaSocialPublicPostRoot,
-    })),
+    }))
+  ),
   {
     ssr: false,
     loading: () => <p className="text-center text-muted">Loading post…</p>,
