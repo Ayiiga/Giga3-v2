@@ -9,7 +9,7 @@ import { splitPostDisplay } from "@/lib/gigasocial/postDisplay";
 import { formatRelativeTime } from "@/lib/datetime";
 import { shareGigaSocialPost } from "@/lib/gigasocial/sharePost";
 import { stripRemixMarker } from "@/lib/gigasocial/remixMeta";
-import { postHasVisualFeedMedia } from "@/lib/gigasocial/postMedia";
+import { getPostMediaKind, postHasVisualFeedMedia } from "@/lib/gigasocial/postMedia";
 import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
 import {
   Bookmark,
@@ -66,6 +66,10 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   const displayBody = useMemo(() => stripRemixMarker(post.body), [post.body]);
   const display = useMemo(() => splitPostDisplay(displayBody), [displayBody]);
   const isVisualPost = useMemo(() => postHasVisualFeedMedia(post), [post]);
+  const visualMediaKind = useMemo(
+    () => (isVisualPost ? getPostMediaKind(post) : null),
+    [isVisualPost, post]
+  );
 
   const captionBlock = display.title ? (
     <>
@@ -74,7 +78,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
       </h2>
       {display.description ? (
         <GigaSocialPostCaption
-          className={isVisualPost ? "mt-1" : "mt-2"}
+          className={isVisualPost ? "mt-1 [&_.gigasocial-post-description]:line-clamp-2" : "mt-2"}
           description={display.description}
           hashtags={post.hashtags}
         />
@@ -139,8 +143,15 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   return (
     <article
       className={cn(
-        "gigasocial-post-card saas-card rounded-2xl border border-border hover:border-accent/25",
-        isVisualPost ? "gigasocial-post-card--visual" : "p-4"
+        "gigasocial-post-card saas-card rounded-2xl border border-border",
+        isVisualPost
+          ? cn(
+              "gigasocial-post-card--visual",
+              visualMediaKind === "video"
+                ? "gigasocial-post-card--video"
+                : "gigasocial-post-card--photo"
+            )
+          : "p-4"
       )}
     >
       <header

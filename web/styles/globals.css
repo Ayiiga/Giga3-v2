@@ -258,6 +258,11 @@ button:focus-visible {
   contain: none;
 }
 
+.gigasocial-pro .gigasocial-post-card {
+  isolation: isolate;
+  overflow: visible;
+}
+
 @media (max-width: 1023px) {
   .gigasocial-stable .saas-card {
     box-shadow: none !important;
@@ -288,6 +293,12 @@ button:focus-visible {
   .gigasocial-pro .gigasocial-post-card,
   .gigasocial-pro .gigasocial-creator-studio {
     background: #fff !important;
+    isolation: isolate;
+    overflow: visible;
+  }
+
+  .gigasocial-pro .gigasocial-post-card--visual .gigasocial-feed-media {
+    overflow: hidden;
   }
 
   .gigasocial-feed-hero {
