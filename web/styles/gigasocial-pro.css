@@ -6,13 +6,19 @@
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
-/* Feed photo/video posts — media dominates ~90% of card height */
+/* Feed photo/video posts — media is 90% of content between header and chrome */
 .gigasocial-post-card--visual {
   display: flex;
   flex-direction: column;
-  min-height: min(82vh, 40rem);
   padding-bottom: 0;
   overflow: hidden;
+}
+
+.gigasocial-post-card--visual .gigasocial-post-card__content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: min(68vh, 32rem);
 }
 
 .gigasocial-post-card--visual .gigasocial-post-card__media-region {
@@ -26,7 +32,14 @@
 .gigasocial-post-card--visual .gigasocial-post-card__meta {
   flex: 1 1 0;
   min-height: 0;
+  max-height: 10%;
   overflow: hidden;
+  padding-top: 0.375rem;
+  padding-bottom: 0.25rem;
+}
+
+.gigasocial-post-card--visual .gigasocial-post-card__comment {
+  flex: 0 0 auto;
 }
 
 .gigasocial-post-card--visual .gigasocial-post-card__actions {
@@ -41,18 +54,24 @@
   border-radius: 0;
   border-left: 0;
   border-right: 0;
+  background: #0a0a0a;
 }
 
-.gigasocial-post-card--visual .gigasocial-feed-media img,
-.gigasocial-post-card--visual .gigasocial-feed-media video {
+.gigasocial-post-card--visual .gigasocial-feed-media--expandable img,
+.gigasocial-post-card--visual .gigasocial-feed-media--gallery img,
+.gigasocial-post-card--visual .gigasocial-feed-media--photo-music img {
   width: 100%;
   height: 100%;
   max-height: 100%;
   aspect-ratio: auto;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .gigasocial-post-card--visual .gigasocial-feed-media--video video {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  aspect-ratio: auto;
   object-fit: contain;
   background: #000;
 }

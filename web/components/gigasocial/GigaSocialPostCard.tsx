@@ -21,8 +21,9 @@ import {
   Trash2,
 } from "lucide-react";
 import { memo, useMemo, useState } from "react";
-import { GigaSocialPostCaption } from "@/components/gigasocial/GigaSocialPostCaption";
 import { GigaSocialCommentThread } from "@/components/gigasocial/GigaSocialCommentThread";
+import { GigaSocialPostCaption } from "@/components/gigasocial/GigaSocialPostCaption";
+import { GigaSocialPostCommentBox } from "@/components/gigasocial/GigaSocialPostCommentBox";
 import { GigaSocialPostMedia } from "@/components/gigasocial/GigaSocialPostMedia";
 import { SocialAvatar } from "@/components/gigasocial/SocialAvatar";
 
@@ -173,14 +174,14 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
       />
 
       {isVisualPost ? (
-        <>
+        <div className="gigasocial-post-card__content">
           <div className="gigasocial-post-card__media-region">
-            <GigaSocialPostMedia post={post} />
+            <GigaSocialPostMedia post={post} allowFullView />
           </div>
           {display.title || display.description || post.hashtags?.length ? (
             <div className="gigasocial-post-card__meta px-4">{captionBlock}</div>
           ) : null}
-        </>
+        </div>
       ) : (
         <>
           {captionBlock}
@@ -199,11 +200,14 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
 
       <div
         className={cn(
-          "flex flex-wrap items-center gap-1 border-t border-border pt-3",
-          isVisualPost ? "gigasocial-post-card__actions mt-2 px-4 pb-3" : "mt-4"
+          "gigasocial-post-card__actions flex flex-wrap items-center gap-0.5 border-t border-border",
+          isVisualPost
+            ? "gigasocial-post-card__actions--compact mt-1 px-4 pt-2"
+            : "mt-4 gap-1 pt-3"
         )}
       >
         <ActionButton
+          compact={isVisualPost}
           active={liked}
           label={String(likeCount)}
           icon={Heart}
@@ -211,22 +215,26 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           disabled={!sessionToken || busy}
         />
         <ActionButton
+          compact={isVisualPost}
           label={String(post.commentCount)}
           icon={MessageCircle}
           onClick={() => setCommentsOpen((o) => !o)}
         />
         <ActionButton
+          compact={isVisualPost}
           label={String(shareCount)}
           icon={Share2}
           onClick={() => void handleShare()}
           disabled={!sessionToken || busy}
         />
         <ActionButton
+          compact={isVisualPost}
           active={bookmarked}
           label="Save"
           icon={Bookmark}
           onClick={() => void handleBookmark()}
           disabled={!sessionToken || busy}
+          iconOnly={isVisualPost}
         />
         {enableRemix && onRemix ? (
           <GigaRemixButton
@@ -235,8 +243,15 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           />
         ) : null}
         {typeof post.viewCount === "number" ? (
-          <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-muted">
-            <Eye className="h-4 w-4" aria-hidden />
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full text-muted",
+              isVisualPost
+                ? "min-h-8 px-2 py-1 text-[11px]"
+                : "min-h-9 gap-1.5 px-3 py-1.5 text-xs font-medium"
+            )}
+          >
+            <Eye className={isVisualPost ? "h-3.5 w-3.5" : "h-4 w-4"} aria-hidden />
             {post.viewCount}
           </span>
         ) : null}
@@ -265,6 +280,22 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
         ) : null}
       </div>
 
+      {sessionToken ? (
+        <div
+          className={cn(
+            "gigasocial-post-card__comment",
+            isVisualPost ? "px-4 pb-3 pt-1" : "mt-3"
+          )}
+        >
+          <GigaSocialPostCommentBox
+            postId={post._id}
+            sessionToken={sessionToken}
+            compact={isVisualPost}
+            onPosted={() => setCommentsOpen(true)}
+          />
+        </div>
+      ) : null}
+
       {editorOpen && onEdit ? (
         <div className="mt-4">
           <GigaSocialPostEditor
@@ -278,9 +309,15 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
         </div>
       ) : null}
 
-      {commentsOpen && sessionToken && (
-        <GigaSocialCommentThread postId={post._id} sessionToken={sessionToken} />
-      )}
+      {commentsOpen && sessionToken ? (
+        <div className={cn(isVisualPost ? "px-4 pb-3" : undefined)}>
+          <GigaSocialCommentThread
+            postId={post._id}
+            sessionToken={sessionToken}
+            hideComposer
+          />
+        </div>
+      ) : null}
     </article>
   );
 });
@@ -291,26 +328,37 @@ function ActionButton({
   onClick,
   active,
   disabled,
+  compact = false,
+  iconOnly = false,
 }: {
   icon: typeof Heart;
   label: string;
   onClick: () => void;
   active?: boolean;
   disabled?: boolean;
+  compact?: boolean;
+  iconOnly?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
+      aria-label={iconOnly && label ? label : undefined}
       className={cn(
-        "inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium",
+        "inline-flex items-center rounded-full font-medium",
+        compact
+          ? "min-h-8 gap-1 px-2 py-1 text-[11px]"
+          : "min-h-9 gap-1.5 px-3 py-1.5 text-xs",
         active ? "bg-red-50 text-red-700" : "text-muted hover:bg-muted/10 hover:text-foreground",
         disabled && "opacity-50"
       )}
     >
-      <Icon className={cn("h-4 w-4", active && "fill-current")} aria-hidden />
-      {label}
+      <Icon
+        className={cn(compact ? "h-3.5 w-3.5" : "h-4 w-4", active && "fill-current")}
+        aria-hidden
+      />
+      {iconOnly ? <span className="sr-only">{label}</span> : label}
     </button>
   );
 }

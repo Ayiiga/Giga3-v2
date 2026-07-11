@@ -8,29 +8,32 @@ import { useMutation, useQuery } from "convex/react";
 import { Loader2, Send } from "lucide-react";
 import { memo, useState } from "react";
 import { formatRelativeTime } from "@/lib/datetime";
+import { GigaSocialPostCommentBox } from "@/components/gigasocial/GigaSocialPostCommentBox";
 
 export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
   postId,
   sessionToken,
+  hideComposer = false,
 }: {
   postId: string;
   sessionToken: string;
+  hideComposer?: boolean;
 }) {
   const data = useQuery(api.gigaSocial.listComments, {
     postId: postId as Id<"socialPosts">,
     sessionToken,
   });
   const addComment = useMutation(api.gigaSocial.addComment);
-  const [body, setBody] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
+  const [replyBody, setReplyBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const comments = (data?.comments ?? []) as SocialComment[];
 
-  async function submit() {
-    const trimmed = body.trim();
-    if (!trimmed || busy) return;
+  async function submitReply() {
+    const trimmed = replyBody.trim();
+    if (!trimmed || busy || !replyTo) return;
     setBusy(true);
     setError(null);
     try {
@@ -38,9 +41,9 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
         sessionToken,
         postId: postId as Id<"socialPosts">,
         body: trimmed,
-        parentId: replyTo ? (replyTo as Id<"socialComments">) : undefined,
+        parentId: replyTo as Id<"socialComments">,
       });
-      setBody("");
+      setReplyBody("");
       setReplyTo(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not post comment.");
@@ -50,7 +53,7 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
   }
 
   return (
-    <div className="mt-4 rounded-xl border border-border bg-white/50 p-3">
+    <div className="mt-3 rounded-xl border border-border bg-white/50 p-3">
       <ul className="space-y-3">
         {comments.length === 0 && (
           <li className="text-xs text-muted">No comments yet. Start the conversation.</li>
@@ -75,38 +78,44 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
         ))}
       </ul>
 
-      {replyTo && (
-        <p className="mt-2 text-xs text-muted">
-          Replying…{" "}
-          <button type="button" className="text-accent" onClick={() => setReplyTo(null)}>
-            Cancel
-          </button>
-        </p>
-      )}
+      {replyTo ? (
+        <div className="mt-3 space-y-2">
+          <p className="text-xs text-muted">
+            Replying…{" "}
+            <button type="button" className="text-accent" onClick={() => setReplyTo(null)}>
+              Cancel
+            </button>
+          </p>
+          <div className="flex gap-2">
+            <input
+              value={replyBody}
+              onChange={(e) => setReplyBody(e.target.value)}
+              placeholder="Write a reply…"
+              aria-label="Reply text"
+              className="min-h-9 flex-1 rounded-full border border-border px-3 py-1.5 text-sm"
+            />
+            <Button
+              type="button"
+              disabled={busy || !replyBody.trim()}
+              onClick={() => void submitReply()}
+              className="h-9 w-9 shrink-0 rounded-full p-0"
+              aria-label="Post reply"
+            >
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
-      <div className="mt-3 flex gap-2">
-        <input
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="Write a comment…"
-          aria-label="Comment text"
-          className="min-h-10 flex-1 rounded-xl border border-border px-3 py-2 text-sm"
-        />
-        <Button
-          type="button"
-          disabled={busy || !body.trim()}
-          onClick={() => void submit()}
-          className="min-h-10"
-          aria-label="Post comment"
-        >
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-        </Button>
-      </div>
-      {error && (
+      {!hideComposer ? (
+        <GigaSocialPostCommentBox postId={postId} sessionToken={sessionToken} />
+      ) : null}
+
+      {error ? (
         <p className="mt-2 text-xs text-red-700" role="alert">
           {error}
         </p>
-      )}
+      ) : null}
     </div>
   );
 });
