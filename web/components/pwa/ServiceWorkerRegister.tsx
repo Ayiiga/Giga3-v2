@@ -15,7 +15,7 @@ export function ServiceWorkerRegister() {
         void registration.update();
         interval = window.setInterval(() => {
           void registration.update();
-        }, 60 * 60 * 1000);
+        }, 15 * 60 * 1000);
       })
       .catch((err) => {
         console.warn("SW registration failed", err);

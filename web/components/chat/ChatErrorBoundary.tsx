@@ -8,6 +8,16 @@ interface State {
 }
 
 function friendlyMessage(message: string): string {
+  if (
+    /Loading chunk [\d]+ failed/i.test(message) ||
+    /ChunkLoadError/i.test(message) ||
+    /Failed to fetch dynamically imported module/i.test(message)
+  ) {
+    return (
+      "The app was updated in the background. Please refresh the page to load the latest version. " +
+      "If this continues, clear your browser cache or reinstall the PWA."
+    );
+  }
   if (message.includes("is not defined") || message.includes("ReferenceError")) {
     return (
       "Chat hit a temporary loading error. Please refresh the page. " +

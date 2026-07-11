@@ -1,9 +1,9 @@
 import { Container } from "@/components/ui/Container";
+import { dynamicWithChunkRetry } from "@/lib/pwa/dynamicWithChunkRetry";
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
-const GigaSocialPageRoot = dynamic(
+const GigaSocialPageRoot = dynamicWithChunkRetry(
   () =>
     import("@/components/gigasocial/GigaSocialPageRoot").then((m) => ({
       default: m.GigaSocialPageRoot,

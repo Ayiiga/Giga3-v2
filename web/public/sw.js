@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v105-gigasocial-compact-hashtags";
+const CACHE_NAME = "giga3-shell-v106-chunk-load-fix";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
@@ -90,28 +90,17 @@ self.addEventListener("fetch", (event) => {
     request.mode === "navigate" ||
     request.headers.get("accept")?.includes("text/html");
 
+  if (isNextChunk(url.pathname)) {
+    // Never cache app bundles — stale chunks cause "Loading chunk N failed" after deploy.
+    event.respondWith(fetch(request));
+    return;
+  }
+
   const isStatic =
-    isNextChunk(url.pathname) ||
     url.pathname.startsWith("/icons/") ||
     url.pathname.startsWith("/splash/") ||
     url.pathname.startsWith("/images/") ||
     /\.(?:js|css|woff2?|png|svg|webp|ico|json|webmanifest)$/.test(url.pathname);
-
-  if (isNextChunk(url.pathname)) {
-    // Network-first for app bundles — cache only as offline fallback.
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        })
-        .catch(() => caches.match(request))
-    );
-    return;
-  }
 
   if (isStatic) {
     event.respondWith(

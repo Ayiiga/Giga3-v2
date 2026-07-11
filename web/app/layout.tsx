@@ -2,6 +2,7 @@ import { GenerationToastHost } from "@/components/generation/GenerationToastHost
 import { AccessibilityBootstrap } from "@/components/a11y/AccessibilityBootstrap";
 import { ConvexRuntimeBootstrap } from "@/components/providers/ConvexRuntimeBootstrap";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { ChunkLoadRecoveryBootstrap } from "@/components/pwa/ChunkLoadRecoveryBootstrap";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { DeferredPwaChrome } from "@/components/pwa/DeferredPwaChrome";
 import { PlatformAnalyticsHost } from "@/components/analytics/PlatformAnalyticsHost";
@@ -100,6 +101,7 @@ export default function RootLayout({
         </ThemeProvider>
         <AccessibilityBootstrap />
         <ServiceWorkerRegister />
+        <ChunkLoadRecoveryBootstrap />
         <GlobalChatPrefetch />
         <PlatformAnalyticsHost />
         <DeferredPwaChrome />

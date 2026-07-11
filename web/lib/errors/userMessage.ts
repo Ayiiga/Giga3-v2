@@ -15,6 +15,9 @@ export function toUserFacingError(
       : typeof err === "string"
         ? err
         : "";
+  if (/Loading chunk [\d]+ failed/i.test(raw) || /ChunkLoadError/i.test(raw)) {
+    return "The app was updated. Please refresh the page to load the latest version.";
+  }
   if (!raw.trim() || SENSITIVE.test(raw)) return fallback;
   const line = raw.split("\n")[0]?.trim() ?? "";
   if (!line || line.length > 180) return fallback;
