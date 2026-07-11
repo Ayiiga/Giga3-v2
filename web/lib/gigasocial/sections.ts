@@ -32,6 +32,12 @@ export const GIGASOCIAL_SECTIONS: GigaSocialSectionDefinition[] = [
     icon: LayoutGrid,
   },
   {
+    id: "live",
+    label: "Live",
+    description: "Live video, audio, screen share, and replays",
+    icon: Radio,
+  },
+  {
     id: "discover",
     label: "Discover",
     description: "Trending, creators, and educational content",
@@ -42,12 +48,6 @@ export const GIGASOCIAL_SECTIONS: GigaSocialSectionDefinition[] = [
     label: "Communities",
     description: "Join topic groups across Africa",
     icon: Users,
-  },
-  {
-    id: "live",
-    label: "Live",
-    description: "Live video, audio, screen share, and replays",
-    icon: Radio,
   },
   {
     id: "profile",

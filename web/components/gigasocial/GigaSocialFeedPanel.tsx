@@ -224,7 +224,10 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
           onTogglePause={toggle}
         />
       ) : (
-        <GigaSocialFeedHero postCount={posts.length} />
+        <GigaSocialFeedHero
+          postCount={posts.length}
+          onGoLive={features.enableGigaLive ? onOpenLive : undefined}
+        />
       )}
 
       {features.enableFeedCategories ? (

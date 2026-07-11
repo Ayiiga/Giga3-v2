@@ -1,7 +1,16 @@
+"use client";
+
 import { GIGA3_VISION } from "@/lib/vision";
+import { GigaSocialGoLiveButton } from "@/components/gigasocial/live/GigaSocialGoLiveButton";
 import { Sparkles, UsersRound } from "lucide-react";
 
-export function GigaSocialFeedHero({ postCount }: { postCount?: number }) {
+export function GigaSocialFeedHero({
+  postCount,
+  onGoLive,
+}: {
+  postCount?: number;
+  onGoLive?: () => void;
+}) {
   return (
     <div className="gigasocial-feed-hero relative overflow-hidden rounded-2xl border border-accent/15 bg-gradient-to-br from-violet-600 via-indigo-600 to-violet-700 p-5 text-white shadow-sm sm:p-6">
       <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10" aria-hidden />
@@ -27,6 +36,9 @@ export function GigaSocialFeedHero({ postCount }: { postCount?: number }) {
           </p>
         </div>
         <div className="flex flex-col items-end gap-2 text-right">
+          {onGoLive ? (
+            <GigaSocialGoLiveButton onClick={onGoLive} variant="hero" />
+          ) : null}
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
             <Sparkles className="h-3.5 w-3.5" aria-hidden />
             {typeof postCount === "number" ? `${postCount} posts loaded` : "Live feed"}

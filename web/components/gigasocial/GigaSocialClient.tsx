@@ -3,6 +3,7 @@
 import { GigaSocialCommunitiesPanel } from "@/components/gigasocial/GigaSocialCommunitiesPanel";
 import { GigaSocialDiscoverPanel } from "@/components/gigasocial/GigaSocialDiscoverPanel";
 import { GigaSocialFeedPanel } from "@/components/gigasocial/GigaSocialFeedPanel";
+import { GigaSocialGoLiveButton } from "@/components/gigasocial/live/GigaSocialGoLiveButton";
 import { GigaSocialLivePanel } from "@/components/gigasocial/live/GigaSocialLivePanel";
 import { GigaSocialNotificationsPanel } from "@/components/gigasocial/GigaSocialNotificationsPanel";
 import { GigaSocialProfilePanel } from "@/components/gigasocial/GigaSocialProfilePanel";
@@ -74,6 +75,14 @@ function GigaSocialContent() {
   const unread = notifications?.unreadCount ?? 0;
   const features = getGigaSocialFeatures();
 
+  const openSection = (id: GigaSocialSection) => {
+    setSection(id);
+    if (id !== "feed") setCommunitySlug(undefined);
+    const params = new URLSearchParams(window.location.search);
+    params.set("tab", id);
+    router.replace(`/gigasocial/?${params.toString()}`, { scroll: false });
+  };
+
   return (
     <div className="gigasocial-pro mx-auto max-w-6xl space-y-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
@@ -99,6 +108,9 @@ function GigaSocialContent() {
             </div>
           </div>
         </div>
+        {features.enableGigaLive ? (
+          <GigaSocialGoLiveButton onClick={() => openSection("live")} variant="header" />
+        ) : null}
         {communitySlug && (
           <div className="saas-card rounded-2xl border border-border px-4 py-3 text-sm">
             Community feed: <span className="font-medium capitalize">{communitySlug}</span>
@@ -126,15 +138,16 @@ function GigaSocialContent() {
             <button
               key={item.id}
               type="button"
-              onClick={() => {
-                setSection(item.id);
-                if (item.id !== "feed") setCommunitySlug(undefined);
-              }}
+              onClick={() => openSection(item.id)}
               className={cn(
                 "relative inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium",
                 active
-                  ? "border-accent/40 bg-accent/10 text-foreground ring-1 ring-accent/20"
-                  : "border-border bg-white text-muted hover:border-accent/25"
+                  ? item.id === "live"
+                    ? "border-red-500/50 bg-red-50 text-red-800 ring-1 ring-red-500/25"
+                    : "border-accent/40 bg-accent/10 text-foreground ring-1 ring-accent/20"
+                  : item.id === "live"
+                    ? "border-red-200 bg-white text-red-700 hover:border-red-400/40"
+                    : "border-border bg-white text-muted hover:border-accent/25"
               )}
             >
               <Icon className="h-4 w-4" aria-hidden />
@@ -164,7 +177,7 @@ function GigaSocialContent() {
               sessionToken={sessionToken}
               communitySlug={communitySlug}
               highlightPostId={highlightPostId}
-              onOpenLive={features.enableGigaLive ? () => setSection("live") : undefined}
+              onOpenLive={features.enableGigaLive ? () => openSection("live") : undefined}
             />
           </>
         )}
