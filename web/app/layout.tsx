@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ChunkLoadRecoveryBootstrap } from "@/components/pwa/ChunkLoadRecoveryBootstrap";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { DeferredPwaChrome } from "@/components/pwa/DeferredPwaChrome";
+import { PwaInstallProvider } from "@/components/pwa/PwaInstallProvider";
 import { PlatformAnalyticsHost } from "@/components/analytics/PlatformAnalyticsHost";
 import { GlobalChatPrefetch } from "@/components/chat/GlobalChatPrefetch";
 import { branding } from "@/lib/branding";
@@ -15,6 +16,7 @@ import { siteConfig } from "@/lib/site";
 import "@/styles/globals.css";
 import "@/styles/a11y.css";
 import "@/styles/generation.css";
+import "@/styles/install-prompt.css";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 
@@ -95,17 +97,21 @@ export default function RootLayout({
   return (
     <html lang={DEFAULT_HTML_LANG} className={inter.variable} suppressHydrationWarning>
       <body className="min-h-full w-full max-w-full overflow-x-hidden bg-background font-sans text-foreground antialiased">
-        <ConvexRuntimeBootstrap />
-        <ThemeProvider>
-          <div className="min-h-full w-full max-w-full overflow-x-hidden overflow-y-visible">{children}</div>
-        </ThemeProvider>
-        <AccessibilityBootstrap />
-        <ServiceWorkerRegister />
-        <ChunkLoadRecoveryBootstrap />
-        <GlobalChatPrefetch />
-        <PlatformAnalyticsHost />
-        <DeferredPwaChrome />
-        <GenerationToastHost />
+        <PwaInstallProvider>
+          <ConvexRuntimeBootstrap />
+          <ThemeProvider>
+            <div className="min-h-full w-full max-w-full overflow-x-hidden overflow-y-visible">
+              {children}
+            </div>
+          </ThemeProvider>
+          <AccessibilityBootstrap />
+          <ServiceWorkerRegister />
+          <ChunkLoadRecoveryBootstrap />
+          <GlobalChatPrefetch />
+          <PlatformAnalyticsHost />
+          <DeferredPwaChrome />
+          <GenerationToastHost />
+        </PwaInstallProvider>
       </body>
     </html>
   );

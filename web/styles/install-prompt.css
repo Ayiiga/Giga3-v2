@@ -1,0 +1,217 @@
+/* Cross-platform PWA install prompt — fixed overlays only (no document flow shifts). */
+
+.install-prompt-root {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.install-prompt-backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  pointer-events: auto;
+  cursor: default;
+}
+
+.install-prompt-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: auto;
+  margin-inline: auto;
+  max-width: 28rem;
+  border-radius: 1.5rem 1.5rem 0 0;
+  border: 1px solid rgba(91, 33, 182, 0.14);
+  border-bottom: none;
+  background: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.94) 0%,
+    rgba(245, 243, 255, 0.97) 55%,
+    rgba(237, 233, 254, 0.98) 100%
+  );
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow:
+    0 -4px 6px rgba(15, 23, 42, 0.04),
+    0 -16px 48px -12px rgba(91, 33, 182, 0.18);
+  padding: 1.25rem 1.25rem max(1.25rem, env(safe-area-inset-bottom));
+  opacity: 0;
+  transform: translate3d(0, 100%, 0);
+}
+
+.install-prompt-sheet--visible {
+  animation: install-prompt-sheet-in 420ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.install-prompt-banner {
+  position: fixed;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  left: 1rem;
+  right: 1rem;
+  z-index: 100;
+  margin-inline: auto;
+  max-width: 28rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(91, 33, 182, 0.14);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.94) 0%,
+    rgba(245, 243, 255, 0.96) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 4px 6px rgba(15, 23, 42, 0.05),
+    0 12px 32px -8px rgba(91, 33, 182, 0.2);
+  padding: 0.875rem 1rem;
+  opacity: 0;
+  transform: translate3d(0, 1.25rem, 0);
+}
+
+.install-prompt-banner--visible {
+  animation: install-prompt-banner-in 380ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.install-prompt-step-icon {
+  display: flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: rgba(91, 33, 182, 0.1);
+  color: #5b21b6;
+}
+
+.install-prompt-step-icon--pulse {
+  animation: install-prompt-icon-pulse 2.4s ease-in-out infinite;
+}
+
+.install-prompt-handle {
+  margin: 0 auto 0.75rem;
+  height: 0.25rem;
+  width: 2.5rem;
+  border-radius: 9999px;
+  background: rgba(91, 33, 182, 0.2);
+}
+
+@keyframes install-prompt-sheet-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 100%, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes install-prompt-banner-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 1.25rem, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes install-prompt-icon-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(91, 33, 182, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(91, 33, 182, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .install-prompt-sheet,
+  .install-prompt-banner {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .install-prompt-step-icon--pulse {
+    animation: none !important;
+  }
+}
+
+.dark .install-prompt-sheet {
+  border-color: rgba(167, 139, 250, 0.2);
+  background: linear-gradient(
+    165deg,
+    rgba(24, 24, 27, 0.96) 0%,
+    rgba(39, 39, 42, 0.97) 55%,
+    rgba(49, 46, 129, 0.35) 100%
+  );
+  box-shadow:
+    0 -4px 6px rgba(0, 0, 0, 0.2),
+    0 -16px 48px -12px rgba(91, 33, 182, 0.35);
+}
+
+.dark .install-prompt-banner {
+  border-color: rgba(167, 139, 250, 0.2);
+  background: linear-gradient(
+    135deg,
+    rgba(24, 24, 27, 0.96) 0%,
+    rgba(39, 39, 42, 0.94) 100%
+  );
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.25),
+    0 12px 32px -8px rgba(91, 33, 182, 0.35);
+}
+
+.dark .install-prompt-step-icon {
+  background: rgba(167, 139, 250, 0.15);
+  color: #a78bfa;
+}
+
+.dark .install-prompt-handle {
+  background: rgba(167, 139, 250, 0.25);
+}
+
+@media (min-width: 640px) {
+  .install-prompt-sheet {
+    bottom: 1.5rem;
+    left: 50%;
+    right: auto;
+    width: min(calc(100% - 2rem), 28rem);
+    border-radius: 1.5rem;
+    border-bottom: 1px solid rgba(91, 33, 182, 0.14);
+    padding-bottom: 1.5rem;
+    transform: translate3d(-50%, 1.5rem, 0);
+  }
+
+  .install-prompt-sheet--visible {
+    animation: install-prompt-sheet-in-desktop 420ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .dark .install-prompt-sheet {
+    border-bottom-color: rgba(167, 139, 250, 0.2);
+  }
+}
+
+@keyframes install-prompt-sheet-in-desktop {
+  from {
+    opacity: 0;
+    transform: translate3d(-50%, 1.5rem, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(-50%, 0, 0);
+  }
+}
