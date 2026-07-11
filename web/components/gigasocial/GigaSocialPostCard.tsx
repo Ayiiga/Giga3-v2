@@ -9,6 +9,7 @@ import { splitPostDisplay } from "@/lib/gigasocial/postDisplay";
 import { formatRelativeTime } from "@/lib/datetime";
 import { shareGigaSocialPost } from "@/lib/gigasocial/sharePost";
 import { stripRemixMarker } from "@/lib/gigasocial/remixMeta";
+import { postHasVisualFeedMedia } from "@/lib/gigasocial/postMedia";
 import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
 import {
   Bookmark,
@@ -63,6 +64,28 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
 
   const displayBody = useMemo(() => stripRemixMarker(post.body), [post.body]);
   const display = useMemo(() => splitPostDisplay(displayBody), [displayBody]);
+  const isVisualPost = useMemo(() => postHasVisualFeedMedia(post), [post]);
+
+  const captionBlock = display.title ? (
+    <>
+      <h2 className={cn("gigasocial-post-title", isVisualPost ? "line-clamp-1" : "mt-4")}>
+        {display.title}
+      </h2>
+      {display.description ? (
+        <GigaSocialPostCaption
+          className={isVisualPost ? "mt-1" : "mt-2"}
+          description={display.description}
+          hashtags={post.hashtags}
+        />
+      ) : null}
+    </>
+  ) : (
+    <GigaSocialPostCaption
+      className={isVisualPost ? undefined : "mt-3"}
+      description={display.description}
+      hashtags={post.hashtags}
+    />
+  );
 
   async function handleLike() {
     if (!sessionToken || busy) return;
@@ -113,8 +136,18 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   }
 
   return (
-    <article className="gigasocial-post-card saas-card rounded-2xl border border-border p-4 hover:border-accent/25">
-      <header className="flex items-start justify-between gap-3">
+    <article
+      className={cn(
+        "gigasocial-post-card saas-card rounded-2xl border border-border hover:border-accent/25",
+        isVisualPost ? "gigasocial-post-card--visual" : "p-4"
+      )}
+    >
+      <header
+        className={cn(
+          "flex items-start justify-between gap-3",
+          isVisualPost && "gigasocial-post-card__chrome px-4 pt-3"
+        )}
+      >
         <div className="flex items-center gap-3">
           <SocialAvatar
             name={post.author.displayName}
@@ -134,36 +167,42 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
         </span>
       </header>
 
-      <GigaRemixBadge post={post} />
+      <GigaRemixBadge
+        post={post}
+        className={isVisualPost ? "gigasocial-post-card__chrome px-4" : undefined}
+      />
 
-      {display.title ? (
+      {isVisualPost ? (
         <>
-          <h2 className="gigasocial-post-title mt-4">{display.title}</h2>
-          {display.description ? (
-            <GigaSocialPostCaption
-              className="mt-2"
-              description={display.description}
-              hashtags={post.hashtags}
-            />
+          <div className="gigasocial-post-card__media-region">
+            <GigaSocialPostMedia post={post} />
+          </div>
+          {display.title || display.description || post.hashtags?.length ? (
+            <div className="gigasocial-post-card__meta px-4">{captionBlock}</div>
           ) : null}
         </>
       ) : (
-        <GigaSocialPostCaption
-          className="mt-3"
-          description={display.description}
-          hashtags={post.hashtags}
-        />
+        <>
+          {captionBlock}
+          <GigaSocialPostMedia post={post} />
+        </>
       )}
 
-      <GigaSocialPostMedia post={post} />
-
-      {error && (
-        <p className="mt-2 text-xs text-red-700" role="alert">
+      {error ? (
+        <p
+          className={cn("text-xs text-red-700", isVisualPost ? "px-4 pt-2" : "mt-2")}
+          role="alert"
+        >
           {error}
         </p>
-      )}
+      ) : null}
 
-      <div className="mt-4 flex flex-wrap items-center gap-1 border-t border-border pt-3">
+      <div
+        className={cn(
+          "flex flex-wrap items-center gap-1 border-t border-border pt-3",
+          isVisualPost ? "gigasocial-post-card__actions mt-2 px-4 pb-3" : "mt-4"
+        )}
+      >
         <ActionButton
           active={liked}
           label={String(likeCount)}
