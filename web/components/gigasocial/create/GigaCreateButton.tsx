@@ -3,6 +3,7 @@
 import {
   GIGA_CREATE_MENU,
   type GigaCreateActionId,
+  type GigaCreateMenuItem,
 } from "@/components/gigasocial/create/gigaCreateMenu";
 import { cn } from "@/lib/utils";
 import { Plus, X } from "lucide-react";
@@ -15,9 +16,11 @@ export type GigaCreateLaunch = {
 
 export const GigaCreateButton = memo(function GigaCreateButton({
   disabled,
+  menuItems = GIGA_CREATE_MENU,
   onSelect,
 }: {
   disabled?: boolean;
+  menuItems?: GigaCreateMenuItem[];
   onSelect: (launch: GigaCreateLaunch) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -97,7 +100,7 @@ export const GigaCreateButton = memo(function GigaCreateButton({
               className="max-h-[min(65dvh,26rem)] overflow-y-auto overscroll-contain px-2 py-2"
               role="menu"
             >
-              {GIGA_CREATE_MENU.map((item) => {
+              {menuItems.map((item) => {
                 const isSecondary = item.id === "remix";
                 const isDisabled = item.disabled === true;
                 return (

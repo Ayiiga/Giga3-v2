@@ -2,7 +2,10 @@
 
 import type { GigaCreateLaunch } from "@/components/gigasocial/create/GigaCreateButton";
 import { GigaCreateButton } from "@/components/gigasocial/create/GigaCreateButton";
-import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
+import {
+  GIGA_CREATE_MENU,
+  type GigaCreateActionId,
+} from "@/components/gigasocial/create/gigaCreateMenu";
 import { FeedCategoryBar } from "@/components/gigasocial/feed/FeedCategoryBar";
 import { FeedSkeletonList } from "@/components/gigasocial/feed/FeedPostSkeleton";
 import { GigaSocialComposer } from "@/components/gigasocial/GigaSocialComposer";
@@ -83,6 +86,14 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const featuredPost = useMemo(
     () => findFeaturedMediaPost(posts, highlightPostId),
     [posts, highlightPostId]
+  );
+
+  const createMenuItems = useMemo(
+    () =>
+      GIGA_CREATE_MENU.filter(
+        (item) => item.id !== "live-content" || features.enableGigaLive
+      ),
+    [features.enableGigaLive]
   );
 
   const feedPosts = useMemo(() => {
@@ -222,10 +233,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
           onTogglePause={toggle}
         />
       ) : (
-        <GigaSocialFeedHero
-          postCount={posts.length}
-          onGoLive={features.enableGigaLive ? onOpenLive : undefined}
-        />
+        <GigaSocialFeedHero postCount={posts.length} />
       )}
 
       {features.enableFeedCategories ? (
@@ -352,6 +360,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       {useGigaCreateFab ? (
         <GigaCreateButton
           disabled={!sessionToken}
+          menuItems={createMenuItems}
           onSelect={handleGigaCreate}
         />
       ) : null}

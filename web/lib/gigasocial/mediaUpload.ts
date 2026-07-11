@@ -160,6 +160,54 @@ export async function generateVideoThumbnail(file: File): Promise<string | undef
   }
 }
 
+function dataUrlToBlob(dataUrl: string): Blob | null {
+  const match = dataUrl.match(/^data:(image\/[a-z0-9+.-]+);base64,(.+)$/i);
+  if (!match) return null;
+  try {
+    const binary = atob(match[2].replace(/\s/g, ""));
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return new Blob([bytes], { type: match[1].toLowerCase() });
+  } catch {
+    return null;
+  }
+}
+
+async function uploadVideoThumbnail(
+  deps: SocialMediaUploadDeps,
+  dataUrl: string,
+  sourceFileName: string
+): Promise<string | undefined> {
+  const blob = dataUrlToBlob(dataUrl);
+  if (!blob) return undefined;
+
+  const baseName = sourceFileName.replace(/\.[^.]+$/, "") || "video";
+  const file = new File([blob], `${baseName}-thumb.jpg`, { type: "image/jpeg" });
+
+  const client = isSupabaseConfigured() ? requireSupabaseClient() : null;
+  const supabaseUid = client ? await getSupabaseUserId(client) : null;
+
+  if (client && supabaseUid) {
+    const objectPath = buildUserStoragePath(supabaseUid, file.name);
+    const bucket = SOCIAL_IMAGE_BUCKETS[0];
+    const directUrl = await tryDirectSupabaseUpload({
+      bucket,
+      objectPath,
+      body: file,
+      contentType: "image/jpeg",
+    });
+    if (directUrl) return directUrl;
+  }
+
+  const uploaded = await uploadViaPrepared(deps, {
+    file,
+    kind: "image",
+  });
+  return uploaded.url;
+}
+
 async function uploadWithProgress(
   uploadUrl: string,
   body: BodyInit,
@@ -406,7 +454,12 @@ export async function uploadSocialVideo(
     throw new Error("Could not verify video duration. Try another file.");
   }
 
-  const thumbnailUrl = await generateVideoThumbnail(file);
+  const thumbnailDataUrl = await generateVideoThumbnail(file);
+  let thumbnailUrl: string | undefined;
+  if (thumbnailDataUrl) {
+    thumbnailUrl =
+      (await uploadVideoThumbnail(deps, thumbnailDataUrl, file.name)) ?? thumbnailDataUrl;
+  }
   const client = isSupabaseConfigured() ? requireSupabaseClient() : null;
   const supabaseUid = client ? await getSupabaseUserId(client) : null;
 
