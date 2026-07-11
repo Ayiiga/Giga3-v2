@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { SOCIAL_CAPTION_MAX_LENGTH } from "@/lib/gigasocial/constants";
-import { extractHashtagsFromText } from "@/lib/gigasocial/hashtags";
+import { extractHashtagsFromText, formatCompactHashtags } from "@/lib/gigasocial/hashtags";
 import { POST_TYPE_OPTIONS, type SocialPostTypeId } from "@/lib/gigasocial/sections";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { X } from "lucide-react";
@@ -79,7 +79,9 @@ export const GigaSocialPostEditor = memo(function GigaSocialPostEditor({
         ))}
       </div>
       {hashtags.length > 0 ? (
-        <p className="mt-2 text-xs text-muted">Hashtags: {hashtags.map((t) => `#${t}`).join(" ")}</p>
+        <p className="mt-2 truncate text-[11px] text-muted">
+          Hashtags: {formatCompactHashtags(hashtags, 5)}
+        </p>
       ) : null}
       {error ? (
         <p className="mt-2 text-xs text-red-700" role="alert">

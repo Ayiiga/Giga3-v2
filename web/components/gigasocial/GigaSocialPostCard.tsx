@@ -20,10 +20,10 @@ import {
   Trash2,
 } from "lucide-react";
 import { memo, useMemo, useState } from "react";
+import { GigaSocialPostCaption } from "@/components/gigasocial/GigaSocialPostCaption";
 import { GigaSocialCommentThread } from "@/components/gigasocial/GigaSocialCommentThread";
 import { GigaSocialPostMedia } from "@/components/gigasocial/GigaSocialPostMedia";
 import { SocialAvatar } from "@/components/gigasocial/SocialAvatar";
-import { renderCaptionWithHashtags } from "@/lib/gigasocial/hashtags";
 
 interface GigaSocialPostCardProps {
   post: SocialPost;
@@ -63,10 +63,6 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
 
   const displayBody = useMemo(() => stripRemixMarker(post.body), [post.body]);
   const display = useMemo(() => splitPostDisplay(displayBody), [displayBody]);
-  const captionParts = useMemo(
-    () => renderCaptionWithHashtags(display.description),
-    [display.description]
-  );
 
   async function handleLike() {
     if (!sessionToken || busy) return;
@@ -144,45 +140,20 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
         <>
           <h2 className="gigasocial-post-title mt-4">{display.title}</h2>
           {display.description ? (
-            <p className="gigasocial-post-description mt-2 whitespace-pre-wrap">
-              {captionParts.map((part, index) =>
-                part.type === "hashtag" ? (
-                  <span key={`${part.value}-${index}`} className="text-accent">
-                    {part.value}
-                  </span>
-                ) : (
-                  <span key={`${part.value}-${index}`}>{part.value}</span>
-                )
-              )}
-            </p>
+            <GigaSocialPostCaption
+              className="mt-2"
+              description={display.description}
+              hashtags={post.hashtags}
+            />
           ) : null}
         </>
       ) : (
-        <p className="gigasocial-post-description mt-3 whitespace-pre-wrap">
-          {captionParts.map((part, index) =>
-            part.type === "hashtag" ? (
-              <span key={`${part.value}-${index}`} className="text-accent">
-                {part.value}
-              </span>
-            ) : (
-              <span key={`${part.value}-${index}`}>{part.value}</span>
-            )
-          )}
-        </p>
+        <GigaSocialPostCaption
+          className="mt-3"
+          description={display.description}
+          hashtags={post.hashtags}
+        />
       )}
-
-      {post.hashtags && post.hashtags.length > 0 ? (
-        <div className="mt-2 flex flex-wrap gap-2" aria-label="Post hashtags">
-          {post.hashtags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent"
-            >
-              #{tag}
-            </span>
-          ))}
-        </div>
-      ) : null}
 
       <GigaSocialPostMedia post={post} />
 

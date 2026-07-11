@@ -538,6 +538,11 @@ button:focus-visible {
   @apply mb-2 mt-3 text-base font-semibold text-foreground sm:text-lg;
 }
 
+.gigasocial-post-hashtags {
+  @apply text-[11px] leading-snug text-muted;
+  word-break: break-word;
+}
+
 .chat-response-title {
   @apply mb-3 text-lg font-bold tracking-tight text-foreground sm:mb-4 sm:text-xl lg:text-2xl;
 }

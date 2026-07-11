@@ -13,7 +13,7 @@ import {
 } from "@/lib/gigasocial/constants";
 import type { CameraFilterId } from "@/lib/gigasocial/cameraFilters";
 import { prepareAudioForPhotoPost } from "@/lib/gigasocial/audioProcessing";
-import { extractHashtagsFromText } from "@/lib/gigasocial/hashtags";
+import { extractHashtagsFromText, formatCompactHashtags } from "@/lib/gigasocial/hashtags";
 import {
   getVideoDuration,
   generateVideoThumbnail,
@@ -117,6 +117,10 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   );
 
   const detectedHashtags = useMemo(() => extractHashtagsFromText(body), [body]);
+  const detectedHashtagPreview = useMemo(
+    () => formatCompactHashtags(detectedHashtags, 4),
+    [detectedHashtags]
+  );
 
   const studioPreviewUrl = pendingImages[0]?.previewUrl ?? null;
 
@@ -385,9 +389,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         <span>
           {body.length}/{SOCIAL_CAPTION_MAX_LENGTH}
         </span>
-        {detectedHashtags.length > 0 ? (
-          <span aria-label="Detected hashtags">
-            {detectedHashtags.map((tag) => `#${tag}`).join(" ")}
+        {detectedHashtagPreview ? (
+          <span className="max-w-[58%] truncate text-[11px] text-muted" aria-label="Detected hashtags">
+            {detectedHashtagPreview}
           </span>
         ) : null}
       </div>
@@ -399,8 +403,11 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
             postType={postType}
             onApplyCaption={setBody}
             onApplyHashtags={(tags) => {
-              const suffix = tags.map((tag) => `#${tag}`).join(" ");
-              setBody((value) => `${value.trim()}\n\n${suffix}`.trim());
+              const suffix = tags
+                .slice(0, 5)
+                .map((tag) => `#${tag}`)
+                .join(" ");
+              setBody((value) => `${value.trim()} ${suffix}`.trim());
             }}
             onApplyCategory={setPostType}
           />

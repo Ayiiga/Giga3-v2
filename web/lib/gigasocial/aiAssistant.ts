@@ -20,7 +20,7 @@ export function detectContentCategory(text: string): SocialPostTypeId {
   return "text";
 }
 
-export function suggestHashtags(text: string, postType: SocialPostTypeId, limit = 8): string[] {
+export function suggestHashtags(text: string, postType: SocialPostTypeId, limit = 5): string[] {
   const pool = HASHTAG_POOLS[postType] ?? HASHTAG_POOLS.default;
   const words = text
     .toLowerCase()
@@ -28,7 +28,7 @@ export function suggestHashtags(text: string, postType: SocialPostTypeId, limit 
     .split(/\s+/)
     .filter((w) => w.length > 4);
   const fromText = [...new Set(words)]
-    .slice(0, 4)
+    .slice(0, 3)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1));
   return [...new Set([...fromText, ...pool])].slice(0, limit);
 }

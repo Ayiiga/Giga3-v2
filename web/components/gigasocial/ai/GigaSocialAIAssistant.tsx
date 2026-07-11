@@ -6,6 +6,7 @@ import {
   improveCaption,
   suggestHashtags,
 } from "@/lib/gigasocial/aiAssistant";
+import { formatCompactHashtags } from "@/lib/gigasocial/hashtags";
 import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
 import { Sparkles, Wand2 } from "lucide-react";
 import { memo, useMemo } from "react";
@@ -71,8 +72,8 @@ export const GigaSocialAIAssistant = memo(function GigaSocialAIAssistant({
         ) : null}
       </div>
       {suggestions.length > 0 ? (
-        <p className="mt-2 text-xs text-muted">
-          Suggested: {suggestions.map((tag) => `#${tag}`).join(" ")}
+        <p className="mt-2 truncate text-[11px] text-muted">
+          Suggested: {formatCompactHashtags(suggestions, 5)}
         </p>
       ) : null}
     </div>
