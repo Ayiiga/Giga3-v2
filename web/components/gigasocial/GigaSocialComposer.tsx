@@ -7,13 +7,14 @@ import {
   SOCIAL_CAPTION_MAX_LENGTH,
   SOCIAL_IMAGE_ACCEPT,
   SOCIAL_MAX_PHOTOS_PER_POST,
+  SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC,
   SOCIAL_VIDEO_ACCEPT,
   type SocialPostMediaItemInput,
 } from "@/lib/gigasocial/constants";
 import type { CameraFilterId } from "@/lib/gigasocial/cameraFilters";
+import { prepareAudioForPhotoPost } from "@/lib/gigasocial/audioProcessing";
 import { extractHashtagsFromText } from "@/lib/gigasocial/hashtags";
 import {
-  getAudioDuration,
   getVideoDuration,
   generateVideoThumbnail,
   uploadSocialAudio,
@@ -250,13 +251,16 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       return;
     }
     try {
-      const durationSec = await getAudioDuration(file);
+      const prepared = await prepareAudioForPhotoPost(file, SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC);
       setPendingAudio({
-        file,
-        name: file.name,
-        durationSec,
+        file: prepared.file,
+        name: prepared.file.name,
+        durationSec: prepared.durationSec,
       });
       setError(null);
+      if (prepared.trimmed) {
+        setSuccess(`Music trimmed to ${SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC} seconds for photo posts.`);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not read audio.");
     }
@@ -319,6 +323,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         if (pendingAudio) {
           const uploadedAudio = await uploadSocialAudio(uploadDeps, pendingAudio.file, {
             signal: controller.signal,
+            maxDurationSec: SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC,
             onProgress: (progress) => setUploadPercent(progress.percent),
           });
           mediaItems.push(uploadedAudio);

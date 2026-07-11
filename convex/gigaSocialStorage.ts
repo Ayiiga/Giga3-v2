@@ -57,7 +57,39 @@ const AUDIO_MIME = new Set([
   "audio/ogg",
   "audio/aac",
   "audio/webm",
+  "audio/x-caf",
 ]);
+
+const AUDIO_MIME_ALIASES: Record<string, string> = {
+  "audio/mp3": "audio/mpeg",
+  "audio/x-m4a": "audio/mp4",
+  "audio/m4a": "audio/mp4",
+  "audio/x-wav": "audio/wav",
+  "audio/wave": "audio/wav",
+  "audio/x-aac": "audio/aac",
+  "audio/x-caf": "audio/x-caf",
+};
+
+const AUDIO_EXT_TO_MIME: Record<string, string> = {
+  mp3: "audio/mpeg",
+  m4a: "audio/mp4",
+  wav: "audio/wav",
+  ogg: "audio/ogg",
+  aac: "audio/aac",
+  webm: "audio/webm",
+  caf: "audio/x-caf",
+};
+
+const SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC = 15;
+
+function normalizeAudioContentType(contentType: string, fileName?: string): string {
+  const raw = contentType?.toLowerCase().split(";")[0].trim();
+  if (raw && AUDIO_MIME.has(raw)) return raw;
+  if (raw && AUDIO_MIME_ALIASES[raw]) return AUDIO_MIME_ALIASES[raw];
+  const ext = fileName?.split(".").pop()?.toLowerCase();
+  if (ext && AUDIO_EXT_TO_MIME[ext]) return AUDIO_EXT_TO_MIME[ext];
+  return raw;
+}
 
 const MAX_AUDIO_BYTES = 15 * 1024 * 1024;
 const SOCIAL_AUDIO_BUCKET = "social-audio";
@@ -65,7 +97,8 @@ const SOCIAL_AUDIO_BUCKET = "social-audio";
 function validateMimeAndSize(
   contentType: string,
   sizeBytes: number,
-  kind: "image" | "video" | "audio"
+  kind: "image" | "video" | "audio",
+  fileName?: string
 ): void {
   if (kind === "image") {
     if (!IMAGE_MIME.has(contentType)) {
@@ -77,7 +110,8 @@ function validateMimeAndSize(
     return;
   }
   if (kind === "audio") {
-    if (!AUDIO_MIME.has(contentType)) {
+    const normalized = normalizeAudioContentType(contentType, fileName);
+    if (!AUDIO_MIME.has(normalized)) {
       throw new Error("Unsupported audio type. Use MP3, M4A, WAV, or OGG.");
     }
     if (sizeBytes > MAX_AUDIO_BYTES) {
@@ -116,7 +150,7 @@ export const prepareMediaUpload = action({
   },
   handler: async (ctx, args): Promise<PrepareMediaUploadResult> => {
     const userId = await requireSession(args.sessionToken);
-    validateMimeAndSize(args.contentType, args.sizeBytes, args.kind);
+    validateMimeAndSize(args.contentType, args.sizeBytes, args.kind, args.fileName);
 
     const bucket =
       args.kind === "image"

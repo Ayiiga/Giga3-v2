@@ -11,14 +11,15 @@ import {
   uploadSupabaseStorageObject,
 } from "@/lib/supabase/storage";
 import type { Id } from "convex/_generated/dataModel";
+import { assertSupportedAudioFile, prepareAudioForPhotoPost } from "@/lib/gigasocial/audioProcessing";
 import {
   SOCIAL_AVATAR_BUCKETS,
   SOCIAL_AUDIO_BUCKETS,
-  SOCIAL_AUDIO_MIME_TYPES,
   SOCIAL_IMAGE_BUCKETS,
   SOCIAL_IMAGE_MIME_TYPES,
   SOCIAL_MAX_AUDIO_BYTES,
   SOCIAL_MAX_AUDIO_DURATION_SEC,
+  SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC,
   SOCIAL_MAX_AVATAR_BYTES,
   SOCIAL_MAX_IMAGE_BYTES,
   SOCIAL_MAX_PHOTOS_PER_POST,
@@ -79,9 +80,7 @@ function validateImageFile(file: File): void {
 }
 
 function validateAudioFile(file: File): void {
-  if (!SOCIAL_AUDIO_MIME_TYPES.has(file.type)) {
-    throw new Error("Unsupported audio type. Use MP3, M4A, WAV, or OGG.");
-  }
+  assertSupportedAudioFile(file);
   if (file.size > SOCIAL_MAX_AUDIO_BYTES) {
     throw new Error("Audio is too large. Maximum size is 15 MB.");
   }
@@ -263,10 +262,14 @@ async function uploadViaPrepared(
     filterId?: string;
   }
 ): Promise<SocialPostMediaItemInput> {
+  const contentType =
+    args.kind === "audio"
+      ? assertSupportedAudioFile(args.file)
+      : args.file.type || "application/octet-stream";
   const prepared = await deps.prepareUpload({
     sessionToken: deps.sessionToken,
     fileName: args.file.name,
-    contentType: args.file.type,
+    contentType,
     sizeBytes: args.file.size,
     kind: args.kind,
   });
@@ -275,7 +278,7 @@ async function uploadViaPrepared(
     const res = await uploadWithProgress(
       prepared.uploadUrl,
       args.file,
-      args.file.type || prepared.contentType,
+      contentType || prepared.contentType,
       args.onProgress,
       args.signal,
       {
@@ -445,11 +448,19 @@ export async function uploadSocialAudio(
   options?: {
     onProgress?: (progress: SocialUploadProgress) => void;
     signal?: AbortSignal;
+    /** Photo+music posts cap at 15s; longer clips are trimmed client-side. */
+    maxDurationSec?: number;
   }
 ): Promise<SocialPostMediaItemInput> {
-  validateAudioFile(file);
-  const durationSec = await getAudioDuration(file);
-  if (durationSec > SOCIAL_MAX_AUDIO_DURATION_SEC) {
+  const maxDurationSec = options?.maxDurationSec ?? SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC;
+  const prepared =
+    maxDurationSec <= SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC
+      ? await prepareAudioForPhotoPost(file, maxDurationSec)
+      : { file, durationSec: await getAudioDuration(file), trimmed: false };
+
+  validateAudioFile(prepared.file);
+  const durationSec = prepared.durationSec;
+  if (maxDurationSec > SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC && durationSec > SOCIAL_MAX_AUDIO_DURATION_SEC) {
     throw new Error(
       `Music tracks must be ${SOCIAL_MAX_AUDIO_DURATION_SEC / 60} minutes or shorter.`
     );
@@ -458,17 +469,18 @@ export async function uploadSocialAudio(
     throw new Error("Could not verify audio duration. Try another file.");
   }
 
+  const contentType = assertSupportedAudioFile(prepared.file);
   const client = isSupabaseConfigured() ? requireSupabaseClient() : null;
   const supabaseUid = client ? await getSupabaseUserId(client) : null;
 
   if (client && supabaseUid) {
-    const objectPath = buildUserStoragePath(supabaseUid, file.name);
+    const objectPath = buildUserStoragePath(supabaseUid, prepared.file.name);
     const bucket = SOCIAL_AUDIO_BUCKETS[0];
     const directUrl = await tryDirectSupabaseUpload({
       bucket,
       objectPath,
-      body: file,
-      contentType: file.type,
+      body: prepared.file,
+      contentType,
     });
     if (directUrl) {
       options?.onProgress?.({ loaded: 1, total: 1, percent: 100 });
@@ -483,7 +495,7 @@ export async function uploadSocialAudio(
   }
 
   return uploadViaPrepared(deps, {
-    file,
+    file: prepared.file,
     kind: "audio",
     durationSec,
     onProgress: options?.onProgress,

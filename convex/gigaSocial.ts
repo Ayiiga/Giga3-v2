@@ -27,6 +27,8 @@ import {
 } from "./gigaSocialViews";
 import type { Id } from "./_generated/dataModel";
 
+const SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC = 15;
+
 async function getOrCreateProfile(
   ctx: { db: import("./_generated/server").QueryCtx["db"] },
   userId: string
@@ -596,8 +598,8 @@ export const createPost = mutation({
         }
         if (item.type === "audio") {
           const duration = item.durationSec ?? 0;
-          if (duration <= 0 || duration > 300) {
-            throw new Error("Music tracks must be 5 minutes or shorter.");
+          if (duration <= 0 || duration > SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC) {
+            throw new Error("Photo music clips must be 15 seconds or shorter.");
           }
         }
         mediaItems.push({
