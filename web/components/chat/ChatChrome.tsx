@@ -1,6 +1,8 @@
 "use client";
 
 import { ChatActionsMenu, type ChatActionsMenuHandle } from "@/components/chat/ChatActionsMenu";
+import { ChatConversationSearch } from "@/components/chat/ChatConversationSearch";
+import type { ConversationItem } from "@/components/chat/ChatSidebar";
 import { ModelSelector } from "@/components/chat/ModelSelector";
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
 import { PlatformChromeHost } from "@/components/platform/PlatformChromeHost";
@@ -40,6 +42,11 @@ interface ChatChromeProps {
   ) => Promise<{ shareToken: string | null; sharePublic: boolean }>;
   chatActionsRef?: Ref<ChatActionsMenuHandle>;
   searchConversations?: { id: string; title: string; mode: string }[];
+  conversationSearch: string;
+  onConversationSearchChange: (value: string) => void;
+  conversations: ConversationItem[];
+  activeConversationId: string | null;
+  onSelectConversation: (id: string) => void;
 }
 
 function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean {
@@ -61,7 +68,12 @@ function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean
     prev.onOpenSidebar === next.onOpenSidebar &&
     prev.onSetPublicShare === next.onSetPublicShare &&
     prev.chatActionsRef === next.chatActionsRef &&
-    prev.searchConversations === next.searchConversations
+    prev.searchConversations === next.searchConversations &&
+    prev.conversationSearch === next.conversationSearch &&
+    prev.onConversationSearchChange === next.onConversationSearchChange &&
+    prev.conversations === next.conversations &&
+    prev.activeConversationId === next.activeConversationId &&
+    prev.onSelectConversation === next.onSelectConversation
   );
 }
 
@@ -83,6 +95,11 @@ export const ChatChrome = memo(function ChatChrome({
   onSetPublicShare,
   chatActionsRef,
   searchConversations,
+  conversationSearch,
+  onConversationSearchChange,
+  conversations,
+  activeConversationId,
+  onSelectConversation,
 }: ChatChromeProps) {
   useRenderDiagnostic("ChatChrome");
 
@@ -122,19 +139,6 @@ export const ChatChrome = memo(function ChatChrome({
           ) : null}
         </div>
 
-        <div className="chat-header-model hidden min-w-0 flex-1 justify-center sm:flex">
-          <ModelSelector
-            value={modelTier}
-            onChange={onModelTierChange}
-            hasOpenAiAccess={hasOpenAiAccess}
-            isPremium={isPremium}
-            freeOpenAiRemaining={freeOpenAiRemaining}
-            disabled={isSending}
-            compact
-            className="max-w-[11rem] lg:max-w-xs"
-          />
-        </div>
-
         <div className="chat-header-actions ml-auto flex shrink-0 items-center gap-2">
           {credits != null ? (
             <CreditBadge
@@ -144,12 +148,13 @@ export const ChatChrome = memo(function ChatChrome({
             />
           ) : null}
 
+          <GigaSocialChatButton variant="prominent" />
+
           <div
             className="chat-header-toolbar flex items-center gap-0.5 rounded-xl border border-border bg-muted/15 p-0.5"
             role="toolbar"
             aria-label="Chat tools"
           >
-            <GigaSocialChatButton variant="toolbar" />
             <PlatformChromeHost
               conversations={searchConversations}
               compact
@@ -188,17 +193,29 @@ export const ChatChrome = memo(function ChatChrome({
         </div>
       </div>
 
-      <div className="chat-header-model-mobile border-t border-border/70 px-3 py-2 sm:hidden">
-        <ModelSelector
-          value={modelTier}
-          onChange={onModelTierChange}
-          hasOpenAiAccess={hasOpenAiAccess}
-          isPremium={isPremium}
-          freeOpenAiRemaining={freeOpenAiRemaining}
-          disabled={isSending}
-          compact
-          className="w-full max-w-none"
-        />
+      <div className="chat-header-combo border-t border-border/70 px-3 py-2 sm:px-4">
+        <div className="chat-header-combo-inner flex min-w-0 items-stretch overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          <ModelSelector
+            value={modelTier}
+            onChange={onModelTierChange}
+            hasOpenAiAccess={hasOpenAiAccess}
+            isPremium={isPremium}
+            freeOpenAiRemaining={freeOpenAiRemaining}
+            disabled={isSending}
+            compact
+            embedded
+            className="shrink-0"
+          />
+          <ChatConversationSearch
+            value={conversationSearch}
+            onChange={onConversationSearchChange}
+            conversations={conversations}
+            activeId={activeConversationId}
+            onSelect={onSelectConversation}
+            embedded
+            className="min-w-0 flex-1"
+          />
+        </div>
       </div>
     </header>
   );

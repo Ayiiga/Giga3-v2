@@ -637,6 +637,16 @@ button:focus-visible {
   flex-shrink: 0;
 }
 
+.chat-header-combo {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.chat-header-combo-inner {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .chat-header-model-mobile .relative {
   width: 100%;
 }

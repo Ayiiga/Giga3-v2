@@ -19,6 +19,8 @@ interface ModelSelectorProps {
   isPremium?: boolean;
   disabled?: boolean;
   compact?: boolean;
+  /** Flush left segment inside a combined model + search bar */
+  embedded?: boolean;
   className?: string;
 }
 
@@ -30,6 +32,7 @@ export const ModelSelector = memo(function ModelSelector({
   isPremium = false,
   disabled,
   compact,
+  embedded,
   className,
 }: ModelSelectorProps) {
   const [open, setOpen] = useState(false);
@@ -63,6 +66,8 @@ export const ModelSelector = memo(function ModelSelector({
           "inline-flex max-w-full min-h-10 items-center gap-1.5 rounded-xl border border-border bg-card px-2 text-sm font-medium text-foreground shadow-sm sm:gap-2 sm:px-3",
           "hover:border-accent/30 hover:bg-accent/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40",
           compact && "min-h-9 px-2.5",
+          embedded &&
+            "min-h-11 rounded-none border-0 border-r border-border bg-transparent shadow-none hover:bg-accent/5",
           disabled && "pointer-events-none opacity-50"
         )}
       >

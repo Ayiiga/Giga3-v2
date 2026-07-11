@@ -39,20 +39,16 @@ export function GigaSocialChatButton({
     <Link
       href={siteConfig.links.gigasocial}
       className={cn(
-        "gigasocial-chat-entry group relative inline-flex shrink-0 items-center justify-center",
+        "gigasocial-chat-entry relative inline-flex shrink-0 items-center justify-center",
         className
       )}
       aria-label="Open GigaSocial community feed"
       title="GigaSocial — community feed"
     >
       <span
-        className="absolute inset-0 rounded-full bg-gradient-to-br from-violet-500/30 to-indigo-500/30 opacity-80"
-        aria-hidden
-      />
-      <span
-        className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-md ring-2 ring-violet-200/90 sm:h-10 sm:w-10"
+        className="relative flex h-10 w-10 items-center justify-center rounded-full bg-violet-600 text-white ring-2 ring-violet-400 shadow-sm sm:h-11 sm:w-11"
       >
-        <UsersRound className="h-4 w-4 sm:h-[18px] sm:w-[18px]" strokeWidth={2.25} aria-hidden />
+        <UsersRound className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={2.25} aria-hidden />
       </span>
       <span
         className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5 rounded-full border-2 border-card bg-emerald-500"

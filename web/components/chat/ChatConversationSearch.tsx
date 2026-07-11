@@ -14,6 +14,8 @@ interface ChatConversationSearchProps {
   activeId: string | null;
   onSelect: (id: string) => void;
   className?: string;
+  /** Flush right segment inside a combined model + search bar */
+  embedded?: boolean;
 }
 
 export const ChatConversationSearch = memo(function ChatConversationSearch({
@@ -23,6 +25,7 @@ export const ChatConversationSearch = memo(function ChatConversationSearch({
   activeId,
   onSelect,
   className,
+  embedded = false,
 }: ChatConversationSearchProps) {
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -89,7 +92,10 @@ export const ChatConversationSearch = memo(function ChatConversationSearch({
         aria-controls={showResults ? listId : undefined}
         aria-autocomplete="list"
         role="combobox"
-        className="input-surface min-h-11 w-full rounded-xl py-2.5 pl-10 pr-10 text-sm shadow-sm"
+        className={cn(
+          "input-surface min-h-11 w-full py-2.5 pl-10 pr-10 text-sm shadow-sm",
+          embedded ? "rounded-none border-0 shadow-none focus:ring-0" : "rounded-xl"
+        )}
       />
       {value.trim().length > 0 && (
         <button

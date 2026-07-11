@@ -4,7 +4,6 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ChatSegmentNotice } from "@/components/chat/ChatSegmentNotice";
 import { ChatBanners } from "@/components/chat/ChatBanners";
 import { ChatChrome } from "@/components/chat/ChatChrome";
-import { ChatConversationSearch } from "@/components/chat/ChatConversationSearch";
 import type { ChatActionsMenuHandle } from "@/components/chat/ChatActionsMenu";
 import { ChatConversationPane } from "@/components/chat/ChatConversationPane";
 import { ChatOverflowProbe } from "@/components/chat/ChatOverflowProbe";
@@ -408,20 +407,15 @@ function ChatShellInner({
             onSetPublicShare={onSetPublicShare}
             chatActionsRef={chatActionsRef}
             searchConversations={searchConversations}
+            conversationSearch={conversationSearch}
+            onConversationSearchChange={setConversationSearch}
+            conversations={conversations}
+            activeConversationId={activeId}
+            onSelectConversation={(id) => {
+              selectConversation(id);
+              handleCloseMobile();
+            }}
           />
-
-          <div className="border-b border-border bg-card px-2 py-2 sm:px-4">
-            <ChatConversationSearch
-              value={conversationSearch}
-              onChange={setConversationSearch}
-              conversations={conversations}
-              activeId={activeId}
-              onSelect={(id) => {
-                selectConversation(id);
-                handleCloseMobile();
-              }}
-            />
-          </div>
 
           <ChatBanners
             email={email}
