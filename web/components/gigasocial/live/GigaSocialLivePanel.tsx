@@ -16,13 +16,9 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
 }: {
   sessionToken: string;
 }) {
-  const live = useQuery(api.gigaSocialLive.listLiveStreams, { sessionToken, status: "live" });
-  const scheduled = useQuery(api.gigaSocialLive.listLiveStreams, {
-    sessionToken,
-    status: "scheduled",
-  });
+  const live = useQuery(api.gigaSocialLive.listLiveStreams, { status: "live" });
+  const scheduled = useQuery(api.gigaSocialLive.listLiveStreams, { status: "scheduled" });
   const replays = useQuery(api.gigaSocialLive.listLiveStreams, {
-    sessionToken,
     status: "ended",
     limit: 10,
   });
@@ -39,6 +35,8 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const listsLoading = live === undefined || scheduled === undefined || replays === undefined;
+
   if (activeStreamId) {
     return (
       <GigaSocialLiveRoom
@@ -53,7 +51,7 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
     );
   }
 
-  if (live === undefined) {
+  if (listsLoading) {
     return <LoadingState label="Loading live streams…" />;
   }
 
@@ -103,8 +101,8 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
       <div className="saas-card rounded-2xl border border-border bg-white p-4">
         <h3 className="text-base font-semibold text-foreground">Go live on GigaSocial</h3>
         <p className="mt-1 text-sm text-muted">
-          Broadcast video, audio, or your screen with live chat, reactions, gifts, moderation, and
-          AI captions.
+          Broadcast vertical 9:16 video, audio, or your screen with live chat, reactions, gifts,
+          moderation, and AI captions.
         </p>
         <div className="mt-4 space-y-3">
           <input
@@ -174,7 +172,7 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
       <StreamSection
         title="Scheduled"
         empty="No scheduled streams yet."
-        streams={scheduled?.streams ?? []}
+        streams={scheduled.streams}
         onJoin={(id) => {
           setHosting(false);
           setActiveStreamId(id);
@@ -185,7 +183,7 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
       <StreamSection
         title="Replays"
         empty="Ended streams with replays will appear here."
-        streams={replays?.streams ?? []}
+        streams={replays.streams}
         onJoin={(id) => {
           setHosting(false);
           setActiveStreamId(id);

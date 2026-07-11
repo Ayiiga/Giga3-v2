@@ -83,13 +83,32 @@
   animation: none !important;
 }
 
+.gigasocial-live-stable .gigasocial-live-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
 .gigasocial-live-stable .gigasocial-live-video {
   display: block;
   width: 100%;
+  background: #000;
+}
+
+.gigasocial-live-stable .gigasocial-live-video--portrait {
+  aspect-ratio: 9 / 16;
+  max-height: min(80vh, 42rem);
+  max-width: min(100%, 28rem);
+  margin-inline: auto;
+  object-fit: cover;
+}
+
+.gigasocial-live-stable .gigasocial-live-video--screen {
   aspect-ratio: 16 / 9;
   max-height: min(72vh, 30rem);
   object-fit: contain;
-  background: #000;
 }
 
 @media (max-width: 1023px) {

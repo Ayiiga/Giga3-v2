@@ -5,10 +5,18 @@ export type LiveStreamMode = "video" | "audio" | "screen";
 export type LiveStreamStatus = "scheduled" | "live" | "ended";
 
 export const LIVE_STREAM_MODES: { id: LiveStreamMode; label: string; description: string }[] = [
-  { id: "video", label: "Live video", description: "Camera broadcast with live chat" },
+  { id: "video", label: "Live video", description: "Vertical 9:16 camera broadcast" },
   { id: "audio", label: "Live audio", description: "Voice-only room with reactions" },
   { id: "screen", label: "Screen share", description: "Share your screen with viewers" },
 ];
+
+/** Preferred capture shape for portrait live video (9:16). */
+export const LIVE_VIDEO_CAPTURE_CONSTRAINTS: MediaTrackConstraints = {
+  facingMode: "user",
+  width: { ideal: 1080 },
+  height: { ideal: 1920 },
+  aspectRatio: { ideal: 9 / 16 },
+};
 
 export const LIVE_REACTIONS = ["❤️", "🔥", "👏", "🎉", "💯", "🙌"] as const;
 

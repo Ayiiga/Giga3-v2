@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import type { Id } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { sanitizeSocialText, toPublicAuthor } from "./gigaSocialViews";
@@ -21,11 +21,15 @@ async function resolveAuthor(
   ctx: { db: import("./_generated/server").QueryCtx["db"] },
   userId: string
 ) {
-  const profile = await ctx.db
-    .query("socialProfiles")
-    .withIndex("by_user", (q) => q.eq("userId", userId))
-    .first();
-  return toPublicAuthor(profile, userId);
+  try {
+    const profile = await ctx.db
+      .query("socialProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+    return toPublicAuthor(profile, userId);
+  } catch {
+    return toPublicAuthor(null, userId);
+  }
 }
 
 function parseReactionCounts(raw: string | undefined | null): Record<string, number> {
@@ -90,19 +94,36 @@ async function toPublicStream(
 
 export const listLiveStreams = query({
   args: {
-    sessionToken: v.optional(v.string()),
     status: v.optional(liveStatusValidator),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const cap = Math.min(args.limit ?? 20, 40);
+    const cap = Math.min(Math.max(args.limit ?? 20, 1), 40);
     const status = args.status ?? "live";
-    const rows = await ctx.db
-      .query("socialLiveStreams")
-      .withIndex("by_status_created", (q) => q.eq("status", status))
-      .order("desc")
-      .take(cap);
-    const streams = await Promise.all(rows.map((row) => toPublicStream(ctx, row)));
+    let rows: Doc<"socialLiveStreams">[] = [];
+
+    try {
+      rows = await ctx.db
+        .query("socialLiveStreams")
+        .withIndex("by_status_created", (q) => q.eq("status", status))
+        .order("desc")
+        .take(cap);
+    } catch {
+      const all = await ctx.db.query("socialLiveStreams").collect();
+      rows = all
+        .filter((row) => row.status === status)
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .slice(0, cap);
+    }
+
+    const streams = [];
+    for (const row of rows) {
+      try {
+        streams.push(await toPublicStream(ctx, row));
+      } catch {
+        /* skip malformed row */
+      }
+    }
     return { streams };
   },
 });
@@ -414,13 +435,25 @@ export const moderateLiveChat = mutation({
 export const getMyLiveStreams = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    let userId: string;
+    try {
+      userId = await requireSession(args.sessionToken);
+    } catch {
+      return { streams: [] };
+    }
     const rows = await ctx.db
       .query("socialLiveStreams")
       .withIndex("by_host_created", (q) => q.eq("hostId", userId))
       .order("desc")
       .take(20);
-    const streams = await Promise.all(rows.map((row) => toPublicStream(ctx, row)));
+    const streams = [];
+    for (const row of rows) {
+      try {
+        streams.push(await toPublicStream(ctx, row));
+      } catch {
+        /* skip malformed row */
+      }
+    }
     return { streams };
   },
 });

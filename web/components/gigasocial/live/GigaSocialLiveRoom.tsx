@@ -5,8 +5,10 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import {
   LIVE_GIFTS,
   LIVE_REACTIONS,
+  LIVE_VIDEO_CAPTURE_CONSTRAINTS,
   type LiveStreamMode,
 } from "@/lib/gigasocial/liveStreaming";
+import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -65,7 +67,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
         mode === "screen"
           ? await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
           : await navigator.mediaDevices.getUserMedia({
-              video: mode !== "audio",
+              video: mode === "video" ? LIVE_VIDEO_CAPTURE_CONSTRAINTS : false,
               audio: true,
             });
       mediaStreamRef.current = media;
@@ -169,9 +171,16 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
         </Button>
       </div>
 
-      <div className="saas-card overflow-hidden rounded-2xl border border-border bg-black">
+      <div className="saas-card gigasocial-live-stage overflow-hidden rounded-2xl border border-border bg-black">
         {stream.replayUrl && stream.status === "ended" ? (
-          <video src={stream.replayUrl} controls className="gigasocial-live-video w-full bg-black" />
+          <video
+            src={stream.replayUrl}
+            controls
+            className={cn(
+              "gigasocial-live-video w-full bg-black",
+              mode === "video" && "gigasocial-live-video--portrait"
+            )}
+          />
         ) : mode === "audio" ? (
           <div className="flex min-h-[12rem] flex-col items-center justify-center gap-3 px-6 py-10 text-white">
             <Radio className="h-10 w-10" aria-hidden />
@@ -184,7 +193,11 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
             playsInline
             muted={isHost}
             controls={!isHost}
-            className="gigasocial-live-video w-full bg-black"
+            className={cn(
+              "gigasocial-live-video w-full bg-black",
+              mode === "video" && "gigasocial-live-video--portrait",
+              mode === "screen" && "gigasocial-live-video--screen"
+            )}
             aria-label="Live stream preview"
           />
         )}
