@@ -1,4 +1,5 @@
 import { httpRouter } from "convex/server";
+import { gigaSocialPostOgImage } from "./gigaSocialPostOgImage";
 import { gigaSocialPostPreview } from "./gigaSocialPostPreview";
 import { healthCheck } from "./health";
 import { paystackWebhook } from "./paystack";
@@ -21,6 +22,12 @@ http.route({
   path: "/gigasocial/post/preview",
   method: "GET",
   handler: gigaSocialPostPreview,
+});
+
+http.route({
+  path: "/gigasocial/post/og-image",
+  method: "GET",
+  handler: gigaSocialPostOgImage,
 });
 
 export default http;

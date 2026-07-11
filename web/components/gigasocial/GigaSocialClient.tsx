@@ -3,7 +3,6 @@
 import { GigaSocialCommunitiesPanel } from "@/components/gigasocial/GigaSocialCommunitiesPanel";
 import { GigaSocialDiscoverPanel } from "@/components/gigasocial/GigaSocialDiscoverPanel";
 import { GigaSocialFeedPanel } from "@/components/gigasocial/GigaSocialFeedPanel";
-import { GigaSocialGoLiveButton } from "@/components/gigasocial/live/GigaSocialGoLiveButton";
 import { GigaSocialLivePanel } from "@/components/gigasocial/live/GigaSocialLivePanel";
 import { GigaSocialNotificationsPanel } from "@/components/gigasocial/GigaSocialNotificationsPanel";
 import { GigaSocialProfilePanel } from "@/components/gigasocial/GigaSocialProfilePanel";
@@ -116,9 +115,6 @@ function GigaSocialContent() {
             </div>
           </div>
         </div>
-        {features.enableGigaLive ? (
-          <GigaSocialGoLiveButton onClick={() => openSection("live")} variant="header" />
-        ) : null}
         {communitySlug && (
           <div className="saas-card rounded-2xl border border-border px-4 py-3 text-sm">
             Community feed: <span className="font-medium capitalize">{communitySlug}</span>

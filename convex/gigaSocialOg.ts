@@ -2,6 +2,7 @@ import type { PublicSocialAuthor, PublicSocialPost } from "./gigaSocialViews";
 import { parseMediaMetaJson } from "./gigaSocialViews";
 
 const DEFAULT_ORIGIN = "https://www.giga3ai.com";
+const DEFAULT_CONVEX_SITE = "https://perfect-lark-521.convex.site";
 const DEFAULT_OG_IMAGE = `${DEFAULT_ORIGIN}/images/logo.png`;
 
 export type GigaSocialOgMeta = {
@@ -70,19 +71,43 @@ function primaryMediaUrl(post: PublicSocialPost): string | undefined {
   return post.mediaUrls?.[0] ?? post.mediaUrl;
 }
 
-function previewImageUrl(post: PublicSocialPost, mediaMetaJson?: string | null): string {
-  if (post.videoThumbnailUrl) return post.videoThumbnailUrl;
+function isPublicImageUrl(url: string): boolean {
+  const trimmed = url.trim();
+  return trimmed.startsWith("https://") || trimmed.startsWith("http://");
+}
+
+function isVideoPost(post: PublicSocialPost): boolean {
+  return post.mediaType === "video" || post.postType === "video";
+}
+
+export function buildGigaSocialOgImageProxyUrl(postId: string, siteUrl?: string): string {
+  const site = (siteUrl ?? process.env.CONVEX_SITE_URL ?? DEFAULT_CONVEX_SITE).replace(/\/$/, "");
+  return `${site}/gigasocial/post/og-image?id=${encodeURIComponent(postId)}`;
+}
+
+function previewImageUrl(
+  post: PublicSocialPost,
+  mediaMetaJson?: string | null,
+  siteUrl?: string
+): string {
+  if (isVideoPost(post)) {
+    return buildGigaSocialOgImageProxyUrl(String(post._id), siteUrl);
+  }
+
+  if (post.videoThumbnailUrl && isPublicImageUrl(post.videoThumbnailUrl)) {
+    return post.videoThumbnailUrl;
+  }
 
   const mediaItems = parseMediaMetaJson(mediaMetaJson);
   const videoThumb = mediaItems.find((item) => item.type === "video" && item.thumbnailUrl)
     ?.thumbnailUrl;
-  if (videoThumb) return videoThumb;
+  if (videoThumb && isPublicImageUrl(videoThumb)) return videoThumb;
 
   const imageFromMeta = mediaItems.find((item) => item.type === "image")?.url;
-  if (imageFromMeta) return imageFromMeta;
+  if (imageFromMeta && isPublicImageUrl(imageFromMeta)) return imageFromMeta;
 
   const mediaUrl = primaryMediaUrl(post);
-  if (mediaUrl && post.mediaType !== "video" && post.postType !== "video") {
+  if (mediaUrl && isPublicImageUrl(mediaUrl)) {
     return mediaUrl;
   }
 
@@ -108,7 +133,7 @@ export function buildGigaSocialOgMeta(
   const excerpt = (display.title || display.description || post.body).replace(/\s+/g, " ").trim();
   const description = excerpt.slice(0, 240);
   const canonicalUrl = buildGigaSocialPostUrl(String(post._id), origin);
-  const imageUrl = previewImageUrl(post, mediaMetaJson);
+  const imageUrl = previewImageUrl(post, mediaMetaJson, process.env.CONVEX_SITE_URL);
   const videoUrl =
     post.mediaType === "video" || post.postType === "video"
       ? primaryMediaUrl(post)
