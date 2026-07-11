@@ -4,14 +4,21 @@ import { parseRemixMeta } from "@/lib/gigasocial/remixMeta";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { GitBranchPlus } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { memo } from "react";
 import { buildGigaSocialPostUrl } from "@/lib/gigasocial/shareLinks";
 
-export const GigaRemixBadge = memo(function GigaRemixBadge({ post }: { post: SocialPost }) {
+export const GigaRemixBadge = memo(function GigaRemixBadge({
+  post,
+  className,
+}: {
+  post: SocialPost;
+  className?: string;
+}) {
   const remix = parseRemixMeta(post.body);
   if (!remix) return null;
   return (
-    <p className="mt-2 text-xs text-muted">
+    <p className={cn("mt-2 text-xs text-muted", className)}>
       <GitBranchPlus className="mr-1 inline h-3.5 w-3.5 text-accent" aria-hidden />
       Remix chain ·{" "}
       <Link href={buildGigaSocialPostUrl(remix.sourcePostId)} className="text-accent hover:underline">

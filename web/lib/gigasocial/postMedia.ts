@@ -64,6 +64,12 @@ export function postHasPlayableMedia(post: SocialPost): boolean {
   return getPostMediaKind(post) !== "none";
 }
 
+/** Photo/video posts in the feed — media should dominate the card layout. */
+export function postHasVisualFeedMedia(post: SocialPost): boolean {
+  const kind = getPostMediaKind(post);
+  return kind === "video" || kind === "image" || kind === "gallery" || kind === "photo-music";
+}
+
 /** First post with video, audio, or images — used for feed autoplay hero. */
 export function findFeaturedMediaPost(
   posts: SocialPost[],
