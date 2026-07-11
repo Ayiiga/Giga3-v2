@@ -4,6 +4,7 @@ import { GigaSocialCommunitiesPanel } from "@/components/gigasocial/GigaSocialCo
 import { GigaSocialDiscoverPanel } from "@/components/gigasocial/GigaSocialDiscoverPanel";
 import { GigaSocialFeedPanel } from "@/components/gigasocial/GigaSocialFeedPanel";
 import { GigaSocialLivePanel } from "@/components/gigasocial/live/GigaSocialLivePanel";
+import { GigaSocialPanelErrorBoundary } from "@/components/gigasocial/GigaSocialPanelErrorBoundary";
 import { GigaSocialNotificationsPanel } from "@/components/gigasocial/GigaSocialNotificationsPanel";
 import { GigaSocialProfilePanel } from "@/components/gigasocial/GigaSocialProfilePanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
@@ -177,12 +178,14 @@ function GigaSocialContent() {
                   : "Newest community posts first — tap the pen icon to share something."
               }
             />
-            <GigaSocialFeedPanel
-              sessionToken={sessionToken}
-              communitySlug={communitySlug}
-              highlightPostId={highlightPostId}
-              onOpenLive={features.enableGigaLive ? () => openSection("live") : undefined}
-            />
+            <GigaSocialPanelErrorBoundary panelName="Feed">
+              <GigaSocialFeedPanel
+                sessionToken={sessionToken}
+                communitySlug={communitySlug}
+                highlightPostId={highlightPostId}
+                onOpenLive={features.enableGigaLive ? () => openSection("live") : undefined}
+              />
+            </GigaSocialPanelErrorBoundary>
           </>
         )}
 
@@ -192,7 +195,9 @@ function GigaSocialContent() {
               title="Discover"
               description="Trending posts, creators, educational content, and popular AI topics."
             />
-            <GigaSocialDiscoverPanel sessionToken={sessionToken} />
+            <GigaSocialPanelErrorBoundary panelName="Discover">
+              <GigaSocialDiscoverPanel sessionToken={sessionToken} />
+            </GigaSocialPanelErrorBoundary>
           </>
         )}
 
@@ -202,13 +207,15 @@ function GigaSocialContent() {
               title="Communities"
               description="Browse and join topic groups — education, tech, business, AI, and more."
             />
-            <GigaSocialCommunitiesPanel
-              sessionToken={sessionToken}
-              onSelectCommunity={(slug) => {
-                setCommunitySlug(slug);
-                setSection("feed");
-              }}
-            />
+            <GigaSocialPanelErrorBoundary panelName="Communities">
+              <GigaSocialCommunitiesPanel
+                sessionToken={sessionToken}
+                onSelectCommunity={(slug) => {
+                  setCommunitySlug(slug);
+                  setSection("feed");
+                }}
+              />
+            </GigaSocialPanelErrorBoundary>
           </>
         )}
 
@@ -218,7 +225,9 @@ function GigaSocialContent() {
               title="Live"
               description="Go live with video, audio, or screen sharing — chat, reactions, gifts, and replays."
             />
-            <GigaSocialLivePanel sessionToken={sessionToken} />
+            <GigaSocialPanelErrorBoundary panelName="Live">
+              <GigaSocialLivePanel sessionToken={sessionToken} />
+            </GigaSocialPanelErrorBoundary>
           </>
         )}
 
@@ -228,7 +237,9 @@ function GigaSocialContent() {
               title="Your profile"
               description="Bio, skills, interests, achievements, XP, and shared posts."
             />
-            <GigaSocialProfilePanel sessionToken={sessionToken} />
+            <GigaSocialPanelErrorBoundary panelName="Profile">
+              <GigaSocialProfilePanel sessionToken={sessionToken} />
+            </GigaSocialPanelErrorBoundary>
           </>
         )}
 
@@ -238,7 +249,9 @@ function GigaSocialContent() {
               title="Notifications"
               description="Likes, comments, replies, and community activity."
             />
-            <GigaSocialNotificationsPanel sessionToken={sessionToken} />
+            <GigaSocialPanelErrorBoundary panelName="Notifications">
+              <GigaSocialNotificationsPanel sessionToken={sessionToken} />
+            </GigaSocialPanelErrorBoundary>
           </>
         )}
       </section>

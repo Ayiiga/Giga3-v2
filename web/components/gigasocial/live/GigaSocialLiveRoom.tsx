@@ -46,6 +46,8 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   const [busy, setBusy] = useState(false);
   const [mediaError, setMediaError] = useState<string | null>(null);
   const joinedRef = useRef(false);
+  const startLiveCalledRef = useRef(false);
+  const hostMediaStartedRef = useRef(false);
 
   const stream = data?.stream;
   const mode = (stream?.mode ?? "video") as LiveStreamMode;
@@ -119,20 +121,40 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   }, [isHost, joinLive, sessionToken, stream, streamId]);
 
   useEffect(() => {
-    if (isHost && stream?.status === "scheduled") {
-      void startLive({ sessionToken, streamId, mode });
-    }
+    if (!isHost || stream?.status !== "scheduled" || startLiveCalledRef.current) return;
+    startLiveCalledRef.current = true;
+    void startLive({ sessionToken, streamId, mode });
   }, [isHost, mode, sessionToken, startLive, stream?.status, streamId]);
 
   useEffect(() => {
-    if (isHost && stream?.status === "live") {
-      void startHostMedia();
+    if (!isHost || stream?.status !== "live") {
+      if (stream?.status !== "live") {
+        hostMediaStartedRef.current = false;
+      }
+      return;
     }
-    return () => stopMedia();
-  }, [isHost, startHostMedia, stopMedia, stream?.status]);
+    if (hostMediaStartedRef.current) return;
+    hostMediaStartedRef.current = true;
+    void startHostMedia();
+  }, [isHost, startHostMedia, stream?.status]);
 
-  if (!data || !stream) {
+  useEffect(() => {
+    return () => stopMedia();
+  }, [stopMedia]);
+
+  if (data === undefined) {
     return <LoadingState label="Joining live room…" />;
+  }
+
+  if (data === null || !stream) {
+    return (
+      <div className="saas-card rounded-2xl border border-border p-6 text-center">
+        <p className="text-sm text-muted">This live stream is unavailable or has ended.</p>
+        <Button type="button" className="mt-4 min-h-11" onClick={onClose}>
+          Go back
+        </Button>
+      </div>
+    );
   }
 
   async function handleSendChat() {
