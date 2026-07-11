@@ -11,12 +11,14 @@ import type { SocialPost } from "@/lib/gigasocial/types";
 import { cn } from "@/lib/utils";
 import { Music2, Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { GigaSocialMediaLightbox } from "@/components/gigasocial/GigaSocialMediaLightbox";
 
 interface GigaSocialPostMediaProps {
   post: SocialPost;
   autoPlay?: boolean;
   paused?: boolean;
   featured?: boolean;
+  allowFullView?: boolean;
   className?: string;
   onUserPaused?: () => void;
 }
@@ -28,6 +30,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   autoPlay = false,
   paused = false,
   featured = false,
+  allowFullView = false,
   className,
   onUserPaused,
 }: GigaSocialPostMediaProps) {
@@ -40,6 +43,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   const primaryMediaUrl = mediaUrls[0];
   const [activeImage, setActiveImage] = useState(0);
   const [muted, setMuted] = useState(true);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -54,11 +58,46 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     ? cn("relative overflow-hidden", className)
     : cn(
         "gigasocial-feed-media relative mt-3 overflow-hidden rounded-xl border border-border",
+        allowFullView && "gigasocial-feed-media--expandable",
         mediaKind === "video" && "gigasocial-feed-media--video",
         mediaKind === "gallery" && "gigasocial-feed-media--gallery",
         mediaKind === "photo-music" && "gigasocial-feed-media--photo-music gigasocial-feed-media--gallery",
         className
       );
+
+  const openLightbox = useCallback(
+    (url: string) => {
+      if (!allowFullView || featured) return;
+      setLightboxUrl(url);
+    },
+    [allowFullView, featured]
+  );
+
+  const renderExpandableImage = (
+    url: string,
+    alt: string,
+    imageClass: string,
+    eager = false
+  ) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={url}
+      alt={alt}
+      className={cn(imageClass, allowFullView && !featured && "cursor-zoom-in")}
+      style={imageFilterStyle}
+      loading={eager ? "eager" : "lazy"}
+      onClick={allowFullView && !featured ? () => openLightbox(url) : undefined}
+    />
+  );
+
+  const lightbox =
+    lightboxUrl && allowFullView && !featured ? (
+      <GigaSocialMediaLightbox
+        imageUrl={lightboxUrl}
+        alt="Full size post photo"
+        onClose={() => setLightboxUrl(null)}
+      />
+    ) : null;
 
   const notifyUserPaused = useCallback(() => {
     onUserPaused?.();
@@ -130,31 +169,31 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
 
     if (mediaUrls.length === 1) {
       return (
-        <div className={feedMediaWrapperClass}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={mediaUrls[0]}
-            alt="Photo with music"
-            className={imageClass}
-            style={imageFilterStyle}
-            loading={featured && shouldPlay ? "eager" : "lazy"}
-          />
-          {audioBar}
-        </div>
+        <>
+          <div className={feedMediaWrapperClass}>
+            {renderExpandableImage(
+              mediaUrls[0],
+              "Photo with music",
+              imageClass,
+              featured && shouldPlay
+            )}
+            {audioBar}
+          </div>
+          {lightbox}
+        </>
       );
     }
 
     return (
+      <>
       <div className={cn(featured ? "space-y-2" : "mt-3 space-y-2")}>
         <div className={feedMediaWrapperClass}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={mediaUrls[activeImage]}
-            alt={`Photo with music ${activeImage + 1} of ${mediaUrls.length}`}
-            className={imageClass}
-            style={imageFilterStyle}
-            loading={featured && shouldPlay ? "eager" : "lazy"}
-          />
+          {renderExpandableImage(
+            mediaUrls[activeImage],
+            `Photo with music ${activeImage + 1} of ${mediaUrls.length}`,
+            imageClass,
+            featured && shouldPlay
+          )}
           {shouldPlay && mediaUrls.length > 1 ? (
             <div className="absolute bottom-3 left-1/2 flex gap-1.5">
               {mediaUrls.map((_, index) => (
@@ -202,6 +241,8 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
           ))}
         </div>
       </div>
+      {lightbox}
+      </>
     );
   }
 
@@ -295,30 +336,30 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
 
   if (mediaKind === "image") {
     return (
-      <div className={feedMediaWrapperClass}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={mediaUrls[0]}
-          alt="Post image"
-          className={featured ? frameClass : "gigasocial-feed-media-frame"}
-          style={imageFilterStyle}
-          loading={featured && shouldPlay ? "eager" : "lazy"}
-        />
-      </div>
+      <>
+        <div className={feedMediaWrapperClass}>
+          {renderExpandableImage(
+            mediaUrls[0],
+            "Post image",
+            featured ? frameClass : "gigasocial-feed-media-frame",
+            featured && shouldPlay
+          )}
+        </div>
+        {lightbox}
+      </>
     );
   }
 
   return (
+    <>
     <div className={cn(featured ? "space-y-2" : "mt-3 space-y-2")}>
       <div className={feedMediaWrapperClass}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={mediaUrls[activeImage]}
-          alt={`Post image ${activeImage + 1} of ${mediaUrls.length}`}
-          className={featured ? frameClass : "gigasocial-feed-media-frame"}
-          style={imageFilterStyle}
-          loading={featured && shouldPlay ? "eager" : "lazy"}
-        />
+        {renderExpandableImage(
+          mediaUrls[activeImage],
+          `Post image ${activeImage + 1} of ${mediaUrls.length}`,
+          featured ? frameClass : "gigasocial-feed-media-frame",
+          featured && shouldPlay
+        )}
         {shouldPlay && mediaUrls.length > 1 ? (
           <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
             {mediaUrls.map((_, index) => (
@@ -365,6 +406,8 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
         ))}
       </div>
     </div>
+    {lightbox}
+    </>
   );
 });
 
