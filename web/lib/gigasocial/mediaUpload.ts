@@ -13,8 +13,12 @@ import {
 import type { Id } from "convex/_generated/dataModel";
 import {
   SOCIAL_AVATAR_BUCKETS,
+  SOCIAL_AUDIO_BUCKETS,
+  SOCIAL_AUDIO_MIME_TYPES,
   SOCIAL_IMAGE_BUCKETS,
   SOCIAL_IMAGE_MIME_TYPES,
+  SOCIAL_MAX_AUDIO_BYTES,
+  SOCIAL_MAX_AUDIO_DURATION_SEC,
   SOCIAL_MAX_AVATAR_BYTES,
   SOCIAL_MAX_IMAGE_BYTES,
   SOCIAL_MAX_PHOTOS_PER_POST,
@@ -51,7 +55,7 @@ export type SocialMediaUploadDeps = {
     fileName: string;
     contentType: string;
     sizeBytes: number;
-    kind: "image" | "video";
+    kind: "image" | "video" | "audio";
   }) => Promise<PrepareUploadResult>;
   resolveStorageUrl: (args: {
     sessionToken: string;
@@ -72,6 +76,32 @@ function validateImageFile(file: File): void {
   if (file.size > SOCIAL_MAX_IMAGE_BYTES) {
     throw new Error("Image is too large. Maximum size is 15 MB.");
   }
+}
+
+function validateAudioFile(file: File): void {
+  if (!SOCIAL_AUDIO_MIME_TYPES.has(file.type)) {
+    throw new Error("Unsupported audio type. Use MP3, M4A, WAV, or OGG.");
+  }
+  if (file.size > SOCIAL_MAX_AUDIO_BYTES) {
+    throw new Error("Audio is too large. Maximum size is 15 MB.");
+  }
+}
+
+export function getAudioDuration(file: File): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const audio = new Audio();
+    audio.preload = "metadata";
+    audio.onloadedmetadata = () => {
+      URL.revokeObjectURL(url);
+      resolve(audio.duration);
+    };
+    audio.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Could not read audio duration."));
+    };
+    audio.src = url;
+  });
 }
 
 function validateVideoFile(file: File): void {
@@ -225,11 +255,12 @@ async function uploadViaPrepared(
   deps: SocialMediaUploadDeps,
   args: {
     file: File;
-    kind: "image" | "video";
+    kind: "image" | "video" | "audio";
     onProgress?: (progress: SocialUploadProgress) => void;
     signal?: AbortSignal;
     durationSec?: number;
     thumbnailUrl?: string;
+    filterId?: string;
   }
 ): Promise<SocialPostMediaItemInput> {
   const prepared = await deps.prepareUpload({
@@ -263,6 +294,7 @@ async function uploadViaPrepared(
       thumbnailUrl: args.thumbnailUrl,
       storagePath: prepared.objectPath,
       storageBucket: prepared.bucket,
+      filterId: args.filterId,
     };
   }
 
@@ -286,6 +318,7 @@ async function uploadViaPrepared(
     type: args.kind,
     durationSec: args.durationSec,
     thumbnailUrl: args.thumbnailUrl,
+    filterId: args.filterId,
   };
 }
 
@@ -293,6 +326,7 @@ export async function uploadSocialImages(
   deps: SocialMediaUploadDeps,
   files: File[],
   options?: {
+    filterId?: string;
     onProgress?: (index: number, progress: SocialUploadProgress) => void;
     signal?: AbortSignal;
   }
@@ -331,6 +365,7 @@ export async function uploadSocialImages(
           type: "image",
           storagePath: objectPath,
           storageBucket: bucket,
+          filterId: options?.filterId,
         });
         continue;
       }
@@ -339,6 +374,7 @@ export async function uploadSocialImages(
     const uploaded = await uploadViaPrepared(deps, {
       file: new File([compressed.blob], file.name, { type: compressed.mimeType }),
       kind: "image",
+      filterId: options?.filterId,
       onProgress: (progress) => options?.onProgress?.(index, progress),
       signal: options?.signal,
     });
@@ -398,6 +434,58 @@ export async function uploadSocialVideo(
     kind: "video",
     durationSec,
     thumbnailUrl,
+    onProgress: options?.onProgress,
+    signal: options?.signal,
+  });
+}
+
+export async function uploadSocialAudio(
+  deps: SocialMediaUploadDeps,
+  file: File,
+  options?: {
+    onProgress?: (progress: SocialUploadProgress) => void;
+    signal?: AbortSignal;
+  }
+): Promise<SocialPostMediaItemInput> {
+  validateAudioFile(file);
+  const durationSec = await getAudioDuration(file);
+  if (durationSec > SOCIAL_MAX_AUDIO_DURATION_SEC) {
+    throw new Error(
+      `Music tracks must be ${SOCIAL_MAX_AUDIO_DURATION_SEC / 60} minutes or shorter.`
+    );
+  }
+  if (durationSec <= 0) {
+    throw new Error("Could not verify audio duration. Try another file.");
+  }
+
+  const client = isSupabaseConfigured() ? requireSupabaseClient() : null;
+  const supabaseUid = client ? await getSupabaseUserId(client) : null;
+
+  if (client && supabaseUid) {
+    const objectPath = buildUserStoragePath(supabaseUid, file.name);
+    const bucket = SOCIAL_AUDIO_BUCKETS[0];
+    const directUrl = await tryDirectSupabaseUpload({
+      bucket,
+      objectPath,
+      body: file,
+      contentType: file.type,
+    });
+    if (directUrl) {
+      options?.onProgress?.({ loaded: 1, total: 1, percent: 100 });
+      return {
+        url: directUrl,
+        type: "audio",
+        durationSec,
+        storagePath: objectPath,
+        storageBucket: bucket,
+      };
+    }
+  }
+
+  return uploadViaPrepared(deps, {
+    file,
+    kind: "audio",
+    durationSec,
     onProgress: options?.onProgress,
     signal: options?.signal,
   });

@@ -87,11 +87,12 @@ export const socialMediaTypeValidator = v.union(
 
 export const socialPostMediaItemValidator = v.object({
   url: v.string(),
-  type: v.union(v.literal("image"), v.literal("video")),
+  type: v.union(v.literal("image"), v.literal("video"), v.literal("audio")),
   durationSec: v.optional(v.number()),
   thumbnailUrl: v.optional(v.string()),
   storagePath: v.optional(v.string()),
   storageBucket: v.optional(v.string()),
+  filterId: v.optional(v.string()),
 });
 
 export const socialNotificationTypeValidator = v.union(

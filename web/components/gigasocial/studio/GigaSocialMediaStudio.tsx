@@ -1,16 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import {
+  CAMERA_FILTERS,
+  type CameraFilterId,
+  getCameraFilterCss,
+} from "@/lib/gigasocial/cameraFilters";
 import { cn } from "@/lib/utils";
 import { memo, useEffect, useState } from "react";
-
-const FILTERS = [
-  { id: "none", label: "Original" },
-  { id: "brightness(1.08) contrast(1.05)", label: "Bright" },
-  { id: "saturate(1.25)", label: "Vivid" },
-  { id: "grayscale(0.35) contrast(1.1)", label: "Classic" },
-  { id: "sepia(0.25) saturate(1.1)", label: "Warm" },
-] as const;
 
 export const GigaSocialMediaStudio = memo(function GigaSocialMediaStudio({
   previewUrl,
@@ -19,15 +16,17 @@ export const GigaSocialMediaStudio = memo(function GigaSocialMediaStudio({
 }: {
   previewUrl: string | null;
   onClose: () => void;
-  onApplyFilter: (filterCss: string) => void;
+  onApplyFilter: (filterId: CameraFilterId) => void;
 }) {
-  const [filter, setFilter] = useState<string>("none");
+  const [filterId, setFilterId] = useState<CameraFilterId>("none");
 
   useEffect(() => {
-    setFilter("none");
+    setFilterId("none");
   }, [previewUrl]);
 
   if (!previewUrl) return null;
+
+  const activeCss = getCameraFilterCss(filterId);
 
   return (
     <div className="rounded-2xl border border-border bg-white p-3">
@@ -37,29 +36,46 @@ export const GigaSocialMediaStudio = memo(function GigaSocialMediaStudio({
           Close
         </button>
       </div>
-      <div className="overflow-hidden rounded-xl border border-border bg-zinc-50">
+      <div className="overflow-hidden rounded-xl border border-border bg-zinc-950">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={previewUrl}
           alt="Studio preview"
-          className="max-h-56 w-full object-contain"
-          style={{ filter: filter === "none" ? undefined : filter }}
+          className="max-h-64 w-full object-contain"
+          style={{ filter: activeCss }}
         />
       </div>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {FILTERS.map((item) => (
+      <div
+        className="mt-3 flex gap-2 overflow-x-auto overscroll-x-contain pb-1"
+        role="listbox"
+        aria-label="Camera filters"
+      >
+        {CAMERA_FILTERS.map((item) => (
           <button
             key={item.id}
             type="button"
-            onClick={() => setFilter(item.id)}
+            role="option"
+            aria-selected={filterId === item.id}
+            onClick={() => setFilterId(item.id)}
             className={cn(
-              "min-h-8 rounded-full border px-3 text-xs font-medium",
-              filter === item.id
-                ? "border-accent/40 bg-accent/10 text-foreground"
-                : "border-border text-muted"
+              "min-w-[4.5rem] shrink-0 rounded-xl border p-1 text-center",
+              filterId === item.id
+                ? "border-accent/50 ring-2 ring-accent/25"
+                : "border-border"
             )}
           >
-            {item.label}
+            <span className="block overflow-hidden rounded-lg border border-border bg-zinc-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={previewUrl}
+                alt=""
+                className="h-14 w-full object-cover"
+                style={{ filter: item.css === "none" ? undefined : item.css }}
+              />
+            </span>
+            <span className="mt-1 block truncate px-0.5 text-[10px] font-medium text-foreground">
+              {item.label}
+            </span>
           </button>
         ))}
       </div>
@@ -68,7 +84,7 @@ export const GigaSocialMediaStudio = memo(function GigaSocialMediaStudio({
           type="button"
           className="min-h-9"
           onClick={() => {
-            onApplyFilter(filter);
+            onApplyFilter(filterId);
             onClose();
           }}
         >
@@ -76,7 +92,8 @@ export const GigaSocialMediaStudio = memo(function GigaSocialMediaStudio({
         </Button>
       </div>
       <p className="mt-2 text-[11px] text-muted">
-        Lightweight filters only — crop, music, and video trim open in future studio updates.
+        Modern camera filters apply to your photo in the feed. Add music from the composer after
+        choosing a photo.
       </p>
     </div>
   );

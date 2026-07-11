@@ -1,9 +1,11 @@
 "use client";
 
+import { getCameraFilterCss } from "@/lib/gigasocial/cameraFilters";
 import {
+  getPostAudioUrl,
+  getPostImageFilterId,
   getPostMediaKind,
   getPostMediaUrls,
-  isAudioMediaUrl,
 } from "@/lib/gigasocial/postMedia";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { cn } from "@/lib/utils";
@@ -31,6 +33,10 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
 }: GigaSocialPostMediaProps) {
   const mediaUrls = useMemo(() => getPostMediaUrls(post), [post]);
   const mediaKind = useMemo(() => getPostMediaKind(post), [post]);
+  const imageFilterStyle = useMemo(
+    () => ({ filter: getCameraFilterCss(getPostImageFilterId(post)) }),
+    [post]
+  );
   const primaryMediaUrl = mediaUrls[0];
   const [activeImage, setActiveImage] = useState(0);
   const [muted, setMuted] = useState(true);
@@ -48,6 +54,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
         "gigasocial-feed-media relative mt-3 overflow-hidden rounded-xl border border-border",
         mediaKind === "video" && "gigasocial-feed-media--video",
         mediaKind === "gallery" && "gigasocial-feed-media--gallery",
+        mediaKind === "photo-music" && "gigasocial-feed-media--gallery",
         className
       );
 
@@ -84,7 +91,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || mediaKind !== "audio") return;
+    if (!audio || (mediaKind !== "audio" && mediaKind !== "photo-music")) return;
 
     if (!shouldPlay) {
       audio.pause();
@@ -94,9 +101,41 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     void audio.play().catch(() => {
       /* Browser may block autoplay until interaction */
     });
-  }, [mediaKind, shouldPlay, mediaUrls[0]]);
+  }, [mediaKind, shouldPlay, post._id]);
 
-  if (!mediaUrls.length || mediaKind === "none") return null;
+  if (mediaKind === "none") return null;
+  if (!mediaUrls.length && mediaKind !== "audio") return null;
+
+  if (mediaKind === "photo-music") {
+    const audioUrl = getPostAudioUrl(post);
+    return (
+      <div className={feedMediaWrapperClass}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={mediaUrls[0]}
+          alt="Photo with music"
+          className={featured ? frameClass : "gigasocial-feed-media-frame"}
+          style={imageFilterStyle}
+          loading={featured && shouldPlay ? "eager" : "lazy"}
+        />
+        {audioUrl ? (
+          <div className="flex items-center gap-3 border-t border-border bg-violet-50/80 px-3 py-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+              <Music2 className="h-5 w-5" aria-hidden />
+            </div>
+            <audio
+              ref={audioRef}
+              src={audioUrl}
+              controls
+              preload="metadata"
+              className="min-w-0 flex-1"
+              aria-label="Post music"
+            />
+          </div>
+        ) : null}
+      </div>
+    );
+  }
 
   if (mediaKind === "video") {
     return (
@@ -135,7 +174,8 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   }
 
   if (mediaKind === "audio") {
-    const audioUrl = mediaUrls.find(isAudioMediaUrl) ?? mediaUrls[0];
+    const audioUrl = getPostAudioUrl(post);
+    if (!audioUrl) return null;
     return (
       <div
         className={cn(
@@ -193,6 +233,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
           src={mediaUrls[0]}
           alt="Post image"
           className={featured ? frameClass : "gigasocial-feed-media-frame"}
+          style={imageFilterStyle}
           loading={featured && shouldPlay ? "eager" : "lazy"}
         />
       </div>
@@ -207,6 +248,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
           src={mediaUrls[activeImage]}
           alt={`Post image ${activeImage + 1} of ${mediaUrls.length}`}
           className={featured ? frameClass : "gigasocial-feed-media-frame"}
+          style={imageFilterStyle}
           loading={featured && shouldPlay ? "eager" : "lazy"}
         />
         {shouldPlay && mediaUrls.length > 1 ? (
@@ -239,7 +281,13 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
             )}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
+            <img
+              src={url}
+              alt=""
+              className="h-full w-full object-cover"
+              style={imageFilterStyle}
+              loading="lazy"
+            />
             {index === 0 && post.mediaType === "gallery" ? (
               <span className="absolute bottom-0 right-0 rounded-tl bg-black/60 px-1 text-[10px] text-white">
                 {mediaUrls.length}
@@ -255,19 +303,24 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
 interface PendingMediaPreviewProps {
   images: Array<{ id: string; previewUrl: string; name: string }>;
   video?: { previewUrl: string; name: string; durationSec: number; thumbnailUrl?: string };
-  imageFilter?: string;
+  audio?: { name: string; durationSec: number };
+  imageFilterId?: string;
   onRemoveImage: (id: string) => void;
   onRemoveVideo: () => void;
+  onRemoveAudio?: () => void;
 }
 
 export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMediaPreview({
   images,
   video,
-  imageFilter = "none",
+  audio,
+  imageFilterId = "none",
   onRemoveImage,
   onRemoveVideo,
+  onRemoveAudio,
 }: PendingMediaPreviewProps) {
-  if (!images.length && !video) return null;
+  const imageFilterStyle = { filter: getCameraFilterCss(imageFilterId) };
+  if (!images.length && !video && !audio) return null;
 
   return (
     <div className="mt-3 space-y-2">
@@ -308,6 +361,26 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
         </div>
       ) : null}
 
+      {audio ? (
+        <div className="flex items-center justify-between gap-2 rounded-xl border border-border bg-violet-50/80 px-3 py-2 text-xs">
+          <span className="inline-flex items-center gap-2 truncate text-foreground">
+            <Music2 className="h-4 w-4 shrink-0 text-violet-700" aria-hidden />
+            {audio.name}
+          </span>
+          <span className="shrink-0 text-muted">{Math.round(audio.durationSec)}s</span>
+          {onRemoveAudio ? (
+            <button
+              type="button"
+              onClick={onRemoveAudio}
+              className="shrink-0 rounded-full bg-black/60 px-2 py-1 text-xs text-white"
+              aria-label="Remove music"
+            >
+              Remove
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
       {images.length > 0 ? (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {images.map((image) => (
@@ -317,7 +390,7 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
                 src={image.previewUrl}
                 alt={image.name}
                 className="h-28 w-full object-cover"
-                style={{ filter: imageFilter === "none" ? undefined : imageFilter }}
+                style={imageFilterStyle}
               />
               <button
                 type="button"

@@ -20,6 +20,7 @@ export type SocialPost = {
   body: string;
   mediaUrl?: string;
   mediaUrls?: string[];
+  mediaItems?: SocialPostMediaItemInput[];
   mediaType?: "none" | "image" | "video" | "gallery";
   videoDurationSec?: number;
   videoThumbnailUrl?: string;

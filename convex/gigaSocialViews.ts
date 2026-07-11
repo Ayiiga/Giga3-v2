@@ -15,6 +15,7 @@ export type PublicSocialPost = {
   body: string;
   mediaUrl?: string;
   mediaUrls?: string[];
+  mediaItems?: SocialPostMediaItem[];
   mediaType?: PostDoc["mediaType"];
   videoDurationSec?: number;
   videoThumbnailUrl?: string;
@@ -75,11 +76,12 @@ export function extractMentions(raw: string): string[] {
 
 export type SocialPostMediaItem = {
   url: string;
-  type: "image" | "video";
+  type: "image" | "video" | "audio";
   durationSec?: number;
   thumbnailUrl?: string;
   storagePath?: string;
   storageBucket?: string;
+  filterId?: string;
 };
 
 export function parseMediaMetaJson(raw: string | undefined | null): SocialPostMediaItem[] {
@@ -94,7 +96,8 @@ export function parseMediaMetaJson(raw: string | undefined | null): SocialPostMe
           item !== null &&
           typeof (item as SocialPostMediaItem).url === "string" &&
           ((item as SocialPostMediaItem).type === "image" ||
-            (item as SocialPostMediaItem).type === "video")
+            (item as SocialPostMediaItem).type === "video" ||
+            (item as SocialPostMediaItem).type === "audio")
       )
       .slice(0, MAX_MEDIA_ITEMS);
   } catch {
@@ -177,12 +180,14 @@ export function toPublicPost(
       : post.mediaUrl
         ? [post.mediaUrl]
         : undefined;
+  const mediaItems = parseMediaMetaJson(post.mediaMetaJson);
 
   return {
     _id: post._id,
     body: post.body,
     mediaUrl: post.mediaUrl ?? mediaUrls?.[0],
     mediaUrls,
+    mediaItems: mediaItems.length ? mediaItems : undefined,
     mediaType: post.mediaType,
     videoDurationSec: post.videoDurationSec,
     videoThumbnailUrl: post.videoThumbnailUrl,
