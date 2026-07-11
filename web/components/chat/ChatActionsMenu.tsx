@@ -49,6 +49,7 @@ interface ChatActionsMenuProps {
   email?: string;
   disabled?: boolean;
   className?: string;
+  variant?: "default" | "toolbar";
   onSetPublicShare?: (
     enabled: boolean
   ) => Promise<{ shareToken: string | null; sharePublic: boolean }>;
@@ -65,6 +66,7 @@ export const ChatActionsMenu = memo(
   email,
   disabled,
   className,
+  variant = "default",
   onSetPublicShare,
   },
   ref
@@ -248,7 +250,12 @@ export const ChatActionsMenu = memo(
         aria-haspopup="menu"
         aria-label="Chat share and export. Shortcuts: Ctrl+Shift+C copy chat, Ctrl+Shift+S share chat"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex min-h-10 min-w-10 items-center justify-center gap-0 rounded-xl border border-border bg-white px-2 text-sm font-medium text-foreground shadow-sm hover:bg-zinc-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 sm:min-h-11 sm:gap-1.5 sm:px-3"
+        className={cn(
+          "inline-flex items-center justify-center gap-0 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:opacity-50",
+          variant === "toolbar"
+            ? "h-9 w-9 rounded-lg text-muted hover:bg-accent/10 hover:text-foreground"
+            : "min-h-10 min-w-10 gap-0 rounded-xl border border-border bg-white px-2 shadow-sm hover:bg-zinc-50 sm:min-h-11 sm:gap-1.5 sm:px-3"
+        )}
       >
         <Share2 className="h-4 w-4" aria-hidden />
         <span className="hidden sm:inline">Share</span>

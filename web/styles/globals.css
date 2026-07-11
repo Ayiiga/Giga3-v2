@@ -613,6 +613,46 @@ button:focus-visible {
   flex-shrink: 0;
 }
 
+.chat-header-bar {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.chat-header-row {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.chat-header-brand {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.chat-header-actions {
+  min-width: 0;
+}
+
+.chat-header-toolbar {
+  flex-shrink: 0;
+}
+
+.chat-header-model-mobile .relative {
+  width: 100%;
+}
+
+.chat-header-model-mobile button {
+  width: 100%;
+  max-width: 100%;
+  justify-content: space-between;
+}
+
+@media (min-width: 640px) {
+  .chat-header-brand {
+    flex: 0 1 auto;
+  }
+}
+
 .chat-stable .chat-composer {
   flex-shrink: 0;
 }

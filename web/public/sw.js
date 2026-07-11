@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v106-chunk-load-fix";
+const CACHE_NAME = "giga3-shell-v107-chat-header-professional";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

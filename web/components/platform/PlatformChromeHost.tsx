@@ -15,6 +15,8 @@ type PlatformChromeHostProps = {
   showNotifications?: boolean;
   compact?: boolean;
   ultraCompact?: boolean;
+  /** Hide global search when the page already has its own search field (e.g. chat). */
+  hideSearch?: boolean;
 };
 
 function NotificationBellWithCount({ onClick }: { onClick: () => void }) {
@@ -34,6 +36,7 @@ export function PlatformChromeHost({
   showNotifications = true,
   compact = false,
   ultraCompact = false,
+  hideSearch = false,
 }: PlatformChromeHostProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -56,16 +59,18 @@ export function PlatformChromeHost({
   return (
     <>
       <div className="flex items-center gap-0.5">
-        <button
-          type="button"
-          onClick={openSearch}
-          className="rounded-xl p-2 text-muted hover:bg-accent/10 hover:text-foreground"
-          aria-label="Search (Ctrl+K)"
-          title="Search (Ctrl+K)"
-        >
-          <Search className="h-4 w-4" aria-hidden />
-          {!compact && <span className="sr-only">Search</span>}
-        </button>
+        {!hideSearch ? (
+          <button
+            type="button"
+            onClick={openSearch}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-accent/10 hover:text-foreground"
+            aria-label="Search (Ctrl+K)"
+            title="Search (Ctrl+K)"
+          >
+            <Search className="h-4 w-4" aria-hidden />
+            {!compact && <span className="sr-only">Search</span>}
+          </button>
+        ) : null}
 
         {showNotifications && sessionToken && (
           <NotificationBellWithCount onClick={() => setNotifOpen(true)} />

@@ -149,7 +149,7 @@ export function NotificationBell({ onClick, unreadCount }: { onClick: () => void
     <button
       type="button"
       onClick={onClick}
-      className="relative rounded-xl p-2 text-muted hover:bg-accent/10 hover:text-foreground"
+      className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-accent/10 hover:text-foreground"
       aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ""}`}
     >
       <Bell className="h-4 w-4" aria-hidden />

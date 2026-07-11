@@ -7,13 +7,34 @@ import Link from "next/link";
 
 type GigaSocialChatButtonProps = {
   className?: string;
+  /** Matches other chat header toolbar icons */
+  variant?: "prominent" | "toolbar";
 };
 
 /**
- * Eye-catching GigaSocial entry point for the chat chrome.
+ * GigaSocial entry point for the chat chrome.
  * Static styling only — no animations (chat-stable safe).
  */
-export function GigaSocialChatButton({ className }: GigaSocialChatButtonProps) {
+export function GigaSocialChatButton({
+  className,
+  variant = "prominent",
+}: GigaSocialChatButtonProps) {
+  if (variant === "toolbar") {
+    return (
+      <Link
+        href={siteConfig.links.gigasocial}
+        className={cn(
+          "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-accent hover:bg-accent/10",
+          className
+        )}
+        aria-label="Open GigaSocial community feed"
+        title="GigaSocial"
+      >
+        <UsersRound className="h-4 w-4" strokeWidth={2} aria-hidden />
+      </Link>
+    );
+  }
+
   return (
     <Link
       href={siteConfig.links.gigasocial}
