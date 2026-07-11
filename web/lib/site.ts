@@ -29,6 +29,9 @@ export const siteConfig = {
     enterprise: "/enterprise",
     workspace: "/workspace",
     automation: "/automation",
+    trending: "/trending",
+    discover: "/discover",
+    prompts: "/prompts",
     video: "/video",
     marketplace: "/marketplace",
     github: "https://github.com/Ayiiga/Giga3-v2",
@@ -40,6 +43,8 @@ export const siteConfig = {
 
 export const navLinks = [
   { href: "/#features", label: "Features" },
+  { href: "/discover", label: "Discover" },
+  { href: "/trending", label: "Trending" },
   { href: "/#multi-chat", label: "Multi-AI" },
   { href: "/pricing", label: "Pricing" },
   { href: "/creator-studio", label: "Creator Studio" },

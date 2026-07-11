@@ -5,15 +5,19 @@ import type { PlatformSearchResult } from "@/lib/automation/types";
 import {
   addRecentSearch,
   clearRecentSearches,
+  getPopularSearches,
   getRecentSearches,
+  getSearchSuggestions,
   searchStaticRoutes,
+  SEARCH_CATEGORY_FILTERS,
+  type SearchCategoryFilter,
 } from "@/lib/platform/globalSearch";
 import { Search, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const KIND_LABELS: Record<string, string> = {
-  chat_prompt: "Saved prompt",
+  chat_prompt: "Prompt",
   workflow: "Workflow",
   learning_artifact: "Learning",
   creator_artifact: "Creator",
@@ -34,6 +38,7 @@ type GlobalSearchModalProps = {
 export function GlobalSearchModal({ open, onClose, conversations }: GlobalSearchModalProps) {
   const [query, setQuery] = useState("");
   const [recent, setRecent] = useState<string[]>([]);
+  const [category, setCategory] = useState<SearchCategoryFilter>("all");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -42,8 +47,11 @@ export function GlobalSearchModal({ open, onClose, conversations }: GlobalSearch
       setTimeout(() => inputRef.current?.focus(), 50);
     } else {
       setQuery("");
+      setCategory("all");
     }
   }, [open]);
+
+  const suggestions = useMemo(() => getSearchSuggestions(query), [query]);
 
   const results = useMemo(() => {
     if (!query.trim()) return [];
@@ -54,14 +62,19 @@ export function GlobalSearchModal({ open, onClose, conversations }: GlobalSearch
         mode: c.mode,
       })),
     });
-    const routes = searchStaticRoutes(query);
+    const routes = searchStaticRoutes(query, category);
     const merged = new Map<string, PlatformSearchResult>();
     for (const r of [...platform, ...routes]) {
+      if (category === "prompts" && r.kind !== "chat_prompt") continue;
+      if (category === "tools" && !["ai_tool", "workflow", "conversation", "creator_artifact"].includes(r.kind)) continue;
+      if (category === "learning" && r.kind !== "learning_artifact") continue;
+      if (category === "community" && r.kind !== "community") continue;
+      if (category === "pages" && !["settings", "wallet", "marketplace"].includes(r.kind) && !r.id.startsWith("route:")) continue;
       const existing = merged.get(r.id);
       if (!existing || r.score > existing.score) merged.set(r.id, r);
     }
     return [...merged.values()].sort((a, b) => b.score - a.score).slice(0, 20);
-  }, [query, conversations]);
+  }, [query, conversations, category]);
 
   const handleSelect = useCallback(
     (q: string) => {
@@ -82,6 +95,8 @@ export function GlobalSearchModal({ open, onClose, conversations }: GlobalSearch
 
   if (!open) return null;
 
+  const popular = getPopularSearches();
+
   return (
     <div
       className="fixed inset-0 z-[100] flex items-start justify-center bg-black/40 p-4 pt-[10vh]"
@@ -101,9 +116,10 @@ export function GlobalSearchModal({ open, onClose, conversations }: GlobalSearch
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search chats, tools, marketplace, settings…"
+            placeholder="Search chats, prompts, tools, trending topics…"
             className="min-w-0 flex-1 bg-transparent text-sm outline-none"
             aria-label="Search query"
+            autoComplete="off"
           />
           <button
             type="button"
@@ -115,9 +131,28 @@ export function GlobalSearchModal({ open, onClose, conversations }: GlobalSearch
           </button>
         </div>
 
+        <div className="border-b border-border px-3 py-2">
+          <div className="flex flex-wrap gap-1.5">
+            {SEARCH_CATEGORY_FILTERS.map((filter) => (
+              <button
+                key={filter.id}
+                type="button"
+                onClick={() => setCategory(filter.id)}
+                className={
+                  category === filter.id
+                    ? "rounded-full border border-accent bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent"
+                    : "rounded-full border border-border px-2.5 py-1 text-[11px] text-muted hover:border-accent/30"
+                }
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="max-h-[60vh] overflow-y-auto p-2">
           {!query.trim() && recent.length > 0 && (
-            <div className="mb-2 px-2">
+            <div className="mb-3 px-2">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-medium text-muted">Recent searches</p>
                 <button
@@ -147,7 +182,43 @@ export function GlobalSearchModal({ open, onClose, conversations }: GlobalSearch
           )}
 
           {!query.trim() && (
-            <p className="px-3 py-4 text-center text-xs text-muted">
+            <div className="mb-3 px-2">
+              <p className="text-xs font-medium text-muted">Popular searches</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {popular.slice(0, 8).map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    className="rounded-full border border-border px-3 py-1 text-xs hover:border-accent/30"
+                    onClick={() => setQuery(item)}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {query.trim() && suggestions.length > 0 && (
+            <div className="mb-2 px-2">
+              <p className="text-xs font-medium text-muted">Suggestions</p>
+              <div className="mt-1 flex flex-wrap gap-2">
+                {suggestions.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    className="rounded-full border border-accent/20 bg-accent/5 px-3 py-1 text-xs text-accent"
+                    onClick={() => setQuery(item)}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!query.trim() && (
+            <p className="px-3 py-2 text-center text-xs text-muted">
               Press <kbd className="rounded border px-1">Ctrl</kbd>+<kbd className="rounded border px-1">K</kbd> anywhere to search
             </p>
           )}

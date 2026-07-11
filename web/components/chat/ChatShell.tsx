@@ -28,6 +28,7 @@ import {
 } from "@/lib/chat/gigaModels";
 import { findLatestImageUrlInMessages } from "@/lib/chat/parseMessageMedia";
 import { consumeGigaLearnChatHandoff } from "@/lib/gigalearn/chatHandoff";
+import { consumePromptChatHandoff } from "@/lib/chat/promptHandoff";
 import { OPEN_SIDEBAR_EVENT } from "@/lib/chat/workspaceNav";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { usePlatformProfile } from "@/hooks/usePlatformProfile";
@@ -296,6 +297,23 @@ function ChatShellInner({
       return () => window.clearTimeout(timer);
     }
   }, [mounted, email, changeMode]);
+
+  useEffect(() => {
+    if (!mounted || !email) return;
+    const handoff = consumePromptChatHandoff();
+    if (!handoff?.prompt) return;
+
+    const applyPrompt = () => {
+      insertRef.current?.(handoff.prompt);
+    };
+
+    if (insertRef.current) {
+      applyPrompt();
+    } else {
+      const timer = window.setTimeout(applyPrompt, 120);
+      return () => window.clearTimeout(timer);
+    }
+  }, [mounted, email]);
 
   useEffect(() => {
     if (!hasOpenAiAccess && modelTier === "pro") {

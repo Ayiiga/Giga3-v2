@@ -1,4 +1,5 @@
 import { listSavedPrompts } from "@/lib/chat/savedPrompts";
+import { CURATED_PROMPTS } from "@/lib/prompts/catalog";
 import { listCreations, listPromptHistory as listCreatorPrompts } from "@/lib/creator-studio/workspace";
 import { listArtifacts, listPromptHistory as listLearnPrompts } from "@/lib/gigalearn/workspace";
 import type { PlatformSearchResult } from "./types";
@@ -52,8 +53,23 @@ export function searchPlatform(
         kind: "chat_prompt",
         title: prompt.title,
         snippet: prompt.body.slice(0, 120),
+        href: "/chat",
         score,
         createdAt: prompt.createdAt,
+      });
+    }
+  }
+
+  for (const prompt of CURATED_PROMPTS) {
+    const score = scoreMatch(q, prompt.title, prompt.description, prompt.body, ...prompt.tags);
+    if (score > 0) {
+      results.push({
+        id: `catalog-prompt:${prompt.id}`,
+        kind: "chat_prompt",
+        title: prompt.title,
+        snippet: prompt.description,
+        href: `/prompts?category=${prompt.category}#${prompt.id}`,
+        score,
       });
     }
   }
