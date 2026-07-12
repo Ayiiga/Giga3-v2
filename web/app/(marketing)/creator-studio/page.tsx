@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function CreatorStudioPage() {
   return (
-    <div className="marketing-stable section-padding pt-28">
+    <div className="creator-studio-stable section-padding pt-28">
       <Container>
         <Suspense fallback={<p className="text-center text-muted">Loading Creator Studio…</p>}>
           <CreatorPageRoot />

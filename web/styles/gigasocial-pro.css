@@ -58,6 +58,16 @@
   flex: none;
 }
 
+.gigasocial-post-card__footer {
+  position: relative;
+  z-index: 1;
+  background: #fff;
+}
+
+.gigasocial-post-card__footer--visual {
+  border-top: 1px solid rgba(91, 33, 182, 0.08);
+}
+
 .gigasocial-post-card--visual .gigasocial-feed-media {
   margin-top: 0;
   height: 100%;
@@ -247,8 +257,20 @@
   }
 
   .gigasocial-post-card--visual {
-    overflow: visible;
+    overflow: hidden;
     contain: none;
+  }
+
+  .gigasocial-post-card__footer {
+    background: #fff !important;
+    contain: paint;
+    backface-visibility: hidden;
+  }
+
+  .gigasocial-feed-item {
+    position: relative;
+    contain: paint;
+    backface-visibility: hidden;
   }
 
   .gigasocial-feed-media img,
@@ -297,6 +319,10 @@
     box-shadow: none;
     background: #fff;
     background-image: none;
+  }
+
+  .gigasocial-pro .gigasocial-post-card--visual {
+    overflow: hidden;
   }
 
   .gigasocial-pro .gigasocial-creator-studio {

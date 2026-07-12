@@ -35,7 +35,7 @@ export const CreatorTextToolPanel = memo(function CreatorTextToolPanel({
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <div className="space-y-4">
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="creator-tool-grid">
           {tools.map((tool) => {
             const Icon = tool.icon;
             const selected = tool.id === activeToolId;
@@ -48,9 +48,9 @@ export const CreatorTextToolPanel = memo(function CreatorTextToolPanel({
                   clear();
                 }}
                 className={cn(
-                  "saas-card flex min-h-11 items-start gap-3 rounded-xl border px-3 py-3 text-left transition-colors",
+                  "creator-tool-card saas-card flex min-h-11 items-start gap-3 rounded-xl border px-3 py-3 text-left",
                   selected
-                    ? "border-accent/40 bg-accent/5 ring-1 ring-accent/20"
+                    ? "border-accent/40 bg-accent/5"
                     : "border-border hover:border-accent/25"
                 )}
               >

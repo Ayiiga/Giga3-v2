@@ -317,7 +317,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       ) : (
         <ul id="gigasocial-feed-posts" className="space-y-4">
           {feedPosts.map((post) => (
-            <li key={post._id} id={`gigasocial-post-${post._id}`}>
+            <li key={post._id} id={`gigasocial-post-${post._id}`} className="gigasocial-feed-item">
               <GigaSocialPostCard
                 post={post}
                 sessionToken={sessionToken}

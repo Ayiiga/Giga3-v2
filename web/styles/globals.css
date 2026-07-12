@@ -297,6 +297,10 @@ button:focus-visible {
     overflow: visible;
   }
 
+  .gigasocial-pro .gigasocial-post-card--visual {
+    overflow: hidden;
+  }
+
   .gigasocial-pro .gigasocial-post-card--visual .gigasocial-feed-media {
     overflow: hidden;
   }
@@ -534,6 +538,72 @@ button:focus-visible {
   .dark .discover-stable .saas-card,
   .dark .discover-stable .trend-card {
     background: var(--card) !important;
+  }
+}
+
+/* Creator Studio — column tool grids on phones. */
+.creator-studio-stable {
+  overflow-x: clip;
+  touch-action: pan-y;
+}
+
+.creator-studio-stable .creator-tool-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .creator-studio-stable .creator-tool-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 1023px) {
+  .creator-studio-stable,
+  .creator-studio-stable * {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    transform: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    will-change: auto !important;
+    contain: none !important;
+  }
+
+  .creator-studio-stable .saas-card {
+    box-shadow: none !important;
+    background-image: none !important;
+    background: #fff !important;
+    overflow: visible;
+  }
+
+  .dark .creator-studio-stable .saas-card {
+    background: var(--card) !important;
+  }
+}
+
+/* GigaSocial profile — flat stat cards on mobile. */
+.gigasocial-profile-stable .gigasocial-creator-studio,
+.gigasocial-profile-stable .saas-card {
+  contain: none;
+  overflow: visible;
+}
+
+@media (max-width: 1023px) {
+  .gigasocial-profile-stable .gigasocial-creator-studio,
+  .gigasocial-profile-stable .saas-card {
+    box-shadow: none !important;
+    background-image: none !important;
+    background: #fff !important;
+  }
+
+  .gigasocial-profile-stable .gigasocial-creator-studio .rounded-xl {
+    contain: paint;
+    backface-visibility: hidden;
   }
 }
 
