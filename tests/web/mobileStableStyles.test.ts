@@ -1,0 +1,39 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+
+const globalsCss = readFileSync(join(process.cwd(), "web/styles/globals.css"), "utf8");
+const gigasocialCss = readFileSync(join(process.cwd(), "web/styles/gigasocial-pro.css"), "utf8");
+
+describe("mobile stability CSS", () => {
+  it("defines discover-stable column-first grids", () => {
+    expect(globalsCss).toContain(".discover-stable .discover-card-grid");
+    expect(globalsCss).toContain("flex-direction: column");
+  });
+
+  it("defines dashboard column-first quick links", () => {
+    expect(globalsCss).toContain(".dashboard-stable .dashboard-quick-grid");
+  });
+
+  it("flattens marketing cards on mobile", () => {
+    expect(globalsCss).toContain(".marketing-stable .saas-card");
+    expect(globalsCss).toContain("background-image: none !important");
+    expect(globalsCss).toContain("overflow: visible");
+  });
+
+  it("avoids vh sizing on gigasocial feed media for mobile", () => {
+    expect(gigasocialCss).toContain("@media (max-width: 1023px)");
+    expect(gigasocialCss).toContain(".gigasocial-feed-media img");
+    expect(gigasocialCss).toContain("max-height: none");
+  });
+
+  it("uses gallery modifier without fixed aspect on media region", () => {
+    expect(gigasocialCss).toContain(".gigasocial-post-card--gallery .gigasocial-post-card__media-region");
+    expect(gigasocialCss).toContain("aspect-ratio: auto");
+  });
+
+  it("defines gigasocial feed shell without nested saas-card contain", () => {
+    expect(gigasocialCss).toContain(".gigasocial-pro .gigasocial-feed-shell");
+    expect(gigasocialCss).toContain("overflow: visible");
+  });
+});

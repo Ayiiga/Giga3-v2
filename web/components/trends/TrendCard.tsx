@@ -28,7 +28,7 @@ export function TrendCard({
       href={href}
       onClick={onNavigate}
       className={cn(
-        "saas-card group block rounded-2xl p-5 transition-colors hover:border-accent/30",
+        "trend-card saas-card group block rounded-2xl p-5 hover:border-accent/30",
         className
       )}
     >

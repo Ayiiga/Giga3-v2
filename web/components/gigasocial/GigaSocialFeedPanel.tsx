@@ -225,7 +225,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   };
 
   return (
-    <div className="gigasocial-pro space-y-4 pb-24">
+    <div className="space-y-4 pb-24">
       {errorToast ? (
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900" role="status">
           {errorToast}

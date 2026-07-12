@@ -4,7 +4,12 @@
   border-color: rgba(91, 33, 182, 0.12);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.98));
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-  isolation: isolate;
+}
+
+.gigasocial-pro .gigasocial-feed-shell {
+  contain: none;
+  overflow: visible;
+  background: #fff;
 }
 
 @media (hover: hover) {
@@ -32,12 +37,15 @@
 
 .gigasocial-post-card--visual.gigasocial-post-card--photo .gigasocial-post-card__media-region {
   aspect-ratio: 4 / 5;
-  max-height: min(78vh, 36rem);
 }
 
 .gigasocial-post-card--visual.gigasocial-post-card--video .gigasocial-post-card__media-region {
   aspect-ratio: 9 / 16;
-  max-height: min(85vh, 44rem);
+}
+
+.gigasocial-post-card--visual.gigasocial-post-card--gallery .gigasocial-post-card__media-region {
+  aspect-ratio: auto;
+  height: auto;
 }
 
 .gigasocial-post-card--visual .gigasocial-post-card__meta {
@@ -67,6 +75,11 @@
   height: 100%;
 }
 
+.gigasocial-post-card--visual.gigasocial-post-card--gallery .gigasocial-feed-media {
+  height: auto;
+  aspect-ratio: 4 / 5;
+}
+
 .gigasocial-post-card--visual .gigasocial-feed-media-frame,
 .gigasocial-post-card--visual .gigasocial-feed-media img,
 .gigasocial-post-card--visual .gigasocial-feed-media video {
@@ -86,25 +99,17 @@
   overflow: hidden;
 }
 
-/* Gallery inside visual cards — main image fills slot; thumbs flow below */
+/* Gallery inside visual cards — block layout; thumbs flow below main image */
 .gigasocial-post-card--visual .gigasocial-post-card__media-region > .mt-3.space-y-2,
 .gigasocial-post-card--visual .gigasocial-post-card__media-region > .space-y-2 {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+  display: block;
+  height: auto;
   margin-top: 0;
-}
-
-.gigasocial-post-card--visual .gigasocial-post-card__media-region > .mt-3.space-y-2 > .gigasocial-feed-media,
-.gigasocial-post-card--visual .gigasocial-post-card__media-region > .space-y-2 > .gigasocial-feed-media {
-  flex: 1 1 auto;
-  min-height: 0;
 }
 
 .gigasocial-post-card--visual .gigasocial-post-card__media-region [role="list"][aria-label="Image gallery"],
 .gigasocial-post-card--visual .gigasocial-post-card__media-region [role="list"][aria-label="Photo gallery"] {
   position: relative;
-  flex: 0 0 auto;
   margin: 0;
   padding: 0.5rem 0.75rem 0;
 }
@@ -113,48 +118,47 @@
   animation: gigasocial-skeleton-pulse 1.4s ease-in-out infinite;
 }
 
-/* Feed media — larger, phone-friendly sizing (portrait-first; no layout transforms) */
+/* Feed media — aspect-ratio sizing (no vh on mobile) */
 .gigasocial-feed-media img,
 .gigasocial-feed-media video {
   display: block;
   width: 100%;
   aspect-ratio: 4 / 5;
-  max-height: min(78vh, 36rem);
   object-fit: cover;
   background: #000;
 }
 
 .gigasocial-feed-media--video video {
   aspect-ratio: 9 / 16;
-  max-height: min(85vh, 44rem);
   object-fit: contain;
 }
 
 .gigasocial-feed-media--gallery img,
 .gigasocial-feed-media--photo-music img {
   aspect-ratio: 4 / 5;
-  max-height: min(78vh, 36rem);
   object-fit: cover;
 }
 
 @media (min-width: 640px) {
   .gigasocial-feed-media img {
-    aspect-ratio: 4 / 5;
     max-height: min(74vh, 40rem);
-    object-fit: cover;
   }
 
   .gigasocial-feed-media--video video {
-    aspect-ratio: 9 / 16;
     max-height: min(82vh, 44rem);
-    object-fit: contain;
   }
 
   .gigasocial-feed-media--gallery img,
   .gigasocial-feed-media--photo-music img {
-    aspect-ratio: 4 / 5;
     max-height: min(74vh, 40rem);
-    object-fit: cover;
+  }
+
+  .gigasocial-post-card--visual.gigasocial-post-card--photo .gigasocial-post-card__media-region {
+    max-height: min(78vh, 36rem);
+  }
+
+  .gigasocial-post-card--visual.gigasocial-post-card--video .gigasocial-post-card__media-region {
+    max-height: min(85vh, 44rem);
   }
 }
 
@@ -245,11 +249,25 @@
   .gigasocial-post-card--visual {
     overflow: visible;
     contain: none;
-    isolation: isolate;
   }
 
-  .gigasocial-post-card--visual .gigasocial-post-card__media-region {
+  .gigasocial-feed-media img,
+  .gigasocial-feed-media video,
+  .gigasocial-feed-media--video video,
+  .gigasocial-feed-media--gallery img,
+  .gigasocial-feed-media--photo-music img {
     max-height: none;
+  }
+
+  .gigasocial-create-fab-button {
+    background-image: none !important;
+    background-color: rgb(91 33 182) !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .gigasocial-create-fab-button.rotate-45 {
+    transform: none !important;
   }
 }
 
@@ -274,7 +292,8 @@
 }
 
 @media (max-width: 1023px) {
-  .gigasocial-pro .gigasocial-post-card {
+  .gigasocial-pro .gigasocial-post-card,
+  .gigasocial-pro .gigasocial-feed-shell {
     box-shadow: none;
     background: #fff;
     background-image: none;
@@ -282,14 +301,6 @@
 
   .gigasocial-pro .gigasocial-creator-studio {
     background: #fff;
-  }
-
-  .gigasocial-create-fab-button {
-    transform: none !important;
-  }
-
-  .gigasocial-create-fab-button.rotate-45 {
-    transform: rotate(45deg) !important;
   }
 }
 

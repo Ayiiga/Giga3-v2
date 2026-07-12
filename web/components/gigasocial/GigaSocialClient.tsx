@@ -103,7 +103,7 @@ function GigaSocialContent() {
             Back to chat
           </Link>
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-md">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-600 text-white">
               <UsersRound className="h-6 w-6" aria-hidden />
             </div>
             <div>
@@ -167,7 +167,7 @@ function GigaSocialContent() {
         })}
       </nav>
 
-      <section className="saas-card rounded-2xl border border-border p-4 sm:p-6">
+      <section className="gigasocial-feed-shell rounded-2xl border border-border p-4 sm:p-6">
         {section === "feed" && (
           <>
             <SectionIntro

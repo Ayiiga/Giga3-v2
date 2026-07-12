@@ -259,7 +259,6 @@ button:focus-visible {
 }
 
 .gigasocial-pro .gigasocial-post-card {
-  isolation: isolate;
   overflow: visible;
 }
 
@@ -285,15 +284,16 @@ button:focus-visible {
   .gigasocial-stable .saas-card,
   .gigasocial-pro .saas-card,
   .gigasocial-pro .gigasocial-post-card,
-  .gigasocial-pro .gigasocial-creator-studio {
+  .gigasocial-pro .gigasocial-creator-studio,
+  .gigasocial-pro .gigasocial-feed-shell {
     box-shadow: none !important;
     background-image: none !important;
   }
 
   .gigasocial-pro .gigasocial-post-card,
-  .gigasocial-pro .gigasocial-creator-studio {
+  .gigasocial-pro .gigasocial-creator-studio,
+  .gigasocial-pro .gigasocial-feed-shell {
     background: #fff !important;
-    isolation: isolate;
     overflow: visible;
   }
 
@@ -308,6 +308,15 @@ button:focus-visible {
 
   .gigasocial-feed-hero [aria-hidden="true"] {
     display: none !important;
+  }
+
+  .gigasocial-pro [class*="bg-gradient-to"] {
+    background-image: none !important;
+  }
+
+  .gigasocial-pro .from-violet-600,
+  .gigasocial-pro [class*="from-violet"] {
+    background-color: rgb(91 33 182) !important;
   }
 }
 
@@ -331,6 +340,7 @@ button:focus-visible {
 
 .marketing-stable .saas-card {
   contain: none;
+  overflow: visible;
 }
 
 @media (max-width: 1023px) {
@@ -350,6 +360,17 @@ button:focus-visible {
   .marketing-stable .premium-card,
   .marketing-stable .glass {
     box-shadow: none !important;
+    background-image: none !important;
+  }
+
+  .marketing-stable .saas-card,
+  .marketing-stable .premium-card {
+    background: #fff !important;
+  }
+
+  .dark .marketing-stable .saas-card,
+  .dark .marketing-stable .premium-card {
+    background: var(--card) !important;
   }
 
   .marketing-stable [role="dialog"] .shadow-2xl,
@@ -361,6 +382,15 @@ button:focus-visible {
     position: sticky;
     top: 0;
     z-index: 50;
+  }
+
+  .marketing-stable [class*="bg-gradient-to"] {
+    background-image: none !important;
+  }
+
+  .marketing-stable .from-violet-600,
+  .marketing-stable [class*="from-violet"] {
+    background-color: rgb(91 33 182) !important;
   }
 }
 
@@ -404,6 +434,32 @@ button:focus-visible {
   transition: none !important;
 }
 
+.dashboard-stable .dashboard-quick-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dashboard-stable .dashboard-rec-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .dashboard-stable .dashboard-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .dashboard-stable .dashboard-rec-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+}
+
 @media (max-width: 1023px) {
   .dashboard-stable,
   .dashboard-stable * {
@@ -423,6 +479,61 @@ button:focus-visible {
   .dashboard-stable .dashboard-stat-card,
   .dashboard-stable .dashboard-panel-card {
     box-shadow: none !important;
+    background-image: none !important;
+    overflow: visible;
+  }
+}
+
+/* Discover / trending category grids — column-first on phones. */
+.discover-stable {
+  overflow-x: clip;
+  touch-action: pan-y;
+}
+
+.discover-stable .discover-card-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .discover-stable .discover-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .discover-stable .discover-card-grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1023px) {
+  .discover-stable,
+  .discover-stable * {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    transform: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    will-change: auto !important;
+    contain: none !important;
+  }
+
+  .discover-stable .saas-card,
+  .discover-stable .trend-card {
+    box-shadow: none !important;
+    background-image: none !important;
+    background: #fff !important;
+    overflow: visible;
+  }
+
+  .dark .discover-stable .saas-card,
+  .dark .discover-stable .trend-card {
+    background: var(--card) !important;
   }
 }
 
