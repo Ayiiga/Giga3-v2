@@ -59,7 +59,7 @@ export const GigaCreateButton = memo(function GigaCreateButton({
       disabled={disabled}
       onClick={toggle}
       className={cn(
-        "gigasocial-create-fab-button inline-flex h-14 w-14 items-center justify-center rounded-full border border-violet-300/50 bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-lg",
+        "gigasocial-create-fab-button inline-flex h-14 w-14 items-center justify-center rounded-full border border-violet-300/50 bg-violet-600 text-white shadow-lg",
         open && "rotate-45",
         disabled && "opacity-50"
       )}

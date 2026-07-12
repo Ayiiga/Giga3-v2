@@ -50,8 +50,8 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   const shouldPlay = autoPlay && !paused;
   const frameClass = featured
     ? mediaKind === "video"
-      ? "w-full bg-black object-contain aspect-[9/16] max-h-[min(85vh,44rem)]"
-      : "w-full bg-black object-cover aspect-[4/5] max-h-[min(78vh,40rem)]"
+      ? "w-full bg-black object-contain aspect-[9/16]"
+      : "w-full bg-black object-cover aspect-[4/5]"
     : "gigasocial-feed-media-frame w-full bg-black";
 
   const feedMediaWrapperClass = featured

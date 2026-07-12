@@ -19,7 +19,7 @@ export function TrendingPageClient() {
   }, [activeCategory]);
 
   return (
-    <div className="space-y-12">
+    <div className="discover-stable space-y-12">
       <header className="mx-auto max-w-3xl text-center">
         <p className="section-heading">Trend Intelligence</p>
         <h1 className="page-title mt-3">Trending on Giga3 AI</h1>
@@ -33,7 +33,7 @@ export function TrendingPageClient() {
         <h2 id="trend-categories-heading" className="mb-4 text-lg font-semibold">
           Popular categories
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="discover-card-grid discover-card-grid--3">
           {TREND_CATEGORIES.map((category) => {
             const Icon = category.icon;
             const isActive = activeCategory?.id === category.id;
@@ -44,7 +44,7 @@ export function TrendingPageClient() {
                 description={category.description}
                 href={category.href}
                 icon={<Icon className="h-5 w-5" aria-hidden />}
-                className={isActive ? "ring-2 ring-accent/30" : undefined}
+                className={isActive ? "border-accent bg-accent/5" : undefined}
                 onNavigate={() => recordTrendActivity(category.href, category.id)}
               />
             );
@@ -61,7 +61,7 @@ export function TrendingPageClient() {
             Open Discover →
           </a>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="discover-card-grid">
           {spotlight.map((item) => (
             <TrendCard
               key={item.id}

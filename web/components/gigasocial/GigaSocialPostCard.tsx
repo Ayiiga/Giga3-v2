@@ -149,7 +149,9 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
               "gigasocial-post-card--visual",
               visualMediaKind === "video"
                 ? "gigasocial-post-card--video"
-                : "gigasocial-post-card--photo"
+                : visualMediaKind === "gallery" || visualMediaKind === "photo-music"
+                  ? "gigasocial-post-card--gallery"
+                  : "gigasocial-post-card--photo"
             )
           : "p-4"
       )}

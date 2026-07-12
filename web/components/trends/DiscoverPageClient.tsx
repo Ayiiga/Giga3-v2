@@ -35,7 +35,7 @@ export function DiscoverPageClient() {
   }, [categoryFilter, kindFilter]);
 
   return (
-    <div className="space-y-10">
+    <div className="discover-stable space-y-10">
       <header className="mx-auto max-w-3xl text-center">
         <p className="section-heading">Discover</p>
         <h1 className="page-title mt-3">Explore Giga3 AI</h1>
@@ -52,7 +52,7 @@ export function DiscoverPageClient() {
         <p className="mb-4 text-sm text-muted">
           Based on your device activity only — we never expose private account data here.
         </p>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="discover-card-grid">
           {personalized.map((item) => (
             <TrendCard
               key={item.id}
@@ -119,7 +119,7 @@ export function DiscoverPageClient() {
         <h2 id="discover-grid" className="mb-4 text-lg font-semibold">
           Browse everything
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="discover-card-grid discover-card-grid--3">
           {items.map((item) => (
             <TrendCard
               key={item.id}

@@ -86,7 +86,7 @@ export function HomeDashboardPanel() {
             <Sparkles className="h-4 w-4 text-accent" aria-hidden />
             Recommended for you
           </h3>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="dashboard-rec-grid">
             {recommendations.items.slice(0, 4).map((item) => (
               <Link
                 key={item.id}
@@ -136,7 +136,7 @@ export function HomeDashboardPanel() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="dashboard-quick-grid">
         {[
           { label: "Chat", href: "/chat" },
           { label: "Media", href: "/media" },
