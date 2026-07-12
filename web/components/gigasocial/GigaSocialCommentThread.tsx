@@ -53,7 +53,7 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
   }
 
   return (
-    <div className="mt-3 rounded-xl border border-border bg-white/50 p-3">
+    <div className="mt-3 rounded-xl border border-border bg-white p-3">
       <ul className="space-y-3">
         {comments.length === 0 && (
           <li className="text-xs text-muted">No comments yet. Start the conversation.</li>

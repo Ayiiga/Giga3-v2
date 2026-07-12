@@ -212,7 +212,7 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
     : avatarPreview ?? avatarUrl ?? profile.avatarUrl;
 
   return (
-    <div className="gigasocial-pro space-y-6">
+    <div className="gigasocial-profile-stable gigasocial-pro space-y-6">
       <div className="saas-card rounded-2xl border border-border p-4 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-center gap-4">

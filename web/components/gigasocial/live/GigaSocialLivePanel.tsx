@@ -35,6 +35,11 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const liveStreams = live?.streams ?? [];
+  const scheduledStreams = scheduled?.streams ?? [];
+  const replayStreams = replays?.streams ?? [];
+  const myStreamList = myStreams?.streams ?? [];
+
   const listsLoading = live === undefined || scheduled === undefined || replays === undefined;
 
   if (activeStreamId) {
@@ -162,7 +167,7 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
       <StreamSection
         title="Live now"
         empty="No one is live right now. Be the first to go live!"
-        streams={live.streams}
+        streams={liveStreams}
         onJoin={(id) => {
           setHosting(false);
           setActiveStreamId(id);
@@ -172,7 +177,7 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
       <StreamSection
         title="Scheduled"
         empty="No scheduled streams yet."
-        streams={scheduled.streams}
+        streams={scheduledStreams}
         onJoin={(id) => {
           setHosting(false);
           setActiveStreamId(id);
@@ -183,7 +188,7 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
       <StreamSection
         title="Replays"
         empty="Ended streams with replays will appear here."
-        streams={replays.streams}
+        streams={replayStreams}
         onJoin={(id) => {
           setHosting(false);
           setActiveStreamId(id);
@@ -191,11 +196,11 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
         showReplay
       />
 
-      {myStreams?.streams?.length ? (
+      {myStreamList.length > 0 ? (
         <StreamSection
           title="Your streams"
           empty=""
-          streams={myStreams.streams}
+          streams={myStreamList}
           onJoin={(id) => {
             setHosting(true);
             setActiveStreamId(id);
@@ -243,7 +248,7 @@ function StreamSection({
                 <div>
                   <p className="font-semibold text-foreground">{stream.title}</p>
                   <p className="text-xs text-muted">
-                    @{stream.host.handle} · {stream.mode} · {stream.status}
+                    @{stream.host?.handle ?? "host"} · {stream.mode} · {stream.status}
                     {stream.viewerCount > 0 ? ` · ${stream.viewerCount} watching` : ""}
                   </p>
                   {showSchedule && stream.scheduledAt ? (

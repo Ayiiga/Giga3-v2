@@ -50,7 +50,7 @@ function CreatorStudioContent() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="creator-studio-stable mx-auto max-w-6xl space-y-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link
@@ -98,7 +98,7 @@ function CreatorStudioContent() {
               className={cn(
                 "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium",
                 active
-                  ? "border-accent/40 bg-accent/10 text-foreground ring-1 ring-accent/20"
+                  ? "border-accent/40 bg-accent/10 text-foreground"
                   : "border-border bg-white text-muted hover:border-accent/25"
               )}
             >

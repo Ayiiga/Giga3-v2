@@ -98,33 +98,37 @@ export const listLiveStreams = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const cap = Math.min(Math.max(args.limit ?? 20, 1), 40);
-    const status = args.status ?? "live";
-    let rows: Doc<"socialLiveStreams">[] = [];
-
     try {
-      rows = await ctx.db
-        .query("socialLiveStreams")
-        .withIndex("by_status_created", (q) => q.eq("status", status))
-        .order("desc")
-        .take(cap);
-    } catch {
-      const all = await ctx.db.query("socialLiveStreams").collect();
-      rows = all
-        .filter((row) => row.status === status)
-        .sort((a, b) => b.createdAt - a.createdAt)
-        .slice(0, cap);
-    }
+      const cap = Math.min(Math.max(args.limit ?? 20, 1), 40);
+      const status = args.status ?? "live";
+      let rows: Doc<"socialLiveStreams">[] = [];
 
-    const streams = [];
-    for (const row of rows) {
       try {
-        streams.push(await toPublicStream(ctx, row));
+        rows = await ctx.db
+          .query("socialLiveStreams")
+          .withIndex("by_status_created", (q) => q.eq("status", status))
+          .order("desc")
+          .take(cap);
       } catch {
-        /* skip malformed row */
+        const all = await ctx.db.query("socialLiveStreams").collect();
+        rows = all
+          .filter((row) => row.status === status)
+          .sort((a, b) => b.createdAt - a.createdAt)
+          .slice(0, cap);
       }
+
+      const streams = [];
+      for (const row of rows) {
+        try {
+          streams.push(await toPublicStream(ctx, row));
+        } catch {
+          /* skip malformed row */
+        }
+      }
+      return { streams };
+    } catch {
+      return { streams: [] };
     }
-    return { streams };
   },
 });
 

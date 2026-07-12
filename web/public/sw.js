@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v122-mobile-stable-cards";
+const CACHE_NAME = "giga3-shell-v123-feed-footer-stable";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

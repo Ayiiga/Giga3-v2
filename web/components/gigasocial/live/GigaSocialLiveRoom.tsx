@@ -226,7 +226,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
         {mediaError ? (
           <p className="bg-red-950 px-3 py-2 text-xs text-red-200">{mediaError}</p>
         ) : null}
-        {stream.captionLines.length > 0 ? (
+        {stream.captionLines?.length ? (
           <div className="border-t border-white/10 bg-black/80 px-3 py-2 text-sm text-white">
             <p className="text-[10px] uppercase tracking-wide text-violet-300">AI captions</p>
             <p>{stream.captionLines[stream.captionLines.length - 1]}</p>

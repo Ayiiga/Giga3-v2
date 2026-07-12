@@ -148,8 +148,8 @@ function GigaSocialContent() {
                 "relative inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium",
                 active
                   ? item.id === "live"
-                    ? "border-red-500/50 bg-red-50 text-red-800 ring-1 ring-red-500/25"
-                    : "border-accent/40 bg-accent/10 text-foreground ring-1 ring-accent/20"
+                    ? "border-red-500/50 bg-red-50 text-red-800"
+                    : "border-accent/40 bg-accent/10 text-foreground"
                   : item.id === "live"
                     ? "border-red-200 bg-white text-red-700 hover:border-red-400/40"
                     : "border-border bg-white text-muted hover:border-accent/25"

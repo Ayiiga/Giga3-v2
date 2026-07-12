@@ -191,9 +191,6 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           <div className="gigasocial-post-card__media-region">
             <GigaSocialPostMedia post={post} allowFullView />
           </div>
-          {display.title || display.description || post.hashtags?.length ? (
-            <div className="gigasocial-post-card__meta px-4">{captionBlock}</div>
-          ) : null}
         </div>
       ) : (
         <>
@@ -213,12 +210,22 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
 
       <div
         className={cn(
-          "gigasocial-post-card__actions flex flex-wrap items-center gap-0.5 border-t border-border",
-          isVisualPost
-            ? "gigasocial-post-card__actions--compact mt-1 px-4 pt-2"
-            : "mt-4 gap-1 pt-3"
+          "gigasocial-post-card__footer bg-white",
+          isVisualPost && "gigasocial-post-card__footer--visual"
         )}
       >
+        {isVisualPost && (display.title || display.description || post.hashtags?.length) ? (
+          <div className="gigasocial-post-card__meta px-4 pt-2">{captionBlock}</div>
+        ) : null}
+
+        <div
+          className={cn(
+            "gigasocial-post-card__actions flex flex-wrap items-center gap-0.5 border-t border-border",
+            isVisualPost
+              ? "gigasocial-post-card__actions--compact px-4 pt-2"
+              : "mt-4 gap-1 pt-3"
+          )}
+        >
         <ActionButton
           compact={isVisualPost}
           active={liked}
@@ -291,23 +298,28 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
             <Trash2 className="h-4 w-4" aria-hidden />
           </Button>
         ) : null}
-      </div>
-
-      {sessionToken ? (
-        <div
-          className={cn(
-            "gigasocial-post-card__comment",
-            isVisualPost ? "px-4 pb-3 pt-1" : "mt-3"
-          )}
-        >
-          <GigaSocialPostCommentBox
-            postId={post._id}
-            sessionToken={sessionToken}
-            compact={isVisualPost}
-            onPosted={() => setCommentsOpen(true)}
-          />
         </div>
-      ) : null}
+
+        {sessionToken && !isVisualPost ? (
+          <div className="gigasocial-post-card__comment mt-3">
+            <GigaSocialPostCommentBox
+              postId={post._id}
+              sessionToken={sessionToken}
+              onPosted={() => setCommentsOpen(true)}
+            />
+          </div>
+        ) : null}
+
+        {commentsOpen && sessionToken ? (
+          <div className={cn("gigasocial-post-card__thread", isVisualPost ? "px-4 pb-3 pt-2" : undefined)}>
+            <GigaSocialCommentThread
+              postId={post._id}
+              sessionToken={sessionToken}
+              hideComposer={!isVisualPost}
+            />
+          </div>
+        ) : null}
+      </div>
 
       {editorOpen && onEdit ? (
         <div className="mt-4">
@@ -318,16 +330,6 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
               await onEdit(post._id, args);
               setEditorOpen(false);
             }}
-          />
-        </div>
-      ) : null}
-
-      {commentsOpen && sessionToken ? (
-        <div className={cn(isVisualPost ? "px-4 pb-3" : undefined)}>
-          <GigaSocialCommentThread
-            postId={post._id}
-            sessionToken={sessionToken}
-            hideComposer
           />
         </div>
       ) : null}

@@ -32,6 +32,16 @@ describe("mobile stability CSS", () => {
     expect(gigasocialCss).toContain("aspect-ratio: auto");
   });
 
+  it("uses solid post footer and feed item paint containment on mobile", () => {
+    expect(gigasocialCss).toContain(".gigasocial-post-card__footer");
+    expect(gigasocialCss).toContain(".gigasocial-feed-item");
+    expect(gigasocialCss).toContain("contain: paint");
+  });
+
+  it("defines creator-studio-stable column tool grid", () => {
+    expect(globalsCss).toContain(".creator-studio-stable .creator-tool-grid");
+  });
+
   it("defines gigasocial feed shell without nested saas-card contain", () => {
     expect(gigasocialCss).toContain(".gigasocial-pro .gigasocial-feed-shell");
     expect(gigasocialCss).toContain("overflow: visible");
