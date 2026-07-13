@@ -11,6 +11,14 @@ export const FAN_LABELS = {
   unfan: "Stop Supporting",
 } as const;
 
+export const FOLLOW_LABELS = {
+  follow: "Follow",
+  following: "Following",
+  unfollow: "Unfollow",
+  followers: "Followers",
+  followingCount: "Following",
+} as const;
+
 /** Map legacy follow copy to fan branding for notifications and UI. */
 export function localizeFanText(text: string): string {
   return text

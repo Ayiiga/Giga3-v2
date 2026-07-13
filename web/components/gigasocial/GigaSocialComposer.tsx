@@ -23,7 +23,7 @@ import {
   type SocialMediaUploadDeps,
 } from "@/lib/gigasocial/mediaUpload";
 import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
-import { classifyMediaFiles, UNIFIED_MEDIA_ACCEPT } from "@/lib/gigasocial/mediaComposer";
+import { GigaSocialCreateMediaMenu, type CreateMediaAction } from "@/components/gigasocial/GigaSocialCreateMediaMenu";
 import { GigaSocialAIAssistant } from "@/components/gigasocial/ai/GigaSocialAIAssistant";
 import { GigaSocialMediaStudio } from "@/components/gigasocial/studio/GigaSocialMediaStudio";
 import {
@@ -34,7 +34,9 @@ import { POST_TYPE_OPTIONS, type SocialPostTypeId } from "@/lib/gigasocial/secti
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { api } from "convex/_generated/api";
 import { useAction, useMutation } from "convex/react";
-import { Camera, ImagePlus, Loader2, Music2, Paperclip, Send, Video, X } from "lucide-react";
+import { classifyMediaFiles, UNIFIED_MEDIA_ACCEPT } from "@/lib/gigasocial/mediaComposer";
+import { useRouter } from "next/navigation";
+import { Camera, Loader2, Send, X } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface PendingImage {
@@ -105,6 +107,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const audioInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const captionRef = useRef<HTMLTextAreaElement>(null);
+  const router = useRouter();
 
   const prepareUpload = useAction(api.gigaSocialStorage.prepareMediaUpload);
   const resolveStorageUrl = useMutation(api.gigaSocialStorage.resolveStorageUrl);
@@ -292,8 +295,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           await addImageFiles(selection.images);
           await addAudioFile(selection.audio);
           if (!body.trim()) {
-            setBody("Photo slideshow with music 🎵");
+            setBody("Photo slideshow with music 🎵\n\n");
           }
+          setSuccess("Slideshow video will play with cinematic transitions and your music track.");
           break;
         case "video-with-audio":
           await addVideoFile(selection.video);
@@ -319,6 +323,31 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       await addDroppedFiles(files);
     },
     [addDroppedFiles]
+  );
+
+  const handleCreateAction = useCallback(
+    (action: CreateMediaAction) => {
+      switch (action) {
+        case "photo":
+          cameraInputRef.current?.click();
+          break;
+        case "photos":
+          imageInputRef.current?.click();
+          break;
+        case "video":
+          videoInputRef.current?.click();
+          break;
+        case "music":
+          audioInputRef.current?.click();
+          break;
+        case "templates":
+          router.push("/creator-studio?tab=image");
+          break;
+        default:
+          break;
+      }
+    },
+    [router]
   );
 
   const handleDrop = useCallback(
@@ -578,61 +607,20 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           }}
         />
 
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          disabled={disabled || busy}
-          onClick={() => unifiedMediaInputRef.current?.click()}
-          aria-label="Add media — photos, videos, or music"
-          aria-haspopup="false"
-        >
-          <Paperclip className="h-4 w-4" aria-hidden />
-          Media
-        </Button>
+        <GigaSocialCreateMediaMenu
+          disabled={disabled}
+          busy={busy}
+          canAddMusic={pendingImages.length > 0 && !pendingVideo}
+          onAction={handleCreateAction}
+        />
         <Button
           type="button"
           size="sm"
           variant="ghost"
-          disabled={disabled || busy || Boolean(pendingVideo)}
-          onClick={() => imageInputRef.current?.click()}
-          aria-label="Add photos only"
-          className="hidden sm:inline-flex"
-        >
-          <ImagePlus className="h-4 w-4" aria-hidden />
-          Photos
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          disabled={disabled || busy || pendingImages.length > 0}
-          onClick={() => videoInputRef.current?.click()}
-          aria-label="Add video only"
-          className="hidden sm:inline-flex"
-        >
-          <Video className="h-4 w-4" aria-hidden />
-          Video
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          disabled={disabled || busy || Boolean(pendingVideo) || pendingImages.length === 0}
-          onClick={() => audioInputRef.current?.click()}
-          aria-label="Add music only"
-          className="hidden sm:inline-flex"
-        >
-          <Music2 className="h-4 w-4" aria-hidden />
-          Music
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
           disabled={disabled || busy || Boolean(pendingVideo)}
           onClick={() => cameraInputRef.current?.click()}
-          aria-label="Capture photo"
+          aria-label="Capture photo with camera"
+          className="hidden sm:inline-flex"
         >
           <Camera className="h-4 w-4" aria-hidden />
           Camera

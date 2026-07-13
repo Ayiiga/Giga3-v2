@@ -1,16 +1,23 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  Building2,
+  Church,
   Clapperboard,
   Film,
   GraduationCap,
   ImageIcon,
+  Landmark,
   Megaphone,
   Music2,
   Newspaper,
+  Plane,
   Quote,
+  Shirt,
   Smartphone,
   Sparkles,
   Trophy,
+  Utensils,
+  Cpu,
 } from "lucide-react";
 
 export type CreatorTemplateId =
@@ -25,7 +32,17 @@ export type CreatorTemplateId =
   | "event-announcement"
   | "social-story"
   | "vertical-short"
-  | "landscape-presentation";
+  | "landscape-presentation"
+  | "church"
+  | "entertainment"
+  | "politics"
+  | "real-estate"
+  | "travel"
+  | "fashion"
+  | "food"
+  | "technology"
+  | "ai-presentation"
+  | "advertisement";
 
 export interface CreatorTemplate {
   id: CreatorTemplateId;
@@ -69,7 +86,7 @@ export const CREATOR_TEMPLATES: CreatorTemplate[] = [
   },
   {
     id: "motivational-quote",
-    title: "Motivational Quote",
+    title: "Motivation",
     description: "Typography-focused quote video with motion effects",
     icon: Quote,
     aspectRatio: "9:16",
@@ -107,7 +124,7 @@ export const CREATOR_TEMPLATES: CreatorTemplate[] = [
   },
   {
     id: "educational-lesson",
-    title: "Educational Lesson",
+    title: "Education",
     description: "Structured lesson layout with clear sections",
     icon: GraduationCap,
     aspectRatio: "16:9",
@@ -119,7 +136,7 @@ export const CREATOR_TEMPLATES: CreatorTemplate[] = [
   },
   {
     id: "product-ad",
-    title: "Product Advertisement",
+    title: "Product Promotion",
     description: "Conversion-focused product showcase",
     icon: Megaphone,
     aspectRatio: "1:1",
@@ -194,6 +211,123 @@ export const CREATOR_TEMPLATES: CreatorTemplate[] = [
       "Landscape presentation video with slide transitions, professional typography, and clean corporate motion.",
     transitions: "push",
     typography: "presentation-sans",
+  },
+  {
+    id: "church",
+    title: "Church",
+    description: "Worship and ministry announcements with reverent typography",
+    icon: Church,
+    aspectRatio: "16:9",
+    tab: "writing",
+    prompt: "Create an uplifting church announcement with scripture reference, event details, and welcoming tone.",
+    transitions: "dissolve",
+    typography: "serif-display",
+  },
+  {
+    id: "entertainment",
+    title: "Entertainment",
+    description: "Show promos and entertainment highlights",
+    icon: Sparkles,
+    aspectRatio: "9:16",
+    tab: "video",
+    category: "cinematic_trailers",
+    prompt: "Entertainment promo with dynamic cuts, bold titles, and energetic motion graphics.",
+    transitions: "whip-pan",
+    typography: "display-bold",
+  },
+  {
+    id: "politics",
+    title: "Politics",
+    description: "News-style political updates and commentary",
+    icon: Landmark,
+    aspectRatio: "16:9",
+    tab: "writing",
+    prompt: "Balanced political update with headline, key points, and neutral professional tone.",
+    transitions: "slide",
+    typography: "news-sans",
+  },
+  {
+    id: "real-estate",
+    title: "Real Estate",
+    description: "Property showcases with listing highlights",
+    icon: Building2,
+    aspectRatio: "16:9",
+    tab: "image",
+    category: "social_graphics",
+    prompt: "Real estate listing graphic with property highlights, location, price area, and professional photography style.",
+    transitions: "ken-burns",
+    typography: "clean-sans",
+  },
+  {
+    id: "travel",
+    title: "Travel",
+    description: "Destination reels and travel stories",
+    icon: Plane,
+    aspectRatio: "9:16",
+    tab: "video",
+    category: "cinematic_trailers",
+    prompt: "Cinematic travel reel with scenic transitions, location titles, and wanderlust mood.",
+    transitions: "crossfade",
+    typography: "travel-serif",
+  },
+  {
+    id: "fashion",
+    title: "Fashion",
+    description: "Lookbook and style showcase layouts",
+    icon: Shirt,
+    aspectRatio: "4:5",
+    tab: "image",
+    category: "social_graphics",
+    prompt: "High-fashion lookbook layout with editorial typography and premium studio lighting.",
+    transitions: "fade",
+    typography: "editorial-serif",
+  },
+  {
+    id: "food",
+    title: "Food",
+    description: "Recipe and restaurant promo visuals",
+    icon: Utensils,
+    aspectRatio: "1:1",
+    tab: "image",
+    category: "social_graphics",
+    prompt: "Appetizing food photography with recipe title space, warm tones, and clean menu styling.",
+    transitions: "zoom",
+    typography: "rounded-sans",
+  },
+  {
+    id: "technology",
+    title: "Technology",
+    description: "Product demos and tech explainers",
+    icon: Cpu,
+    aspectRatio: "16:9",
+    tab: "writing",
+    prompt: "Technology product update with features, benefits, and modern professional tone.",
+    transitions: "slide-up",
+    typography: "tech-sans",
+  },
+  {
+    id: "ai-presentation",
+    title: "AI Presentation",
+    description: "AI-assisted slide decks and explainers",
+    icon: Cpu,
+    aspectRatio: "16:9",
+    tab: "image",
+    category: "infographics",
+    prompt: "AI presentation slide with diagram space, modern gradients, and clear information hierarchy.",
+    transitions: "push",
+    typography: "presentation-sans",
+  },
+  {
+    id: "advertisement",
+    title: "Advertisement",
+    description: "Paid social and display ad creatives",
+    icon: Megaphone,
+    aspectRatio: "1:1",
+    tab: "image",
+    category: "social_graphics",
+    prompt: "High-converting advertisement with product focus, benefit bullets, and bold CTA area.",
+    transitions: "zoom",
+    typography: "commercial-sans",
   },
 ];
 

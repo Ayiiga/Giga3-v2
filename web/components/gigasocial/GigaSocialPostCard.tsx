@@ -25,7 +25,7 @@ import { GigaSocialCommentThread } from "@/components/gigasocial/GigaSocialComme
 import { GigaSocialPostCaption } from "@/components/gigasocial/GigaSocialPostCaption";
 import { GigaSocialPostCommentBox } from "@/components/gigasocial/GigaSocialPostCommentBox";
 import { GigaSocialPostMedia } from "@/components/gigasocial/GigaSocialPostMedia";
-import { SocialAvatar } from "@/components/gigasocial/SocialAvatar";
+import { GigaSocialProfileLink } from "@/components/gigasocial/GigaSocialProfileLink";
 
 interface GigaSocialPostCardProps {
   post: SocialPost;
@@ -162,20 +162,20 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           isVisualPost && "gigasocial-post-card__chrome px-4 pt-3"
         )}
       >
-        <div className="flex items-center gap-3">
-          <SocialAvatar
-            name={post.author.displayName}
-            avatarUrl={post.author.avatarUrl}
-            size="md"
-          />
-          <div>
-            <p className="text-sm font-semibold text-foreground">{post.author.displayName}</p>
-            <p className="text-xs text-muted">
-              @{post.author.handle} · {formatRelativeTime(post.createdAt)}
-              {post.communitySlug ? ` · ${post.communitySlug}` : ""}
-            </p>
-          </div>
-        </div>
+        <GigaSocialProfileLink
+          handle={post.author.handle}
+          displayName={post.author.displayName}
+          avatarUrl={post.author.avatarUrl}
+          avatarSize="md"
+        >
+          <span className="block truncate text-sm font-semibold text-foreground">
+            {post.author.displayName}
+          </span>
+          <span className="block truncate text-xs text-muted">
+            @{post.author.handle} · {formatRelativeTime(post.createdAt)}
+            {post.communitySlug ? ` · ${post.communitySlug}` : ""}
+          </span>
+        </GigaSocialProfileLink>
         <span className="rounded-full bg-muted/10 px-2 py-0.5 text-xs capitalize text-muted">
           {post.postType}
         </span>

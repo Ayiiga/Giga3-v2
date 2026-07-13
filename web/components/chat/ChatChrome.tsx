@@ -3,6 +3,7 @@
 import { ChatActionsMenu, type ChatActionsMenuHandle } from "@/components/chat/ChatActionsMenu";
 import { ChatConversationSearch } from "@/components/chat/ChatConversationSearch";
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
+import { ChatMoreMenu } from "@/components/chat/ChatMoreMenu";
 import { ModelSelector } from "@/components/chat/ModelSelector";
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
 import { PlatformChromeHost } from "@/components/platform/PlatformChromeHost";
@@ -37,6 +38,7 @@ interface ChatChromeProps {
   modelTier: GigaModelId;
   onModelTierChange: (id: GigaModelId) => void;
   onOpenSidebar: () => void;
+  onOpenWorkspace?: () => void;
   onSetPublicShare?: (
     enabled: boolean
   ) => Promise<{ shareToken: string | null; sharePublic: boolean }>;
@@ -66,6 +68,7 @@ function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean
     prev.modelTier === next.modelTier &&
     prev.onModelTierChange === next.onModelTierChange &&
     prev.onOpenSidebar === next.onOpenSidebar &&
+    prev.onOpenWorkspace === next.onOpenWorkspace &&
     prev.onSetPublicShare === next.onSetPublicShare &&
     prev.chatActionsRef === next.chatActionsRef &&
     prev.searchConversations === next.searchConversations &&
@@ -92,6 +95,7 @@ export const ChatChrome = memo(function ChatChrome({
   modelTier,
   onModelTierChange,
   onOpenSidebar,
+  onOpenWorkspace,
   onSetPublicShare,
   chatActionsRef,
   searchConversations,
@@ -107,7 +111,7 @@ export const ChatChrome = memo(function ChatChrome({
 
   return (
     <header className="chat-header-stable chat-header-bar border-b border-border bg-card">
-      <div className="chat-header-row flex min-h-14 items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
+      <div className="chat-header-row flex min-h-12 items-center gap-2 px-3 py-1.5 sm:min-h-14 sm:gap-3 sm:px-4 sm:py-2">
         <div className="chat-header-brand flex min-w-0 items-center gap-2">
           <button
             type="button"
@@ -124,7 +128,7 @@ export const ChatChrome = memo(function ChatChrome({
             aria-label={`${branding.name} home`}
           >
             <BrandLogo size={28} className="shrink-0 shadow-none ring-0" />
-            <span className="truncate text-sm font-semibold text-foreground sm:text-base">
+            <span className="hidden truncate text-sm font-semibold text-foreground sm:inline sm:text-base">
               {branding.shortName}
             </span>
           </Link>
@@ -139,19 +143,19 @@ export const ChatChrome = memo(function ChatChrome({
           ) : null}
         </div>
 
-        <div className="chat-header-actions ml-auto flex shrink-0 items-center gap-2">
+        <div className="chat-header-actions relative ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           {credits != null ? (
             <CreditBadge
               credits={credits}
               showLabel={false}
-              className="min-h-9 shrink-0 px-2.5 text-xs sm:px-3"
+              className="hidden min-h-9 shrink-0 px-2.5 text-xs sm:flex sm:px-3"
             />
           ) : null}
 
-          <GigaSocialChatButton variant="prominent" />
+          <GigaSocialChatButton variant="prominent" className="shrink-0" />
 
           <div
-            className="chat-header-toolbar flex items-center gap-0.5 rounded-xl border border-border bg-muted/15 p-0.5"
+            className="chat-header-toolbar hidden items-center gap-0.5 rounded-xl border border-border bg-muted/15 p-0.5 md:flex"
             role="toolbar"
             aria-label="Chat tools"
           >
@@ -176,6 +180,13 @@ export const ChatChrome = memo(function ChatChrome({
             />
           </div>
 
+          <ChatMoreMenu
+            credits={credits}
+            onOpenWorkspace={() => undefined}
+            onShare={() => void chatActionsRef?.current?.shareChat()}
+            className="relative md:hidden"
+          />
+
           <button
             type="button"
             onClick={() => {
@@ -186,14 +197,14 @@ export const ChatChrome = memo(function ChatChrome({
               }
               router.push("/chat/login");
             }}
-            className="hidden min-h-9 shrink-0 rounded-lg px-2.5 text-xs font-medium text-muted hover:bg-accent/10 hover:text-foreground md:inline-flex lg:px-3 lg:text-sm"
+            className="hidden min-h-9 shrink-0 rounded-lg px-2.5 text-xs font-medium text-muted hover:bg-accent/10 hover:text-foreground lg:inline-flex lg:px-3 lg:text-sm"
           >
             Sign out
           </button>
         </div>
       </div>
 
-      <div className="chat-header-combo border-t border-border/70 px-3 py-2 sm:px-4">
+      <div className="chat-header-combo hidden border-t border-border/70 px-3 py-2 sm:px-4 md:block">
         <div className="chat-header-combo-inner flex min-w-0 items-stretch overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           <ModelSelector
             value={modelTier}
