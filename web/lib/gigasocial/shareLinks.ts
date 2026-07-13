@@ -24,3 +24,10 @@ export function buildGigaSocialFeedPostUrl(postId: string, origin?: string): str
   const base = (origin?.replace(/\/$/, "") || DEFAULT_ORIGIN).replace(/\/$/, "");
   return `${base}/gigasocial/?highlight=${encodeURIComponent(postId)}`;
 }
+
+/** Public profile URL by @handle. */
+export function buildGigaSocialProfileUrl(handle: string, origin?: string): string {
+  const base = (origin?.replace(/\/$/, "") || DEFAULT_ORIGIN).replace(/\/$/, "");
+  const normalized = handle.replace(/^@/, "").trim().toLowerCase();
+  return `${base}/gigasocial/profile/?handle=${encodeURIComponent(normalized)}`;
+}

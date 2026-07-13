@@ -83,4 +83,6 @@ export type SocialProfileView = {
   supportingCount?: number;
   supporting?: boolean;
   userId?: string;
+  likesReceived?: number;
+  aiCreationsCount?: number;
 };

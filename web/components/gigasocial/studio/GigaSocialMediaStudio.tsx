@@ -51,13 +51,14 @@ export const GigaSocialMediaStudio = memo(function GigaSocialMediaStudio({
         aria-label="Camera filters"
       >
         {CAMERA_FILTERS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            role="option"
-            aria-selected={filterId === item.id}
-            onClick={() => setFilterId(item.id)}
-            className={cn(
+            <button
+              key={item.id}
+              type="button"
+              role="option"
+              aria-selected={filterId === item.id}
+              aria-label={`${item.label}${item.group === "premium" ? " premium preset" : ""}`}
+              onClick={() => setFilterId(item.id)}
+              className={cn(
               "min-w-[4.5rem] shrink-0 rounded-xl border p-1 text-center",
               filterId === item.id
                 ? "border-accent/50 ring-2 ring-accent/25"
@@ -75,6 +76,9 @@ export const GigaSocialMediaStudio = memo(function GigaSocialMediaStudio({
             </span>
             <span className="mt-1 block truncate px-0.5 text-[10px] font-medium text-foreground">
               {item.label}
+              {item.group === "premium" ? (
+                <span className="ml-1 text-[9px] uppercase text-violet-600">Pro</span>
+              ) : null}
             </span>
           </button>
         ))}

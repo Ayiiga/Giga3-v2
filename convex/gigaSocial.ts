@@ -536,10 +536,28 @@ export const getProfileByHandle = query({
       .query("socialPosts")
       .withIndex("by_author_created", (q) => q.eq("authorId", profile.userId))
       .order("desc")
-      .take(12);
-    const visiblePosts = posts.filter((p) => !p.deletedAt);
-    const { fanCount, supportingCount } = await getFanCounts(ctx, profile.userId);
+      .take(60);
+    const isOwner = viewerId === profile.userId;
     const supporting = await isSupporting(ctx, viewerId, profile.userId);
+
+    const visiblePosts = posts.filter((p) => {
+      if (p.deletedAt) return false;
+      if (p.visibility === "followers" && !isOwner && !supporting) return false;
+      return true;
+    });
+
+    const { fanCount, supportingCount } = await getFanCounts(ctx, profile.userId);
+    const likesReceived = visiblePosts.reduce((sum, p) => sum + (p.likeCount ?? 0), 0);
+    const aiCreationsCount = visiblePosts.filter((p) => p.postType === "ai").length;
+
+    let likedPostIds = new Set<string>();
+    if (viewerId) {
+      const reactions = await ctx.db
+        .query("socialReactions")
+        .withIndex("by_user", (q) => q.eq("userId", viewerId))
+        .collect();
+      likedPostIds = new Set(reactions.map((r) => String(r.postId)));
+    }
 
     return {
       profile: {
@@ -554,11 +572,15 @@ export const getProfileByHandle = query({
         fanCount,
         supportingCount,
         supporting,
+        likesReceived,
+        aiCreationsCount,
         userId: profile.userId,
       },
       posts: await Promise.all(
-        visiblePosts.map(async (post) =>
-          toPublicPost(post, toPublicAuthor(profile, profile.userId))
+        visiblePosts.slice(0, 24).map(async (post) =>
+          toPublicPost(post, toPublicAuthor(profile, profile.userId), {
+            likedByMe: likedPostIds.has(String(post._id)),
+          })
         )
       ),
     };

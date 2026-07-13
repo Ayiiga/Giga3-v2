@@ -44,6 +44,11 @@ function CreatorStudioContent() {
     if (tab && CREATOR_SECTIONS.some((s) => s.id === tab)) {
       setSection(tab);
     }
+    const templateId = params.get("template");
+    if (templateId) {
+      const el = document.getElementById(`creator-template-${templateId}`);
+      el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   }, [params]);
 
   if (!email) {

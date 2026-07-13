@@ -191,7 +191,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
           {renderExpandableImage(
             mediaUrls[activeImage],
             `Photo with music ${activeImage + 1} of ${mediaUrls.length}`,
-            imageClass,
+            cn(imageClass, "gigasocial-slideshow-frame"),
             featured && shouldPlay
           )}
           {shouldPlay && mediaUrls.length > 1 ? (

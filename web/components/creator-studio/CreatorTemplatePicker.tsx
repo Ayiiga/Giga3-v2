@@ -49,6 +49,7 @@ export const CreatorTemplatePicker = memo(function CreatorTemplatePicker({
               key={template.id}
               type="button"
               onClick={() => handleSelect(template)}
+              id={`creator-template-${template.id}`}
               className="saas-card flex min-h-[88px] flex-col items-start gap-2 rounded-2xl border border-border p-4 text-left transition-colors hover:border-accent/40 hover:bg-accent/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               aria-label={`${template.title}: ${template.description}`}
             >

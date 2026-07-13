@@ -1,11 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { FAN_LABELS } from "@/lib/gigasocial/fanBranding";
+import { FAN_LABELS, FOLLOW_LABELS } from "@/lib/gigasocial/fanBranding";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useMutation } from "convex/react";
-import { HeartHandshake, Loader2 } from "lucide-react";
+import { HeartHandshake, Loader2, UserMinus, UserPlus } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 
 export const GigaSocialFanButton = memo(function GigaSocialFanButton({
@@ -14,6 +14,7 @@ export const GigaSocialFanButton = memo(function GigaSocialFanButton({
   supporting: initialSupporting,
   disabled,
   className,
+  useFollowLabels = false,
   onChange,
 }: {
   sessionToken: string;
@@ -21,6 +22,7 @@ export const GigaSocialFanButton = memo(function GigaSocialFanButton({
   supporting?: boolean;
   disabled?: boolean;
   className?: string;
+  useFollowLabels?: boolean;
   onChange?: (supporting: boolean) => void;
 }) {
   const [supporting, setSupporting] = useState(Boolean(initialSupporting));
@@ -39,6 +41,20 @@ export const GigaSocialFanButton = memo(function GigaSocialFanButton({
     }
   }, [busy, creatorId, disabled, onChange, sessionToken, toggleFan]);
 
+  const label = useFollowLabels
+    ? supporting
+      ? FOLLOW_LABELS.following
+      : FOLLOW_LABELS.follow
+    : supporting
+      ? FAN_LABELS.supporting
+      : FAN_LABELS.becomeAFan;
+
+  const Icon = useFollowLabels
+    ? supporting
+      ? UserMinus
+      : UserPlus
+    : HeartHandshake;
+
   return (
     <Button
       type="button"
@@ -48,13 +64,14 @@ export const GigaSocialFanButton = memo(function GigaSocialFanButton({
       onClick={() => void handleToggle()}
       className={cn("min-h-9", className)}
       aria-pressed={supporting}
+      aria-label={supporting ? (useFollowLabels ? FOLLOW_LABELS.unfollow : FAN_LABELS.unfan) : label}
     >
       {busy ? (
         <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
       ) : (
-        <HeartHandshake className="h-4 w-4" aria-hidden />
+        <Icon className="h-4 w-4" aria-hidden />
       )}
-      {supporting ? FAN_LABELS.supporting : FAN_LABELS.becomeAFan}
+      {label}
     </Button>
   );
 });
