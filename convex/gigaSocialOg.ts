@@ -34,7 +34,7 @@ export function formatCompactCount(value: number): string {
   return String(Math.round(value));
 }
 
-function splitPostDisplay(body: string): { title: string | null; description: string } {
+export function splitPostDisplay(body: string): { title: string | null; description: string } {
   const trimmed = body.trim();
   if (!trimmed) return { title: null, description: "" };
 
@@ -90,7 +90,15 @@ function previewImageUrl(
   mediaMetaJson?: string | null,
   siteUrl?: string
 ): string {
+  const mediaItems = parseMediaMetaJson(mediaMetaJson);
+  const videoThumb = mediaItems.find((item) => item.type === "video" && item.thumbnailUrl)
+    ?.thumbnailUrl;
+
   if (isVideoPost(post)) {
+    if (post.videoThumbnailUrl && isPublicImageUrl(post.videoThumbnailUrl)) {
+      return post.videoThumbnailUrl;
+    }
+    if (videoThumb && isPublicImageUrl(videoThumb)) return videoThumb;
     return buildGigaSocialOgImageProxyUrl(String(post._id), siteUrl);
   }
 
@@ -98,17 +106,17 @@ function previewImageUrl(
     return post.videoThumbnailUrl;
   }
 
-  const mediaItems = parseMediaMetaJson(mediaMetaJson);
-  const videoThumb = mediaItems.find((item) => item.type === "video" && item.thumbnailUrl)
-    ?.thumbnailUrl;
-  if (videoThumb && isPublicImageUrl(videoThumb)) return videoThumb;
-
   const imageFromMeta = mediaItems.find((item) => item.type === "image")?.url;
   if (imageFromMeta && isPublicImageUrl(imageFromMeta)) return imageFromMeta;
 
   const mediaUrl = primaryMediaUrl(post);
   if (mediaUrl && isPublicImageUrl(mediaUrl)) {
     return mediaUrl;
+  }
+
+  // Text-only or missing image — use og-image proxy for generated preview card
+  if (post.body.trim()) {
+    return buildGigaSocialOgImageProxyUrl(String(post._id), siteUrl);
   }
 
   return DEFAULT_OG_IMAGE;
@@ -180,6 +188,8 @@ export function renderGigaSocialPreviewHtml(
     metaTag("og:image", meta.imageUrl),
     metaTag("og:image:secure_url", meta.imageUrl),
     metaTag("og:image:alt", meta.imageAlt),
+    metaTag("og:image:width", "1200"),
+    metaTag("og:image:height", "630"),
     metaTag("og:url", meta.canonicalUrl),
     metaTag("og:type", meta.type),
     metaTag("og:site_name", meta.siteName),

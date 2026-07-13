@@ -16,7 +16,7 @@ export const listNewsSubscribers = internalQuery({
   handler: async (ctx) => {
     const rows = await ctx.db.query("pushSubscriptions").collect();
     return rows
-      .filter((r) => r.newsAlerts)
+      .filter((r) => r.newsAlerts && !r.muteAll)
       .map((r) => ({
         endpoint: r.endpoint,
         p256dh: r.p256dh,
@@ -30,8 +30,23 @@ export const listSportsSubscribers = internalQuery({
   handler: async (ctx) => {
     const rows = await ctx.db.query("pushSubscriptions").collect();
     return rows
-      .filter((r) => r.sportsAlerts)
+      .filter((r) => r.sportsAlerts && !r.muteAll)
       .map((r) => ({
+        endpoint: r.endpoint,
+        p256dh: r.p256dh,
+        auth: r.auth,
+      }));
+  },
+});
+
+export const listAnnouncementSubscribers = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const rows = await ctx.db.query("pushSubscriptions").collect();
+    return rows
+      .filter((r) => r.announcementAlerts !== false && !r.muteAll)
+      .map((r) => ({
+        userId: r.userId,
         endpoint: r.endpoint,
         p256dh: r.p256dh,
         auth: r.auth,

@@ -23,6 +23,7 @@ import {
   type SocialMediaUploadDeps,
 } from "@/lib/gigasocial/mediaUpload";
 import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
+import { classifyMediaFiles, UNIFIED_MEDIA_ACCEPT } from "@/lib/gigasocial/mediaComposer";
 import { GigaSocialAIAssistant } from "@/components/gigasocial/ai/GigaSocialAIAssistant";
 import { GigaSocialMediaStudio } from "@/components/gigasocial/studio/GigaSocialMediaStudio";
 import {
@@ -33,7 +34,7 @@ import { POST_TYPE_OPTIONS, type SocialPostTypeId } from "@/lib/gigasocial/secti
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { api } from "convex/_generated/api";
 import { useAction, useMutation } from "convex/react";
-import { Camera, ImagePlus, Loader2, Music2, Send, Video, X } from "lucide-react";
+import { Camera, ImagePlus, Loader2, Music2, Paperclip, Send, Video, X } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface PendingImage {
@@ -98,6 +99,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const [studioOpen, setStudioOpen] = useState(false);
   const [previewFilterId, setPreviewFilterId] = useState<CameraFilterId>("none");
   const uploadAbortRef = useRef<AbortController | null>(null);
+  const unifiedMediaInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -272,64 +274,51 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
 
   const addDroppedFiles = useCallback(
     async (files: FileList | File[]) => {
-      const list = Array.from(files);
-      const imageFiles = list.filter((file) => file.type.startsWith("image/"));
-      const audioFile = list.find((file) => file.type.startsWith("audio/"));
-      const videoFile = list.find((file) => file.type.startsWith("video/"));
-
-      if (videoFile && !imageFiles.length && !audioFile) {
-        await addVideoFile(videoFile);
+      const selection = classifyMediaFiles(Array.from(files));
+      if (selection.kind === "unsupported") {
+        setError(selection.reason);
         return;
       }
 
-      if (imageFiles.length) {
-        if (pendingVideo) {
-          setError("Remove the video before adding photos.");
-          return;
-        }
-        const remaining = SOCIAL_MAX_PHOTOS_PER_POST - pendingImages.length;
-        if (remaining <= 0) {
-          setError(`You can attach up to ${SOCIAL_MAX_PHOTOS_PER_POST} photos.`);
-          return;
-        }
-        const next = imageFiles.slice(0, remaining).map((file) => ({
-          id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
-          file,
-          previewUrl: URL.createObjectURL(file),
-          name: file.name,
-        }));
-        setPendingImages((prev) => [...prev, ...next]);
-        setPostType("image");
-        setError(null);
-
-        if (audioFile) {
-          try {
-            const prepared = await prepareAudioForPhotoPost(
-              audioFile,
-              SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC
-            );
-            setPendingAudio({
-              file: prepared.file,
-              name: prepared.file.name,
-              durationSec: prepared.durationSec,
-            });
-            if (prepared.trimmed) {
-              setSuccess(
-                `Music trimmed to ${SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC} seconds for photo posts.`
-              );
-            }
-          } catch (e) {
-            setError(e instanceof Error ? e.message : "Could not read audio.");
+      switch (selection.kind) {
+        case "single-image":
+        case "photo-gallery":
+          await addImageFiles(selection.files);
+          break;
+        case "single-video":
+          await addVideoFile(selection.files[0]);
+          break;
+        case "slideshow":
+          await addImageFiles(selection.images);
+          await addAudioFile(selection.audio);
+          if (!body.trim()) {
+            setBody("Photo slideshow with music 🎵");
           }
-        }
-        return;
-      }
-
-      if (audioFile) {
-        await addAudioFile(audioFile);
+          break;
+        case "video-with-audio":
+          await addVideoFile(selection.video);
+          if (selection.audio) {
+            setSuccess("Video selected. Soundtrack mixing is applied on publish.");
+          }
+          break;
+        case "mixed-timeline":
+          setError(
+            "Combined photo + video timelines are best created one at a time. Add photos or a video separately."
+          );
+          break;
+        default:
+          break;
       }
     },
-    [addAudioFile, addVideoFile, pendingImages.length, pendingVideo]
+    [addAudioFile, addImageFiles, addVideoFile, body]
+  );
+
+  const handleUnifiedMediaPick = useCallback(
+    async (files: FileList | null) => {
+      if (!files?.length) return;
+      await addDroppedFiles(files);
+    },
+    [addDroppedFiles]
   );
 
   const handleDrop = useCallback(
@@ -534,6 +523,17 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <input
+          ref={unifiedMediaInputRef}
+          type="file"
+          accept={UNIFIED_MEDIA_ACCEPT}
+          multiple
+          className="sr-only"
+          onChange={(event) => {
+            void handleUnifiedMediaPick(event.target.files);
+            event.target.value = "";
+          }}
+        />
+        <input
           ref={imageInputRef}
           type="file"
           accept={SOCIAL_IMAGE_ACCEPT}
@@ -582,9 +582,22 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           type="button"
           size="sm"
           variant="outline"
+          disabled={disabled || busy}
+          onClick={() => unifiedMediaInputRef.current?.click()}
+          aria-label="Add media — photos, videos, or music"
+          aria-haspopup="false"
+        >
+          <Paperclip className="h-4 w-4" aria-hidden />
+          Media
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
           disabled={disabled || busy || Boolean(pendingVideo)}
           onClick={() => imageInputRef.current?.click()}
-          aria-label="Add photos"
+          aria-label="Add photos only"
+          className="hidden sm:inline-flex"
         >
           <ImagePlus className="h-4 w-4" aria-hidden />
           Photos
@@ -592,10 +605,11 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         <Button
           type="button"
           size="sm"
-          variant="outline"
+          variant="ghost"
           disabled={disabled || busy || pendingImages.length > 0}
           onClick={() => videoInputRef.current?.click()}
-          aria-label="Add video"
+          aria-label="Add video only"
+          className="hidden sm:inline-flex"
         >
           <Video className="h-4 w-4" aria-hidden />
           Video
@@ -603,10 +617,11 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         <Button
           type="button"
           size="sm"
-          variant="outline"
+          variant="ghost"
           disabled={disabled || busy || Boolean(pendingVideo) || pendingImages.length === 0}
           onClick={() => audioInputRef.current?.click()}
-          aria-label="Add music"
+          aria-label="Add music only"
+          className="hidden sm:inline-flex"
         >
           <Music2 className="h-4 w-4" aria-hidden />
           Music

@@ -21,6 +21,13 @@ export const savePushSubscription = mutation({
     auth: v.string(),
     newsAlerts: v.optional(v.boolean()),
     sportsAlerts: v.optional(v.boolean()),
+    muteAll: v.optional(v.boolean()),
+    socialAlerts: v.optional(v.boolean()),
+    commentAlerts: v.optional(v.boolean()),
+    mentionAlerts: v.optional(v.boolean()),
+    followAlerts: v.optional(v.boolean()),
+    generationAlerts: v.optional(v.boolean()),
+    announcementAlerts: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     if (!isPushAlertsEnabled()) {
@@ -40,6 +47,13 @@ export const savePushSubscription = mutation({
       auth: args.auth,
       newsAlerts: args.newsAlerts ?? true,
       sportsAlerts: args.sportsAlerts ?? true,
+      muteAll: args.muteAll ?? false,
+      socialAlerts: args.socialAlerts ?? true,
+      commentAlerts: args.commentAlerts ?? true,
+      mentionAlerts: args.mentionAlerts ?? true,
+      followAlerts: args.followAlerts ?? true,
+      generationAlerts: args.generationAlerts ?? true,
+      announcementAlerts: args.announcementAlerts ?? true,
       updatedAt: now,
     };
 
@@ -61,6 +75,13 @@ export const updatePushPreferences = mutation({
     endpoint: v.string(),
     newsAlerts: v.boolean(),
     sportsAlerts: v.boolean(),
+    muteAll: v.optional(v.boolean()),
+    socialAlerts: v.optional(v.boolean()),
+    commentAlerts: v.optional(v.boolean()),
+    mentionAlerts: v.optional(v.boolean()),
+    followAlerts: v.optional(v.boolean()),
+    generationAlerts: v.optional(v.boolean()),
+    announcementAlerts: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken);
@@ -74,6 +95,13 @@ export const updatePushPreferences = mutation({
     await ctx.db.patch(row._id, {
       newsAlerts: args.newsAlerts,
       sportsAlerts: args.sportsAlerts,
+      muteAll: args.muteAll ?? row.muteAll ?? false,
+      socialAlerts: args.socialAlerts ?? row.socialAlerts ?? true,
+      commentAlerts: args.commentAlerts ?? row.commentAlerts ?? true,
+      mentionAlerts: args.mentionAlerts ?? row.mentionAlerts ?? true,
+      followAlerts: args.followAlerts ?? row.followAlerts ?? true,
+      generationAlerts: args.generationAlerts ?? row.generationAlerts ?? true,
+      announcementAlerts: args.announcementAlerts ?? row.announcementAlerts ?? true,
       updatedAt: Date.now(),
     });
   },
