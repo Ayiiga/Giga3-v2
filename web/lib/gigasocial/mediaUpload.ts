@@ -208,6 +208,27 @@ async function uploadVideoThumbnail(
   return uploaded.url;
 }
 
+async function withUploadRetry<T>(
+  fn: () => Promise<T>,
+  maxAttempts = 3,
+  baseDelayMs = 600
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, baseDelayMs * attempt));
+      }
+    }
+  }
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Upload failed. Check your connection and try again.");
+}
+
 async function uploadWithProgress(
   uploadUrl: string,
   body: BodyInit,
@@ -218,15 +239,22 @@ async function uploadWithProgress(
   method: "POST" | "PUT" = "POST"
 ): Promise<Response> {
   if (!onProgress) {
-    return fetch(uploadUrl, {
-      method,
-      headers: {
-        "Content-Type": contentType,
-        ...(headers ?? {}),
-      },
-      body,
-      signal,
-    });
+    return withUploadRetry(() =>
+      fetch(uploadUrl, {
+        method,
+        headers: {
+          "Content-Type": contentType,
+          ...(headers ?? {}),
+        },
+        body,
+        signal,
+      }).then((response) => {
+        if (!response.ok) {
+          throw new Error(`Upload failed (${response.status}). Please retry.`);
+        }
+        return response;
+      })
+    );
   }
 
   return new Promise((resolve, reject) => {

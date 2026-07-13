@@ -17,16 +17,40 @@ function urlBase64ToUint8Array(base64String: string) {
   return output;
 }
 
+type PushPrefs = {
+  muteAll: boolean;
+  newsAlerts: boolean;
+  sportsAlerts: boolean;
+  socialAlerts: boolean;
+  commentAlerts: boolean;
+  mentionAlerts: boolean;
+  followAlerts: boolean;
+  generationAlerts: boolean;
+  announcementAlerts: boolean;
+};
+
+const DEFAULT_PREFS: PushPrefs = {
+  muteAll: false,
+  newsAlerts: true,
+  sportsAlerts: true,
+  socialAlerts: true,
+  commentAlerts: true,
+  mentionAlerts: true,
+  followAlerts: true,
+  generationAlerts: true,
+  announcementAlerts: true,
+};
+
 export function PushAlertsPanel({ embedded = true }: { embedded?: boolean }) {
   const pushConfig = useQuery(api.pushAlerts.getPushConfig);
   const savePushSubscription = useMutation(api.pushAlerts.savePushSubscription);
   const updatePushPreferences = useMutation(api.pushAlerts.updatePushPreferences);
+  const removePushSubscription = useMutation(api.pushAlerts.removePushSubscription);
   const sendTestPush = useAction(api.pushAlertsActions.sendTestPush);
 
   const [sessionToken] = useState(() => getSessionToken());
   const [endpoint, setEndpoint] = useState<string | null>(null);
-  const [newsAlerts, setNewsAlerts] = useState(true);
-  const [sportsAlerts, setSportsAlerts] = useState(true);
+  const [prefs, setPrefs] = useState<PushPrefs>(DEFAULT_PREFS);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -59,8 +83,7 @@ export function PushAlertsPanel({ embedded = true }: { embedded?: boolean }) {
         endpoint: json.endpoint,
         p256dh: json.keys.p256dh,
         auth: json.keys.auth,
-        newsAlerts,
-        sportsAlerts,
+        ...prefs,
       });
       setEndpoint(json.endpoint);
       setStatus(`Alerts enabled · ${formatTimestampDateTime(Date.now())}`);
@@ -69,14 +92,7 @@ export function PushAlertsPanel({ embedded = true }: { embedded?: boolean }) {
     } finally {
       setBusy(false);
     }
-  }, [
-    enabled,
-    newsAlerts,
-    pushConfig?.vapidPublicKey,
-    savePushSubscription,
-    sessionToken,
-    sportsAlerts,
-  ]);
+  }, [enabled, prefs, pushConfig?.vapidPublicKey, savePushSubscription, sessionToken]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -86,6 +102,10 @@ export function PushAlertsPanel({ embedded = true }: { embedded?: boolean }) {
       .catch(() => undefined);
   }, [enabled]);
 
+  function updatePref<K extends keyof PushPrefs>(key: K, value: PushPrefs[K]) {
+    setPrefs((prev) => ({ ...prev, [key]: value }));
+  }
+
   async function savePreferences() {
     if (!sessionToken || !endpoint) return;
     setBusy(true);
@@ -93,12 +113,28 @@ export function PushAlertsPanel({ embedded = true }: { embedded?: boolean }) {
       await updatePushPreferences({
         sessionToken,
         endpoint,
-        newsAlerts,
-        sportsAlerts,
+        ...prefs,
       });
       setStatus("Alert preferences saved.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save preferences.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function unsubscribe() {
+    if (!sessionToken || !endpoint) return;
+    setBusy(true);
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const sub = await registration.pushManager.getSubscription();
+      if (sub) await sub.unsubscribe();
+      await removePushSubscription({ sessionToken, endpoint });
+      setEndpoint(null);
+      setStatus("Push alerts disabled on this device.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not unsubscribe.");
     } finally {
       setBusy(false);
     }
@@ -119,15 +155,22 @@ export function PushAlertsPanel({ embedded = true }: { embedded?: boolean }) {
 
   if (!pushConfig) return null;
 
+  const categoryDisabled = prefs.muteAll;
+
   return (
-    <section className={embedded ? "px-3 py-4 sm:px-4" : "rounded-2xl border bg-card p-6"}>
+    <section
+      className={embedded ? "px-3 py-4 sm:px-4" : "rounded-2xl border bg-card p-6"}
+      aria-labelledby="push-alerts-heading"
+    >
       <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-blue-500/10 px-3 py-1 text-sm font-medium text-blue-800">
         <Bell className="h-4 w-4" aria-hidden />
         Push alerts
       </div>
-      <h2 className="text-base font-semibold">News &amp; sports notifications</h2>
+      <h2 id="push-alerts-heading" className="text-base font-semibold">
+        Intelligent notifications
+      </h2>
       <p className="mt-2 text-sm text-muted">
-        Get breaking headlines and live score alerts on supported devices.
+        Receive timely alerts for social activity, AI generation, news, and platform announcements.
       </p>
 
       {!enabled && (
@@ -142,22 +185,45 @@ export function PushAlertsPanel({ embedded = true }: { embedded?: boolean }) {
 
       {enabled && sessionToken && (
         <div className="mt-4 space-y-3">
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex min-h-10 items-center gap-2 text-sm font-medium">
             <input
               type="checkbox"
-              checked={newsAlerts}
-              onChange={(e) => setNewsAlerts(e.target.checked)}
+              checked={prefs.muteAll}
+              onChange={(e) => updatePref("muteAll", e.target.checked)}
+              aria-describedby="mute-all-desc"
             />
-            Breaking news headlines
+            Mute all notifications
           </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={sportsAlerts}
-              onChange={(e) => setSportsAlerts(e.target.checked)}
-            />
-            Live sports scores
-          </label>
+          <p id="mute-all-desc" className="sr-only">
+            Disables all push notification categories on this device
+          </p>
+
+          <fieldset className="space-y-2" disabled={categoryDisabled}>
+            <legend className="text-xs font-semibold uppercase tracking-wide text-muted">
+              Categories
+            </legend>
+            {(
+              [
+                ["socialAlerts", "New posts & social activity"],
+                ["commentAlerts", "Comments & replies"],
+                ["mentionAlerts", "Mentions"],
+                ["followAlerts", "New followers"],
+                ["generationAlerts", "AI image & video complete"],
+                ["newsAlerts", "Breaking news headlines"],
+                ["sportsAlerts", "Live sports scores"],
+                ["announcementAlerts", "Platform announcements"],
+              ] as const
+            ).map(([key, label]) => (
+              <label key={key} className="flex min-h-10 items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={prefs[key]}
+                  onChange={(e) => updatePref(key, e.target.checked)}
+                />
+                {label}
+              </label>
+            ))}
+          </fieldset>
 
           {!endpoint ? (
             <Button type="button" size="sm" onClick={() => void registerPush()} disabled={busy}>
@@ -166,11 +232,33 @@ export function PushAlertsPanel({ embedded = true }: { embedded?: boolean }) {
             </Button>
           ) : (
             <div className="flex flex-wrap gap-2">
-              <Button type="button" size="sm" variant="secondary" onClick={() => void savePreferences()} disabled={busy}>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={() => void savePreferences()}
+                disabled={busy}
+              >
                 Save preferences
               </Button>
-              <Button type="button" size="sm" variant="ghost" onClick={() => void testAlert()} disabled={busy}>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => void testAlert()}
+                disabled={busy}
+              >
                 Send test
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => void unsubscribe()}
+                disabled={busy}
+              >
+                <BellOff className="mr-1 h-3.5 w-3.5" aria-hidden />
+                Unsubscribe
               </Button>
               <span className="inline-flex items-center gap-1 text-xs text-emerald-700">
                 <Bell className="h-3.5 w-3.5" aria-hidden />
@@ -178,22 +266,19 @@ export function PushAlertsPanel({ embedded = true }: { embedded?: boolean }) {
               </span>
             </div>
           )}
-
-          {endpoint && (
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 text-xs text-muted hover:text-foreground"
-              onClick={() => setEndpoint(null)}
-            >
-              <BellOff className="h-3.5 w-3.5" aria-hidden />
-              Show as not subscribed (this device only)
-            </button>
-          )}
         </div>
       )}
 
-      {status && <p className="mt-3 text-sm text-emerald-700">{status}</p>}
-      {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
+      {status && (
+        <p className="mt-3 text-sm text-emerald-700" role="status">
+          {status}
+        </p>
+      )}
+      {error && (
+        <p className="mt-3 text-sm text-red-700" role="alert">
+          {error}
+        </p>
+      )}
     </section>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { CreatorTemplatePicker } from "@/components/creator-studio/CreatorTemplatePicker";
 import { CreatorImagePanel } from "@/components/creator-studio/CreatorImagePanel";
 import { CreatorTextToolPanel } from "@/components/creator-studio/CreatorTextToolPanel";
 import { CreatorWorkspacePanel } from "@/components/creator-studio/CreatorWorkspacePanel";
@@ -82,6 +83,16 @@ function CreatorStudioContent() {
           </Link>
         </div>
       </header>
+
+      <CreatorTemplatePicker
+        onSelectWriting={(template) => {
+          if (template.tab === "social") {
+            setSection("social");
+          } else {
+            setSection("writing");
+          }
+        }}
+      />
 
       <nav
         className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1"

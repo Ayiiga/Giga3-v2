@@ -32,4 +32,11 @@ crons.daily(
   {}
 );
 
+crons.interval(
+  "retry queued push notifications",
+  { minutes: 5 },
+  internal.pushNotificationDispatch.processPushQueue,
+  {}
+);
+
 export default crons;

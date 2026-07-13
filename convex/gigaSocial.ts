@@ -1,4 +1,5 @@
-import { internalQuery, mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
+import { internalQuery, mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
@@ -136,8 +137,43 @@ async function isSupporting(
   return Boolean(row);
 }
 
+function pushCategoryForSocialType(
+  type:
+    | "like"
+    | "comment"
+    | "reply"
+    | "mention"
+    | "follow"
+    | "community"
+    | "learning"
+    | "creator"
+): string {
+  switch (type) {
+    case "comment":
+    case "reply":
+      return "comment";
+    case "mention":
+      return "mention";
+    case "follow":
+      return "follow";
+    default:
+      return "social";
+  }
+}
+
+async function resolveUserIdByHandle(
+  ctx: { db: MutationCtx["db"] },
+  handle: string
+): Promise<string | null> {
+  const profile = await ctx.db
+    .query("socialProfiles")
+    .withIndex("by_handle", (q) => q.eq("handle", handle.toLowerCase()))
+    .first();
+  return profile?.userId ?? null;
+}
+
 async function notifyUser(
-  ctx: { db: import("./_generated/server").MutationCtx["db"] },
+  ctx: MutationCtx,
   args: {
     recipientId: string;
     type:
@@ -165,6 +201,21 @@ async function notifyUser(
     message: sanitizeSocialText(args.message, 280),
     read: false,
     createdAt: Date.now(),
+  });
+
+  const actorProfile = args.actorId ? await getProfileDoc(ctx, args.actorId) : null;
+  const actorName = actorProfile?.displayName ?? "Someone";
+  const postUrl = args.postId
+    ? `/gigasocial/post/?id=${encodeURIComponent(String(args.postId))}`
+    : "/gigasocial/";
+
+  await ctx.scheduler.runAfter(0, internal.pushNotificationDispatch.dispatchPushNotification, {
+    recipientId: args.recipientId,
+    category: pushCategoryForSocialType(args.type),
+    title: `GigaSocial · ${actorName}`,
+    body: args.message,
+    url: postUrl,
+    tag: `social-${args.type}-${args.postId ?? "none"}-${args.actorId ?? "system"}`,
   });
 }
 
@@ -788,6 +839,38 @@ export const createPost = mutation({
       gamificationJson: awardXp(profile.gamificationJson, 15),
       updatedAt: now,
     });
+
+    // Notify @mentioned users
+    for (const handle of mentions) {
+      const mentionedUserId = await resolveUserIdByHandle(ctx, handle);
+      if (!mentionedUserId || mentionedUserId === userId) continue;
+      await notifyUser(ctx, {
+        recipientId: mentionedUserId,
+        type: "mention",
+        actorId: userId,
+        postId,
+        message: "mentioned you in a post",
+      });
+    }
+
+    // Notify followers of a new post (public posts only, capped for performance)
+    if ((args.visibility ?? "public") === "public") {
+      const followers = await ctx.db
+        .query("socialFollows")
+        .withIndex("by_following", (q) => q.eq("followingId", userId))
+        .take(100);
+      const authorName = profile.displayName;
+      for (const follower of followers) {
+        if (follower.followerId === userId) continue;
+        await notifyUser(ctx, {
+          recipientId: follower.followerId,
+          type: "creator",
+          actorId: userId,
+          postId,
+          message: `${authorName} published a new post`,
+        });
+      }
+    }
 
     return { postId };
   },

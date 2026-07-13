@@ -692,11 +692,39 @@ export default defineSchema({
     auth: v.string(),
     newsAlerts: v.boolean(),
     sportsAlerts: v.boolean(),
+    /** When true, suppress all push categories for this subscription. */
+    muteAll: v.optional(v.boolean()),
+    socialAlerts: v.optional(v.boolean()),
+    commentAlerts: v.optional(v.boolean()),
+    mentionAlerts: v.optional(v.boolean()),
+    followAlerts: v.optional(v.boolean()),
+    generationAlerts: v.optional(v.boolean()),
+    announcementAlerts: v.optional(v.boolean()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_user", ["userId"])
     .index("by_endpoint", ["endpoint"]),
+
+  /** Prevents duplicate push notifications within a short window. */
+  pushNotificationDedup: defineTable({
+    userId: v.string(),
+    tag: v.string(),
+    sentAt: v.number(),
+  }).index("by_user_tag", ["userId", "tag"]),
+
+  /** Failed push deliveries queued for retry when device is temporarily offline. */
+  pushNotificationQueue: defineTable({
+    userId: v.string(),
+    endpoint: v.string(),
+    p256dh: v.string(),
+    auth: v.string(),
+    payloadJson: v.string(),
+    tag: v.string(),
+    category: v.string(),
+    attempts: v.number(),
+    createdAt: v.number(),
+  }).index("by_created", ["createdAt"]),
 
   /** GigaSocial — user profiles (additive; separate from users / creatorProfiles). */
   socialProfiles: defineTable({

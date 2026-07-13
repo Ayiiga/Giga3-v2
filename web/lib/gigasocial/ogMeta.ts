@@ -51,6 +51,9 @@ function primaryMediaUrl(post: SocialPost): string | undefined {
 
 export function previewImageUrl(post: SocialPost): string {
   if (isVideoPost(post)) {
+    if (post.videoThumbnailUrl && isPublicImageUrl(post.videoThumbnailUrl)) {
+      return post.videoThumbnailUrl;
+    }
     return buildGigaSocialOgImageProxyUrl(post._id);
   }
 
@@ -61,6 +64,10 @@ export function previewImageUrl(post: SocialPost): string {
   const mediaUrl = primaryMediaUrl(post);
   if (mediaUrl && isPublicImageUrl(mediaUrl)) {
     return mediaUrl;
+  }
+
+  if (post.body.trim()) {
+    return buildGigaSocialOgImageProxyUrl(post._id);
   }
 
   return DEFAULT_OG_IMAGE;

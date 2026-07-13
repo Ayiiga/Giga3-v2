@@ -1,7 +1,7 @@
 /** Cloudflare Pages middleware — rich OG previews for shared GigaSocial posts. */
 
 const CRAWLER_UA =
-  /facebookexternalhit|Facebot|WhatsApp|whatsapp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|Googlebot|bingbot|Applebot|Pinterest|Embedly|ia_archiver|Snapchat|SkypeUriPreview/i;
+  /facebookexternalhit|Facebot|WhatsApp|whatsapp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|Googlebot|bingbot|Applebot|Pinterest|Embedly|ia_archiver|Snapchat|SkypeUriPreview|Viber|Line\/|KakaoTalk|redditbot|Quora|MetaInspector|bot|crawl|spider|preview|fetch|link/i;
 
 const DEFAULT_CONVEX_SITE = "https://perfect-lark-521.convex.site";
 
