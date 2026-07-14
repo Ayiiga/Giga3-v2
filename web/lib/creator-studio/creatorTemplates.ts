@@ -32,6 +32,9 @@ export type CreatorTemplateId =
   | "event-announcement"
   | "social-story"
   | "vertical-short"
+  | "social-reel"
+  | "social-short"
+  | "photo-music-story"
   | "landscape-presentation"
   | "church"
   | "entertainment"
@@ -198,6 +201,45 @@ export const CREATOR_TEMPLATES: CreatorTemplate[] = [
       "Vertical short video with hook in first 2 seconds, fast pacing, captions area, and engaging motion.",
     transitions: "jump-cut",
     typography: "caption-sans",
+  },
+  {
+    id: "social-reel",
+    title: "Reels",
+    description: "Instagram-style reel with bold captions",
+    icon: Clapperboard,
+    aspectRatio: "9:16",
+    tab: "video",
+    category: "cinematic_trailers",
+    prompt:
+      "Social reel with punchy hook, beat-synced cuts, animated captions, and vertical mobile framing.",
+    transitions: "beat-sync",
+    typography: "caption-sans",
+  },
+  {
+    id: "social-short",
+    title: "Shorts",
+    description: "YouTube Shorts-style vertical clip",
+    icon: Smartphone,
+    aspectRatio: "9:16",
+    tab: "video",
+    category: "cinematic_trailers",
+    prompt:
+      "Short-form vertical video with bold title card, fast pacing, and thumb-stopping first frame.",
+    transitions: "jump-cut",
+    typography: "bold-display",
+  },
+  {
+    id: "photo-music-story",
+    title: "Photo + Music",
+    description: "Slideshow with soundtrack and motion",
+    icon: Music2,
+    aspectRatio: "9:16",
+    tab: "video",
+    category: "music_videos",
+    prompt:
+      "Photo slideshow with music sync, Ken Burns motion, smooth crossfades, and social-ready pacing.",
+    transitions: "crossfade",
+    typography: "minimal",
   },
   {
     id: "landscape-presentation",

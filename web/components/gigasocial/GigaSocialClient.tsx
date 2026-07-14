@@ -92,7 +92,7 @@ function GigaSocialContent() {
   };
 
   return (
-    <div className="gigasocial-pro mx-auto max-w-6xl space-y-8">
+    <div className="gigasocial-stable gigasocial-pro mx-auto max-w-6xl space-y-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link

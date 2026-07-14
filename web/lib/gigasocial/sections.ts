@@ -77,6 +77,9 @@ export type SocialPostTypeId = (typeof POST_TYPE_OPTIONS)[number]["id"];
 export const DISCOVER_FILTERS = [
   { id: "trending", label: "Trending" },
   { id: "recent", label: "Recent" },
+  { id: "video", label: "Videos" },
+  { id: "photo", label: "Photos" },
+  { id: "music", label: "Music" },
   { id: "education", label: "Education" },
   { id: "creator", label: "Creators" },
   { id: "ai", label: "AI" },

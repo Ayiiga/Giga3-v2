@@ -279,6 +279,7 @@ export const listFeed = query({
   args: {
     sessionToken: v.optional(v.string()),
     communitySlug: v.optional(v.string()),
+    followingOnly: v.optional(v.boolean()),
     cursor: v.optional(v.number()),
     limit: v.optional(v.number()),
   },
@@ -310,6 +311,18 @@ export const listFeed = query({
     rows = rows.filter((r) => !r.deletedAt);
     if (args.cursor) {
       rows = rows.filter((r) => r.createdAt < args.cursor!);
+    }
+
+    if (args.followingOnly) {
+      if (!userId) {
+        return { posts: [], nextCursor: null };
+      }
+      const follows = await ctx.db
+        .query("socialFollows")
+        .withIndex("by_follower", (q) => q.eq("followerId", userId))
+        .collect();
+      const followingIds = new Set(follows.map((f) => f.followingId));
+      rows = rows.filter((r) => followingIds.has(r.authorId));
     }
 
     rows.sort((a, b) => b.createdAt - a.createdAt);
@@ -365,6 +378,38 @@ export const listFeed = query({
   },
 });
 
+export const searchProfiles = query({
+  args: {
+    query: v.string(),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const q = args.query.trim().toLowerCase();
+    const cap = Math.min(args.limit ?? 8, 16);
+    if (!q || q.length < 2) return { profiles: [] };
+
+    const profiles = await ctx.db.query("socialProfiles").take(400);
+    const matched = profiles
+      .filter(
+        (profile) =>
+          profile.handle.includes(q) ||
+          profile.displayName.toLowerCase().includes(q) ||
+          profile.bio.toLowerCase().includes(q)
+      )
+      .slice(0, cap);
+
+    return {
+      profiles: matched.map((profile) => ({
+        userId: profile.userId,
+        displayName: profile.displayName,
+        handle: profile.handle,
+        avatarUrl: profile.avatarUrl,
+        bio: profile.bio,
+      })),
+    };
+  },
+});
+
 export const listDiscover = query({
   args: {
     sessionToken: v.optional(v.string()),
@@ -374,7 +419,10 @@ export const listDiscover = query({
         v.literal("recent"),
         v.literal("education"),
         v.literal("creator"),
-        v.literal("ai")
+        v.literal("ai"),
+        v.literal("video"),
+        v.literal("photo"),
+        v.literal("music")
       )
     ),
     query: v.optional(v.string()),
@@ -404,6 +452,20 @@ export const listDiscover = query({
       rows = rows.filter((r) => r.postType === "creator");
     } else if (filter === "ai") {
       rows = rows.filter((r) => r.postType === "ai");
+    } else if (filter === "video") {
+      rows = rows.filter((r) => r.mediaType === "video" || r.postType === "video");
+    } else if (filter === "photo") {
+      rows = rows.filter(
+        (r) =>
+          r.mediaType === "image" ||
+          r.mediaType === "gallery" ||
+          r.postType === "image"
+      );
+    } else if (filter === "music") {
+      rows = rows.filter((r) => {
+        const items = parseMediaMetaJson(r.mediaMetaJson);
+        return items.some((item) => item.type === "audio");
+      });
     }
 
     const q = args.query?.trim().toLowerCase();
@@ -416,9 +478,33 @@ export const listDiscover = query({
     }
 
     const slice = rows.slice(0, cap);
+    let userId: string | null = null;
+    if (args.sessionToken) {
+      try {
+        userId = await requireSession(args.sessionToken);
+      } catch {
+        userId = null;
+      }
+    }
+
+    let supportingAuthors = new Set<string>();
+    if (userId) {
+      const follows = await ctx.db
+        .query("socialFollows")
+        .withIndex("by_follower", (q) => q.eq("followerId", userId!))
+        .collect();
+      supportingAuthors = new Set(follows.map((f) => f.followingId));
+    }
+
     const posts = await Promise.all(
       slice.map(async (post) => {
-        const author = await resolveAuthor(ctx, post.authorId);
+        const resolved = await resolveAuthor(ctx, post.authorId);
+        const author = enrichAuthorForViewer(
+          resolved,
+          post.authorId,
+          userId,
+          supportingAuthors
+        );
         return toPublicPost(post, author);
       })
     );

@@ -1,19 +1,23 @@
 "use client";
 
 import { GigaSocialPostMedia } from "@/components/gigasocial/GigaSocialPostMedia";
+import { GigaSocialProfileLink } from "@/components/gigasocial/GigaSocialProfileLink";
+import { GigaSocialFanButton } from "@/components/gigasocial/fans/GigaSocialFanButton";
 import { formatRelativeTime } from "@/lib/datetime";
 import { splitPostDisplay } from "@/lib/gigasocial/postDisplay";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { cn } from "@/lib/utils";
+import { getUserEmail } from "@/lib/auth";
 import { Pause, Play } from "lucide-react";
 import Link from "next/link";
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 
 interface GigaSocialFeaturedPlayerProps {
   post: SocialPost;
   autoPlay: boolean;
   paused: boolean;
+  sessionToken?: string | null;
   onPause: () => void;
   onTogglePause: () => void;
   onSkipNext?: () => void;
@@ -32,9 +36,15 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
   onSkipPrevious,
   onVideoEnded,
   enableSwipeSkip = false,
+  sessionToken = null,
 }: GigaSocialFeaturedPlayerProps) {
   const display = useMemo(() => splitPostDisplay(post.body), [post.body]);
   const preview = display.description || display.title || post.body;
+  const [following, setFollowing] = useState(Boolean(post.author.supportingByMe));
+  const myUserId = useMemo(() => getUserEmail(), []);
+  const canFollow = Boolean(
+    sessionToken && post.author.userId && myUserId !== post.author.userId
+  );
 
   const swipe = useSwipeGesture({
     enabled: enableSwipeSkip && Boolean(onSkipNext || onSkipPrevious),
@@ -50,15 +60,35 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
       onTouchEnd={swipe.onTouchEnd}
     >
       <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
-        <div className="min-w-0">
+        <GigaSocialProfileLink
+          handle={post.author.handle}
+          displayName={post.author.displayName}
+          avatarUrl={post.author.avatarUrl}
+          avatarSize="sm"
+          showFollowOnAvatar={canFollow}
+          creatorId={post.author.userId}
+          sessionToken={sessionToken}
+          supporting={following}
+        >
           <p className="text-xs font-medium uppercase tracking-wide text-accent">Now playing</p>
           <p className="truncate text-sm font-semibold text-foreground">
             {post.author.displayName}
             <span className="font-normal text-muted"> · @{post.author.handle}</span>
           </p>
           <p className="text-xs text-muted">{formatRelativeTime(post.createdAt)}</p>
-        </div>
-        <button
+        </GigaSocialProfileLink>
+        <div className="flex shrink-0 items-center gap-2">
+          {canFollow ? (
+            <GigaSocialFanButton
+              sessionToken={sessionToken!}
+              creatorId={post.author.userId!}
+              supporting={following}
+              useFollowLabels
+              compact
+              onChange={setFollowing}
+            />
+          ) : null}
+          <button
           type="button"
           onClick={onTogglePause}
           className={cn(
@@ -72,6 +102,7 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
         >
           {paused ? <Play className="h-4 w-4" aria-hidden /> : <Pause className="h-4 w-4" aria-hidden />}
         </button>
+        </div>
       </div>
 
       <GigaSocialPostMedia

@@ -23,10 +23,13 @@ import {
 } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 import { GigaSocialCommentThread } from "@/components/gigasocial/GigaSocialCommentThread";
+import { GigaSocialFanButton } from "@/components/gigasocial/fans/GigaSocialFanButton";
 import { GigaSocialPostCaption } from "@/components/gigasocial/GigaSocialPostCaption";
 import { GigaSocialPostCommentBox } from "@/components/gigasocial/GigaSocialPostCommentBox";
 import { GigaSocialPostMedia } from "@/components/gigasocial/GigaSocialPostMedia";
 import { GigaSocialProfileLink } from "@/components/gigasocial/GigaSocialProfileLink";
+import { VerifiedBadge } from "@/components/gigasocial/VerifiedBadge";
+import { getUserEmail } from "@/lib/auth";
 
 interface GigaSocialPostCardProps {
   post: SocialPost;
@@ -67,6 +70,12 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   const [editorOpen, setEditorOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [following, setFollowing] = useState(Boolean(post.author.supportingByMe));
+  const myUserId = useMemo(() => getUserEmail(), []);
+  const isOwnPost = Boolean(
+    myUserId && post.author.userId && myUserId === post.author.userId
+  );
+  const canFollow = Boolean(sessionToken && post.author.userId && !isOwnPost);
 
   const displayBody = useMemo(() => stripRemixMarker(post.body), [post.body]);
   const display = useMemo(() => splitPostDisplay(displayBody), [displayBody]);
@@ -177,22 +186,37 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           displayName={post.author.displayName}
           avatarUrl={post.author.avatarUrl}
           avatarSize="md"
-          showFollowOnAvatar
+          showFollowOnAvatar={canFollow}
           creatorId={post.author.userId}
           sessionToken={sessionToken}
-          supporting={post.author.supportingByMe}
+          supporting={following}
         >
-          <span className="block truncate text-sm font-semibold text-foreground">
-            {post.author.displayName}
+          <span className="flex min-w-0 items-center gap-1">
+            <span className="truncate text-sm font-semibold text-foreground">
+              {post.author.displayName}
+            </span>
+            <VerifiedBadge verified={post.author.verified} />
           </span>
           <span className="block truncate text-xs text-muted">
             @{post.author.handle} · {formatRelativeTime(post.createdAt)}
             {post.communitySlug ? ` · ${post.communitySlug}` : ""}
           </span>
         </GigaSocialProfileLink>
-        <span className="rounded-full bg-muted/10 px-2 py-0.5 text-xs capitalize text-muted">
-          {post.postType}
-        </span>
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          {canFollow ? (
+            <GigaSocialFanButton
+              sessionToken={sessionToken!}
+              creatorId={post.author.userId!}
+              supporting={following}
+              useFollowLabels
+              compact
+              onChange={setFollowing}
+            />
+          ) : null}
+          <span className="rounded-full bg-muted/10 px-2 py-0.5 text-xs capitalize text-muted">
+            {post.postType}
+          </span>
+        </div>
       </header>
 
       <GigaRemixBadge

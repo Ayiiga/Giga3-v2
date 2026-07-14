@@ -6,6 +6,7 @@ import {
   type CameraFilterId,
   getCameraFilterCss,
 } from "@/lib/gigasocial/cameraFilters";
+import { CAMERA_CAPTURE_MODES } from "@/lib/gigasocial/cameraModes";
 import { cn } from "@/lib/utils";
 import { memo, useEffect, useState } from "react";
 
@@ -44,6 +45,32 @@ export const GigaSocialMediaStudio = memo(function GigaSocialMediaStudio({
           className="max-h-64 w-full object-contain"
           style={{ filter: activeCss }}
         />
+      </div>
+      <p className="mb-2 text-[11px] text-muted">
+        AI capture modes apply non-destructive looks — your original file is preserved.
+      </p>
+      <div
+        className="mb-3 flex gap-2 overflow-x-auto overscroll-x-contain pb-1"
+        role="listbox"
+        aria-label="Camera capture modes"
+      >
+        {CAMERA_CAPTURE_MODES.filter((mode) => mode.group === "capture").map((mode) => (
+          <button
+            key={mode.id}
+            type="button"
+            role="option"
+            aria-selected={filterId === (mode.filterId ?? "none")}
+            onClick={() => setFilterId(mode.filterId ?? "none")}
+            className={cn(
+              "shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-medium",
+              filterId === (mode.filterId ?? "none")
+                ? "border-accent/40 bg-accent/10 text-foreground"
+                : "border-border text-muted"
+            )}
+          >
+            {mode.label}
+          </button>
+        ))}
       </div>
       <div
         className="mt-3 flex gap-2 overflow-x-auto overscroll-x-contain pb-1"

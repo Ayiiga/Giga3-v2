@@ -6,6 +6,7 @@ export type SocialAuthor = {
   avatarUrl?: string;
   userId?: string;
   supportingByMe?: boolean;
+  verified?: boolean;
 };
 
 export type SocialComment = {

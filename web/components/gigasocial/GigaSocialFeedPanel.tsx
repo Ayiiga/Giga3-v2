@@ -7,6 +7,7 @@ import {
   type GigaCreateActionId,
 } from "@/components/gigasocial/create/gigaCreateMenu";
 import { FeedCategoryBar } from "@/components/gigasocial/feed/FeedCategoryBar";
+import { GigaSocialSearchBar } from "@/components/gigasocial/feed/GigaSocialSearchBar";
 import { FeedSkeletonList } from "@/components/gigasocial/feed/FeedPostSkeleton";
 import { GigaSocialComposer } from "@/components/gigasocial/GigaSocialComposer";
 import { GigaSocialComposerSheet } from "@/components/gigasocial/GigaSocialComposerSheet";
@@ -17,9 +18,12 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useGigaSocialFeedAutoplay } from "@/hooks/useGigaSocialFeedAutoplay";
 import {
+  feedCategoryNeedsFollowingFeed,
+  feedCategoryNeedsSavedFeed,
   filterPostsByFeedCategory,
   type FeedCategoryId,
 } from "@/lib/gigasocial/feedCategories";
+import { rememberSearch } from "@/lib/gigasocial/searchStorage";
 import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { handleFromEmail } from "@/lib/gigasocial/handleFromEmail";
 import { findFeaturedMediaPost, getPostMediaKind } from "@/lib/gigasocial/postMedia";
@@ -51,18 +55,46 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const [composerOpen, setComposerOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<"all" | SocialPostTypeId>("all");
   const [feedCategory, setFeedCategory] = useState<FeedCategoryId>("for-you");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [composeAction, setComposeAction] = useState<GigaCreateActionId | undefined>();
   const [remixSource, setRemixSource] = useState<SocialPost | null>(null);
   const [errorToast, setErrorToast] = useState<string | null>(null);
   const [activeFeaturedVideoId, setActiveFeaturedVideoId] = useState<string | null>(null);
   const highlightScrolledRef = useRef<string | null>(null);
 
-  const feed = useQuery(api.gigaSocial.listFeed, {
-    sessionToken: sessionToken ?? undefined,
-    communitySlug,
-    cursor,
-    limit: 15,
-  });
+  const followingFeed = feedCategoryNeedsFollowingFeed(feedCategory);
+  const savedFeed = feedCategoryNeedsSavedFeed(feedCategory);
+
+  const feed = useQuery(
+    api.gigaSocial.listFeed,
+    savedFeed
+      ? "skip"
+      : {
+          sessionToken: sessionToken ?? undefined,
+          communitySlug,
+          followingOnly: followingFeed || undefined,
+          cursor,
+          limit: 15,
+        }
+  );
+
+  const saved = useQuery(
+    api.gigaSocial.listBookmarks,
+    savedFeed && sessionToken ? { sessionToken } : "skip"
+  );
+
+  const searchResults = useQuery(
+    api.gigaSocial.listDiscover,
+    debouncedSearch.trim()
+      ? {
+          sessionToken: sessionToken ?? undefined,
+          query: debouncedSearch.trim(),
+          filter: "recent",
+          limit: 24,
+        }
+      : "skip"
+  );
 
   const myHandle = useMemo(() => handleFromEmail(getUserEmail()), []);
 
@@ -74,14 +106,30 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const deletePost = useMutation(api.gigaSocial.deletePost);
 
   const posts = useMemo(() => {
-    const merged = [...(cursor ? extraPosts : []), ...(feed?.posts ?? [])] as SocialPost[];
-    const sorted = [...merged].sort((a, b) => b.createdAt - a.createdAt);
+    const sourcePosts = savedFeed
+      ? ((saved?.posts ?? []) as SocialPost[])
+      : debouncedSearch.trim()
+        ? ((searchResults?.posts ?? []) as SocialPost[])
+        : ([...(cursor ? extraPosts : []), ...(feed?.posts ?? [])] as SocialPost[]);
+
+    const sorted = [...sourcePosts].sort((a, b) => b.createdAt - a.createdAt);
     const typed =
       typeFilter === "all" ? sorted : sorted.filter((p) => p.postType === typeFilter);
     return features.enableFeedCategories
       ? filterPostsByFeedCategory(typed, feedCategory)
       : typed;
-  }, [cursor, extraPosts, feed?.posts, typeFilter, feedCategory, features.enableFeedCategories]);
+  }, [
+    cursor,
+    debouncedSearch,
+    extraPosts,
+    feed?.posts,
+    feedCategory,
+    features.enableFeedCategories,
+    saved?.posts,
+    savedFeed,
+    searchResults?.posts,
+    typeFilter,
+  ]);
 
   const { autoPlay, paused, pause, toggle, hydrated } = useGigaSocialFeedAutoplay();
 
@@ -197,7 +245,16 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   useEffect(() => {
     resetFeedPagination();
     setActiveFeaturedVideoId(null);
-  }, [communitySlug, resetFeedPagination]);
+  }, [communitySlug, feedCategory, resetFeedPagination]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedSearch(searchQuery), 280);
+    return () => window.clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (debouncedSearch.trim()) rememberSearch(debouncedSearch.trim());
+  }, [debouncedSearch]);
 
   useEffect(() => {
     if (!posts.length) {
@@ -272,7 +329,14 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setCursor(feed.nextCursor ?? undefined);
   }, [feed]);
 
-  if (feed === undefined) {
+  const loading =
+    savedFeed
+      ? saved === undefined
+      : debouncedSearch.trim()
+        ? searchResults === undefined
+        : feed === undefined;
+
+  if (loading) {
     return <FeedSkeletonList count={3} />;
   }
 
@@ -290,19 +354,22 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   };
 
   return (
-    <div className="space-y-4 pb-24">
+    <div className="gigasocial-stable space-y-4 pb-24">
       {errorToast ? (
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900" role="status">
           {errorToast}
         </p>
       ) : null}
 
-      {featuredPost ? (
+      <GigaSocialSearchBar value={searchQuery} onChange={setSearchQuery} sessionToken={sessionToken} />
+
+      {featuredPost && !debouncedSearch.trim() && !savedFeed ? (
         hydrated ? (
           <GigaSocialFeaturedPlayer
             post={featuredPost}
             autoPlay={autoPlay}
             paused={paused}
+            sessionToken={sessionToken}
             onPause={pause}
             onTogglePause={toggle}
             enableSwipeSkip={getPostMediaKind(featuredPost) === "video" && videoPosts.length > 1}
@@ -322,9 +389,9 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
             aria-hidden
           />
         )
-      ) : (
+      ) : !debouncedSearch.trim() && !savedFeed ? (
         <GigaSocialFeedHero postCount={posts.length} />
-      )}
+      ) : null}
 
       {features.enableFeedCategories ? (
         <FeedCategoryBar value={feedCategory} onChange={setFeedCategory} />
@@ -441,13 +508,13 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         </ul>
       )}
 
-      {feed.nextCursor && (
+      {feed?.nextCursor && !savedFeed && !debouncedSearch.trim() ? (
         <div className="flex justify-center">
           <Button type="button" variant="outline" onClick={loadMore} className="min-h-11">
             Load more
           </Button>
         </div>
-      )}
+      ) : null}
 
       {useGigaCreateFab ? (
         <GigaCreateButton
