@@ -68,13 +68,34 @@ jobs:
           echo "RESOLVED_CONVEX_URL=${RESOLVED}" >> "$GITHUB_ENV"
           echo "RESOLVED_CONVEX_SITE_URL=${RESOLVED_SITE}" >> "$GITHUB_ENV"
 
+      - name: Resolve data backend (Supabase when fully configured)
+        env:
+          REQUESTED_BACKEND: ${{ vars.NEXT_PUBLIC_GIGA3_DATA_BACKEND || secrets.NEXT_PUBLIC_GIGA3_DATA_BACKEND || '' }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          REQUESTED="$(printf '%s' "${REQUESTED_BACKEND}" | tr '[:upper:]' '[:lower:]')"
+          if [ "$REQUESTED" = "supabase" ] || [ "$REQUESTED" = "convex" ]; then
+            RESOLVED_BACKEND="$REQUESTED"
+          elif [ -n "${NEXT_PUBLIC_SUPABASE_URL:-}" ] && [ -n "${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}" ]; then
+            RESOLVED_BACKEND="supabase"
+          else
+            RESOLVED_BACKEND="convex"
+            if [ -n "${NEXT_PUBLIC_SUPABASE_URL:-}" ] && [ -z "${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}" ]; then
+              echo "::warning::NEXT_PUBLIC_SUPABASE_URL is set but NEXT_PUBLIC_SUPABASE_ANON_KEY is missing — building with convex data backend until the anon key is added."
+            fi
+          fi
+          echo "Resolved data backend: ${RESOLVED_BACKEND}"
+          echo "RESOLVED_GIGA3_DATA_BACKEND=${RESOLVED_BACKEND}" >> "$GITHUB_ENV"
+
       - name: Validate deployment secrets
         working-directory: .
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           NEXT_PUBLIC_CONVEX_URL: ${{ env.RESOLVED_CONVEX_URL }}
-          NEXT_PUBLIC_GIGA3_DATA_BACKEND: ${{ vars.NEXT_PUBLIC_GIGA3_DATA_BACKEND || secrets.NEXT_PUBLIC_GIGA3_DATA_BACKEND || 'supabase' }}
+          NEXT_PUBLIC_GIGA3_DATA_BACKEND: ${{ env.RESOLVED_GIGA3_DATA_BACKEND }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: |
@@ -126,7 +147,7 @@ jobs:
         env:
           NEXT_PUBLIC_CONVEX_URL: ${{ env.RESOLVED_CONVEX_URL }}
           NEXT_PUBLIC_CONVEX_SITE_URL: ${{ env.RESOLVED_CONVEX_SITE_URL }}
-          NEXT_PUBLIC_GIGA3_DATA_BACKEND: ${{ vars.NEXT_PUBLIC_GIGA3_DATA_BACKEND || secrets.NEXT_PUBLIC_GIGA3_DATA_BACKEND || 'supabase' }}
+          NEXT_PUBLIC_GIGA3_DATA_BACKEND: ${{ env.RESOLVED_GIGA3_DATA_BACKEND }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY }}
