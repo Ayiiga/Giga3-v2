@@ -32,6 +32,13 @@ export interface Database {
           starter_credits_granted: boolean;
           interest_profile: Json | null;
           convex_user_id: string | null;
+          user_role: string;
+          onboarding_state: Json | null;
+          user_preferences: Json | null;
+          referral_code: string | null;
+          learning_streak_days: number;
+          onboarding_completed_at: string | null;
+          last_active_date_key: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -50,6 +57,13 @@ export interface Database {
           starter_credits_granted?: boolean;
           interest_profile?: Json | null;
           convex_user_id?: string | null;
+          user_role?: string;
+          onboarding_state?: Json | null;
+          user_preferences?: Json | null;
+          referral_code?: string | null;
+          learning_streak_days?: number;
+          onboarding_completed_at?: string | null;
+          last_active_date_key?: string | null;
           created_at?: string;
           updated_at?: string;
         };

@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v132-list-notifications-fix";
+const CACHE_NAME = "giga3-shell-v133-supabase-backend";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

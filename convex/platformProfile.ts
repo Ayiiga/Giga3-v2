@@ -23,26 +23,31 @@ function generateReferralCode(email: string): string {
 export const getPlatformProfile = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_email", (q) => q.eq("email", email))
-      .first();
-    if (!user) return null;
+    try {
+      const email = await requireSession(args.sessionToken);
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_email", (q) => q.eq("email", email))
+        .first();
+      if (!user) return null;
 
-    return {
-      userRole: user.userRole ?? "general",
-      onboardingState: parseJson(user.onboardingState, {
-        completed: Boolean(user.onboardingCompletedAt),
-        role: user.userRole ?? "general",
-        stepsSeen: [],
-        dismissedTips: [],
-      }),
-      userPreferences: parseJson(user.userPreferences, null),
-      referralCode: user.referralCode ?? null,
-      learningStreakDays: user.learningStreakDays ?? 0,
-      onboardingCompletedAt: user.onboardingCompletedAt ?? null,
-    };
+      return {
+        userRole: user.userRole ?? "general",
+        onboardingState: parseJson(user.onboardingState, {
+          completed: Boolean(user.onboardingCompletedAt),
+          role: user.userRole ?? "general",
+          stepsSeen: [],
+          dismissedTips: [],
+        }),
+        userPreferences: parseJson(user.userPreferences, null),
+        referralCode: user.referralCode ?? null,
+        learningStreakDays: user.learningStreakDays ?? 0,
+        onboardingCompletedAt: user.onboardingCompletedAt ?? null,
+      };
+    } catch (error) {
+      console.error("getPlatformProfile failed:", error);
+      return null;
+    }
   },
 });
 
