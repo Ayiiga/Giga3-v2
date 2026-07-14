@@ -106,11 +106,19 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const recordShare = useMutation(api.gigaSocial.recordShare);
   const deletePost = useMutation(api.gigaSocial.deletePost);
 
+  const searchLoading = Boolean(debouncedSearch.trim()) && searchResults === undefined;
+  const initialFeedLoading = !savedFeed && !debouncedSearch.trim() && feed === undefined;
+  const savedLoading = savedFeed && saved === undefined;
+  const postsLoading = initialFeedLoading || savedLoading || searchLoading;
+  const isSearching = Boolean(searchQuery.trim() || debouncedSearch.trim());
+
   const posts = useMemo(() => {
     const sourcePosts = savedFeed
       ? ((saved?.posts ?? []) as SocialPost[])
       : debouncedSearch.trim()
-        ? ((searchResults?.posts ?? []) as SocialPost[])
+        ? searchLoading
+          ? []
+          : ((searchResults?.posts ?? []) as SocialPost[])
         : ([...(cursor ? extraPosts : []), ...(feed?.posts ?? [])] as SocialPost[]);
 
     const sorted = [...sourcePosts].sort((a, b) => b.createdAt - a.createdAt);
@@ -128,6 +136,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     features.enableFeedCategories,
     saved?.posts,
     savedFeed,
+    searchLoading,
     searchResults?.posts,
     typeFilter,
   ]);
@@ -330,17 +339,6 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setCursor(feed.nextCursor ?? undefined);
   }, [feed]);
 
-  const loading =
-    savedFeed
-      ? saved === undefined
-      : debouncedSearch.trim()
-        ? searchResults === undefined
-        : feed === undefined;
-
-  if (loading) {
-    return <FeedSkeletonList count={3} />;
-  }
-
   const useGigaCreateFab = features.enableGigaCreate && Boolean(sessionToken);
 
   const composerProps = {
@@ -365,7 +363,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 
       <GigaSocialSearchBar value={searchQuery} onChange={setSearchQuery} sessionToken={sessionToken} />
 
-      {featuredPost && !debouncedSearch.trim() && !savedFeed ? (
+      {featuredPost && !isSearching && !savedFeed ? (
         hydrated ? (
           <GigaSocialFeaturedPlayer
             post={featuredPost}
@@ -388,7 +386,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
             aria-hidden
           />
         )
-      ) : !debouncedSearch.trim() && !savedFeed ? (
+      ) : !isSearching && !savedFeed ? (
         <GigaSocialFeedHero postCount={posts.length} />
       ) : null}
 
@@ -440,17 +438,27 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         <GigaSocialComposerSheet open={composerOpen} onClose={closeComposer} {...composerProps} />
       ) : null}
 
-      {feedPosts.length === 0 ? (
+      {postsLoading ? (
+        <FeedSkeletonList count={3} />
+      ) : feedPosts.length === 0 ? (
         <div id="gigasocial-feed-posts">
           <EmptyState
           icon={MessageCircle}
-          title={typeFilter === "all" ? "No posts yet" : `No ${typeFilter} posts yet`}
+          title={
+            isSearching
+              ? "No matching posts"
+              : typeFilter === "all"
+                ? "No posts yet"
+                : `No ${typeFilter} posts yet`
+          }
           description={
-            typeFilter === "all"
-              ? featuredPost
-                ? "More posts will appear here as the community shares."
-                : "Be the first to share something with the community."
-              : "Try another filter or be the first to post in this category."
+            isSearching
+              ? "Try different keywords or browse creators in the search dropdown."
+              : typeFilter === "all"
+                ? featuredPost
+                  ? "More posts will appear here as the community shares."
+                  : "Be the first to share something with the community."
+                : "Try another filter or be the first to post in this category."
           }
           showVision
         />

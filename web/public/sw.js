@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v129-single-video-playback";
+const CACHE_NAME = "giga3-shell-v130-search-bar-focus";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
