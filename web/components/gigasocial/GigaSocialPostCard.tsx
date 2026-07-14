@@ -177,6 +177,10 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           displayName={post.author.displayName}
           avatarUrl={post.author.avatarUrl}
           avatarSize="md"
+          showFollowOnAvatar
+          creatorId={post.author.userId}
+          sessionToken={sessionToken}
+          supporting={post.author.supportingByMe}
         >
           <span className="block truncate text-sm font-semibold text-foreground">
             {post.author.displayName}

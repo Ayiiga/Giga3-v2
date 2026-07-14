@@ -1,5 +1,6 @@
 "use client";
 
+import { GigaSocialAvatarFollow } from "@/components/gigasocial/GigaSocialAvatarFollow";
 import { SocialAvatar } from "@/components/gigasocial/SocialAvatar";
 import { buildGigaSocialProfileUrl } from "@/lib/gigasocial/shareLinks";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,10 @@ interface GigaSocialProfileLinkProps {
   avatarSize?: "sm" | "md" | "lg" | "xl";
   showAvatar?: boolean;
   showHandle?: boolean;
+  showFollowOnAvatar?: boolean;
+  creatorId?: string;
+  sessionToken?: string | null;
+  supporting?: boolean;
   className?: string;
   children?: ReactNode;
 }
@@ -24,35 +29,58 @@ export const GigaSocialProfileLink = memo(function GigaSocialProfileLink({
   avatarSize = "md",
   showAvatar = true,
   showHandle = true,
+  showFollowOnAvatar = false,
+  creatorId,
+  sessionToken,
+  supporting = false,
   className,
   children,
 }: GigaSocialProfileLinkProps) {
   const href = buildGigaSocialProfileUrl(handle);
 
+  const avatarNode = showFollowOnAvatar ? (
+    <GigaSocialAvatarFollow
+      displayName={displayName}
+      handle={handle}
+      avatarUrl={avatarUrl}
+      avatarSize={avatarSize}
+      creatorId={creatorId}
+      sessionToken={sessionToken}
+      supporting={supporting}
+    />
+  ) : (
+    <SocialAvatar name={displayName} avatarUrl={avatarUrl} size={avatarSize} />
+  );
+
   return (
-    <Link
-      href={href}
-      className={cn(
-        "group inline-flex min-h-10 min-w-0 items-center gap-2 rounded-lg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-        className
-      )}
-      aria-label={`View ${displayName}'s profile`}
-    >
+    <div className={cn("flex min-w-0 items-start gap-2", className)}>
       {showAvatar ? (
-        <SocialAvatar name={displayName} avatarUrl={avatarUrl} size={avatarSize} />
+        <Link
+          href={href}
+          className="shrink-0 rounded-lg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          aria-label={`View ${displayName}'s profile`}
+        >
+          {avatarNode}
+        </Link>
       ) : null}
-      <span className="min-w-0">
-        {children ?? (
-          <>
-            <span className="block truncate text-sm font-semibold text-foreground group-hover:text-accent">
-              {displayName}
-            </span>
-            {showHandle ? (
-              <span className="block truncate text-xs text-muted">@{handle}</span>
-            ) : null}
-          </>
-        )}
-      </span>
-    </Link>
+      <Link
+        href={href}
+        className="group min-w-0 flex-1 rounded-lg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        aria-label={`View ${displayName}'s profile`}
+      >
+        <span className="min-w-0">
+          {children ?? (
+            <>
+              <span className="block truncate text-sm font-semibold text-foreground group-hover:text-accent">
+                {displayName}
+              </span>
+              {showHandle ? (
+                <span className="block truncate text-xs text-muted">@{handle}</span>
+              ) : null}
+            </>
+          )}
+        </span>
+      </Link>
+    </div>
   );
 });

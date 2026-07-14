@@ -104,7 +104,21 @@ async function resolveAuthor(
     .query("socialProfiles")
     .withIndex("by_user", (q) => q.eq("userId", userId))
     .first();
-  return toPublicAuthor(profile, userId);
+  return toPublicAuthor(profile, userId, { userId });
+}
+
+function enrichAuthorForViewer(
+  author: ReturnType<typeof toPublicAuthor>,
+  authorId: string,
+  viewerId: string | null,
+  supportingAuthors: Set<string>
+) {
+  return {
+    ...author,
+    userId: authorId,
+    supportingByMe:
+      viewerId && viewerId !== authorId ? supportingAuthors.has(authorId) : undefined,
+  };
 }
 
 async function getFanCounts(
@@ -305,6 +319,7 @@ export const listFeed = query({
 
     let liked = new Set<string>();
     let bookmarked = new Set<string>();
+    let supportingAuthors = new Set<string>();
     if (userId && slice.length) {
       const reactions = await ctx.db
         .query("socialReactions")
@@ -316,13 +331,24 @@ export const listFeed = query({
         .withIndex("by_user_created", (q) => q.eq("userId", userId!))
         .collect();
       bookmarked = new Set(marks.map((m) => m.postId));
+      const follows = await ctx.db
+        .query("socialFollows")
+        .withIndex("by_follower", (q) => q.eq("followerId", userId!))
+        .collect();
+      supportingAuthors = new Set(follows.map((f) => f.followingId));
     }
 
     const posts = await Promise.all(
       slice.map(async (post) => {
         let author = authorCache.get(post.authorId);
         if (!author) {
-          author = await resolveAuthor(ctx, post.authorId);
+          const resolved = await resolveAuthor(ctx, post.authorId);
+          author = enrichAuthorForViewer(
+            resolved,
+            post.authorId,
+            userId,
+            supportingAuthors
+          );
           authorCache.set(post.authorId, author);
         }
         return toPublicPost(post, author, {

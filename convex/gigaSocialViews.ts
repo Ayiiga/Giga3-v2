@@ -8,6 +8,8 @@ export type PublicSocialAuthor = {
   displayName: string;
   handle: string;
   avatarUrl?: string;
+  userId?: string;
+  supportingByMe?: boolean;
 };
 
 export type PublicSocialPost = {
@@ -154,18 +156,27 @@ export function normalizeSocialHandle(handle: string): string {
     .slice(0, MAX_HANDLE);
 }
 
-export function toPublicAuthor(profile: ProfileDoc | null, fallbackId: string): PublicSocialAuthor {
+export function toPublicAuthor(
+  profile: ProfileDoc | null,
+  fallbackId: string,
+  extras?: { userId?: string; supportingByMe?: boolean }
+): PublicSocialAuthor {
+  const userId = extras?.userId ?? profile?.userId ?? fallbackId;
   if (profile) {
     return {
       displayName: profile.displayName,
       handle: profile.handle,
       avatarUrl: profile.avatarUrl,
+      userId,
+      supportingByMe: extras?.supportingByMe,
     };
   }
   const local = fallbackId.split("@")[0] ?? "user";
   return {
     displayName: local,
     handle: local.slice(0, MAX_HANDLE),
+    userId,
+    supportingByMe: extras?.supportingByMe,
   };
 }
 
