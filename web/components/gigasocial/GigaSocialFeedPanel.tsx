@@ -63,6 +63,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const [errorToast, setErrorToast] = useState<string | null>(null);
   const [activeFeaturedVideoId, setActiveFeaturedVideoId] = useState<string | null>(null);
   const highlightScrolledRef = useRef<string | null>(null);
+  const featuredInitializedRef = useRef(false);
+  const userPickedFeaturedRef = useRef(false);
 
   const followingFeed = feedCategoryNeedsFollowingFeed(feedCategory);
   const savedFeed = feedCategoryNeedsSavedFeed(feedCategory);
@@ -176,7 +178,10 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         Math.max(0, baseIndex + direction)
       );
       const nextPost = videoPosts[nextIndex];
-      if (nextPost) setActiveFeaturedVideoId(nextPost._id);
+      if (nextPost) {
+        userPickedFeaturedRef.current = true;
+        setActiveFeaturedVideoId(nextPost._id);
+      }
     },
     [featuredPost?._id, featuredVideoIndex, videoPosts]
   );
@@ -255,6 +260,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   useEffect(() => {
     resetFeedPagination();
     setActiveFeaturedVideoId(null);
+    featuredInitializedRef.current = false;
+    userPickedFeaturedRef.current = false;
   }, [communitySlug, feedCategory, resetFeedPagination]);
 
   useEffect(() => {
@@ -269,6 +276,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   useEffect(() => {
     if (!posts.length) {
       setActiveFeaturedVideoId(null);
+      featuredInitializedRef.current = false;
+      userPickedFeaturedRef.current = false;
       return;
     }
 
@@ -276,16 +285,29 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       const preferred = findFeaturedMediaPost(posts, highlightPostId);
       if (preferred && getPostMediaKind(preferred) === "video") {
         setActiveFeaturedVideoId(preferred._id);
+        featuredInitializedRef.current = true;
         return;
       }
     }
 
-    setActiveFeaturedVideoId((current) => {
-      if (current && videoPosts.some((post) => post._id === current)) {
-        return current;
-      }
-      return videoPosts[0]?._id ?? findFeaturedMediaPost(posts, highlightPostId)?._id ?? null;
-    });
+    if (userPickedFeaturedRef.current || featuredInitializedRef.current) {
+      setActiveFeaturedVideoId((current) => {
+        if (current && videoPosts.some((post) => post._id === current)) {
+          return current;
+        }
+        userPickedFeaturedRef.current = false;
+        featuredInitializedRef.current = false;
+        return null;
+      });
+      return;
+    }
+
+    const initial =
+      videoPosts[0] ?? findFeaturedMediaPost(posts, highlightPostId);
+    if (initial && getPostMediaKind(initial) === "video") {
+      setActiveFeaturedVideoId(initial._id);
+      featuredInitializedRef.current = true;
+    }
   }, [highlightPostId, posts, videoPosts]);
 
   useEffect(() => {

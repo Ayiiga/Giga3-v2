@@ -12,10 +12,22 @@ import {
 } from "react";
 
 const MIN_PLAY_RATIO = 0.55;
+const STICKY_MIN_RATIO = 0.35;
+const SWITCH_MARGIN = 0.2;
+const PRIORITY_MIN_RATIO = 0.35;
+
+type ObserveVideoOptions = {
+  /** Featured / pinned player — wins while meaningfully on screen. */
+  priority?: boolean;
+};
 
 type FeedVideoPlaybackContextValue = {
   activePostId: string | null;
-  observeVideo: (postId: string, element: HTMLElement | null) => void;
+  observeVideo: (
+    postId: string,
+    element: HTMLElement | null,
+    options?: ObserveVideoOptions
+  ) => void;
   isActiveVideo: (postId: string) => boolean;
 };
 
@@ -23,7 +35,7 @@ const FeedVideoPlaybackContext = createContext<FeedVideoPlaybackContextValue | n
   null
 );
 
-/** Ensures only one feed video autoplays — the most visible clip wins. */
+/** Ensures only one feed video autoplays — sticky handoff, no rapid auto-switching. */
 export function FeedVideoPlaybackProvider({
   enabled,
   children,
@@ -33,24 +45,57 @@ export function FeedVideoPlaybackProvider({
 }) {
   const entriesRef = useRef<Map<string, HTMLElement>>(new Map());
   const ratiosRef = useRef<Map<string, number>>(new Map());
+  const priorityIdsRef = useRef<Set<string>>(new Set());
+  const activePostIdRef = useRef<string | null>(null);
   const [activePostId, setActivePostId] = useState<string | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   const pickActiveVideo = useCallback(() => {
+    let bestPriorityId: string | null = null;
+    let bestPriorityRatio = PRIORITY_MIN_RATIO;
+    for (const postId of priorityIdsRef.current) {
+      const ratio = ratiosRef.current.get(postId) ?? 0;
+      if (ratio > bestPriorityRatio) {
+        bestPriorityRatio = ratio;
+        bestPriorityId = postId;
+      }
+    }
+    if (bestPriorityId) {
+      activePostIdRef.current = bestPriorityId;
+      setActivePostId((current) => (current === bestPriorityId ? current : bestPriorityId));
+      return;
+    }
+
     let bestId: string | null = null;
     let bestRatio = MIN_PLAY_RATIO;
     for (const [postId, ratio] of ratiosRef.current) {
+      if (priorityIdsRef.current.has(postId)) continue;
       if (ratio > bestRatio) {
         bestRatio = ratio;
         bestId = postId;
       }
     }
+
+    const currentId = activePostIdRef.current;
+    if (currentId && !priorityIdsRef.current.has(currentId)) {
+      const currentRatio = ratiosRef.current.get(currentId) ?? 0;
+      if (currentRatio >= STICKY_MIN_RATIO) {
+        if (!bestId || bestId === currentId || bestRatio < currentRatio + SWITCH_MARGIN) {
+          setActivePostId((current) => (current === currentId ? current : currentId));
+          return;
+        }
+      }
+    }
+
+    activePostIdRef.current = bestId;
     setActivePostId((current) => (current === bestId ? current : bestId));
   }, []);
 
   useEffect(() => {
     if (!enabled) {
       ratiosRef.current.clear();
+      priorityIdsRef.current.clear();
+      activePostIdRef.current = null;
       setActivePostId(null);
       observerRef.current?.disconnect();
       observerRef.current = null;
@@ -92,23 +137,37 @@ export function FeedVideoPlaybackProvider({
     }
   }, [activePostId, enabled]);
 
-  const observeVideo = useCallback((postId: string, element: HTMLElement | null) => {
-    const observer = observerRef.current;
-    const previous = entriesRef.current.get(postId);
-    if (previous && observer) observer.unobserve(previous);
+  const observeVideo = useCallback(
+    (postId: string, element: HTMLElement | null, options?: ObserveVideoOptions) => {
+      const observer = observerRef.current;
 
-    if (!element) {
-      entriesRef.current.delete(postId);
-      ratiosRef.current.delete(postId);
-      pickActiveVideo();
-      return;
-    }
+      if (options?.priority) {
+        priorityIdsRef.current.add(postId);
+      } else {
+        priorityIdsRef.current.delete(postId);
+      }
 
-    element.dataset.feedVideoId = postId;
-    entriesRef.current.set(postId, element);
-    ratiosRef.current.set(postId, 0);
-    if (observer) observer.observe(element);
-  }, [pickActiveVideo]);
+      const previous = entriesRef.current.get(postId);
+      if (previous && observer) observer.unobserve(previous);
+
+      if (!element) {
+        entriesRef.current.delete(postId);
+        ratiosRef.current.delete(postId);
+        priorityIdsRef.current.delete(postId);
+        if (activePostIdRef.current === postId) {
+          activePostIdRef.current = null;
+        }
+        pickActiveVideo();
+        return;
+      }
+
+      element.dataset.feedVideoId = postId;
+      entriesRef.current.set(postId, element);
+      ratiosRef.current.set(postId, 0);
+      if (observer) observer.observe(element);
+    },
+    [pickActiveVideo]
+  );
 
   const isActiveVideo = useCallback(
     (postId: string) => activePostId === postId,

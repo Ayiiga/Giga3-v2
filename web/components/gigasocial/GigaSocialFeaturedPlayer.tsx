@@ -54,7 +54,7 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
   const mediaRegionRef = useCallback(
     (element: HTMLDivElement | null) => {
       if (shouldAutoPlayVideo) {
-        observeVideo(post._id, element);
+        observeVideo(post._id, element, { priority: true });
       } else {
         observeVideo(post._id, null);
       }
@@ -66,14 +66,13 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
     enabled: enableSwipeSkip && Boolean(onSkipNext || onSkipPrevious),
     onSwipeUp: onSkipNext,
     onSwipeDown: onSkipPrevious,
+    threshold: 88,
   });
 
   return (
     <section
       className="overflow-hidden rounded-2xl border border-accent/20 bg-card shadow-sm"
       aria-label="Featured post"
-      onTouchStart={swipe.onTouchStart}
-      onTouchEnd={swipe.onTouchEnd}
     >
       <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
         <GigaSocialProfileLink
@@ -121,7 +120,11 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
         </div>
       </div>
 
-      <div ref={isVideo ? mediaRegionRef : undefined}>
+      <div
+        ref={isVideo ? mediaRegionRef : undefined}
+        onTouchStart={swipe.onTouchStart}
+        onTouchEnd={swipe.onTouchEnd}
+      >
         <GigaSocialPostMedia
           post={post}
           autoPlay={shouldAutoPlayVideo && isActiveVideo(post._id)}
