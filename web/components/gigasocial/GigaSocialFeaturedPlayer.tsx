@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Pause, Play } from "lucide-react";
 import Link from "next/link";
 import { memo, useMemo } from "react";
+import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 
 interface GigaSocialFeaturedPlayerProps {
   post: SocialPost;
@@ -15,6 +16,10 @@ interface GigaSocialFeaturedPlayerProps {
   paused: boolean;
   onPause: () => void;
   onTogglePause: () => void;
+  onSkipNext?: () => void;
+  onSkipPrevious?: () => void;
+  onVideoEnded?: () => void;
+  enableSwipeSkip?: boolean;
 }
 
 export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
@@ -23,14 +28,26 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
   paused,
   onPause,
   onTogglePause,
+  onSkipNext,
+  onSkipPrevious,
+  onVideoEnded,
+  enableSwipeSkip = false,
 }: GigaSocialFeaturedPlayerProps) {
   const display = useMemo(() => splitPostDisplay(post.body), [post.body]);
   const preview = display.description || display.title || post.body;
+
+  const swipe = useSwipeGesture({
+    enabled: enableSwipeSkip && Boolean(onSkipNext || onSkipPrevious),
+    onSwipeUp: onSkipNext,
+    onSwipeDown: onSkipPrevious,
+  });
 
   return (
     <section
       className="overflow-hidden rounded-2xl border border-accent/20 bg-card shadow-sm"
       aria-label="Featured post"
+      onTouchStart={swipe.onTouchStart}
+      onTouchEnd={swipe.onTouchEnd}
     >
       <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
         <div className="min-w-0">
@@ -63,6 +80,7 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
         paused={paused}
         featured
         onUserPaused={onPause}
+        onVideoEnded={onVideoEnded}
         className="gigasocial-featured-media"
       />
 

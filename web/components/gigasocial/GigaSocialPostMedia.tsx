@@ -21,6 +21,7 @@ interface GigaSocialPostMediaProps {
   allowFullView?: boolean;
   className?: string;
   onUserPaused?: () => void;
+  onVideoEnded?: () => void;
 }
 
 const SLIDESHOW_MS = 4500;
@@ -33,6 +34,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   allowFullView = false,
   className,
   onUserPaused,
+  onVideoEnded,
 }: GigaSocialPostMediaProps) {
   const mediaUrls = useMemo(() => getPostMediaUrls(post), [post]);
   const mediaKind = useMemo(() => getPostMediaKind(post), [post]);
@@ -254,6 +256,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
           src={mediaUrls[0]}
           controls
           playsInline
+          autoPlay={shouldPlay}
           preload={shouldPlay ? "auto" : "metadata"}
           poster={post.videoThumbnailUrl}
           muted={muted}
@@ -261,6 +264,9 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
           aria-label="Post video"
           onPause={(event) => {
             if (!event.currentTarget.ended && shouldPlay) notifyUserPaused();
+          }}
+          onEnded={() => {
+            if (shouldPlay) onVideoEnded?.();
           }}
         />
         {shouldPlay ? (
