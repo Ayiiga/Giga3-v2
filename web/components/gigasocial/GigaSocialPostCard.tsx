@@ -11,6 +11,7 @@ import { shareGigaSocialPost } from "@/lib/gigasocial/sharePost";
 import { stripRemixMarker } from "@/lib/gigasocial/remixMeta";
 import { getPostMediaKind, postHasVisualFeedMedia } from "@/lib/gigasocial/postMedia";
 import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
+import { useElementInView } from "@/hooks/useElementInView";
 import {
   Bookmark,
   Eye,
@@ -39,6 +40,8 @@ interface GigaSocialPostCardProps {
   canDelete?: boolean;
   enableEdit?: boolean;
   enableRemix?: boolean;
+  feedAutoPlay?: boolean;
+  feedPaused?: boolean;
 }
 
 export const GigaSocialPostCard = memo(function GigaSocialPostCard({
@@ -53,6 +56,8 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   canDelete = false,
   enableEdit = false,
   enableRemix = false,
+  feedAutoPlay = false,
+  feedPaused = false,
 }: GigaSocialPostCardProps) {
   const [liked, setLiked] = useState(Boolean(post.likedByMe));
   const [likeCount, setLikeCount] = useState(post.likeCount);
@@ -70,6 +75,11 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
     () => (isVisualPost ? getPostMediaKind(post) : null),
     [isVisualPost, post]
   );
+  const shouldAutoPlayVideo =
+    feedAutoPlay && !feedPaused && visualMediaKind === "video";
+  const { ref: videoViewportRef, inView: videoInView } = useElementInView<HTMLDivElement>({
+    enabled: shouldAutoPlayVideo,
+  });
 
   const captionBlock = display.title ? (
     <>
@@ -188,8 +198,16 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
 
       {isVisualPost ? (
         <div className="gigasocial-post-card__content">
-          <div className="gigasocial-post-card__media-region">
-            <GigaSocialPostMedia post={post} allowFullView />
+          <div
+            ref={visualMediaKind === "video" ? videoViewportRef : undefined}
+            className="gigasocial-post-card__media-region"
+          >
+            <GigaSocialPostMedia
+              post={post}
+              allowFullView
+              autoPlay={shouldAutoPlayVideo && videoInView}
+              paused={feedPaused}
+            />
           </div>
         </div>
       ) : (

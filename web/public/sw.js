@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v125-creator-social-chat-ux";
+const CACHE_NAME = "giga3-shell-v126-video-autoplay-swipe";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

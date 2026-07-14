@@ -22,7 +22,7 @@ import {
 } from "@/lib/gigasocial/feedCategories";
 import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { handleFromEmail } from "@/lib/gigasocial/handleFromEmail";
-import { findFeaturedMediaPost } from "@/lib/gigasocial/postMedia";
+import { findFeaturedMediaPost, getPostMediaKind } from "@/lib/gigasocial/postMedia";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
@@ -54,6 +54,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const [composeAction, setComposeAction] = useState<GigaCreateActionId | undefined>();
   const [remixSource, setRemixSource] = useState<SocialPost | null>(null);
   const [errorToast, setErrorToast] = useState<string | null>(null);
+  const [activeFeaturedVideoId, setActiveFeaturedVideoId] = useState<string | null>(null);
   const highlightScrolledRef = useRef<string | null>(null);
 
   const feed = useQuery(api.gigaSocial.listFeed, {
@@ -84,10 +85,51 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 
   const { autoPlay, paused, pause, toggle, hydrated } = useGigaSocialFeedAutoplay();
 
-  const featuredPost = useMemo(
-    () => findFeaturedMediaPost(posts, highlightPostId),
-    [posts, highlightPostId]
+  const videoPosts = useMemo(
+    () => posts.filter((post) => getPostMediaKind(post) === "video"),
+    [posts]
   );
+
+  const featuredPost = useMemo(() => {
+    if (activeFeaturedVideoId) {
+      const selected = videoPosts.find((post) => post._id === activeFeaturedVideoId);
+      if (selected) return selected;
+    }
+    const fallback = findFeaturedMediaPost(posts, highlightPostId);
+    if (fallback && getPostMediaKind(fallback) === "video") return fallback;
+    return videoPosts[0] ?? fallback;
+  }, [activeFeaturedVideoId, highlightPostId, posts, videoPosts]);
+
+  const featuredVideoIndex = useMemo(() => {
+    if (!featuredPost) return -1;
+    return videoPosts.findIndex((post) => post._id === featuredPost._id);
+  }, [featuredPost, videoPosts]);
+
+  const skipFeaturedVideo = useCallback(
+    (direction: 1 | -1) => {
+      if (videoPosts.length < 2) return;
+      const currentIndex =
+        featuredVideoIndex >= 0
+          ? featuredVideoIndex
+          : videoPosts.findIndex((post) => post._id === featuredPost?._id);
+      const baseIndex = currentIndex >= 0 ? currentIndex : 0;
+      const nextIndex = Math.min(
+        videoPosts.length - 1,
+        Math.max(0, baseIndex + direction)
+      );
+      const nextPost = videoPosts[nextIndex];
+      if (nextPost) setActiveFeaturedVideoId(nextPost._id);
+    },
+    [featuredPost?._id, featuredVideoIndex, videoPosts]
+  );
+
+  const goToNextFeaturedVideo = useCallback(() => {
+    skipFeaturedVideo(1);
+  }, [skipFeaturedVideo]);
+
+  const goToPreviousFeaturedVideo = useCallback(() => {
+    skipFeaturedVideo(-1);
+  }, [skipFeaturedVideo]);
 
   const createMenuItems = useMemo(
     () =>
@@ -154,7 +196,30 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 
   useEffect(() => {
     resetFeedPagination();
+    setActiveFeaturedVideoId(null);
   }, [communitySlug, resetFeedPagination]);
+
+  useEffect(() => {
+    if (!posts.length) {
+      setActiveFeaturedVideoId(null);
+      return;
+    }
+
+    if (highlightPostId) {
+      const preferred = findFeaturedMediaPost(posts, highlightPostId);
+      if (preferred && getPostMediaKind(preferred) === "video") {
+        setActiveFeaturedVideoId(preferred._id);
+        return;
+      }
+    }
+
+    setActiveFeaturedVideoId((current) => {
+      if (current && videoPosts.some((post) => post._id === current)) {
+        return current;
+      }
+      return videoPosts[0]?._id ?? findFeaturedMediaPost(posts, highlightPostId)?._id ?? null;
+    });
+  }, [highlightPostId, posts, videoPosts]);
 
   useEffect(() => {
     if (!highlightPostId || !posts.length) return;
@@ -240,6 +305,16 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
             paused={paused}
             onPause={pause}
             onTogglePause={toggle}
+            enableSwipeSkip={getPostMediaKind(featuredPost) === "video" && videoPosts.length > 1}
+            onSkipNext={
+              getPostMediaKind(featuredPost) === "video" ? goToNextFeaturedVideo : undefined
+            }
+            onSkipPrevious={
+              getPostMediaKind(featuredPost) === "video" ? goToPreviousFeaturedVideo : undefined
+            }
+            onVideoEnded={
+              getPostMediaKind(featuredPost) === "video" ? goToNextFeaturedVideo : undefined
+            }
           />
         ) : (
           <div
@@ -321,6 +396,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
               <GigaSocialPostCard
                 post={post}
                 sessionToken={sessionToken}
+                feedAutoPlay={autoPlay}
+                feedPaused={paused}
                 canDelete={Boolean(myHandle && post.author.handle === myHandle)}
                 enableRemix={features.enableGigaRemix}
                 enableEdit={features.enableAIEditing}
