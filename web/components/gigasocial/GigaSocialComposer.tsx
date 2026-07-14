@@ -24,6 +24,7 @@ import {
 } from "@/lib/gigasocial/mediaUpload";
 import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
 import { GigaSocialCreateMediaMenu, type CreateMediaAction } from "@/components/gigasocial/GigaSocialCreateMediaMenu";
+import { CreatorTemplateQuickPick } from "@/components/gigasocial/feed/CreatorTemplateQuickPick";
 import { GigaSocialAIAssistant } from "@/components/gigasocial/ai/GigaSocialAIAssistant";
 import { GigaSocialMediaStudio } from "@/components/gigasocial/studio/GigaSocialMediaStudio";
 import {
@@ -507,6 +508,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         }}
         onRemoveAudio={() => setPendingAudio(null)}
       />
+
+      <CreatorTemplateQuickPick className="mt-3" />
 
       {enableMediaStudio && studioOpen && studioPreviewUrl ? (
         <div className="mt-3">

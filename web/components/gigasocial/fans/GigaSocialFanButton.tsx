@@ -16,6 +16,7 @@ export const GigaSocialFanButton = memo(function GigaSocialFanButton({
   className,
   useFollowLabels = false,
   overlay = false,
+  compact = false,
   onChange,
 }: {
   sessionToken: string;
@@ -25,6 +26,7 @@ export const GigaSocialFanButton = memo(function GigaSocialFanButton({
   className?: string;
   useFollowLabels?: boolean;
   overlay?: boolean;
+  compact?: boolean;
   onChange?: (supporting: boolean) => void;
 }) {
   const [supporting, setSupporting] = useState(Boolean(initialSupporting));
@@ -90,6 +92,42 @@ export const GigaSocialFanButton = memo(function GigaSocialFanButton({
         ) : (
           <Icon className="h-3.5 w-3.5" aria-hidden />
         )}
+      </button>
+    );
+  }
+
+  if (compact) {
+    return (
+      <button
+        type="button"
+        disabled={disabled || busy}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          void handleToggle();
+        }}
+        className={cn(
+          "inline-flex min-h-8 shrink-0 items-center gap-1 rounded-full border px-2.5 text-xs font-semibold",
+          supporting
+            ? "border-border bg-muted/20 text-muted"
+            : "border-violet-300 bg-violet-600 text-white hover:bg-violet-700",
+          className
+        )}
+        aria-pressed={supporting}
+        aria-label={
+          supporting
+            ? useFollowLabels
+              ? FOLLOW_LABELS.unfollow
+              : FAN_LABELS.unfan
+            : label
+        }
+      >
+        {busy ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+        ) : (
+          <Icon className="h-3.5 w-3.5" aria-hidden />
+        )}
+        {label}
       </button>
     );
   }
