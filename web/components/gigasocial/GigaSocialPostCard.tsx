@@ -11,7 +11,7 @@ import { shareGigaSocialPost } from "@/lib/gigasocial/sharePost";
 import { stripRemixMarker } from "@/lib/gigasocial/remixMeta";
 import { getPostMediaKind, postHasVisualFeedMedia } from "@/lib/gigasocial/postMedia";
 import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
-import { useElementInView } from "@/hooks/useElementInView";
+import { useFeedVideoPlayback } from "@/components/gigasocial/feed/FeedVideoPlaybackProvider";
 import {
   Bookmark,
   Eye,
@@ -21,7 +21,7 @@ import {
   Share2,
   Trash2,
 } from "lucide-react";
-import { memo, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { GigaSocialCommentThread } from "@/components/gigasocial/GigaSocialCommentThread";
 import { GigaSocialFanButton } from "@/components/gigasocial/fans/GigaSocialFanButton";
 import { GigaSocialPostCaption } from "@/components/gigasocial/GigaSocialPostCaption";
@@ -86,9 +86,17 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   );
   const shouldAutoPlayVideo =
     feedAutoPlay && !feedPaused && visualMediaKind === "video";
-  const { ref: videoViewportRef, inView: videoInView } = useElementInView<HTMLDivElement>({
-    enabled: shouldAutoPlayVideo,
-  });
+  const { observeVideo, isActiveVideo } = useFeedVideoPlayback();
+  const videoRegionRef = useCallback(
+    (element: HTMLDivElement | null) => {
+      if (shouldAutoPlayVideo) {
+        observeVideo(post._id, element);
+      } else {
+        observeVideo(post._id, null);
+      }
+    },
+    [observeVideo, post._id, shouldAutoPlayVideo]
+  );
 
   const captionBlock = display.title ? (
     <>
@@ -227,13 +235,13 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
       {isVisualPost ? (
         <div className="gigasocial-post-card__content">
           <div
-            ref={visualMediaKind === "video" ? videoViewportRef : undefined}
+            ref={visualMediaKind === "video" ? videoRegionRef : undefined}
             className="gigasocial-post-card__media-region"
           >
             <GigaSocialPostMedia
               post={post}
               allowFullView
-              autoPlay={shouldAutoPlayVideo && videoInView}
+              autoPlay={shouldAutoPlayVideo && isActiveVideo(post._id)}
               paused={feedPaused}
             />
           </div>

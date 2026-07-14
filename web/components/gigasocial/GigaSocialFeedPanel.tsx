@@ -7,6 +7,7 @@ import {
   type GigaCreateActionId,
 } from "@/components/gigasocial/create/gigaCreateMenu";
 import { FeedCategoryBar } from "@/components/gigasocial/feed/FeedCategoryBar";
+import { FeedVideoPlaybackProvider } from "@/components/gigasocial/feed/FeedVideoPlaybackProvider";
 import { GigaSocialSearchBar } from "@/components/gigasocial/feed/GigaSocialSearchBar";
 import { FeedSkeletonList } from "@/components/gigasocial/feed/FeedPostSkeleton";
 import { GigaSocialComposer } from "@/components/gigasocial/GigaSocialComposer";
@@ -354,6 +355,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   };
 
   return (
+    <FeedVideoPlaybackProvider enabled={autoPlay && !paused}>
     <div className="gigasocial-stable space-y-4 pb-24">
       {errorToast ? (
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900" role="status">
@@ -378,9 +380,6 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
             }
             onSkipPrevious={
               getPostMediaKind(featuredPost) === "video" ? goToPreviousFeaturedVideo : undefined
-            }
-            onVideoEnded={
-              getPostMediaKind(featuredPost) === "video" ? goToNextFeaturedVideo : undefined
             }
           />
         ) : (
@@ -524,6 +523,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         />
       ) : null}
     </div>
+    </FeedVideoPlaybackProvider>
   );
 });
 

@@ -10,7 +10,9 @@ import { cn } from "@/lib/utils";
 import { getUserEmail } from "@/lib/auth";
 import { Pause, Play } from "lucide-react";
 import Link from "next/link";
-import { memo, useMemo, useState } from "react";
+import { useFeedVideoPlayback } from "@/components/gigasocial/feed/FeedVideoPlaybackProvider";
+import { getPostMediaKind } from "@/lib/gigasocial/postMedia";
+import { memo, useCallback, useMemo, useState } from "react";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 
 interface GigaSocialFeaturedPlayerProps {
@@ -44,6 +46,20 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
   const myUserId = useMemo(() => getUserEmail(), []);
   const canFollow = Boolean(
     sessionToken && post.author.userId && myUserId !== post.author.userId
+  );
+
+  const isVideo = getPostMediaKind(post) === "video";
+  const shouldAutoPlayVideo = autoPlay && !paused && isVideo;
+  const { observeVideo, isActiveVideo } = useFeedVideoPlayback();
+  const mediaRegionRef = useCallback(
+    (element: HTMLDivElement | null) => {
+      if (shouldAutoPlayVideo) {
+        observeVideo(post._id, element);
+      } else {
+        observeVideo(post._id, null);
+      }
+    },
+    [observeVideo, post._id, shouldAutoPlayVideo]
   );
 
   const swipe = useSwipeGesture({
@@ -105,15 +121,17 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
         </div>
       </div>
 
-      <GigaSocialPostMedia
-        post={post}
-        autoPlay={autoPlay}
-        paused={paused}
-        featured
-        onUserPaused={onPause}
-        onVideoEnded={onVideoEnded}
-        className="gigasocial-featured-media"
-      />
+      <div ref={isVideo ? mediaRegionRef : undefined}>
+        <GigaSocialPostMedia
+          post={post}
+          autoPlay={shouldAutoPlayVideo && isActiveVideo(post._id)}
+          paused={paused}
+          featured
+          onUserPaused={onPause}
+          onVideoEnded={onVideoEnded}
+          className="gigasocial-featured-media"
+        />
+      </div>
 
       {preview ? (
         <div className="border-t border-border px-4 py-3">
