@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v131-no-auto-video-switch";
+const CACHE_NAME = "giga3-shell-v132-list-notifications-fix";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

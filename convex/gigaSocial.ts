@@ -727,11 +727,15 @@ export const listComments = query({
 
 export const listNotifications = query({
   args: {
-    ...sessionArgs,
+    sessionToken: v.optional(v.string()),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     try {
+      if (!args.sessionToken?.trim()) {
+        return { notifications: [], unreadCount: 0 };
+      }
+
       let userId: string;
       try {
         userId = await requireSession(args.sessionToken);
@@ -740,16 +744,33 @@ export const listNotifications = query({
       }
 
       const cap = Math.min(args.limit ?? 30, 60);
-      const rows = await ctx.db
-        .query("socialNotifications")
-        .withIndex("by_recipient_created", (q) => q.eq("recipientId", userId))
-        .order("desc")
-        .take(cap);
+      let rows: Array<{
+        _id: Id<"socialNotifications">;
+        actorId?: string;
+        type: string;
+        message: string;
+        read: boolean;
+        createdAt: number;
+        postId?: Id<"socialPosts">;
+        communitySlug?: string;
+      }> = [];
 
-      const enriched = await Promise.all(
-        rows.map(async (n) => {
+      try {
+        rows = await ctx.db
+          .query("socialNotifications")
+          .withIndex("by_recipient_created", (q) => q.eq("recipientId", userId))
+          .order("desc")
+          .take(cap);
+      } catch (error) {
+        console.error("listNotifications query failed:", error);
+        return { notifications: [], unreadCount: 0 };
+      }
+
+      const enriched = [];
+      for (const n of rows) {
+        try {
           const actor = n.actorId ? await resolveAuthor(ctx, n.actorId) : null;
-          return {
+          enriched.push({
             _id: n._id,
             type: n.type,
             message: n.message,
@@ -758,9 +779,11 @@ export const listNotifications = query({
             postId: n.postId,
             communitySlug: n.communitySlug,
             actor,
-          };
-        })
-      );
+          });
+        } catch (error) {
+          console.error("listNotifications row skipped:", error);
+        }
+      }
 
       let unreadCount = 0;
       try {
@@ -773,13 +796,65 @@ export const listNotifications = query({
             .collect()
         ).length;
       } catch {
-        unreadCount = 0;
+        try {
+          const recent = await ctx.db
+            .query("socialNotifications")
+            .withIndex("by_recipient_created", (q) => q.eq("recipientId", userId))
+            .order("desc")
+            .take(200);
+          unreadCount = recent.filter((n) => !n.read).length;
+        } catch {
+          unreadCount = enriched.filter((n) => !n.read).length;
+        }
       }
 
       return { notifications: enriched, unreadCount };
     } catch (error) {
       console.error("listNotifications failed:", error);
       return { notifications: [], unreadCount: 0 };
+    }
+  },
+});
+
+/** Lightweight unread badge query — must never take down GigaSocial shell. */
+export const getNotificationUnreadCount = query({
+  args: {
+    sessionToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    try {
+      if (!args.sessionToken?.trim()) return { unreadCount: 0 };
+
+      let userId: string;
+      try {
+        userId = await requireSession(args.sessionToken);
+      } catch {
+        return { unreadCount: 0 };
+      }
+
+      try {
+        const unread = await ctx.db
+          .query("socialNotifications")
+          .withIndex("by_recipient_read", (q) =>
+            q.eq("recipientId", userId).eq("read", false)
+          )
+          .collect();
+        return { unreadCount: unread.length };
+      } catch {
+        try {
+          const recent = await ctx.db
+            .query("socialNotifications")
+            .withIndex("by_recipient_created", (q) => q.eq("recipientId", userId))
+            .order("desc")
+            .take(200);
+          return { unreadCount: recent.filter((n) => !n.read).length };
+        } catch {
+          return { unreadCount: 0 };
+        }
+      }
+    } catch (error) {
+      console.error("getNotificationUnreadCount failed:", error);
+      return { unreadCount: 0 };
     }
   },
 });
@@ -1308,15 +1383,30 @@ export const leaveCommunity = mutation({
 export const markNotificationsRead = mutation({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
-    const unread = await ctx.db
-      .query("socialNotifications")
-      .withIndex("by_recipient_read", (q) =>
-        q.eq("recipientId", userId).eq("read", false)
-      )
-      .collect();
-    await Promise.all(unread.map((n) => ctx.db.patch(n._id, { read: true })));
-    return { ok: true };
+    try {
+      const userId = await requireSession(args.sessionToken);
+      let unread: Array<{ _id: Id<"socialNotifications"> }> = [];
+      try {
+        unread = await ctx.db
+          .query("socialNotifications")
+          .withIndex("by_recipient_read", (q) =>
+            q.eq("recipientId", userId).eq("read", false)
+          )
+          .collect();
+      } catch {
+        const recent = await ctx.db
+          .query("socialNotifications")
+          .withIndex("by_recipient_created", (q) => q.eq("recipientId", userId))
+          .order("desc")
+          .take(200);
+        unread = recent.filter((n) => !n.read);
+      }
+      await Promise.all(unread.map((n) => ctx.db.patch(n._id, { read: true })));
+      return { ok: true };
+    } catch (error) {
+      console.error("markNotificationsRead failed:", error);
+      return { ok: false };
+    }
   },
 });
 
