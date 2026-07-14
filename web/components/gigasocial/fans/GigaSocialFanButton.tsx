@@ -15,6 +15,7 @@ export const GigaSocialFanButton = memo(function GigaSocialFanButton({
   disabled,
   className,
   useFollowLabels = false,
+  overlay = false,
   onChange,
 }: {
   sessionToken: string;
@@ -23,6 +24,7 @@ export const GigaSocialFanButton = memo(function GigaSocialFanButton({
   disabled?: boolean;
   className?: string;
   useFollowLabels?: boolean;
+  overlay?: boolean;
   onChange?: (supporting: boolean) => void;
 }) {
   const [supporting, setSupporting] = useState(Boolean(initialSupporting));
@@ -54,6 +56,43 @@ export const GigaSocialFanButton = memo(function GigaSocialFanButton({
       ? UserMinus
       : UserPlus
     : HeartHandshake;
+
+  if (overlay) {
+    return (
+      <button
+        type="button"
+        disabled={disabled || busy}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          void handleToggle();
+        }}
+        className={cn(
+          "inline-flex h-7 w-7 items-center justify-center rounded-full border-2 border-card shadow-sm",
+          supporting
+            ? "bg-muted/90 text-muted"
+            : "bg-violet-600 text-white hover:bg-violet-700",
+          className
+        )}
+        aria-pressed={supporting}
+        aria-label={
+          supporting
+            ? useFollowLabels
+              ? FOLLOW_LABELS.unfollow
+              : FAN_LABELS.unfan
+            : useFollowLabels
+              ? FOLLOW_LABELS.follow
+              : FAN_LABELS.becomeAFan
+        }
+      >
+        {busy ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+        ) : (
+          <Icon className="h-3.5 w-3.5" aria-hidden />
+        )}
+      </button>
+    );
+  }
 
   return (
     <Button

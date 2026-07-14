@@ -29,5 +29,5 @@ export function buildGigaSocialFeedPostUrl(postId: string, origin?: string): str
 export function buildGigaSocialProfileUrl(handle: string, origin?: string): string {
   const base = (origin?.replace(/\/$/, "") || DEFAULT_ORIGIN).replace(/\/$/, "");
   const normalized = handle.replace(/^@/, "").trim().toLowerCase();
-  return `${base}/gigasocial/profile/?handle=${encodeURIComponent(normalized)}`;
+  return `${base}/gigasocial/profile/${encodeURIComponent(normalized)}/`;
 }

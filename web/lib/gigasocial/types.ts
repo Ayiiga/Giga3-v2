@@ -4,6 +4,8 @@ export type SocialAuthor = {
   displayName: string;
   handle: string;
   avatarUrl?: string;
+  userId?: string;
+  supportingByMe?: boolean;
 };
 
 export type SocialComment = {

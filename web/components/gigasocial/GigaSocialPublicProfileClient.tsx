@@ -1,12 +1,12 @@
 "use client";
 
-import { GigaSocialFanButton } from "@/components/gigasocial/fans/GigaSocialFanButton";
+import { GigaSocialAvatarFollow } from "@/components/gigasocial/GigaSocialAvatarFollow";
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
-import { GigaSocialProfileLink } from "@/components/gigasocial/GigaSocialProfileLink";
-import { SocialAvatar } from "@/components/gigasocial/SocialAvatar";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getSessionToken } from "@/lib/auth";
 import { BADGE_LABELS } from "@/lib/gigasocial/sections";
+import { buildGigaSocialProfileUrl } from "@/lib/gigasocial/shareLinks";
+import { parseProfileHandle } from "@/lib/gigasocial/profileRoute";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
@@ -14,7 +14,8 @@ import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { Award, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { memo, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { memo, useEffect, useMemo, useState } from "react";
 import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
 
 type ProfileTab = "posts" | "photos" | "videos" | "ai" | "liked";
@@ -94,28 +95,23 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
           aria-label={`${profile.displayName} cover`}
         />
         <div className="relative px-4 pb-4 sm:px-6">
-          <div className="-mt-12 flex flex-wrap items-end justify-between gap-4">
-            <SocialAvatar
-              name={profile.displayName}
+          <div className="-mt-12">
+            <GigaSocialAvatarFollow
+              displayName={profile.displayName}
+              handle={profile.handle}
               avatarUrl={profile.avatarUrl}
-              size="xl"
-              className="ring-4 ring-card"
+              avatarSize="xl"
+              creatorId={profile.userId}
+              sessionToken={sessionToken}
+              supporting={profile.supporting}
+              avatarClassName="ring-4 ring-card"
+              onFollowChange={(newSupporting) => {
+                setFanCount((c) => {
+                  const base = c ?? profile.fanCount ?? 0;
+                  return newSupporting ? base + 1 : Math.max(0, base - 1);
+                });
+              }}
             />
-            {sessionToken && sessionToken !== profile.userId ? (
-              <GigaSocialFanButton
-                sessionToken={sessionToken}
-                creatorId={profile.userId}
-                supporting={profile.supporting}
-                useFollowLabels
-                className="min-h-11 px-5 text-sm font-semibold"
-                onChange={(newSupporting) => {
-                  setFanCount((c) => {
-                    const base = c ?? profile.fanCount ?? 0;
-                    return newSupporting ? base + 1 : Math.max(0, base - 1);
-                  });
-                }}
-              />
-            ) : null}
           </div>
 
           <div className="mt-3">
@@ -228,13 +224,43 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
 });
 
 export function GigaSocialPublicProfileRoot() {
-  const handle =
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("handle")?.replace(/^@/, "") ?? ""
-      : "";
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [sessionToken] = useState(() => getSessionToken());
+
+  const handle = useMemo(
+    () => parseProfileHandle(pathname, searchParams.toString()),
+    [pathname, searchParams]
+  );
+
+  const myProfile = useQuery(
+    api.gigaSocial.getMyProfile,
+    !handle && sessionToken ? { sessionToken } : "skip"
+  );
+
+  useEffect(() => {
+    if (handle || !myProfile?.profile?.handle) return;
+    router.replace(buildGigaSocialProfileUrl(myProfile.profile.handle));
+  }, [handle, myProfile?.profile?.handle, router]);
 
   if (!handle) {
-    return <p className="text-center text-muted">Missing profile handle.</p>;
+    if (sessionToken && myProfile === undefined) {
+      return <LoadingState label="Loading profile…" />;
+    }
+    if (sessionToken && myProfile?.profile?.handle) {
+      return <LoadingState label="Opening your profile…" />;
+    }
+    return (
+      <div className="saas-card rounded-2xl border border-border p-8 text-center">
+        <p className="text-sm text-muted">
+          Enter a creator handle to view their public profile.
+        </p>
+        <Link href="/gigasocial/" className="mt-4 inline-block text-sm text-accent hover:underline">
+          Browse GigaSocial
+        </Link>
+      </div>
+    );
   }
 
   return <GigaSocialPublicProfileClient handle={handle} />;
