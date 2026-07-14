@@ -31,6 +31,15 @@ function friendlyMessage(message: string): string {
       "confirm GitHub Actions “Deploy Convex backend” succeeded."
     );
   }
+  if (
+    message.includes("exceeded the free plan limits") ||
+    message.includes("deployments have been disabled")
+  ) {
+    return (
+      "Giga3 is running on Supabase for chat history and profile data. AI replies may be " +
+      "limited until Convex billing is restored. Refresh the page — chat should still open."
+    );
+  }
   if (message.includes("NEXT_PUBLIC_CONVEX_URL")) {
     return "Chat is misconfigured: missing NEXT_PUBLIC_CONVEX_URL at build time. Rebuild with GitHub Actions or Cloudflare env set.";
   }

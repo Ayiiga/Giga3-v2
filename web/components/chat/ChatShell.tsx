@@ -142,9 +142,9 @@ function ChatShellInner({
 
   useEffect(() => {
     const token = getSessionToken();
-    if (!token) return;
+    if (!token || isSupabaseDataBackend()) return;
     void trackDailyActivity();
-    void syncAchievements({ sessionToken: token });
+    void syncAchievements({ sessionToken: token }).catch(() => undefined);
   }, [trackDailyActivity, syncAchievements]);
 
   const searchConversations = useMemo(
