@@ -5,6 +5,7 @@ import { GigaSocialDiscoverPanel } from "@/components/gigasocial/GigaSocialDisco
 import { GigaSocialFeedPanel } from "@/components/gigasocial/GigaSocialFeedPanel";
 import { GigaSocialLivePanel } from "@/components/gigasocial/live/GigaSocialLivePanel";
 import { GigaSocialPanelErrorBoundary } from "@/components/gigasocial/GigaSocialPanelErrorBoundary";
+import { GigaSocialUnreadLoader } from "@/components/gigasocial/GigaSocialUnreadLoader";
 import { GigaSocialNotificationsPanel } from "@/components/gigasocial/GigaSocialNotificationsPanel";
 import { GigaSocialProfilePanel } from "@/components/gigasocial/GigaSocialProfilePanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
@@ -19,11 +20,11 @@ import {
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { ArrowLeft, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
 function GigaSocialContent() {
   useRenderDiagnostic("GigaSocialContent");
@@ -40,11 +41,9 @@ function GigaSocialContent() {
     params.get("community") ?? undefined
   );
   const highlightPostId = params.get("highlight")?.trim() || undefined;
+  const [unread, setUnread] = useState(0);
+  const handleUnread = useCallback((count: number) => setUnread(count), []);
 
-  const notifications = useQuery(
-    api.gigaSocial.listNotifications,
-    sessionToken ? { sessionToken, limit: 1 } : "skip"
-  );
   const ensureMyProfile = useMutation(api.gigaSocial.ensureMyProfile);
 
   useEffect(() => {
@@ -80,7 +79,6 @@ function GigaSocialContent() {
     return <p className="text-center text-base text-muted">Redirecting…</p>;
   }
 
-  const unread = notifications?.unreadCount ?? 0;
   const features = getGigaSocialFeatures();
 
   const openSection = (id: GigaSocialSection) => {
@@ -93,6 +91,7 @@ function GigaSocialContent() {
 
   return (
     <div className="gigasocial-stable gigasocial-pro mx-auto max-w-6xl space-y-8">
+      <GigaSocialUnreadLoader sessionToken={sessionToken} onUnread={handleUnread} />
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link
