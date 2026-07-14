@@ -82,7 +82,10 @@ export const GigaSocialSearchBar = memo(function GigaSocialSearchBar({
       ) : null}
 
       {showPanel ? (
-        <div className="absolute left-0 right-0 top-full z-40 mt-1 overflow-hidden rounded-xl border border-border bg-card shadow-lg">
+        <div
+          className="absolute left-0 right-0 top-full z-40 mt-1 overflow-hidden rounded-xl border border-border bg-card shadow-lg"
+          onMouseDown={(event) => event.preventDefault()}
+        >
           {creators?.profiles?.length ? (
             <div className="border-b border-border px-3 py-2">
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted">
