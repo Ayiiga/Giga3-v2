@@ -39,7 +39,7 @@ export function classifyChatMediaFiles(files: File[]): ChatMediaPickIntent {
   }
 
   if (images.length > 0 && audios.length === 0 && others.length === 0) {
-    return { kind: images.length === 1 ? "camera" : "image", files: images };
+    return { kind: "image", files: images };
   }
 
   if (images.length > 0 && audios.length > 0 && others.length === 0) {

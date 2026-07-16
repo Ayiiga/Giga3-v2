@@ -6,7 +6,6 @@ import { useGigaSocialStories } from "@/hooks/useGigaSocialStories";
 import {
   buildStoryRingItems,
   reelsForStoryRing,
-  storyRingStartIndex,
 } from "@/lib/gigasocial/storyRings";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -41,7 +40,7 @@ export const ChatGigaSocialStoryRings = memo(function ChatGigaSocialStoryRings({
     (ringId: string) => {
       const subset = reelsForStoryRing(reels, ringId);
       setViewerReels(subset.length ? subset : reels);
-      setStartIndex(storyRingStartIndex(reels, ringId));
+      setStartIndex(0);
       setViewerOpen(true);
     },
     [reels]

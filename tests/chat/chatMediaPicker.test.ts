@@ -6,9 +6,9 @@ function file(name: string, type: string): File {
 }
 
 describe("classifyChatMediaFiles", () => {
-  it("routes a single image to camera kind", () => {
+  it("routes images to image kind", () => {
     const result = classifyChatMediaFiles([file("a.jpg", "image/jpeg")]);
-    expect(result).toEqual({ kind: "camera", files: [expect.any(File)] });
+    expect(result).toEqual({ kind: "image", files: [expect.any(File)] });
   });
 
   it("routes multiple images to image kind", () => {
