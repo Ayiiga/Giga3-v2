@@ -66,6 +66,8 @@ interface GigaSocialComposerProps {
   disabled?: boolean;
   sessionToken: string;
   initialAction?: GigaCreateActionId;
+  initialBody?: string;
+  initialPostType?: SocialPostTypeId;
   remixSource?: SocialPost;
   enableAIAssistant?: boolean;
   enableMediaStudio?: boolean;
@@ -83,6 +85,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   disabled,
   sessionToken,
   initialAction,
+  initialBody,
+  initialPostType,
   remixSource,
   enableAIAssistant = false,
   enableMediaStudio = false,
@@ -131,7 +135,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const studioPreviewUrl = pendingImages[0]?.previewUrl ?? null;
 
   useEffect(() => {
-    if (!initialAction && !remixSource) return;
+    if (!initialAction && !remixSource && !initialBody) return;
     if (remixSource) {
       const prefix = buildRemixBodyPrefix({
         sourcePostId: remixSource._id,
@@ -142,15 +146,35 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       setPostType(remixSource.postType);
       return;
     }
+    if (initialBody) setBody(initialBody);
+    if (initialPostType) setPostType(initialPostType);
+    if (!initialAction) {
+      queueMicrotask(() => captionRef.current?.focus());
+      return;
+    }
     switch (initialAction) {
       case "video-studio":
+      case "media-video":
         setPostType("video");
         queueMicrotask(() => videoInputRef.current?.click());
         break;
       case "photo-studio":
+      case "media-photo":
         setPostType("image");
         queueMicrotask(() => imageInputRef.current?.click());
         setStudioOpen(true);
+        break;
+      case "media-unified":
+        setPostType("image");
+        queueMicrotask(() => unifiedMediaInputRef.current?.click());
+        break;
+      case "media-camera":
+        setPostType("image");
+        queueMicrotask(() => cameraInputRef.current?.click());
+        break;
+      case "media-audio":
+        setPostType("image");
+        queueMicrotask(() => audioInputRef.current?.click());
         break;
       case "text-post":
         setPostType("text");
@@ -158,23 +182,24 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         break;
       case "learning-post":
         setPostType("education");
-        setBody((value) => value.trim() || "📚 What I learned today\n\n");
+        setBody((value) => value.trim() || initialBody || "📚 What I learned today\n\n");
         queueMicrotask(() => captionRef.current?.focus());
         break;
       case "product-post":
         setPostType("creator");
-        setBody((value) => value.trim() || "🛒 Product showcase\n\n");
+        setBody((value) => value.trim() || initialBody || "🛒 Product showcase\n\n");
         queueMicrotask(() => captionRef.current?.focus());
         break;
       case "ai-enhance":
         setPostType("text");
-        setBody((value) => value.trim() || "Sharing an update with the Giga3 community…\n\n");
+        setBody((value) => value.trim() || initialBody || "Sharing an update with the Giga3 community…\n\n");
         queueMicrotask(() => captionRef.current?.focus());
         break;
       default:
+        if (initialBody) queueMicrotask(() => captionRef.current?.focus());
         break;
     }
-  }, [initialAction, remixSource]);
+  }, [initialAction, initialBody, initialPostType, remixSource]);
 
   const hasMedia = pendingImages.length > 0 || Boolean(pendingVideo) || Boolean(pendingAudio);
   const canPost = Boolean(body.trim() || hasMedia);
@@ -329,6 +354,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const handleCreateAction = useCallback(
     (action: CreateMediaAction) => {
       switch (action) {
+        case "media":
+          unifiedMediaInputRef.current?.click();
+          break;
         case "photo":
           cameraInputRef.current?.click();
           break;

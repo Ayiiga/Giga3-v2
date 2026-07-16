@@ -97,7 +97,7 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
 
     const delayedSync = () => {
       scheduleSync();
-      for (const ms of [50, 120, 250, 400, 600]) {
+      for (const ms of [50, 120, 250, 400, 600, 900]) {
         window.setTimeout(scheduleSync, ms);
       }
     };
@@ -105,6 +105,7 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
     const onComposerFocus = (e: FocusEvent) => {
       if (!isMobile() || !isMobileChatComposerTarget(e.target)) return;
       delayedSync();
+      window.setTimeout(scrollComposerIntoView, 16);
     };
 
     const onComposerBlur = (e: FocusEvent) => {

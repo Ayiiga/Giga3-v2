@@ -182,6 +182,7 @@ function GigaSocialContent() {
                 sessionToken={sessionToken}
                 communitySlug={communitySlug}
                 highlightPostId={highlightPostId}
+                autoOpenStories={params.get("stories") === "1"}
                 onOpenLive={features.enableGigaLive ? () => openSection("live") : undefined}
               />
             </GigaSocialPanelErrorBoundary>

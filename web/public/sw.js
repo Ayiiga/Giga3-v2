@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v133-supabase-backend";
+const CACHE_NAME = "giga3-shell-v134-production-enhancement";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

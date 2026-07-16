@@ -2,10 +2,11 @@
 
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
-import { ImageIcon, Images, Music2, Sparkles, Video, Plus } from "lucide-react";
+import { FileStack, ImageIcon, Images, Music2, Sparkles, Video, Plus } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 export type CreateMediaAction =
+  | "media"
   | "photo"
   | "photos"
   | "video"
@@ -27,7 +28,14 @@ const MENU_ITEMS: {
   icon: typeof ImageIcon;
   description: string;
 }[] = [
-  { id: "photo", label: "Photo", emoji: "📷", icon: ImageIcon, description: "Single image" },
+  {
+    id: "media",
+    label: "Media",
+    emoji: "📎",
+    icon: FileStack,
+    description: "Photos, video, camera, music, and files",
+  },
+  { id: "photo", label: "Photo", emoji: "📷", icon: ImageIcon, description: "Single image or camera" },
   { id: "photos", label: "Photos", emoji: "🖼", icon: Images, description: "Gallery or slideshow" },
   { id: "video", label: "Video", emoji: "🎥", icon: Video, description: "Up to 40 seconds" },
   { id: "music", label: "Add Music", emoji: "🎵", icon: Music2, description: "Soundtrack for photos" },
@@ -78,11 +86,11 @@ export const GigaSocialCreateMediaMenu = memo(function GigaSocialCreateMediaMenu
         onClick={() => setOpen((value) => !value)}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="Create — add photos, video, music, or templates"
+      aria-label="Add media — photos, video, music, or files"
         className="min-h-10 gap-1.5"
       >
         <Plus className="h-4 w-4" aria-hidden />
-        Create
+        Media
       </Button>
 
       {open ? (
