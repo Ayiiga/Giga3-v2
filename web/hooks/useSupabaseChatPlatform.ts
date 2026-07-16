@@ -544,6 +544,9 @@ export function useSupabaseChatPlatform() {
     segmentNotice,
     credits,
     hasOpenAiAccess: false,
+    isPremium: false,
+    subscriptionActive: false,
+    freeOpenAiRemaining: 0,
     interestProfileJson,
     uploadUsage: null,
   };

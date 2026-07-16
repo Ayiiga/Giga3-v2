@@ -296,6 +296,13 @@ export function useChatPlatform() {
         ? false
         : Boolean(chatCreditsRow.isPremium);
 
+  const subscriptionActive =
+    chatCreditsRow === undefined
+      ? false
+      : chatCreditsRow === null
+        ? false
+        : Boolean(chatCreditsRow.subscriptionActive);
+
   const freeOpenAiRemaining =
     chatCreditsRow === undefined || chatCreditsRow === null
       ? 0
@@ -1069,6 +1076,7 @@ export function useChatPlatform() {
     credits,
     hasOpenAiAccess,
     isPremium,
+    subscriptionActive,
     freeOpenAiRemaining,
     interestProfileJson,
     uploadUsage: uploadUsage ?? null,
