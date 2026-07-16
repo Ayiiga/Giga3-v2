@@ -19,7 +19,7 @@ export function TrendIntelligenceSection() {
   const topics = TREND_CATEGORIES.slice(0, 6);
 
   return (
-    <section id="trending" className="section-padding scroll-mt-24 bg-zinc-50/80">
+    <section id="trending" className="discover-stable section-padding scroll-mt-24 bg-zinc-50">
       <Container>
         <div className="mx-auto max-w-2xl text-center">
           <p className="section-heading">Trend intelligence</p>
@@ -30,7 +30,7 @@ export function TrendIntelligenceSection() {
           </p>
         </div>
 
-        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="discover-card-grid discover-card-grid--4 mt-10">
           {QUICK_SHORTCUTS.map((item) => {
             const Icon = item.icon;
             return (
@@ -55,7 +55,7 @@ export function TrendIntelligenceSection() {
               View all →
             </Link>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="discover-card-grid discover-card-grid--3">
             {topics.map((category) => {
               const Icon = category.icon;
               return (
@@ -78,7 +78,7 @@ export function TrendIntelligenceSection() {
               Open Discover →
             </Link>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="discover-card-grid discover-card-grid--3">
             {featured.map((item) => (
               <TrendCard
                 key={item.id}

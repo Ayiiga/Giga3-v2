@@ -42,6 +42,20 @@ describe("mobile stability CSS", () => {
     expect(globalsCss).toContain(".creator-studio-stable .creator-tool-grid");
   });
 
+  it("defines discover four-column and panel grids", () => {
+    expect(globalsCss).toContain(".discover-stable .discover-card-grid--4");
+    expect(globalsCss).toContain(".discover-stable .discover-card-grid--panels");
+  });
+
+  it("flattens semi-transparent marketing backgrounds on mobile", () => {
+    expect(globalsCss).toContain('.marketing-stable [class*="bg-accent/"]');
+    expect(globalsCss).toContain("isolation: auto !important");
+  });
+
+  it("defines dashboard panel column-first grid", () => {
+    expect(globalsCss).toContain(".dashboard-stable .dashboard-panel-grid");
+  });
+
   it("defines gigasocial feed shell without nested saas-card contain", () => {
     expect(gigasocialCss).toContain(".gigasocial-pro .gigasocial-feed-shell");
     expect(gigasocialCss).toContain("overflow: visible");

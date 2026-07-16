@@ -223,7 +223,19 @@ button:focus-visible {
   overflow-y: visible;
   touch-action: pan-y;
   overscroll-behavior-y: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow-anchor: none;
+}
+
+@media (max-width: 1023px) {
+  .marketing-scroll-main {
+    -webkit-overflow-scrolling: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .marketing-scroll-main {
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 /* GigaSocial feed — ensure page scroll works with featured autoplay media. */
@@ -358,6 +370,7 @@ button:focus-visible {
     -webkit-backdrop-filter: none !important;
     will-change: auto !important;
     contain: none !important;
+    isolation: auto !important;
   }
 
   .marketing-stable .saas-card,
@@ -370,6 +383,39 @@ button:focus-visible {
   .marketing-stable .saas-card,
   .marketing-stable .premium-card {
     background: #fff !important;
+  }
+
+  .marketing-stable .saas-card.overflow-hidden {
+    overflow: visible !important;
+  }
+
+  .marketing-stable .saas-card[class*="ring-"],
+  .marketing-stable .premium-card[class*="ring-"] {
+    --tw-ring-shadow: 0 0 #0000 !important;
+    --tw-ring-offset-shadow: 0 0 #0000 !important;
+    box-shadow: none !important;
+  }
+
+  .marketing-stable [class*="bg-accent/"],
+  .marketing-stable [class*="bg-zinc-50/"],
+  .marketing-stable [class*="bg-white/"],
+  .marketing-stable [class*="bg-violet-"],
+  .marketing-stable [class*="bg-emerald-"],
+  .marketing-stable [class*="bg-muted/"] {
+    background-image: none !important;
+  }
+
+  .marketing-stable [class*="bg-accent/5"],
+  .marketing-stable [class*="bg-accent/10"] {
+    background-color: rgb(245 243 255) !important;
+  }
+
+  .marketing-stable [class*="bg-zinc-50/"] {
+    background-color: #fafafa !important;
+  }
+
+  .marketing-stable [class*="bg-emerald-50"] {
+    background-color: rgb(236 253 245) !important;
   }
 
   .dark .marketing-stable .saas-card,
@@ -450,6 +496,12 @@ button:focus-visible {
   gap: 0.5rem;
 }
 
+.dashboard-stable .dashboard-panel-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 @media (min-width: 640px) {
   .dashboard-stable .dashboard-quick-grid {
     display: grid;
@@ -461,6 +513,14 @@ button:focus-visible {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-stable .dashboard-panel-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
   }
 }
 
@@ -512,6 +572,24 @@ button:focus-visible {
   .discover-stable .discover-card-grid--3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
+  .discover-stable .discover-card-grid--4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.discover-stable .discover-card-grid--panels {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+  .discover-stable .discover-card-grid--panels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
 }
 
 @media (max-width: 1023px) {
@@ -533,6 +611,19 @@ button:focus-visible {
     background-image: none !important;
     background: #fff !important;
     overflow: visible;
+  }
+
+  .discover-stable .saas-card[class*="ring-"],
+  .discover-stable .trend-card[class*="ring-"] {
+    --tw-ring-shadow: 0 0 #0000 !important;
+    --tw-ring-offset-shadow: 0 0 #0000 !important;
+    box-shadow: none !important;
+  }
+
+  .discover-stable [class*="bg-accent/5"],
+  .discover-stable [class*="bg-accent/10"] {
+    background-color: rgb(245 243 255) !important;
+    background-image: none !important;
   }
 
   .dark .discover-stable .saas-card,

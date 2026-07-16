@@ -40,7 +40,7 @@ export function Hero() {
             <InstallButton size="lg" variant="outline" className="w-full sm:col-span-2 lg:col-span-1" />
           </div>
 
-          <dl className="mx-auto mt-14 grid max-w-lg grid-cols-3 gap-4">
+          <dl className="mx-auto mt-14 grid max-w-lg grid-cols-1 gap-4 sm:grid-cols-3">
             {heroStats.map((stat) => (
               <div
                 key={stat.label}

@@ -6,7 +6,7 @@ import { Check } from "lucide-react";
 
 export function Pricing() {
   return (
-    <section id="pricing" className="section-padding scroll-mt-24">
+    <section id="pricing" className="discover-stable section-padding scroll-mt-24">
       <Container>
         <div className="mx-auto max-w-2xl text-center">
           <p className="section-heading">Pricing</p>
@@ -18,7 +18,7 @@ export function Pricing() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-6 lg:grid-cols-3">
+        <div className="discover-card-grid discover-card-grid--3 mt-14">
           {pricingPlans.map((plan) => (
             <article
               key={plan.name}

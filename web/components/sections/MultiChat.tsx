@@ -26,7 +26,7 @@ export function MultiChat() {
   return (
     <section
       id="multi-chat"
-      className="section-padding scroll-mt-24 border-y border-border bg-zinc-50"
+      className="discover-stable section-padding scroll-mt-24 border-y border-border bg-zinc-50"
     >
       <Container>
         <div className="mx-auto max-w-2xl text-center">
@@ -41,7 +41,7 @@ export function MultiChat() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="discover-card-grid discover-card-grid--3 mt-14">
           {steps.map((step, i) => {
             const Icon = step.icon;
             return (

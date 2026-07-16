@@ -25,10 +25,10 @@ export function Contact() {
   }
 
   return (
-    <section id="contact" className="section-padding scroll-mt-24">
+    <section id="contact" className="discover-stable section-padding scroll-mt-24">
       <Container>
-        <div className="saas-card overflow-hidden rounded-2xl">
-          <div className="grid lg:grid-cols-2">
+        <div className="saas-card rounded-2xl">
+          <div className="discover-card-grid discover-card-grid--panels">
             <div className="p-8 sm:p-10 lg:border-r lg:border-border">
               <p className="section-heading">Contact</p>
               <h2 className="page-title mt-3">

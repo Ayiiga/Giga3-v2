@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v141-stories-reels-autoplay";
+const CACHE_NAME = "giga3-shell-v142-marketing-mobile-stable";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
