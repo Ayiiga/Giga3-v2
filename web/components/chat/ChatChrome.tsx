@@ -10,7 +10,6 @@ import { PlatformChromeHost } from "@/components/platform/PlatformChromeHost";
 import { ChatGigaSocialStoryRingsSafe } from "@/components/chat/ChatGigaSocialStoryRingsSafe";
 import type { UiMessage } from "@/components/chat/MessageList";
 import { CreditBadge } from "@/components/billing/CreditBadge";
-import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { clearAllClientAuth } from "@/lib/auth";
 import type { GigaModelId } from "@/lib/chat/gigaModels";
@@ -124,13 +123,10 @@ export const ChatChrome = memo(function ChatChrome({
 
           <Link
             href="/"
-            className="flex min-w-0 items-center gap-2 rounded-lg pr-1 hover:opacity-90"
+            className="min-w-0 truncate rounded-lg pr-1 text-sm font-semibold text-foreground hover:opacity-90 sm:text-base"
             aria-label={`${branding.name} home`}
           >
-            <BrandLogo size={28} className="shrink-0 shadow-none ring-0" />
-            <span className="hidden truncate text-sm font-semibold text-foreground sm:inline sm:text-base">
-              {branding.shortName}
-            </span>
+            {branding.shortName}
           </Link>
 
           {conversationTitle ? (

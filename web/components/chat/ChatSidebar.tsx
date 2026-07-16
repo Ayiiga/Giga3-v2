@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { BrandLogo } from "@/components/brand/BrandLogo";
 import {
   filterConversations,
   groupConversationsByDate,
@@ -171,11 +170,8 @@ function ChatSidebarComponent({
       >
         <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
           <div className="flex min-w-0 items-center gap-2">
-            <Link href="/" onClick={onCloseMobile} className="flex min-w-0 items-center gap-2.5">
-              <BrandLogo size={28} className="shrink-0 shadow-none ring-0" />
-              <span className="truncate text-base font-semibold text-foreground">
-                {siteConfig.name}
-              </span>
+            <Link href="/" onClick={onCloseMobile} className="min-w-0 truncate text-base font-semibold text-foreground">
+              {siteConfig.name}
             </Link>
             <Link
               href={siteConfig.links.gigasocial}
