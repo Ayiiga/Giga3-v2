@@ -12,6 +12,11 @@ import { cn } from "@/lib/utils";
 import { Music2, Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GigaSocialMediaLightbox } from "@/components/gigasocial/GigaSocialMediaLightbox";
+import {
+  StoriesOfflineBadge,
+  StoriesOfflineUnavailable,
+} from "@/components/gigasocial/stories/StoriesOfflineIndicator";
+import { useStoryOfflineMedia } from "@/hooks/useStoryOfflineMedia";
 
 interface GigaSocialPostMediaProps {
   post: SocialPost;
@@ -19,6 +24,8 @@ interface GigaSocialPostMediaProps {
   paused?: boolean;
   featured?: boolean;
   allowFullView?: boolean;
+  /** Stories viewer: resolve cached media for offline replay. */
+  offlinePlayback?: boolean;
   className?: string;
   onUserPaused?: () => void;
   onVideoEnded?: () => void;
@@ -32,17 +39,24 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   paused = false,
   featured = false,
   allowFullView = false,
+  offlinePlayback = false,
   className,
   onUserPaused,
   onVideoEnded,
 }: GigaSocialPostMediaProps) {
   const mediaUrls = useMemo(() => getPostMediaUrls(post), [post]);
   const mediaKind = useMemo(() => getPostMediaKind(post), [post]);
+  const offlineMedia = useStoryOfflineMedia(post, { enabled: offlinePlayback });
   const imageFilterStyle = useMemo(
     () => ({ filter: getCameraFilterCss(getPostImageFilterId(post)) }),
     [post]
   );
-  const primaryMediaUrl = mediaUrls[0];
+  const primaryMediaUrl = offlinePlayback && offlineMedia.mediaUrl
+    ? offlineMedia.mediaUrl
+    : mediaUrls[0];
+  const videoPosterUrl = offlinePlayback
+    ? offlineMedia.posterUrl ?? post.videoThumbnailUrl
+    : post.videoThumbnailUrl;
   const [activeImage, setActiveImage] = useState(0);
   const [muted, setMuted] = useState(true);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -249,16 +263,37 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   }
 
   if (mediaKind === "video") {
+    if (offlinePlayback && offlineMedia.unavailable && !offlineMedia.checkingCache) {
+      return (
+        <div className={feedMediaWrapperClass}>
+          <StoriesOfflineUnavailable />
+        </div>
+      );
+    }
+
+    if (offlinePlayback && offlineMedia.checkingCache && !primaryMediaUrl) {
+      return (
+        <div className={cn(feedMediaWrapperClass, "flex min-h-[12rem] items-center justify-center")}>
+          <p className="text-xs text-white/60">Loading cached story…</p>
+        </div>
+      );
+    }
+
     return (
       <div className={feedMediaWrapperClass}>
+        {offlineMedia.offlineAvailable ? (
+          <div className="absolute left-3 top-3 z-10">
+            <StoriesOfflineBadge />
+          </div>
+        ) : null}
         <video
           ref={videoRef}
-          src={mediaUrls[0]}
+          src={primaryMediaUrl}
           controls
           playsInline
           autoPlay={shouldPlay}
           preload={shouldPlay ? "auto" : "metadata"}
-          poster={post.videoThumbnailUrl}
+          poster={videoPosterUrl}
           muted={muted}
           className={featured ? frameClass : "gigasocial-feed-media-frame"}
           aria-label="Post video"
