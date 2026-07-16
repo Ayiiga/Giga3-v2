@@ -20,7 +20,8 @@ export const GigaSocialStoriesBar = memo(function GigaSocialStoriesBar({
   className?: string;
   autoOpen?: boolean;
 }) {
-  const { reels, viewedIds, loading } = useGigaSocialStories(sessionToken);
+  const { reels, viewedIds, loading, offline, offlineCachedReels, hasOfflineSnapshot } =
+    useGigaSocialStories(sessionToken);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerReels, setViewerReels] = useState<SocialPost[]>([]);
   const [startIndex, setStartIndex] = useState(0);
@@ -47,7 +48,7 @@ export const GigaSocialStoriesBar = memo(function GigaSocialStoriesBar({
     openRing("community");
   }, [autoOpen, loading, openRing, reels.length]);
 
-  if (loading && !reels.length) {
+  if (loading && !reels.length && !offline) {
     return (
       <div
         className={cn("gigasocial-stories-bar flex gap-3 overflow-x-auto px-1 py-1", className)}
@@ -63,10 +64,27 @@ export const GigaSocialStoriesBar = memo(function GigaSocialStoriesBar({
     );
   }
 
-  if (!ringItems.length) return null;
+  if (!ringItems.length) {
+    if (offline) {
+      return (
+        <p className={cn("px-2 py-2 text-center text-xs text-muted", className)} role="status">
+          {hasOfflineSnapshot
+            ? "No cached Stories available offline. Watch Stories while online to save them for replay."
+            : "Connect to the internet to load Stories."}
+        </p>
+      );
+    }
+    return null;
+  }
 
   return (
     <>
+      {offline ? (
+        <p className={cn("px-2 pb-1 text-center text-[11px] text-amber-700", className)} role="status">
+          Offline mode · {offlineCachedReels.length} cached reel
+          {offlineCachedReels.length === 1 ? "" : "s"} available
+        </p>
+      ) : null}
       <div
         className={cn(
           "gigasocial-stories-bar flex gap-3 overflow-x-auto overscroll-x-contain px-1 py-1",

@@ -7,6 +7,7 @@ import {
   markStoryViewed,
   notifyViewedStoriesChanged,
 } from "@/lib/gigasocial/storiesStorage";
+import { cacheViewedStoryMedia } from "@/lib/gigasocial/storiesMediaCache";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
@@ -65,11 +66,13 @@ export const GigaSocialStoriesViewer = memo(function GigaSocialStoriesViewer({
     markTimerRef.current = window.setTimeout(() => {
       markStoryViewed(storyId);
       notifyViewedStoriesChanged();
+      const reel = reels.find((item) => item._id === storyId);
+      if (reel) void cacheViewedStoryMedia(reel);
     }, VIEW_MARK_MS);
     return () => {
       if (markTimerRef.current) window.clearTimeout(markTimerRef.current);
     };
-  }, [active?._id]);
+  }, [active?._id, reels]);
 
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
@@ -155,6 +158,7 @@ export const GigaSocialStoriesViewer = memo(function GigaSocialStoriesViewer({
               paused={paused}
               featured
               allowFullView={false}
+              offlinePlayback
             />
           </button>
         </div>

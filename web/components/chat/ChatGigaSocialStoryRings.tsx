@@ -29,7 +29,7 @@ export const ChatGigaSocialStoryRings = memo(function ChatGigaSocialStoryRings({
   compact = true,
 }: ChatGigaSocialStoryRingsProps) {
   const sessionToken = useMemo(() => getSessionToken(), []);
-  const { reels, viewedIds, hasUnviewed, loading } = useGigaSocialStories(sessionToken);
+  const { reels, viewedIds, hasUnviewed, loading, offline } = useGigaSocialStories(sessionToken);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerReels, setViewerReels] = useState(reels);
   const [startIndex, setStartIndex] = useState(0);
@@ -49,7 +49,7 @@ export const ChatGigaSocialStoryRings = memo(function ChatGigaSocialStoryRings({
     [reels]
   );
 
-  if (loading && !reels.length) {
+  if (loading && !reels.length && !offline) {
     return (
       <div
         className={cn("flex items-center gap-1.5", className)}
