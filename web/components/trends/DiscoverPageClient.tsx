@@ -35,7 +35,7 @@ export function DiscoverPageClient() {
   }, [categoryFilter, kindFilter]);
 
   return (
-    <div className="discover-stable space-y-10">
+    <div className="space-y-10">
       <header className="mx-auto max-w-3xl text-center">
         <p className="section-heading">Discover</p>
         <h1 className="page-title mt-3">Explore Giga3 AI</h1>

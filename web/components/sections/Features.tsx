@@ -22,7 +22,7 @@ const iconMap: Record<(typeof features)[number]["icon"], LucideIcon> = {
 
 export function Features() {
   return (
-    <section id="features" className="section-padding scroll-mt-24">
+    <section id="features" className="discover-stable section-padding scroll-mt-24">
       <Container>
         <div className="mx-auto max-w-2xl text-center">
           <p className="section-heading">Features</p>
@@ -35,7 +35,7 @@ export function Features() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="discover-card-grid discover-card-grid--3 mt-14">
           {features.map((feature, i) => {
             const Icon = iconMap[feature.icon];
             return (

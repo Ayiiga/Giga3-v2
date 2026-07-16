@@ -19,7 +19,7 @@ export function TrendingPageClient() {
   }, [activeCategory]);
 
   return (
-    <div className="discover-stable space-y-12">
+    <div className="space-y-12">
       <header className="mx-auto max-w-3xl text-center">
         <p className="section-heading">Trend Intelligence</p>
         <h1 className="page-title mt-3">Trending on Giga3 AI</h1>

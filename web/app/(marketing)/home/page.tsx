@@ -25,7 +25,7 @@ export default function HomeDashboardPage() {
             <div className="mt-8 space-y-6">
               <HomeDashboardPanel />
               <PlatformSettingsPanel />
-              <div className="grid gap-6 lg:grid-cols-2">
+              <div className="dashboard-panel-grid">
                 <ReferralCard />
                 <PrivacyControlsPanel />
               </div>

@@ -19,7 +19,7 @@ export function TrendDashboardPanel() {
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="discover-card-grid discover-card-grid--panels">
         {TREND_DASHBOARD_SECTIONS.map((section) => (
           <div key={section.id} className="saas-card rounded-2xl p-5">
             <h3 className="text-sm font-semibold text-foreground">{section.title}</h3>
