@@ -19,7 +19,7 @@ export function TrendIntelligenceSection() {
   const topics = TREND_CATEGORIES.slice(0, 6);
 
   return (
-    <section id="trending" className="discover-stable section-padding scroll-mt-24 bg-zinc-50">
+    <section id="trending" className="discover-stable section-padding scroll-mt-24 bg-white">
       <Container>
         <div className="mx-auto max-w-2xl text-center">
           <p className="section-heading">Trend intelligence</p>
@@ -37,12 +37,12 @@ export function TrendIntelligenceSection() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="saas-card flex items-center gap-3 rounded-2xl px-4 py-3 hover:border-accent/30"
+                className="marketing-shortcut-link saas-card block rounded-xl border border-border bg-white px-4 py-3"
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                <span className="marketing-shortcut-link__icon flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
                   <Icon className="h-5 w-5" aria-hidden />
                 </span>
-                <span className="font-medium">{item.label}</span>
+                <span className="marketing-shortcut-link__label font-medium">{item.label}</span>
               </Link>
             );
           })}
