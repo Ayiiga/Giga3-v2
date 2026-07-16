@@ -145,6 +145,8 @@ export const GigaSocialStoriesViewer = memo(function GigaSocialStoriesViewer({
             type="button"
             className="gigasocial-stories-slide relative h-full max-h-[min(78dvh,42rem)] w-full max-w-md overflow-hidden rounded-2xl bg-black"
             onClick={() => setPaused((value) => !value)}
+            onTouchStart={(event) => event.stopPropagation()}
+            onTouchEnd={(event) => event.stopPropagation()}
             aria-label={paused ? "Resume story" : "Pause story"}
           >
             <GigaSocialPostMedia

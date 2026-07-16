@@ -28,7 +28,7 @@ describe("storyRings", () => {
     expect(rings.length).toBeGreaterThan(1);
   });
 
-  it("returns up to three reels per author", () => {
+  it("returns up to three reels per author newest first", () => {
     const reels = [
       videoPost("1", "alpha", 400),
       videoPost("2", "alpha", 300),
@@ -38,5 +38,17 @@ describe("storyRings", () => {
     const subset = reelsForAuthor(reels, "alpha");
     expect(subset).toHaveLength(3);
     expect(subset.map((post) => post._id)).toEqual(["1", "2", "3"]);
+  });
+
+  it("limits chat ring count when maxRings is set", () => {
+    const reels = [
+      videoPost("1", "a", 400),
+      videoPost("2", "b", 300),
+      videoPost("3", "c", 200),
+      videoPost("4", "d", 100),
+    ];
+    const rings = buildStoryRingItems(reels, new Set(), { maxRings: 3 });
+    expect(rings).toHaveLength(3);
+    expect(rings[0]?.id).toBe("community");
   });
 });

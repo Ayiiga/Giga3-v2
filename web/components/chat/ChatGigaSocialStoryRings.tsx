@@ -3,8 +3,10 @@
 import { GigaSocialStoriesViewer } from "@/components/gigasocial/stories/GigaSocialStoriesViewer";
 import { SocialAvatar } from "@/components/gigasocial/SocialAvatar";
 import { useGigaSocialStories } from "@/hooks/useGigaSocialStories";
+import { getSessionToken } from "@/lib/auth";
 import {
   buildStoryRingItems,
+  CHAT_STORY_RING_LIMIT,
   reelsForStoryRing,
 } from "@/lib/gigasocial/storyRings";
 import { siteConfig } from "@/lib/site";
@@ -26,13 +28,14 @@ export const ChatGigaSocialStoryRings = memo(function ChatGigaSocialStoryRings({
   className,
   compact = true,
 }: ChatGigaSocialStoryRingsProps) {
-  const { reels, viewedIds, hasUnviewed, loading } = useGigaSocialStories();
+  const sessionToken = useMemo(() => getSessionToken(), []);
+  const { reels, viewedIds, hasUnviewed, loading } = useGigaSocialStories(sessionToken);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerReels, setViewerReels] = useState(reels);
   const [startIndex, setStartIndex] = useState(0);
 
   const ringItems = useMemo(
-    () => buildStoryRingItems(reels, viewedIds),
+    () => buildStoryRingItems(reels, viewedIds, { maxRings: CHAT_STORY_RING_LIMIT }),
     [reels, viewedIds]
   );
 
