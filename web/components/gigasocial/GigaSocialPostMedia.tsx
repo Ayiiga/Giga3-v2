@@ -336,7 +336,8 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
         {shouldPlay ? (
           <button
             type="button"
-            onClick={() => {
+            onClick={(event) => {
+              event.stopPropagation();
               setMuted((value) => {
                 const next = !value;
                 persistVideoMutedPreference(next);
@@ -344,14 +345,24 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
                 return next;
               });
             }}
-            className="absolute bottom-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/55 text-white"
+            onTouchStart={(event) => event.stopPropagation()}
+            onTouchEnd={(event) => event.stopPropagation()}
+            className={cn(
+              "gigasocial-video-mute-btn absolute z-20 inline-flex items-center justify-center rounded-full text-white",
+              featured
+                ? "gigasocial-video-mute-btn--featured bottom-4 right-4 min-h-12 gap-1.5 px-3.5 py-2"
+                : "bottom-3 right-3 h-9 w-9 bg-black/55"
+            )}
             aria-label={effectiveMuted ? "Unmute video" : "Mute video"}
           >
             {effectiveMuted ? (
-              <VolumeX className="h-4 w-4" aria-hidden />
+              <VolumeX className={featured ? "h-5 w-5 shrink-0" : "h-4 w-4"} aria-hidden />
             ) : (
-              <Volume2 className="h-4 w-4" aria-hidden />
+              <Volume2 className={featured ? "h-5 w-5 shrink-0" : "h-4 w-4"} aria-hidden />
             )}
+            {featured && effectiveMuted ? (
+              <span className="text-xs font-semibold leading-none">Sound</span>
+            ) : null}
           </button>
         ) : null}
         {post.videoDurationSec && !featured ? (
