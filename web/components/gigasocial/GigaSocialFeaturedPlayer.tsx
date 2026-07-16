@@ -26,6 +26,7 @@ interface GigaSocialFeaturedPlayerProps {
   onSkipPrevious?: () => void;
   onVideoEnded?: () => void;
   enableSwipeSkip?: boolean;
+  replayKey?: number;
 }
 
 export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
@@ -38,6 +39,7 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
   onSkipPrevious,
   onVideoEnded,
   enableSwipeSkip = false,
+  replayKey = 0,
   sessionToken = null,
 }: GigaSocialFeaturedPlayerProps) {
   const display = useMemo(() => splitPostDisplay(post.body), [post.body]);
@@ -126,6 +128,7 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
         onTouchEnd={swipe.onTouchEnd}
       >
         <GigaSocialPostMedia
+          key={`${post._id}-${replayKey}`}
           post={post}
           autoPlay={shouldAutoPlayVideo && isActiveVideo(post._id)}
           paused={paused}

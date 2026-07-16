@@ -5,7 +5,9 @@ import { useCallback, useRef } from "react";
 type SwipeGestureOptions = {
   onSwipeUp?: () => void;
   onSwipeDown?: () => void;
+  onTap?: () => void;
   threshold?: number;
+  tapThreshold?: number;
   enabled?: boolean;
 };
 
@@ -13,7 +15,9 @@ type SwipeGestureOptions = {
 export function useSwipeGesture({
   onSwipeUp,
   onSwipeDown,
+  onTap,
   threshold = 56,
+  tapThreshold = 12,
   enabled = true,
 }: SwipeGestureOptions) {
   const startRef = useRef<{ x: number; y: number } | null>(null);
@@ -41,13 +45,20 @@ export function useSwipeGesture({
       const deltaY = touch.clientY - startRef.current.y;
       startRef.current = null;
 
-      if (Math.abs(deltaY) < threshold) return;
-      if (Math.abs(deltaX) > Math.abs(deltaY)) return;
+      const absX = Math.abs(deltaX);
+      const absY = Math.abs(deltaY);
 
-      if (deltaY < 0) onSwipeUp?.();
-      else onSwipeDown?.();
+      if (absY >= threshold && absX <= absY) {
+        if (deltaY < 0) onSwipeUp?.();
+        else onSwipeDown?.();
+        return;
+      }
+
+      if (onTap && absX <= tapThreshold && absY <= tapThreshold) {
+        onTap();
+      }
     },
-    [enabled, onSwipeDown, onSwipeUp, threshold]
+    [enabled, onSwipeDown, onSwipeUp, onTap, tapThreshold, threshold]
   );
 
   return { onTouchStart, onTouchEnd };

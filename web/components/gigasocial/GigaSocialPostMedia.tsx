@@ -17,6 +17,10 @@ import {
   StoriesOfflineUnavailable,
 } from "@/components/gigasocial/stories/StoriesOfflineIndicator";
 import { useStoryOfflineMedia } from "@/hooks/useStoryOfflineMedia";
+import {
+  persistVideoMutedPreference,
+  readVideoMutedPreference,
+} from "@/lib/gigasocial/videoMutePreference";
 
 interface GigaSocialPostMediaProps {
   post: SocialPost;
@@ -58,10 +62,12 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     ? offlineMedia.posterUrl ?? post.videoThumbnailUrl
     : post.videoThumbnailUrl;
   const [activeImage, setActiveImage] = useState(0);
-  const [muted, setMuted] = useState(true);
+  const [muted, setMuted] = useState(false);
+  const [browserMuted, setBrowserMuted] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const effectiveMuted = muted || browserMuted;
 
   const shouldPlay = autoPlay && !paused;
   const frameClass = featured
@@ -121,16 +127,33 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
 
   useEffect(() => {
     setActiveImage(0);
+    setBrowserMuted(false);
+    setMuted(readVideoMutedPreference());
   }, [post._id]);
+
+  useEffect(() => {
+    if (!shouldPlay || mediaKind !== "image") return;
+    const timer = window.setTimeout(() => {
+      onVideoEnded?.();
+    }, SLIDESHOW_MS);
+    return () => window.clearTimeout(timer);
+  }, [mediaKind, onVideoEnded, post._id, shouldPlay]);
 
   useEffect(() => {
     if (!shouldPlay || mediaUrls.length < 2) return;
     if (mediaKind !== "gallery" && mediaKind !== "photo-music") return;
+
+    let frameIndex = 0;
     const timer = window.setInterval(() => {
-      setActiveImage((index) => (index + 1) % mediaUrls.length);
+      if (frameIndex >= mediaUrls.length - 1) {
+        onVideoEnded?.();
+        return;
+      }
+      frameIndex += 1;
+      setActiveImage(frameIndex);
     }, SLIDESHOW_MS);
     return () => window.clearInterval(timer);
-  }, [mediaKind, mediaUrls.length, shouldPlay]);
+  }, [mediaKind, mediaUrls.length, onVideoEnded, post._id, shouldPlay]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -141,11 +164,17 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
       return;
     }
 
-    video.muted = muted;
+    video.muted = effectiveMuted;
     void video.play().catch(() => {
-      /* Browser may block autoplay until interaction */
+      if (!muted) {
+        video.muted = true;
+        setBrowserMuted(true);
+        void video.play().catch(() => {
+          /* Browser may block autoplay until interaction */
+        });
+      }
     });
-  }, [mediaKind, muted, shouldPlay, primaryMediaUrl]);
+  }, [effectiveMuted, mediaKind, muted, shouldPlay, primaryMediaUrl]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -289,12 +318,12 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
         <video
           ref={videoRef}
           src={primaryMediaUrl}
-          controls
+          controls={!featured}
           playsInline
           autoPlay={shouldPlay}
           preload={shouldPlay ? "auto" : "metadata"}
           poster={videoPosterUrl}
-          muted={muted}
+          muted={effectiveMuted}
           className={featured ? frameClass : "gigasocial-feed-media-frame"}
           aria-label="Post video"
           onPause={(event) => {
@@ -307,11 +336,22 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
         {shouldPlay ? (
           <button
             type="button"
-            onClick={() => setMuted((value) => !value)}
+            onClick={() => {
+              setMuted((value) => {
+                const next = !value;
+                persistVideoMutedPreference(next);
+                if (!next) setBrowserMuted(false);
+                return next;
+              });
+            }}
             className="absolute bottom-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/55 text-white"
-            aria-label={muted ? "Unmute video" : "Mute video"}
+            aria-label={effectiveMuted ? "Unmute video" : "Mute video"}
           >
-            {muted ? <VolumeX className="h-4 w-4" aria-hidden /> : <Volume2 className="h-4 w-4" aria-hidden />}
+            {effectiveMuted ? (
+              <VolumeX className="h-4 w-4" aria-hidden />
+            ) : (
+              <Volume2 className="h-4 w-4" aria-hidden />
+            )}
           </button>
         ) : null}
         {post.videoDurationSec && !featured ? (
