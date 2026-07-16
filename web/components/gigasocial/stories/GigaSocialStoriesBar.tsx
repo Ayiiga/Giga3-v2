@@ -3,17 +3,14 @@
 import { GigaSocialStoriesViewer } from "@/components/gigasocial/stories/GigaSocialStoriesViewer";
 import { SocialAvatar } from "@/components/gigasocial/SocialAvatar";
 import { useGigaSocialStories } from "@/hooks/useGigaSocialStories";
+import {
+  buildStoryRingItems,
+  reelsForStoryRing,
+  storyRingStartIndex,
+} from "@/lib/gigasocial/storyRings";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { cn } from "@/lib/utils";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-type StoryRingItem = {
-  id: string;
-  label: string;
-  avatarUrl?: string | null;
-  hasUnviewed: boolean;
-  reelIndex: number;
-};
 
 export const GigaSocialStoriesBar = memo(function GigaSocialStoriesBar({
   sessionToken,
@@ -26,47 +23,30 @@ export const GigaSocialStoriesBar = memo(function GigaSocialStoriesBar({
 }) {
   const { reels, viewedIds, loading } = useGigaSocialStories(sessionToken);
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerReels, setViewerReels] = useState<SocialPost[]>([]);
   const [startIndex, setStartIndex] = useState(0);
   const autoOpenedRef = useRef(false);
 
-  const ringItems = useMemo((): StoryRingItem[] => {
-    if (!reels.length) return [];
+  const ringItems = useMemo(
+    () => buildStoryRingItems(reels, viewedIds),
+    [reels, viewedIds]
+  );
 
-    const byAuthor = new Map<string, { post: SocialPost; index: number }>();
-    reels.forEach((post, index) => {
-      const key = post.author.handle || post.author.displayName;
-      if (!byAuthor.has(key)) byAuthor.set(key, { post, index });
-    });
-
-    const community: StoryRingItem = {
-      id: "community",
-      label: "Community",
-      avatarUrl: reels[0]?.author.avatarUrl,
-      hasUnviewed: reels.some((post) => !viewedIds.has(post._id)),
-      reelIndex: 0,
-    };
-
-    const creators = [...byAuthor.values()].slice(0, 3).map(({ post, index }) => ({
-      id: post._id,
-      label: post.author.displayName,
-      avatarUrl: post.author.avatarUrl,
-      hasUnviewed: !viewedIds.has(post._id),
-      reelIndex: index,
-    }));
-
-    return [community, ...creators];
-  }, [reels, viewedIds]);
-
-  const openViewer = useCallback((reelIndex: number) => {
-    setStartIndex(reelIndex);
-    setViewerOpen(true);
-  }, []);
+  const openRing = useCallback(
+    (ringId: string) => {
+      const subset = reelsForStoryRing(reels, ringId);
+      setViewerReels(subset.length ? subset : reels);
+      setStartIndex(storyRingStartIndex(reels, ringId));
+      setViewerOpen(true);
+    },
+    [reels]
+  );
 
   useEffect(() => {
     if (!autoOpen || autoOpenedRef.current || loading || !reels.length) return;
     autoOpenedRef.current = true;
-    openViewer(0);
-  }, [autoOpen, loading, openViewer, reels.length]);
+    openRing("community");
+  }, [autoOpen, loading, openRing, reels.length]);
 
   if (loading && !reels.length) {
     return (
@@ -102,7 +82,7 @@ export const GigaSocialStoriesBar = memo(function GigaSocialStoriesBar({
             type="button"
             role="listitem"
             className="flex w-16 shrink-0 flex-col items-center gap-1 text-center"
-            onClick={() => openViewer(item.reelIndex)}
+            onClick={() => openRing(item.id)}
             aria-label={`${item.label}${item.hasUnviewed ? ", new content" : ""}`}
           >
             <SocialAvatar
@@ -119,10 +99,10 @@ export const GigaSocialStoriesBar = memo(function GigaSocialStoriesBar({
         ))}
       </div>
 
-      {viewerOpen ? (
+      {viewerOpen && viewerReels.length ? (
         <GigaSocialStoriesViewer
-          reels={reels}
-          initialIndex={startIndex}
+          reels={viewerReels}
+          initialIndex={Math.min(startIndex, viewerReels.length - 1)}
           onClose={() => setViewerOpen(false)}
         />
       ) : null}

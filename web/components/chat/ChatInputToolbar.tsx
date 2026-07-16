@@ -1,70 +1,48 @@
 "use client";
 
+import { ChatCreateHub } from "@/components/chat/ChatCreateHub";
 import { cn } from "@/lib/utils";
-import { buildMediaStudioUrl, MEDIA_STUDIO_TEMPLATES } from "@/lib/media/studioTemplates";
+import type { ChatCreateActionId } from "@/lib/chat/chatCreateMenu";
+import {
+  CHAT_UNIFIED_MEDIA_ACCEPT,
+  classifyChatMediaFiles,
+} from "@/lib/chat/chatMediaPicker";
 import type { AttachmentKind } from "@/lib/chat/multimodalAttachments";
 import { useVoiceDictation } from "@/hooks/useVoiceDictation";
-import {
-  Camera,
-  ChevronUp,
-  Clapperboard,
-  FolderOpen,
-  ImageIcon,
-  Loader2,
-  Mic,
-  Plus,
-  Sparkles,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useId, useRef, useState } from "react";
+import { ChevronUp, Mic, Plus } from "lucide-react";
+import { useId, useRef } from "react";
 
 interface ChatInputToolbarProps {
   disabled?: boolean;
   expanded: boolean;
   onToggle: () => void;
   onPickFiles: (files: File[], kind: AttachmentKind) => void;
+  onInsertTemplate: (text: string) => void;
   onError: (message: string) => void;
   onVoiceTranscript?: (text: string) => void;
 }
-
-const actions: {
-  kind: AttachmentKind | "media";
-  label: string;
-  shortLabel: string;
-  icon: typeof Camera;
-}[] = [
-  { kind: "camera", label: "Camera", shortLabel: "Cam", icon: Camera },
-  { kind: "file", label: "Upload file", shortLabel: "File", icon: FolderOpen },
-  { kind: "image", label: "Image", shortLabel: "Img", icon: ImageIcon },
-  { kind: "video", label: "Video", shortLabel: "Vid", icon: Clapperboard },
-  {
-    kind: "media",
-    label: "Media Studio",
-    shortLabel: "Studio",
-    icon: Sparkles,
-  },
-];
 
 export function ChatInputToolbar({
   disabled,
   expanded,
   onToggle,
   onPickFiles,
+  onInsertTemplate,
   onError,
   onVoiceTranscript,
 }: ChatInputToolbarProps) {
-  const router = useRouter();
   const { supported: voiceSupported, listening, toggle: toggleVoice } =
     useVoiceDictation((text) => {
       onVoiceTranscript?.(text);
       if (expanded) onToggle();
     });
   const menuId = useId();
+  const unifiedRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const imageRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
-  const [mediaLoading, setMediaLoading] = useState(false);
+  const audioRef = useRef<HTMLInputElement>(null);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement>,
@@ -81,39 +59,46 @@ export function ChatInputToolbar({
     }
   }
 
-  function openCreateMedia() {
-    if (disabled || mediaLoading) return;
-    setMediaLoading(true);
+  function handleUnifiedChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (!files.length) return;
+    const intent = classifyChatMediaFiles(files);
+    if (intent.kind === "unsupported") {
+      onError(intent.reason);
+      return;
+    }
     try {
-      const template = MEDIA_STUDIO_TEMPLATES[0];
-      if (!template) {
-        onError("Media Studio is unavailable right now.");
-        return;
-      }
-      router.push(buildMediaStudioUrl(template));
-    } catch {
-      onError("Could not open Media Studio. Visit /media from the menu.");
-    } finally {
-      window.setTimeout(() => setMediaLoading(false), 1200);
+      onPickFiles(intent.files, intent.kind);
+      onToggle();
+    } catch (err) {
+      onError(err instanceof Error ? err.message : "Could not attach file.");
     }
   }
 
-  function triggerInput(kind: AttachmentKind | "media") {
-    if (kind === "media") {
-      openCreateMedia();
-      return;
-    }
-    const map = {
-      camera: cameraRef,
-      file: fileRef,
-      image: imageRef,
-      video: videoRef,
-    } as const;
-    map[kind].current?.click();
+  function triggerMediaAction(action: ChatCreateActionId) {
+    const map: Partial<Record<ChatCreateActionId, () => void>> = {
+      "media-unified": () => unifiedRef.current?.click(),
+      "media-camera": () => cameraRef.current?.click(),
+      "media-photos": () => imageRef.current?.click(),
+      "media-video": () => videoRef.current?.click(),
+      "media-audio": () => audioRef.current?.click(),
+    };
+    map[action]?.();
   }
 
   return (
     <>
+      <input
+        ref={unifiedRef}
+        type="file"
+        accept={CHAT_UNIFIED_MEDIA_ACCEPT}
+        multiple
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden
+        onChange={handleUnifiedChange}
+      />
       <input
         ref={cameraRef}
         type="file"
@@ -155,6 +140,16 @@ export function ChatInputToolbar({
         aria-hidden
         onChange={(e) => handleChange(e, "video")}
       />
+      <input
+        ref={audioRef}
+        type="file"
+        accept="audio/*"
+        multiple
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden
+        onChange={(e) => handleChange(e, "file")}
+      />
 
       {voiceSupported && onVoiceTranscript && (
         <button
@@ -179,8 +174,8 @@ export function ChatInputToolbar({
         disabled={disabled}
         aria-expanded={expanded}
         aria-controls={menuId}
-        aria-label={expanded ? "Close attach menu" : "Add attachment"}
-        title={expanded ? "Close" : "Add"}
+        aria-label={expanded ? "Close create menu" : "Open create menu"}
+        title={expanded ? "Close" : "Create"}
         onClick={onToggle}
         className={cn(
           "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-foreground shadow-sm",
@@ -197,51 +192,16 @@ export function ChatInputToolbar({
         )}
       </button>
 
-      {expanded && (
-        <div
-          id={menuId}
-          role="menu"
-          aria-label="Attach files or open media"
-          className="absolute bottom-full left-0 z-20 mb-2 w-[min(100vw-2rem,22rem)] rounded-2xl border border-border bg-card p-2 shadow-lg"
-        >
-          <p className="px-2 pb-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
-            Attach & create
-          </p>
-          <div className="grid grid-cols-5 gap-1">
-            {actions.map((action) => {
-              const Icon = action.icon;
-              const isMedia = action.kind === "media";
-              const loading = isMedia && mediaLoading;
-              return (
-                <button
-                  key={action.label}
-                  type="button"
-                  role="menuitem"
-                  disabled={disabled || (isMedia && mediaLoading)}
-                  title={action.label}
-                  aria-label={action.label}
-                  onClick={() => triggerInput(action.kind)}
-                  className={cn(
-                    "flex min-h-[3.25rem] flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-center",
-                    "text-zinc-700 hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500",
-                    isMedia && "text-violet-700 hover:bg-violet-50",
-                    disabled && "pointer-events-none opacity-50"
-                  )}
-                >
-                  {loading ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-violet-600" aria-hidden />
-                  ) : (
-                    <Icon className="h-5 w-5 shrink-0" aria-hidden />
-                  )}
-                  <span className="text-[10px] font-semibold leading-tight sm:text-[11px]">
-                    {action.shortLabel}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {expanded ? (
+        <ChatCreateHub
+          menuId={menuId}
+          disabled={disabled}
+          onMediaAction={triggerMediaAction}
+          onInsertTemplate={onInsertTemplate}
+          onError={onError}
+          onClose={onToggle}
+        />
+      ) : null}
     </>
   );
 }

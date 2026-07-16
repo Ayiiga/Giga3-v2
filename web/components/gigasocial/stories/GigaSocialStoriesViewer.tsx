@@ -30,6 +30,7 @@ export const GigaSocialStoriesViewer = memo(function GigaSocialStoriesViewer({
     Math.min(Math.max(initialIndex, 0), Math.max(reels.length - 1, 0))
   );
   const [mounted, setMounted] = useState(false);
+  const [paused, setPaused] = useState(false);
   const markTimerRef = useRef<number | null>(null);
 
   const active = reels[index] ?? null;
@@ -52,6 +53,10 @@ export const GigaSocialStoriesViewer = memo(function GigaSocialStoriesViewer({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    setPaused(false);
+  }, [active?._id]);
 
   useEffect(() => {
     const storyId = active?._id;
@@ -136,22 +141,31 @@ export const GigaSocialStoriesViewer = memo(function GigaSocialStoriesViewer({
         </div>
 
         <div className="flex min-h-0 flex-1 items-center justify-center px-2 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <div className="gigasocial-stories-slide relative h-full max-h-[min(78dvh,42rem)] w-full max-w-md overflow-hidden rounded-2xl bg-black">
+          <button
+            type="button"
+            className="gigasocial-stories-slide relative h-full max-h-[min(78dvh,42rem)] w-full max-w-md overflow-hidden rounded-2xl bg-black"
+            onClick={() => setPaused((value) => !value)}
+            aria-label={paused ? "Resume story" : "Pause story"}
+          >
             <GigaSocialPostMedia
               post={active}
               autoPlay
-              paused={false}
+              paused={paused}
               featured
               allowFullView={false}
             />
-          </div>
+          </button>
         </div>
 
         {reels.length > 1 ? (
           <p className="pb-3 text-center text-xs text-white/60" aria-live="polite">
-            Swipe up or down · {index + 1} of {reels.length}
+            Tap to {paused ? "play" : "pause"} · Swipe up or down · {index + 1} of {reels.length}
           </p>
-        ) : null}
+        ) : (
+          <p className="pb-3 text-center text-xs text-white/60" aria-live="polite">
+            Tap to {paused ? "play" : "pause"}
+          </p>
+        )}
       </div>
     </div>,
     document.body
