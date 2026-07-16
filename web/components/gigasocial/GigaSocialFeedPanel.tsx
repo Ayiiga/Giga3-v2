@@ -3,9 +3,10 @@
 import type { GigaCreateLaunch } from "@/components/gigasocial/create/GigaCreateButton";
 import { GigaCreateButton } from "@/components/gigasocial/create/GigaCreateButton";
 import {
-  GIGA_CREATE_MENU,
+  getGigaCreateSections,
   type GigaCreateActionId,
 } from "@/components/gigasocial/create/gigaCreateMenu";
+import { GigaSocialStoriesBar } from "@/components/gigasocial/stories/GigaSocialStoriesBar";
 import { FeedCategoryBar } from "@/components/gigasocial/feed/FeedCategoryBar";
 import { FeedVideoPlaybackProvider } from "@/components/gigasocial/feed/FeedVideoPlaybackProvider";
 import { GigaSocialSearchBar } from "@/components/gigasocial/feed/GigaSocialSearchBar";
@@ -25,6 +26,7 @@ import {
   type FeedCategoryId,
 } from "@/lib/gigasocial/feedCategories";
 import { rememberSearch } from "@/lib/gigasocial/searchStorage";
+import { resolveGigaCreateRoute } from "@/lib/gigasocial/gigaCreateRoutes";
 import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { handleFromEmail } from "@/lib/gigasocial/handleFromEmail";
 import { findFeaturedMediaPost, getPostMediaKind } from "@/lib/gigasocial/postMedia";
@@ -37,6 +39,7 @@ import type { SocialPost } from "@/lib/gigasocial/types";
 import { useMutation, useQuery } from "convex/react";
 import { getUserEmail } from "@/lib/auth";
 import { MessageCircle, SquarePen, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
@@ -44,12 +47,15 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   communitySlug,
   highlightPostId,
   onOpenLive,
+  autoOpenStories = false,
 }: {
   sessionToken: string | null;
   communitySlug?: string;
   highlightPostId?: string;
   onOpenLive?: () => void;
+  autoOpenStories?: boolean;
 }) {
+  const router = useRouter();
   const features = useGigaSocialFeatures();
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [extraPosts, setExtraPosts] = useState<SocialPost[]>([]);
@@ -59,6 +65,10 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [composeAction, setComposeAction] = useState<GigaCreateActionId | undefined>();
+  const [composeInitialBody, setComposeInitialBody] = useState<string | undefined>();
+  const [composeInitialPostType, setComposeInitialPostType] = useState<
+    SocialPostTypeId | undefined
+  >();
   const [remixSource, setRemixSource] = useState<SocialPost | null>(null);
   const [errorToast, setErrorToast] = useState<string | null>(null);
   const [activeFeaturedVideoId, setActiveFeaturedVideoId] = useState<string | null>(null);
@@ -194,11 +204,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     skipFeaturedVideo(-1);
   }, [skipFeaturedVideo]);
 
-  const createMenuItems = useMemo(
-    () =>
-      GIGA_CREATE_MENU.filter(
-        (item) => item.id !== "live-content" || features.enableGigaLive
-      ),
+  const createMenuSections = useMemo(
+    () => getGigaCreateSections({ enableLive: features.enableGigaLive }),
     [features.enableGigaLive]
   );
 
@@ -212,22 +219,54 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setExtraPosts([]);
   }, []);
 
-  const openComposer = useCallback((action?: GigaCreateActionId, source?: SocialPost | null) => {
-    setComposeAction(action);
-    setRemixSource(source ?? null);
-    setComposerOpen(true);
-    setErrorToast(null);
-  }, []);
+  const openComposer = useCallback(
+    (
+      action?: GigaCreateActionId,
+      source?: SocialPost | null,
+      options?: { body?: string; postType?: SocialPostTypeId }
+    ) => {
+      setComposeAction(action);
+      setComposeInitialBody(options?.body);
+      setComposeInitialPostType(options?.postType);
+      setRemixSource(source ?? null);
+      setComposerOpen(true);
+      setErrorToast(null);
+    },
+    []
+  );
 
   const closeComposer = useCallback(() => {
     setComposerOpen(false);
     setComposeAction(undefined);
+    setComposeInitialBody(undefined);
+    setComposeInitialPostType(undefined);
     setRemixSource(null);
   }, []);
 
   const handleGigaCreate = useCallback(
     (launch: GigaCreateLaunch) => {
-      if (launch.action === "live-content") {
+      const route = resolveGigaCreateRoute(launch.action);
+
+      if (route.kind === "navigate") {
+        router.push(route.href);
+        return;
+      }
+
+      if (route.kind === "toast") {
+        setErrorToast(route.message);
+        if (launch.action === "remix") {
+          queueMicrotask(() => {
+            const behavior = window.matchMedia("(max-width: 1023px)").matches ? "auto" : "smooth";
+            document.getElementById("gigasocial-feed-posts")?.scrollIntoView({
+              behavior,
+              block: "start",
+            });
+          });
+        }
+        return;
+      }
+
+      if (route.action === "live-content") {
         if (onOpenLive) {
           onOpenLive();
           return;
@@ -235,20 +274,13 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         setErrorToast("Open the Live tab to start streaming.");
         return;
       }
-      if (launch.action === "remix") {
-        setErrorToast("Choose a post below and tap Remix to start a remix chain.");
-        queueMicrotask(() => {
-          const behavior = window.matchMedia("(max-width: 1023px)").matches ? "auto" : "smooth";
-          document.getElementById("gigasocial-feed-posts")?.scrollIntoView({
-            behavior,
-            block: "start",
-          });
-        });
-        return;
-      }
-      openComposer(launch.action);
+
+      openComposer(route.action, null, {
+        body: route.body,
+        postType: route.postType,
+      });
     },
-    [onOpenLive, openComposer]
+    [onOpenLive, openComposer, router]
   );
 
   useEffect(() => {
@@ -367,6 +399,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     sessionToken: sessionToken!,
     communitySlug,
     initialAction: composeAction,
+    initialBody: composeInitialBody,
+    initialPostType: composeInitialPostType,
     remixSource: remixSource ?? undefined,
     enableAIAssistant: features.enableAIEditing,
     enableMediaStudio: features.enableMediaStudio,
@@ -384,6 +418,10 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       ) : null}
 
       <GigaSocialSearchBar value={searchQuery} onChange={setSearchQuery} sessionToken={sessionToken} />
+
+      {!isSearching && !savedFeed ? (
+        <GigaSocialStoriesBar sessionToken={sessionToken} autoOpen={autoOpenStories} />
+      ) : null}
 
       {featuredPost && !isSearching && !savedFeed ? (
         hydrated ? (
@@ -548,7 +586,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       {useGigaCreateFab ? (
         <GigaCreateButton
           disabled={!sessionToken}
-          menuItems={createMenuItems}
+          sections={createMenuSections}
+          enableLive={features.enableGigaLive}
           onSelect={handleGigaCreate}
         />
       ) : null}

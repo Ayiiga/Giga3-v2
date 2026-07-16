@@ -1,13 +1,13 @@
 "use client";
 
 import {
-  GIGA_CREATE_MENU,
+  getGigaCreateSections,
   type GigaCreateActionId,
-  type GigaCreateMenuItem,
+  type GigaCreateMenuSection,
 } from "@/components/gigasocial/create/gigaCreateMenu";
 import { cn } from "@/lib/utils";
 import { Plus, X } from "lucide-react";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
 export type GigaCreateLaunch = {
@@ -16,15 +16,22 @@ export type GigaCreateLaunch = {
 
 export const GigaCreateButton = memo(function GigaCreateButton({
   disabled,
-  menuItems = GIGA_CREATE_MENU,
+  sections,
+  enableLive = true,
   onSelect,
 }: {
   disabled?: boolean;
-  menuItems?: GigaCreateMenuItem[];
+  sections?: GigaCreateMenuSection[];
+  enableLive?: boolean;
   onSelect: (launch: GigaCreateLaunch) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  const menuSections = useMemo(
+    () => sections ?? getGigaCreateSections({ enableLive }),
+    [enableLive, sections]
+  );
 
   const close = useCallback(() => setOpen(false), []);
   const toggle = useCallback(() => setOpen((value) => !value), []);
@@ -63,7 +70,7 @@ export const GigaCreateButton = memo(function GigaCreateButton({
         open && "rotate-45",
         disabled && "opacity-50"
       )}
-      aria-label={open ? "Close GigaCreate" : "Open GigaCreate"}
+      aria-label={open ? "Close create menu" : "Open create menu"}
       aria-expanded={open}
       aria-haspopup="menu"
     >
@@ -87,61 +94,73 @@ export const GigaCreateButton = memo(function GigaCreateButton({
             className="gigasocial-create-menu pointer-events-auto border-t border-border bg-white shadow-2xl"
             role="dialog"
             aria-modal="true"
-            aria-label="GigaCreate options"
+            aria-label="Create hub"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="border-b border-border/60 px-4 py-3">
               <p className="text-base font-semibold text-foreground">Create</p>
               <p className="mt-0.5 text-xs text-muted">
-                Share video, photos, learning content, and more.
+                Media, documents, AI tools, and education — all in one place.
               </p>
             </div>
             <div
-              className="max-h-[min(65dvh,26rem)] overflow-y-auto overscroll-contain px-2 py-2"
+              className="max-h-[min(70dvh,32rem)] overflow-y-auto overscroll-contain px-2 py-2"
               role="menu"
             >
-              {menuItems.map((item) => {
-                const isSecondary = item.id === "remix";
-                const isDisabled = item.disabled === true;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    role="menuitem"
-                    disabled={isDisabled}
-                    aria-disabled={isDisabled}
-                    className={cn(
-                      "flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left",
-                      isSecondary && "bg-slate-50",
-                      isDisabled
-                        ? "cursor-not-allowed opacity-60"
-                        : isSecondary
-                          ? "hover:bg-slate-100 active:bg-slate-100"
-                          : "hover:bg-accent/5 active:bg-accent/10"
-                    )}
-                    onClick={() => {
-                      if (isDisabled) return;
-                      onSelect({ action: item.id });
-                      close();
-                    }}
-                  >
-                    <span
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-lg"
-                      aria-hidden
-                    >
-                      {item.emoji}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold text-foreground">
-                        {item.label}
-                      </span>
-                      <span className="block text-xs leading-relaxed text-muted">
-                        {item.description}
-                      </span>
-                    </span>
-                  </button>
-                );
-              })}
+              {menuSections.map((section) => (
+                <section key={section.id} className="mb-3 last:mb-0" aria-label={section.title}>
+                  <div className="sticky top-0 z-[1] bg-white px-2 py-1.5">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                      {section.title}
+                    </p>
+                    <p className="text-[11px] text-muted/80">{section.subtitle}</p>
+                  </div>
+                  <div className="space-y-0.5">
+                    {section.items.map((item) => {
+                      const isSecondary = item.id === "remix";
+                      const isDisabled = item.disabled === true;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          role="menuitem"
+                          disabled={isDisabled}
+                          aria-disabled={isDisabled}
+                          className={cn(
+                            "flex w-full min-h-11 items-start gap-3 rounded-xl px-3 py-2.5 text-left",
+                            isSecondary && "bg-slate-50",
+                            isDisabled
+                              ? "cursor-not-allowed opacity-60"
+                              : isSecondary
+                                ? "hover:bg-slate-100 active:bg-slate-100"
+                                : "hover:bg-accent/5 active:bg-accent/10"
+                          )}
+                          onClick={() => {
+                            if (isDisabled) return;
+                            onSelect({ action: item.id });
+                            close();
+                          }}
+                        >
+                          <span
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-lg"
+                            aria-hidden
+                          >
+                            {item.emoji}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-sm font-semibold text-foreground">
+                              {item.label}
+                            </span>
+                            <span className="block text-xs leading-relaxed text-muted">
+                              {item.description}
+                            </span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
             </div>
             <div className="flex justify-end border-t border-border/60 p-4">{fab}</div>
           </div>
