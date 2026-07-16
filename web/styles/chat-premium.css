@@ -149,6 +149,15 @@
   .chat-composer-textarea {
     scroll-margin-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
   }
+
+  .chat-story-rings {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .chat-story-rings::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .chat-stable .chat-typing-dot,

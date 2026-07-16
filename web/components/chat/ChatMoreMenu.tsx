@@ -1,6 +1,5 @@
 "use client";
 
-import { GigaSocialChatButton } from "@/components/chat/GigaSocialChatButton";
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { clearAllClientAuth } from "@/lib/auth";

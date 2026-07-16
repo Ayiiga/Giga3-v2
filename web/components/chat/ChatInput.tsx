@@ -4,6 +4,7 @@ import { ChatInputToolbar } from "@/components/chat/ChatInputToolbar";
 import { EmojiPicker } from "@/components/chat/EmojiPicker";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { Button } from "@/components/ui/Button";
+import { classifyChatMediaFiles } from "@/lib/chat/chatMediaPicker";
 import {
   buildUserDisplayContent,
   prepareChatAttachment,
@@ -220,7 +221,7 @@ export const ChatInput = memo(function ChatInput({
   return (
     <form
       onSubmit={handleSubmit}
-      className="chat-composer min-w-0 max-w-full px-3 py-2 sm:px-4 sm:py-3"
+      className="chat-composer min-w-0 max-w-full px-2 py-1.5 sm:px-3 sm:py-2"
     >
       <div className="chat-thread space-y-2">
         {notice && (
@@ -260,7 +261,13 @@ export const ChatInput = memo(function ChatInput({
             e.preventDefault();
             setDragOver(false);
             const files = Array.from(e.dataTransfer.files ?? []);
-            if (files.length) void handlePickFiles(files, "file");
+            if (!files.length) return;
+            const intent = classifyChatMediaFiles(files);
+            if (intent.kind === "unsupported") {
+              setNotice(intent.reason);
+              return;
+            }
+            void handlePickFiles(intent.files, intent.kind);
           }}
         >
           <ChatInputToolbar
@@ -271,6 +278,7 @@ export const ChatInput = memo(function ChatInput({
               setEmojiOpen(false);
             }}
             onPickFiles={(files, kind) => void handlePickFiles(files, kind)}
+            onInsertTemplate={insertText}
             onError={(msg) => setNotice(msg)}
             onVoiceTranscript={(text) => insertText(text)}
           />
@@ -321,7 +329,7 @@ export const ChatInput = memo(function ChatInput({
           </Button>
         </div>
 
-        <p className="hidden px-2 text-center text-[11px] leading-relaxed text-muted/70 sm:block">
+        <p className="hidden px-2 text-center text-[11px] leading-relaxed text-muted/70 md:block">
           Giga3 AI can make mistakes. Check important information.
         </p>
         {showUploadHint && uploadUsage && (

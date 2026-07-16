@@ -97,9 +97,14 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
 
     const delayedSync = () => {
       scheduleSync();
-      for (const ms of [50, 120, 250, 400, 600, 900]) {
+      for (const ms of [50, 120, 250, 400, 600, 900, 1200]) {
         window.setTimeout(scheduleSync, ms);
       }
+    };
+
+    const onViewportChange = () => {
+      scheduleSync();
+      window.requestAnimationFrame(scrollComposerIntoView);
     };
 
     const onComposerFocus = (e: FocusEvent) => {
@@ -118,10 +123,10 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
     };
 
     if (vv) {
-      vv.addEventListener("resize", scheduleSync);
-      vv.addEventListener("scroll", scheduleSync);
+      vv.addEventListener("resize", onViewportChange);
+      vv.addEventListener("scroll", onViewportChange);
     }
-    window.addEventListener("resize", scheduleSync);
+    window.addEventListener("resize", onViewportChange);
     window.addEventListener("orientationchange", delayedSync);
     document.addEventListener("focusin", onComposerFocus);
     document.addEventListener("focusout", onComposerBlur);
@@ -130,10 +135,10 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
     return () => {
       cancelAnimationFrame(raf);
       if (vv) {
-        vv.removeEventListener("resize", scheduleSync);
-        vv.removeEventListener("scroll", scheduleSync);
+        vv.removeEventListener("resize", onViewportChange);
+        vv.removeEventListener("scroll", onViewportChange);
       }
-      window.removeEventListener("resize", scheduleSync);
+      window.removeEventListener("resize", onViewportChange);
       window.removeEventListener("orientationchange", delayedSync);
       document.removeEventListener("focusin", onComposerFocus);
       document.removeEventListener("focusout", onComposerBlur);
