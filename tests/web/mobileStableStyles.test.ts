@@ -42,6 +42,23 @@ describe("mobile stability CSS", () => {
     expect(globalsCss).toContain(".creator-studio-stable .creator-tool-grid");
   });
 
+  it("keeps discover grids single-column until desktop breakpoint", () => {
+    expect(globalsCss).toContain("@media (min-width: 1024px)");
+    expect(globalsCss).toContain(".discover-stable .discover-card-grid {");
+    expect(globalsCss).not.toMatch(/@media \(min-width: 640px\)[\s\S]*\.discover-stable \.discover-card-grid/);
+  });
+
+  it("disables document momentum scroll on marketing routes for mobile", () => {
+    expect(globalsCss).toContain("html.marketing-route");
+    expect(globalsCss).toContain("overflow-anchor: none");
+    expect(globalsCss).toContain("-webkit-font-smoothing: auto");
+  });
+
+  it("removes media-stable card contain on mobile", () => {
+    expect(globalsCss).toContain(".media-stable .saas-card");
+    expect(globalsCss).toContain("contain: none !important");
+  });
+
   it("defines discover four-column and panel grids", () => {
     expect(globalsCss).toContain(".discover-stable .discover-card-grid--4");
     expect(globalsCss).toContain(".discover-stable .discover-card-grid--panels");

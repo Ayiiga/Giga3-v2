@@ -106,7 +106,7 @@ export function GlobalSearchModal({ open, onClose, conversations }: GlobalSearch
       onClick={onClose}
     >
       <div
-        className="saas-card w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-card"
+        className="saas-card w-full max-w-xl overflow-hidden rounded-2xl bg-white dark:bg-card"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 border-b border-border px-4 py-3">

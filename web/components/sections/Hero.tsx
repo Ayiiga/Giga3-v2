@@ -8,7 +8,7 @@ import { ArrowRight, Bot } from "lucide-react";
 
 export function Hero() {
   return (
-    <section className="bg-white pt-12 sm:pt-16">
+    <section className="discover-stable bg-white pt-12 sm:pt-16">
       <Container>
         <div className="mx-auto max-w-3xl text-center">
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/5 px-4 py-2 text-sm font-medium text-accent">
@@ -29,7 +29,7 @@ export function Hero() {
 
           <VisionTagline className="mx-auto mt-5 max-w-md text-center" variant="subtle" />
 
-          <div className="mx-auto mt-10 grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2 lg:max-w-3xl lg:grid-cols-3">
+          <div className="discover-card-grid discover-card-grid--3 mx-auto mt-10 w-full max-w-3xl">
             <ButtonLink href="/chat/login" size="lg" className="w-full">
               Start chatting
               <ArrowRight aria-hidden />
@@ -37,10 +37,10 @@ export function Hero() {
             <ButtonLink href="#multi-chat" variant="secondary" size="lg" className="w-full">
               See multi-AI
             </ButtonLink>
-            <InstallButton size="lg" variant="outline" className="w-full sm:col-span-2 lg:col-span-1" />
+            <InstallButton size="lg" variant="outline" className="w-full" />
           </div>
 
-          <dl className="mx-auto mt-14 grid max-w-lg grid-cols-1 gap-4 sm:grid-cols-3">
+          <dl className="discover-card-grid discover-card-grid--3 mx-auto mt-14 max-w-lg">
             {heroStats.map((stat) => (
               <div
                 key={stat.label}
@@ -54,23 +54,21 @@ export function Hero() {
         </div>
 
         <div className="relative mx-auto mt-16 max-w-4xl">
-          <div className="saas-card overflow-hidden p-1">
-            <div className="rounded-xl bg-zinc-50 p-6 sm:p-8">
-              <div className="mb-4 flex items-center gap-2 border-b border-border pb-4">
-                <Bot className="text-accent" aria-hidden />
-                <span className="font-medium text-foreground">Giga3 Assistant</span>
-                <span className="ml-auto rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                  Failover active
-                </span>
+          <div className="saas-card rounded-2xl p-6 sm:p-8">
+            <div className="mb-4 flex items-center gap-2 border-b border-border pb-4">
+              <Bot className="text-accent" aria-hidden />
+              <span className="font-medium text-foreground">Giga3 Assistant</span>
+              <span className="ml-auto rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                Failover active
+              </span>
+            </div>
+            <div className="space-y-4 text-base leading-[1.7]">
+              <div className="max-w-[85%] rounded-2xl rounded-tl-md border border-border bg-white px-4 py-3 text-muted">
+                What happens if the primary AI provider is down?
               </div>
-              <div className="space-y-4 text-base leading-[1.7]">
-                <div className="max-w-[85%] rounded-2xl rounded-tl-md border border-border bg-white px-4 py-3 text-muted">
-                  What happens if the primary AI provider is down?
-                </div>
-                <div className="ml-auto max-w-[90%] rounded-2xl rounded-tr-md bg-violet-50 px-4 py-3 text-foreground">
-                  Giga3 tries backup models and keys automatically—your team keeps
-                  chatting while we surface which provider answered.
-                </div>
+              <div className="ml-auto max-w-[90%] rounded-2xl rounded-tr-md border border-border bg-white px-4 py-3 text-foreground">
+                Giga3 tries backup models and keys automatically—your team keeps
+                chatting while we surface which provider answered.
               </div>
             </div>
           </div>

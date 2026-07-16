@@ -43,7 +43,7 @@ export function Features() {
                 key={feature.title}
                 className={cn(
                   "saas-card p-6 sm:p-8",
-                  i === 0 && "ring-1 ring-accent/10 sm:col-span-2 lg:col-span-1"
+                  i === 0 && "ring-1 ring-accent/10"
                 )}
               >
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
