@@ -66,9 +66,19 @@ html.marketing-route {
     overflow-anchor: none;
   }
 
+  html.marketing-route,
   html.marketing-route body {
     -webkit-overflow-scrolling: auto;
     -webkit-font-smoothing: auto;
+  }
+
+  .marketing-stable,
+  .marketing-stable main,
+  .marketing-scroll-main,
+  .discover-stable,
+  .dashboard-stable {
+    overflow-x: visible !important;
+    overflow-y: visible !important;
   }
 }
 
@@ -395,10 +405,16 @@ button:focus-visible {
   .marketing-stable .saas-card,
   .marketing-stable .premium-card {
     background: #fff !important;
+    overflow: hidden !important;
+  }
+
+  .marketing-stable .bg-zinc-50,
+  .marketing-stable section.bg-zinc-50 {
+    background-color: #ffffff !important;
   }
 
   .marketing-stable .saas-card.overflow-hidden {
-    overflow: visible !important;
+    overflow: hidden !important;
   }
 
   .marketing-stable .saas-card[class*="ring-"],
@@ -456,10 +472,15 @@ button:focus-visible {
     background-color: rgb(245 243 255) !important;
   }
 
-  .marketing-stable header {
+  .marketing-stable header,
+  .marketing-stable .marketing-site-header {
     position: sticky;
     top: 0;
     z-index: 50;
+    contain: paint;
+    background-color: #ffffff !important;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
 
   .marketing-stable [class*="bg-gradient-to"] {
@@ -479,9 +500,35 @@ button:focus-visible {
 }
 
 .dashboard-stable .dashboard-stat-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  display: block;
+}
+
+.dashboard-stable .dashboard-stat-grid > * + * {
+  margin-top: 0.75rem;
+}
+
+.dashboard-stable .dashboard-quick-grid {
+  display: block;
+}
+
+.dashboard-stable .dashboard-quick-grid > * + * {
+  margin-top: 0.5rem;
+}
+
+.dashboard-stable .dashboard-rec-grid {
+  display: block;
+}
+
+.dashboard-stable .dashboard-rec-grid > * + * {
+  margin-top: 0.5rem;
+}
+
+.dashboard-stable .dashboard-panel-grid {
+  display: block;
+}
+
+.dashboard-stable .dashboard-panel-grid > * + * {
+  margin-top: 1.5rem;
 }
 
 @media (min-width: 1024px) {
@@ -489,6 +536,40 @@ button:focus-visible {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.75rem;
+  }
+
+  .dashboard-stable .dashboard-stat-grid > * + * {
+    margin-top: 0;
+  }
+
+  .dashboard-stable .dashboard-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .dashboard-stable .dashboard-quick-grid > * + * {
+    margin-top: 0;
+  }
+
+  .dashboard-stable .dashboard-rec-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .dashboard-stable .dashboard-rec-grid > * + * {
+    margin-top: 0;
+  }
+
+  .dashboard-stable .dashboard-panel-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .dashboard-stable .dashboard-panel-grid > * + * {
+    margin-top: 0;
   }
 }
 
@@ -504,44 +585,6 @@ button:focus-visible {
 
 .dashboard-stable .dashboard-progress-fill {
   transition: none !important;
-}
-
-.dashboard-stable .dashboard-quick-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.dashboard-stable .dashboard-rec-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.dashboard-stable .dashboard-panel-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-@media (min-width: 1024px) {
-  .dashboard-stable .dashboard-quick-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.5rem;
-  }
-
-  .dashboard-stable .dashboard-rec-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.5rem;
-  }
-
-  .dashboard-stable .dashboard-panel-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.5rem;
-  }
 }
 
 @media (max-width: 1023px) {
@@ -564,20 +607,30 @@ button:focus-visible {
   .dashboard-stable .dashboard-panel-card {
     box-shadow: none !important;
     background-image: none !important;
-    overflow: visible;
+    overflow: hidden;
   }
 }
 
-/* Discover / trending category grids — column-first on phones. */
+/* Discover / trending category grids — block stack on phones (no flex compositor ghosting). */
 .discover-stable {
   overflow-x: clip;
   touch-action: pan-y;
 }
 
 .discover-stable .discover-card-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: block;
+}
+
+.discover-stable .discover-card-grid > * + * {
+  margin-top: 1rem;
+}
+
+.discover-stable .discover-card-grid--panels {
+  display: block;
+}
+
+.discover-stable .discover-card-grid--panels > * + * {
+  margin-top: 1.25rem;
 }
 
 @media (min-width: 1024px) {
@@ -587,6 +640,10 @@ button:focus-visible {
     gap: 1rem;
   }
 
+  .discover-stable .discover-card-grid > * + * {
+    margin-top: 0;
+  }
+
   .discover-stable .discover-card-grid--3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -594,19 +651,15 @@ button:focus-visible {
   .discover-stable .discover-card-grid--4 {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-}
 
-.discover-stable .discover-card-grid--panels {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-@media (min-width: 1024px) {
   .discover-stable .discover-card-grid--panels {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.25rem;
+  }
+
+  .discover-stable .discover-card-grid--panels > * + * {
+    margin-top: 0;
   }
 }
 
@@ -628,7 +681,42 @@ button:focus-visible {
     box-shadow: none !important;
     background-image: none !important;
     background: #fff !important;
-    overflow: visible;
+    overflow: hidden !important;
+    position: relative;
+  }
+
+  .discover-stable .discover-card-grid > *,
+  .discover-stable .discover-card-grid--panels > * {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+  }
+
+  .discover-stable .marketing-shortcut-link {
+    display: block !important;
+    overflow: hidden !important;
+  }
+
+  .discover-stable .marketing-shortcut-link__icon {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  .discover-stable .marketing-shortcut-link__label {
+    display: inline-block;
+    vertical-align: middle;
+    padding-left: 0.75rem;
+  }
+
+  .discover-stable .trend-card > div {
+    display: block !important;
+  }
+
+  .discover-stable .trend-card > div > div:first-child {
+    display: inline-block !important;
+    vertical-align: top;
+    margin-bottom: 0.5rem;
   }
 
   .discover-stable .saas-card[class*="ring-"],

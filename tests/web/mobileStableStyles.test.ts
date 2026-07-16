@@ -6,19 +6,20 @@ const globalsCss = readFileSync(join(process.cwd(), "web/styles/globals.css"), "
 const gigasocialCss = readFileSync(join(process.cwd(), "web/styles/gigasocial-pro.css"), "utf8");
 
 describe("mobile stability CSS", () => {
-  it("defines discover-stable column-first grids", () => {
+  it("defines discover-stable block-stack grids", () => {
     expect(globalsCss).toContain(".discover-stable .discover-card-grid");
-    expect(globalsCss).toContain("flex-direction: column");
+    expect(globalsCss).toContain("display: block");
   });
 
-  it("defines dashboard column-first quick links", () => {
+  it("defines dashboard block-stack quick links", () => {
     expect(globalsCss).toContain(".dashboard-stable .dashboard-quick-grid");
+    expect(globalsCss).toContain("display: block");
   });
 
-  it("flattens marketing cards on mobile", () => {
+  it("flattens and clips marketing cards on mobile", () => {
     expect(globalsCss).toContain(".marketing-stable .saas-card");
     expect(globalsCss).toContain("background-image: none !important");
-    expect(globalsCss).toContain("overflow: visible");
+    expect(globalsCss).toContain("overflow: hidden !important");
   });
 
   it("avoids vh sizing on gigasocial feed media for mobile", () => {
@@ -44,7 +45,6 @@ describe("mobile stability CSS", () => {
 
   it("keeps discover grids single-column until desktop breakpoint", () => {
     expect(globalsCss).toContain("@media (min-width: 1024px)");
-    expect(globalsCss).toContain(".discover-stable .discover-card-grid {");
     expect(globalsCss).not.toMatch(/@media \(min-width: 640px\)[\s\S]*\.discover-stable \.discover-card-grid/);
   });
 
@@ -64,12 +64,17 @@ describe("mobile stability CSS", () => {
     expect(globalsCss).toContain(".discover-stable .discover-card-grid--panels");
   });
 
+  it("isolates marketing header paint layer on mobile", () => {
+    expect(globalsCss).toContain(".marketing-stable .marketing-site-header");
+    expect(globalsCss).toContain("contain: paint");
+  });
+
   it("flattens semi-transparent marketing backgrounds on mobile", () => {
     expect(globalsCss).toContain('.marketing-stable [class*="bg-accent/"]');
     expect(globalsCss).toContain("isolation: auto !important");
   });
 
-  it("defines dashboard panel column-first grid", () => {
+  it("defines dashboard panel block-stack grid", () => {
     expect(globalsCss).toContain(".dashboard-stable .dashboard-panel-grid");
   });
 

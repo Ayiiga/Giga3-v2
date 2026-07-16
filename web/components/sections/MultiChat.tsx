@@ -26,7 +26,7 @@ export function MultiChat() {
   return (
     <section
       id="multi-chat"
-      className="discover-stable section-padding scroll-mt-24 border-y border-border bg-zinc-50"
+      className="discover-stable section-padding scroll-mt-24 border-y border-border bg-white"
     >
       <Container>
         <div className="mx-auto max-w-2xl text-center">
