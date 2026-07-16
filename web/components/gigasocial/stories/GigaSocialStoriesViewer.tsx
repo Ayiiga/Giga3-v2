@@ -32,22 +32,42 @@ export const GigaSocialStoriesViewer = memo(function GigaSocialStoriesViewer({
   );
   const [mounted, setMounted] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [replayKey, setReplayKey] = useState(0);
   const markTimerRef = useRef<number | null>(null);
+  const suppressClickRef = useRef(false);
 
   const active = reels[index] ?? null;
 
   const goNext = useCallback(() => {
-    setIndex((current) => Math.min(reels.length - 1, current + 1));
+    setIndex((current) => {
+      if (current < reels.length - 1) return current + 1;
+      return 0;
+    });
   }, [reels.length]);
 
   const goPrevious = useCallback(() => {
-    setIndex((current) => Math.max(0, current - 1));
-  }, []);
+    setIndex((current) => {
+      if (current > 0) return current - 1;
+      return reels.length - 1;
+    });
+  }, [reels.length]);
+
+  const handleStoryEnded = useCallback(() => {
+    setIndex((current) => {
+      if (current < reels.length - 1) return current + 1;
+      setReplayKey((value) => value + 1);
+      return current;
+    });
+  }, [reels.length]);
 
   const swipe = useSwipeGesture({
-    enabled: reels.length > 1,
-    onSwipeUp: goNext,
-    onSwipeDown: goPrevious,
+    enabled: true,
+    onSwipeUp: reels.length > 1 ? goNext : undefined,
+    onSwipeDown: reels.length > 1 ? goPrevious : undefined,
+    onTap: () => {
+      suppressClickRef.current = true;
+      setPaused((value) => !value);
+    },
     threshold: 72,
   });
 
@@ -57,6 +77,7 @@ export const GigaSocialStoriesViewer = memo(function GigaSocialStoriesViewer({
 
   useEffect(() => {
     setPaused(false);
+    setReplayKey(0);
   }, [active?._id]);
 
   useEffect(() => {
@@ -125,11 +146,7 @@ export const GigaSocialStoriesViewer = memo(function GigaSocialStoriesViewer({
         </button>
       </div>
 
-      <div
-        className="relative flex min-h-0 flex-1 flex-col"
-        onTouchStart={swipe.onTouchStart}
-        onTouchEnd={swipe.onTouchEnd}
-      >
+      <div className="relative flex min-h-0 flex-1 flex-col">
         <div className="flex justify-center gap-1 px-4 py-2">
           {reels.map((reel, reelIndex) => (
             <span
@@ -147,18 +164,26 @@ export const GigaSocialStoriesViewer = memo(function GigaSocialStoriesViewer({
           <button
             type="button"
             className="gigasocial-stories-slide relative h-full max-h-[min(78dvh,42rem)] w-full max-w-md overflow-hidden rounded-2xl bg-black"
-            onClick={() => setPaused((value) => !value)}
-            onTouchStart={(event) => event.stopPropagation()}
-            onTouchEnd={(event) => event.stopPropagation()}
+            onClick={() => {
+              if (suppressClickRef.current) {
+                suppressClickRef.current = false;
+                return;
+              }
+              setPaused((value) => !value);
+            }}
+            onTouchStart={swipe.onTouchStart}
+            onTouchEnd={swipe.onTouchEnd}
             aria-label={paused ? "Resume story" : "Pause story"}
           >
             <GigaSocialPostMedia
+              key={`${active._id}-${replayKey}`}
               post={active}
               autoPlay
               paused={paused}
               featured
               allowFullView={false}
               offlinePlayback
+              onVideoEnded={handleStoryEnded}
             />
           </button>
         </div>

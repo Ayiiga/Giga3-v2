@@ -72,6 +72,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const [remixSource, setRemixSource] = useState<SocialPost | null>(null);
   const [errorToast, setErrorToast] = useState<string | null>(null);
   const [activeFeaturedVideoId, setActiveFeaturedVideoId] = useState<string | null>(null);
+  const [featuredReplayKey, setFeaturedReplayKey] = useState(0);
   const highlightScrolledRef = useRef<string | null>(null);
   const featuredInitializedRef = useRef(false);
   const userPickedFeaturedRef = useRef(false);
@@ -183,10 +184,14 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
           ? featuredVideoIndex
           : videoPosts.findIndex((post) => post._id === featuredPost?._id);
       const baseIndex = currentIndex >= 0 ? currentIndex : 0;
-      const nextIndex = Math.min(
-        videoPosts.length - 1,
-        Math.max(0, baseIndex + direction)
-      );
+      const nextIndex =
+        direction > 0
+          ? baseIndex >= videoPosts.length - 1
+            ? 0
+            : baseIndex + 1
+          : baseIndex <= 0
+            ? videoPosts.length - 1
+            : baseIndex - 1;
       const nextPost = videoPosts[nextIndex];
       if (nextPost) {
         userPickedFeaturedRef.current = true;
@@ -203,6 +208,18 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const goToPreviousFeaturedVideo = useCallback(() => {
     skipFeaturedVideo(-1);
   }, [skipFeaturedVideo]);
+
+  const handleFeaturedVideoEnded = useCallback(() => {
+    if (videoPosts.length < 2) {
+      setFeaturedReplayKey((value) => value + 1);
+      return;
+    }
+    if (featuredVideoIndex >= 0 && featuredVideoIndex < videoPosts.length - 1) {
+      goToNextFeaturedVideo();
+      return;
+    }
+    setFeaturedReplayKey((value) => value + 1);
+  }, [featuredVideoIndex, goToNextFeaturedVideo, videoPosts.length]);
 
   const createMenuSections = useMemo(
     () => getGigaCreateSections({ enableLive: features.enableGigaLive }),
@@ -343,6 +360,10 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   }, [highlightPostId, posts, videoPosts]);
 
   useEffect(() => {
+    setFeaturedReplayKey(0);
+  }, [featuredPost?._id]);
+
+  useEffect(() => {
     if (!highlightPostId || !posts.length) return;
     if (highlightScrolledRef.current === highlightPostId) return;
     const el = document.getElementById(`gigasocial-post-${highlightPostId}`);
@@ -439,6 +460,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
             onSkipPrevious={
               getPostMediaKind(featuredPost) === "video" ? goToPreviousFeaturedVideo : undefined
             }
+            onVideoEnded={handleFeaturedVideoEnded}
+            replayKey={featuredReplayKey}
           />
         ) : (
           <div
