@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v139-offline-stories-reels";
+const CACHE_NAME = "giga3-shell-v140-offline-stories-credits";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

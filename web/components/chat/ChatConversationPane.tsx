@@ -26,6 +26,8 @@ interface ChatConversationPaneProps {
   onEditMessage?: (messageId: string, content: string) => void;
   onStopGenerating?: () => void;
   uploadUsage?: UploadUsageSnapshot | null;
+  credits?: number | null;
+  subscriptionActive?: boolean;
   error?: string | null;
   onDismissError?: () => void;
   onAttachmentsChange?: (attachments: PreparedChatAttachment[]) => void;
@@ -52,6 +54,8 @@ function panePropsEqual(
     prev.onEditMessage === next.onEditMessage &&
     prev.onStopGenerating === next.onStopGenerating &&
     prev.uploadUsage === next.uploadUsage &&
+    prev.credits === next.credits &&
+    prev.subscriptionActive === next.subscriptionActive &&
     prev.error === next.error &&
     prev.onDismissError === next.onDismissError &&
     prev.onAttachmentsChange === next.onAttachmentsChange &&
@@ -78,6 +82,8 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onEditMessage,
   onStopGenerating,
   uploadUsage,
+  credits,
+  subscriptionActive,
   error,
   onDismissError,
   onAttachmentsChange,
@@ -109,7 +115,11 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         />
         <div className="chat-composer-dock min-w-0 max-w-full border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)]">
         {error && (
-          <ChatErrorBanner message={error} onDismiss={onDismissError} />
+          <ChatErrorBanner
+            message={error}
+            onDismiss={onDismissError}
+            subscriptionActive={subscriptionActive}
+          />
         )}
         <ChatTypingBar
           visible={showTyping}
@@ -122,6 +132,8 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           onSend={onSend}
           disabled={isSending || awaitingReply}
           uploadUsage={uploadUsage}
+          credits={credits}
+          subscriptionActive={subscriptionActive}
           onAttachmentsChange={onAttachmentsChange}
           onSuggestVisionTier={onSuggestVisionTier}
           initialAttachments={initialAttachments}

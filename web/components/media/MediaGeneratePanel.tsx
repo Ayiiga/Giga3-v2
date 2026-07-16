@@ -21,6 +21,7 @@ import {
   imageStudioActionRequiresSource,
 } from "@/lib/chat/imageStudioLinks";
 import type { UsageSnapshot } from "@/lib/credits/constants";
+import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
 import { canGenerateImage, canGenerateVideo } from "@/lib/credits/rules";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, ImageIcon, Loader2, Video, XCircle } from "lucide-react";
@@ -550,14 +551,17 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
         </div>
 
         {!canGen && usage && (
-          <p className="text-base text-amber-200">
-            {tab === "video"
-              ? "Premium + credits required for video."
-              : "Daily image limit reached or insufficient credits."}{" "}
-            <Link href="/credits" className="font-semibold text-accent underline">
-              Get credits
-            </Link>
-          </p>
+          <CreditPromptBanner
+            variant={tab === "video" ? "subscribe" : "empty"}
+            message={
+              tab === "video"
+                ? "Premium subscription and credits are required for video generation."
+                : "Daily image limit reached or you need more credits to generate."
+            }
+            subscriptionActive={usage.subscriptionActive}
+            creditCost={tab === "video" ? usage.creditCosts.video : usage.creditCosts.image}
+            compact
+          />
         )}
 
         <Button
