@@ -207,6 +207,22 @@ export async function prepareChatAttachment(
     sizeBytes: file.size,
   };
 
+  if (file.type.startsWith("video/")) {
+    return {
+      ...base,
+      kind: "document",
+      text: `${name} (${formatUploadBytes(file.size)}) video attached. Describe what you need — summary, scene breakdown, or key moments. For visual analysis, attach screenshots or key frames as images.`,
+    };
+  }
+
+  if (file.type.startsWith("audio/")) {
+    return {
+      ...base,
+      kind: "text",
+      text: `${name} (${formatUploadBytes(file.size)}) audio attached. Ask for transcription, summary, lyrics, or music analysis.`,
+    };
+  }
+
   if (kind === "image") {
     const maxFileBytes = Math.min(
       limits?.maxFileBytes ?? MAX_INLINE_IMAGE_BYTES,

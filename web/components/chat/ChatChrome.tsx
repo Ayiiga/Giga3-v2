@@ -7,7 +7,7 @@ import { ChatMoreMenu } from "@/components/chat/ChatMoreMenu";
 import { ModelSelector } from "@/components/chat/ModelSelector";
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
 import { PlatformChromeHost } from "@/components/platform/PlatformChromeHost";
-import { ChatGigaSocialStoryRings } from "@/components/chat/ChatGigaSocialStoryRings";
+import { ChatGigaSocialStoryRingsSafe } from "@/components/chat/ChatGigaSocialStoryRingsSafe";
 import type { UiMessage } from "@/components/chat/MessageList";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { BrandLogo } from "@/components/brand/BrandLogo";
@@ -152,7 +152,7 @@ export const ChatChrome = memo(function ChatChrome({
             />
           ) : null}
 
-          <ChatGigaSocialStoryRings className="shrink-0" compact />
+          <ChatGigaSocialStoryRingsSafe className="shrink-0" compact />
 
           <div
             className="chat-header-toolbar hidden items-center gap-0.5 rounded-xl border border-border bg-muted/15 p-0.5 md:flex"
