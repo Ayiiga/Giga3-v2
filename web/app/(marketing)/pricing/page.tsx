@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function PricingPage() {
   return (
-    <div className="section-padding pt-28 pb-[max(2rem,env(safe-area-inset-bottom))]">
+    <div className="discover-stable section-padding pt-28 pb-[max(2rem,env(safe-area-inset-bottom))]">
       <Container>
         <div className="mx-auto max-w-2xl text-center">
           <h1 className="hero-title">Pricing</h1>

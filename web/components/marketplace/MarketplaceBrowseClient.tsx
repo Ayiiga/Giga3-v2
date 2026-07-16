@@ -32,11 +32,11 @@ function MarketplaceBrowseInner() {
   }, []);
 
   return (
-    <Container className="py-8 sm:py-12">
+    <Container className="discover-stable py-8 sm:py-12">
       <div className="mx-auto max-w-6xl space-y-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-700 dark:text-emerald-300">
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700 dark:text-emerald-300">
               <Store className="h-4 w-4" aria-hidden />
               Digital Marketplace
             </div>
@@ -104,12 +104,12 @@ function MarketplaceBrowseInner() {
             description="Try a different search or be the first creator on Giga3."
           />
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="discover-card-grid discover-card-grid--3">
             {listings.map((item: NonNullable<typeof listings>[number]) => (
               <Link
                 key={item._id}
                 href={`/marketplace/item/?id=${item._id}`}
-                className="group rounded-2xl border border-border bg-card p-5 hover:border-accent/30"
+                className="saas-card group block rounded-2xl p-5 hover:border-accent/30"
               >
                 {item.coverImageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element

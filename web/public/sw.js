@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v143-stories-mute-visible";
+const CACHE_NAME = "giga3-shell-v144-marketing-scroll-stable";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

@@ -34,7 +34,7 @@ function PricingPageClientInner() {
   } = useBilling();
 
   return (
-    <div className="mt-14 space-y-16">
+    <div className="discover-stable mt-14 space-y-16">
       <CheckoutOverlay
         phase={checkoutPhase}
         label={checkoutPreview?.label}
@@ -62,7 +62,7 @@ function PricingPageClientInner() {
         <div className="mt-3 flex justify-center">
           <PaystackModeBadge mode={paystackMode} inlineEnabled={inlineEnabled} />
         </div>
-        <div className="mt-10 grid gap-8 lg:grid-cols-3">
+        <div className="discover-card-grid discover-card-grid--3 mt-10">
           {SUBSCRIPTION_PRODUCTS.map((product) => (
             <SubscriptionCard
               key={product.id}
@@ -89,7 +89,7 @@ function PricingPageClientInner() {
       </section>
 
       <section>
-        <article className="glass mx-auto max-w-lg rounded-2xl p-6">
+        <article className="saas-card mx-auto max-w-lg rounded-2xl p-6">
           <h3 className="text-lg font-semibold">Free</h3>
           <p className="mt-2 text-3xl font-bold">{formatGhs(0)}</p>
           <ul className="mt-6 space-y-2 text-sm text-muted">
@@ -108,12 +108,12 @@ function PricingPageClientInner() {
         <p className="mx-auto mt-2 max-w-lg text-center text-sm text-muted">
           One-time packs added to your balance (any plan).
         </p>
-        <div className="mt-10 grid gap-8 md:grid-cols-3">
+        <div className="discover-card-grid discover-card-grid--3 mt-10">
           {CREDIT_PACKS.map((pack) => (
             <article
               key={pack.id}
               className={cn(
-                "glass flex flex-col rounded-2xl p-6",
+                "saas-card flex flex-col rounded-2xl p-6",
                 pack.highlighted && "border-violet-500/40"
               )}
             >
