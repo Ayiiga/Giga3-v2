@@ -348,6 +348,22 @@
   }
 }
 
+.gigasocial-video-mute-btn--featured {
+  background-color: rgba(0, 0, 0, 0.92);
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+}
+
+@media (max-width: 1023px) {
+  .gigasocial-stable .gigasocial-video-mute-btn--featured {
+    background-color: rgba(0, 0, 0, 0.92) !important;
+    border: 2px solid rgba(255, 255, 255, 0.75) !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45) !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gigasocial-feed-skeleton {
     animation: none;

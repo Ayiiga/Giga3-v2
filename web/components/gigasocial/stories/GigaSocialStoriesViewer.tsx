@@ -190,11 +190,11 @@ export const GigaSocialStoriesViewer = memo(function GigaSocialStoriesViewer({
 
         {reels.length > 1 ? (
           <p className="pb-3 text-center text-xs text-white/60" aria-live="polite">
-            Tap to {paused ? "play" : "pause"} · Swipe up or down · {index + 1} of {reels.length}
+            Tap to {paused ? "play" : "pause"} · Tap Sound to unmute · Swipe up or down · {index + 1} of {reels.length}
           </p>
         ) : (
           <p className="pb-3 text-center text-xs text-white/60" aria-live="polite">
-            Tap to {paused ? "play" : "pause"}
+            Tap to {paused ? "play" : "pause"} · Tap Sound to unmute
           </p>
         )}
       </div>

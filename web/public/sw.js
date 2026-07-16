@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v142-marketing-mobile-stable";
+const CACHE_NAME = "giga3-shell-v143-stories-mute-visible";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
