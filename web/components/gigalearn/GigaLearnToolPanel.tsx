@@ -1,5 +1,6 @@
 "use client";
 
+import { CreditPromptLinks } from "@/components/billing/CreditPromptLinks";
 import { CreatorResultPanel } from "@/components/creator-studio/CreatorResultPanel";
 import { Button } from "@/components/ui/Button";
 import { useGigaLearnGeneration } from "@/hooks/useGigaLearnGeneration";
@@ -186,7 +187,10 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
             Generate
           </Button>
           {insufficientCredits && (
-            <p className="text-xs text-amber-700">Need {activeTool?.creditCost ?? 2} credits.</p>
+            <CreditPromptLinks
+              creditCost={activeTool?.creditCost ?? 2}
+              className="text-xs text-amber-700"
+            />
           )}
           {phase === "success" && (
             <p className="text-xs text-muted">Saved to your learning workspace.</p>

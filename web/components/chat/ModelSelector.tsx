@@ -1,5 +1,6 @@
 "use client";
 
+import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
 import {
   GIGA_MODELS,
   getGigaModel,
@@ -17,6 +18,7 @@ interface ModelSelectorProps {
   hasOpenAiAccess?: boolean;
   freeOpenAiRemaining?: number;
   isPremium?: boolean;
+  subscriptionActive?: boolean;
   disabled?: boolean;
   compact?: boolean;
   /** Flush left segment inside a combined model + search bar */
@@ -30,12 +32,14 @@ export const ModelSelector = memo(function ModelSelector({
   hasOpenAiAccess = false,
   freeOpenAiRemaining = 0,
   isPremium = false,
+  subscriptionActive = false,
   disabled,
   compact,
   embedded,
   className,
 }: ModelSelectorProps) {
   const [open, setOpen] = useState(false);
+  const [showProUpsell, setShowProUpsell] = useState(false);
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const current = getGigaModel(value);
@@ -102,9 +106,13 @@ export const ModelSelector = memo(function ModelSelector({
                     locked && "cursor-not-allowed opacity-60"
                   )}
                   onClick={() => {
-                    if (locked) return;
+                    if (locked) {
+                      setShowProUpsell(true);
+                      return;
+                    }
                     onChange(model.id);
                     setOpen(false);
+                    setShowProUpsell(false);
                   }}
                 >
                   <ModelIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden />
@@ -129,6 +137,16 @@ export const ModelSelector = memo(function ModelSelector({
               </li>
             );
           })}
+          {showProUpsell && !hasOpenAiAccess && (
+            <li className="border-t border-border px-2 py-2">
+              <CreditPromptBanner
+                variant="subscribe"
+                subscriptionActive={subscriptionActive || isPremium}
+                compact
+                onDismiss={() => setShowProUpsell(false)}
+              />
+            </li>
+          )}
         </ul>
       )}
     </div>

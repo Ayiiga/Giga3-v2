@@ -131,6 +131,7 @@ function ChatShellInner({
     credits,
     hasOpenAiAccess,
     isPremium,
+    subscriptionActive,
     freeOpenAiRemaining,
     interestProfileJson,
     uploadUsage,
@@ -427,6 +428,7 @@ function ChatShellInner({
             credits={credits}
             hasOpenAiAccess={hasOpenAiAccess}
             isPremium={isPremium}
+            subscriptionActive={subscriptionActive}
             freeOpenAiRemaining={freeOpenAiRemaining}
             modelTier={modelTier}
             onModelTierChange={handleModelTierChange}
@@ -451,6 +453,8 @@ function ChatShellInner({
             chatProviderLabel={chatProviderLabel}
             usedFallback={usedFallback}
             interestProfileJson={interestProfileJson}
+            credits={credits}
+            subscriptionActive={subscriptionActive}
           />
 
           <ChatSegmentNotice message={segmentNotice ?? null} />
@@ -488,6 +492,8 @@ function ChatShellInner({
           onEditMessage={handleEditMessage}
           onStopGenerating={() => void stopGenerating()}
           uploadUsage={uploadUsage}
+          credits={credits}
+          subscriptionActive={subscriptionActive}
           error={visibleError}
           onDismissError={() => setDismissedError(error)}
           onAttachmentsChange={handleAttachmentsChange}

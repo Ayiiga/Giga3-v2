@@ -1,5 +1,6 @@
 "use client";
 
+import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
 import { ChatInputToolbar } from "@/components/chat/ChatInputToolbar";
 import { EmojiPicker } from "@/components/chat/EmojiPicker";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
@@ -11,6 +12,7 @@ import {
   type PreparedChatAttachment,
   type AttachmentKind,
 } from "@/lib/chat/multimodalAttachments";
+import { CHAT_CREDIT_COST } from "@/lib/billing/creditPrompts";
 import {
   formatUploadBytes,
   type UploadUsageSnapshot,
@@ -35,6 +37,8 @@ interface ChatInputProps {
   /** Parent can call `.current(text)` to insert templates into the textarea. */
   insertRef?: MutableRefObject<((text: string) => void) | null>;
   uploadUsage?: UploadUsageSnapshot | null;
+  credits?: number | null;
+  subscriptionActive?: boolean;
   onAttachmentsChange?: (attachments: PreparedChatAttachment[]) => void;
   onSuggestVisionTier?: () => void;
   /** One-shot attachments from GigaLearn homework handoff. */
@@ -47,6 +51,8 @@ export const ChatInput = memo(function ChatInput({
   placeholder = "Message Giga3 AI…",
   insertRef,
   uploadUsage,
+  credits,
+  subscriptionActive = false,
   onAttachmentsChange,
   onSuggestVisionTier,
   initialAttachments,
@@ -180,11 +186,12 @@ export const ChatInput = memo(function ChatInput({
     };
   }, [attachments]);
 
-  const canSend = Boolean(value.trim() || attachments.length > 0);
+  const outOfCredits = credits != null && credits < CHAT_CREDIT_COST;
+  const canSend = Boolean(value.trim() || attachments.length > 0) && !outOfCredits;
 
   function submit() {
     const trimmed = value.trim();
-    if ((!trimmed && attachments.length === 0) || disabled || busy) return;
+    if ((!trimmed && attachments.length === 0) || disabled || busy || outOfCredits) return;
     const displayContent = buildUserDisplayContent(trimmed, attachments);
     onSend(displayContent, attachments);
     setValue("");
@@ -212,7 +219,7 @@ export const ChatInput = memo(function ChatInput({
     }
   }
 
-  const inputDisabled = disabled || busy;
+  const inputDisabled = disabled || busy || outOfCredits;
   const showUploadHint =
     attachments.length > 0 ||
     (uploadUsage != null &&
@@ -224,6 +231,16 @@ export const ChatInput = memo(function ChatInput({
       className="chat-composer min-w-0 max-w-full px-2 py-1.5 sm:px-3 sm:py-2"
     >
       <div className="chat-thread space-y-2">
+        {outOfCredits && (
+          <CreditPromptBanner
+            variant="empty"
+            credits={credits}
+            creditCost={CHAT_CREDIT_COST}
+            subscriptionActive={subscriptionActive}
+            compact
+          />
+        )}
+
         {notice && (
           <NoticeBanner message={notice} onDismiss={() => setNotice(null)} />
         )}

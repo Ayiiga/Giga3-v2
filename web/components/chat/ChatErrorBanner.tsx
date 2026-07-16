@@ -1,19 +1,31 @@
 "use client";
 
-import Link from "next/link";
+import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
+import { isBillingRelatedError } from "@/lib/billing/creditPrompts";
 import { X } from "lucide-react";
 
 export function ChatErrorBanner({
   message,
   onDismiss,
+  subscriptionActive,
 }: {
   message: string;
   onDismiss?: () => void;
+  subscriptionActive?: boolean;
 }) {
-  const lowCredits =
-    typeof message === "string" &&
-    (message.toLowerCase().includes("insufficient credits") ||
-      message.toLowerCase().includes("credits"));
+  const billingError = isBillingRelatedError(message);
+
+  if (billingError) {
+    return (
+      <CreditPromptBanner
+        variant="error"
+        message={message}
+        subscriptionActive={subscriptionActive}
+        onDismiss={onDismiss}
+        className="mx-3 mt-2 sm:mx-4"
+      />
+    );
+  }
 
   return (
     <div
@@ -22,17 +34,6 @@ export function ChatErrorBanner({
     >
       <div className="min-w-0 flex-1">
         <p className="leading-snug">{typeof message === "string" ? message : "Something went wrong."}</p>
-        {lowCredits && (
-          <p className="mt-2 text-xs">
-            <Link href="/pricing" className="font-medium text-accent underline">
-              View plans
-            </Link>
-            {" · "}
-            <Link href="/credits" className="font-medium text-accent underline">
-              Buy credits
-            </Link>
-          </p>
-        )}
       </div>
       {onDismiss && (
         <button
