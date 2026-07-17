@@ -1,15 +1,10 @@
 "use client";
 
-import { GigaSocialCommunitiesPanel } from "@/components/gigasocial/GigaSocialCommunitiesPanel";
-import { GigaSocialDiscoverPanel } from "@/components/gigasocial/GigaSocialDiscoverPanel";
-import { GigaSocialFeedPanel } from "@/components/gigasocial/GigaSocialFeedPanel";
-import { GigaSocialLivePanel } from "@/components/gigasocial/live/GigaSocialLivePanel";
 import { GigaSocialPanelErrorBoundary } from "@/components/gigasocial/GigaSocialPanelErrorBoundary";
 import { GigaSocialUnreadLoader } from "@/components/gigasocial/GigaSocialUnreadLoader";
-import { GigaSocialNotificationsPanel } from "@/components/gigasocial/GigaSocialNotificationsPanel";
-import { GigaSocialProfilePanel } from "@/components/gigasocial/GigaSocialProfilePanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
+import { LoadingState } from "@/components/ui/LoadingState";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { withChunkRetryLoader } from "@/lib/pwa/dynamicWithChunkRetry";
 import { getSessionToken } from "@/lib/auth";
@@ -28,13 +23,71 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 
+const panelLoading = (label: string) => (
+  <LoadingState label={label} className="py-8" />
+);
+
+const GigaSocialFeedPanel = dynamic(
+  withChunkRetryLoader(() =>
+    import("@/components/gigasocial/GigaSocialFeedPanel").then((m) => ({
+      default: m.GigaSocialFeedPanel,
+    }))
+  ),
+  { ssr: false, loading: () => panelLoading("Loading feed…") }
+);
+
+const GigaSocialDiscoverPanel = dynamic(
+  withChunkRetryLoader(() =>
+    import("@/components/gigasocial/GigaSocialDiscoverPanel").then((m) => ({
+      default: m.GigaSocialDiscoverPanel,
+    }))
+  ),
+  { ssr: false, loading: () => panelLoading("Loading discover…") }
+);
+
+const GigaSocialCommunitiesPanel = dynamic(
+  withChunkRetryLoader(() =>
+    import("@/components/gigasocial/GigaSocialCommunitiesPanel").then((m) => ({
+      default: m.GigaSocialCommunitiesPanel,
+    }))
+  ),
+  { ssr: false, loading: () => panelLoading("Loading communities…") }
+);
+
+const GigaSocialLivePanel = dynamic(
+  withChunkRetryLoader(() =>
+    import("@/components/gigasocial/live/GigaSocialLivePanel").then((m) => ({
+      default: m.GigaSocialLivePanel,
+    }))
+  ),
+  { ssr: false, loading: () => panelLoading("Loading live…") }
+);
+
 const GigaSocialCreatorPanel = dynamic(
   withChunkRetryLoader(() =>
     import("@/components/gigasocial/economy/GigaSocialCreatorPanel").then((m) => ({
       default: m.GigaSocialCreatorPanel,
     }))
   ),
-  { ssr: false, loading: () => <p className="text-sm text-muted">Loading creator tools…</p> }
+  { ssr: false, loading: () => panelLoading("Loading creator tools…") }
+);
+
+const GigaSocialProfilePanel = dynamic(
+  withChunkRetryLoader(() =>
+    import("@/components/gigasocial/GigaSocialProfilePanel").then((m) => ({
+      default: m.GigaSocialProfilePanel,
+    }))
+  ),
+  { ssr: false, loading: () => panelLoading("Loading profile…") }
+);
+
+const GigaSocialNotificationsPanel = dynamic(
+  withChunkRetryLoader(() =>
+    import("@/components/gigasocial/GigaSocialNotificationsPanel").then((m) => ({
+      default: m.GigaSocialNotificationsPanel,
+    }))
+  ),
+  { ssr: false, loading: () => panelLoading("Loading notifications…") }
 );
 
 function GigaSocialContent() {
