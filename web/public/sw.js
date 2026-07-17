@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v146-creator-economy";
+const CACHE_NAME = "giga3-shell-v147-live-gifts-admin-economy";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

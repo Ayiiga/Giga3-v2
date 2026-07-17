@@ -83,7 +83,7 @@ function serializeEconomyJson(data: EconomyJson): string {
   return JSON.stringify(data);
 }
 
-async function loadEconomySettings(ctx: DbCtx): Promise<EconomySettings> {
+export async function loadEconomySettings(ctx: DbCtx): Promise<EconomySettings> {
   const rows = await ctx.db.query("remoteConfigEntries").take(200);
   const settings = { ...DEFAULT_ECONOMY_SETTINGS };
 
@@ -193,7 +193,7 @@ async function getUserByEmail(ctx: DbCtx, email: string) {
     .first();
 }
 
-async function deductVariableCredits(
+export async function deductVariableCredits(
   ctx: { db: import("./_generated/server").MutationCtx["db"] },
   userId: string,
   amount: number,

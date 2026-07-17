@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminSocialEconomyPanel } from "@/components/admin/AdminSocialEconomyPanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { AdminKeyGate } from "@/components/admin/AdminKeyGate";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -257,6 +258,12 @@ function AdminInner() {
           )}
         </div>
       </section>
+
+      <AdminSocialEconomyPanel
+        adminCreds={adminCreds}
+        onNotice={(msg) => setNotice(msg)}
+        onError={(msg) => setError(msg || null)}
+      />
     </div>
   );
 }
