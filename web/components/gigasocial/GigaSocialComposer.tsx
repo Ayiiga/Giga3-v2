@@ -15,6 +15,10 @@ import type { CameraFilterId } from "@/lib/gigasocial/cameraFilters";
 import { prepareAudioForPhotoPost } from "@/lib/gigasocial/audioProcessing";
 import { extractHashtagsFromText, formatCompactHashtags } from "@/lib/gigasocial/hashtags";
 import {
+  classifyMediaFiles,
+  UNIFIED_MEDIA_ACCEPT,
+} from "@/lib/gigasocial/mediaComposer";
+import {
   getVideoDuration,
   generateVideoThumbnail,
   uploadSocialAudio,

@@ -27,4 +27,10 @@ describe("classifyMediaFiles", () => {
       reason: "Add at least one photo before attaching music.",
     });
   });
+
+  it("exports unified media accept string for composer file input", async () => {
+    const { UNIFIED_MEDIA_ACCEPT } = await import("../../web/lib/gigasocial/mediaComposer");
+    expect(UNIFIED_MEDIA_ACCEPT).toContain("image/jpeg");
+    expect(UNIFIED_MEDIA_ACCEPT).toContain("video/mp4");
+  });
 });
