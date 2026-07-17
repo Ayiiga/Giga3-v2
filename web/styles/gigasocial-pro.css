@@ -12,6 +12,38 @@
   background: #fff;
 }
 
+/* Compact feed layout — tighter vertical rhythm, more content above the fold */
+.gigasocial-feed-panel-compact {
+  contain: none;
+}
+
+.gigasocial-stories-bar--compact {
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+
+.gigasocial-stories-bar--compact button {
+  scroll-snap-align: start;
+}
+
+.gigasocial-featured-player--compact .gigasocial-featured-media video,
+.gigasocial-featured-player--compact .gigasocial-featured-media img {
+  max-height: 11rem;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+@media (min-width: 640px) {
+  .gigasocial-featured-player--compact .gigasocial-featured-media video,
+  .gigasocial-featured-player--compact .gigasocial-featured-media img {
+    max-height: 14rem;
+  }
+}
+
+.gigasocial-feed-hero {
+  contain: none;
+}
+
 @media (hover: hover) {
   .gigasocial-pro .gigasocial-post-card:hover {
     border-color: rgba(91, 33, 182, 0.25);

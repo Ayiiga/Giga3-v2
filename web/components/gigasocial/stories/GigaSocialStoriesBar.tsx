@@ -14,11 +14,13 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 export const GigaSocialStoriesBar = memo(function GigaSocialStoriesBar({
   sessionToken,
   className,
+  compact = false,
   autoOpen = false,
   autoOpenRingId,
 }: {
   sessionToken?: string | null;
   className?: string;
+  compact?: boolean;
   autoOpen?: boolean;
   autoOpenRingId?: string;
 }) {
@@ -53,13 +55,23 @@ export const GigaSocialStoriesBar = memo(function GigaSocialStoriesBar({
   if (loading && !reels.length && !offline) {
     return (
       <div
-        className={cn("gigasocial-stories-bar flex gap-3 overflow-x-auto px-1 py-1", className)}
+        className={cn(
+          "gigasocial-stories-bar flex gap-2 overflow-x-auto py-0.5",
+          compact ? "px-0" : "px-1 py-1",
+          className
+        )}
         aria-hidden
       >
-        {[0, 1, 2].map((slot) => (
-          <div key={slot} className="flex w-16 shrink-0 flex-col items-center gap-1">
-            <div className="h-14 w-14 rounded-full bg-muted/20" />
-            <div className="h-2 w-10 rounded bg-muted/20" />
+        {[0, 1, 2, 3, 4].map((slot) => (
+          <div
+            key={slot}
+            className={cn(
+              "flex shrink-0 flex-col items-center gap-0.5",
+              compact ? "w-[3.25rem]" : "w-16"
+            )}
+          >
+            <div className={cn("rounded-full bg-muted/20", compact ? "h-12 w-12" : "h-14 w-14")} />
+            {!compact ? <div className="h-2 w-10 rounded bg-muted/20" /> : null}
           </div>
         ))}
       </div>
@@ -89,7 +101,8 @@ export const GigaSocialStoriesBar = memo(function GigaSocialStoriesBar({
       ) : null}
       <div
         className={cn(
-          "gigasocial-stories-bar flex gap-3 overflow-x-auto overscroll-x-contain px-1 py-1",
+          "gigasocial-stories-bar flex gap-2 overflow-x-auto overscroll-x-contain py-0.5",
+          compact ? "gigasocial-stories-bar--compact px-0" : "gap-3 px-1 py-1",
           className
         )}
         role="list"
@@ -100,18 +113,26 @@ export const GigaSocialStoriesBar = memo(function GigaSocialStoriesBar({
             key={item.id}
             type="button"
             role="listitem"
-            className="flex w-16 shrink-0 flex-col items-center gap-1 text-center"
+            className={cn(
+              "flex shrink-0 flex-col items-center text-center",
+              compact ? "w-[3.25rem] gap-0.5" : "w-16 gap-1"
+            )}
             onClick={() => openRing(item.id)}
             aria-label={`${item.label}${item.hasUnviewed ? ", new content" : ""}`}
           >
             <SocialAvatar
               name={item.label}
               avatarUrl={item.avatarUrl}
-              size="lg"
+              size={compact ? "md" : "lg"}
               hasStory
               hasUnviewedStory={item.hasUnviewed}
             />
-            <span className="w-full truncate text-[11px] font-medium text-foreground">
+            <span
+              className={cn(
+                "w-full truncate font-medium text-foreground",
+                compact ? "text-[10px] leading-tight" : "text-[11px]"
+              )}
+            >
               {item.label}
             </span>
           </button>

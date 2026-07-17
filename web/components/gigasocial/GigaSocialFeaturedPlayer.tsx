@@ -27,6 +27,7 @@ interface GigaSocialFeaturedPlayerProps {
   onVideoEnded?: () => void;
   enableSwipeSkip?: boolean;
   replayKey?: number;
+  compact?: boolean;
 }
 
 export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
@@ -40,6 +41,7 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
   onVideoEnded,
   enableSwipeSkip = false,
   replayKey = 0,
+  compact = false,
   sessionToken = null,
 }: GigaSocialFeaturedPlayerProps) {
   const display = useMemo(() => splitPostDisplay(post.body), [post.body]);
@@ -73,10 +75,18 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
 
   return (
     <section
-      className="overflow-hidden rounded-2xl border border-accent/20 bg-card shadow-sm"
+      className={cn(
+        "gigasocial-featured-player overflow-hidden rounded-xl border border-accent/20 bg-card shadow-sm",
+        compact && "gigasocial-featured-player--compact"
+      )}
       aria-label="Featured post"
     >
-      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+      <div
+        className={cn(
+          "flex items-center justify-between gap-2 border-b border-border",
+          compact ? "px-3 py-2" : "gap-3 px-4 py-3"
+        )}
+      >
         <GigaSocialProfileLink
           handle={post.author.handle}
           displayName={post.author.displayName}
@@ -87,7 +97,9 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
           sessionToken={sessionToken}
           supporting={following}
         >
-          <p className="text-xs font-medium uppercase tracking-wide text-accent">Now playing</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-accent">
+            {compact ? "Featured" : "Now playing"}
+          </p>
           <p className="truncate text-sm font-semibold text-foreground">
             {post.author.displayName}
             <span className="font-normal text-muted"> · @{post.author.handle}</span>
@@ -139,7 +151,7 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
         />
       </div>
 
-      {preview ? (
+      {preview && !compact ? (
         <div className="border-t border-border px-4 py-3">
           {display.title ? (
             <h2 className="gigasocial-post-title text-base">{display.title}</h2>
