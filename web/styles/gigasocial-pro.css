@@ -48,6 +48,20 @@
   }
 }
 
+.gigasocial-video-trim-editor video {
+  background: #000;
+}
+
+.gigasocial-trim-slider {
+  height: 0.35rem;
+  cursor: pointer;
+}
+
+.gigasocial-trim-slider:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .gigasocial-feed-hero {
   contain: none;
 }
