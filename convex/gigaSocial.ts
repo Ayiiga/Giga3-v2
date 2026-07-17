@@ -27,6 +27,7 @@ import {
   type SocialPostMediaItem,
 } from "./gigaSocialViews";
 import type { Id } from "./_generated/dataModel";
+import { ensureMonetizationUnlock, isMonetizationUnlocked, parsePrivacySettings } from "./gigaSocialEconomy";
 
 const SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC = 15;
 
@@ -313,6 +314,21 @@ export const listFeed = query({
       rows = rows.filter((r) => r.createdAt < args.cursor!);
     }
 
+    if (userId) {
+      const follows = await ctx.db
+        .query("socialFollows")
+        .withIndex("by_follower", (q) => q.eq("followerId", userId))
+        .collect();
+      const supportingIds = new Set(follows.map((f) => f.followingId));
+      rows = rows.filter((post) => {
+        if (post.visibility !== "followers") return true;
+        if (post.authorId === userId) return true;
+        return supportingIds.has(post.authorId);
+      });
+    } else {
+      rows = rows.filter((post) => post.visibility !== "followers");
+    }
+
     if (args.followingOnly) {
       if (!userId) {
         return { posts: [], nextCursor: null };
@@ -326,6 +342,26 @@ export const listFeed = query({
     }
 
     rows.sort((a, b) => b.createdAt - a.createdAt);
+
+    const boostedPostIds = new Set<string>();
+    const activeBoosts = await ctx.db
+      .query("socialPostBoosts")
+      .withIndex("by_status_ends", (q) => q.eq("status", "active"))
+      .take(200);
+    const now = Date.now();
+    for (const boost of activeBoosts) {
+      if (boost.endsAt > now && boost.targetType === "post") {
+        boostedPostIds.add(boost.targetId);
+      }
+    }
+    if (boostedPostIds.size > 0) {
+      rows.sort((a, b) => {
+        const aBoost = boostedPostIds.has(String(a._id)) ? 1 : 0;
+        const bBoost = boostedPostIds.has(String(b._id)) ? 1 : 0;
+        if (aBoost !== bBoost) return bBoost - aBoost;
+        return b.createdAt - a.createdAt;
+      });
+    }
 
     const slice = rows.slice(0, cap);
     const authorCache = new Map<string, ReturnType<typeof toPublicAuthor>>();
@@ -660,7 +696,25 @@ export const getProfileByHandle = query({
 
     const { fanCount, supportingCount } = await getFanCounts(ctx, profile.userId);
     const likesReceived = visiblePosts.reduce((sum, p) => sum + (p.likeCount ?? 0), 0);
+    const totalViews = visiblePosts.reduce((sum, p) => sum + (p.viewCount ?? 0), 0);
     const aiCreationsCount = visiblePosts.filter((p) => p.postType === "ai").length;
+    const gamification = parseGamification(profile.gamificationJson);
+    const privacy = parsePrivacySettings(profile.privacySettingsJson);
+    const monetizationUnlocked = await isMonetizationUnlocked(ctx, profile);
+
+    let mutualFans = 0;
+    if (viewerId && viewerId !== profile.userId) {
+      const myFans = await ctx.db
+        .query("socialFollows")
+        .withIndex("by_following", (q) => q.eq("followingId", viewerId))
+        .collect();
+      const theirFans = await ctx.db
+        .query("socialFollows")
+        .withIndex("by_following", (q) => q.eq("followingId", profile.userId))
+        .collect();
+      const myFanIds = new Set(myFans.map((f) => f.followerId));
+      mutualFans = theirFans.filter((f) => myFanIds.has(f.followerId)).length;
+    }
 
     let likedPostIds = new Set<string>();
     if (viewerId) {
@@ -677,15 +731,21 @@ export const getProfileByHandle = query({
         handle: profile.handle,
         bio: profile.bio ?? "",
         avatarUrl: profile.avatarUrl,
+        coverUrl: profile.coverUrl,
         skills: profile.skills,
         interests: profile.interests,
-        gamification: parseGamification(profile.gamificationJson),
+        gamification,
         postCount: visiblePosts.length,
         fanCount,
         supportingCount,
+        mutualFans,
         supporting,
         likesReceived,
+        totalViews,
         aiCreationsCount,
+        creatorLevel: gamification.level,
+        monetizationUnlocked,
+        privacy,
         userId: profile.userId,
       },
       posts: await Promise.all(
@@ -889,8 +949,10 @@ export const upsertMyProfile = mutation({
     handle: v.optional(v.string()),
     bio: v.optional(v.string()),
     avatarUrl: v.optional(v.string()),
+    coverUrl: v.optional(v.string()),
     skills: v.optional(v.array(v.string())),
     interests: v.optional(v.array(v.string())),
+    privacySettingsJson: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
@@ -919,8 +981,16 @@ export const upsertMyProfile = mutation({
         args.avatarUrl !== undefined
           ? args.avatarUrl.trim().slice(0, 500)
           : profile.avatarUrl,
+      coverUrl:
+        args.coverUrl !== undefined
+          ? args.coverUrl.trim().slice(0, 500)
+          : profile.coverUrl,
       skills: args.skills?.map((s) => s.trim().slice(0, 40)).filter(Boolean).slice(0, 12) ?? profile.skills,
       interests: args.interests?.map((s) => s.trim().slice(0, 40)).filter(Boolean).slice(0, 12) ?? profile.interests,
+      privacySettingsJson:
+        args.privacySettingsJson !== undefined
+          ? args.privacySettingsJson
+          : profile.privacySettingsJson,
       updatedAt: now,
     });
 
@@ -1299,6 +1369,23 @@ export const recordPostView = mutation({
 
     const viewCount = (post.viewCount ?? 0) + 1;
     await ctx.db.patch(args.postId, { viewCount, updatedAt: Date.now() });
+
+    const boosts = await ctx.db
+      .query("socialPostBoosts")
+      .withIndex("by_target", (q) =>
+        q.eq("targetType", "post").eq("targetId", String(args.postId))
+      )
+      .collect();
+    const now = Date.now();
+    for (const boost of boosts) {
+      if (boost.status === "active" && boost.endsAt > now) {
+        await ctx.db.patch(boost._id, {
+          impressions: boost.impressions + 1,
+          reach: boost.reach + 1,
+        });
+      }
+    }
+
     return { ok: true, viewCount };
   },
 });
@@ -1476,7 +1563,8 @@ export const toggleFan = mutation({
       .first();
     if (existing) {
       await ctx.db.delete(existing._id);
-      return { supporting: false };
+      const fanCount = await getFanCounts(ctx, args.creatorId);
+      return { supporting: false, fanCount: fanCount.fanCount };
     }
     await ctx.db.insert("socialFollows", {
       followerId: userId,
@@ -1489,7 +1577,15 @@ export const toggleFan = mutation({
       actorId: userId,
       message: "became your fan",
     });
-    return { supporting: true };
+    const creatorProfile = await ctx.db
+      .query("socialProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", args.creatorId))
+      .first();
+    if (creatorProfile) {
+      await ensureMonetizationUnlock(ctx, creatorProfile);
+    }
+    const fanCount = await getFanCounts(ctx, args.creatorId);
+    return { supporting: true, fanCount: fanCount.fanCount };
   },
 });
 

@@ -379,6 +379,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       postType: SocialPostTypeId;
       mediaItems?: SocialPostMediaItemInput[];
       communitySlug?: string;
+      visibility?: "public" | "followers";
     }) => {
       if (!sessionToken) throw new Error("Sign in to post.");
       await createPost({
@@ -387,6 +388,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         postType: args.postType,
         mediaItems: args.mediaItems,
         communitySlug: args.communitySlug,
+        visibility: args.visibility,
       });
       resetFeedPagination();
       setComposeAction(undefined);

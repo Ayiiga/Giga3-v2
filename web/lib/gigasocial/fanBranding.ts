@@ -9,6 +9,8 @@ export const FAN_LABELS = {
   becameYourFan: "became your fan",
   fansOnly: "Fans only",
   unfan: "Stop Supporting",
+  mutualFans: "Mutual Fans",
+  followingLabel: "Following",
 } as const;
 
 export const FOLLOW_LABELS = {

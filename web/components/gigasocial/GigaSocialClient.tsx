@@ -1,5 +1,6 @@
 "use client";
 
+import { GigaSocialCreatorPanel } from "@/components/gigasocial/economy/GigaSocialCreatorPanel";
 import { GigaSocialCommunitiesPanel } from "@/components/gigasocial/GigaSocialCommunitiesPanel";
 import { GigaSocialDiscoverPanel } from "@/components/gigasocial/GigaSocialDiscoverPanel";
 import { GigaSocialFeedPanel } from "@/components/gigasocial/GigaSocialFeedPanel";
@@ -227,6 +228,18 @@ function GigaSocialContent() {
             />
             <GigaSocialPanelErrorBoundary panelName="Live">
               <GigaSocialLivePanel sessionToken={sessionToken} />
+            </GigaSocialPanelErrorBoundary>
+          </>
+        )}
+
+        {section === "creator" && (
+          <>
+            <SectionIntro
+              title="Creator economy"
+              description="Dashboard, gifts hub, affiliate links, and boost campaigns — unlocks at 500 fans."
+            />
+            <GigaSocialPanelErrorBoundary panelName="Creator">
+              <GigaSocialCreatorPanel sessionToken={sessionToken} />
             </GigaSocialPanelErrorBoundary>
           </>
         )}

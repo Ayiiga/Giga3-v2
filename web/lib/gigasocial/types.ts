@@ -84,6 +84,11 @@ export type SocialProfileView = {
   postCount?: number;
   fanCount?: number;
   supportingCount?: number;
+  mutualFans?: number;
+  totalViews?: number;
+  creatorLevel?: number;
+  monetizationUnlocked?: boolean;
+  coverUrl?: string;
   supporting?: boolean;
   userId?: string;
   likesReceived?: number;

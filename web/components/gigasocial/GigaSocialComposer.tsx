@@ -35,7 +35,7 @@ import { POST_TYPE_OPTIONS, type SocialPostTypeId } from "@/lib/gigasocial/secti
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { api } from "convex/_generated/api";
 import { useAction, useMutation } from "convex/react";
-import { classifyMediaFiles, UNIFIED_MEDIA_ACCEPT } from "@/lib/gigasocial/mediaComposer";
+import { visibilityLabel } from "@/lib/gigasocial/fanBranding";
 import { useRouter } from "next/navigation";
 import { Camera, Loader2, Send, X } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -77,6 +77,7 @@ interface GigaSocialComposerProps {
     postType: SocialPostTypeId;
     mediaItems?: SocialPostMediaItemInput[];
     communitySlug?: string;
+    visibility?: "public" | "followers";
   }) => Promise<void>;
 }
 
@@ -95,6 +96,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
 }: GigaSocialComposerProps) {
   const [body, setBody] = useState("");
   const [postType, setPostType] = useState<SocialPostTypeId>("text");
+  const [visibility, setVisibility] = useState<"public" | "followers">("public");
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [pendingVideo, setPendingVideo] = useState<PendingVideo | null>(null);
   const [pendingAudio, setPendingAudio] = useState<PendingAudio | null>(null);
@@ -446,6 +448,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         postType,
         mediaItems,
         communitySlug,
+        visibility,
       });
 
       setBody("");
@@ -669,6 +672,17 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
               {o.label}
             </option>
           ))}
+        </select>
+
+        <select
+          value={visibility}
+          onChange={(e) => setVisibility(e.target.value as "public" | "followers")}
+          className="rounded-xl border border-border bg-white px-3 py-2 text-sm"
+          disabled={disabled || busy}
+          aria-label="Post visibility"
+        >
+          <option value="public">{visibilityLabel("public")}</option>
+          <option value="followers">{visibilityLabel("followers")}</option>
         </select>
 
         <Button
