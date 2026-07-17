@@ -1,4 +1,4 @@
-import { internalMutation, query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { adminCredentialArgs, ensureAdminAccess } from "./adminAccess";
 
@@ -20,6 +20,8 @@ const DEFAULT_CONFIG: Record<string, { value: string; description: string }> = {
   "gigasocial.economy.boostMaxGhs": { value: "2000", description: "Maximum boost budget (GHS)" },
   "gigasocial.economy.boostDurations": { value: "1,3,5,7,14,21,30,60,90", description: "Allowed boost durations (days)" },
 };
+
+export const ECONOMY_CONFIG_PREFIX = "gigasocial.economy.";
 
 function hashToPercent(input: string): number {
   let hash = 0;
@@ -96,7 +98,60 @@ export const upsertRemoteConfig = internalMutation({
 export const listRemoteConfigAdmin = query({
   args: adminCredentialArgs,
   handler: async (ctx, args) => {
-    ensureAdminAccess(args);
+    await ensureAdminAccess(args);
     return await ctx.db.query("remoteConfigEntries").take(100);
+  },
+});
+
+export const getEconomyConfigAdmin = query({
+  args: adminCredentialArgs,
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    const rows = await ctx.db.query("remoteConfigEntries").take(100);
+    return Object.entries(DEFAULT_CONFIG)
+      .filter(([key]) => key.startsWith(ECONOMY_CONFIG_PREFIX))
+      .map(([key, def]) => {
+        const row = rows.find((r) => r.key === key);
+        return {
+          key,
+          value: row?.value ?? def.value,
+          description: def.description,
+        };
+      });
+  },
+});
+
+export const updateEconomyConfigAdmin = mutation({
+  args: {
+    ...adminCredentialArgs,
+    key: v.string(),
+    value: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    if (!args.key.startsWith(ECONOMY_CONFIG_PREFIX)) {
+      throw new Error("Invalid economy config key.");
+    }
+    const def = DEFAULT_CONFIG[args.key];
+    if (!def) throw new Error("Unknown economy config key.");
+
+    const existing = await ctx.db
+      .query("remoteConfigEntries")
+      .withIndex("by_key", (q) => q.eq("key", args.key))
+      .first();
+    const now = Date.now();
+    const payload = {
+      value: args.value.trim(),
+      description: def.description,
+      enabled: true,
+      rolloutPercent: 100,
+      updatedAt: now,
+    };
+    if (existing) {
+      await ctx.db.patch(existing._id, payload);
+    } else {
+      await ctx.db.insert("remoteConfigEntries", { key: args.key, ...payload });
+    }
+    return { ok: true };
   },
 });

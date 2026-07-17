@@ -4,6 +4,11 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { sanitizeSocialText, toPublicAuthor } from "./gigaSocialViews";
+import {
+  deductVariableCredits,
+  isMonetizationUnlocked,
+  loadEconomySettings,
+} from "./gigaSocialEconomy";
 
 const liveModeValidator = v.union(
   v.literal("video"),
@@ -352,16 +357,52 @@ export const sendLiveGift = mutation({
     const userId = await requireSession(args.sessionToken);
     const stream = await ctx.db.get(args.streamId);
     if (!stream || stream.status !== "live") throw new Error("Stream is not live.");
+    if (userId === stream.hostId) throw new Error("You cannot gift yourself.");
+
+    const hostProfile = await ctx.db
+      .query("socialProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", stream.hostId))
+      .first();
+    if (!hostProfile) throw new Error("Host profile not found.");
+
+    const settings = await loadEconomySettings(ctx);
+    const unlocked = await isMonetizationUnlocked(ctx, hostProfile, settings);
+    if (!unlocked) {
+      throw new Error("This creator has not unlocked live gifts yet (500 fans required).");
+    }
+
     const giftType = args.giftType.trim().slice(0, 32);
-    const amount = Math.max(1, Math.min(500, Math.floor(args.amount)));
+    const credits = Math.max(1, Math.min(500, Math.floor(args.amount)));
+    const share = settings.giftCreatorSharePercent / 100;
+    const amountGhs = credits * settings.creditsToGhsRate * share;
+
+    await deductVariableCredits(
+      ctx,
+      userId,
+      credits,
+      `live-gift:${stream.hostId}`,
+      JSON.stringify({ giftType, credits, streamId: args.streamId })
+    );
+
     await ctx.db.insert("socialLiveGifts", {
       streamId: args.streamId,
       senderId: userId,
       giftType,
-      amount,
+      amount: credits,
       createdAt: Date.now(),
     });
-    return { ok: true };
+
+    await ctx.db.insert("socialCreatorGifts", {
+      creatorId: stream.hostId,
+      senderId: userId,
+      giftType,
+      credits,
+      amountGhs,
+      streamId: args.streamId,
+      createdAt: Date.now(),
+    });
+
+    return { ok: true, amountGhs };
   },
 });
 
