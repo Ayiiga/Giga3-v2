@@ -1,9 +1,10 @@
 "use client";
 
 import { GigaSocialAvatarFollow } from "@/components/gigasocial/GigaSocialAvatarFollow";
+import { GigaSocialFanButton } from "@/components/gigasocial/fans/GigaSocialFanButton";
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { getSessionToken } from "@/lib/auth";
+import { getSessionToken, getUserEmail } from "@/lib/auth";
 import { BADGE_LABELS } from "@/lib/gigasocial/sections";
 import { buildGigaSocialProfileUrl } from "@/lib/gigasocial/shareLinks";
 import { parseProfileHandle } from "@/lib/gigasocial/profileRoute";
@@ -85,6 +86,9 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
   }
 
   const displayFanCount = fanCount ?? profile.fanCount ?? 0;
+  const myUserId = getUserEmail();
+  const isOwnProfile = Boolean(myUserId && profile.userId && myUserId === profile.userId);
+  const canFollow = Boolean(sessionToken && profile.userId && !isOwnProfile);
 
   return (
     <div className="space-y-6">
@@ -120,10 +124,27 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
             />
           </div>
 
-          <div className="mt-3">
-            <h1 className="text-xl font-bold text-foreground">{profile.displayName}</h1>
-            <p className="text-sm text-muted">@{profile.handle}</p>
-            {profile.bio ? <p className="mt-2 text-sm text-foreground">{profile.bio}</p> : null}
+          <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="text-xl font-bold text-foreground">{profile.displayName}</h1>
+              <p className="text-sm text-muted">@{profile.handle}</p>
+              {profile.bio ? <p className="mt-2 text-sm text-foreground">{profile.bio}</p> : null}
+            </div>
+            {canFollow ? (
+              <GigaSocialFanButton
+                sessionToken={sessionToken}
+                creatorId={profile.userId!}
+                supporting={profile.supporting}
+                useFollowLabels
+                onChange={(newSupporting, newFanCount) => {
+                  setFanCount((c) => {
+                    if (typeof newFanCount === "number") return newFanCount;
+                    const base = c ?? profile.fanCount ?? 0;
+                    return newSupporting ? base + 1 : Math.max(0, base - 1);
+                  });
+                }}
+              />
+            ) : null}
           </div>
 
           <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
