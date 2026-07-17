@@ -315,7 +315,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         setPostType("video");
         setError(null);
         setSuccess(
-          `This video is ${Math.ceil(durationSec)}s. Trim it to ${SOCIAL_MAX_VIDEO_DURATION_SEC}s before posting.`
+          `This video is ${Math.ceil(durationSec)}s. Open Clip Studio to choose a ${SOCIAL_MAX_VIDEO_DURATION_SEC}s segment.`
         );
         return;
       }

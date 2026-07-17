@@ -37,7 +37,7 @@ const MENU_ITEMS: {
   },
   { id: "photo", label: "Photo", emoji: "📷", icon: ImageIcon, description: "Single image or camera" },
   { id: "photos", label: "Photos", emoji: "🖼", icon: Images, description: "Gallery or slideshow" },
-  { id: "video", label: "Video", emoji: "🎥", icon: Video, description: "Trim long clips to 40s" },
+  { id: "video", label: "Video", emoji: "🎥", icon: Video, description: "Clip Studio · 40s max" },
   { id: "music", label: "Add Music", emoji: "🎵", icon: Music2, description: "Soundtrack for photos" },
   { id: "templates", label: "Templates", emoji: "✨", icon: Sparkles, description: "Creator presets" },
 ];
