@@ -15,7 +15,7 @@ interface GigaSocialAvatarFollowProps {
   supporting?: boolean;
   className?: string;
   avatarClassName?: string;
-  onFollowChange?: (supporting: boolean) => void;
+  onFollowChange?: (supporting: boolean, fanCount?: number) => void;
 }
 
 /** Avatar with an on-picture follow control for feed and profile surfaces. */

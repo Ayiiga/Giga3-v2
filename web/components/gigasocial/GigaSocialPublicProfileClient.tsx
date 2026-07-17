@@ -8,7 +8,8 @@ import { BADGE_LABELS } from "@/lib/gigasocial/sections";
 import { buildGigaSocialProfileUrl } from "@/lib/gigasocial/shareLinks";
 import { parseProfileHandle } from "@/lib/gigasocial/profileRoute";
 import type { SocialPost } from "@/lib/gigasocial/types";
-import { cn } from "@/lib/utils";
+import { FAN_LABELS } from "@/lib/gigasocial/fanBranding";
+import { GigaSocialGiftsHub } from "@/components/gigasocial/economy/GigaSocialGiftsHub";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -18,7 +19,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { memo, useEffect, useMemo, useState } from "react";
 import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
 
-type ProfileTab = "posts" | "photos" | "videos" | "ai" | "liked";
+type ProfileTab = "posts" | "photos" | "videos" | "ai" | "liked" | "gifts";
 
 function profileCoverGradient(handle: string): string {
   let hash = 0;
@@ -89,8 +90,12 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
     <div className="space-y-6">
       <div className="saas-card overflow-hidden rounded-2xl border border-border">
         <div
-          className="h-32 w-full sm:h-40"
-          style={{ background: profileCoverGradient(profile.handle) }}
+          className="h-32 w-full bg-cover bg-center sm:h-40"
+          style={
+            profile.coverUrl
+              ? { backgroundImage: `url(${profile.coverUrl})` }
+              : { background: profileCoverGradient(profile.handle) }
+          }
           role="img"
           aria-label={`${profile.displayName} cover`}
         />
@@ -105,8 +110,9 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
               sessionToken={sessionToken}
               supporting={profile.supporting}
               avatarClassName="ring-4 ring-card"
-              onFollowChange={(newSupporting) => {
+              onFollowChange={(newSupporting, newFanCount) => {
                 setFanCount((c) => {
+                  if (typeof newFanCount === "number") return newFanCount;
                   const base = c ?? profile.fanCount ?? 0;
                   return newSupporting ? base + 1 : Math.max(0, base - 1);
                 });
@@ -126,16 +132,30 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
               <dd className="font-semibold">{profile.postCount ?? 0}</dd>
             </div>
             <div>
-              <dt className="text-muted">Followers</dt>
+              <dt className="text-muted">{FAN_LABELS.fans}</dt>
               <dd className="font-semibold">{displayFanCount}</dd>
             </div>
             <div>
-              <dt className="text-muted">Following</dt>
+              <dt className="text-muted">{FAN_LABELS.followingLabel}</dt>
               <dd className="font-semibold">{profile.supportingCount ?? 0}</dd>
             </div>
             <div>
               <dt className="text-muted">Likes received</dt>
               <dd className="font-semibold">{profile.likesReceived ?? 0}</dd>
+            </div>
+            <div>
+              <dt className="text-muted">Total views</dt>
+              <dd className="font-semibold">{profile.totalViews ?? 0}</dd>
+            </div>
+            {(profile.mutualFans ?? 0) > 0 ? (
+              <div>
+                <dt className="text-muted">{FAN_LABELS.mutualFans}</dt>
+                <dd className="font-semibold">{profile.mutualFans}</dd>
+              </div>
+            ) : null}
+            <div>
+              <dt className="text-muted">Creator level</dt>
+              <dd className="font-semibold">{profile.creatorLevel ?? profile.gamification?.level ?? 1}</dd>
             </div>
           </dl>
 
@@ -176,6 +196,7 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
             ["videos", "Videos"],
             ["ai", "AI"],
             ["liked", "Liked"],
+            ...(profile.monetizationUnlocked ? [["gifts", "Gifts"] as const] : []),
           ] as const
         ).map(([id, label]) => (
           <button
@@ -194,7 +215,9 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
         ))}
       </nav>
 
-      {filteredPosts.length === 0 ? (
+      {tab === "gifts" && profile.monetizationUnlocked && sessionToken ? (
+        <GigaSocialGiftsHub sessionToken={sessionToken} creatorId={profile.userId} />
+      ) : filteredPosts.length === 0 ? (
         <p className="text-center text-sm text-muted">No {tab} to show yet.</p>
       ) : (
         <div className="space-y-4">

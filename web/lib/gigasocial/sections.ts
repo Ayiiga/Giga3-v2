@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   Bell,
   Compass,
   LayoutGrid,
@@ -14,6 +15,7 @@ export type GigaSocialSection =
   | "discover"
   | "communities"
   | "live"
+  | "creator"
   | "profile"
   | "notifications";
 
@@ -48,6 +50,12 @@ export const GIGASOCIAL_SECTIONS: GigaSocialSectionDefinition[] = [
     label: "Communities",
     description: "Join topic groups across Africa",
     icon: Users,
+  },
+  {
+    id: "creator",
+    label: "Creator",
+    description: "Dashboard, gifts, affiliate, and boost campaigns",
+    icon: BarChart3,
   },
   {
     id: "profile",

@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v145-marketing-block-layout";
+const CACHE_NAME = "giga3-shell-v146-creator-economy";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

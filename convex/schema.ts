@@ -733,10 +733,13 @@ export default defineSchema({
     handle: v.string(),
     bio: v.optional(v.string()),
     avatarUrl: v.optional(v.string()),
+    coverUrl: v.optional(v.string()),
     skills: v.array(v.string()),
     interests: v.array(v.string()),
     achievementsJson: v.optional(v.string()),
     gamificationJson: v.optional(v.string()),
+    privacySettingsJson: v.optional(v.string()),
+    economyJson: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -864,6 +867,58 @@ export default defineSchema({
     amount: v.number(),
     createdAt: v.number(),
   }).index("by_stream_created", ["streamId", "createdAt"]),
+
+  /** GigaSocial creator economy — profile gifts (live + direct). */
+  socialCreatorGifts: defineTable({
+    creatorId: v.string(),
+    senderId: v.string(),
+    giftType: v.string(),
+    credits: v.number(),
+    amountGhs: v.number(),
+    message: v.optional(v.string()),
+    postId: v.optional(v.id("socialPosts")),
+    streamId: v.optional(v.id("socialLiveStreams")),
+    createdAt: v.number(),
+  })
+    .index("by_creator_created", ["creatorId", "createdAt"])
+    .index("by_sender_created", ["senderId", "createdAt"]),
+
+  /** GigaSocial creator affiliate tracking. */
+  socialAffiliateEvents: defineTable({
+    creatorId: v.string(),
+    affiliateCode: v.string(),
+    eventType: v.union(v.literal("click"), v.literal("conversion")),
+    visitorId: v.optional(v.string()),
+    amountGhs: v.optional(v.number()),
+    metadataJson: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_creator_created", ["creatorId", "createdAt"])
+    .index("by_code", ["affiliateCode"]),
+
+  /** GigaSocial paid post / product boost campaigns. */
+  socialPostBoosts: defineTable({
+    creatorId: v.string(),
+    targetType: v.union(
+      v.literal("post"),
+      v.literal("video"),
+      v.literal("marketplace"),
+      v.literal("business")
+    ),
+    targetId: v.string(),
+    budgetGhs: v.number(),
+    durationDays: v.number(),
+    status: v.union(v.literal("active"), v.literal("completed"), v.literal("cancelled")),
+    impressions: v.number(),
+    reach: v.number(),
+    engagement: v.number(),
+    startedAt: v.number(),
+    endsAt: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_creator_created", ["creatorId", "createdAt"])
+    .index("by_target", ["targetType", "targetId"])
+    .index("by_status_ends", ["status", "endsAt"]),
 
   /** Enterprise & education — org-scoped data isolated from consumer chat history. */
   organizations: defineTable({

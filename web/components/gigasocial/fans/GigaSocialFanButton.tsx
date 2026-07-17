@@ -27,7 +27,7 @@ export const GigaSocialFanButton = memo(function GigaSocialFanButton({
   useFollowLabels?: boolean;
   overlay?: boolean;
   compact?: boolean;
-  onChange?: (supporting: boolean) => void;
+  onChange?: (supporting: boolean, fanCount?: number) => void;
 }) {
   const [supporting, setSupporting] = useState(Boolean(initialSupporting));
   const [busy, setBusy] = useState(false);
@@ -39,7 +39,7 @@ export const GigaSocialFanButton = memo(function GigaSocialFanButton({
     try {
       const result = await toggleFan({ sessionToken, creatorId });
       setSupporting(result.supporting);
-      onChange?.(result.supporting);
+      onChange?.(result.supporting, result.fanCount);
     } finally {
       setBusy(false);
     }

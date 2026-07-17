@@ -33,7 +33,7 @@ export function giga3ShareDefaults(overrides?: {
   };
 }
 
-/** Subtle corner watermark so gallery saves promote the Giga3 AI PWA. */
+import { readExportWatermarkPreference } from "@/lib/gigasocial/exportWatermark";
 export async function watermarkImageBlob(blob: Blob): Promise<Blob> {
   if (!blob.type.startsWith("image/") || typeof document === "undefined") {
     return blob;
@@ -91,5 +91,6 @@ export async function watermarkImageBlob(blob: Blob): Promise<Blob> {
 }
 
 export async function prepareImageForGallery(blob: Blob): Promise<Blob> {
+  if (!readExportWatermarkPreference()) return blob;
   return watermarkImageBlob(blob);
 }

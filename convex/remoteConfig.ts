@@ -9,6 +9,16 @@ const DEFAULT_CONFIG: Record<string, { value: string; description: string }> = {
   "search.global": { value: "true", description: "Unified global search" },
   "feedback.screenshots": { value: "true", description: "Allow screenshot attachments" },
   "growth.leaderboard": { value: "false", description: "Community leaderboard (beta)" },
+  "gigasocial.economy.minFans": { value: "500", description: "Minimum fans to unlock creator monetization" },
+  "gigasocial.economy.viewRewardRate": { value: "0.001", description: "GHS per content view" },
+  "gigasocial.economy.watchTimeRate": { value: "0.01", description: "GHS per video watch minute" },
+  "gigasocial.economy.engagementRate": { value: "0.05", description: "GHS per comment or share" },
+  "gigasocial.economy.giftSharePercent": { value: "80", description: "Creator share of gift value (%)" },
+  "gigasocial.economy.affiliatePercent": { value: "10", description: "Affiliate commission (%)" },
+  "gigasocial.economy.creditsToGhs": { value: "0.1", description: "GHS value per credit for gifts" },
+  "gigasocial.economy.boostMinGhs": { value: "10", description: "Minimum boost budget (GHS)" },
+  "gigasocial.economy.boostMaxGhs": { value: "2000", description: "Maximum boost budget (GHS)" },
+  "gigasocial.economy.boostDurations": { value: "1,3,5,7,14,21,30,60,90", description: "Allowed boost durations (days)" },
 };
 
 function hashToPercent(input: string): number {
