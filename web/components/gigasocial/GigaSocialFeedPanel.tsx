@@ -11,6 +11,7 @@ import { FeedCategoryBar } from "@/components/gigasocial/feed/FeedCategoryBar";
 import { FeedVideoPlaybackProvider } from "@/components/gigasocial/feed/FeedVideoPlaybackProvider";
 import { GigaSocialSearchBar } from "@/components/gigasocial/feed/GigaSocialSearchBar";
 import { FeedSkeletonList } from "@/components/gigasocial/feed/FeedPostSkeleton";
+import { GigaSocialPanelErrorBoundary } from "@/components/gigasocial/GigaSocialPanelErrorBoundary";
 import { GigaSocialComposer } from "@/components/gigasocial/GigaSocialComposer";
 import { GigaSocialComposerSheet } from "@/components/gigasocial/GigaSocialComposerSheet";
 import { GigaSocialFeaturedPlayer } from "@/components/gigasocial/GigaSocialFeaturedPlayer";
@@ -545,11 +546,15 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       ) : null}
 
       {sessionToken && composerOpen && !useGigaCreateFab ? (
-        <GigaSocialComposer {...composerProps} />
+        <GigaSocialPanelErrorBoundary panelName="Create post">
+          <GigaSocialComposer {...composerProps} />
+        </GigaSocialPanelErrorBoundary>
       ) : null}
 
       {sessionToken && useGigaCreateFab ? (
-        <GigaSocialComposerSheet open={composerOpen} onClose={closeComposer} {...composerProps} />
+        <GigaSocialPanelErrorBoundary panelName="Create post">
+          <GigaSocialComposerSheet open={composerOpen} onClose={closeComposer} {...composerProps} />
+        </GigaSocialPanelErrorBoundary>
       ) : null}
 
       {postsLoading ? (
@@ -638,12 +643,14 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       ) : null}
 
       {useGigaCreateFab ? (
-        <GigaCreateButton
-          disabled={!sessionToken}
-          sections={createMenuSections}
-          enableLive={features.enableGigaLive}
-          onSelect={handleGigaCreate}
-        />
+        <GigaSocialPanelErrorBoundary panelName="Create">
+          <GigaCreateButton
+            disabled={!sessionToken}
+            sections={createMenuSections}
+            enableLive={features.enableGigaLive}
+            onSelect={handleGigaCreate}
+          />
+        </GigaSocialPanelErrorBoundary>
       ) : null}
     </div>
     </FeedVideoPlaybackProvider>

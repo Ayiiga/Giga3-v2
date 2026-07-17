@@ -1,7 +1,6 @@
 import { httpAction } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
-import { consumeDeveloperApiRateLimit } from "./gigaSocialDeveloperApiRateLimit";
 import { RateLimitError } from "./securityErrors";
 
 const CORS_HEADERS = {
@@ -77,7 +76,9 @@ async function withDeveloperAuth(
   }
 
   try {
-    await consumeDeveloperApiRateLimit(ctx, apiKeyId);
+    await ctx.runMutation(internal.gigaSocialDeveloperApiRateLimit.consumeDeveloperApiRateLimitMutation, {
+      apiKeyId,
+    });
     return await handler();
   } catch (err) {
     if (err instanceof RateLimitError) {
