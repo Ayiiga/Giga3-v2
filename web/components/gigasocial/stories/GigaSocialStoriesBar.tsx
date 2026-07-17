@@ -15,10 +15,12 @@ export const GigaSocialStoriesBar = memo(function GigaSocialStoriesBar({
   sessionToken,
   className,
   autoOpen = false,
+  autoOpenRingId,
 }: {
   sessionToken?: string | null;
   className?: string;
   autoOpen?: boolean;
+  autoOpenRingId?: string;
 }) {
   const { reels, viewedIds, loading, offline, offlineCachedReels, hasOfflineSnapshot } =
     useGigaSocialStories(sessionToken);
@@ -45,8 +47,8 @@ export const GigaSocialStoriesBar = memo(function GigaSocialStoriesBar({
   useEffect(() => {
     if (!autoOpen || autoOpenedRef.current || loading || !reels.length) return;
     autoOpenedRef.current = true;
-    openRing("community");
-  }, [autoOpen, loading, openRing, reels.length]);
+    openRing(autoOpenRingId?.trim() || "community");
+  }, [autoOpen, autoOpenRingId, loading, openRing, reels.length]);
 
   if (loading && !reels.length && !offline) {
     return (
