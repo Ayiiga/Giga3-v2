@@ -1,6 +1,6 @@
 "use client";
 
-import { GigaSocialAvatarFollow } from "@/components/gigasocial/GigaSocialAvatarFollow";
+import { GigaSocialFanButton } from "@/components/gigasocial/fans/GigaSocialFanButton";
 import { SocialAvatar } from "@/components/gigasocial/SocialAvatar";
 import { buildGigaSocialProfileUrl } from "@/lib/gigasocial/shareLinks";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ interface GigaSocialProfileLinkProps {
   creatorId?: string;
   sessionToken?: string | null;
   supporting?: boolean;
+  onFollowChange?: (supporting: boolean, fanCount?: number) => void;
   className?: string;
   children?: ReactNode;
 }
@@ -33,38 +34,58 @@ export const GigaSocialProfileLink = memo(function GigaSocialProfileLink({
   creatorId,
   sessionToken,
   supporting = false,
+  onFollowChange,
   className,
   children,
 }: GigaSocialProfileLinkProps) {
-  const href = buildGigaSocialProfileUrl(handle);
-
-  const avatarNode = showFollowOnAvatar ? (
-    <GigaSocialAvatarFollow
-      displayName={displayName}
-      handle={handle}
-      avatarUrl={avatarUrl}
-      avatarSize={avatarSize}
-      creatorId={creatorId}
-      sessionToken={sessionToken}
-      supporting={supporting}
-    />
-  ) : (
-    <SocialAvatar name={displayName} avatarUrl={avatarUrl} size={avatarSize} />
+  const normalizedHandle = handle.replace(/^@/, "").trim().toLowerCase();
+  const href = buildGigaSocialProfileUrl(normalizedHandle);
+  const canFollow = Boolean(
+    showFollowOnAvatar && sessionToken && creatorId && sessionToken !== creatorId
   );
+
+  if (!normalizedHandle) {
+    return (
+      <div className={cn("flex min-w-0 items-start gap-2", className)}>
+        {showAvatar ? (
+          <SocialAvatar name={displayName} avatarUrl={avatarUrl} size={avatarSize} />
+        ) : null}
+        <div className="min-w-0">
+          <span className="block truncate text-sm font-semibold text-foreground">{displayName}</span>
+          {showHandle ? <span className="block truncate text-xs text-muted">@unknown</span> : null}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("flex min-w-0 items-start gap-2", className)}>
       {showAvatar ? (
-        <Link
-          href={href}
-          className="shrink-0 rounded-lg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          aria-label={`View ${displayName}'s profile`}
-        >
-          {avatarNode}
-        </Link>
+        <div className="relative shrink-0">
+          <Link
+            href={href}
+            prefetch={false}
+            className="block rounded-lg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            aria-label={`View ${displayName}'s profile`}
+          >
+            <SocialAvatar name={displayName} avatarUrl={avatarUrl} size={avatarSize} />
+          </Link>
+          {canFollow ? (
+            <GigaSocialFanButton
+              sessionToken={sessionToken!}
+              creatorId={creatorId!}
+              supporting={supporting}
+              useFollowLabels
+              overlay
+              className="absolute -bottom-0.5 -right-0.5"
+              onChange={onFollowChange}
+            />
+          ) : null}
+        </div>
       ) : null}
       <Link
         href={href}
+        prefetch={false}
         className="group min-w-0 flex-1 rounded-lg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         aria-label={`View ${displayName}'s profile`}
       >
@@ -75,7 +96,7 @@ export const GigaSocialProfileLink = memo(function GigaSocialProfileLink({
                 {displayName}
               </span>
               {showHandle ? (
-                <span className="block truncate text-xs text-muted">@{handle}</span>
+                <span className="block truncate text-xs text-muted">@{normalizedHandle}</span>
               ) : null}
             </>
           )}

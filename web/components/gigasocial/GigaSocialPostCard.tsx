@@ -198,6 +198,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           creatorId={post.author.userId}
           sessionToken={sessionToken}
           supporting={following}
+          onFollowChange={setFollowing}
         >
           <span className="flex min-w-0 items-center gap-1">
             <span className="truncate text-sm font-semibold text-foreground">

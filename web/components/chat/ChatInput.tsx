@@ -66,6 +66,8 @@ export const ChatInput = memo(function ChatInput({
   const [toolbarOpen, setToolbarOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [composerFocused, setComposerFocused] = useState(false);
+  const [isMobileComposer, setIsMobileComposer] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const composerRef = useRef<HTMLDivElement>(null);
 
@@ -110,6 +112,17 @@ export const ChatInput = memo(function ChatInput({
     setAttachments(initialAttachments);
     setNotice("Homework image attached — review and send when ready.");
   }, [initialAttachments]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const sync = () => setIsMobileComposer(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  const typingMode = isMobileComposer && composerFocused;
 
   useEffect(() => {
     const hasVisual = attachments.some(
@@ -266,8 +279,9 @@ export const ChatInput = memo(function ChatInput({
         <div
           ref={composerRef}
           className={cn(
-            "chat-composer-surface relative flex items-end gap-1.5 rounded-[1.75rem] border bg-card p-1.5 shadow-sm transition-colors sm:gap-2 sm:p-2",
-            dragOver ? "border-accent/50 bg-accent/5" : "border-border"
+            "chat-composer-surface relative flex items-end gap-1.5 rounded-[1.75rem] border bg-card p-1.5 shadow-sm sm:gap-2 sm:p-2",
+            dragOver ? "border-accent/50 bg-accent/5" : "border-border",
+            typingMode && "chat-composer-surface--typing"
           )}
           onDragOver={(e) => {
             e.preventDefault();
@@ -287,18 +301,20 @@ export const ChatInput = memo(function ChatInput({
             void handlePickFiles(intent.files, intent.kind);
           }}
         >
-          <ChatInputToolbar
-            disabled={inputDisabled}
-            expanded={toolbarOpen}
-            onToggle={() => {
-              setToolbarOpen((open) => !open);
-              setEmojiOpen(false);
-            }}
-            onPickFiles={(files, kind) => void handlePickFiles(files, kind)}
-            onInsertTemplate={insertText}
-            onError={(msg) => setNotice(msg)}
-            onVoiceTranscript={(text) => insertText(text)}
-          />
+          {!typingMode ? (
+            <ChatInputToolbar
+              disabled={inputDisabled}
+              expanded={toolbarOpen}
+              onToggle={() => {
+                setToolbarOpen((open) => !open);
+                setEmojiOpen(false);
+              }}
+              onPickFiles={(files, kind) => void handlePickFiles(files, kind)}
+              onInsertTemplate={insertText}
+              onError={(msg) => setNotice(msg)}
+              onVoiceTranscript={(text) => insertText(text)}
+            />
+          ) : null}
 
           <div className="relative min-w-0 flex-1">
             <EmojiPicker
@@ -311,26 +327,45 @@ export const ChatInput = memo(function ChatInput({
               value={value}
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={handleKeyDown}
+              onFocus={() => {
+                setComposerFocused(true);
+                setToolbarOpen(false);
+                setEmojiOpen(false);
+              }}
+              onBlur={() => {
+                window.setTimeout(() => {
+                  const active = document.activeElement;
+                  if (active?.closest(".chat-composer-surface")) return;
+                  setComposerFocused(false);
+                  setToolbarOpen(false);
+                  setEmojiOpen(false);
+                }, 120);
+              }}
               disabled={inputDisabled}
-              rows={1}
+              rows={typingMode ? 3 : 1}
               placeholder={placeholder}
-              className="chat-composer-textarea max-h-40 min-h-10 w-full resize-none overflow-y-auto border-0 bg-transparent px-2 py-2 text-base leading-[1.5] text-foreground outline-none placeholder:text-muted focus:ring-0 disabled:opacity-50"
+              className={cn(
+                "chat-composer-textarea w-full resize-none overflow-y-auto border-0 bg-transparent px-2 py-2 text-base leading-[1.5] text-foreground outline-none placeholder:text-muted focus:ring-0 disabled:opacity-50",
+                typingMode ? "max-h-52 min-h-[4.5rem]" : "max-h-40 min-h-10"
+              )}
               aria-label="Chat message"
             />
           </div>
 
-          <button
-            type="button"
-            disabled={inputDisabled}
-            aria-label="Insert emoji"
-            onClick={() => {
-              setEmojiOpen((open) => !open);
-              setToolbarOpen(false);
-            }}
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted hover:bg-accent/10"
-          >
-            <Smile className="h-5 w-5" aria-hidden />
-          </button>
+          {!typingMode ? (
+            <button
+              type="button"
+              disabled={inputDisabled}
+              aria-label="Insert emoji"
+              onClick={() => {
+                setEmojiOpen((open) => !open);
+                setToolbarOpen(false);
+              }}
+              className="chat-composer-secondary inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted hover:bg-accent/10"
+            >
+              <Smile className="h-5 w-5" aria-hidden />
+            </button>
+          ) : null}
 
           <Button
             type="submit"
