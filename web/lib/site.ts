@@ -25,7 +25,7 @@ export const siteConfig = {
     media: "/media",
     creatorStudio: "/creator-studio",
     gigalearn: "/gigalearn",
-    gigasocial: "/gigasocial",
+    gigasocial: "/gigasocial/",
     enterprise: "/enterprise",
     workspace: "/workspace",
     automation: "/automation",

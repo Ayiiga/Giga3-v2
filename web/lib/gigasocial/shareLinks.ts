@@ -19,10 +19,29 @@ export function buildGigaSocialSharePreviewUrl(postId: string): string {
   return `${site}/gigasocial/post/preview?id=${encodeURIComponent(postId)}`;
 }
 
+/** Deep link into the authenticated GigaSocial feed. */
+export function buildGigaSocialFeedUrl(
+  options?: {
+    stories?: boolean;
+    ring?: string;
+    highlight?: string;
+    tab?: string;
+  },
+  origin?: string
+): string {
+  const base = (origin?.replace(/\/$/, "") || DEFAULT_ORIGIN).replace(/\/$/, "");
+  const params = new URLSearchParams();
+  if (options?.stories) params.set("stories", "1");
+  if (options?.ring) params.set("ring", options.ring);
+  if (options?.highlight) params.set("highlight", options.highlight);
+  if (options?.tab) params.set("tab", options.tab);
+  const query = params.toString();
+  return query ? `${base}/gigasocial/?${query}` : `${base}/gigasocial/`;
+}
+
 /** Deep link into the authenticated GigaSocial feed, scrolling to a post when present. */
 export function buildGigaSocialFeedPostUrl(postId: string, origin?: string): string {
-  const base = (origin?.replace(/\/$/, "") || DEFAULT_ORIGIN).replace(/\/$/, "");
-  return `${base}/gigasocial/?highlight=${encodeURIComponent(postId)}`;
+  return buildGigaSocialFeedUrl({ highlight: postId }, origin);
 }
 
 /** Public profile URL by @handle (query param for static-export client routing). */

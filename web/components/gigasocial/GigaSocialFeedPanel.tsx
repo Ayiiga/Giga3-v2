@@ -48,12 +48,14 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   highlightPostId,
   onOpenLive,
   autoOpenStories = false,
+  autoOpenStoriesRing,
 }: {
   sessionToken: string | null;
   communitySlug?: string;
   highlightPostId?: string;
   onOpenLive?: () => void;
   autoOpenStories?: boolean;
+  autoOpenStoriesRing?: string;
 }) {
   const router = useRouter();
   const features = useGigaSocialFeatures();
@@ -443,7 +445,11 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       <GigaSocialSearchBar value={searchQuery} onChange={setSearchQuery} sessionToken={sessionToken} />
 
       {!isSearching && !savedFeed ? (
-        <GigaSocialStoriesBar sessionToken={sessionToken} autoOpen={autoOpenStories} />
+        <GigaSocialStoriesBar
+          sessionToken={sessionToken}
+          autoOpen={autoOpenStories}
+          autoOpenRingId={autoOpenStoriesRing}
+        />
       ) : null}
 
       {featuredPost && !isSearching && !savedFeed ? (
