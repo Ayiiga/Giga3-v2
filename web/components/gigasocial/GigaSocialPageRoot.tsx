@@ -4,6 +4,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { withChunkRetryLoader } from "@/lib/pwa/dynamicWithChunkRetry";
 import dynamic from "next/dynamic";
+import { GigaSocialShellBoundary } from "@/components/gigasocial/GigaSocialShellBoundary";
 
 const GigaSocialClient = dynamic(
   withChunkRetryLoader(() =>
@@ -16,5 +17,9 @@ const GigaSocialClient = dynamic(
 
 export function GigaSocialPageRoot() {
   useRenderDiagnostic("GigaSocialPageRoot");
-  return <GigaSocialClient />;
+  return (
+    <GigaSocialShellBoundary>
+      <GigaSocialClient />
+    </GigaSocialShellBoundary>
+  );
 }

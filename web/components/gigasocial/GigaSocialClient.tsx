@@ -1,6 +1,5 @@
 "use client";
 
-import { GigaSocialCreatorPanel } from "@/components/gigasocial/economy/GigaSocialCreatorPanel";
 import { GigaSocialCommunitiesPanel } from "@/components/gigasocial/GigaSocialCommunitiesPanel";
 import { GigaSocialDiscoverPanel } from "@/components/gigasocial/GigaSocialDiscoverPanel";
 import { GigaSocialFeedPanel } from "@/components/gigasocial/GigaSocialFeedPanel";
@@ -12,6 +11,7 @@ import { GigaSocialProfilePanel } from "@/components/gigasocial/GigaSocialProfil
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
+import { withChunkRetryLoader } from "@/lib/pwa/dynamicWithChunkRetry";
 import { getSessionToken } from "@/lib/auth";
 import { getGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import {
@@ -22,10 +22,20 @@ import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useMutation } from "convex/react";
+import dynamic from "next/dynamic";
 import { ArrowLeft, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
+
+const GigaSocialCreatorPanel = dynamic(
+  withChunkRetryLoader(() =>
+    import("@/components/gigasocial/economy/GigaSocialCreatorPanel").then((m) => ({
+      default: m.GigaSocialCreatorPanel,
+    }))
+  ),
+  { ssr: false, loading: () => <p className="text-sm text-muted">Loading creator tools…</p> }
+);
 
 function GigaSocialContent() {
   useRenderDiagnostic("GigaSocialContent");
@@ -184,6 +194,7 @@ function GigaSocialContent() {
                 communitySlug={communitySlug}
                 highlightPostId={highlightPostId}
                 autoOpenStories={params.get("stories") === "1"}
+                autoOpenStoriesRing={params.get("ring")?.trim() || undefined}
                 onOpenLive={features.enableGigaLive ? () => openSection("live") : undefined}
               />
             </GigaSocialPanelErrorBoundary>
