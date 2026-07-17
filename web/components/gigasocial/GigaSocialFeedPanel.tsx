@@ -420,6 +420,25 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 
   const useGigaCreateFab = features.enableGigaCreate && Boolean(sessionToken);
 
+  const [hideFeaturedOnMobile, setHideFeaturedOnMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const update = () => {
+      setHideFeaturedOnMobile(mq.matches && !highlightPostId);
+    };
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, [highlightPostId]);
+
+  const showFeaturedAboveFeed = Boolean(
+    featuredPost && !isSearching && !savedFeed && !hideFeaturedOnMobile
+  );
+
+  const visibleFeedPosts =
+    hideFeaturedOnMobile && featuredPost ? [featuredPost, ...feedPosts] : feedPosts;
+
   const composerProps = {
     sessionToken: sessionToken!,
     communitySlug,
@@ -435,27 +454,70 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 
   return (
     <FeedVideoPlaybackProvider enabled={autoPlay && !paused}>
-    <div className="gigasocial-stable space-y-4 pb-24">
+    <div className="gigasocial-feed-panel-compact gigasocial-stable space-y-1.5 pb-20 sm:space-y-2.5 sm:pb-24">
       {errorToast ? (
-        <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900" role="status">
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs text-amber-900" role="status">
           {errorToast}
         </p>
       ) : null}
 
-      <GigaSocialSearchBar value={searchQuery} onChange={setSearchQuery} sessionToken={sessionToken} />
-
       {!isSearching && !savedFeed ? (
         <GigaSocialStoriesBar
           sessionToken={sessionToken}
+          compact
           autoOpen={autoOpenStories}
           autoOpenRingId={autoOpenStoriesRing}
         />
       ) : null}
 
-      {featuredPost && !isSearching && !savedFeed ? (
+      <GigaSocialSearchBar value={searchQuery} onChange={setSearchQuery} sessionToken={sessionToken} />
+
+      {features.enableFeedCategories ? (
+        <div className="hidden sm:block">
+          <FeedCategoryBar value={feedCategory} onChange={setFeedCategory} />
+        </div>
+      ) : null}
+
+      <div
+        className="hidden flex-wrap items-center gap-1.5 sm:flex sm:gap-2"
+        role="tablist"
+        aria-label="Filter feed by post type"
+      >
+        <FilterChip active={typeFilter === "all"} onClick={() => setTypeFilter("all")} label="All" />
+        {POST_TYPE_OPTIONS.filter((t) =>
+          ["education", "creator", "ai", "image"].includes(t.id)
+        ).map((t) => (
+          <FilterChip
+            key={t.id}
+            active={typeFilter === t.id}
+            onClick={() => setTypeFilter(t.id)}
+            label={t.label}
+          />
+        ))}
+        {sessionToken && !useGigaCreateFab ? (
+          <button
+            type="button"
+            onClick={() => setComposerOpen((open) => !open)}
+            className={cn(
+              "ml-auto inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-muted hover:border-accent/30 hover:bg-accent/5 hover:text-accent",
+              composerOpen && "border-accent/40 bg-accent/10 text-accent"
+            )}
+            aria-label={composerOpen ? "Close new post" : "New post"}
+            aria-expanded={composerOpen}
+          >
+            {composerOpen ? (
+              <X className="h-3.5 w-3.5" aria-hidden />
+            ) : (
+              <SquarePen className="h-3.5 w-3.5" aria-hidden />
+            )}
+          </button>
+        ) : null}
+      </div>
+
+      {showFeaturedAboveFeed ? (
         hydrated ? (
           <GigaSocialFeaturedPlayer
-            post={featuredPost}
+            post={featuredPost!}
             autoPlay={autoPlay}
             paused={paused}
             sessionToken={sessionToken}
@@ -470,56 +532,17 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
             }
             onVideoEnded={handleFeaturedVideoEnded}
             replayKey={featuredReplayKey}
+            compact
           />
         ) : (
           <div
-            className="gigasocial-featured-slot min-h-[14rem] rounded-2xl border border-accent/20 bg-card sm:min-h-[16rem]"
+            className="gigasocial-featured-slot min-h-[10rem] rounded-xl border border-accent/20 bg-card sm:min-h-[12rem]"
             aria-hidden
           />
         )
-      ) : !isSearching && !savedFeed ? (
-        <GigaSocialFeedHero postCount={posts.length} />
+      ) : !isSearching && !savedFeed && !posts.length && !postsLoading ? (
+        <GigaSocialFeedHero postCount={posts.length} compact />
       ) : null}
-
-      {features.enableFeedCategories ? (
-        <FeedCategoryBar value={feedCategory} onChange={setFeedCategory} />
-      ) : null}
-
-      <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter feed by post type">
-        <FilterChip active={typeFilter === "all"} onClick={() => setTypeFilter("all")} label="All" />
-        {POST_TYPE_OPTIONS.filter((t) =>
-          ["education", "creator", "ai", "image"].includes(t.id)
-        ).map((t) => (
-          <FilterChip
-            key={t.id}
-            active={typeFilter === t.id}
-            onClick={() => setTypeFilter(t.id)}
-            label={t.label}
-          />
-        ))}
-      </div>
-
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-medium text-muted">Latest posts</p>
-        {sessionToken && !useGigaCreateFab ? (
-          <button
-            type="button"
-            onClick={() => setComposerOpen((open) => !open)}
-            className={cn(
-              "inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white text-muted hover:border-accent/30 hover:bg-accent/5 hover:text-accent",
-              composerOpen && "border-accent/40 bg-accent/10 text-accent"
-            )}
-            aria-label={composerOpen ? "Close new post" : "New post"}
-            aria-expanded={composerOpen}
-          >
-            {composerOpen ? (
-              <X className="h-4 w-4" aria-hidden />
-            ) : (
-              <SquarePen className="h-4 w-4" aria-hidden />
-            )}
-          </button>
-        ) : null}
-      </div>
 
       {sessionToken && composerOpen && !useGigaCreateFab ? (
         <GigaSocialComposer {...composerProps} />
@@ -530,8 +553,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       ) : null}
 
       {postsLoading ? (
-        <FeedSkeletonList count={3} />
-      ) : feedPosts.length === 0 ? (
+        <FeedSkeletonList count={2} />
+      ) : visibleFeedPosts.length === 0 ? (
         <div id="gigasocial-feed-posts">
           <EmptyState
           icon={MessageCircle}
@@ -555,8 +578,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         />
         </div>
       ) : (
-        <ul id="gigasocial-feed-posts" className="space-y-4">
-          {feedPosts.map((post) => (
+        <ul id="gigasocial-feed-posts" className="space-y-3">
+          {visibleFeedPosts.map((post) => (
             <li key={post._id} id={`gigasocial-post-${post._id}`} className="gigasocial-feed-item">
               <GigaSocialPostCard
                 post={post}
@@ -643,7 +666,7 @@ function FilterChip({
       aria-selected={active}
       onClick={onClick}
       className={cn(
-        "min-h-9 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+        "min-h-8 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors sm:min-h-9 sm:px-3 sm:py-1.5 sm:text-xs",
         active
           ? "border-accent/40 bg-accent/10 text-foreground"
           : "border-border bg-white text-muted hover:border-accent/25 hover:text-foreground"

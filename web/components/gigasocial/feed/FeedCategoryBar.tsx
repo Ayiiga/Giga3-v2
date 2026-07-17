@@ -13,7 +13,7 @@ export const FeedCategoryBar = memo(function FeedCategoryBar({
 }) {
   return (
     <div
-      className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1"
+      className="flex gap-1.5 overflow-x-auto overscroll-x-contain pb-0.5 sm:gap-2"
       role="tablist"
       aria-label="Feed categories"
     >
@@ -27,7 +27,7 @@ export const FeedCategoryBar = memo(function FeedCategoryBar({
             aria-selected={active}
             onClick={() => onChange(category.id)}
             className={cn(
-              "inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium",
+              "inline-flex min-h-8 shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium sm:min-h-9 sm:gap-1.5 sm:px-3 sm:py-1.5 sm:text-xs",
               active
                 ? "border-accent/40 bg-accent/10 text-foreground"
                 : "border-border bg-white text-muted hover:border-accent/25 hover:text-foreground"

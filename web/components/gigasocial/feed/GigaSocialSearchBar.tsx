@@ -68,7 +68,7 @@ export const GigaSocialSearchBar = memo(function GigaSocialSearchBar({
         }}
         placeholder="Search creators, hashtags, topics…"
         aria-label="Search GigaSocial"
-        className="w-full rounded-xl border border-border bg-white py-2.5 pl-10 pr-10 text-sm"
+        className="w-full rounded-xl border border-border bg-white py-2 pl-10 pr-10 text-sm"
       />
       {value ? (
         <button
