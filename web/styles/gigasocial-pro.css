@@ -13,6 +13,14 @@
 }
 
 /* Compact feed layout — tighter vertical rhythm, more content above the fold */
+.gigasocial-page-shell {
+  contain: none;
+}
+
+[data-marketing="true"]:has(.gigasocial-page-shell) footer {
+  display: none;
+}
+
 .gigasocial-feed-panel-compact {
   contain: none;
 }

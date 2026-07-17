@@ -153,48 +153,59 @@ function GigaSocialContent() {
     router.replace(`/gigasocial/?${params.toString()}`, { scroll: false });
   };
 
+  const isFeedSection = section === "feed";
+
   return (
-    <div className="gigasocial-stable gigasocial-pro mx-auto max-w-6xl space-y-3 sm:space-y-4">
+    <div
+      className={cn(
+        "gigasocial-stable gigasocial-pro mx-auto max-w-6xl",
+        isFeedSection ? "space-y-2" : "space-y-3 sm:space-y-4"
+      )}
+    >
       <GigaSocialUnreadLoader sessionToken={sessionToken} onUnread={handleUnread} />
-      <header className="flex flex-wrap items-center justify-between gap-2 sm:items-start sm:gap-3">
-        <div className="min-w-0 flex-1">
+      <header
+        className={cn(
+          "gigasocial-shell-header flex flex-wrap items-center justify-between gap-2",
+          isFeedSection && "gap-1.5"
+        )}
+      >
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <Link
             href={siteConfig.links.dashboard}
-            className="mb-1 inline-flex min-h-8 items-center gap-1.5 text-xs text-muted hover:text-foreground sm:mb-1.5 sm:min-h-9 sm:gap-2 sm:text-sm"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border text-muted hover:border-accent/30 hover:text-foreground sm:h-9 sm:w-auto sm:gap-1.5 sm:px-2.5 sm:py-1"
+            aria-label="Back to chat"
           >
-            <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
-            Back to chat
+            <ArrowLeft className="h-4 w-4" aria-hidden />
+            <span className="hidden text-sm sm:inline">Chat</span>
           </Link>
-          <div className="flex items-center gap-2.5 sm:gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-600 text-white sm:h-10 sm:w-10 sm:rounded-2xl">
-              <UsersRound className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden />
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-600 text-white sm:h-9 sm:w-9 sm:rounded-xl">
+              <UsersRound className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
             </div>
-            <div className="min-w-0">
-              <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-                GigaSocial
-              </h1>
-              <p className="hidden text-sm text-muted sm:block">
-                Connect, share, learn, and collaborate across the Giga3 AI community.
-              </p>
-            </div>
+            <h1 className="truncate text-base font-bold tracking-tight text-foreground sm:text-xl">
+              GigaSocial
+            </h1>
           </div>
+          <p className="sr-only">
+            Connect, share, learn, and collaborate across the Giga3 AI community.
+          </p>
         </div>
-        {communitySlug && (
-          <div className="saas-card rounded-2xl border border-border px-4 py-3 text-sm">
-            Community feed: <span className="font-medium capitalize">{communitySlug}</span>
+        {communitySlug ? (
+          <div className="rounded-full border border-border px-2.5 py-1 text-xs sm:rounded-2xl sm:px-4 sm:py-2 sm:text-sm">
+            <span className="font-medium capitalize">{communitySlug}</span>
             <button
               type="button"
-              className="ml-2 text-accent hover:underline"
+              className="ml-1.5 text-accent hover:underline"
               onClick={() => setCommunitySlug(undefined)}
             >
               Clear
             </button>
           </div>
-        )}
+        ) : null}
       </header>
 
       <nav
-        className="flex gap-1.5 overflow-x-auto overscroll-x-contain pb-0.5 sm:gap-2"
+        className="flex gap-1 overflow-x-auto overscroll-x-contain sm:gap-1.5"
         aria-label="GigaSocial sections"
       >
         {GIGASOCIAL_SECTIONS.filter((item) =>
@@ -208,7 +219,7 @@ function GigaSocialContent() {
               type="button"
               onClick={() => openSection(item.id)}
               className={cn(
-                "relative inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium sm:min-h-10 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm",
+                "relative inline-flex min-h-8 shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium sm:min-h-9 sm:gap-1.5 sm:px-3 sm:py-1.5 sm:text-xs",
                 active
                   ? item.id === "live"
                     ? "border-red-500/50 bg-red-50 text-red-800"
@@ -230,7 +241,12 @@ function GigaSocialContent() {
         })}
       </nav>
 
-      <section className="gigasocial-feed-shell rounded-2xl border border-border p-3 sm:p-4">
+      <section
+        className={cn(
+          "gigasocial-feed-shell rounded-xl border border-border sm:rounded-2xl",
+          isFeedSection ? "p-2 sm:p-4" : "p-3 sm:p-4"
+        )}
+      >
         {section === "feed" && (
           <GigaSocialPanelErrorBoundary panelName="Feed">
             <GigaSocialFeedPanel

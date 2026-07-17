@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v151-gigasocial-feed-layout";
+const CACHE_NAME = "giga3-shell-v152-gigasocial-feed-top";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

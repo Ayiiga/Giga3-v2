@@ -425,14 +425,12 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 1023px)");
     const update = () => {
-      setHideFeaturedOnMobile(
-        mq.matches && feedPosts.length > 1 && !highlightPostId
-      );
+      setHideFeaturedOnMobile(mq.matches && !highlightPostId);
     };
     update();
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
-  }, [feedPosts.length, highlightPostId]);
+  }, [highlightPostId]);
 
   const showFeaturedAboveFeed = Boolean(
     featuredPost && !isSearching && !savedFeed && !hideFeaturedOnMobile
@@ -456,18 +454,12 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 
   return (
     <FeedVideoPlaybackProvider enabled={autoPlay && !paused}>
-    <div className="gigasocial-feed-panel-compact gigasocial-stable space-y-2 pb-20 sm:space-y-3 sm:pb-24">
+    <div className="gigasocial-feed-panel-compact gigasocial-stable space-y-1.5 pb-20 sm:space-y-2.5 sm:pb-24">
       {errorToast ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs text-amber-900" role="status">
           {errorToast}
         </p>
       ) : null}
-
-      {features.enableFeedCategories ? (
-        <FeedCategoryBar value={feedCategory} onChange={setFeedCategory} />
-      ) : null}
-
-      <GigaSocialSearchBar value={searchQuery} onChange={setSearchQuery} sessionToken={sessionToken} />
 
       {!isSearching && !savedFeed ? (
         <GigaSocialStoriesBar
@@ -478,7 +470,19 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         />
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2" role="tablist" aria-label="Filter feed by post type">
+      <GigaSocialSearchBar value={searchQuery} onChange={setSearchQuery} sessionToken={sessionToken} />
+
+      {features.enableFeedCategories ? (
+        <div className="hidden sm:block">
+          <FeedCategoryBar value={feedCategory} onChange={setFeedCategory} />
+        </div>
+      ) : null}
+
+      <div
+        className="hidden flex-wrap items-center gap-1.5 sm:flex sm:gap-2"
+        role="tablist"
+        aria-label="Filter feed by post type"
+      >
         <FilterChip active={typeFilter === "all"} onClick={() => setTypeFilter("all")} label="All" />
         {POST_TYPE_OPTIONS.filter((t) =>
           ["education", "creator", "ai", "image"].includes(t.id)
