@@ -2,7 +2,6 @@
 
 import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
 import { ChatProviderBanner } from "@/components/chat/ChatProviderBanner";
-import { SlowNetworkBanner } from "@/components/chat/SlowNetworkBanner";
 import { UserLearningBanner } from "@/components/chat/UserLearningBanner";
 import { creditBalancePrompt } from "@/lib/billing/creditPrompts";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
@@ -92,7 +91,6 @@ export const ChatBanners = memo(function ChatBanners({
         </div>
       )}
       <div className={cn(hasMessages && "hidden sm:block")}>
-        <SlowNetworkBanner />
         <UserLearningBanner interestProfileJson={interestProfileJson} />
       </div>
       <ChatProviderBanner label={chatProviderLabel} usedFallback={usedFallback} />

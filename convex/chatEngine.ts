@@ -7,6 +7,7 @@ import {
 } from "./webSearch";
 import {
   buildChatRoutePlan,
+  chatSystemProfile,
   resolveAiProviderTier,
   shouldStartFailoverAttempt,
   type AiProviderTier,
@@ -281,13 +282,14 @@ async function openaiComplete(
   model: string,
   messages: OpenAI.Chat.ChatCompletionMessageParam[],
   timeoutMs: number,
-  maxTokens: number
+  maxTokens: number,
+  temperature = 0.7
 ): Promise<string> {
   const client = new OpenAI({ apiKey, timeout: timeoutMs, maxRetries: 0 });
   const response = await client.chat.completions.create({
     model,
     messages,
-    temperature: 0.7,
+    temperature,
     max_tokens: maxTokens,
   });
   const text = response.choices[0]?.message?.content?.trim();
@@ -311,7 +313,8 @@ async function geminiComplete(
   messages: ChatCompletionMessage[],
   timeoutMs: number,
   maxTokens: number,
-  enableWebSearch: boolean
+  enableWebSearch: boolean,
+  temperature = 0.7
 ): Promise<{ text: string; usedWebSearch: boolean }> {
   const hasVisionImages = hasInlineImageAttachments(messages);
 
@@ -385,7 +388,7 @@ async function geminiComplete(
   const body: Record<string, unknown> = {
     contents,
     generationConfig: {
-      temperature: 0.7,
+      temperature,
       maxOutputTokens: maxTokens,
     },
   };
@@ -451,6 +454,7 @@ function buildProviderAttempts(args: {
   falModel: string;
   falTimeoutMs: number;
   enableFalChat: boolean;
+  temperature: number;
 }): Attempt[] {
   const attempts: Attempt[] = [];
 
@@ -465,7 +469,8 @@ function buildProviderAttempts(args: {
             args.trimmed,
             args.timeoutMs,
             args.maxTokens,
-            args.plan.enableWebSearch
+            args.plan.enableWebSearch,
+            args.temperature
           );
           return { content: result.text, usedWebSearch: result.usedWebSearch };
         },
@@ -482,7 +487,8 @@ function buildProviderAttempts(args: {
             args.primaryModel,
             args.asOpenAi,
             args.timeoutMs,
-            args.maxTokens
+            args.maxTokens,
+            args.temperature
           ),
         }),
       });
@@ -678,6 +684,9 @@ export async function completeChatWithFailover(
   const timeoutMs = hasImageAttachment
     ? Math.max(cfg.providerTimeoutMs, 45_000)
     : cfg.providerTimeoutMs;
+  const profile = chatSystemProfile(
+    tier === "premium" ? "pro" : routing?.chatSystem
+  );
 
   const attempts = buildProviderAttempts({
     plan,
@@ -696,6 +705,7 @@ export async function completeChatWithFailover(
     falModel,
     falTimeoutMs: cfg.falTimeoutMs,
     enableFalChat: cfg.enableFalChat,
+    temperature: profile.temperature,
   });
 
   const sequential = await runSequentialPlan(

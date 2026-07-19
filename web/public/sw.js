@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 const CACHE_NAME = "giga3-shell-v157-gigasocial-upload-menu";
+=======
+const CACHE_NAME = "giga3-shell-v39-multi-chat-systems";
+>>>>>>> origin/cursor/multi-chat-systems-993f
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
