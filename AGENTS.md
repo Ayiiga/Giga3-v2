@@ -26,10 +26,20 @@ When fixing chat reliability on slow mobile networks, update **both** `web/hooks
 
 - Install root: `npm ci --legacy-peer-deps`
 - Install web: `cd web && npm install --legacy-peer-deps`
-- Lint: `npm run lint` (runs `web` ESLint)
-- Build: `npm run build` (static export to `web/out`)
-- Convex codegen: `npx convex codegen`
+- Lint: `cd web && npm run lint`
+- Build: `cd web && npm run build` (static export to `web/out`)
+- Dev server: `cd web && npm run dev` → `http://localhost:3000` (use tmux for long-running)
+- Convex codegen: `npx convex codegen` (needs `npx convex login` or use checked-in `convex/_generated/`)
 - Convex deploy: `npx convex deploy --yes` (requires `CONVEX_DEPLOY_KEY`)
+- Tests: none — root `npm test` is a stub; verify via lint, build, and manual browser check
+
+### Local dev env (web)
+
+`web/.env.local` is gitignored. Copy `web/.env.local.example` and set at minimum:
+
+- `NEXT_PUBLIC_CONVEX_URL=https://perfect-lark-521.convex.cloud` (production backend; no local `convex dev` required for UI work)
+
+Chat login uses mock email auth (localStorage). Open `/chat/login`, enter any email, then `/chat` for the full UI.
 
 ### Build-time env (web)
 
