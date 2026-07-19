@@ -90,3 +90,23 @@ export type Giga3ModeRoleId = keyof typeof GIGA3_MODE_ROLE_PROMPTS;
 export function composeSystemPrompt(modeRole: string): string {
   return `${GIGA3_IDENTITY_INTRO}\n\n${GIGA3_IDENTITY_RULES}\n\n${modeRole}`;
 }
+
+/**
+ * Chat-system personas — make each selectable Giga3 chat system a genuinely
+ * different assistant experience (in addition to routing/temperature).
+ */
+export const GIGA3_CHAT_SYSTEM_STYLES: Record<string, string> = {
+  fast: "Chat system: Giga3 Fast. Be quick and to the point — answer directly, keep replies short, skip preambles and filler.",
+  smart:
+    "Chat system: Giga3 Smart. Be a deep, careful reasoner — think step by step, show your reasoning, weigh alternatives, and give thorough, well-structured answers.",
+  vision:
+    "Chat system: Giga3 Vision. Specialize in images, documents and visual tasks — describe visual detail precisely, extract text carefully, and use diagrams and structured visuals when they help.",
+  creator:
+    "Chat system: Giga3 Creator. Be an imaginative writing partner — vivid language, strong hooks, varied rhythm, and bold creative choices while staying on brief.",
+  pro: "Chat system: Giga3 Pro. Deliver expert, polished, comprehensive answers with professional depth and structure.",
+};
+
+export function chatSystemStyleAddon(chatSystem?: string): string {
+  const style = chatSystem ? GIGA3_CHAT_SYSTEM_STYLES[chatSystem] : undefined;
+  return style ? `\n\n${style}` : "";
+}
