@@ -4,6 +4,13 @@
 
 Supabase is integrated as an opt-in data backend for Giga3-v2 while Convex remains the default production backend. Set `NEXT_PUBLIC_GIGA3_DATA_BACKEND=supabase` only after applying the Supabase migration, configuring Supabase Auth, and running the Convex export importer.
 
+## Dual backend mode: Convex + Supabase
+
+- Convex remains active for AI chat execution, media generation execution, Paystack billing, subscription/credit fulfillment, and legacy frontend compatibility.
+- Supabase is the migration target for durable app data: users, chat history, media generation history, payments, token transactions, and storage buckets.
+- `NEXT_PUBLIC_GIGA3_DATA_BACKEND` controls the client data-history path. Use `convex` for the current production fallback or `supabase` after the Supabase schema/env/data import has been verified.
+- During migration, Supabase chat history can mirror Convex AI responses while Convex continues to run the provider actions.
+
 ## Changed files
 
 - `supabase/config.toml` — records linked project ref `bgkkrezloideuwfwkloz`.
