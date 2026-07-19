@@ -136,7 +136,6 @@
   .chat-composer-dock {
     position: relative;
     bottom: auto;
-    /* Shell tracks visualViewport height — only safe-area padding here. */
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
@@ -146,6 +145,35 @@
     height: -webkit-fill-available;
     overscroll-behavior: none;
     touch-action: manipulation;
+  }
+
+  /* Lift composer above soft keyboard; message list gets dock-height padding. */
+  html.chat-route.chat-keyboard-open .chat-composer-stack {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: var(--chat-keyboard-inset, 0px);
+    z-index: 30;
+    width: 100%;
+    max-width: 100%;
+    background: hsl(var(--background));
+    box-shadow: 0 -1px 0 hsl(var(--border));
+  }
+
+  html.chat-route.chat-keyboard-open .chat-message-scroll-region {
+    padding-bottom: calc(var(--chat-composer-dock-height, 5.5rem) + 0.5rem);
+  }
+
+  /* Free vertical space for the conversation when typing. */
+  html.chat-route.chat-keyboard-open .chat-workspace-panel,
+  html.chat-route.chat-keyboard-open .chat-story-rings,
+  html.chat-route.chat-keyboard-open .chat-banners-band {
+    display: none !important;
+  }
+
+  html.chat-route.chat-keyboard-open .chat-header-band {
+    flex-shrink: 1;
+    min-height: 0;
   }
 
   .chat-composer-textarea {

@@ -79,7 +79,7 @@ export const ChatBanners = memo(function ChatBanners({
   }
 
   return (
-    <div className="shrink-0">
+    <div className="chat-banners-band shrink-0">
       {showBalancePrompt && balancePrompt && (
         <div className="border-b border-amber-200/50 px-3 py-2 sm:px-4">
           <CreditPromptBanner

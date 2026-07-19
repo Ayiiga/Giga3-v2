@@ -4,6 +4,13 @@ export const MOBILE_CHAT_MAX_WIDTH = 1023;
 /** Max animation frames to chase keyboard open animations (~800ms at 60fps). */
 export const COMPOSER_VISIBILITY_MAX_FRAMES = 48;
 
+/** CSS custom properties applied on `html.chat-route` during keyboard sync. */
+export const CHAT_KEYBOARD_INSET_VAR = "--chat-keyboard-inset";
+export const CHAT_COMPOSER_DOCK_HEIGHT_VAR = "--chat-composer-dock-height";
+
+/** Default composer dock height when not yet measured (mobile typing bar + input). */
+export const DEFAULT_COMPOSER_DOCK_HEIGHT_PX = 88;
+
 export type VisualViewportRect = {
   offsetTop: number;
   offsetLeft: number;
@@ -37,6 +44,26 @@ export function keyboardInsetPx(
 ): number {
   if (!viewport) return 0;
   return Math.max(0, innerHeight - viewport.height - viewport.offsetTop);
+}
+
+/**
+ * Best-effort keyboard inset for Android PWAs where visualViewport may not shrink
+ * with `interactive-widget=overlays-content`. Falls back to layout viewport height.
+ */
+export function measureKeyboardInset(
+  innerHeight: number,
+  viewport: Pick<VisualViewportRect, "height" | "offsetTop"> | null,
+  layoutHeight?: number
+): number {
+  const fromVisual = keyboardInsetPx(innerHeight, viewport);
+  if (fromVisual > 0) return fromVisual;
+
+  if (layoutHeight !== undefined && layoutHeight > 0) {
+    const fromLayout = Math.max(0, innerHeight - layoutHeight);
+    if (fromLayout >= 80) return fromLayout;
+  }
+
+  return 0;
 }
 
 /** Heuristic: soft keyboard is likely open when visual viewport is materially shorter. */
@@ -97,4 +124,21 @@ export function measureComposerVisibility(
     clipped,
     overflowPx: clipped ? composerScrollOverflowPx(composerBottom, viewport, paddingPx) : 0,
   };
+}
+
+export function applyChatKeyboardCssVars(
+  root: HTMLElement,
+  insetPx: number,
+  composerDockHeightPx: number
+): void {
+  root.style.setProperty(CHAT_KEYBOARD_INSET_VAR, `${Math.max(0, insetPx)}px`);
+  root.style.setProperty(
+    CHAT_COMPOSER_DOCK_HEIGHT_VAR,
+    `${Math.max(0, composerDockHeightPx)}px`
+  );
+}
+
+export function clearChatKeyboardCssVars(root: HTMLElement): void {
+  root.style.removeProperty(CHAT_KEYBOARD_INSET_VAR);
+  root.style.removeProperty(CHAT_COMPOSER_DOCK_HEIGHT_VAR);
 }

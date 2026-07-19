@@ -131,7 +131,7 @@ function ChatWorkspacePanelComponent({
     <div
       id="modes"
       className={cn(
-        "shrink-0 border-b border-border bg-card",
+        "chat-workspace-panel shrink-0 border-b border-border bg-card",
         hasMessages && !open && "hidden sm:block"
       )}
     >

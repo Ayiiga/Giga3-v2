@@ -4,10 +4,15 @@ import { ChatBundlePrefetch } from "@/components/chat/ChatBundlePrefetch";
 import { CHAT_VIEWPORT_SYNC_EVENT, type ChatViewportSyncDetail } from "@/lib/chat/chatViewportEvents";
 import {
   COMPOSER_VISIBILITY_MAX_FRAMES,
+  DEFAULT_COMPOSER_DOCK_HEIGHT_PX,
+  applyChatKeyboardCssVars,
   buildShellViewportStyles,
+  clearChatKeyboardCssVars,
   isComposerDockClipped,
+  isKeyboardLikelyOpen,
   isMobileChatWidth,
   measureComposerVisibility,
+  measureKeyboardInset,
   readVisualViewportRect,
 } from "@/lib/chat/keyboardViewport";
 import { useEffect, useRef } from "react";
@@ -37,6 +42,23 @@ function clearShellViewport(shell: HTMLElement) {
   shell.style.maxHeight = "";
 }
 
+function readComposerDockHeight(): number {
+  const dock = document.querySelector<HTMLElement>(".chat-composer-dock");
+  if (!dock) return DEFAULT_COMPOSER_DOCK_HEIGHT_PX;
+  const height = dock.getBoundingClientRect().height;
+  return height > 0 ? Math.ceil(height) : DEFAULT_COMPOSER_DOCK_HEIGHT_PX;
+}
+
+function scrollComposerIntoView(): void {
+  const textarea = document.querySelector<HTMLElement>(".chat-composer-textarea");
+  if (!textarea) return;
+  try {
+    textarea.scrollIntoView({ block: "end", behavior: "instant" });
+  } catch {
+    textarea.scrollIntoView(false);
+  }
+}
+
 function nudgeMessageListForClippedComposer(): boolean {
   const composer = document.querySelector<HTMLElement>(".chat-composer-dock");
   const vv = window.visualViewport;
@@ -62,10 +84,47 @@ function isComposerClippedNow(): boolean {
   return isComposerDockClipped(rect.bottom, readVisualViewportRect(vv));
 }
 
+type KeyboardLayoutState = {
+  keyboardOpen: boolean;
+  insetPx: number;
+};
+
+function readKeyboardLayoutState(): KeyboardLayoutState {
+  const vv = window.visualViewport;
+  const viewport = vv ? readVisualViewportRect(vv) : null;
+  const innerHeight = window.innerHeight;
+  const layoutHeight = document.documentElement.clientHeight;
+  const insetPx = measureKeyboardInset(innerHeight, viewport, layoutHeight);
+  const keyboardOpen =
+    insetPx >= 80 ||
+    isKeyboardLikelyOpen(innerHeight, viewport) ||
+    Boolean(document.activeElement?.closest(".chat-composer"));
+  return { keyboardOpen, insetPx: keyboardOpen ? insetPx : 0 };
+}
+
+function applyKeyboardLayout(shell: HTMLElement, html: HTMLElement): KeyboardLayoutState {
+  const { keyboardOpen, insetPx } = readKeyboardLayoutState();
+  const composerHeight = readComposerDockHeight();
+
+  applyChatKeyboardCssVars(html, insetPx, composerHeight);
+  html.classList.toggle("chat-keyboard-open", keyboardOpen);
+
+  if (isMobileChatWidth(window.innerWidth)) {
+    applyShellViewport(shell);
+  }
+
+  return { keyboardOpen, insetPx };
+}
+
+function clearKeyboardLayout(shell: HTMLElement, html: HTMLElement) {
+  html.classList.remove("chat-keyboard-open");
+  clearChatKeyboardCssVars(html);
+  clearShellViewport(shell);
+}
+
 /**
- * Pins the chat shell to window.visualViewport on mobile so the composer stays
- * above the soft keyboard when interactive-widget=overlays-content is active.
- * Desktop uses normal document flow (no fixed shell / viewport listeners).
+ * Pins the chat shell to window.visualViewport on mobile and lifts the composer
+ * above the soft keyboard via CSS vars + fixed dock positioning.
  */
 export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
   const shellRef = useRef<HTMLDivElement>(null);
@@ -107,12 +166,12 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
 
     const scheduleSync = (adjustScroll = false) => {
       if (!isMobile()) {
-        clearShellViewport(shell);
+        clearKeyboardLayout(shell, html);
         return;
       }
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        applyShellViewport(shell);
+        applyKeyboardLayout(shell, html);
         if (adjustScroll) {
           nudgeMessageListForClippedComposer();
         }
@@ -129,11 +188,20 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
           cancelChase();
           return;
         }
-        applyShellViewport(shell);
+        const { keyboardOpen } = applyKeyboardLayout(shell, html);
+        scrollComposerIntoView();
         nudgeMessageListForClippedComposer();
         chaseFrames += 1;
 
-        if (chaseFrames >= COMPOSER_VISIBILITY_MAX_FRAMES || !isComposerClippedNow()) {
+        const stillClipped = isComposerClippedNow();
+        if (
+          chaseFrames >= COMPOSER_VISIBILITY_MAX_FRAMES ||
+          (!stillClipped && keyboardOpen)
+        ) {
+          cancelChase();
+          return;
+        }
+        if (chaseFrames >= COMPOSER_VISIBILITY_MAX_FRAMES && !keyboardOpen) {
           cancelChase();
           return;
         }
@@ -158,13 +226,15 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
       window.setTimeout(() => {
         const active = document.activeElement;
         if (isMobileChatComposerTarget(active)) return;
+        html.classList.remove("chat-keyboard-open");
+        clearChatKeyboardCssVars(html);
         scheduleSync(false);
       }, 160);
     };
 
     const onWindowResize = () => {
       if (!isMobile()) {
-        clearShellViewport(shell);
+        clearKeyboardLayout(shell, html);
         unlockPageScroll();
         return;
       }
@@ -209,7 +279,8 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
       document.removeEventListener("focusin", onComposerFocus);
       document.removeEventListener("focusout", onComposerBlur);
       document.removeEventListener(CHAT_VIEWPORT_SYNC_EVENT, onViewportSyncEvent);
-      html.classList.remove("chat-route");
+      html.classList.remove("chat-route", "chat-keyboard-open");
+      clearChatKeyboardCssVars(html);
       unlockPageScroll();
       clearShellViewport(shell);
     };
