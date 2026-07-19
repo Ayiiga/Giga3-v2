@@ -11,8 +11,10 @@ interface SocialAvatarProps {
   square?: boolean;
   /** Gradient story ring (GigaSocial stories/reels). */
   hasStory?: boolean;
-  /** Green accent when unseen story content exists. */
+  /** Unviewed story indicator (green dot on ring). */
   hasUnviewedStory?: boolean;
+  /** Red LIVE badge on story rings when creator is broadcasting. */
+  isLive?: boolean;
 }
 
 const SIZE_CLASS = {
@@ -37,6 +39,7 @@ export const SocialAvatar = memo(function SocialAvatar({
   square = false,
   hasStory = false,
   hasUnviewedStory = false,
+  isLive = false,
 }: SocialAvatarProps) {
   const initial = (name.trim() || "?").slice(0, 1).toUpperCase();
   const shape = square ? "rounded-2xl" : "rounded-full";
@@ -103,6 +106,11 @@ export const SocialAvatar = memo(function SocialAvatar({
           <div className={cn(SIZE_CLASS[size], shape, "overflow-hidden")}>{avatarNode}</div>
         </div>
       </div>
+      {isLive ? (
+        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded bg-red-600 px-1 py-px text-[8px] font-bold uppercase tracking-wide text-white">
+          Live
+        </span>
+      ) : null}
       {hasUnviewedStory ? (
         <span
           className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500"

@@ -9,6 +9,7 @@ export type GigaCreateActionId =
   | "learning-post"
   | "product-post"
   | "live-content"
+  | "story-content"
   | "media-unified"
   | "media-photo"
   | "media-video"
@@ -312,13 +313,13 @@ export function getGigaCreateSections(options?: {
   })).filter((section) => section.items.length > 0);
 }
 
-/** Five-option upload menu for the GigaSocial (+) FAB — feed only. */
+/** Six-option upload menu for the GigaSocial (+) FAB — feed only. */
 export const GIGA_CREATE_FAB_ITEMS: GigaCreateMenuItem[] = [
   {
     id: "media-camera",
     label: "Camera",
     emoji: "📷",
-    description: "Capture photos or videos with your device camera",
+    description: "Capture photos or videos with pro creator tools",
   },
   {
     id: "media-unified",
@@ -335,13 +336,19 @@ export const GIGA_CREATE_FAB_ITEMS: GigaCreateMenuItem[] = [
   {
     id: "text-post",
     label: "Post",
-    emoji: "✍️",
+    emoji: "📝",
     description: "Write a post with photos, emojis, and hashtags",
+  },
+  {
+    id: "story-content",
+    label: "Story",
+    emoji: "📖",
+    description: "Share a short video to your Story ring",
   },
   {
     id: "live-content",
     label: "Go Live",
-    emoji: "🔴",
+    emoji: "📡",
     description: "Start a live broadcast with title and audience",
   },
 ];

@@ -17,12 +17,15 @@ export const GigaSocialStoriesBar = memo(function GigaSocialStoriesBar({
   compact = false,
   autoOpen = false,
   autoOpenRingId,
+  liveHostHandles,
 }: {
   sessionToken?: string | null;
   className?: string;
   compact?: boolean;
   autoOpen?: boolean;
   autoOpenRingId?: string;
+  /** Creator handles currently broadcasting live (shows LIVE badge on story ring). */
+  liveHostHandles?: ReadonlySet<string>;
 }) {
   const { reels, viewedIds, loading, offline, offlineCachedReels, hasOfflineSnapshot } =
     useGigaSocialStories(sessionToken);
@@ -126,6 +129,9 @@ export const GigaSocialStoriesBar = memo(function GigaSocialStoriesBar({
               size={compact ? "md" : "lg"}
               hasStory
               hasUnviewedStory={item.hasUnviewed}
+              isLive={
+                item.id !== "community" && Boolean(liveHostHandles?.has(item.id.toLowerCase()))
+              }
             />
             <span
               className={cn(
