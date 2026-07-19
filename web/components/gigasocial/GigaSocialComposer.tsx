@@ -93,6 +93,7 @@ interface GigaSocialComposerProps {
   enableAIAssistant?: boolean;
   enableMediaStudio?: boolean;
   onPosted?: () => void;
+  onFullscreenFlowChange?: (active: boolean) => void;
   onSubmit: (args: {
     body: string;
     postType: SocialPostTypeId;
@@ -113,6 +114,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   enableAIAssistant = false,
   enableMediaStudio = false,
   onPosted,
+  onFullscreenFlowChange,
   onSubmit,
 }: GigaSocialComposerProps) {
   const [body, setBody] = useState("");
@@ -146,6 +148,14 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const captionRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
+
+  const fullscreenFlowActive = Boolean(
+    mediaReviewDraft || videoTrimDraft || cameraStudioOpen
+  );
+
+  useEffect(() => {
+    onFullscreenFlowChange?.(fullscreenFlowActive);
+  }, [fullscreenFlowActive, onFullscreenFlowChange]);
 
   const prepareUpload = useAction(api.gigaSocialStorage.prepareMediaUpload);
   const resolveStorageUrl = useMutation(api.gigaSocialStorage.resolveStorageUrl);
@@ -369,7 +379,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         setBody((current) => (current.trim() ? current : result.caption));
       }
       if (result.kind === "video") {
-        const durationSec = result.durationSec ?? (await getVideoDuration(result.file));
+        const measured = await getVideoDuration(result.file);
+        const durationSec =
+          result.durationSec && result.durationSec > 0 ? result.durationSec : measured;
         if (needsVideoTrim(durationSec)) {
           clearVideoTrimDraft();
           setVideoTrimDraft({
@@ -796,7 +808,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
             }
             if (file.type.startsWith("video/")) {
               void addVideoFile(file);
-            } else {
+            } else if (event.target.files) {
               void addImageFiles(event.target.files);
             }
             event.target.value = "";

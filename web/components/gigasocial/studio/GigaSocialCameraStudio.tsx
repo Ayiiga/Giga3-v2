@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
 import { GigaSocialTeleprompter } from "@/components/gigasocial/studio/GigaSocialTeleprompter";
 import {
   CAMERA_FILTERS,
   getCameraFilterCss,
   type CameraFilterId,
 } from "@/lib/gigasocial/cameraFilters";
+import { SOCIAL_MAX_VIDEO_DURATION_SEC } from "@/lib/gigasocial/constants";
 import { cn } from "@/lib/utils";
 import {
   Camera,
@@ -59,7 +59,10 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
-  const timerRef = useRef<number | null>(null);
+  const recordTimerRef = useRef<number | null>(null);
+  const countdownTimerRef = useRef<number | null>(null);
+  const recordSecRef = useRef(0);
+  const activeFilterRef = useRef<CameraFilterId>("none");
 
   const [mounted, setMounted] = useState(false);
   const [ready, setReady] = useState(false);
@@ -75,6 +78,21 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
   const [beautyOn, setBeautyOn] = useState(false);
   const [filterId, setFilterId] = useState<CameraFilterId>("none");
   const [busy, setBusy] = useState(false);
+
+  const clearRecordTimer = useCallback(() => {
+    if (recordTimerRef.current != null) {
+      window.clearInterval(recordTimerRef.current);
+      recordTimerRef.current = null;
+    }
+  }, []);
+
+  const clearCountdownTimer = useCallback(() => {
+    if (countdownTimerRef.current != null) {
+      window.clearInterval(countdownTimerRef.current);
+      countdownTimerRef.current = null;
+    }
+    setCountdown(null);
+  }, []);
 
   const stopStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -109,19 +127,19 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
   }, []);
 
   useEffect(() => {
+    activeFilterRef.current = beautyOn ? "natural" : filterId;
+  }, [beautyOn, filterId]);
+
+  useEffect(() => {
     if (!open) return;
     setMode(defaultMode);
     void startStream();
     return () => {
+      clearCountdownTimer();
+      clearRecordTimer();
       stopStream();
-      if (timerRef.current) window.clearInterval(timerRef.current);
     };
-  }, [defaultMode, open, startStream, stopStream]);
-
-  useEffect(() => {
-    if (!open) return;
-    void startStream();
-  }, [facing, mode, open, startStream]);
+  }, [clearCountdownTimer, clearRecordTimer, defaultMode, facing, mode, open, startStream, stopStream]);
 
   const capturePhoto = useCallback(async () => {
     const video = videoRef.current;
@@ -133,7 +151,7 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
       canvas.height = video.videoHeight || 720;
       const ctx = canvas.getContext("2d");
       if (!ctx) throw new Error("Could not capture photo.");
-      const filter = getCameraFilterCss(beautyOn ? "natural" : filterId);
+      const filter = getCameraFilterCss(activeFilterRef.current);
       if (filter && filter !== "none") ctx.filter = filter;
       if (facing === "user") {
         ctx.translate(canvas.width, 0);
@@ -145,26 +163,24 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
       );
       if (!blob) throw new Error("Could not save photo.");
       const file = new File([blob], `gigasocial-${Date.now()}.jpg`, { type: "image/jpeg" });
-      onCapture({ file, kind: "image", filterId: beautyOn ? "natural" : filterId });
+      onCapture({ file, kind: "image", filterId: activeFilterRef.current });
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not capture photo.");
     } finally {
       setBusy(false);
     }
-  }, [beautyOn, busy, facing, filterId, onCapture, onClose, ready]);
+  }, [busy, facing, onCapture, onClose, ready]);
 
   const stopRecording = useCallback(() => {
-    recorderRef.current?.stop();
+    if (!recorderRef.current) return;
+    recorderRef.current.stop();
     recorderRef.current = null;
-    if (timerRef.current) {
-      window.clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
+    clearRecordTimer();
     setRecording(false);
-  }, []);
+  }, [clearRecordTimer]);
 
-  const startRecording = useCallback(async () => {
+  const startRecording = useCallback(() => {
     const stream = streamRef.current;
     if (!stream || recording || busy) return;
     setBusy(true);
@@ -180,27 +196,34 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
         const blob = new Blob(chunksRef.current, { type: mimeType });
         const ext = mimeType.includes("mp4") ? "mp4" : "webm";
         const file = new File([blob], `gigasocial-${Date.now()}.${ext}`, { type: mimeType });
+        const durationSec = Math.max(recordSecRef.current, 1);
         onCapture({
           file,
           kind: "video",
-          durationSec: recordSec,
-          filterId: beautyOn ? "natural" : filterId,
+          durationSec,
+          filterId: activeFilterRef.current,
         });
+        recordSecRef.current = 0;
         setRecordSec(0);
         setBusy(false);
         onClose();
       };
       recorder.start(250);
       setRecording(true);
+      recordSecRef.current = 0;
       setRecordSec(0);
-      timerRef.current = window.setInterval(() => {
-        setRecordSec((value) => value + 1);
+      recordTimerRef.current = window.setInterval(() => {
+        recordSecRef.current += 1;
+        setRecordSec(recordSecRef.current);
+        if (recordSecRef.current >= SOCIAL_MAX_VIDEO_DURATION_SEC) {
+          stopRecording();
+        }
       }, 1000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not start recording.");
       setBusy(false);
     }
-  }, [beautyOn, busy, filterId, onCapture, onClose, recordSec, recording]);
+  }, [busy, onCapture, onClose, recording, stopRecording]);
 
   const runCapture = useCallback(() => {
     if (mode === "photo") {
@@ -212,21 +235,21 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
       return;
     }
     if (timerSec > 0) {
+      clearCountdownTimer();
       setCountdown(timerSec);
       let left = timerSec;
-      const id = window.setInterval(() => {
+      countdownTimerRef.current = window.setInterval(() => {
         left -= 1;
         setCountdown(left);
         if (left <= 0) {
-          window.clearInterval(id);
-          setCountdown(null);
-          void startRecording();
+          clearCountdownTimer();
+          startRecording();
         }
       }, 1000);
       return;
     }
-    void startRecording();
-  }, [capturePhoto, mode, recording, startRecording, stopRecording, timerSec]);
+    startRecording();
+  }, [capturePhoto, clearCountdownTimer, mode, recording, startRecording, stopRecording, timerSec]);
 
   if (!mounted || !open) return null;
 
@@ -273,7 +296,7 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
           <video
             ref={videoRef}
             className={cn(
-              "h-full w-full object-cover",
+              "gigasocial-camera-preview h-full w-full object-cover",
               facing === "user" && "scale-x-[-1]"
             )}
             style={{ filter: previewFilter !== "none" ? previewFilter : undefined }}
@@ -298,13 +321,10 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
           ) : null}
           {recording ? (
             <div className="absolute left-3 top-3 rounded-full bg-red-600/90 px-2 py-0.5 text-xs font-semibold">
-              REC {recordSec}s
+              REC {recordSec}s / {SOCIAL_MAX_VIDEO_DURATION_SEC}s
             </div>
           ) : null}
-          <GigaSocialTeleprompter
-            active={showTeleprompter}
-            recording={recording}
-          />
+          <GigaSocialTeleprompter active={showTeleprompter} recording={recording} />
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-2 px-3 py-2">

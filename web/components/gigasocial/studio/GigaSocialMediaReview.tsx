@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { GigaSocialAIAssistant } from "@/components/gigasocial/ai/GigaSocialAIAssistant";
 import { GigaSocialMediaStudio } from "@/components/gigasocial/studio/GigaSocialMediaStudio";
 import { GigaSocialVideoTrimEditor } from "@/components/gigasocial/studio/GigaSocialVideoTrimEditor";
+import { getCameraFilterCss } from "@/lib/gigasocial/cameraFilters";
 import type { CameraFilterId } from "@/lib/gigasocial/cameraFilters";
 import { generateVideoThumbnail } from "@/lib/gigasocial/mediaUpload";
 import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
@@ -53,6 +54,7 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
   const [workingFile, setWorkingFile] = useState(file);
   const [workingDuration, setWorkingDuration] = useState(durationSec);
   const previewUrl = useMemo(() => URL.createObjectURL(workingFile), [workingFile]);
+  const previewFilter = getCameraFilterCss(activeFilterId);
 
   useEffect(() => {
     setMounted(true);
@@ -128,7 +130,12 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
             <video src={previewUrl} controls playsInline className="max-h-[50vh] w-full object-contain" />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={previewUrl} alt="" className="max-h-[50vh] w-full object-contain" />
+            <img
+              src={previewUrl}
+              alt=""
+              className="max-h-[50vh] w-full object-contain"
+              style={{ filter: previewFilter !== "none" ? previewFilter : undefined }}
+            />
           )}
         </div>
 
@@ -165,7 +172,7 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
           />
         </label>
 
-        {enableAI && caption.trim() ? (
+        {enableAI ? (
           <GigaSocialAIAssistant
             body={caption}
             postType={postType}
