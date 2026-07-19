@@ -13,6 +13,7 @@ import {
   type AttachmentKind,
 } from "@/lib/chat/multimodalAttachments";
 import { CHAT_CREDIT_COST } from "@/lib/billing/creditPrompts";
+import { dispatchChatViewportSync } from "@/lib/chat/chatViewportEvents";
 import {
   formatUploadBytes,
   type UploadUsageSnapshot,
@@ -124,6 +125,11 @@ export const ChatInput = memo(function ChatInput({
   }, []);
 
   const typingMode = isMobileComposer && composerFocused && typingReady;
+
+  useEffect(() => {
+    if (!typingReady) return;
+    dispatchChatViewportSync({ reason: "typing-mode" });
+  }, [typingReady]);
 
   useEffect(() => {
     const hasVisual = attachments.some(
@@ -332,12 +338,14 @@ export const ChatInput = memo(function ChatInput({
                 setComposerFocused(true);
                 setToolbarOpen(false);
                 setEmojiOpen(false);
+                dispatchChatViewportSync({ reason: "focus" });
                 requestAnimationFrame(() => {
                   requestAnimationFrame(() => setTypingReady(true));
                 });
               }}
               onBlur={() => {
                 setTypingReady(false);
+                dispatchChatViewportSync({ reason: "blur" });
                 window.setTimeout(() => {
                   const active = document.activeElement;
                   if (active?.closest(".chat-composer-surface")) return;

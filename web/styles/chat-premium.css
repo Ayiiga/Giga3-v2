@@ -134,9 +134,9 @@
 
 @media (max-width: 1023px) {
   .chat-composer-dock {
-    position: sticky;
-    bottom: 0;
-    /* Shell already tracks visualViewport height — only safe-area padding here. */
+    position: relative;
+    bottom: auto;
+    /* Shell tracks visualViewport height — only safe-area padding here. */
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
@@ -145,6 +145,7 @@
     height: 100%;
     height: -webkit-fill-available;
     overscroll-behavior: none;
+    touch-action: manipulation;
   }
 
   .chat-composer-textarea {

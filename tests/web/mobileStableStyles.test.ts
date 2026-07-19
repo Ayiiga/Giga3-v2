@@ -78,6 +78,11 @@ describe("mobile stability CSS", () => {
     expect(globalsCss).toContain(".dashboard-stable .dashboard-panel-grid");
   });
 
+  it("locks chat route document height on mobile for PWA keyboard shell", () => {
+    expect(globalsCss).toContain("html.chat-route");
+    expect(globalsCss).toContain("overscroll-behavior: none");
+  });
+
   it("defines gigasocial feed shell without nested saas-card contain", () => {
     expect(gigasocialCss).toContain(".gigasocial-pro .gigasocial-feed-shell");
     expect(gigasocialCss).toContain("overflow: visible");

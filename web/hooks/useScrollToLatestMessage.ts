@@ -1,5 +1,6 @@
 "use client";
 
+import { dispatchChatViewportSync } from "@/lib/chat/chatViewportEvents";
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 
 interface UseScrollToLatestMessageOptions {
@@ -60,6 +61,7 @@ export function useScrollToLatestMessage({
     requestAnimationFrame(() => {
       scrollToBottom(el, "auto");
       setShowScrollButton(false);
+      dispatchChatViewportSync({ reason: "scroll" });
     });
   }, [scrollRef, scrollKey, enabled]);
 
