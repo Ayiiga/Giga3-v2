@@ -67,6 +67,7 @@ export const ChatInput = memo(function ChatInput({
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [composerFocused, setComposerFocused] = useState(false);
+  const [typingReady, setTypingReady] = useState(false);
   const [isMobileComposer, setIsMobileComposer] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const composerRef = useRef<HTMLDivElement>(null);
@@ -122,7 +123,7 @@ export const ChatInput = memo(function ChatInput({
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  const typingMode = isMobileComposer && composerFocused;
+  const typingMode = isMobileComposer && composerFocused && typingReady;
 
   useEffect(() => {
     const hasVisual = attachments.some(
@@ -331,8 +332,12 @@ export const ChatInput = memo(function ChatInput({
                 setComposerFocused(true);
                 setToolbarOpen(false);
                 setEmojiOpen(false);
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => setTypingReady(true));
+                });
               }}
               onBlur={() => {
+                setTypingReady(false);
                 window.setTimeout(() => {
                   const active = document.activeElement;
                   if (active?.closest(".chat-composer-surface")) return;
@@ -342,11 +347,11 @@ export const ChatInput = memo(function ChatInput({
                 }, 120);
               }}
               disabled={inputDisabled}
-              rows={typingMode ? 3 : 1}
+              rows={typingMode ? 2 : 1}
               placeholder={placeholder}
               className={cn(
                 "chat-composer-textarea w-full resize-none overflow-y-auto border-0 bg-transparent px-2 py-2 text-base leading-[1.5] text-foreground outline-none placeholder:text-muted focus:ring-0 disabled:opacity-50",
-                typingMode ? "max-h-52 min-h-[4.5rem]" : "max-h-40 min-h-10"
+                typingMode ? "max-h-52 min-h-[3.25rem]" : "max-h-40 min-h-10"
               )}
               aria-label="Chat message"
             />
