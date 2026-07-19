@@ -24,6 +24,7 @@ import {
 } from "@/lib/gigasocial/feedCategories";
 import { rememberSearch } from "@/lib/gigasocial/searchStorage";
 import { resolveGigaCreateRoute } from "@/lib/gigasocial/gigaCreateRoutes";
+import { primeCameraStream } from "@/lib/gigasocial/cameraCapture";
 import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { handleFromEmail } from "@/lib/gigasocial/handleFromEmail";
 import { findFeaturedMediaPost, getPostMediaKind } from "@/lib/gigasocial/postMedia";
@@ -303,6 +304,12 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         }
         setErrorToast("Open the Live tab to start streaming.");
         return;
+      }
+
+      if (route.action === "media-camera") {
+        primeCameraStream({ includeAudio: false, facing: "environment" });
+      } else if (route.action === "story-content") {
+        primeCameraStream({ includeAudio: true, facing: "environment" });
       }
 
       openComposer(route.action, null, {

@@ -7,6 +7,15 @@ import {
   type CameraFilterId,
 } from "@/lib/gigasocial/cameraFilters";
 import { SOCIAL_MAX_VIDEO_DURATION_SEC } from "@/lib/gigasocial/constants";
+import {
+  consumePrimedCameraStream,
+  createVideoRecorder,
+  getCameraErrorMessage,
+  normalizeRecordedVideoMime,
+  requestCameraStream,
+  videoFileExtension,
+  type CameraFacing,
+} from "@/lib/gigasocial/cameraCapture";
 import { cn } from "@/lib/utils";
 import {
   Camera,
@@ -39,16 +48,6 @@ type GigaSocialCameraStudioProps = {
 
 type CaptureMode = "photo" | "video";
 
-function pickVideoMime(): string {
-  const candidates = ["video/webm;codecs=vp9,opus", "video/webm", "video/mp4"];
-  for (const type of candidates) {
-    if (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(type)) {
-      return type;
-    }
-  }
-  return "video/webm";
-}
-
 export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
   open,
   defaultMode = "photo",
@@ -63,12 +62,13 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
   const countdownTimerRef = useRef<number | null>(null);
   const recordSecRef = useRef(0);
   const activeFilterRef = useRef<CameraFilterId>("none");
+  const audioMutedRef = useRef(false);
 
   const [mounted, setMounted] = useState(false);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<CaptureMode>(defaultMode);
-  const [facing, setFacing] = useState<"user" | "environment">("environment");
+  const [facing, setFacing] = useState<CameraFacing>("environment");
   const [recording, setRecording] = useState(false);
   const [recordSec, setRecordSec] = useState(0);
   const [showGrid, setShowGrid] = useState(false);
@@ -78,6 +78,7 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
   const [beautyOn, setBeautyOn] = useState(false);
   const [filterId, setFilterId] = useState<CameraFilterId>("none");
   const [busy, setBusy] = useState(false);
+  const [audioMuted, setAudioMuted] = useState(false);
 
   const clearRecordTimer = useCallback(() => {
     if (recordTimerRef.current != null) {
@@ -102,25 +103,36 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
     }
   }, []);
 
+  const attachStream = useCallback(async (stream: MediaStream) => {
+    streamRef.current = stream;
+    const hasAudio = stream.getAudioTracks().some((track) => track.enabled);
+    audioMutedRef.current = mode === "video" && !hasAudio;
+    setAudioMuted(audioMutedRef.current);
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+      await videoRef.current.play();
+    }
+    setReady(true);
+  }, [mode]);
+
   const startStream = useCallback(async () => {
+    if (recorderRef.current?.state === "recording") return;
     stopStream();
     setReady(false);
     setError(null);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: mode === "video",
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
-      setReady(true);
-    } catch {
-      setError("Camera unavailable. Check permissions or try again.");
+      const primed = consumePrimedCameraStream();
+      const stream = primed
+        ? await primed
+        : await requestCameraStream({
+            facing,
+            includeAudio: mode === "video",
+          });
+      await attachStream(stream);
+    } catch (err) {
+      setError(getCameraErrorMessage(err));
     }
-  }, [facing, mode, stopStream]);
+  }, [attachStream, facing, mode, stopStream]);
 
   useEffect(() => {
     setMounted(true);
@@ -133,13 +145,21 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
   useEffect(() => {
     if (!open) return;
     setMode(defaultMode);
+  }, [defaultMode, open]);
+
+  useEffect(() => {
+    if (!open) return;
     void startStream();
     return () => {
       clearCountdownTimer();
       clearRecordTimer();
+      if (recorderRef.current && recorderRef.current.state !== "inactive") {
+        recorderRef.current.stop();
+        recorderRef.current = null;
+      }
       stopStream();
     };
-  }, [clearCountdownTimer, clearRecordTimer, defaultMode, facing, mode, open, startStream, stopStream]);
+  }, [clearCountdownTimer, clearRecordTimer, facing, mode, open, startStream, stopStream]);
 
   const capturePhoto = useCallback(async () => {
     const video = videoRef.current;
@@ -166,36 +186,62 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
       onCapture({ file, kind: "image", filterId: activeFilterRef.current });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not capture photo.");
+      setError(getCameraErrorMessage(err));
     } finally {
       setBusy(false);
     }
   }, [busy, facing, onCapture, onClose, ready]);
 
   const stopRecording = useCallback(() => {
-    if (!recorderRef.current) return;
-    recorderRef.current.stop();
-    recorderRef.current = null;
-    clearRecordTimer();
-    setRecording(false);
+    const recorder = recorderRef.current;
+    if (!recorder || recorder.state === "inactive") return;
+    try {
+      if (recorder.state === "recording") {
+        recorder.requestData();
+      }
+      recorder.stop();
+    } catch {
+      recorderRef.current = null;
+      clearRecordTimer();
+      setRecording(false);
+      setBusy(false);
+    }
   }, [clearRecordTimer]);
 
   const startRecording = useCallback(() => {
     const stream = streamRef.current;
     if (!stream || recording || busy) return;
     setBusy(true);
+    setError(null);
     try {
       chunksRef.current = [];
-      const mimeType = pickVideoMime();
-      const recorder = new MediaRecorder(stream, { mimeType });
+      const { recorder, mimeType } = createVideoRecorder(stream);
       recorderRef.current = recorder;
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) chunksRef.current.push(event.data);
       };
+      recorder.onerror = () => {
+        setError("Recording failed. Try again or switch browsers.");
+        recorderRef.current = null;
+        clearRecordTimer();
+        setRecording(false);
+        setBusy(false);
+      };
       recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: mimeType });
-        const ext = mimeType.includes("mp4") ? "mp4" : "webm";
-        const file = new File([blob], `gigasocial-${Date.now()}.${ext}`, { type: mimeType });
+        const normalizedMime = normalizeRecordedVideoMime(mimeType);
+        const blob = new Blob(chunksRef.current, { type: normalizedMime });
+        if (!blob.size) {
+          setError("No video was captured. Hold record a little longer and try again.");
+          recorderRef.current = null;
+          clearRecordTimer();
+          setRecording(false);
+          setBusy(false);
+          return;
+        }
+        const ext = videoFileExtension(normalizedMime);
+        const file = new File([blob], `gigasocial-${Date.now()}.${ext}`, {
+          type: normalizedMime,
+        });
         const durationSec = Math.max(recordSecRef.current, 1);
         onCapture({
           file,
@@ -205,6 +251,9 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
         });
         recordSecRef.current = 0;
         setRecordSec(0);
+        recorderRef.current = null;
+        clearRecordTimer();
+        setRecording(false);
         setBusy(false);
         onClose();
       };
@@ -219,11 +268,12 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
           stopRecording();
         }
       }, 1000);
+      setBusy(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not start recording.");
+      setError(getCameraErrorMessage(err));
       setBusy(false);
     }
-  }, [busy, onCapture, onClose, recording, stopRecording]);
+  }, [busy, clearRecordTimer, onCapture, onClose, recording, stopRecording]);
 
   const runCapture = useCallback(() => {
     if (mode === "photo") {
@@ -251,6 +301,15 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
     startRecording();
   }, [capturePhoto, clearCountdownTimer, mode, recording, startRecording, stopRecording, timerSec]);
 
+  const switchMode = useCallback(
+    (nextMode: CaptureMode) => {
+      if (nextMode === mode) return;
+      if (recording) stopRecording();
+      setMode(nextMode);
+    },
+    [mode, recording, stopRecording]
+  );
+
   if (!mounted || !open) return null;
 
   const previewFilter = getCameraFilterCss(beautyOn ? "natural" : filterId);
@@ -270,7 +329,7 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
           <div className="flex gap-1 rounded-full bg-white/10 p-0.5">
             <button
               type="button"
-              onClick={() => setMode("photo")}
+              onClick={() => switchMode("photo")}
               className={cn(
                 "rounded-full px-3 py-1 text-xs font-medium",
                 mode === "photo" ? "bg-violet-600 text-white" : "text-white/80"
@@ -280,7 +339,7 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
             </button>
             <button
               type="button"
-              onClick={() => setMode("video")}
+              onClick={() => switchMode("video")}
               className={cn(
                 "rounded-full px-3 py-1 text-xs font-medium",
                 mode === "video" ? "bg-violet-600 text-white" : "text-white/80"
@@ -302,7 +361,14 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
             style={{ filter: previewFilter !== "none" ? previewFilter : undefined }}
             playsInline
             muted
+            autoPlay
           />
+          {!ready && !error ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+              <Loader2 className="h-8 w-8 animate-spin text-white/80" aria-hidden />
+              <span className="sr-only">Starting camera…</span>
+            </div>
+          ) : null}
           {showGrid ? (
             <div
               className="pointer-events-none absolute inset-0 opacity-35"
@@ -323,6 +389,11 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
             <div className="absolute left-3 top-3 rounded-full bg-red-600/90 px-2 py-0.5 text-xs font-semibold">
               REC {recordSec}s / {SOCIAL_MAX_VIDEO_DURATION_SEC}s
             </div>
+          ) : null}
+          {mode === "video" && audioMuted && ready ? (
+            <p className="absolute right-3 top-3 max-w-[10rem] rounded-lg bg-black/60 px-2 py-1 text-[10px] text-amber-100">
+              Recording without microphone — allow mic access for audio.
+            </p>
           ) : null}
           <GigaSocialTeleprompter active={showTeleprompter} recording={recording} />
         </div>
@@ -394,9 +465,18 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
         </div>
 
         {error ? (
-          <p className="px-4 pb-3 text-center text-xs text-red-200" role="alert">
-            {error}
-          </p>
+          <div className="space-y-2 px-4 pb-3 text-center">
+            <p className="text-xs text-red-200" role="alert">
+              {error}
+            </p>
+            <button
+              type="button"
+              className="rounded-full bg-white/15 px-4 py-1.5 text-xs font-medium text-white"
+              onClick={() => void startStream()}
+            >
+              Retry camera
+            </button>
+          </div>
         ) : null}
       </div>
     </div>,

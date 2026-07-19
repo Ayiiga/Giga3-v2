@@ -132,8 +132,12 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const [studioOpen, setStudioOpen] = useState(false);
   const [previewFilterId, setPreviewFilterId] = useState<CameraFilterId>("none");
   const [locationTag, setLocationTag] = useState("");
-  const [cameraStudioOpen, setCameraStudioOpen] = useState(false);
-  const [cameraDefaultMode, setCameraDefaultMode] = useState<"photo" | "video">("photo");
+  const [cameraStudioOpen, setCameraStudioOpen] = useState(
+    () => initialAction === "media-camera" || initialAction === "story-content"
+  );
+  const [cameraDefaultMode, setCameraDefaultMode] = useState<"photo" | "video">(() =>
+    initialAction === "story-content" ? "video" : "photo"
+  );
   const [mediaReviewDraft, setMediaReviewDraft] = useState<{
     file: File;
     kind: "image" | "video";
@@ -214,13 +218,13 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       case "media-camera":
         setPostType("image");
         setCameraDefaultMode("photo");
-        queueMicrotask(() => setCameraStudioOpen(true));
+        setCameraStudioOpen(true);
         break;
       case "story-content":
         setPostType("video");
         setBody((value) => value.trim() || initialBody || "✨ Story\n\n#story");
         setCameraDefaultMode("video");
-        queueMicrotask(() => setCameraStudioOpen(true));
+        setCameraStudioOpen(true);
         break;
       case "media-audio":
         setPostType("image");
