@@ -26,10 +26,15 @@ When fixing chat reliability on slow mobile networks, update **both** `web/hooks
 
 - Install root: `npm ci --legacy-peer-deps`
 - Install web: `cd web && npm install --legacy-peer-deps`
-- Lint: `npm run lint` (runs `web` ESLint)
-- Build: `npm run build` (static export to `web/out`)
-- Convex codegen: `npx convex codegen`
+- Lint: `cd web && npm run lint`
+- Build: `cd web && npm run build` (static export to `web/out`)
+- Dev server: `cd web && npm run dev` → `http://localhost:3000` (chat: `/chat/login/`)
+- Convex codegen: `npx convex codegen` (requires `npx convex login` or local `npx convex dev`; fails with 401 if only `CONVEX_DEPLOYMENT_VALUE` is set)
 - Convex deploy: `npx convex deploy --yes` (requires `CONVEX_DEPLOY_KEY`)
+
+### Local dev without `convex dev`
+
+Copy `web/.env.local.example` → `web/.env.local` and set `NEXT_PUBLIC_CONVEX_URL` to the production deployment (`https://perfect-lark-521.convex.cloud`) when local `npx convex dev` or codegen auth is unavailable. The Next.js app and chat UI work against remote Convex; backend env vars (`OPENAI_API_KEY`, etc.) live on the Convex deployment, not in Next.js.
 
 ### Build-time env (web)
 
