@@ -98,6 +98,17 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     savedFeed && sessionToken ? { sessionToken } : "skip"
   );
 
+  const liveStreams = useQuery(api.gigaSocialLive.listLiveStreams, { status: "live", limit: 20 });
+
+  const liveHostHandles = useMemo(() => {
+    const handles = new Set<string>();
+    for (const stream of liveStreams?.streams ?? []) {
+      const handle = stream.host?.handle?.trim().toLowerCase();
+      if (handle) handles.add(handle);
+    }
+    return handles;
+  }, [liveStreams?.streams]);
+
   const searchResults = useQuery(
     api.gigaSocial.listDiscover,
     debouncedSearch.trim()
@@ -460,6 +471,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
           compact
           autoOpen={autoOpenStories}
           autoOpenRingId={autoOpenStoriesRing}
+          liveHostHandles={liveHostHandles}
         />
       ) : null}
 

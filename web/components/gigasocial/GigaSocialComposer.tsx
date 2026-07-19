@@ -29,9 +29,18 @@ import {
   type SocialMediaUploadDeps,
 } from "@/lib/gigasocial/mediaUpload";
 import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
+import { GigaSocialComposerMeta } from "@/components/gigasocial/composer/GigaSocialComposerMeta";
 import { GigaSocialCreateMediaMenu, type CreateMediaAction } from "@/components/gigasocial/GigaSocialCreateMediaMenu";
 import { CreatorTemplateQuickPick } from "@/components/gigasocial/feed/CreatorTemplateQuickPick";
 import { GigaSocialAIAssistant } from "@/components/gigasocial/ai/GigaSocialAIAssistant";
+import {
+  GigaSocialCameraStudio,
+  type GigaSocialCameraCapture,
+} from "@/components/gigasocial/studio/GigaSocialCameraStudio";
+import {
+  GigaSocialMediaReview,
+  type GigaSocialMediaReviewResult,
+} from "@/components/gigasocial/studio/GigaSocialMediaReview";
 import { GigaSocialMediaStudio } from "@/components/gigasocial/studio/GigaSocialMediaStudio";
 import { GigaSocialVideoTrimEditor } from "@/components/gigasocial/studio/GigaSocialVideoTrimEditor";
 import {
@@ -42,9 +51,8 @@ import { POST_TYPE_OPTIONS, type SocialPostTypeId } from "@/lib/gigasocial/secti
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { api } from "convex/_generated/api";
 import { useAction, useMutation } from "convex/react";
-import { visibilityLabel } from "@/lib/gigasocial/fanBranding";
-import { useRouter } from "next/navigation";
 import { Camera, Loader2, Send, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface PendingImage {
@@ -121,6 +129,15 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const [dragActive, setDragActive] = useState(false);
   const [studioOpen, setStudioOpen] = useState(false);
   const [previewFilterId, setPreviewFilterId] = useState<CameraFilterId>("none");
+  const [locationTag, setLocationTag] = useState("");
+  const [cameraStudioOpen, setCameraStudioOpen] = useState(false);
+  const [cameraDefaultMode, setCameraDefaultMode] = useState<"photo" | "video">("photo");
+  const [mediaReviewDraft, setMediaReviewDraft] = useState<{
+    file: File;
+    kind: "image" | "video";
+    filterId?: CameraFilterId;
+    durationSec?: number;
+  } | null>(null);
   const uploadAbortRef = useRef<AbortController | null>(null);
   const unifiedMediaInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -186,7 +203,14 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         break;
       case "media-camera":
         setPostType("image");
-        queueMicrotask(() => cameraInputRef.current?.click());
+        setCameraDefaultMode("photo");
+        queueMicrotask(() => setCameraStudioOpen(true));
+        break;
+      case "story-content":
+        setPostType("video");
+        setBody((value) => value.trim() || initialBody || "✨ Story\n\n#story");
+        setCameraDefaultMode("video");
+        queueMicrotask(() => setCameraStudioOpen(true));
         break;
       case "media-audio":
         setPostType("image");
@@ -326,6 +350,49 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     }
   }, [applyPendingVideo, clearVideoTrimDraft, pendingAudio, pendingImages.length]);
 
+  const handleCameraCapture = useCallback((capture: GigaSocialCameraCapture) => {
+    setCameraStudioOpen(false);
+    setMediaReviewDraft({
+      file: capture.file,
+      kind: capture.kind,
+      filterId: capture.filterId,
+      durationSec: capture.durationSec,
+    });
+  }, []);
+
+  const handleMediaReviewComplete = useCallback(
+    async (result: GigaSocialMediaReviewResult) => {
+      if (result.filterId && result.filterId !== "none") {
+        setPreviewFilterId(result.filterId);
+      }
+      if (result.caption.trim()) {
+        setBody((current) => (current.trim() ? current : result.caption));
+      }
+      if (result.kind === "video") {
+        const durationSec = result.durationSec ?? (await getVideoDuration(result.file));
+        if (needsVideoTrim(durationSec)) {
+          clearVideoTrimDraft();
+          setVideoTrimDraft({
+            file: result.file,
+            previewUrl: URL.createObjectURL(result.file),
+            durationSec,
+          });
+          setPostType("video");
+        } else {
+          applyPendingVideo({
+            file: result.file,
+            durationSec,
+            thumbnailUrl: result.thumbnailUrl,
+          });
+        }
+      } else {
+        await addImageFiles([result.file]);
+      }
+      setMediaReviewDraft(null);
+    },
+    [addImageFiles, applyPendingVideo, clearVideoTrimDraft]
+  );
+
   const addAudioFile = useCallback(async (file: File) => {
     if (pendingVideo) {
       setError("Remove the video before adding music.");
@@ -408,7 +475,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           unifiedMediaInputRef.current?.click();
           break;
         case "photo":
-          cameraInputRef.current?.click();
+          setCameraDefaultMode("photo");
+          setCameraStudioOpen(true);
           break;
         case "photos":
           imageInputRef.current?.click();
@@ -487,6 +555,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       }
 
       let finalBody = body.trim();
+      if (locationTag.trim()) {
+        finalBody = `${finalBody}\n📍 ${locationTag.trim()}`.trim();
+      }
       if (remixSource) {
         finalBody = appendRemixMarker(finalBody, remixSource._id);
       }
@@ -513,6 +584,22 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     }
   }
 
+  if (mediaReviewDraft) {
+    return (
+      <GigaSocialMediaReview
+        open
+        file={mediaReviewDraft.file}
+        kind={mediaReviewDraft.kind}
+        filterId={mediaReviewDraft.filterId}
+        durationSec={mediaReviewDraft.durationSec}
+        postType={postType}
+        enableAI={enableAIAssistant}
+        onClose={() => setMediaReviewDraft(null)}
+        onSkip={(result) => void handleMediaReviewComplete(result)}
+      />
+    );
+  }
+
   if (videoTrimDraft) {
     return (
       <GigaSocialVideoTrimEditor
@@ -529,6 +616,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   }
 
   return (
+    <>
     <div
       id="gigasocial-composer"
       className="saas-card rounded-2xl border border-border p-4"
@@ -542,6 +630,18 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       <label htmlFor="gigasocial-caption" className="sr-only">
         Post caption
       </label>
+      <GigaSocialComposerMeta
+        location={locationTag}
+        onLocationChange={setLocationTag}
+        visibility={visibility}
+        onVisibilityChange={setVisibility}
+        onInsertMention={() => {
+          setBody((value) => `${value.trimEnd()}@`.trimStart());
+          captionRef.current?.focus();
+        }}
+        onInsertEmoji={(emoji) => setBody((value) => `${value}${emoji}`)}
+        disabled={disabled || busy}
+      />
       <textarea
         id="gigasocial-caption"
         ref={captionRef}
@@ -725,7 +825,10 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           size="sm"
           variant="ghost"
           disabled={disabled || busy || Boolean(pendingVideo)}
-          onClick={() => cameraInputRef.current?.click()}
+          onClick={() => {
+            setCameraDefaultMode("photo");
+            setCameraStudioOpen(true);
+          }}
           aria-label="Capture photo with camera"
           className="hidden sm:inline-flex"
         >
@@ -745,17 +848,6 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
               {o.label}
             </option>
           ))}
-        </select>
-
-        <select
-          value={visibility}
-          onChange={(e) => setVisibility(e.target.value as "public" | "followers")}
-          className="rounded-xl border border-border bg-white px-3 py-2 text-sm"
-          disabled={disabled || busy}
-          aria-label="Post visibility"
-        >
-          <option value="public">{visibilityLabel("public")}</option>
-          <option value="followers">{visibilityLabel("followers")}</option>
         </select>
 
         <Button
@@ -780,5 +872,12 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         </p>
       ) : null}
     </div>
+    <GigaSocialCameraStudio
+      open={cameraStudioOpen}
+      defaultMode={cameraDefaultMode}
+      onClose={() => setCameraStudioOpen(false)}
+      onCapture={handleCameraCapture}
+    />
+    </>
   );
 });

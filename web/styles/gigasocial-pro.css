@@ -23,6 +23,30 @@
 
 .gigasocial-feed-panel-compact {
   contain: none;
+  scroll-behavior: smooth;
+}
+
+.gigasocial-feed-panel-compact > .gigasocial-post-card,
+.gigasocial-feed-panel-compact .gigasocial-feed-skeleton {
+  margin-bottom: 0.125rem;
+}
+
+.gigasocial-pro .gigasocial-post-card {
+  border-radius: 1.25rem;
+  transition: box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.gigasocial-pro .gigasocial-stories-bar {
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.125rem;
+}
+
+.gigasocial-pro .gigasocial-stories-bar button {
+  transition: opacity 200ms ease;
+}
+
+.gigasocial-pro .gigasocial-feed-skeleton {
+  border-radius: 1.25rem;
 }
 
 .gigasocial-stories-bar--compact {
@@ -428,6 +452,7 @@
 .gigasocial-composer-sheet {
   contain: none;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
 }
 
 .gigasocial-live-stable,

@@ -89,6 +89,13 @@ export function resolveGigaCreateRoute(action: GigaCreateActionId): GigaCreateRo
       return { kind: "compose", action: "video-studio", postType: "video" };
     case "media-camera":
       return { kind: "compose", action: "media-camera", postType: "image" };
+    case "story-content":
+      return {
+        kind: "compose",
+        action: "story-content",
+        postType: "video",
+        body: "✨ Story\n\n#story",
+      };
     case "media-audio":
       return { kind: "compose", action: "media-audio", postType: "image" };
     case "ai-chat":
