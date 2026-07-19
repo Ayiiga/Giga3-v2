@@ -685,11 +685,20 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         <input
           ref={cameraInputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,video/*"
           capture="environment"
           className="sr-only"
           onChange={(event) => {
-            if (event.target.files) void addImageFiles(event.target.files);
+            const file = event.target.files?.[0];
+            if (!file) {
+              event.target.value = "";
+              return;
+            }
+            if (file.type.startsWith("video/")) {
+              void addVideoFile(file);
+            } else {
+              void addImageFiles(event.target.files);
+            }
             event.target.value = "";
           }}
         />

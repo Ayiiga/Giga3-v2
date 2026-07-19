@@ -311,3 +311,45 @@ export function getGigaCreateSections(options?: {
     ),
   })).filter((section) => section.items.length > 0);
 }
+
+/** Five-option upload menu for the GigaSocial (+) FAB — feed only. */
+export const GIGA_CREATE_FAB_ITEMS: GigaCreateMenuItem[] = [
+  {
+    id: "media-camera",
+    label: "Camera",
+    emoji: "📷",
+    description: "Capture photos or videos with your device camera",
+  },
+  {
+    id: "media-unified",
+    label: "Photo / Photo with Music",
+    emoji: "🖼️",
+    description: "Select photos, add music, and create a slideshow",
+  },
+  {
+    id: "video-studio",
+    label: "Video",
+    emoji: "🎥",
+    description: "Record or choose a video — trim, filters, and captions",
+  },
+  {
+    id: "text-post",
+    label: "Post",
+    emoji: "✍️",
+    description: "Write a post with photos, emojis, and hashtags",
+  },
+  {
+    id: "live-content",
+    label: "Go Live",
+    emoji: "🔴",
+    description: "Start a live broadcast with title and audience",
+  },
+];
+
+export function getGigaCreateFabItems(options?: {
+  enableLive?: boolean;
+}): GigaCreateMenuItem[] {
+  return GIGA_CREATE_FAB_ITEMS.filter(
+    (item) => item.id !== "live-content" || options?.enableLive !== false
+  );
+}

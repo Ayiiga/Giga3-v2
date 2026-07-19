@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v156-chat-keyboard-stable";
+const CACHE_NAME = "giga3-shell-v157-gigasocial-upload-menu";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

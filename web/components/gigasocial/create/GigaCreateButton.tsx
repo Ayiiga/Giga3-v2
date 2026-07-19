@@ -1,9 +1,9 @@
 "use client";
 
 import {
-  getGigaCreateSections,
+  getGigaCreateFabItems,
   type GigaCreateActionId,
-  type GigaCreateMenuSection,
+  type GigaCreateMenuItem,
 } from "@/components/gigasocial/create/gigaCreateMenu";
 import { cn } from "@/lib/utils";
 import { Plus, X } from "lucide-react";
@@ -16,25 +16,32 @@ export type GigaCreateLaunch = {
 
 export const GigaCreateButton = memo(function GigaCreateButton({
   disabled,
-  sections,
   enableLive = true,
   onSelect,
 }: {
   disabled?: boolean;
-  sections?: GigaCreateMenuSection[];
   enableLive?: boolean;
   onSelect: (launch: GigaCreateLaunch) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  const menuSections = useMemo(
-    () => sections ?? getGigaCreateSections({ enableLive }),
-    [enableLive, sections]
+  const menuItems = useMemo(
+    () => getGigaCreateFabItems({ enableLive }),
+    [enableLive]
   );
 
   const close = useCallback(() => setOpen(false), []);
   const toggle = useCallback(() => setOpen((value) => !value), []);
+
+  const handleSelect = useCallback(
+    (item: GigaCreateMenuItem) => {
+      if (item.disabled) return;
+      onSelect({ action: item.id });
+      close();
+    },
+    [close, onSelect]
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -67,10 +74,10 @@ export const GigaCreateButton = memo(function GigaCreateButton({
       onClick={toggle}
       className={cn(
         "gigasocial-create-fab-button inline-flex h-14 w-14 items-center justify-center rounded-full border border-violet-300/50 bg-violet-600 text-white shadow-lg",
-        open && "rotate-45",
+        open && "gigasocial-create-fab-button--open",
         disabled && "opacity-50"
       )}
-      aria-label={open ? "Close create menu" : "Open create menu"}
+      aria-label={open ? "Close upload menu" : "Open upload menu"}
       aria-expanded={open}
       aria-haspopup="menu"
     >
@@ -82,7 +89,7 @@ export const GigaCreateButton = memo(function GigaCreateButton({
     <>
       {open ? (
         <div
-          className="gigasocial-stable gigasocial-create-overlay fixed inset-0 z-[60] bg-black/45"
+          className="gigasocial-stable gigasocial-create-overlay fixed inset-0 z-[60] bg-black/40"
           aria-hidden
           onClick={close}
         />
@@ -91,81 +98,45 @@ export const GigaCreateButton = memo(function GigaCreateButton({
       <div className="gigasocial-stable gigasocial-create-fab pointer-events-none fixed inset-x-0 bottom-0 z-[61] flex flex-col items-stretch justify-end pb-[env(safe-area-inset-bottom)]">
         {open ? (
           <div
-            className="gigasocial-create-menu pointer-events-auto border-t border-border bg-white shadow-2xl"
+            className="gigasocial-upload-sheet pointer-events-auto"
             role="dialog"
             aria-modal="true"
-            aria-label="Create hub"
+            aria-label="Upload"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="border-b border-border/60 px-4 py-3">
+            <div className="gigasocial-upload-sheet__handle" aria-hidden />
+            <div className="gigasocial-upload-sheet__header">
               <p className="text-base font-semibold text-foreground">Create</p>
-              <p className="mt-0.5 text-xs text-muted">
-                Media, documents, AI tools, and education — all in one place.
-              </p>
+              <p className="mt-0.5 text-xs text-muted">Choose what to share</p>
             </div>
-            <div
-              className="max-h-[min(70dvh,32rem)] overflow-y-auto overscroll-contain px-2 py-2"
-              role="menu"
-            >
-              {menuSections.map((section) => (
-                <section key={section.id} className="mb-3 last:mb-0" aria-label={section.title}>
-                  <div className="sticky top-0 z-[1] bg-white px-2 py-1.5">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                      {section.title}
-                    </p>
-                    <p className="text-[11px] text-muted/80">{section.subtitle}</p>
-                  </div>
-                  <div className="space-y-0.5">
-                    {section.items.map((item) => {
-                      const isSecondary = item.id === "remix";
-                      const isDisabled = item.disabled === true;
-                      return (
-                        <button
-                          key={item.id}
-                          type="button"
-                          role="menuitem"
-                          disabled={isDisabled}
-                          aria-disabled={isDisabled}
-                          className={cn(
-                            "flex w-full min-h-11 items-start gap-3 rounded-xl px-3 py-2.5 text-left",
-                            isSecondary && "bg-slate-50",
-                            isDisabled
-                              ? "cursor-not-allowed opacity-60"
-                              : isSecondary
-                                ? "hover:bg-slate-100 active:bg-slate-100"
-                                : "hover:bg-accent/5 active:bg-accent/10"
-                          )}
-                          onClick={() => {
-                            if (isDisabled) return;
-                            onSelect({ action: item.id });
-                            close();
-                          }}
-                        >
-                          <span
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-lg"
-                            aria-hidden
-                          >
-                            {item.emoji}
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block text-sm font-semibold text-foreground">
-                              {item.label}
-                            </span>
-                            <span className="block text-xs leading-relaxed text-muted">
-                              {item.description}
-                            </span>
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </section>
+            <div className="gigasocial-upload-sheet__list" role="menu">
+              {menuItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="menuitem"
+                  disabled={item.disabled}
+                  aria-disabled={item.disabled}
+                  className={cn(
+                    "gigasocial-upload-sheet__item",
+                    item.disabled && "cursor-not-allowed opacity-60"
+                  )}
+                  onClick={() => handleSelect(item)}
+                >
+                  <span className="gigasocial-upload-sheet__emoji" aria-hidden>
+                    {item.emoji}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold text-foreground">{item.label}</span>
+                    <span className="block text-xs leading-relaxed text-muted">{item.description}</span>
+                  </span>
+                </button>
               ))}
             </div>
-            <div className="flex justify-end border-t border-border/60 p-4">{fab}</div>
+            <div className="gigasocial-upload-sheet__fab-row">{fab}</div>
           </div>
         ) : (
-          <div className="gigasocial-stable pointer-events-auto flex justify-end p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="pointer-events-auto flex justify-end p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             {fab}
           </div>
         )}
