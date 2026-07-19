@@ -22,14 +22,26 @@ Giga3 uses **both** Convex and Supabase in production-capable configs:
 
 When fixing chat reliability on slow mobile networks, update **both** `web/hooks/useChatPlatform.ts` and `web/hooks/useSupabaseChatPlatform.ts`, plus shared timings in `web/lib/chat/chatNetwork.ts`.
 
-### Commands (from repo root)
+### Commands
 
-- Install root: `npm ci --legacy-peer-deps`
-- Install web: `cd web && npm install --legacy-peer-deps`
-- Lint: `npm run lint` (runs `web` ESLint)
-- Build: `npm run build` (static export to `web/out`)
-- Convex codegen: `npx convex codegen`
-- Convex deploy: `npx convex deploy --yes` (requires `CONVEX_DEPLOY_KEY`)
+**Install (repo root):**
+
+- `npm ci --legacy-peer-deps`
+- `cd web && npm install --legacy-peer-deps`
+
+**Lint / build (run inside `web/` — root `package.json` has no `lint`/`build` scripts):**
+
+- `cd web && npm run lint`
+- `cd web && npm run build` → static export to `web/out`
+
+**Convex (repo root):**
+
+- `npx convex codegen` — requires `CONVEX_DEPLOYMENT` (from `npx convex dev` once) or use committed `convex/_generated` for web-only work
+- `npx convex deploy --yes` (requires `CONVEX_DEPLOY_KEY`)
+
+**Dev server:**
+
+- `cd web && npm run dev` → http://localhost:3000 (create `web/.env.local` from `.env.local.example`; production URL `https://perfect-lark-521.convex.cloud` works when the VM can reach Convex TLS)
 
 ### Build-time env (web)
 
@@ -52,7 +64,7 @@ Set in `web/.env.local` or CI secrets:
 Production deployment: **`perfect-lark-521`** (`https://perfect-lark-521.convex.cloud`).
 
 - `users:getUser` is a **public query** in `convex/users.ts`. If the client reports it is missing, production has not received a successful deploy.
-- This Cloud Agent VM often **cannot** reach `api.convex.dev` or `*.convex.cloud` (TLS). Use GitHub Actions **Deploy Convex backend** or a local machine for codegen/deploy.
+- Convex TLS reachability **varies by Cloud Agent VM** — if `curl https://perfect-lark-521.convex.cloud` fails, use GitHub Actions **Deploy Convex backend** or a local machine for codegen/deploy. When reachable, point `web/.env.local` at production URLs for dev without `npx convex dev`.
 - If CI fails in ~20s at **Deploy to Convex** after key format validation passes, regenerate `CONVEX_DEPLOY_KEY` (`prod:perfect-lark-521|…`) in Convex Dashboard → production → Settings → Deploy key.
 
 ### Premium UI / themes
