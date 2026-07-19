@@ -8,6 +8,7 @@ import {
   SOCIAL_IMAGE_ACCEPT,
   SOCIAL_MAX_PHOTOS_PER_POST,
   SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC,
+  SOCIAL_MAX_VIDEO_DURATION_SEC,
   SOCIAL_VIDEO_ACCEPT,
   type SocialPostMediaItemInput,
 } from "@/lib/gigasocial/constants";
@@ -18,6 +19,7 @@ import {
   classifyMediaFiles,
   UNIFIED_MEDIA_ACCEPT,
 } from "@/lib/gigasocial/mediaComposer";
+import { needsVideoTrim } from "@/lib/gigasocial/videoTrim";
 import {
   getVideoDuration,
   generateVideoThumbnail,
@@ -31,6 +33,7 @@ import { GigaSocialCreateMediaMenu, type CreateMediaAction } from "@/components/
 import { CreatorTemplateQuickPick } from "@/components/gigasocial/feed/CreatorTemplateQuickPick";
 import { GigaSocialAIAssistant } from "@/components/gigasocial/ai/GigaSocialAIAssistant";
 import { GigaSocialMediaStudio } from "@/components/gigasocial/studio/GigaSocialMediaStudio";
+import { GigaSocialVideoTrimEditor } from "@/components/gigasocial/studio/GigaSocialVideoTrimEditor";
 import {
   appendRemixMarker,
   buildRemixBodyPrefix,
@@ -62,6 +65,12 @@ interface PendingVideo {
 interface PendingAudio {
   file: File;
   name: string;
+  durationSec: number;
+}
+
+interface VideoTrimDraft {
+  file: File;
+  previewUrl: string;
   durationSec: number;
 }
 
@@ -103,6 +112,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const [visibility, setVisibility] = useState<"public" | "followers">("public");
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [pendingVideo, setPendingVideo] = useState<PendingVideo | null>(null);
+  const [videoTrimDraft, setVideoTrimDraft] = useState<VideoTrimDraft | null>(null);
   const [pendingAudio, setPendingAudio] = useState<PendingAudio | null>(null);
   const [busy, setBusy] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number | null>(null);
@@ -216,14 +226,48 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     }
   }, []);
 
+  const clearVideoTrimDraft = useCallback(() => {
+    setVideoTrimDraft((current) => {
+      if (current) revokePreview(current.previewUrl);
+      return null;
+    });
+  }, [revokePreview]);
+
+  const applyPendingVideo = useCallback(
+    (args: {
+      file: File;
+      durationSec: number;
+      thumbnailUrl?: string;
+      trimmed?: boolean;
+    }) => {
+      setPendingVideo((current) => {
+        if (current) revokePreview(current.previewUrl);
+        return {
+          file: args.file,
+          previewUrl: URL.createObjectURL(args.file),
+          name: args.file.name,
+          durationSec: args.durationSec,
+          thumbnailUrl: args.thumbnailUrl,
+        };
+      });
+      setPostType("video");
+      setError(null);
+      if (args.trimmed) {
+        setSuccess(`Video trimmed to ${SOCIAL_MAX_VIDEO_DURATION_SEC} seconds for GigaSocial.`);
+      }
+    },
+    [revokePreview]
+  );
+
   const clearPendingMedia = useCallback(() => {
     pendingImages.forEach((image) => revokePreview(image.previewUrl));
     if (pendingVideo) revokePreview(pendingVideo.previewUrl);
+    clearVideoTrimDraft();
     setPendingImages([]);
     setPendingVideo(null);
     setPendingAudio(null);
     setPreviewFilterId("none");
-  }, [pendingImages, pendingVideo, revokePreview]);
+  }, [clearVideoTrimDraft, pendingImages, pendingVideo, revokePreview]);
 
   const addImageFiles = useCallback(
     async (files: FileList | File[]) => {
@@ -261,26 +305,26 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     }
     try {
       const durationSec = await getVideoDuration(file);
-      if (durationSec > 40) {
-        setError(
-          `Videos must be 40 seconds or shorter. This video is ${Math.ceil(durationSec)} seconds.`
+      if (needsVideoTrim(durationSec)) {
+        clearVideoTrimDraft();
+        setVideoTrimDraft({
+          file,
+          previewUrl: URL.createObjectURL(file),
+          durationSec,
+        });
+        setPostType("video");
+        setError(null);
+        setSuccess(
+          `This video is ${Math.ceil(durationSec)}s. Open Clip Studio to choose a ${SOCIAL_MAX_VIDEO_DURATION_SEC}s segment.`
         );
         return;
       }
       const thumbnailUrl = await generateVideoThumbnail(file);
-      setPendingVideo({
-        file,
-        previewUrl: URL.createObjectURL(file),
-        name: file.name,
-        durationSec,
-        thumbnailUrl,
-      });
-      setPostType("video");
-      setError(null);
+      applyPendingVideo({ file, durationSec, thumbnailUrl });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not read video.");
     }
-  }, [pendingAudio, pendingImages.length]);
+  }, [applyPendingVideo, clearVideoTrimDraft, pendingAudio, pendingImages.length]);
 
   const addAudioFile = useCallback(async (file: File) => {
     if (pendingVideo) {
@@ -469,6 +513,21 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     }
   }
 
+  if (videoTrimDraft) {
+    return (
+      <GigaSocialVideoTrimEditor
+        file={videoTrimDraft.file}
+        previewUrl={videoTrimDraft.previewUrl}
+        durationSec={videoTrimDraft.durationSec}
+        onCancel={clearVideoTrimDraft}
+        onComplete={(result) => {
+          clearVideoTrimDraft();
+          applyPendingVideo(result);
+        }}
+      />
+    );
+  }
+
   return (
     <div
       id="gigasocial-composer"
@@ -562,7 +621,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         </p>
       ) : (
         <p className="mt-2 text-xs text-muted">
-          Add multiple photos, then attach music (up to {SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC}s). Videos up to 40s.
+          Add photos, music (up to {SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC}s), or video. Long videos
+          open the trim editor (max {SOCIAL_MAX_VIDEO_DURATION_SEC}s).
         </p>
       )}
 

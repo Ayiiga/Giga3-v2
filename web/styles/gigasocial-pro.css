@@ -48,6 +48,102 @@
   }
 }
 
+.gigasocial-video-trim-editor video {
+  background: #000;
+}
+
+.gigasocial-trim-timeline {
+  position: relative;
+  height: 3.25rem;
+  touch-action: none;
+  cursor: pointer;
+  border-radius: 0.75rem;
+  padding: 0.35rem 0;
+}
+
+.gigasocial-trim-timeline:focus-visible {
+  outline: 2px solid rgba(167, 139, 250, 0.85);
+  outline-offset: 2px;
+}
+
+.gigasocial-trim-timeline__track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 0.5rem;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.14));
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.gigasocial-trim-timeline__selection {
+  position: absolute;
+  top: 50%;
+  height: 0.85rem;
+  transform: translateY(-50%);
+  border-radius: 0.35rem;
+  background: linear-gradient(180deg, rgba(139, 92, 246, 0.95), rgba(109, 40, 217, 0.9));
+  box-shadow: 0 0 0 1px rgba(196, 181, 253, 0.45), 0 4px 14px rgba(91, 33, 182, 0.35);
+  min-width: 0.5rem;
+}
+
+.gigasocial-trim-timeline__playhead {
+  position: absolute;
+  top: 0.2rem;
+  bottom: 0.2rem;
+  width: 2px;
+  margin-left: -1px;
+  background: #fff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.65);
+  pointer-events: none;
+}
+
+.gigasocial-trim-timeline__handle {
+  position: absolute;
+  top: 50%;
+  width: 0.35rem;
+  height: 1.35rem;
+  margin-left: -0.175rem;
+  transform: translateY(-50%);
+  border-radius: 0.2rem;
+  background: #f5f3ff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.45);
+  pointer-events: none;
+}
+
+.gigasocial-trim-nudge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.gigasocial-trim-nudge:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.gigasocial-trim-nudge:not(:disabled):active {
+  background: rgba(139, 92, 246, 0.25);
+}
+
+.gigasocial-trim-slider {
+  height: 0.35rem;
+  cursor: pointer;
+}
+
+.gigasocial-trim-slider:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .gigasocial-feed-hero {
   contain: none;
 }
