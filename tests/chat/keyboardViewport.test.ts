@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
+  applyChatKeyboardCssVars,
   buildShellViewportStyles,
+  clearChatKeyboardCssVars,
   composerScrollOverflowPx,
   isComposerDockClipped,
   isKeyboardLikelyOpen,
   isMobileChatWidth,
   keyboardInsetPx,
   measureComposerVisibility,
+  measureKeyboardInset,
   readVisualViewportRect,
 } from "../../web/lib/chat/keyboardViewport";
 
@@ -16,6 +19,35 @@ describe("keyboardViewport helpers", () => {
     expect(keyboardInsetPx(800, { height: 500, offsetTop: 0 })).toBe(300);
     expect(keyboardInsetPx(800, { height: 500, offsetTop: 40 })).toBe(260);
     expect(keyboardInsetPx(800, null)).toBe(0);
+  });
+
+  it("falls back to layout viewport height when visual inset is zero", () => {
+    expect(measureKeyboardInset(800, { height: 800, offsetTop: 0 }, 800)).toBe(0);
+    expect(measureKeyboardInset(800, { height: 800, offsetTop: 0 }, 520)).toBe(280);
+    expect(measureKeyboardInset(800, { height: 500, offsetTop: 0 }, 520)).toBe(300);
+    expect(measureKeyboardInset(800, null, 520)).toBe(280);
+  });
+
+  it("applies and clears keyboard CSS variables on the document root", () => {
+    const properties: Record<string, string> = {};
+    const el = {
+      style: {
+        setProperty: (name: string, value: string) => {
+          properties[name] = value;
+        },
+        removeProperty: (name: string) => {
+          delete properties[name];
+        },
+        getPropertyValue: (name: string) => properties[name] ?? "",
+      },
+    } as unknown as HTMLElement;
+
+    applyChatKeyboardCssVars(el, 240, 96);
+    expect(el.style.getPropertyValue("--chat-keyboard-inset")).toBe("240px");
+    expect(el.style.getPropertyValue("--chat-composer-dock-height")).toBe("96px");
+    clearChatKeyboardCssVars(el);
+    expect(el.style.getPropertyValue("--chat-keyboard-inset")).toBe("");
+    expect(el.style.getPropertyValue("--chat-composer-dock-height")).toBe("");
   });
 
   it("detects likely keyboard open state", () => {

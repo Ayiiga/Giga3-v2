@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v164-camera-capture";
+const CACHE_NAME = "giga3-shell-v165-chat-keyboard";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

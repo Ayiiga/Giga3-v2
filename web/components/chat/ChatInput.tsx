@@ -340,6 +340,14 @@ export const ChatInput = memo(function ChatInput({
                 setEmojiOpen(false);
                 dispatchChatViewportSync({ reason: "focus" });
                 requestAnimationFrame(() => {
+                  const textarea = textareaRef.current;
+                  if (textarea) {
+                    try {
+                      textarea.scrollIntoView({ block: "end", behavior: "instant" });
+                    } catch {
+                      textarea.scrollIntoView(false);
+                    }
+                  }
                   requestAnimationFrame(() => setTypingReady(true));
                 });
               }}
