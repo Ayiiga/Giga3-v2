@@ -2,10 +2,7 @@
 
 import type { GigaCreateLaunch } from "@/components/gigasocial/create/GigaCreateButton";
 import { GigaCreateButton } from "@/components/gigasocial/create/GigaCreateButton";
-import {
-  getGigaCreateSections,
-  type GigaCreateActionId,
-} from "@/components/gigasocial/create/gigaCreateMenu";
+import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
 import { GigaSocialStoriesBar } from "@/components/gigasocial/stories/GigaSocialStoriesBar";
 import { FeedCategoryBar } from "@/components/gigasocial/feed/FeedCategoryBar";
 import { FeedVideoPlaybackProvider } from "@/components/gigasocial/feed/FeedVideoPlaybackProvider";
@@ -223,11 +220,6 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     }
     setFeaturedReplayKey((value) => value + 1);
   }, [featuredVideoIndex, goToNextFeaturedVideo, videoPosts.length]);
-
-  const createMenuSections = useMemo(
-    () => getGigaCreateSections({ enableLive: features.enableGigaLive }),
-    [features.enableGigaLive]
-  );
 
   const feedPosts = useMemo(() => {
     if (!featuredPost) return posts;
@@ -646,7 +638,6 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         <GigaSocialPanelErrorBoundary panelName="Create">
           <GigaCreateButton
             disabled={!sessionToken}
-            sections={createMenuSections}
             enableLive={features.enableGigaLive}
             onSelect={handleGigaCreate}
           />
