@@ -136,7 +136,8 @@
   .chat-composer-dock {
     position: sticky;
     bottom: 0;
-    padding-bottom: max(env(safe-area-inset-bottom, 0px), var(--chat-keyboard-inset, 0px));
+    /* Shell already tracks visualViewport height — only safe-area padding here. */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   .chat-keyboard-shell {
@@ -147,6 +148,7 @@
   }
 
   .chat-composer-textarea {
+    field-sizing: fixed;
     scroll-margin-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
   }
 

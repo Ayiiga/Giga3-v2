@@ -271,12 +271,12 @@
   }
 
   .chat-composer-surface--typing .chat-composer-textarea {
-    min-height: 4.5rem;
+    min-height: 3.25rem;
     max-height: 13rem;
   }
 
   .chat-composer-secondary {
-    transition: opacity 0.2s ease, transform 0.2s ease, max-width 0.2s ease;
+    transition: none;
   }
 
   .chat-composer-surface--typing .chat-composer-secondary {

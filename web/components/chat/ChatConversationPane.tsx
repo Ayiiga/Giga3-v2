@@ -113,7 +113,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           disabled={isSending || awaitingReply}
           className="hidden md:block"
         />
-        <div className="chat-composer-dock min-w-0 max-w-full border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)]">
+        <div className="chat-composer-dock min-w-0 max-w-full border-t border-border bg-background">
         {error && (
           <ChatErrorBanner
             message={error}
