@@ -26,7 +26,7 @@ import {
   toPublicPost,
   type SocialPostMediaItem,
 } from "./gigaSocialViews";
-import type { Id } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import { ensureMonetizationUnlock, isMonetizationUnlocked, parsePrivacySettings } from "./gigaSocialEconomy";
 
 const SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC = 15;
