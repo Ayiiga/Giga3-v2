@@ -3,14 +3,13 @@
 import type { GigaCreateLaunch } from "@/components/gigasocial/create/GigaCreateButton";
 import { GigaCreateButton } from "@/components/gigasocial/create/GigaCreateButton";
 import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
-import { GigaSocialStoriesBar } from "@/components/gigasocial/stories/GigaSocialStoriesBar";
+import { GigaSocialStoriesBarWithLive } from "@/components/gigasocial/stories/GigaSocialStoriesBarWithLive";
 import { FeedCategoryBar } from "@/components/gigasocial/feed/FeedCategoryBar";
 import { FeedVideoPlaybackProvider } from "@/components/gigasocial/feed/FeedVideoPlaybackProvider";
 import { GigaSocialSearchBar } from "@/components/gigasocial/feed/GigaSocialSearchBar";
 import { FeedSkeletonList } from "@/components/gigasocial/feed/FeedPostSkeleton";
 import { GigaSocialPanelErrorBoundary } from "@/components/gigasocial/GigaSocialPanelErrorBoundary";
-import { GigaSocialComposer } from "@/components/gigasocial/GigaSocialComposer";
-import { GigaSocialComposerSheet } from "@/components/gigasocial/GigaSocialComposerSheet";
+import { withChunkRetryLoader } from "@/lib/pwa/dynamicWithChunkRetry";
 import { GigaSocialFeaturedPlayer } from "@/components/gigasocial/GigaSocialFeaturedPlayer";
 import { GigaSocialFeedHero } from "@/components/gigasocial/GigaSocialFeedHero";
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
@@ -38,7 +37,26 @@ import { useMutation, useQuery } from "convex/react";
 import { getUserEmail } from "@/lib/auth";
 import { MessageCircle, SquarePen, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+const GigaSocialComposer = dynamic(
+  withChunkRetryLoader(() =>
+    import("@/components/gigasocial/GigaSocialComposer").then((m) => ({
+      default: m.GigaSocialComposer,
+    }))
+  ),
+  { ssr: false }
+);
+
+const GigaSocialComposerSheet = dynamic(
+  withChunkRetryLoader(() =>
+    import("@/components/gigasocial/GigaSocialComposerSheet").then((m) => ({
+      default: m.GigaSocialComposerSheet,
+    }))
+  ),
+  { ssr: false }
+);
 
 export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   sessionToken,
@@ -97,17 +115,6 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     api.gigaSocial.listBookmarks,
     savedFeed && sessionToken ? { sessionToken } : "skip"
   );
-
-  const liveStreams = useQuery(api.gigaSocialLive.listLiveStreams, { status: "live", limit: 20 });
-
-  const liveHostHandles = useMemo(() => {
-    const handles = new Set<string>();
-    for (const stream of liveStreams?.streams ?? []) {
-      const handle = stream.host?.handle?.trim().toLowerCase();
-      if (handle) handles.add(handle);
-    }
-    return handles;
-  }, [liveStreams?.streams]);
 
   const searchResults = useQuery(
     api.gigaSocial.listDiscover,
@@ -466,12 +473,11 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       ) : null}
 
       {!isSearching && !savedFeed ? (
-        <GigaSocialStoriesBar
+        <GigaSocialStoriesBarWithLive
           sessionToken={sessionToken}
           compact
           autoOpen={autoOpenStories}
           autoOpenRingId={autoOpenStoriesRing}
-          liveHostHandles={liveHostHandles}
         />
       ) : null}
 

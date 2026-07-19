@@ -8,7 +8,7 @@ interface State {
 }
 
 export class GigaSocialPanelErrorBoundary extends Component<
-  { children: ReactNode; panelName?: string },
+  { children: ReactNode; panelName?: string; fallback?: ReactNode },
   State
 > {
   state: State = { error: null };
@@ -23,6 +23,7 @@ export class GigaSocialPanelErrorBoundary extends Component<
 
   render() {
     if (this.state.error) {
+      if (this.props.fallback) return this.props.fallback;
       const label = this.props.panelName ?? "This section";
       return (
         <div className="saas-card rounded-2xl border border-border p-6 text-center">
