@@ -30,6 +30,7 @@ export function MarketingBodyScrollUnlock() {
 
     const chatShell = document.querySelector<HTMLElement>(".chat-keyboard-shell");
     if (chatShell) {
+      chatShell.style.position = "";
       chatShell.style.top = "";
       chatShell.style.left = "";
       chatShell.style.width = "";

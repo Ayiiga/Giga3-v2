@@ -822,6 +822,15 @@ button:focus-visible {
   isolation: isolate;
 }
 
+@media (max-width: 1023px) {
+  html.chat-route,
+  html.chat-route body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+}
+
 .chat-main-column {
   min-height: 0;
   min-width: 0;
