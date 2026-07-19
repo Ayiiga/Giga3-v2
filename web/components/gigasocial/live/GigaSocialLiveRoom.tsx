@@ -6,6 +6,7 @@ import {
   LIVE_GIFTS,
   LIVE_REACTIONS,
   LIVE_VIDEO_CAPTURE_CONSTRAINTS,
+  getLiveReactionCount,
   type LiveStreamMode,
 } from "@/lib/gigasocial/liveStreaming";
 import { cn } from "@/lib/utils";
@@ -242,7 +243,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
             className="min-h-9 rounded-full border border-border bg-white px-3 text-sm"
             onClick={() => void sendReaction({ sessionToken, streamId, emoji })}
           >
-            {emoji} {stream.reactionCounts[emoji] ?? 0}
+            {emoji} {getLiveReactionCount(stream.reactionCounts, emoji)}
           </button>
         ))}
       </div>

@@ -29,4 +29,13 @@ export const LIVE_GIFTS = [
   { id: "rocket", label: "Rocket", emoji: "🚀", credits: 50 },
 ] as const;
 
+export type LiveReactionCount = { emoji: string; count: number };
+
+export function getLiveReactionCount(
+  counts: LiveReactionCount[] | undefined,
+  emoji: string
+): number {
+  return counts?.find((entry) => entry.emoji === emoji)?.count ?? 0;
+}
+
 export type LiveGiftId = (typeof LIVE_GIFTS)[number]["id"];

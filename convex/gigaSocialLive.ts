@@ -47,6 +47,20 @@ function parseReactionCounts(raw: string | undefined | null): Record<string, num
   }
 }
 
+/** Convex query results cannot use emoji/non-ASCII object keys — return an array instead. */
+function reactionCountsToPublicArray(
+  raw: string | undefined | null
+): { emoji: string; count: number }[] {
+  const counts = parseReactionCounts(raw);
+  return Object.entries(counts).map(([emoji, count]) => ({
+    emoji,
+    count:
+      typeof count === "number" && Number.isFinite(count)
+        ? Math.max(0, Math.floor(count))
+        : 0,
+  }));
+}
+
 function parseCaptionLines(raw: string | undefined | null): string[] {
   if (!raw) return [];
   try {
@@ -89,7 +103,7 @@ async function toPublicStream(
     viewerCount: stream.viewerCount,
     peakViewers: stream.peakViewers,
     coHostIds: stream.coHostIds ?? [],
-    reactionCounts: parseReactionCounts(stream.reactionCountsJson),
+    reactionCounts: reactionCountsToPublicArray(stream.reactionCountsJson),
     captionLines: parseCaptionLines(stream.captionLinesJson),
     replayUrl: stream.replayUrl,
     createdAt: stream.createdAt,
