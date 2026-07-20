@@ -1039,7 +1039,7 @@ export function useChatPlatform() {
       try {
         await convexMutationWithTimeout("chatMessaging:deleteMessage", {
           sessionToken: token,
-          messageId,
+          messageId: messageId as Id<"messages">,
         });
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to delete message");
