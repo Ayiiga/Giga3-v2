@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v166-chat-admin-push";
+const CACHE_NAME = "giga3-shell-v167-pwa-stability-offline";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

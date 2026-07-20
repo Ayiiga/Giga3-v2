@@ -1,5 +1,6 @@
 "use client";
 
+import { GlobalSlowNetworkBanner } from "@/components/pwa/GlobalSlowNetworkBanner";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
 import { SwUpdatePrompt } from "@/components/pwa/SwUpdatePrompt";
 import { withChunkRetryLoader } from "@/lib/pwa/dynamicWithChunkRetry";
@@ -33,6 +34,7 @@ export function DeferredPwaChrome() {
 
   return (
     <>
+      <GlobalSlowNetworkBanner />
       <SwUpdatePrompt />
       <InstallPrompt />
       <OfflineBanner />

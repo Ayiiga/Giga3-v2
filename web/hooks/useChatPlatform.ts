@@ -1,10 +1,12 @@
 "use client";
 
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
+import type { UiMessage } from "@/components/chat/MessageList";
 import { useChatReplyPolling, POLL_FAIL_HINT_THRESHOLD } from "@/hooks/useChatReplyPolling";
 import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
 import { useConnectionQuality } from "@/hooks/useConnectionQuality";
+import { useEffectiveOnline } from "@/hooks/useEffectiveOnline";
 import { getSessionToken, getUserEmail, setSessionToken } from "@/lib/auth";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
@@ -19,8 +21,14 @@ import {
 } from "@/lib/chat/offlineOutbox";
 import {
   readCachedMessages,
+  readCachedMessagesAsync,
   writeCachedMessages,
 } from "@/lib/chat/messageCache";
+import {
+  readCachedConversations,
+  writeCachedConversations,
+} from "@/lib/chat/conversationCache";
+import { emitOutboxStatus } from "@/lib/chat/outboxEvents";
 import { CHAT_SEGMENT_NOTICE } from "@/lib/chat/chatSegmentation";
 import { chatSystemForModel, gigaModelForMode, type GigaModelId } from "@/lib/chat/gigaModels";
 import {
@@ -55,6 +63,7 @@ import {
   CHAT_REPLY_TIMEOUT_ERROR,
 } from "@/lib/generation/types";
 import { convexHttpCall } from "@/lib/network/convexCall";
+import { toUserFacingError } from "@/lib/errors/userMessage";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -95,6 +104,7 @@ export function useChatPlatform() {
   const [mounted, setMounted] = useState(false);
   const [sessionToken, setSessionTokenState] = useState<string | null>(null);
   const [outboxCount, setOutboxCount] = useState(0);
+  const [isSyncingOutbox, setIsSyncingOutbox] = useState(false);
   const [segmentNotice, setSegmentNotice] = useState<string | null>(null);
   const createUserAttempted = useRef(false);
   const creditsCacheRef = useRef<number | null>(null);
@@ -109,6 +119,7 @@ export function useChatPlatform() {
   const syncingOutboxRef = useRef(false);
   const lastChatSystemRef = useRef<GigaModelId>("fast");
   const { isSlowNetwork } = useConnectionQuality();
+  const { effectiveOnline } = useEffectiveOnline();
   const isSlowNetworkRef = useRef(isSlowNetwork);
   isSlowNetworkRef.current = isSlowNetwork;
 
@@ -215,10 +226,30 @@ export function useChatPlatform() {
     [clearReplyFailureTimer]
   );
 
-  const cachedMessageFallback = useMemo(
-    () => (activeId ? readCachedMessages(activeId) : null),
-    [activeId]
+  const [cachedMessageFallback, setCachedMessageFallback] = useState<UiMessage[] | null>(
+    null
   );
+  const [cachedConversations, setCachedConversations] = useState<ConversationItem[] | null>(
+    null
+  );
+
+  useEffect(() => {
+    if (!activeId) {
+      setCachedMessageFallback(null);
+      return;
+    }
+    const sync = readCachedMessages(activeId);
+    if (sync) setCachedMessageFallback(sync);
+    void readCachedMessagesAsync(activeId).then((rows) => {
+      if (rows?.length) setCachedMessageFallback(rows);
+    });
+  }, [activeId]);
+
+  useEffect(() => {
+    void readCachedConversations().then((rows) => {
+      if (rows?.length) setCachedConversations(rows);
+    });
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -335,7 +366,8 @@ export function useChatPlatform() {
     Boolean(activeId) && messagesRaw === undefined && mounted && Boolean(sessionToken);
 
   const conversations = useStableConversations(
-    conversationsRaw as ConversationItem[] | undefined
+    (conversationsRaw as ConversationItem[] | undefined) ??
+      (!effectiveOnline ? cachedConversations ?? undefined : undefined)
   );
 
   const messages = useStableUiMessages(
@@ -358,6 +390,12 @@ export function useChatPlatform() {
   }, [activeId, messagesRaw]);
 
   useEffect(() => {
+    if (!conversationsRaw?.length) return;
+    void writeCachedConversations(conversationsRaw as ConversationItem[]);
+    setCachedConversations(conversationsRaw as ConversationItem[]);
+  }, [conversationsRaw]);
+
+  useEffect(() => {
     if (!segmentNotice) return;
     const timer = window.setTimeout(() => setSegmentNotice(null), 8_000);
     return () => window.clearTimeout(timer);
@@ -366,6 +404,8 @@ export function useChatPlatform() {
   const refreshOutboxCount = useCallback(async () => {
     const rows = await listOutbox();
     setOutboxCount(rows.length);
+    emitOutboxStatus({ count: rows.length, syncing: syncingOutboxRef.current });
+    return rows.length;
   }, []);
 
   const dispatchAccept = useCallback(
@@ -494,13 +534,20 @@ export function useChatPlatform() {
   );
 
   const flushOutbox = useCallback(async () => {
-    if (syncingOutboxRef.current || typeof navigator === "undefined" || !navigator.onLine) {
+    if (
+      syncingOutboxRef.current ||
+      typeof navigator === "undefined" ||
+      !navigator.onLine ||
+      !effectiveOnline
+    ) {
       return;
     }
     syncingOutboxRef.current = true;
+    setIsSyncingOutbox(true);
     try {
       const rows = await listOutbox();
       setOutboxCount(rows.length);
+      emitOutboxStatus({ count: rows.length, syncing: true });
       for (const row of rows) {
         const token = getSessionToken();
         if (!token) {
@@ -534,15 +581,18 @@ export function useChatPlatform() {
             : MAX_SEND_RETRIES;
           if (row.attempts + 1 >= maxOutboxAttempts) {
             await removeOutbox(row.id);
-            setError(msg);
+            setError(toUserFacingError(e, msg));
           }
         }
       }
       await refreshOutboxCount();
     } finally {
       syncingOutboxRef.current = false;
+      setIsSyncingOutbox(false);
+      const remaining = await listOutbox();
+      emitOutboxStatus({ count: remaining.length, syncing: false });
     }
-  }, [createConversation, dispatchAccept, refreshOutboxCount, hasOpenAiAccess, isSlowNetwork]);
+  }, [createConversation, dispatchAccept, refreshOutboxCount, isSlowNetwork, effectiveOnline]);
 
   useEffect(() => {
     if (!email || createUserAttempted.current) return;
@@ -707,18 +757,26 @@ export function useChatPlatform() {
       registerChatOutboxSync();
       void flushOutbox();
     };
+    const onVisible = () => {
+      if (document.visibilityState === "visible" && navigator.onLine) {
+        registerChatOutboxSync();
+        void flushOutbox();
+      }
+    };
     const onSwMessage = (event: MessageEvent) => {
       if (event.data?.type === "GIGA3_FLUSH_OUTBOX") {
         void flushOutbox();
       }
     };
     window.addEventListener("online", onOnline);
+    document.addEventListener("visibilitychange", onVisible);
     navigator.serviceWorker?.addEventListener("message", onSwMessage);
     if (typeof navigator !== "undefined" && navigator.onLine) {
       void flushOutbox();
     }
     return () => {
       window.removeEventListener("online", onOnline);
+      document.removeEventListener("visibilitychange", onVisible);
       navigator.serviceWorker?.removeEventListener("message", onSwMessage);
     };
   }, [flushOutbox, refreshOutboxCount]);
@@ -802,7 +860,7 @@ export function useChatPlatform() {
       setPollConversationId(activeId);
       const clientRequestId = newClientRequestId();
 
-      if (typeof navigator !== "undefined" && !navigator.onLine) {
+      if (!effectiveOnline) {
         const entry: OutboxEntry = {
           id: clientRequestId,
           clientRequestId,
@@ -1090,6 +1148,8 @@ export function useChatPlatform() {
     isAcceptingMessage: false,
     isSlowNetwork,
     outboxCount,
+    isSyncingOutbox,
+    retryOutboxSync: flushOutbox,
     error,
     startNewChat,
     selectConversation,

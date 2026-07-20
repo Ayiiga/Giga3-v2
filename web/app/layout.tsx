@@ -8,6 +8,7 @@ import { DeferredPwaChrome } from "@/components/pwa/DeferredPwaChrome";
 import { PwaInstallProvider } from "@/components/pwa/PwaInstallProvider";
 import { PlatformAnalyticsHost } from "@/components/analytics/PlatformAnalyticsHost";
 import { GlobalChatPrefetch } from "@/components/chat/GlobalChatPrefetch";
+import { AuthenticatedChatRedirect } from "@/components/chat/AuthenticatedChatRedirect";
 import { branding } from "@/lib/branding";
 import { brandingAssetUrl } from "@/lib/brandingAssets";
 import { DEFAULT_HTML_LANG, DEFAULT_OG_LOCALE } from "@/lib/locale";
@@ -86,7 +87,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover",
-  interactiveWidget: "overlays-content",
+  /** Resize layout when soft keyboard opens — prevents chat composer clipping on Android PWA. */
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({
@@ -108,6 +110,7 @@ export default function RootLayout({
           <ServiceWorkerRegister />
           <ChunkLoadRecoveryBootstrap />
           <GlobalChatPrefetch />
+          <AuthenticatedChatRedirect />
           <PlatformAnalyticsHost />
           <DeferredPwaChrome />
           <GenerationToastHost />
