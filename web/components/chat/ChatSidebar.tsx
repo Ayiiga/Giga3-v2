@@ -97,7 +97,7 @@ const ACCOUNT_NAV = [
   { href: "/workspace", label: "Workspace", icon: UsersRound },
   { href: "/subscribe", label: "Subscription", icon: Sparkles },
   { href: "/credits", label: "Credits", icon: Coins },
-  { href: "/home", label: "Settings", icon: Settings },
+  { href: siteConfig.links.home, label: "Settings", icon: Settings },
 ] as const;
 
 function ChatSidebarComponent({
