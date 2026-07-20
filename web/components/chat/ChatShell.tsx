@@ -18,7 +18,7 @@ import { getSessionToken } from "@/lib/auth";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation } from "convex/react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   getGigaModel,
   gigaModelForMode,
@@ -89,6 +89,7 @@ function ChatShellInner({
   useRenderDiagnostic("ChatShellInner");
 
   const router = useRouter();
+  const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [templateNotice, setTemplateNotice] = useState<string | null>(null);
@@ -137,6 +138,7 @@ function ChatShellInner({
     freeOpenAiRemaining,
     interestProfileJson,
     uploadUsage,
+    retryOutboxSync,
   } = usePlatform();
 
   const { needsOnboarding, completeOnboarding, trackDailyActivity } = usePlatformProfile();
@@ -387,8 +389,11 @@ function ChatShellInner({
   );
 
   useEffect(() => {
-    if (mounted && !email) router.replace("/chat/login");
-  }, [mounted, email, router]);
+    if (mounted && !email) {
+      const next = pathname?.startsWith("/chat") ? pathname : "/chat";
+      router.replace(`/chat/login?next=${encodeURIComponent(next)}`);
+    }
+  }, [mounted, email, router, pathname]);
 
   useEffect(() => {
     setDismissedError(null);
@@ -502,6 +507,7 @@ function ChatShellInner({
           awaitingReply={awaitingReply}
           isAcceptingMessage={isAcceptingMessage}
           isSlowNetwork={isSlowNetwork}
+          onRetryOutboxSync={retryOutboxSync}
           insertRef={insertRef}
           onSend={handleSend}
           onInsertTemplate={handleInsertTemplate}

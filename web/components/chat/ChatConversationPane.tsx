@@ -1,5 +1,6 @@
 "use client";
 
+import { ChatSyncBanner } from "@/components/chat/ChatSyncBanner";
 import { ChatCategorySwitcher } from "@/components/chat/ChatCategorySwitcher";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatErrorBanner } from "@/components/chat/ChatErrorBanner";
@@ -34,6 +35,7 @@ interface ChatConversationPaneProps {
   onAttachmentsChange?: (attachments: PreparedChatAttachment[]) => void;
   onSuggestVisionTier?: () => void;
   initialAttachments?: PreparedChatAttachment[];
+  onRetryOutboxSync?: () => void;
 }
 
 function panePropsEqual(
@@ -63,7 +65,8 @@ function panePropsEqual(
     prev.onAttachmentsChange === next.onAttachmentsChange &&
     prev.onSuggestVisionTier === next.onSuggestVisionTier &&
     prev.initialAttachments === next.initialAttachments &&
-    prev.insertRef === next.insertRef
+    prev.insertRef === next.insertRef &&
+    prev.onRetryOutboxSync === next.onRetryOutboxSync
   );
 }
 
@@ -92,6 +95,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onAttachmentsChange,
   onSuggestVisionTier,
   initialAttachments,
+  onRetryOutboxSync,
 }: ChatConversationPaneProps) {
   const showTyping = awaitingReply || isSending;
   const typingPhase = awaitingReply ? "replying" : "sending";
@@ -118,6 +122,15 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           className="hidden md:block"
         />
         <div className="chat-composer-dock min-w-0 max-w-full border-t border-border bg-background">
+        <ChatSyncBanner
+          onRetrySync={
+            onRetryOutboxSync
+              ? () => {
+                  void onRetryOutboxSync();
+                }
+              : undefined
+          }
+        />
         {error && (
           <ChatErrorBanner
             message={error}

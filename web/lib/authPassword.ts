@@ -14,7 +14,7 @@ async function authAction<T>(
   if (!convexUrl) throw new Error("Chat backend is not configured.");
   return convexHttpCall<T>(convexUrl, "action", path, args, {
     timeoutMs: 25_000,
-    retries: 1,
+    retries: 2,
   });
 }
 

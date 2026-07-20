@@ -16,6 +16,7 @@ import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useGigaSocialFeedAutoplay } from "@/hooks/useGigaSocialFeedAutoplay";
+import { useEffectiveOnline } from "@/hooks/useEffectiveOnline";
 import {
   feedCategoryNeedsFollowingFeed,
   feedCategoryNeedsSavedFeed,
@@ -28,6 +29,7 @@ import { primeCameraStream } from "@/lib/gigasocial/cameraCapture";
 import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { handleFromEmail } from "@/lib/gigasocial/handleFromEmail";
 import { findFeaturedMediaPost, getPostMediaKind } from "@/lib/gigasocial/postMedia";
+import { loadFeedSnapshot, saveFeedSnapshot } from "@/lib/gigasocial/feedOfflineSnapshot";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
@@ -76,6 +78,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 }) {
   const router = useRouter();
   const features = useGigaSocialFeatures();
+  const { effectiveOnline } = useEffectiveOnline();
+  const [offlineSnapshot, setOfflineSnapshot] = useState<SocialPost[] | null>(null);
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [extraPosts, setExtraPosts] = useState<SocialPost[]>([]);
   const [composerOpen, setComposerOpen] = useState(false);
@@ -139,10 +143,17 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const deletePost = useMutation(api.gigaSocial.deletePost);
 
   const searchLoading = Boolean(debouncedSearch.trim()) && searchResults === undefined;
-  const initialFeedLoading = !savedFeed && !debouncedSearch.trim() && feed === undefined;
-  const savedLoading = savedFeed && saved === undefined;
+  const initialFeedLoading =
+    !savedFeed && !debouncedSearch.trim() && feed === undefined && effectiveOnline;
+  const savedLoading = savedFeed && saved === undefined && effectiveOnline;
   const postsLoading = initialFeedLoading || savedLoading || searchLoading;
   const isSearching = Boolean(searchQuery.trim() || debouncedSearch.trim());
+
+  useEffect(() => {
+    if (!effectiveOnline) {
+      setOfflineSnapshot(loadFeedSnapshot());
+    }
+  }, [effectiveOnline]);
 
   const posts = useMemo(() => {
     const sourcePosts = savedFeed
@@ -151,7 +162,9 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         ? searchLoading
           ? []
           : ((searchResults?.posts ?? []) as SocialPost[])
-        : ([...(cursor ? extraPosts : []), ...(feed?.posts ?? [])] as SocialPost[]);
+        : effectiveOnline
+          ? ([...(cursor ? extraPosts : []), ...(feed?.posts ?? [])] as SocialPost[])
+          : (offlineSnapshot ?? []);
 
     const sorted = [...sourcePosts].sort((a, b) => b.createdAt - a.createdAt);
     const typed =
@@ -171,7 +184,17 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     searchLoading,
     searchResults?.posts,
     typeFilter,
+    effectiveOnline,
+    offlineSnapshot,
   ]);
+
+  useEffect(() => {
+    if (!effectiveOnline || savedFeed || debouncedSearch.trim()) return;
+    const livePosts = [...(cursor ? extraPosts : []), ...(feed?.posts ?? [])] as SocialPost[];
+    if (livePosts.length > 0) {
+      saveFeedSnapshot(livePosts);
+    }
+  }, [cursor, debouncedSearch, effectiveOnline, extraPosts, feed?.posts, savedFeed]);
 
   const { autoPlay, paused, pause, toggle, hydrated } = useGigaSocialFeedAutoplay();
 

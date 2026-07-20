@@ -4,8 +4,19 @@ import type { ConversationItem } from "@/components/chat/ChatSidebar";
 import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
 import { useConnectionQuality } from "@/hooks/useConnectionQuality";
+import { useEffectiveOnline } from "@/hooks/useEffectiveOnline";
+import {
+  bumpOutboxAttempt,
+  enqueueOutbox,
+  listOutbox,
+  newClientRequestId,
+  registerChatOutboxSync,
+  removeOutbox,
+  type OutboxEntry,
+} from "@/lib/chat/offlineOutbox";
+import { emitOutboxStatus } from "@/lib/chat/outboxEvents";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
-import { chatSystemForModel, type GigaModelId } from "@/lib/chat/gigaModels";
+import { chatSystemForModel, gigaModelForMode, type GigaModelId } from "@/lib/chat/gigaModels";
 import { getSessionToken, getUserEmail } from "@/lib/auth";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import {
@@ -186,8 +197,12 @@ export function useSupabaseChatPlatform() {
   const [conversationsRaw, setConversationsRaw] = useState<ConversationItem[] | undefined>();
   const [messagesRaw, setMessagesRaw] = useState<MessageRow[] | undefined>();
   const [segmentNotice, setSegmentNotice] = useState<string | null>(null);
+  const [outboxCount, setOutboxCount] = useState(0);
+  const [isSyncingOutbox, setIsSyncingOutbox] = useState(false);
   const loadingConversationsRef = useRef(false);
   const loadingMessagesRef = useRef(false);
+  const syncingOutboxRef = useRef(false);
+  const { effectiveOnline } = useEffectiveOnline();
 
   useEffect(() => {
     setMounted(true);
@@ -305,6 +320,152 @@ export function useSupabaseChatPlatform() {
     [activeId]
   );
 
+  const refreshOutboxCount = useCallback(async () => {
+    const rows = await listOutbox();
+    setOutboxCount(rows.length);
+    emitOutboxStatus({ count: rows.length, syncing: syncingOutboxRef.current });
+    return rows.length;
+  }, []);
+
+  const deliverSupabaseMessage = useCallback(
+    async (
+      content: string,
+      attachments: PreparedChatAttachment[] | undefined,
+      modelTier: GigaModelId,
+      chatId: string | null
+    ) => {
+      if (!email) throw new Error("Please sign in");
+      const sessionToken = getSessionToken();
+      if (!sessionToken) throw new Error("Session expired. Please sign in again.");
+
+      let chat =
+        (chatId ? conversations.find((c) => c._id === chatId) : null) ?? activeConversation;
+      if (!chat) {
+        chat = await createSupabaseChat(email, mode);
+        setConversationsRaw((prev) => [chat as ConversationItem, ...(prev ?? [])]);
+        setActiveId(chat._id);
+      }
+
+      await appendSupabaseMessage(chat._id, "user", content);
+      let convexConversationId = chat.convexConversationId ?? null;
+      if (!convexConversationId) {
+        convexConversationId = await createConvexConversation(sessionToken, mode);
+        const updated = await updateSupabaseChat(chat._id, { convexConversationId });
+        if (updated) chat = updated;
+      }
+
+      const assistantBaseline = countAssistantMessages(
+        await fetchConvexMessages(sessionToken, convexConversationId, isSlowNetwork)
+      );
+
+      const result = await sendConvexMessageWithRetry(
+        {
+          sessionToken,
+          conversationId: convexConversationId,
+          content,
+          mode,
+          chatSystem: chatSystemForModel(modelTier),
+          ...(attachments?.length
+            ? {
+                attachments: attachments.map(
+                  ({ previewUrl: _previewUrl, thumbDataUrl: _thumb, ...attachment }) =>
+                    attachment
+                ),
+              }
+            : {}),
+        },
+        isSlowNetwork
+      );
+
+      if (result.status === "processing") {
+        await waitForAssistantReply(
+          sessionToken,
+          convexConversationId,
+          assistantBaseline,
+          replyWaitMs(isSlowNetwork),
+          isSlowNetwork
+        );
+      }
+      const convexMessages = await fetchConvexMessages(
+        sessionToken,
+        convexConversationId,
+        isSlowNetwork
+      );
+      await replaceSupabaseMessages(chat._id, convexMessages);
+      setMessagesRaw(await listSupabaseMessages(chat._id));
+    },
+    [activeConversation, conversations, email, isSlowNetwork, mode]
+  );
+
+  const flushOutbox = useCallback(async () => {
+    if (
+      syncingOutboxRef.current ||
+      typeof navigator === "undefined" ||
+      !navigator.onLine ||
+      !effectiveOnline
+    ) {
+      return;
+    }
+    syncingOutboxRef.current = true;
+    setIsSyncingOutbox(true);
+    try {
+      const rows = await listOutbox();
+      emitOutboxStatus({ count: rows.length, syncing: true });
+      for (const row of rows) {
+        try {
+          await deliverSupabaseMessage(
+            row.content,
+            row.attachments as PreparedChatAttachment[] | undefined,
+            gigaModelForMode(row.mode as AiModeId),
+            row.conversationId
+          );
+          await removeOutbox(row.id);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : "Sync failed";
+          await bumpOutboxAttempt(row.id, msg);
+          if (row.attempts + 1 >= maxSendRetries(isSlowNetwork)) {
+            await removeOutbox(row.id);
+            setError(toUserFacingError(e, msg));
+          }
+        }
+      }
+      await refreshOutboxCount();
+    } finally {
+      syncingOutboxRef.current = false;
+      setIsSyncingOutbox(false);
+      const remaining = await listOutbox();
+      emitOutboxStatus({ count: remaining.length, syncing: false });
+    }
+  }, [deliverSupabaseMessage, effectiveOnline, isSlowNetwork, refreshOutboxCount]);
+
+  useEffect(() => {
+    void refreshOutboxCount();
+    const onOnline = () => {
+      registerChatOutboxSync();
+      void flushOutbox();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible" && navigator.onLine) {
+        registerChatOutboxSync();
+        void flushOutbox();
+      }
+    };
+    const onSwMessage = (event: MessageEvent) => {
+      if (event.data?.type === "GIGA3_FLUSH_OUTBOX") {
+        void flushOutbox();
+      }
+    };
+    window.addEventListener("online", onOnline);
+    document.addEventListener("visibilitychange", onVisible);
+    navigator.serviceWorker?.addEventListener("message", onSwMessage);
+    if (navigator.onLine) void flushOutbox();
+    return () => {
+      window.removeEventListener("online", onOnline);
+      document.removeEventListener("visibilitychange", onVisible);
+      navigator.serviceWorker?.removeEventListener("message", onSwMessage);
+    };
+  }, [flushOutbox, refreshOutboxCount]);
+
   const changeMode = useCallback(
     async (next: AiModeId) => {
       setMode(next);
@@ -336,6 +497,28 @@ export function useSupabaseChatPlatform() {
       }
       setError(null);
       setPendingUserText(content);
+
+      if (!effectiveOnline) {
+        const clientRequestId = newClientRequestId();
+        const entry: OutboxEntry = {
+          id: clientRequestId,
+          clientRequestId,
+          conversationId: activeId,
+          content,
+          mode,
+          attachments: attachments?.map(
+            ({ previewUrl: _p, thumbDataUrl: _t, ...rest }) => rest
+          ),
+          attempts: 0,
+          createdAt: Date.now(),
+        };
+        await enqueueOutbox(entry);
+        registerChatOutboxSync();
+        await refreshOutboxCount();
+        setError("Offline — message queued and will send when you're back online.");
+        return;
+      }
+
       setIsSending(true);
       setAwaitingReply(false);
       try {
@@ -454,7 +637,7 @@ export function useSupabaseChatPlatform() {
         setAwaitingReply(false);
       }
     },
-    [email, activeConversation, mode, isSlowNetwork]
+    [email, activeConversation, mode, isSlowNetwork, effectiveOnline, activeId, refreshOutboxCount]
   );
 
   const regenerateMessage = useCallback(
@@ -525,7 +708,9 @@ export function useSupabaseChatPlatform() {
     awaitingReply,
     isAcceptingMessage: isSending,
     isSlowNetwork,
-    outboxCount: 0,
+    outboxCount,
+    isSyncingOutbox,
+    retryOutboxSync: flushOutbox,
     error,
     startNewChat,
     selectConversation,
