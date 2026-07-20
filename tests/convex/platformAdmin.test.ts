@@ -16,8 +16,9 @@ describe("platformAdmin", () => {
     expect(isPlatformAdminEmail("other@example.com")).toBe(false);
   });
 
-  it("returns false when env is unset", () => {
+  it("returns false when env is unset except for platform owner", () => {
     delete process.env.PLATFORM_ADMIN_EMAILS;
-    expect(isPlatformAdminEmail("ayiiga3@gmail.com")).toBe(false);
+    expect(isPlatformAdminEmail("ayiiga3@gmail.com")).toBe(true);
+    expect(isPlatformAdminEmail("other@example.com")).toBe(false);
   });
 });

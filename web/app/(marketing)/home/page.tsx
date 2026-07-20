@@ -7,6 +7,7 @@ import { ReferralCard } from "@/components/growth/ReferralCard";
 import { PlatformProfileProvider } from "@/components/platform/PlatformProfileProvider";
 import { PrivacyControlsPanel } from "@/components/platform/PrivacyControlsPanel";
 import { PlatformSettingsPanel } from "@/components/platform/PlatformSettingsPanel";
+import { SettingsAdminDashboardPanel } from "@/components/platform/SettingsAdminDashboardPanel";
 import { VisionTagline } from "@/components/vision/VisionTagline";
 import { Container } from "@/components/ui/Container";
 import { siteConfig } from "@/lib/site";
@@ -25,6 +26,7 @@ export default function HomeDashboardPage() {
             <div className="mt-8 space-y-6">
               <HomeDashboardPanel />
               <PlatformSettingsPanel />
+              <SettingsAdminDashboardPanel />
               <div className="dashboard-panel-grid">
                 <ReferralCard />
                 <PrivacyControlsPanel />
