@@ -54,7 +54,7 @@ const MORE_LINKS: MenuLink[] = [
   { href: "/automation/", label: "Automation", icon: Zap },
   { href: siteConfig.links.media, label: "Media Studio", icon: Sparkles },
   { href: "/install/", label: "Invite Friends", icon: Users },
-  { href: siteConfig.links.dashboard, label: "Settings", icon: Settings },
+  { href: siteConfig.links.home, label: "Settings", icon: Settings },
   { href: "/about/", label: "About", icon: Info },
   { href: "/chat/", label: "Help", icon: HelpCircle },
 ];
