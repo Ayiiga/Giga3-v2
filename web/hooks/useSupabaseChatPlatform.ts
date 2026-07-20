@@ -538,6 +538,8 @@ export function useSupabaseChatPlatform() {
     archiveConversation: async () => undefined,
     favoriteConversation: async () => undefined,
     editMessage: async () => undefined,
+    deleteMessage: async () => undefined,
+    renameConversation: async () => undefined,
     setActiveId,
     chatProviderLabel,
     usedFallback,

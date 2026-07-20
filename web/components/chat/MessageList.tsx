@@ -34,6 +34,7 @@ interface MessageListProps {
   onInsertTemplate?: (text: string) => void;
   onRegenerate?: (messageId: string) => void;
   onEditMessage?: (messageId: string, content: string) => void;
+  onDeleteMessage?: (messageId: string) => void;
 }
 
 const QUICK_PROMPTS_FALLBACK = [
@@ -52,6 +53,7 @@ function MessageListInner({
   onInsertTemplate,
   onRegenerate,
   onEditMessage,
+  onDeleteMessage,
 }: MessageListProps) {
   useRenderDiagnostic("MessageList");
 
@@ -206,6 +208,7 @@ function MessageListInner({
                     }
                     onRegenerate={onRegenerate}
                     onEdit={onEditMessage}
+                    onDelete={onDeleteMessage}
                   />
                 ))}
               </div>
@@ -228,6 +231,7 @@ function propsEqual(prev: MessageListProps, next: MessageListProps): boolean {
     prev.onInsertTemplate === next.onInsertTemplate &&
     prev.onRegenerate === next.onRegenerate &&
     prev.onEditMessage === next.onEditMessage &&
+    prev.onDeleteMessage === next.onDeleteMessage &&
     prev.messages === next.messages
   );
 }

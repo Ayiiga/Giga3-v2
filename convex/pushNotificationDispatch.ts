@@ -4,6 +4,7 @@ import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { getVapidPublicKey, isPushAlertsEnabled } from "./featureFlags";
+import { isWithinQuietHours } from "./pushQuietHours";
 
 export const PUSH_CATEGORY = {
   NEWS: "news",
@@ -111,6 +112,14 @@ export const dispatchPushNotification = internalAction({
       { userId: args.recipientId, tag, windowMs: DEDUP_WINDOW_MS }
     );
     if (isDuplicate) return { sent: 0, queued: 0, deduplicated: true };
+
+    const userPrefs = await ctx.runQuery(internal.pushAlertsInternal.getUserNotificationPrefs, {
+      userId: args.recipientId,
+    });
+    if (!userPrefs.notificationsEnabled) return { sent: 0, queued: 0, muted: true };
+    if (isWithinQuietHours(userPrefs.quietHours)) {
+      return { sent: 0, queued: 0, quietHours: true };
+    }
 
     const subs = await ctx.runQuery(internal.pushAlertsInternal.listSubscriptionsForUser, {
       userId: args.recipientId,

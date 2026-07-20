@@ -13,6 +13,11 @@ export function PlatformSettingsPanel() {
   const [writingStyle, setWritingStyle] = useState(preferences.preferredWritingStyle);
   const [language, setLanguage] = useState(preferences.preferredLanguage);
   const [notifications, setNotifications] = useState(preferences.notificationsEnabled);
+  const [quietHoursEnabled, setQuietHoursEnabled] = useState(
+    Boolean(preferences.quietHoursEnabled)
+  );
+  const [quietHoursStart, setQuietHoursStart] = useState(preferences.quietHoursStart ?? "22:00");
+  const [quietHoursEnd, setQuietHoursEnd] = useState(preferences.quietHoursEnd ?? "07:00");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +27,9 @@ export function PlatformSettingsPanel() {
     setWritingStyle(preferences.preferredWritingStyle);
     setLanguage(preferences.preferredLanguage);
     setNotifications(preferences.notificationsEnabled);
+    setQuietHoursEnabled(Boolean(preferences.quietHoursEnabled));
+    setQuietHoursStart(preferences.quietHoursStart ?? "22:00");
+    setQuietHoursEnd(preferences.quietHoursEnd ?? "07:00");
   }, [userRole, preferences]);
 
   if (isLoading) {
@@ -45,6 +53,9 @@ export function PlatformSettingsPanel() {
       preferredWritingStyle: writingStyle,
       preferredLanguage: language,
       notificationsEnabled: notifications,
+      quietHoursEnabled,
+      quietHoursStart,
+      quietHoursEnd,
     });
 
     setBusy(false);
@@ -122,6 +133,46 @@ export function PlatformSettingsPanel() {
           className="h-4 w-4 accent-accent"
         />
       </label>
+
+      <div className="space-y-3 rounded-xl border border-border p-4">
+        <label className="flex cursor-pointer items-center justify-between gap-4 text-sm">
+          <span className="font-medium">Quiet hours</span>
+          <input
+            type="checkbox"
+            checked={quietHoursEnabled}
+            onChange={(e) => setQuietHoursEnabled(e.target.checked)}
+            disabled={busy}
+            className="h-4 w-4 accent-accent"
+          />
+        </label>
+        {quietHoursEnabled ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block text-sm">
+              <span className="text-muted">Start</span>
+              <input
+                type="time"
+                value={quietHoursStart}
+                onChange={(e) => setQuietHoursStart(e.target.value)}
+                disabled={busy}
+                className="input-surface mt-1 w-full"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="text-muted">End</span>
+              <input
+                type="time"
+                value={quietHoursEnd}
+                onChange={(e) => setQuietHoursEnd(e.target.value)}
+                disabled={busy}
+                className="input-surface mt-1 w-full"
+              />
+            </label>
+          </div>
+        ) : null}
+        <p className="text-xs text-muted">
+          Push notifications are paused during quiet hours on this account.
+        </p>
+      </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" size="sm" disabled={busy}>

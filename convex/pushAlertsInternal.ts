@@ -1,5 +1,6 @@
 import { internalQuery } from "./_generated/server";
 import { v } from "convex/values";
+import { parseUserPreferencesJson } from "./pushQuietHours";
 
 export const listSubscriptionsForUser = internalQuery({
   args: { userId: v.string() },
@@ -51,5 +52,21 @@ export const listAnnouncementSubscribers = internalQuery({
         p256dh: r.p256dh,
         auth: r.auth,
       }));
+  },
+});
+
+export const getUserNotificationPrefs = internalQuery({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.userId))
+      .first();
+    if (!user) return { notificationsEnabled: true, quietHours: null };
+    const prefs = parseUserPreferencesJson(user.userPreferences);
+    return {
+      notificationsEnabled: prefs?.notificationsEnabled !== false,
+      quietHours: prefs,
+    };
   },
 });

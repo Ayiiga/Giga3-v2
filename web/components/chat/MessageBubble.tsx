@@ -22,6 +22,7 @@ export interface MessageBubbleProps {
   streaming?: boolean;
   onRegenerate?: (messageId: string) => void;
   onEdit?: (messageId: string, content: string) => void;
+  onDelete?: (messageId: string) => void;
 }
 
 function bubblePropsEqual(
@@ -37,7 +38,8 @@ function bubblePropsEqual(
     prev.showSending === next.showSending &&
     prev.streaming === next.streaming &&
     prev.onRegenerate === next.onRegenerate &&
-    prev.onEdit === next.onEdit
+    prev.onEdit === next.onEdit &&
+    prev.onDelete === next.onDelete
   );
 }
 
@@ -51,6 +53,7 @@ export const MessageBubble = memo(function MessageBubble({
   streaming,
   onRegenerate,
   onEdit,
+  onDelete,
 }: MessageBubbleProps) {
   useRenderDiagnostic("MessageBubble");
 
@@ -155,6 +158,7 @@ export const MessageBubble = memo(function MessageBubble({
       onRegenerate={
         !isUser && id && onRegenerate ? () => onRegenerate(id) : undefined
       }
+      onDelete={isUser && id && onDelete ? () => onDelete(id) : undefined}
     />
   ) : null;
 
