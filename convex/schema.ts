@@ -211,6 +211,8 @@ export default defineSchema({
     onboardingState: v.optional(v.string()),
     /** JSON UserPreferences — privacy-respecting personalization */
     userPreferences: v.optional(v.string()),
+    /** Consumer account moderation — undefined means active */
+    accountStatus: v.optional(v.union(v.literal("active"), v.literal("suspended"))),
     onboardingCompletedAt: v.optional(v.number()),
     referralCode: v.optional(v.string()),
     referredByUserId: v.optional(v.string()),

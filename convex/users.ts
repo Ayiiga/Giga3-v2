@@ -58,6 +58,9 @@ export const createUser = mutation({
       .withIndex("by_email", (q) => q.eq("email", email))
       .first();
     if (existing) {
+      if (existing.accountStatus === "suspended") {
+        throw new Error("This account has been suspended. Contact support.");
+      }
       const user = await grantStarterCreditsIfNeeded(ctx, email, existing);
       return await attachSessionToken(email, user);
     }

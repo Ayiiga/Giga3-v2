@@ -327,6 +327,7 @@ export function useChatPlatform() {
   const setPinnedMutation = useMutation(api.conversations.setPinned);
   const setArchivedMutation = useMutation(api.conversations.setArchived);
   const setFavoriteMutation = useMutation(api.conversations.setFavorite);
+  const updateTitleMutation = useMutation(api.conversations.updateTitle);
   const createUser = useMutation(api.users.createUser);
 
   const conversationsLoading = conversationsRaw === undefined;
@@ -988,19 +989,6 @@ export function useChatPlatform() {
     [sessionToken, activeId, setArchivedMutation]
   );
 
-  const favoriteConversation = useCallback(
-    async (conversationId: string, isFavorite: boolean) => {
-      const token = sessionToken ?? getSessionToken();
-      if (!token) return;
-      await setFavoriteMutation({
-        sessionToken: token,
-        conversationId: conversationId as Id<"conversations">,
-        isFavorite,
-      });
-    },
-    [sessionToken, setFavoriteMutation]
-  );
-
   const editMessage = useCallback(
     async (messageId: string, content: string) => {
       const token = sessionToken ?? getSessionToken();
@@ -1043,6 +1031,51 @@ export function useChatPlatform() {
     [sessionToken, activeId, mode, beginReplyWait, trackChatGeneration]
   );
 
+  const deleteMessage = useCallback(
+    async (messageId: string) => {
+      const token = sessionToken ?? getSessionToken();
+      if (!token) return;
+      setError(null);
+      try {
+        await convexMutationWithTimeout("chatMessaging:deleteMessage", {
+          sessionToken: token,
+          messageId: messageId as Id<"messages">,
+        });
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Failed to delete message");
+      }
+    },
+    [sessionToken]
+  );
+
+  const renameConversation = useCallback(
+    async (conversationId: string, title: string) => {
+      const token = sessionToken ?? getSessionToken();
+      if (!token) return;
+      const trimmed = title.trim();
+      if (!trimmed) return;
+      await updateTitleMutation({
+        sessionToken: token,
+        conversationId: conversationId as Id<"conversations">,
+        title: trimmed,
+      });
+    },
+    [sessionToken, updateTitleMutation]
+  );
+
+  const favoriteConversation = useCallback(
+    async (conversationId: string, isFavorite: boolean) => {
+      const token = sessionToken ?? getSessionToken();
+      if (!token) return;
+      await setFavoriteMutation({
+        sessionToken: token,
+        conversationId: conversationId as Id<"conversations">,
+        isFavorite,
+      });
+    },
+    [sessionToken, setFavoriteMutation]
+  );
+
   return {
     email,
     mounted,
@@ -1069,6 +1102,8 @@ export function useChatPlatform() {
     archiveConversation,
     favoriteConversation,
     editMessage,
+    deleteMessage,
+    renameConversation,
     setActiveId,
     chatProviderLabel,
     usedFallback,

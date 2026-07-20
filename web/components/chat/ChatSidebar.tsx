@@ -25,6 +25,7 @@ import {
   PanelLeft,
   Trophy,
   PanelLeftClose,
+  Pencil,
   Pin,
   Search,
   Settings,
@@ -63,6 +64,7 @@ interface ChatSidebarProps {
   onPin?: (id: string, pinned: boolean) => void;
   onArchive?: (id: string, archived: boolean) => void;
   onFavorite?: (id: string, isFavorite: boolean) => void;
+  onRename?: (id: string, title: string) => void;
   email: string;
   mounted: boolean;
   credits: number | null;
@@ -108,6 +110,7 @@ function ChatSidebarComponent({
   onPin,
   onArchive,
   onFavorite,
+  onRename,
   email,
   credits,
   collapsed,
@@ -318,6 +321,7 @@ function ChatSidebarComponent({
                   onPin={onPin}
                   onArchive={onArchive}
                   onFavorite={onFavorite}
+                  onRename={onRename}
                 />
               )}
 
@@ -333,6 +337,7 @@ function ChatSidebarComponent({
                   onPin={onPin}
                   onArchive={onArchive}
                   onFavorite={onFavorite}
+                  onRename={onRename}
                 />
               ))}
             </div>
@@ -479,6 +484,7 @@ function ConversationBlock({
   onPin,
   onArchive,
   onFavorite,
+  onRename,
 }: {
   label: string;
   conversations: ConversationItem[];
@@ -489,6 +495,7 @@ function ConversationBlock({
   onPin?: (id: string, pinned: boolean) => void;
   onArchive?: (id: string, archived: boolean) => void;
   onFavorite?: (id: string, isFavorite: boolean) => void;
+  onRename?: (id: string, title: string) => void;
 }) {
   return (
     <div className="mb-3">
@@ -551,6 +558,17 @@ function ConversationBlock({
                         )}
                         aria-hidden
                       />
+                    </IconAction>
+                  )}
+                  {onRename && (
+                    <IconAction
+                      label="Rename"
+                      onClick={() => {
+                        const next = window.prompt("Rename chat", c.title || "Untitled");
+                        if (next !== null) onRename(c._id, next);
+                      }}
+                    >
+                      <Pencil className="h-3.5 w-3.5" aria-hidden />
                     </IconAction>
                   )}
                   {onArchive && (

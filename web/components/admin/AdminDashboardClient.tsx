@@ -1,6 +1,8 @@
 "use client";
 
+import { AdminPlatformOverview } from "@/components/admin/AdminPlatformOverview";
 import { AdminSocialEconomyPanel } from "@/components/admin/AdminSocialEconomyPanel";
+import { AdminUsersPanel } from "@/components/admin/AdminUsersPanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { AdminKeyGate } from "@/components/admin/AdminKeyGate";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -59,6 +61,9 @@ function AdminInner() {
         pendingKey={admin.pendingKey}
         onPendingKeyChange={admin.setPendingKey}
         onSubmit={() => void admin.submitKey()}
+        onAccountSignIn={() => void admin.submitAccountSignIn()}
+        canUseAccountSignIn={admin.canUseAccountSignIn}
+        accountSignInPending={admin.accountSignInPending}
         title="Admin dashboard"
       />
     );
@@ -85,7 +90,9 @@ function AdminInner() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="page-title">Admin dashboard</h1>
-          <p className="mt-2 text-muted">Revenue, creator payouts, and marketplace moderation.</p>
+          <p className="mt-2 text-muted">
+            Platform overview, user management, revenue, payouts, and moderation.
+          </p>
         </div>
         <ButtonLink href="/insights/" variant="ghost">
           Platform analytics →
@@ -98,6 +105,14 @@ function AdminInner() {
       {error && (
         <p className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-700">{error}</p>
       )}
+
+      <AdminPlatformOverview adminCreds={adminCreds} />
+
+      <AdminUsersPanel
+        adminCreds={adminCreds}
+        onNotice={(msg) => setNotice(msg)}
+        onError={(msg) => setError(msg || null)}
+      />
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl border bg-card p-5">

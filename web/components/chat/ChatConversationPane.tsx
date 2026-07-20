@@ -24,6 +24,7 @@ interface ChatConversationPaneProps {
   onInsertTemplate: (text: string) => void;
   onRegenerate?: (messageId: string) => void;
   onEditMessage?: (messageId: string, content: string) => void;
+  onDeleteMessage?: (messageId: string) => void;
   onStopGenerating?: () => void;
   uploadUsage?: UploadUsageSnapshot | null;
   credits?: number | null;
@@ -52,6 +53,7 @@ function panePropsEqual(
     prev.onInsertTemplate === next.onInsertTemplate &&
     prev.onRegenerate === next.onRegenerate &&
     prev.onEditMessage === next.onEditMessage &&
+    prev.onDeleteMessage === next.onDeleteMessage &&
     prev.onStopGenerating === next.onStopGenerating &&
     prev.uploadUsage === next.uploadUsage &&
     prev.credits === next.credits &&
@@ -80,6 +82,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onInsertTemplate,
   onRegenerate,
   onEditMessage,
+  onDeleteMessage,
   onStopGenerating,
   uploadUsage,
   credits,
@@ -105,6 +108,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         onInsertTemplate={onInsertTemplate}
         onRegenerate={onRegenerate}
         onEditMessage={onEditMessage}
+        onDeleteMessage={onDeleteMessage}
       />
       <div className="chat-composer-stack min-w-0 max-w-full shrink-0">
         <ChatCategorySwitcher

@@ -125,6 +125,8 @@ function ChatShellInner({
     archiveConversation,
     favoriteConversation,
     editMessage,
+    deleteMessage,
+    renameConversation,
     chatProviderLabel,
     usedFallback,
     segmentNotice,
@@ -370,6 +372,20 @@ function ChatShellInner({
     [editMessage]
   );
 
+  const handleDeleteMessage = useCallback(
+    (messageId: string) => {
+      void deleteMessage(messageId);
+    },
+    [deleteMessage]
+  );
+
+  const handleRenameConversation = useCallback(
+    (conversationId: string, title: string) => {
+      void renameConversation(conversationId, title);
+    },
+    [renameConversation]
+  );
+
   useEffect(() => {
     if (mounted && !email) router.replace("/chat/login");
   }, [mounted, email, router]);
@@ -402,6 +418,7 @@ function ChatShellInner({
         onPin={(id, pinned) => void pinConversation(id, pinned)}
         onArchive={(id, archived) => void archiveConversation(id, archived)}
         onFavorite={(id, fav) => void favoriteConversation(id, fav)}
+        onRename={(id, title) => handleRenameConversation(id, title)}
         email={email}
         mounted={mounted}
         credits={credits}
@@ -490,6 +507,7 @@ function ChatShellInner({
           onInsertTemplate={handleInsertTemplate}
           onRegenerate={handleRegenerate}
           onEditMessage={handleEditMessage}
+          onDeleteMessage={handleDeleteMessage}
           onStopGenerating={() => void stopGenerating()}
           uploadUsage={uploadUsage}
           credits={credits}

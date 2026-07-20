@@ -6,8 +6,9 @@ import {
   getAdminSessionToken,
   setAdminSessionToken,
 } from "@/lib/adminAuth";
+import { getSessionToken } from "@/lib/auth";
 import { api } from "convex/_generated/api";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
@@ -19,10 +20,17 @@ export function useAdminSession() {
   const params = useSearchParams();
   const router = useRouter();
   const exchangeAdminKey = useMutation(api.adminAuth.exchangeAdminKey);
+  const exchangeUserSessionForAdmin = useMutation(api.adminAuth.exchangeUserSessionForAdmin);
+  const sessionToken = getSessionToken();
+  const platformAdminCheck = useQuery(
+    api.adminAuth.isCurrentUserPlatformAdmin,
+    sessionToken ? { sessionToken } : "skip"
+  );
   const [ready, setReady] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingKey, setPendingKey] = useState("");
+  const [accountPending, setAccountPending] = useState(false);
 
   const establishSession = useCallback(
     async (adminKey: string) => {
@@ -82,6 +90,29 @@ export function useAdminSession() {
     return ok;
   }, [pendingKey, establishSession]);
 
+  const submitAccountSignIn = useCallback(async () => {
+    const token = getSessionToken();
+    if (!token) {
+      setError("Sign in to your Giga3 account first.");
+      return false;
+    }
+    setAccountPending(true);
+    setError(null);
+    try {
+      const result = await exchangeUserSessionForAdmin({ sessionToken: token });
+      setAdminSessionToken(result.adminSessionToken);
+      setAuthorized(true);
+      return true;
+    } catch {
+      clearAdminSessionToken();
+      setAuthorized(false);
+      setError("This account is not authorized for admin access.");
+      return false;
+    } finally {
+      setAccountPending(false);
+    }
+  }, [exchangeUserSessionForAdmin]);
+
   const signOutAdmin = useCallback(() => {
     clearAdminSessionToken();
     setAuthorized(false);
@@ -94,6 +125,9 @@ export function useAdminSession() {
     pendingKey,
     setPendingKey,
     submitKey,
+    submitAccountSignIn,
+    canUseAccountSignIn: platformAdminCheck?.isAdmin === true,
+    accountSignInPending: accountPending,
     signOutAdmin,
     credentials: adminCredentials(),
   };

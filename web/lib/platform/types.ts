@@ -32,6 +32,9 @@ export type UserPreferences = {
   learningInterests: string[];
   marketplaceInterests: string[];
   privacyShareUsage: boolean;
+  quietHoursEnabled?: boolean;
+  quietHoursStart?: string;
+  quietHoursEnd?: string;
 };
 
 export type OnboardingState = {

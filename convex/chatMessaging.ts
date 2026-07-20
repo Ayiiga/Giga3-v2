@@ -553,3 +553,32 @@ export const editAndResend = mutation({
     };
   },
 });
+
+/** Delete a user message and all subsequent turns in the conversation. */
+export const deleteMessage = mutation({
+  args: {
+    sessionToken: v.string(),
+    messageId: v.id("messages"),
+  },
+  handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken);
+    const message = await ctx.db.get(args.messageId);
+    if (!message || message.role !== "user") {
+      throw new Error("Message not found");
+    }
+
+    const conv = await ctx.db.get(message.conversationId);
+    if (!conv || conv.userId !== email) {
+      throw new Error("Forbidden");
+    }
+
+    await ctx.runMutation(internal.platform.removeMessagesFrom, {
+      conversationId: message.conversationId,
+      userId: email,
+      fromMessageId: args.messageId,
+    });
+
+    await ctx.db.patch(message.conversationId, { updatedAt: Date.now() });
+    return { ok: true as const };
+  },
+});

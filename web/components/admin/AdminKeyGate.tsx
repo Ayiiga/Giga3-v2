@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { getSessionToken } from "@/lib/auth";
 
 type AdminKeyGateProps = {
   ready: boolean;
@@ -9,6 +10,9 @@ type AdminKeyGateProps = {
   pendingKey: string;
   onPendingKeyChange: (value: string) => void;
   onSubmit: () => void;
+  onAccountSignIn?: () => void;
+  accountSignInPending?: boolean;
+  canUseAccountSignIn?: boolean;
   title?: string;
 };
 
@@ -20,6 +24,9 @@ export function AdminKeyGate({
   pendingKey,
   onPendingKeyChange,
   onSubmit,
+  onAccountSignIn,
+  accountSignInPending = false,
+  canUseAccountSignIn = false,
   title = "Admin access",
 }: AdminKeyGateProps) {
   if (!ready) {
@@ -56,6 +63,22 @@ export function AdminKeyGate({
           Unlock dashboard
         </Button>
       </form>
+      {canUseAccountSignIn && onAccountSignIn ? (
+        <div className="mt-6 border-t border-border pt-6">
+          <p className="mb-3 text-center text-sm text-muted">
+            Or sign in with your configured administrator account.
+          </p>
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            disabled={accountSignInPending || !getSessionToken()}
+            onClick={() => onAccountSignIn()}
+          >
+            {getSessionToken() ? "Use admin account" : "Sign in to Giga3 first"}
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }

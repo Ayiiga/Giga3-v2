@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v165-chat-keyboard";
+const CACHE_NAME = "giga3-shell-v166-chat-admin-push";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
