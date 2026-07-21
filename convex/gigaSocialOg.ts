@@ -1,5 +1,4 @@
 import type { PublicSocialAuthor, PublicSocialPost } from "./gigaSocialViews";
-import { parseMediaMetaJson } from "./gigaSocialViews";
 
 const DEFAULT_ORIGIN = "https://www.giga3ai.com";
 const DEFAULT_CONVEX_SITE = "https://perfect-lark-521.convex.site";
@@ -71,54 +70,24 @@ function primaryMediaUrl(post: PublicSocialPost): string | undefined {
   return post.mediaUrls?.[0] ?? post.mediaUrl;
 }
 
-function isPublicImageUrl(url: string): boolean {
-  const trimmed = url.trim();
-  return trimmed.startsWith("https://") || trimmed.startsWith("http://");
-}
-
-function isVideoPost(post: PublicSocialPost): boolean {
-  return post.mediaType === "video" || post.postType === "video";
-}
-
 export function buildGigaSocialOgImageProxyUrl(postId: string, siteUrl?: string): string {
   const site = (siteUrl ?? process.env.CONVEX_SITE_URL ?? DEFAULT_CONVEX_SITE).replace(/\/$/, "");
   return `${site}/gigasocial/post/og-image?id=${encodeURIComponent(postId)}`;
 }
 
-function previewImageUrl(
-  post: PublicSocialPost,
-  mediaMetaJson?: string | null,
-  siteUrl?: string
-): string {
-  const mediaItems = parseMediaMetaJson(mediaMetaJson);
-  const videoThumb = mediaItems.find((item) => item.type === "video" && item.thumbnailUrl)
-    ?.thumbnailUrl;
+function hasShareableContent(post: PublicSocialPost): boolean {
+  return Boolean(
+    post.body.trim() ||
+      post.mediaUrl ||
+      (post.mediaUrls && post.mediaUrls.length > 0)
+  );
+}
 
-  if (isVideoPost(post)) {
-    if (post.videoThumbnailUrl && isPublicImageUrl(post.videoThumbnailUrl)) {
-      return post.videoThumbnailUrl;
-    }
-    if (videoThumb && isPublicImageUrl(videoThumb)) return videoThumb;
+/** Always proxy through Convex so crawlers get stable image bytes (no redirects / mp4 mistaken as image). */
+function previewImageUrl(post: PublicSocialPost, _mediaMetaJson?: string | null, siteUrl?: string): string {
+  if (hasShareableContent(post)) {
     return buildGigaSocialOgImageProxyUrl(String(post._id), siteUrl);
   }
-
-  if (post.videoThumbnailUrl && isPublicImageUrl(post.videoThumbnailUrl)) {
-    return post.videoThumbnailUrl;
-  }
-
-  const imageFromMeta = mediaItems.find((item) => item.type === "image")?.url;
-  if (imageFromMeta && isPublicImageUrl(imageFromMeta)) return imageFromMeta;
-
-  const mediaUrl = primaryMediaUrl(post);
-  if (mediaUrl && isPublicImageUrl(mediaUrl)) {
-    return mediaUrl;
-  }
-
-  // Text-only or missing image — use og-image proxy for generated preview card
-  if (post.body.trim()) {
-    return buildGigaSocialOgImageProxyUrl(String(post._id), siteUrl);
-  }
-
   return DEFAULT_OG_IMAGE;
 }
 

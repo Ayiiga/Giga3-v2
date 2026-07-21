@@ -7,18 +7,17 @@ import { getConvexSiteUrl } from "@/lib/convex/env";
 const DEFAULT_OG_IMAGE = `${siteConfig.url.replace(/\/$/, "")}/images/logo.png`;
 const DEFAULT_CONVEX_SITE = "https://perfect-lark-521.convex.site";
 
-function isPublicImageUrl(url: string): boolean {
-  const trimmed = url.trim();
-  return trimmed.startsWith("https://") || trimmed.startsWith("http://");
-}
-
-function isVideoPost(post: SocialPost): boolean {
-  return post.mediaType === "video" || post.postType === "video";
-}
-
 function buildGigaSocialOgImageProxyUrl(postId: string): string {
   const site = (getConvexSiteUrl() || DEFAULT_CONVEX_SITE).replace(/\/$/, "");
   return `${site}/gigasocial/post/og-image?id=${encodeURIComponent(postId)}`;
+}
+
+function hasShareableContent(post: SocialPost): boolean {
+  return Boolean(
+    post.body.trim() ||
+      post.mediaUrl ||
+      (post.mediaUrls && post.mediaUrls.length > 0)
+  );
 }
 
 export function formatCompactCount(value: number): string {
@@ -45,31 +44,10 @@ function mediaLabel(post: SocialPost): string {
   return "Post";
 }
 
-function primaryMediaUrl(post: SocialPost): string | undefined {
-  return post.mediaUrls?.[0] ?? post.mediaUrl;
-}
-
 export function previewImageUrl(post: SocialPost): string {
-  if (isVideoPost(post)) {
-    if (post.videoThumbnailUrl && isPublicImageUrl(post.videoThumbnailUrl)) {
-      return post.videoThumbnailUrl;
-    }
+  if (hasShareableContent(post)) {
     return buildGigaSocialOgImageProxyUrl(post._id);
   }
-
-  if (post.videoThumbnailUrl && isPublicImageUrl(post.videoThumbnailUrl)) {
-    return post.videoThumbnailUrl;
-  }
-
-  const mediaUrl = primaryMediaUrl(post);
-  if (mediaUrl && isPublicImageUrl(mediaUrl)) {
-    return mediaUrl;
-  }
-
-  if (post.body.trim()) {
-    return buildGigaSocialOgImageProxyUrl(post._id);
-  }
-
   return DEFAULT_OG_IMAGE;
 }
 
