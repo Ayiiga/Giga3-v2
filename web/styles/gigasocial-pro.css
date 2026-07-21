@@ -599,6 +599,38 @@
   }
 }
 
+/* Phase 3 delightful UX — micro-interactions only (never animate large layouts). */
+.gigasocial-pressable {
+  transition: transform 120ms ease, opacity 120ms ease, border-color 160ms ease;
+  touch-action: manipulation;
+}
+
+.gigasocial-pressable:active {
+  transform: scale(0.98);
+}
+
+.gigasocial-skeleton-bone {
+  background: linear-gradient(90deg, rgba(148, 163, 184, 0.18), rgba(148, 163, 184, 0.32), rgba(148, 163, 184, 0.18));
+  background-size: 200% 100%;
+}
+
+.gigasocial-feedback-error {
+  animation: gigasocial-fade-in 180ms ease;
+}
+
+.gigasocial-feedback-success {
+  animation: gigasocial-fade-in 180ms ease;
+}
+
+@keyframes gigasocial-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gigasocial-feed-skeleton {
     animation: none;
@@ -607,4 +639,23 @@
   .gigasocial-create-fab-button {
     transition: none;
   }
+
+  .gigasocial-pressable,
+  .gigasocial-pressable:active {
+    transition: none;
+    transform: none;
+  }
+
+  .gigasocial-feedback-error,
+  .gigasocial-feedback-success,
+  .gigasocial-skeleton-bone {
+    animation: none;
+  }
+}
+
+/* High-contrast friendly focus for community / growth controls */
+.gigasocial-pro button:focus-visible,
+.gigasocial-pro a:focus-visible {
+  outline: 2px solid rgba(91, 33, 182, 0.55);
+  outline-offset: 2px;
 }

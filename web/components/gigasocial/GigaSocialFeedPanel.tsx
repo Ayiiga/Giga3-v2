@@ -15,6 +15,7 @@ import { GigaSocialFeedHero } from "@/components/gigasocial/GigaSocialFeedHero";
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { SocialEmptyState } from "@/components/gigasocial/ux/SocialEmptyState";
 import { useGigaSocialFeedAutoplay } from "@/hooks/useGigaSocialFeedAutoplay";
 import { useEffectiveOnline } from "@/hooks/useEffectiveOnline";
 import {
@@ -601,26 +602,38 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         <FeedSkeletonList count={2} />
       ) : visibleFeedPosts.length === 0 ? (
         <div id="gigasocial-feed-posts">
-          <EmptyState
-          icon={MessageCircle}
-          title={
-            isSearching
-              ? "No matching posts"
-              : typeFilter === "all"
-                ? "No posts yet"
-                : `No ${typeFilter} posts yet`
-          }
-          description={
-            isSearching
-              ? "Try different keywords or browse creators in the search dropdown."
-              : typeFilter === "all"
-                ? featuredPost
-                  ? "More posts will appear here as the community shares."
-                  : "Be the first to share something with the community."
-                : "Try another filter or be the first to post in this category."
-          }
-          showVision
-        />
+          {features.enableDelightfulUX && !isSearching && typeFilter === "all" && !featuredPost ? (
+            <SocialEmptyState
+              icon={MessageCircle}
+              title="No posts yet."
+              description="Be the first to share something with the community. Invite friends or create a post to get started."
+              primaryLabel="Create Post"
+              onPrimary={() => openComposer("text-post")}
+              secondaryLabel="Invite Friends"
+              onSecondary={() => router.push("/gigasocial/?tab=profile")}
+            />
+          ) : (
+            <EmptyState
+              icon={MessageCircle}
+              title={
+                isSearching
+                  ? "No matching posts"
+                  : typeFilter === "all"
+                    ? "No posts yet"
+                    : `No ${typeFilter} posts yet`
+              }
+              description={
+                isSearching
+                  ? "Try different keywords or browse creators in the search dropdown."
+                  : typeFilter === "all"
+                    ? featuredPost
+                      ? "More posts will appear here as the community shares."
+                      : "Be the first to share something with the community."
+                    : "Try another filter or be the first to post in this category."
+              }
+              showVision
+            />
+          )}
         </div>
       ) : (
         <ul id="gigasocial-feed-posts" className="space-y-3">

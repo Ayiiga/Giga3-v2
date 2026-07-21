@@ -30,6 +30,8 @@ import { GigaSocialPostMedia } from "@/components/gigasocial/GigaSocialPostMedia
 import { GigaSocialProfileLink } from "@/components/gigasocial/GigaSocialProfileLink";
 import { VerifiedBadge } from "@/components/gigasocial/VerifiedBadge";
 import { getUserEmail } from "@/lib/auth";
+import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
+import { triggerHaptic } from "@/lib/gigasocial/haptics";
 
 interface GigaSocialPostCardProps {
   post: SocialPost;
@@ -62,6 +64,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   feedAutoPlay = false,
   feedPaused = false,
 }: GigaSocialPostCardProps) {
+  const features = useGigaSocialFeatures();
   const [liked, setLiked] = useState(Boolean(post.likedByMe));
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [bookmarked, setBookmarked] = useState(Boolean(post.bookmarkedByMe));
@@ -124,6 +127,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
     const next = !liked;
     setLiked(next);
     setLikeCount((c) => Math.max(0, c + (next ? 1 : -1)));
+    if (next) triggerHaptic("success", features.enableHaptics);
     setBusy(true);
     setError(null);
     try {
@@ -132,6 +136,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
       setLiked(!next);
       setLikeCount((c) => Math.max(0, c + (next ? -1 : 1)));
       setError(e instanceof Error ? e.message : "Could not update like.");
+      triggerHaptic("error", features.enableHaptics);
     } finally {
       setBusy(false);
     }

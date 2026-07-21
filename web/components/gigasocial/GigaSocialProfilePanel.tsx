@@ -1,11 +1,12 @@
 "use client";
 
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
+import { GigaSocialGrowthHub } from "@/components/gigasocial/growth/GigaSocialGrowthHub";
 import { GigaSocialCreatorStudio } from "@/components/gigasocial/studio/GigaSocialCreatorStudio";
+import { ProfileSkeleton } from "@/components/gigasocial/ux/PanelSkeletons";
 import { FAN_LABELS } from "@/lib/gigasocial/fanBranding";
 import { SocialAvatar } from "@/components/gigasocial/SocialAvatar";
 import { Button } from "@/components/ui/Button";
-import { LoadingState } from "@/components/ui/LoadingState";
 import { getGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { BADGE_LABELS } from "@/lib/gigasocial/sections";
 import { SOCIAL_AVATAR_ACCEPT } from "@/lib/gigasocial/constants";
@@ -86,7 +87,7 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
   }, [avatarPreview]);
 
   if (data === undefined) {
-    return <LoadingState label="Loading profile…" />;
+    return <ProfileSkeleton />;
   }
 
   if (data === null) {
@@ -401,6 +402,8 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
           </>
         )}
       </div>
+
+      <GigaSocialGrowthHub sessionToken={sessionToken} xp={gamification?.xp ?? 0} />
 
       {gamification && gamification.badges.length > 0 && (
         <section>
