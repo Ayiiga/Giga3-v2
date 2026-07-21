@@ -30,6 +30,18 @@
 /marketplace/sell/*
   Cache-Control: no-store, no-cache, must-revalidate
 
+/wallet/*
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/credits/*
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/admin/*
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/offline/*
+  Cache-Control: public, max-age=3600
+
 /manifest.webmanifest
   Content-Type: application/manifest+json
   Cache-Control: public, max-age=86400
