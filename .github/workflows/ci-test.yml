@@ -32,6 +32,16 @@ jobs:
             npm install --legacy-peer-deps
           fi
 
+      # Tests import web/ modules (e.g. lucide-react via gigaModels) — install web deps too.
+      - name: Install web dependencies
+        working-directory: web
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --legacy-peer-deps
+          else
+            npm install --legacy-peer-deps
+          fi
+
       - name: Run Vitest (unit + security)
         run: npm test
 
