@@ -1,4 +1,5 @@
-const CACHE_NAME = "giga3-shell-v169-gigasocial-phase3";
+/** Phase 4 production readiness — bump cache name so clients refresh shell assets safely. */
+const CACHE_NAME = "giga3-shell-v170-production-readiness";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
@@ -24,6 +25,8 @@ function isSensitiveDocumentPath(pathname) {
     pathname.startsWith("/chat/") ||
     pathname.startsWith("/payment/") ||
     pathname.startsWith("/credits/") ||
+    pathname.startsWith("/wallet/") ||
+    pathname.startsWith("/admin/") ||
     pathname.startsWith("/marketplace/sell/") ||
     pathname.startsWith("/creator-studio/") ||
     pathname.startsWith("/gigalearn/") ||
