@@ -1,9 +1,10 @@
 # Cloudflare Pages — Next.js static export (trailingSlash: true)
 /payment/success/*  /payment/success/index.html  200
 /payment/failed/*   /payment/failed/index.html   200
-/chat/*             /chat/index.html             200
-/gigasocial/*       /gigasocial/index.html       200
+/chat/*               /chat/index.html               200
+/gigasocial/post/*    /gigasocial/post/index.html    200
 /gigasocial/profile/* /gigasocial/profile/index.html 200
+/gigasocial/*         /gigasocial/index.html         200
 
 # Legacy static site paths → App Router
 /login.html         /chat/login/                 301
