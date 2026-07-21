@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { api } from "./_generated/api";
 import { requireSession } from "./auth";
 import { sanitizeHttpHeaderValue } from "./sanitizeHttpHeader";
+import { assertSafeUploadFileName } from "./uploadSecurity";
 import { sessionArgs } from "./validators";
 
 const SOCIAL_IMAGE_BUCKET = "social-images";
@@ -150,7 +151,8 @@ export const prepareMediaUpload = action({
   },
   handler: async (ctx, args): Promise<PrepareMediaUploadResult> => {
     const userId = await requireSession(args.sessionToken);
-    validateMimeAndSize(args.contentType, args.sizeBytes, args.kind, args.fileName);
+    const safeName = assertSafeUploadFileName(args.fileName);
+    validateMimeAndSize(args.contentType, args.sizeBytes, args.kind, safeName);
 
     const bucket =
       args.kind === "image"
@@ -158,7 +160,7 @@ export const prepareMediaUpload = action({
         : args.kind === "video"
           ? SOCIAL_VIDEO_BUCKET
           : SOCIAL_AUDIO_BUCKET;
-    const objectPath = buildSocialObjectPath(userId, args.fileName);
+    const objectPath = buildSocialObjectPath(userId, safeName);
 
     const baseUrl = process.env.SUPABASE_URL?.trim()?.replace(/\/$/, "");
     const serviceKey = sanitizeHttpHeaderValue(process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -224,13 +226,14 @@ export const prepareAvatarUpload = action({
   },
   handler: async (ctx, args): Promise<PrepareMediaUploadResult> => {
     const userId = await requireSession(args.sessionToken);
-    validateMimeAndSize(args.contentType, args.sizeBytes, "image");
+    const safeName = assertSafeUploadFileName(args.fileName);
+    validateMimeAndSize(args.contentType, args.sizeBytes, "image", safeName);
     if (args.sizeBytes > MAX_AVATAR_BYTES) {
       throw new Error("Avatar image is too large. Maximum size is 2 MB.");
     }
 
     const bucket = SOCIAL_AVATAR_BUCKET;
-    const objectPath = `${cleanSegment(userId)}/avatar-${Date.now()}-${cleanSegment(args.fileName)}`;
+    const objectPath = `${cleanSegment(userId)}/avatar-${Date.now()}-${cleanSegment(safeName)}`;
 
     const baseUrl = process.env.SUPABASE_URL?.trim()?.replace(/\/$/, "");
     const serviceKey = sanitizeHttpHeaderValue(process.env.SUPABASE_SERVICE_ROLE_KEY);

@@ -1,5 +1,6 @@
 import { internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { adminCredentialArgs, ensureAdminAccess } from "./adminAccess";
 
 export const SECURITY_EVENT_TYPES = {
   AUTH_FAILURE: "auth_failure",
@@ -19,13 +20,6 @@ const severityValidator = v.union(
   v.literal("medium"),
   v.literal("high")
 );
-
-function ensureAdminAccess(adminKey: string): void {
-  const requiredKey = process.env.QUALITY_DASHBOARD_ADMIN_KEY?.trim();
-  if (!requiredKey || adminKey !== requiredKey) {
-    throw new Error("Unauthorized");
-  }
-}
 
 function hashIdentifier(value: string | undefined): string | undefined {
   if (!value?.trim()) return undefined;
@@ -76,11 +70,11 @@ export const recordSecurityEvent = internalMutation({
 
 export const getSecurityDashboard = query({
   args: {
-    adminKey: v.string(),
+    ...adminCredentialArgs,
     hours: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    ensureAdminAccess(args.adminKey);
+    await ensureAdminAccess(args);
     const hours = Math.max(1, Math.min(168, args.hours ?? 24));
     const since = Date.now() - hours * 60 * 60 * 1000;
     const rows = await ctx.db

@@ -50,6 +50,8 @@ export type SocialCommunity = {
   emoji: string;
   memberCount: number;
   joined: boolean;
+  /** Phase 3 optional type tag from catalog — ignored by older clients. */
+  communityType?: string;
 };
 
 export type SocialNotification = {

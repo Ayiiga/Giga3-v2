@@ -1,0 +1,52 @@
+name: CI — Unit & Security Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  vitest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install root dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --legacy-peer-deps
+          else
+            npm install --legacy-peer-deps
+          fi
+
+      # Tests import web/ modules (e.g. lucide-react via gigaModels) — install web deps too.
+      - name: Install web dependencies
+        working-directory: web
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --legacy-peer-deps
+          else
+            npm install --legacy-peer-deps
+          fi
+
+      - name: Run Vitest (unit + security)
+        run: npm test
+
+      - name: Summarize
+        if: always()
+        run: |
+          echo "### CI Vitest" >> "$GITHUB_STEP_SUMMARY"
+          echo "Ran \`npm test\` (vitest) as a production readiness gate." >> "$GITHUB_STEP_SUMMARY"

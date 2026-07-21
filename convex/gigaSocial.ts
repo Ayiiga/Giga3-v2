@@ -28,6 +28,7 @@ import {
 } from "./gigaSocialViews";
 import type { Doc, Id } from "./_generated/dataModel";
 import { ensureMonetizationUnlock, isMonetizationUnlocked, parsePrivacySettings } from "./gigaSocialEconomy";
+import { consumeSocialWriteRateLimit } from "./socialRateLimit";
 
 const SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC = 15;
 
@@ -1010,6 +1011,7 @@ export const createPost = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
+    await consumeSocialWriteRateLimit(ctx, userId, "create_post");
     const body = sanitizeSocialText(args.body);
     const hashtags = extractHashtags(body);
     const mentions = extractMentions(body);
@@ -1194,6 +1196,7 @@ export const toggleLike = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
+    await consumeSocialWriteRateLimit(ctx, userId, "toggle_like");
     const post = await ctx.db.get(args.postId);
     if (!post || post.deletedAt) throw new Error("Post not found.");
 
@@ -1248,6 +1251,7 @@ export const addComment = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
+    await consumeSocialWriteRateLimit(ctx, userId, "add_comment");
     const body = sanitizeSocialText(args.body);
     if (!body) throw new Error("Comment cannot be empty.");
 

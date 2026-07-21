@@ -9,6 +9,50 @@ export type GigaSocialFeatureFlags = {
   enableFeedCategories: boolean;
   enableGigaLive: boolean;
   enableGigaFans: boolean;
+  /** AI suggestion toolbar under every post (never mutates original). */
+  enablePostAIActions: boolean;
+  /** Data Saver / Ultra Data Saver + adaptive media loading. */
+  enableDataSaver: boolean;
+  /** Offline likes/comments/follows/posts queue (separate from chat outbox). */
+  enableSocialOutbox: boolean;
+  /** Personalized For You ranking + expanded feed sections. */
+  enableIntelligentFeed: boolean;
+  /** Tip / gift button on post cards. */
+  enablePostTips: boolean;
+  /** AI Studio hub + expanded create tools (teleprompter, scripts, etc.). */
+  enableAIStudio: boolean;
+  /** Creator Wallet tab + growth assistant on creator dashboard. */
+  enableCreatorWallet: boolean;
+  /** Creator level ladder (New → Legend) display. */
+  enableCreatorLevels: boolean;
+  /** Expanded community types, rooms stubs, and collaboration spaces. */
+  enableCommunitiesV2: boolean;
+  /** AI Community Assistant (suggestions only — never auto-removes content). */
+  enableCommunityAI: boolean;
+  /** Interest / region / follow based community discovery. */
+  enableCommunityDiscovery: boolean;
+  /** Skeletons, micro-motion, smart empty states (no pull-to-refresh). */
+  enableDelightfulUX: boolean;
+  /** Optional haptic feedback on supported devices. */
+  enableHaptics: boolean;
+  /** Plugin registry for future installable tools (default on = registry visible). */
+  enableSocialPlugins: boolean;
+  /** Multi-provider social AI abstraction (separate from chat aiRouter). */
+  enableSocialAiRouter: boolean;
+  /** Client readiness helpers for future API v2 (v1 remains default). */
+  enableApiV2Client: boolean;
+  /** Daily login / weekly challenge reward surfaces. */
+  enableDailyRewards: boolean;
+  /** Creator challenges + leaderboard (display + local scoring). */
+  enableCreatorChallenges: boolean;
+  /** Social invite UI layered on platformGrowth referrals. */
+  enableSocialReferrals: boolean;
+  /** Grouped notification center + granular local prefs. */
+  enableSmartNotifications: boolean;
+  /** Explorer → Legend loyalty ladder (display over XP). */
+  enableLoyaltyLevels: boolean;
+  /** Personal AI assistant card (summaries / reminders). */
+  enablePersonalAssistant: boolean;
 };
 
 const STORAGE_KEY = "giga3_gigasocial_flags";
@@ -28,6 +72,28 @@ export const GIGASOCIAL_FEATURE_DEFAULTS: GigaSocialFeatureFlags = {
   enableFeedCategories: envFlag("NEXT_PUBLIC_GIGASOCIAL_FEED_CATEGORIES", true),
   enableGigaLive: envFlag("NEXT_PUBLIC_GIGASOCIAL_LIVE", true),
   enableGigaFans: envFlag("NEXT_PUBLIC_GIGASOCIAL_FANS", true),
+  enablePostAIActions: envFlag("NEXT_PUBLIC_GIGASOCIAL_POST_AI_ACTIONS", true),
+  enableDataSaver: envFlag("NEXT_PUBLIC_GIGASOCIAL_DATA_SAVER", true),
+  enableSocialOutbox: envFlag("NEXT_PUBLIC_GIGASOCIAL_SOCIAL_OUTBOX", true),
+  enableIntelligentFeed: envFlag("NEXT_PUBLIC_GIGASOCIAL_INTELLIGENT_FEED", true),
+  enablePostTips: envFlag("NEXT_PUBLIC_GIGASOCIAL_POST_TIPS", true),
+  enableAIStudio: envFlag("NEXT_PUBLIC_GIGASOCIAL_AI_STUDIO", true),
+  enableCreatorWallet: envFlag("NEXT_PUBLIC_GIGASOCIAL_CREATOR_WALLET", true),
+  enableCreatorLevels: envFlag("NEXT_PUBLIC_GIGASOCIAL_CREATOR_LEVELS", true),
+  enableCommunitiesV2: envFlag("NEXT_PUBLIC_GIGASOCIAL_COMMUNITIES_V2", true),
+  enableCommunityAI: envFlag("NEXT_PUBLIC_GIGASOCIAL_COMMUNITY_AI", true),
+  enableCommunityDiscovery: envFlag("NEXT_PUBLIC_GIGASOCIAL_COMMUNITY_DISCOVERY", true),
+  enableDelightfulUX: envFlag("NEXT_PUBLIC_GIGASOCIAL_DELIGHTFUL_UX", true),
+  enableHaptics: envFlag("NEXT_PUBLIC_GIGASOCIAL_HAPTICS", true),
+  enableSocialPlugins: envFlag("NEXT_PUBLIC_GIGASOCIAL_PLUGINS", false),
+  enableSocialAiRouter: envFlag("NEXT_PUBLIC_GIGASOCIAL_AI_ROUTER", true),
+  enableApiV2Client: envFlag("NEXT_PUBLIC_GIGASOCIAL_API_V2", false),
+  enableDailyRewards: envFlag("NEXT_PUBLIC_GIGASOCIAL_DAILY_REWARDS", true),
+  enableCreatorChallenges: envFlag("NEXT_PUBLIC_GIGASOCIAL_CHALLENGES", true),
+  enableSocialReferrals: envFlag("NEXT_PUBLIC_GIGASOCIAL_REFERRALS", true),
+  enableSmartNotifications: envFlag("NEXT_PUBLIC_GIGASOCIAL_SMART_NOTIFICATIONS", true),
+  enableLoyaltyLevels: envFlag("NEXT_PUBLIC_GIGASOCIAL_LOYALTY", true),
+  enablePersonalAssistant: envFlag("NEXT_PUBLIC_GIGASOCIAL_PERSONAL_ASSISTANT", true),
 };
 
 export function readGigaSocialFeatureOverrides(): Partial<GigaSocialFeatureFlags> {

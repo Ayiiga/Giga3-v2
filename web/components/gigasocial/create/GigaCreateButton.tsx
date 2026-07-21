@@ -17,11 +17,15 @@ export type GigaCreateLaunch = {
 export const GigaCreateButton = memo(function GigaCreateButton({
   disabled,
   enableLive = true,
+  enableAIStudio = false,
   onSelect,
+  onOpenAIStudio,
 }: {
   disabled?: boolean;
   enableLive?: boolean;
+  enableAIStudio?: boolean;
   onSelect: (launch: GigaCreateLaunch) => void;
+  onOpenAIStudio?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -42,6 +46,11 @@ export const GigaCreateButton = memo(function GigaCreateButton({
     },
     [close, onSelect]
   );
+
+  const handleOpenAIStudio = useCallback(() => {
+    onOpenAIStudio?.();
+    close();
+  }, [close, onOpenAIStudio]);
 
   useEffect(() => {
     setMounted(true);
@@ -132,6 +141,24 @@ export const GigaCreateButton = memo(function GigaCreateButton({
                   </span>
                 </button>
               ))}
+              {enableAIStudio ? (
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="gigasocial-upload-sheet__item"
+                  onClick={handleOpenAIStudio}
+                >
+                  <span className="gigasocial-upload-sheet__emoji" aria-hidden>
+                    ✦
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold text-foreground">AI Studio</span>
+                    <span className="block text-xs leading-relaxed text-muted">
+                      Teleprompter, scripts, thumbnails, captions, and more
+                    </span>
+                  </span>
+                </button>
+              ) : null}
             </div>
             <div className="gigasocial-upload-sheet__fab-row">{fab}</div>
           </div>
