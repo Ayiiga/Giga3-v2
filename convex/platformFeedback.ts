@@ -108,7 +108,7 @@ export const listFeedbackAdmin = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    ensureAdminAccess(args);
+    await ensureAdminAccess(args);
     const limit = args.limit ?? 50;
     const rows = await ctx.db
       .query("userFeedbackSubmissions")
@@ -127,7 +127,7 @@ export const updateFeedbackStatus = mutation({
     adminNote: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    ensureAdminAccess(args);
+    await ensureAdminAccess(args);
     const row = await ctx.db.get(args.feedbackId);
     if (!row) throw new Error("Not found");
     await ctx.db.patch(args.feedbackId, {

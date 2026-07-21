@@ -33,7 +33,7 @@ export const recordHealthSnapshot = internalMutation({
 export const getSystemHealth = query({
   args: adminCredentialArgs,
   handler: async (ctx, args) => {
-    ensureAdminAccess(args);
+    await ensureAdminAccess(args);
     const now = Date.now();
     const windowMs = 24 * 60 * 60 * 1000;
 
