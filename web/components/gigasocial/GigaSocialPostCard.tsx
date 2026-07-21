@@ -21,7 +21,8 @@ import {
   Share2,
   Trash2,
 } from "lucide-react";
-import { memo, useCallback, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+import { memo, useCallback, useMemo, useRef, useState } from "react";
 import { GigaSocialCommentThread } from "@/components/gigasocial/GigaSocialCommentThread";
 import { GigaSocialFanButton } from "@/components/gigasocial/fans/GigaSocialFanButton";
 import { GigaSocialPostCaption } from "@/components/gigasocial/GigaSocialPostCaption";
@@ -29,7 +30,16 @@ import { GigaSocialPostCommentBox } from "@/components/gigasocial/GigaSocialPost
 import { GigaSocialPostMedia } from "@/components/gigasocial/GigaSocialPostMedia";
 import { GigaSocialProfileLink } from "@/components/gigasocial/GigaSocialProfileLink";
 import { VerifiedBadge } from "@/components/gigasocial/VerifiedBadge";
+import { GigaSocialTipButton } from "@/components/gigasocial/economy/GigaSocialTipButton";
 import { getUserEmail } from "@/lib/auth";
+
+const GigaSocialPostAIActions = dynamic(
+  () =>
+    import("@/components/gigasocial/ai/GigaSocialPostAIActions").then((m) => ({
+      default: m.GigaSocialPostAIActions,
+    })),
+  { ssr: false, loading: () => null }
+);
 
 interface GigaSocialPostCardProps {
   post: SocialPost;
@@ -43,6 +53,8 @@ interface GigaSocialPostCardProps {
   canDelete?: boolean;
   enableEdit?: boolean;
   enableRemix?: boolean;
+  enablePostAIActions?: boolean;
+  enablePostTips?: boolean;
   feedAutoPlay?: boolean;
   feedPaused?: boolean;
 }
@@ -59,6 +71,8 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   canDelete = false,
   enableEdit = false,
   enableRemix = false,
+  enablePostAIActions = false,
+  enablePostTips = false,
   feedAutoPlay = false,
   feedPaused = false,
 }: GigaSocialPostCardProps) {
@@ -71,11 +85,16 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [following, setFollowing] = useState(Boolean(post.author.supportingByMe));
+  const [heartBurst, setHeartBurst] = useState(false);
+  const lastTapRef = useRef(0);
   const myUserId = useMemo(() => getUserEmail(), []);
   const isOwnPost = Boolean(
     myUserId && post.author.userId && myUserId === post.author.userId
   );
   const canFollow = Boolean(sessionToken && post.author.userId && !isOwnPost);
+  const canTip = Boolean(
+    enablePostTips && sessionToken && post.author.userId && !isOwnPost
+  );
 
   const displayBody = useMemo(() => stripRemixMarker(post.body), [post.body]);
   const display = useMemo(() => splitPostDisplay(displayBody), [displayBody]);
@@ -119,23 +138,45 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
     />
   );
 
-  async function handleLike() {
-    if (!sessionToken || busy) return;
-    const next = !liked;
-    setLiked(next);
-    setLikeCount((c) => Math.max(0, c + (next ? 1 : -1)));
-    setBusy(true);
-    setError(null);
-    try {
-      await onLike(post._id, next);
-    } catch (e) {
-      setLiked(!next);
-      setLikeCount((c) => Math.max(0, c + (next ? -1 : 1)));
-      setError(e instanceof Error ? e.message : "Could not update like.");
-    } finally {
-      setBusy(false);
+  const handleLike = useCallback(
+    async (forceLike = false) => {
+      if (!sessionToken || busy) return;
+      const next = forceLike ? true : !liked;
+      if (forceLike && liked) {
+        setHeartBurst(true);
+        window.setTimeout(() => setHeartBurst(false), 450);
+        return;
+      }
+      setLiked(next);
+      setLikeCount((c) => Math.max(0, c + (next ? 1 : -1)));
+      if (next) {
+        setHeartBurst(true);
+        window.setTimeout(() => setHeartBurst(false), 450);
+      }
+      setBusy(true);
+      setError(null);
+      try {
+        await onLike(post._id, next);
+      } catch (e) {
+        setLiked(!next);
+        setLikeCount((c) => Math.max(0, c + (next ? -1 : 1)));
+        setError(e instanceof Error ? e.message : "Could not update like.");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [busy, liked, onLike, post._id, sessionToken]
+  );
+
+  const handleDoubleTapLike = useCallback(() => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 280) {
+      void handleLike(true);
+      lastTapRef.current = 0;
+      return;
     }
-  }
+    lastTapRef.current = now;
+  }, [handleLike]);
 
   async function handleBookmark() {
     if (!sessionToken || busy) return;
@@ -237,7 +278,9 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
         <div className="gigasocial-post-card__content">
           <div
             ref={visualMediaKind === "video" ? videoRegionRef : undefined}
-            className="gigasocial-post-card__media-region"
+            className="gigasocial-post-card__media-region relative"
+            onDoubleClick={() => void handleLike(true)}
+            onTouchEnd={handleDoubleTapLike}
           >
             <GigaSocialPostMedia
               post={post}
@@ -245,6 +288,14 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
               autoPlay={shouldAutoPlayVideo && isActiveVideo(post._id)}
               paused={feedPaused}
             />
+            {heartBurst ? (
+              <span
+                className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
+                aria-hidden
+              >
+                <Heart className="h-16 w-16 fill-white text-white drop-shadow-lg" />
+              </span>
+            ) : null}
           </div>
         </div>
       ) : (
@@ -311,6 +362,15 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           disabled={!sessionToken || busy}
           iconOnly={isVisualPost}
         />
+        {canTip ? (
+          <GigaSocialTipButton
+            sessionToken={sessionToken!}
+            creatorId={post.author.userId!}
+            postId={post._id}
+            compact={isVisualPost}
+            disabled={busy}
+          />
+        ) : null}
         {enableRemix && onRemix ? (
           <GigaRemixButton
             disabled={!sessionToken || busy}
@@ -354,6 +414,12 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           </Button>
         ) : null}
         </div>
+
+        {enablePostAIActions ? (
+          <div className={cn(isVisualPost ? "px-4 pt-1" : "mt-2")}>
+            <GigaSocialPostAIActions post={post} compact={isVisualPost} />
+          </div>
+        ) : null}
 
         {sessionToken && !isVisualPost ? (
           <div className="gigasocial-post-card__comment mt-3">

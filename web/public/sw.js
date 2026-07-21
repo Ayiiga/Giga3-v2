@@ -1,4 +1,4 @@
-const CACHE_NAME = "giga3-shell-v167-pwa-stability-offline";
+const CACHE_NAME = "giga3-shell-v168-gigasocial-ai-creator";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

@@ -1,3 +1,4 @@
+import { sortPostsForYou, type FeedRankingContext } from "@/lib/gigasocial/feedRanking";
 import { getPostMediaKind } from "@/lib/gigasocial/postMedia";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
@@ -6,6 +7,8 @@ export type FeedCategoryId =
   | "for-you"
   | "following"
   | "trending"
+  | "nearby"
+  | "ai-picks"
   | "recent"
   | "videos"
   | "photos"
@@ -18,48 +21,59 @@ export type FeedCategoryId =
   | "saved"
   | "trending-africa"
   | "sports"
+  | "football"
   | "entertainment"
+  | "comedy"
+  | "technology"
+  | "students"
+  | "teachers"
+  | "churches"
+  | "gaming"
+  | "live-now"
   | "creator-zone";
 
 export const FEED_CATEGORIES: { id: FeedCategoryId; label: string; emoji: string }[] = [
   { id: "for-you", label: "For You", emoji: "✨" },
   { id: "following", label: "Following", emoji: "👥" },
   { id: "trending", label: "Trending", emoji: "🔥" },
+  { id: "nearby", label: "Nearby", emoji: "📍" },
+  { id: "ai-picks", label: "AI Picks", emoji: "🤖" },
+  { id: "football", label: "Football", emoji: "⚽" },
+  { id: "education", label: "Education", emoji: "📚" },
+  { id: "technology", label: "Technology", emoji: "💻" },
+  { id: "music", label: "Music", emoji: "🎵" },
+  { id: "comedy", label: "Comedy", emoji: "😂" },
+  { id: "business", label: "Business", emoji: "💼" },
+  { id: "students", label: "Students", emoji: "🎓" },
+  { id: "teachers", label: "Teachers", emoji: "🍎" },
+  { id: "churches", label: "Churches", emoji: "⛪" },
+  { id: "gaming", label: "Gaming", emoji: "🎮" },
+  { id: "live-now", label: "Live Now", emoji: "🔴" },
   { id: "recent", label: "Recent", emoji: "🕐" },
   { id: "videos", label: "Videos", emoji: "🎬" },
   { id: "photos", label: "Photos", emoji: "📷" },
-  { id: "music", label: "Music", emoji: "🎵" },
-  { id: "education", label: "Education", emoji: "📚" },
-  { id: "business", label: "Business", emoji: "💼" },
-  { id: "ai", label: "AI", emoji: "🤖" },
+  { id: "ai", label: "AI", emoji: "✦" },
   { id: "marketplace", label: "Marketplace", emoji: "🛒" },
   { id: "communities", label: "Communities", emoji: "🌍" },
   { id: "saved", label: "Saved", emoji: "🔖" },
 ];
 
-const CATEGORY_HASHTAGS: Record<
-  Exclude<
-    FeedCategoryId,
-    | "for-you"
-    | "following"
-    | "trending"
-    | "recent"
-    | "videos"
-    | "photos"
-    | "music"
-    | "saved"
-    | "trending-africa"
-    | "communities"
-  >,
-  string[]
-> = {
+const CATEGORY_HASHTAGS: Record<string, string[]> = {
   sports: ["sports", "football", "soccer", "afcon", "fitness", "athletics"],
+  football: ["football", "soccer", "afcon", "premierleague", "worldcup", "matchday"],
   education: ["education", "learn", "study", "school", "gigalearn", "tutorial"],
   business: ["business", "startup", "entrepreneur", "finance", "africa", "trade"],
   entertainment: ["entertainment", "music", "comedy", "movie", "viral", "fun"],
+  comedy: ["comedy", "funny", "skit", "humor", "laugh"],
+  technology: ["tech", "technology", "coding", "software", "gadget", "ai"],
+  students: ["student", "campus", "university", "exam", "lecture"],
+  teachers: ["teacher", "tutor", "classroom", "lesson", "educator"],
+  churches: ["church", "gospel", "faith", "sermon", "worship", "prayer"],
+  gaming: ["gaming", "gamer", "esports", "playstation", "xbox", "mobilegame"],
   "creator-zone": ["creator", "content", "studio", "brand", "collab"],
   ai: ["ai", "gpt", "machinelearning", "artificialintelligence", "giga3"],
   marketplace: ["marketplace", "shop", "sell", "product", "store", "listing"],
+  nearby: ["local", "nearby", "community", "neighborhood", "ghana", "nigeria", "kenya"],
 };
 
 function engagementScore(post: SocialPost): number {
@@ -76,15 +90,30 @@ function matchesHashtagCategory(post: SocialPost, needles: string[]): boolean {
     needles.some((needle) => tag.toLowerCase().includes(needle))
   );
   const bodyHit = needles.some((needle) => post.body.toLowerCase().includes(`#${needle}`));
-  return Boolean(hashtagHit || bodyHit);
+  const plainHit = needles.some((needle) => post.body.toLowerCase().includes(needle));
+  return Boolean(hashtagHit || bodyHit || plainHit);
 }
 
 export function filterPostsByFeedCategory(
   posts: SocialPost[],
-  category: FeedCategoryId
+  category: FeedCategoryId,
+  rankingCtx?: FeedRankingContext
 ): SocialPost[] {
   switch (category) {
     case "for-you":
+      return rankingCtx ? sortPostsForYou(posts, rankingCtx) : posts;
+    case "ai-picks":
+      return sortPostsForYou(
+        posts.filter(
+          (post) =>
+            post.postType === "ai" ||
+            matchesHashtagCategory(post, CATEGORY_HASHTAGS.ai) ||
+            engagementScore(post) > 0
+        ),
+        rankingCtx ?? { interestKeywords: ["ai", "learn", "creator"] }
+      );
+    case "nearby":
+      return posts.filter((post) => matchesHashtagCategory(post, CATEGORY_HASHTAGS.nearby));
     case "recent":
       return posts;
     case "trending":
@@ -102,6 +131,12 @@ export function filterPostsByFeedCategory(
         const kind = getPostMediaKind(post);
         return kind === "audio" || kind === "photo-music";
       });
+    case "live-now":
+      return posts.filter(
+        (post) =>
+          post.body.toLowerCase().includes("live") ||
+          post.hashtags?.some((tag) => tag.toLowerCase().includes("live"))
+      );
     case "ai":
       return posts.filter(
         (post) =>
@@ -115,23 +150,28 @@ export function filterPostsByFeedCategory(
       );
     case "communities":
       return posts.filter((post) => Boolean(post.communitySlug));
-    case "education": {
-      const tags = CATEGORY_HASHTAGS.education;
-      return posts.filter(
-        (post) =>
-          post.postType === "education" ||
-          post.communitySlug === "education" ||
-          matchesHashtagCategory(post, tags)
-      );
-    }
+    case "education":
     case "business":
-      return posts.filter((post) => matchesHashtagCategory(post, CATEGORY_HASHTAGS.business));
     case "sports":
-      return posts.filter((post) => matchesHashtagCategory(post, CATEGORY_HASHTAGS.sports));
+    case "football":
     case "entertainment":
-      return posts.filter((post) =>
-        matchesHashtagCategory(post, CATEGORY_HASHTAGS.entertainment)
-      );
+    case "comedy":
+    case "technology":
+    case "students":
+    case "teachers":
+    case "churches":
+    case "gaming": {
+      const tags = CATEGORY_HASHTAGS[category] ?? [];
+      if (category === "education") {
+        return posts.filter(
+          (post) =>
+            post.postType === "education" ||
+            post.communitySlug === "education" ||
+            matchesHashtagCategory(post, tags)
+        );
+      }
+      return posts.filter((post) => matchesHashtagCategory(post, tags));
+    }
     case "creator-zone": {
       const tags = CATEGORY_HASHTAGS["creator-zone"];
       const postTypes: SocialPostTypeId[] = ["creator", "video", "image"];

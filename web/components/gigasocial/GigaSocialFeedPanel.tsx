@@ -4,25 +4,31 @@ import type { GigaCreateLaunch } from "@/components/gigasocial/create/GigaCreate
 import { GigaCreateButton } from "@/components/gigasocial/create/GigaCreateButton";
 import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
 import { GigaSocialStoriesBarWithLive } from "@/components/gigasocial/stories/GigaSocialStoriesBarWithLive";
+import { DataSaverControl } from "@/components/gigasocial/feed/DataSaverControl";
 import { FeedCategoryBar } from "@/components/gigasocial/feed/FeedCategoryBar";
 import { FeedVideoPlaybackProvider } from "@/components/gigasocial/feed/FeedVideoPlaybackProvider";
 import { GigaSocialSearchBar } from "@/components/gigasocial/feed/GigaSocialSearchBar";
 import { FeedSkeletonList } from "@/components/gigasocial/feed/FeedPostSkeleton";
+import { LazyFeedItem } from "@/components/gigasocial/feed/LazyFeedItem";
 import { GigaSocialPanelErrorBoundary } from "@/components/gigasocial/GigaSocialPanelErrorBoundary";
 import { withChunkRetryLoader } from "@/lib/pwa/dynamicWithChunkRetry";
 import { GigaSocialFeaturedPlayer } from "@/components/gigasocial/GigaSocialFeaturedPlayer";
 import { GigaSocialFeedHero } from "@/components/gigasocial/GigaSocialFeedHero";
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
+import type { AIStudioLaunch } from "@/components/gigasocial/studio/GigaSocialAIStudioHub";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useConnectionQuality } from "@/hooks/useConnectionQuality";
 import { useGigaSocialFeedAutoplay } from "@/hooks/useGigaSocialFeedAutoplay";
 import { useEffectiveOnline } from "@/hooks/useEffectiveOnline";
+import { useGigaSocialOutbox } from "@/hooks/useGigaSocialOutbox";
 import {
   feedCategoryNeedsFollowingFeed,
   feedCategoryNeedsSavedFeed,
   filterPostsByFeedCategory,
   type FeedCategoryId,
 } from "@/lib/gigasocial/feedCategories";
+import type { FeedRankingContext } from "@/lib/gigasocial/feedRanking";
 import { rememberSearch } from "@/lib/gigasocial/searchStorage";
 import { resolveGigaCreateRoute } from "@/lib/gigasocial/gigaCreateRoutes";
 import { primeCameraStream } from "@/lib/gigasocial/cameraCapture";
@@ -42,6 +48,14 @@ import { MessageCircle, SquarePen, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+const GigaSocialAIStudioHub = dynamic(
+  () =>
+    import("@/components/gigasocial/studio/GigaSocialAIStudioHub").then((m) => ({
+      default: m.GigaSocialAIStudioHub,
+    })),
+  { ssr: false }
+);
 
 const GigaSocialComposer = dynamic(
   withChunkRetryLoader(() =>
@@ -79,10 +93,13 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const router = useRouter();
   const features = useGigaSocialFeatures();
   const { effectiveOnline } = useEffectiveOnline();
+  const { isSlowNetwork } = useConnectionQuality();
+  const socialOutbox = useGigaSocialOutbox(sessionToken, features.enableSocialOutbox);
   const [offlineSnapshot, setOfflineSnapshot] = useState<SocialPost[] | null>(null);
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [extraPosts, setExtraPosts] = useState<SocialPost[]>([]);
   const [composerOpen, setComposerOpen] = useState(false);
+  const [aiStudioOpen, setAiStudioOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<"all" | SocialPostTypeId>("all");
   const [feedCategory, setFeedCategory] = useState<FeedCategoryId>("for-you");
   const [searchQuery, setSearchQuery] = useState("");
@@ -155,6 +172,16 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     }
   }, [effectiveOnline]);
 
+  const rankingCtx = useMemo<FeedRankingContext | undefined>(() => {
+    if (!features.enableIntelligentFeed) return undefined;
+    return {
+      isSlowNetwork,
+      hourOfDay: new Date().getHours(),
+      regionHint: "africa",
+      interestKeywords: ["ai", "learn", "creator", "africa"],
+    };
+  }, [features.enableIntelligentFeed, isSlowNetwork]);
+
   const posts = useMemo(() => {
     const sourcePosts = savedFeed
       ? ((saved?.posts ?? []) as SocialPost[])
@@ -170,7 +197,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     const typed =
       typeFilter === "all" ? sorted : sorted.filter((p) => p.postType === typeFilter);
     return features.enableFeedCategories
-      ? filterPostsByFeedCategory(typed, feedCategory)
+      ? filterPostsByFeedCategory(typed, feedCategory, rankingCtx)
       : typed;
   }, [
     cursor,
@@ -179,6 +206,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     feed?.posts,
     feedCategory,
     features.enableFeedCategories,
+    rankingCtx,
     saved?.posts,
     savedFeed,
     searchLoading,
@@ -343,6 +371,25 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     [onOpenLive, openComposer, router]
   );
 
+  const handleAIStudioLaunch = useCallback(
+    (launch: AIStudioLaunch) => {
+      if (launch.kind === "toast") {
+        setErrorToast(launch.message);
+        return;
+      }
+      if (launch.kind === "navigate") {
+        router.push(launch.href);
+        return;
+      }
+      primeCameraStream({ includeAudio: true, facing: "user" });
+      openComposer("media-camera", null, {
+        body: launch.body,
+        postType: "video",
+      });
+    },
+    [openComposer, router]
+  );
+
   useEffect(() => {
     if (!errorToast) return;
     const timer = window.setTimeout(() => setErrorToast(null), 6000);
@@ -425,6 +472,21 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       visibility?: "public" | "followers";
     }) => {
       if (!sessionToken) throw new Error("Sign in to post.");
+      if (!effectiveOnline && features.enableSocialOutbox) {
+        if (args.mediaItems?.length) {
+          throw new Error("Media posts need a connection. Text-only drafts can sync offline.");
+        }
+        await socialOutbox.enqueue("create_post", {
+          body: args.body,
+          postType: args.postType,
+          communitySlug: args.communitySlug,
+        });
+        setErrorToast("Saved offline — will publish when you're back online.");
+        resetFeedPagination();
+        setComposeAction(undefined);
+        setRemixSource(null);
+        return;
+      }
       await createPost({
         sessionToken,
         body: args.body,
@@ -437,7 +499,14 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       setComposeAction(undefined);
       setRemixSource(null);
     },
-    [createPost, resetFeedPagination, sessionToken]
+    [
+      createPost,
+      effectiveOnline,
+      features.enableSocialOutbox,
+      resetFeedPagination,
+      sessionToken,
+      socialOutbox,
+    ]
   );
 
   const handleEditPost = useCallback(
@@ -511,7 +580,18 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         />
       ) : null}
 
-      <GigaSocialSearchBar value={searchQuery} onChange={setSearchQuery} sessionToken={sessionToken} />
+      <div className="flex items-start gap-2">
+        <div className="min-w-0 flex-1">
+          <GigaSocialSearchBar value={searchQuery} onChange={setSearchQuery} sessionToken={sessionToken} />
+        </div>
+        {features.enableDataSaver ? <DataSaverControl className="shrink-0 pt-0.5" /> : null}
+      </div>
+
+      {socialOutbox.pendingCount > 0 ? (
+        <p className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs text-sky-900" role="status">
+          {socialOutbox.pendingCount} offline action{socialOutbox.pendingCount === 1 ? "" : "s"} waiting to sync
+        </p>
+      ) : null}
 
       {features.enableFeedCategories ? (
         <div className="hidden sm:block">
@@ -624,8 +704,13 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         </div>
       ) : (
         <ul id="gigasocial-feed-posts" className="space-y-3">
-          {visibleFeedPosts.map((post) => (
-            <li key={post._id} id={`gigasocial-post-${post._id}`} className="gigasocial-feed-item">
+          {visibleFeedPosts.map((post, index) => (
+            <LazyFeedItem
+              key={post._id}
+              eager={index < 2}
+              minHeightClass="min-h-[10rem]"
+            >
+              <div id={`gigasocial-post-${post._id}`}>
               <GigaSocialPostCard
                 post={post}
                 sessionToken={sessionToken}
@@ -634,14 +719,20 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
                 canDelete={Boolean(myHandle && post.author.handle === myHandle)}
                 enableRemix={features.enableGigaRemix}
                 enableEdit={features.enableAIEditing}
+                enablePostAIActions={features.enablePostAIActions}
+                enablePostTips={features.enablePostTips}
                 onEdit={handleEditPost}
                 onRemix={
                   features.enableGigaRemix
                     ? (source) => openComposer("remix", source)
                     : undefined
                 }
-                onLike={async (postId) => {
+                onLike={async (postId, liked) => {
                   if (!sessionToken) return;
+                  if (!effectiveOnline && features.enableSocialOutbox) {
+                    await socialOutbox.enqueue(liked ? "like" : "unlike", { postId });
+                    return;
+                  }
                   await toggleLike({
                     sessionToken,
                     postId: postId as Id<"socialPosts">,
@@ -669,7 +760,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
                   });
                 }}
               />
-            </li>
+              </div>
+            </LazyFeedItem>
           ))}
         </ul>
       )}
@@ -687,9 +779,19 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
           <GigaCreateButton
             disabled={!sessionToken}
             enableLive={features.enableGigaLive}
+            enableAIStudio={features.enableAIStudio}
             onSelect={handleGigaCreate}
+            onOpenAIStudio={() => setAiStudioOpen(true)}
           />
         </GigaSocialPanelErrorBoundary>
+      ) : null}
+
+      {features.enableAIStudio ? (
+        <GigaSocialAIStudioHub
+          open={aiStudioOpen}
+          onClose={() => setAiStudioOpen(false)}
+          onLaunch={handleAIStudioLaunch}
+        />
       ) : null}
     </div>
     </FeedVideoPlaybackProvider>

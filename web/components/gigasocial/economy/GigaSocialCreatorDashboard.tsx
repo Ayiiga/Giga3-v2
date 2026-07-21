@@ -2,27 +2,63 @@
 
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatGhs, fanProgressPercent } from "@/lib/gigasocial/creatorEconomy";
+import {
+  creatorLevelProgress,
+  formatCreatorRanks,
+  nextCreatorLevel,
+  resolveCreatorLevel,
+} from "@/lib/gigasocial/creatorLevels";
 import { FAN_LABELS } from "@/lib/gigasocial/fanBranding";
+import { buildGrowthInsights } from "@/lib/gigasocial/feedRanking";
+import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { formatCompactCount } from "@/lib/gigasocial/ogMeta";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import {
+  Award,
   BarChart3,
   Eye,
   Gift,
   Lock,
+  Sparkles,
   TrendingUp,
   Users,
   Video,
 } from "lucide-react";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 
 export const GigaSocialCreatorDashboard = memo(function GigaSocialCreatorDashboard({
   sessionToken,
 }: {
   sessionToken: string;
 }) {
+  const features = useGigaSocialFeatures();
   const dashboard = useQuery(api.gigaSocialEconomy.getCreatorDashboard, { sessionToken });
+
+  const levelDef = useMemo(
+    () => resolveCreatorLevel(dashboard?.level ?? 1),
+    [dashboard?.level]
+  );
+  const nextLevel = useMemo(
+    () => nextCreatorLevel(dashboard?.level ?? 1),
+    [dashboard?.level]
+  );
+  const ranks = useMemo(
+    () =>
+      formatCreatorRanks({
+        fanCount: dashboard?.fanCount ?? 0,
+        engagementRate: dashboard?.audienceInsights.engagementRate ?? 0,
+        countryHint: "Africa",
+      }),
+    [dashboard?.audienceInsights.engagementRate, dashboard?.fanCount]
+  );
+  const insights = useMemo(() => {
+    if (!dashboard) return [];
+    return buildGrowthInsights({
+      todayViews: dashboard.postPerformance.totalViews,
+      engagementRate: dashboard.audienceInsights.engagementRate,
+    });
+  }, [dashboard]);
 
   if (dashboard === undefined) {
     return <LoadingState label="Loading creator dashboard…" />;
@@ -57,6 +93,12 @@ export const GigaSocialCreatorDashboard = memo(function GigaSocialCreatorDashboa
               {fanProgressPercent(dashboard.fanCount, dashboard.fansRequired)}% — gifts, affiliate,
               and boost campaigns unlock together.
             </p>
+            {features.enableCreatorLevels ? (
+              <p className="mt-3 text-xs text-muted">
+                Current track: <span className="font-medium text-foreground">{levelDef.label}</span>
+                {nextLevel ? ` · next ${nextLevel.label}` : ""}
+              </p>
+            ) : null}
           </div>
         </div>
       </div>
@@ -71,6 +113,7 @@ export const GigaSocialCreatorDashboard = memo(function GigaSocialCreatorDashboa
             <h2 className="text-lg font-semibold text-foreground">Creator Dashboard</h2>
             <p className="text-sm text-muted">
               Level {dashboard.level} · {formatCompactCount(dashboard.fanCount)} {FAN_LABELS.fans}
+              {features.enableCreatorLevels ? ` · ${levelDef.label}` : ""}
             </p>
           </div>
           <div className="text-right">
@@ -81,6 +124,74 @@ export const GigaSocialCreatorDashboard = memo(function GigaSocialCreatorDashboa
           </div>
         </div>
       </div>
+
+      {features.enableCreatorLevels ? (
+        <section className="saas-card rounded-2xl border border-border p-4">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <Award className="h-4 w-4 text-accent" aria-hidden />
+            Creator level & ranks
+          </h3>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div>
+              <p className="text-lg font-semibold text-foreground">{levelDef.label}</p>
+              <p className="text-xs text-muted">
+                {nextLevel
+                  ? `${creatorLevelProgress(dashboard.level)}% to ${nextLevel.label}`
+                  : "Max track unlocked"}
+              </p>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted/30">
+                <div
+                  className="h-full rounded-full bg-violet-600"
+                  style={{ width: `${creatorLevelProgress(dashboard.level)}%` }}
+                />
+              </div>
+              <ul className="mt-2 space-y-0.5 text-[11px] text-muted">
+                {levelDef.unlocks.map((item) => (
+                  <li key={item}>• {item}</li>
+                ))}
+              </ul>
+            </div>
+            <dl className="grid grid-cols-1 gap-2 text-sm">
+              <div>
+                <dt className="text-muted">Creator Rank</dt>
+                <dd className="font-semibold text-foreground">{ranks.creatorRank}</dd>
+              </div>
+              <div>
+                <dt className="text-muted">Local Rank</dt>
+                <dd className="font-semibold text-foreground">{ranks.localRank}</dd>
+              </div>
+              <div>
+                <dt className="text-muted">Country Rank</dt>
+                <dd className="font-semibold text-foreground">{ranks.countryRank}</dd>
+              </div>
+              {dashboard.badges?.length ? (
+                <div>
+                  <dt className="text-muted">Badges</dt>
+                  <dd className="font-semibold text-foreground">
+                    {dashboard.badges.slice(0, 4).join(" · ")}
+                  </dd>
+                </div>
+              ) : null}
+            </dl>
+          </div>
+        </section>
+      ) : null}
+
+      {insights.length ? (
+        <section className="saas-card rounded-2xl border border-violet-200 bg-violet-50/40 p-4">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <Sparkles className="h-4 w-4 text-violet-700" aria-hidden />
+            AI insights
+          </h3>
+          <ul className="mt-2 space-y-1.5">
+            {insights.map((line) => (
+              <li key={line} className="text-sm text-foreground">
+                {line}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <div className="gigasocial-creator-stat-grid">
         <Stat icon={TrendingUp} label="Content" value={formatGhs(dashboard.contentEarningsGhs)} />

@@ -6,7 +6,15 @@ export function clampTeleprompterSpeed(speed: number): number {
 }
 
 export function clampTeleprompterFontSize(size: number): number {
-  return Math.min(28, Math.max(14, size));
+  return Math.min(36, Math.max(14, size));
+}
+
+export function clampTeleprompterMargin(marginPx: number): number {
+  return Math.min(48, Math.max(0, marginPx));
+}
+
+export function clampTeleprompterCountdown(seconds: number): number {
+  return Math.min(10, Math.max(0, Math.round(seconds)));
 }
 
 /** Advance scroll offset in pixels for teleprompter text. */
