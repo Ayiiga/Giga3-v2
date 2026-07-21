@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminPlatformOverview } from "@/components/admin/AdminPlatformOverview";
+import { AdminSecurityHealthPanel } from "@/components/admin/AdminSecurityHealthPanel";
 import { AdminSocialEconomyPanel } from "@/components/admin/AdminSocialEconomyPanel";
 import { AdminUsersPanel } from "@/components/admin/AdminUsersPanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
@@ -107,6 +108,8 @@ function AdminInner() {
       )}
 
       <AdminPlatformOverview adminCreds={adminCreds} />
+
+      <AdminSecurityHealthPanel adminCreds={adminCreds} />
 
       <AdminUsersPanel
         adminCreds={adminCreds}
