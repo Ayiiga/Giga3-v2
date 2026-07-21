@@ -21,6 +21,18 @@ import {
   persistVideoMutedPreference,
   readVideoMutedPreference,
 } from "@/lib/gigasocial/videoMutePreference";
+import { useConnectionQuality } from "@/hooks/useConnectionQuality";
+import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
+import {
+  readDataSaverMode,
+  readVideoQualityPreference,
+  resolveAutoVideoQuality,
+  resolveEffectiveDataSaver,
+  shouldDeferMediaLoad,
+  shouldUseUltraDataSaver,
+  videoPreloadForQuality,
+} from "@/lib/gigasocial/dataSaver";
+import { pickAdaptiveStreamUrl } from "@/lib/gigasocial/adaptiveVideo";
 
 interface GigaSocialPostMediaProps {
   post: SocialPost;
@@ -48,6 +60,8 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   onUserPaused,
   onVideoEnded,
 }: GigaSocialPostMediaProps) {
+  const features = useGigaSocialFeatures();
+  const { saveData, isSlowNetwork } = useConnectionQuality();
   const mediaUrls = useMemo(() => getPostMediaUrls(post), [post]);
   const mediaKind = useMemo(() => getPostMediaKind(post), [post]);
   const offlineMedia = useStoryOfflineMedia(post, { enabled: offlinePlayback });
@@ -55,9 +69,24 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     () => ({ filter: getCameraFilterCss(getPostImageFilterId(post)) }),
     [post]
   );
+  const dataSaverMode = useMemo(() => {
+    if (!features.enableDataSaver) return "off" as const;
+    return resolveEffectiveDataSaver(readDataSaverMode(), { saveData, isSlowNetwork });
+  }, [features.enableDataSaver, isSlowNetwork, saveData]);
+  const videoQuality = useMemo(() => {
+    if (!features.enableDataSaver) return "auto" as const;
+    return resolveAutoVideoQuality(dataSaverMode, readVideoQualityPreference(), {
+      isSlowNetwork,
+      saveData,
+    });
+  }, [dataSaverMode, features.enableDataSaver, isSlowNetwork, saveData]);
   const primaryMediaUrl = offlinePlayback && offlineMedia.mediaUrl
     ? offlineMedia.mediaUrl
     : mediaUrls[0];
+  const adaptive = useMemo(
+    () => pickAdaptiveStreamUrl(primaryMediaUrl, undefined, videoQuality),
+    [primaryMediaUrl, videoQuality]
+  );
   const videoPosterUrl = offlinePlayback
     ? offlineMedia.posterUrl ?? post.videoThumbnailUrl
     : post.videoThumbnailUrl;
@@ -65,11 +94,26 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   const [muted, setMuted] = useState(false);
   const [browserMuted, setBrowserMuted] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [mediaUnlocked, setMediaUnlocked] = useState(false);
+  const [forceFullVideo, setForceFullVideo] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const effectiveMuted = muted || browserMuted;
-
   const shouldPlay = autoPlay && !paused;
+  const deferMedia =
+    features.enableDataSaver &&
+    shouldDeferMediaLoad(dataSaverMode) &&
+    !mediaUnlocked &&
+    !featured &&
+    !shouldPlay;
+  const ultraSaver = features.enableDataSaver && shouldUseUltraDataSaver(dataSaverMode);
+  const videoSrc = adaptive.url;
+  const audioOnlyPlayback =
+    !forceFullVideo && (adaptive.audioOnly || (ultraSaver && mediaKind === "video"));
+  const videoPreload = videoPreloadForQuality(
+    forceFullVideo ? "720p" : videoQuality,
+    shouldPlay
+  );
   const frameClass = featured
     ? mediaKind === "video"
       ? "w-full bg-black object-contain aspect-[9/16]"
@@ -129,6 +173,8 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     setActiveImage(0);
     setBrowserMuted(false);
     setMuted(readVideoMutedPreference());
+    setMediaUnlocked(false);
+    setForceFullVideo(false);
   }, [post._id]);
 
   useEffect(() => {
@@ -174,7 +220,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
         });
       }
     });
-  }, [effectiveMuted, mediaKind, muted, shouldPlay, primaryMediaUrl]);
+  }, [effectiveMuted, mediaKind, muted, shouldPlay, primaryMediaUrl, videoSrc]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -192,6 +238,35 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
 
   if (mediaKind === "none") return null;
   if (!mediaUrls.length && mediaKind !== "audio") return null;
+
+  if (deferMedia) {
+    return (
+      <div className={feedMediaWrapperClass}>
+        <button
+          type="button"
+          onClick={() => setMediaUnlocked(true)}
+          className={cn(
+            "flex w-full flex-col items-center justify-center gap-2 bg-zinc-900 text-white",
+            featured ? frameClass : "gigasocial-feed-media-frame min-h-[12rem]"
+          )}
+          style={
+            videoPosterUrl
+              ? {
+                  backgroundImage: `linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.55)), url(${videoPosterUrl})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }
+              : undefined
+          }
+        >
+          <Play className="h-8 w-8" aria-hidden />
+          <span className="text-xs font-medium">
+            {ultraSaver ? "Ultra Data Saver — tap to load" : "Data Saver — tap to load media"}
+          </span>
+        </button>
+      </div>
+    );
+  }
 
   if (mediaKind === "photo-music") {
     const audioUrl = getPostAudioUrl(post);
@@ -308,6 +383,51 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
       );
     }
 
+    if (audioOnlyPlayback) {
+      return (
+        <div className={feedMediaWrapperClass}>
+          <div
+            className={cn(
+              "flex flex-col items-center justify-center gap-3 bg-zinc-950 text-white",
+              featured ? frameClass : "gigasocial-feed-media-frame min-h-[12rem]"
+            )}
+            style={
+              videoPosterUrl
+                ? {
+                    backgroundImage: `linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.65)), url(${videoPosterUrl})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }
+                : undefined
+            }
+          >
+            <Music2 className="h-8 w-8" aria-hidden />
+            <p className="text-xs font-medium">Audio only · Data Saver</p>
+            {videoSrc ? (
+              <audio
+                ref={audioRef}
+                src={videoSrc}
+                controls
+                preload="metadata"
+                className="w-[90%]"
+                aria-label="Post audio"
+              />
+            ) : null}
+            <button
+              type="button"
+              onClick={() => {
+                setForceFullVideo(true);
+                setMediaUnlocked(true);
+              }}
+              className="rounded-full border border-white/30 px-3 py-1 text-[11px]"
+            >
+              Load video
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className={feedMediaWrapperClass}>
         {offlineMedia.offlineAvailable ? (
@@ -317,11 +437,11 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
         ) : null}
         <video
           ref={videoRef}
-          src={primaryMediaUrl}
+          src={videoSrc ?? primaryMediaUrl}
           controls={!featured}
           playsInline
           autoPlay={shouldPlay}
-          preload={shouldPlay ? "auto" : "metadata"}
+          preload={videoPreload}
           poster={videoPosterUrl}
           muted={effectiveMuted}
           className={featured ? frameClass : "gigasocial-feed-media-frame"}
@@ -368,6 +488,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
         {post.videoDurationSec && !featured ? (
           <p className="px-3 py-1.5 text-xs text-muted">
             {Math.round(post.videoDurationSec)}s video
+            {videoQuality !== "auto" ? ` · ${videoQuality}` : ""}
           </p>
         ) : null}
       </div>
