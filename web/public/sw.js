@@ -1,5 +1,5 @@
-/** Phase 4 production readiness — bump cache name so clients refresh shell assets safely. */
-const CACHE_NAME = "giga3-shell-v170-production-readiness";
+/** Tip/gift unlock fix — bump cache so installed PWAs refresh shell after #220. */
+const CACHE_NAME = "giga3-shell-v171-tip-gift-fix";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

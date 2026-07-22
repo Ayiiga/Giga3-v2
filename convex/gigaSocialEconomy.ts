@@ -457,9 +457,8 @@ export const sendCreatorGift = mutation({
       .first();
     if (!profile) throw new Error("Creator not found.");
 
-    // Tips are allowed for any creator with a social profile.
+    // Tips are allowed for any creator with a social profile (hotfix #220 / SW v171).
     // The 500-fan monetization unlock gates affiliate/boost/payout tools — not receiving tips.
-    // (Feed Tip UI is shown on every post; blocking here surfaced raw Convex errors to fans.)
     const settings = await loadEconomySettings(ctx);
 
     const credits = Math.max(1, Math.min(500, Math.floor(args.credits)));
