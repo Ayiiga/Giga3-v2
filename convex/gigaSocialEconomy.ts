@@ -413,7 +413,9 @@ export const getGiftsHub = query({
       displayName: profile.displayName,
       handle: profile.handle,
       avatarUrl: profile.avatarUrl,
-      unlocked: unlocked || isOwner,
+      // Receiving tips/gifts is open for every creator; fan unlock is for payout tools.
+      unlocked: true,
+      monetizationUnlocked: unlocked,
       isOwner,
       totalGifts,
       totalEarningsGhs,
@@ -455,11 +457,10 @@ export const sendCreatorGift = mutation({
       .first();
     if (!profile) throw new Error("Creator not found.");
 
+    // Tips are allowed for any creator with a social profile.
+    // The 500-fan monetization unlock gates affiliate/boost/payout tools — not receiving tips.
+    // (Feed Tip UI is shown on every post; blocking here surfaced raw Convex errors to fans.)
     const settings = await loadEconomySettings(ctx);
-    const unlocked = await isMonetizationUnlocked(ctx, profile, settings);
-    if (!unlocked) {
-      throw new Error("This creator has not unlocked the Gifts Hub yet.");
-    }
 
     const credits = Math.max(1, Math.min(500, Math.floor(args.credits)));
     const share = settings.giftCreatorSharePercent / 100;

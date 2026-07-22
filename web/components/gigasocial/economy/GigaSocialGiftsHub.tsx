@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { toUserFacingError } from "@/lib/errors/userMessage";
 import { formatGhs } from "@/lib/gigasocial/creatorEconomy";
 import { api } from "convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
@@ -39,7 +40,7 @@ export const GigaSocialGiftsHub = memo(function GigaSocialGiftsHub({
         });
         setMessage(`Sent ${giftType} gift! Thank you for supporting this creator.`);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Could not send gift.");
+        setError(toUserFacingError(e, "Could not send gift. Please try again."));
       } finally {
         setBusy(null);
       }
@@ -55,17 +56,6 @@ export const GigaSocialGiftsHub = memo(function GigaSocialGiftsHub({
     return <p className="text-sm text-muted">Gifts hub unavailable.</p>;
   }
 
-  if (!hub.unlocked) {
-    return (
-      <div className="saas-card rounded-2xl border border-border p-6 text-center">
-        <Gift className="mx-auto h-8 w-8 text-muted" aria-hidden />
-        <p className="mt-2 text-sm text-muted">
-          @{hub.handle} unlocks Gifts Hub at 500 fans.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
       <div className="saas-card rounded-2xl border border-border p-4">
@@ -78,6 +68,11 @@ export const GigaSocialGiftsHub = memo(function GigaSocialGiftsHub({
             ? `You've received ${hub.totalGifts} gifts (${formatGhs(hub.totalEarningsGhs)}).`
             : `Support @${hub.handle} with virtual gifts and tips.`}
         </p>
+        {hub.isOwner && hub.monetizationUnlocked === false ? (
+          <p className="mt-2 text-xs text-muted">
+            Tips are open now. Affiliate, boost, and payout tools unlock at 500 fans.
+          </p>
+        ) : null}
       </div>
 
       {!hub.isOwner ? (
