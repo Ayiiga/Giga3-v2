@@ -40,10 +40,17 @@ describe("enterprise service worker policy", () => {
     expect(precacheBlock).not.toContain('"/credits/"');
   });
 
-  it("skips offline caching for sensitive document paths", () => {
+  it("skips offline caching for sensitive billing/admin document paths", () => {
     expect(sw).toContain("isSensitiveDocumentPath");
-    expect(sw).toContain("/chat/");
     expect(sw).toContain("/payment/");
+    expect(sw).toContain("/wallet/");
+    expect(sw).toContain("isOfflineAppShellPath");
+  });
+
+  it("allows runtime offline shells for chat and gigasocial", () => {
+    expect(sw).toContain('pathname.startsWith("/chat/")');
+    expect(sw).toContain('pathname.startsWith("/gigasocial/")');
+    expect(sw).toContain("NEXT_STATIC_CACHE");
   });
 
   it("waits for user consent before skipWaiting", () => {

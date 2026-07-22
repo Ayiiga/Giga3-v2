@@ -96,7 +96,9 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const { effectiveOnline } = useEffectiveOnline();
   const { isSlowNetwork } = useConnectionQuality();
   const socialOutbox = useGigaSocialOutbox(sessionToken, features.enableSocialOutbox);
-  const [offlineSnapshot, setOfflineSnapshot] = useState<SocialPost[] | null>(null);
+  const [offlineSnapshot, setOfflineSnapshot] = useState<SocialPost[] | null>(() =>
+    typeof window !== "undefined" ? loadFeedSnapshot() : null
+  );
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [extraPosts, setExtraPosts] = useState<SocialPost[]>([]);
   const [composerOpen, setComposerOpen] = useState(false);
@@ -123,7 +125,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 
   const feed = useQuery(
     api.gigaSocial.listFeed,
-    savedFeed
+    savedFeed || !effectiveOnline
       ? "skip"
       : {
           sessionToken: sessionToken ?? undefined,
@@ -136,12 +138,12 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 
   const saved = useQuery(
     api.gigaSocial.listBookmarks,
-    savedFeed && sessionToken ? { sessionToken } : "skip"
+    savedFeed && sessionToken && effectiveOnline ? { sessionToken } : "skip"
   );
 
   const searchResults = useQuery(
     api.gigaSocial.listDiscover,
-    debouncedSearch.trim()
+    debouncedSearch.trim() && effectiveOnline
       ? {
           sessionToken: sessionToken ?? undefined,
           query: debouncedSearch.trim(),
@@ -160,7 +162,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const recordShare = useMutation(api.gigaSocial.recordShare);
   const deletePost = useMutation(api.gigaSocial.deletePost);
 
-  const searchLoading = Boolean(debouncedSearch.trim()) && searchResults === undefined;
+  const searchLoading =
+    Boolean(debouncedSearch.trim()) && searchResults === undefined && effectiveOnline;
   const initialFeedLoading =
     !savedFeed && !debouncedSearch.trim() && feed === undefined && effectiveOnline;
   const savedLoading = savedFeed && saved === undefined && effectiveOnline;

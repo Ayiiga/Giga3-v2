@@ -1,5 +1,6 @@
-/** Like/Tip above mute + trim/camera quality — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v173-media-controls";
+/** Offline chat + GigaSocial shells for signed-in PWAs — refresh installed clients. */
+const CACHE_NAME = "giga3-shell-v174-offline-app";
+const NEXT_STATIC_CACHE = "giga3-next-static-v174";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
@@ -19,10 +20,12 @@ const PRECACHE = [
   "/chat/login/",
 ];
 
-/** Document paths that must not be stored offline (session / billing / creator tools). */
+/**
+ * Documents that must never be stored offline (billing / admin / creator tools).
+ * Chat + GigaSocial shells are intentionally excluded — see isOfflineAppShellPath.
+ */
 function isSensitiveDocumentPath(pathname) {
   return (
-    pathname.startsWith("/chat/") ||
     pathname.startsWith("/payment/") ||
     pathname.startsWith("/credits/") ||
     pathname.startsWith("/wallet/") ||
@@ -30,29 +33,27 @@ function isSensitiveDocumentPath(pathname) {
     pathname.startsWith("/marketplace/sell/") ||
     pathname.startsWith("/creator-studio/") ||
     pathname.startsWith("/gigalearn/") ||
-    pathname.startsWith("/gigasocial/") ||
     pathname.startsWith("/creator/")
   );
 }
 
-function isNextChunk(pathname) {
-  return pathname.startsWith("/_next/");
+/** App shells that may be runtime-cached after an online visit for offline reopen. */
+function isOfflineAppShellPath(pathname) {
+  if (pathname.startsWith("/chat/login")) return false;
+  return (
+    pathname === "/chat" ||
+    pathname.startsWith("/chat/") ||
+    pathname === "/gigasocial" ||
+    pathname.startsWith("/gigasocial/")
+  );
 }
 
-/** Drop stale JS/CSS bundles so a deleted Convex URL cannot linger in cache. */
-async function purgeNextChunks() {
-  const keys = await caches.keys();
-  await Promise.all(
-    keys.map(async (key) => {
-      const cache = await caches.open(key);
-      const requests = await cache.keys();
-      await Promise.all(
-        requests
-          .filter((req) => isNextChunk(new URL(req.url).pathname))
-          .map((req) => cache.delete(req))
-      );
-    })
-  );
+function isNextStaticAsset(pathname) {
+  return pathname.startsWith("/_next/static/");
+}
+
+function isNextChunk(pathname) {
+  return pathname.startsWith("/_next/");
 }
 
 self.addEventListener("install", (event) => {
@@ -74,10 +75,11 @@ self.addEventListener("activate", (event) => {
       .keys()
       .then((keys) =>
         Promise.all(
-          keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+          keys
+            .filter((k) => k !== CACHE_NAME && k !== NEXT_STATIC_CACHE)
+            .map((k) => caches.delete(k))
         )
       )
-      .then(() => purgeNextChunks())
       .then(() => self.clients.claim())
   );
 });
@@ -93,8 +95,25 @@ self.addEventListener("fetch", (event) => {
     request.mode === "navigate" ||
     request.headers.get("accept")?.includes("text/html");
 
+  // Hashed Next bundles: network-first when online, cache fallback offline.
+  // Content hashes avoid serving wrong deploys for a given filename.
+  if (isNextStaticAsset(url.pathname)) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(NEXT_STATIC_CACHE).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // Other /_next/ paths (build manifests, etc.) — never cache.
   if (isNextChunk(url.pathname)) {
-    // Never cache app bundles — stale chunks cause "Loading chunk N failed" after deploy.
     event.respondWith(fetch(request));
     return;
   }
@@ -124,10 +143,13 @@ self.addEventListener("fetch", (event) => {
 
   if (isDocument) {
     const sensitive = isSensitiveDocumentPath(url.pathname);
+    const appShell = isOfflineAppShellPath(url.pathname);
+
     event.respondWith(
       fetch(request)
         .then((response) => {
-          if (response.ok && !sensitive) {
+          // Cache marketing + chat/GigaSocial shells after a successful visit.
+          if (response.ok && (appShell || !sensitive)) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
@@ -150,13 +172,19 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-/** Background Sync — nudge open chat clients to flush IndexedDB outbox. */
+/** Background Sync — nudge open clients to flush IndexedDB outboxes. */
 self.addEventListener("sync", (event) => {
-  if (event.tag !== "giga3-chat-outbox") return;
+  if (event.tag !== "giga3-chat-outbox" && event.tag !== "giga3-social-outbox") {
+    return;
+  }
+  const messageType =
+    event.tag === "giga3-social-outbox"
+      ? "GIGA3_FLUSH_SOCIAL_OUTBOX"
+      : "GIGA3_FLUSH_OUTBOX";
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
       for (const client of clients) {
-        client.postMessage({ type: "GIGA3_FLUSH_OUTBOX" });
+        client.postMessage({ type: messageType });
       }
     })
   );

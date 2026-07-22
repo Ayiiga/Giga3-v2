@@ -125,5 +125,18 @@ export function useGigaSocialOutbox(sessionToken: string | null, enabled: boolea
     void flush();
   }, [effectiveOnline, enabled, flush]);
 
+  useEffect(() => {
+    if (!enabled || typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+      return;
+    }
+    const onMessage = (event: MessageEvent) => {
+      if (event.data?.type === "GIGA3_FLUSH_SOCIAL_OUTBOX") {
+        void flush();
+      }
+    };
+    navigator.serviceWorker.addEventListener("message", onMessage);
+    return () => navigator.serviceWorker.removeEventListener("message", onMessage);
+  }, [enabled, flush]);
+
   return { pendingCount, enqueue, flush, refresh };
 }
