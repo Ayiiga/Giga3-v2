@@ -195,6 +195,50 @@
   width: 100%;
 }
 
+/* Like + Tip rail on photos/videos — right side for thumb reach. */
+.gigasocial-post-card__media-actions {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 1.1rem;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  pointer-events: auto;
+}
+
+.gigasocial-post-card__media-action {
+  display: inline-flex;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.35rem 0.45rem;
+}
+
+.gigasocial-post-card__media-action:disabled {
+  opacity: 0.5;
+}
+
+.gigasocial-post-card__media-action--liked {
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.55);
+}
+
+.gigasocial-post-card__media-action--liked .lucide-heart,
+.gigasocial-post-card__media-action--liked svg {
+  fill: currentColor;
+}
+
 .gigasocial-post-card--visual.gigasocial-post-card--photo .gigasocial-post-card__media-region {
   aspect-ratio: 4 / 5;
 }

@@ -301,6 +301,40 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
                 <Heart className="h-16 w-16 fill-white text-white drop-shadow-lg" />
               </span>
             ) : null}
+            {/* Like + Tip on media for thumb reach (photos/videos). */}
+            <div
+              className="gigasocial-post-card__media-actions"
+              onClick={(e) => e.stopPropagation()}
+              onDoubleClick={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                disabled={!sessionToken || busy}
+                onClick={() => void handleLike()}
+                className={cn(
+                  "gigasocial-post-card__media-action",
+                  liked && "gigasocial-post-card__media-action--liked"
+                )}
+                aria-label={liked ? "Unlike" : "Like"}
+                aria-pressed={liked}
+              >
+                <Heart
+                  className={cn("h-5 w-5", liked && "fill-current")}
+                  aria-hidden
+                />
+                <span>{likeCount}</span>
+              </button>
+              {canTip ? (
+                <GigaSocialTipButton
+                  sessionToken={sessionToken!}
+                  creatorId={post.author.userId!}
+                  postId={post._id}
+                  onMedia
+                  disabled={busy}
+                />
+              ) : null}
+            </div>
           </div>
         </div>
       ) : (
@@ -337,14 +371,16 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
               : "mt-4 gap-1 pt-3"
           )}
         >
-        <ActionButton
-          compact={isVisualPost}
-          active={liked}
-          label={String(likeCount)}
-          icon={Heart}
-          onClick={() => void handleLike()}
-          disabled={!sessionToken || busy}
-        />
+        {/* Like/Tip live on media for visual posts; keep in footer for text posts. */}
+        {!isVisualPost ? (
+          <ActionButton
+            active={liked}
+            label={String(likeCount)}
+            icon={Heart}
+            onClick={() => void handleLike()}
+            disabled={!sessionToken || busy}
+          />
+        ) : null}
         <ActionButton
           compact={isVisualPost}
           label={String(post.commentCount)}
@@ -367,12 +403,11 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           disabled={!sessionToken || busy}
           iconOnly={isVisualPost}
         />
-        {canTip ? (
+        {!isVisualPost && canTip ? (
           <GigaSocialTipButton
             sessionToken={sessionToken!}
             creatorId={post.author.userId!}
             postId={post._id}
-            compact={isVisualPost}
             disabled={busy}
           />
         ) : null}
