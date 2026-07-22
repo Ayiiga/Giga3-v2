@@ -82,4 +82,5 @@ Schedule a **restore drill** at least quarterly on a non-production clone when a
 
 - `docs/DEPLOYMENT_SECURITY_REPORT.md` — auth & security ops
 - `docs/PAYSTACK_PRODUCTION_CHECKLIST.md` — payment recovery
+- `docs/PHASE_4_CONTROLLED_UPGRADE.md` — live Phase 4 flags, kill-switches, monitoring
 - Phase 4 PRs — security hardening, reliability SW v170, admin health panel
