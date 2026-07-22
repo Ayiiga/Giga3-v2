@@ -11,13 +11,16 @@ import { cn } from "@/lib/utils";
 function tipErrorMessage(err: unknown): string {
   const raw = err instanceof Error ? err.message : String(err ?? "");
   if (/not unlocked|Gifts Hub/i.test(raw)) {
-    return "This creator cannot receive tips yet. Try again later.";
+    return "Tips are fixed on the server. Close and reopen the app, then try again.";
   }
   if (/insufficient|not enough|credits/i.test(raw)) {
     return "Not enough credits to send this tip.";
   }
   if (/cannot gift yourself/i.test(raw)) {
     return "You cannot tip yourself.";
+  }
+  if (/Creator not found/i.test(raw)) {
+    return "Creator profile not found.";
   }
   return toUserFacingError(err, "Could not send tip. Please try again.");
 }
@@ -77,7 +80,10 @@ export const GigaSocialTipButton = memo(function GigaSocialTipButton({
       <button
         type="button"
         disabled={disabled || busy !== null}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => {
+          setOpen((value) => !value);
+          setError(null);
+        }}
         className={cn(
           "inline-flex items-center rounded-full font-medium text-amber-800 hover:bg-amber-50",
           compact ? "min-h-8 gap-1 px-2 py-1 text-[11px]" : "min-h-9 gap-1.5 px-3 py-1.5 text-xs",

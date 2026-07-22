@@ -5,6 +5,18 @@ const SENSITIVE =
 
 const GENERIC = "Something went wrong. Please try again.";
 
+/** Remove Convex wrapper noise: [CONVEX M(...)] [Request ID: ...] Server Error Uncaught Error: */
+export function stripConvexErrorNoise(message: string): string {
+  let text = message.replace(/\s+/g, " ").trim();
+  text = text.replace(/\[CONVEX [^\]]+\]\s*/gi, "");
+  text = text.replace(/\[Request ID:\s*[^\]]+\]\s*/gi, "");
+  text = text.replace(/^Server Error\s*/i, "");
+  text = text.replace(/^Uncaught Error:\s*/i, "");
+  text = text.replace(/\s+at handler\s*\([^)]*\)[\s\S]*$/i, "");
+  text = text.replace(/\s+Called by client\s*$/i, "");
+  return text.trim();
+}
+
 export function toUserFacingError(
   err: unknown,
   fallback = GENERIC
@@ -19,9 +31,12 @@ export function toUserFacingError(
     return "The app was updated. Please refresh the page to load the latest version.";
   }
   if (!raw.trim() || SENSITIVE.test(raw)) return fallback;
-  const line = raw.split("\n")[0]?.trim() ?? "";
-  if (!line || line.length > 180) return fallback;
-  return line;
+  const cleaned = stripConvexErrorNoise(raw.split("\n")[0] ?? "");
+  if (!cleaned || cleaned.length > 180) return fallback;
+  if (/Gifts Hub|not unlocked/i.test(cleaned)) {
+    return "This creator cannot receive tips yet. Please try again after refreshing.";
+  }
+  return cleaned;
 }
 
 export function logClientDiagnostic(
