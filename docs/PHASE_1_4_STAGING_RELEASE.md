@@ -1,9 +1,9 @@
 # Phase 1–4 Staging Release — Merge, Deploy & Rollback
 
-**Branch:** `cursor/phase1-4-staging-release-bde5`  
-**Base:** `main`  
+**Branch:** `cursor/phase1-4-staging-release-bde5` (merged)  
+**Base:** `main` @ `4bc3909`  
 **Date:** 2026-07-21  
-**Status:** Staging integration ready for human approval — **do not treat as production-complete until post-deploy monitoring passes**
+**Status:** ✅ Merged & deployed — see `docs/PHASE_1_4_POSTDEPLOY_STATUS.md` for smoke results and 72h monitoring
 
 ---
 

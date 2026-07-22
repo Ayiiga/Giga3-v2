@@ -1,6 +1,7 @@
-# Phase 1–4 Validation Evidence (Staging)
+# Phase 1–4 Validation Evidence
 
-Recorded on branch `cursor/phase1-4-staging-release-bde5` against `main` @ `e0be4fb` (merge base at cut).
+Pre-merge evidence recorded on `cursor/phase1-4-staging-release-bde5` against `main` @ `e0be4fb`.  
+Post-deploy status: `docs/PHASE_1_4_POSTDEPLOY_STATUS.md` (production `4bc3909`).
 
 ## Automated
 
