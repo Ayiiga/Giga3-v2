@@ -1,9 +1,12 @@
 /**
  * Sliding-window rate limits for GigaSocial write mutations.
  * Reuses feedbackRateLimits table — no schema change.
- * Kill-switch: GIGA3_SOCIAL_WRITE_RATE_LIMIT=false
+ * Kill-switches:
+ * - Env: GIGA3_SOCIAL_WRITE_RATE_LIMIT=false (immediate)
+ * - Remote: phase4.security enabled=false (admin controlled upgrade)
  */
 
+import { isPhase4FlagEnabled } from "./phase4Controls";
 import { RateLimitError } from "./securityErrors";
 
 const WINDOW_MS = 10 * 60 * 1000;
@@ -30,6 +33,7 @@ export async function consumeSocialWriteRateLimit(
   action: keyof typeof LIMITS
 ): Promise<void> {
   if (!isSocialWriteRateLimitEnabled()) return;
+  if (!(await isPhase4FlagEnabled(ctx, "phase4.security"))) return;
 
   const config = LIMITS[action];
   if (!config) return;

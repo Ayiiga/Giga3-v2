@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminPhase4ControlsPanel } from "@/components/admin/AdminPhase4ControlsPanel";
 import { AdminPlatformOverview } from "@/components/admin/AdminPlatformOverview";
 import { AdminSecurityHealthPanel } from "@/components/admin/AdminSecurityHealthPanel";
 import { AdminSocialEconomyPanel } from "@/components/admin/AdminSocialEconomyPanel";
@@ -108,6 +109,12 @@ function AdminInner() {
       )}
 
       <AdminPlatformOverview adminCreds={adminCreds} />
+
+      <AdminPhase4ControlsPanel
+        adminCreds={adminCreds}
+        onNotice={(msg) => setNotice(msg)}
+        onError={(msg) => setError(msg || null)}
+      />
 
       <AdminSecurityHealthPanel adminCreds={adminCreds} />
 

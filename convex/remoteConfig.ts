@@ -1,6 +1,11 @@
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { adminCredentialArgs, ensureAdminAccess } from "./adminAccess";
+import {
+  PHASE4_FLAG_DEFAULTS,
+  PHASE4_FLAG_KEYS,
+  type Phase4FlagKey,
+} from "./phase4Controls";
 
 const DEFAULT_CONFIG: Record<string, { value: string; description: string }> = {
   "onboarding.enabled": { value: "true", description: "Show smart onboarding for new users" },
@@ -19,6 +24,12 @@ const DEFAULT_CONFIG: Record<string, { value: string; description: string }> = {
   "gigasocial.economy.boostMinGhs": { value: "10", description: "Minimum boost budget (GHS)" },
   "gigasocial.economy.boostMaxGhs": { value: "2000", description: "Maximum boost budget (GHS)" },
   "gigasocial.economy.boostDurations": { value: "1,3,5,7,14,21,30,60,90", description: "Allowed boost durations (days)" },
+  ...Object.fromEntries(
+    Object.entries(PHASE4_FLAG_DEFAULTS).map(([key, def]) => [
+      key,
+      { value: def.value, description: def.description },
+    ])
+  ),
 };
 
 export const ECONOMY_CONFIG_PREFIX = "gigasocial.economy.";
@@ -153,5 +164,65 @@ export const updateEconomyConfigAdmin = mutation({
       await ctx.db.insert("remoteConfigEntries", { key: args.key, ...payload });
     }
     return { ok: true };
+  },
+});
+
+/** Admin: list Phase 4 controlled-upgrade flags (defaults when unset). */
+export const getPhase4ConfigAdmin = query({
+  args: adminCredentialArgs,
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    const rows = await ctx.db.query("remoteConfigEntries").take(100);
+    return PHASE4_FLAG_KEYS.map((key) => {
+      const def = PHASE4_FLAG_DEFAULTS[key];
+      const row = rows.find((r) => r.key === key);
+      return {
+        key,
+        value: row?.value ?? def.value,
+        description: def.description,
+        enabled: row?.enabled ?? def.enabled,
+        rolloutPercent: row?.rolloutPercent ?? 100,
+      };
+    });
+  },
+});
+
+/** Admin: enable/disable a Phase 4 release-group flag (no schema change). */
+export const updatePhase4ConfigAdmin = mutation({
+  args: {
+    ...adminCredentialArgs,
+    key: v.string(),
+    enabled: v.boolean(),
+    value: v.optional(v.string()),
+    rolloutPercent: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    if (!PHASE4_FLAG_KEYS.includes(args.key as Phase4FlagKey)) {
+      throw new Error("Invalid Phase 4 config key.");
+    }
+    const key = args.key as Phase4FlagKey;
+    const def = PHASE4_FLAG_DEFAULTS[key];
+    const existing = await ctx.db
+      .query("remoteConfigEntries")
+      .withIndex("by_key", (q) => q.eq("key", key))
+      .first();
+    const now = Date.now();
+    const payload = {
+      value: (args.value?.trim() || existing?.value || def.value).slice(0, 80),
+      description: def.description,
+      enabled: args.enabled,
+      rolloutPercent: Math.max(
+        0,
+        Math.min(100, args.rolloutPercent ?? existing?.rolloutPercent ?? 100)
+      ),
+      updatedAt: now,
+    };
+    if (existing) {
+      await ctx.db.patch(existing._id, payload);
+    } else {
+      await ctx.db.insert("remoteConfigEntries", { key, ...payload });
+    }
+    return { ok: true, key, enabled: payload.enabled };
   },
 });
