@@ -195,12 +195,13 @@
   width: 100%;
 }
 
-/* Like + Tip rail on photos/videos — right side for thumb reach. */
+/* Like + Tip rail on photos/videos — above mute (mute stays at bottom-right). */
 .gigasocial-post-card__media-actions {
   position: absolute;
   right: 0.6rem;
-  bottom: 1.1rem;
-  z-index: 12;
+  /* Clear mute control (~2.25rem) + gap so Like/Tip sit above speaker. */
+  bottom: 3.75rem;
+  z-index: 30;
   display: flex;
   flex-direction: column;
   align-items: center;

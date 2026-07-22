@@ -1,5 +1,5 @@
-/** Like/Tip on-media rail — bump so installed PWAs refresh shell assets. */
-const CACHE_NAME = "giga3-shell-v172-media-actions";
+/** Like/Tip above mute + trim/camera quality — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v173-media-controls";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

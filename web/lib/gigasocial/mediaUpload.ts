@@ -117,10 +117,27 @@ export function getVideoDuration(file: File): Promise<number> {
     const url = URL.createObjectURL(file);
     const video = document.createElement("video");
     video.preload = "metadata";
-    video.onloadedmetadata = () => {
+    const finish = (duration: number) => {
       URL.revokeObjectURL(url);
-      const duration = Number.isFinite(video.duration) ? video.duration : 0;
       resolve(duration);
+    };
+    video.onloadedmetadata = () => {
+      // Some browsers report Infinity until a seek forces duration.
+      if (!Number.isFinite(video.duration) || video.duration === Infinity) {
+        const onTimeUpdate = () => {
+          video.removeEventListener("timeupdate", onTimeUpdate);
+          video.currentTime = 0;
+          finish(Number.isFinite(video.duration) ? video.duration : 0);
+        };
+        video.addEventListener("timeupdate", onTimeUpdate);
+        try {
+          video.currentTime = 1e101;
+        } catch {
+          finish(0);
+        }
+        return;
+      }
+      finish(video.duration);
     };
     video.onerror = () => {
       URL.revokeObjectURL(url);

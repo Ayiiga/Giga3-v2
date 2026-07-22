@@ -8,13 +8,17 @@ import {
 } from "@/lib/gigasocial/cameraFilters";
 import { SOCIAL_MAX_VIDEO_DURATION_SEC } from "@/lib/gigasocial/constants";
 import {
+  CAMERA_QUALITY_PRESETS,
   consumePrimedCameraStream,
   createVideoRecorder,
   getCameraErrorMessage,
+  listCameraDevices,
   normalizeRecordedVideoMime,
   requestCameraStream,
   videoFileExtension,
+  type CameraDeviceOption,
   type CameraFacing,
+  type CameraQualityId,
 } from "@/lib/gigasocial/cameraCapture";
 import { cn } from "@/lib/utils";
 import {
@@ -79,6 +83,9 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
   const [filterId, setFilterId] = useState<CameraFilterId>("none");
   const [busy, setBusy] = useState(false);
   const [audioMuted, setAudioMuted] = useState(false);
+  const [quality, setQuality] = useState<CameraQualityId>("full-hd");
+  const [cameraDevices, setCameraDevices] = useState<CameraDeviceOption[]>([]);
+  const [deviceId, setDeviceId] = useState<string | undefined>(undefined);
 
   const clearRecordTimer = useCallback(() => {
     if (recordTimerRef.current != null) {
@@ -127,12 +134,16 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
         : await requestCameraStream({
             facing,
             includeAudio: mode === "video",
+            quality,
+            deviceId,
           });
       await attachStream(stream);
+      const devices = await listCameraDevices();
+      setCameraDevices(devices);
     } catch (err) {
       setError(getCameraErrorMessage(err));
     }
-  }, [attachStream, facing, mode, stopStream]);
+  }, [attachStream, deviceId, facing, mode, quality, stopStream]);
 
   useEffect(() => {
     setMounted(true);
@@ -159,7 +170,7 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
       }
       stopStream();
     };
-  }, [clearCountdownTimer, clearRecordTimer, facing, mode, open, startStream, stopStream]);
+  }, [clearCountdownTimer, clearRecordTimer, deviceId, facing, mode, open, quality, startStream, stopStream]);
 
   const capturePhoto = useCallback(async () => {
     const video = videoRef.current;
@@ -398,10 +409,61 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
           <GigaSocialTeleprompter active={showTeleprompter} recording={recording} />
         </div>
 
+        <div className="space-y-2 border-t border-white/10 px-3 py-2">
+          <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
+            <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-white/55">
+              Quality
+            </span>
+            {CAMERA_QUALITY_PRESETS.map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                disabled={recording || busy}
+                onClick={() => setQuality(preset.id)}
+                className={cn(
+                  "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold",
+                  quality === preset.id
+                    ? "bg-violet-600 text-white"
+                    : "bg-white/10 text-white/80 hover:bg-white/15"
+                )}
+                title={preset.description}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+          {cameraDevices.length > 1 ? (
+            <label className="flex items-center gap-2 text-[10px] text-white/70">
+              <span className="shrink-0 font-semibold uppercase tracking-wide text-white/55">
+                Camera
+              </span>
+              <select
+                className="min-w-0 flex-1 rounded-lg border border-white/15 bg-black/40 px-2 py-1.5 text-[11px] text-white"
+                value={deviceId ?? ""}
+                disabled={recording || busy}
+                onChange={(event) => {
+                  const next = event.target.value || undefined;
+                  setDeviceId(next);
+                }}
+              >
+                <option value="">Auto ({facing === "user" ? "Front" : "Rear"})</option>
+                {cameraDevices.map((device) => (
+                  <option key={device.deviceId} value={device.deviceId}>
+                    {device.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+        </div>
+
         <div className="flex flex-wrap items-center justify-center gap-2 px-3 py-2">
           <ToolButton
             label="Flip"
-            onClick={() => setFacing((value) => (value === "user" ? "environment" : "user"))}
+            onClick={() => {
+              setDeviceId(undefined);
+              setFacing((value) => (value === "user" ? "environment" : "user"));
+            }}
             icon={<SwitchCamera className="h-4 w-4" />}
           />
           <ToolButton

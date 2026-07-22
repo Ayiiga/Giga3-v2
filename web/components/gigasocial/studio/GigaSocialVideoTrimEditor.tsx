@@ -7,6 +7,7 @@ import {
   computeTrimRange,
   formatVideoTime,
   trimVideoFile,
+  VIDEO_CLIP_LENGTH_OPTIONS_SEC,
 } from "@/lib/gigasocial/videoTrim";
 import { cn } from "@/lib/utils";
 import {
@@ -57,6 +58,9 @@ export const GigaSocialVideoTrimEditor = memo(function GigaSocialVideoTrimEditor
   const timelineRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const [startSec, setStartSec] = useState(0);
+  const [clipLengthSec, setClipLengthSec] = useState(() =>
+    Math.min(maxClipSec, Math.max(1, Math.floor(durationSec) || maxClipSec))
+  );
   const [playing, setPlaying] = useState(false);
   const [previewTimeSec, setPreviewTimeSec] = useState(0);
   const [exporting, setExporting] = useState(false);
@@ -64,13 +68,13 @@ export const GigaSocialVideoTrimEditor = memo(function GigaSocialVideoTrimEditor
   const [error, setError] = useState<string | null>(null);
 
   const trimRange = useMemo(
-    () => computeTrimRange(durationSec, startSec, maxClipSec),
-    [durationSec, maxClipSec, startSec]
+    () => computeTrimRange(durationSec, startSec, maxClipSec, clipLengthSec),
+    [clipLengthSec, durationSec, maxClipSec, startSec]
   );
 
   const maxStart = useMemo(
-    () => Math.max(0, durationSec - Math.min(maxClipSec, durationSec)),
-    [durationSec, maxClipSec]
+    () => Math.max(0, durationSec - Math.min(maxClipSec, durationSec, clipLengthSec)),
+    [clipLengthSec, durationSec, maxClipSec]
   );
 
   const clipDurationSec = trimRange.endSec - trimRange.startSec;
@@ -93,9 +97,11 @@ export const GigaSocialVideoTrimEditor = memo(function GigaSocialVideoTrimEditor
     (nextStart: number) => {
       const clamped = Math.min(Math.max(0, nextStart), maxStart);
       setStartSec(clamped);
-      seekPreview(computeTrimRange(durationSec, clamped, maxClipSec).startSec);
+      seekPreview(
+        computeTrimRange(durationSec, clamped, maxClipSec, clipLengthSec).startSec
+      );
     },
-    [durationSec, maxClipSec, maxStart, seekPreview]
+    [clipLengthSec, durationSec, maxClipSec, maxStart, seekPreview]
   );
 
   useEffect(() => {
@@ -114,11 +120,11 @@ export const GigaSocialVideoTrimEditor = memo(function GigaSocialVideoTrimEditor
       if (!track || exporting || maxStart <= 0) return;
       const rect = track.getBoundingClientRect();
       const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-      const clipLen = Math.min(maxClipSec, durationSec);
+      const clipLen = Math.min(maxClipSec, durationSec, clipLengthSec);
       const idealStart = ratio * durationSec - clipLen / 2;
       setClipStart(idealStart);
     },
-    [durationSec, exporting, maxClipSec, maxStart, setClipStart]
+    [clipLengthSec, durationSec, exporting, maxClipSec, maxStart, setClipStart]
   );
 
   const togglePlayPreview = useCallback(async () => {
@@ -211,7 +217,7 @@ export const GigaSocialVideoTrimEditor = memo(function GigaSocialVideoTrimEditor
               {file.name} · {formatFileSize(file.size)} · {formatVideoTime(durationSec)} source
             </p>
             <p className="mt-0.5 text-[11px] text-white/55">
-              Choose any {maxClipSec}s segment — required before posting long videos.
+              Shorten long videos before posting — pick length, then slide the clip window.
             </p>
           </div>
         </div>
@@ -224,6 +230,31 @@ export const GigaSocialVideoTrimEditor = memo(function GigaSocialVideoTrimEditor
         >
           <X className="h-5 w-5" aria-hidden />
         </button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 border-b border-white/10 px-4 py-2.5">
+        <span className="text-[11px] font-medium text-white/70">Clip length</span>
+        {VIDEO_CLIP_LENGTH_OPTIONS_SEC.filter((sec) => sec <= maxClipSec).map((sec) => {
+          const nextLen = Math.min(sec, Math.max(1, durationSec || sec));
+          const selected = Math.abs(clipLengthSec - nextLen) < 0.01 || clipLengthSec === sec;
+          return (
+            <button
+              key={sec}
+              type="button"
+              disabled={exporting}
+              onClick={() => {
+                setClipLengthSec(nextLen);
+                setStartSec((prev) => Math.min(prev, Math.max(0, durationSec - nextLen)));
+              }}
+              className={cn(
+                "rounded-full px-3 py-1 text-[11px] font-semibold",
+                selected ? "bg-violet-600 text-white" : "bg-white/10 text-white/80 hover:bg-white/15"
+              )}
+            >
+              {sec}s
+            </button>
+          );
+        })}
       </div>
 
       <div className="relative bg-black">
