@@ -16,7 +16,8 @@ export function dispatchWorkspaceNav(target: WorkspaceNavTarget) {
   }
   requestAnimationFrame(() => {
     const workspace = document.getElementById("modes");
-    workspace?.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Instant scroll — smooth scroll jitters the chat shell on mobile.
+    workspace?.scrollIntoView({ behavior: "auto", block: "nearest" });
   });
 }
 

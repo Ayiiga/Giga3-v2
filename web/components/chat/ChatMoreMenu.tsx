@@ -24,6 +24,7 @@ import {
   Sparkles,
   Store,
   Users,
+  UsersRound,
   Wallet,
   Zap,
   LogOut,
@@ -46,6 +47,7 @@ type MenuLink = {
 };
 
 const MORE_LINKS: MenuLink[] = [
+  { href: "/gigasocial/", label: "GigaSocial", icon: UsersRound },
   { href: "/gigalearn/", label: "GigaLearn", icon: GraduationCap },
   { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
   { href: "/marketplace/", label: "Marketplace", icon: Store },
@@ -54,9 +56,9 @@ const MORE_LINKS: MenuLink[] = [
   { href: "/automation/", label: "Automation", icon: Zap },
   { href: siteConfig.links.media, label: "Media Studio", icon: Sparkles },
   { href: "/install/", label: "Invite Friends", icon: Users },
-  { href: siteConfig.links.home, label: "Settings", icon: Settings },
+  { href: siteConfig.links.home, label: "Dashboard", icon: Settings },
   { href: "/about/", label: "About", icon: Info },
-  { href: "/chat/", label: "Help", icon: HelpCircle },
+  { href: "/about/", label: "Help", icon: HelpCircle },
 ];
 
 export const ChatMoreMenu = memo(function ChatMoreMenu({
@@ -161,15 +163,23 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
 
           {MORE_LINKS.map((item) => {
             const Icon = item.icon;
+            const featured = item.label === "GigaSocial";
             return (
               <Link
                 key={item.href + item.label}
                 href={item.href}
                 role="menuitem"
                 onClick={close}
-                className="flex min-h-10 items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
+                className={
+                  featured
+                    ? "flex min-h-11 items-center gap-2 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-sm font-bold text-foreground hover:bg-accent/15"
+                    : "flex min-h-10 items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
+                }
               >
-                <Icon className="h-4 w-4 text-muted" aria-hidden />
+                <Icon
+                  className={featured ? "h-4 w-4 text-accent" : "h-4 w-4 text-muted"}
+                  aria-hidden
+                />
                 {item.label}
               </Link>
             );

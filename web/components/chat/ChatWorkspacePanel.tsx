@@ -21,7 +21,7 @@ import {
 } from "@/lib/chat/workspaceNav";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
-import { Bell, BookOpen, ChevronDown, FileText, Loader2, MessageCircle, Newspaper, Sparkles, Trophy, Workflow } from "lucide-react";
+import { Bell, BookOpen, ChevronDown, ChevronUp, FileText, Loader2, MessageCircle, Newspaper, Sparkles, Trophy, UsersRound, Workflow } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo, useEffect, useState } from "react";
 
@@ -47,11 +47,15 @@ function ChatWorkspacePanelComponent({
   onError,
 }: ChatWorkspacePanelProps) {
   const router = useRouter();
-  const [sessionToken] = useState(() => getSessionToken());
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [open, setOpen] = useState(!hasMessages);
   const [tab, setTab] = useState<WorkspaceTab>(hasMessages ? "modes" : "documents");
   const [navigatedOpen, setNavigatedOpen] = useState(false);
   const [mediaNavigating, setMediaNavigating] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSessionToken(getSessionToken());
+  }, []);
 
   useEffect(() => {
     if (mode === "news") {
@@ -67,6 +71,7 @@ function ChatWorkspacePanelComponent({
     }
     if (!hasMessages) {
       setOpen(true);
+      setNavigatedOpen(false);
       if (mode !== "news") {
         setTab("documents");
       }
@@ -130,10 +135,7 @@ function ChatWorkspacePanelComponent({
   return (
     <div
       id="modes"
-      className={cn(
-        "chat-workspace-panel shrink-0 border-b border-border bg-card",
-        hasMessages && !open && "hidden sm:block"
-      )}
+      className="chat-workspace-panel shrink-0 border-b border-border bg-card"
     >
       <button
         type="button"
@@ -156,13 +158,11 @@ function ChatWorkspacePanelComponent({
           {tab === "sports" && "Sports desk"}
           {tab === "alerts" && "Push alerts"}
           {tab === "automation" && "Automation"}
-          <ChevronDown
-            className={cn(
-              "h-4 w-4 text-muted",
-              open && "rotate-180"
-            )}
-            aria-hidden
-          />
+          {open ? (
+            <ChevronUp className="h-4 w-4 text-muted" aria-hidden />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-muted" aria-hidden />
+          )}
         </span>
       </button>
 
@@ -190,6 +190,25 @@ function ChatWorkspacePanelComponent({
           >
             {tab === "modes" && (
               <div className="space-y-3 px-3 py-3 sm:px-4">
+                <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => router.push(siteConfig.links.gigasocial)}
+                  className="flex min-h-16 w-full items-center gap-3 rounded-xl border border-accent/35 bg-accent/10 p-3 text-left shadow-sm ring-1 ring-accent/15 hover:bg-accent/15"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-emerald-500">
+                    <UsersRound className="h-5 w-5 text-white" aria-hidden />
+                  </div>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-bold text-foreground">GigaSocial</span>
+                    <span className="mt-0.5 block line-clamp-2 text-xs font-medium text-accent">
+                      Feed, stories, and creator tools — open the social hub.
+                    </span>
+                  </span>
+                  <span className="shrink-0 rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent-foreground">
+                    Social
+                  </span>
+                </button>
                 <button
                   type="button"
                   disabled={disabled}
