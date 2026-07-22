@@ -21,16 +21,24 @@ export default function OfflinePage() {
         </div>
         <h1 className="mt-6 text-2xl font-semibold text-foreground">You&apos;re offline</h1>
         <p className="mx-auto mt-3 max-w-md leading-[1.7] text-muted">
-          {branding.name} can show public pages while offline. Chat, billing, and creator
-          tools require a secure connection and are not cached on this device.
+          {branding.name} keeps Chat and GigaSocial available offline after you open them
+          once while online. Billing and admin tools still need a connection.
         </p>
         <p className="mx-auto mt-2 max-w-md text-sm text-muted">
-          Reconnect to continue signed-in work or browse cached marketing pages.
+          Open a cached surface below, or reconnect for live AI replies and new posts.
         </p>
         <VisionTagline className="mx-auto mt-4 max-w-md" variant="subtle" />
-        <ButtonLink href="/" variant="primary" className="mt-8">
-          Back to home
-        </ButtonLink>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <ButtonLink href="/chat/" variant="primary">
+            Open chat
+          </ButtonLink>
+          <ButtonLink href="/gigasocial/" variant="secondary">
+            Open GigaSocial
+          </ButtonLink>
+          <ButtonLink href="/" variant="ghost">
+            Back to home
+          </ButtonLink>
+        </div>
       </Container>
     </div>
   );

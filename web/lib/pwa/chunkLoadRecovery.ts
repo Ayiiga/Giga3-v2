@@ -22,9 +22,21 @@ export function chunkLoadUserMessage(): string {
   return "The app was updated. Refreshing to load the latest version…";
 }
 
-/** Clear PWA caches and hard-reload once per session to fetch fresh bundles. */
+function isBrowserOffline(): boolean {
+  return typeof navigator !== "undefined" && navigator.onLine === false;
+}
+
+/**
+ * Clear PWA caches and hard-reload once per session to fetch fresh bundles.
+ * Skips destructive recovery while offline — wiping the SW would brick chat/feed.
+ */
 export async function recoverFromStaleChunks(): Promise<boolean> {
   if (typeof window === "undefined") return false;
+
+  // Offline: keep caches so chat + GigaSocial can still open from the last visit.
+  if (isBrowserOffline()) {
+    return false;
+  }
 
   try {
     if (sessionStorage.getItem(RECOVERY_KEY) === "1") {

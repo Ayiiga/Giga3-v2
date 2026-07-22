@@ -13,6 +13,10 @@ export function withChunkRetryLoader<P = Record<string, never>>(
   return () =>
     loader().catch((err: unknown) => {
       if (isChunkLoadError(err)) {
+        // Offline: do not wipe caches — let the error boundary show a reconnect hint.
+        if (typeof navigator !== "undefined" && navigator.onLine === false) {
+          throw err;
+        }
         void recoverFromStaleChunks();
         return new Promise<LoaderResult<P>>(() => {
           /* page is reloading */

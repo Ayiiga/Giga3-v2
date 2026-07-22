@@ -5,9 +5,9 @@ import {
 import Script from "next/script";
 
 /**
- * Injects the Convex URL before any app JS runs. Chat HTML is never cached by
- * the service worker, so this overrides stale PWA bundles that still embed a
- * deleted deployment (e.g. happy-otter-123.convex.cloud).
+ * Injects the Convex URL before any app JS runs. Chat/GigaSocial HTML may be
+ * runtime-cached for offline reopen; this bootstrap + normalizeConvexUrl() keep
+ * retired deployment hosts from sticking after a deploy.
  */
 export function ConvexRuntimeBootstrap() {
   const convexUrl =

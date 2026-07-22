@@ -258,19 +258,22 @@ export function useChatPlatform() {
   }, []);
 
   const sessionQueryArgs = useMemo(
-    () => (mounted && sessionToken ? { sessionToken } : ("skip" as const)),
-    [mounted, sessionToken]
+    () =>
+      mounted && sessionToken && effectiveOnline
+        ? { sessionToken }
+        : ("skip" as const),
+    [mounted, sessionToken, effectiveOnline]
   );
   const conversationsQueryArgs = sessionQueryArgs;
   const messagesQueryArgs = useMemo(
     () =>
-      mounted && sessionToken && activeId
+      mounted && sessionToken && activeId && effectiveOnline
         ? {
             conversationId: activeId as Id<"conversations">,
             sessionToken,
           }
         : ("skip" as const),
-    [mounted, sessionToken, activeId]
+    [mounted, sessionToken, activeId, effectiveOnline]
   );
 
   const chatCreditsRow = useQuery(api.users.getChatCredits, sessionQueryArgs);
@@ -296,13 +299,13 @@ export function useChatPlatform() {
   messagesRawRef.current = effectiveMessagesRaw;
   const replyStatusQueryArgs = useMemo(
     () =>
-      mounted && sessionToken && activeId && awaitingReply
+      mounted && sessionToken && activeId && awaitingReply && effectiveOnline
         ? {
             sessionToken,
             conversationId: activeId as Id<"conversations">,
           }
         : ("skip" as const),
-    [mounted, sessionToken, activeId, awaitingReply]
+    [mounted, sessionToken, activeId, awaitingReply, effectiveOnline]
   );
   const replyStatus = useQuery(api.chatMessaging.getReplyStatus, replyStatusQueryArgs);
   const uploadUsage = useQuery(api.uploadLimits.getUploadUsageSnapshot, sessionQueryArgs);
@@ -361,9 +364,15 @@ export function useChatPlatform() {
   const updateTitleMutation = useMutation(api.conversations.updateTitle);
   const createUser = useMutation(api.users.createUser);
 
-  const conversationsLoading = conversationsRaw === undefined;
+  const conversationsLoading =
+    effectiveOnline && conversationsRaw === undefined && !cachedConversations;
   const messagesLoading =
-    Boolean(activeId) && messagesRaw === undefined && mounted && Boolean(sessionToken);
+    effectiveOnline &&
+    Boolean(activeId) &&
+    messagesRaw === undefined &&
+    mounted &&
+    Boolean(sessionToken) &&
+    !cachedMessageFallback;
 
   const conversations = useStableConversations(
     (conversationsRaw as ConversationItem[] | undefined) ??
