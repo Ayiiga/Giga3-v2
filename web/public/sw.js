@@ -1,5 +1,5 @@
-/** Tip/gift unlock fix — bump cache so installed PWAs refresh shell after #220. */
-const CACHE_NAME = "giga3-shell-v171-tip-gift-fix";
+/** Like/Tip on-media rail — bump so installed PWAs refresh shell assets. */
+const CACHE_NAME = "giga3-shell-v172-media-actions";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
