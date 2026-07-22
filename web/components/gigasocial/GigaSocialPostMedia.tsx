@@ -468,7 +468,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
             onTouchStart={(event) => event.stopPropagation()}
             onTouchEnd={(event) => event.stopPropagation()}
             className={cn(
-              "gigasocial-video-mute-btn absolute z-20 inline-flex items-center justify-center rounded-full text-white",
+              "gigasocial-video-mute-btn absolute z-10 inline-flex items-center justify-center rounded-full text-white",
               featured
                 ? "gigasocial-video-mute-btn--featured bottom-4 right-4 min-h-12 gap-1.5 px-3.5 py-2"
                 : "bottom-3 right-3 h-9 w-9 bg-black/55"

@@ -353,7 +353,13 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         setPostType("video");
         setError(null);
         setSuccess(
-          `This video is ${Math.ceil(durationSec)}s. Open Clip Studio to choose a ${SOCIAL_MAX_VIDEO_DURATION_SEC}s segment.`
+          `This video is ${Math.ceil(durationSec)}s. Shorten it in Clip Studio (15 / 30 / 40s), then post.`
+        );
+        return;
+      }
+      if (!Number.isFinite(durationSec) || durationSec <= 0) {
+        setError(
+          "Could not read this video length. Try another file, or record in-app (max 40s)."
         );
         return;
       }

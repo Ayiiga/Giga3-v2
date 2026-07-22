@@ -2,9 +2,55 @@
 
 export type CameraFacing = "user" | "environment";
 
+/** Capture quality presets applied as getUserMedia constraints. */
+export type CameraQualityId = "hd" | "full-hd" | "ultra-hd";
+
+export type CameraQualityPreset = {
+  id: CameraQualityId;
+  label: string;
+  description: string;
+  width: number;
+  height: number;
+  frameRate?: number;
+};
+
+export const CAMERA_QUALITY_PRESETS: CameraQualityPreset[] = [
+  {
+    id: "hd",
+    label: "HD 720p",
+    description: "Faster on slow networks",
+    width: 1280,
+    height: 720,
+    frameRate: 30,
+  },
+  {
+    id: "full-hd",
+    label: "Full HD 1080p",
+    description: "Sharp social default",
+    width: 1920,
+    height: 1080,
+    frameRate: 30,
+  },
+  {
+    id: "ultra-hd",
+    label: "4K Ultra HD",
+    description: "Highest quality when supported",
+    width: 3840,
+    height: 2160,
+    frameRate: 30,
+  },
+];
+
+export type CameraDeviceOption = {
+  deviceId: string;
+  label: string;
+};
+
 export type CameraStreamRequest = {
   facing?: CameraFacing;
   includeAudio?: boolean;
+  quality?: CameraQualityId;
+  deviceId?: string;
 };
 
 let primedStreamPromise: Promise<MediaStream> | null = null;
@@ -18,6 +64,47 @@ function isAppleMobile(): boolean {
   );
 }
 
+export function getCameraQualityPreset(id?: CameraQualityId | null): CameraQualityPreset {
+  return (
+    CAMERA_QUALITY_PRESETS.find((preset) => preset.id === id) ?? CAMERA_QUALITY_PRESETS[1]
+  );
+}
+
+/** List video input devices (labels appear after camera permission). */
+export async function listCameraDevices(): Promise<CameraDeviceOption[]> {
+  if (typeof navigator === "undefined" || !navigator.mediaDevices?.enumerateDevices) {
+    return [];
+  }
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  return devices
+    .filter((device) => device.kind === "videoinput")
+    .map((device, index) => ({
+      deviceId: device.deviceId,
+      label: device.label?.trim() || `Camera ${index + 1}`,
+    }));
+}
+
+function buildVideoConstraints(request: CameraStreamRequest): MediaTrackConstraints {
+  const facing = request.facing ?? "environment";
+  const quality = getCameraQualityPreset(request.quality ?? (isAppleMobile() ? "full-hd" : "hd"));
+  // Prefer portrait ideals for phone social capture.
+  const portrait = isAppleMobile() || facing === "environment";
+  const width = portrait ? quality.height : quality.width;
+  const height = portrait ? quality.width : quality.height;
+
+  const base: MediaTrackConstraints = {
+    width: { ideal: width },
+    height: { ideal: height },
+    frameRate: quality.frameRate ? { ideal: quality.frameRate } : undefined,
+    aspectRatio: portrait ? { ideal: 9 / 16 } : { ideal: 16 / 9 },
+  };
+
+  if (request.deviceId) {
+    return { ...base, deviceId: { exact: request.deviceId } };
+  }
+  return { ...base, facingMode: facing };
+}
+
 /** Start getUserMedia during a user gesture (FAB tap) so mobile browsers allow the prompt. */
 export function primeCameraStream(request: CameraStreamRequest = {}): Promise<MediaStream> | null {
   if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
@@ -25,7 +112,12 @@ export function primeCameraStream(request: CameraStreamRequest = {}): Promise<Me
   }
   const facing = request.facing ?? "environment";
   const includeAudio = request.includeAudio ?? false;
-  primedStreamPromise = requestCameraStream({ facing, includeAudio });
+  primedStreamPromise = requestCameraStream({
+    facing,
+    includeAudio,
+    quality: request.quality,
+    deviceId: request.deviceId,
+  });
   return primedStreamPromise;
 }
 
@@ -47,29 +139,44 @@ export async function requestCameraStream(
     throw new Error("Camera is not supported in this browser.");
   }
 
-  const facing = request.facing ?? "environment";
   const includeAudio = request.includeAudio ?? false;
-  const video: MediaTrackConstraints = isAppleMobile()
-    ? {
-        facingMode: facing,
-        width: { ideal: 1080 },
-        height: { ideal: 1920 },
-        aspectRatio: { ideal: 9 / 16 },
-      }
-    : { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } };
-
-  if (!includeAudio) {
-    return navigator.mediaDevices.getUserMedia({ video, audio: false });
-  }
+  const tryConstraints = async (video: MediaTrackConstraints) => {
+    if (!includeAudio) {
+      return navigator.mediaDevices.getUserMedia({ video, audio: false });
+    }
+    try {
+      return await navigator.mediaDevices.getUserMedia({ video, audio: true });
+    } catch (error) {
+      if (isPermissionDenied(error)) throw error;
+      return navigator.mediaDevices.getUserMedia({ video, audio: false });
+    }
+  };
 
   try {
-    return await navigator.mediaDevices.getUserMedia({ video, audio: true });
+    return await tryConstraints(buildVideoConstraints(request));
   } catch (error) {
-    if (isPermissionDenied(error)) {
-      throw error;
+    // Fall back when ultra-hd / exact deviceId is unsupported.
+    if (request.quality === "ultra-hd" || request.deviceId) {
+      try {
+        return await tryConstraints(
+          buildVideoConstraints({
+            ...request,
+            quality: "full-hd",
+            deviceId: undefined,
+          })
+        );
+      } catch {
+        /* continue */
+      }
     }
-    // Mic unavailable (in use / missing) — still allow silent video capture.
-    return navigator.mediaDevices.getUserMedia({ video, audio: false });
+    if (error instanceof DOMException && error.name === "OverconstrainedError") {
+      return tryConstraints({
+        facingMode: request.facing ?? "environment",
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      });
+    }
+    throw error;
   }
 }
 
@@ -141,8 +248,8 @@ export function getCameraErrorMessage(error: unknown): string {
     if (error.name === "SecurityError") {
       return "Camera access requires a secure connection (HTTPS).";
     }
-    if (error.name === "OverconstrainedError") {
-      return "This camera mode is not supported on your device. Try flipping the camera.";
+      if (error.name === "OverconstrainedError") {
+      return "This camera quality is not supported. Try HD 720p or Full HD, or flip the camera.";
     }
   }
   if (error instanceof Error && error.message) return error.message;
