@@ -6,7 +6,6 @@ import { sessionArgs } from "./validators";
 import { sanitizeSocialText, toPublicAuthor } from "./gigaSocialViews";
 import {
   deductVariableCredits,
-  isMonetizationUnlocked,
   loadEconomySettings,
 } from "./gigaSocialEconomy";
 
@@ -379,11 +378,9 @@ export const sendLiveGift = mutation({
       .first();
     if (!hostProfile) throw new Error("Host profile not found.");
 
+    // Receiving live gifts is open to any host with a profile (same as post tips).
+    // Fan-threshold unlock still applies to affiliate/boost/payout tools.
     const settings = await loadEconomySettings(ctx);
-    const unlocked = await isMonetizationUnlocked(ctx, hostProfile, settings);
-    if (!unlocked) {
-      throw new Error("This creator has not unlocked live gifts yet (500 fans required).");
-    }
 
     const giftType = args.giftType.trim().slice(0, 32);
     const credits = Math.max(1, Math.min(500, Math.floor(args.amount)));

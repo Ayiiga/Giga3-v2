@@ -5,7 +5,22 @@ import type { Id } from "convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { Gift, Loader2 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
+import { toUserFacingError } from "@/lib/errors/userMessage";
 import { cn } from "@/lib/utils";
+
+function tipErrorMessage(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err ?? "");
+  if (/not unlocked|Gifts Hub/i.test(raw)) {
+    return "This creator cannot receive tips yet. Try again later.";
+  }
+  if (/insufficient|not enough|credits/i.test(raw)) {
+    return "Not enough credits to send this tip.";
+  }
+  if (/cannot gift yourself/i.test(raw)) {
+    return "You cannot tip yourself.";
+  }
+  return toUserFacingError(err, "Could not send tip. Please try again.");
+}
 
 const QUICK_TIPS = [
   { id: "spark", label: "Tip", emoji: "✨", credits: 5 },
@@ -49,7 +64,7 @@ export const GigaSocialTipButton = memo(function GigaSocialTipButton({
         setMessage("Tip sent!");
         setOpen(false);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Could not send tip.");
+        setError(tipErrorMessage(e));
       } finally {
         setBusy(null);
       }
