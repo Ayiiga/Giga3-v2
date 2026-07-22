@@ -138,6 +138,7 @@ export function HomeDashboardPanel() {
 
       <div className="dashboard-quick-grid">
         {[
+          { label: "GigaSocial", href: "/gigasocial/", featured: true },
           { label: "Chat", href: "/chat" },
           { label: "Media", href: "/media" },
           { label: "Learn", href: "/gigalearn" },
@@ -146,7 +147,11 @@ export function HomeDashboardPanel() {
           <Link
             key={q.href}
             href={q.href}
-            className="rounded-xl border border-border py-2 text-center text-xs font-medium hover:border-accent/30"
+            className={
+              "featured" in q && q.featured
+                ? "rounded-xl border border-accent/40 bg-accent/10 py-2 text-center text-xs font-bold text-foreground ring-1 ring-accent/15 hover:bg-accent/15"
+                : "rounded-xl border border-border py-2 text-center text-xs font-medium hover:border-accent/30"
+            }
           >
             {q.label}
           </Link>

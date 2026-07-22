@@ -1,6 +1,6 @@
-/** Offline chat + GigaSocial shells for signed-in PWAs — refresh installed clients. */
-const CACHE_NAME = "giga3-shell-v174-offline-app";
-const NEXT_STATIC_CACHE = "giga3-next-static-v174";
+/** Workspace GigaSocial featured + stability — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v175-workspace-social";
+const NEXT_STATIC_CACHE = "giga3-next-static-v175";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

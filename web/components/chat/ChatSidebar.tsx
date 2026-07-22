@@ -7,7 +7,7 @@ import {
 } from "@/lib/chat/groupConversationsByDate";
 import { listSavedPrompts, type SavedPrompt } from "@/lib/chat/savedPrompts";
 import { getModeDefinition, isValidMode } from "@/lib/aiRouter";
-import { dispatchWorkspaceNav } from "@/lib/chat/workspaceNav";
+import { dispatchWorkspaceNav, type WorkspaceNavTarget } from "@/lib/chat/workspaceNav";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import {
@@ -79,25 +79,48 @@ interface ChatSidebarProps {
 
 type SidebarView = "active" | "archived" | "favorites";
 
-const PRIMARY_NAV = [
+type WorkspaceNavItem =
+  | {
+      href: string;
+      label: string;
+      icon: typeof Home;
+      featured?: boolean;
+      hint?: string;
+    }
+  | {
+      hash: WorkspaceNavTarget;
+      label: string;
+      icon: typeof Home;
+      featured?: boolean;
+      hint?: string;
+    };
+
+/** GigaSocial leads the Workspace list — featured + first for signed-in discovery. */
+const PRIMARY_NAV: WorkspaceNavItem[] = [
+  {
+    href: "/gigasocial/",
+    label: "GigaSocial",
+    icon: UsersRound,
+    featured: true,
+    hint: "Feed · Stories · Create",
+  },
   { href: "/chat", label: "Home", icon: Home },
   { href: "/gigalearn/", label: "GigaLearn", icon: BookOpen },
-  { href: "/gigasocial/", label: "GigaSocial", icon: UsersRound },
-  { hash: "documents" as const, label: "My Documents", icon: FileText },
+  { hash: "documents", label: "My Documents", icon: FileText },
   { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
   { href: "/marketplace/", label: "Marketplace", icon: LayoutGrid },
-  { hash: "modes" as const, label: "AI Tools", icon: Wand2 },
-  { hash: "automation" as const, label: "Automation", icon: Workflow },
-  { hash: "news" as const, label: "News desk", icon: Newspaper },
-  { hash: "sports" as const, label: "Sports desk", icon: Trophy },
-] as const;
+  { hash: "modes", label: "AI Tools", icon: Wand2 },
+  { hash: "automation", label: "Automation", icon: Workflow },
+  { hash: "news", label: "News desk", icon: Newspaper },
+  { hash: "sports", label: "Sports desk", icon: Trophy },
+];
 
 const ACCOUNT_NAV = [
   { href: "/wallet", label: "GigaWallet", icon: CreditCard },
   { href: "/workspace", label: "Workspace", icon: UsersRound },
   { href: "/subscribe", label: "Subscription", icon: Sparkles },
   { href: "/credits", label: "Credits", icon: Coins },
-  { href: siteConfig.links.home, label: "Settings", icon: Settings },
+  { href: siteConfig.links.home, label: "Dashboard", icon: Settings },
 ] as const;
 
 function ChatSidebarComponent({
@@ -258,7 +281,7 @@ function ChatSidebarComponent({
                   />
                 ))}
                 <Link
-                  href="/chat"
+                  href={siteConfig.links.prompts}
                   onClick={onCloseMobile}
                   className="flex min-h-9 items-center gap-2 rounded-xl px-3 text-xs font-medium text-accent hover:bg-accent/5"
                 >
@@ -358,7 +381,7 @@ function ChatSidebarComponent({
               </Link>
             ))}
             <Link
-              href="/"
+              href={siteConfig.links.about}
               onClick={onCloseMobile}
               className="flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted hover:bg-accent/5 hover:text-foreground"
             >
@@ -378,7 +401,7 @@ function ChatSidebarComponent({
               </p>
             </div>
             <Link
-              href="/media"
+              href={siteConfig.links.media}
               className="touch-target rounded-xl text-accent hover:bg-accent/10"
               aria-label="Image Studio"
               title="Image Studio"
@@ -413,10 +436,40 @@ function SidebarNavItem({
   item,
   onNavigate,
 }: {
-  item: (typeof PRIMARY_NAV)[number];
+  item: WorkspaceNavItem;
   onNavigate: () => void;
 }) {
   const Icon = item.icon;
+  const featured = Boolean(item.featured);
+
+  const content = featured ? (
+    <>
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-emerald-500 text-white">
+        <Icon className="h-4 w-4" aria-hidden />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-bold text-foreground">{item.label}</span>
+        {item.hint ? (
+          <span className="mt-0.5 block truncate text-[11px] font-medium text-accent">
+            {item.hint}
+          </span>
+        ) : null}
+      </span>
+      <span className="shrink-0 rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent-foreground">
+        Social
+      </span>
+    </>
+  ) : (
+    <>
+      <Icon className="h-4 w-4 shrink-0" aria-hidden />
+      {item.label}
+    </>
+  );
+
+  const className = featured
+    ? "flex min-h-12 w-full items-center gap-3 rounded-xl border border-accent/35 bg-accent/10 px-3 text-left shadow-sm ring-1 ring-accent/15 hover:bg-accent/15"
+    : "flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-muted hover:bg-accent/5 hover:text-foreground";
+
   if ("hash" in item) {
     return (
       <button
@@ -425,21 +478,15 @@ function SidebarNavItem({
           dispatchWorkspaceNav(item.hash);
           onNavigate();
         }}
-        className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-muted hover:bg-accent/5 hover:text-foreground"
+        className={className}
       >
-        <Icon className="h-4 w-4 shrink-0" aria-hidden />
-        {item.label}
+        {content}
       </button>
     );
   }
   return (
-    <Link
-      href={item.href}
-      onClick={onNavigate}
-      className="flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted hover:bg-accent/5 hover:text-foreground"
-    >
-      <Icon className="h-4 w-4 shrink-0" aria-hidden />
-      {item.label}
+    <Link href={item.href} onClick={onNavigate} className={className}>
+      {content}
     </Link>
   );
 }
@@ -630,6 +677,7 @@ function sidebarPropsEqual(prev: ChatSidebarProps, next: ChatSidebarProps): bool
     prev.onPin === next.onPin &&
     prev.onArchive === next.onArchive &&
     prev.onFavorite === next.onFavorite &&
+    prev.onRename === next.onRename &&
     prev.email === next.email &&
     prev.mounted === next.mounted &&
     prev.credits === next.credits &&
