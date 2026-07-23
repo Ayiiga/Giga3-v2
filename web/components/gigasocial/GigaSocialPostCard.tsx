@@ -71,7 +71,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   onEdit,
   onRemix,
   canDelete = false,
-  enableEdit = false,
+  enableEdit = true,
   enableRemix = false,
   enablePostAIActions = false,
   enablePostTips = false,

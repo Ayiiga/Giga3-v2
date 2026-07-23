@@ -23,7 +23,7 @@
 
 .gigasocial-feed-panel-compact {
   contain: none;
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
 }
 
 .gigasocial-feed-panel-compact > .gigasocial-post-card,

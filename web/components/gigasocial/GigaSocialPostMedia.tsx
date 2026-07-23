@@ -632,6 +632,7 @@ interface PendingMediaPreviewProps {
   onRemoveImage: (id: string) => void;
   onRemoveVideo: () => void;
   onRemoveAudio?: () => void;
+  compact?: boolean;
 }
 
 export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMediaPreview({
@@ -642,12 +643,16 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
   onRemoveImage,
   onRemoveVideo,
   onRemoveAudio,
+  compact = false,
 }: PendingMediaPreviewProps) {
   const imageFilterStyle = { filter: getCameraFilterCss(imageFilterId) };
   if (!images.length && !video && !audio) return null;
 
+  const videoMax = compact ? "max-h-36" : "max-h-64";
+  const imageMax = compact ? "aspect-square max-h-28" : "aspect-[4/5] max-h-44";
+
   return (
-    <div className="mt-3 space-y-2">
+    <div className={cn(compact ? "mt-2 space-y-1.5" : "mt-3 space-y-2")}>
       {video ? (
         <div className="relative overflow-hidden rounded-xl border border-border bg-black/5">
           {video.thumbnailUrl ? (
@@ -655,12 +660,12 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
             <img
               src={video.thumbnailUrl}
               alt="Video preview"
-              className="max-h-64 w-full object-contain"
+              className={cn("w-full object-contain", videoMax)}
             />
           ) : (
             <video
               src={video.previewUrl}
-              className="max-h-64 w-full object-contain"
+              className={cn("w-full object-contain", videoMax)}
               muted
               playsInline
             />
@@ -670,7 +675,7 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
               <Play className="h-5 w-5" aria-hidden />
             </span>
           </div>
-          <div className="flex items-center justify-between gap-2 px-3 py-2 text-xs text-muted">
+          <div className="flex items-center justify-between gap-2 px-3 py-1.5 text-xs text-muted">
             <span className="truncate">{video.name}</span>
             <span>{Math.round(video.durationSec)}s</span>
           </div>
@@ -706,14 +711,14 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
       ) : null}
 
       {images.length > 0 ? (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <div className={cn("grid gap-2", compact ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-3")}>
           {images.map((image) => (
             <div key={image.id} className="relative overflow-hidden rounded-xl border border-border">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={image.previewUrl}
                 alt={image.name}
-                className="aspect-[4/5] max-h-44 w-full object-cover"
+                className={cn("w-full object-cover", imageMax)}
                 style={imageFilterStyle}
               />
               <button

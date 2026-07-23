@@ -1,6 +1,6 @@
-/** Workspace GigaSocial featured + stability — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v175-workspace-social";
-const NEXT_STATIC_CACHE = "giga3-next-static-v175";
+/** Compact GigaSocial compose + creator edit — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v176-composer-compact";
+const NEXT_STATIC_CACHE = "giga3-next-static-v176";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [

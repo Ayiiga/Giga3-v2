@@ -440,7 +440,7 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
                   post={post}
                   sessionToken={sessionToken}
                   canDelete
-                  enableEdit={features.enableAIEditing}
+                  enableEdit
                   onEdit={async (postId, args: { body: string; postType: SocialPostTypeId }) => {
                     await updatePost({
                       sessionToken,

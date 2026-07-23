@@ -732,9 +732,12 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
                 sessionToken={sessionToken}
                 feedAutoPlay={autoPlay}
                 feedPaused={paused}
-                canDelete={Boolean(myHandle && post.author.handle === myHandle)}
+                canDelete={Boolean(
+                  (myHandle && post.author.handle === myHandle) ||
+                    (getUserEmail() && post.author.userId === getUserEmail())
+                )}
                 enableRemix={features.enableGigaRemix}
-                enableEdit={features.enableAIEditing}
+                enableEdit
                 enablePostAIActions={features.enablePostAIActions}
                 enablePostTips={features.enablePostTips}
                 onEdit={handleEditPost}
