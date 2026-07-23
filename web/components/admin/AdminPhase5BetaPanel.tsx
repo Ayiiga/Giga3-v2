@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { usePhase5Flags } from "@/hooks/usePhase5Flags";
 import { api } from "convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { Ticket } from "lucide-react";
@@ -26,6 +27,9 @@ export function AdminPhase5BetaPanel({
   onNotice: (message: string) => void;
   onError: (message: string) => void;
 }) {
+  const flags = usePhase5Flags();
+  // Matches server: create allowed when phase5.admin_tools OR phase5.beta is on.
+  const canCreateInvite = flags.beta || flags.adminTools;
   const data = useQuery(api.phase5Beta.listBetaAdmin, adminCreds);
   const createInvite = useMutation(api.phase5Beta.createBetaInviteAdmin);
   const updateWaitlist = useMutation(api.phase5Beta.updateWaitlistStatusAdmin);
@@ -85,7 +89,12 @@ export function AdminPhase5BetaPanel({
         </label>
         <Button
           size="sm"
-          disabled={busy}
+          disabled={busy || !canCreateInvite}
+          title={
+            !canCreateInvite
+              ? "Enable phase5.beta or phase5.admin_tools first"
+              : undefined
+          }
           onClick={() => {
             void (async () => {
               setBusy(true);
