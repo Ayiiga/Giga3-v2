@@ -64,7 +64,7 @@ export const GigaSocialComposerSheet = memo(function GigaSocialComposerSheet({
         className={cn(
           fullscreenFlow
             ? "gigasocial-stable fixed inset-0 z-[60] pointer-events-none"
-            : "gigasocial-stable gigasocial-composer-sheet fixed inset-x-0 bottom-0 z-[61] flex max-h-[min(92dvh,48rem)] flex-col border-t border-border bg-white shadow-2xl"
+            : "gigasocial-stable gigasocial-composer-sheet fixed inset-x-0 bottom-0 z-[61] flex max-h-[min(85svh,40rem)] flex-col border-t border-border bg-white shadow-2xl"
         )}
         role="dialog"
         aria-modal="true"
@@ -72,8 +72,8 @@ export const GigaSocialComposerSheet = memo(function GigaSocialComposerSheet({
         onClick={(event) => event.stopPropagation()}
       >
         {!fullscreenFlow ? (
-          <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
-            <p className="text-base font-semibold text-foreground">New post</p>
+          <div className="flex items-center justify-between border-b border-border/60 px-4 py-2.5">
+            <p className="text-sm font-semibold text-foreground">New post</p>
             <button
               type="button"
               onClick={onClose}
@@ -86,11 +86,12 @@ export const GigaSocialComposerSheet = memo(function GigaSocialComposerSheet({
         ) : null}
         <div
           className={cn(
-            fullscreenFlow ? "pointer-events-auto" : "flex-1 overflow-y-auto overscroll-contain p-4"
+            fullscreenFlow ? "pointer-events-auto" : "flex-1 overflow-y-auto overscroll-contain p-3"
           )}
         >
           <GigaSocialComposer
             {...composerProps}
+            compact
             onFullscreenFlowChange={setFullscreenFlow}
             onPosted={() => {
               onPosted?.();

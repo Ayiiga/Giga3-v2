@@ -92,6 +92,8 @@ interface GigaSocialComposerProps {
   remixSource?: SocialPost;
   enableAIAssistant?: boolean;
   enableMediaStudio?: boolean;
+  /** Dense sheet layout — less vertical chrome for mobile compose. */
+  compact?: boolean;
   onPosted?: () => void;
   onFullscreenFlowChange?: (active: boolean) => void;
   onSubmit: (args: {
@@ -113,6 +115,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   remixSource,
   enableAIAssistant = false,
   enableMediaStudio = false,
+  compact = false,
   onPosted,
   onFullscreenFlowChange,
   onSubmit,
@@ -641,7 +644,11 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     <>
     <div
       id="gigasocial-composer"
-      className="saas-card rounded-2xl border border-border p-4"
+      className={
+        compact
+          ? "space-y-2"
+          : "saas-card space-y-2 rounded-2xl border border-border p-4"
+      }
       onDragOver={(event) => {
         event.preventDefault();
         if (!disabled && !busy) setDragActive(true);
@@ -663,19 +670,24 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         }}
         onInsertEmoji={(emoji) => setBody((value) => `${value}${emoji}`)}
         disabled={disabled || busy}
+        compact={compact}
       />
       <textarea
         id="gigasocial-caption"
         ref={captionRef}
         value={body}
         onChange={(e) => setBody(e.target.value)}
-        rows={4}
+        rows={compact ? 2 : 4}
         maxLength={SOCIAL_CAPTION_MAX_LENGTH}
-        placeholder="Share something with the Giga3 community… Use #hashtags and emojis."
-        className="w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm"
+        placeholder="Share with the community… #hashtags welcome"
+        className={
+          compact
+            ? "max-h-28 w-full resize-y overflow-y-auto rounded-xl border border-border bg-white px-3 py-2 text-sm"
+            : "w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm"
+        }
         disabled={disabled || busy}
       />
-      <div className="mt-1 flex items-center justify-between text-xs text-muted">
+      <div className="flex items-center justify-between text-xs text-muted">
         <span>
           {body.length}/{SOCIAL_CAPTION_MAX_LENGTH}
         </span>
@@ -687,21 +699,20 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       </div>
 
       {enableAIAssistant ? (
-        <div className="mt-3">
-          <GigaSocialAIAssistant
-            body={body}
-            postType={postType}
-            onApplyCaption={setBody}
-            onApplyHashtags={(tags) => {
-              const suffix = tags
-                .slice(0, 5)
-                .map((tag) => `#${tag}`)
-                .join(" ");
-              setBody((value) => `${value.trim()} ${suffix}`.trim());
-            }}
-            onApplyCategory={setPostType}
-          />
-        </div>
+        <GigaSocialAIAssistant
+          body={body}
+          postType={postType}
+          compact={compact}
+          onApplyCaption={setBody}
+          onApplyHashtags={(tags) => {
+            const suffix = tags
+              .slice(0, 5)
+              .map((tag) => `#${tag}`)
+              .join(" ");
+            setBody((value) => `${value.trim()} ${suffix}`.trim());
+          }}
+          onApplyCategory={setPostType}
+        />
       ) : null}
 
       <GigaSocialPendingMediaPreview
@@ -709,6 +720,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         video={pendingVideo ?? undefined}
         audio={pendingAudio ?? undefined}
         imageFilterId={previewFilterId}
+        compact={compact}
         onRemoveImage={(id) => {
           setPendingImages((prev) => {
             const target = prev.find((image) => image.id === id);
@@ -725,10 +737,10 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         onRemoveAudio={() => setPendingAudio(null)}
       />
 
-      <CreatorTemplateQuickPick className="mt-3" />
+      <CreatorTemplateQuickPick compact={compact} />
 
       {enableMediaStudio && studioOpen && studioPreviewUrl ? (
-        <div className="mt-3">
+        <div className={compact ? "mt-1" : "mt-3"}>
           <GigaSocialMediaStudio
             previewUrl={studioPreviewUrl}
             onClose={() => setStudioOpen(false)}
@@ -738,21 +750,21 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       ) : null}
 
       {dragActive ? (
-        <p className="mt-2 rounded-xl border border-dashed border-accent/40 bg-accent/5 px-3 py-2 text-xs text-accent">
-          Drop one or more photos (optional music), or a short video
+        <p className="rounded-xl border border-dashed border-accent/40 bg-accent/5 px-3 py-2 text-xs text-accent">
+          Drop photos or a short video
         </p>
-      ) : (
-        <p className="mt-2 text-xs text-muted">
+      ) : compact ? null : (
+        <p className="text-xs text-muted">
           Add photos, music (up to {SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC}s), or video. Long videos
           open the trim editor (max {SOCIAL_MAX_VIDEO_DURATION_SEC}s).
         </p>
       )}
 
       {uploadPercent !== null && busy ? (
-        <div className="mt-3 space-y-2" role="status" aria-live="polite">
-          <div className="h-2 overflow-hidden rounded-full bg-muted/20">
+        <div className="space-y-1.5" role="status" aria-live="polite">
+          <div className="h-1.5 overflow-hidden rounded-full bg-muted/20">
             <div
-              className="h-full rounded-full bg-accent transition-all"
+              className="h-full rounded-full bg-accent"
               style={{ width: `${uploadPercent}%` }}
             />
           </div>
@@ -770,7 +782,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         </div>
       ) : null}
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <input
           ref={unifiedMediaInputRef}
           type="file"
@@ -884,12 +896,12 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       </div>
 
       {success ? (
-        <p className="mt-2 text-xs text-green-700" role="status">
+        <p className="text-xs text-green-700" role="status">
           {success}
         </p>
       ) : null}
       {error ? (
-        <p className="mt-2 text-xs text-red-700" role="alert">
+        <p className="text-xs text-red-700" role="alert">
           {error}
         </p>
       ) : null}
