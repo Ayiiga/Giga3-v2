@@ -174,7 +174,17 @@ export const feedbackSubmissionTypeValidator = v.union(
   v.literal("bug"),
   v.literal("feature"),
   v.literal("ai_rating"),
-  v.literal("incorrect_info")
+  v.literal("incorrect_info"),
+  /** Phase 5 expanded types (clients only send when phase5.feedback is on). */
+  v.literal("usability"),
+  v.literal("content_report")
+);
+
+export const feedbackPriorityValidator = v.union(
+  v.literal("low"),
+  v.literal("normal"),
+  v.literal("high"),
+  v.literal("critical")
 );
 
 export const feedbackSubmissionStatusValidator = v.union(
@@ -1079,6 +1089,8 @@ export default defineSchema({
     messageId: v.optional(v.string()),
     conversationId: v.optional(v.string()),
     rating: v.optional(v.number()),
+    /** Phase 5 admin priority ranking (optional; defaults inferred). */
+    priority: v.optional(feedbackPriorityValidator),
     adminNote: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
