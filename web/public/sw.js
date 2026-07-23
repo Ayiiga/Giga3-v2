@@ -1,6 +1,9 @@
-/** Multi-account creators + faster uploads — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v177-multi-account-upload";
-const NEXT_STATIC_CACHE = "giga3-next-static-v177";
+/** App icon badge + push alerts for social/AI — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v178-app-badge-push";
+const NEXT_STATIC_CACHE = "giga3-next-static-v178";
+const BADGE_DB = "giga3-badge-v1";
+const BADGE_STORE = "meta";
+const BADGE_KEY = "count";
 
 /** Public marketing/shell routes only — never precache authenticated app surfaces. */
 const PRECACHE = [
@@ -66,8 +69,122 @@ self.addEventListener("install", (event) => {
 self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") {
     self.skipWaiting();
+    return;
+  }
+  if (event.data?.type === "GIGA3_CLEAR_BADGE") {
+    event.waitUntil(clearAppBadge());
+    return;
+  }
+  if (event.data?.type === "GIGA3_SET_BADGE") {
+    const count = Number(event.data.count) || 0;
+    event.waitUntil(setAppBadgeCount(count));
+    return;
+  }
+  if (event.data?.type === "GIGA3_BUMP_BADGE") {
+    const delta = Number(event.data.delta) || 1;
+    event.waitUntil(bumpAppBadge(delta));
   }
 });
+
+function openBadgeDb() {
+  return new Promise((resolve) => {
+    if (!self.indexedDB) {
+      resolve(null);
+      return;
+    }
+    const req = self.indexedDB.open(BADGE_DB, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(BADGE_STORE)) {
+        db.createObjectStore(BADGE_STORE);
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(null);
+  });
+}
+
+function readBadgeCount() {
+  return openBadgeDb().then(
+    (db) =>
+      new Promise((resolve) => {
+        if (!db) {
+          resolve(0);
+          return;
+        }
+        try {
+          const tx = db.transaction(BADGE_STORE, "readonly");
+          const req = tx.objectStore(BADGE_STORE).get(BADGE_KEY);
+          req.onsuccess = () => {
+            const value = req.result;
+            resolve(typeof value === "number" && value > 0 ? value : 0);
+          };
+          req.onerror = () => resolve(0);
+        } catch {
+          resolve(0);
+        }
+      })
+  );
+}
+
+function writeBadgeCount(count) {
+  return openBadgeDb().then(
+    (db) =>
+      new Promise((resolve) => {
+        if (!db) {
+          resolve();
+          return;
+        }
+        try {
+          const tx = db.transaction(BADGE_STORE, "readwrite");
+          tx.objectStore(BADGE_STORE).put(Math.max(0, Math.floor(count)), BADGE_KEY);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => resolve();
+        } catch {
+          resolve();
+        }
+      })
+  );
+}
+
+async function applyRegistrationBadge(count) {
+  const safe = Math.max(0, Math.min(99, Math.floor(count)));
+  try {
+    if (safe <= 0) {
+      if (typeof self.registration.clearAppBadge === "function") {
+        await self.registration.clearAppBadge();
+      }
+    } else if (typeof self.registration.setAppBadge === "function") {
+      await self.registration.setAppBadge(safe);
+    }
+  } catch {
+    /* unsupported */
+  }
+}
+
+async function setAppBadgeCount(count) {
+  await writeBadgeCount(count);
+  await applyRegistrationBadge(count);
+}
+
+async function clearAppBadge() {
+  await writeBadgeCount(0);
+  await applyRegistrationBadge(0);
+}
+
+async function bumpAppBadge(delta) {
+  const next = (await readBadgeCount()) + Math.max(1, Number(delta) || 1);
+  await setAppBadgeCount(next);
+  return next;
+}
+
+async function anyClientVisible() {
+  const clients = await self.clients.matchAll({
+    type: "window",
+    includeUncontrolled: true,
+  });
+  return clients.some((client) => client.visibilityState === "visible");
+}
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
@@ -191,7 +308,14 @@ self.addEventListener("sync", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  let payload = { title: "Giga3 AI", body: "New update available.", url: "/chat/", tag: "giga3-default" };
+  let payload = {
+    title: "Giga3 AI",
+    body: "New update available.",
+    url: "/chat/",
+    tag: "giga3-default",
+    badgeCount: undefined,
+    badgeIncrement: 1,
+  };
   try {
     payload = { ...payload, ...(event.data ? event.data.json() : {}) };
   } catch {
@@ -199,14 +323,28 @@ self.addEventListener("push", (event) => {
   }
   const tag = payload.tag || `giga3-${Date.now()}`;
   event.waitUntil(
-    self.registration.showNotification(payload.title, {
-      body: payload.body,
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
-      tag,
-      renotify: false,
-      data: { url: payload.url || "/chat/", tag },
-    })
+    (async () => {
+      const visible = await anyClientVisible();
+      if (!visible) {
+        if (typeof payload.badgeCount === "number") {
+          await setAppBadgeCount(payload.badgeCount);
+        } else {
+          await bumpAppBadge(payload.badgeIncrement ?? 1);
+        }
+      }
+      await self.registration.showNotification(payload.title, {
+        body: payload.body,
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        tag,
+        renotify: true,
+        data: {
+          url: payload.url || "/chat/",
+          tag,
+          badgeCount: payload.badgeCount,
+        },
+      });
+    })()
   );
 });
 
@@ -214,16 +352,22 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const target = event.notification.data?.url || "/chat/";
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+    (async () => {
+      await clearAppBadge();
+      const clients = await self.clients.matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      });
       for (const client of clients) {
         if ("focus" in client && "navigate" in client) {
-          return client.focus().then(() => client.navigate(target));
+          await client.focus();
+          return client.navigate(target);
         }
         if ("focus" in client) {
           return client.focus();
         }
       }
       return self.clients.openWindow(target);
-    })
+    })()
   );
 });

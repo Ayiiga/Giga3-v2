@@ -54,6 +54,7 @@ export const completeMediaJob = internalMutation({
           body: `Your AI ${job.mediaType} is ready to view.`,
           url: "/media/",
           tag: `generation-${args.jobId}`,
+          badgeIncrement: 1,
         }
       );
 

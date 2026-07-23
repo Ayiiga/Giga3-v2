@@ -24,6 +24,10 @@ type PushPayload = {
   body: string;
   url?: string;
   tag?: string;
+  /** Absolute launcher badge count when known. */
+  badgeCount?: number;
+  /** Increment launcher badge when absolute count is unknown (default 1). */
+  badgeIncrement?: number;
 };
 
 const DEDUP_WINDOW_MS = 5 * 60 * 1000;
@@ -100,6 +104,8 @@ export const dispatchPushNotification = internalAction({
     body: v.string(),
     url: v.optional(v.string()),
     tag: v.optional(v.string()),
+    badgeCount: v.optional(v.number()),
+    badgeIncrement: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     if (!isPushAlertsEnabled()) return { sent: 0, queued: 0 };
@@ -130,6 +136,8 @@ export const dispatchPushNotification = internalAction({
       body: args.body.slice(0, 240),
       url: args.url ?? "/chat/",
       tag,
+      badgeCount: args.badgeCount,
+      badgeIncrement: args.badgeIncrement ?? 1,
     };
 
     let sent = 0;

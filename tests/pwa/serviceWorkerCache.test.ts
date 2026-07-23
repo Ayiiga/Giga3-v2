@@ -3,10 +3,10 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("service worker cache version", () => {
-  it("uses multi-account-upload cache name (v177)", () => {
+  it("uses app-badge-push cache name (v178)", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v177-multi-account-upload"');
-    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v177"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v178-app-badge-push"');
+    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v178"');
     expect(sw).toContain('pathname.startsWith("/wallet/")');
     expect(sw).toContain('pathname.startsWith("/admin/")');
   });
@@ -27,5 +27,17 @@ describe("service worker cache version", () => {
     expect(sensitiveFn).toContain("/payment/");
     expect(sensitiveFn).not.toContain("/chat/");
     expect(sensitiveFn).not.toContain("/gigasocial/");
+  });
+
+  it("bumps launcher badge on push when no visible client", () => {
+    const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
+    expect(sw).toContain("GIGA3_CLEAR_BADGE");
+    expect(sw).toContain("GIGA3_SET_BADGE");
+    expect(sw).toContain("GIGA3_BUMP_BADGE");
+    expect(sw).toContain("setAppBadge");
+    expect(sw).toContain("clearAppBadge");
+    expect(sw).toContain("badgeIncrement");
+    expect(sw).toContain("anyClientVisible");
+    expect(sw).toContain("renotify: true");
   });
 });

@@ -635,6 +635,33 @@ export const processJob = internalAction({
           role: "assistant",
           content: assistantContent,
         });
+
+        // Notify when the user is away — bumps installed PWA launcher badge.
+        if (engineResult.providerId !== "local_fallback") {
+          const isImage = engineResult.requestKind === "image_generation";
+          const chatUrl = `/chat/?c=${encodeURIComponent(job.conversationId)}`;
+          const preview = assistantContent.replace(/\s+/g, " ").trim().slice(0, 120);
+          await ctx.scheduler.runAfter(
+            0,
+            internal.pushNotificationDispatch.dispatchPushNotification,
+            {
+              recipientId: email,
+              category: "generation",
+              title: isImage ? "Image ready" : "AI reply ready",
+              body: preview || (isImage ? "Your generated image is ready." : "Your Giga3 reply is ready."),
+              url: chatUrl,
+              tag: `generation-chat-${args.jobId}`,
+              badgeIncrement: 1,
+            }
+          );
+          await ctx.runMutation(internal.platformNotifications.createNotificationInternal, {
+            userId: email,
+            category: "ai_task",
+            title: isImage ? "Image ready" : "AI reply ready",
+            body: preview || job.content.slice(0, 120),
+            href: chatUrl,
+          });
+        }
       }
 
       if (chargedAi) {

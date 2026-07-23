@@ -1,3 +1,4 @@
+import { internal } from "./_generated/api";
 import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
@@ -93,6 +94,9 @@ export const completeVideoJob = internalMutation({
     videoCreditsCharged: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    const job = await ctx.db.get(args.jobId);
+    if (!job) return;
+
     await ctx.db.patch(args.jobId, {
       status: args.status,
       outputUrl: args.outputUrl,
@@ -103,6 +107,37 @@ export const completeVideoJob = internalMutation({
         ? { videoCreditsCharged: args.videoCreditsCharged }
         : {}),
     });
+
+    if (args.status === "succeeded") {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.pushNotificationDispatch.dispatchPushNotification,
+        {
+          recipientId: job.userId,
+          category: "generation",
+          title: "Video generation complete",
+          body: "Your AI video is ready to view.",
+          url: "/video/",
+          tag: `generation-video-${args.jobId}`,
+          badgeIncrement: 1,
+        }
+      );
+      await ctx.runMutation(internal.platformNotifications.createNotificationInternal, {
+        userId: job.userId,
+        category: "creator",
+        title: "Video ready",
+        body: job.prompt.slice(0, 160),
+        href: "/video/",
+      });
+    } else if (args.status === "failed" && args.errorMessage) {
+      await ctx.runMutation(internal.platformNotifications.createNotificationInternal, {
+        userId: job.userId,
+        category: "ai_task",
+        title: "Video generation failed",
+        body: args.errorMessage.slice(0, 160),
+        href: "/video/",
+      });
+    }
   },
 });
 

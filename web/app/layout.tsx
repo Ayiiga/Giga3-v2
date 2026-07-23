@@ -2,10 +2,11 @@ import { GenerationToastHost } from "@/components/generation/GenerationToastHost
 import { AccessibilityBootstrap } from "@/components/a11y/AccessibilityBootstrap";
 import { ConvexRuntimeBootstrap } from "@/components/providers/ConvexRuntimeBootstrap";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import { ChunkLoadRecoveryBootstrap } from "@/components/pwa/ChunkLoadRecoveryBootstrap";
-import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
+import { AppBadgeSync } from "@/components/pwa/AppBadgeSync";
 import { DeferredPwaChrome } from "@/components/pwa/DeferredPwaChrome";
 import { PwaInstallProvider } from "@/components/pwa/PwaInstallProvider";
+import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
+import { ChunkLoadRecoveryBootstrap } from "@/components/pwa/ChunkLoadRecoveryBootstrap";
 import { PlatformAnalyticsHost } from "@/components/analytics/PlatformAnalyticsHost";
 import { GlobalChatPrefetch } from "@/components/chat/GlobalChatPrefetch";
 import { AuthenticatedChatRedirect } from "@/components/chat/AuthenticatedChatRedirect";
@@ -108,6 +109,7 @@ export default function RootLayout({
           </ThemeProvider>
           <AccessibilityBootstrap />
           <ServiceWorkerRegister />
+          <AppBadgeSync />
           <ChunkLoadRecoveryBootstrap />
           <GlobalChatPrefetch />
           <AuthenticatedChatRedirect />
