@@ -1176,4 +1176,23 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_cohort_activated", ["cohort", "activatedAt"]),
+
+  /** Phase 5 — community daily challenges (gated by phase5.community_growth). */
+  betaDailyChallenges: defineTable({
+    dateKey: v.string(),
+    title: v.string(),
+    description: v.string(),
+    badgeId: v.string(),
+    active: v.boolean(),
+    createdAt: v.number(),
+  }).index("by_dateKey", ["dateKey"]),
+
+  betaChallengeCompletions: defineTable({
+    userId: v.string(),
+    challengeId: v.id("betaDailyChallenges"),
+    dateKey: v.string(),
+    completedAt: v.number(),
+  })
+    .index("by_user_date", ["userId", "dateKey"])
+    .index("by_challenge", ["challengeId"]),
 });

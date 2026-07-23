@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminPhase4ControlsPanel } from "@/components/admin/AdminPhase4ControlsPanel";
+import { AdminPhase5AnalyticsPanel } from "@/components/admin/AdminPhase5AnalyticsPanel";
 import { AdminPhase5BetaPanel } from "@/components/admin/AdminPhase5BetaPanel";
 import { AdminPhase5ControlsPanel } from "@/components/admin/AdminPhase5ControlsPanel";
 import { AdminPhase5FeedbackPanel } from "@/components/admin/AdminPhase5FeedbackPanel";
@@ -136,6 +137,8 @@ function AdminInner() {
         onNotice={(msg) => setNotice(msg)}
         onError={(msg) => setError(msg || null)}
       />
+
+      <AdminPhase5AnalyticsPanel adminCreds={adminCreds} />
 
       <AdminSecurityHealthPanel adminCreds={adminCreds} />
 
