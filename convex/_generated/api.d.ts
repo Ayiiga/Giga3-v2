@@ -88,6 +88,7 @@ import type * as paymentViews from "../paymentViews.js";
 import type * as payments from "../payments.js";
 import type * as paystack from "../paystack.js";
 import type * as paystackConfig from "../paystackConfig.js";
+import type * as phase5Beta from "../phase5Beta.js";
 import type * as platform from "../platform.js";
 import type * as platformActions from "../platformActions.js";
 import type * as platformFeedback from "../platformFeedback.js";
@@ -221,6 +222,7 @@ declare const fullApi: ApiFromModules<{
   payments: typeof payments;
   paystack: typeof paystack;
   paystackConfig: typeof paystackConfig;
+  phase5Beta: typeof phase5Beta;
   platform: typeof platform;
   platformActions: typeof platformActions;
   platformFeedback: typeof platformFeedback;

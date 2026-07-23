@@ -16,6 +16,17 @@
 - Review `/admin` → Phase 5 public beta controls
 - Keep all flags disabled until module PRs land and Impl 10 checklist passes
 
+## Impl 1 — Public beta expansion (`phase5.beta`)
+
+**What shipped**
+- Invite codes by cohort (students, teachers, creators, trusted testers, community leaders)
+- Optional waitlist + admin waitlist workflow
+- `/beta` waitlist / redeem UI (hidden until flag enabled)
+- Admin invite management panel
+- Activation stats (cohort members / onboarded %)
+
+**Default:** OFF — enable `phase5.beta` only after seeding invite codes and passing Impl 10 checklist.
+
 ## Upcoming module releases
 
-Release notes for Impl 1–9 will append below as each flagged PR merges.
+Release notes for Impl 2–9 will append below as each flagged PR merges.
