@@ -1,19 +1,25 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { usePhase5Flags } from "@/hooks/usePhase5Flags";
 import { getSessionToken } from "@/lib/auth";
 import type { FeedbackType } from "@/lib/platform/types";
 import { api } from "convex/_generated/api";
 import { useMutation } from "convex/react";
-import { Bug, Lightbulb, MessageSquare, Star, X } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { Bug, Flag, Lightbulb, MessageSquare, Star, X } from "lucide-react";
+import { FormEvent, useMemo, useState } from "react";
 
-const FEEDBACK_TYPES: { id: FeedbackType; label: string; icon: typeof Bug }[] = [
+const BASE_FEEDBACK_TYPES: { id: FeedbackType; label: string; icon: typeof Bug }[] = [
   { id: "general", label: "Send feedback", icon: MessageSquare },
   { id: "bug", label: "Report bug", icon: Bug },
   { id: "feature", label: "Request feature", icon: Lightbulb },
   { id: "ai_rating", label: "Rate AI response", icon: Star },
   { id: "incorrect_info", label: "Report incorrect info", icon: MessageSquare },
+];
+
+const PHASE5_FEEDBACK_TYPES: { id: FeedbackType; label: string; icon: typeof Bug }[] = [
+  { id: "usability", label: "Usability feedback", icon: Lightbulb },
+  { id: "content_report", label: "Report content", icon: Flag },
 ];
 
 type FeedbackModalProps = {
@@ -31,6 +37,14 @@ export function FeedbackModal({
   messageId,
   conversationId,
 }: FeedbackModalProps) {
+  const phase5 = usePhase5Flags();
+  const feedbackTypes = useMemo(
+    () =>
+      phase5.feedback
+        ? [...BASE_FEEDBACK_TYPES, ...PHASE5_FEEDBACK_TYPES]
+        : BASE_FEEDBACK_TYPES,
+    [phase5.feedback]
+  );
   const [type, setType] = useState<FeedbackType>(defaultType);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -51,7 +65,7 @@ export function FeedbackModal({
       await submitFeedback({
         sessionToken,
         type,
-        title: title || FEEDBACK_TYPES.find((t) => t.id === type)?.label || "Feedback",
+        title: title || feedbackTypes.find((t) => t.id === type)?.label || "Feedback",
         body,
         screenshotDataUrl: screenshot ?? undefined,
         messageId,
@@ -100,7 +114,7 @@ export function FeedbackModal({
         ) : (
           <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
             <div className="flex flex-wrap gap-2">
-              {FEEDBACK_TYPES.map((t) => (
+              {feedbackTypes.map((t) => (
                 <button
                   key={t.id}
                   type="button"

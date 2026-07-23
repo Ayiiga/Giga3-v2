@@ -16,9 +16,13 @@ export type FeedbackType =
   | "bug"
   | "feature"
   | "ai_rating"
-  | "incorrect_info";
+  | "incorrect_info"
+  | "usability"
+  | "content_report";
 
 export type FeedbackStatus = "open" | "reviewing" | "resolved" | "closed";
+
+export type FeedbackPriority = "low" | "normal" | "high" | "critical";
 
 export type UserPreferences = {
   favoriteTools: string[];

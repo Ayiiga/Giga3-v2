@@ -27,6 +27,16 @@
 
 **Default:** OFF — enable `phase5.beta` only after seeding invite codes and passing Impl 10 checklist.
 
+## Impl 2 — User feedback system (`phase5.feedback`)
+
+**What shipped**
+- Expanded categories: usability + content report (flag-gated)
+- Auto priority ranking for admin queue
+- Admin feedback resolution workflow (status + priority)
+- Existing bug/feature/AI rating feedback unchanged when flag is off
+
+**Default:** OFF for expanded types; core feedback modal remains available.
+
 ## Upcoming module releases
 
-Release notes for Impl 2–9 will append below as each flagged PR merges.
+Release notes for Impl 3–9 will append below as each flagged PR merges.
