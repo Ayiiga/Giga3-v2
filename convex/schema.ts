@@ -184,6 +184,23 @@ export const feedbackSubmissionStatusValidator = v.union(
   v.literal("closed")
 );
 
+/** Phase 5 public-beta cohorts (additive; unused when phase5.beta is off). */
+export const betaCohortValidator = v.union(
+  v.literal("existing"),
+  v.literal("trusted_tester"),
+  v.literal("student"),
+  v.literal("teacher"),
+  v.literal("creator"),
+  v.literal("community_leader")
+);
+
+export const betaWaitlistStatusValidator = v.union(
+  v.literal("pending"),
+  v.literal("invited"),
+  v.literal("activated"),
+  v.literal("rejected")
+);
+
 export default defineSchema({
   users: defineTable({
     email: v.string(),
@@ -1106,4 +1123,45 @@ export default defineSchema({
     message: v.optional(v.string()),
     createdAt: v.number(),
   }).index("by_service_created", ["service", "createdAt"]),
+
+  /** Phase 5 — public beta invite codes (gated by phase5.beta). */
+  betaInviteCodes: defineTable({
+    code: v.string(),
+    cohort: betaCohortValidator,
+    maxUses: v.number(),
+    usedCount: v.number(),
+    note: v.optional(v.string()),
+    createdByAdmin: v.optional(v.string()),
+    expiresAt: v.optional(v.number()),
+    active: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_code", ["code"])
+    .index("by_cohort_created", ["cohort", "createdAt"]),
+
+  /** Phase 5 — optional waitlist for controlled growth. */
+  betaWaitlist: defineTable({
+    email: v.string(),
+    cohort: betaCohortValidator,
+    status: betaWaitlistStatusValidator,
+    reason: v.optional(v.string()),
+    inviteCodeId: v.optional(v.id("betaInviteCodes")),
+    userId: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_email", ["email"])
+    .index("by_status_created", ["status", "createdAt"])
+    .index("by_cohort_created", ["cohort", "createdAt"]),
+
+  /** Phase 5 — users activated into a beta cohort. */
+  betaCohortMembers: defineTable({
+    userId: v.string(),
+    cohort: betaCohortValidator,
+    inviteCode: v.optional(v.string()),
+    onboardedAt: v.optional(v.number()),
+    activatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_cohort_activated", ["cohort", "activatedAt"]),
 });
