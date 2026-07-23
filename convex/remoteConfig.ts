@@ -6,14 +6,26 @@ import {
   PHASE4_FLAG_KEYS,
   type Phase4FlagKey,
 } from "./phase4Controls";
+import {
+  PHASE5_FLAG_DEFAULTS,
+  PHASE5_FLAG_KEYS,
+  type Phase5FlagKey,
+} from "./phase5Controls";
 
-const DEFAULT_CONFIG: Record<string, { value: string; description: string }> = {
+const DEFAULT_CONFIG: Record<
+  string,
+  { value: string; description: string; enabled?: boolean }
+> = {
   "onboarding.enabled": { value: "true", description: "Show smart onboarding for new users" },
   "referrals.enabled": { value: "true", description: "Referral program active" },
   "dashboard.v2": { value: "true", description: "Intelligent home dashboard" },
   "search.global": { value: "true", description: "Unified global search" },
   "feedback.screenshots": { value: "true", description: "Allow screenshot attachments" },
-  "growth.leaderboard": { value: "false", description: "Community leaderboard (beta)" },
+  "growth.leaderboard": {
+    value: "false",
+    description: "Community leaderboard (beta)",
+    enabled: false,
+  },
   "gigasocial.economy.minFans": { value: "500", description: "Minimum fans to unlock creator monetization" },
   "gigasocial.economy.viewRewardRate": { value: "0.001", description: "GHS per content view" },
   "gigasocial.economy.watchTimeRate": { value: "0.01", description: "GHS per video watch minute" },
@@ -27,7 +39,13 @@ const DEFAULT_CONFIG: Record<string, { value: string; description: string }> = {
   ...Object.fromEntries(
     Object.entries(PHASE4_FLAG_DEFAULTS).map(([key, def]) => [
       key,
-      { value: def.value, description: def.description },
+      { value: def.value, description: def.description, enabled: def.enabled },
+    ])
+  ),
+  ...Object.fromEntries(
+    Object.entries(PHASE5_FLAG_DEFAULTS).map(([key, def]) => [
+      key,
+      { value: def.value, description: def.description, enabled: def.enabled },
     ])
   ),
 };
@@ -45,12 +63,13 @@ function hashToPercent(input: string): number {
 export const getRemoteConfig = query({
   args: { userId: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const rows = await ctx.db.query("remoteConfigEntries").take(100);
+    const rows = await ctx.db.query("remoteConfigEntries").take(160);
     const map: Record<string, { enabled: boolean; value: string }> = {};
 
     for (const [key, def] of Object.entries(DEFAULT_CONFIG)) {
       const row = rows.find((r) => r.key === key);
-      const enabled = row?.enabled ?? true;
+      // Phase 5 (and any entry with explicit default) may default OFF when unset.
+      const enabled = row?.enabled ?? def.enabled ?? true;
       const rollout = row?.rolloutPercent ?? 100;
       const inRollout =
         !args.userId || rollout >= 100 || hashToPercent(args.userId + key) < rollout;
@@ -118,7 +137,7 @@ export const getEconomyConfigAdmin = query({
   args: adminCredentialArgs,
   handler: async (ctx, args) => {
     await ensureAdminAccess(args);
-    const rows = await ctx.db.query("remoteConfigEntries").take(100);
+    const rows = await ctx.db.query("remoteConfigEntries").take(160);
     return Object.entries(DEFAULT_CONFIG)
       .filter(([key]) => key.startsWith(ECONOMY_CONFIG_PREFIX))
       .map(([key, def]) => {
@@ -172,7 +191,7 @@ export const getPhase4ConfigAdmin = query({
   args: adminCredentialArgs,
   handler: async (ctx, args) => {
     await ensureAdminAccess(args);
-    const rows = await ctx.db.query("remoteConfigEntries").take(100);
+    const rows = await ctx.db.query("remoteConfigEntries").take(160);
     return PHASE4_FLAG_KEYS.map((key) => {
       const def = PHASE4_FLAG_DEFAULTS[key];
       const row = rows.find((r) => r.key === key);
@@ -215,6 +234,66 @@ export const updatePhase4ConfigAdmin = mutation({
       rolloutPercent: Math.max(
         0,
         Math.min(100, args.rolloutPercent ?? existing?.rolloutPercent ?? 100)
+      ),
+      updatedAt: now,
+    };
+    if (existing) {
+      await ctx.db.patch(existing._id, payload);
+    } else {
+      await ctx.db.insert("remoteConfigEntries", { key, ...payload });
+    }
+    return { ok: true, key, enabled: payload.enabled };
+  },
+});
+
+/** Admin: list Phase 5 public-beta flags (defaults OFF when unset). */
+export const getPhase5ConfigAdmin = query({
+  args: adminCredentialArgs,
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    const rows = await ctx.db.query("remoteConfigEntries").take(120);
+    return PHASE5_FLAG_KEYS.map((key) => {
+      const def = PHASE5_FLAG_DEFAULTS[key];
+      const row = rows.find((r) => r.key === key);
+      return {
+        key,
+        value: row?.value ?? def.value,
+        description: def.description,
+        enabled: row?.enabled ?? def.enabled,
+        rolloutPercent: row?.rolloutPercent ?? 0,
+      };
+    });
+  },
+});
+
+/** Admin: enable/disable a Phase 5 module flag (no schema change). */
+export const updatePhase5ConfigAdmin = mutation({
+  args: {
+    ...adminCredentialArgs,
+    key: v.string(),
+    enabled: v.boolean(),
+    value: v.optional(v.string()),
+    rolloutPercent: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    if (!PHASE5_FLAG_KEYS.includes(args.key as Phase5FlagKey)) {
+      throw new Error("Invalid Phase 5 config key.");
+    }
+    const key = args.key as Phase5FlagKey;
+    const def = PHASE5_FLAG_DEFAULTS[key];
+    const existing = await ctx.db
+      .query("remoteConfigEntries")
+      .withIndex("by_key", (q) => q.eq("key", key))
+      .first();
+    const now = Date.now();
+    const payload = {
+      value: (args.value?.trim() || existing?.value || def.value).slice(0, 80),
+      description: def.description,
+      enabled: args.enabled,
+      rolloutPercent: Math.max(
+        0,
+        Math.min(100, args.rolloutPercent ?? existing?.rolloutPercent ?? 0)
       ),
       updatedAt: now,
     };

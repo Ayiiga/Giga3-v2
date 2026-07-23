@@ -40,7 +40,11 @@ export function useRemoteConfig() {
 
   const isEnabled = useCallback(
     (key: string): boolean => {
-      return config?.[key]?.enabled ?? true;
+      const entry = config?.[key];
+      if (entry?.enabled !== undefined) return Boolean(entry.enabled);
+      // Phase 5 modules default OFF when remote config has not loaded yet.
+      if (key.startsWith("phase5.")) return false;
+      return true;
     },
     [config]
   );
