@@ -45,6 +45,11 @@ import { POST_TYPE_OPTIONS, type SocialPostTypeId } from "@/lib/gigasocial/secti
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { useMutation, useQuery } from "convex/react";
 import { getUserEmail } from "@/lib/auth";
+import { GigaSocialAccountSwitcher } from "@/components/gigasocial/accounts/GigaSocialAccountSwitcher";
+import {
+  resolveActiveSocialAccount,
+  type SocialAccountSummary,
+} from "@/lib/gigasocial/activeSocialAccount";
 import { MessageCircle, SquarePen, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -99,6 +104,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const [offlineSnapshot, setOfflineSnapshot] = useState<SocialPost[] | null>(() =>
     typeof window !== "undefined" ? loadFeedSnapshot() : null
   );
+  const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [extraPosts, setExtraPosts] = useState<SocialPost[]>([]);
   const [composerOpen, setComposerOpen] = useState(false);
@@ -154,6 +160,20 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   );
 
   const myHandle = useMemo(() => handleFromEmail(getUserEmail()), []);
+  const accountsQuery = useQuery(
+    api.gigaSocial.listMySocialAccounts,
+    sessionToken && effectiveOnline ? { sessionToken } : "skip"
+  );
+  const accounts = useMemo(
+    () => (accountsQuery?.accounts ?? []) as SocialAccountSummary[],
+    [accountsQuery?.accounts]
+  );
+
+  useEffect(() => {
+    if (!accounts.length) return;
+    const active = resolveActiveSocialAccount(accounts);
+    setActiveProfileId(active?.profileId ?? null);
+  }, [accounts]);
 
   const createPost = useMutation(api.gigaSocial.createPost);
   const updatePost = useMutation(api.gigaSocial.updatePost);
@@ -474,6 +494,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       mediaItems?: SocialPostMediaItemInput[];
       communitySlug?: string;
       visibility?: "public" | "followers";
+      profileId?: string;
     }) => {
       if (!sessionToken) throw new Error("Sign in to post.");
       if (!effectiveOnline && features.enableSocialOutbox) {
@@ -498,12 +519,16 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         mediaItems: args.mediaItems,
         communitySlug: args.communitySlug,
         visibility: args.visibility,
+        profileId: (args.profileId ?? activeProfileId ?? undefined) as
+          | Id<"socialProfiles">
+          | undefined,
       });
       resetFeedPagination();
       setComposeAction(undefined);
       setRemixSource(null);
     },
     [
+      activeProfileId,
       createPost,
       effectiveOnline,
       features.enableSocialOutbox,
@@ -562,6 +587,9 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     remixSource: remixSource ?? undefined,
     enableAIAssistant: features.enableAIEditing,
     enableMediaStudio: features.enableMediaStudio,
+    profileId: activeProfileId ?? undefined,
+    accounts,
+    onActiveProfileChange: setActiveProfileId,
     onSubmit: handleCreate,
     onPosted: closeComposer,
   };

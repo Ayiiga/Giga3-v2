@@ -31,23 +31,61 @@ import { ensureMonetizationUnlock, isMonetizationUnlocked, parsePrivacySettings 
 import { consumeSocialWriteRateLimit } from "./socialRateLimit";
 
 const SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC = 15;
+export const MAX_SOCIAL_ACCOUNTS_PER_USER = 3;
 
-async function getProfileDoc(
+async function listProfileDocs(
   ctx: { db: import("./_generated/server").QueryCtx["db"] },
   userId: string
 ) {
   return ctx.db
     .query("socialProfiles")
     .withIndex("by_user", (q) => q.eq("userId", userId))
-    .first();
+    .collect();
+}
+
+async function getMainProfileDoc(
+  ctx: { db: import("./_generated/server").QueryCtx["db"] },
+  userId: string
+) {
+  const profiles = await listProfileDocs(ctx, userId);
+  if (!profiles.length) return null;
+  const main = profiles.find((profile) => profile.isMain === true);
+  if (main) return main;
+  return [...profiles].sort((a, b) => a.createdAt - b.createdAt)[0] ?? null;
+}
+
+async function getProfileDoc(
+  ctx: { db: import("./_generated/server").QueryCtx["db"] },
+  userId: string
+) {
+  return getMainProfileDoc(ctx, userId);
+}
+
+async function getOwnedProfileDoc(
+  ctx: { db: import("./_generated/server").QueryCtx["db"] },
+  userId: string,
+  profileId: Id<"socialProfiles"> | undefined
+) {
+  if (!profileId) return getMainProfileDoc(ctx, userId);
+  const profile = await ctx.db.get(profileId);
+  if (!profile || profile.userId !== userId) {
+    throw new Error("That creator account was not found.");
+  }
+  return profile;
 }
 
 async function getOrCreateProfile(
   ctx: { db: import("./_generated/server").MutationCtx["db"] },
   userId: string
 ) {
-  const existing = await getProfileDoc(ctx, userId);
-  if (existing) return existing;
+  const existing = await getMainProfileDoc(ctx, userId);
+  if (existing) {
+    if (existing.isMain !== true) {
+      await ctx.db.patch(existing._id, { isMain: true, updatedAt: Date.now() });
+      return (await ctx.db.get(existing._id))!;
+    }
+    return existing;
+  }
 
   const local = userId.split("@")[0] ?? "user";
   const handle = normalizeSocialHandle(local) || `user-${Date.now()}`;
@@ -61,6 +99,8 @@ async function getOrCreateProfile(
     interests: [],
     achievementsJson: "[]",
     gamificationJson: defaultGamificationJson(),
+    isMain: true,
+    accountLabel: "Main",
     createdAt: now,
     updatedAt: now,
   });
@@ -100,12 +140,16 @@ function parseAchievementsJson(raw: string | undefined | null): string[] {
 
 async function resolveAuthor(
   ctx: { db: import("./_generated/server").QueryCtx["db"] },
-  userId: string
+  userId: string,
+  profileId?: Id<"socialProfiles">
 ) {
-  const profile = await ctx.db
-    .query("socialProfiles")
-    .withIndex("by_user", (q) => q.eq("userId", userId))
-    .first();
+  if (profileId) {
+    const specific = await ctx.db.get(profileId);
+    if (specific && specific.userId === userId) {
+      return toPublicAuthor(specific, userId, { userId });
+    }
+  }
+  const profile = await getMainProfileDoc(ctx, userId);
   return toPublicAuthor(profile, userId, { userId });
 }
 
@@ -390,16 +434,17 @@ export const listFeed = query({
 
     const posts = await Promise.all(
       slice.map(async (post) => {
-        let author = authorCache.get(post.authorId);
+        const cacheKey = `${post.authorId}:${post.profileId ?? "main"}`;
+        let author = authorCache.get(cacheKey);
         if (!author) {
-          const resolved = await resolveAuthor(ctx, post.authorId);
+          const resolved = await resolveAuthor(ctx, post.authorId, post.profileId);
           author = enrichAuthorForViewer(
             resolved,
             post.authorId,
             userId,
             supportingAuthors
           );
-          authorCache.set(post.authorId, author);
+          authorCache.set(cacheKey, author);
         }
         return toPublicPost(post, author, {
           likedByMe: liked.has(post._id),
@@ -535,7 +580,7 @@ export const listDiscover = query({
 
     const posts = await Promise.all(
       slice.map(async (post) => {
-        const resolved = await resolveAuthor(ctx, post.authorId);
+        const resolved = await resolveAuthor(ctx, post.authorId, post.profileId);
         const author = enrichAuthorForViewer(
           resolved,
           post.authorId,
@@ -619,14 +664,35 @@ export const getMyProfile = query({
       const recentPosts = [];
       for (const post of visiblePosts) {
         try {
-          recentPosts.push(await toPublicPost(post, author));
+          const postAuthor =
+            post.profileId && post.profileId !== profile._id
+              ? await resolveAuthor(ctx, userId, post.profileId)
+              : author;
+          recentPosts.push(await toPublicPost(post, postAuthor));
         } catch {
           /* skip posts that fail to serialize */
         }
       }
 
+      const allAccounts = await listProfileDocs(ctx, userId);
+      const accounts = [...allAccounts]
+        .sort((a, b) => {
+          if (a.isMain === true && b.isMain !== true) return -1;
+          if (b.isMain === true && a.isMain !== true) return 1;
+          return a.createdAt - b.createdAt;
+        })
+        .map((row) => ({
+          profileId: row._id,
+          displayName: row.displayName,
+          handle: row.handle,
+          avatarUrl: row.avatarUrl,
+          isMain: row.isMain === true || allAccounts.length === 1,
+          accountLabel: row.accountLabel ?? (row.isMain === true ? "Main" : "Creator"),
+        }));
+
       return {
         profile: {
+          profileId: profile._id,
           displayName: profile.displayName?.trim() || fallback.displayName,
           handle: profile.handle?.trim() || fallback.handle,
           bio: profile.bio ?? "",
@@ -639,7 +705,11 @@ export const getMyProfile = query({
           postCount: visiblePosts.length,
           fanCount,
           supportingCount,
+          isMain: true,
+          accountLabel: profile.accountLabel ?? "Main",
         },
+        accounts,
+        maxAccounts: MAX_SOCIAL_ACCOUNTS_PER_USER,
         recentPosts,
       };
     } catch (error) {
@@ -934,7 +1004,7 @@ export const listBookmarks = query({
       marks.map(async (mark) => {
         const post = await ctx.db.get(mark.postId);
         if (!post || post.deletedAt) return null;
-        const author = await resolveAuthor(ctx, post.authorId);
+        const author = await resolveAuthor(ctx, post.authorId, post.profileId);
         return toPublicPost(post, author, { bookmarkedByMe: true });
       })
     );
@@ -946,6 +1016,7 @@ export const listBookmarks = query({
 export const upsertMyProfile = mutation({
   args: {
     sessionToken: v.string(),
+    profileId: v.optional(v.id("socialProfiles")),
     displayName: v.optional(v.string()),
     handle: v.optional(v.string()),
     bio: v.optional(v.string()),
@@ -954,10 +1025,14 @@ export const upsertMyProfile = mutation({
     skills: v.optional(v.array(v.string())),
     interests: v.optional(v.array(v.string())),
     privacySettingsJson: v.optional(v.string()),
+    accountLabel: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
-    const profile = await getOrCreateProfile(ctx, userId);
+    const profile = args.profileId
+      ? await getOwnedProfileDoc(ctx, userId, args.profileId)
+      : await getOrCreateProfile(ctx, userId);
+    if (!profile) throw new Error("Creator account not found.");
     const now = Date.now();
 
     let handle = profile.handle;
@@ -968,7 +1043,7 @@ export const upsertMyProfile = mutation({
         .query("socialProfiles")
         .withIndex("by_handle", (q) => q.eq("handle", next))
         .first();
-      if (clash && clash.userId !== userId) {
+      if (clash && clash._id !== profile._id) {
         throw new Error("Handle is already taken.");
       }
       handle = next;
@@ -992,10 +1067,103 @@ export const upsertMyProfile = mutation({
         args.privacySettingsJson !== undefined
           ? args.privacySettingsJson
           : profile.privacySettingsJson,
+      accountLabel:
+        args.accountLabel !== undefined
+          ? args.accountLabel.trim().slice(0, 40) || profile.accountLabel
+          : profile.accountLabel,
       updatedAt: now,
     });
 
-    return { ok: true };
+    return { ok: true, profileId: profile._id };
+  },
+});
+
+export const listMySocialAccounts = query({
+  args: sessionArgs,
+  handler: async (ctx, args) => {
+    try {
+      const userId = await requireSession(args.sessionToken);
+      const profiles = await listProfileDocs(ctx, userId);
+      const sorted = [...profiles].sort((a, b) => {
+        if (a.isMain === true && b.isMain !== true) return -1;
+        if (b.isMain === true && a.isMain !== true) return 1;
+        return a.createdAt - b.createdAt;
+      });
+      return {
+        maxAccounts: MAX_SOCIAL_ACCOUNTS_PER_USER,
+        accounts: sorted.map((profile) => ({
+          profileId: profile._id,
+          displayName: profile.displayName,
+          handle: profile.handle,
+          avatarUrl: profile.avatarUrl,
+          isMain: profile.isMain === true || sorted.length === 1,
+          accountLabel: profile.accountLabel ?? (profile.isMain === true ? "Main" : "Creator"),
+        })),
+      };
+    } catch {
+      return { maxAccounts: MAX_SOCIAL_ACCOUNTS_PER_USER, accounts: [] };
+    }
+  },
+});
+
+export const createSocialAccount = mutation({
+  args: {
+    sessionToken: v.string(),
+    displayName: v.string(),
+    handle: v.string(),
+    accountLabel: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    await getOrCreateProfile(ctx, userId);
+    const existing = await listProfileDocs(ctx, userId);
+    if (existing.length >= MAX_SOCIAL_ACCOUNTS_PER_USER) {
+      throw new Error(`You can create up to ${MAX_SOCIAL_ACCOUNTS_PER_USER} creator accounts.`);
+    }
+    const handle = normalizeSocialHandle(args.handle);
+    if (!handle) throw new Error("Handle is required.");
+    const clash = await ctx.db
+      .query("socialProfiles")
+      .withIndex("by_handle", (q) => q.eq("handle", handle))
+      .first();
+    if (clash) throw new Error("Handle is already taken.");
+    const now = Date.now();
+    const displayName = args.displayName.trim().slice(0, 80) || handle;
+    const id = await ctx.db.insert("socialProfiles", {
+      userId,
+      displayName,
+      handle,
+      bio: "",
+      skills: [],
+      interests: [],
+      achievementsJson: "[]",
+      gamificationJson: defaultGamificationJson(),
+      isMain: false,
+      accountLabel: (args.accountLabel?.trim().slice(0, 40) || "Creator").slice(0, 40),
+      createdAt: now,
+      updatedAt: now,
+    });
+    return { profileId: id, handle, displayName };
+  },
+});
+
+export const setMainSocialAccount = mutation({
+  args: {
+    sessionToken: v.string(),
+    profileId: v.id("socialProfiles"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    const target = await getOwnedProfileDoc(ctx, userId, args.profileId);
+    if (!target) throw new Error("Creator account not found.");
+    const now = Date.now();
+    const profiles = await listProfileDocs(ctx, userId);
+    for (const profile of profiles) {
+      const nextMain = profile._id === target._id;
+      if (profile.isMain === nextMain) continue;
+      await ctx.db.patch(profile._id, { isMain: nextMain, updatedAt: now });
+    }
+    return { ok: true, profileId: target._id };
   },
 });
 
@@ -1008,6 +1176,7 @@ export const createPost = mutation({
     mediaItems: v.optional(v.array(socialPostMediaItemValidator)),
     communitySlug: v.optional(v.string()),
     visibility: v.optional(v.union(v.literal("public"), v.literal("followers"))),
+    profileId: v.optional(v.id("socialProfiles")),
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
@@ -1087,7 +1256,10 @@ export const createPost = mutation({
       if (!member) throw new Error("Join the community before posting.");
     }
 
-    const profile = await getOrCreateProfile(ctx, userId);
+    const profile = args.profileId
+      ? await getOwnedProfileDoc(ctx, userId, args.profileId)
+      : await getOrCreateProfile(ctx, userId);
+    if (!profile) throw new Error("Creator account not found.");
     const now = Date.now();
     const mediaUrls = mediaItems.map((m) => m.url);
     const primaryVideo = mediaItems.find((m) => m.type === "video");
@@ -1096,6 +1268,7 @@ export const createPost = mutation({
 
     const postId = await ctx.db.insert("socialPosts", {
       authorId: userId,
+      profileId: profile._id,
       body,
       mediaUrl: mediaUrls[0],
       mediaUrls: mediaUrls.length ? mediaUrls : undefined,
@@ -1340,7 +1513,7 @@ export const getPublicPost = query({
     if (!post || post.deletedAt) return null;
     if (post.visibility === "followers") return null;
 
-    const author = await resolveAuthor(ctx, post.authorId);
+    const author = await resolveAuthor(ctx, post.authorId, post.profileId);
     return toPublicPost(post, author);
   },
 });
@@ -1354,7 +1527,7 @@ export const getPublicPostOgBundle = internalQuery({
     if (!post || post.deletedAt) return null;
     if (post.visibility === "followers") return null;
 
-    const author = await resolveAuthor(ctx, post.authorId);
+    const author = await resolveAuthor(ctx, post.authorId, post.profileId);
     return {
       post: toPublicPost(post, author),
       mediaMetaJson: post.mediaMetaJson,

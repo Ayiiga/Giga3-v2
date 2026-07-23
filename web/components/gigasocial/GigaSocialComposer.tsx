@@ -30,6 +30,8 @@ import {
 } from "@/lib/gigasocial/mediaUpload";
 import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
 import { GigaSocialComposerMeta } from "@/components/gigasocial/composer/GigaSocialComposerMeta";
+import { GigaSocialAccountSwitcher } from "@/components/gigasocial/accounts/GigaSocialAccountSwitcher";
+import type { SocialAccountSummary } from "@/lib/gigasocial/activeSocialAccount";
 import { GigaSocialCreateMediaMenu, type CreateMediaAction } from "@/components/gigasocial/GigaSocialCreateMediaMenu";
 import { CreatorTemplateQuickPick } from "@/components/gigasocial/feed/CreatorTemplateQuickPick";
 import { GigaSocialAIAssistant } from "@/components/gigasocial/ai/GigaSocialAIAssistant";
@@ -102,7 +104,12 @@ interface GigaSocialComposerProps {
     mediaItems?: SocialPostMediaItemInput[];
     communitySlug?: string;
     visibility?: "public" | "followers";
+    profileId?: string;
   }) => Promise<void>;
+  /** Active multi-account profile for this post. */
+  profileId?: string;
+  accounts?: SocialAccountSummary[];
+  onActiveProfileChange?: (profileId: string) => void;
 }
 
 export const GigaSocialComposer = memo(function GigaSocialComposer({
@@ -116,6 +123,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   enableAIAssistant = false,
   enableMediaStudio = false,
   compact = false,
+  profileId,
+  accounts,
+  onActiveProfileChange,
   onPosted,
   onFullscreenFlowChange,
   onSubmit,
@@ -559,24 +569,26 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         });
         mediaItems = [uploaded];
       } else if (pendingImages.length) {
-        const uploadedImages = await uploadSocialImages(
-          uploadDeps,
-          pendingImages.map((image) => image.file),
-          {
-            filterId: previewFilterId === "none" ? undefined : previewFilterId,
-            signal: controller.signal,
-            onProgress: (_index, progress) => setUploadPercent(progress.percent),
-          }
-        );
+        const imageFiles = pendingImages.map((image) => image.file);
+        const imageUpload = uploadSocialImages(uploadDeps, imageFiles, {
+          filterId: previewFilterId === "none" ? undefined : previewFilterId,
+          signal: controller.signal,
+          fastCompress: true,
+          onProgress: (_index, progress) => setUploadPercent(progress.percent),
+        });
+        const audioUpload = pendingAudio
+          ? uploadSocialAudio(uploadDeps, pendingAudio.file, {
+              signal: controller.signal,
+              maxDurationSec: SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC,
+              onProgress: (progress) => setUploadPercent(progress.percent),
+            })
+          : null;
+        const [uploadedImages, uploadedAudio] = await Promise.all([
+          imageUpload,
+          audioUpload,
+        ]);
         mediaItems = [...uploadedImages];
-        if (pendingAudio) {
-          const uploadedAudio = await uploadSocialAudio(uploadDeps, pendingAudio.file, {
-            signal: controller.signal,
-            maxDurationSec: SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC,
-            onProgress: (progress) => setUploadPercent(progress.percent),
-          });
-          mediaItems.push(uploadedAudio);
-        }
+        if (uploadedAudio) mediaItems.push(uploadedAudio);
       }
 
       let finalBody = body.trim();
@@ -593,6 +605,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         mediaItems,
         communitySlug,
         visibility,
+        profileId,
       });
 
       setBody("");
@@ -659,6 +672,14 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       <label htmlFor="gigasocial-caption" className="sr-only">
         Post caption
       </label>
+      {accounts && accounts.length > 1 && onActiveProfileChange ? (
+        <GigaSocialAccountSwitcher
+          accounts={accounts}
+          activeProfileId={profileId ?? null}
+          onChange={onActiveProfileChange}
+          compact={compact}
+        />
+      ) : null}
       <GigaSocialComposerMeta
         location={locationTag}
         onLocationChange={setLocationTag}

@@ -425,6 +425,8 @@ export async function uploadSocialImages(
     filterId?: string;
     onProgress?: (index: number, progress: SocialUploadProgress) => void;
     signal?: AbortSignal;
+    /** Faster mobile uploads — smaller bytes over the wire. */
+    fastCompress?: boolean;
   }
 ): Promise<SocialPostMediaItemInput[]> {
   if (!files.length) return [];
@@ -434,16 +436,13 @@ export async function uploadSocialImages(
 
   const client = isSupabaseConfigured() ? requireSupabaseClient() : null;
   const supabaseUid = client ? await getSupabaseUserId(client) : null;
-  const results: SocialPostMediaItemInput[] = [];
+  const compressOpts = options?.fastCompress
+    ? { maxDimension: 1280, quality: 0.72, maxBytes: SOCIAL_MAX_IMAGE_BYTES }
+    : { maxDimension: 1440, quality: 0.78, maxBytes: SOCIAL_MAX_IMAGE_BYTES };
 
-  for (let index = 0; index < files.length; index += 1) {
-    const file = files[index];
+  const uploadOne = async (file: File, index: number): Promise<SocialPostMediaItemInput> => {
     validateImageFile(file);
-    const compressed = await compressImageFile(file, {
-      maxDimension: 1920,
-      quality: 0.86,
-      maxBytes: SOCIAL_MAX_IMAGE_BYTES,
-    });
+    const compressed = await compressImageFile(file, compressOpts);
 
     if (client && supabaseUid) {
       const objectPath = buildUserStoragePath(supabaseUid, file.name);
@@ -456,27 +455,39 @@ export async function uploadSocialImages(
       });
       if (directUrl) {
         options?.onProgress?.(index, { loaded: 1, total: 1, percent: 100 });
-        results.push({
+        return {
           url: directUrl,
           type: "image",
           storagePath: objectPath,
           storageBucket: bucket,
           filterId: options?.filterId,
-        });
-        continue;
+        };
       }
     }
 
-    const uploaded = await uploadViaPrepared(deps, {
+    return uploadViaPrepared(deps, {
       file: new File([compressed.blob], file.name, { type: compressed.mimeType }),
       kind: "image",
       filterId: options?.filterId,
       onProgress: (progress) => options?.onProgress?.(index, progress),
       signal: options?.signal,
     });
-    results.push(uploaded);
+  };
+
+  // Parallel uploads (pool of 3) — major win for multi-photo posts on mobile.
+  const concurrency = Math.min(3, files.length);
+  const results: SocialPostMediaItemInput[] = new Array(files.length);
+  let nextIndex = 0;
+
+  async function worker() {
+    while (nextIndex < files.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      results[index] = await uploadOne(files[index], index);
+    }
   }
 
+  await Promise.all(Array.from({ length: concurrency }, () => worker()));
   return results;
 }
 
@@ -499,14 +510,23 @@ export async function uploadSocialVideo(
     throw new Error("Could not verify video duration. Try another file.");
   }
 
-  const thumbnailDataUrl = await generateVideoThumbnail(file);
-  let thumbnailUrl: string | undefined;
-  if (thumbnailDataUrl) {
-    thumbnailUrl =
-      (await uploadVideoThumbnail(deps, thumbnailDataUrl, file.name)) ?? thumbnailDataUrl;
-  }
   const client = isSupabaseConfigured() ? requireSupabaseClient() : null;
   const supabaseUid = client ? await getSupabaseUserId(client) : null;
+
+  // Start the main video upload immediately; generate/upload thumbnail in parallel.
+  const thumbnailPromise = (async (): Promise<string | undefined> => {
+    const thumbnailDataUrl = await generateVideoThumbnail(file);
+    if (!thumbnailDataUrl) return undefined;
+    try {
+      return (
+        (await uploadVideoThumbnail(deps, thumbnailDataUrl, file.name)) ?? thumbnailDataUrl
+      );
+    } catch {
+      return thumbnailDataUrl;
+    }
+  })();
+
+  let videoResult: SocialPostMediaItemInput | null = null;
 
   if (client && supabaseUid) {
     const objectPath = buildUserStoragePath(supabaseUid, file.name);
@@ -519,25 +539,31 @@ export async function uploadSocialVideo(
     });
     if (directUrl) {
       options?.onProgress?.({ loaded: 1, total: 1, percent: 100 });
-      return {
+      videoResult = {
         url: directUrl,
         type: "video",
         durationSec,
-        thumbnailUrl,
         storagePath: objectPath,
         storageBucket: bucket,
       };
     }
   }
 
-  return uploadViaPrepared(deps, {
-    file,
-    kind: "video",
-    durationSec,
-    thumbnailUrl,
-    onProgress: options?.onProgress,
-    signal: options?.signal,
-  });
+  if (!videoResult) {
+    videoResult = await uploadViaPrepared(deps, {
+      file,
+      kind: "video",
+      durationSec,
+      onProgress: options?.onProgress,
+      signal: options?.signal,
+    });
+  }
+
+  const thumbnailUrl = await thumbnailPromise;
+  return {
+    ...videoResult,
+    thumbnailUrl: thumbnailUrl ?? videoResult.thumbnailUrl,
+  };
 }
 
 export async function uploadSocialAudio(

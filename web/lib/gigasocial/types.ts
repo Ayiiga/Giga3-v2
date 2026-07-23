@@ -74,6 +74,7 @@ export type SocialGamification = {
 };
 
 export type SocialProfileView = {
+  profileId?: string;
   displayName: string;
   handle: string;
   bio: string;
@@ -95,4 +96,6 @@ export type SocialProfileView = {
   userId?: string;
   likesReceived?: number;
   aiCreationsCount?: number;
+  isMain?: boolean;
+  accountLabel?: string;
 };
