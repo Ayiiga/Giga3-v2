@@ -28,6 +28,8 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
   const ensureMyProfile = useMutation(api.gigaSocial.ensureMyProfile);
   const features = useMemo(() => getGigaSocialFeatures(), []);
   const upsert = useMutation(api.gigaSocial.upsertMyProfile);
+  const createSocialAccount = useMutation(api.gigaSocial.createSocialAccount);
+  const setMainSocialAccount = useMutation(api.gigaSocial.setMainSocialAccount);
   const updatePost = useMutation(api.gigaSocial.updatePost);
   const toggleLike = useMutation(api.gigaSocial.toggleLike);
   const toggleBookmark = useMutation(api.gigaSocial.toggleBookmark);
@@ -50,6 +52,9 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
   const [uploadPercent, setUploadPercent] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [newHandle, setNewHandle] = useState("");
+  const [newDisplayName, setNewDisplayName] = useState("");
+  const [creatingAccount, setCreatingAccount] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const uploadDeps = useMemo(
@@ -64,6 +69,15 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
   const profile = data?.profile;
   const posts = (data?.recentPosts ?? []) as SocialPost[];
   const gamification = profile?.gamification;
+  const accounts = (data?.accounts ?? []) as Array<{
+    profileId: string;
+    displayName: string;
+    handle: string;
+    avatarUrl?: string;
+    isMain: boolean;
+    accountLabel: string;
+  }>;
+  const maxAccounts = data?.maxAccounts ?? 3;
 
   useEffect(() => {
     if (!profile || editing) return;
@@ -182,6 +196,9 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
 
       await upsert({
         sessionToken,
+        profileId: (profile as { profileId?: string }).profileId as
+          | Id<"socialProfiles">
+          | undefined,
         displayName: trimmedName,
         handle: trimmedHandle,
         bio: bio.trim(),
@@ -273,6 +290,105 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
             {success}
           </p>
         )}
+
+        <div className="mt-4 rounded-xl border border-border/80 bg-muted/10 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-semibold text-foreground">
+              Creator accounts ({accounts.length}/{maxAccounts})
+            </p>
+            <p className="text-[11px] text-muted">One main · up to three total</p>
+          </div>
+          <ul className="mt-2 space-y-1.5">
+            {(accounts.length ? accounts : [
+              {
+                profileId: "current",
+                displayName: profile.displayName,
+                handle: profile.handle,
+                isMain: true,
+                accountLabel: "Main",
+              },
+            ]).map((account) => (
+              <li
+                key={account.profileId}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-white px-2.5 py-2 text-sm"
+              >
+                <span className="min-w-0">
+                  <span className="font-medium text-foreground">@{account.handle}</span>
+                  <span className="ml-2 text-xs text-muted">
+                    {account.accountLabel}
+                    {account.isMain ? " · Main" : ""}
+                  </span>
+                </span>
+                {!account.isMain && account.profileId !== "current" ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="min-h-8 text-xs"
+                    disabled={busy}
+                    onClick={() => {
+                      void setMainSocialAccount({
+                        sessionToken,
+                        profileId: account.profileId as Id<"socialProfiles">,
+                      })
+                        .then(() => setSuccess(`@${account.handle} is now your main account.`))
+                        .catch((e) =>
+                          setError(e instanceof Error ? e.message : "Could not set main account.")
+                        );
+                    }}
+                  >
+                    Make main
+                  </Button>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+          {accounts.length < maxAccounts ? (
+            <div className="mt-3 space-y-2 border-t border-border/70 pt-3">
+              <p className="text-[11px] text-muted">Add another creator identity</p>
+              <div className="flex flex-wrap gap-2">
+                <input
+                  value={newDisplayName}
+                  onChange={(e) => setNewDisplayName(e.target.value)}
+                  placeholder="Display name"
+                  className="min-h-9 min-w-[8rem] flex-1 rounded-lg border border-border px-2 text-sm"
+                />
+                <input
+                  value={newHandle}
+                  onChange={(e) => setNewHandle(e.target.value)}
+                  placeholder="handle"
+                  className="min-h-9 min-w-[8rem] flex-1 rounded-lg border border-border px-2 text-sm"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={creatingAccount || busy || !newHandle.trim() || !newDisplayName.trim()}
+                  onClick={() => {
+                    setCreatingAccount(true);
+                    setError(null);
+                    void createSocialAccount({
+                      sessionToken,
+                      displayName: newDisplayName.trim(),
+                      handle: newHandle.trim(),
+                    })
+                      .then(() => {
+                        setNewDisplayName("");
+                        setNewHandle("");
+                        setSuccess("Creator account added.");
+                      })
+                      .catch((e) =>
+                        setError(e instanceof Error ? e.message : "Could not add account.")
+                      )
+                      .finally(() => setCreatingAccount(false));
+                  }}
+                >
+                  {creatingAccount ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  Add account
+                </Button>
+              </div>
+            </div>
+          ) : null}
+        </div>
 
         {editing ? (
           <form

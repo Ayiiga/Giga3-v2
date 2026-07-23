@@ -742,6 +742,9 @@ export default defineSchema({
     gamificationJson: v.optional(v.string()),
     privacySettingsJson: v.optional(v.string()),
     economyJson: v.optional(v.string()),
+    /** Up to 3 profiles per userId — exactly one should be main. */
+    isMain: v.optional(v.boolean()),
+    accountLabel: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -750,6 +753,8 @@ export default defineSchema({
 
   socialPosts: defineTable({
     authorId: v.string(),
+    /** Optional face for multi-account creators (must belong to authorId). */
+    profileId: v.optional(v.id("socialProfiles")),
     body: v.string(),
     mediaUrl: v.optional(v.string()),
     mediaUrls: v.optional(v.array(v.string())),
