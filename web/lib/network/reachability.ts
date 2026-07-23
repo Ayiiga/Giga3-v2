@@ -2,8 +2,9 @@
 
 import { getConvexUrl } from "@/lib/convex";
 
-const PROBE_TIMEOUT_MS = 6_000;
-const PROBE_CACHE_MS = 12_000;
+/** Generous timeout — 3G/H+ often needs >6s; aborting early caused false offline. */
+const PROBE_TIMEOUT_MS = 14_000;
+const PROBE_CACHE_MS = 20_000;
 
 let lastProbeAt = 0;
 let lastProbeResult = true;

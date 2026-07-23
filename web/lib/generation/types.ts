@@ -41,4 +41,4 @@ export const CHAT_REPLY_INCOMPLETE_ERROR =
   "AI could not complete this reply. Your message was saved — please try again.";
 
 export const CHAT_REPLY_TIMEOUT_ERROR =
-  "Reply is taking longer than expected. Your message was saved — please try again or check your connection.";
+  "Reply is taking longer than expected. Your message was saved — please wait a moment or try again.";

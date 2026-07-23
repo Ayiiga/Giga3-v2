@@ -515,7 +515,7 @@ export function useSupabaseChatPlatform() {
         await enqueueOutbox(entry);
         registerChatOutboxSync();
         await refreshOutboxCount();
-        setError("Offline — message queued and will send when you're back online.");
+        // Keep pending bubble; outbox flush retries silently in the background.
         return;
       }
 

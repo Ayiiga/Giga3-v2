@@ -1,6 +1,6 @@
-/** App icon badge + push alerts for social/AI — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v178-app-badge-push";
-const NEXT_STATIC_CACHE = "giga3-next-static-v178";
+/** Silent network chrome — refresh installed PWAs after badge + outbox work. */
+const CACHE_NAME = "giga3-shell-v179-silent-network";
+const NEXT_STATIC_CACHE = "giga3-next-static-v179";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";
