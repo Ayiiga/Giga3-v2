@@ -11,6 +11,11 @@ import {
   PHASE5_FLAG_KEYS,
   type Phase5FlagKey,
 } from "./phase5Controls";
+import {
+  PHASE6_FLAG_DEFAULTS,
+  PHASE6_FLAG_KEYS,
+  type Phase6FlagKey,
+} from "./phase6Controls";
 
 const DEFAULT_CONFIG: Record<
   string,
@@ -48,6 +53,12 @@ const DEFAULT_CONFIG: Record<
       { value: def.value, description: def.description, enabled: def.enabled },
     ])
   ),
+  ...Object.fromEntries(
+    Object.entries(PHASE6_FLAG_DEFAULTS).map(([key, def]) => [
+      key,
+      { value: def.value, description: def.description, enabled: def.enabled },
+    ])
+  ),
 };
 
 export const ECONOMY_CONFIG_PREFIX = "gigasocial.economy.";
@@ -63,12 +74,12 @@ function hashToPercent(input: string): number {
 export const getRemoteConfig = query({
   args: { userId: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const rows = await ctx.db.query("remoteConfigEntries").take(160);
+    const rows = await ctx.db.query("remoteConfigEntries").take(200);
     const map: Record<string, { enabled: boolean; value: string }> = {};
 
     for (const [key, def] of Object.entries(DEFAULT_CONFIG)) {
       const row = rows.find((r) => r.key === key);
-      // Phase 5 (and any entry with explicit default) may default OFF when unset.
+      // Phase 5/6 (and any entry with explicit default) may default OFF when unset.
       const enabled = row?.enabled ?? def.enabled ?? true;
       const rollout = row?.rolloutPercent ?? 100;
       const inRollout =
@@ -137,7 +148,7 @@ export const getEconomyConfigAdmin = query({
   args: adminCredentialArgs,
   handler: async (ctx, args) => {
     await ensureAdminAccess(args);
-    const rows = await ctx.db.query("remoteConfigEntries").take(160);
+    const rows = await ctx.db.query("remoteConfigEntries").take(200);
     return Object.entries(DEFAULT_CONFIG)
       .filter(([key]) => key.startsWith(ECONOMY_CONFIG_PREFIX))
       .map(([key, def]) => {
@@ -191,7 +202,7 @@ export const getPhase4ConfigAdmin = query({
   args: adminCredentialArgs,
   handler: async (ctx, args) => {
     await ensureAdminAccess(args);
-    const rows = await ctx.db.query("remoteConfigEntries").take(160);
+    const rows = await ctx.db.query("remoteConfigEntries").take(200);
     return PHASE4_FLAG_KEYS.map((key) => {
       const def = PHASE4_FLAG_DEFAULTS[key];
       const row = rows.find((r) => r.key === key);
@@ -282,6 +293,66 @@ export const updatePhase5ConfigAdmin = mutation({
     }
     const key = args.key as Phase5FlagKey;
     const def = PHASE5_FLAG_DEFAULTS[key];
+    const existing = await ctx.db
+      .query("remoteConfigEntries")
+      .withIndex("by_key", (q) => q.eq("key", key))
+      .first();
+    const now = Date.now();
+    const payload = {
+      value: (args.value?.trim() || existing?.value || def.value).slice(0, 80),
+      description: def.description,
+      enabled: args.enabled,
+      rolloutPercent: Math.max(
+        0,
+        Math.min(100, args.rolloutPercent ?? existing?.rolloutPercent ?? 0)
+      ),
+      updatedAt: now,
+    };
+    if (existing) {
+      await ctx.db.patch(existing._id, payload);
+    } else {
+      await ctx.db.insert("remoteConfigEntries", { key, ...payload });
+    }
+    return { ok: true, key, enabled: payload.enabled };
+  },
+});
+
+/** Admin: list Phase 6 Africa-launch flags (defaults OFF when unset). */
+export const getPhase6ConfigAdmin = query({
+  args: adminCredentialArgs,
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    const rows = await ctx.db.query("remoteConfigEntries").take(200);
+    return PHASE6_FLAG_KEYS.map((key) => {
+      const def = PHASE6_FLAG_DEFAULTS[key];
+      const row = rows.find((r) => r.key === key);
+      return {
+        key,
+        value: row?.value ?? def.value,
+        description: def.description,
+        enabled: row?.enabled ?? def.enabled,
+        rolloutPercent: row?.rolloutPercent ?? 0,
+      };
+    });
+  },
+});
+
+/** Admin: enable/disable a Phase 6 module flag (no schema change). */
+export const updatePhase6ConfigAdmin = mutation({
+  args: {
+    ...adminCredentialArgs,
+    key: v.string(),
+    enabled: v.boolean(),
+    value: v.optional(v.string()),
+    rolloutPercent: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    if (!PHASE6_FLAG_KEYS.includes(args.key as Phase6FlagKey)) {
+      throw new Error("Invalid Phase 6 config key.");
+    }
+    const key = args.key as Phase6FlagKey;
+    const def = PHASE6_FLAG_DEFAULTS[key];
     const existing = await ctx.db
       .query("remoteConfigEntries")
       .withIndex("by_key", (q) => q.eq("key", key))
