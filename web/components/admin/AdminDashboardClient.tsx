@@ -5,6 +5,7 @@ import { AdminPhase5AnalyticsPanel } from "@/components/admin/AdminPhase5Analyti
 import { AdminPhase5BetaPanel } from "@/components/admin/AdminPhase5BetaPanel";
 import { AdminPhase5ControlsPanel } from "@/components/admin/AdminPhase5ControlsPanel";
 import { AdminPhase5FeedbackPanel } from "@/components/admin/AdminPhase5FeedbackPanel";
+import { AdminPhase6ControlsPanel } from "@/components/admin/AdminPhase6ControlsPanel";
 import { AdminPlatformOverview } from "@/components/admin/AdminPlatformOverview";
 import { AdminSecurityHealthPanel } from "@/components/admin/AdminSecurityHealthPanel";
 import { AdminSocialEconomyPanel } from "@/components/admin/AdminSocialEconomyPanel";
@@ -121,6 +122,12 @@ function AdminInner() {
       />
 
       <AdminPhase5ControlsPanel
+        adminCreds={adminCreds}
+        onNotice={(msg) => setNotice(msg)}
+        onError={(msg) => setError(msg || null)}
+      />
+
+      <AdminPhase6ControlsPanel
         adminCreds={adminCreds}
         onNotice={(msg) => setNotice(msg)}
         onError={(msg) => setError(msg || null)}

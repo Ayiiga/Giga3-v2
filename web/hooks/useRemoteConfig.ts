@@ -42,8 +42,8 @@ export function useRemoteConfig() {
     (key: string): boolean => {
       const entry = config?.[key];
       if (entry?.enabled !== undefined) return Boolean(entry.enabled);
-      // Phase 5 modules default OFF when remote config has not loaded yet.
-      if (key.startsWith("phase5.")) return false;
+      // Phase 5/6 modules default OFF when remote config has not loaded yet.
+      if (key.startsWith("phase5.") || key.startsWith("phase6.")) return false;
       return true;
     },
     [config]
