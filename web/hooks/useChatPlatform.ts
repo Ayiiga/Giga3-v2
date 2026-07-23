@@ -2,7 +2,7 @@
 
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
 import type { UiMessage } from "@/components/chat/MessageList";
-import { useChatReplyPolling, POLL_FAIL_HINT_THRESHOLD } from "@/hooks/useChatReplyPolling";
+import { useChatReplyPolling } from "@/hooks/useChatReplyPolling";
 import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
 import { useConnectionQuality } from "@/hooks/useConnectionQuality";
@@ -294,7 +294,6 @@ export function useChatPlatform() {
       ? messagesRaw
       : undefined;
   const polledReplyActive = pollSnapshot.replyActive;
-  const pollFailures = pollSnapshot.pollFailures;
   const messagesRawRef = useRef(effectiveMessagesRaw);
   messagesRawRef.current = effectiveMessagesRaw;
   const replyStatusQueryArgs = useMemo(
@@ -751,14 +750,7 @@ export function useChatPlatform() {
     return () => clearInterval(interval);
   }, [awaitingReply, clearPendingSyncUi, clearReplyFailureTimer, tryResolveReplyFromMessages]);
 
-  useEffect(() => {
-    if (!awaitingReply || pollFailures < POLL_FAIL_HINT_THRESHOLD) return;
-    if (replyOutcomeRef.current === "success") return;
-    setError((prev) =>
-      prev ??
-      "Having trouble checking for your reply on this connection. Still trying — or tap send again."
-    );
-  }, [awaitingReply, pollFailures]);
+  // Poll failures on flaky 3G stay silent — keep waiting/retrying without a banner.
 
   useEffect(() => {
     void refreshOutboxCount();
@@ -887,8 +879,8 @@ export function useChatPlatform() {
         await refreshOutboxCount();
         setIsSending(false);
         setAwaitingReply(false);
+        // Keep pendingUserText so the bubble stays visible; sync is silent.
         logChatClient("send_offline_queued", { clientRequestId });
-        setError("Offline — message queued and will send when you're back online.");
         return;
       }
 
@@ -923,16 +915,11 @@ export function useChatPlatform() {
           /* ignore */
         }
         setAwaitingReply(false);
-        setPendingUserText(null);
+        // Keep pending bubble; outbox flush retries in the background.
         clearPendingSyncUi();
         logChatClient("send_fail", {
           error: e instanceof Error ? e.message : String(e),
         });
-        setError(
-          e instanceof Error
-            ? `${e.message} Message queued — we'll retry when your connection is stronger.`
-            : "Message queued — we'll retry when your connection is stronger."
-        );
       });
     },
     [
