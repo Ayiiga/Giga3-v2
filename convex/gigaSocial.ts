@@ -276,6 +276,7 @@ async function notifyUser(
     body: args.message,
     url: postUrl,
     tag: `social-${args.type}-${args.postId ?? "none"}-${args.actorId ?? "system"}`,
+    badgeIncrement: 1,
   });
 }
 

@@ -11,6 +11,8 @@ type PushPayload = {
   body: string;
   url?: string;
   tag?: string;
+  badgeCount?: number;
+  badgeIncrement?: number;
 };
 
 async function sendWebPush(
@@ -60,6 +62,7 @@ export const sendTestPush = action({
       body: "Push notifications are working.",
       url: "/chat/",
       tag: "giga3-test",
+      badgeIncrement: 1,
     });
     if (!ok) throw new Error("Could not send push notification. Check VAPID keys.");
     return { sent: true };

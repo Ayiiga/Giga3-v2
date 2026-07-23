@@ -170,7 +170,8 @@ export function PushAlertsPanel({ embedded = true }: { embedded?: boolean }) {
         Intelligent notifications
       </h2>
       <p className="mt-2 text-sm text-muted">
-        Receive timely alerts for social activity, AI generation, news, and platform announcements.
+        Get alerts when you are away — including a numeric badge on the installed Giga3 app icon
+        (like WhatsApp) for GigaSocial activity and AI results ready to view.
       </p>
 
       {!enabled && (
@@ -208,7 +209,7 @@ export function PushAlertsPanel({ embedded = true }: { embedded?: boolean }) {
                 ["commentAlerts", "Comments & replies"],
                 ["mentionAlerts", "Mentions"],
                 ["followAlerts", "New followers"],
-                ["generationAlerts", "AI image & video complete"],
+                ["generationAlerts", "AI chat, image & video complete"],
                 ["newsAlerts", "Breaking news headlines"],
                 ["sportsAlerts", "Live sports scores"],
                 ["announcementAlerts", "Platform announcements"],
