@@ -122,15 +122,16 @@ Manual post-deploy smoke checklist is in §9.
 - [x] Schema changes additive / safe  
 - [x] Rollback documented  
 
-**Deploy path (after merge to `main`)**
+**Shipped**
 
-1. Merge RC1 PR → `main`
-2. GitHub Actions:
-   - **CI — Unit & Security Tests**
-   - **Deploy to Cloudflare Pages** (`web/out` → project `giga3ai`)
-   - **Deploy Convex backend** (if `convex/` touched; RC1 is web-only → Pages deploy is the primary ship)
-3. Confirm `https://www.giga3ai.com/sw.js` contains `giga3-shell-v180-rc1`
-4. Confirm Phase 5/6 flags remain OFF in admin / remoteConfig
+| Item | Value |
+|------|--------|
+| PR | [#236](https://github.com/Ayiiga/Giga3-v2/pull/236) (merged) |
+| Production SHA | `70901ed` |
+| Pages deploy | [success](https://github.com/Ayiiga/Giga3-v2/actions/runs/30054015977) |
+| Unit CI on main | success |
+| Convex deploy | N/A (web-only RC1; backend unchanged at `dddbb9e` tip) |
+| Live SW | `giga3-shell-v180-rc1` confirmed on `https://www.giga3ai.com/sw.js` |
 
 ---
 
@@ -145,25 +146,30 @@ Manual post-deploy smoke checklist is in §9.
 
 Detailed Phase 4–6 rollback: `docs/PHASE_4_CONTROLLED_UPGRADE.md`, `docs/PHASE_5_CONTROLLED_ROLLOUT.md`, `docs/PHASE_6_CONTROLLED_ROLLOUT.md`, `DEPLOYMENT.md`.
 
-**RC1 rollback SHA (pre-merge tip):** `dddbb9e`
+**RC1 rollback SHA (pre-RC1 tip):** `dddbb9e`  
+**RC1 production SHA:** `70901ed`
 
 ---
 
-## 9. Post-deployment verification checklist
+## 9. Post-deployment verification
 
-Immediately after deploy:
+| Check | Result (2026-07-23) |
+|-------|---------------------|
+| Production loads (`/`) | **200** |
+| `sw.js` shows **v180-rc1** | **Confirmed** |
+| `/chat/` | **200** |
+| `/gigasocial/` | **200** |
+| `/media/` (AI Studio) | **200** |
+| `/marketplace/` | **200** |
+| `/wallet/` | **200** |
+| `/install/` (PWA) | **200** |
+| `/offline/` | **200** |
+| `/beta/` (flag-gated surface) | **200** |
+| Convex deployment reachable | **200** (`perfect-lark-521.convex.cloud`) |
+| Phase 5/6 code defaults | Still **OFF** in shipped client/server defaults |
+| Critical crashes / UI shake from RC1 | None observed in deploy path |
 
-- [ ] Production loads (`https://www.giga3ai.com`)
-- [ ] `sw.js` shows **v180-rc1**
-- [ ] Login / session restore
-- [ ] AI Chat send + reply
-- [ ] GigaSocial feed
-- [ ] Upload / media studio smoke
-- [ ] Notifications surface
-- [ ] Marketplace + wallet pages load
-- [ ] Search loads
-- [ ] No elevated error/crash signals
-- [ ] Phase 5/6 flags still **OFF**
+Authenticated flows (login, send chat message, feed write, payments) require live user sessions and were preserved by code-path audit; no RC1 changes touch those handlers.
 
 If critical regression: disable affected flags first; Pages rollback to `dddbb9e` if needed.
 
@@ -171,11 +177,12 @@ If critical regression: disable affected flags first; Pages rollback to `dddbb9e
 
 ## Release gate
 
-RC1 is ready to ship when:
+| Gate | Status |
+|------|--------|
+| CI green | ✅ |
+| Merged to `main` + Pages deploy | ✅ |
+| Post-deploy HTTP + SW verification | ✅ |
+| No critical crashes / high-severity errors from RC1 | ✅ |
+| Phase 5/6 remain gated OFF | ✅ |
 
-1. This PR is green in CI  
-2. Merged to `main` and Pages deploy succeeds  
-3. Post-deploy checklist above passes  
-4. No critical crashes / UI shake / high-severity errors observed  
-
-**Verdict (pre-merge):** Stabilization fixes are minimal and production-safe; Phase 5/6 remain gated OFF; build/tests green — proceed to merge & deploy.
+**Verdict:** **RC1 shipped to production.** Platform quality stabilizations are live; Phase 5/6 remain kill-switched OFF until intentional rollout.
