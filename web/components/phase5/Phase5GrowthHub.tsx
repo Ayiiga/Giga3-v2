@@ -74,7 +74,9 @@ function ChallengeCard({ sessionToken }: { sessionToken: string }) {
 
   useEffect(() => {
     if (data?.enabled && !data.challenge) {
-      void ensure({ sessionToken });
+      void ensure({ sessionToken }).catch(() => {
+        /* flag race / offline — card stays in preparing state */
+      });
     }
   }, [data?.enabled, data?.challenge, ensure, sessionToken]);
 
