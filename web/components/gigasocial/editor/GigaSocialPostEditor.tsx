@@ -59,7 +59,7 @@ export const GigaSocialPostEditor = memo(function GigaSocialPostEditor({
         onChange={(e) => setBody(e.target.value)}
         maxLength={SOCIAL_CAPTION_MAX_LENGTH}
         rows={4}
-        className="w-full resize-y rounded-xl border border-border bg-white px-3 py-2 text-sm"
+        className="w-full resize-none rounded-xl border border-border bg-white px-3 py-2 text-sm"
         placeholder="Update your caption…"
       />
       <div className="mt-2 flex flex-wrap gap-2">

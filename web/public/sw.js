@@ -1,6 +1,6 @@
-/** Tips & boosts via Paystack MoMo/card — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v185-paystack-tips";
-const NEXT_STATIC_CACHE = "giga3-next-static-v185";
+/** Crash/shake stability — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v186-stabilize";
+const NEXT_STATIC_CACHE = "giga3-next-static-v186";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";
@@ -265,15 +265,16 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Cache marketing + chat/GigaSocial shells after a successful visit.
-          if (response.ok && (appShell || !sensitive)) {
+          // Never runtime-cache chat/GigaSocial HTML — stale shells cause shake/crashes after deploys.
+          // Marketing/public docs may still be cached for offline reopen.
+          if (response.ok && !sensitive && !appShell) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
           return response;
         })
         .catch(() => {
-          if (sensitive) {
+          if (sensitive || appShell) {
             return caches.match("/offline/");
           }
           return caches

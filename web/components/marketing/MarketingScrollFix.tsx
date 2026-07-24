@@ -11,9 +11,9 @@ function usesStableViewport(pathname: string): boolean {
 }
 
 /**
- * Marketing routes use long forms (marketplace sell, pricing). The root viewport
- * sets interactive-widget=overlays-content for chat stability; on marketing pages
- * that traps fields under the mobile keyboard.
+ * Root viewport uses interactive-widget=overlays-content for chat/GigaSocial
+ * stability. Marketing form pages need resizes-content so inputs are not trapped
+ * under the soft keyboard. Stable app shells keep overlays-content.
  */
 export function MarketingScrollFix() {
   useEffect(() => {

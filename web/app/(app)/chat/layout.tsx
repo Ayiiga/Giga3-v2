@@ -7,9 +7,12 @@ export const metadata: Metadata = {
   description: "Giga3 AI — advanced AI for learning, research, coding, creativity, and productivity",
 };
 
-/** Let the browser shrink the layout viewport when the soft keyboard opens (Android PWA). */
+/**
+ * Soft keyboard overlays the layout; ChatKeyboardShell + visualViewport chase
+ * keep the composer above the keyboard without dual layout resize shake.
+ */
 export const viewport: Viewport = {
-  interactiveWidget: "resizes-content",
+  interactiveWidget: "overlays-content",
 };
 
 export default function ChatLayout({

@@ -110,7 +110,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
     recognition.onresult = (event) => {
       const line = event.results[event.results.length - 1]?.[0]?.transcript?.trim();
       if (line) {
-        void addCaption({ sessionToken, streamId, line });
+        void addCaption({ sessionToken, streamId, line }).catch(() => undefined);
       }
     };
     recognition.start();
@@ -211,14 +211,20 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
     if (!stream || joinedRef.current) return;
     if (stream.status === "live" && !isHost) {
       joinedRef.current = true;
-      void joinLive({ sessionToken, streamId });
+      void joinLive({ sessionToken, streamId }).catch((e) => {
+        setMediaError(getLiveMediaErrorMessage(e, "camera"));
+        joinedRef.current = false;
+      });
     }
   }, [isHost, joinLive, sessionToken, stream, streamId]);
 
   useEffect(() => {
     if (!isHost || stream?.status !== "scheduled" || startLiveCalledRef.current) return;
     startLiveCalledRef.current = true;
-    void startLive({ sessionToken, streamId, mode });
+    void startLive({ sessionToken, streamId, mode }).catch((e) => {
+      setMediaError(getLiveMediaErrorMessage(e, "camera"));
+      startLiveCalledRef.current = false;
+    });
   }, [isHost, mode, sessionToken, startLive, stream?.status, streamId]);
 
   useEffect(() => {
@@ -259,6 +265,8 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
     try {
       await sendChat({ sessionToken, streamId, body: chatBody });
       setChatBody("");
+    } catch (e) {
+      setMediaError(getLiveMediaErrorMessage(e, "camera"));
     } finally {
       setBusy(false);
     }
@@ -266,8 +274,12 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
 
   async function handleEnd() {
     stopMedia();
-    if (isHost && stream.status === "live") {
-      await endLive({ sessionToken, streamId });
+    try {
+      if (isHost && stream.status === "live") {
+        await endLive({ sessionToken, streamId });
+      }
+    } catch {
+      /* still leave the room UI */
     }
     onClose();
   }
@@ -444,7 +456,9 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
             key={emoji}
             type="button"
             className="min-h-9 rounded-full border border-border bg-white px-3 text-sm"
-            onClick={() => void sendReaction({ sessionToken, streamId, emoji })}
+            onClick={() =>
+              void sendReaction({ sessionToken, streamId, emoji }).catch(() => undefined)
+            }
           >
             {emoji} {getLiveReactionCount(stream.reactionCounts, emoji)}
           </button>
@@ -470,9 +484,9 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
               variant="outline"
               className="min-h-9"
               onClick={() =>
-                void addCoHost({ sessionToken, streamId, coHostHandle }).then(() =>
-                  setCoHostHandle("")
-                )
+                void addCoHost({ sessionToken, streamId, coHostHandle })
+                  .then(() => setCoHostHandle(""))
+                  .catch((e) => setMediaError(getLiveMediaErrorMessage(e, "camera")))
               }
             >
               <Users className="h-4 w-4" aria-hidden />
@@ -501,7 +515,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
                   streamId,
                   giftType: gift.id,
                   amount: gift.credits,
-                })
+                }).catch((e) => setMediaError(getLiveMediaErrorMessage(e, "camera")))
               }
             >
               {gift.emoji} {gift.label}
@@ -525,7 +539,11 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
                   type="button"
                   className="ml-2 text-xs text-red-700"
                   onClick={() =>
-                    void moderate({ sessionToken, streamId, messageId: message._id })
+                    void moderate({
+                      sessionToken,
+                      streamId,
+                      messageId: message._id,
+                    }).catch(() => undefined)
                   }
                 >
                   Remove

@@ -17,11 +17,15 @@ export const GigaSocialAffiliatePanel = memo(function GigaSocialAffiliatePanel({
   const ensureCode = useMutation(api.gigaSocialEconomy.ensureAffiliateCode);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleGenerate = useCallback(async () => {
     setBusy(true);
+    setError(null);
     try {
       await ensureCode({ sessionToken });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not generate affiliate link.");
     } finally {
       setBusy(false);
     }
@@ -85,6 +89,7 @@ export const GigaSocialAffiliatePanel = memo(function GigaSocialAffiliatePanel({
             Generate affiliate link
           </Button>
         )}
+        {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
       </div>
 
       <div className="gigasocial-creator-stat-grid">

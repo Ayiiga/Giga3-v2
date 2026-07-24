@@ -363,12 +363,9 @@ export const ChatInput = memo(function ChatInput({
                 }, 120);
               }}
               disabled={inputDisabled}
-              rows={typingMode ? 2 : 1}
+              rows={1}
               placeholder={placeholder}
-              className={cn(
-                "chat-composer-textarea w-full resize-none overflow-y-auto border-0 bg-transparent px-2 py-2 text-base leading-[1.5] text-foreground outline-none placeholder:text-muted focus:ring-0 disabled:opacity-50",
-                typingMode ? "max-h-52 min-h-[3.25rem]" : "max-h-40 min-h-10"
-              )}
+              className="chat-composer-textarea max-h-40 min-h-10 w-full resize-none overflow-y-auto border-0 bg-transparent px-2 py-2 text-base leading-[1.5] text-foreground outline-none placeholder:text-muted focus:ring-0 disabled:opacity-50"
               aria-label="Chat message"
             />
           </div>

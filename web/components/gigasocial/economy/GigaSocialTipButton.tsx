@@ -8,6 +8,7 @@ import { memo, useCallback, useState } from "react";
 import { toUserFacingError } from "@/lib/errors/userMessage";
 import { CREATOR_TIP_CATALOG } from "@/lib/gigasocial/tipCatalog";
 import { formatGhs } from "@/lib/gigasocial/creatorEconomy";
+import { redirectToPaystack } from "@/lib/payments/paystackService";
 import { cn } from "@/lib/utils";
 
 function tipErrorMessage(err: unknown): string {
@@ -61,7 +62,7 @@ export const GigaSocialTipButton = memo(function GigaSocialTipButton({
           postId: postId as Id<"socialPosts">,
           message: "Thanks for creating!",
         });
-        window.location.href = init.authorizationUrl;
+        redirectToPaystack(init.authorizationUrl);
       } catch (e) {
         setError(tipErrorMessage(e));
         setBusy(null);
