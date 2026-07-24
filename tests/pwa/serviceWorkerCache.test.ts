@@ -3,19 +3,21 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("service worker cache version", () => {
-  it("uses paystack-tips cache name (v185)", () => {
+  it("uses stabilize cache name (v186)", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v185-paystack-tips"');
-    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v185"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v186-stabilize"');
+    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v186"');
     expect(sw).toContain('pathname.startsWith("/wallet/")');
     expect(sw).toContain('pathname.startsWith("/admin/")');
   });
 
-  it("runtime-caches chat and gigasocial shells for offline reopen", () => {
+  it("identifies chat/gigasocial shells but does not runtime-cache their HTML", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
     expect(sw).toContain("isOfflineAppShellPath");
     expect(sw).toContain('pathname.startsWith("/chat/")');
     expect(sw).toContain('pathname.startsWith("/gigasocial/")');
+    expect(sw).toContain("!sensitive && !appShell");
+    expect(sw).toContain("Never runtime-cache chat/GigaSocial HTML");
     expect(sw).toContain("isNextStaticAsset");
     expect(sw).toContain("giga3-social-outbox");
   });
