@@ -36,6 +36,7 @@ import { primeCameraStream } from "@/lib/gigasocial/cameraCapture";
 import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { handleFromEmail } from "@/lib/gigasocial/handleFromEmail";
 import { findFeaturedMediaPost, getPostMediaKind } from "@/lib/gigasocial/postMedia";
+import { sortPostsNewestFirst } from "@/lib/gigasocial/postSort";
 import { loadFeedSnapshot, saveFeedSnapshot } from "@/lib/gigasocial/feedOfflineSnapshot";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
@@ -110,7 +111,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const [composerOpen, setComposerOpen] = useState(false);
   const [aiStudioOpen, setAiStudioOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<"all" | SocialPostTypeId>("all");
-  const [feedCategory, setFeedCategory] = useState<FeedCategoryId>("for-you");
+  const [feedCategory, setFeedCategory] = useState<FeedCategoryId>("recent");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [composeAction, setComposeAction] = useState<GigaCreateActionId | undefined>();
@@ -182,6 +183,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const toggleBookmark = useMutation(api.gigaSocial.toggleBookmark);
   const recordShare = useMutation(api.gigaSocial.recordShare);
   const deletePost = useMutation(api.gigaSocial.deletePost);
+  const setPostPinned = useMutation(api.gigaSocial.setPostPinned);
 
   const searchLoading =
     Boolean(debouncedSearch.trim()) && searchResults === undefined && effectiveOnline;
@@ -218,7 +220,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
           ? ([...(cursor ? extraPosts : []), ...(feed?.posts ?? [])] as SocialPost[])
           : (offlineSnapshot ?? []);
 
-    const sorted = [...sourcePosts].sort((a, b) => b.createdAt - a.createdAt);
+    const sorted = sortPostsNewestFirst(sourcePosts);
     const typed =
       typeFilter === "all" ? sorted : sorted.filter((p) => p.postType === typeFilter);
     return features.enableFeedCategories
@@ -809,6 +811,14 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
                   await deletePost({
                     sessionToken,
                     postId: postId as Id<"socialPosts">,
+                  });
+                }}
+                onPin={async (postId, pinned) => {
+                  if (!sessionToken) return;
+                  await setPostPinned({
+                    sessionToken,
+                    postId: postId as Id<"socialPosts">,
+                    pinned,
                   });
                 }}
               />

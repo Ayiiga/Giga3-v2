@@ -18,11 +18,12 @@ import {
   Heart,
   MessageCircle,
   Pencil,
+  Pin,
   Share2,
   Trash2,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GigaSocialCommentThread } from "@/components/gigasocial/GigaSocialCommentThread";
 import { GigaSocialFanButton } from "@/components/gigasocial/fans/GigaSocialFanButton";
 import { GigaSocialPostCaption } from "@/components/gigasocial/GigaSocialPostCaption";
@@ -50,6 +51,7 @@ interface GigaSocialPostCardProps {
   onBookmark: (postId: string, bookmarked: boolean) => Promise<void>;
   onShare: (postId: string) => Promise<void>;
   onDelete?: (postId: string) => Promise<void>;
+  onPin?: (postId: string, pinned: boolean) => Promise<void>;
   onEdit?: (postId: string, args: { body: string; postType: SocialPostTypeId }) => Promise<void>;
   onRemix?: (post: SocialPost) => void;
   canDelete?: boolean;
@@ -68,6 +70,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   onBookmark,
   onShare,
   onDelete,
+  onPin,
   onEdit,
   onRemix,
   canDelete = false,
@@ -90,8 +93,13 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   const [error, setError] = useState<string | null>(null);
   const [following, setFollowing] = useState(Boolean(post.author.supportingByMe));
   const [heartBurst, setHeartBurst] = useState(false);
+  const [pinned, setPinned] = useState(Boolean(post.pinnedAt));
   const lastTapRef = useRef(0);
   const myUserId = useMemo(() => getUserEmail(), []);
+
+  useEffect(() => {
+    setPinned(Boolean(post.pinnedAt));
+  }, [post._id, post.pinnedAt]);
   const isOwnPost = Boolean(
     myUserId && post.author.userId && myUserId === post.author.userId
   );
@@ -99,6 +107,23 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   const canTip = Boolean(
     enablePostTips && sessionToken && post.author.userId && !isOwnPost
   );
+  const canPin = Boolean(sessionToken && isOwnPost && onPin);
+
+  const handlePin = useCallback(async () => {
+    if (!canPin || busy || !onPin) return;
+    const next = !pinned;
+    setPinned(next);
+    setBusy(true);
+    setError(null);
+    try {
+      await onPin(post._id, next);
+    } catch (e) {
+      setPinned(!next);
+      setError(e instanceof Error ? e.message : "Could not update pin.");
+    } finally {
+      setBusy(false);
+    }
+  }, [busy, canPin, onPin, pinned, post._id]);
 
   const displayBody = useMemo(() => stripRemixMarker(post.body), [post.body]);
   const display = useMemo(() => splitPostDisplay(displayBody), [displayBody]);
@@ -274,6 +299,12 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           <span className="rounded-full bg-muted/10 px-2 py-0.5 text-xs capitalize text-muted">
             {post.postType}
           </span>
+          {pinned ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-medium text-accent">
+              <Pin className="h-3 w-3" aria-hidden />
+              Pinned
+            </span>
+          ) : null}
         </div>
       </header>
 
@@ -437,12 +468,29 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
             {post.viewCount}
           </span>
         ) : null}
+        {canPin ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className={cn(
+              "min-h-9",
+              pinned ? "text-accent" : "text-muted",
+              !(canDelete && enableEdit && onEdit) && "ml-auto"
+            )}
+            onClick={() => void handlePin()}
+            aria-label={pinned ? "Unpin post" : "Pin post"}
+            aria-pressed={pinned}
+          >
+            <Pin className="h-4 w-4" aria-hidden />
+          </Button>
+        ) : null}
         {canDelete && enableEdit && onEdit ? (
           <Button
             type="button"
             size="sm"
             variant="ghost"
-            className="ml-auto min-h-9 text-muted"
+            className={cn("min-h-9 text-muted", !canPin && "ml-auto")}
             onClick={() => setEditorOpen(true)}
             aria-label="Edit post"
           >
@@ -454,7 +502,10 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
             type="button"
             size="sm"
             variant="ghost"
-            className={cn("min-h-9 text-red-700", !(enableEdit && onEdit) && "ml-auto")}
+            className={cn(
+              "min-h-9 text-red-700",
+              !(enableEdit && onEdit) && !canPin && "ml-auto"
+            )}
             onClick={() => void onDelete(post._id)}
           >
             <Trash2 className="h-4 w-4" aria-hidden />
@@ -483,6 +534,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
             <GigaSocialCommentThread
               postId={post._id}
               sessionToken={sessionToken}
+              postAuthorUserId={post.author.userId}
               hideComposer={!isVisualPost}
             />
           </div>
