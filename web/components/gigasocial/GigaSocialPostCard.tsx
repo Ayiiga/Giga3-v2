@@ -107,18 +107,20 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
     () => (isVisualPost ? getPostMediaKind(post) : null),
     [isVisualPost, post]
   );
-  const shouldAutoPlayVideo =
-    feedAutoPlay && !feedPaused && visualMediaKind === "video";
+  const shouldAutoPlayMedia =
+    feedAutoPlay &&
+    !feedPaused &&
+    (visualMediaKind === "video" || visualMediaKind === "photo-music");
   const { observeVideo, isActiveVideo } = useFeedVideoPlayback();
   const videoRegionRef = useCallback(
     (element: HTMLDivElement | null) => {
-      if (shouldAutoPlayVideo) {
+      if (shouldAutoPlayMedia) {
         observeVideo(post._id, element);
       } else {
         observeVideo(post._id, null);
       }
     },
-    [observeVideo, post._id, shouldAutoPlayVideo]
+    [observeVideo, post._id, shouldAutoPlayMedia]
   );
 
   const captionBlock = display.title ? (
@@ -283,7 +285,11 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
       {isVisualPost ? (
         <div className="gigasocial-post-card__content">
           <div
-            ref={visualMediaKind === "video" ? videoRegionRef : undefined}
+            ref={
+              visualMediaKind === "video" || visualMediaKind === "photo-music"
+                ? videoRegionRef
+                : undefined
+            }
             className="gigasocial-post-card__media-region relative"
             onDoubleClick={() => void handleLike(true)}
             onTouchEnd={handleDoubleTapLike}
@@ -291,7 +297,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
             <GigaSocialPostMedia
               post={post}
               allowFullView
-              autoPlay={shouldAutoPlayVideo && isActiveVideo(post._id)}
+              autoPlay={shouldAutoPlayMedia && isActiveVideo(post._id)}
               paused={feedPaused}
             />
             {heartBurst ? (

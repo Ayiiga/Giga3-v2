@@ -232,7 +232,11 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     }
 
     void audio.play().catch(() => {
-      /* Browser may block autoplay until interaction */
+      // Unmuted autoplay is often blocked; start muted so the track still runs.
+      audio.muted = true;
+      void audio.play().catch(() => {
+        /* Browser may block until interaction */
+      });
     });
   }, [mediaKind, shouldPlay, post._id]);
 

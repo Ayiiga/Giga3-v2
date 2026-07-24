@@ -3,10 +3,10 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("service worker cache version", () => {
-  it("uses stabilize cache name (v186)", () => {
+  it("uses photo-music-video cache name (v187)", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v186-stabilize"');
-    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v186"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v187-photo-music-video"');
+    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v187"');
     expect(sw).toContain('pathname.startsWith("/wallet/")');
     expect(sw).toContain('pathname.startsWith("/admin/")');
   });

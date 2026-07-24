@@ -52,18 +52,20 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
     sessionToken && post.author.userId && myUserId !== post.author.userId
   );
 
-  const isVideo = getPostMediaKind(post) === "video";
-  const shouldAutoPlayVideo = autoPlay && !paused && isVideo;
+  const mediaKind = useMemo(() => getPostMediaKind(post), [post]);
+  const isPlayable =
+    mediaKind === "video" || mediaKind === "photo-music" || mediaKind === "audio";
+  const shouldAutoPlayMedia = autoPlay && !paused && isPlayable;
   const { observeVideo, isActiveVideo } = useFeedVideoPlayback();
   const mediaRegionRef = useCallback(
     (element: HTMLDivElement | null) => {
-      if (shouldAutoPlayVideo) {
+      if (shouldAutoPlayMedia) {
         observeVideo(post._id, element, { priority: true });
       } else {
         observeVideo(post._id, null);
       }
     },
-    [observeVideo, post._id, shouldAutoPlayVideo]
+    [observeVideo, post._id, shouldAutoPlayMedia]
   );
 
   const swipe = useSwipeGesture({
@@ -135,14 +137,14 @@ export const GigaSocialFeaturedPlayer = memo(function GigaSocialFeaturedPlayer({
       </div>
 
       <div
-        ref={isVideo ? mediaRegionRef : undefined}
+        ref={isPlayable ? mediaRegionRef : undefined}
         onTouchStart={swipe.onTouchStart}
         onTouchEnd={swipe.onTouchEnd}
       >
         <GigaSocialPostMedia
           key={`${post._id}-${replayKey}`}
           post={post}
-          autoPlay={shouldAutoPlayVideo && isActiveVideo(post._id)}
+          autoPlay={shouldAutoPlayMedia && isActiveVideo(post._id)}
           paused={paused}
           featured
           onUserPaused={onPause}

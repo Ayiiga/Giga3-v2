@@ -547,7 +547,14 @@ export const listDiscover = query({
     } else if (filter === "music") {
       rows = rows.filter((r) => {
         const items = parseMediaMetaJson(r.mediaMetaJson);
-        return items.some((item) => item.type === "audio");
+        if (items.some((item) => item.type === "audio")) return true;
+        if (items.some((item) => item.filterId === "photo-music")) return true;
+        const body = r.body.toLowerCase();
+        return (
+          body.includes("🎵") ||
+          body.includes("#photomusic") ||
+          (r.hashtags?.some((tag) => tag.toLowerCase() === "photomusic") ?? false)
+        );
       });
     }
 
