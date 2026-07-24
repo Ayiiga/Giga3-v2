@@ -15,7 +15,7 @@ describe("sendCreatorGift policy", () => {
     const handler = src.slice(handlerStart, nextExport === -1 ? undefined : nextExport);
     expect(handler).not.toContain("has not unlocked the Gifts Hub");
     expect(handler).not.toContain("isMonetizationUnlocked");
-    expect(handler).toContain("not receiving tips");
+    expect(handler).toContain("not tips or ad boosts");
   });
 
   it("does not block live gifts behind fan unlock", () => {
