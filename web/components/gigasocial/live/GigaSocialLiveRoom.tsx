@@ -6,18 +6,26 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import {
   LIVE_GIFTS,
   LIVE_REACTIONS,
+  LIVE_SCREEN_SHARE_MOBILE_HINT,
   LIVE_VIDEO_CAPTURE_CONSTRAINTS,
   getLiveMediaErrorMessage,
   getLiveReactionCount,
   supportsLiveCameraMic,
-  supportsLiveScreenShare,
   type LiveStreamMode,
 } from "@/lib/gigasocial/liveStreaming";
+import {
+  requestMobileScreenShareCameraStream,
+  requestMobileScreenShareFromFile,
+  requestOsDisplayCaptureStream,
+  supportsOsDisplayCapture,
+  takeLiveScreenShareHandoff,
+  type ScreenShareSource,
+} from "@/lib/gigasocial/liveScreenShare";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { Gift, MessageCircle, Radio, Shield, Type, Users, X } from "lucide-react";
+import { Gift, MessageCircle, MonitorUp, Radio, Shield, Type, Users, X } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
@@ -45,22 +53,21 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const recognitionRef = useRef<{ stop: () => void } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [chatBody, setChatBody] = useState("");
   const [coHostHandle, setCoHostHandle] = useState("");
   const [busy, setBusy] = useState(false);
   const [mediaError, setMediaError] = useState<string | null>(null);
   const [showTeleprompter, setShowTeleprompter] = useState(false);
-  /** When screen share is unavailable, host can fall back to camera without ending the stream. */
-  const [captureOverride, setCaptureOverride] = useState<"camera" | null>(null);
+  const [screenSource, setScreenSource] = useState<ScreenShareSource | null>(null);
+  const [awaitingScreenShare, setAwaitingScreenShare] = useState(false);
   const joinedRef = useRef(false);
   const startLiveCalledRef = useRef(false);
   const hostMediaStartedRef = useRef(false);
 
   const stream = data?.stream;
   const mode = (stream?.mode ?? "video") as LiveStreamMode;
-  const captureMode: LiveStreamMode =
-    captureOverride === "camera" && mode === "screen" ? "video" : mode;
 
   const stopMedia = useCallback(() => {
     mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
@@ -70,65 +77,135 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
     recognitionRef.current = null;
   }, []);
 
+  const startCaptions = useCallback(() => {
+    const win = window as Window & {
+      SpeechRecognition?: new () => {
+        continuous: boolean;
+        interimResults: boolean;
+        onresult:
+          | ((event: {
+              results: { [index: number]: { [index: number]: { transcript?: string } } };
+            }) => void)
+          | null;
+        start: () => void;
+        stop: () => void;
+      };
+      webkitSpeechRecognition?: new () => {
+        continuous: boolean;
+        interimResults: boolean;
+        onresult:
+          | ((event: {
+              results: { [index: number]: { [index: number]: { transcript?: string } } };
+            }) => void)
+          | null;
+        start: () => void;
+        stop: () => void;
+      };
+    };
+    const SpeechRecognitionCtor = win.SpeechRecognition || win.webkitSpeechRecognition;
+    if (!SpeechRecognitionCtor || !isHost) return;
+    const recognition = new SpeechRecognitionCtor();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.onresult = (event) => {
+      const line = event.results[event.results.length - 1]?.[0]?.transcript?.trim();
+      if (line) {
+        void addCaption({ sessionToken, streamId, line });
+      }
+    };
+    recognition.start();
+    recognitionRef.current = recognition;
+  }, [addCaption, isHost, sessionToken, streamId]);
+
+  const attachHostMedia = useCallback(
+    async (media: MediaStream, source: ScreenShareSource | null) => {
+      stopMedia();
+      mediaStreamRef.current = media;
+      setScreenSource(source);
+      setAwaitingScreenShare(false);
+      setMediaError(null);
+      if (videoRef.current && mode !== "audio") {
+        videoRef.current.srcObject = media;
+        await videoRef.current.play().catch(() => undefined);
+      }
+      startCaptions();
+    },
+    [mode, startCaptions, stopMedia]
+  );
+
   const startHostMedia = useCallback(async () => {
     if (!isHost || stream?.status !== "live") return;
     setMediaError(null);
     try {
-      stopMedia();
-      let media: MediaStream;
-      if (captureMode === "screen") {
-        if (!supportsLiveScreenShare()) {
-          throw new TypeError("getDisplayMedia is not a function");
+      if (mode === "screen") {
+        const handoff = takeLiveScreenShareHandoff();
+        if (handoff) {
+          await attachHostMedia(handoff.stream, handoff.source);
+          return;
         }
-        media = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-      } else {
-        if (!supportsLiveCameraMic()) {
-          throw new TypeError("getUserMedia is not a function");
-        }
-        media = await navigator.mediaDevices.getUserMedia({
-          video: captureMode === "video" ? LIVE_VIDEO_CAPTURE_CONSTRAINTS : false,
-          audio: true,
-        });
+        // Screen capture must start from a tap — show picker instead of auto-failing.
+        setAwaitingScreenShare(true);
+        return;
       }
-      mediaStreamRef.current = media;
-      if (videoRef.current && captureMode !== "audio") {
-        videoRef.current.srcObject = media;
-        await videoRef.current.play().catch(() => undefined);
+
+      if (!supportsLiveCameraMic()) {
+        throw new TypeError("getUserMedia is not a function");
       }
-      const win = window as Window & {
-        SpeechRecognition?: new () => {
-          continuous: boolean;
-          interimResults: boolean;
-          onresult: ((event: { results: { [index: number]: { [index: number]: { transcript?: string } } } }) => void) | null;
-          start: () => void;
-          stop: () => void;
-        };
-        webkitSpeechRecognition?: new () => {
-          continuous: boolean;
-          interimResults: boolean;
-          onresult: ((event: { results: { [index: number]: { [index: number]: { transcript?: string } } } }) => void) | null;
-          start: () => void;
-          stop: () => void;
-        };
-      };
-      const SpeechRecognitionCtor = win.SpeechRecognition || win.webkitSpeechRecognition;
-      if (SpeechRecognitionCtor && isHost) {
-        const recognition = new SpeechRecognitionCtor();
-        recognition.continuous = true;
-        recognition.interimResults = false;
-        recognition.onresult = (event) => {
-          const line = event.results[event.results.length - 1]?.[0]?.transcript?.trim();
-          if (line) {
-            void addCaption({ sessionToken, streamId, line });
-          }
-        };
-        recognition.start();
-        recognitionRef.current = recognition;
-      }
+      const media = await navigator.mediaDevices.getUserMedia({
+        video: mode === "video" ? LIVE_VIDEO_CAPTURE_CONSTRAINTS : false,
+        audio: true,
+      });
+      await attachHostMedia(media, null);
     } catch (e) {
-      setMediaError(getLiveMediaErrorMessage(e, captureMode));
+      setMediaError(getLiveMediaErrorMessage(e, mode));
+      if (mode === "screen") setAwaitingScreenShare(true);
     }
-  }, [addCaption, captureMode, isHost, sessionToken, stopMedia, stream?.status, streamId]);
+  }, [attachHostMedia, isHost, mode, stream?.status]);
+
+  const shareOsDisplay = useCallback(async () => {
+    setBusy(true);
+    setMediaError(null);
+    try {
+      const media = await requestOsDisplayCaptureStream();
+      await attachHostMedia(media, "display");
+    } catch (e) {
+      setMediaError(getLiveMediaErrorMessage(e, "screen"));
+      setAwaitingScreenShare(true);
+    } finally {
+      setBusy(false);
+    }
+  }, [attachHostMedia]);
+
+  const shareWithRearCamera = useCallback(async () => {
+    setBusy(true);
+    setMediaError(null);
+    try {
+      const media = await requestMobileScreenShareCameraStream();
+      await attachHostMedia(media, "camera");
+    } catch (e) {
+      setMediaError(getLiveMediaErrorMessage(e, "screen"));
+      setAwaitingScreenShare(true);
+    } finally {
+      setBusy(false);
+    }
+  }, [attachHostMedia]);
+
+  const shareFromFile = useCallback(
+    async (file: File) => {
+      setBusy(true);
+      setMediaError(null);
+      try {
+        const media = await requestMobileScreenShareFromFile(file);
+        await attachHostMedia(media, "file");
+      } catch (e) {
+        setMediaError(getLiveMediaErrorMessage(e, "screen"));
+        setAwaitingScreenShare(true);
+      } finally {
+        setBusy(false);
+      }
+    },
+    [attachHostMedia]
+  );
 
   useEffect(() => {
     if (!stream || joinedRef.current) return;
@@ -148,6 +225,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
     if (!isHost || stream?.status !== "live") {
       if (stream?.status !== "live") {
         hostMediaStartedRef.current = false;
+        setAwaitingScreenShare(false);
       }
       return;
     }
@@ -194,6 +272,9 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
     onClose();
   }
 
+  const showScreenPicker =
+    isHost && mode === "screen" && stream.status === "live" && awaitingScreenShare;
+
   return (
     <div className="gigasocial-live-stable gigasocial-live-room space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -221,7 +302,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
               mode === "video" && "gigasocial-live-video--portrait"
             )}
           />
-        ) : captureMode === "audio" ? (
+        ) : mode === "audio" ? (
           <div className="relative flex min-h-[12rem] flex-col items-center justify-center gap-3 px-6 py-10 text-white">
             <Radio className="h-10 w-10" aria-hidden />
             <p className="text-sm font-medium">Live audio room</p>
@@ -233,6 +314,53 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
               />
             ) : null}
           </div>
+        ) : showScreenPicker ? (
+          <div className="flex min-h-[16rem] flex-col items-center justify-center gap-3 px-4 py-8 text-center text-white">
+            <MonitorUp className="h-10 w-10 text-violet-200" aria-hidden />
+            <p className="text-sm font-medium">Share your screen on this phone</p>
+            <p className="max-w-sm text-xs text-violet-100/90">{LIVE_SCREEN_SHARE_MOBILE_HINT}</p>
+            <div className="mt-1 flex w-full max-w-sm flex-col gap-2">
+              {supportsOsDisplayCapture() ? (
+                <Button
+                  type="button"
+                  disabled={busy}
+                  className="min-h-11 w-full"
+                  onClick={() => void shareOsDisplay()}
+                >
+                  Share screen / window
+                </Button>
+              ) : null}
+              <Button
+                type="button"
+                disabled={busy}
+                variant="outline"
+                className="min-h-11 w-full border-white/30 bg-white/10 text-white"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Share video or screen recording
+              </Button>
+              <Button
+                type="button"
+                disabled={busy}
+                variant="outline"
+                className="min-h-11 w-full border-white/30 bg-white/10 text-white"
+                onClick={() => void shareWithRearCamera()}
+              >
+                Show with rear camera
+              </Button>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="video/*,image/*"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                if (file) void shareFromFile(file);
+              }}
+            />
+          </div>
         ) : (
           <div className="relative">
             <video
@@ -242,8 +370,8 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
               controls={!isHost}
               className={cn(
                 "gigasocial-live-video w-full bg-black",
-                (captureMode === "video" || mode === "video") && "gigasocial-live-video--portrait",
-                captureMode === "screen" && mode === "screen" && "gigasocial-live-video--screen"
+                mode === "video" && "gigasocial-live-video--portrait",
+                mode === "screen" && "gigasocial-live-video--screen"
               )}
               aria-label="Live stream preview"
             />
@@ -258,36 +386,6 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
         {mediaError ? (
           <div className="space-y-2 bg-red-950 px-3 py-2 text-xs text-red-200">
             <p role="alert">{mediaError}</p>
-            {isHost ? (
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="min-h-8 border-red-200/40 bg-red-900/40 text-red-50"
-                  onClick={() => {
-                    hostMediaStartedRef.current = true;
-                    void startHostMedia();
-                  }}
-                >
-                  Retry
-                </Button>
-                {mode === "screen" && captureOverride !== "camera" ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="min-h-8 border-red-200/40 bg-red-900/40 text-red-50"
-                    onClick={() => {
-                      setCaptureOverride("camera");
-                      hostMediaStartedRef.current = false;
-                    }}
-                  >
-                    Use camera instead
-                  </Button>
-                ) : null}
-              </div>
-            ) : null}
           </div>
         ) : null}
         {stream.captionLines?.length ? (
@@ -310,8 +408,32 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
             <Type className="h-4 w-4" aria-hidden />
             {showTeleprompter ? "Hide script" : "Teleprompter"}
           </Button>
-          {captureOverride === "camera" && mode === "screen" ? (
-            <p className="text-xs text-muted">Previewing with camera (screen share unavailable).</p>
+          {mode === "screen" && !awaitingScreenShare ? (
+            <>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="min-h-9"
+                disabled={busy}
+                onClick={() => {
+                  setAwaitingScreenShare(true);
+                  stopMedia();
+                }}
+              >
+                Change share
+              </Button>
+              {screenSource ? (
+                <p className="text-xs text-muted">
+                  Sharing via{" "}
+                  {screenSource === "display"
+                    ? "screen"
+                    : screenSource === "file"
+                      ? "gallery file"
+                      : "rear camera"}
+                </p>
+              ) : null}
+            </>
           ) : null}
         </div>
       ) : null}
@@ -348,7 +470,9 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
               variant="outline"
               className="min-h-9"
               onClick={() =>
-                void addCoHost({ sessionToken, streamId, coHostHandle }).then(() => setCoHostHandle(""))
+                void addCoHost({ sessionToken, streamId, coHostHandle }).then(() =>
+                  setCoHostHandle("")
+                )
               }
             >
               <Users className="h-4 w-4" aria-hidden />

@@ -14,6 +14,10 @@ describe("enterprise PWA security headers", () => {
     expect(headers).toContain("X-Permitted-Cross-Domain-Policies: none");
   });
 
+  it("allows display-capture for live screen share", () => {
+    expect(headers).toMatch(/Permissions-Policy:.*display-capture=\(self\)/);
+  });
+
   it("includes worker-src and manifest-src in CSP", () => {
     expect(headers).toContain("worker-src 'self'");
     expect(headers).toContain("manifest-src 'self'");

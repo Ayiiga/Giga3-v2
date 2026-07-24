@@ -1,6 +1,6 @@
-/** Live screen-share + teleprompter fixes — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v181-live-fix";
-const NEXT_STATIC_CACHE = "giga3-next-static-v181";
+/** Mobile live screen-share fallbacks — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v182-mobile-screen";
+const NEXT_STATIC_CACHE = "giga3-next-static-v182";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";
