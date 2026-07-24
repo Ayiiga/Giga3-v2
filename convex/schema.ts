@@ -815,6 +815,8 @@ export default defineSchema({
     likeCount: v.number(),
     commentCount: v.number(),
     shareCount: v.number(),
+    /** Set by the post author to pin on their profile / float in feeds. */
+    pinnedAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
     deletedAt: v.optional(v.number()),
@@ -828,6 +830,8 @@ export default defineSchema({
     authorId: v.string(),
     body: v.string(),
     parentId: v.optional(v.id("socialComments")),
+    /** Set by the post creator to pin a comment on the thread. */
+    pinnedAt: v.optional(v.number()),
     createdAt: v.number(),
     deletedAt: v.optional(v.number()),
   })

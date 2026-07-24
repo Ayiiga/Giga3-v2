@@ -35,6 +35,7 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
   const toggleBookmark = useMutation(api.gigaSocial.toggleBookmark);
   const recordShare = useMutation(api.gigaSocial.recordShare);
   const deletePost = useMutation(api.gigaSocial.deletePost);
+  const setPostPinned = useMutation(api.gigaSocial.setPostPinned);
   const prepareAvatarUpload = useAction(api.gigaSocialStorage.prepareAvatarUpload);
   const resolveStorageUrl = useMutation(api.gigaSocialStorage.resolveStorageUrl);
 
@@ -576,6 +577,13 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
                   }}
                   onDelete={async (postId) => {
                     await deletePost({ sessionToken, postId: postId as Id<"socialPosts"> });
+                  }}
+                  onPin={async (postId, pinned) => {
+                    await setPostPinned({
+                      sessionToken,
+                      postId: postId as Id<"socialPosts">,
+                      pinned,
+                    });
                   }}
                 />
               </li>

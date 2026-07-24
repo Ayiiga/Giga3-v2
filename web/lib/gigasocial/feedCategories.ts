@@ -33,6 +33,7 @@ export type FeedCategoryId =
   | "creator-zone";
 
 export const FEED_CATEGORIES: { id: FeedCategoryId; label: string; emoji: string }[] = [
+  { id: "recent", label: "Newest", emoji: "🕐" },
   { id: "for-you", label: "For You", emoji: "✨" },
   { id: "following", label: "Following", emoji: "👥" },
   { id: "trending", label: "Trending", emoji: "🔥" },
@@ -49,7 +50,6 @@ export const FEED_CATEGORIES: { id: FeedCategoryId; label: string; emoji: string
   { id: "churches", label: "Churches", emoji: "⛪" },
   { id: "gaming", label: "Gaming", emoji: "🎮" },
   { id: "live-now", label: "Live Now", emoji: "🔴" },
-  { id: "recent", label: "Recent", emoji: "🕐" },
   { id: "videos", label: "Videos", emoji: "🎬" },
   { id: "photos", label: "Photos", emoji: "📷" },
   { id: "ai", label: "AI", emoji: "✦" },
@@ -115,7 +115,12 @@ export function filterPostsByFeedCategory(
     case "nearby":
       return posts.filter((post) => matchesHashtagCategory(post, CATEGORY_HASHTAGS.nearby));
     case "recent":
-      return posts;
+      return [...posts].sort((a, b) => {
+        const aPin = a.pinnedAt ? 1 : 0;
+        const bPin = b.pinnedAt ? 1 : 0;
+        if (aPin !== bPin) return bPin - aPin;
+        return b.createdAt - a.createdAt;
+      });
     case "trending":
     case "trending-africa":
       return [...posts].sort((a, b) => engagementScore(b) - engagementScore(a));

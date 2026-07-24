@@ -32,6 +32,21 @@ import { consumeSocialWriteRateLimit } from "./socialRateLimit";
 
 const SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC = 15;
 export const MAX_SOCIAL_ACCOUNTS_PER_USER = 3;
+const MAX_PINNED_POSTS_PER_AUTHOR = 3;
+const MAX_PINNED_COMMENTS_PER_POST = 5;
+
+function compareNewestWithPins(
+  a: { createdAt: number; pinnedAt?: number },
+  b: { createdAt: number; pinnedAt?: number }
+): number {
+  const aPin = a.pinnedAt ? 1 : 0;
+  const bPin = b.pinnedAt ? 1 : 0;
+  if (aPin !== bPin) return bPin - aPin;
+  if (a.pinnedAt && b.pinnedAt && a.pinnedAt !== b.pinnedAt) {
+    return b.pinnedAt - a.pinnedAt;
+  }
+  return b.createdAt - a.createdAt;
+}
 
 async function listProfileDocs(
   ctx: { db: import("./_generated/server").QueryCtx["db"] },
@@ -387,7 +402,7 @@ export const listFeed = query({
       rows = rows.filter((r) => followingIds.has(r.authorId));
     }
 
-    rows.sort((a, b) => b.createdAt - a.createdAt);
+    rows.sort(compareNewestWithPins);
 
     const boostedPostIds = new Set<string>();
     const activeBoosts = await ctx.db
@@ -405,7 +420,7 @@ export const listFeed = query({
         const aBoost = boostedPostIds.has(String(a._id)) ? 1 : 0;
         const bBoost = boostedPostIds.has(String(b._id)) ? 1 : 0;
         if (aBoost !== bBoost) return bBoost - aBoost;
-        return b.createdAt - a.createdAt;
+        return compareNewestWithPins(a, b);
       });
     }
 
@@ -637,8 +652,11 @@ export const getMyProfile = query({
           .query("socialPosts")
           .withIndex("by_author_created", (q) => q.eq("authorId", userId))
           .order("desc")
-          .take(20);
-        visiblePosts = posts.filter((p) => !p.deletedAt);
+          .take(80);
+        visiblePosts = posts
+          .filter((p) => !p.deletedAt)
+          .sort(compareNewestWithPins)
+          .slice(0, 20);
       } catch {
         visiblePosts = [];
       }
@@ -763,15 +781,17 @@ export const getProfileByHandle = query({
       .query("socialPosts")
       .withIndex("by_author_created", (q) => q.eq("authorId", profile.userId))
       .order("desc")
-      .take(60);
+      .take(80);
     const isOwner = viewerId === profile.userId;
     const supporting = await isSupporting(ctx, viewerId, profile.userId);
 
-    const visiblePosts = posts.filter((p) => {
-      if (p.deletedAt) return false;
-      if (p.visibility === "followers" && !isOwner && !supporting) return false;
-      return true;
-    });
+    const visiblePosts = posts
+      .filter((p) => {
+        if (p.deletedAt) return false;
+        if (p.visibility === "followers" && !isOwner && !supporting) return false;
+        return true;
+      })
+      .sort(compareNewestWithPins);
 
     const { fanCount, supportingCount } = await getFanCounts(ctx, profile.userId);
     const likesReceived = visiblePosts.reduce((sum, p) => sum + (p.likeCount ?? 0), 0);
@@ -850,17 +870,17 @@ export const listComments = query({
     const rows = await ctx.db
       .query("socialComments")
       .withIndex("by_post_created", (q) => q.eq("postId", args.postId))
-      .order("asc")
+      .order("desc")
       .collect();
 
-    const visible = rows.filter((c) => !c.deletedAt);
+    const visible = rows.filter((c) => !c.deletedAt).sort(compareNewestWithPins);
     const comments = await Promise.all(
       visible.map(async (comment) => {
         const author = await resolveAuthor(ctx, comment.authorId);
         return toPublicComment(comment, author);
       })
     );
-    return { comments };
+    return { comments, postAuthorId: post.authorId };
   },
 });
 
@@ -1478,6 +1498,87 @@ export const addComment = mutation({
     });
 
     return { commentId };
+  },
+});
+
+export const setPostPinned = mutation({
+  args: {
+    sessionToken: v.string(),
+    postId: v.id("socialPosts"),
+    pinned: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    const post = await ctx.db.get(args.postId);
+    if (!post || post.deletedAt) throw new Error("Post not found.");
+    if (post.authorId !== userId) throw new Error("Only the creator can pin this post.");
+
+    if (args.pinned) {
+      const authorPosts = await ctx.db
+        .query("socialPosts")
+        .withIndex("by_author_created", (q) => q.eq("authorId", userId))
+        .order("desc")
+        .take(80);
+      const pinnedCount = authorPosts.filter(
+        (p) => !p.deletedAt && p.pinnedAt && p._id !== args.postId
+      ).length;
+      if (pinnedCount >= MAX_PINNED_POSTS_PER_AUTHOR) {
+        throw new Error(
+          `You can pin up to ${MAX_PINNED_POSTS_PER_AUTHOR} posts. Unpin one first.`
+        );
+      }
+      const pinnedAt = Date.now();
+      await ctx.db.patch(args.postId, {
+        pinnedAt,
+        updatedAt: pinnedAt,
+      });
+      return { pinned: true, pinnedAt };
+    }
+
+    await ctx.db.patch(args.postId, {
+      pinnedAt: undefined,
+      updatedAt: Date.now(),
+    });
+    return { pinned: false, pinnedAt: null };
+  },
+});
+
+export const setCommentPinned = mutation({
+  args: {
+    sessionToken: v.string(),
+    commentId: v.id("socialComments"),
+    pinned: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    const comment = await ctx.db.get(args.commentId);
+    if (!comment || comment.deletedAt) throw new Error("Comment not found.");
+    const post = await ctx.db.get(comment.postId);
+    if (!post || post.deletedAt) throw new Error("Post not found.");
+    if (post.authorId !== userId) {
+      throw new Error("Only the post creator can pin comments.");
+    }
+
+    if (args.pinned) {
+      const thread = await ctx.db
+        .query("socialComments")
+        .withIndex("by_post_created", (q) => q.eq("postId", comment.postId))
+        .collect();
+      const pinnedCount = thread.filter(
+        (c) => !c.deletedAt && c.pinnedAt && c._id !== args.commentId
+      ).length;
+      if (pinnedCount >= MAX_PINNED_COMMENTS_PER_POST) {
+        throw new Error(
+          `You can pin up to ${MAX_PINNED_COMMENTS_PER_POST} comments on a post.`
+        );
+      }
+      const pinnedAt = Date.now();
+      await ctx.db.patch(args.commentId, { pinnedAt });
+      return { pinned: true, pinnedAt };
+    }
+
+    await ctx.db.patch(args.commentId, { pinnedAt: undefined });
+    return { pinned: false, pinnedAt: null };
   },
 });
 

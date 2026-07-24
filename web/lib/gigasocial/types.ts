@@ -15,6 +15,7 @@ export type SocialComment = {
   body: string;
   parentId?: string;
   createdAt: number;
+  pinnedAt?: number;
   author: SocialAuthor;
 };
 
@@ -37,6 +38,7 @@ export type SocialPost = {
   commentCount: number;
   shareCount: number;
   createdAt: number;
+  pinnedAt?: number;
   author: SocialAuthor;
   likedByMe?: boolean;
   bookmarkedByMe?: boolean;

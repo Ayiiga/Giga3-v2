@@ -31,6 +31,7 @@ export type PublicSocialPost = {
   commentCount: number;
   shareCount: number;
   createdAt: number;
+  pinnedAt?: number;
   author: PublicSocialAuthor;
   likedByMe?: boolean;
   bookmarkedByMe?: boolean;
@@ -42,6 +43,7 @@ export type PublicSocialComment = {
   body: string;
   parentId?: Id<"socialComments">;
   createdAt: number;
+  pinnedAt?: number;
   author: PublicSocialAuthor;
 };
 
@@ -212,6 +214,7 @@ export function toPublicPost(
     commentCount: post.commentCount,
     shareCount: post.shareCount,
     createdAt: post.createdAt,
+    pinnedAt: post.pinnedAt,
     author,
     likedByMe: extras?.likedByMe,
     bookmarkedByMe: extras?.bookmarkedByMe,
@@ -228,6 +231,7 @@ export function toPublicComment(
     body: comment.body,
     parentId: comment.parentId,
     createdAt: comment.createdAt,
+    pinnedAt: comment.pinnedAt,
     author,
   };
 }

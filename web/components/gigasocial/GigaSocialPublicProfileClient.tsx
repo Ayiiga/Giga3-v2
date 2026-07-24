@@ -49,6 +49,7 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
   const toggleLike = useMutation(api.gigaSocial.toggleLike);
   const toggleBookmark = useMutation(api.gigaSocial.toggleBookmark);
   const recordShare = useMutation(api.gigaSocial.recordShare);
+  const setPostPinned = useMutation(api.gigaSocial.setPostPinned);
 
   const profile = data?.profile;
   const posts = useMemo(() => (data?.posts ?? []) as SocialPost[], [data?.posts]);
@@ -251,6 +252,7 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
               post={post}
               sessionToken={sessionToken}
               enablePostTips
+              canDelete={Boolean(myUserId && profile.userId === myUserId)}
               onLike={async (postId) => {
                 if (!sessionToken) return;
                 await toggleLike({ sessionToken, postId: postId as Id<"socialPosts"> });
@@ -263,6 +265,17 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
                 if (!sessionToken) return;
                 await recordShare({ sessionToken, postId: postId as Id<"socialPosts"> });
               }}
+              onPin={
+                sessionToken && myUserId && profile.userId === myUserId
+                  ? async (postId, pinned) => {
+                      await setPostPinned({
+                        sessionToken,
+                        postId: postId as Id<"socialPosts">,
+                        pinned,
+                      });
+                    }
+                  : undefined
+              }
             />
           ))}
         </div>
