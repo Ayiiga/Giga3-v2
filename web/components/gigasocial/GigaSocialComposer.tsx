@@ -91,6 +91,8 @@ interface GigaSocialComposerProps {
   initialAction?: GigaCreateActionId;
   initialBody?: string;
   initialPostType?: SocialPostTypeId;
+  /** Open camera studio with teleprompter on (AI Studio Script launch). */
+  initialTeleprompter?: boolean;
   remixSource?: SocialPost;
   enableAIAssistant?: boolean;
   enableMediaStudio?: boolean;
@@ -119,6 +121,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   initialAction,
   initialBody,
   initialPostType,
+  initialTeleprompter = false,
   remixSource,
   enableAIAssistant = false,
   enableMediaStudio = false,
@@ -930,6 +933,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     <GigaSocialCameraStudio
       open={cameraStudioOpen}
       defaultMode={cameraDefaultMode}
+      initialTeleprompter={initialTeleprompter}
       onClose={() => setCameraStudioOpen(false)}
       onCapture={handleCameraCapture}
     />

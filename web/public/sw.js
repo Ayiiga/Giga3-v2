@@ -1,6 +1,6 @@
-/** RC1 release candidate — refresh installed PWAs after Phase 5/6 landings. */
-const CACHE_NAME = "giga3-shell-v180-rc1";
-const NEXT_STATIC_CACHE = "giga3-next-static-v180";
+/** Live screen-share + teleprompter fixes — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v181-live-fix";
+const NEXT_STATIC_CACHE = "giga3-next-static-v181";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";
