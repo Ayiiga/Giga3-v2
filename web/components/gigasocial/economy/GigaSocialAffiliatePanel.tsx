@@ -46,7 +46,9 @@ export const GigaSocialAffiliatePanel = memo(function GigaSocialAffiliatePanel({
 
   if (!affiliate.unlocked) {
     return (
-      <p className="text-sm text-muted">Affiliate program unlocks at 500 fans.</p>
+      <p className="text-sm text-muted">
+        Affiliate program unlocks at 500 fans. Tips on your posts stay open meanwhile.
+      </p>
     );
   }
 

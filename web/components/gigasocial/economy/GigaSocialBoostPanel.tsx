@@ -3,9 +3,11 @@
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatGhs } from "@/lib/gigasocial/creatorEconomy";
+import { FAN_LABELS } from "@/lib/gigasocial/fanBranding";
+import { formatCompactCount } from "@/lib/gigasocial/ogMeta";
 import { api } from "convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
-import { Megaphone, Loader2 } from "lucide-react";
+import { Lock, Megaphone, Loader2 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 
 const DEFAULT_DURATIONS = [1, 3, 5, 7, 14, 21, 30, 60, 90];
@@ -18,6 +20,7 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
   postId?: string;
 }) {
   const settings = useQuery(api.gigaSocialEconomy.getEconomySettings, {});
+  const dashboard = useQuery(api.gigaSocialEconomy.getCreatorDashboard, { sessionToken });
   const campaigns = useQuery(api.gigaSocialEconomy.listBoostCampaigns, { sessionToken });
   const createBoost = useMutation(api.gigaSocialEconomy.createBoostCampaign);
 
@@ -56,8 +59,27 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
     }
   }, [budgetGhs, createBoost, durationDays, sessionToken, targetId]);
 
-  if (campaigns === undefined || settings === undefined) {
+  if (campaigns === undefined || settings === undefined || dashboard === undefined) {
     return <LoadingState label="Loading boost campaigns…" />;
+  }
+
+  if (dashboard && !dashboard.unlocked) {
+    return (
+      <div className="saas-card rounded-2xl border border-border p-6">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+            <Lock className="h-5 w-5" aria-hidden />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Boost campaigns</h2>
+            <p className="mt-1 text-sm text-muted">
+              Unlock at {dashboard.fansRequired} {FAN_LABELS.fans.toLowerCase()}. You have{" "}
+              {formatCompactCount(dashboard.fanCount)}. Tips on posts stay open meanwhile.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

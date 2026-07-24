@@ -90,8 +90,9 @@ export const GigaSocialCreatorDashboard = memo(function GigaSocialCreatorDashboa
               />
             </div>
             <p className="mt-2 text-xs text-muted">
-              {fanProgressPercent(dashboard.fanCount, dashboard.fansRequired)}% — gifts, affiliate,
-              and boost campaigns unlock together.
+              {fanProgressPercent(dashboard.fanCount, dashboard.fansRequired)}% — tips already work on
+              your posts. Affiliate, boost, and payout tools unlock at{" "}
+              {dashboard.fansRequired} fans.
             </p>
             {features.enableCreatorLevels ? (
               <p className="mt-3 text-xs text-muted">
