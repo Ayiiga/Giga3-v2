@@ -7,7 +7,7 @@ import { Loader2, Settings2 } from "lucide-react";
 import { memo, useCallback, useEffect, useState } from "react";
 
 const FIELD_LABELS: Record<string, string> = {
-  "gigasocial.economy.minFans": "Minimum fans for earn tools (tips stay open)",
+  "gigasocial.economy.minFans": "Minimum fans for affiliate/payouts (tips & boosts stay open)",
   "gigasocial.economy.viewRewardRate": "Content view reward (GHS per view)",
   "gigasocial.economy.watchTimeRate": "Video watch-time reward (GHS per minute)",
   "gigasocial.economy.engagementRate": "Engagement reward (GHS per comment/share)",

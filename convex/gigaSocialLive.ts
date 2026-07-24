@@ -379,7 +379,7 @@ export const sendLiveGift = mutation({
     if (!hostProfile) throw new Error("Host profile not found.");
 
     // Receiving live gifts is open to any host with a profile (same as post tips).
-    // Fan-threshold unlock still applies to affiliate/boost/payout tools.
+    // Fan-threshold unlock still applies to affiliate/payout tools (not tips or boosts).
     const settings = await loadEconomySettings(ctx);
 
     const giftType = args.giftType.trim().slice(0, 32);

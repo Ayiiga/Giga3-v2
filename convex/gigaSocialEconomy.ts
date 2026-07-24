@@ -458,7 +458,7 @@ export const sendCreatorGift = mutation({
     if (!profile) throw new Error("Creator not found.");
 
     // Tips are allowed for any creator with a social profile (hotfix #220 / SW v171).
-    // The 500-fan monetization unlock gates affiliate/boost/payout tools — not receiving tips.
+    // The 500-fan monetization unlock gates affiliate/payout tools — not tips or ad boosts.
     const settings = await loadEconomySettings(ctx);
 
     const credits = Math.max(1, Math.min(500, Math.floor(args.credits)));
@@ -612,10 +612,8 @@ export const createBoostCampaign = mutation({
     if (!profile) throw new Error("Profile not found.");
 
     const settings = await loadEconomySettings(ctx);
-    const unlocked = await isMonetizationUnlocked(ctx, profile, settings);
-    if (!unlocked) {
-      throw new Error("Boost campaigns unlock at 500 Fans.");
-    }
+    // Advertisement boosts are open to every creator — fan unlock is for
+    // affiliate / payout tools only (tips are also ungated).
 
     const budgetGhs = Math.max(
       settings.boostBudgetMinGhs,

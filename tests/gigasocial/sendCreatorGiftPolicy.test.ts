@@ -15,7 +15,7 @@ describe("sendCreatorGift policy", () => {
     const handler = src.slice(handlerStart, nextExport === -1 ? undefined : nextExport);
     expect(handler).not.toContain("has not unlocked the Gifts Hub");
     expect(handler).not.toContain("isMonetizationUnlocked");
-    expect(handler).toContain("not receiving tips");
+    expect(handler).toContain("not tips or ad boosts");
   });
 
   it("does not block live gifts behind fan unlock", () => {
@@ -31,13 +31,18 @@ describe("sendCreatorGift policy", () => {
     expect(handler).not.toContain("isMonetizationUnlocked");
   });
 
-  it("keeps affiliate and boost gated at 500 fans", () => {
+  it("keeps affiliate gated at 500 fans but leaves boosts open", () => {
     const src = readFileSync(
       resolve(__dirname, "../../convex/gigaSocialEconomy.ts"),
       "utf8"
     );
     expect(src).toContain("Affiliate program unlocks at 500 Fans.");
-    expect(src).toContain("Boost campaigns unlock at 500 Fans.");
+    expect(src).not.toContain("Boost campaigns unlock at 500 Fans.");
+    const boostStart = src.indexOf("export const createBoostCampaign");
+    expect(boostStart).toBeGreaterThan(-1);
+    const nextExport = src.indexOf("export const ", boostStart + 10);
+    const boostHandler = src.slice(boostStart, nextExport === -1 ? undefined : nextExport);
+    expect(boostHandler).not.toContain("isMonetizationUnlocked");
   });
 
   it("defaults post tip buttons on (not gated by monetizationUnlocked)", () => {

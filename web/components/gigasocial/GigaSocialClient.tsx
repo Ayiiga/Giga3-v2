@@ -306,7 +306,7 @@ function GigaSocialContent() {
           <>
             <SectionIntro
               title="Creator economy"
-              description="Tips are open on every post. Affiliate, boost, and payout tools unlock at 500 fans."
+              description="Tips and ad boosts are open to every creator. Affiliate and payout tools unlock at 500 fans."
             />
             <GigaSocialPanelErrorBoundary panelName="Creator">
               <GigaSocialCreatorPanel sessionToken={sessionToken} />

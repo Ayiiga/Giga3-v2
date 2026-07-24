@@ -1,6 +1,6 @@
-/** Tips open on all posts; 500 fans unlocks earn tools — refresh PWAs. */
-const CACHE_NAME = "giga3-shell-v183-tips-open";
-const NEXT_STATIC_CACHE = "giga3-next-static-v183";
+/** Ad boosts open with no fan gate — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v184-boost-open";
+const NEXT_STATIC_CACHE = "giga3-next-static-v184";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";
