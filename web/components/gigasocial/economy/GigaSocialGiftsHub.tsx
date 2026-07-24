@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { toUserFacingError } from "@/lib/errors/userMessage";
 import { formatGhs } from "@/lib/gigasocial/creatorEconomy";
+import { redirectToPaystack } from "@/lib/payments/paystackService";
 import { api } from "convex/_generated/api";
 import { useAction, useQuery } from "convex/react";
 import { Gift, Loader2 } from "lucide-react";
@@ -36,7 +37,7 @@ export const GigaSocialGiftsHub = memo(function GigaSocialGiftsHub({
           giftType,
           message: "Thanks for creating!",
         });
-        window.location.href = init.authorizationUrl;
+        redirectToPaystack(init.authorizationUrl);
       } catch (e) {
         setError(toUserFacingError(e, "Could not start tip payment. Please try again."));
         setBusy(null);

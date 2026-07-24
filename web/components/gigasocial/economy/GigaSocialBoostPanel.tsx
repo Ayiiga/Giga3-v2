@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatGhs } from "@/lib/gigasocial/creatorEconomy";
+import { redirectToPaystack } from "@/lib/payments/paystackService";
 import { api } from "convex/_generated/api";
 import { useAction, useQuery } from "convex/react";
 import { Megaphone, Loader2 } from "lucide-react";
@@ -46,7 +47,7 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
         budgetGhs,
         durationDays,
       });
-      window.location.href = init.authorizationUrl;
+      redirectToPaystack(init.authorizationUrl);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not start boost payment.");
       setBusy(false);

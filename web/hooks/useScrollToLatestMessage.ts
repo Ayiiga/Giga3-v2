@@ -42,6 +42,26 @@ export function useScrollToLatestMessage({
     return () => el.removeEventListener("scroll", onScroll);
   }, [scrollRef, nearBottomThresholdPx, scrollKey]);
 
+  // Stick to bottom while streaming reveal grows the last bubble (scrollKey
+  // only changes on new turns, not mid-reveal character ticks).
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || !enabled || typeof ResizeObserver === "undefined") return;
+
+    const observer = new ResizeObserver(() => {
+      if (!nearBottomRef.current) return;
+      const node = scrollRef.current;
+      if (!node) return;
+      scrollToBottom(node, "auto");
+    });
+
+    const stack = el.querySelector(".chat-message-stack") ?? el.firstElementChild;
+    if (stack) observer.observe(stack);
+    observer.observe(el);
+
+    return () => observer.disconnect();
+  }, [scrollRef, enabled, scrollKey]);
+
   useEffect(() => {
     if (!enabled || !scrollKey || prevKeyRef.current === scrollKey) {
       return;

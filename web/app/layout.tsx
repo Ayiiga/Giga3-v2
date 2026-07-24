@@ -88,8 +88,12 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover",
-  /** Resize layout when soft keyboard opens — prevents chat composer clipping on Android PWA. */
-  interactiveWidget: "resizes-content",
+  /**
+   * Keep layout viewport stable while the soft keyboard overlays content.
+   * ChatKeyboardShell pins to visualViewport; marketing pages opt into
+   * resizes-content via MarketingScrollFix so form fields stay visible.
+   */
+  interactiveWidget: "overlays-content",
 };
 
 export default function RootLayout({

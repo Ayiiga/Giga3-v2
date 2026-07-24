@@ -141,6 +141,22 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
 
     html.classList.add("chat-route");
 
+    // Ensure chat wins over MarketingScrollFix residual resizes-content.
+    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    const previousViewport = viewportMeta?.getAttribute("content") ?? "";
+    if (viewportMeta) {
+      const next = previousViewport.includes("interactive-widget=")
+        ? previousViewport.replace(
+            /interactive-widget=\S+/g,
+            "interactive-widget=overlays-content"
+          )
+        : `${previousViewport}, interactive-widget=overlays-content`.replace(
+            /^,\s*/,
+            ""
+          );
+      viewportMeta.setAttribute("content", next);
+    }
+
     const isMobile = () => isMobileChatWidth(window.innerWidth);
 
     const lockPageScroll = () => {
@@ -283,6 +299,9 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
       clearChatKeyboardCssVars(html);
       unlockPageScroll();
       clearShellViewport(shell);
+      if (viewportMeta) {
+        viewportMeta.setAttribute("content", previousViewport);
+      }
     };
   }, []);
 

@@ -6,6 +6,7 @@ import { Container } from "@/components/ui/Container";
 import { formatGhs } from "@/lib/marketplace/catalog";
 import { formatTimestampDateTime } from "@/lib/datetime";
 import { getSessionToken } from "@/lib/auth";
+import { redirectToPaystack } from "@/lib/payments/paystackService";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
@@ -39,7 +40,7 @@ function MarketplaceItemInner() {
   const [submittingReview, setSubmittingReview] = useState(false);
 
   useEffect(() => {
-    if (listingId) void recordView({ listingId });
+    if (listingId) void recordView({ listingId }).catch(() => undefined);
   }, [listingId, recordView]);
 
   if (!listingId) {
@@ -64,7 +65,7 @@ function MarketplaceItemInner() {
     setError(null);
     try {
       const init = await initPurchase({ sessionToken: token, listingId: listingId! });
-      window.location.href = init.authorizationUrl;
+      redirectToPaystack(init.authorizationUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Checkout failed");
       setBuying(false);

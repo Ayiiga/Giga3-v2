@@ -1076,26 +1076,35 @@ button:focus-visible {
 }
 
 @media (max-width: 1023px) {
-  .chat-stable .saas-card,
-  .chat-stable #modes,
-  .chat-stable #modes *,
-  .chat-stable .chat-message-bubble,
-  .chat-stable .hover\:-translate-y-0\.5,
-  .chat-stable .hover\:-translate-y-0\.5:hover,
-  .chat-stable [class*="backdrop-blur"] {
-    transform: none !important;
-    filter: none !important;
-    backdrop-filter: none !important;
-    contain: none !important;
-  }
-
+  /* Mirror marketing-stable / gigasocial-stable: kill GPU transform/contain shake. */
+  .chat-stable,
   .chat-stable * {
     transition-duration: 0s !important;
     transition-delay: 0s !important;
+    transform: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    will-change: auto !important;
+    contain: none !important;
+    isolation: auto !important;
+  }
+
+  .chat-stable .saas-card,
+  .chat-stable [class*="backdrop-blur"] {
+    box-shadow: none !important;
   }
 
   .chat-stable .animate-spin {
     animation: spin 1s linear infinite !important;
+  }
+
+  /* Center scroll FAB without translate (transform killed above). */
+  .chat-stable .chat-scroll-fab {
+    left: 0 !important;
+    right: 0 !important;
+    margin-inline: auto !important;
+    width: max-content;
   }
 }
 

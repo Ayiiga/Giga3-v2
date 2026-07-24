@@ -706,8 +706,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         placeholder="Share with the community… #hashtags welcome"
         className={
           compact
-            ? "max-h-28 w-full resize-y overflow-y-auto rounded-xl border border-border bg-white px-3 py-2 text-sm"
-            : "w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm"
+            ? "max-h-28 w-full resize-none overflow-y-auto rounded-xl border border-border bg-white px-3 py-2 text-sm"
+            : "w-full resize-none rounded-xl border border-border bg-white px-3 py-2.5 text-sm"
         }
         disabled={disabled || busy}
       />
