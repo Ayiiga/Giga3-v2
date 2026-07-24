@@ -33,7 +33,8 @@ const DEFAULT_CONFIG: Record<
   },
   "gigasocial.economy.minFans": {
     value: "500",
-    description: "Minimum fans to unlock earn tools (affiliate, boost, payouts) — tips stay open",
+    description:
+      "Minimum fans to unlock affiliate and payout tools — tips and ad boosts stay open",
   },
   "gigasocial.economy.viewRewardRate": { value: "0.001", description: "GHS per content view" },
   "gigasocial.economy.watchTimeRate": { value: "0.01", description: "GHS per video watch minute" },
