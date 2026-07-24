@@ -41,7 +41,9 @@ export const paymentTypeValidator = v.union(
   v.literal("credits"),
   v.literal("video_subscription"),
   v.literal("video_credits"),
-  v.literal("marketplace")
+  v.literal("marketplace"),
+  v.literal("creator_gift"),
+  v.literal("boost_campaign")
 );
 
 export const marketplaceProductTypeValidator = v.union(
@@ -292,6 +294,21 @@ export default defineSchema({
     videoPlanId: v.optional(v.string()),
     marketplaceListingId: v.optional(v.id("marketplaceListings")),
     creatorId: v.optional(v.string()),
+    /** Creator tip (Paystack) metadata */
+    giftType: v.optional(v.string()),
+    giftPostId: v.optional(v.id("socialPosts")),
+    giftMessage: v.optional(v.string()),
+    /** Ad boost (Paystack) metadata */
+    boostTargetType: v.optional(
+      v.union(
+        v.literal("post"),
+        v.literal("video"),
+        v.literal("marketplace"),
+        v.literal("business")
+      )
+    ),
+    boostTargetId: v.optional(v.string()),
+    boostDurationDays: v.optional(v.number()),
     status: v.union(
       v.literal("pending"),
       v.literal("success"),
@@ -912,10 +929,13 @@ export default defineSchema({
     message: v.optional(v.string()),
     postId: v.optional(v.id("socialPosts")),
     streamId: v.optional(v.id("socialLiveStreams")),
+    /** Paystack reference when tip was paid via MoMo/card/etc. */
+    paymentReference: v.optional(v.string()),
     createdAt: v.number(),
   })
     .index("by_creator_created", ["creatorId", "createdAt"])
-    .index("by_sender_created", ["senderId", "createdAt"]),
+    .index("by_sender_created", ["senderId", "createdAt"])
+    .index("by_payment_reference", ["paymentReference"]),
 
   /** GigaSocial creator affiliate tracking. */
   socialAffiliateEvents: defineTable({
@@ -942,17 +962,25 @@ export default defineSchema({
     targetId: v.string(),
     budgetGhs: v.number(),
     durationDays: v.number(),
-    status: v.union(v.literal("active"), v.literal("completed"), v.literal("cancelled")),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("active"),
+      v.literal("completed"),
+      v.literal("cancelled")
+    ),
     impressions: v.number(),
     reach: v.number(),
     engagement: v.number(),
     startedAt: v.number(),
     endsAt: v.number(),
+    /** Paystack reference when boost was paid via MoMo/card/etc. */
+    paymentReference: v.optional(v.string()),
     createdAt: v.number(),
   })
     .index("by_creator_created", ["creatorId", "createdAt"])
     .index("by_target", ["targetType", "targetId"])
-    .index("by_status_ends", ["status", "endsAt"]),
+    .index("by_status_ends", ["status", "endsAt"])
+    .index("by_payment_reference", ["paymentReference"]),
 
   /** Enterprise & education — org-scoped data isolated from consumer chat history. */
   organizations: defineTable({

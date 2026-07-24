@@ -82,7 +82,7 @@ export const GigaSocialCreatorWallet = memo(function GigaSocialCreatorWallet({
       <section className="saas-card rounded-2xl border border-border p-4">
         <h3 className="text-sm font-semibold text-foreground">Monetization rails</h3>
         <ul className="mt-2 space-y-1.5 text-sm text-muted">
-          <li>Tips & Creator Stars — fans tip from any post</li>
+          <li>Tips — fans pay via Paystack (MoMo, card, bank) on any post</li>
           <li>Paid communities & subscriptions — via Giga3 Wallet</li>
           <li>Premium content & affiliate marketplace</li>
           <li>Creator challenges, weekly & referral rewards</li>

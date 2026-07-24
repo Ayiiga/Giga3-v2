@@ -1,9 +1,22 @@
-import { mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { parseGamification } from "./gigaSocialViews";
 import type { Doc, Id } from "./_generated/dataModel";
+
+/** Paystack tip tiers in GHS (MoMo / card / bank). */
+export const CREATOR_TIP_CATALOG = [
+  { id: "spark", label: "Spark", emoji: "✨", amountGhs: 1 },
+  { id: "fire", label: "Fire", emoji: "🔥", amountGhs: 2 },
+  { id: "crown", label: "Crown", emoji: "👑", amountGhs: 5 },
+  { id: "rocket", label: "Rocket", emoji: "🚀", amountGhs: 10 },
+  { id: "diamond", label: "Diamond", emoji: "💎", amountGhs: 20 },
+] as const;
+
+export function getCreatorTipTier(giftType: string) {
+  return CREATOR_TIP_CATALOG.find((tier) => tier.id === giftType) ?? null;
+}
 
 type DbCtx = { db: import("./_generated/server").QueryCtx["db"] };
 
@@ -427,14 +440,94 @@ export const getGiftsHub = query({
         createdAt: g.createdAt,
         senderId: isOwner ? g.senderId : undefined,
       })),
-      giftCatalog: [
-        { id: "spark", label: "Spark", emoji: "✨", credits: 5 },
-        { id: "fire", label: "Fire", emoji: "🔥", credits: 10 },
-        { id: "crown", label: "Crown", emoji: "👑", credits: 25 },
-        { id: "rocket", label: "Rocket", emoji: "🚀", credits: 50 },
-        { id: "diamond", label: "Diamond", emoji: "💎", credits: 100 },
-      ],
+      giftCatalog: CREATOR_TIP_CATALOG.map((tier) => ({
+        id: tier.id,
+        label: tier.label,
+        emoji: tier.emoji,
+        amountGhs: tier.amountGhs,
+        credits: tier.amountGhs, // legacy field — tips are GHS via Paystack
+      })),
     };
+  },
+});
+
+/** Record a tip after successful Paystack charge (idempotent by payment reference). */
+export const fulfillCreatorGiftInternal = internalMutation({
+  args: {
+    reference: v.string(),
+    senderId: v.string(),
+    creatorId: v.string(),
+    giftType: v.string(),
+    amountGhs: v.number(),
+    postId: v.optional(v.id("socialPosts")),
+    message: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("socialCreatorGifts")
+      .withIndex("by_payment_reference", (q) => q.eq("paymentReference", args.reference))
+      .first();
+    if (existing) return { giftId: existing._id, alreadyFulfilled: true as const };
+
+    const settings = await loadEconomySettings(ctx);
+    const share = settings.giftCreatorSharePercent / 100;
+    const creatorAmountGhs = Math.round(args.amountGhs * share * 100) / 100;
+
+    const giftId = await ctx.db.insert("socialCreatorGifts", {
+      creatorId: args.creatorId,
+      senderId: args.senderId,
+      giftType: args.giftType.trim().slice(0, 32),
+      credits: 0,
+      amountGhs: creatorAmountGhs,
+      message: args.message?.trim().slice(0, 200),
+      postId: args.postId,
+      paymentReference: args.reference,
+      createdAt: Date.now(),
+    });
+    return { giftId, alreadyFulfilled: false as const, creatorAmountGhs };
+  },
+});
+
+/** Activate a boost after successful Paystack charge (idempotent by payment reference). */
+export const activateBoostCampaignInternal = internalMutation({
+  args: {
+    reference: v.string(),
+    creatorId: v.string(),
+    targetType: v.union(
+      v.literal("post"),
+      v.literal("video"),
+      v.literal("marketplace"),
+      v.literal("business")
+    ),
+    targetId: v.string(),
+    budgetGhs: v.number(),
+    durationDays: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("socialPostBoosts")
+      .withIndex("by_payment_reference", (q) => q.eq("paymentReference", args.reference))
+      .first();
+    if (existing) return { boostId: existing._id, alreadyFulfilled: true as const };
+
+    const now = Date.now();
+    const endsAt = now + args.durationDays * 24 * 60 * 60 * 1000;
+    const boostId = await ctx.db.insert("socialPostBoosts", {
+      creatorId: args.creatorId,
+      targetType: args.targetType,
+      targetId: args.targetId,
+      budgetGhs: args.budgetGhs,
+      durationDays: args.durationDays,
+      status: "active",
+      impressions: 0,
+      reach: 0,
+      engagement: 0,
+      startedAt: now,
+      endsAt,
+      paymentReference: args.reference,
+      createdAt: now,
+    });
+    return { boostId, alreadyFulfilled: false as const, endsAt };
   },
 });
 
@@ -590,6 +683,57 @@ export const trackAffiliateClick = mutation({
   },
 });
 
+/** Validate boost checkout inputs for Paystack initialize (action-safe). */
+export const validateBoostCheckoutInternal = internalQuery({
+  args: {
+    creatorId: v.string(),
+    targetType: v.union(
+      v.literal("post"),
+      v.literal("video"),
+      v.literal("marketplace"),
+      v.literal("business")
+    ),
+    targetId: v.string(),
+    budgetGhs: v.number(),
+    durationDays: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("socialProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", args.creatorId))
+      .first();
+    if (!profile) throw new Error("Profile not found.");
+
+    const settings = await loadEconomySettings(ctx);
+    const budgetGhs = Math.max(
+      settings.boostBudgetMinGhs,
+      Math.min(settings.boostBudgetMaxGhs, Math.floor(args.budgetGhs))
+    );
+    if (!settings.boostDurationDays.includes(args.durationDays)) {
+      throw new Error("Invalid campaign duration.");
+    }
+
+    if (args.targetType === "post" || args.targetType === "video") {
+      const post = await ctx.db.get(args.targetId as Id<"socialPosts">);
+      if (!post || post.deletedAt || post.authorId !== args.creatorId) {
+        throw new Error("Post not found or not owned by you.");
+      }
+    }
+
+    return {
+      budgetGhs,
+      durationDays: args.durationDays,
+      targetType: args.targetType,
+      targetId: args.targetId,
+      label: `Boost ${args.targetType} · GHC ${budgetGhs}`,
+    };
+  },
+});
+
+/**
+ * Free/unpaid boost creation is disabled — campaigns require Paystack
+ * (mobile money, cards, etc.) via paystack.initializeBoostPayment.
+ */
 export const createBoostCampaign = mutation({
   args: {
     sessionToken: v.string(),
@@ -603,52 +747,10 @@ export const createBoostCampaign = mutation({
     budgetGhs: v.number(),
     durationDays: v.number(),
   },
-  handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
-    const profile = await ctx.db
-      .query("socialProfiles")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
-    if (!profile) throw new Error("Profile not found.");
-
-    const settings = await loadEconomySettings(ctx);
-    // Advertisement boosts are open to every creator — fan unlock is for
-    // affiliate / payout tools only (tips are also ungated).
-
-    const budgetGhs = Math.max(
-      settings.boostBudgetMinGhs,
-      Math.min(settings.boostBudgetMaxGhs, Math.floor(args.budgetGhs))
+  handler: async () => {
+    throw new Error(
+      "Boost campaigns are paid with Paystack (mobile money, card, or bank). Use Pay & launch."
     );
-    if (!settings.boostDurationDays.includes(args.durationDays)) {
-      throw new Error("Invalid campaign duration.");
-    }
-
-    if (args.targetType === "post" || args.targetType === "video") {
-      const post = await ctx.db.get(args.targetId as Id<"socialPosts">);
-      if (!post || post.deletedAt || post.authorId !== userId) {
-        throw new Error("Post not found or not owned by you.");
-      }
-    }
-
-    const now = Date.now();
-    const endsAt = now + args.durationDays * 24 * 60 * 60 * 1000;
-
-    const boostId = await ctx.db.insert("socialPostBoosts", {
-      creatorId: userId,
-      targetType: args.targetType,
-      targetId: args.targetId,
-      budgetGhs,
-      durationDays: args.durationDays,
-      status: "active",
-      impressions: 0,
-      reach: 0,
-      engagement: 0,
-      startedAt: now,
-      endsAt,
-      createdAt: now,
-    });
-
-    return { boostId, endsAt };
   },
 });
 

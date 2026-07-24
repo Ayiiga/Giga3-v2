@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatGhs } from "@/lib/gigasocial/creatorEconomy";
 import { api } from "convex/_generated/api";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useQuery } from "convex/react";
 import { Megaphone, Loader2 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 
@@ -19,42 +19,39 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
 }) {
   const settings = useQuery(api.gigaSocialEconomy.getEconomySettings, {});
   const campaigns = useQuery(api.gigaSocialEconomy.listBoostCampaigns, { sessionToken });
-  const createBoost = useMutation(api.gigaSocialEconomy.createBoostCampaign);
+  const initBoost = useAction(api.paystack.initializeBoostPayment);
 
   const [budgetGhs, setBudgetGhs] = useState(50);
   const [durationDays, setDurationDays] = useState(7);
   const [targetId, setTargetId] = useState(postId ?? "");
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const durations = settings?.boostDurationDays ?? DEFAULT_DURATIONS;
   const minBudget = settings?.boostBudgetMinGhs ?? 10;
   const maxBudget = settings?.boostBudgetMaxGhs ?? 2000;
 
-  const handleCreate = useCallback(async () => {
+  const handlePayAndLaunch = useCallback(async () => {
     if (!targetId.trim()) {
       setError("Enter a post ID to boost.");
       return;
     }
     setBusy(true);
     setError(null);
-    setMessage(null);
     try {
-      await createBoost({
+      const init = await initBoost({
         sessionToken,
         targetType: "post",
         targetId: targetId.trim(),
         budgetGhs,
         durationDays,
       });
-      setMessage("Boost campaign created.");
+      window.location.href = init.authorizationUrl;
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not create campaign.");
-    } finally {
+      setError(e instanceof Error ? e.message : "Could not start boost payment.");
       setBusy(false);
     }
-  }, [budgetGhs, createBoost, durationDays, sessionToken, targetId]);
+  }, [budgetGhs, durationDays, initBoost, sessionToken, targetId]);
 
   if (campaigns === undefined || settings === undefined) {
     return <LoadingState label="Loading boost campaigns…" />;
@@ -68,8 +65,8 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
           Boost Posts
         </h2>
         <p className="mt-1 text-sm text-muted">
-          Promote posts, videos, or marketplace items — available to every creator. Budget{" "}
-          {formatGhs(minBudget)}–{formatGhs(maxBudget)}.
+          Pay with mobile money, card, or bank via Paystack. Budget {formatGhs(minBudget)}–
+          {formatGhs(maxBudget)}.
         </p>
 
         <div className="mt-4 space-y-3">
@@ -115,13 +112,12 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
             </select>
           </label>
 
-          <Button type="button" disabled={busy} onClick={() => void handleCreate()}>
+          <Button type="button" disabled={busy} onClick={() => void handlePayAndLaunch()}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
-            Launch campaign
+            Pay & launch with Paystack
           </Button>
         </div>
 
-        {message ? <p className="mt-2 text-sm text-green-700">{message}</p> : null}
         {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
       </div>
 
