@@ -8,11 +8,12 @@ export const metadata: Metadata = {
 };
 
 /**
- * Soft keyboard overlays the layout; ChatKeyboardShell + visualViewport chase
- * keep the composer above the keyboard without dual layout resize shake.
+ * Soft keyboard should resize the layout on chat so the composer stays visible
+ * (Android/iOS PWA). ChatKeyboardShell still pins to visualViewport and lifts
+ * the dock when the layout does not shrink.
  */
 export const viewport: Viewport = {
-  interactiveWidget: "overlays-content",
+  interactiveWidget: "resizes-content",
 };
 
 export default function ChatLayout({

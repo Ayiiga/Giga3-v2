@@ -11,9 +11,10 @@ function usesStableViewport(pathname: string): boolean {
 }
 
 /**
- * Root viewport uses interactive-widget=overlays-content for chat/GigaSocial
- * stability. Marketing form pages need resizes-content so inputs are not trapped
- * under the soft keyboard. Stable app shells keep overlays-content.
+ * Root viewport prefers overlays-content for marketing/GigaSocial stability.
+ * Chat forces resizes-content in ChatKeyboardShell so the composer stays above
+ * the soft keyboard. Marketing form pages also need resizes-content so inputs
+ * are not trapped under the keyboard. Stable app shells skip the override.
  */
 export function MarketingScrollFix() {
   useEffect(() => {

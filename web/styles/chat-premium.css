@@ -152,7 +152,7 @@
     position: fixed;
     left: 0;
     right: 0;
-    bottom: var(--chat-keyboard-inset, 0px);
+    bottom: max(var(--chat-keyboard-inset, 0px), env(safe-area-inset-bottom, 0px));
     z-index: 30;
     width: 100%;
     max-width: 100%;

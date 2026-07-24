@@ -89,9 +89,9 @@ export const viewport: Viewport = {
   maximumScale: 5,
   viewportFit: "cover",
   /**
-   * Keep layout viewport stable while the soft keyboard overlays content.
-   * ChatKeyboardShell pins to visualViewport; marketing pages opt into
-   * resizes-content via MarketingScrollFix so form fields stay visible.
+   * Prefer overlays-content globally for marketing/GigaSocial GPU stability.
+   * Chat forces resizes-content in ChatKeyboardShell so the composer stays above
+   * the soft keyboard on mobile PWAs.
    */
   interactiveWidget: "overlays-content",
 };

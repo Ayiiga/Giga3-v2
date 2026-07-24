@@ -1,6 +1,6 @@
-/** Newest-first feed + creator pins — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v188-pin-newest";
-const NEXT_STATIC_CACHE = "giga3-next-static-v188";
+/** Chat composer above soft keyboard — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v189-chat-keyboard";
+const NEXT_STATIC_CACHE = "giga3-next-static-v189";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";

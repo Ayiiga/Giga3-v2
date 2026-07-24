@@ -14,6 +14,7 @@ import {
   measureComposerVisibility,
   measureKeyboardInset,
   readVisualViewportRect,
+  resolveComposerBottomInset,
 } from "@/lib/chat/keyboardViewport";
 import { useEffect, useRef } from "react";
 
@@ -89,21 +90,38 @@ type KeyboardLayoutState = {
   insetPx: number;
 };
 
-function readKeyboardLayoutState(): KeyboardLayoutState {
+function readKeyboardLayoutState(baselineHeight: number): KeyboardLayoutState {
   const vv = window.visualViewport;
   const viewport = vv ? readVisualViewportRect(vv) : null;
   const innerHeight = window.innerHeight;
   const layoutHeight = document.documentElement.clientHeight;
-  const insetPx = measureKeyboardInset(innerHeight, viewport, layoutHeight);
+  const measuredInset = measureKeyboardInset(
+    innerHeight,
+    viewport,
+    layoutHeight,
+    baselineHeight > 0 ? baselineHeight : undefined
+  );
+  const composerFocused = Boolean(document.activeElement?.closest(".chat-composer"));
   const keyboardOpen =
-    insetPx >= 80 ||
-    isKeyboardLikelyOpen(innerHeight, viewport) ||
-    Boolean(document.activeElement?.closest(".chat-composer"));
-  return { keyboardOpen, insetPx: keyboardOpen ? insetPx : 0 };
+    measuredInset >= 80 ||
+    isKeyboardLikelyOpen(innerHeight, viewport, 80, baselineHeight > 0 ? baselineHeight : undefined) ||
+    composerFocused;
+
+  // Fixed composer bottom offset: full inset when layout still overlays the keyboard;
+  // 0 when resizes-content already shrunk the layout to the visual viewport.
+  const insetPx = keyboardOpen
+    ? resolveComposerBottomInset(measuredInset, layoutHeight, viewport)
+    : 0;
+
+  return { keyboardOpen, insetPx };
 }
 
-function applyKeyboardLayout(shell: HTMLElement, html: HTMLElement): KeyboardLayoutState {
-  const { keyboardOpen, insetPx } = readKeyboardLayoutState();
+function applyKeyboardLayout(
+  shell: HTMLElement,
+  html: HTMLElement,
+  baselineHeight: number
+): KeyboardLayoutState {
+  const { keyboardOpen, insetPx } = readKeyboardLayoutState(baselineHeight);
   const composerHeight = readComposerDockHeight();
 
   applyChatKeyboardCssVars(html, insetPx, composerHeight);
@@ -138,22 +156,20 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
     const body = document.body;
     const prevHtmlOverflow = html.style.overflow;
     const prevBodyOverflow = body.style.overflow;
+    let focusBaselineHeight = 0;
 
     html.classList.add("chat-route");
 
-    // Ensure chat wins over MarketingScrollFix residual resizes-content.
+    // Chat must resize the layout so the composer is not trapped under the keyboard.
     const viewportMeta = document.querySelector('meta[name="viewport"]');
     const previousViewport = viewportMeta?.getAttribute("content") ?? "";
     if (viewportMeta) {
       const next = previousViewport.includes("interactive-widget=")
         ? previousViewport.replace(
             /interactive-widget=\S+/g,
-            "interactive-widget=overlays-content"
+            "interactive-widget=resizes-content"
           )
-        : `${previousViewport}, interactive-widget=overlays-content`.replace(
-            /^,\s*/,
-            ""
-          );
+        : `${previousViewport}, interactive-widget=resizes-content`.replace(/^,\s*/, "");
       viewportMeta.setAttribute("content", next);
     }
 
@@ -187,7 +203,7 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
       }
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        applyKeyboardLayout(shell, html);
+        applyKeyboardLayout(shell, html, focusBaselineHeight);
         if (adjustScroll) {
           nudgeMessageListForClippedComposer();
         }
@@ -204,7 +220,7 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
           cancelChase();
           return;
         }
-        const { keyboardOpen } = applyKeyboardLayout(shell, html);
+        const { keyboardOpen } = applyKeyboardLayout(shell, html, focusBaselineHeight);
         scrollComposerIntoView();
         nudgeMessageListForClippedComposer();
         chaseFrames += 1;
@@ -233,6 +249,11 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
 
     const onComposerFocus = (e: FocusEvent) => {
       if (!isMobile() || !isMobileChatComposerTarget(e.target)) return;
+      focusBaselineHeight = Math.max(
+        window.innerHeight,
+        window.visualViewport?.height ?? 0,
+        document.documentElement.clientHeight
+      );
       lockPageScroll();
       chaseComposerVisibility();
     };
@@ -242,6 +263,7 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
       window.setTimeout(() => {
         const active = document.activeElement;
         if (isMobileChatComposerTarget(active)) return;
+        focusBaselineHeight = 0;
         html.classList.remove("chat-keyboard-open");
         clearChatKeyboardCssVars(html);
         scheduleSync(false);

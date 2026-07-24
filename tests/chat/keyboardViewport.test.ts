@@ -11,6 +11,7 @@ import {
   measureComposerVisibility,
   measureKeyboardInset,
   readVisualViewportRect,
+  resolveComposerBottomInset,
 } from "../../web/lib/chat/keyboardViewport";
 
 describe("keyboardViewport helpers", () => {
@@ -26,6 +27,18 @@ describe("keyboardViewport helpers", () => {
     expect(measureKeyboardInset(800, { height: 800, offsetTop: 0 }, 520)).toBe(280);
     expect(measureKeyboardInset(800, { height: 500, offsetTop: 0 }, 520)).toBe(300);
     expect(measureKeyboardInset(800, null, 520)).toBe(280);
+  });
+
+  it("uses focus baseline when visual and layout insets are flat", () => {
+    expect(measureKeyboardInset(800, { height: 800, offsetTop: 0 }, 800, 800)).toBe(0);
+    expect(measureKeyboardInset(520, { height: 520, offsetTop: 0 }, 520, 800)).toBe(280);
+    expect(measureKeyboardInset(520, null, 520, 800)).toBe(280);
+  });
+
+  it("does not double-lift when layout already matches visual viewport", () => {
+    expect(resolveComposerBottomInset(280, 520, { height: 520 })).toBe(0);
+    expect(resolveComposerBottomInset(280, 800, { height: 520 })).toBe(280);
+    expect(resolveComposerBottomInset(0, 800, { height: 520 })).toBe(0);
   });
 
   it("applies and clears keyboard CSS variables on the document root", () => {
@@ -55,6 +68,7 @@ describe("keyboardViewport helpers", () => {
     expect(isKeyboardLikelyOpen(800, { height: 700, offsetTop: 0 })).toBe(true);
     expect(isKeyboardLikelyOpen(800, { height: 730, offsetTop: 0 })).toBe(false);
     expect(isKeyboardLikelyOpen(800, { height: 500, offsetTop: 0 })).toBe(true);
+    expect(isKeyboardLikelyOpen(520, { height: 520, offsetTop: 0 }, 80, 800)).toBe(true);
   });
 
   it("reads visual viewport rects", () => {
