@@ -48,31 +48,62 @@ export function keyboardInsetPx(
 
 /**
  * Best-effort keyboard inset for Android PWAs where visualViewport may not shrink
- * with `interactive-widget=overlays-content`. Falls back to layout viewport height.
+ * with `interactive-widget=overlays-content`. Falls back to layout viewport height
+ * and an optional pre-keyboard baseline height captured on composer focus.
  */
 export function measureKeyboardInset(
   innerHeight: number,
   viewport: Pick<VisualViewportRect, "height" | "offsetTop"> | null,
-  layoutHeight?: number
+  layoutHeight?: number,
+  baselineHeight?: number
 ): number {
   const fromVisual = keyboardInsetPx(innerHeight, viewport);
-  if (fromVisual > 0) return fromVisual;
+  let inset = fromVisual;
 
   if (layoutHeight !== undefined && layoutHeight > 0) {
     const fromLayout = Math.max(0, innerHeight - layoutHeight);
-    if (fromLayout >= 80) return fromLayout;
+    if (fromLayout >= 80) inset = Math.max(inset, fromLayout);
   }
 
-  return 0;
+  if (baselineHeight !== undefined && baselineHeight > 0 && viewport) {
+    const fromBaseline = Math.max(0, baselineHeight - viewport.height - viewport.offsetTop);
+    if (fromBaseline >= 80) inset = Math.max(inset, fromBaseline);
+  } else if (baselineHeight !== undefined && baselineHeight > 0) {
+    const fromBaselineInner = Math.max(0, baselineHeight - innerHeight);
+    if (fromBaselineInner >= 80) inset = Math.max(inset, fromBaselineInner);
+  }
+
+  return inset;
+}
+
+/**
+ * When `interactive-widget=resizes-content` already shrunk the layout viewport to
+ * match the visual viewport, a fixed composer should sit at bottom:0 — lifting by
+ * the full keyboard inset would double-compensate and push the input too high.
+ */
+export function resolveComposerBottomInset(
+  insetPx: number,
+  layoutHeight: number,
+  viewport: Pick<VisualViewportRect, "height"> | null,
+  tolerancePx = 24
+): number {
+  if (!viewport || insetPx <= 0) return Math.max(0, insetPx);
+  const layoutMatchesVisual = Math.abs(layoutHeight - viewport.height) <= tolerancePx;
+  return layoutMatchesVisual ? 0 : Math.max(0, insetPx);
 }
 
 /** Heuristic: soft keyboard is likely open when visual viewport is materially shorter. */
 export function isKeyboardLikelyOpen(
   innerHeight: number,
   viewport: Pick<VisualViewportRect, "height" | "offsetTop"> | null,
-  thresholdPx = 80
+  thresholdPx = 80,
+  baselineHeight?: number
 ): boolean {
-  return keyboardInsetPx(innerHeight, viewport) >= thresholdPx;
+  if (keyboardInsetPx(innerHeight, viewport) >= thresholdPx) return true;
+  if (baselineHeight !== undefined && baselineHeight > 0 && viewport) {
+    return baselineHeight - viewport.height - viewport.offsetTop >= thresholdPx;
+  }
+  return false;
 }
 
 export function buildShellViewportStyles(viewport: VisualViewportRect): ShellViewportStyles {
