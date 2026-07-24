@@ -2,34 +2,31 @@
 
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
-import { useMutation } from "convex/react";
+import { useAction } from "convex/react";
 import { Gift, Loader2 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { toUserFacingError } from "@/lib/errors/userMessage";
+import { CREATOR_TIP_CATALOG } from "@/lib/gigasocial/tipCatalog";
+import { formatGhs } from "@/lib/gigasocial/creatorEconomy";
 import { cn } from "@/lib/utils";
 
 function tipErrorMessage(err: unknown): string {
   const raw = err instanceof Error ? err.message : String(err ?? "");
-  if (/not unlocked|Gifts Hub/i.test(raw)) {
-    return "Tips are fixed on the server. Close and reopen the app, then try again.";
-  }
-  if (/insufficient|not enough|credits/i.test(raw)) {
-    return "Not enough credits to send this tip.";
-  }
-  if (/cannot gift yourself/i.test(raw)) {
+  if (/cannot tip yourself|cannot gift yourself/i.test(raw)) {
     return "You cannot tip yourself.";
   }
   if (/Creator not found/i.test(raw)) {
     return "Creator profile not found.";
   }
-  return toUserFacingError(err, "Could not send tip. Please try again.");
+  if (/PAYSTACK|not configured|checkout/i.test(raw)) {
+    return "Payment is temporarily unavailable. Please try again shortly.";
+  }
+  return toUserFacingError(err, "Could not start tip payment. Please try again.");
 }
 
-const QUICK_TIPS = [
-  { id: "spark", label: "Tip", emoji: "✨", credits: 5 },
-  { id: "fire", label: "Fire", emoji: "🔥", credits: 10 },
-  { id: "crown", label: "Crown", emoji: "👑", credits: 25 },
-] as const;
+const QUICK_TIPS = CREATOR_TIP_CATALOG.filter((tier) =>
+  ["spark", "fire", "crown"].includes(tier.id)
+);
 
 export const GigaSocialTipButton = memo(function GigaSocialTipButton({
   sessionToken,
@@ -47,35 +44,30 @@ export const GigaSocialTipButton = memo(function GigaSocialTipButton({
   disabled?: boolean;
   onMedia?: boolean;
 }) {
-  const sendGift = useMutation(api.gigaSocialEconomy.sendCreatorGift);
+  const initTip = useAction(api.paystack.initializeCreatorGiftPayment);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const tip = useCallback(
-    async (giftType: string, credits: number) => {
+    async (giftType: string) => {
       setBusy(giftType);
       setError(null);
-      setMessage(null);
       try {
-        await sendGift({
+        const init = await initTip({
           sessionToken,
           creatorId,
           giftType,
-          credits,
           postId: postId as Id<"socialPosts">,
           message: "Thanks for creating!",
         });
-        setMessage("Tip sent!");
-        setOpen(false);
+        window.location.href = init.authorizationUrl;
       } catch (e) {
         setError(tipErrorMessage(e));
-      } finally {
         setBusy(null);
       }
     },
-    [creatorId, postId, sendGift, sessionToken]
+    [creatorId, initTip, postId, sessionToken]
   );
 
   return (
@@ -120,29 +112,30 @@ export const GigaSocialTipButton = memo(function GigaSocialTipButton({
       {open ? (
         <div
           className={cn(
-            "absolute z-30 mb-1 min-w-[10rem] rounded-xl border border-border bg-white p-2 shadow-md",
+            "absolute z-30 mb-1 min-w-[11rem] rounded-xl border border-border bg-white p-2 shadow-md",
             onMedia ? "bottom-full right-0" : "bottom-full left-0"
           )}
         >
-          <p className="mb-1.5 text-[10px] font-medium text-muted">Support with credits</p>
+          <p className="mb-1.5 text-[10px] font-medium text-muted">
+            Pay with MoMo, card, or bank
+          </p>
           <div className="flex flex-col gap-1">
             {QUICK_TIPS.map((item) => (
               <button
                 key={item.id}
                 type="button"
                 disabled={busy !== null}
-                onClick={() => void tip(item.id, item.credits)}
+                onClick={() => void tip(item.id)}
                 className="inline-flex min-h-8 items-center justify-between rounded-lg px-2 text-xs text-foreground hover:bg-amber-50"
               >
                 <span>
                   <span aria-hidden>{item.emoji}</span> {item.label}
                 </span>
-                <span className="text-muted">{item.credits} cr</span>
+                <span className="text-muted">{formatGhs(item.amountGhs)}</span>
               </button>
             ))}
           </div>
           {error ? <p className="mt-1 text-[10px] text-red-700">{error}</p> : null}
-          {message ? <p className="mt-1 text-[10px] text-emerald-700">{message}</p> : null}
         </div>
       ) : null}
     </div>

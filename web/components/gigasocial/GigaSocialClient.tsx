@@ -306,7 +306,7 @@ function GigaSocialContent() {
           <>
             <SectionIntro
               title="Creator economy"
-              description="Tips and ad boosts are open to every creator. Affiliate and payout tools unlock at 500 fans."
+              description="Tips and ad boosts pay via Paystack (MoMo, card, bank). Affiliate and payouts unlock at 500 fans."
             />
             <GigaSocialPanelErrorBoundary panelName="Creator">
               <GigaSocialCreatorPanel sessionToken={sessionToken} />

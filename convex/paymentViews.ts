@@ -9,7 +9,9 @@ export type ClientPaymentView = {
     | "credits"
     | "video_subscription"
     | "video_credits"
-    | "marketplace";
+    | "marketplace"
+    | "creator_gift"
+    | "boost_campaign";
   amountGhs: number;
   productId: string;
   planId?: "basic" | "pro" | "premium";

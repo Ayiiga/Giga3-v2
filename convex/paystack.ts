@@ -37,8 +37,19 @@ import {
   computePlatformFeeGhs,
 } from "./platformRevenue";
 import { withRetries } from "./mediaUtils";
+import { getCreatorTipTier } from "./gigaSocialEconomy";
 
 const PAYSTACK_BASE = "https://api.paystack.co";
+
+/** Ghana checkout channels — MoMo, cards, bank, USSD, etc. */
+const PAYSTACK_CHANNELS = [
+  "card",
+  "mobile_money",
+  "ussd",
+  "bank",
+  "bank_transfer",
+  "qr",
+] as const;
 
 function paystackSecret(): string {
   const key = getPaystackSecret();
@@ -254,7 +265,9 @@ export const createPendingPayment = internalMutation({
       v.literal("credits"),
       v.literal("video_subscription"),
       v.literal("video_credits"),
-      v.literal("marketplace")
+      v.literal("marketplace"),
+      v.literal("creator_gift"),
+      v.literal("boost_campaign")
     ),
     amountGhs: v.number(),
     planId: v.optional(
@@ -265,6 +278,19 @@ export const createPendingPayment = internalMutation({
     videoPlanId: v.optional(v.string()),
     marketplaceListingId: v.optional(v.id("marketplaceListings")),
     creatorId: v.optional(v.string()),
+    giftType: v.optional(v.string()),
+    giftPostId: v.optional(v.id("socialPosts")),
+    giftMessage: v.optional(v.string()),
+    boostTargetType: v.optional(
+      v.union(
+        v.literal("post"),
+        v.literal("video"),
+        v.literal("marketplace"),
+        v.literal("business")
+      )
+    ),
+    boostTargetId: v.optional(v.string()),
+    boostDurationDays: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("payments", {
@@ -280,6 +306,12 @@ export const createPendingPayment = internalMutation({
       videoPlanId: args.videoPlanId,
       marketplaceListingId: args.marketplaceListingId,
       creatorId: args.creatorId,
+      giftType: args.giftType,
+      giftPostId: args.giftPostId,
+      giftMessage: args.giftMessage,
+      boostTargetType: args.boostTargetType,
+      boostTargetId: args.boostTargetId,
+      boostDurationDays: args.boostDurationDays,
       status: "pending",
       createdAt: Date.now(),
     });
@@ -381,6 +413,34 @@ export const fulfillPayment = internalMutation({
         buyerId: record.userId,
         listingId: record.marketplaceListingId,
         amountGhs: record.amountGhs,
+      });
+    } else if (
+      record.type === "creator_gift" &&
+      record.creatorId &&
+      record.giftType
+    ) {
+      await ctx.runMutation(internal.gigaSocialEconomy.fulfillCreatorGiftInternal, {
+        reference: record.reference,
+        senderId: record.userId,
+        creatorId: record.creatorId,
+        giftType: record.giftType,
+        amountGhs: record.amountGhs,
+        postId: record.giftPostId,
+        message: record.giftMessage,
+      });
+    } else if (
+      record.type === "boost_campaign" &&
+      record.boostTargetType &&
+      record.boostTargetId &&
+      record.boostDurationDays
+    ) {
+      await ctx.runMutation(internal.gigaSocialEconomy.activateBoostCampaignInternal, {
+        reference: record.reference,
+        creatorId: record.userId,
+        targetType: record.boostTargetType,
+        targetId: record.boostTargetId,
+        budgetGhs: record.amountGhs,
+        durationDays: record.boostDurationDays,
       });
     }
 
@@ -583,6 +643,192 @@ export const initializeMarketplacePayment = action({
       reference,
       amountGhs: catalog.amountGhs,
       label: catalog.label,
+      mode,
+    };
+  },
+});
+
+/** Tip a creator via Paystack (mobile money, card, bank, etc.). */
+export const initializeCreatorGiftPayment = action({
+  args: {
+    sessionToken: v.string(),
+    creatorId: v.string(),
+    giftType: v.string(),
+    postId: v.optional(v.id("socialPosts")),
+    message: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    assertPaystackProductionReady();
+    const senderId = await requireSession(args.sessionToken);
+    if (senderId === args.creatorId) {
+      throw new Error("You cannot tip yourself.");
+    }
+
+    const tier = getCreatorTipTier(args.giftType);
+    if (!tier || tier.amountGhs <= 0) {
+      throw new Error("Invalid tip amount.");
+    }
+
+    const creatorProfile = await ctx.runQuery(api.gigaSocialEconomy.getGiftsHub, {
+      sessionToken: args.sessionToken,
+      creatorId: args.creatorId,
+    });
+    if (!creatorProfile) throw new Error("Creator not found.");
+
+    const user = await ctx.runQuery(api.users.getUser, {
+      sessionToken: args.sessionToken,
+    });
+    const email = (user?.email ?? senderId).trim().toLowerCase();
+    if (!email.includes("@")) {
+      throw new Error("A valid email is required for checkout");
+    }
+
+    const productId = `creator_gift_${tier.id}`;
+    const reference = `giga3_tip_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    const frontend = process.env.FRONTEND_URL ?? "https://www.giga3ai.com";
+    const mode = getPaystackMode();
+    const label = `${tier.emoji} ${tier.label} tip · GHC ${tier.amountGhs}`;
+
+    await ctx.runMutation(internal.paystack.createPendingPayment, {
+      userId: senderId,
+      reference,
+      productId,
+      type: "creator_gift",
+      amountGhs: tier.amountGhs,
+      creatorId: args.creatorId,
+      giftType: tier.id,
+      giftPostId: args.postId,
+      giftMessage: args.message?.trim().slice(0, 200),
+    });
+
+    const init = await paystackPost("/transaction/initialize", {
+      email,
+      amount: toPesewas(tier.amountGhs),
+      currency: "GHS",
+      reference,
+      channels: [...PAYSTACK_CHANNELS],
+      callback_url: `${frontend}/payment/success/?reference=${encodeURIComponent(reference)}&tip=1`,
+      metadata: {
+        userId: senderId,
+        productId,
+        creatorId: args.creatorId,
+        giftType: tier.id,
+        paystack_mode: mode,
+        custom_fields: [
+          { display_name: "Tip", variable_name: "tip", value: label },
+          {
+            display_name: "Creator",
+            variable_name: "creator",
+            value: creatorProfile.handle ?? args.creatorId,
+          },
+        ],
+      },
+    });
+
+    const authorizationUrl = init.data?.authorization_url as string | undefined;
+    if (!authorizationUrl?.trim()) {
+      throw new Error("Paystack did not return a checkout URL. Please try again.");
+    }
+
+    return {
+      authorizationUrl,
+      accessCode: (init.data?.access_code as string | undefined)?.trim() ?? "",
+      reference,
+      amountGhs: tier.amountGhs,
+      label,
+      mode,
+    };
+  },
+});
+
+/** Pay for an ad boost via Paystack (mobile money, card, bank, etc.). */
+export const initializeBoostPayment = action({
+  args: {
+    sessionToken: v.string(),
+    targetType: v.union(
+      v.literal("post"),
+      v.literal("video"),
+      v.literal("marketplace"),
+      v.literal("business")
+    ),
+    targetId: v.string(),
+    budgetGhs: v.number(),
+    durationDays: v.number(),
+  },
+  handler: async (ctx, args) => {
+    assertPaystackProductionReady();
+    const userId = await requireSession(args.sessionToken);
+
+    const prepared = await ctx.runQuery(
+      internal.gigaSocialEconomy.validateBoostCheckoutInternal,
+      {
+        creatorId: userId,
+        targetType: args.targetType,
+        targetId: args.targetId,
+        budgetGhs: args.budgetGhs,
+        durationDays: args.durationDays,
+      }
+    );
+
+    const user = await ctx.runQuery(api.users.getUser, {
+      sessionToken: args.sessionToken,
+    });
+    const email = (user?.email ?? userId).trim().toLowerCase();
+    if (!email.includes("@")) {
+      throw new Error("A valid email is required for checkout");
+    }
+
+    const productId = `boost_${prepared.targetType}_${prepared.durationDays}d`;
+    const reference = `giga3_boost_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    const frontend = process.env.FRONTEND_URL ?? "https://www.giga3ai.com";
+    const mode = getPaystackMode();
+
+    await ctx.runMutation(internal.paystack.createPendingPayment, {
+      userId,
+      reference,
+      productId,
+      type: "boost_campaign",
+      amountGhs: prepared.budgetGhs,
+      creatorId: userId,
+      boostTargetType: prepared.targetType,
+      boostTargetId: prepared.targetId,
+      boostDurationDays: prepared.durationDays,
+    });
+
+    const init = await paystackPost("/transaction/initialize", {
+      email,
+      amount: toPesewas(prepared.budgetGhs),
+      currency: "GHS",
+      reference,
+      channels: [...PAYSTACK_CHANNELS],
+      callback_url: `${frontend}/payment/success/?reference=${encodeURIComponent(reference)}&boost=1`,
+      metadata: {
+        userId,
+        productId,
+        boostTargetType: prepared.targetType,
+        boostTargetId: prepared.targetId,
+        paystack_mode: mode,
+        custom_fields: [
+          {
+            display_name: "Boost",
+            variable_name: "boost",
+            value: prepared.label,
+          },
+        ],
+      },
+    });
+
+    const authorizationUrl = init.data?.authorization_url as string | undefined;
+    if (!authorizationUrl?.trim()) {
+      throw new Error("Paystack did not return a checkout URL. Please try again.");
+    }
+
+    return {
+      authorizationUrl,
+      accessCode: (init.data?.access_code as string | undefined)?.trim() ?? "",
+      reference,
+      amountGhs: prepared.budgetGhs,
+      label: prepared.label,
       mode,
     };
   },

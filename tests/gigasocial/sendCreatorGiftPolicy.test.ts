@@ -31,7 +31,7 @@ describe("sendCreatorGift policy", () => {
     expect(handler).not.toContain("isMonetizationUnlocked");
   });
 
-  it("keeps affiliate gated at 500 fans but leaves boosts open", () => {
+  it("keeps affiliate gated at 500 fans; boosts require Paystack not fan unlock", () => {
     const src = readFileSync(
       resolve(__dirname, "../../convex/gigaSocialEconomy.ts"),
       "utf8"
@@ -43,6 +43,7 @@ describe("sendCreatorGift policy", () => {
     const nextExport = src.indexOf("export const ", boostStart + 10);
     const boostHandler = src.slice(boostStart, nextExport === -1 ? undefined : nextExport);
     expect(boostHandler).not.toContain("isMonetizationUnlocked");
+    expect(boostHandler).toContain("Paystack");
   });
 
   it("defaults post tip buttons on (not gated by monetizationUnlocked)", () => {

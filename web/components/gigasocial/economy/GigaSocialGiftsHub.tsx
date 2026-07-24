@@ -5,7 +5,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { toUserFacingError } from "@/lib/errors/userMessage";
 import { formatGhs } from "@/lib/gigasocial/creatorEconomy";
 import { api } from "convex/_generated/api";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useQuery } from "convex/react";
 import { Gift, Loader2 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 
@@ -20,32 +20,29 @@ export const GigaSocialGiftsHub = memo(function GigaSocialGiftsHub({
     sessionToken,
     creatorId,
   });
-  const sendGift = useMutation(api.gigaSocialEconomy.sendCreatorGift);
+  const initTip = useAction(api.paystack.initializeCreatorGiftPayment);
   const [busy, setBusy] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleSend = useCallback(
-    async (giftType: string, credits: number) => {
+    async (giftType: string) => {
       if (!hub?.creatorId || hub.isOwner) return;
       setBusy(giftType);
       setError(null);
-      setMessage(null);
       try {
-        await sendGift({
+        const init = await initTip({
           sessionToken,
           creatorId: hub.creatorId,
           giftType,
-          credits,
+          message: "Thanks for creating!",
         });
-        setMessage(`Sent ${giftType} gift! Thank you for supporting this creator.`);
+        window.location.href = init.authorizationUrl;
       } catch (e) {
-        setError(toUserFacingError(e, "Could not send gift. Please try again."));
-      } finally {
+        setError(toUserFacingError(e, "Could not start tip payment. Please try again."));
         setBusy(null);
       }
     },
-    [hub?.creatorId, hub?.isOwner, sendGift, sessionToken]
+    [hub?.creatorId, hub?.isOwner, initTip, sessionToken]
   );
 
   if (hub === undefined) {
@@ -66,7 +63,7 @@ export const GigaSocialGiftsHub = memo(function GigaSocialGiftsHub({
         <p className="mt-1 text-sm text-muted">
           {hub.isOwner
             ? `You've received ${hub.totalGifts} gifts (${formatGhs(hub.totalEarningsGhs)}).`
-            : `Support @${hub.handle} with virtual gifts and tips.`}
+            : `Support @${hub.handle} with Paystack — mobile money, card, or bank.`}
         </p>
         {hub.isOwner && hub.monetizationUnlocked === false ? (
           <p className="mt-2 text-xs text-muted">
@@ -84,7 +81,7 @@ export const GigaSocialGiftsHub = memo(function GigaSocialGiftsHub({
               size="sm"
               variant="outline"
               disabled={busy !== null}
-              onClick={() => void handleSend(gift.id, gift.credits)}
+              onClick={() => void handleSend(gift.id)}
               className="min-h-10"
             >
               {busy === gift.id ? (
@@ -93,14 +90,13 @@ export const GigaSocialGiftsHub = memo(function GigaSocialGiftsHub({
                 <span aria-hidden>{gift.emoji}</span>
               )}
               <span className="ml-1">
-                {gift.label} · {gift.credits} credits
+                {gift.label} · {formatGhs(gift.amountGhs ?? gift.credits)}
               </span>
             </Button>
           ))}
         </div>
       ) : null}
 
-      {message ? <p className="text-sm text-green-700">{message}</p> : null}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
       {hub.recentGifts.length > 0 ? (
@@ -110,7 +106,7 @@ export const GigaSocialGiftsHub = memo(function GigaSocialGiftsHub({
             {hub.recentGifts.map((gift, index) => (
               <li key={`${gift.createdAt}-${index}`} className="text-sm text-muted">
                 <span className="font-medium text-foreground">{gift.giftType}</span> ·{" "}
-                {gift.credits} credits ({formatGhs(gift.amountGhs)})
+                {formatGhs(gift.amountGhs)}
                 {gift.message ? ` — "${gift.message}"` : ""}
               </li>
             ))}
