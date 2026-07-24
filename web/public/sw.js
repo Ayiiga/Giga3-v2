@@ -1,6 +1,6 @@
-/** Crash/shake stability — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v186-stabilize";
-const NEXT_STATIC_CACHE = "giga3-next-static-v186";
+/** Photo + music publishes as muxed video — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v187-photo-music-video";
+const NEXT_STATIC_CACHE = "giga3-next-static-v187";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";

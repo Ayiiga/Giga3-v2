@@ -14,16 +14,17 @@ import {
 } from "@/lib/gigasocial/constants";
 import type { CameraFilterId } from "@/lib/gigasocial/cameraFilters";
 import { prepareAudioForPhotoPost } from "@/lib/gigasocial/audioProcessing";
+import { getCameraFilterCss } from "@/lib/gigasocial/cameraFilters";
 import { extractHashtagsFromText, formatCompactHashtags } from "@/lib/gigasocial/hashtags";
 import {
   classifyMediaFiles,
   UNIFIED_MEDIA_ACCEPT,
 } from "@/lib/gigasocial/mediaComposer";
+import { composePhotoMusicVideo } from "@/lib/gigasocial/photoMusicVideo";
 import { needsVideoTrim } from "@/lib/gigasocial/videoTrim";
 import {
   getVideoDuration,
   generateVideoThumbnail,
-  uploadSocialAudio,
   uploadSocialImages,
   uploadSocialVideo,
   type SocialMediaUploadDeps,
@@ -476,14 +477,18 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           await addImageFiles(selection.images);
           await addAudioFile(selection.audio);
           if (!body.trim()) {
-            setBody("Photo slideshow with music 🎵\n\n");
+            setBody("Photo with music 🎵\n\n");
           }
-          setSuccess("Slideshow video will play with cinematic transitions and your music track.");
+          setSuccess(
+            `Photo + music will publish as a ${SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC}s video with your soundtrack.`
+          );
           break;
         case "video-with-audio":
           await addVideoFile(selection.video);
           if (selection.audio) {
-            setSuccess("Video selected. Soundtrack mixing is applied on publish.");
+            setSuccess(
+              "Video selected. To add a soundtrack, post a photo with music (exports as video + audio)."
+            );
           }
           break;
         case "mixed-timeline":
@@ -565,33 +570,50 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
 
     try {
       let mediaItems: SocialPostMediaItemInput[] | undefined;
+      let publishPostType = postType;
       if (pendingVideo) {
         const uploaded = await uploadSocialVideo(uploadDeps, pendingVideo.file, {
           signal: controller.signal,
           onProgress: (progress) => setUploadPercent(progress.percent),
         });
         mediaItems = [uploaded];
+        publishPostType = "video";
+      } else if (pendingImages.length && pendingAudio) {
+        setSuccess("Mixing photo + music into a video…");
+        const composed = await composePhotoMusicVideo(
+          pendingImages.map((image) => image.file),
+          pendingAudio.file,
+          {
+            maxDurationSec: SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC,
+            filterCss: getCameraFilterCss(
+              previewFilterId === "none" ? undefined : previewFilterId
+            ),
+            signal: controller.signal,
+            onProgress: (percent) => setUploadPercent(Math.round(percent * 70)),
+          }
+        );
+        const uploaded = await uploadSocialVideo(uploadDeps, composed.file, {
+          signal: controller.signal,
+          onProgress: (progress) =>
+            setUploadPercent(70 + Math.round(progress.percent * 0.3)),
+        });
+        mediaItems = [
+          {
+            ...uploaded,
+            // Marker for music feed filters; camera look is already baked into frames.
+            filterId: "photo-music",
+          },
+        ];
+        publishPostType = "video";
       } else if (pendingImages.length) {
         const imageFiles = pendingImages.map((image) => image.file);
-        const imageUpload = uploadSocialImages(uploadDeps, imageFiles, {
+        const uploadedImages = await uploadSocialImages(uploadDeps, imageFiles, {
           filterId: previewFilterId === "none" ? undefined : previewFilterId,
           signal: controller.signal,
           fastCompress: true,
           onProgress: (_index, progress) => setUploadPercent(progress.percent),
         });
-        const audioUpload = pendingAudio
-          ? uploadSocialAudio(uploadDeps, pendingAudio.file, {
-              signal: controller.signal,
-              maxDurationSec: SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC,
-              onProgress: (progress) => setUploadPercent(progress.percent),
-            })
-          : null;
-        const [uploadedImages, uploadedAudio] = await Promise.all([
-          imageUpload,
-          audioUpload,
-        ]);
         mediaItems = [...uploadedImages];
-        if (uploadedAudio) mediaItems.push(uploadedAudio);
       }
 
       let finalBody = body.trim();
@@ -601,10 +623,13 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       if (remixSource) {
         finalBody = appendRemixMarker(finalBody, remixSource._id);
       }
+      if (pendingImages.length && pendingAudio && !/#photomusic\b/i.test(finalBody)) {
+        finalBody = `${finalBody} #PhotoMusic`.trim();
+      }
 
       await onSubmit({
         body: finalBody,
-        postType,
+        postType: publishPostType,
         mediaItems,
         communitySlug,
         visibility,
@@ -779,7 +804,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         </p>
       ) : compact ? null : (
         <p className="text-xs text-muted">
-          Add photos, music (up to {SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC}s), or video. Long videos
+          Add photos + music (publishes as a {SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC}s video with
+          soundtrack), or a video. Long videos
           open the trim editor (max {SOCIAL_MAX_VIDEO_DURATION_SEC}s).
         </p>
       )}

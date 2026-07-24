@@ -129,7 +129,19 @@ export function filterPostsByFeedCategory(
     case "music":
       return posts.filter((post) => {
         const kind = getPostMediaKind(post);
-        return kind === "audio" || kind === "photo-music";
+        if (kind === "audio" || kind === "photo-music") return true;
+        if (
+          post.mediaItems?.some(
+            (item) => item.type === "audio" || item.filterId === "photo-music"
+          )
+        ) {
+          return true;
+        }
+        const body = post.body.toLowerCase();
+        return (
+          body.includes("🎵") ||
+          Boolean(post.hashtags?.some((tag) => tag.toLowerCase() === "photomusic"))
+        );
       });
     case "live-now":
       return posts.filter(
