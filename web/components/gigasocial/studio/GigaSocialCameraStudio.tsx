@@ -46,6 +46,8 @@ export type GigaSocialCameraCapture = {
 type GigaSocialCameraStudioProps = {
   open: boolean;
   defaultMode?: "photo" | "video";
+  /** Open with teleprompter visible (AI Studio / Script launch). */
+  initialTeleprompter?: boolean;
   onClose: () => void;
   onCapture: (result: GigaSocialCameraCapture) => void;
 };
@@ -55,6 +57,7 @@ type CaptureMode = "photo" | "video";
 export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
   open,
   defaultMode = "photo",
+  initialTeleprompter = false,
   onClose,
   onCapture,
 }: GigaSocialCameraStudioProps) {
@@ -76,7 +79,7 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
   const [recording, setRecording] = useState(false);
   const [recordSec, setRecordSec] = useState(0);
   const [showGrid, setShowGrid] = useState(false);
-  const [showTeleprompter, setShowTeleprompter] = useState(false);
+  const [showTeleprompter, setShowTeleprompter] = useState(initialTeleprompter);
   const [timerSec, setTimerSec] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [beautyOn, setBeautyOn] = useState(false);
@@ -156,7 +159,8 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
   useEffect(() => {
     if (!open) return;
     setMode(defaultMode);
-  }, [defaultMode, open]);
+    setShowTeleprompter(initialTeleprompter);
+  }, [defaultMode, initialTeleprompter, open]);
 
   useEffect(() => {
     if (!open) return;

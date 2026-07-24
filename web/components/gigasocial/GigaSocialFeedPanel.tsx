@@ -118,6 +118,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const [composeInitialPostType, setComposeInitialPostType] = useState<
     SocialPostTypeId | undefined
   >();
+  const [composeInitialTeleprompter, setComposeInitialTeleprompter] = useState(false);
   const [remixSource, setRemixSource] = useState<SocialPost | null>(null);
   const [errorToast, setErrorToast] = useState<string | null>(null);
   const [activeFeaturedVideoId, setActiveFeaturedVideoId] = useState<string | null>(null);
@@ -329,11 +330,12 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     (
       action?: GigaCreateActionId,
       source?: SocialPost | null,
-      options?: { body?: string; postType?: SocialPostTypeId }
+      options?: { body?: string; postType?: SocialPostTypeId; teleprompter?: boolean }
     ) => {
       setComposeAction(action);
       setComposeInitialBody(options?.body);
       setComposeInitialPostType(options?.postType);
+      setComposeInitialTeleprompter(Boolean(options?.teleprompter));
       setRemixSource(source ?? null);
       setComposerOpen(true);
       setErrorToast(null);
@@ -346,6 +348,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setComposeAction(undefined);
     setComposeInitialBody(undefined);
     setComposeInitialPostType(undefined);
+    setComposeInitialTeleprompter(false);
     setRemixSource(null);
   }, []);
 
@@ -409,6 +412,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       openComposer("media-camera", null, {
         body: launch.body,
         postType: "video",
+        teleprompter: Boolean(launch.teleprompter),
       });
     },
     [openComposer, router]
@@ -584,6 +588,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     initialAction: composeAction,
     initialBody: composeInitialBody,
     initialPostType: composeInitialPostType,
+    initialTeleprompter: composeInitialTeleprompter,
     remixSource: remixSource ?? undefined,
     enableAIAssistant: features.enableAIEditing,
     enableMediaStudio: features.enableMediaStudio,

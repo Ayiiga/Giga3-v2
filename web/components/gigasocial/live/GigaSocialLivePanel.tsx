@@ -4,12 +4,17 @@ import { GigaSocialLiveRoom } from "@/components/gigasocial/live/GigaSocialLiveR
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { LIVE_STREAM_MODES } from "@/lib/gigasocial/liveStreaming";
+import {
+  LIVE_SCREEN_SHARE_UNSUPPORTED_MESSAGE,
+  LIVE_STREAM_MODES,
+  supportsLiveScreenShare,
+  type LiveStreamMode,
+} from "@/lib/gigasocial/liveStreaming";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { Calendar, Radio, Video } from "lucide-react";
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
   sessionToken,
@@ -30,10 +35,19 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
   const [activeStreamId, setActiveStreamId] = useState<Id<"socialLiveStreams"> | null>(null);
   const [hosting, setHosting] = useState(false);
   const [title, setTitle] = useState("");
-  const [mode, setMode] = useState<(typeof LIVE_STREAM_MODES)[number]["id"]>("video");
+  const [mode, setMode] = useState<LiveStreamMode>("video");
   const [scheduleAt, setScheduleAt] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [screenShareOk, setScreenShareOk] = useState(true);
+
+  useEffect(() => {
+    const ok = supportsLiveScreenShare();
+    setScreenShareOk(ok);
+    if (!ok) {
+      setMode((current) => (current === "screen" ? "video" : current));
+    }
+  }, []);
 
   const liveStreams = live?.streams ?? [];
   const scheduledStreams = scheduled?.streams ?? [];
@@ -61,6 +75,10 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
   }
 
   async function handleGoLive() {
+    if (mode === "screen" && !supportsLiveScreenShare()) {
+      setError(LIVE_SCREEN_SHARE_UNSUPPORTED_MESSAGE);
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -81,6 +99,10 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
   async function handleSchedule() {
     if (!scheduleAt) {
       setError("Pick a schedule date and time.");
+      return;
+    }
+    if (mode === "screen" && !supportsLiveScreenShare()) {
+      setError(LIVE_SCREEN_SHARE_UNSUPPORTED_MESSAGE);
       return;
     }
     setBusy(true);
@@ -118,21 +140,38 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
             maxLength={120}
           />
           <div className="flex flex-wrap gap-2">
-            {LIVE_STREAM_MODES.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setMode(item.id)}
-                className={`min-h-9 rounded-full border px-3 py-1.5 text-xs font-medium ${
-                  mode === item.id
-                    ? "border-accent/40 bg-accent/10 text-foreground"
-                    : "border-border text-muted"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+            {LIVE_STREAM_MODES.map((item) => {
+              const screenBlocked = item.id === "screen" && !screenShareOk;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  disabled={screenBlocked}
+                  title={screenBlocked ? LIVE_SCREEN_SHARE_UNSUPPORTED_MESSAGE : item.description}
+                  onClick={() => {
+                    if (screenBlocked) {
+                      setError(LIVE_SCREEN_SHARE_UNSUPPORTED_MESSAGE);
+                      return;
+                    }
+                    setError(null);
+                    setMode(item.id);
+                  }}
+                  className={`min-h-9 rounded-full border px-3 py-1.5 text-xs font-medium ${
+                    mode === item.id
+                      ? "border-accent/40 bg-accent/10 text-foreground"
+                      : "border-border text-muted"
+                  } ${screenBlocked ? "cursor-not-allowed opacity-45" : ""}`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
+          {!screenShareOk ? (
+            <p className="text-xs text-muted">
+              Screen share is unavailable on this device — use Live video or Live audio.
+            </p>
+          ) : null}
           <div className="flex flex-wrap gap-2">
             <Button type="button" disabled={busy} onClick={() => void handleGoLive()} className="min-h-10">
               <Radio className="mr-1.5 h-4 w-4" aria-hidden />

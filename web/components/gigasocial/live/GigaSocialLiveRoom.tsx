@@ -1,19 +1,23 @@
 "use client";
 
+import { GigaSocialTeleprompter } from "@/components/gigasocial/studio/GigaSocialTeleprompter";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import {
   LIVE_GIFTS,
   LIVE_REACTIONS,
   LIVE_VIDEO_CAPTURE_CONSTRAINTS,
+  getLiveMediaErrorMessage,
   getLiveReactionCount,
+  supportsLiveCameraMic,
+  supportsLiveScreenShare,
   type LiveStreamMode,
 } from "@/lib/gigasocial/liveStreaming";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { Gift, MessageCircle, Radio, Shield, Users, X } from "lucide-react";
+import { Gift, MessageCircle, Radio, Shield, Type, Users, X } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
@@ -46,12 +50,17 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   const [coHostHandle, setCoHostHandle] = useState("");
   const [busy, setBusy] = useState(false);
   const [mediaError, setMediaError] = useState<string | null>(null);
+  const [showTeleprompter, setShowTeleprompter] = useState(false);
+  /** When screen share is unavailable, host can fall back to camera without ending the stream. */
+  const [captureOverride, setCaptureOverride] = useState<"camera" | null>(null);
   const joinedRef = useRef(false);
   const startLiveCalledRef = useRef(false);
   const hostMediaStartedRef = useRef(false);
 
   const stream = data?.stream;
   const mode = (stream?.mode ?? "video") as LiveStreamMode;
+  const captureMode: LiveStreamMode =
+    captureOverride === "camera" && mode === "screen" ? "video" : mode;
 
   const stopMedia = useCallback(() => {
     mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
@@ -66,15 +75,23 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
     setMediaError(null);
     try {
       stopMedia();
-      const media =
-        mode === "screen"
-          ? await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
-          : await navigator.mediaDevices.getUserMedia({
-              video: mode === "video" ? LIVE_VIDEO_CAPTURE_CONSTRAINTS : false,
-              audio: true,
-            });
+      let media: MediaStream;
+      if (captureMode === "screen") {
+        if (!supportsLiveScreenShare()) {
+          throw new TypeError("getDisplayMedia is not a function");
+        }
+        media = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      } else {
+        if (!supportsLiveCameraMic()) {
+          throw new TypeError("getUserMedia is not a function");
+        }
+        media = await navigator.mediaDevices.getUserMedia({
+          video: captureMode === "video" ? LIVE_VIDEO_CAPTURE_CONSTRAINTS : false,
+          audio: true,
+        });
+      }
       mediaStreamRef.current = media;
-      if (videoRef.current && mode !== "audio") {
+      if (videoRef.current && captureMode !== "audio") {
         videoRef.current.srcObject = media;
         await videoRef.current.play().catch(() => undefined);
       }
@@ -109,9 +126,9 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
         recognitionRef.current = recognition;
       }
     } catch (e) {
-      setMediaError(e instanceof Error ? e.message : "Could not access camera or microphone.");
+      setMediaError(getLiveMediaErrorMessage(e, captureMode));
     }
-  }, [addCaption, isHost, mode, sessionToken, stopMedia, stream?.status, streamId]);
+  }, [addCaption, captureMode, isHost, sessionToken, stopMedia, stream?.status, streamId]);
 
   useEffect(() => {
     if (!stream || joinedRef.current) return;
@@ -194,7 +211,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
         </Button>
       </div>
 
-      <div className="saas-card gigasocial-live-stage overflow-hidden rounded-2xl border border-border bg-black">
+      <div className="saas-card gigasocial-live-stage relative overflow-hidden rounded-2xl border border-border bg-black">
         {stream.replayUrl && stream.status === "ended" ? (
           <video
             src={stream.replayUrl}
@@ -204,28 +221,74 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
               mode === "video" && "gigasocial-live-video--portrait"
             )}
           />
-        ) : mode === "audio" ? (
-          <div className="flex min-h-[12rem] flex-col items-center justify-center gap-3 px-6 py-10 text-white">
+        ) : captureMode === "audio" ? (
+          <div className="relative flex min-h-[12rem] flex-col items-center justify-center gap-3 px-6 py-10 text-white">
             <Radio className="h-10 w-10" aria-hidden />
             <p className="text-sm font-medium">Live audio room</p>
             <p className="text-xs text-violet-200">Chat, reactions, and gifts are active.</p>
+            {isHost ? (
+              <GigaSocialTeleprompter
+                active={showTeleprompter}
+                recording={stream.status === "live"}
+              />
+            ) : null}
           </div>
         ) : (
-          <video
-            ref={videoRef}
-            playsInline
-            muted={isHost}
-            controls={!isHost}
-            className={cn(
-              "gigasocial-live-video w-full bg-black",
-              mode === "video" && "gigasocial-live-video--portrait",
-              mode === "screen" && "gigasocial-live-video--screen"
-            )}
-            aria-label="Live stream preview"
-          />
+          <div className="relative">
+            <video
+              ref={videoRef}
+              playsInline
+              muted={isHost}
+              controls={!isHost}
+              className={cn(
+                "gigasocial-live-video w-full bg-black",
+                (captureMode === "video" || mode === "video") && "gigasocial-live-video--portrait",
+                captureMode === "screen" && mode === "screen" && "gigasocial-live-video--screen"
+              )}
+              aria-label="Live stream preview"
+            />
+            {isHost ? (
+              <GigaSocialTeleprompter
+                active={showTeleprompter}
+                recording={stream.status === "live"}
+              />
+            ) : null}
+          </div>
         )}
         {mediaError ? (
-          <p className="bg-red-950 px-3 py-2 text-xs text-red-200">{mediaError}</p>
+          <div className="space-y-2 bg-red-950 px-3 py-2 text-xs text-red-200">
+            <p role="alert">{mediaError}</p>
+            {isHost ? (
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="min-h-8 border-red-200/40 bg-red-900/40 text-red-50"
+                  onClick={() => {
+                    hostMediaStartedRef.current = true;
+                    void startHostMedia();
+                  }}
+                >
+                  Retry
+                </Button>
+                {mode === "screen" && captureOverride !== "camera" ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="min-h-8 border-red-200/40 bg-red-900/40 text-red-50"
+                    onClick={() => {
+                      setCaptureOverride("camera");
+                      hostMediaStartedRef.current = false;
+                    }}
+                  >
+                    Use camera instead
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
         ) : null}
         {stream.captionLines?.length ? (
           <div className="border-t border-white/10 bg-black/80 px-3 py-2 text-sm text-white">
@@ -234,6 +297,24 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
           </div>
         ) : null}
       </div>
+
+      {isHost && stream.status === "live" ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant={showTeleprompter ? "primary" : "outline"}
+            className="min-h-9"
+            onClick={() => setShowTeleprompter((value) => !value)}
+          >
+            <Type className="h-4 w-4" aria-hidden />
+            {showTeleprompter ? "Hide script" : "Teleprompter"}
+          </Button>
+          {captureOverride === "camera" && mode === "screen" ? (
+            <p className="text-xs text-muted">Previewing with camera (screen share unavailable).</p>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap gap-2">
         {LIVE_REACTIONS.map((emoji) => (
