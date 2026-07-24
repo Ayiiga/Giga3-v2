@@ -40,7 +40,7 @@ function MarketplaceItemInner() {
   const [submittingReview, setSubmittingReview] = useState(false);
 
   useEffect(() => {
-    if (listingId) void recordView({ listingId });
+    if (listingId) void recordView({ listingId }).catch(() => undefined);
   }, [listingId, recordView]);
 
   if (!listingId) {
