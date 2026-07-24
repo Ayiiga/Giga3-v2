@@ -74,7 +74,8 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   enableEdit = true,
   enableRemix = false,
   enablePostAIActions = false,
-  enablePostTips = false,
+  /** Tips are open on all posts/photos/videos — not gated by 500-fan earn unlock. */
+  enablePostTips = true,
   feedAutoPlay = false,
   feedPaused = false,
 }: GigaSocialPostCardProps) {

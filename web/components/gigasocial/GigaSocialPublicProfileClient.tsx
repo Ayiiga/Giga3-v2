@@ -217,7 +217,8 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
             ["videos", "Videos"],
             ["ai", "AI"],
             ["liked", "Liked"],
-            ...(profile.monetizationUnlocked ? [["gifts", "Gifts"] as const] : []),
+            // Tips/gifts are open regardless of 500-fan earn unlock.
+            ["gifts", "Gifts"],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -236,8 +237,10 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
         ))}
       </nav>
 
-      {tab === "gifts" && profile.monetizationUnlocked && sessionToken ? (
+      {tab === "gifts" && sessionToken ? (
         <GigaSocialGiftsHub sessionToken={sessionToken} creatorId={profile.userId} />
+      ) : tab === "gifts" && !sessionToken ? (
+        <p className="text-center text-sm text-muted">Sign in to tip this creator.</p>
       ) : filteredPosts.length === 0 ? (
         <p className="text-center text-sm text-muted">No {tab} to show yet.</p>
       ) : (
@@ -247,6 +250,7 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
               key={post._id}
               post={post}
               sessionToken={sessionToken}
+              enablePostTips
               onLike={async (postId) => {
                 if (!sessionToken) return;
                 await toggleLike({ sessionToken, postId: postId as Id<"socialPosts"> });

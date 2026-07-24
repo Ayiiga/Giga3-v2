@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-/** Guard: feed Tip button must not hard-fail on monetization unlock. */
+/** Guard: tips stay open; 500 fans unlocks earn tools only. */
 describe("sendCreatorGift policy", () => {
   it("does not block tips behind Gifts Hub unlock", () => {
     const src = readFileSync(
@@ -15,6 +15,7 @@ describe("sendCreatorGift policy", () => {
     const handler = src.slice(handlerStart, nextExport === -1 ? undefined : nextExport);
     expect(handler).not.toContain("has not unlocked the Gifts Hub");
     expect(handler).not.toContain("isMonetizationUnlocked");
+    expect(handler).toContain("not receiving tips");
   });
 
   it("does not block live gifts behind fan unlock", () => {
@@ -28,5 +29,33 @@ describe("sendCreatorGift policy", () => {
     const handler = src.slice(handlerStart, nextExport === -1 ? undefined : nextExport);
     expect(handler).not.toContain("unlocked live gifts");
     expect(handler).not.toContain("isMonetizationUnlocked");
+  });
+
+  it("keeps affiliate and boost gated at 500 fans", () => {
+    const src = readFileSync(
+      resolve(__dirname, "../../convex/gigaSocialEconomy.ts"),
+      "utf8"
+    );
+    expect(src).toContain("Affiliate program unlocks at 500 Fans.");
+    expect(src).toContain("Boost campaigns unlock at 500 Fans.");
+  });
+
+  it("defaults post tip buttons on (not gated by monetizationUnlocked)", () => {
+    const src = readFileSync(
+      resolve(__dirname, "../../web/components/gigasocial/GigaSocialPostCard.tsx"),
+      "utf8"
+    );
+    expect(src).toMatch(/enablePostTips\s*=\s*true/);
+    expect(src).not.toMatch(/monetizationUnlocked/);
+  });
+
+  it("shows public profile gifts without monetization unlock", () => {
+    const src = readFileSync(
+      resolve(__dirname, "../../web/components/gigasocial/GigaSocialPublicProfileClient.tsx"),
+      "utf8"
+    );
+    expect(src).toContain('["gifts", "Gifts"]');
+    expect(src).not.toMatch(/monetizationUnlocked \? \[\[\"gifts\"/);
+    expect(src).toContain("enablePostTips");
   });
 });
