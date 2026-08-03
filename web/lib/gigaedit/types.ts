@@ -22,6 +22,12 @@ export type GigaEditProjectStatus = "draft" | "ready" | "exported";
 
 export type ExportAspectRatio = "9:16" | "16:9" | "1:1" | "4:5" | "4:3";
 
+/** Options when opening a GigaEdit section (projects / templates / social formats). */
+export type GigaEditOpenOptions = {
+  projectId?: string;
+  aspect?: ExportAspectRatio;
+};
+
 export type GigaEditProjectMeta = {
   id: string;
   title: string;

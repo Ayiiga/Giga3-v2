@@ -7,13 +7,19 @@ import {
   exportProjectJson,
   listGigaEditProjects,
   saveGigaEditProject,
+  sectionForProjectKind,
   type GigaEditProjectRecord,
 } from "@/lib/gigaedit/projects";
 import { enqueueGigaEditSync } from "@/lib/gigaedit/offline";
-import { Copy, Download, Plus, Trash2 } from "lucide-react";
+import type { GigaEditOpenOptions, GigaEditSection } from "@/lib/gigaedit/types";
+import { Copy, Download, FolderOpen, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
-export function ProjectManager() {
+type ProjectManagerProps = {
+  onOpen?: (section: GigaEditSection, opts?: GigaEditOpenOptions) => void;
+};
+
+export function ProjectManager({ onOpen }: ProjectManagerProps) {
   const [projects, setProjects] = useState<GigaEditProjectRecord[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -34,6 +40,7 @@ export function ProjectManager() {
       enqueueGigaEditSync({ projectId: project.id, action: "backup" });
       setMessage("Draft created and saved on this device.");
       await refresh();
+      onOpen?.("video", { projectId: project.id, aspect: project.aspectRatio });
     } finally {
       setBusy(false);
     }
@@ -45,7 +52,8 @@ export function ProjectManager() {
         <div>
           <h2 className="text-lg font-semibold">My projects</h2>
           <p className="mt-1 text-xs text-[var(--ge-muted)]">
-            Auto-save drafts in IndexedDB. Duplicate, export JSON, or delete — originals stay private.
+            Auto-save drafts in IndexedDB. Open, duplicate, export JSON, or delete — originals stay
+            private.
           </p>
         </div>
         <button
@@ -76,6 +84,21 @@ export function ProjectManager() {
                   {p.aiAssisted ? " · AI-assisted" : ""}
                 </p>
               </div>
+              <button
+                type="button"
+                className="rounded-lg border border-[var(--ge-border)] px-2 py-2 text-[11px] text-[var(--ge-gold)]"
+                onClick={() =>
+                  onOpen?.(sectionForProjectKind(p.kind) as GigaEditSection, {
+                    projectId: p.id,
+                    aspect: p.aspectRatio,
+                  })
+                }
+              >
+                <span className="inline-flex items-center gap-1">
+                  <FolderOpen className="h-3.5 w-3.5" aria-hidden />
+                  Open
+                </span>
+              </button>
               <button
                 type="button"
                 className="rounded-lg border border-[var(--ge-border)] p-2 text-[var(--ge-muted)]"

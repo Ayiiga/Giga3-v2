@@ -10,6 +10,8 @@ import { detectDeviceTier } from "@/lib/gigaedit/deviceCapability";
 import { aspectRatioCss } from "@/lib/gigaedit/exportFormats";
 import {
   createEmptyProject,
+  getGigaEditProject,
+  getProjectOriginalBlob,
   putProjectOriginalBlob,
   saveGigaEditProject,
 } from "@/lib/gigaedit/projects";
@@ -24,7 +26,15 @@ import type { ExportAspectRatio } from "@/lib/gigaedit/types";
 import { CAMERA_FILTERS } from "@/lib/gigasocial/cameraFilters";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-export function PhotoEditor() {
+export type PhotoEditorProps = {
+  initialProjectId?: string | null;
+  initialAspect?: ExportAspectRatio | null;
+};
+
+export function PhotoEditor({
+  initialProjectId = null,
+  initialAspect = null,
+}: PhotoEditorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const previewRef = useRef<CameraStylePreviewHandle>(null);
@@ -33,15 +43,49 @@ export function PhotoEditor() {
   const [brightness, setBrightness] = useState(1);
   const [contrast, setContrast] = useState(1);
   const [saturate, setSaturate] = useState(1);
-  const [aspectRatio, setAspectRatio] = useState<ExportAspectRatio>("1:1");
+  const [aspectRatio, setAspectRatio] = useState<ExportAspectRatio>(initialAspect ?? "1:1");
   const [posterTitle, setPosterTitle] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [publishFile, setPublishFile] = useState<File | null>(null);
-  const [projectId, setProjectId] = useState<string | undefined>();
+  const [projectId, setProjectId] = useState<string | undefined>(initialProjectId ?? undefined);
   const [cameraLook, setCameraLook] = useState<CameraLookOptions>(DEFAULT_CAMERA_LOOK);
   const [exporting, setExporting] = useState(false);
   const originalRef = useRef<File | null>(null);
   const tier = useMemo(() => detectDeviceTier(), []);
+
+  useEffect(() => {
+    if (initialAspect) setAspectRatio(initialAspect);
+  }, [initialAspect]);
+
+  useEffect(() => {
+    if (!initialProjectId) return;
+    let cancelled = false;
+    void (async () => {
+      const project = await getGigaEditProject(initialProjectId);
+      if (!project || cancelled) return;
+      setProjectId(project.id);
+      setAspectRatio(project.aspectRatio);
+      setFilterId(project.filterId || "none");
+      setBrightness(project.brightness ?? 1);
+      setContrast(project.contrast ?? 1);
+      setSaturate(project.saturate ?? 1);
+      setPosterTitle(project.overlayText || "");
+      const blob = await getProjectOriginalBlob(project.id);
+      if (blob && !cancelled) {
+        const file = new File([blob], `${project.title || "photo"}.png`, {
+          type: blob.type || "image/png",
+        });
+        originalRef.current = file;
+        revokeManagedObjectUrl(objectUrl);
+        setObjectUrl(createManagedObjectUrl(file));
+        setStatus(`Opened project “${project.title}”. Original preserved.`);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- hydrate once per project id
+  }, [initialProjectId]);
 
   const baseFilter = useMemo(
     () => CAMERA_FILTERS.find((f) => f.id === filterId)?.css ?? "none",
@@ -99,6 +143,7 @@ export function PhotoEditor() {
       overlayText: posterTitle,
       tier,
       mimeType: "image/png",
+      aspectRatio,
     });
   }
 

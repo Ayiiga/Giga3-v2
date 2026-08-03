@@ -1,6 +1,6 @@
-/** GigaEdit → GigaSocial publish redirect fix — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v198-gigaedit-publish";
-const NEXT_STATIC_CACHE = "giga3-next-static-v198";
+/** GigaEdit full functional tabs/buttons — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v199-gigaedit-full";
+const NEXT_STATIC_CACHE = "giga3-next-static-v199";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";

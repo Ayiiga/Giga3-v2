@@ -92,3 +92,12 @@ export {
   flushPublishQueueToHandoff,
 } from "@/lib/gigaedit/publishQueue";
 export { extractAudioFromVideo } from "@/lib/gigaedit/audioExtract";
+export {
+  exportEditedVideoFile,
+  videoNeedsBake,
+} from "@/lib/gigaedit/videoExport";
+export {
+  putProjectAudioBlob,
+  getProjectAudioBlob,
+  sectionForProjectKind,
+} from "@/lib/gigaedit/projects";

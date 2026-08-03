@@ -13,7 +13,11 @@ import { TemplateGallery } from "@/components/gigaedit/TemplateGallery";
 import { VideoEditor } from "@/components/gigaedit/VideoEditor";
 import { useGigaEditFeatures } from "@/lib/gigaedit/featureFlags";
 import { startGigaEditBackgroundSync } from "@/lib/gigaedit/offline";
-import type { GigaEditSection } from "@/lib/gigaedit/types";
+import type {
+  ExportAspectRatio,
+  GigaEditOpenOptions,
+  GigaEditSection,
+} from "@/lib/gigaedit/types";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -32,10 +36,17 @@ const SECTION_LABELS: Record<GigaEditSection, string> = {
   ai: "AI Assist",
 };
 
+const ASPECTS = new Set<ExportAspectRatio>(["9:16", "16:9", "1:1", "4:5", "4:3"]);
+
 function parseSection(raw: string | null): GigaEditSection {
   if (!raw) return "home";
   if (raw in SECTION_LABELS) return raw as GigaEditSection;
   return "home";
+}
+
+function parseAspect(raw: string | null): ExportAspectRatio | null {
+  if (!raw) return null;
+  return ASPECTS.has(raw as ExportAspectRatio) ? (raw as ExportAspectRatio) : null;
 }
 
 export function GigaEditClient() {
@@ -46,15 +57,26 @@ export function GigaEditClient() {
     () => parseSection(searchParams?.get("tab") ?? searchParams?.get("tool")),
     [searchParams]
   );
+  const projectId = searchParams?.get("project") ?? null;
+  const aspect = useMemo(
+    () => parseAspect(searchParams?.get("aspect") ?? null),
+    [searchParams]
+  );
 
   const openSection = useCallback(
-    (next: GigaEditSection) => {
+    (next: GigaEditSection, opts?: GigaEditOpenOptions) => {
       const params = new URLSearchParams(searchParams?.toString() ?? "");
       if (next === "home") {
         params.delete("tab");
         params.delete("tool");
+        params.delete("project");
+        params.delete("aspect");
       } else {
         params.set("tab", next);
+        if (opts?.projectId) params.set("project", opts.projectId);
+        else params.delete("project");
+        if (opts?.aspect) params.set("aspect", opts.aspect);
+        else if (!opts?.projectId) params.delete("aspect");
       }
       const qs = params.toString();
       router.replace(qs ? `/gigaedit/?${qs}` : "/gigaedit/", { scroll: false });
@@ -106,27 +128,39 @@ export function GigaEditClient() {
       </div>
 
       {section === "home" && <GigaEditHome onOpen={openSection} />}
-      {section === "video" && <VideoEditor />}
-      {section === "photo" && <PhotoEditor />}
+      {section === "video" && (
+        <VideoEditor initialProjectId={projectId} initialAspect={aspect} />
+      )}
+      {section === "photo" && (
+        <PhotoEditor initialProjectId={projectId} initialAspect={aspect} />
+      )}
       {section === "teleprompter" && <TeleprompterStudio />}
-      {section === "script" && <AiCreatorAssistant />}
-      {section === "ai" && <AiCreatorAssistant />}
+      {section === "script" && features.enableGigaEditAiAssist ? (
+        <AiCreatorAssistant />
+      ) : null}
+      {section === "script" && !features.enableGigaEditAiAssist ? (
+        <p className="text-sm text-[var(--ge-muted)]">AI Script assist is disabled.</p>
+      ) : null}
+      {section === "ai" && features.enableGigaEditAiAssist ? <AiCreatorAssistant /> : null}
+      {section === "ai" && !features.enableGigaEditAiAssist ? (
+        <p className="text-sm text-[var(--ge-muted)]">AI Assist is disabled.</p>
+      ) : null}
       {section === "templates" && (
         <TemplateGallery
-          onUseVideo={() => openSection("video")}
-          onUsePhoto={() => openSection("photo")}
+          onUseVideo={(opts) => openSection("video", opts)}
+          onUsePhoto={(opts) => openSection("photo", opts)}
         />
       )}
       {section === "audio" && <AudioStudio />}
       {section === "social" && <SocialMediaCreator />}
       {section === "projects" && (
         <div className="space-y-4">
-          <ProjectManager />
+          <ProjectManager onOpen={openSection} />
           {features.enableGigaEditOffline ? <OfflineManager /> : null}
         </div>
       )}
 
-      <GigaEditBottomNav />
+      <GigaEditBottomNav activeSection={section} onOpenSection={openSection} />
     </div>
   );
 }
