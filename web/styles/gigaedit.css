@@ -1,0 +1,181 @@
+/**
+ * GigaEdit creator studio — deep navy + gold, scoped tokens.
+ * Mobile-stable: no dvh jitter, no hover transforms, no backdrop-blur on small screens.
+ */
+
+.gigaedit-page,
+.gigaedit-shell,
+.gigaedit-stable {
+  --ge-bg: #0b1220;
+  --ge-card: rgba(22, 32, 51, 0.92);
+  --ge-card-solid: #162033;
+  --ge-input: #1e293b;
+  --ge-text: #ffffff;
+  --ge-muted: #94a3b8;
+  --ge-gold: #fbbf24;
+  --ge-blue: #3b82f6;
+  --ge-border: rgba(148, 163, 184, 0.18);
+  --ge-shadow: 0 8px 28px -12px rgba(0, 0, 0, 0.55);
+  --ge-radius: 1.125rem;
+}
+
+.gigaedit-page {
+  background: var(--ge-bg);
+  color: var(--ge-text);
+  min-height: 100%;
+  overflow-x: clip;
+  overflow-y: visible;
+  touch-action: pan-y;
+  overscroll-behavior-y: auto;
+}
+
+.gigaedit-shell {
+  color: var(--ge-text);
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(59, 130, 246, 0.16), transparent 55%),
+    radial-gradient(90% 60% at 100% 0%, rgba(251, 191, 36, 0.1), transparent 45%),
+    var(--ge-bg);
+  /* Prefer vh over dynamic viewport units to avoid mobile URL-bar layout shake. */
+  min-height: calc(100vh - 4.5rem);
+  overflow-x: clip;
+  contain: none;
+}
+
+.gigaedit-stable,
+.gigaedit-stable * {
+  animation: none !important;
+}
+
+.gigaedit-stable *,
+.gigaedit-stable *::before,
+.gigaedit-stable *::after {
+  scroll-behavior: auto !important;
+}
+
+.gigaedit-glass {
+  background: var(--ge-card-solid);
+  border: 1px solid var(--ge-border);
+  border-radius: var(--ge-radius);
+  box-shadow: var(--ge-shadow);
+  contain: none;
+}
+
+@media (min-width: 1024px) {
+  .gigaedit-glass {
+    background: var(--ge-card);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+}
+
+.gigaedit-gold {
+  color: var(--ge-gold);
+}
+
+.gigaedit-action-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 6.5rem;
+  padding: 0.9rem;
+  border-radius: var(--ge-radius);
+  border: 1px solid var(--ge-border);
+  background: var(--ge-card-solid);
+  text-align: left;
+  /* No transform transitions — marketing-stable + mobile GPU tear risk. */
+  transition: none;
+}
+
+@media (min-width: 1024px) {
+  .gigaedit-action-tile:hover {
+    border-color: rgba(251, 191, 36, 0.45);
+  }
+}
+
+.gigaedit-bottom-nav {
+  position: sticky;
+  bottom: 0;
+  z-index: 40;
+  margin-top: 1rem;
+  border-top: 1px solid var(--ge-border);
+  background: rgba(11, 18, 32, 0.96);
+  padding: 0.4rem 0.35rem calc(0.4rem + env(safe-area-inset-bottom));
+}
+
+.gigaedit-bottom-nav a,
+.gigaedit-bottom-nav button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1;
+  padding: 0.35rem 0.15rem;
+  font-size: 0.62rem;
+  line-height: 1.1;
+  color: var(--ge-muted);
+}
+
+.gigaedit-bottom-nav a[aria-current="page"],
+.gigaedit-bottom-nav button[aria-current="page"] {
+  color: var(--ge-gold);
+}
+
+.gigaedit-timeline-track {
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  background: #0f172a;
+  border: 1px solid var(--ge-border);
+  position: relative;
+  overflow: hidden;
+}
+
+.gigaedit-timeline-clip {
+  position: absolute;
+  top: 0.2rem;
+  bottom: 0.2rem;
+  border-radius: 0.35rem;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.85), rgba(251, 191, 36, 0.75));
+  color: #0b1220;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  padding: 0 0.35rem;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Mobile: keep editor canvas filters/transforms; kill motion elsewhere in GigaEdit. */
+@media (max-width: 1023px) {
+  .gigaedit-stable,
+  .gigaedit-stable *:not(.gigaedit-allow-effects):not(.gigaedit-allow-effects *) {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    will-change: auto !important;
+    contain: none !important;
+    isolation: auto !important;
+  }
+
+  .marketing-stable .gigaedit-page,
+  .marketing-stable .gigaedit-shell,
+  .marketing-stable .gigaedit-glass,
+  .marketing-stable .gigaedit-action-tile,
+  .marketing-stable .gigaedit-bottom-nav {
+    background-color: var(--ge-card-solid) !important;
+    background-image: none !important;
+    color: var(--ge-text) !important;
+    box-shadow: none !important;
+  }
+
+  .marketing-stable .gigaedit-shell {
+    background-color: var(--ge-bg) !important;
+  }
+
+  .marketing-stable .gigaedit-allow-effects,
+  .marketing-stable .gigaedit-allow-effects * {
+    transform: var(--ge-transform, none) !important;
+    filter: var(--ge-filter, none) !important;
+    will-change: auto !important;
+  }
+}

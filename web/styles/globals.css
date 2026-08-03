@@ -4,6 +4,7 @@
 
 @import "./gigasocial-pro.css";
 @import "./gigasocial-premium.css";
+@import "./gigaedit.css";
 
 :root {
   --font-inter: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",

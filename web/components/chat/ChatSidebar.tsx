@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import {
   Archive,
   BookOpen,
+  Clapperboard,
   Coins,
   CreditCard,
   FileText,
@@ -108,6 +109,7 @@ const PRIMARY_NAV: WorkspaceNavItem[] = [
   { href: "/gigalearn/", label: "GigaLearn", icon: BookOpen },
   { hash: "documents", label: "My Documents", icon: FileText },
   { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
+  { href: "/gigaedit/", label: "GigaEdit", icon: Clapperboard },
   { href: "/marketplace/", label: "Marketplace", icon: LayoutGrid },
   { hash: "modes", label: "AI Tools", icon: Wand2 },
   { hash: "automation", label: "Automation", icon: Workflow },

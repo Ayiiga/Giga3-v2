@@ -23,6 +23,7 @@ import {
 import { composePhotoMusicVideo } from "@/lib/gigasocial/photoMusicVideo";
 import { needsVideoTrim } from "@/lib/gigasocial/videoTrim";
 import {
+  getAudioDuration,
   getVideoDuration,
   generateVideoThumbnail,
   uploadSocialImages,
@@ -31,6 +32,8 @@ import {
 } from "@/lib/gigasocial/mediaUpload";
 import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
 import { GigaSocialComposerMeta } from "@/components/gigasocial/composer/GigaSocialComposerMeta";
+import { SoundLibraryPicker } from "@/components/gigaedit/SoundLibraryPicker";
+import { soundAttributionLine } from "@/lib/gigaedit/soundLibrary";
 import {
   GigaSocialComposerQuickActions,
   type ComposerQuickActionId,
@@ -89,6 +92,13 @@ interface VideoTrimDraft {
   durationSec: number;
 }
 
+export type GigaSocialComposerInitialMedia = {
+  images?: File[];
+  video?: File | null;
+  audio?: File | null;
+  soundAttribution?: string;
+};
+
 interface GigaSocialComposerProps {
   communitySlug?: string;
   disabled?: boolean;
@@ -98,6 +108,9 @@ interface GigaSocialComposerProps {
   initialPostType?: SocialPostTypeId;
   /** Open camera studio with teleprompter on (AI Studio Script launch). */
   initialTeleprompter?: boolean;
+  /** Prefill from GigaEdit publish handoff (files already on device). */
+  initialMedia?: GigaSocialComposerInitialMedia | null;
+  initialVisibility?: "public" | "followers";
   remixSource?: SocialPost;
   enableAIAssistant?: boolean;
   enableMediaStudio?: boolean;
@@ -127,6 +140,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   initialBody,
   initialPostType,
   initialTeleprompter = false,
+  initialMedia = null,
+  initialVisibility,
   remixSource,
   enableAIAssistant = false,
   enableMediaStudio = false,
@@ -140,11 +155,17 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
 }: GigaSocialComposerProps) {
   const [body, setBody] = useState("");
   const [postType, setPostType] = useState<SocialPostTypeId>("text");
-  const [visibility, setVisibility] = useState<"public" | "followers">("public");
+  const [visibility, setVisibility] = useState<"public" | "followers">(
+    () => initialVisibility ?? "public"
+  );
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [pendingVideo, setPendingVideo] = useState<PendingVideo | null>(null);
   const [videoTrimDraft, setVideoTrimDraft] = useState<VideoTrimDraft | null>(null);
   const [pendingAudio, setPendingAudio] = useState<PendingAudio | null>(null);
+  const [soundAttribution, setSoundAttribution] = useState<string | null>(
+    () => initialMedia?.soundAttribution ?? null
+  );
+  const [soundLibraryOpen, setSoundLibraryOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -153,9 +174,15 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const [studioOpen, setStudioOpen] = useState(false);
   const [previewFilterId, setPreviewFilterId] = useState<CameraFilterId>("none");
   const [locationTag, setLocationTag] = useState("");
-  const [cameraStudioOpen, setCameraStudioOpen] = useState(
-    () => initialAction === "media-camera" || initialAction === "story-content"
+  const hasInitialMedia = Boolean(
+    initialMedia?.video || initialMedia?.audio || (initialMedia?.images?.length ?? 0) > 0
   );
+  const [cameraStudioOpen, setCameraStudioOpen] = useState(
+    () =>
+      !hasInitialMedia &&
+      (initialAction === "media-camera" || initialAction === "story-content")
+  );
+  const gigaEditSeededRef = useRef(false);
   const [cameraDefaultMode, setCameraDefaultMode] = useState<"photo" | "video">(() =>
     initialAction === "story-content" ? "video" : "photo"
   );
@@ -203,6 +230,68 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const studioPreviewUrl = pendingImages[0]?.previewUrl ?? null;
 
   useEffect(() => {
+    if (gigaEditSeededRef.current || !initialMedia) return;
+    gigaEditSeededRef.current = true;
+    let cancelled = false;
+    void (async () => {
+      if (initialVisibility) setVisibility(initialVisibility);
+      if (initialMedia.soundAttribution) setSoundAttribution(initialMedia.soundAttribution);
+      if (initialMedia.video) {
+        try {
+          const durationSec = await getVideoDuration(initialMedia.video);
+          if (cancelled) return;
+          if (needsVideoTrim(durationSec)) {
+            clearVideoTrimDraft();
+            setVideoTrimDraft({
+              file: initialMedia.video,
+              previewUrl: URL.createObjectURL(initialMedia.video),
+              durationSec,
+            });
+            setPostType("video");
+            setSuccess("GigaEdit video loaded — trim if needed, then post.");
+          } else {
+            applyPendingVideo({ file: initialMedia.video, durationSec });
+            setSuccess("GigaEdit project loaded — ready to publish to GigaSocial.");
+          }
+        } catch {
+          if (!cancelled) setError("Could not load GigaEdit video into composer.");
+        }
+      } else if (initialMedia.images?.length) {
+        await addImageFiles(initialMedia.images);
+        if (!cancelled) setSuccess("GigaEdit photo loaded — ready to publish.");
+      }
+      if (initialMedia.audio && !cancelled) {
+        try {
+          const prepared = await prepareAudioForPhotoPost(initialMedia.audio);
+          if (cancelled) return;
+          setPendingAudio({
+            file: prepared.file,
+            name: prepared.file.name,
+            durationSec: prepared.durationSec,
+          });
+        } catch {
+          /* optional audio */
+        }
+      }
+      if (initialBody && !cancelled) setBody(initialBody);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Seed once from handoff — intentional sparse deps.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialMedia]);
+
+  useEffect(() => {
+    if (initialMedia) {
+      if (initialBody) setBody(initialBody);
+      if (initialPostType) setPostType(initialPostType);
+      if (initialAction === "story-content") {
+        setBody((value) => value.trim() || initialBody || "✨ Story\n\n#story");
+        setPostType("video");
+      }
+      return;
+    }
     if (!initialAction && !remixSource && !initialBody) return;
     if (remixSource) {
       const prefix = buildRemixBodyPrefix({
@@ -274,7 +363,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         if (initialBody) queueMicrotask(() => captionRef.current?.focus());
         break;
     }
-  }, [initialAction, initialBody, initialPostType, remixSource]);
+  }, [initialAction, initialBody, initialMedia, initialPostType, remixSource]);
 
   const hasMedia = pendingImages.length > 0 || Boolean(pendingVideo) || Boolean(pendingAudio);
   const canPost = Boolean(body.trim() || hasMedia);
@@ -532,7 +621,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           videoInputRef.current?.click();
           break;
         case "music":
-          audioInputRef.current?.click();
+          setSoundLibraryOpen(true);
           break;
         case "templates":
           router.push("/creator-studio?tab=image");
@@ -665,6 +754,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       if (pendingImages.length && pendingAudio && !/#photomusic\b/i.test(finalBody)) {
         finalBody = `${finalBody} #PhotoMusic`.trim();
       }
+      if (soundAttribution && !finalBody.includes(soundAttribution)) {
+        finalBody = `${finalBody}\n🎵 ${soundAttribution}`.trim();
+      }
 
       await onSubmit({
         body: finalBody,
@@ -677,6 +769,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
 
       setBody("");
       clearPendingMedia();
+      setSoundAttribution(null);
       setPostType("text");
       setSuccess("Post published successfully.");
       onPosted?.();
@@ -760,6 +853,50 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         disabled={disabled || busy}
         compact={compact}
       />
+      {soundAttribution ? (
+        <p className="rounded-lg border border-amber-200/40 bg-amber-50/80 px-3 py-1.5 text-xs text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100">
+          🎵 {soundAttribution}
+        </p>
+      ) : null}
+      {initialMedia ? (
+        <p className="text-[11px] text-muted">
+          From GigaEdit · original media preserved separately on your device
+        </p>
+      ) : null}
+      {soundLibraryOpen ? (
+        <div className="space-y-2 rounded-xl border border-border p-2">
+          <SoundLibraryPicker
+            onClose={() => setSoundLibraryOpen(false)}
+            onSelect={(sound, file) => {
+              void (async () => {
+                try {
+                  const prepared = await prepareAudioForPhotoPost(file);
+                  setPendingAudio({
+                    file: prepared.file,
+                    name: prepared.file.name,
+                    durationSec: prepared.durationSec || (await getAudioDuration(prepared.file).catch(() => 0)),
+                  });
+                  setSoundAttribution(soundAttributionLine(sound));
+                  setSoundLibraryOpen(false);
+                  setSuccess(`Using ${soundAttributionLine(sound)}`);
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : "Could not attach sound.");
+                }
+              })();
+            }}
+          />
+          <button
+            type="button"
+            className="w-full rounded-lg border border-border px-3 py-2 text-xs text-muted"
+            onClick={() => {
+              setSoundLibraryOpen(false);
+              audioInputRef.current?.click();
+            }}
+          >
+            Import audio from this device instead
+          </button>
+        </div>
+      ) : null}
       <textarea
         id="gigasocial-caption"
         ref={captionRef}
