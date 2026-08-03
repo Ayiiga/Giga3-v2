@@ -67,6 +67,8 @@ export {
   consumePublishHandoffMeta,
   loadPublishHandoffFiles,
   launchGigaSocialWithHandoff,
+  handoffAndOpenGigaSocial,
+  gigasocialPublishUrl,
 } from "@/lib/gigaedit/publishHandoff";
 export {
   destinationComposerSeed,

@@ -15,6 +15,7 @@ import {
   createManagedObjectUrl,
   revokeManagedObjectUrl,
 } from "@/lib/gigaedit/mediaPipeline";
+import { handoffAndOpenGigaSocial } from "@/lib/gigaedit/publishHandoff";
 import { EXPORT_FORMATS, type ExportAspectRatio, type GigaEditTimelineClip } from "@/lib/gigaedit/types";
 import { CAMERA_FILTERS } from "@/lib/gigasocial/cameraFilters";
 import { formatVideoTime } from "@/lib/gigasocial/videoTrim";
@@ -226,8 +227,43 @@ export function VideoEditor() {
       setStatus("Import a video first.");
       return;
     }
-    // Preserve original quality: hand off the source file as the publish media.
-    // CSS filter/transform previews stay non-destructive and never overwrite the original.
+    setStatus("Opening GigaSocial feed…");
+    try {
+      // Preserve original quality: hand off the source file as the publish media.
+      const id = await saveProject();
+      setProjectId(id);
+      const result = await handoffAndOpenGigaSocial({
+        kind: "video",
+        edited: originalFileRef.current,
+        original: originalFileRef.current,
+        aspectRatio,
+        destination: "feed",
+        caption: overlayText,
+        projectId: id,
+        durationSec: duration || undefined,
+        aiAssisted: Boolean(captions) || greenScreen,
+      });
+      if (result.queued) {
+        setPublishReady(true);
+        setStatus("You're offline — opened publish options. Post will sync when you're back online.");
+        return;
+      }
+      if (result.error) {
+        setPublishReady(true);
+        setStatus(`${result.error} — adjust options below, then publish.`);
+        return;
+      }
+    } catch (err) {
+      setPublishReady(true);
+      setStatus(err instanceof Error ? err.message : "Could not open GigaSocial.");
+    }
+  }
+
+  async function openPublishOptions() {
+    if (!originalFileRef.current) {
+      setStatus("Import a video first.");
+      return;
+    }
     const id = await saveProject();
     setProjectId(id);
     setPublishReady(true);
@@ -288,7 +324,14 @@ export function VideoEditor() {
           className="rounded-xl bg-[var(--ge-gold)] px-3 py-2 text-xs font-bold text-[#0b1220]"
           onClick={() => void readyToPublish()}
         >
-          Ready to publish
+          Post to GigaSocial
+        </button>
+        <button
+          type="button"
+          className="rounded-xl border border-[var(--ge-border)] px-3 py-2 text-xs"
+          onClick={() => void openPublishOptions()}
+        >
+          Publish options
         </button>
       </div>
 

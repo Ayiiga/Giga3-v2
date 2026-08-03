@@ -382,20 +382,26 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setRemixSource(null);
   }, []);
 
-  const openGigaEditPublishHandoff = useCallback(async () => {
+  const openGigaEditPublishHandoff = useCallback(async (): Promise<boolean> => {
     if (!sessionToken) {
       requireAuth();
-      return;
+      return false;
     }
     let meta = peekPublishHandoff();
     if (!meta) {
       const flushed = await flushPublishQueueToHandoff();
       if (flushed) meta = peekPublishHandoff();
     }
-    if (!meta) return;
-    const consumed = consumePublishHandoffMeta();
-    if (!consumed) return;
-    const files = await loadPublishHandoffFiles(consumed);
+    if (!meta) return false;
+
+    // Load blobs before consuming meta so a failed IDB read can retry later.
+    const files = await loadPublishHandoffFiles(meta);
+    if (!files.edited) {
+      setErrorToast("Could not load your GigaEdit media yet. Tap New post or try again.");
+      return false;
+    }
+
+    const consumed = consumePublishHandoffMeta() ?? meta;
     const seed = destinationComposerSeed(consumed.destination ?? "feed");
     const visibility = privacyToSocialVisibility(consumed.privacy) ?? "public";
     let attribution: string | undefined;
@@ -411,8 +417,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       seed.body ||
       (consumed.kind === "photo" ? "" : seed.body);
     setComposeInitialMedia({
-      images: files.edited && consumed.kind === "photo" ? [files.edited] : undefined,
-      video: files.edited && consumed.kind === "video" ? files.edited : null,
+      images: consumed.kind === "photo" ? [files.edited] : undefined,
+      video: consumed.kind === "video" ? files.edited : null,
       audio: files.audio,
       soundAttribution: attribution,
     });
@@ -436,30 +442,58 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     } catch {
       /* ignore */
     }
+    return true;
   }, [requireAuth, sessionToken]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const wantsPublish = params.get("gigaeditPublish") === "1" || Boolean(peekPublishHandoff());
-    if (!wantsPublish || !sessionToken) return;
+    if (!wantsPublish) return;
+    if (!sessionToken) {
+      // Keep handoff; prompt sign-in so the user can finish posting after auth.
+      requireAuth();
+      return;
+    }
     if (gigaEditPublishHandledRef.current) return;
-    gigaEditPublishHandledRef.current = true;
-    void openGigaEditPublishHandoff();
-  }, [openGigaEditPublishHandoff, sessionToken]);
+
+    let cancelled = false;
+    void (async () => {
+      const ok = await openGigaEditPublishHandoff();
+      if (!cancelled && ok) gigaEditPublishHandledRef.current = true;
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [openGigaEditPublishHandoff, requireAuth, sessionToken]);
 
   useEffect(() => {
     function onOnline() {
       if (gigaEditPublishHandledRef.current && composerOpen) return;
       void flushPublishQueueToHandoff().then((n) => {
         if (n <= 0) return;
-        gigaEditPublishHandledRef.current = true;
-        void openGigaEditPublishHandoff();
+        void openGigaEditPublishHandoff().then((ok) => {
+          if (ok) gigaEditPublishHandledRef.current = true;
+        });
+      });
+    }
+    function onHandoffReady() {
+      if (gigaEditPublishHandledRef.current && composerOpen) return;
+      if (!sessionToken) {
+        requireAuth();
+        return;
+      }
+      void openGigaEditPublishHandoff().then((ok) => {
+        if (ok) gigaEditPublishHandledRef.current = true;
       });
     }
     window.addEventListener("online", onOnline);
-    return () => window.removeEventListener("online", onOnline);
-  }, [composerOpen, openGigaEditPublishHandoff]);
+    window.addEventListener("giga3:gigaedit-publish-ready", onHandoffReady);
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("giga3:gigaedit-publish-ready", onHandoffReady);
+    };
+  }, [composerOpen, openGigaEditPublishHandoff, requireAuth, sessionToken]);
 
   const handleGigaCreate = useCallback(
     (launch: GigaCreateLaunch) => {

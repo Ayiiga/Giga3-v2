@@ -2,15 +2,13 @@
 
 import { SoundLibraryPicker } from "@/components/gigaedit/SoundLibraryPicker";
 import { extractAudioFromVideo } from "@/lib/gigaedit/audioExtract";
-import { isGigaEditOnline } from "@/lib/gigaedit/offline";
 import {
-  launchGigaSocialWithHandoff,
+  handoffAndOpenGigaSocial,
   storePublishHandoff,
 } from "@/lib/gigaedit/publishHandoff";
 import { enqueuePublishQueue } from "@/lib/gigaedit/publishQueue";
 import type {
   GigaEditAudioMixMode,
-  GigaEditPublishDestination,
   GigaEditPublishMediaKind,
   GigaEditPublishPrivacy,
 } from "@/lib/gigaedit/publishTypes";
@@ -88,16 +86,22 @@ export function PublishScreen({
     return () => URL.revokeObjectURL(url);
   }, [editedFile]);
 
-  async function buildHandoff(destination: GigaEditPublishDestination) {
+  async function prepareAudioPackage(): Promise<{
+    audioBlob: Blob | null;
+    soundId?: string;
+    reuse: boolean;
+  }> {
     const reuse =
       privacy === "public_reusable" && allowSoundReuse && audioMixMode !== "mute";
 
     let audioBlob: Blob | null = null;
     let soundId: string | undefined = selectedSound?.soundId;
 
+    // Best-effort only — never block opening GigaSocial on extract failures/hangs.
     if (kind === "video" && reuse && audioMixMode === "original" && !replaceAudioFile) {
       const extracted = await extractAudioFromVideo(originalFile, {
-        maxDurationSec: durationSec,
+        maxDurationSec: Math.min(durationSec ?? 30, 30),
+        timeoutMs: 4_000,
       });
       if (extracted) {
         audioBlob = extracted.blob;
@@ -128,47 +132,48 @@ export function PublishScreen({
       }
     }
 
-    return storePublishHandoff({
-      meta: {
-        kind,
-        projectId,
-        fileName: editedFile.name,
-        mimeType: editedFile.type || (kind === "video" ? "video/mp4" : "image/png"),
-        aspectRatio,
-        durationSec,
-        caption,
-        privacy,
-        allowSoundReuse: reuse,
-        soundId,
-        soundTitle: reuse ? soundTitle : undefined,
-        audioMixMode: audioMixMode === "mute" ? "mute" : audioMixMode,
-        aiAssisted,
-        destination,
-      },
-      edited: editedFile,
-      original: originalFile,
-      audio: audioMixMode === "mute" ? null : audioBlob,
-    });
+    return { audioBlob: audioMixMode === "mute" ? null : audioBlob, soundId, reuse };
   }
 
   async function publishToSocial(destination: "feed" | "reel" | "story") {
     setBusy(true);
-    setStatus(null);
+    setStatus("Opening GigaSocial…");
     try {
       if (privacy === "private") {
         setStatus("Private is draft-only. Choose Public or Followers to publish.");
         return;
       }
-      const handoff = await buildHandoff(destination);
-      if (!isGigaEditOnline()) {
-        await enqueuePublishQueue({ handoff, destination });
+      const { audioBlob, soundId, reuse } = await prepareAudioPackage();
+      const result = await handoffAndOpenGigaSocial({
+        kind,
+        edited: editedFile,
+        original: originalFile,
+        aspectRatio,
+        destination,
+        caption,
+        privacy,
+        projectId,
+        durationSec,
+        aiAssisted,
+        soundId,
+        soundTitle: reuse ? soundTitle : undefined,
+        audio: audioBlob,
+        audioMixMode: audioMixMode === "mute" ? "mute" : audioMixMode,
+        allowSoundReuse: reuse,
+      });
+      if (result.queued) {
         setStatus("You're offline — publish queued. It will sync when you're back online.");
+        setBusy(false);
         return;
       }
-      launchGigaSocialWithHandoff();
+      if (result.error) {
+        setStatus(result.error);
+        setBusy(false);
+        return;
+      }
+      // Navigation in progress — keep busy state until unload.
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Could not prepare publish package.");
-    } finally {
       setBusy(false);
     }
   }
@@ -176,7 +181,26 @@ export function PublishScreen({
   async function saveDraft() {
     setBusy(true);
     try {
-      const handoff = await buildHandoff("draft");
+      const { audioBlob } = await prepareAudioPackage();
+      const handoff = await storePublishHandoff({
+        meta: {
+          kind,
+          projectId,
+          fileName: editedFile.name,
+          mimeType: editedFile.type || (kind === "video" ? "video/mp4" : "image/png"),
+          aspectRatio,
+          durationSec,
+          caption,
+          privacy: "private",
+          allowSoundReuse: false,
+          audioMixMode: audioMixMode === "mute" ? "mute" : audioMixMode,
+          aiAssisted,
+          destination: "draft",
+        },
+        edited: editedFile,
+        original: originalFile,
+        audio: audioBlob,
+      });
       await enqueuePublishQueue({ handoff, destination: "feed" });
       setStatus("Draft saved on this device.");
       onDraftSaved?.();
