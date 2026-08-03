@@ -171,10 +171,15 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
     />
   );
 
+  const promptAuth = useCallback(() => {
+    onRequireAuth?.();
+    window.dispatchEvent(new CustomEvent("gigasocial:require-auth"));
+  }, [onRequireAuth]);
+
   const handleLike = useCallback(
     async (forceLike = false) => {
       if (!sessionToken) {
-        onRequireAuth?.();
+        promptAuth();
         return;
       }
       if (busy) return;
@@ -204,7 +209,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
         setBusy(false);
       }
     },
-    [busy, features.enableHaptics, liked, onLike, onRequireAuth, post._id, sessionToken]
+    [busy, features.enableHaptics, liked, onLike, post._id, promptAuth, sessionToken]
   );
 
   const handleDoubleTapLike = useCallback(() => {
@@ -219,7 +224,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
 
   async function handleBookmark() {
     if (!sessionToken) {
-      onRequireAuth?.();
+      promptAuth();
       return;
     }
     if (busy) return;
@@ -237,7 +242,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
 
   async function handleShare() {
     if (!sessionToken) {
-      onRequireAuth?.();
+      promptAuth();
       return;
     }
     if (busy) return;
@@ -315,7 +320,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
               size="sm"
               variant="outline"
               className="min-h-11"
-              onClick={() => onRequireAuth?.()}
+              onClick={promptAuth}
             >
               Follow
             </Button>
@@ -346,8 +351,28 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
                 : undefined
             }
             className="gigasocial-post-card__media-region relative"
-            onDoubleClick={() => void handleLike(true)}
-            onTouchEnd={handleDoubleTapLike}
+            onDoubleClick={() => {
+              if (!sessionToken) {
+                promptAuth();
+                return;
+              }
+              void handleLike(true);
+            }}
+            onTouchEnd={(event) => {
+              if (!sessionToken) {
+                // Single tap on media should not spam auth; only double-tap likes prompt.
+                const now = Date.now();
+                if (now - lastTapRef.current < 280) {
+                  promptAuth();
+                  lastTapRef.current = 0;
+                  event.preventDefault();
+                } else {
+                  lastTapRef.current = now;
+                }
+                return;
+              }
+              handleDoubleTapLike();
+            }}
           >
             <GigaSocialPostMedia
               post={post}
@@ -373,7 +398,15 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => void handleLike()}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  if (!sessionToken) {
+                    promptAuth();
+                    return;
+                  }
+                  void handleLike();
+                }}
                 className={cn(
                   "gigasocial-post-card__media-action",
                   "gigasocial-reaction-like",
@@ -480,7 +513,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
             disabled={busy}
             onRemix={() => {
               if (!sessionToken) {
-                onRequireAuth?.();
+                promptAuth();
                 return;
               }
               onRemix(post);
