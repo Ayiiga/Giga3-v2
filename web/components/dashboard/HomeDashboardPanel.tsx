@@ -139,10 +139,10 @@ export function HomeDashboardPanel() {
       <div className="dashboard-quick-grid">
         {[
           { label: "GigaSocial", href: "/gigasocial/", featured: true },
-          { label: "Chat", href: "/chat" },
-          { label: "Media", href: "/media" },
           { label: "GigaEdit", href: "/gigaedit/" },
           { label: "Learn", href: "/gigalearn" },
+          { label: "Chat", href: "/chat" },
+          { label: "Media", href: "/media" },
           { label: "Wallet", href: "/wallet" },
         ].map((q) => (
           <Link

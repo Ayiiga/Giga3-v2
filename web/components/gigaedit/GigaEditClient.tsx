@@ -12,11 +12,12 @@ import { TeleprompterStudio } from "@/components/gigaedit/TeleprompterStudio";
 import { TemplateGallery } from "@/components/gigaedit/TemplateGallery";
 import { VideoEditor } from "@/components/gigaedit/VideoEditor";
 import { useGigaEditFeatures } from "@/lib/gigaedit/featureFlags";
+import { startGigaEditBackgroundSync } from "@/lib/gigaedit/offline";
 import type { GigaEditSection } from "@/lib/gigaedit/types";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 const SECTION_LABELS: Record<GigaEditSection, string> = {
   home: "Home",
@@ -60,6 +61,11 @@ export function GigaEditClient() {
     },
     [router, searchParams]
   );
+
+  useEffect(() => {
+    if (!features.enableGigaEditOffline) return;
+    return startGigaEditBackgroundSync();
+  }, [features.enableGigaEditOffline]);
 
   if (!features.enableGigaEdit) {
     return (

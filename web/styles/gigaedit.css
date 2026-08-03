@@ -146,6 +146,22 @@
   overflow: hidden;
 }
 
+/* Pro camera preview — keep filters/transforms; avoid layout thrash. */
+.gigaedit-camera-preview {
+  contain: none;
+  isolation: auto;
+  content-visibility: auto;
+}
+
+.gigaedit-camera-preview img,
+.gigaedit-camera-preview video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  /* Prefer compositor-friendly paint without continuous will-change. */
+  backface-visibility: hidden;
+}
+
 /* Mobile: keep editor canvas filters/transforms; kill motion elsewhere in GigaEdit. */
 @media (max-width: 1023px) {
   .gigaedit-stable,

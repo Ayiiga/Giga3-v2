@@ -1,6 +1,9 @@
 "use client";
 
+import { CameraStylePreview } from "@/components/gigaedit/CameraStylePreview";
 import { PublishScreen } from "@/components/gigaedit/PublishScreen";
+import { DEFAULT_CAMERA_LOOK, type CameraLookOptions } from "@/lib/gigaedit/cameraLook";
+import { detectDeviceTier } from "@/lib/gigaedit/deviceCapability";
 import { aspectRatioCss } from "@/lib/gigaedit/exportFormats";
 import {
   createEmptyProject,
@@ -8,6 +11,10 @@ import {
   saveGigaEditProject,
 } from "@/lib/gigaedit/projects";
 import { enqueueGigaEditSync } from "@/lib/gigaedit/offline";
+import {
+  createManagedObjectUrl,
+  revokeManagedObjectUrl,
+} from "@/lib/gigaedit/mediaPipeline";
 import { EXPORT_FORMATS, type ExportAspectRatio, type GigaEditTimelineClip } from "@/lib/gigaedit/types";
 import { CAMERA_FILTERS } from "@/lib/gigasocial/cameraFilters";
 import { formatVideoTime } from "@/lib/gigasocial/videoTrim";
@@ -21,7 +28,7 @@ import {
   SplitSquareVertical,
   Type,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 function newClip(partial: Omit<GigaEditTimelineClip, "id">): GigaEditTimelineClip {
   return { ...partial, id: `clip_${Date.now()}_${Math.random().toString(36).slice(2, 6)}` };
@@ -45,24 +52,32 @@ export function VideoEditor() {
   const [status, setStatus] = useState<string | null>(null);
   const [publishReady, setPublishReady] = useState(false);
   const [projectId, setProjectId] = useState<string | undefined>();
+  const [cameraLook, setCameraLook] = useState<CameraLookOptions>(DEFAULT_CAMERA_LOOK);
   const originalFileRef = useRef<File | null>(null);
+  const tier = useMemo(() => detectDeviceTier(), []);
 
-  const filterCss = useMemo(
-    () => CAMERA_FILTERS.find((f) => f.id === filterId)?.css ?? "none",
-    [filterId]
+  const filterCss = useMemo(() => {
+    const base = CAMERA_FILTERS.find((f) => f.id === filterId)?.css ?? "none";
+    if (greenScreen) {
+      return `${base === "none" ? "" : base} contrast(1.1)`.trim() || "contrast(1.1)";
+    }
+    return base;
+  }, [filterId, greenScreen]);
+
+  const editTransform = useMemo(
+    () => `rotate(${rotateDeg}deg) scale(${cropScale})`,
+    [rotateDeg, cropScale]
   );
 
   useEffect(() => {
-    return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
+    return () => revokeManagedObjectUrl(objectUrl);
   }, [objectUrl]);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
     video.playbackRate = speed;
-  }, [speed]);
+  }, [speed, objectUrl]);
 
   function onPickFile(file: File | null) {
     if (!file) return;
@@ -71,10 +86,9 @@ export function VideoEditor() {
       return;
     }
     originalFileRef.current = file;
-    if (objectUrl) URL.revokeObjectURL(objectUrl);
-    const url = URL.createObjectURL(file);
-    setObjectUrl(url);
-    setStatus("Original kept safely. Edits are non-destructive.");
+    revokeManagedObjectUrl(objectUrl);
+    setObjectUrl(createManagedObjectUrl(file));
+    setStatus("Original kept safely. Pro camera preview is non-destructive.");
   }
 
   function ensureBaseClip(dur: number) {
@@ -242,8 +256,8 @@ export function VideoEditor() {
       <div>
         <h2 className="text-lg font-semibold">Video editor</h2>
         <p className="mt-1 text-xs text-[var(--ge-muted)]">
-          Multi-layer timeline with trim, split, merge, crop, rotate, speed, filters, text, captions,
-          and social export presets. Advanced AI tools degrade gracefully offline.
+          Pro camera preview, multi-layer timeline, trim/split/merge, and social export — tuned for{" "}
+          {tier}-tier devices. Advanced AI tools degrade gracefully offline.
         </p>
       </div>
 
@@ -279,47 +293,31 @@ export function VideoEditor() {
       </div>
 
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_16rem]">
-        <div className="gigaedit-glass p-3">
-          <div
-            className="gigaedit-allow-effects relative mx-auto max-h-[55vh] overflow-hidden rounded-xl bg-black"
-            style={{ aspectRatio: aspectRatioCss(aspectRatio), width: "min(100%, 360px)" }}
-          >
-            {objectUrl ? (
-              <video
-                ref={videoRef}
-                src={objectUrl}
-                controls
-                playsInline
-                className="h-full w-full object-cover"
-                style={
-                  {
-                    "--ge-filter": greenScreen
-                      ? `${filterCss === "none" ? "" : filterCss} contrast(1.1)`.trim()
-                      : filterCss,
-                    "--ge-transform": `rotate(${rotateDeg}deg) scale(${cropScale})`,
-                    filter: "var(--ge-filter)",
-                    transform: "var(--ge-transform)",
-                  } as CSSProperties
-                }
-                onLoadedMetadata={(e) => {
-                  const dur = e.currentTarget.duration || 0;
-                  setDuration(dur);
-                  ensureBaseClip(dur);
-                }}
-                onTimeUpdate={(e) => setPlayhead(e.currentTarget.currentTime)}
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center p-6 text-center text-xs text-[var(--ge-muted)]">
-                Import a video to start editing. Camera/mic access is only requested when you record.
-              </div>
-            )}
-            {overlayText ? (
+        <CameraStylePreview
+          kind="video"
+          src={objectUrl}
+          videoRef={videoRef}
+          controls
+          aspectRatioCss={aspectRatioCss(aspectRatio)}
+          baseFilterCss={filterCss}
+          extraTransform={editTransform}
+          look={cameraLook}
+          onLookChange={setCameraLook}
+          emptyLabel="Import a video to start editing. Camera/mic access is only requested when you record."
+          overlay={
+            overlayText ? (
               <p className="pointer-events-none absolute inset-x-3 bottom-10 text-center text-sm font-bold text-white drop-shadow">
                 {overlayText}
               </p>
-            ) : null}
-          </div>
-        </div>
+            ) : null
+          }
+          onLoadedMetadata={(el) => {
+            const dur = el.duration || 0;
+            setDuration(dur);
+            ensureBaseClip(dur);
+          }}
+          onTimeUpdate={(el) => setPlayhead(el.currentTime)}
+        />
 
         <div className="space-y-3">
           <label className="block text-xs text-[var(--ge-muted)]">

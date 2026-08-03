@@ -96,7 +96,7 @@ type WorkspaceNavItem =
       hint?: string;
     };
 
-/** GigaSocial leads the Workspace list — featured + first for signed-in discovery. */
+/** Workspace apps: GigaSocial → GigaEdit → GigaLearn, then remaining tools. */
 const PRIMARY_NAV: WorkspaceNavItem[] = [
   {
     href: "/gigasocial/",
@@ -105,11 +105,16 @@ const PRIMARY_NAV: WorkspaceNavItem[] = [
     featured: true,
     hint: "Feed · Stories · Create",
   },
-  { href: "/chat", label: "Home", icon: Home },
+  {
+    href: "/gigaedit/",
+    label: "GigaEdit",
+    icon: Clapperboard,
+    hint: "Video · Photo · Creator studio",
+  },
   { href: "/gigalearn/", label: "GigaLearn", icon: BookOpen },
+  { href: "/chat", label: "Home", icon: Home },
   { hash: "documents", label: "My Documents", icon: FileText },
   { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
-  { href: "/gigaedit/", label: "GigaEdit", icon: Clapperboard },
   { href: "/marketplace/", label: "Marketplace", icon: LayoutGrid },
   { hash: "modes", label: "AI Tools", icon: Wand2 },
   { hash: "automation", label: "Automation", icon: Workflow },

@@ -1,6 +1,7 @@
 /**
  * Offline manager helpers for GigaEdit.
  * Sync is a local queue stub — no backend schema changes.
+ * Background flush runs when the browser comes online.
  */
 
 const SYNC_QUEUE_KEY = "giga3_gigaedit_sync_queue_v1";
@@ -16,6 +17,36 @@ export type GigaEditSyncItem = {
 export function isGigaEditOnline(): boolean {
   if (typeof navigator === "undefined") return true;
   return navigator.onLine;
+}
+
+let backgroundSyncStarted = false;
+
+/**
+ * Listen for online events and flush the local sync queue.
+ * Safe to call multiple times — installs a single listener.
+ */
+export function startGigaEditBackgroundSync(
+  onFlushed?: (count: number) => void
+): () => void {
+  if (typeof window === "undefined") return () => undefined;
+
+  const flush = () => {
+    void flushGigaEditSyncQueue().then((result) => {
+      if (result.flushed > 0) onFlushed?.(result.flushed);
+    });
+  };
+
+  if (!backgroundSyncStarted) {
+    backgroundSyncStarted = true;
+    window.addEventListener("online", flush);
+  }
+
+  if (isGigaEditOnline()) flush();
+
+  return () => {
+    window.removeEventListener("online", flush);
+    backgroundSyncStarted = false;
+  };
 }
 
 function readQueue(): GigaEditSyncItem[] {
@@ -81,4 +112,6 @@ export const GIGAEDIT_OFFLINE_CAPABILITIES = [
   "Save drafts locally",
   "Use downloaded sounds",
   "Queue posts for upload",
+  "Pro camera-style preview (local)",
+  "Background sync when back online",
 ] as const;

@@ -1,6 +1,12 @@
 "use client";
 
+import {
+  CameraStylePreview,
+  type CameraStylePreviewHandle,
+} from "@/components/gigaedit/CameraStylePreview";
 import { PublishScreen } from "@/components/gigaedit/PublishScreen";
+import { DEFAULT_CAMERA_LOOK, type CameraLookOptions } from "@/lib/gigaedit/cameraLook";
+import { detectDeviceTier } from "@/lib/gigaedit/deviceCapability";
 import { aspectRatioCss } from "@/lib/gigaedit/exportFormats";
 import {
   createEmptyProject,
@@ -8,13 +14,19 @@ import {
   saveGigaEditProject,
 } from "@/lib/gigaedit/projects";
 import { enqueueGigaEditSync } from "@/lib/gigaedit/offline";
+import {
+  createManagedObjectUrl,
+  renderEditedImageBlob,
+  revokeManagedObjectUrl,
+} from "@/lib/gigaedit/mediaPipeline";
 import type { ExportAspectRatio } from "@/lib/gigaedit/types";
 import { CAMERA_FILTERS } from "@/lib/gigasocial/cameraFilters";
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export function PhotoEditor() {
   const inputRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
+  const previewRef = useRef<CameraStylePreviewHandle>(null);
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [filterId, setFilterId] = useState("none");
   const [brightness, setBrightness] = useState(1);
@@ -25,22 +37,26 @@ export function PhotoEditor() {
   const [status, setStatus] = useState<string | null>(null);
   const [publishFile, setPublishFile] = useState<File | null>(null);
   const [projectId, setProjectId] = useState<string | undefined>();
+  const [cameraLook, setCameraLook] = useState<CameraLookOptions>(DEFAULT_CAMERA_LOOK);
+  const [exporting, setExporting] = useState(false);
   const originalRef = useRef<File | null>(null);
+  const tier = useMemo(() => detectDeviceTier(), []);
 
   const baseFilter = useMemo(
     () => CAMERA_FILTERS.find((f) => f.id === filterId)?.css ?? "none",
     [filterId]
   );
 
-  const composedFilter = useMemo(() => {
-    const extras = `brightness(${brightness}) contrast(${contrast}) saturate(${saturate})`;
-    return baseFilter === "none" ? extras : `${baseFilter} ${extras}`;
-  }, [baseFilter, brightness, contrast, saturate]);
+  const manualExtras = useMemo(() => {
+    return `brightness(${brightness}) contrast(${contrast}) saturate(${saturate})`;
+  }, [brightness, contrast, saturate]);
+
+  const stackedBaseFilter = useMemo(() => {
+    return baseFilter === "none" ? manualExtras : `${baseFilter} ${manualExtras}`;
+  }, [baseFilter, manualExtras]);
 
   useEffect(() => {
-    return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
+    return () => revokeManagedObjectUrl(objectUrl);
   }, [objectUrl]);
 
   function onPick(file: File | null) {
@@ -50,9 +66,9 @@ export function PhotoEditor() {
       return;
     }
     originalRef.current = file;
-    if (objectUrl) URL.revokeObjectURL(objectUrl);
-    setObjectUrl(URL.createObjectURL(file));
-    setStatus("Original preserved. Export creates a new file only.");
+    revokeManagedObjectUrl(objectUrl);
+    setObjectUrl(createManagedObjectUrl(file));
+    setStatus("Original preserved. Camera-style preview is non-destructive.");
   }
 
   function aiEnhance() {
@@ -60,6 +76,7 @@ export function PhotoEditor() {
     setBrightness(1.06);
     setContrast(1.18);
     setSaturate(1.2);
+    setCameraLook((prev) => ({ ...prev, hdr: true, adaptiveBrightness: true, naturalColors: true }));
     setStatus("AI Enhance applied (AI-assisted local preview).");
   }
 
@@ -68,46 +85,40 @@ export function PhotoEditor() {
     setBrightness(1.05);
     setContrast(0.98);
     setSaturate(1.08);
+    setCameraLook((prev) => ({ ...prev, portrait: true, naturalColors: true }));
     setStatus("Portrait improvement preview applied.");
   }
 
-  function renderEditedBlob(): Promise<Blob | null> {
+  async function renderEditedBlob(): Promise<Blob | null> {
     const img = imgRef.current;
-    if (!img || !objectUrl) return Promise.resolve(null);
-    const canvas = document.createElement("canvas");
-    const w = img.naturalWidth || 1080;
-    const h = img.naturalHeight || 1080;
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return Promise.resolve(null);
-    ctx.filter = composedFilter;
-    ctx.drawImage(img, 0, 0, w, h);
-    if (posterTitle.trim()) {
-      ctx.filter = "none";
-      ctx.fillStyle = "rgba(11,18,32,0.55)";
-      ctx.fillRect(0, h * 0.72, w, h * 0.28);
-      ctx.fillStyle = "#fbbf24";
-      ctx.font = `bold ${Math.max(28, Math.floor(w * 0.06))}px system-ui`;
-      ctx.textAlign = "center";
-      ctx.fillText(posterTitle.trim(), w / 2, h * 0.88);
-    }
-    return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), "image/png"));
+    if (!img || !objectUrl) return null;
+    const lookFilter = previewRef.current?.getComposedFilter() ?? stackedBaseFilter;
+    return renderEditedImageBlob(img, {
+      filterCss: lookFilter,
+      overlayText: posterTitle,
+      tier,
+      mimeType: "image/png",
+    });
   }
 
   async function exportPng() {
-    const blob = await renderEditedBlob();
-    if (!blob) {
-      setStatus("Import a photo first.");
-      return;
+    setExporting(true);
+    try {
+      const blob = await renderEditedBlob();
+      if (!blob) {
+        setStatus("Import a photo first.");
+        return;
+      }
+      const url = createManagedObjectUrl(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `gigaedit-${Date.now()}.png`;
+      a.click();
+      revokeManagedObjectUrl(url);
+      setStatus("Exported a new PNG. Original upload unchanged.");
+    } finally {
+      setExporting(false);
     }
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `gigaedit-${Date.now()}.png`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setStatus("Exported a new PNG. Original upload unchanged.");
   }
 
   async function saveDraft() {
@@ -121,7 +132,7 @@ export function PhotoEditor() {
     project.contrast = contrast;
     project.saturate = saturate;
     project.overlayText = posterTitle;
-    project.aiAssisted = filterId === "hdr" || Boolean(posterTitle);
+    project.aiAssisted = filterId === "hdr" || Boolean(posterTitle) || cameraLook.portrait;
     project.hasOriginal = Boolean(originalRef.current);
     await saveGigaEditProject(project);
     if (originalRef.current) await putProjectOriginalBlob(project.id, originalRef.current);
@@ -136,15 +147,20 @@ export function PhotoEditor() {
       setStatus("Import a photo first.");
       return;
     }
-    const blob = await renderEditedBlob();
-    if (!blob) {
-      setStatus("Could not render edited photo.");
-      return;
+    setExporting(true);
+    try {
+      const blob = await renderEditedBlob();
+      if (!blob) {
+        setStatus("Could not render edited photo.");
+        return;
+      }
+      const id = await saveDraft();
+      const edited = new File([blob], `gigaedit-${Date.now()}.png`, { type: "image/png" });
+      setProjectId(id);
+      setPublishFile(edited);
+    } finally {
+      setExporting(false);
     }
-    const id = await saveDraft();
-    const edited = new File([blob], `gigaedit-${Date.now()}.png`, { type: "image/png" });
-    setProjectId(id);
-    setPublishFile(edited);
   }
 
   if (publishFile && originalRef.current) {
@@ -155,7 +171,7 @@ export function PhotoEditor() {
         originalFile={originalRef.current}
         aspectRatio={aspectRatio}
         projectId={projectId}
-        aiAssisted={filterId === "hdr" || Boolean(posterTitle)}
+        aiAssisted={filterId === "hdr" || Boolean(posterTitle) || cameraLook.portrait}
         defaultCaption={posterTitle}
         onClose={() => setPublishFile(null)}
       />
@@ -167,7 +183,8 @@ export function PhotoEditor() {
       <div>
         <h2 className="text-lg font-semibold">Photo editor</h2>
         <p className="mt-1 text-xs text-[var(--ge-muted)]">
-          AI enhance, filters, color, crop framing, posters, thumbnails, and flyers — non-destructive.
+          Pro camera preview with adaptive brightness, HDR, exposure, white balance, portrait, and
+          low-light — non-destructive, offline-ready ({tier}-tier device).
         </p>
       </div>
 
@@ -192,15 +209,21 @@ export function PhotoEditor() {
         <button type="button" className="rounded-xl border border-[var(--ge-border)] px-3 py-2 text-xs" onClick={portraitImprove}>
           Portrait
         </button>
-        <button type="button" className="rounded-xl border border-[var(--ge-border)] px-3 py-2 text-xs" onClick={() => void exportPng()}>
-          Export PNG
+        <button
+          type="button"
+          disabled={exporting}
+          className="rounded-xl border border-[var(--ge-border)] px-3 py-2 text-xs disabled:opacity-50"
+          onClick={() => void exportPng()}
+        >
+          {exporting ? "Exporting…" : "Export PNG"}
         </button>
         <button type="button" className="rounded-xl border border-[var(--ge-border)] px-3 py-2 text-xs" onClick={() => void saveDraft()}>
           Save draft
         </button>
         <button
           type="button"
-          className="rounded-xl bg-[var(--ge-gold)] px-3 py-2 text-xs font-bold text-[#0b1220]"
+          disabled={exporting}
+          className="rounded-xl bg-[var(--ge-gold)] px-3 py-2 text-xs font-bold text-[#0b1220] disabled:opacity-50"
           onClick={() => void readyToPublish()}
         >
           Ready to publish
@@ -208,32 +231,17 @@ export function PhotoEditor() {
       </div>
 
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_16rem]">
-        <div className="gigaedit-glass flex items-center justify-center p-3">
-          <div
-            className="gigaedit-allow-effects overflow-hidden rounded-xl bg-black"
-            style={{ aspectRatio: aspectRatioCss(aspectRatio), width: "min(100%, 420px)" }}
-          >
-            {objectUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                ref={imgRef}
-                src={objectUrl}
-                alt="Photo being edited"
-                className="h-full w-full object-cover"
-                style={
-                  {
-                    "--ge-filter": composedFilter,
-                    filter: "var(--ge-filter)",
-                  } as CSSProperties
-                }
-              />
-            ) : (
-              <div className="flex h-full min-h-[220px] items-center justify-center p-6 text-center text-xs text-[var(--ge-muted)]">
-                Import a photo to enhance, resize, or design a poster.
-              </div>
-            )}
-          </div>
-        </div>
+        <CameraStylePreview
+          ref={previewRef}
+          kind="image"
+          src={objectUrl}
+          imgRef={imgRef}
+          aspectRatioCss={aspectRatioCss(aspectRatio)}
+          baseFilterCss={stackedBaseFilter}
+          look={cameraLook}
+          onLookChange={setCameraLook}
+          emptyLabel="Import a photo to enhance, resize, or design a poster."
+        />
 
         <div className="space-y-3">
           <label className="block text-xs text-[var(--ge-muted)]">
