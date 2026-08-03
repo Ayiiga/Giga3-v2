@@ -18,7 +18,7 @@ const frontendIconsDir = join(__dirname, "..", "..", "frontend", "assets", "icon
 const frontendImagesDir = join(__dirname, "..", "..", "frontend", "assets", "images");
 
 /** Bump when icons/splash change — keeps browsers and PWAs off stale assets. */
-const BRAND_ASSET_VERSION = "20260703";
+const BRAND_ASSET_VERSION = "20260803";
 
 const BRAND = {
   name: "Giga3 AI",
@@ -29,6 +29,8 @@ const BRAND = {
   backgroundColor: "#ffffff",
   /** Solid violet — single background color for app icons. */
   violet: [91, 33, 182],
+  /** Slightly deeper rim for contrast on light home-screen wallpapers. */
+  violetDeep: [67, 20, 140],
   white: [255, 255, 255],
   splashTop: [250, 250, 252],
   splashBottom: [245, 243, 255],
@@ -112,11 +114,13 @@ function setWhite(pixels, i) {
 
 function renderIcon(size, { maskable = false, splash = false } = {}) {
   const pixels = Buffer.alloc(size * size * 4);
-  const pad = maskable ? size * 0.1 : 0;
+  // Larger safe zone for adaptive/maskable icons on Android launchers.
+  const pad = maskable ? size * 0.12 : 0;
   const cx = size / 2;
   const cy = size / 2;
-  const markScale = size * (maskable ? 0.36 : splash ? 0.22 : 0.42);
+  const markScale = size * (maskable ? 0.34 : splash ? 0.22 : 0.42);
   const cornerR = size * (splash ? 0 : 0.22);
+  const rim = Math.max(1, Math.round(size * 0.028));
 
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
@@ -155,12 +159,32 @@ function renderIcon(size, { maskable = false, splash = false } = {}) {
         const inSafe =
           x >= pad && y >= pad && x < size - pad && y < size - pad;
         if (!inSafe) {
-          setWhite(pixels, i);
+          // Soft brand-tinted pad — readable on light and dark wallpapers when cropped.
+          pixels[i] = 250;
+          pixels[i + 1] = 248;
+          pixels[i + 2] = 255;
+          pixels[i + 3] = 255;
           continue;
         }
       }
 
       setSolidViolet(pixels, i);
+
+      // Thin deeper rim improves contrast on pale home-screen wallpapers.
+      if (!maskable) {
+        const onRim =
+          !isInRoundedRect(x, y, size, size, Math.max(0, cornerR - rim)) ||
+          x < rim ||
+          y < rim ||
+          x >= size - rim ||
+          y >= size - rim;
+        if (onRim) {
+          pixels[i] = BRAND.violetDeep[0];
+          pixels[i + 1] = BRAND.violetDeep[1];
+          pixels[i + 2] = BRAND.violetDeep[2];
+          pixels[i + 3] = 255;
+        }
+      }
 
       const nx = (x - cx) / markScale;
       const ny = (y - cy) / markScale;
@@ -378,7 +402,8 @@ const SPLASH_SCREENS = [
 
 const FAVICON_SVG = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Giga3 AI">
-  <rect width="512" height="512" rx="112" fill="#5b21b6"/>
+  <rect width="512" height="512" rx="112" fill="#43148c"/>
+  <rect x="14" y="14" width="484" height="484" rx="98" fill="#5b21b6"/>
   <path fill="#ffffff" d="M 356 178 A 104 104 0 1 0 356 334 L 300 334 A 48 48 0 0 1 300 256 L 356 256 L 356 226 L 268 226 A 88 88 0 0 1 268 178 Z"/>
 </svg>
 `;

@@ -1,6 +1,6 @@
-/** Badge, guest browse & offline UX — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v191-badge-guest-offline";
-const NEXT_STATIC_CACHE = "giga3-next-static-v191";
+/** Smart engagement PWA enhancements — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v192-smart-engagement";
+const NEXT_STATIC_CACHE = "giga3-next-static-v192";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";

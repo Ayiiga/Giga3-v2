@@ -15,6 +15,6 @@ export const ChatSyncBanner = memo(function ChatSyncBanner(
   _props: ChatSyncBannerProps
 ) {
   return (
-    <OfflineModeBanner message="Offline Mode — you can read cached chats; sending waits until you're back online." />
+    <OfflineModeBanner message="Offline Mode — read cached chats; sending is disabled until you're back online." />
   );
 });
