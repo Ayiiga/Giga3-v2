@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @import "./gigasocial-pro.css";
+@import "./gigasocial-premium.css";
 
 :root {
   --font-inter: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -331,17 +332,34 @@ button:focus-visible {
     overflow: visible;
   }
 
-  .gigasocial-pro .gigasocial-post-card--visual {
-    overflow: hidden;
+  /* Premium navy theme overrides mobile white-card force when active. */
+  .gigasocial-premium.gigasocial-pro .gigasocial-post-card,
+  .gigasocial-premium .gigasocial-post-card,
+  .gigasocial-premium.gigasocial-pro .gigasocial-creator-studio,
+  .gigasocial-premium .gigasocial-creator-studio {
+    background: #162033 !important;
+    overflow: visible;
   }
 
-  .gigasocial-pro .gigasocial-post-card--visual .gigasocial-feed-media {
-    overflow: hidden;
+  .gigasocial-premium.gigasocial-pro .gigasocial-feed-shell,
+  .gigasocial-premium .gigasocial-feed-shell {
+    background: transparent !important;
   }
 
   .gigasocial-feed-hero {
     background-image: none !important;
     background-color: rgb(91 33 182) !important;
+  }
+
+  .gigasocial-premium .gigasocial-feed-hero {
+    background-image: none !important;
+    background-color: #1e3a8a !important;
+  }
+
+  /* Allow skeleton shimmer only (opacity sweep via transform on ::after). */
+  .gigasocial-premium .gigasocial-shimmer::after {
+    animation: gigasocial-shimmer-slide 1.4s ease-in-out infinite !important;
+    transform: translateX(-100%) !important;
   }
 
   .gigasocial-feed-hero [aria-hidden="true"] {
@@ -406,6 +424,14 @@ button:focus-visible {
   .marketing-stable .premium-card {
     background: #fff !important;
     overflow: hidden !important;
+  }
+
+  .marketing-stable .gigasocial-premium .saas-card,
+  .marketing-stable .gigasocial-premium .gigasocial-post-card,
+  .marketing-stable .gigasocial-premium .premium-card {
+    background: #162033 !important;
+    color: #fff !important;
+    overflow: visible !important;
   }
 
   .marketing-stable .bg-zinc-50,

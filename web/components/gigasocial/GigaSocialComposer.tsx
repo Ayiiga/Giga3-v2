@@ -31,6 +31,10 @@ import {
 } from "@/lib/gigasocial/mediaUpload";
 import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
 import { GigaSocialComposerMeta } from "@/components/gigasocial/composer/GigaSocialComposerMeta";
+import {
+  GigaSocialComposerQuickActions,
+  type ComposerQuickActionId,
+} from "@/components/gigasocial/composer/GigaSocialComposerQuickActions";
 import { GigaSocialAccountSwitcher } from "@/components/gigasocial/accounts/GigaSocialAccountSwitcher";
 import type { SocialAccountSummary } from "@/lib/gigasocial/activeSocialAccount";
 import { GigaSocialCreateMediaMenu, type CreateMediaAction } from "@/components/gigasocial/GigaSocialCreateMediaMenu";
@@ -540,6 +544,41 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     [router]
   );
 
+  const handleQuickAction = useCallback(
+    (action: ComposerQuickActionId) => {
+      switch (action) {
+        case "photo":
+          imageInputRef.current?.click();
+          break;
+        case "video":
+          videoInputRef.current?.click();
+          break;
+        case "camera":
+          setCameraDefaultMode("photo");
+          setCameraStudioOpen(true);
+          break;
+        case "feeling":
+          setBody((value) => `${value}✨`);
+          captionRef.current?.focus();
+          break;
+        case "location":
+          document
+            .querySelector<HTMLInputElement>("#gigasocial-composer input[placeholder^='Location']")
+            ?.focus();
+          break;
+        case "ai":
+          document.getElementById("gigasocial-ai-assistant")?.scrollIntoView({
+            block: "nearest",
+            behavior: window.matchMedia("(max-width: 1023px)").matches ? "auto" : "smooth",
+          });
+          break;
+        default:
+          break;
+      }
+    },
+    []
+  );
+
   const handleDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
@@ -728,7 +767,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         onChange={(e) => setBody(e.target.value)}
         rows={compact ? 2 : 4}
         maxLength={SOCIAL_CAPTION_MAX_LENGTH}
-        placeholder="Share with the community… #hashtags welcome"
+        placeholder="Share your thoughts with the world..."
         className={
           compact
             ? "max-h-28 w-full resize-none overflow-y-auto rounded-xl border border-border bg-white px-3 py-2 text-sm"
@@ -747,21 +786,28 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         ) : null}
       </div>
 
+      <GigaSocialComposerQuickActions
+        disabled={disabled || busy}
+        onAction={handleQuickAction}
+      />
+
       {enableAIAssistant ? (
-        <GigaSocialAIAssistant
-          body={body}
-          postType={postType}
-          compact={compact}
-          onApplyCaption={setBody}
-          onApplyHashtags={(tags) => {
-            const suffix = tags
-              .slice(0, 5)
-              .map((tag) => `#${tag}`)
-              .join(" ");
-            setBody((value) => `${value.trim()} ${suffix}`.trim());
-          }}
-          onApplyCategory={setPostType}
-        />
+        <div id="gigasocial-ai-assistant">
+          <GigaSocialAIAssistant
+            body={body}
+            postType={postType}
+            compact={compact}
+            onApplyCaption={setBody}
+            onApplyHashtags={(tags) => {
+              const suffix = tags
+                .slice(0, 5)
+                .map((tag) => `#${tag}`)
+                .join(" ");
+              setBody((value) => `${value.trim()} ${suffix}`.trim());
+            }}
+            onApplyCategory={setPostType}
+          />
+        </div>
       ) : null}
 
       <GigaSocialPendingMediaPreview

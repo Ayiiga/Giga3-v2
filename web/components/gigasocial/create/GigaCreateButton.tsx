@@ -57,6 +57,15 @@ export const GigaCreateButton = memo(function GigaCreateButton({
   }, []);
 
   useEffect(() => {
+    function onOpenCreate() {
+      if (disabled) return;
+      setOpen(true);
+    }
+    window.addEventListener("gigasocial:open-create", onOpenCreate);
+    return () => window.removeEventListener("gigasocial:open-create", onOpenCreate);
+  }, [disabled]);
+
+  useEffect(() => {
     if (!open) return;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -163,7 +172,7 @@ export const GigaCreateButton = memo(function GigaCreateButton({
             <div className="gigasocial-upload-sheet__fab-row">{fab}</div>
           </div>
         ) : (
-          <div className="pointer-events-auto flex justify-end p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="pointer-events-auto hidden justify-end p-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:flex">
             {fab}
           </div>
         )}

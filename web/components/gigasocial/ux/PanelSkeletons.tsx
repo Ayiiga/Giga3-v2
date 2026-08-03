@@ -6,10 +6,7 @@ import { memo } from "react";
 function Bone({ className }: { className?: string }) {
   return (
     <div
-      className={cn(
-        "gigasocial-skeleton-bone animate-pulse rounded-lg bg-muted/25",
-        className
-      )}
+      className={cn("gigasocial-skeleton-bone gigasocial-shimmer rounded-lg", className)}
       aria-hidden
     />
   );
