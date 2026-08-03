@@ -5,12 +5,18 @@ import {
   postBadgeMessageToServiceWorker,
   setAppBadgeCount,
 } from "@/lib/pwa/appBadge";
+import { shouldClearAppBadgeForPath } from "@/lib/pwa/badgeClearPaths";
 import { getSessionToken } from "@/lib/auth";
 import { getConvexClient } from "@/lib/convex";
 import { getConvexUrl } from "@/lib/convex/env";
 import { api } from "convex/_generated/api";
 import { ConvexProvider, ConvexReactClient, useConvex } from "convex/react";
 import { useEffect, useLayoutEffect, useState } from "react";
+
+function currentPathname(): string {
+  if (typeof window === "undefined") return "";
+  return window.location.pathname || "";
+}
 
 function AppBadgeSyncInner() {
   const convex = useConvex();
@@ -56,24 +62,40 @@ function AppBadgeSyncInner() {
       postBadgeMessageToServiceWorker("GIGA3_CLEAR_BADGE");
     }
 
+    function clearIfRelevantSection() {
+      if (shouldClearAppBadgeForPath(currentPathname())) {
+        void clearBadge();
+        return true;
+      }
+      return false;
+    }
+
     function onVisibilityChange() {
       if (document.visibilityState === "visible") {
-        void clearBadge();
+        if (!clearIfRelevantSection()) {
+          void syncFromServer();
+        }
         return;
       }
       void syncFromServer();
     }
 
     function onFocus() {
-      void clearBadge();
+      clearIfRelevantSection();
     }
 
     function onBlur() {
       void syncFromServer();
     }
 
+    function onPathMaybeChanged() {
+      clearIfRelevantSection();
+    }
+
     if (document.visibilityState === "visible") {
-      void clearBadge();
+      if (!clearIfRelevantSection()) {
+        void syncFromServer();
+      }
     } else {
       void syncFromServer();
     }
@@ -81,11 +103,32 @@ function AppBadgeSyncInner() {
     document.addEventListener("visibilitychange", onVisibilityChange);
     window.addEventListener("focus", onFocus);
     window.addEventListener("blur", onBlur);
+    window.addEventListener("popstate", onPathMaybeChanged);
+    // App-router soft navigations
+    window.addEventListener("giga3:route-change", onPathMaybeChanged);
+
+    const pushState = history.pushState.bind(history);
+    const replaceState = history.replaceState.bind(history);
+    history.pushState = function (...args) {
+      const result = pushState(...args);
+      onPathMaybeChanged();
+      return result;
+    };
+    history.replaceState = function (...args) {
+      const result = replaceState(...args);
+      onPathMaybeChanged();
+      return result;
+    };
+
     return () => {
       cancelled = true;
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("blur", onBlur);
+      window.removeEventListener("popstate", onPathMaybeChanged);
+      window.removeEventListener("giga3:route-change", onPathMaybeChanged);
+      history.pushState = pushState;
+      history.replaceState = replaceState;
     };
   }, [convex]);
 

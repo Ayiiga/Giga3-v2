@@ -36,6 +36,8 @@ interface ChatConversationPaneProps {
   onSuggestVisionTier?: () => void;
   initialAttachments?: PreparedChatAttachment[];
   onRetryOutboxSync?: () => void;
+  /** UI lock only (e.g. offline) — does not change send/outbox hooks. */
+  inputDisabled?: boolean;
 }
 
 function panePropsEqual(
@@ -50,6 +52,7 @@ function panePropsEqual(
     prev.awaitingReply === next.awaitingReply &&
     prev.isAcceptingMessage === next.isAcceptingMessage &&
     prev.isSlowNetwork === next.isSlowNetwork &&
+    prev.inputDisabled === next.inputDisabled &&
     prev.messages === next.messages &&
     prev.onSend === next.onSend &&
     prev.onInsertTemplate === next.onInsertTemplate &&
@@ -96,9 +99,11 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onSuggestVisionTier,
   initialAttachments,
   onRetryOutboxSync,
+  inputDisabled = false,
 }: ChatConversationPaneProps) {
   const showTyping = awaitingReply || isSending;
   const typingPhase = awaitingReply ? "replying" : "sending";
+  const composerDisabled = isSending || awaitingReply || inputDisabled;
 
   return (
     <div className="chat-conversation-grid min-h-0 min-w-0 max-w-full overflow-x-clip overflow-y-hidden bg-background">
@@ -118,7 +123,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         <ChatCategorySwitcher
           mode={mode}
           onModeChange={onModeChange}
-          disabled={isSending || awaitingReply}
+          disabled={composerDisabled}
           className="hidden md:block"
         />
         <div className="chat-composer-dock min-w-0 max-w-full border-t border-border bg-background">
@@ -147,7 +152,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         <ChatInput
           insertRef={insertRef}
           onSend={onSend}
-          disabled={isSending || awaitingReply}
+          disabled={composerDisabled}
           uploadUsage={uploadUsage}
           credits={credits}
           subscriptionActive={subscriptionActive}

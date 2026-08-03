@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Giga3 AI">
-  <rect width="512" height="512" rx="112" fill="#5b21b6"/>
+  <rect width="512" height="512" rx="112" fill="#43148c"/>
+  <rect x="14" y="14" width="484" height="484" rx="98" fill="#5b21b6"/>
   <path fill="#ffffff" d="M 356 178 A 104 104 0 1 0 356 334 L 300 334 A 48 48 0 0 1 300 256 L 356 256 L 356 226 L 268 226 A 88 88 0 0 1 268 178 Z"/>
 </svg>

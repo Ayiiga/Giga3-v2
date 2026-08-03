@@ -3,6 +3,7 @@
 import { GigaSocialAvatarFollow } from "@/components/gigasocial/GigaSocialAvatarFollow";
 import { GigaSocialFanButton } from "@/components/gigasocial/fans/GigaSocialFanButton";
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
+import { GigaSocialAuthPrompt } from "@/components/gigasocial/ux/GigaSocialAuthPrompt";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getSessionToken, getUserEmail } from "@/lib/auth";
 import { BADGE_LABELS } from "@/lib/gigasocial/sections";
@@ -40,6 +41,8 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
   const [sessionToken] = useState(() => getSessionToken());
   const [tab, setTab] = useState<ProfileTab>("posts");
   const [fanCount, setFanCount] = useState<number | null>(null);
+  const [authOpen, setAuthOpen] = useState(false);
+  const requireAuth = () => setAuthOpen(true);
 
   const data = useQuery(api.gigaSocial.getProfileByHandle, {
     handle,
@@ -241,7 +244,14 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
       {tab === "gifts" && sessionToken ? (
         <GigaSocialGiftsHub sessionToken={sessionToken} creatorId={profile.userId} />
       ) : tab === "gifts" && !sessionToken ? (
-        <p className="text-center text-sm text-muted">Sign in to tip this creator.</p>
+        <div className="space-y-3">
+          <p className="text-center text-sm text-muted">Sign in to tip this creator.</p>
+          <GigaSocialAuthPrompt
+            nextPath={buildGigaSocialProfileUrl(handle)}
+            title="Sign in to tip"
+            description="Join GigaSocial to tip creators and unlock gifts."
+          />
+        </div>
       ) : filteredPosts.length === 0 ? (
         <p className="text-center text-sm text-muted">No {tab} to show yet.</p>
       ) : (
@@ -252,17 +262,27 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
               post={post}
               sessionToken={sessionToken}
               enablePostTips
+              onRequireAuth={requireAuth}
               canDelete={Boolean(myUserId && profile.userId === myUserId)}
               onLike={async (postId) => {
-                if (!sessionToken) return;
+                if (!sessionToken) {
+                  requireAuth();
+                  return;
+                }
                 await toggleLike({ sessionToken, postId: postId as Id<"socialPosts"> });
               }}
               onBookmark={async (postId) => {
-                if (!sessionToken) return;
+                if (!sessionToken) {
+                  requireAuth();
+                  return;
+                }
                 await toggleBookmark({ sessionToken, postId: postId as Id<"socialPosts"> });
               }}
               onShare={async (postId) => {
-                if (!sessionToken) return;
+                if (!sessionToken) {
+                  requireAuth();
+                  return;
+                }
                 await recordShare({ sessionToken, postId: postId as Id<"socialPosts"> });
               }}
               onPin={
@@ -280,6 +300,14 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
           ))}
         </div>
       )}
+
+      {authOpen ? (
+        <GigaSocialAuthPrompt
+          variant="modal"
+          nextPath={buildGigaSocialProfileUrl(handle)}
+          onDismiss={() => setAuthOpen(false)}
+        />
+      ) : null}
     </div>
   );
 });

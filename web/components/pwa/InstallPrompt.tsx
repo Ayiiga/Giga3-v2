@@ -4,6 +4,7 @@ import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Button } from "@/components/ui/Button";
 import { usePwaInstall } from "@/hooks/usePwaInstall";
 import { branding } from "@/lib/branding";
+import { shouldSuppressInstallPrompt } from "@/lib/pwa/installPromptPaths";
 import {
   dismissInstallPrompt,
   isInstallPromptDismissed,
@@ -63,7 +64,7 @@ export const InstallPrompt = memo(function InstallPrompt() {
 
   const shouldShow = useMemo(() => {
     if (!delayReady || dismissed || isInstalled) return false;
-    if (pathname === "/install" || pathname === "/install/") return false;
+    if (shouldSuppressInstallPrompt(pathname)) return false;
     if (isIosGuide) return true;
     if (isAndroidNative) return true;
     return false;
@@ -130,7 +131,7 @@ export const InstallPrompt = memo(function InstallPrompt() {
             <button
               type="button"
               onClick={handleDismiss}
-              className="shrink-0 rounded-lg p-2 text-muted hover:bg-accent/10"
+              className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-accent/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               aria-label="Close install instructions"
             >
               <X className="h-4 w-4" aria-hidden />
@@ -175,12 +176,12 @@ export const InstallPrompt = memo(function InstallPrompt() {
               type="button"
               variant="outline"
               size="sm"
-              className="flex-1"
+              className="min-h-12 flex-1"
               onClick={handleDismiss}
             >
               Not now
             </Button>
-            <Button type="button" size="sm" className="flex-1" onClick={handleDismiss}>
+            <Button type="button" size="sm" className="min-h-12 flex-1" onClick={handleDismiss}>
               Got it
             </Button>
           </div>
@@ -208,6 +209,7 @@ export const InstallPrompt = memo(function InstallPrompt() {
         <Button
           type="button"
           size="sm"
+          className="min-h-12"
           disabled={installing}
           onClick={() => void handleInstall()}
           aria-label={`Install ${branding.name}`}
@@ -218,7 +220,7 @@ export const InstallPrompt = memo(function InstallPrompt() {
         <button
           type="button"
           onClick={handleDismiss}
-          className="rounded-lg p-2 text-muted hover:bg-accent/10"
+          className="inline-flex h-12 w-12 items-center justify-center rounded-lg text-muted hover:bg-accent/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           aria-label="Dismiss install banner"
         >
           <X className="h-4 w-4" aria-hidden />

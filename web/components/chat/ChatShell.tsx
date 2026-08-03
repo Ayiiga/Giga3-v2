@@ -18,7 +18,6 @@ import { getSessionToken } from "@/lib/auth";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation } from "convex/react";
-import { useRouter, usePathname } from "next/navigation";
 import {
   getGigaModel,
   gigaModelForMode,
@@ -30,7 +29,9 @@ import { findLatestImageUrlInMessages } from "@/lib/chat/parseMessageMedia";
 import { consumeGigaLearnChatHandoff } from "@/lib/gigalearn/chatHandoff";
 import { consumePromptChatHandoff } from "@/lib/chat/promptHandoff";
 import { OPEN_SIDEBAR_EVENT } from "@/lib/chat/workspaceNav";
+import { ChatGuestBrowseView } from "@/components/chat/ChatGuestBrowseView";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { useEffectiveOnline } from "@/hooks/useEffectiveOnline";
 import { usePlatformProfile } from "@/hooks/usePlatformProfile";
 import { useRemoteConfig } from "@/hooks/useRemoteConfig";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
@@ -88,8 +89,6 @@ function ChatShellInner({
 }) {
   useRenderDiagnostic("ChatShellInner");
 
-  const router = useRouter();
-  const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [templateNotice, setTemplateNotice] = useState<string | null>(null);
@@ -100,6 +99,7 @@ function ChatShellInner({
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const insertRef = useRef<((text: string) => void) | null>(null);
   const chatActionsRef = useRef<ChatActionsMenuHandle | null>(null);
+  const { effectiveOnline } = useEffectiveOnline();
 
   const {
     email,
@@ -185,9 +185,10 @@ function ChatShellInner({
 
   const handleSend = useCallback(
     (msg: string, attachments?: import("@/lib/chat/multimodalAttachments").PreparedChatAttachment[]) => {
+      if (!effectiveOnline) return;
       void sendMessage(msg, attachments, modelTier);
     },
-    [sendMessage, modelTier]
+    [effectiveOnline, sendMessage, modelTier]
   );
 
   const handleSuggestVisionTier = useCallback(() => {
@@ -389,24 +390,21 @@ function ChatShellInner({
   );
 
   useEffect(() => {
-    if (mounted && !email) {
-      const next = pathname?.startsWith("/chat") ? pathname : "/chat";
-      router.replace(`/chat/login?next=${encodeURIComponent(next)}`);
-    }
-  }, [mounted, email, router, pathname]);
-
-  useEffect(() => {
     setDismissedError(null);
   }, [error]);
 
   const visibleError = error && error !== dismissedError ? error : null;
 
-  if (!mounted || !email) {
+  if (!mounted) {
     return (
       <div className="flex h-full items-center justify-center text-base text-muted">
-        Redirecting…
+        Loading chat…
       </div>
     );
+  }
+
+  if (!email) {
+    return <ChatGuestBrowseView />;
   }
 
   return (
@@ -523,6 +521,7 @@ function ChatShellInner({
           onAttachmentsChange={handleAttachmentsChange}
           onSuggestVisionTier={handleSuggestVisionTier}
           initialAttachments={handoffAttachments}
+          inputDisabled={!effectiveOnline}
         />
       </div>
     </div>
