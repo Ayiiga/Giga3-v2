@@ -21,9 +21,9 @@ export const metadata: Metadata = {
 
 export default function GigaEditPage() {
   return (
-    <div className="gigaedit-page px-0 pb-3 pt-[3.75rem] sm:px-3 sm:pb-6 sm:pt-20">
+    <div className="gigaedit-page gigaedit-stable px-0 pb-3 pt-[3.75rem] sm:px-3 sm:pb-6 sm:pt-20">
       <Container className="!px-0 sm:!px-4">
-        <Suspense fallback={<p className="text-center text-muted">Loading GigaEdit…</p>}>
+        <Suspense fallback={<p className="text-center text-[var(--ge-muted,#94a3b8)]">Loading GigaEdit…</p>}>
           <GigaEditPageRoot />
         </Suspense>
       </Container>

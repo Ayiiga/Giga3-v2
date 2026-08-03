@@ -23,6 +23,7 @@ import {
 import { composePhotoMusicVideo } from "@/lib/gigasocial/photoMusicVideo";
 import { needsVideoTrim } from "@/lib/gigasocial/videoTrim";
 import {
+  getAudioDuration,
   getVideoDuration,
   generateVideoThumbnail,
   uploadSocialImages,
@@ -31,6 +32,8 @@ import {
 } from "@/lib/gigasocial/mediaUpload";
 import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
 import { GigaSocialComposerMeta } from "@/components/gigasocial/composer/GigaSocialComposerMeta";
+import { SoundLibraryPicker } from "@/components/gigaedit/SoundLibraryPicker";
+import { soundAttributionLine } from "@/lib/gigaedit/soundLibrary";
 import {
   GigaSocialComposerQuickActions,
   type ComposerQuickActionId,
@@ -162,6 +165,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const [soundAttribution, setSoundAttribution] = useState<string | null>(
     () => initialMedia?.soundAttribution ?? null
   );
+  const [soundLibraryOpen, setSoundLibraryOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -617,7 +621,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           videoInputRef.current?.click();
           break;
         case "music":
-          audioInputRef.current?.click();
+          setSoundLibraryOpen(true);
           break;
         case "templates":
           router.push("/creator-studio?tab=image");
@@ -858,6 +862,40 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         <p className="text-[11px] text-muted">
           From GigaEdit · original media preserved separately on your device
         </p>
+      ) : null}
+      {soundLibraryOpen ? (
+        <div className="space-y-2 rounded-xl border border-border p-2">
+          <SoundLibraryPicker
+            onClose={() => setSoundLibraryOpen(false)}
+            onSelect={(sound, file) => {
+              void (async () => {
+                try {
+                  const prepared = await prepareAudioForPhotoPost(file);
+                  setPendingAudio({
+                    file: prepared.file,
+                    name: prepared.file.name,
+                    durationSec: prepared.durationSec || (await getAudioDuration(prepared.file).catch(() => 0)),
+                  });
+                  setSoundAttribution(soundAttributionLine(sound));
+                  setSoundLibraryOpen(false);
+                  setSuccess(`Using ${soundAttributionLine(sound)}`);
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : "Could not attach sound.");
+                }
+              })();
+            }}
+          />
+          <button
+            type="button"
+            className="w-full rounded-lg border border-border px-3 py-2 text-xs text-muted"
+            onClick={() => {
+              setSoundLibraryOpen(false);
+              audioInputRef.current?.click();
+            }}
+          >
+            Import audio from this device instead
+          </button>
+        </div>
       ) : null}
       <textarea
         id="gigasocial-caption"

@@ -16,7 +16,7 @@ import type {
 } from "@/lib/gigaedit/publishTypes";
 import { saveSound, type GigaEditSoundAsset } from "@/lib/gigaedit/soundLibrary";
 import type { ExportAspectRatio } from "@/lib/gigaedit/types";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 export type PublishScreenProps = {
   kind: GigaEditPublishMediaKind;
@@ -80,8 +80,13 @@ export function PublishScreen({
   const [showLibrary, setShowLibrary] = useState(false);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const previewUrl = useMemo(() => URL.createObjectURL(editedFile), [editedFile]);
+  useEffect(() => {
+    const url = URL.createObjectURL(editedFile);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [editedFile]);
 
   async function buildHandoff(destination: GigaEditPublishDestination) {
     const reuse =
@@ -223,12 +228,13 @@ export function PublishScreen({
       </div>
 
       <div className="gigaedit-glass overflow-hidden p-2">
-        {kind === "video" ? (
+        {previewUrl && kind === "video" ? (
           <video src={previewUrl} controls playsInline className="mx-auto max-h-64 rounded-xl" />
-        ) : (
+        ) : null}
+        {previewUrl && kind === "photo" ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={previewUrl} alt="Ready to publish" className="mx-auto max-h-64 rounded-xl object-contain" />
-        )}
+        ) : null}
       </div>
 
       <label className="block text-xs text-[var(--ge-muted)]">

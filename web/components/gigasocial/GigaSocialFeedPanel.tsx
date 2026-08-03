@@ -426,6 +426,16 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setRemixSource(null);
     setComposerOpen(true);
     setErrorToast("GigaEdit project ready — review and publish.");
+    // Strip one-shot query flag so refresh/back doesn't reopen the sheet in a loop.
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("gigaeditPublish")) {
+        url.searchParams.delete("gigaeditPublish");
+        window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+      }
+    } catch {
+      /* ignore */
+    }
   }, [requireAuth, sessionToken]);
 
   useEffect(() => {
@@ -440,13 +450,16 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 
   useEffect(() => {
     function onOnline() {
+      if (gigaEditPublishHandledRef.current && composerOpen) return;
       void flushPublishQueueToHandoff().then((n) => {
-        if (n > 0) void openGigaEditPublishHandoff();
+        if (n <= 0) return;
+        gigaEditPublishHandledRef.current = true;
+        void openGigaEditPublishHandoff();
       });
     }
     window.addEventListener("online", onOnline);
     return () => window.removeEventListener("online", onOnline);
-  }, [openGigaEditPublishHandoff]);
+  }, [composerOpen, openGigaEditPublishHandoff]);
 
   const handleGigaCreate = useCallback(
     (launch: GigaCreateLaunch) => {

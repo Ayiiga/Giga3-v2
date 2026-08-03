@@ -77,7 +77,7 @@ describe("GigaEdit routing & SW", () => {
 
   it("precaches gigaedit shell and bumps cache version", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v195-gigaedit-publish"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v196-gigaedit-stable"');
     expect(sw).toContain('"/gigaedit/"');
   });
 });

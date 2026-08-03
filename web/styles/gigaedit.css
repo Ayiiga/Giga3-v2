@@ -1,9 +1,11 @@
 /**
  * GigaEdit creator studio — deep navy + gold, scoped tokens.
- * Kept separate from chat/marketing tokens.
+ * Mobile-stable: no dvh jitter, no hover transforms, no backdrop-blur on small screens.
  */
 
-.gigaedit-shell {
+.gigaedit-page,
+.gigaedit-shell,
+.gigaedit-stable {
   --ge-bg: #0b1220;
   --ge-card: rgba(22, 32, 51, 0.92);
   --ge-card-solid: #162033;
@@ -15,12 +17,39 @@
   --ge-border: rgba(148, 163, 184, 0.18);
   --ge-shadow: 0 8px 28px -12px rgba(0, 0, 0, 0.55);
   --ge-radius: 1.125rem;
+}
+
+.gigaedit-page {
+  background: var(--ge-bg);
+  color: var(--ge-text);
+  min-height: 100%;
+  overflow-x: clip;
+  overflow-y: visible;
+  touch-action: pan-y;
+  overscroll-behavior-y: auto;
+}
+
+.gigaedit-shell {
   color: var(--ge-text);
   background:
     radial-gradient(120% 80% at 50% -10%, rgba(59, 130, 246, 0.16), transparent 55%),
     radial-gradient(90% 60% at 100% 0%, rgba(251, 191, 36, 0.1), transparent 45%),
     var(--ge-bg);
-  min-height: calc(100dvh - 3.75rem);
+  /* Prefer vh over dynamic viewport units to avoid mobile URL-bar layout shake. */
+  min-height: calc(100vh - 4.5rem);
+  overflow-x: clip;
+  contain: none;
+}
+
+.gigaedit-stable,
+.gigaedit-stable * {
+  animation: none !important;
+}
+
+.gigaedit-stable *,
+.gigaedit-stable *::before,
+.gigaedit-stable *::after {
+  scroll-behavior: auto !important;
 }
 
 .gigaedit-glass {
@@ -28,6 +57,7 @@
   border: 1px solid var(--ge-border);
   border-radius: var(--ge-radius);
   box-shadow: var(--ge-shadow);
+  contain: none;
 }
 
 @media (min-width: 1024px) {
@@ -52,13 +82,13 @@
   border: 1px solid var(--ge-border);
   background: var(--ge-card-solid);
   text-align: left;
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  /* No transform transitions — marketing-stable + mobile GPU tear risk. */
+  transition: none;
 }
 
 @media (min-width: 1024px) {
   .gigaedit-action-tile:hover {
     border-color: rgba(251, 191, 36, 0.45);
-    transform: translateY(-2px);
   }
 }
 
@@ -116,8 +146,32 @@
   overflow: hidden;
 }
 
-/* Allow filters/transforms inside editor canvas on mobile (marketing-stable strips them). */
+/* Mobile: keep editor canvas filters/transforms; kill motion elsewhere in GigaEdit. */
 @media (max-width: 1023px) {
+  .gigaedit-stable,
+  .gigaedit-stable *:not(.gigaedit-allow-effects):not(.gigaedit-allow-effects *) {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    will-change: auto !important;
+    contain: none !important;
+    isolation: auto !important;
+  }
+
+  .marketing-stable .gigaedit-page,
+  .marketing-stable .gigaedit-shell,
+  .marketing-stable .gigaedit-glass,
+  .marketing-stable .gigaedit-action-tile,
+  .marketing-stable .gigaedit-bottom-nav {
+    background-color: var(--ge-card-solid) !important;
+    background-image: none !important;
+    color: var(--ge-text) !important;
+    box-shadow: none !important;
+  }
+
+  .marketing-stable .gigaedit-shell {
+    background-color: var(--ge-bg) !important;
+  }
+
   .marketing-stable .gigaedit-allow-effects,
   .marketing-stable .gigaedit-allow-effects * {
     transform: var(--ge-transform, none) !important;

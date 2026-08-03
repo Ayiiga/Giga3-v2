@@ -79,6 +79,16 @@ describe("GigaEdit publish flags & offline", () => {
 
   it("bumps SW cache for publish integration", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v195-gigaedit-publish"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v196-gigaedit-stable"');
+  });
+});
+
+describe("GigaEdit mobile stability", () => {
+  it("avoids dvh height and hover transforms that shake mobile layouts", () => {
+    const css = readFileSync(resolve(__dirname, "../../web/styles/gigaedit.css"), "utf8");
+    expect(css).not.toContain("100dvh");
+    expect(css).toContain("gigaedit-stable");
+    expect(css).toContain("gigaedit-allow-effects");
+    expect(css).toContain("transition: none");
   });
 });
