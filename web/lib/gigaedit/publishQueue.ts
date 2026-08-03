@@ -98,10 +98,13 @@ export async function flushPublishQueueToHandoff(): Promise<number> {
   if (queue.length === 0) return 0;
   const first = queue[0];
   try {
-    sessionStorage.setItem(
-      "giga3_gigaedit_publish_handoff_v1",
-      JSON.stringify({ ...first.handoff, destination: first.destination })
-    );
+    const raw = JSON.stringify({ ...first.handoff, destination: first.destination });
+    sessionStorage.setItem("giga3_gigaedit_publish_handoff_v1", raw);
+    try {
+      localStorage.setItem("giga3_gigaedit_publish_handoff_backup_v1", raw);
+    } catch {
+      /* quota */
+    }
   } catch {
     return 0;
   }

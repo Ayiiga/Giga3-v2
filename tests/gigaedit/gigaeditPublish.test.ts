@@ -66,6 +66,29 @@ describe("GigaEdit sound library helpers", () => {
   });
 });
 
+describe("GigaEdit publish redirect helpers", () => {
+  it("builds a feed publish URL with handoff flag", async () => {
+    const { gigasocialPublishUrl } = await import("../../web/lib/gigaedit/publishHandoff");
+    expect(gigasocialPublishUrl("feed")).toBe("/gigasocial/?tab=feed&gigaeditPublish=1");
+    expect(gigasocialPublishUrl("reel")).toContain("gigaeditPublish=1");
+  });
+
+  it("wires Post to GigaSocial from editors", () => {
+    const photo = readFileSync(
+      resolve(__dirname, "../../web/components/gigaedit/PhotoEditor.tsx"),
+      "utf8"
+    );
+    const video = readFileSync(
+      resolve(__dirname, "../../web/components/gigaedit/VideoEditor.tsx"),
+      "utf8"
+    );
+    expect(photo).toContain("handoffAndOpenGigaSocial");
+    expect(video).toContain("handoffAndOpenGigaSocial");
+    expect(photo).toContain("Post to GigaSocial");
+    expect(video).toContain("Post to GigaSocial");
+  });
+});
+
 describe("GigaEdit publish flags & offline", () => {
   it("enables publish integration by default", () => {
     expect(GIGAEDIT_FEATURE_DEFAULTS.enableGigaEditPublish).toBe(true);
@@ -79,7 +102,7 @@ describe("GigaEdit publish flags & offline", () => {
 
   it("bumps SW cache for publish integration", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v197-gigaedit-camera"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v198-gigaedit-publish"');
   });
 });
 

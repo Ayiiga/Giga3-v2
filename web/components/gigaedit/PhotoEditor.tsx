@@ -19,6 +19,7 @@ import {
   renderEditedImageBlob,
   revokeManagedObjectUrl,
 } from "@/lib/gigaedit/mediaPipeline";
+import { handoffAndOpenGigaSocial } from "@/lib/gigaedit/publishHandoff";
 import type { ExportAspectRatio } from "@/lib/gigaedit/types";
 import { CAMERA_FILTERS } from "@/lib/gigasocial/cameraFilters";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -148,6 +149,48 @@ export function PhotoEditor() {
       return;
     }
     setExporting(true);
+    setStatus("Opening GigaSocial feed…");
+    try {
+      const blob = await renderEditedBlob();
+      if (!blob) {
+        setStatus("Could not render edited photo.");
+        return;
+      }
+      const id = await saveDraft();
+      const edited = new File([blob], `gigaedit-${Date.now()}.png`, { type: "image/png" });
+      setProjectId(id);
+      const result = await handoffAndOpenGigaSocial({
+        kind: "photo",
+        edited,
+        original: originalRef.current,
+        aspectRatio,
+        destination: "feed",
+        caption: posterTitle,
+        projectId: id,
+        aiAssisted: filterId === "hdr" || Boolean(posterTitle) || cameraLook.portrait,
+      });
+      if (result.queued) {
+        setPublishFile(edited);
+        setStatus("You're offline — opened publish options. Post will sync when you're back online.");
+        return;
+      }
+      if (result.error) {
+        setPublishFile(edited);
+        setStatus(`${result.error} — adjust options below, then publish.`);
+        return;
+      }
+      // Full-page navigation to GigaSocial in progress.
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function openPublishOptions() {
+    if (!originalRef.current) {
+      setStatus("Import a photo first.");
+      return;
+    }
+    setExporting(true);
     try {
       const blob = await renderEditedBlob();
       if (!blob) {
@@ -226,7 +269,15 @@ export function PhotoEditor() {
           className="rounded-xl bg-[var(--ge-gold)] px-3 py-2 text-xs font-bold text-[#0b1220] disabled:opacity-50"
           onClick={() => void readyToPublish()}
         >
-          Ready to publish
+          {exporting ? "Opening…" : "Post to GigaSocial"}
+        </button>
+        <button
+          type="button"
+          disabled={exporting}
+          className="rounded-xl border border-[var(--ge-border)] px-3 py-2 text-xs disabled:opacity-50"
+          onClick={() => void openPublishOptions()}
+        >
+          Publish options
         </button>
       </div>
 
