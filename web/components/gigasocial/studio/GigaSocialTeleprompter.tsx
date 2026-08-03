@@ -145,6 +145,17 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
 
   useEffect(() => {
     if (!active) return;
+    function onVoiceTick() {
+      setOffsetPx((current) =>
+        advanceTeleprompterOffset(current, clampTeleprompterSpeed(speed), 280, false)
+      );
+    }
+    window.addEventListener("giga3:teleprompter-voice-tick", onVoiceTick);
+    return () => window.removeEventListener("giga3:teleprompter-voice-tick", onVoiceTick);
+  }, [active, speed]);
+
+  useEffect(() => {
+    if (!active) return;
     const onKey = (event: KeyboardEvent) => {
       // Bluetooth / media remote friendly: Space toggles pause while recording.
       if (event.code === "Space" && recording) {

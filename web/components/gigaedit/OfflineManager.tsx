@@ -78,19 +78,30 @@ export function OfflineManager({ compact = false }: { compact?: boolean }) {
           type="button"
           className="inline-flex items-center gap-1 rounded-lg border border-[var(--ge-border)] px-2 py-1 text-xs text-[var(--ge-muted)]"
           onClick={() => {
-            void flushGigaEditSyncQueue().then((r) => {
-              setStatus(r.flushed ? `Flushed ${r.flushed} items.` : "Nothing to sync.");
+            void (async () => {
+              const local = await flushGigaEditSyncQueue();
+              const pub = await flushPublishQueueToHandoff();
+              if (pub > 0) {
+                setStatus("Publish draft ready — opening GigaSocial…");
+                window.location.assign("/gigasocial/?tab=feed&gigaeditPublish=1");
+                return;
+              }
+              setStatus(
+                local.flushed
+                  ? `Cleared ${local.flushed} local backup item${local.flushed === 1 ? "" : "s"}.`
+                  : "Nothing queued. Local drafts already saved on this device."
+              );
               refresh();
-            });
+            })();
           }}
         >
           <RefreshCw className="h-3.5 w-3.5" aria-hidden />
-          Sync now
+          Flush queue
         </button>
       </div>
       <p className="text-xs text-[var(--ge-muted)]">
         {online
-          ? "Connected. Projects stay private on-device; cloud backup can attach later without changing auth."
+          ? "Connected. Projects stay private on-device. Flush queue resurfaces offline publish drafts in GigaSocial."
           : "You’re offline. Creative tools below still work from IndexedDB / local cache."}
       </p>
       <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">

@@ -15,8 +15,8 @@ export function SocialMediaCreator() {
       <div>
         <h2 className="text-lg font-semibold">Social media creator</h2>
         <p className="mt-1 text-xs text-[var(--ge-muted)]">
-          Pick a platform format, edit in GigaEdit, then use Ready to publish for the GigaSocial
-          publish screen (Feed, Reel, Story, Draft, Device, External).
+          Pick a platform format — opens the editor with that aspect ratio, then Post to GigaSocial
+          for Feed, Reel, Story, Draft, Device, or External.
         </p>
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
@@ -27,17 +27,18 @@ export function SocialMediaCreator() {
             className="gigaedit-glass p-4 text-left"
             onClick={() =>
               void (async () => {
+                const isVertical =
+                  format.aspectRatio === "9:16" || format.aspectRatio === "4:5";
                 const project = createEmptyProject({
-                  kind: "social",
+                  kind: isVertical ? "video" : "photo",
                   title: `${format.platform} draft`,
                   aspectRatio: format.aspectRatio,
                 });
                 await saveGigaEditProject(project);
                 setStatus(`${format.label} project created (${format.aspectRatio}).`);
+                const tab = isVertical ? "video" : "photo";
                 router.push(
-                  format.aspectRatio === "9:16" || format.aspectRatio === "4:5"
-                    ? "/gigaedit/?tab=video"
-                    : "/gigaedit/?tab=photo"
+                  `/gigaedit/?tab=${tab}&project=${encodeURIComponent(project.id)}&aspect=${encodeURIComponent(format.aspectRatio)}`
                 );
               })()
             }
@@ -51,13 +52,13 @@ export function SocialMediaCreator() {
       </div>
       <div className="flex flex-wrap gap-2">
         <Link
-          href="/gigaedit/?tab=video"
+          href="/gigaedit/?tab=video&aspect=9%3A16"
           className="inline-flex rounded-xl bg-[var(--ge-gold)] px-3 py-2 text-xs font-bold text-[#0b1220]"
         >
           Open video editor
         </Link>
         <Link
-          href="/gigasocial/"
+          href="/gigasocial/?tab=feed"
           className="inline-flex rounded-xl border border-[var(--ge-border)] px-3 py-2 text-xs text-[var(--ge-gold)]"
         >
           Open GigaSocial

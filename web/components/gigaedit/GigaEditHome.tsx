@@ -1,12 +1,17 @@
 "use client";
 
 import { OfflineManager } from "@/components/gigaedit/OfflineManager";
-import { GIGAEDIT_QUICK_ACTIONS, type GigaEditSection } from "@/lib/gigaedit/types";
+import { sectionForProjectKind } from "@/lib/gigaedit/projects";
+import {
+  GIGAEDIT_QUICK_ACTIONS,
+  type GigaEditOpenOptions,
+  type GigaEditSection,
+} from "@/lib/gigaedit/types";
 import { listGigaEditProjects, type GigaEditProjectRecord } from "@/lib/gigaedit/projects";
 import { useEffect, useState } from "react";
 
 type GigaEditHomeProps = {
-  onOpen: (section: GigaEditSection) => void;
+  onOpen: (section: GigaEditSection, opts?: GigaEditOpenOptions) => void;
 };
 
 export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
@@ -89,7 +94,12 @@ export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
                 <button
                   type="button"
                   className="shrink-0 text-xs text-[var(--ge-gold)]"
-                  onClick={() => onOpen(p.kind === "photo" ? "photo" : p.kind === "audio" ? "audio" : "video")}
+                  onClick={() =>
+                    onOpen(sectionForProjectKind(p.kind) as GigaEditSection, {
+                      projectId: p.id,
+                      aspect: p.aspectRatio,
+                    })
+                  }
                 >
                   Open
                 </button>

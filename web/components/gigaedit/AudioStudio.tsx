@@ -38,7 +38,7 @@ export function AudioStudio() {
           project.hasOriginal = true;
           await saveGigaEditProject(project);
           await putProjectOriginalBlob(project.id, blob);
-          setStatus("Audio saved locally. Sync to video timeline from the video editor.");
+          setStatus("Audio saved locally. Open Video editor → Use Audio Studio take to attach it.");
         })();
         stream.getTracks().forEach((t) => t.stop());
       };
@@ -60,7 +60,8 @@ export function AudioStudio() {
       <div>
         <h2 className="text-lg font-semibold">Audio studio</h2>
         <p className="mt-1 text-xs text-[var(--ge-muted)]">
-          Record voiceovers offline, keep originals, and pair them with video music sync later.
+          Record voiceovers offline, keep originals, then attach them on the video timeline for
+          export mix.
         </p>
       </div>
       <div className="gigaedit-glass flex flex-wrap items-center gap-3 p-4">
@@ -83,6 +84,12 @@ export function AudioStudio() {
             Stop
           </button>
         )}
+        <a
+          href="/gigaedit/?tab=video"
+          className="rounded-xl border border-[var(--ge-border)] px-3 py-2 text-xs text-[var(--ge-gold)]"
+        >
+          Open video editor
+        </a>
         {audioUrl ? <audio controls src={audioUrl} className="w-full max-w-md" /> : null}
       </div>
       {status ? <p className="text-xs text-[var(--ge-gold)]">{status}</p> : null}

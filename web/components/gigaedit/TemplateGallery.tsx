@@ -2,11 +2,12 @@
 
 import { GIGAEDIT_TEMPLATES } from "@/lib/gigaedit/templates";
 import { createEmptyProject, saveGigaEditProject } from "@/lib/gigaedit/projects";
+import type { GigaEditOpenOptions } from "@/lib/gigaedit/types";
 import { useState } from "react";
 
 type TemplateGalleryProps = {
-  onUseVideo: () => void;
-  onUsePhoto: () => void;
+  onUseVideo: (opts?: GigaEditOpenOptions) => void;
+  onUsePhoto: (opts?: GigaEditOpenOptions) => void;
 };
 
 export function TemplateGallery({ onUseVideo, onUsePhoto }: TemplateGalleryProps) {
@@ -17,7 +18,8 @@ export function TemplateGallery({ onUseVideo, onUsePhoto }: TemplateGalleryProps
       <div>
         <h2 className="text-lg font-semibold">Templates</h2>
         <p className="mt-1 text-xs text-[var(--ge-muted)]">
-          Downloaded layouts work offline. Premium marketplace templates can plug in later.
+          Downloaded layouts work offline and open the matching editor with the template aspect
+          ratio seeded.
         </p>
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
@@ -40,16 +42,18 @@ export function TemplateGallery({ onUseVideo, onUsePhoto }: TemplateGalleryProps
               onClick={() =>
                 void (async () => {
                   const project = createEmptyProject({
-                    kind: "template",
+                    kind: t.category === "photo" || t.category === "business" ? "photo" : "video",
                     title: t.title,
                     aspectRatio: t.aspectRatio,
                   });
                   project.aiAssisted = t.aiLabel;
                   project.notes = t.id;
+                  project.overlayText = t.title;
                   await saveGigaEditProject(project);
-                  setStatus(`Template “${t.title}” saved as a draft project.`);
-                  if (t.category === "photo" || t.category === "business") onUsePhoto();
-                  else onUseVideo();
+                  setStatus(`Template “${t.title}” opened (${t.aspectRatio}).`);
+                  const opts = { projectId: project.id, aspect: t.aspectRatio };
+                  if (t.category === "photo" || t.category === "business") onUsePhoto(opts);
+                  else onUseVideo(opts);
                 })()
               }
             >

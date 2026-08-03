@@ -11,8 +11,10 @@ import {
 import { detectDeviceTier } from "@/lib/gigaedit/deviceCapability";
 import {
   createEmptyProject,
+  putProjectOriginalBlob,
   saveGigaEditProject,
 } from "@/lib/gigaedit/projects";
+import { handoffAndOpenGigaSocial } from "@/lib/gigaedit/publishHandoff";
 import { generateTeleprompterScript, loadTeleprompterScript } from "@/lib/gigasocial/teleprompterScripts";
 import { Camera, CameraOff } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -27,8 +29,11 @@ export function TeleprompterStudio() {
   const [topic, setTopic] = useState("");
   const [prompterKey, setPrompterKey] = useState(0);
   const [cameraLook, setCameraLook] = useState<CameraLookOptions>(DEFAULT_CAMERA_LOOK);
+  const [voiceFollow, setVoiceFollow] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const recordedFileRef = useRef<File | null>(null);
+  const recognitionRef = useRef<{ stop: () => void } | null>(null);
   const tier = useMemo(() => detectDeviceTier(), []);
 
   useEffect(() => {
@@ -82,13 +87,24 @@ export function TeleprompterStudio() {
     };
     recorder.onstop = () => {
       const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "video/webm" });
+      const file = new File([blob], `gigaedit-teleprompter-${Date.now()}.webm`, {
+        type: blob.type || "video/webm",
+      });
+      recordedFileRef.current = file;
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `gigaedit-teleprompter-${Date.now()}.webm`;
+      a.download = file.name;
       a.click();
       URL.revokeObjectURL(url);
-      setStatus("Recording exported. Original camera stream was not overwritten.");
+      void (async () => {
+        const project = createEmptyProject({ kind: "teleprompter", title: "Teleprompter take" });
+        project.hasOriginal = true;
+        project.scriptText = loadTeleprompterScript();
+        await saveGigaEditProject(project);
+        await putProjectOriginalBlob(project.id, file);
+        setStatus("Recording saved locally. Use Post to GigaSocial when ready.");
+      })();
     };
     recorder.start();
     setRecording(true);
@@ -107,6 +123,74 @@ export function TeleprompterStudio() {
     await saveGigaEditProject(project);
     setStatus("Script draft saved locally for offline use.");
   }
+
+  async function postRecording() {
+    const file = recordedFileRef.current;
+    if (!file) {
+      setStatus("Record a take first, then post to GigaSocial.");
+      return;
+    }
+    setStatus("Opening GigaSocial…");
+    const result = await handoffAndOpenGigaSocial({
+      kind: "video",
+      edited: file,
+      original: file,
+      aspectRatio: "9:16",
+      destination: "feed",
+      caption: topic.trim() || "Teleprompter take",
+      aiAssisted: Boolean(topic.trim()),
+    });
+    if (result.error) setStatus(result.error);
+    if (result.queued) setStatus("Offline — recording queued for GigaSocial.");
+  }
+
+  function toggleVoiceFollow() {
+    if (voiceFollow) {
+      recognitionRef.current?.stop();
+      recognitionRef.current = null;
+      setVoiceFollow(false);
+      setStatus("Voice-follow off. Use teleprompter speed controls to scroll.");
+      return;
+    }
+    const w = window as Window & Record<string, unknown>;
+    const Ctor = (w.SpeechRecognition || w.webkitSpeechRecognition) as
+      | (new () => {
+          continuous: boolean;
+          interimResults: boolean;
+          onresult: ((ev: { results: ArrayLike<ArrayLike<{ transcript?: string }>> }) => void) | null;
+          onerror: (() => void) | null;
+          start: () => void;
+          stop: () => void;
+        })
+      | undefined;
+    if (!Ctor) {
+      setStatus("Voice-follow needs browser SpeechRecognition. Scroll manually via teleprompter settings.");
+      return;
+    }
+    try {
+      const recognition = new Ctor();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.onresult = () => {
+        // Nudge teleprompter by dispatching a custom event the overlay can listen for.
+        window.dispatchEvent(new CustomEvent("giga3:teleprompter-voice-tick"));
+      };
+      recognition.onerror = () => {
+        setVoiceFollow(false);
+        setStatus("Voice-follow stopped. Continue with manual scroll.");
+      };
+      recognition.start();
+      recognitionRef.current = recognition;
+      setVoiceFollow(true);
+      setStatus("Voice-follow on — speech advances the teleprompter when the browser supports it.");
+    } catch {
+      setStatus("Could not start voice-follow on this device.");
+    }
+  }
+
+  useEffect(() => {
+    return () => recognitionRef.current?.stop();
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -151,6 +235,20 @@ export function TeleprompterStudio() {
           onClick={() => void saveScriptProject()}
         >
           Save script draft
+        </button>
+        <button
+          type="button"
+          className="rounded-xl border border-[var(--ge-border)] px-3 py-2 text-xs"
+          onClick={toggleVoiceFollow}
+        >
+          {voiceFollow ? "Voice-follow on" : "Voice-follow"}
+        </button>
+        <button
+          type="button"
+          className="rounded-xl bg-[var(--ge-gold)] px-3 py-2 text-xs font-bold text-[#0b1220]"
+          onClick={() => void postRecording()}
+        >
+          Post to GigaSocial
         </button>
       </div>
 
@@ -204,9 +302,8 @@ export function TeleprompterStudio() {
             Generate AI script
           </button>
           <p className="text-[11px] text-[var(--ge-muted)]">
-            Voice-follow scrolling can use the browser SpeechRecognition API when available; speed and
-            mirror controls are in the teleprompter settings gear. Recording never overwrites the live
-            stream.
+            Voice-follow uses browser SpeechRecognition when available. Speed and mirror controls are
+            in the teleprompter settings gear. Recordings save locally and can post to GigaSocial.
           </p>
         </div>
       </div>

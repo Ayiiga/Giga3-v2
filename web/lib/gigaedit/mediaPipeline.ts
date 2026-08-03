@@ -10,6 +10,9 @@ import {
   type DeviceTier,
 } from "@/lib/gigaedit/deviceCapability";
 import { analyzeImageData, type FrameAnalysis } from "@/lib/gigaedit/cameraLook";
+import { aspectRatioSize } from "@/lib/gigaedit/exportFormats";
+import type { ExportAspectRatio } from "@/lib/gigaedit/types";
+import { coverDrawRect } from "@/lib/gigasocial/photoMusicVideo";
 
 export function createManagedObjectUrl(blob: Blob): string {
   return URL.createObjectURL(blob);
@@ -113,6 +116,8 @@ export type RenderImageOptions = {
   quality?: number;
   overlayText?: string;
   tier?: DeviceTier;
+  /** When set, cover-crop into this frame before export. */
+  aspectRatio?: ExportAspectRatio;
 };
 
 /**
@@ -127,7 +132,18 @@ export async function renderEditedImageBlob(
   const maxEdge = options.maxEdge ?? getExportMaxEdge(tier);
   const naturalW = img.naturalWidth || 1080;
   const naturalH = img.naturalHeight || 1080;
-  const { width, height } = fitWithin(naturalW, naturalH, maxEdge);
+  let width: number;
+  let height: number;
+  if (options.aspectRatio) {
+    const target = aspectRatioSize(options.aspectRatio);
+    const fitted = fitWithin(target.width, target.height, maxEdge);
+    width = fitted.width;
+    height = fitted.height;
+  } else {
+    const fitted = fitWithin(naturalW, naturalH, maxEdge);
+    width = fitted.width;
+    height = fitted.height;
+  }
   const mime = options.mimeType ?? "image/png";
   const quality = options.quality ?? (tier === "low" ? 0.88 : 0.92);
 
@@ -138,15 +154,44 @@ export async function renderEditedImageBlob(
     w: number,
     h: number
   ) => {
-    drawScaled(ctx, bitmap as CanvasImageSource, w, h, options.filterCss);
+    const filterCtx = ctx as Filterable2DContext;
+    filterCtx.clearRect(0, 0, w, h);
+    filterCtx.fillStyle = "#000";
+    filterCtx.fillRect(0, 0, w, h);
+    filterCtx.filter = options.filterCss && options.filterCss !== "none" ? options.filterCss : "none";
+    const srcW =
+      bitmap instanceof HTMLImageElement
+        ? bitmap.naturalWidth || naturalW
+        : "width" in bitmap
+          ? Number(bitmap.width) || naturalW
+          : naturalW;
+    const srcH =
+      bitmap instanceof HTMLImageElement
+        ? bitmap.naturalHeight || naturalH
+        : "height" in bitmap
+          ? Number(bitmap.height) || naturalH
+          : naturalH;
+    const cover = coverDrawRect(srcW, srcH, w, h);
+    filterCtx.drawImage(
+      bitmap as CanvasImageSource,
+      cover.sx,
+      cover.sy,
+      cover.sw,
+      cover.sh,
+      0,
+      0,
+      w,
+      h
+    );
+    filterCtx.filter = "none";
     if (options.overlayText?.trim()) {
       const text = options.overlayText.trim();
-      ctx.fillStyle = "rgba(11,18,32,0.55)";
-      ctx.fillRect(0, h * 0.72, w, h * 0.28);
-      ctx.fillStyle = "#fbbf24";
-      ctx.font = `bold ${Math.max(28, Math.floor(w * 0.06))}px system-ui,sans-serif`;
-      ctx.textAlign = "center";
-      ctx.fillText(text, w / 2, h * 0.88);
+      filterCtx.fillStyle = "rgba(11,18,32,0.55)";
+      filterCtx.fillRect(0, h * 0.72, w, h * 0.28);
+      filterCtx.fillStyle = "#fbbf24";
+      filterCtx.font = `bold ${Math.max(28, Math.floor(w * 0.06))}px system-ui,sans-serif`;
+      filterCtx.textAlign = "center";
+      filterCtx.fillText(text, w / 2, h * 0.88);
     }
   };
 

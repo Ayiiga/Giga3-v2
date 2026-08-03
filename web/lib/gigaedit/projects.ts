@@ -142,6 +142,46 @@ export async function getProjectOriginalBlob(id: string): Promise<Blob | null> {
   }
 }
 
+/** Side media (e.g. voiceover) keyed as `${projectId}::audio` — never overwrites the original. */
+export async function putProjectAudioBlob(projectId: string, blob: Blob): Promise<void> {
+  const db = await openDb();
+  if (!db) return;
+  const tx = db.transaction(BLOB_STORE, "readwrite");
+  await idbReq(
+    tx.objectStore(BLOB_STORE).put({
+      id: `${projectId}::audio`,
+      blob,
+      role: "audio",
+      savedAt: Date.now(),
+    })
+  );
+}
+
+export async function getProjectAudioBlob(projectId: string): Promise<Blob | null> {
+  const db = await openDb();
+  if (!db) return null;
+  try {
+    const tx = db.transaction(BLOB_STORE, "readonly");
+    const row = (await idbReq(tx.objectStore(BLOB_STORE).get(`${projectId}::audio`))) as
+      | { blob?: Blob }
+      | undefined;
+    return row?.blob ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function sectionForProjectKind(
+  kind: GigaEditProjectKind
+): "video" | "photo" | "teleprompter" | "audio" | "social" | "templates" {
+  if (kind === "photo") return "photo";
+  if (kind === "teleprompter") return "teleprompter";
+  if (kind === "audio") return "audio";
+  if (kind === "social") return "social";
+  if (kind === "template") return "templates";
+  return "video";
+}
+
 export function createEmptyProject(input: {
   kind: GigaEditProjectKind;
   title?: string;
