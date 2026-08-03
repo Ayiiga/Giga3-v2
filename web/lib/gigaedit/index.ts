@@ -30,7 +30,29 @@ export {
   enqueueGigaEditSync,
   flushGigaEditSyncQueue,
   listGigaEditSyncQueue,
+  startGigaEditBackgroundSync,
 } from "@/lib/gigaedit/offline";
+export {
+  DEFAULT_CAMERA_LOOK,
+  composeCameraLookCss,
+  analyzeImageData,
+  buildProCameraConstraints,
+  type CameraLookOptions,
+  type FrameAnalysis,
+} from "@/lib/gigaedit/cameraLook";
+export {
+  detectDeviceTier,
+  getGigaEditCapabilities,
+  getPreviewMaxEdge,
+  getExportMaxEdge,
+  type DeviceTier,
+} from "@/lib/gigaedit/deviceCapability";
+export {
+  renderEditedImageBlob,
+  analyzeMediaElement,
+  createManagedObjectUrl,
+  revokeManagedObjectUrl,
+} from "@/lib/gigaedit/mediaPipeline";
 export { GIGAEDIT_TEMPLATES } from "@/lib/gigaedit/templates";
 export {
   buildAiAssistPrompt,

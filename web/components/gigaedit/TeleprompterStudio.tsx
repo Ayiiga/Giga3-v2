@@ -1,24 +1,35 @@
 "use client";
 
+import { CameraStylePreview } from "@/components/gigaedit/CameraStylePreview";
 import { GigaSocialTeleprompter } from "@/components/gigasocial/studio/GigaSocialTeleprompter";
+import {
+  DEFAULT_CAMERA_LOOK,
+  applyCameraTrackEnhancements,
+  buildProCameraConstraints,
+  type CameraLookOptions,
+} from "@/lib/gigaedit/cameraLook";
+import { detectDeviceTier } from "@/lib/gigaedit/deviceCapability";
 import {
   createEmptyProject,
   saveGigaEditProject,
 } from "@/lib/gigaedit/projects";
 import { generateTeleprompterScript, loadTeleprompterScript } from "@/lib/gigasocial/teleprompterScripts";
 import { Camera, CameraOff } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export function TeleprompterStudio() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [cameraOn, setCameraOn] = useState(false);
+  const [stream, setStream] = useState<MediaStream | null>(null);
   const [recording, setRecording] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [topic, setTopic] = useState("");
   const [prompterKey, setPrompterKey] = useState(0);
+  const [cameraLook, setCameraLook] = useState<CameraLookOptions>(DEFAULT_CAMERA_LOOK);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const tier = useMemo(() => detectDeviceTier(), []);
 
   useEffect(() => {
     return () => {
@@ -28,17 +39,21 @@ export function TeleprompterStudio() {
 
   async function enableCamera() {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" },
-        audio: true,
+      const constraints = buildProCameraConstraints({
+        facingMode: "user",
+        look: cameraLook,
+        tier,
       });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
+      const next = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = next;
+      setStream(next);
+      const applied = await applyCameraTrackEnhancements(next, cameraLook);
       setCameraOn(true);
-      setStatus("Camera & mic enabled with your permission.");
+      setStatus(
+        applied.length
+          ? `Camera ready with ${applied.join(", ")} (permission granted).`
+          : "Camera & mic enabled with your permission. Pro enhancements use best-effort device support."
+      );
     } catch {
       setStatus("Camera/microphone permission denied or unavailable.");
     }
@@ -47,19 +62,20 @@ export function TeleprompterStudio() {
   function disableCamera() {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+    setStream(null);
     if (videoRef.current) videoRef.current.srcObject = null;
     setCameraOn(false);
     setRecording(false);
   }
 
   function startRecording() {
-    const stream = streamRef.current;
-    if (!stream) {
+    const active = streamRef.current;
+    if (!active) {
       setStatus("Enable the camera first.");
       return;
     }
     chunksRef.current = [];
-    const recorder = new MediaRecorder(stream);
+    const recorder = new MediaRecorder(active);
     mediaRecorderRef.current = recorder;
     recorder.ondataavailable = (e) => {
       if (e.data.size > 0) chunksRef.current.push(e.data);
@@ -97,8 +113,8 @@ export function TeleprompterStudio() {
       <div>
         <h2 className="text-lg font-semibold">Teleprompter</h2>
         <p className="mt-1 text-xs text-[var(--ge-muted)]">
-          Floating camera mode, auto-scroll, speed/font/mirror controls, countdown, and offline
-          scripts — powered by Giga3’s existing teleprompter engine.
+          Pro camera preview with autofocus, auto exposure, white balance, and stabilization when the
+          device supports them — plus offline scripts ({tier}-tier).
         </p>
       </div>
 
@@ -139,16 +155,27 @@ export function TeleprompterStudio() {
       </div>
 
       <div className="grid gap-3 lg:grid-cols-2">
-        <div className="gigaedit-glass relative min-h-[240px] overflow-hidden p-2">
-          <video ref={videoRef} muted playsInline className="h-full min-h-[220px] w-full rounded-xl bg-black object-cover" />
-          <div className="absolute inset-x-2 bottom-2 top-1/3">
-            <GigaSocialTeleprompter
-              key={prompterKey}
-              active
-              recording={recording}
-              className="h-full"
-            />
-          </div>
+        <div className="relative">
+          <CameraStylePreview
+            kind="video"
+            stream={stream}
+            videoRef={videoRef}
+            muted
+            aspectRatioCss="9 / 16"
+            look={cameraLook}
+            onLookChange={setCameraLook}
+            emptyLabel="Enable the camera for a pro preview with adaptive look controls."
+            overlay={
+              <div className="absolute inset-x-2 bottom-2 top-1/3">
+                <GigaSocialTeleprompter
+                  key={prompterKey}
+                  active
+                  recording={recording}
+                  className="h-full"
+                />
+              </div>
+            }
+          />
         </div>
         <div className="gigaedit-glass space-y-3 p-4">
           <label className="block text-xs text-[var(--ge-muted)]">
@@ -178,7 +205,8 @@ export function TeleprompterStudio() {
           </button>
           <p className="text-[11px] text-[var(--ge-muted)]">
             Voice-follow scrolling can use the browser SpeechRecognition API when available; speed and
-            mirror controls are in the teleprompter settings gear.
+            mirror controls are in the teleprompter settings gear. Recording never overwrites the live
+            stream.
           </p>
         </div>
       </div>

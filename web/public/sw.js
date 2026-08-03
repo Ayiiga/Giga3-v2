@@ -1,6 +1,6 @@
-/** GigaEdit publish + mobile stability — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v196-gigaedit-stable";
-const NEXT_STATIC_CACHE = "giga3-next-static-v196";
+/** GigaEdit pro camera preview + workspace order — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v197-gigaedit-camera";
+const NEXT_STATIC_CACHE = "giga3-next-static-v197";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";

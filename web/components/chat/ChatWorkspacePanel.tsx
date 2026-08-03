@@ -21,7 +21,7 @@ import {
 } from "@/lib/chat/workspaceNav";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
-import { Bell, BookOpen, ChevronDown, ChevronUp, FileText, Loader2, MessageCircle, Newspaper, Sparkles, Trophy, UsersRound, Workflow } from "lucide-react";
+import { Bell, BookOpen, ChevronDown, ChevronUp, Clapperboard, FileText, Loader2, MessageCircle, Newspaper, Sparkles, Trophy, UsersRound, Workflow } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo, useEffect, useState } from "react";
 
@@ -207,6 +207,22 @@ function ChatWorkspacePanelComponent({
                   </span>
                   <span className="shrink-0 rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent-foreground">
                     Social
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => router.push(`${siteConfig.links.gigaedit}/`)}
+                  className="flex min-h-16 w-full items-center gap-3 rounded-xl border border-border bg-zinc-50/50 p-3 text-left hover:border-accent/25 hover:bg-accent/5"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-600">
+                    <Clapperboard className="h-5 w-5 text-white" aria-hidden />
+                  </div>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-medium text-foreground">GigaEdit</span>
+                    <span className="mt-0.5 block line-clamp-2 text-xs text-muted">
+                      CapCut-style studio — video, photo, teleprompter, and offline edits.
+                    </span>
                   </span>
                 </button>
                 <button

@@ -49,9 +49,9 @@ type MenuLink = {
 
 const MORE_LINKS: MenuLink[] = [
   { href: "/gigasocial/", label: "GigaSocial", icon: UsersRound },
+  { href: "/gigaedit/", label: "GigaEdit", icon: Clapperboard },
   { href: "/gigalearn/", label: "GigaLearn", icon: GraduationCap },
   { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
-  { href: "/gigaedit/", label: "GigaEdit", icon: Clapperboard },
   { href: "/marketplace/", label: "Marketplace", icon: Store },
   { href: "/wallet/", label: "Wallet", icon: Wallet },
   { href: "/enterprise/", label: "Enterprise", icon: Briefcase },
