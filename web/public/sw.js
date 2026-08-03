@@ -1,6 +1,6 @@
-/** Smart engagement PWA enhancements — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v192-smart-engagement";
-const NEXT_STATIC_CACHE = "giga3-next-static-v192";
+/** Device & context awareness for chat — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v193-device-context";
+const NEXT_STATIC_CACHE = "giga3-next-static-v193";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";
