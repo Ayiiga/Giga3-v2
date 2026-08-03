@@ -8,6 +8,7 @@ const PUBLIC_PATHS = [
   "/subscribe/",
   "/credits/",
   "/creator-studio/",
+  "/gigaedit/",
   "/gigalearn/",
   "/enterprise/",
   "/workspace/",

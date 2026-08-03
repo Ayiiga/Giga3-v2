@@ -141,6 +141,7 @@ export function HomeDashboardPanel() {
           { label: "GigaSocial", href: "/gigasocial/", featured: true },
           { label: "Chat", href: "/chat" },
           { label: "Media", href: "/media" },
+          { label: "GigaEdit", href: "/gigaedit/" },
           { label: "Learn", href: "/gigalearn" },
           { label: "Wallet", href: "/wallet" },
         ].map((q) => (

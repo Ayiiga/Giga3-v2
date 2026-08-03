@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 
 export type AIStudioToolId =
   | "ai-studio"
+  | "gigaedit"
   | "teleprompter"
   | "script-generator"
   | "thumbnail-maker"
@@ -31,6 +32,12 @@ export type AIStudioTool = {
 };
 
 export const AI_STUDIO_TOOLS: AIStudioTool[] = [
+  {
+    id: "gigaedit",
+    label: "GigaEdit",
+    emoji: "🎬",
+    description: "Full creator studio — video, photo, teleprompter",
+  },
   {
     id: "teleprompter",
     label: "Teleprompter",
@@ -118,6 +125,8 @@ export type AIStudioLaunch =
 
 export function resolveAIStudioLaunch(toolId: AIStudioToolId): AIStudioLaunch {
   switch (toolId) {
+    case "gigaedit":
+      return { kind: "navigate", href: `${siteConfig.links.gigaedit}/` };
     case "teleprompter":
       return { kind: "compose-camera", teleprompter: true };
     case "script-generator":
@@ -137,6 +146,7 @@ export function resolveAIStudioLaunch(toolId: AIStudioToolId): AIStudioLaunch {
         href: `${siteConfig.links.dashboard}?category=writing`,
       };
     case "video-editor":
+      return { kind: "navigate", href: `${siteConfig.links.gigaedit}/?tab=video` };
     case "music-generator":
       return { kind: "navigate", href: siteConfig.links.video };
     case "voice-studio":
