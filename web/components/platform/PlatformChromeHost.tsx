@@ -4,6 +4,7 @@ import { FeedbackModal } from "@/components/feedback/FeedbackModal";
 import { NotificationBell, NotificationCenter } from "@/components/notifications/NotificationCenter";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { GlobalSearchModal } from "@/components/search/GlobalSearchModal";
+import { useIntelligentNotifications } from "@/hooks/useIntelligentNotifications";
 import { getSessionToken } from "@/lib/auth";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -19,14 +20,28 @@ type PlatformChromeHostProps = {
   hideSearch?: boolean;
 };
 
-function NotificationBellWithCount({ onClick }: { onClick: () => void }) {
+function NotificationBellServerCount({
+  onClick,
+  localUnread,
+}: {
+  onClick: () => void;
+  localUnread: number;
+}) {
   const sessionToken = getSessionToken();
   const notifData = useQuery(
     api.platformNotifications.listNotifications,
     sessionToken ? { sessionToken, limit: 5 } : "skip"
   );
+  const unread = (notifData?.unreadCount ?? 0) + localUnread;
+  return <NotificationBell onClick={onClick} unreadCount={unread} />;
+}
+
+function NotificationBellWithCount({ onClick }: { onClick: () => void }) {
+  const { unreadCount: localUnread } = useIntelligentNotifications();
   return (
-    <NotificationBell onClick={onClick} unreadCount={notifData?.unreadCount ?? 0} />
+    <ConvexAppShell>
+      <NotificationBellServerCount onClick={onClick} localUnread={localUnread} />
+    </ConvexAppShell>
   );
 }
 
@@ -72,7 +87,7 @@ export function PlatformChromeHost({
           </button>
         ) : null}
 
-        {showNotifications && sessionToken && (
+        {showNotifications && (
           <NotificationBellWithCount onClick={() => setNotifOpen(true)} />
         )}
 
@@ -94,7 +109,7 @@ export function PlatformChromeHost({
         onClose={() => setSearchOpen(false)}
         conversations={conversations}
       />
-      {showNotifications && sessionToken && (
+      {showNotifications && (
         <ConvexAppShell>
           <NotificationCenter open={notifOpen} onClose={() => setNotifOpen(false)} />
         </ConvexAppShell>
