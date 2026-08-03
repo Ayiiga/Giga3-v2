@@ -30,11 +30,19 @@ import { consumeGigaLearnChatHandoff } from "@/lib/gigalearn/chatHandoff";
 import { consumePromptChatHandoff } from "@/lib/chat/promptHandoff";
 import { OPEN_SIDEBAR_EVENT } from "@/lib/chat/workspaceNav";
 import { ChatGuestBrowseView } from "@/components/chat/ChatGuestBrowseView";
+import type { UiMessage } from "@/components/chat/MessageList";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { useEffectiveOnline } from "@/hooks/useEffectiveOnline";
 import { usePlatformProfile } from "@/hooks/usePlatformProfile";
 import { useRemoteConfig } from "@/hooks/useRemoteConfig";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
+import {
+  buildLocationContextLine,
+  isNewsOrWeatherIntent,
+  needsLocationEnrichment,
+  resolveLocalDeviceAnswer,
+} from "@/lib/chat/deviceContextIntents";
+import { captureCoordinates } from "@/lib/geolocation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function ChatShell() {
@@ -97,6 +105,7 @@ function ChatShellInner({
   const [handoffAttachments, setHandoffAttachments] = useState<PreparedChatAttachment[]>([]);
   const [conversationSearch, setConversationSearch] = useState("");
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+  const [localTurns, setLocalTurns] = useState<UiMessage[]>([]);
   const insertRef = useRef<((text: string) => void) | null>(null);
   const chatActionsRef = useRef<ChatActionsMenuHandle | null>(null);
   const { effectiveOnline } = useEffectiveOnline();
@@ -183,12 +192,76 @@ function ChatShellInner({
     }
   }, []);
 
+  useEffect(() => {
+    setLocalTurns([]);
+  }, [activeId]);
+
+  const appendLocalTurn = useCallback((userText: string, assistantText: string) => {
+    const now = Date.now();
+    setLocalTurns((prev) => [
+      ...prev,
+      {
+        id: `local-user-${now}`,
+        role: "user",
+        content: userText,
+        createdAt: now,
+      },
+      {
+        id: `local-assistant-${now}`,
+        role: "assistant",
+        content: assistantText,
+        createdAt: now + 1,
+      },
+    ]);
+  }, []);
+
+  const displayMessages = useMemo(
+    () => (localTurns.length ? [...messages, ...localTurns] : messages),
+    [localTurns, messages]
+  );
+
   const handleSend = useCallback(
-    (msg: string, attachments?: import("@/lib/chat/multimodalAttachments").PreparedChatAttachment[]) => {
-      if (!effectiveOnline) return;
-      void sendMessage(msg, attachments, modelTier);
+    (
+      msg: string,
+      attachments?: import("@/lib/chat/multimodalAttachments").PreparedChatAttachment[]
+    ) => {
+      void (async () => {
+        const trimmed = msg.trim();
+        if (!trimmed && !attachments?.length) return;
+
+        // Device/calendar/clock/connectivity answers use browser APIs — work offline too.
+        if (trimmed && !attachments?.length) {
+          const local = await resolveLocalDeviceAnswer(trimmed);
+          if (local) {
+            appendLocalTurn(trimmed, local.answer);
+            return;
+          }
+        }
+
+        if (!effectiveOnline) {
+          appendLocalTurn(
+            trimmed || "(attachment)",
+            isNewsOrWeatherIntent(trimmed)
+              ? "Live news and weather need an internet connection. You’re offline right now — I can still answer date, time, timezone, and basic device questions from this device."
+              : "You’re offline. I can still answer date, time, timezone, and basic device questions locally. Reconnect to send this to Giga3 AI."
+          );
+          return;
+        }
+
+        let wire = trimmed;
+        if (trimmed && !attachments?.length && needsLocationEnrichment(trimmed)) {
+          try {
+            const coords = await captureCoordinates();
+            wire = `${trimmed}\n\n${buildLocationContextLine(coords.latitude, coords.longitude)}`;
+          } catch {
+            // Permission denied or unavailable — continue without location.
+          }
+        }
+
+        void sendMessage(wire || msg, attachments, modelTier);
+      })();
     },
-    [effectiveOnline, sendMessage, modelTier]
+    [appendLocalTurn, effectiveOnline, modelTier, sendMessage]
   );
 
   const handleSuggestVisionTier = useCallback(() => {
@@ -410,7 +483,7 @@ function ChatShellInner({
   return (
     <>
     <div className="flex h-full min-h-0 min-w-0 max-w-full flex-1 overflow-hidden bg-background">
-      <ChatOverflowProbe messageCount={messages.length} />
+      <ChatOverflowProbe messageCount={displayMessages.length} />
       <ChatSidebar
         conversations={conversations}
         conversationsLoading={conversationsLoading}
@@ -439,7 +512,7 @@ function ChatShellInner({
           <ChatChrome
             email={email}
             mounted={mounted}
-            messages={messages}
+            messages={displayMessages}
             conversationTitle={activeConversation?.title}
             conversationId={activeId}
             sharePublic={activeConversation?.sharePublic}
@@ -469,7 +542,7 @@ function ChatShellInner({
           <ChatBanners
             email={email}
             mounted={mounted}
-            hasMessages={messages.length > 0}
+            hasMessages={displayMessages.length > 0}
             chatProviderLabel={chatProviderLabel}
             usedFallback={usedFallback}
             interestProfileJson={interestProfileJson}
@@ -483,7 +556,7 @@ function ChatShellInner({
             mode={mode}
             onModeChange={handleModeChange}
             disabled={isSending || awaitingReply}
-            hasMessages={messages.length > 0}
+            hasMessages={displayMessages.length > 0}
             sourceImageUrl={latestImageUrl}
             onInsertDocument={handleInsertDocument}
             onError={handleTemplateError}
@@ -497,7 +570,7 @@ function ChatShellInner({
         </div>
 
         <ChatConversationPane
-          messages={messages}
+          messages={displayMessages}
           mode={mode}
           onModeChange={handleModeChange}
           isLoading={messagesLoading}
@@ -521,7 +594,6 @@ function ChatShellInner({
           onAttachmentsChange={handleAttachmentsChange}
           onSuggestVisionTier={handleSuggestVisionTier}
           initialAttachments={handoffAttachments}
-          inputDisabled={!effectiveOnline}
         />
       </div>
     </div>
