@@ -31,6 +31,10 @@ export const GigaSocialDiscoverPanel = memo(function GigaSocialDiscoverPanel({
   const toggleBookmark = useMutation(api.gigaSocial.toggleBookmark);
   const recordShare = useMutation(api.gigaSocial.recordShare);
 
+  const requireAuth = () => {
+    window.dispatchEvent(new CustomEvent("gigasocial:require-auth"));
+  };
+
   if (data === undefined) {
     return <LoadingState label="Discovering posts…" />;
   }
@@ -81,22 +85,32 @@ export const GigaSocialDiscoverPanel = memo(function GigaSocialDiscoverPanel({
               <GigaSocialPostCard
                 post={post}
                 sessionToken={sessionToken}
+                onRequireAuth={requireAuth}
                 onLike={async (postId) => {
-                  if (!sessionToken) return;
+                  if (!sessionToken) {
+                    requireAuth();
+                    return;
+                  }
                   await toggleLike({
                     sessionToken,
                     postId: postId as Id<"socialPosts">,
                   });
                 }}
                 onBookmark={async (postId) => {
-                  if (!sessionToken) return;
+                  if (!sessionToken) {
+                    requireAuth();
+                    return;
+                  }
                   await toggleBookmark({
                     sessionToken,
                     postId: postId as Id<"socialPosts">,
                   });
                 }}
                 onShare={async (postId) => {
-                  if (!sessionToken) return;
+                  if (!sessionToken) {
+                    requireAuth();
+                    return;
+                  }
                   await recordShare({
                     sessionToken,
                     postId: postId as Id<"socialPosts">,

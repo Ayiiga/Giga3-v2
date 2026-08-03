@@ -1,6 +1,6 @@
-/** GigaSocial premium UI — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v190-gigasocial-premium";
-const NEXT_STATIC_CACHE = "giga3-next-static-v190";
+/** Badge, guest browse & offline UX — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v191-badge-guest-offline";
+const NEXT_STATIC_CACHE = "giga3-next-static-v191";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";
