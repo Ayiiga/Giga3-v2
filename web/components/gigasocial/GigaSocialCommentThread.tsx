@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { GigaSocialAuthPrompt } from "@/components/gigasocial/ux/GigaSocialAuthPrompt";
 import type { SocialComment } from "@/lib/gigasocial/types";
 import { sortCommentsNewestWithPins } from "@/lib/gigasocial/postSort";
 import { api } from "convex/_generated/api";
@@ -18,15 +19,17 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
   sessionToken,
   postAuthorUserId,
   hideComposer = false,
+  onRequireAuth,
 }: {
   postId: string;
-  sessionToken: string;
+  sessionToken: string | null;
   postAuthorUserId?: string;
   hideComposer?: boolean;
+  onRequireAuth?: () => void;
 }) {
   const data = useQuery(api.gigaSocial.listComments, {
     postId: postId as Id<"socialPosts">,
-    sessionToken,
+    sessionToken: sessionToken ?? undefined,
   });
   const addComment = useMutation(api.gigaSocial.addComment);
   const setCommentPinned = useMutation(api.gigaSocial.setCommentPinned);
@@ -35,6 +38,7 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
   const [busy, setBusy] = useState(false);
   const [pinBusyId, setPinBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showAuth, setShowAuth] = useState(false);
 
   const myUserId = useMemo(() => getUserEmail(), []);
   const canPinComments = Boolean(
@@ -47,6 +51,11 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
   );
 
   async function submitReply() {
+    if (!sessionToken) {
+      setShowAuth(true);
+      onRequireAuth?.();
+      return;
+    }
     const trimmed = replyBody.trim();
     if (!trimmed || busy || !replyTo) return;
     setBusy(true);
@@ -68,7 +77,7 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
   }
 
   async function togglePin(comment: SocialComment) {
-    if (!canPinComments || pinBusyId) return;
+    if (!sessionToken || !canPinComments || pinBusyId) return;
     setPinBusyId(comment._id);
     setError(null);
     try {
@@ -85,10 +94,10 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
   }
 
   return (
-    <div className="mt-3 rounded-xl border border-border bg-white p-3">
+    <div className="gigasocial-empty-card mt-3 rounded-xl border border-border bg-white p-3">
       <ul className="space-y-3">
         {comments.length === 0 && (
-          <li className="text-xs text-muted">No comments yet. Start the conversation.</li>
+          <li className="text-xs text-muted">No comments yet. Be the first to join the conversation.</li>
         )}
         {comments.map((comment) => (
           <li key={comment._id} className="text-sm">
@@ -108,8 +117,15 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
             <div className="mt-1 flex flex-wrap items-center gap-3">
               <button
                 type="button"
-                className="text-xs font-medium text-accent hover:underline"
-                onClick={() => setReplyTo(comment._id)}
+                className="min-h-11 text-xs font-medium text-accent hover:underline"
+                onClick={() => {
+                  if (!sessionToken) {
+                    setShowAuth(true);
+                    onRequireAuth?.();
+                    return;
+                  }
+                  setReplyTo(comment._id);
+                }}
               >
                 Reply
               </button>
@@ -117,7 +133,7 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
                 <button
                   type="button"
                   className={cn(
-                    "inline-flex items-center gap-1 text-xs font-medium hover:underline",
+                    "inline-flex min-h-11 items-center gap-1 text-xs font-medium hover:underline",
                     comment.pinnedAt ? "text-accent" : "text-muted"
                   )}
                   disabled={pinBusyId === comment._id}
@@ -132,7 +148,7 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
         ))}
       </ul>
 
-      {replyTo ? (
+      {replyTo && sessionToken ? (
         <div className="mt-3 space-y-2">
           <p className="text-xs text-muted">
             Replying…{" "}
@@ -146,13 +162,13 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
               onChange={(e) => setReplyBody(e.target.value)}
               placeholder="Write a reply…"
               aria-label="Reply text"
-              className="min-h-9 flex-1 rounded-full border border-border px-3 py-1.5 text-sm"
+              className="min-h-11 flex-1 rounded-full border border-border px-3 py-1.5 text-sm"
             />
             <Button
               type="button"
               disabled={busy || !replyBody.trim()}
               onClick={() => void submitReply()}
-              className="h-9 w-9 shrink-0 rounded-full p-0"
+              className="h-11 w-11 shrink-0 rounded-full p-0"
               aria-label="Post reply"
             >
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -161,8 +177,30 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
         </div>
       ) : null}
 
-      {!hideComposer ? (
+      {!hideComposer && sessionToken ? (
         <GigaSocialPostCommentBox postId={postId} sessionToken={sessionToken} />
+      ) : null}
+
+      {!sessionToken ? (
+        <div className="mt-3">
+          {showAuth ? (
+            <GigaSocialAuthPrompt
+              title="Join the conversation"
+              description="Sign in to comment, reply, and react."
+            />
+          ) : (
+            <button
+              type="button"
+              className="gigasocial-quick-action w-full justify-center"
+              onClick={() => {
+                setShowAuth(true);
+                onRequireAuth?.();
+              }}
+            >
+              Sign in to comment
+            </button>
+          )}
+        </div>
       ) : null}
 
       {error ? (

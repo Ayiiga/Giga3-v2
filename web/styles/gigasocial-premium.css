@@ -1,0 +1,448 @@
+/**
+ * GigaSocial Premium UI — visual tokens & surfaces only.
+ * Scoped under .gigasocial-stable / .gigasocial-pro so chat/marketing tokens stay intact.
+ */
+
+.gigasocial-stable.gigasocial-premium,
+.gigasocial-page-shell.gigasocial-premium,
+.gigasocial-stable .gigasocial-premium {
+  --gs-bg: #0b1220;
+  --gs-card: #162033;
+  --gs-input: #1e293b;
+  --gs-text: #ffffff;
+  --gs-muted: #94a3b8;
+  --gs-gold: #fbbf24;
+  --gs-blue: #3b82f6;
+  --gs-success: #22c55e;
+  --gs-like: #ef4444;
+  --gs-border: rgba(148, 163, 184, 0.18);
+  --gs-shadow: 0 8px 28px -12px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  --gs-radius: 1.125rem;
+  --gs-radius-sm: 0.875rem;
+  color: var(--gs-text);
+}
+
+.gigasocial-page-shell.gigasocial-premium {
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(59, 130, 246, 0.16), transparent 55%),
+    radial-gradient(90% 60% at 100% 0%, rgba(251, 191, 36, 0.08), transparent 45%),
+    var(--gs-bg);
+  color: var(--gs-text);
+  min-height: 100%;
+}
+
+.gigasocial-premium.gigasocial-pro,
+.gigasocial-premium .gigasocial-pro {
+  color: var(--gs-text);
+}
+
+/* Shell / feed */
+.gigasocial-premium .gigasocial-feed-shell,
+.gigasocial-premium.gigasocial-pro .gigasocial-feed-shell {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.gigasocial-premium .gigasocial-shell-header h1 {
+  color: var(--gs-text);
+  letter-spacing: -0.02em;
+}
+
+.gigasocial-premium .gigasocial-brand-mark {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: #fff;
+  box-shadow: 0 6px 18px -8px rgba(59, 130, 246, 0.7);
+}
+
+/* Post cards */
+.gigasocial-premium .gigasocial-post-card,
+.gigasocial-premium.gigasocial-pro .gigasocial-post-card {
+  background: var(--gs-card) !important;
+  border: 1px solid var(--gs-border) !important;
+  border-radius: var(--gs-radius) !important;
+  box-shadow: var(--gs-shadow) !important;
+  color: var(--gs-text);
+}
+
+.gigasocial-premium .gigasocial-post-card .text-foreground,
+.gigasocial-premium .gigasocial-post-card h2,
+.gigasocial-premium .gigasocial-post-card .gigasocial-post-title {
+  color: var(--gs-text) !important;
+}
+
+.gigasocial-premium .gigasocial-post-card .text-muted {
+  color: var(--gs-muted) !important;
+}
+
+.gigasocial-premium .gigasocial-feed-media,
+.gigasocial-premium .gigasocial-feed-media-frame {
+  border-radius: var(--gs-radius-sm);
+  overflow: hidden;
+  background: #0a101c;
+}
+
+.gigasocial-premium .gigasocial-post-card--visual {
+  overflow: hidden;
+}
+
+.gigasocial-premium .gigasocial-post-card__media-actions button,
+.gigasocial-premium .gigasocial-post-card__footer button {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+.gigasocial-premium .gigasocial-post-card header .h-10.w-10 {
+  height: 3rem;
+  width: 3rem;
+}
+
+.gigasocial-premium .gigasocial-post-card__footer.bg-white {
+  background: transparent !important;
+}
+
+.gigasocial-premium .gigasocial-bottom-dock__item[aria-current="true"]::after {
+  content: "";
+  display: block;
+  width: 1.1rem;
+  height: 0.2rem;
+  margin-top: 0.1rem;
+  border-radius: 999px;
+  background: var(--gs-gold);
+}
+
+.gigasocial-premium .gigasocial-guest-composer:focus-visible {
+  outline: 3px solid rgba(59, 130, 246, 0.45);
+  outline-offset: 2px;
+}
+
+.gigasocial-premium .gigasocial-reaction-like[aria-pressed="true"],
+.gigasocial-premium .gigasocial-post-card button[aria-pressed="true"].text-red-600,
+.gigasocial-premium .gigasocial-post-card .text-red-600 {
+  color: var(--gs-like) !important;
+}
+
+.gigasocial-premium .gigasocial-pin-badge,
+.gigasocial-premium [class*="Pinned"] {
+  color: var(--gs-gold);
+}
+
+/* Featured / stories */
+.gigasocial-premium .gigasocial-featured-player,
+.gigasocial-premium .gigasocial-stories-bar {
+  background: var(--gs-card);
+  border: 1px solid var(--gs-border);
+  border-radius: var(--gs-radius);
+  box-shadow: var(--gs-shadow);
+}
+
+.gigasocial-premium .gigasocial-feed-hero {
+  background: linear-gradient(135deg, #1e3a8a 0%, #0b1220 55%, #162033 100%) !important;
+  border-radius: var(--gs-radius);
+  border: 1px solid var(--gs-border);
+}
+
+/* Composer */
+.gigasocial-premium #gigasocial-composer.saas-card,
+.gigasocial-premium .gigasocial-composer-sheet,
+.gigasocial-premium #gigasocial-composer {
+  background: var(--gs-card) !important;
+  border-color: var(--gs-border) !important;
+  border-radius: var(--gs-radius) !important;
+  box-shadow: var(--gs-shadow);
+  color: var(--gs-text);
+}
+
+.gigasocial-premium #gigasocial-composer textarea,
+.gigasocial-premium #gigasocial-caption,
+.gigasocial-premium .gigasocial-composer-sheet textarea {
+  background: var(--gs-input) !important;
+  color: var(--gs-text) !important;
+  border-color: var(--gs-border) !important;
+  border-radius: 1rem !important;
+  min-height: 3.25rem;
+}
+
+.gigasocial-premium #gigasocial-composer textarea::placeholder,
+.gigasocial-premium #gigasocial-caption::placeholder {
+  color: var(--gs-muted);
+}
+
+.gigasocial-premium .gigasocial-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.gigasocial-premium .gigasocial-quick-action {
+  min-height: 48px;
+  border-radius: 999px;
+  border: 1px solid var(--gs-border);
+  background: var(--gs-input);
+  color: var(--gs-muted);
+  padding: 0.5rem 0.9rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.gigasocial-premium .gigasocial-quick-action:hover,
+.gigasocial-premium .gigasocial-quick-action:focus-visible {
+  color: var(--gs-text);
+  border-color: rgba(59, 130, 246, 0.45);
+  outline: none;
+}
+
+.gigasocial-premium .gigasocial-quick-action:focus-visible {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35);
+}
+
+/* Top section pills */
+.gigasocial-premium .gigasocial-section-nav {
+  gap: 0.4rem;
+  padding-bottom: 0.25rem;
+}
+
+.gigasocial-premium .gigasocial-section-nav button {
+  min-height: 44px;
+  border-radius: 999px;
+  background: var(--gs-input);
+  border-color: var(--gs-border);
+  color: var(--gs-muted);
+}
+
+.gigasocial-premium .gigasocial-section-nav button[aria-current="true"],
+.gigasocial-premium .gigasocial-section-nav button.gigasocial-section-active {
+  background: rgba(59, 130, 246, 0.18);
+  border-color: rgba(59, 130, 246, 0.55);
+  color: var(--gs-text);
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.25);
+}
+
+/* Bottom dock */
+.gigasocial-bottom-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  padding: 0.5rem 0.75rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+}
+
+.gigasocial-bottom-dock__bar {
+  pointer-events: auto;
+  margin: 0 auto;
+  max-width: 28rem;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: end;
+  gap: 0.15rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 1.35rem;
+  background: rgba(22, 32, 51, 0.94);
+  border: 1px solid var(--gs-border);
+  box-shadow: 0 12px 40px -16px rgba(0, 0, 0, 0.7);
+}
+
+.gigasocial-bottom-dock__item {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-height: 48px;
+  border-radius: 0.85rem;
+  color: var(--gs-muted);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.gigasocial-bottom-dock__item[aria-current="true"] {
+  color: var(--gs-text);
+}
+
+.gigasocial-bottom-dock__item[aria-current="true"] .gigasocial-bottom-dock__icon {
+  color: var(--gs-blue);
+}
+
+.gigasocial-bottom-dock__create {
+  transform: translateY(-0.55rem);
+  width: 3.35rem;
+  height: 3.35rem;
+  min-height: 3.35rem;
+  border-radius: 999px;
+  background: linear-gradient(145deg, #3b82f6, #2563eb);
+  color: #fff;
+  box-shadow: 0 10px 24px -10px rgba(59, 130, 246, 0.85);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+}
+
+.gigasocial-bottom-dock__create:focus-visible {
+  outline: 3px solid rgba(251, 191, 36, 0.55);
+  outline-offset: 2px;
+}
+
+.gigasocial-premium .gigasocial-create-fab-button {
+  /* Dock owns create on mobile; keep FAB available as fallback above dock. */
+  bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 1024px) {
+  .gigasocial-bottom-dock {
+    display: none;
+  }
+
+  .gigasocial-premium .gigasocial-create-fab-button {
+    bottom: 1.25rem;
+  }
+}
+
+/* Offline / guest banners */
+.gigasocial-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border-radius: var(--gs-radius-sm);
+  border: 1px solid var(--gs-border);
+  background: rgba(30, 41, 59, 0.95);
+  color: var(--gs-text);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+}
+
+.gigasocial-status-banner--offline {
+  border-color: rgba(251, 191, 36, 0.35);
+  background: rgba(66, 48, 10, 0.55);
+}
+
+.gigasocial-status-banner--guest {
+  border-color: rgba(59, 130, 246, 0.35);
+  background: rgba(30, 58, 138, 0.35);
+}
+
+.gigasocial-auth-prompt {
+  border-radius: var(--gs-radius);
+  border: 1px solid var(--gs-border);
+  background: linear-gradient(180deg, #1a2740, #162033);
+  box-shadow: var(--gs-shadow);
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.gigasocial-auth-prompt h3 {
+  color: var(--gs-text);
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.gigasocial-auth-prompt p {
+  color: var(--gs-muted);
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+}
+
+/* Skeletons */
+.gigasocial-premium .gigasocial-feed-skeleton,
+.gigasocial-premium .gigasocial-shimmer-block {
+  background: var(--gs-card) !important;
+  border-color: var(--gs-border) !important;
+}
+
+.gigasocial-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: #1a2740 !important;
+}
+
+.gigasocial-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.08),
+    transparent
+  );
+  animation: gigasocial-shimmer-slide 1.4s ease-in-out infinite;
+}
+
+@keyframes gigasocial-shimmer-slide {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Empty states */
+.gigasocial-premium .gigasocial-empty-card {
+  background: var(--gs-card);
+  border: 1px solid var(--gs-border);
+  border-radius: var(--gs-radius);
+  box-shadow: var(--gs-shadow);
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  color: var(--gs-muted);
+}
+
+.gigasocial-premium .gigasocial-empty-card h3 {
+  color: var(--gs-text);
+  font-weight: 700;
+}
+
+/* Inputs / buttons inside premium shell */
+.gigasocial-premium .input-surface,
+.gigasocial-premium input,
+.gigasocial-premium select,
+.gigasocial-premium textarea {
+  background-color: var(--gs-input);
+  color: var(--gs-text);
+  border-color: var(--gs-border);
+}
+
+.gigasocial-premium a.text-accent,
+.gigasocial-premium .text-accent {
+  color: var(--gs-blue) !important;
+}
+
+.gigasocial-premium .bg-accent,
+.gigasocial-premium .bg-violet-600 {
+  background-color: var(--gs-blue) !important;
+}
+
+.gigasocial-premium .border-border {
+  border-color: var(--gs-border) !important;
+}
+
+.gigasocial-premium .bg-white,
+.gigasocial-premium .bg-card {
+  background-color: var(--gs-card) !important;
+  color: var(--gs-text);
+}
+
+/* Desktop-only soft motion (mobile stability rules remain in globals.css) */
+@media (min-width: 1024px) {
+  .gigasocial-premium .gigasocial-post-card {
+    transition: border-color 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+  }
+
+  .gigasocial-premium .gigasocial-bottom-dock__item,
+  .gigasocial-premium .gigasocial-quick-action {
+    transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
+  }
+}
+
+/* Clear dock space on feed */
+.gigasocial-premium .gigasocial-feed-panel-compact,
+.gigasocial-premium .gigasocial-client-main {
+  padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 1024px) {
+  .gigasocial-premium .gigasocial-feed-panel-compact,
+  .gigasocial-premium .gigasocial-client-main {
+    padding-bottom: 1.5rem;
+  }
+}

@@ -2,8 +2,12 @@
 
 import { GigaSocialPanelErrorBoundary } from "@/components/gigasocial/GigaSocialPanelErrorBoundary";
 import { GigaSocialUnreadLoader } from "@/components/gigasocial/GigaSocialUnreadLoader";
+import { GigaSocialAuthPrompt } from "@/components/gigasocial/ux/GigaSocialAuthPrompt";
+import { GigaSocialBottomDock } from "@/components/gigasocial/ux/GigaSocialBottomDock";
+import { GigaSocialGuestBanner } from "@/components/gigasocial/ux/GigaSocialGuestBanner";
+import { GigaSocialOfflineBanner } from "@/components/gigasocial/ux/GigaSocialOfflineBanner";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
-import { Button, ButtonLink } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { withChunkRetryLoader } from "@/lib/pwa/dynamicWithChunkRetry";
@@ -22,6 +26,13 @@ import { ArrowLeft, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
+
+const AUTH_REQUIRED_SECTIONS = new Set<GigaSocialSection>([
+  "live",
+  "creator",
+  "profile",
+  "notifications",
+]);
 
 const panelLoading = (label: string) => (
   <LoadingState label={label} className="py-8" />
@@ -106,6 +117,7 @@ function GigaSocialContent() {
   );
   const highlightPostId = params.get("highlight")?.trim() || undefined;
   const [unread, setUnread] = useState(0);
+  const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const handleUnread = useCallback((count: number) => setUnread(count), []);
 
   const ensureMyProfile = useMutation(api.gigaSocial.ensureMyProfile);
@@ -123,12 +135,6 @@ function GigaSocialContent() {
   }, [ensureMyProfile, sessionToken]);
 
   useEffect(() => {
-    if (mounted && !sessionToken) {
-      router.replace("/chat/login?next=/gigasocial");
-    }
-  }, [mounted, sessionToken, router]);
-
-  useEffect(() => {
     const tab = params.get("tab") as GigaSocialSection;
     if (tab && GIGASOCIAL_SECTIONS.some((s) => s.id === tab)) {
       setSection(tab);
@@ -139,30 +145,60 @@ function GigaSocialContent() {
     if (highlight && section !== "feed") setSection("feed");
   }, [params, section]);
 
-  if (!mounted || !sessionToken) {
-    return <p className="text-center text-base text-muted">Redirecting…</p>;
+  useEffect(() => {
+    function onRequireAuth() {
+      setAuthPromptOpen(true);
+    }
+    window.addEventListener("gigasocial:require-auth", onRequireAuth);
+    return () => window.removeEventListener("gigasocial:require-auth", onRequireAuth);
+  }, []);
+
+  if (!mounted) {
+    return <p className="text-center text-base text-muted">Loading GigaSocial…</p>;
   }
 
   const features = getGigaSocialFeatures();
+  const isGuest = !sessionToken;
 
   const openSection = (id: GigaSocialSection) => {
+    setAuthPromptOpen(false);
     setSection(id);
     if (id !== "feed") setCommunitySlug(undefined);
-    const params = new URLSearchParams(window.location.search);
-    params.set("tab", id);
-    router.replace(`/gigasocial/?${params.toString()}`, { scroll: false });
+    const nextParams = new URLSearchParams(window.location.search);
+    nextParams.set("tab", id);
+    router.replace(`/gigasocial/?${nextParams.toString()}`, { scroll: false });
+  };
+
+  const handleCreate = () => {
+    if (isGuest) {
+      setAuthPromptOpen(true);
+      return;
+    }
+    setAuthPromptOpen(false);
+    if (section !== "feed") {
+      openSection("feed");
+    }
+    window.dispatchEvent(new CustomEvent("gigasocial:open-create"));
   };
 
   const isFeedSection = section === "feed";
+  const showAuthGate = isGuest && AUTH_REQUIRED_SECTIONS.has(section);
 
   return (
     <div
       className={cn(
-        "gigasocial-stable gigasocial-pro mx-auto max-w-6xl",
+        "gigasocial-stable gigasocial-pro gigasocial-premium gigasocial-client-main mx-auto max-w-6xl",
         isFeedSection ? "space-y-2" : "space-y-3 sm:space-y-4"
       )}
     >
-      <GigaSocialUnreadLoader sessionToken={sessionToken} onUnread={handleUnread} />
+      {sessionToken ? (
+        <GigaSocialUnreadLoader sessionToken={sessionToken} onUnread={handleUnread} />
+      ) : null}
+      <GigaSocialOfflineBanner />
+      {isGuest ? <GigaSocialGuestBanner /> : null}
+      {authPromptOpen && !showAuthGate ? (
+        <GigaSocialAuthPrompt />
+      ) : null}
       <header
         className={cn(
           "gigasocial-shell-header flex flex-wrap items-center justify-between gap-2",
@@ -179,7 +215,7 @@ function GigaSocialContent() {
             <span className="hidden text-sm sm:inline">Chat</span>
           </Link>
           <div className="flex min-w-0 items-center gap-2">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-600 text-white sm:h-9 sm:w-9 sm:rounded-xl">
+            <div className="gigasocial-brand-mark flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white sm:h-9 sm:w-9 sm:rounded-xl">
               <UsersRound className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
             </div>
             <h1 className="truncate text-base font-bold tracking-tight text-foreground sm:text-xl">
@@ -205,7 +241,7 @@ function GigaSocialContent() {
       </header>
 
       <nav
-        className="flex gap-1 overflow-x-auto overscroll-x-contain sm:gap-1.5"
+        className="gigasocial-section-nav hidden gap-1 overflow-x-auto overscroll-x-contain lg:flex lg:gap-1.5"
         aria-label="GigaSocial sections"
       >
         {GIGASOCIAL_SECTIONS.filter((item) =>
@@ -218,8 +254,10 @@ function GigaSocialContent() {
               key={item.id}
               type="button"
               onClick={() => openSection(item.id)}
+              aria-current={active ? "true" : undefined}
               className={cn(
-                "relative inline-flex min-h-8 shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium sm:min-h-9 sm:gap-1.5 sm:px-3 sm:py-1.5 sm:text-xs",
+                "relative inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium",
+                active && "gigasocial-section-active",
                 active
                   ? item.id === "live"
                     ? "border-red-500/50 bg-red-50 text-red-800"
@@ -296,9 +334,13 @@ function GigaSocialContent() {
               title="Live"
               description="Go live with video, audio, or screen sharing — chat, reactions, gifts, and replays."
             />
-            <GigaSocialPanelErrorBoundary panelName="Live">
-              <GigaSocialLivePanel sessionToken={sessionToken} />
-            </GigaSocialPanelErrorBoundary>
+            {sessionToken ? (
+              <GigaSocialPanelErrorBoundary panelName="Live">
+                <GigaSocialLivePanel sessionToken={sessionToken} />
+              </GigaSocialPanelErrorBoundary>
+            ) : (
+              <GigaSocialAuthPrompt title="Sign in to go live" />
+            )}
           </>
         )}
 
@@ -308,9 +350,13 @@ function GigaSocialContent() {
               title="Creator economy"
               description="Tips and ad boosts pay via Paystack (MoMo, card, bank). Affiliate and payouts unlock at 500 fans."
             />
-            <GigaSocialPanelErrorBoundary panelName="Creator">
-              <GigaSocialCreatorPanel sessionToken={sessionToken} />
-            </GigaSocialPanelErrorBoundary>
+            {sessionToken ? (
+              <GigaSocialPanelErrorBoundary panelName="Creator">
+                <GigaSocialCreatorPanel sessionToken={sessionToken} />
+              </GigaSocialPanelErrorBoundary>
+            ) : (
+              <GigaSocialAuthPrompt title="Sign in for creator tools" />
+            )}
           </>
         )}
 
@@ -320,9 +366,13 @@ function GigaSocialContent() {
               title="Your profile"
               description="Bio, skills, interests, achievements, XP, and shared posts."
             />
-            <GigaSocialPanelErrorBoundary panelName="Profile">
-              <GigaSocialProfilePanel sessionToken={sessionToken} />
-            </GigaSocialPanelErrorBoundary>
+            {sessionToken ? (
+              <GigaSocialPanelErrorBoundary panelName="Profile">
+                <GigaSocialProfilePanel sessionToken={sessionToken} />
+              </GigaSocialPanelErrorBoundary>
+            ) : (
+              <GigaSocialAuthPrompt title="Sign in to view your profile" />
+            )}
           </>
         )}
 
@@ -332,14 +382,18 @@ function GigaSocialContent() {
               title="Notifications"
               description="Likes, comments, replies, and community activity."
             />
-            <GigaSocialPanelErrorBoundary panelName="Notifications">
-              <GigaSocialNotificationsPanel sessionToken={sessionToken} />
-            </GigaSocialPanelErrorBoundary>
+            {sessionToken ? (
+              <GigaSocialPanelErrorBoundary panelName="Notifications">
+                <GigaSocialNotificationsPanel sessionToken={sessionToken} />
+              </GigaSocialPanelErrorBoundary>
+            ) : (
+              <GigaSocialAuthPrompt title="Sign in to open your inbox" />
+            )}
           </>
         )}
       </section>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="hidden flex-wrap gap-3 lg:flex">
         <ButtonLink href={siteConfig.links.creatorStudio} variant="outline" className="min-h-11">
           Creator Studio
         </ButtonLink>
@@ -347,6 +401,13 @@ function GigaSocialContent() {
           Open chat
         </ButtonLink>
       </div>
+
+      <GigaSocialBottomDock
+        activeSection={section}
+        unread={unread}
+        onNavigate={openSection}
+        onCreate={handleCreate}
+      />
     </div>
   );
 }

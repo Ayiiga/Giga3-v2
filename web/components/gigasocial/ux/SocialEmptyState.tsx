@@ -28,17 +28,17 @@ export const SocialEmptyState = memo(function SocialEmptyState({
   children?: ReactNode;
 }) {
   return (
-    <div className={cn("space-y-3", className)}>
+    <div className={cn("gigasocial-empty-card space-y-3", className)}>
       <EmptyState title={title} description={description} icon={icon} showVision />
       {(primaryLabel && onPrimary) || (secondaryLabel && onSecondary) || children ? (
         <div className="flex flex-wrap items-center justify-center gap-2">
           {primaryLabel && onPrimary ? (
-            <Button type="button" size="sm" onClick={onPrimary} className="min-h-10">
+            <Button type="button" size="sm" onClick={onPrimary} className="min-h-12">
               {primaryLabel}
             </Button>
           ) : null}
           {secondaryLabel && onSecondary ? (
-            <Button type="button" size="sm" variant="outline" onClick={onSecondary} className="min-h-10">
+            <Button type="button" size="sm" variant="outline" onClick={onSecondary} className="min-h-12">
               {secondaryLabel}
             </Button>
           ) : null}

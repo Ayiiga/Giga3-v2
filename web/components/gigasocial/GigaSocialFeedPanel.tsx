@@ -328,12 +328,20 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setExtraPosts([]);
   }, []);
 
+  const requireAuth = useCallback(() => {
+    window.dispatchEvent(new CustomEvent("gigasocial:require-auth"));
+  }, []);
+
   const openComposer = useCallback(
     (
       action?: GigaCreateActionId,
       source?: SocialPost | null,
       options?: { body?: string; postType?: SocialPostTypeId; teleprompter?: boolean }
     ) => {
+      if (!sessionToken) {
+        requireAuth();
+        return;
+      }
       setComposeAction(action);
       setComposeInitialBody(options?.body);
       setComposeInitialPostType(options?.postType);
@@ -342,7 +350,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       setComposerOpen(true);
       setErrorToast(null);
     },
-    []
+    [requireAuth, sessionToken]
   );
 
   const closeComposer = useCallback(() => {
@@ -565,6 +573,15 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 
   const useGigaCreateFab = features.enableGigaCreate && Boolean(sessionToken);
 
+  useEffect(() => {
+    if (useGigaCreateFab) return;
+    function onOpenCreate() {
+      openComposer("text-post");
+    }
+    window.addEventListener("gigasocial:open-create", onOpenCreate);
+    return () => window.removeEventListener("gigasocial:open-create", onOpenCreate);
+  }, [openComposer, useGigaCreateFab]);
+
   const [hideFeaturedOnMobile, setHideFeaturedOnMobile] = useState(false);
 
   useEffect(() => {
@@ -704,6 +721,20 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         <GigaSocialFeedHero postCount={posts.length} compact />
       ) : null}
 
+      {!sessionToken ? (
+        <button
+          type="button"
+          onClick={requireAuth}
+          className="gigasocial-guest-composer w-full rounded-[1.125rem] border border-[var(--gs-border,#334155)] bg-[var(--gs-card,#162033)] px-4 py-3 text-left shadow-sm"
+          aria-label="Sign in to share your thoughts"
+        >
+          <p className="text-sm font-semibold text-[var(--gs-text,#fff)]">Share something</p>
+          <p className="mt-1 text-sm text-[var(--gs-muted,#94a3b8)]">
+            Share your thoughts with the world...
+          </p>
+        </button>
+      ) : null}
+
       {sessionToken && composerOpen && !useGigaCreateFab ? (
         <GigaSocialPanelErrorBoundary panelName="Create post">
           <GigaSocialComposer {...composerProps} />
@@ -781,8 +812,12 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
                     ? (source) => openComposer("remix", source)
                     : undefined
                 }
+                onRequireAuth={requireAuth}
                 onLike={async (postId, liked) => {
-                  if (!sessionToken) return;
+                  if (!sessionToken) {
+                    requireAuth();
+                    return;
+                  }
                   if (!effectiveOnline && features.enableSocialOutbox) {
                     await socialOutbox.enqueue(liked ? "like" : "unlike", { postId });
                     return;
@@ -793,14 +828,20 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
                   });
                 }}
                 onBookmark={async (postId) => {
-                  if (!sessionToken) return;
+                  if (!sessionToken) {
+                    requireAuth();
+                    return;
+                  }
                   await toggleBookmark({
                     sessionToken,
                     postId: postId as Id<"socialPosts">,
                   });
                 }}
                 onShare={async (postId) => {
-                  if (!sessionToken) return;
+                  if (!sessionToken) {
+                    requireAuth();
+                    return;
+                  }
                   await recordShare({
                     sessionToken,
                     postId: postId as Id<"socialPosts">,

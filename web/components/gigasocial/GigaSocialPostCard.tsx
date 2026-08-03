@@ -54,6 +54,7 @@ interface GigaSocialPostCardProps {
   onPin?: (postId: string, pinned: boolean) => Promise<void>;
   onEdit?: (postId: string, args: { body: string; postType: SocialPostTypeId }) => Promise<void>;
   onRemix?: (post: SocialPost) => void;
+  onRequireAuth?: () => void;
   canDelete?: boolean;
   enableEdit?: boolean;
   enableRemix?: boolean;
@@ -73,6 +74,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   onPin,
   onEdit,
   onRemix,
+  onRequireAuth,
   canDelete = false,
   enableEdit = true,
   enableRemix = false,
@@ -171,7 +173,11 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
 
   const handleLike = useCallback(
     async (forceLike = false) => {
-      if (!sessionToken || busy) return;
+      if (!sessionToken) {
+        onRequireAuth?.();
+        return;
+      }
+      if (busy) return;
       const next = forceLike ? true : !liked;
       if (forceLike && liked) {
         setHeartBurst(true);
@@ -198,7 +204,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
         setBusy(false);
       }
     },
-    [busy, features.enableHaptics, liked, onLike, post._id, sessionToken]
+    [busy, features.enableHaptics, liked, onLike, onRequireAuth, post._id, sessionToken]
   );
 
   const handleDoubleTapLike = useCallback(() => {
@@ -212,7 +218,11 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   }, [handleLike]);
 
   async function handleBookmark() {
-    if (!sessionToken || busy) return;
+    if (!sessionToken) {
+      onRequireAuth?.();
+      return;
+    }
+    if (busy) return;
     const next = !bookmarked;
     setBookmarked(next);
     setBusy(true);
@@ -226,7 +236,11 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   }
 
   async function handleShare() {
-    if (!sessionToken || busy) return;
+    if (!sessionToken) {
+      onRequireAuth?.();
+      return;
+    }
+    if (busy) return;
     setBusy(true);
     try {
       const result = await shareGigaSocialPost(post);
@@ -295,6 +309,16 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
               compact
               onChange={setFollowing}
             />
+          ) : !sessionToken && post.author.userId && !isOwnPost ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="min-h-11"
+              onClick={() => onRequireAuth?.()}
+            >
+              Follow
+            </Button>
           ) : null}
           <span className="rounded-full bg-muted/10 px-2 py-0.5 text-xs capitalize text-muted">
             {post.postType}
@@ -348,10 +372,11 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
             >
               <button
                 type="button"
-                disabled={!sessionToken || busy}
+                disabled={busy}
                 onClick={() => void handleLike()}
                 className={cn(
                   "gigasocial-post-card__media-action",
+                  "gigasocial-reaction-like",
                   liked && "gigasocial-post-card__media-action--liked"
                 )}
                 aria-label={liked ? "Unlike" : "Like"}
@@ -416,7 +441,8 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
             label={String(likeCount)}
             icon={Heart}
             onClick={() => void handleLike()}
-            disabled={!sessionToken || busy}
+            disabled={busy}
+            className="gigasocial-reaction-like"
           />
         ) : null}
         <ActionButton
@@ -430,7 +456,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           label={String(shareCount)}
           icon={Share2}
           onClick={() => void handleShare()}
-          disabled={!sessionToken || busy}
+          disabled={busy}
         />
         <ActionButton
           compact={isVisualPost}
@@ -438,7 +464,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           label="Save"
           icon={Bookmark}
           onClick={() => void handleBookmark()}
-          disabled={!sessionToken || busy}
+          disabled={busy}
           iconOnly={isVisualPost}
         />
         {!isVisualPost && canTip ? (
@@ -451,8 +477,14 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
         ) : null}
         {enableRemix && onRemix ? (
           <GigaRemixButton
-            disabled={!sessionToken || busy}
-            onRemix={() => onRemix(post)}
+            disabled={busy}
+            onRemix={() => {
+              if (!sessionToken) {
+                onRequireAuth?.();
+                return;
+              }
+              onRemix(post);
+            }}
           />
         ) : null}
         {typeof post.viewCount === "number" ? (
@@ -529,13 +561,14 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           </div>
         ) : null}
 
-        {commentsOpen && sessionToken ? (
+        {commentsOpen ? (
           <div className={cn("gigasocial-post-card__thread", isVisualPost ? "px-4 pb-3 pt-2" : undefined)}>
             <GigaSocialCommentThread
               postId={post._id}
               sessionToken={sessionToken}
               postAuthorUserId={post.author.userId}
               hideComposer={!isVisualPost}
+              onRequireAuth={onRequireAuth}
             />
           </div>
         ) : null}
@@ -565,6 +598,7 @@ function ActionButton({
   disabled,
   compact = false,
   iconOnly = false,
+  className,
 }: {
   icon: typeof Heart;
   label: string;
@@ -573,6 +607,7 @@ function ActionButton({
   disabled?: boolean;
   compact?: boolean;
   iconOnly?: boolean;
+  className?: string;
 }) {
   return (
     <button
@@ -586,7 +621,8 @@ function ActionButton({
           ? "min-h-8 gap-1 px-2 py-1 text-[11px]"
           : "min-h-9 gap-1.5 px-3 py-1.5 text-xs",
         active ? "bg-red-50 text-red-700" : "text-muted hover:bg-muted/10 hover:text-foreground",
-        disabled && "opacity-50"
+        disabled && "opacity-50",
+        className
       )}
     >
       <Icon
