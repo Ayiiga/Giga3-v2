@@ -2,11 +2,12 @@ import { describe, expect, it } from "vitest";
 import { shouldClearAppBadgeForPath } from "../../web/lib/pwa/badgeClearPaths";
 
 describe("shouldClearAppBadgeForPath", () => {
-  it("clears on chat, gigasocial, media, home, and workspace", () => {
+  it("clears on chat, gigasocial, media, gigalearn, home, and workspace", () => {
     expect(shouldClearAppBadgeForPath("/chat")).toBe(true);
     expect(shouldClearAppBadgeForPath("/chat/")).toBe(true);
     expect(shouldClearAppBadgeForPath("/gigasocial/?tab=notifications")).toBe(true);
     expect(shouldClearAppBadgeForPath("/media")).toBe(true);
+    expect(shouldClearAppBadgeForPath("/gigalearn")).toBe(true);
     expect(shouldClearAppBadgeForPath("/home")).toBe(true);
     expect(shouldClearAppBadgeForPath("/workspace")).toBe(true);
   });

@@ -6,6 +6,7 @@ import { ImageStudioQuickPanel } from "@/components/chat/ImageStudioQuickPanel";
 import { ToolSelector } from "@/components/chat/ToolSelector";
 import { NewsDeskPanel } from "@/components/news/NewsDeskPanel";
 import { GenerationAlertsPanel } from "@/components/generation/GenerationAlertsPanel";
+import { IntelligentNotificationPreferencesPanel } from "@/components/notifications/IntelligentNotificationPreferencesPanel";
 import { PushAlertsPanel } from "@/components/pwa/PushAlertsPanel";
 import { SportsDeskPanel } from "@/components/sports/SportsDeskPanel";
 import { getSessionToken } from "@/lib/auth";
@@ -273,6 +274,7 @@ function ChatWorkspacePanelComponent({
 
             {tab === "alerts" && (
               <div id="alerts" className="space-y-3 p-3 sm:p-4">
+                <IntelligentNotificationPreferencesPanel embedded />
                 <GenerationAlertsPanel embedded />
                 <PushAlertsPanel embedded />
               </div>

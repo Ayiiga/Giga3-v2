@@ -3,6 +3,7 @@ import { AccessibilityBootstrap } from "@/components/a11y/AccessibilityBootstrap
 import { ConvexRuntimeBootstrap } from "@/components/providers/ConvexRuntimeBootstrap";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ConnectivityStatusHost } from "@/components/engagement/ConnectivityStatusHost";
+import { IntelligentNotificationHost } from "@/components/notifications/IntelligentNotificationHost";
 import { AppBadgeSync } from "@/components/pwa/AppBadgeSync";
 import { DeferredPwaChrome } from "@/components/pwa/DeferredPwaChrome";
 import { PwaInstallProvider } from "@/components/pwa/PwaInstallProvider";
@@ -115,6 +116,7 @@ export default function RootLayout({
           <AccessibilityBootstrap />
           <ServiceWorkerRegister />
           <AppBadgeSync />
+          <IntelligentNotificationHost />
           <ConnectivityStatusHost />
           <ChunkLoadRecoveryBootstrap />
           <GlobalChatPrefetch />

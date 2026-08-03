@@ -13,6 +13,8 @@ export function shouldClearAppBadgeForPath(pathname: string | null | undefined):
     path.startsWith("/gigasocial/") ||
     path === "/media" ||
     path.startsWith("/media/") ||
+    path === "/gigalearn" ||
+    path.startsWith("/gigalearn/") ||
     path === "/home" ||
     path.startsWith("/home/") ||
     path === "/workspace" ||

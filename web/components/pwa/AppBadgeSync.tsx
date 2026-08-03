@@ -9,6 +9,7 @@ import { shouldClearAppBadgeForPath } from "@/lib/pwa/badgeClearPaths";
 import { getSessionToken } from "@/lib/auth";
 import { getConvexClient } from "@/lib/convex";
 import { getConvexUrl } from "@/lib/convex/env";
+import { NotificationService } from "@/lib/intelligentNotifications";
 import { api } from "convex/_generated/api";
 import { ConvexProvider, ConvexReactClient, useConvex } from "convex/react";
 import { useEffect, useLayoutEffect, useState } from "react";
@@ -16,6 +17,12 @@ import { useEffect, useLayoutEffect, useState } from "react";
 function currentPathname(): string {
   if (typeof window === "undefined") return "";
   return window.location.pathname || "";
+}
+
+async function applyBadge(total: number) {
+  const safe = Math.max(0, Math.min(99, Math.floor(total)));
+  await setAppBadgeCount(safe);
+  postBadgeMessageToServiceWorker("GIGA3_SET_BADGE", safe);
 }
 
 function AppBadgeSyncInner() {
@@ -29,9 +36,13 @@ function AppBadgeSyncInner() {
 
     async function syncFromServer() {
       const token = getSessionToken();
+      const localUnread = NotificationService.getPreferences().enabled
+        ? NotificationService.unreadCount()
+        : 0;
+
       if (!token) {
-        await clearAppBadgeCount();
-        postBadgeMessageToServiceWorker("GIGA3_CLEAR_BADGE");
+        if (cancelled) return;
+        await applyBadge(localUnread);
         return;
       }
       try {
@@ -49,11 +60,12 @@ function AppBadgeSyncInner() {
           typeof social?.unreadCount === "number" ? social.unreadCount : 0;
         const platformUnread =
           typeof platform?.unreadCount === "number" ? platform.unreadCount : 0;
-        const total = Math.max(0, socialUnread + platformUnread);
-        await setAppBadgeCount(total);
-        postBadgeMessageToServiceWorker("GIGA3_SET_BADGE", total);
+        const total = Math.max(0, socialUnread + platformUnread + localUnread);
+        await applyBadge(total);
       } catch {
-        /* offline — leave SW badge as-is */
+        if (cancelled) return;
+        /* offline — keep local intelligent unread visible */
+        await applyBadge(localUnread);
       }
     }
 
@@ -63,8 +75,18 @@ function AppBadgeSyncInner() {
     }
 
     function clearIfRelevantSection() {
-      if (shouldClearAppBadgeForPath(currentPathname())) {
-        void clearBadge();
+      const path = currentPathname();
+      NotificationService.clearCategoriesForPath(path);
+
+      if (shouldClearAppBadgeForPath(path)) {
+        const remainingLocal = NotificationService.getPreferences().enabled
+          ? NotificationService.unreadCount()
+          : 0;
+        if (remainingLocal <= 0) {
+          void clearBadge();
+        } else {
+          void applyBadge(remainingLocal);
+        }
         return true;
       }
       return false;
@@ -92,6 +114,13 @@ function AppBadgeSyncInner() {
       clearIfRelevantSection();
     }
 
+    function onLocalChanged() {
+      if (document.visibilityState === "visible" && clearIfRelevantSection()) {
+        return;
+      }
+      void syncFromServer();
+    }
+
     if (document.visibilityState === "visible") {
       if (!clearIfRelevantSection()) {
         void syncFromServer();
@@ -104,8 +133,9 @@ function AppBadgeSyncInner() {
     window.addEventListener("focus", onFocus);
     window.addEventListener("blur", onBlur);
     window.addEventListener("popstate", onPathMaybeChanged);
-    // App-router soft navigations
     window.addEventListener("giga3:route-change", onPathMaybeChanged);
+    window.addEventListener("giga3:intelligent-notifications-changed", onLocalChanged);
+    window.addEventListener("giga3:intelligent-prefs-changed", onLocalChanged);
 
     const pushState = history.pushState.bind(history);
     const replaceState = history.replaceState.bind(history);
@@ -127,6 +157,8 @@ function AppBadgeSyncInner() {
       window.removeEventListener("blur", onBlur);
       window.removeEventListener("popstate", onPathMaybeChanged);
       window.removeEventListener("giga3:route-change", onPathMaybeChanged);
+      window.removeEventListener("giga3:intelligent-notifications-changed", onLocalChanged);
+      window.removeEventListener("giga3:intelligent-prefs-changed", onLocalChanged);
       history.pushState = pushState;
       history.replaceState = replaceState;
     };
@@ -135,7 +167,7 @@ function AppBadgeSyncInner() {
   return null;
 }
 
-/** Site-wide host — bumps/clears installed PWA icon badges for social + AI alerts. */
+/** Site-wide host — bumps/clears installed PWA icon badges for social + AI + local alerts. */
 export function AppBadgeSync() {
   const [client, setClient] = useState<ConvexReactClient | null>(null);
 
