@@ -79,4 +79,6 @@ export const GIGAEDIT_OFFLINE_CAPABILITIES = [
   "Record audio",
   "Export completed projects",
   "Save drafts locally",
+  "Use downloaded sounds",
+  "Queue posts for upload",
 ] as const;

@@ -39,3 +39,32 @@ export {
   type AiAssistKind,
 } from "@/lib/gigaedit/aiAssist";
 export { aspectRatioCss, aspectRatioSize } from "@/lib/gigaedit/exportFormats";
+export {
+  storePublishHandoff,
+  peekPublishHandoff,
+  consumePublishHandoffMeta,
+  loadPublishHandoffFiles,
+  launchGigaSocialWithHandoff,
+} from "@/lib/gigaedit/publishHandoff";
+export {
+  destinationComposerSeed,
+  privacyToSocialVisibility,
+  type GigaEditPublishDestination,
+  type GigaEditPublishPrivacy,
+} from "@/lib/gigaedit/publishTypes";
+export {
+  listSounds,
+  saveSound,
+  getSound,
+  getSoundBlob,
+  incrementSoundUsage,
+  soundAttributionLine,
+  filterSounds,
+  type GigaEditSoundAsset,
+} from "@/lib/gigaedit/soundLibrary";
+export {
+  enqueuePublishQueue,
+  listPublishQueue,
+  flushPublishQueueToHandoff,
+} from "@/lib/gigaedit/publishQueue";
+export { extractAudioFromVideo } from "@/lib/gigaedit/audioExtract";

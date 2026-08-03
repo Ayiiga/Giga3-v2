@@ -3,6 +3,18 @@
 import type { GigaCreateLaunch } from "@/components/gigasocial/create/GigaCreateButton";
 import { GigaCreateButton } from "@/components/gigasocial/create/GigaCreateButton";
 import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
+import type { GigaSocialComposerInitialMedia } from "@/components/gigasocial/GigaSocialComposer";
+import {
+  consumePublishHandoffMeta,
+  loadPublishHandoffFiles,
+  peekPublishHandoff,
+} from "@/lib/gigaedit/publishHandoff";
+import { flushPublishQueueToHandoff } from "@/lib/gigaedit/publishQueue";
+import {
+  destinationComposerSeed,
+  privacyToSocialVisibility,
+} from "@/lib/gigaedit/publishTypes";
+import { soundAttributionLine, getSound } from "@/lib/gigaedit/soundLibrary";
 import { GigaSocialStoriesBarWithLive } from "@/components/gigasocial/stories/GigaSocialStoriesBarWithLive";
 import { DataSaverControl } from "@/components/gigasocial/feed/DataSaverControl";
 import { FeedCategoryBar } from "@/components/gigasocial/feed/FeedCategoryBar";
@@ -120,8 +132,14 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     SocialPostTypeId | undefined
   >();
   const [composeInitialTeleprompter, setComposeInitialTeleprompter] = useState(false);
+  const [composeInitialMedia, setComposeInitialMedia] =
+    useState<GigaSocialComposerInitialMedia | null>(null);
+  const [composeInitialVisibility, setComposeInitialVisibility] = useState<
+    "public" | "followers" | undefined
+  >();
   const [remixSource, setRemixSource] = useState<SocialPost | null>(null);
   const [errorToast, setErrorToast] = useState<string | null>(null);
+  const gigaEditPublishHandledRef = useRef(false);
   const [activeFeaturedVideoId, setActiveFeaturedVideoId] = useState<string | null>(null);
   const [featuredReplayKey, setFeaturedReplayKey] = useState(0);
   const highlightScrolledRef = useRef<string | null>(null);
@@ -359,8 +377,76 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setComposeInitialBody(undefined);
     setComposeInitialPostType(undefined);
     setComposeInitialTeleprompter(false);
+    setComposeInitialMedia(null);
+    setComposeInitialVisibility(undefined);
     setRemixSource(null);
   }, []);
+
+  const openGigaEditPublishHandoff = useCallback(async () => {
+    if (!sessionToken) {
+      requireAuth();
+      return;
+    }
+    let meta = peekPublishHandoff();
+    if (!meta) {
+      const flushed = await flushPublishQueueToHandoff();
+      if (flushed) meta = peekPublishHandoff();
+    }
+    if (!meta) return;
+    const consumed = consumePublishHandoffMeta();
+    if (!consumed) return;
+    const files = await loadPublishHandoffFiles(consumed);
+    const seed = destinationComposerSeed(consumed.destination ?? "feed");
+    const visibility = privacyToSocialVisibility(consumed.privacy) ?? "public";
+    let attribution: string | undefined;
+    if (consumed.soundId) {
+      const sound = await getSound(consumed.soundId);
+      if (sound) attribution = soundAttributionLine(sound);
+      else if (consumed.soundTitle) {
+        attribution = `Original Sound · ${consumed.soundTitle}`;
+      }
+    }
+    const caption =
+      consumed.caption?.trim() ||
+      seed.body ||
+      (consumed.kind === "photo" ? "" : seed.body);
+    setComposeInitialMedia({
+      images: files.edited && consumed.kind === "photo" ? [files.edited] : undefined,
+      video: files.edited && consumed.kind === "video" ? files.edited : null,
+      audio: files.audio,
+      soundAttribution: attribution,
+    });
+    setComposeInitialVisibility(visibility);
+    setComposeInitialBody(caption);
+    setComposeInitialPostType(
+      consumed.kind === "photo" ? "image" : seed.postType === "text" ? "video" : seed.postType
+    );
+    setComposeAction(seed.action === "story-content" ? "story-content" : "text-post");
+    setComposeInitialTeleprompter(false);
+    setRemixSource(null);
+    setComposerOpen(true);
+    setErrorToast("GigaEdit project ready — review and publish.");
+  }, [requireAuth, sessionToken]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const wantsPublish = params.get("gigaeditPublish") === "1" || Boolean(peekPublishHandoff());
+    if (!wantsPublish || !sessionToken) return;
+    if (gigaEditPublishHandledRef.current) return;
+    gigaEditPublishHandledRef.current = true;
+    void openGigaEditPublishHandoff();
+  }, [openGigaEditPublishHandoff, sessionToken]);
+
+  useEffect(() => {
+    function onOnline() {
+      void flushPublishQueueToHandoff().then((n) => {
+        if (n > 0) void openGigaEditPublishHandoff();
+      });
+    }
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, [openGigaEditPublishHandoff]);
 
   const handleGigaCreate = useCallback(
     (launch: GigaCreateLaunch) => {
@@ -608,6 +694,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     initialBody: composeInitialBody,
     initialPostType: composeInitialPostType,
     initialTeleprompter: composeInitialTeleprompter,
+    initialMedia: composeInitialMedia,
+    initialVisibility: composeInitialVisibility,
     remixSource: remixSource ?? undefined,
     enableAIAssistant: features.enableAIEditing,
     enableMediaStudio: features.enableMediaStudio,

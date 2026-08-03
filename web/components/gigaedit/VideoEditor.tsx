@@ -1,5 +1,6 @@
 "use client";
 
+import { PublishScreen } from "@/components/gigaedit/PublishScreen";
 import { aspectRatioCss } from "@/lib/gigaedit/exportFormats";
 import {
   createEmptyProject,
@@ -42,6 +43,8 @@ export function VideoEditor() {
   const [greenScreen, setGreenScreen] = useState(false);
   const [clips, setClips] = useState<GigaEditTimelineClip[]>([]);
   const [status, setStatus] = useState<string | null>(null);
+  const [publishReady, setPublishReady] = useState(false);
+  const [projectId, setProjectId] = useState<string | undefined>();
   const originalFileRef = useRef<File | null>(null);
 
   const filterCss = useMemo(
@@ -199,10 +202,40 @@ export function VideoEditor() {
       await putProjectOriginalBlob(project.id, originalFileRef.current);
     }
     enqueueGigaEditSync({ projectId: project.id, action: "backup" });
+    setProjectId(project.id);
     setStatus("Draft auto-saved locally. Original file preserved.");
+    return project.id;
+  }
+
+  async function readyToPublish() {
+    if (!originalFileRef.current) {
+      setStatus("Import a video first.");
+      return;
+    }
+    // Preserve original quality: hand off the source file as the publish media.
+    // CSS filter/transform previews stay non-destructive and never overwrite the original.
+    const id = await saveProject();
+    setProjectId(id);
+    setPublishReady(true);
   }
 
   const timelineMax = Math.max(duration, 8);
+
+  if (publishReady && originalFileRef.current) {
+    return (
+      <PublishScreen
+        kind="video"
+        editedFile={originalFileRef.current}
+        originalFile={originalFileRef.current}
+        aspectRatio={aspectRatio}
+        durationSec={duration || undefined}
+        projectId={projectId}
+        aiAssisted={Boolean(captions) || greenScreen}
+        defaultCaption={overlayText}
+        onClose={() => setPublishReady(false)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -235,6 +268,13 @@ export function VideoEditor() {
           onClick={() => void saveProject()}
         >
           Save draft
+        </button>
+        <button
+          type="button"
+          className="rounded-xl bg-[var(--ge-gold)] px-3 py-2 text-xs font-bold text-[#0b1220]"
+          onClick={() => void readyToPublish()}
+        >
+          Ready to publish
         </button>
       </div>
 

@@ -4,6 +4,8 @@ export type GigaEditFeatureFlags = {
   enableGigaEdit: boolean;
   enableGigaEditOffline: boolean;
   enableGigaEditAiAssist: boolean;
+  /** Publish screen + GigaSocial handoff / sound library. */
+  enableGigaEditPublish: boolean;
 };
 
 const STORAGE_KEY = "giga3_gigaedit_flags";
@@ -18,6 +20,7 @@ export const GIGAEDIT_FEATURE_DEFAULTS: GigaEditFeatureFlags = {
   enableGigaEdit: envFlag("NEXT_PUBLIC_GIGAEDIT_ENABLED", true),
   enableGigaEditOffline: envFlag("NEXT_PUBLIC_GIGAEDIT_OFFLINE", true),
   enableGigaEditAiAssist: envFlag("NEXT_PUBLIC_GIGAEDIT_AI_ASSIST", true),
+  enableGigaEditPublish: envFlag("NEXT_PUBLIC_GIGAEDIT_PUBLISH", true),
 };
 
 export function readGigaEditFeatureOverrides(): Partial<GigaEditFeatureFlags> {

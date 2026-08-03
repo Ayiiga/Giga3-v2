@@ -1,5 +1,6 @@
 "use client";
 
+import { PublishScreen } from "@/components/gigaedit/PublishScreen";
 import { aspectRatioCss } from "@/lib/gigaedit/exportFormats";
 import {
   createEmptyProject,
@@ -22,6 +23,8 @@ export function PhotoEditor() {
   const [aspectRatio, setAspectRatio] = useState<ExportAspectRatio>("1:1");
   const [posterTitle, setPosterTitle] = useState("");
   const [status, setStatus] = useState<string | null>(null);
+  const [publishFile, setPublishFile] = useState<File | null>(null);
+  const [projectId, setProjectId] = useState<string | undefined>();
   const originalRef = useRef<File | null>(null);
 
   const baseFilter = useMemo(
@@ -68,19 +71,16 @@ export function PhotoEditor() {
     setStatus("Portrait improvement preview applied.");
   }
 
-  async function exportPng() {
+  function renderEditedBlob(): Promise<Blob | null> {
     const img = imgRef.current;
-    if (!img || !objectUrl) {
-      setStatus("Import a photo first.");
-      return;
-    }
+    if (!img || !objectUrl) return Promise.resolve(null);
     const canvas = document.createElement("canvas");
     const w = img.naturalWidth || 1080;
     const h = img.naturalHeight || 1080;
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) return Promise.resolve(null);
     ctx.filter = composedFilter;
     ctx.drawImage(img, 0, 0, w, h);
     if (posterTitle.trim()) {
@@ -92,16 +92,22 @@ export function PhotoEditor() {
       ctx.textAlign = "center";
       ctx.fillText(posterTitle.trim(), w / 2, h * 0.88);
     }
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `gigaedit-${Date.now()}.png`;
-      a.click();
-      URL.revokeObjectURL(url);
-      setStatus("Exported a new PNG. Original upload unchanged.");
-    }, "image/png");
+    return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), "image/png"));
+  }
+
+  async function exportPng() {
+    const blob = await renderEditedBlob();
+    if (!blob) {
+      setStatus("Import a photo first.");
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `gigaedit-${Date.now()}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setStatus("Exported a new PNG. Original upload unchanged.");
   }
 
   async function saveDraft() {
@@ -120,7 +126,40 @@ export function PhotoEditor() {
     await saveGigaEditProject(project);
     if (originalRef.current) await putProjectOriginalBlob(project.id, originalRef.current);
     enqueueGigaEditSync({ projectId: project.id, action: "backup" });
+    setProjectId(project.id);
     setStatus("Photo draft saved locally.");
+    return project.id;
+  }
+
+  async function readyToPublish() {
+    if (!originalRef.current) {
+      setStatus("Import a photo first.");
+      return;
+    }
+    const blob = await renderEditedBlob();
+    if (!blob) {
+      setStatus("Could not render edited photo.");
+      return;
+    }
+    const id = await saveDraft();
+    const edited = new File([blob], `gigaedit-${Date.now()}.png`, { type: "image/png" });
+    setProjectId(id);
+    setPublishFile(edited);
+  }
+
+  if (publishFile && originalRef.current) {
+    return (
+      <PublishScreen
+        kind="photo"
+        editedFile={publishFile}
+        originalFile={originalRef.current}
+        aspectRatio={aspectRatio}
+        projectId={projectId}
+        aiAssisted={filterId === "hdr" || Boolean(posterTitle)}
+        defaultCaption={posterTitle}
+        onClose={() => setPublishFile(null)}
+      />
+    );
   }
 
   return (
@@ -158,6 +197,13 @@ export function PhotoEditor() {
         </button>
         <button type="button" className="rounded-xl border border-[var(--ge-border)] px-3 py-2 text-xs" onClick={() => void saveDraft()}>
           Save draft
+        </button>
+        <button
+          type="button"
+          className="rounded-xl bg-[var(--ge-gold)] px-3 py-2 text-xs font-bold text-[#0b1220]"
+          onClick={() => void readyToPublish()}
+        >
+          Ready to publish
         </button>
       </div>
 

@@ -1,6 +1,6 @@
-/** GigaEdit creator studio tab — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v194-gigaedit";
-const NEXT_STATIC_CACHE = "giga3-next-static-v194";
+/** GigaEdit → GigaSocial publish integration — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v195-gigaedit-publish";
+const NEXT_STATIC_CACHE = "giga3-next-static-v195";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";

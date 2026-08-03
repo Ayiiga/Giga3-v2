@@ -6,6 +6,7 @@ import {
   isGigaEditOnline,
   listGigaEditSyncQueue,
 } from "@/lib/gigaedit/offline";
+import { flushPublishQueueToHandoff, listPublishQueue } from "@/lib/gigaedit/publishQueue";
 import { CloudOff, RefreshCw, Wifi } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -16,7 +17,9 @@ export function OfflineManager({ compact = false }: { compact?: boolean }) {
 
   const refresh = useCallback(() => {
     setOnline(isGigaEditOnline());
-    setQueueLen(listGigaEditSyncQueue().length);
+    void listPublishQueue().then((pub) => {
+      setQueueLen(listGigaEditSyncQueue().length + pub.length);
+    });
   }, []);
 
   useEffect(() => {
@@ -30,15 +33,23 @@ export function OfflineManager({ compact = false }: { compact?: boolean }) {
             refresh();
           }
         });
+        void flushPublishQueueToHandoff().then((n) => {
+          if (n > 0) {
+            setStatus("Publish draft ready — open GigaSocial to finish posting.");
+            refresh();
+          }
+        });
       }
     }
     window.addEventListener("online", onChange);
     window.addEventListener("offline", onChange);
     window.addEventListener("giga3:gigaedit-sync-changed", onChange);
+    window.addEventListener("giga3:gigaedit-publish-queue-changed", onChange);
     return () => {
       window.removeEventListener("online", onChange);
       window.removeEventListener("offline", onChange);
       window.removeEventListener("giga3:gigaedit-sync-changed", onChange);
+      window.removeEventListener("giga3:gigaedit-publish-queue-changed", onChange);
     };
   }, [refresh]);
 
