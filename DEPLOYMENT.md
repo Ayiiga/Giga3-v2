@@ -77,14 +77,25 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `PAYSTACK_CREDITS_60_GHS` | No | Default `60` (grants same number of credits) |
    | `PAYSTACK_CREDITS_150_GHS` | No | Default `150` |
    | `PAYSTACK_CREDITS_500_GHS` | No | Default `500` |
-   | `FRONTEND_URL` | **Yes (prod)** | Paystack/Stripe redirects, e.g. `https://www.giga3ai.com` |
+   | `FRONTEND_URL` | **Yes (prod)** | Paystack/Stripe redirects + password-reset links, e.g. `https://www.giga3ai.com` |
+   | `RESEND_API_KEY` | **Yes for email** | Password reset + engagement emails via [Resend](https://resend.com). Without this, forgot-password cannot deliver mail. |
+   | `AUTH_FROM_EMAIL` | Recommended | Default `Giga3 AI <noreply@giga3ai.com>` — domain must be verified in Resend |
    | `STRIPE_SECRET_KEY` | Legacy only | Old token checkout in `payments.ts` |
 
    ```bash
    npx convex env set OPENAI_API_KEY "sk-..."
    npx convex env set FRONTEND_URL "https://www.giga3ai.com"
    npx convex env set PAYSTACK_SECRET_KEY "sk_live_..."
+   npx convex env set RESEND_API_KEY "re_..."
+   npx convex env set AUTH_FROM_EMAIL "Giga3 AI <noreply@giga3ai.com>"
    ```
+
+   **Email checklist (forgot password + engagement digests):**
+   1. Create a Resend account and verify the sending domain (`giga3ai.com`) or use a Resend-provided from-address while testing.
+   2. Set GitHub secret `RESEND_API_KEY` (CI syncs it on Convex deploy) **and** set the same key on the Convex production deployment.
+   3. Confirm `AUTH_FROM_EMAIL` uses a verified domain.
+   4. Test Forgot password on `/chat/login/` — you should receive a 1-hour reset link.
+   5. Engagement digests run every 3 days (UTC 15:00) for inactive opted-in users; unsubscribe via the link in each email (`/email/unsubscribe` on the Convex site).
 
 6. **Configure Convex auth / CORS** (if needed): allow your Pages origin (`https://www.giga3ai.com`, `https://giga3ai.pages.dev`) in the Convex dashboard.
 

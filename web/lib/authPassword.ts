@@ -6,6 +6,14 @@ import { convexHttpCall } from "@/lib/network/convexCall";
 
 type SessionResult = { email: string; sessionToken: string };
 
+export type PasswordResetResult = {
+  ok: boolean;
+  emailed: boolean;
+  deliveryConfigured?: boolean;
+  accountMatched?: boolean;
+  deliveryError?: string;
+};
+
 async function authAction<T>(
   path: string,
   args: Record<string, unknown>
@@ -44,11 +52,14 @@ export async function signInWithPassword(
 
 export async function requestPasswordReset(
   email: string,
-  resetBaseUrl: string
-): Promise<{ ok: boolean; emailed: boolean }> {
-  return authAction<{ ok: boolean; emailed: boolean }>(
+  resetBaseUrl?: string
+): Promise<PasswordResetResult> {
+  return authAction<PasswordResetResult>(
     "authPasswordActions:requestPasswordReset",
-    { email: email.trim().toLowerCase(), resetBaseUrl }
+    {
+      email: email.trim().toLowerCase(),
+      ...(resetBaseUrl ? { resetBaseUrl } : {}),
+    }
   );
 }
 
@@ -67,4 +78,8 @@ export async function resetPasswordWithToken(
   );
   setAuthSession(result.email, result.sessionToken);
   return result;
+}
+
+export function passwordRequirementsHint(): string {
+  return "Use at least 8 characters with a letter and a number.";
 }

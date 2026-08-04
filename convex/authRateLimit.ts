@@ -30,7 +30,7 @@ export async function consumeAuthRateLimit(
   }
 
   if (existing.count >= AUTH_MAX_ATTEMPTS) {
-    throw new RateLimitError("Too many sign-in attempts. Try again later.");
+    throw new RateLimitError("Too many attempts. Try again later.");
   }
 
   await ctx.db.patch(existing._id, { count: existing.count + 1 });

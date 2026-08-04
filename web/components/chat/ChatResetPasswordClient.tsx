@@ -2,7 +2,10 @@
 
 import { Button } from "@/components/ui/Button";
 import { isValidEmail } from "@/lib/auth";
-import { resetPasswordWithToken } from "@/lib/authPassword";
+import {
+  passwordRequirementsHint,
+  resetPasswordWithToken,
+} from "@/lib/authPassword";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -50,7 +53,10 @@ function ResetPasswordInner() {
       <div className="premium-card w-full max-w-md p-8 sm:p-10">
         <div className="mb-6 flex flex-col items-center gap-4 text-center">
           <BrandLogo size={48} className="shadow-none ring-0" />
-          <h1 className="text-2xl font-semibold text-foreground">Set new password</h1>
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground">Set new password</h1>
+            <p className="mt-2 text-sm text-muted">{passwordRequirementsHint()}</p>
+          </div>
         </div>
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
           <div>
@@ -78,6 +84,7 @@ function ResetPasswordInner() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="input-surface"
+              placeholder="Letter + number, 8+ characters"
             />
           </div>
           <div>

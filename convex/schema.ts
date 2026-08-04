@@ -247,9 +247,14 @@ export default defineSchema({
     referredByUserId: v.optional(v.string()),
     learningStreakDays: v.optional(v.number()),
     lastActiveDateKey: v.optional(v.string()),
+    /** Engagement email opt-in — undefined means opted in (soft default). */
+    emailEngagementOptIn: v.optional(v.boolean()),
+    lastEngagementEmailAt: v.optional(v.number()),
+    emailUnsubscribeToken: v.optional(v.string()),
   })
     .index("by_email", ["email"])
-    .index("by_referralCode", ["referralCode"]),
+    .index("by_referralCode", ["referralCode"])
+    .index("by_last_engagement_email", ["lastEngagementEmailAt"]),
 
   /** Email + password credentials (scrypt hash). Separate from users for security. */
   userCredentials: defineTable({

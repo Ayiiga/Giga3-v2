@@ -134,6 +134,9 @@ jobs:
           fi
           if [ -n "${RESEND_API_KEY:-}" ]; then
             npx convex env set RESEND_API_KEY "${RESEND_API_KEY}"
+            echo "RESEND_API_KEY synced — password reset + engagement email enabled."
+          else
+            echo "::warning::RESEND_API_KEY GitHub secret is empty — forgot-password and engagement emails will not send until it is set."
           fi
           if [ -n "${NEXT_PUBLIC_SUPABASE_URL:-}" ]; then
             npx convex env set SUPABASE_URL "${NEXT_PUBLIC_SUPABASE_URL}"
