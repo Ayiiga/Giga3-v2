@@ -79,7 +79,7 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `PAYSTACK_CREDITS_500_GHS` | No | Default `500` |
    | `FRONTEND_URL` | **Yes (prod)** | Paystack/Stripe redirects + password-reset links, e.g. `https://www.giga3ai.com` |
    | `RESEND_API_KEY` | **Yes for email** | Password reset + engagement emails via [Resend](https://resend.com). Without this, forgot-password cannot deliver mail. |
-   | `AUTH_FROM_EMAIL` | Recommended | Default `Giga3 AI <noreply@giga3ai.com>` — domain must be verified in Resend |
+   | `AUTH_FROM_EMAIL` | Recommended | Default `Giga3 AI <onboarding@resend.dev>` (works immediately). After verifying `giga3ai.com` in Resend, switch to `Giga3 AI <noreply@giga3ai.com>`. |
    | `STRIPE_SECRET_KEY` | Legacy only | Old token checkout in `payments.ts` |
 
    ```bash

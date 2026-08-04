@@ -147,9 +147,12 @@ jobs:
           if [ -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
             npx convex env set SUPABASE_SERVICE_ROLE_KEY "${SUPABASE_SERVICE_ROLE_KEY}"
           fi
-          npx convex env set AUTH_FROM_EMAIL "${AUTH_FROM_EMAIL:-Giga3 AI <noreply@giga3ai.com>}"
+          # Prefer verified Resend onboarding sender until giga3ai.com is verified in Resend.
+          FROM_EMAIL="${AUTH_FROM_EMAIL:-Giga3 AI <onboarding@resend.dev>}"
+          npx convex env set AUTH_FROM_EMAIL "${FROM_EMAIL}"
           npx convex env set PLATFORM_ADMIN_EMAILS "${PLATFORM_ADMIN_EMAILS:-ayiiga3@gmail.com}"
           echo "Chat latency env applied (CHAT_*). Optional secrets synced if present."
+          echo "AUTH_FROM_EMAIL set for transactional mail."
 
       - name: Convex deploy failure details
         if: failure() && steps.convex_deploy.outcome == 'failure'
