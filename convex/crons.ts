@@ -39,4 +39,12 @@ crons.interval(
   {}
 );
 
+// Occasional re-engagement emails (create / learn / entertain) for inactive opted-in users.
+crons.cron(
+  "engagement email digests",
+  "0 15 */3 * *",
+  internal.engagementEmailActions.sendEngagementDigests,
+  { limit: 40, minInactiveDays: 3, minDaysSinceLastEmail: 6 }
+);
+
 export default crons;

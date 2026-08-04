@@ -1,5 +1,6 @@
 import { internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
+import { consumeAuthRateLimit } from "./authRateLimit";
 
 export const hasCredentialsInternal = internalQuery({
   args: { email: v.string() },
@@ -111,5 +112,13 @@ export const updatePasswordHashInternal = internalMutation({
       passwordResetExpiresAt: undefined,
       updatedAt: Date.now(),
     });
+  },
+});
+
+/** Shared sliding-window limiter for password auth actions. */
+export const consumePasswordAuthRateLimit = internalMutation({
+  args: { bucketKey: v.string() },
+  handler: async (ctx, args) => {
+    await consumeAuthRateLimit(ctx, `password:${args.bucketKey}`);
   },
 });

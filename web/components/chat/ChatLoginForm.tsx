@@ -3,8 +3,8 @@
 import { Button } from "@/components/ui/Button";
 import { getUserEmail, isValidEmail } from "@/lib/auth";
 import {
+  passwordRequirementsHint,
   requestPasswordReset,
-  resetPasswordWithToken,
   signInWithPassword,
   signUpWithPassword,
 } from "@/lib/authPassword";
@@ -50,10 +50,20 @@ function ChatLoginFormInner() {
         const resetBase = `${window.location.origin}/chat/login/reset`;
         const result = await requestPasswordReset(normalized, resetBase);
         if (result.emailed) {
-          setInfo("Password reset link sent. Check your email.");
+          setInfo(
+            "Password reset link sent. Check your inbox and spam folder — the link expires in 1 hour."
+          );
+        } else if (result.deliveryConfigured === false && result.accountMatched) {
+          setError(
+            "We could not send email right now (delivery is not configured). Please try again later or contact support."
+          );
+        } else if (result.deliveryError && result.accountMatched) {
+          setError(
+            "We could not deliver the reset email. Check the address and try again in a few minutes. Also check spam."
+          );
         } else {
           setInfo(
-            "If an account exists for this email, you will receive reset instructions when email delivery is configured."
+            "If an account exists for this email, a reset link has been sent. Check inbox and spam."
           );
         }
         return;
@@ -139,6 +149,13 @@ function ChatLoginFormInner() {
             />
           </div>
 
+          {mode === "forgot" && (
+            <p className="text-sm text-muted">
+              Enter the email on your account. We will send a secure one-hour reset
+              link if that account exists.
+            </p>
+          )}
+
           {mode !== "forgot" && (
             <div>
               <label
@@ -156,8 +173,11 @@ function ChatLoginFormInner() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="input-surface"
-                placeholder="At least 8 characters"
+                placeholder="e.g. creat3more"
               />
+              {mode === "signup" && (
+                <p className="mt-2 text-xs text-muted">{passwordRequirementsHint()}</p>
+              )}
             </div>
           )}
 

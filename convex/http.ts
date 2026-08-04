@@ -9,6 +9,7 @@ import {
 } from "./gigaSocialDeveloperApi";
 import { gigaSocialPostOgImage } from "./gigaSocialPostOgImage";
 import { gigaSocialPostPreview } from "./gigaSocialPostPreview";
+import { unsubscribeEngagementEmail } from "./engagementEmailHttp";
 import { healthCheck } from "./health";
 import { paystackWebhook } from "./paystack";
 
@@ -18,6 +19,12 @@ http.route({
   path: "/health",
   method: "GET",
   handler: healthCheck,
+});
+
+http.route({
+  path: "/email/unsubscribe",
+  method: "GET",
+  handler: unsubscribeEngagementEmail,
 });
 
 http.route({
