@@ -49,13 +49,13 @@ function pickTheme(candidate: Candidate): {
   if (/creat|design|image|video|edit|media|art/.test(joined)) {
     return {
       title: "Make something new in minutes",
-      lead: "Media Studio and GigaEdit are ready for your next poster, clip, or social post.",
+      lead: "Media Studio and GigaEdit are ready for your next poster, clip, or social Story.",
       ctaLabel: "Start creating",
       ctaPath: "/gigaedit/",
       bullets: [
         "Generate or refine an image for your brand",
         "Edit and export with GigaEdit",
-        "Publish straight to GigaSocial when it looks right",
+        "Post a photo or video Story on GigaSocial",
       ],
     };
   }
@@ -63,13 +63,13 @@ function pickTheme(candidate: Candidate): {
   if (/fun|entertain|music|story|social|game/.test(joined)) {
     return {
       title: "Come back for entertainment & community",
-      lead: "GigaSocial and chat are great for light ideas, stories, and creator inspiration.",
+      lead: "GigaSocial Stories now support photos and videos — share a quick update with your ring.",
       ctaLabel: "Open GigaSocial",
       ctaPath: "/gigasocial/",
       bullets: [
-        "Catch up on creator posts and tips",
-        "Draft a fun caption with chat",
-        "Share a short clip when you are ready",
+        "Watch Stories from creators you follow",
+        "Share a photo or short video Story",
+        "Tip, comment, and grow with the community",
       ],
     };
   }
@@ -81,7 +81,7 @@ function pickTheme(candidate: Candidate): {
     ctaPath: "/chat/",
     bullets: [
       "Chat for ideas, plans, and quick answers",
-      "Create with Media Studio and GigaEdit",
+      "Create with Media Studio, GigaEdit, and Stories",
       "Learn with GigaLearn or browse the marketplace",
     ],
   };

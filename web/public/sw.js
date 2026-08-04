@@ -1,6 +1,6 @@
-/** Password reset email + engagement digests — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v202-password-email";
-const NEXT_STATIC_CACHE = "giga3-next-static-v202";
+/** GigaSocial photo+video Stories + engagement emails — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v203-stories-media-email";
+const NEXT_STATIC_CACHE = "giga3-next-static-v203";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";

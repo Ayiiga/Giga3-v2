@@ -93,7 +93,8 @@ export function resolveGigaCreateRoute(action: GigaCreateActionId): GigaCreateRo
       return {
         kind: "compose",
         action: "story-content",
-        postType: "video",
+        // Media kind is chosen in-composer (photo or video).
+        postType: "image",
         body: "✨ Story\n\n#story",
       };
     case "media-audio":

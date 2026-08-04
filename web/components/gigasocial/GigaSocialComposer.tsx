@@ -183,8 +183,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       (initialAction === "media-camera" || initialAction === "story-content")
   );
   const gigaEditSeededRef = useRef(false);
-  const [cameraDefaultMode, setCameraDefaultMode] = useState<"photo" | "video">(() =>
-    initialAction === "story-content" ? "video" : "photo"
+  const [cameraDefaultMode, setCameraDefaultMode] = useState<"photo" | "video">(
+    "photo"
   );
   const [mediaReviewDraft, setMediaReviewDraft] = useState<{
     file: File;
@@ -288,7 +288,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       if (initialPostType) setPostType(initialPostType);
       if (initialAction === "story-content") {
         setBody((value) => value.trim() || initialBody || "✨ Story\n\n#story");
-        setPostType("video");
+        // Keep seeded media type (photo or video) — do not force video-only stories.
+        if (!initialPostType && !initialMedia?.video) setPostType("image");
       }
       return;
     }
@@ -331,9 +332,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         setCameraStudioOpen(true);
         break;
       case "story-content":
-        setPostType("video");
+        setPostType("image");
         setBody((value) => value.trim() || initialBody || "✨ Story\n\n#story");
-        setCameraDefaultMode("video");
+        setCameraDefaultMode("photo");
         setCameraStudioOpen(true);
         break;
       case "media-audio":
@@ -753,6 +754,13 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       }
       if (pendingImages.length && pendingAudio && !/#photomusic\b/i.test(finalBody)) {
         finalBody = `${finalBody} #PhotoMusic`.trim();
+      }
+      if (
+        initialAction === "story-content" &&
+        (pendingVideo || pendingImages.length) &&
+        !/#story\b/i.test(finalBody)
+      ) {
+        finalBody = `${finalBody}\n#story`.trim();
       }
       if (soundAttribution && !finalBody.includes(soundAttribution)) {
         finalBody = `${finalBody}\n🎵 ${soundAttribution}`.trim();

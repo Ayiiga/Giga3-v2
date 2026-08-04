@@ -39,12 +39,13 @@ crons.interval(
   {}
 );
 
-// Occasional re-engagement emails (create / learn / entertain) for inactive opted-in users.
-crons.cron(
+// Daily re-engagement emails (create / learn / entertain / GigaSocial) for inactive opted-in users.
+// Still occasional per user via minDaysSinceLastEmail.
+crons.daily(
   "engagement email digests",
-  "0 15 */3 * *",
+  { hourUTC: 15, minuteUTC: 0 },
   internal.engagementEmailActions.sendEngagementDigests,
-  { limit: 40, minInactiveDays: 3, minDaysSinceLastEmail: 6 }
+  { limit: 50, minInactiveDays: 2, minDaysSinceLastEmail: 4 }
 );
 
 export default crons;

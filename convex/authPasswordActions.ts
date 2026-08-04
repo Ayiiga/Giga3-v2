@@ -74,6 +74,34 @@ async function sendResetEmail(to: string, resetUrl: string) {
   });
 }
 
+async function sendWelcomeEmail(to: string): Promise<void> {
+  if (!isEmailDeliveryConfigured()) return;
+  const frontend = getFrontendBaseUrl();
+  const html = wrapEmailHtml({
+    title: "Welcome to Giga3 AI",
+    bodyHtml: `
+      <p style="margin:0 0 12px;">Your account is ready.</p>
+      <p style="margin:0 0 12px;">Come back anytime to chat, learn, create, and share photo or video Stories on GigaSocial.</p>
+      <ul style="margin:0 0 20px;padding-left:18px;">
+        <li style="margin:0 0 6px;"><a href="${frontend}/chat/" style="color:#0f766e;">Chat &amp; ideas</a></li>
+        <li style="margin:0 0 6px;"><a href="${frontend}/gigalearn/" style="color:#0f766e;">Learn with GigaLearn</a></li>
+        <li style="margin:0 0 6px;"><a href="${frontend}/gigaedit/" style="color:#0f766e;">Create with GigaEdit</a></li>
+        <li style="margin:0 0 6px;"><a href="${frontend}/gigasocial/" style="color:#0f766e;">GigaSocial Stories</a></li>
+      </ul>
+    `,
+  });
+  await sendEmail({
+    to,
+    subject: "Welcome to Giga3 AI — create, learn, and share",
+    html,
+    text: `Welcome to Giga3 AI. Open ${frontend}/chat/ to get started.`,
+    tags: [
+      { name: "category", value: "welcome" },
+      { name: "app", value: "giga3" },
+    ],
+  });
+}
+
 /** Create account with email + password. */
 export const signUpWithPassword = action({
   args: {
@@ -107,7 +135,10 @@ export const signUpWithPassword = action({
       passwordHash,
     });
 
-    return await issueSession(ctx, email);
+    const session = await issueSession(ctx, email);
+    // Best-effort welcome — never block sign-up if mail fails.
+    void sendWelcomeEmail(email).catch(() => undefined);
+    return session;
   },
 });
 
