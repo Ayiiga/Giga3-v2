@@ -1,6 +1,9 @@
 /**
  * Shared Resend email helper for transactional + engagement mail.
  * Requires Convex env RESEND_API_KEY. Optional AUTH_FROM_EMAIL.
+ *
+ * Note: Resend's onboarding@resend.dev sender can only deliver to the Resend
+ * account owner's inbox until giga3ai.com is verified at resend.com/domains.
  */
 
 export type SendEmailInput = {
@@ -11,9 +14,21 @@ export type SendEmailInput = {
   tags?: Array<{ name: string; value: string }>;
 };
 
+export type EmailFailureReason =
+  | "not_configured"
+  | "sandbox_recipient"
+  | "domain_unverified"
+  | "provider_error"
+  | "network_error";
+
 export type SendEmailResult =
   | { ok: true; id?: string }
-  | { ok: false; reason: string; status?: number };
+  | {
+      ok: false;
+      reason: EmailFailureReason;
+      status?: number;
+      providerMessage?: string;
+    };
 
 export function isEmailDeliveryConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY?.trim());
@@ -25,6 +40,16 @@ export function getAuthFromEmail(): string {
     // Resend onboarding sender works before a custom domain is verified.
     "Giga3 AI <onboarding@resend.dev>"
   );
+}
+
+/** Inbox that receives reset-link copies when Resend cannot deliver to the user. */
+export function getEmailFallbackInbox(): string | null {
+  const configured = process.env.AUTH_EMAIL_FALLBACK_INBOX?.trim().toLowerCase();
+  if (configured && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(configured)) {
+    return configured;
+  }
+  // Resend account owner — only address that works with onboarding@resend.dev.
+  return "ayiiga3@gmail.com";
 }
 
 export function getFrontendBaseUrl(): string {
@@ -41,6 +66,30 @@ export function getConvexSiteUrl(): string {
     process.env.NEXT_PUBLIC_CONVEX_SITE_URL?.replace(/\/$/, "") ||
     "https://perfect-lark-521.convex.site"
   );
+}
+
+export function classifyResendFailure(
+  status: number,
+  body: string
+): Pick<Extract<SendEmailResult, { ok: false }>, "reason" | "providerMessage"> {
+  const lower = body.toLowerCase();
+  if (
+    lower.includes("only send testing emails") ||
+    lower.includes("your own email address")
+  ) {
+    return { reason: "sandbox_recipient", providerMessage: body.slice(0, 400) };
+  }
+  if (
+    lower.includes("domain is not verified") ||
+    lower.includes("verify a domain") ||
+    lower.includes("verify your domain")
+  ) {
+    return { reason: "domain_unverified", providerMessage: body.slice(0, 400) };
+  }
+  return {
+    reason: "provider_error",
+    providerMessage: body.slice(0, 400) || `HTTP ${status}`,
+  };
 }
 
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
@@ -70,13 +119,15 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
+      const classified = classifyResendFailure(res.status, body);
       console.error(
-        `[email] Resend failed status=${res.status} to=${input.to} body=${body.slice(0, 400)}`
+        `[email] Resend failed status=${res.status} reason=${classified.reason} to=${input.to} body=${body.slice(0, 400)}`
       );
       return {
         ok: false,
-        reason: "provider_error",
+        reason: classified.reason,
         status: res.status,
+        providerMessage: classified.providerMessage,
       };
     }
 

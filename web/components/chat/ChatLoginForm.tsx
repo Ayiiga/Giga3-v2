@@ -57,6 +57,18 @@ function ChatLoginFormInner() {
           setError(
             "We could not send email right now (delivery is not configured). Please try again later or contact support."
           );
+        } else if (result.supportNotified && result.accountMatched) {
+          setInfo(
+            "We could not email that address automatically yet. Support has your one-hour reset link and can forward it — contact ayiiga3@gmail.com or try again shortly."
+          );
+        } else if (
+          (result.deliveryError === "sandbox_recipient" ||
+            result.deliveryError === "domain_unverified") &&
+          result.accountMatched
+        ) {
+          setError(
+            "Password reset email is blocked until the Giga3 sending domain is verified in Resend. Contact support or try again after domain setup."
+          );
         } else if (result.deliveryError && result.accountMatched) {
           setError(
             "We could not deliver the reset email. Check the address and try again in a few minutes. Also check spam."

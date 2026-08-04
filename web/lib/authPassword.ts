@@ -12,6 +12,8 @@ export type PasswordResetResult = {
   deliveryConfigured?: boolean;
   accountMatched?: boolean;
   deliveryError?: string;
+  /** True when Resend blocked the user inbox but support received the link. */
+  supportNotified?: boolean;
 };
 
 async function authAction<T>(
