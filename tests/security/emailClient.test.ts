@@ -27,7 +27,7 @@ describe("emailClient helpers", () => {
 
   it("uses production frontend and from defaults", () => {
     expect(getFrontendBaseUrl()).toBe("https://www.giga3ai.com");
-    expect(getAuthFromEmail()).toContain("noreply@giga3ai.com");
+    expect(getAuthFromEmail()).toContain("onboarding@resend.dev");
   });
 
   it("wraps branded HTML for transactional mail", () => {

@@ -22,7 +22,8 @@ export function isEmailDeliveryConfigured(): boolean {
 export function getAuthFromEmail(): string {
   return (
     process.env.AUTH_FROM_EMAIL?.trim() ||
-    "Giga3 AI <noreply@giga3ai.com>"
+    // Resend onboarding sender works before a custom domain is verified.
+    "Giga3 AI <onboarding@resend.dev>"
   );
 }
 
