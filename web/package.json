@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "next lint",
     "test:chat-overflow": "node scripts/chat-overflow-viewport-test.mjs",
-    "verify:convex-env": "node scripts/verify-convex-in-build.mjs"
+    "verify:convex-env": "node scripts/verify-convex-in-build.mjs",
+    "generate:creator-series-pdfs": "node scripts/generate-creator-series-pdfs.mjs"
   },
   "dependencies": {
     "@paystack/inline-js": "^2.22.9",

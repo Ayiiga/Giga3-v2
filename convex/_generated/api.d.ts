@@ -66,6 +66,7 @@ import type * as liveNewsInternal from "../liveNewsInternal.js";
 import type * as liveNewsShared from "../liveNewsShared.js";
 import type * as marketplace from "../marketplace.js";
 import type * as marketplacePayments from "../marketplacePayments.js";
+import type * as marketplaceSeed from "../marketplaceSeed.js";
 import type * as marketplaceViews from "../marketplaceViews.js";
 import type * as media from "../media.js";
 import type * as mediaCatalog from "../mediaCatalog.js";
@@ -215,6 +216,7 @@ declare const fullApi: ApiFromModules<{
   liveNewsShared: typeof liveNewsShared;
   marketplace: typeof marketplace;
   marketplacePayments: typeof marketplacePayments;
+  marketplaceSeed: typeof marketplaceSeed;
   marketplaceViews: typeof marketplaceViews;
   media: typeof media;
   mediaCatalog: typeof mediaCatalog;

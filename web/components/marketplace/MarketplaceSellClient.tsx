@@ -256,19 +256,29 @@ function MarketplaceSellInner() {
   }
 
   return (
-    <Container className="py-8 sm:py-12">
+    <Container className="discover-stable py-8 sm:py-12">
       <div className="mx-auto max-w-5xl space-y-10">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="page-title">Creator dashboard</h1>
-            <p className="mt-2 text-muted">Publish digital products and manage earnings.</p>
-            <p className="mt-1 text-xs text-muted">
-              {formatCurrentDateTime()}
-            </p>
+        <div className="overflow-hidden rounded-3xl border border-emerald-900/10 bg-[#042f2e] px-6 py-7 text-emerald-50 sm:px-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-xl">
+              <p className="text-sm font-medium text-emerald-200">Creator studio</p>
+              <h1 className="mt-2 font-serif text-3xl tracking-tight text-white sm:text-4xl">
+                Sell products buyers trust
+              </h1>
+              <p className="mt-2 text-sm text-emerald-100/90">
+                Publish eBooks, templates, and packs with verification, covers, and Paystack
+                delivery — then track payouts in one place.
+              </p>
+              <p className="mt-2 text-xs text-emerald-200/70">{formatCurrentDateTime()}</p>
+            </div>
+            <ButtonLink
+              href="/marketplace"
+              variant="secondary"
+              className="border-white/20 bg-white text-emerald-950 hover:bg-emerald-50"
+            >
+              Browse marketplace
+            </ButtonLink>
           </div>
-          <ButtonLink href="/marketplace" variant="ghost">
-            Browse marketplace
-          </ButtonLink>
         </div>
 
         {message && (
@@ -418,9 +428,11 @@ function MarketplaceSellInner() {
         <CreatorNewsHub sessionToken={sessionToken} />
 
         <section className="rounded-2xl border bg-card p-6">
-          <h2 className="text-lg font-semibold">New listing</h2>
+          <h2 className="font-serif text-xl font-semibold">New listing</h2>
           <p className="mt-2 text-sm text-muted">
-            Upload a cover image and product file when you publish, or attach the file later.
+            Lead with a sharp cover, a benefit-first description, and a ready-to-download file.
+            Tip: the official Creator Academy series are priced at GHS 150.00 each — a clear
+            premium reference for comprehensive guides.
           </p>
           {(verificationStatus !== "pending" && verificationStatus !== "approved") && (
             <p className="mt-2 text-sm text-amber-700">

@@ -145,7 +145,18 @@ Add these under **Settings → Secrets and variables → Actions → Repository 
 - [ ] `/chat/` — send message (needs `OPENAI_API_KEY` on Convex)
 - [ ] `/pricing/`, `/subscribe/`, `/credits/` — Paystack flow (needs `PAYSTACK_SECRET_KEY`, `FRONTEND_URL`)
 - [ ] `/media/` — image job (needs `REPLICATE_API_TOKEN`)
+- [ ] `/marketplace/` — Creator Academy shelf + listings
 - [ ] PWA: `manifest.webmanifest`, `sw.js` served (see `web/public/_headers`)
+
+### Creator Academy marketplace seed (GHS 150 × 4)
+
+Official PDF series live under `web/public/marketplace/series/` (regenerate with `cd web && npm run generate:creator-series-pdfs`). After **both** Convex and Pages have deployed:
+
+```bash
+npx convex run marketplaceSeed:seedGiga3CreatorSeries '{"adminKey":"YOUR_PLATFORM_STATS_ADMIN_KEY"}'
+```
+
+Optional Convex env: `MARKETPLACE_OFFICIAL_SELLER_EMAIL` (default `academy@giga3ai.com`). The action fetches PDFs from `FRONTEND_URL`, stores them in Convex `_storage`, and publishes four listings at **GHS 150** each (tags `giga3-official-series` / `giga3-series-1`…`4`). Buyers download via **My purchases** after Paystack — do not link the public PDF paths in marketing CTAs.
 
 ---
 
