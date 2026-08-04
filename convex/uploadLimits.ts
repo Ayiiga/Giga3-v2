@@ -1,6 +1,6 @@
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { requireSession } from "./auth";
+import { requireSession, tryRequireSession } from "./auth";
 import type { ValidatedAttachmentFile } from "./attachmentValidation";
 import { isSubscriptionActive } from "./creditsConfig";
 import type { SubscriptionPlanId } from "./subscriptionPlans";
@@ -170,7 +170,11 @@ async function applyUploadRecord(
 export const getUploadUsageSnapshot = query({
   args: { sessionToken: v.string() },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await tryRequireSession(args.sessionToken);
+    if (!email) {
+      const limits = await getLimitForPlan(ctx, "free");
+      return snapshotFrom("free", limits, null);
+    }
     const user = await getUserByEmail(ctx, email);
     if (!user) {
       const limits = await getLimitForPlan(ctx, "free");

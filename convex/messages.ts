@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { requireSession } from "./auth";
+import { requireSession, tryRequireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { sanitizePublicShareMessageContent } from "./publicShareSanitizer";
 
@@ -25,7 +25,8 @@ export const listByConversation = query({
     ...sessionArgs,
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await tryRequireSession(args.sessionToken);
+    if (!userId) return [];
     const conv = await ctx.db.get(args.conversationId);
     if (!conversationOwnerMatches(conv, userId)) return [];
     const rows = await ctx.db

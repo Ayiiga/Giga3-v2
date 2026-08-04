@@ -17,6 +17,21 @@ export async function requireSession(sessionToken: string | undefined): Promise<
   return await verifySessionToken(sessionToken);
 }
 
+/**
+ * Session helper for chat shell queries. Returns null instead of throwing so an
+ * expired/invalid token cannot crash the React error boundary via useQuery.
+ */
+export async function tryRequireSession(
+  sessionToken: string | undefined
+): Promise<string | null> {
+  try {
+    return await requireSession(sessionToken);
+  } catch (error) {
+    if (error instanceof UnauthorizedError) return null;
+    throw error;
+  }
+}
+
 /** @deprecated Use requireSession — client identity claims are ignored. */
 export async function requireAuthenticatedEmail(
   sessionToken: string | undefined,

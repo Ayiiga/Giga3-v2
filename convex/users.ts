@@ -8,7 +8,7 @@ import {
 } from "./userLearning";
 import { isValidMode } from "./aiModes";
 import { grantStarterCreditsIfNeeded } from "./userStarterCredits";
-import { requireSession } from "./auth";
+import { requireSession, tryRequireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { createSessionToken } from "./sessionAuth";
 import { consumeAuthRateLimit } from "./authRateLimit";
@@ -125,10 +125,21 @@ export const getUser = query({
   },
 });
 
+/** Lightweight probe so the chat shell can recover from expired tokens without crashing. */
+export const validateSession = query({
+  args: sessionArgs,
+  handler: async (_ctx, args) => {
+    const email = await tryRequireSession(args.sessionToken);
+    if (!email) return { ok: false as const };
+    return { ok: true as const, email };
+  },
+});
+
 export const getChatCredits = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await tryRequireSession(args.sessionToken);
+    if (!email) return null;
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", email))
@@ -181,7 +192,8 @@ export const getChatCredits = query({
 export const getInterestProfile = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await tryRequireSession(args.sessionToken);
+    if (!email) return null;
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", email))

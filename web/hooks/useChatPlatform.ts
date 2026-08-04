@@ -7,7 +7,12 @@ import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
 import { useConnectionQuality } from "@/hooks/useConnectionQuality";
 import { useEffectiveOnline } from "@/hooks/useEffectiveOnline";
-import { getSessionToken, getUserEmail, setSessionToken } from "@/lib/auth";
+import {
+  clearAllClientAuth,
+  getSessionToken,
+  getUserEmail,
+  setSessionToken,
+} from "@/lib/auth";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import {
@@ -276,9 +281,25 @@ export function useChatPlatform() {
     [mounted, sessionToken, activeId, effectiveOnline]
   );
 
+  const sessionIdentity = useQuery(api.users.validateSession, sessionQueryArgs);
   const chatCreditsRow = useQuery(api.users.getChatCredits, sessionQueryArgs);
   const interestProfileRow = useQuery(api.users.getInterestProfile, sessionQueryArgs);
   const conversationsRaw = useQuery(api.conversations.list, conversationsQueryArgs);
+
+  useEffect(() => {
+    if (!mounted || sessionIdentity === undefined) return;
+    if (sessionIdentity.ok) return;
+    // Expired/invalid token — clear local auth so chat opens the sign-in path
+    // instead of a Convex Unauthorized crash.
+    clearAllClientAuth();
+    setSessionTokenState(null);
+    setEmail(null);
+    setError("Session expired. Please sign in again.");
+    if (typeof window !== "undefined") {
+      const next = encodeURIComponent("/chat/");
+      window.location.replace(`/chat/login/?next=${next}`);
+    }
+  }, [mounted, sessionIdentity]);
   const messagesRaw = useQuery(api.messages.listByConversation, messagesQueryArgs);
   const [pollConversationId, setPollConversationId] = useState<string | null>(null);
   const pollTargetId = pollConversationId ?? activeId;
