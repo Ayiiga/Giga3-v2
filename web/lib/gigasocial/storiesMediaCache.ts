@@ -198,7 +198,10 @@ async function ensureQuota(db: IDBDatabase, incomingBytes: number): Promise<void
 /** Cache media for a story/reel the user has already watched. */
 export async function cacheViewedStoryMedia(post: SocialPost): Promise<boolean> {
   if (typeof indexedDB === "undefined") return false;
-  if (getPostMediaKind(post) !== "video") return false;
+  const kind = getPostMediaKind(post);
+  if (kind !== "video" && kind !== "image" && kind !== "gallery" && kind !== "photo-music") {
+    return false;
+  }
 
   const mediaUrl = getPostMediaUrls(post)[0];
   if (!mediaUrl) return false;

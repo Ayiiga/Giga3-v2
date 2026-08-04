@@ -343,7 +343,7 @@ export const GIGA_CREATE_FAB_ITEMS: GigaCreateMenuItem[] = [
     id: "story-content",
     label: "Story",
     emoji: "📖",
-    description: "Share a short video to your Story ring",
+    description: "Share a photo or short video to your Story ring",
   },
   {
     id: "live-content",

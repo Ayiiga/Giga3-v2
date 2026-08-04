@@ -95,7 +95,8 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    2. Set GitHub secret `RESEND_API_KEY` (CI syncs it on Convex deploy) **and** set the same key on the Convex production deployment.
    3. Confirm `AUTH_FROM_EMAIL` uses a verified domain.
    4. Test Forgot password on `/chat/login/` — you should receive a 1-hour reset link.
-   5. Engagement digests run every 3 days (UTC 15:00) for inactive opted-in users; unsubscribe via the link in each email (`/email/unsubscribe` on the Convex site).
+   5. Engagement digests run **daily** (UTC 15:00) for inactive opted-in users (still occasional per person — about every 4+ days); unsubscribe via `/email/unsubscribe` on the Convex site.
+   6. New sign-ups also receive a welcome email when Resend is configured.
 
 6. **Configure Convex auth / CORS** (if needed): allow your Pages origin (`https://www.giga3ai.com`, `https://giga3ai.pages.dev`) in the Convex dashboard.
 
