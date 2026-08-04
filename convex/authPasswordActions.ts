@@ -333,13 +333,25 @@ export const requestPasswordReset = action({
       ? await sendResetEmailFallback(email, resetUrl)
       : false;
 
+    // When support received the link, omit deliveryError so older PWA builds
+    // (which only check deliveryError) do not show a hard red failure.
+    if (fallbackOk) {
+      return {
+        ok: true as const,
+        emailed: false,
+        deliveryConfigured: true,
+        accountMatched: true,
+        supportNotified: true,
+      };
+    }
+
     return {
       ok: true as const,
       emailed: false,
       deliveryConfigured: true,
       accountMatched: true,
       deliveryError: sendResult.reason,
-      supportNotified: fallbackOk,
+      supportNotified: false,
     };
   },
 });
