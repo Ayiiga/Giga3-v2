@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeAll } from "vitest";
 import { createSessionToken, verifySessionToken } from "../../convex/sessionAuth";
-import { requireSession } from "../../convex/auth";
+import { requireSession, tryRequireSession } from "../../convex/auth";
 import { UnauthorizedError } from "../../convex/securityErrors";
 
 beforeAll(() => {
@@ -40,5 +40,17 @@ describe("requireSession", () => {
 
   it("returns 401 without a session token", async () => {
     await expect(requireSession(undefined)).rejects.toBeInstanceOf(UnauthorizedError);
+  });
+});
+
+describe("tryRequireSession", () => {
+  it("returns email for a valid session", async () => {
+    const token = await createSessionToken("ok@example.com");
+    await expect(tryRequireSession(token)).resolves.toBe("ok@example.com");
+  });
+
+  it("returns null for missing or invalid sessions instead of throwing", async () => {
+    await expect(tryRequireSession(undefined)).resolves.toBeNull();
+    await expect(tryRequireSession("giga3.v1.not-a-token")).resolves.toBeNull();
   });
 });

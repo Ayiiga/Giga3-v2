@@ -1,6 +1,6 @@
-/** Marketplace Creator Academy + professional seller shelf — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v200-marketplace-academy";
-const NEXT_STATIC_CACHE = "giga3-next-static-v200";
+/** Chat session recovery — expired tokens no longer crash chat shell. */
+const CACHE_NAME = "giga3-shell-v201-chat-session-fix";
+const NEXT_STATIC_CACHE = "giga3-next-static-v201";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";

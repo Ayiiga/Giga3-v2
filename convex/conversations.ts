@@ -2,7 +2,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { isValidMode } from "./aiModes";
-import { requireSession } from "./auth";
+import { requireSession, tryRequireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { normalizeUserId } from "./userIds";
 
@@ -61,7 +61,8 @@ function userOwnsConversation(
 export const list = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await tryRequireSession(args.sessionToken);
+    if (!userId) return [];
     return await listConversationsForUser(ctx, userId);
   },
 });

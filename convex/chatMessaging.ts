@@ -12,7 +12,7 @@ import {
   recordQualityObservation,
   validateAnswerQuality,
 } from "./answerQuality";
-import { requireSession } from "./auth";
+import { requireSession, tryRequireSession } from "./auth";
 import {
   toUploadRecordFiles,
   validateAttachments,
@@ -363,7 +363,8 @@ export const getReplyStatus = query({
     conversationId: v.id("conversations"),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await tryRequireSession(args.sessionToken);
+    if (!email) return { active: false as const };
     const conv = await ctx.db.get(args.conversationId);
     if (!conv || conv.userId !== email) {
       return { active: false as const };
