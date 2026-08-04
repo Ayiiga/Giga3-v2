@@ -1,6 +1,8 @@
 import { describe, expect, it, beforeEach, afterEach } from "vitest";
 import {
+  classifyResendFailure,
   getAuthFromEmail,
+  getEmailFallbackInbox,
   getFrontendBaseUrl,
   isEmailDeliveryConfigured,
   wrapEmailHtml,
@@ -12,6 +14,7 @@ describe("emailClient helpers", () => {
   beforeEach(() => {
     delete process.env.RESEND_API_KEY;
     delete process.env.AUTH_FROM_EMAIL;
+    delete process.env.AUTH_EMAIL_FALLBACK_INBOX;
     delete process.env.FRONTEND_URL;
   });
 
@@ -27,7 +30,23 @@ describe("emailClient helpers", () => {
 
   it("uses production frontend and from defaults", () => {
     expect(getFrontendBaseUrl()).toBe("https://www.giga3ai.com");
-    expect(getAuthFromEmail()).toContain("noreply@giga3ai.com");
+    expect(getAuthFromEmail()).toContain("onboarding@resend.dev");
+    expect(getEmailFallbackInbox()).toBe("ayiiga3@gmail.com");
+  });
+
+  it("classifies Resend sandbox and domain errors", () => {
+    expect(
+      classifyResendFailure(
+        403,
+        "You can only send testing emails to your own email address (ayiiga3@gmail.com)."
+      ).reason
+    ).toBe("sandbox_recipient");
+    expect(
+      classifyResendFailure(
+        403,
+        "The giga3ai.com domain is not verified. Please, add and verify your domain"
+      ).reason
+    ).toBe("domain_unverified");
   });
 
   it("wraps branded HTML for transactional mail", () => {

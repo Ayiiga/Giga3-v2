@@ -16,6 +16,7 @@ import {
   verifyPassword,
 } from "./passwordCryptoNode";
 import {
+  getEmailFallbackInbox,
   getFrontendBaseUrl,
   isEmailDeliveryConfigured,
   sendEmail,
@@ -72,6 +73,51 @@ async function sendResetEmail(to: string, resetUrl: string) {
       { name: "app", value: "giga3" },
     ],
   });
+}
+
+/**
+ * When Resend sandbox/domain blocks the user inbox, email the working fallback
+ * inbox with the same reset link so an admin can forward it immediately.
+ */
+async function sendResetEmailFallback(
+  userEmail: string,
+  resetUrl: string
+): Promise<boolean> {
+  const fallback = getEmailFallbackInbox();
+  if (!fallback || fallback === userEmail) return false;
+
+  const html = wrapEmailHtml({
+    title: "Password reset (forward to user)",
+    bodyHtml: `
+      <p style="margin:0 0 12px;">Resend could not deliver directly to <strong>${userEmail}</strong> yet (domain not verified or sandbox limit).</p>
+      <p style="margin:0 0 12px;">Forward this one-hour reset link to that user:</p>
+      <p style="margin:0 0 22px;">
+        <a href="${resetUrl}"
+           style="display:inline-block;background:#0f766e;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:700;">
+          Reset password for ${userEmail}
+        </a>
+      </p>
+      <p style="margin:0;word-break:break-all;font-size:13px;"><a href="${resetUrl}" style="color:#0f766e;">${resetUrl}</a></p>
+    `,
+  });
+
+  const result = await sendEmail({
+    to: fallback,
+    subject: `[Giga3] Password reset for ${userEmail} — please forward`,
+    html,
+    text: `Password reset for ${userEmail} (expires in 1 hour):\n${resetUrl}\n\nForward this link to the user. Verify giga3ai.com at resend.com/domains to enable direct delivery.`,
+    tags: [
+      { name: "category", value: "password_reset_fallback" },
+      { name: "app", value: "giga3" },
+    ],
+  });
+
+  if (result.ok) {
+    console.warn(
+      `[authPassword] Reset link for ${userEmail} emailed to fallback inbox ${fallback}`
+    );
+  }
+  return result.ok;
 }
 
 async function sendWelcomeEmail(to: string): Promise<void> {
@@ -268,12 +314,44 @@ export const requestPasswordReset = action({
     }
 
     const sendResult = await sendResetEmail(email, resetUrl);
+    if (sendResult.ok) {
+      return {
+        ok: true as const,
+        emailed: true,
+        deliveryConfigured: true,
+        accountMatched: true,
+      };
+    }
+
+    // Direct delivery blocked (typical before giga3ai.com is verified in Resend).
+    // Fall back to the configured support inbox so the link is not lost.
+    const canFallback =
+      sendResult.reason === "sandbox_recipient" ||
+      sendResult.reason === "domain_unverified" ||
+      sendResult.reason === "provider_error";
+    const fallbackOk = canFallback
+      ? await sendResetEmailFallback(email, resetUrl)
+      : false;
+
+    // When support received the link, omit deliveryError so older PWA builds
+    // (which only check deliveryError) do not show a hard red failure.
+    if (fallbackOk) {
+      return {
+        ok: true as const,
+        emailed: false,
+        deliveryConfigured: true,
+        accountMatched: true,
+        supportNotified: true,
+      };
+    }
+
     return {
       ok: true as const,
-      emailed: sendResult.ok,
+      emailed: false,
       deliveryConfigured: true,
       accountMatched: true,
-      deliveryError: sendResult.ok ? undefined : sendResult.reason,
+      deliveryError: sendResult.reason,
+      supportNotified: false,
     };
   },
 });

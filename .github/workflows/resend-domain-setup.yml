@@ -1,0 +1,50 @@
+name: Setup Resend sending domain
+
+# Verifies giga3ai.com in Resend and adds DNS in Cloudflare, then points
+# AUTH_FROM_EMAIL at noreply@giga3ai.com so password-reset reaches all users.
+#
+# Requires:
+#   - RESEND_API_KEY with full access (sending-only keys cannot manage domains)
+#   - CF_API_TOKEN with Zone → DNS → Edit for giga3ai.com
+#   - CF_ACCOUNT_ID
+#   - CONVEX_DEPLOY_KEY or CONVEX_DEPLOYMENT_VALUE
+#
+# Run: Actions → Setup Resend sending domain → Run workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: Domain to verify in Resend
+        required: true
+        default: giga3ai.com
+      from_email:
+        description: AUTH_FROM_EMAIL after verify
+        required: true
+        default: "Giga3 AI <noreply@giga3ai.com>"
+
+concurrency:
+  group: resend-domain-setup
+  cancel-in-progress: false
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Create/verify Resend domain + Cloudflare DNS
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          CONVEX_DEPLOYMENT_VALUE: ${{ secrets.CONVEX_DEPLOYMENT_VALUE }}
+          RESEND_DOMAIN: ${{ inputs.domain }}
+          AUTH_FROM_EMAIL: ${{ inputs.from_email }}
+        run: node scripts/setup-resend-domain-cloudflare.mjs

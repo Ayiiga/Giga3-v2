@@ -79,7 +79,8 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `PAYSTACK_CREDITS_500_GHS` | No | Default `500` |
    | `FRONTEND_URL` | **Yes (prod)** | Paystack/Stripe redirects + password-reset links, e.g. `https://www.giga3ai.com` |
    | `RESEND_API_KEY` | **Yes for email** | Password reset + engagement emails via [Resend](https://resend.com). Without this, forgot-password cannot deliver mail. |
-   | `AUTH_FROM_EMAIL` | Recommended | Default `Giga3 AI <noreply@giga3ai.com>` — domain must be verified in Resend |
+   | `AUTH_FROM_EMAIL` | Recommended | Default `Giga3 AI <onboarding@resend.dev>` (testing only — can only deliver to the Resend account owner). After verifying `giga3ai.com`, set `Giga3 AI <noreply@giga3ai.com>`. |
+   | `AUTH_EMAIL_FALLBACK_INBOX` | Recommended | Receives reset-link copies when Resend blocks the user inbox (default `ayiiga3@gmail.com`). |
    | `STRIPE_SECRET_KEY` | Legacy only | Old token checkout in `payments.ts` |
 
    ```bash
@@ -88,13 +89,18 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    npx convex env set PAYSTACK_SECRET_KEY "sk_live_..."
    npx convex env set RESEND_API_KEY "re_..."
    npx convex env set AUTH_FROM_EMAIL "Giga3 AI <noreply@giga3ai.com>"
+   npx convex env set AUTH_EMAIL_FALLBACK_INBOX "ayiiga3@gmail.com"
    ```
 
    **Email checklist (forgot password + engagement digests):**
-   1. Create a Resend account and verify the sending domain (`giga3ai.com`) or use a Resend-provided from-address while testing.
-   2. Set GitHub secret `RESEND_API_KEY` (CI syncs it on Convex deploy) **and** set the same key on the Convex production deployment.
-   3. Confirm `AUTH_FROM_EMAIL` uses a verified domain.
-   4. Test Forgot password on `/chat/login/` — you should receive a 1-hour reset link.
+   1. **Verify `giga3ai.com` in Resend** (required to email users other than the Resend account owner):
+      - Open [resend.com/domains](https://resend.com/domains) → **Add Domain** → `giga3ai.com`
+      - Add the DNS records Resend shows (SPF/MX + DKIM CNAMEs) in **Cloudflare → giga3ai.com → DNS**
+      - Click **Verify** in Resend (propagation can take a few minutes)
+      - Set `AUTH_FROM_EMAIL` to `Giga3 AI <noreply@giga3ai.com>` on Convex
+   2. Until the domain is verified, `onboarding@resend.dev` can only deliver to the Resend owner inbox (`ayiiga3@gmail.com`). Forgot-password for other users emails a forwardable copy to `AUTH_EMAIL_FALLBACK_INBOX`.
+   3. Set GitHub secret `RESEND_API_KEY` (CI syncs it on Convex deploy) **and** set the same key on the Convex production deployment. Prefer a **full-access** key if you will manage domains via API (`node scripts/setup-resend-domain.mjs`).
+   4. Test Forgot password on `/chat/login/` for a non-owner address — you should receive a 1-hour reset link after domain verify.
    5. Engagement digests run **daily** (UTC 15:00) for inactive opted-in users (still occasional per person — about every 4+ days); unsubscribe via `/email/unsubscribe` on the Convex site.
    6. New sign-ups also receive a welcome email when Resend is configured.
 
