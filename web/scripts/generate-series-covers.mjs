@@ -1,0 +1,123 @@
+/**
+ * Generate premium Creator Academy cover SVGs (no Playwright required).
+ * Run: node web/scripts/generate-series-covers.mjs
+ */
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const coverDir = path.resolve(__dirname, "../public/marketplace/series/covers");
+
+const covers = [
+  {
+    file: "series-1.svg",
+    number: "01",
+    title: "Platform Foundations",
+    subtitle: "Install · Chat · Models · Offline",
+    accent: "#14b8a6",
+    accentDeep: "#042f2e",
+    motif: "pwa",
+  },
+  {
+    file: "series-2.svg",
+    number: "02",
+    title: "Create & Publish",
+    subtitle: "Media Studio · GigaEdit · Export",
+    accent: "#34d399",
+    accentDeep: "#064e3b",
+    motif: "create",
+  },
+  {
+    file: "series-3.svg",
+    number: "03",
+    title: "GigaSocial Playbook",
+    subtitle: "Feed · Community · Growth",
+    accent: "#2dd4bf",
+    accentDeep: "#0f766e",
+    motif: "social",
+  },
+  {
+    file: "series-4.svg",
+    number: "04",
+    title: "Monetize & Marketplace",
+    subtitle: "Paystack · Products · Payouts",
+    accent: "#fbbf24",
+    accentDeep: "#115e59",
+    motif: "market",
+  },
+];
+
+function motifShapes(motif) {
+  if (motif === "create") {
+    return `
+  <rect x="780" y="140" width="280" height="180" rx="28" fill="#fff" fill-opacity="0.08"/>
+  <rect x="820" y="180" width="200" height="120" rx="16" fill="#fff" fill-opacity="0.1"/>
+  <circle cx="920" cy="240" r="28" fill="#fff" fill-opacity="0.22"/>`;
+  }
+  if (motif === "social") {
+    return `
+  <circle cx="860" cy="200" r="54" fill="#fff" fill-opacity="0.12"/>
+  <circle cx="940" cy="250" r="40" fill="#fff" fill-opacity="0.1"/>
+  <circle cx="820" cy="280" r="34" fill="#fff" fill-opacity="0.08"/>
+  <path d="M780 420 C860 360, 980 360, 1060 420" stroke="#fff" stroke-opacity="0.18" stroke-width="10" fill="none"/>`;
+  }
+  if (motif === "market") {
+    return `
+  <rect x="800" y="160" width="220" height="260" rx="22" fill="#fff" fill-opacity="0.1"/>
+  <rect x="830" y="210" width="160" height="20" rx="8" fill="#fff" fill-opacity="0.2"/>
+  <rect x="830" y="250" width="120" height="16" rx="8" fill="#fff" fill-opacity="0.14"/>
+  <rect x="830" y="340" width="160" height="36" rx="12" fill="#fbbf24" fill-opacity="0.85"/>`;
+  }
+  // pwa
+  return `
+  <rect x="820" y="150" width="200" height="320" rx="36" fill="#fff" fill-opacity="0.1"/>
+  <rect x="850" y="200" width="140" height="200" rx="12" fill="#fff" fill-opacity="0.08"/>
+  <circle cx="920" cy="430" r="10" fill="#fff" fill-opacity="0.35"/>`;
+}
+
+function coverSvg(c) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600" role="img" aria-label="Giga3 Creator Academy Series ${c.number}">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="${c.accentDeep}"/>
+      <stop offset="55%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="${c.accentDeep}"/>
+    </linearGradient>
+    <linearGradient id="band" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="${c.accent}"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="20%" cy="15%" r="55%">
+      <stop offset="0%" stop-color="${c.accent}" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="${c.accent}" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="1600" fill="url(#bg)"/>
+  <rect width="1200" height="1600" fill="url(#glow)"/>
+  <rect x="0" y="0" width="18" height="1600" fill="url(#band)"/>
+  ${motifShapes(c.motif)}
+  <text x="72" y="120" fill="${c.accent}" font-family="Georgia, 'Iowan Old Style', serif" font-size="30" letter-spacing="4">GIGA3 CREATOR ACADEMY</text>
+  <text x="72" y="280" fill="#ffffff" font-family="Georgia, 'Iowan Old Style', serif" font-size="120" font-weight="700">Series</text>
+  <text x="72" y="420" fill="${c.accent}" font-family="Georgia, 'Iowan Old Style', serif" font-size="140" font-weight="700">${c.number}</text>
+  <text x="72" y="560" fill="#ffffff" font-family="Georgia, 'Iowan Old Style', serif" font-size="64" font-weight="700">${c.title}</text>
+  <text x="72" y="640" fill="#cbd5e1" font-family="ui-sans-serif, system-ui, sans-serif" font-size="32">${c.subtitle}</text>
+  <rect x="72" y="720" width="220" height="8" rx="4" fill="url(#band)"/>
+  <text x="72" y="860" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="28">Official educational eBook</text>
+  <text x="72" y="920" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="26">Personal license · Paystack GHS</text>
+  <rect x="72" y="1080" width="420" height="96" rx="24" fill="${c.accent}"/>
+  <text x="100" y="1142" fill="#042f2e" font-family="Georgia, serif" font-size="42" font-weight="700">GHS 150.00</text>
+  <text x="72" y="1280" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="24">www.giga3ai.com/marketplace</text>
+  <text x="72" y="1480" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="22">Digital delivery after verified purchase</text>
+</svg>
+`;
+}
+
+await mkdir(coverDir, { recursive: true });
+for (const c of covers) {
+  const out = path.join(coverDir, c.file);
+  await writeFile(out, coverSvg(c), "utf8");
+  console.log("Wrote", out);
+}
+console.log("Done — 4 premium series covers");

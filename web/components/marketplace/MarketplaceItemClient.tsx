@@ -10,6 +10,7 @@ import { redirectToPaystack } from "@/lib/payments/paystackService";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
+import { BadgeCheck, Download, ShieldCheck } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
@@ -144,26 +145,48 @@ function MarketplaceItemInner() {
             License: {listing.license.replace(/_/g, " ")}
           </p>
           <p className="mt-1 text-sm text-muted">{listing.purchaseCount} purchases</p>
+          {creator?.verified ? (
+            <p className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-emerald-700 dark:text-emerald-300">
+              <BadgeCheck className="h-4 w-4" aria-hidden />
+              Verified creator
+            </p>
+          ) : null}
           {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
           {download?.allowed && download.url ? (
-            <a
-              href={download.url}
-              download={download.fileName}
-              className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-3 font-medium text-white"
-            >
-              Download
-            </a>
+            <>
+              <a
+                href={download.url}
+                download={download.fileName}
+                className="mt-4 inline-flex w-full min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white"
+              >
+                <Download className="h-4 w-4" aria-hidden />
+                Download PDF
+              </a>
+              <p className="mt-2 text-center text-xs text-muted">
+                You own this. Save the file to your device.
+              </p>
+            </>
           ) : !listing.hasFile ? (
             <p className="mt-4 rounded-xl border border-dashed border-border px-4 py-3 text-center text-sm text-muted">
               Not available for purchase yet — the creator hasn&apos;t uploaded the file.
             </p>
           ) : (
-            <Button className="mt-4 w-full" onClick={handleBuy} disabled={buying}>
-              {buying ? "Redirecting…" : "Buy now"}
-            </Button>
+            <>
+              <Button className="mt-4 w-full min-h-12" onClick={handleBuy} disabled={buying}>
+                {buying ? "Redirecting to Paystack…" : "Buy with Paystack"}
+              </Button>
+              <p className="mt-2 inline-flex items-start gap-1.5 text-xs text-muted">
+                <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+                Secure GHS checkout. PDF unlocks in My purchases after payment succeeds —
+                never pay outside Paystack.
+              </p>
+            </>
           )}
           <div className="mt-4 flex flex-wrap gap-2">
-            {listing.tags.map((tag: string) => (
+            {listing.tags
+              .filter((tag: string) => !tag.startsWith("giga3-series") || tag === "giga3-official-series")
+              .slice(0, 6)
+              .map((tag: string) => (
               <span key={tag} className="rounded-full bg-accent/10 px-2.5 py-1 text-xs">
                 {tag}
               </span>

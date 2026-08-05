@@ -1,6 +1,6 @@
-/** Priority release: GigaEdit studio + immersive remix/viewer — refresh PWAs. */
-const CACHE_NAME = "giga3-shell-v206-priority-release";
-const NEXT_STATIC_CACHE = "giga3-next-static-v206";
+/** Marketplace covers + purchase downloads — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v207-marketplace-covers";
+const NEXT_STATIC_CACHE = "giga3-next-static-v207";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";
