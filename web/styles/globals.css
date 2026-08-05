@@ -314,8 +314,8 @@ button:focus-visible {
     box-shadow: none !important;
   }
 
-  .gigasocial-stable:not(.gigasocial-camera-studio):not(.gigasocial-media-review),
-  .gigasocial-stable:not(.gigasocial-camera-studio):not(.gigasocial-media-review) *,
+  .gigasocial-stable:not(.gigasocial-camera-studio):not(.gigasocial-media-review):not(.gigasocial-immersive-capture),
+  .gigasocial-stable:not(.gigasocial-camera-studio):not(.gigasocial-media-review):not(.gigasocial-immersive-capture) *,
   .gigasocial-pro,
   .gigasocial-pro * {
     transition-duration: 0s !important;

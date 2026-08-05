@@ -1,8 +1,14 @@
 "use client";
 
+import { PreSnapEditBar } from "@/components/gigasocial/studio/PreSnapEditBar";
 import { GigaSocialTeleprompter } from "@/components/gigasocial/studio/GigaSocialTeleprompter";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
+import {
+  getCameraFilterCss,
+  type CameraFilterId,
+} from "@/lib/gigasocial/cameraFilters";
+import type { CameraCaptureModeId } from "@/lib/gigasocial/cameraModes";
 import {
   LIVE_GIFTS,
   LIVE_REACTIONS,
@@ -27,6 +33,7 @@ import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { Gift, MessageCircle, MonitorUp, Radio, Shield, Type, Users, X } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   sessionToken,
@@ -60,11 +67,29 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   const [busy, setBusy] = useState(false);
   const [mediaError, setMediaError] = useState<string | null>(null);
   const [showTeleprompter, setShowTeleprompter] = useState(false);
+  const [showChatPanel, setShowChatPanel] = useState(true);
+  const [showPreSnap, setShowPreSnap] = useState(true);
+  const [filterId, setFilterId] = useState<CameraFilterId>("none");
+  const [captureModeId, setCaptureModeId] = useState<CameraCaptureModeId>("standard");
+  const [mounted, setMounted] = useState(false);
   const [screenSource, setScreenSource] = useState<ScreenShareSource | null>(null);
   const [awaitingScreenShare, setAwaitingScreenShare] = useState(false);
   const joinedRef = useRef(false);
   const startLiveCalledRef = useRef(false);
   const hostMediaStartedRef = useRef(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mounted]);
 
   const stream = data?.stream;
   const mode = (stream?.mode ?? "video") as LiveStreamMode;
@@ -286,36 +311,23 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
 
   const showScreenPicker =
     isHost && mode === "screen" && stream.status === "live" && awaitingScreenShare;
+  const previewFilter = getCameraFilterCss(filterId);
 
-  return (
-    <div className="gigasocial-live-stable gigasocial-live-room space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-accent">GigaSocial Live</p>
-          <h3 className="text-lg font-semibold text-foreground">{stream.title}</h3>
-          <p className="text-xs text-muted">
-            @{stream.host.handle} · {stream.status} · {stream.viewerCount} viewers
-            {stream.peakViewers > 0 ? ` · peak ${stream.peakViewers}` : ""}
-          </p>
-        </div>
-        <Button type="button" variant="outline" size="sm" onClick={() => void handleEnd()} className="min-h-9">
-          <X className="h-4 w-4" aria-hidden />
-          {isHost ? "End stream" : "Leave"}
-        </Button>
-      </div>
+  if (!mounted) {
+    return <LoadingState label="Opening fullscreen live…" />;
+  }
 
-      <div className="saas-card gigasocial-live-stage relative overflow-hidden rounded-2xl border border-border bg-black">
+  return createPortal(
+    <div className="gigasocial-live-stable gigasocial-live-room gigasocial-immersive-capture fixed inset-0 z-[70] flex flex-col bg-black text-white">
+      <div className="gigasocial-live-stage relative min-h-0 flex-1 overflow-hidden bg-black">
         {stream.replayUrl && stream.status === "ended" ? (
           <video
             src={stream.replayUrl}
             controls
-            className={cn(
-              "gigasocial-live-video w-full bg-black",
-              mode === "video" && "gigasocial-live-video--portrait"
-            )}
+            className="gigasocial-live-video gigasocial-live-video--fullscreen absolute inset-0 h-full w-full object-contain bg-black"
           />
         ) : mode === "audio" ? (
-          <div className="relative flex min-h-[12rem] flex-col items-center justify-center gap-3 px-6 py-10 text-white">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-white">
             <Radio className="h-10 w-10" aria-hidden />
             <p className="text-sm font-medium">Live audio room</p>
             <p className="text-xs text-violet-200">Chat, reactions, and gifts are active.</p>
@@ -327,7 +339,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
             ) : null}
           </div>
         ) : showScreenPicker ? (
-          <div className="flex min-h-[16rem] flex-col items-center justify-center gap-3 px-4 py-8 text-center text-white">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4 text-center text-white">
             <MonitorUp className="h-10 w-10 text-violet-200" aria-hidden />
             <p className="text-sm font-medium">Share your screen on this phone</p>
             <p className="max-w-sm text-xs text-violet-100/90">{LIVE_SCREEN_SHARE_MOBILE_HINT}</p>
@@ -374,17 +386,21 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
             />
           </div>
         ) : (
-          <div className="relative">
+          <>
             <video
               ref={videoRef}
               playsInline
               muted={isHost}
               controls={!isHost}
               className={cn(
-                "gigasocial-live-video w-full bg-black",
-                mode === "video" && "gigasocial-live-video--portrait",
-                mode === "screen" && "gigasocial-live-video--screen"
+                "gigasocial-live-video gigasocial-live-video--fullscreen absolute inset-0 h-full w-full bg-black",
+                mode === "screen" ? "object-contain" : "object-cover"
               )}
+              style={
+                isHost && mode === "video" && previewFilter
+                  ? { filter: previewFilter }
+                  : undefined
+              }
               aria-label="Live stream preview"
             />
             {isHost ? (
@@ -393,182 +409,237 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
                 recording={stream.status === "live"}
               />
             ) : null}
-          </div>
+          </>
         )}
-        {mediaError ? (
-          <div className="space-y-2 bg-red-950 px-3 py-2 text-xs text-red-200">
-            <p role="alert">{mediaError}</p>
+
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 bg-gradient-to-b from-black/70 to-transparent px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-violet-200">
+              GigaSocial Live · fullscreen
+            </p>
+            <h3 className="truncate text-base font-semibold text-white">{stream.title}</h3>
+            <p className="text-[11px] text-white/70">
+              @{stream.host.handle} · {stream.status} · {stream.viewerCount} viewers
+              {stream.peakViewers > 0 ? ` · peak ${stream.peakViewers}` : ""}
+            </p>
           </div>
-        ) : null}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void handleEnd()}
+            className="min-h-9 shrink-0 border-white/30 bg-black/40 text-white"
+          >
+            <X className="h-4 w-4" aria-hidden />
+            {isHost ? "End" : "Leave"}
+          </Button>
+        </div>
+
         {stream.captionLines?.length ? (
-          <div className="border-t border-white/10 bg-black/80 px-3 py-2 text-sm text-white">
+          <div className="absolute inset-x-3 bottom-44 rounded-xl bg-black/70 px-3 py-2 text-sm text-white">
             <p className="text-[10px] uppercase tracking-wide text-violet-300">AI captions</p>
             <p>{stream.captionLines[stream.captionLines.length - 1]}</p>
           </div>
         ) : null}
       </div>
 
-      {isHost && stream.status === "live" ? (
+      {mediaError ? (
+        <div className="space-y-1 bg-red-950 px-3 py-2 text-xs text-red-200">
+          <p role="alert">{mediaError}</p>
+        </div>
+      ) : null}
+
+      <div className="space-y-2 border-t border-white/10 bg-black/90 px-3 py-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        {isHost && mode === "video" && showPreSnap && stream.status === "live" ? (
+          <PreSnapEditBar
+            filterId={filterId}
+            onFilterChange={setFilterId}
+            modeId={captureModeId}
+            onModeChange={setCaptureModeId}
+            disabled={busy}
+          />
+        ) : null}
+
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            size="sm"
-            variant={showTeleprompter ? "primary" : "outline"}
-            className="min-h-9"
-            onClick={() => setShowTeleprompter((value) => !value)}
-          >
-            <Type className="h-4 w-4" aria-hidden />
-            {showTeleprompter ? "Hide script" : "Teleprompter"}
-          </Button>
-          {mode === "screen" && !awaitingScreenShare ? (
+          {isHost && stream.status === "live" ? (
             <>
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
+                variant={showTeleprompter ? "primary" : "outline"}
                 className="min-h-9"
-                disabled={busy}
-                onClick={() => {
-                  setAwaitingScreenShare(true);
-                  stopMedia();
-                }}
+                onClick={() => setShowTeleprompter((value) => !value)}
               >
-                Change share
+                <Type className="h-4 w-4" aria-hidden />
+                {showTeleprompter ? "Hide script" : "Teleprompter"}
               </Button>
-              {screenSource ? (
-                <p className="text-xs text-muted">
-                  Sharing via{" "}
-                  {screenSource === "display"
-                    ? "screen"
-                    : screenSource === "file"
-                      ? "gallery file"
-                      : "rear camera"}
-                </p>
+              {mode === "video" ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="min-h-9"
+                  onClick={() => setShowPreSnap((value) => !value)}
+                >
+                  {showPreSnap ? "Hide looks" : "Pre-live looks"}
+                </Button>
+              ) : null}
+              {mode === "screen" && !awaitingScreenShare ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="min-h-9"
+                  disabled={busy}
+                  onClick={() => {
+                    setAwaitingScreenShare(true);
+                    stopMedia();
+                  }}
+                >
+                  Change share
+                </Button>
               ) : null}
             </>
           ) : null}
-        </div>
-      ) : null}
-
-      <div className="flex flex-wrap gap-2">
-        {LIVE_REACTIONS.map((emoji) => (
-          <button
-            key={emoji}
+          <Button
             type="button"
-            className="min-h-9 rounded-full border border-border bg-white px-3 text-sm"
-            onClick={() =>
-              void sendReaction({ sessionToken, streamId, emoji }).catch(() => undefined)
-            }
+            size="sm"
+            variant="outline"
+            className="min-h-9"
+            onClick={() => setShowChatPanel((value) => !value)}
           >
-            {emoji} {getLiveReactionCount(stream.reactionCounts, emoji)}
-          </button>
-        ))}
-      </div>
-
-      {isHost ? (
-        <div className="saas-card space-y-2 rounded-xl border border-border bg-white p-3">
-          <p className="text-sm font-medium text-foreground">
-            <Shield className="mr-1 inline h-4 w-4" aria-hidden />
-            Host moderation
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <input
-              value={coHostHandle}
-              onChange={(e) => setCoHostHandle(e.target.value)}
-              placeholder="Add co-host @handle"
-              className="input-surface min-h-9 flex-1"
-            />
-            <Button
+            <MessageCircle className="h-4 w-4" aria-hidden />
+            {showChatPanel ? "Hide chat" : "Chat"}
+          </Button>
+          {LIVE_REACTIONS.map((emoji) => (
+            <button
+              key={emoji}
               type="button"
-              size="sm"
-              variant="outline"
-              className="min-h-9"
+              className="min-h-9 rounded-full border border-white/20 bg-white/10 px-3 text-sm"
               onClick={() =>
-                void addCoHost({ sessionToken, streamId, coHostHandle })
-                  .then(() => setCoHostHandle(""))
-                  .catch((e) => setMediaError(getLiveMediaErrorMessage(e, "camera")))
+                void sendReaction({ sessionToken, streamId, emoji }).catch(() => undefined)
               }
             >
-              <Users className="h-4 w-4" aria-hidden />
-              Co-host
-            </Button>
-          </div>
-        </div>
-      ) : null}
-
-      <div className="saas-card rounded-xl border border-border bg-white p-3">
-        <p className="mb-2 text-sm font-medium text-foreground">
-          <Gift className="mr-1 inline h-4 w-4" aria-hidden />
-          Send a gift
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {LIVE_GIFTS.map((gift) => (
-            <Button
-              key={gift.id}
-              type="button"
-              size="sm"
-              variant="outline"
-              className="min-h-9"
-              onClick={() =>
-                void sendGift({
-                  sessionToken,
-                  streamId,
-                  giftType: gift.id,
-                  amount: gift.credits,
-                }).catch((e) => setMediaError(getLiveMediaErrorMessage(e, "camera")))
-              }
-            >
-              {gift.emoji} {gift.label}
-            </Button>
+              {emoji} {getLiveReactionCount(stream.reactionCounts, emoji)}
+            </button>
           ))}
         </div>
-      </div>
 
-      <div className="saas-card rounded-xl border border-border bg-white p-3">
-        <p className="mb-2 text-sm font-medium text-foreground">
-          <MessageCircle className="mr-1 inline h-4 w-4" aria-hidden />
-          Live chat
-        </p>
-        <ul className="max-h-56 space-y-2 overflow-y-auto overscroll-contain">
-          {data.chat.map((message) => (
-            <li key={message._id} className="text-sm">
-              <span className="font-medium text-foreground">{message.author.displayName}</span>
-              <span className="text-muted"> {message.body}</span>
-              {isHost ? (
-                <button
-                  type="button"
-                  className="ml-2 text-xs text-red-700"
-                  onClick={() =>
-                    void moderate({
-                      sessionToken,
-                      streamId,
-                      messageId: message._id,
-                    }).catch(() => undefined)
-                  }
-                >
-                  Remove
-                </button>
+        {showChatPanel ? (
+          <div className="grid max-h-[34vh] gap-2 overflow-y-auto overscroll-contain sm:grid-cols-2">
+            {isHost ? (
+              <div className="space-y-2 rounded-xl border border-white/15 bg-white/5 p-3">
+                <p className="text-sm font-medium">
+                  <Shield className="mr-1 inline h-4 w-4" aria-hidden />
+                  Host moderation
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <input
+                    value={coHostHandle}
+                    onChange={(e) => setCoHostHandle(e.target.value)}
+                    placeholder="Add co-host @handle"
+                    className="input-surface min-h-9 flex-1 bg-black/40 text-white"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="min-h-9"
+                    onClick={() =>
+                      void addCoHost({ sessionToken, streamId, coHostHandle })
+                        .then(() => setCoHostHandle(""))
+                        .catch((e) => setMediaError(getLiveMediaErrorMessage(e, "camera")))
+                    }
+                  >
+                    <Users className="h-4 w-4" aria-hidden />
+                    Co-host
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+
+            <div className="space-y-2 rounded-xl border border-white/15 bg-white/5 p-3">
+              <p className="text-sm font-medium">
+                <Gift className="mr-1 inline h-4 w-4" aria-hidden />
+                Send a gift
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {LIVE_GIFTS.map((gift) => (
+                  <Button
+                    key={gift.id}
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="min-h-9"
+                    onClick={() =>
+                      void sendGift({
+                        sessionToken,
+                        streamId,
+                        giftType: gift.id,
+                        amount: gift.credits,
+                      }).catch((e) => setMediaError(getLiveMediaErrorMessage(e, "camera")))
+                    }
+                  >
+                    {gift.emoji} {gift.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2 rounded-xl border border-white/15 bg-white/5 p-3 sm:col-span-2">
+              <p className="text-sm font-medium">
+                <MessageCircle className="mr-1 inline h-4 w-4" aria-hidden />
+                Live chat
+              </p>
+              <ul className="max-h-28 space-y-2 overflow-y-auto overscroll-contain">
+                {data.chat.map((message) => (
+                  <li key={message._id} className="text-sm">
+                    <span className="font-medium text-white">{message.author.displayName}</span>
+                    <span className="text-white/70"> {message.body}</span>
+                    {isHost ? (
+                      <button
+                        type="button"
+                        className="ml-2 text-xs text-red-300"
+                        onClick={() =>
+                          void moderate({
+                            sessionToken,
+                            streamId,
+                            messageId: message._id,
+                          }).catch(() => undefined)
+                        }
+                      >
+                        Remove
+                      </button>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+              {stream.status === "live" ? (
+                <div className="flex gap-2">
+                  <input
+                    value={chatBody}
+                    onChange={(e) => setChatBody(e.target.value)}
+                    placeholder="Say something…"
+                    className="input-surface min-h-10 flex-1 bg-black/40 text-white"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") void handleSendChat();
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void handleSendChat()}
+                    className="min-h-10"
+                  >
+                    Send
+                  </Button>
+                </div>
               ) : null}
-            </li>
-          ))}
-        </ul>
-        {stream.status === "live" ? (
-          <div className="mt-3 flex gap-2">
-            <input
-              value={chatBody}
-              onChange={(e) => setChatBody(e.target.value)}
-              placeholder="Say something…"
-              className="input-surface min-h-10 flex-1"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") void handleSendChat();
-              }}
-            />
-            <Button type="button" disabled={busy} onClick={() => void handleSendChat()} className="min-h-10">
-              Send
-            </Button>
+            </div>
           </div>
         ) : null}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 });

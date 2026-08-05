@@ -1,6 +1,6 @@
-/** Marketplace covers + purchase downloads — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v207-marketplace-covers";
-const NEXT_STATIC_CACHE = "giga3-next-static-v207";
+/** Fullscreen cameras / live / teleprompter + pre-snap edits — refresh PWAs. */
+const CACHE_NAME = "giga3-shell-v208-fullscreen-cameras";
+const NEXT_STATIC_CACHE = "giga3-next-static-v208";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";
