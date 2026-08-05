@@ -755,7 +755,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 
   return (
     <FeedVideoPlaybackProvider enabled={autoPlay && !paused}>
-    <div className="gigasocial-feed-panel-compact gigasocial-stable space-y-1.5 pb-20 sm:space-y-2.5 sm:pb-24">
+    <div className="gigasocial-feed-panel-compact gigasocial-stable min-w-0 max-w-full space-y-1.5 pb-20 sm:space-y-2.5 sm:pb-24">
       {errorToast ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs text-amber-900" role="status">
           {errorToast}

@@ -104,8 +104,10 @@ export const GigaSocialStoriesBar = memo(function GigaSocialStoriesBar({
       ) : null}
       <div
         className={cn(
-          "gigasocial-stories-bar flex gap-2 overflow-x-auto overscroll-x-contain py-0.5",
-          compact ? "gigasocial-stories-bar--compact px-0" : "gap-3 px-1 py-1",
+          "gigasocial-stories-bar flex max-w-full gap-2 overflow-x-auto overscroll-x-contain py-0.5",
+          compact
+            ? "gigasocial-stories-bar--compact -mx-0.5 px-0.5"
+            : "gap-3 px-1 py-1",
           className
         )}
         role="list"

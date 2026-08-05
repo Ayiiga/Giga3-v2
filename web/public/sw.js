@@ -1,6 +1,6 @@
-/** Resend domain/fallback password-reset delivery — refresh installed PWAs. */
-const CACHE_NAME = "giga3-shell-v204-resend-email-fix";
-const NEXT_STATIC_CACHE = "giga3-next-static-v204";
+/** GigaSocial mobile feed side-clip fix — refresh installed PWAs. */
+const CACHE_NAME = "giga3-shell-v205-gigasocial-feed-sides";
+const NEXT_STATIC_CACHE = "giga3-next-static-v205";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";
