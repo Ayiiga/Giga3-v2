@@ -3,10 +3,10 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("service worker cache version", () => {
-  it("uses resend-email-fix cache name (v204)", () => {
+  it("uses gigasocial-feed-sides cache name (v205)", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v204-resend-email-fix"');
-    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v204"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v205-gigasocial-feed-sides"');
+    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v205"');
     expect(sw).toContain('pathname.startsWith("/wallet/")');
     expect(sw).toContain('pathname.startsWith("/admin/")');
   });

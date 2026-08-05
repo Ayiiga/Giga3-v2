@@ -552,21 +552,38 @@
     background-image: none !important;
   }
 
+  /* Clip media only — card chrome (actions, badges) must stay visible on narrow phones. */
   .gigasocial-post-card--visual {
-    overflow: hidden;
+    overflow: visible;
     contain: none;
+  }
+
+  .gigasocial-post-card--visual .gigasocial-post-card__media-region,
+  .gigasocial-post-card--visual .gigasocial-feed-media {
+    overflow: hidden;
   }
 
   .gigasocial-post-card__footer {
     background: #fff !important;
-    contain: paint;
+    contain: none;
     backface-visibility: hidden;
   }
 
   .gigasocial-feed-item {
     position: relative;
-    contain: paint;
+    contain: none;
     backface-visibility: hidden;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .gigasocial-post-card__media-actions {
+    right: max(0.45rem, env(safe-area-inset-right, 0px));
+  }
+
+  .gigasocial-stories-bar {
+    max-width: 100%;
+    scroll-padding-inline: 0.25rem;
   }
 
   .gigasocial-feed-media img,

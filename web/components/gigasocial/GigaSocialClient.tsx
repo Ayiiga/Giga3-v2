@@ -187,7 +187,7 @@ function GigaSocialContent() {
   return (
     <div
       className={cn(
-        "gigasocial-stable gigasocial-pro gigasocial-premium gigasocial-client-main mx-auto max-w-6xl",
+        "gigasocial-stable gigasocial-pro gigasocial-premium gigasocial-client-main mx-auto w-full min-w-0 max-w-6xl",
         isFeedSection ? "space-y-2" : "space-y-3 sm:space-y-4"
       )}
     >

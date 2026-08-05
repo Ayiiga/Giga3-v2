@@ -78,9 +78,20 @@ html.marketing-route {
   .marketing-stable main,
   .marketing-scroll-main,
   .discover-stable,
-  .dashboard-stable {
+  .dashboard-stable,
+  .gigasocial-stable,
+  .gigasocial-page-shell {
     overflow-x: visible !important;
     overflow-y: visible !important;
+  }
+
+  /* Keep GigaSocial feed chrome inside the viewport without clipping side controls. */
+  .gigasocial-page-shell,
+  .gigasocial-client-main,
+  .gigasocial-feed-shell,
+  .gigasocial-feed-panel-compact {
+    min-width: 0;
+    max-width: 100%;
   }
 }
 

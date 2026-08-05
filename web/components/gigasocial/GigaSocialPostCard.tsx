@@ -278,33 +278,35 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
     >
       <header
         className={cn(
-          "flex items-start justify-between gap-3",
-          isVisualPost && "gigasocial-post-card__chrome px-4 pt-3"
+          "flex min-w-0 items-start justify-between gap-2 sm:gap-3",
+          isVisualPost && "gigasocial-post-card__chrome px-3 pt-3 sm:px-4"
         )}
       >
-        <GigaSocialProfileLink
-          handle={post.author.handle}
-          displayName={post.author.displayName}
-          avatarUrl={post.author.avatarUrl}
-          avatarSize="md"
-          showFollowOnAvatar={canFollow}
-          creatorId={post.author.userId}
-          sessionToken={sessionToken}
-          supporting={following}
-          onFollowChange={setFollowing}
-        >
-          <span className="flex min-w-0 items-center gap-1">
-            <span className="truncate text-sm font-semibold text-foreground">
-              {post.author.displayName}
+        <div className="min-w-0 flex-1">
+          <GigaSocialProfileLink
+            handle={post.author.handle}
+            displayName={post.author.displayName}
+            avatarUrl={post.author.avatarUrl}
+            avatarSize="md"
+            showFollowOnAvatar={canFollow}
+            creatorId={post.author.userId}
+            sessionToken={sessionToken}
+            supporting={following}
+            onFollowChange={setFollowing}
+          >
+            <span className="flex min-w-0 items-center gap-1">
+              <span className="truncate text-sm font-semibold text-foreground">
+                {post.author.displayName}
+              </span>
+              <VerifiedBadge verified={post.author.verified} />
             </span>
-            <VerifiedBadge verified={post.author.verified} />
-          </span>
-          <span className="block truncate text-xs text-muted">
-            @{post.author.handle} · {formatRelativeTime(post.createdAt)}
-            {post.communitySlug ? ` · ${post.communitySlug}` : ""}
-          </span>
-        </GigaSocialProfileLink>
-        <div className="flex shrink-0 flex-col items-end gap-1.5">
+            <span className="block truncate text-xs text-muted">
+              @{post.author.handle} · {formatRelativeTime(post.createdAt)}
+              {post.communitySlug ? ` · ${post.communitySlug}` : ""}
+            </span>
+          </GigaSocialProfileLink>
+        </div>
+        <div className="flex max-w-[42%] shrink-0 flex-col items-end gap-1.5">
           {canFollow ? (
             <GigaSocialFanButton
               sessionToken={sessionToken!}
@@ -461,9 +463,9 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
 
         <div
           className={cn(
-            "gigasocial-post-card__actions flex flex-wrap items-center gap-0.5 border-t border-border",
+            "gigasocial-post-card__actions flex w-full min-w-0 flex-wrap items-center gap-0.5 border-t border-border",
             isVisualPost
-              ? "gigasocial-post-card__actions--compact px-4 pt-2"
+              ? "gigasocial-post-card__actions--compact px-3 pt-2 sm:px-4"
               : "mt-4 gap-1 pt-3"
           )}
         >

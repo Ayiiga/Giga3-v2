@@ -33,10 +33,19 @@ describe("mobile stability CSS", () => {
     expect(gigasocialCss).toContain("aspect-ratio: auto");
   });
 
-  it("uses solid post footer and feed item paint containment on mobile", () => {
+  it("keeps feed items and footers unclipped on mobile", () => {
     expect(gigasocialCss).toContain(".gigasocial-post-card__footer");
     expect(gigasocialCss).toContain(".gigasocial-feed-item");
-    expect(gigasocialCss).toContain("contain: paint");
+    expect(gigasocialCss).toContain("contain: none");
+    expect(gigasocialCss).toMatch(
+      /\.gigasocial-post-card--visual\s*\{[^}]*overflow:\s*visible/
+    );
+  });
+
+  it("allows gigasocial-stable horizontal overflow on mobile", () => {
+    expect(globalsCss).toContain(".gigasocial-stable");
+    expect(globalsCss).toContain(".gigasocial-page-shell");
+    expect(globalsCss).toContain("overflow-x: visible !important");
   });
 
   it("defines creator-studio-stable column tool grid", () => {
