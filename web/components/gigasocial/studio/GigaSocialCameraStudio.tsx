@@ -86,9 +86,26 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
   const [filterId, setFilterId] = useState<CameraFilterId>("none");
   const [busy, setBusy] = useState(false);
   const [audioMuted, setAudioMuted] = useState(false);
-  const [quality, setQuality] = useState<CameraQualityId>("full-hd");
+  const [quality, setQuality] = useState<CameraQualityId>(() => {
+    if (typeof window === "undefined") return "full-hd";
+    try {
+      const saved = window.localStorage.getItem("giga3_camera_quality");
+      if (saved === "hd" || saved === "full-hd" || saved === "ultra-hd") return saved;
+    } catch {
+      /* ignore */
+    }
+    return "full-hd";
+  });
   const [cameraDevices, setCameraDevices] = useState<CameraDeviceOption[]>([]);
   const [deviceId, setDeviceId] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("giga3_camera_quality", quality);
+    } catch {
+      /* ignore */
+    }
+  }, [quality]);
 
   const clearRecordTimer = useCallback(() => {
     if (recordTimerRef.current != null) {

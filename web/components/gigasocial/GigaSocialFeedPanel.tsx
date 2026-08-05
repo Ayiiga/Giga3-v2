@@ -27,6 +27,8 @@ import { withChunkRetryLoader } from "@/lib/pwa/dynamicWithChunkRetry";
 import { GigaSocialFeaturedPlayer } from "@/components/gigasocial/GigaSocialFeaturedPlayer";
 import { GigaSocialFeedHero } from "@/components/gigasocial/GigaSocialFeedHero";
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
+import { GigaRemixStudio } from "@/components/gigasocial/remix/GigaRemixStudio";
+import type { GigaRemixModeId } from "@/lib/gigasocial/remixMeta";
 import type { AIStudioLaunch } from "@/components/gigasocial/studio/GigaSocialAIStudioHub";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -138,6 +140,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     "public" | "followers" | undefined
   >();
   const [remixSource, setRemixSource] = useState<SocialPost | null>(null);
+  const [remixMode, setRemixMode] = useState<GigaRemixModeId>("classic");
+  const [remixStudioPost, setRemixStudioPost] = useState<SocialPost | null>(null);
   const [errorToast, setErrorToast] = useState<string | null>(null);
   const gigaEditPublishHandledRef = useRef(false);
   const [activeFeaturedVideoId, setActiveFeaturedVideoId] = useState<string | null>(null);
@@ -354,7 +358,12 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     (
       action?: GigaCreateActionId,
       source?: SocialPost | null,
-      options?: { body?: string; postType?: SocialPostTypeId; teleprompter?: boolean }
+      options?: {
+        body?: string;
+        postType?: SocialPostTypeId;
+        teleprompter?: boolean;
+        remixMode?: GigaRemixModeId;
+      }
     ) => {
       if (!sessionToken) {
         requireAuth();
@@ -365,6 +374,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       setComposeInitialPostType(options?.postType);
       setComposeInitialTeleprompter(Boolean(options?.teleprompter));
       setRemixSource(source ?? null);
+      setRemixMode(source ? options?.remixMode ?? "classic" : "classic");
       setComposerOpen(true);
       setErrorToast(null);
     },
@@ -380,6 +390,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setComposeInitialMedia(null);
     setComposeInitialVisibility(undefined);
     setRemixSource(null);
+    setRemixMode("classic");
+    setRemixStudioPost(null);
   }, []);
 
   const openGigaEditPublishHandoff = useCallback(async (): Promise<boolean> => {
@@ -744,6 +756,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     initialMedia: composeInitialMedia,
     initialVisibility: composeInitialVisibility,
     remixSource: remixSource ?? undefined,
+    remixMode,
     enableAIAssistant: features.enableAIEditing,
     enableMediaStudio: features.enableMediaStudio,
     profileId: activeProfileId ?? undefined,
@@ -944,7 +957,13 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
                 onEdit={handleEditPost}
                 onRemix={
                   features.enableGigaRemix
-                    ? (source) => openComposer("remix", source)
+                    ? (source) => {
+                        if (!sessionToken) {
+                          requireAuth();
+                          return;
+                        }
+                        setRemixStudioPost(source);
+                      }
                     : undefined
                 }
                 onRequireAuth={requireAuth}
@@ -1029,6 +1048,24 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
           open={aiStudioOpen}
           onClose={() => setAiStudioOpen(false)}
           onLaunch={handleAIStudioLaunch}
+        />
+      ) : null}
+
+      {features.enableGigaRemix && remixStudioPost ? (
+        <GigaRemixStudio
+          open
+          post={remixStudioPost}
+          onClose={() => setRemixStudioPost(null)}
+          onSelectMode={(mode) => {
+            const source = remixStudioPost;
+            setRemixStudioPost(null);
+            setRemixMode(mode);
+            if (mode === "ai-subtitles") {
+              window.location.assign("/gigaedit/?tab=video");
+              return;
+            }
+            openComposer("remix", source);
+          }}
         />
       ) : null}
     </div>

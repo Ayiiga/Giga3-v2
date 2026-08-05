@@ -139,6 +139,12 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     [allowFullView, featured]
   );
 
+  const openVideoLightbox = useCallback(() => {
+    if (!allowFullView || featured || mediaKind !== "video") return;
+    const url = mediaUrls[0];
+    if (url) setLightboxUrl(url);
+  }, [allowFullView, featured, mediaKind, mediaUrls]);
+
   const renderExpandableImage = (
     url: string,
     alt: string,
@@ -156,11 +162,33 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     />
   );
 
+  const lightboxItems = useMemo(() => {
+    if (!lightboxUrl || !allowFullView || featured) return null;
+    if (mediaKind === "video") {
+      return [{ url: lightboxUrl, kind: "video" as const, alt: "Full screen video" }];
+    }
+    if (mediaKind === "gallery" || mediaKind === "photo-music") {
+      return mediaUrls.map((url, i) => ({
+        url,
+        kind: "image" as const,
+        alt: `Post photo ${i + 1}`,
+      }));
+    }
+    return [{ url: lightboxUrl, kind: "image" as const, alt: "Full size post photo" }];
+  }, [allowFullView, featured, lightboxUrl, mediaKind, mediaUrls]);
+
+  const lightboxInitialIndex = useMemo(() => {
+    if (!lightboxUrl || !lightboxItems) return 0;
+    const idx = lightboxItems.findIndex((item) => item.url === lightboxUrl);
+    return idx >= 0 ? idx : 0;
+  }, [lightboxItems, lightboxUrl]);
+
   const lightbox =
-    lightboxUrl && allowFullView && !featured ? (
+    lightboxItems && lightboxUrl && allowFullView && !featured ? (
       <GigaSocialMediaLightbox
-        imageUrl={lightboxUrl}
-        alt="Full size post photo"
+        items={lightboxItems}
+        initialIndex={lightboxInitialIndex}
+        alt="Full size post media"
         onClose={() => setLightboxUrl(null)}
       />
     ) : null;
@@ -433,11 +461,33 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     }
 
     return (
-      <div className={feedMediaWrapperClass}>
+      <div
+        className={feedMediaWrapperClass}
+        onDoubleClick={
+          allowFullView && !featured
+            ? (event) => {
+                event.preventDefault();
+                openVideoLightbox();
+              }
+            : undefined
+        }
+      >
         {offlineMedia.offlineAvailable ? (
           <div className="absolute left-3 top-3 z-10">
             <StoriesOfflineBadge />
           </div>
+        ) : null}
+        {allowFullView && !featured ? (
+          <button
+            type="button"
+            className="absolute left-3 top-3 z-10 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-semibold text-white"
+            onClick={(event) => {
+              event.stopPropagation();
+              openVideoLightbox();
+            }}
+          >
+            Full screen
+          </button>
         ) : null}
         <video
           ref={videoRef}
