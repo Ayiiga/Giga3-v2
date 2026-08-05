@@ -1059,12 +1059,11 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
           onSelectMode={(mode) => {
             const source = remixStudioPost;
             setRemixStudioPost(null);
-            setRemixMode(mode);
             if (mode === "ai-subtitles") {
               window.location.assign("/gigaedit/?tab=video");
               return;
             }
-            openComposer("remix", source);
+            openComposer("remix", source, { remixMode: mode });
           }}
         />
       ) : null}
