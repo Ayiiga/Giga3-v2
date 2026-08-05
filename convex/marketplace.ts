@@ -362,7 +362,18 @@ export const getMyPurchases = query({
     for (const purchase of purchases) {
       const listing = await ctx.db.get(purchase.listingId);
       if (!listing) continue;
-      results.push({ purchase, listing });
+      let downloadUrl: string | null = null;
+      if (listing.fileStorageId) {
+        downloadUrl = await ctx.storage.getUrl(listing.fileStorageId);
+      }
+      results.push({
+        purchase,
+        listing,
+        /** Signed Convex storage URL when the buyer owns a file-backed listing. */
+        downloadUrl,
+        fileName: listing.fileName ?? "download",
+        hasDownload: Boolean(downloadUrl),
+      });
     }
     return results;
   },

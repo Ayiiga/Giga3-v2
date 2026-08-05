@@ -43,7 +43,7 @@ export const CREATOR_SERIES: CreatorSeriesMeta[] = [
     license: "personal",
     fileName: "Giga3-AI-PWA-Series-1-Platform-Foundations.pdf",
     pdfPath: "/marketplace/series/giga3-series-1-platform-foundations.pdf",
-    coverPath: "/marketplace/series/covers/series-1.svg",
+    coverPath: "/marketplace/series/covers/series-1.svg?v=20260805",
     topics: [
       "PWA install & shell",
       "Chat & model tiers",
@@ -67,7 +67,7 @@ export const CREATOR_SERIES: CreatorSeriesMeta[] = [
     license: "personal",
     fileName: "Giga3-AI-PWA-Series-2-Create-and-Publish.pdf",
     pdfPath: "/marketplace/series/giga3-series-2-create-and-publish.pdf",
-    coverPath: "/marketplace/series/covers/series-2.svg",
+    coverPath: "/marketplace/series/covers/series-2.svg?v=20260805",
     topics: [
       "Media Studio jobs",
       "GigaEdit pipeline",
@@ -91,7 +91,7 @@ export const CREATOR_SERIES: CreatorSeriesMeta[] = [
     license: "personal",
     fileName: "Giga3-AI-PWA-Series-3-GigaSocial-Creator-Playbook.pdf",
     pdfPath: "/marketplace/series/giga3-series-3-gigasocial-creator-playbook.pdf",
-    coverPath: "/marketplace/series/covers/series-3.svg",
+    coverPath: "/marketplace/series/covers/series-3.svg?v=20260805",
     topics: [
       "Feed & composer",
       "Tips & gifts",
@@ -115,7 +115,7 @@ export const CREATOR_SERIES: CreatorSeriesMeta[] = [
     license: "personal",
     fileName: "Giga3-AI-PWA-Series-4-Monetize-and-Marketplace.pdf",
     pdfPath: "/marketplace/series/giga3-series-4-monetize-and-marketplace.pdf",
-    coverPath: "/marketplace/series/covers/series-4.svg",
+    coverPath: "/marketplace/series/covers/series-4.svg?v=20260805",
     topics: [
       "Paystack & GHS",
       "Sell digital goods",

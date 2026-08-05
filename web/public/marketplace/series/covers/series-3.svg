@@ -1,18 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600" role="img" aria-label="Giga3 Creator Academy Series 03">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0d9488"/>
-      <stop offset="100%" stop-color="#042f2e"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f766e"/>
+      <stop offset="55%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#0f766e"/>
     </linearGradient>
+    <linearGradient id="band" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2dd4bf"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="20%" cy="15%" r="55%">
+      <stop offset="0%" stop-color="#2dd4bf" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#2dd4bf" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect width="1200" height="630" fill="url(#g)"/>
-  <circle cx="980" cy="120" r="180" fill="#ffffff" fill-opacity="0.06"/>
-  <circle cx="200" cy="520" r="220" fill="#ffffff" fill-opacity="0.05"/>
-  <text x="72" y="120" fill="#99f6e4" font-family="Georgia, serif" font-size="28">Giga3 Creator Academy</text>
-  <text x="72" y="220" fill="#ffffff" font-family="Georgia, serif" font-size="64" font-weight="700">Series 3</text>
-  <text x="72" y="300" fill="#ecfdf5" font-family="Georgia, serif" font-size="42">GigaSocial Creator Playbook</text>
-  <text x="72" y="360" fill="#a7f3d0" font-family="Georgia, serif" font-size="28">Feed, community, tips, gifts &amp; growth</text>
-  <text x="72" y="520" fill="#ffffff" font-family="Georgia, serif" font-size="32" font-weight="700">GHS 150.00</text>
-  <text x="72" y="570" fill="#ccfbf1" font-family="Georgia, serif" font-size="22">www.giga3ai.com/marketplace</text>
+  <rect width="1200" height="1600" fill="url(#bg)"/>
+  <rect width="1200" height="1600" fill="url(#glow)"/>
+  <rect x="0" y="0" width="18" height="1600" fill="url(#band)"/>
+  
+  <circle cx="860" cy="200" r="54" fill="#fff" fill-opacity="0.12"/>
+  <circle cx="940" cy="250" r="40" fill="#fff" fill-opacity="0.1"/>
+  <circle cx="820" cy="280" r="34" fill="#fff" fill-opacity="0.08"/>
+  <path d="M780 420 C860 360, 980 360, 1060 420" stroke="#fff" stroke-opacity="0.18" stroke-width="10" fill="none"/>
+  <text x="72" y="120" fill="#2dd4bf" font-family="Georgia, 'Iowan Old Style', serif" font-size="30" letter-spacing="4">GIGA3 CREATOR ACADEMY</text>
+  <text x="72" y="280" fill="#ffffff" font-family="Georgia, 'Iowan Old Style', serif" font-size="120" font-weight="700">Series</text>
+  <text x="72" y="420" fill="#2dd4bf" font-family="Georgia, 'Iowan Old Style', serif" font-size="140" font-weight="700">03</text>
+  <text x="72" y="560" fill="#ffffff" font-family="Georgia, 'Iowan Old Style', serif" font-size="64" font-weight="700">GigaSocial Playbook</text>
+  <text x="72" y="640" fill="#cbd5e1" font-family="ui-sans-serif, system-ui, sans-serif" font-size="32">Feed · Community · Growth</text>
+  <rect x="72" y="720" width="220" height="8" rx="4" fill="url(#band)"/>
+  <text x="72" y="860" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="28">Official educational eBook</text>
+  <text x="72" y="920" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="26">Personal license · Paystack GHS</text>
+  <rect x="72" y="1080" width="420" height="96" rx="24" fill="#2dd4bf"/>
+  <text x="100" y="1142" fill="#042f2e" font-family="Georgia, serif" font-size="42" font-weight="700">GHS 150.00</text>
+  <text x="72" y="1280" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="24">www.giga3ai.com/marketplace</text>
+  <text x="72" y="1480" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="22">Digital delivery after verified purchase</text>
 </svg>

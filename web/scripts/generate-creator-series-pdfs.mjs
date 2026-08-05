@@ -80,13 +80,18 @@ Render probes (?renderProbe=1) help engineers diagnose chat re-render storms —
 Starter credits may apply for new accounts. Do not share login sessions across devices in ways that confuse purchase ownership.`,
       },
       {
-        h: "10. Series 1 checklist",
+        h: "10. Download this PDF after purchase",
+        body: `Buy with Paystack on ${SITE}/marketplace — never pay outside the app. Sign in with the same account, open My purchases, then tap Download PDF (or open the listing and download there). Files unlock only after payment is recorded for your buyer account.`,
+      },
+      {
+        h: "11. Series 1 checklist",
         body: `□ Install Giga3 as a PWA on your primary phone
 □ Sign in and send a test chat on Fast and Smart
 □ Toggle theme and confirm the shell remains readable
 □ Open Marketplace, GigaEdit, and GigaSocial from the workspace
 □ Note your credit balance before a long Creator session
 □ Hard-refresh after any announced production deploy
+□ Confirm My purchases download works for this series after buying
 
 Next: Series 2 — Create & Publish covers Media Studio, GigaEdit, cameras, and export to GigaSocial (${PRICE}).`,
       },
@@ -149,7 +154,11 @@ Keep sourceImageUrl / ?source= edit links for iterative design (poster → varia
         body: `Name files by campaign (brand_hook_v3.mp4). Store covers at marketplace-friendly 16:9. Export a still frame for link previews. Back up finals outside the browser. Never upload national ID scans into Media Studio or GigaSocial — verification has its own secure path (Series 4).`,
       },
       {
-        h: "9. Series 2 checklist",
+        h: "9. Download this PDF after purchase",
+        body: `After Paystack checkout on ${SITE}/marketplace, open My purchases while signed in and tap Download PDF. Delivery is tied to your buyer account — that is how Giga3 keeps marketplace files fraud-free.`,
+      },
+      {
+        h: "10. Series 2 checklist",
         body: `□ Generate one image in Media Studio and save it
 □ Open GigaEdit, apply aspect crop, export
 □ Record a short clip with teleprompter
@@ -212,7 +221,11 @@ Offline: draft captions in notes; publish when connectivity is stable so media u
         body: `Track saves, tips, profile visits, and marketplace clicks — not vanity alone. If a format earns tips, make a series. If a post drives marketplace views but no buys, tighten the product page preview text and cover (Series 4).`,
       },
       {
-        h: "9. Series 3 checklist",
+        h: "9. Download this PDF after purchase",
+        body: `Pay on ${SITE}/marketplace with Paystack, then download from My purchases. Do not redistribute Academy PDFs; personal license only.`,
+      },
+      {
+        h: "10. Series 3 checklist",
         body: `□ Set main social profile + one experimental profile
 □ Publish three posts with distinct hooks
 □ Enable or test tip/gift on a media post
@@ -282,11 +295,16 @@ Bundle strategically on GigaSocial (“Series 1–2 starter pack”) only if you
         body: `Keep a purchase → download FAQ in your bio. If a buyer pays but cannot download, verify payment reference and file attachment. Admins can moderate listing status (publish/archive). Never ask buyers to pay outside Paystack for Marketplace SKUs.`,
       },
       {
-        h: "9. End-to-end monetization checklist",
+        h: "9. Buyer download path (fraud-free)",
+        body: `Buyers receive files only after Paystack success + signed-in ownership check. Sellers must never collect private payment outside Paystack for Marketplace SKUs. Support buyers by pointing them to My purchases → Download PDF.`,
+      },
+      {
+        h: "10. End-to-end monetization checklist",
         body: `□ Verification approved
 □ One flagship product with cover + file
 □ Price tested (consider ${PRICE} for premium guides)
 □ Buy-flow tested on a second account
+□ Confirm Download PDF works for a test purchase
 □ Payout method note saved for admins
 □ GigaSocial posts linking to your listing
 □ Academy series 1–4 completed for full literacy
@@ -298,23 +316,32 @@ You now have the complete Giga3 AI PWA Creator Academy curriculum across four se
 ];
 
 function coverSvg({ number, title, subtitle, accent }) {
+  const n = String(number).padStart(2, "0");
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="${accent}"/>
+      <stop offset="55%" stop-color="#0b1220"/>
       <stop offset="100%" stop-color="#042f2e"/>
     </linearGradient>
+    <linearGradient id="band" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="${accent}"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
   </defs>
-  <rect width="1200" height="630" fill="url(#g)"/>
-  <circle cx="980" cy="120" r="180" fill="#ffffff" fill-opacity="0.06"/>
-  <circle cx="200" cy="520" r="220" fill="#ffffff" fill-opacity="0.05"/>
-  <text x="72" y="120" fill="#99f6e4" font-family="Georgia, serif" font-size="28">Giga3 Creator Academy</text>
-  <text x="72" y="220" fill="#ffffff" font-family="Georgia, serif" font-size="64" font-weight="700">Series ${number}</text>
-  <text x="72" y="300" fill="#ecfdf5" font-family="Georgia, serif" font-size="42">${escapeXml(title)}</text>
-  <text x="72" y="360" fill="#a7f3d0" font-family="Georgia, serif" font-size="28">${escapeXml(subtitle)}</text>
-  <text x="72" y="520" fill="#ffffff" font-family="Georgia, serif" font-size="32" font-weight="700">${PRICE}</text>
-  <text x="72" y="570" fill="#ccfbf1" font-family="Georgia, serif" font-size="22">www.giga3ai.com/marketplace</text>
+  <rect width="1200" height="1600" fill="url(#bg)"/>
+  <rect x="0" y="0" width="18" height="1600" fill="url(#band)"/>
+  <text x="72" y="120" fill="#99f6e4" font-family="Georgia, serif" font-size="30" letter-spacing="4">GIGA3 CREATOR ACADEMY</text>
+  <text x="72" y="280" fill="#ffffff" font-family="Georgia, serif" font-size="120" font-weight="700">Series</text>
+  <text x="72" y="420" fill="#fbbf24" font-family="Georgia, serif" font-size="140" font-weight="700">${n}</text>
+  <text x="72" y="560" fill="#ffffff" font-family="Georgia, serif" font-size="64" font-weight="700">${escapeXml(title)}</text>
+  <text x="72" y="640" fill="#cbd5e1" font-family="sans-serif" font-size="32">${escapeXml(subtitle)}</text>
+  <rect x="72" y="720" width="220" height="8" rx="4" fill="url(#band)"/>
+  <rect x="72" y="1080" width="420" height="96" rx="24" fill="${accent}"/>
+  <text x="100" y="1142" fill="#042f2e" font-family="Georgia, serif" font-size="42" font-weight="700">${PRICE}</text>
+  <text x="72" y="1280" fill="#94a3b8" font-family="sans-serif" font-size="24">www.giga3ai.com/marketplace</text>
+  <text x="72" y="1480" fill="#64748b" font-family="sans-serif" font-size="22">Digital delivery after verified purchase</text>
 </svg>`;
 }
 

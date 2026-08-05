@@ -53,12 +53,11 @@ function MarketplaceBrowseInner() {
               Giga3 Marketplace
             </p>
             <h1 className="page-title font-serif tracking-tight">
-              A professional shelf for creator products
+              Buy. Pay. Download.
             </h1>
             <p className="mt-3 text-muted">
-              Sell eBooks, templates, prompts, and educational packs to buyers who already
-              create with Giga3. Verified sellers, Paystack checkout in GHS, instant digital
-              delivery.
+              Simple digital products for Giga3 creators — eBooks, templates, and packs.
+              Paystack in GHS. Files unlock only after a successful payment.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -76,16 +75,16 @@ function MarketplaceBrowseInner() {
 
         <section
           className="rounded-3xl border border-border bg-card/80 px-5 py-5 sm:px-6"
-          aria-label="Why creators sell here"
+          aria-label="Safe buying"
         >
           <div className="flex items-start gap-3">
             <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" aria-hidden />
             <div>
-              <h2 className="font-serif text-xl text-foreground">Built for serious creators</h2>
+              <h2 className="font-serif text-xl text-foreground">Fraud-free by design</h2>
               <p className="mt-1 max-w-3xl text-sm text-muted">
-                Identity verification, clear licensing, cover-led listings, and payout balance
-                tracking — so your digital products look as professional as your GigaSocial
-                brand.
+                Checkout only through Paystack. Downloads require a signed-in buyer account
+                with a recorded purchase. Prefer Verified sellers. Never pay sellers outside
+                the app for Marketplace items.
               </p>
             </div>
           </div>
@@ -151,15 +150,18 @@ function MarketplaceBrowseInner() {
                   <img
                     src={item.coverImageUrl}
                     alt={item.title}
-                    className="mb-4 aspect-video w-full rounded-xl object-cover"
+                    className="mb-4 aspect-[4/3] w-full rounded-xl object-cover"
                   />
                 ) : (
-                  <div className="mb-4 flex aspect-video items-center justify-center rounded-xl bg-emerald-950/5 text-sm text-muted dark:bg-emerald-400/10">
-                    {typeLabel(item.productType)}
+                  <div className="mb-4 flex aspect-[4/3] flex-col items-center justify-center gap-1 rounded-xl bg-gradient-to-br from-emerald-950/10 to-emerald-700/10 text-sm text-muted dark:from-emerald-400/10 dark:to-emerald-900/20">
+                    <span className="text-xs font-semibold uppercase tracking-wide">
+                      {typeLabel(item.productType)}
+                    </span>
+                    <span className="px-3 text-center text-xs line-clamp-2">{item.title}</span>
                   </div>
                 )}
                 <div className="flex items-start justify-between gap-2">
-                  <h2 className="font-serif text-lg font-semibold group-hover:text-emerald-800 dark:group-hover:text-emerald-300">
+                  <h2 className="line-clamp-2 font-serif text-lg font-semibold group-hover:text-emerald-800 dark:group-hover:text-emerald-300">
                     {item.title}
                   </h2>
                   <span className="shrink-0 font-bold tabular-nums">
@@ -169,17 +171,19 @@ function MarketplaceBrowseInner() {
                 <p className="mt-2 line-clamp-2 text-sm text-muted">{item.description}</p>
                 <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
                   <span>{item.category}</span>
-                  {item.creator?.verified && (
+                  {item.creator?.verified ? (
                     <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
                       <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
                       Verified
                     </span>
+                  ) : (
+                    <span>Seller</span>
                   )}
-                  {item.ratingCount > 0 && (
+                  {item.ratingCount > 0 ? (
                     <span>
                       ★ {item.ratingAvg.toFixed(1)} ({item.ratingCount})
                     </span>
-                  )}
+                  ) : null}
                 </div>
               </Link>
             ))}
