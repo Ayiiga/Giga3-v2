@@ -47,6 +47,8 @@ type CommonProps = {
   onLookChange?: (look: CameraLookOptions) => void;
   showControls?: boolean;
   emptyLabel?: string;
+  /** Edge-to-edge preview for teleprompter / live capture shells. */
+  variant?: "card" | "immersive";
 };
 
 type ImageProps = CommonProps & {
@@ -190,13 +192,23 @@ export const CameraStylePreview = forwardRef<CameraStylePreviewHandle, CameraSty
     } as CSSProperties;
 
     const showControls = props.showControls !== false;
+    const immersive = props.variant === "immersive";
 
     return (
-      <div className={cn("space-y-2", props.className)}>
-        <div className="gigaedit-glass p-3">
+      <div className={cn(immersive ? "flex h-full min-h-0 flex-col" : "space-y-2", props.className)}>
+        <div className={cn(immersive ? "min-h-0 flex-1" : "gigaedit-glass p-3")}>
           <div
-            className="gigaedit-allow-effects gigaedit-camera-preview relative mx-auto max-h-[55vh] overflow-hidden rounded-xl bg-black"
-            style={{ aspectRatio: props.aspectRatioCss, width: "min(100%, 420px)" }}
+            className={cn(
+              "gigaedit-allow-effects gigaedit-camera-preview relative overflow-hidden bg-black",
+              immersive
+                ? "h-full w-full rounded-none"
+                : "mx-auto max-h-[55vh] rounded-xl"
+            )}
+            style={
+              immersive
+                ? undefined
+                : { aspectRatio: props.aspectRatioCss, width: "min(100%, 420px)" }
+            }
           >
             {props.kind === "image" && props.src ? (
               // eslint-disable-next-line @next/next/no-img-element

@@ -533,15 +533,35 @@
   object-fit: contain;
 }
 
+/* Immersive fullscreen live / camera shells — edge-to-edge stage. */
+.gigasocial-immersive-capture.gigasocial-live-room .gigasocial-live-stage {
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+.gigasocial-immersive-capture .gigasocial-live-video--fullscreen {
+  aspect-ratio: auto;
+  max-height: none;
+  max-width: none;
+  margin-inline: 0;
+}
+
 @media (max-width: 1023px) {
-  .gigasocial-live-stable,
-  .gigasocial-live-stable * {
+  .gigasocial-live-stable:not(.gigasocial-immersive-capture),
+  .gigasocial-live-stable:not(.gigasocial-immersive-capture) * {
     transition-duration: 0s !important;
     transition-delay: 0s !important;
     transform: none !important;
     filter: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+    will-change: auto !important;
+    contain: none !important;
+  }
+
+  .gigasocial-live-stable.gigasocial-immersive-capture {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
     will-change: auto !important;
     contain: none !important;
   }

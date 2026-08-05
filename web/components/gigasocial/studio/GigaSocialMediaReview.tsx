@@ -108,37 +108,41 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
   }
 
   return createPortal(
-    <div className="gigasocial-stable gigasocial-media-review fixed inset-0 z-[71] flex flex-col bg-black/90">
-      <div className="flex items-center justify-between px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] text-white">
-        <button type="button" onClick={onClose} className="text-sm text-white/80">
-          Cancel
-        </button>
-        <p className="text-sm font-semibold">Review</p>
-        <button
-          type="button"
-          onClick={() => void finish(true)}
-          className="inline-flex items-center gap-1 text-sm text-violet-200"
-        >
-          <SkipForward className="h-4 w-4" />
-          Skip
-        </button>
+    <div className="gigasocial-stable gigasocial-media-review gigasocial-immersive-capture fixed inset-0 z-[71] flex flex-col bg-black">
+      <div className="relative min-h-0 flex-1">
+        {kind === "video" ? (
+          <video
+            src={previewUrl}
+            controls
+            playsInline
+            className="absolute inset-0 h-full w-full object-contain bg-black"
+          />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={previewUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full object-contain bg-black"
+            style={{ filter: previewFilter !== "none" ? previewFilter : undefined }}
+          />
+        )}
+        <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] text-white">
+          <button type="button" onClick={onClose} className="text-sm text-white/90">
+            Cancel
+          </button>
+          <p className="text-sm font-semibold">Review</p>
+          <button
+            type="button"
+            onClick={() => void finish(true)}
+            className="inline-flex items-center gap-1 text-sm text-white"
+          >
+            <SkipForward className="h-4 w-4" />
+            Skip
+          </button>
+        </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pb-4">
-        <div className="overflow-hidden rounded-2xl border border-white/15 bg-black">
-          {kind === "video" ? (
-            <video src={previewUrl} controls playsInline className="max-h-[50vh] w-full object-contain" />
-          ) : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={previewUrl}
-              alt=""
-              className="max-h-[50vh] w-full object-contain"
-              style={{ filter: previewFilter !== "none" ? previewFilter : undefined }}
-            />
-          )}
-        </div>
-
+      <div className="max-h-[42vh] space-y-3 overflow-y-auto border-t border-white/10 bg-black/90 px-4 py-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <div className="flex flex-wrap gap-2">
           {kind === "image" ? (
             <Button type="button" size="sm" variant="outline" onClick={() => setStudioOpen((v) => !v)}>
@@ -166,7 +170,7 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
           <textarea
             value={caption}
             onChange={(event) => setCaption(event.target.value)}
-            rows={3}
+            rows={2}
             placeholder="Add a caption, #hashtags, @mentions…"
             className="mt-1 w-full resize-none rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40"
           />
@@ -185,11 +189,7 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
           />
         ) : null}
 
-        <Button
-          type="button"
-          className={cn("min-h-11 w-full")}
-          onClick={() => void finish(false)}
-        >
+        <Button type="button" className={cn("min-h-11 w-full")} onClick={() => void finish(false)}>
           <Check className="h-4 w-4" />
           Use in post
         </Button>

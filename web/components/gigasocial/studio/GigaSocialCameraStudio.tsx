@@ -1,11 +1,12 @@
 "use client";
 
+import { PreSnapEditBar } from "@/components/gigasocial/studio/PreSnapEditBar";
 import { GigaSocialTeleprompter } from "@/components/gigasocial/studio/GigaSocialTeleprompter";
 import {
-  CAMERA_FILTERS,
   getCameraFilterCss,
   type CameraFilterId,
 } from "@/lib/gigasocial/cameraFilters";
+import type { CameraCaptureModeId } from "@/lib/gigasocial/cameraModes";
 import { SOCIAL_MAX_VIDEO_DURATION_SEC } from "@/lib/gigasocial/constants";
 import {
   CAMERA_QUALITY_PRESETS,
@@ -31,7 +32,6 @@ import {
   Type,
   Video,
   X,
-  Zap,
 } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -84,6 +84,8 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
   const [countdown, setCountdown] = useState<number | null>(null);
   const [beautyOn, setBeautyOn] = useState(false);
   const [filterId, setFilterId] = useState<CameraFilterId>("none");
+  const [captureModeId, setCaptureModeId] = useState<CameraCaptureModeId>("standard");
+  const [showPreSnap, setShowPreSnap] = useState(true);
   const [busy, setBusy] = useState(false);
   const [audioMuted, setAudioMuted] = useState(false);
   const [quality, setQuality] = useState<CameraQualityId>(() => {
@@ -347,24 +349,59 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
   const previewFilter = getCameraFilterCss(beautyOn ? "natural" : filterId);
 
   return createPortal(
-    <div className="gigasocial-stable gigasocial-camera-studio fixed inset-0 z-[70] flex flex-col bg-black text-white">
-      <div className="relative flex min-h-0 flex-1 flex-col">
-        <div className="flex items-center justify-between px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+    <div className="gigasocial-stable gigasocial-camera-studio gigasocial-immersive-capture fixed inset-0 z-[70] bg-black text-white">
+      <video
+        ref={videoRef}
+        className={cn(
+          "gigasocial-camera-preview absolute inset-0 h-full w-full object-cover",
+          facing === "user" && "scale-x-[-1]"
+        )}
+        style={{ filter: previewFilter !== "none" ? previewFilter : undefined }}
+        playsInline
+        muted
+        autoPlay
+      />
+      {!ready && !error ? (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+          <Loader2 className="h-8 w-8 animate-spin text-white/80" aria-hidden />
+          <span className="sr-only">Starting camera…</span>
+        </div>
+      ) : null}
+      {showGrid ? (
+        <div
+          className="pointer-events-none absolute inset-0 opacity-35"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
+            backgroundSize: "33.33% 33.33%",
+          }}
+          aria-hidden
+        />
+      ) : null}
+      {countdown != null ? (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-5xl font-bold">
+          {countdown}
+        </div>
+      ) : null}
+      <GigaSocialTeleprompter active={showTeleprompter} recording={recording} />
+
+      <div className="pointer-events-none absolute inset-0 flex flex-col justify-between">
+        <div className="pointer-events-auto flex items-center justify-between bg-gradient-to-b from-black/55 to-transparent px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-white/80 hover:bg-white/10"
+            className="rounded-full p-2 text-white/90 hover:bg-white/10"
             aria-label="Close camera"
           >
             <X className="h-5 w-5" />
           </button>
-          <div className="flex gap-1 rounded-full bg-white/10 p-0.5">
+          <div className="flex gap-1 rounded-full bg-black/40 p-0.5 backdrop-blur-sm">
             <button
               type="button"
               onClick={() => switchMode("photo")}
               className={cn(
                 "rounded-full px-3 py-1 text-xs font-medium",
-                mode === "photo" ? "bg-violet-600 text-white" : "text-white/80"
+                mode === "photo" ? "bg-white text-black" : "text-white/85"
               )}
             >
               Photo
@@ -374,63 +411,51 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
               onClick={() => switchMode("video")}
               className={cn(
                 "rounded-full px-3 py-1 text-xs font-medium",
-                mode === "video" ? "bg-violet-600 text-white" : "text-white/80"
+                mode === "video" ? "bg-white text-black" : "text-white/85"
               )}
             >
               Video
             </button>
           </div>
-          <span className="w-9" aria-hidden />
+          <button
+            type="button"
+            onClick={() => setShowPreSnap((value) => !value)}
+            className={cn(
+              "rounded-full px-2.5 py-1.5 text-[10px] font-semibold",
+              showPreSnap ? "bg-white text-black" : "bg-black/40 text-white/90"
+            )}
+          >
+            Edit
+          </button>
         </div>
 
-        <div className="relative min-h-0 flex-1 overflow-hidden">
-          <video
-            ref={videoRef}
-            className={cn(
-              "gigasocial-camera-preview h-full w-full object-cover",
-              facing === "user" && "scale-x-[-1]"
-            )}
-            style={{ filter: previewFilter !== "none" ? previewFilter : undefined }}
-            playsInline
-            muted
-            autoPlay
-          />
-          {!ready && !error ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-              <Loader2 className="h-8 w-8 animate-spin text-white/80" aria-hidden />
-              <span className="sr-only">Starting camera…</span>
-            </div>
-          ) : null}
-          {showGrid ? (
-            <div
-              className="pointer-events-none absolute inset-0 opacity-35"
-              style={{
-                backgroundImage:
-                  "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
-                backgroundSize: "33.33% 33.33%",
-              }}
-              aria-hidden
-            />
-          ) : null}
-          {countdown != null ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-5xl font-bold">
-              {countdown}
-            </div>
-          ) : null}
+        <div className="pointer-events-none absolute left-3 top-[max(4.5rem,calc(env(safe-area-inset-top)+3.5rem))] space-y-2">
           {recording ? (
-            <div className="absolute left-3 top-3 rounded-full bg-red-600/90 px-2 py-0.5 text-xs font-semibold">
+            <div className="rounded-full bg-red-600/90 px-2 py-0.5 text-xs font-semibold">
               REC {recordSec}s / {SOCIAL_MAX_VIDEO_DURATION_SEC}s
             </div>
           ) : null}
           {mode === "video" && audioMuted && ready ? (
-            <p className="absolute right-3 top-3 max-w-[10rem] rounded-lg bg-black/60 px-2 py-1 text-[10px] text-amber-100">
+            <p className="max-w-[10rem] rounded-lg bg-black/60 px-2 py-1 text-[10px] text-amber-100">
               Recording without microphone — allow mic access for audio.
             </p>
           ) : null}
-          <GigaSocialTeleprompter active={showTeleprompter} recording={recording} />
         </div>
 
-        <div className="space-y-2 border-t border-white/10 px-3 py-2">
+        <div className="pointer-events-auto space-y-2 bg-gradient-to-t from-black/75 via-black/45 to-transparent px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-8">
+          {showPreSnap && !recording ? (
+            <PreSnapEditBar
+              filterId={beautyOn ? "natural" : filterId}
+              onFilterChange={(id) => {
+                setBeautyOn(false);
+                setFilterId(id);
+              }}
+              modeId={captureModeId}
+              onModeChange={setCaptureModeId}
+              disabled={busy}
+            />
+          ) : null}
+
           <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
             <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-white/55">
               Quality
@@ -444,7 +469,7 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
                 className={cn(
                   "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold",
                   quality === preset.id
-                    ? "bg-violet-600 text-white"
+                    ? "bg-white text-black"
                     : "bg-white/10 text-white/80 hover:bg-white/15"
                 )}
                 title={preset.description}
@@ -476,91 +501,81 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
               </select>
             </label>
           ) : null}
-        </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-2 px-3 py-2">
-          <ToolButton
-            label="Flip"
-            onClick={() => {
-              setDeviceId(undefined);
-              setFacing((value) => (value === "user" ? "environment" : "user"));
-            }}
-            icon={<SwitchCamera className="h-4 w-4" />}
-          />
-          <ToolButton
-            label="Grid"
-            active={showGrid}
-            onClick={() => setShowGrid((value) => !value)}
-            icon={<Grid3X3 className="h-4 w-4" />}
-          />
-          <ToolButton
-            label="Timer"
-            active={timerSec === 3}
-            onClick={() => setTimerSec((value) => (value === 3 ? 0 : 3))}
-            icon={<Timer className="h-4 w-4" />}
-          />
-          <ToolButton
-            label="Script"
-            active={showTeleprompter}
-            onClick={() => setShowTeleprompter((value) => !value)}
-            icon={<Type className="h-4 w-4" />}
-          />
-          <ToolButton
-            label="Beauty"
-            active={beautyOn}
-            onClick={() => setBeautyOn((value) => !value)}
-            icon={<Sparkles className="h-4 w-4" />}
-          />
-          <ToolButton
-            label="AI look"
-            active={filterId !== "none"}
-            onClick={() =>
-              setFilterId((current) => {
-                const ids = CAMERA_FILTERS.map((f) => f.id);
-                const idx = ids.indexOf(current);
-                return ids[(idx + 1) % ids.length] ?? "none";
-              })
-            }
-            icon={<Zap className="h-4 w-4" />}
-          />
-        </div>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <ToolButton
+              label="Flip"
+              onClick={() => {
+                setDeviceId(undefined);
+                setFacing((value) => (value === "user" ? "environment" : "user"));
+              }}
+              icon={<SwitchCamera className="h-4 w-4" />}
+            />
+            <ToolButton
+              label="Grid"
+              active={showGrid}
+              onClick={() => setShowGrid((value) => !value)}
+              icon={<Grid3X3 className="h-4 w-4" />}
+            />
+            <ToolButton
+              label="Timer"
+              active={timerSec === 3}
+              onClick={() => setTimerSec((value) => (value === 3 ? 0 : 3))}
+              icon={<Timer className="h-4 w-4" />}
+            />
+            <ToolButton
+              label="Script"
+              active={showTeleprompter}
+              onClick={() => setShowTeleprompter((value) => !value)}
+              icon={<Type className="h-4 w-4" />}
+            />
+            <ToolButton
+              label="Beauty"
+              active={beautyOn}
+              onClick={() => setBeautyOn((value) => !value)}
+              icon={<Sparkles className="h-4 w-4" />}
+            />
+          </div>
 
-        <div className="flex items-center justify-center gap-6 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2">
-          <button
-            type="button"
-            disabled={!ready || busy || countdown != null}
-            onClick={runCapture}
-            className={cn(
-              "flex h-16 w-16 items-center justify-center rounded-full border-4 border-white",
-              mode === "video" && recording ? "bg-red-500" : "bg-white/20",
-              (!ready || busy) && "opacity-50"
-            )}
-            aria-label={mode === "photo" ? "Take photo" : recording ? "Stop recording" : "Start recording"}
-          >
-            {busy ? (
-              <Loader2 className="h-6 w-6 animate-spin" />
-            ) : mode === "photo" ? (
-              <Camera className="h-7 w-7" />
-            ) : (
-              <Video className="h-7 w-7" />
-            )}
-          </button>
-        </div>
-
-        {error ? (
-          <div className="space-y-2 px-4 pb-3 text-center">
-            <p className="text-xs text-red-200" role="alert">
-              {error}
-            </p>
+          <div className="flex items-center justify-center gap-6 pt-1">
             <button
               type="button"
-              className="rounded-full bg-white/15 px-4 py-1.5 text-xs font-medium text-white"
-              onClick={() => void startStream()}
+              disabled={!ready || busy || countdown != null}
+              onClick={runCapture}
+              className={cn(
+                "flex h-16 w-16 items-center justify-center rounded-full border-4 border-white",
+                mode === "video" && recording ? "bg-red-500" : "bg-white/20",
+                (!ready || busy) && "opacity-50"
+              )}
+              aria-label={
+                mode === "photo" ? "Take photo" : recording ? "Stop recording" : "Start recording"
+              }
             >
-              Retry camera
+              {busy ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : mode === "photo" ? (
+                <Camera className="h-7 w-7" />
+              ) : (
+                <Video className="h-7 w-7" />
+              )}
             </button>
           </div>
-        ) : null}
+
+          {error ? (
+            <div className="space-y-2 text-center">
+              <p className="text-xs text-red-200" role="alert">
+                {error}
+              </p>
+              <button
+                type="button"
+                className="rounded-full bg-white/15 px-4 py-1.5 text-xs font-medium text-white"
+                onClick={() => void startStream()}
+              >
+                Retry camera
+              </button>
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>,
     document.body
