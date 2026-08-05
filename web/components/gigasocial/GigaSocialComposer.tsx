@@ -56,6 +56,7 @@ import { GigaSocialVideoTrimEditor } from "@/components/gigasocial/studio/GigaSo
 import {
   appendRemixMarker,
   buildRemixBodyPrefix,
+  type GigaRemixModeId,
 } from "@/lib/gigasocial/remixMeta";
 import { POST_TYPE_OPTIONS, type SocialPostTypeId } from "@/lib/gigasocial/sections";
 import type { SocialPost } from "@/lib/gigasocial/types";
@@ -112,6 +113,7 @@ interface GigaSocialComposerProps {
   initialMedia?: GigaSocialComposerInitialMedia | null;
   initialVisibility?: "public" | "followers";
   remixSource?: SocialPost;
+  remixMode?: GigaRemixModeId;
   enableAIAssistant?: boolean;
   enableMediaStudio?: boolean;
   /** Dense sheet layout — less vertical chrome for mobile compose. */
@@ -143,6 +145,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   initialMedia = null,
   initialVisibility,
   remixSource,
+  remixMode = "classic",
   enableAIAssistant = false,
   enableMediaStudio = false,
   compact = false,
@@ -299,9 +302,14 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         sourcePostId: remixSource._id,
         sourceAuthorHandle: remixSource.author.handle,
         sourceAuthorName: remixSource.author.displayName,
+        mode: remixMode,
       });
       setBody(`${prefix}My take: `);
-      setPostType(remixSource.postType);
+      setPostType(
+        remixMode === "voice-over" || remixMode === "reaction" || remixMode === "split-view"
+          ? "video"
+          : remixSource.postType
+      );
       return;
     }
     if (initialBody) setBody(initialBody);
@@ -364,7 +372,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         if (initialBody) queueMicrotask(() => captionRef.current?.focus());
         break;
     }
-  }, [initialAction, initialBody, initialMedia, initialPostType, remixSource]);
+  }, [initialAction, initialBody, initialMedia, initialPostType, remixMode, remixSource]);
 
   const hasMedia = pendingImages.length > 0 || Boolean(pendingVideo) || Boolean(pendingAudio);
   const canPost = Boolean(body.trim() || hasMedia);
@@ -750,7 +758,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         finalBody = `${finalBody}\n📍 ${locationTag.trim()}`.trim();
       }
       if (remixSource) {
-        finalBody = appendRemixMarker(finalBody, remixSource._id);
+        finalBody = appendRemixMarker(finalBody, remixSource._id, remixMode);
       }
       if (pendingImages.length && pendingAudio && !/#photomusic\b/i.test(finalBody)) {
         finalBody = `${finalBody} #PhotoMusic`.trim();

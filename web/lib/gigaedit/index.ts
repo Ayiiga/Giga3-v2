@@ -13,6 +13,14 @@ export {
   type ExportAspectRatio,
 } from "@/lib/gigaedit/types";
 export {
+  GIGAEDIT_TOOL_CATALOG,
+  GIGAEDIT_TOOL_CATEGORIES,
+  featuredGigaEditTools,
+  resolveGigaEditToolHref,
+  toolsForCategory,
+  type GigaEditCatalogTool,
+} from "@/lib/gigaedit/toolCatalog";
+export {
   createEmptyProject,
   listGigaEditProjects,
   saveGigaEditProject,

@@ -25,9 +25,16 @@ function NotificationBellWithCount({ onClick }: { onClick: () => void }) {
     api.platformNotifications.listNotifications,
     sessionToken ? { sessionToken, limit: 5 } : "skip"
   );
-  return (
-    <NotificationBell onClick={onClick} unreadCount={notifData?.unreadCount ?? 0} />
+  const socialUnread = useQuery(
+    api.gigaSocial.getNotificationUnreadCount,
+    sessionToken ? { sessionToken } : "skip"
   );
+  const platformCount =
+    typeof notifData?.unreadCount === "number" ? notifData.unreadCount : 0;
+  const socialCount =
+    typeof socialUnread?.unreadCount === "number" ? socialUnread.unreadCount : 0;
+  const total = Math.max(0, platformCount + socialCount);
+  return <NotificationBell onClick={onClick} unreadCount={total} />;
 }
 
 /** Global search, notifications, and feedback — keyboard shortcut Ctrl+K / Cmd+K */

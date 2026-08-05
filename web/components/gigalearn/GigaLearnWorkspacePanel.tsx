@@ -44,9 +44,44 @@ export const GigaLearnWorkspacePanel = memo(function GigaLearnWorkspacePanel() {
   const topSubjects = Object.entries(progress.subjectsStudied)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
+  const continueLearning = artifacts[0] ?? null;
+  const dailyTip =
+    profile.subjects[0] ||
+    topSubjects[0]?.[0] ||
+    "Keep a short daily study block — consistency beats cramming.";
 
   return (
     <div className="space-y-8">
+      {continueLearning ? (
+        <section
+          className="saas-card rounded-2xl border border-accent/25 bg-accent/5 p-4"
+          aria-labelledby="gigalearn-continue"
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent">
+            Continue learning
+          </p>
+          <h3 id="gigalearn-continue" className="mt-1 text-base font-semibold text-foreground">
+            {continueLearning.title || "Pick up where you left off"}
+          </h3>
+          <p className="mt-1 line-clamp-2 text-sm text-muted">
+            {continueLearning.content.slice(0, 160)}
+          </p>
+          <p className="mt-2 text-xs text-muted">
+            Daily focus: {dailyTip}
+          </p>
+        </section>
+      ) : (
+        <section className="saas-card rounded-2xl border border-border p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent">
+            Daily recommendations
+          </p>
+          <h3 className="mt-1 text-base font-semibold text-foreground">Start a learning streak</h3>
+          <p className="mt-1 text-sm text-muted">
+            Generate a quiz, notes, or study plan — your progress appears here for quick continue.
+          </p>
+        </section>
+      )}
+
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Materials created" value={String(progress.totalGenerations)} />
         <StatCard label="Learning streak" value={`${progress.streakDays} day${progress.streakDays === 1 ? "" : "s"}`} />
