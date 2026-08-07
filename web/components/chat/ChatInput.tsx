@@ -18,6 +18,11 @@ import {
   formatUploadBytes,
   type UploadUsageSnapshot,
 } from "@/lib/chat/uploadLimits";
+import {
+  clearComposerDraft,
+  readComposerDraft,
+  writeComposerDraft,
+} from "@/lib/chat/composerDraft";
 import { Send, Smile, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -44,6 +49,8 @@ interface ChatInputProps {
   onSuggestVisionTier?: () => void;
   /** One-shot attachments from GigaLearn homework handoff. */
   initialAttachments?: PreparedChatAttachment[];
+  /** Active conversation — drafts are restored per chat. */
+  conversationId?: string | null;
 }
 
 export const ChatInput = memo(function ChatInput({
@@ -57,10 +64,11 @@ export const ChatInput = memo(function ChatInput({
   onAttachmentsChange,
   onSuggestVisionTier,
   initialAttachments,
+  conversationId = null,
 }: ChatInputProps) {
   useRenderDiagnostic("ChatInput");
 
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(() => readComposerDraft(conversationId));
   const [notice, setNotice] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<PreparedChatAttachment[]>([]);
   const [busy, setBusy] = useState(false);
@@ -88,6 +96,18 @@ export const ChatInput = memo(function ChatInput({
       insertRef.current = null;
     };
   }, [insertRef, insertText]);
+
+  useEffect(() => {
+    setValue(readComposerDraft(conversationId));
+  }, [conversationId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const timer = window.setTimeout(() => {
+      writeComposerDraft(conversationId, value);
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [conversationId, value]);
 
   useEffect(() => {
     if (!toolbarOpen) return;
@@ -215,6 +235,7 @@ export const ChatInput = memo(function ChatInput({
     const displayContent = buildUserDisplayContent(trimmed, attachments);
     onSend(displayContent, attachments);
     setValue("");
+    clearComposerDraft(conversationId);
     for (const attachment of attachments) {
       if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl);
     }

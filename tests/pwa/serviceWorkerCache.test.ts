@@ -3,32 +3,36 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("service worker cache version", () => {
-  it("uses fullscreen-cameras cache name (v208)", () => {
+  it("uses persistent-offline cache name (v209)", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v208-fullscreen-cameras"');
-    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v208"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v209-persistent-offline"');
+    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v209"');
+    expect(sw).toContain('APP_SHELL_CACHE = "giga3-app-shell-v209"');
     expect(sw).toContain('pathname.startsWith("/wallet/")');
     expect(sw).toContain('pathname.startsWith("/admin/")');
   });
 
-  it("identifies chat/gigasocial shells but does not runtime-cache their HTML", () => {
+  it("network-first caches chat/gigasocial/gigalearn/gigaedit shells for offline reopen", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
     expect(sw).toContain("isOfflineAppShellPath");
     expect(sw).toContain('pathname.startsWith("/chat/")');
     expect(sw).toContain('pathname.startsWith("/gigasocial/")');
-    expect(sw).toContain("!sensitive && !appShell");
-    expect(sw).toContain("Never runtime-cache chat/GigaSocial HTML");
+    expect(sw).toContain('pathname.startsWith("/gigalearn/")');
+    expect(sw).toContain('pathname.startsWith("/gigaedit/")');
+    expect(sw).toContain("APP_SHELL_CACHE");
+    expect(sw).toContain("network-first");
     expect(sw).toContain("isNextStaticAsset");
     expect(sw).toContain("giga3-social-outbox");
   });
 
-  it("does not treat chat/gigasocial as never-cache sensitive paths", () => {
+  it("does not treat chat/gigasocial/gigalearn as never-cache sensitive paths", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
     const sensitiveFn =
       sw.match(/function isSensitiveDocumentPath\(pathname\) \{([\s\S]*?)\n\}/)?.[1] ?? "";
     expect(sensitiveFn).toContain("/payment/");
     expect(sensitiveFn).not.toContain("/chat/");
     expect(sensitiveFn).not.toContain("/gigasocial/");
+    expect(sensitiveFn).not.toContain("/gigalearn/");
   });
 
   it("bumps launcher badge on push when no visible client", () => {

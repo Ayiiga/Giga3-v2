@@ -197,6 +197,19 @@ export function saveArtifact(
   };
   const next = [artifact, ...listArtifacts()].slice(0, 150);
   writeJson(ARTIFACTS_KEY, next);
+  // Mirror into IndexedDB so lessons stay available after reboots offline.
+  void import("@/lib/gigalearn/offlineLessons")
+    .then(({ saveOfflineLesson }) =>
+      saveOfflineLesson({
+        id: artifact.id,
+        title: artifact.title,
+        content: artifact.content,
+        toolId: artifact.toolId,
+        curriculum: artifact.curriculum,
+        subject: artifact.subject,
+      })
+    )
+    .catch(() => undefined);
   return artifact;
 }
 

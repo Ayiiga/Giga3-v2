@@ -1,17 +1,18 @@
 "use client";
 
-import { getSessionToken, getUserEmail } from "@/lib/auth";
+import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import { useCallback, useEffect, useState } from "react";
 
 const REQUIRE_AUTH_EVENT = "gigasocial:require-auth";
 
 /** Session-aware guest helpers for UI gating only — does not alter auth logic. */
 export function useGuestAccess() {
-  const [isGuest, setIsGuest] = useState(true);
+  // Sync read avoids guest flash when a persisted session already exists.
+  const [isGuest, setIsGuest] = useState(() => !hasPersistedAuth());
 
   useEffect(() => {
     const refresh = () => {
-      setIsGuest(!getSessionToken() || !getUserEmail());
+      setIsGuest(!hasPersistedAuth());
     };
     refresh();
     window.addEventListener("storage", refresh);

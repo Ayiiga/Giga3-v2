@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 export function useMediaBilling() {
   const email = getUserEmail();
   const [mounted, setMounted] = useState(false);
-  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [sessionToken, setSessionToken] = useState<string | null>(() => getSessionToken());
 
   useEffect(() => {
     setMounted(true);

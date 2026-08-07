@@ -56,6 +56,20 @@ export async function listSocialOutbox(): Promise<SocialOutboxEntry[]> {
   });
 }
 
+/** Stable key so reconnect sync does not duplicate the same offline action. */
+export function socialOutboxDedupeKey(
+  entry: Pick<SocialOutboxEntry, "action" | "postId" | "creatorId" | "body" | "postType" | "communitySlug">
+): string {
+  return [
+    entry.action,
+    entry.postId ?? "",
+    entry.creatorId ?? "",
+    entry.postType ?? "",
+    entry.communitySlug ?? "",
+    (entry.body ?? "").trim(),
+  ].join("|");
+}
+
 export async function enqueueSocialOutbox(
   entry: Omit<SocialOutboxEntry, "id" | "attempts" | "createdAt"> & {
     id?: string;
@@ -63,17 +77,20 @@ export async function enqueueSocialOutbox(
     createdAt?: number;
   }
 ): Promise<SocialOutboxEntry> {
+  const existing = await listSocialOutbox();
+  const dedupe = socialOutboxDedupeKey(entry);
+  const match = existing.find((row) => socialOutboxDedupeKey(row) === dedupe);
   const full: SocialOutboxEntry = {
-    id: entry.id ?? newSocialOutboxId(),
+    id: entry.id ?? match?.id ?? newSocialOutboxId(),
     action: entry.action,
     postId: entry.postId,
     creatorId: entry.creatorId,
     body: entry.body,
     postType: entry.postType,
     communitySlug: entry.communitySlug,
-    attempts: entry.attempts ?? 0,
-    createdAt: entry.createdAt ?? Date.now(),
-    lastError: entry.lastError,
+    attempts: entry.attempts ?? match?.attempts ?? 0,
+    createdAt: entry.createdAt ?? match?.createdAt ?? Date.now(),
+    lastError: entry.lastError ?? match?.lastError,
   };
   if (typeof indexedDB === "undefined") return full;
   const db = await openDb();

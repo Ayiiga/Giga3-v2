@@ -13,6 +13,11 @@ import {
   getUserEmail,
   setSessionToken,
 } from "@/lib/auth";
+import { recoverInvalidSession } from "@/lib/auth/sessionRestore";
+import {
+  readActiveConversationId,
+  writeActiveConversationId,
+} from "@/lib/chat/workspacePersist";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import {
@@ -97,8 +102,8 @@ function sleep(ms: number): Promise<void> {
 }
 
 export function useChatPlatform() {
-  const [email, setEmail] = useState<string | null>(null);
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(() => getUserEmail());
+  const [activeId, setActiveId] = useState<string | null>(() => readActiveConversationId());
   const [mode, setMode] = useState<AiModeId>("general");
   const [isSending, setIsSending] = useState(false);
   const [awaitingReply, setAwaitingReply] = useState(false);
@@ -107,7 +112,8 @@ export function useChatPlatform() {
   const [chatProviderLabel, setChatProviderLabel] = useState<string | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [sessionToken, setSessionTokenState] = useState<string | null>(null);
+  const [sessionToken, setSessionTokenState] = useState<string | null>(() => getSessionToken());
+  const sessionRecoveryRef = useRef(false);
   const [outboxCount, setOutboxCount] = useState(0);
   const [isSyncingOutbox, setIsSyncingOutbox] = useState(false);
   const [segmentNotice, setSegmentNotice] = useState<string | null>(null);
@@ -262,6 +268,10 @@ export function useChatPlatform() {
     setSessionTokenState(getSessionToken());
   }, []);
 
+  useEffect(() => {
+    writeActiveConversationId(activeId);
+  }, [activeId]);
+
   const sessionQueryArgs = useMemo(
     () =>
       mounted && sessionToken && effectiveOnline
@@ -285,21 +295,6 @@ export function useChatPlatform() {
   const chatCreditsRow = useQuery(api.users.getChatCredits, sessionQueryArgs);
   const interestProfileRow = useQuery(api.users.getInterestProfile, sessionQueryArgs);
   const conversationsRaw = useQuery(api.conversations.list, conversationsQueryArgs);
-
-  useEffect(() => {
-    if (!mounted || sessionIdentity === undefined) return;
-    if (sessionIdentity.ok) return;
-    // Expired/invalid token — clear local auth so chat opens the sign-in path
-    // instead of a Convex Unauthorized crash.
-    clearAllClientAuth();
-    setSessionTokenState(null);
-    setEmail(null);
-    setError("Session expired. Please sign in again.");
-    if (typeof window !== "undefined") {
-      const next = encodeURIComponent("/chat/");
-      window.location.replace(`/chat/login/?next=${next}`);
-    }
-  }, [mounted, sessionIdentity]);
   const messagesRaw = useQuery(api.messages.listByConversation, messagesQueryArgs);
   const [pollConversationId, setPollConversationId] = useState<string | null>(null);
   const pollTargetId = pollConversationId ?? activeId;
@@ -383,6 +378,55 @@ export function useChatPlatform() {
   const setFavoriteMutation = useMutation(api.conversations.setFavorite);
   const updateTitleMutation = useMutation(api.conversations.updateTitle);
   const createUser = useMutation(api.users.createUser);
+
+  useEffect(() => {
+    if (!mounted || sessionIdentity === undefined) return;
+    if (sessionIdentity.ok) {
+      sessionRecoveryRef.current = false;
+      return;
+    }
+    // Offline with a cached token: keep the user signed in and use IDB history.
+    if (!effectiveOnline && getSessionToken()) {
+      return;
+    }
+    if (sessionRecoveryRef.current) return;
+    sessionRecoveryRef.current = true;
+
+    void (async () => {
+      const recovered = await recoverInvalidSession({
+        online: effectiveOnline,
+        bootstrapSession: async (bootstrapEmail) => {
+          try {
+            const result = await createUser({ email: bootstrapEmail });
+            if (result && typeof result === "object" && "sessionToken" in result) {
+              const next = (result as { sessionToken: string }).sessionToken;
+              return next || null;
+            }
+          } catch {
+            return null;
+          }
+          return null;
+        },
+      });
+
+      if (recovered.status === "refreshed" || recovered.status === "offline_cached") {
+        setSessionTokenState(recovered.sessionToken);
+        setEmail(recovered.email);
+        sessionRecoveryRef.current = false;
+        return;
+      }
+
+      // Silent restore failed — only then clear and show login.
+      clearAllClientAuth();
+      setSessionTokenState(null);
+      setEmail(null);
+      setError("Session expired. Please sign in again.");
+      if (typeof window !== "undefined") {
+        const next = encodeURIComponent("/chat/");
+        window.location.replace(`/chat/login/?next=${next}`);
+      }
+    })();
+  }, [mounted, sessionIdentity, effectiveOnline, createUser]);
 
   const conversationsLoading =
     effectiveOnline && conversationsRaw === undefined && !cachedConversations;

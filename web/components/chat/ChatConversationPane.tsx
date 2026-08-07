@@ -38,6 +38,7 @@ interface ChatConversationPaneProps {
   onRetryOutboxSync?: () => void;
   /** UI lock only (e.g. offline) — does not change send/outbox hooks. */
   inputDisabled?: boolean;
+  conversationId?: string | null;
 }
 
 function panePropsEqual(
@@ -69,7 +70,8 @@ function panePropsEqual(
     prev.onSuggestVisionTier === next.onSuggestVisionTier &&
     prev.initialAttachments === next.initialAttachments &&
     prev.insertRef === next.insertRef &&
-    prev.onRetryOutboxSync === next.onRetryOutboxSync
+    prev.onRetryOutboxSync === next.onRetryOutboxSync &&
+    prev.conversationId === next.conversationId
   );
 }
 
@@ -100,6 +102,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   initialAttachments,
   onRetryOutboxSync,
   inputDisabled = false,
+  conversationId = null,
 }: ChatConversationPaneProps) {
   const showTyping = awaitingReply || isSending;
   const typingPhase = awaitingReply ? "replying" : "sending";
@@ -159,6 +162,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           onAttachmentsChange={onAttachmentsChange}
           onSuggestVisionTier={onSuggestVisionTier}
           initialAttachments={initialAttachments}
+          conversationId={conversationId}
         />
       </div>
       </div>

@@ -56,8 +56,8 @@ export function useGigaSocialOutbox(sessionToken: string | null, enabled: boolea
     if (!enabled || !sessionToken || !effectiveOnline) return;
     const rows = await listSocialOutbox();
     for (const row of rows) {
+      // Keep failed items visible for manual retry — never silently drop.
       if (row.attempts >= MAX_ATTEMPTS) {
-        await removeSocialOutbox(row.id);
         continue;
       }
       try {

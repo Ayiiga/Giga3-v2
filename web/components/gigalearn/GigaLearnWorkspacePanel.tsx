@@ -52,6 +52,9 @@ export const GigaLearnWorkspacePanel = memo(function GigaLearnWorkspacePanel() {
 
   return (
     <div className="space-y-8">
+      <p className="text-xs text-muted">
+        Saved lessons stay on this device for offline study. New generation needs a connection.
+      </p>
       {continueLearning ? (
         <section
           className="saas-card rounded-2xl border border-accent/25 bg-accent/5 p-4"
