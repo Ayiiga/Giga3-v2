@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { getUserEmail, isValidEmail } from "@/lib/auth";
+import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import {
   passwordRequirementsHint,
   requestPasswordReset,
@@ -28,11 +29,21 @@ function ChatLoginFormInner() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [restoringSession] = useState(() => hasPersistedAuth());
 
   useEffect(() => {
-    const existing = getUserEmail();
-    if (existing) router.replace(nextPath.startsWith("/") ? nextPath : "/chat");
+    if (!hasPersistedAuth() && !getUserEmail()) return;
+    router.replace(nextPath.startsWith("/") ? nextPath : "/chat");
   }, [router, nextPath]);
+
+  if (restoringSession) {
+    return (
+      <div className="flex min-h-[16rem] flex-col items-center justify-center gap-3 px-6 text-center">
+        <BrandLogo size={40} />
+        <p className="text-sm text-muted">Restoring your session…</p>
+      </div>
+    );
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();

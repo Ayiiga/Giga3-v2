@@ -16,6 +16,7 @@ import {
   STUDENT_TOOLS,
   TEACHER_TOOLS,
 } from "@/lib/gigalearn/tools";
+import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import { getGigaLearnProfile, saveGigaLearnProfile } from "@/lib/gigalearn/profile";
 import type { LearnerRole } from "@/lib/gigalearn/curricula";
 import { siteConfig } from "@/lib/site";
@@ -36,9 +37,11 @@ function GigaLearnContent() {
     GIGALEARN_SECTIONS.some((s) => s.id === initialTab) ? initialTab : "student"
   );
   const [role, setRole] = useState<LearnerRole>("student");
-
   useEffect(() => {
-    if (!email) router.replace("/chat/login?next=/gigalearn");
+    // Keep offline learners in-app when a session is already on device.
+    if (!email && !hasPersistedAuth()) {
+      router.replace("/chat/login?next=/gigalearn");
+    }
   }, [email, router]);
 
   useEffect(() => {

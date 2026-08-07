@@ -1,6 +1,7 @@
-/** Fullscreen cameras / live / teleprompter + pre-snap edits — refresh PWAs. */
-const CACHE_NAME = "giga3-shell-v208-fullscreen-cameras";
-const NEXT_STATIC_CACHE = "giga3-next-static-v208";
+/** Persistent login + offline app shells — refresh PWAs. */
+const CACHE_NAME = "giga3-shell-v209-persistent-offline";
+const NEXT_STATIC_CACHE = "giga3-next-static-v209";
+const APP_SHELL_CACHE = "giga3-app-shell-v209";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";
@@ -22,11 +23,12 @@ const PRECACHE = [
   "/subscribe/",
   "/chat/login/",
   "/gigaedit/",
+  "/gigalearn/",
 ];
 
 /**
- * Documents that must never be stored offline (billing / admin / creator tools).
- * Chat + GigaSocial shells are intentionally excluded — see isOfflineAppShellPath.
+ * Documents that must never be stored offline (billing / admin / seller tools).
+ * Chat, GigaSocial, GigaLearn, and GigaEdit shells use network-first app-shell cache.
  */
 function isSensitiveDocumentPath(pathname) {
   return (
@@ -36,19 +38,22 @@ function isSensitiveDocumentPath(pathname) {
     pathname.startsWith("/admin/") ||
     pathname.startsWith("/marketplace/sell/") ||
     pathname.startsWith("/creator-studio/") ||
-    pathname.startsWith("/gigalearn/") ||
     pathname.startsWith("/creator/")
   );
 }
 
-/** App shells that may be runtime-cached after an online visit for offline reopen. */
+/** App shells that may be runtime-cached (network-first) after an online visit. */
 function isOfflineAppShellPath(pathname) {
   if (pathname.startsWith("/chat/login")) return false;
   return (
     pathname === "/chat" ||
     pathname.startsWith("/chat/") ||
     pathname === "/gigasocial" ||
-    pathname.startsWith("/gigasocial/")
+    pathname.startsWith("/gigasocial/") ||
+    pathname === "/gigalearn" ||
+    pathname.startsWith("/gigalearn/") ||
+    pathname === "/gigaedit" ||
+    pathname.startsWith("/gigaedit/")
   );
 }
 
@@ -194,7 +199,10 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((k) => k !== CACHE_NAME && k !== NEXT_STATIC_CACHE)
+            .filter(
+              (k) =>
+                k !== CACHE_NAME && k !== NEXT_STATIC_CACHE && k !== APP_SHELL_CACHE
+            )
             .map((k) => caches.delete(k))
         )
       )
@@ -266,17 +274,28 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Never runtime-cache chat/GigaSocial HTML — stale shells cause shake/crashes after deploys.
-          // Marketing/public docs may still be cached for offline reopen.
+          // Marketing/public docs: long-lived shell cache.
           if (response.ok && !sensitive && !appShell) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
+          // Chat / Social / Learn / Edit: network-first; cache only after a successful
+          // online visit so offline reopen works without serving forever-stale HTML.
+          if (response.ok && appShell) {
+            const clone = response.clone();
+            caches.open(APP_SHELL_CACHE).then((cache) => cache.put(request, clone));
+          }
           return response;
         })
         .catch(() => {
-          if (sensitive || appShell) {
+          if (sensitive) {
             return caches.match("/offline/");
+          }
+          if (appShell) {
+            return caches
+              .open(APP_SHELL_CACHE)
+              .then((cache) => cache.match(request))
+              .then((cached) => cached || caches.match("/offline/"));
           }
           return caches
             .match(request)

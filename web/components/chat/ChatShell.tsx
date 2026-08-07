@@ -15,6 +15,10 @@ import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { useChatShareShortcuts } from "@/hooks/useChatShareShortcuts";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { getSessionToken } from "@/lib/auth";
+import {
+  readSidebarCollapsed,
+  writeSidebarCollapsed,
+} from "@/lib/chat/workspacePersist";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { useMutation } from "convex/react";
@@ -97,7 +101,7 @@ function ChatShellInner({
 }) {
   useRenderDiagnostic("ChatShellInner");
 
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => readSidebarCollapsed());
   const [mobileOpen, setMobileOpen] = useState(false);
   const [templateNotice, setTemplateNotice] = useState<string | null>(null);
   const [dismissedError, setDismissedError] = useState<string | null>(null);
@@ -310,7 +314,11 @@ function ChatShellInner({
   }, []);
 
   const handleToggleSidebar = useCallback(() => {
-    setSidebarCollapsed((c) => !c);
+    setSidebarCollapsed((c) => {
+      const next = !c;
+      writeSidebarCollapsed(next);
+      return next;
+    });
   }, []);
 
   const handleNewChat = useCallback(() => {
@@ -594,6 +602,7 @@ function ChatShellInner({
           onAttachmentsChange={handleAttachmentsChange}
           onSuggestVisionTier={handleSuggestVisionTier}
           initialAttachments={handoffAttachments}
+          conversationId={activeId}
         />
       </div>
     </div>

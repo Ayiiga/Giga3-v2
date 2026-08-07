@@ -77,7 +77,7 @@ describe("GigaEdit routing & SW", () => {
 
   it("precaches gigaedit shell and bumps cache version", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v208-fullscreen-cameras"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v209-persistent-offline"');
     expect(sw).toContain('"/gigaedit/"');
   });
 });
