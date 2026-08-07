@@ -24,8 +24,6 @@ const PRECACHE = [
   "/chat/login/",
   "/gigaedit/",
   "/gigalearn/",
-  "/gigasocial/",
-  "/chat/",
 ];
 
 /**
