@@ -3,11 +3,11 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("service worker cache version", () => {
-  it("uses persistent-offline cache name (v209)", () => {
+  it("uses social-perf-offline cache name (v210)", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v209-persistent-offline"');
-    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v209"');
-    expect(sw).toContain('APP_SHELL_CACHE = "giga3-app-shell-v209"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v210-social-perf-offline"');
+    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v210"');
+    expect(sw).toContain('APP_SHELL_CACHE = "giga3-app-shell-v210"');
     expect(sw).toContain('pathname.startsWith("/wallet/")');
     expect(sw).toContain('pathname.startsWith("/admin/")');
   });

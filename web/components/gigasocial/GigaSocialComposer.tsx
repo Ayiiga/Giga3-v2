@@ -306,10 +306,77 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       });
       setBody(`${prefix}My take: `);
       setPostType(
-        remixMode === "voice-over" || remixMode === "reaction" || remixMode === "split-view"
+        remixMode === "voice-over" ||
+          remixMode === "reaction" ||
+          remixMode === "split-view" ||
+          remixMode === "green-screen" ||
+          remixMode === "clip-reply" ||
+          remixMode === "ai-subtitles"
           ? "video"
           : remixSource.postType
       );
+      // Keep the original video/audio attached to the remix composition.
+      void import("@/lib/gigasocial/remixSourceAttach").then(async ({ attachRemixSourceMedia }) => {
+        try {
+          setBusy(true);
+          setPendingVideo((current) => {
+            if (current?.previewUrl.startsWith("blob:")) URL.revokeObjectURL(current.previewUrl);
+            return null;
+          });
+          setPendingImages((prev) => {
+            for (const image of prev) {
+              if (image.previewUrl.startsWith("blob:")) URL.revokeObjectURL(image.previewUrl);
+            }
+            return [];
+          });
+          setPendingAudio(null);
+          const attached = await attachRemixSourceMedia(remixSource, remixMode);
+          if (attached.video) {
+            const previewUrl = URL.createObjectURL(attached.video);
+            let thumbnailUrl: string | undefined;
+            try {
+              thumbnailUrl = await generateVideoThumbnail(attached.video);
+            } catch {
+              /* optional */
+            }
+            setPendingVideo({
+              file: attached.video,
+              previewUrl,
+              name: attached.video.name,
+              durationSec: attached.videoDurationSec ?? 0,
+              thumbnailUrl,
+            });
+            setPostType("video");
+          } else if (attached.images?.length) {
+            setPendingImages(
+              attached.images.map((file, index) => ({
+                id: `remix-${remixSource._id}-${index}`,
+                file,
+                previewUrl: URL.createObjectURL(file),
+                name: file.name,
+              }))
+            );
+            setPostType("image");
+          }
+          if (attached.audio) {
+            setPendingAudio({
+              file: attached.audio,
+              name: attached.audio.name,
+              durationSec: 0,
+            });
+            if (attached.soundAttribution) setSoundAttribution(attached.soundAttribution);
+          }
+          if (!attached.video && !attached.images?.length && !attached.audio) {
+            setError("Could not attach the original media. Check your connection and try again.");
+          } else {
+            setSuccess("Original media attached — add your take, then post.");
+          }
+        } catch {
+          setError("Could not attach the original media for this remix.");
+        } finally {
+          setBusy(false);
+        }
+      });
       return;
     }
     if (initialBody) setBody(initialBody);

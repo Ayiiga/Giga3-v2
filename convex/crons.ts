@@ -48,4 +48,12 @@ crons.daily(
   { limit: 50, minInactiveDays: 2, minDaysSinceLastEmail: 4 }
 );
 
+// Weekly branded product-update email for opted-in users (respects unsubscribe + 12-day gap).
+crons.weekly(
+  "feature announcement emails",
+  { dayOfWeek: "monday", hourUTC: 14, minuteUTC: 0 },
+  internal.engagementEmailActions.sendFeatureAnnouncementEmails,
+  { limit: 40, minDaysSinceLastEmail: 12 }
+);
+
 export default crons;

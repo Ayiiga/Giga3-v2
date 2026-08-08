@@ -158,6 +158,8 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
       className={cn(imageClass, allowFullView && !featured && "cursor-zoom-in")}
       style={imageFilterStyle}
       loading={eager ? "eager" : "lazy"}
+      decoding="async"
+      fetchPriority={eager || featured ? "high" : "auto"}
       onClick={allowFullView && !featured ? () => openLightbox(url) : undefined}
     />
   );

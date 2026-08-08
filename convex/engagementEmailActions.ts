@@ -63,27 +63,81 @@ function pickTheme(candidate: Candidate): {
   if (/fun|entertain|music|story|social|game/.test(joined)) {
     return {
       title: "Come back for entertainment & community",
-      lead: "GigaSocial Stories now support photos and videos — share a quick update with your ring.",
+      lead: "GigaSocial now loads faster offline — reopen watched Reels and posts from cache, then remix with the original video attached.",
       ctaLabel: "Open GigaSocial",
       ctaPath: "/gigasocial/",
       bullets: [
-        "Watch Stories from creators you follow",
-        "Share a photo or short video Story",
+        "Browse your cached feed and Stories offline",
+        "Remix keeps the source video in your composition",
         "Tip, comment, and grow with the community",
       ],
     };
   }
 
   return {
-    title: "We saved a spot for your next idea",
-    lead: "Whether you want to create, learn, or just explore — Giga3 AI is ready when you are.",
+    title: "New on Giga3 AI — faster Social, smarter remix",
+    lead: "Your feed is snappier, offline-ready, and remix now keeps the original video attached. Open Giga3 when you are ready.",
     ctaLabel: "Open Giga3",
-    ctaPath: "/chat/",
+    ctaPath: "/gigasocial/",
     bullets: [
-      "Chat for ideas, plans, and quick answers",
-      "Create with Media Studio, GigaEdit, and Stories",
-      "Learn with GigaLearn or browse the marketplace",
+      "Faster photos & videos with smart caching",
+      "Offline feed, Reels, and Stories you already watched",
+      "Giga Remix preserves source media + attribution",
     ],
+  };
+}
+
+function buildFeatureAnnouncementHtml(candidate: Candidate): {
+  subject: string;
+  html: string;
+  text: string;
+} {
+  const frontend = getFrontendBaseUrl();
+  const greet = candidate.name?.trim()
+    ? `Hi ${candidate.name.trim().split(/\s+/)[0]},`
+    : "Hi there,";
+  const unsub = `${getConvexSiteUrl()}/email/unsubscribe?email=${encodeURIComponent(
+    candidate.email
+  )}&token=${encodeURIComponent(candidate.unsubscribeToken)}`;
+  const ctaUrl = `${frontend}/gigasocial/`;
+
+  const html = wrapEmailHtml({
+    title: "What’s new in Giga3 AI",
+    bodyHtml: `
+      <p style="margin:0 0 12px;">${greet}</p>
+      <p style="margin:0 0 12px;">
+        We upgraded <strong>GigaSocial</strong> so your feed feels faster, works offline with
+        content you already watched, and <strong>Remix</strong> keeps the original video in your take.
+      </p>
+      <ul style="margin:0 0 20px;padding-left:18px;">
+        <li style="margin:0 0 6px;">Instant reopen for cached photos, videos, Reels &amp; Stories</li>
+        <li style="margin:0 0 6px;">Smarter lazy-loading and prefetch on slow networks</li>
+        <li style="margin:0 0 6px;">Remix attaches source media, audio timing &amp; attribution</li>
+      </ul>
+      <p style="margin:0 0 8px;">
+        <a href="${ctaUrl}"
+           style="display:inline-block;background:#0f766e;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:700;">
+          Explore GigaSocial
+        </a>
+      </p>
+    `,
+    footerHtml: `
+      <p style="margin:0;">Sent to your verified Giga3 account. Occasional product updates only.</p>
+      <p style="margin:8px 0 0;"><a href="${unsub}" style="color:#0f766e;">Unsubscribe from these emails</a></p>
+    `,
+  });
+
+  const text = [
+    greet.replace(/,$/, ""),
+    "What’s new: faster GigaSocial, offline cached feed/Reels, and Remix that keeps the source video.",
+    `Explore: ${ctaUrl}`,
+    `Unsubscribe: ${unsub}`,
+  ].join("\n\n");
+
+  return {
+    subject: "What’s new in Giga3 AI · GigaSocial upgrade",
+    html,
+    text,
   };
 }
 
@@ -200,6 +254,78 @@ export const sendEngagementDigests = internalAction({
         text: content.text,
         tags: [
           { name: "category", value: "engagement" },
+          { name: "app", value: "giga3" },
+        ],
+      });
+
+      if (result.ok) {
+        sent += 1;
+        await ctx.runMutation(
+          internal.engagementEmail.markEngagementEmailSentInternal,
+          {
+            email: ready.email,
+            unsubscribeToken: ready.unsubscribeToken,
+          }
+        );
+      } else {
+        failed += 1;
+      }
+    }
+
+    return {
+      ok: true as const,
+      attempted: candidates.length,
+      sent,
+      failed,
+    };
+  },
+});
+
+/**
+ * Branded major-feature announcement for opted-in users.
+ * Respects the same unsubscribe + last-sent rate limits as digests.
+ */
+export const sendFeatureAnnouncementEmails = internalAction({
+  args: {
+    limit: v.optional(v.number()),
+    minDaysSinceLastEmail: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    if (!isEmailDeliveryConfigured()) {
+      console.error("[featureEmail] skipped — RESEND_API_KEY not configured");
+      return { ok: false as const, reason: "not_configured", sent: 0, attempted: 0 };
+    }
+
+    const candidates = await ctx.runQuery(
+      internal.engagementEmail.listEngagementCandidatesInternal,
+      {
+        limit: args.limit ?? 40,
+        // Include recently active users — this is a product update, not a win-back.
+        minInactiveDays: 0,
+        minDaysSinceLastEmail: args.minDaysSinceLastEmail ?? 10,
+      }
+    );
+
+    let sent = 0;
+    let failed = 0;
+
+    for (const candidate of candidates as Candidate[]) {
+      const ensured = await ctx.runMutation(
+        internal.engagementEmail.ensureUnsubscribeTokenInternal,
+        {
+          email: candidate.email,
+          unsubscribeToken: candidate.unsubscribeToken,
+        }
+      );
+      const ready = { ...candidate, unsubscribeToken: ensured.token };
+      const content = buildFeatureAnnouncementHtml(ready);
+      const result = await sendEmail({
+        to: ready.email,
+        subject: content.subject,
+        html: content.html,
+        text: content.text,
+        tags: [
+          { name: "category", value: "feature_announcement" },
           { name: "app", value: "giga3" },
         ],
       });
