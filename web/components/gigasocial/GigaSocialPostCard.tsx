@@ -62,6 +62,8 @@ interface GigaSocialPostCardProps {
   enablePostTips?: boolean;
   feedAutoPlay?: boolean;
   feedPaused?: boolean;
+  /** Use IndexedDB-cached blobs when offline. */
+  offlinePlayback?: boolean;
 }
 
 export const GigaSocialPostCard = memo(function GigaSocialPostCard({
@@ -83,6 +85,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   enablePostTips = true,
   feedAutoPlay = false,
   feedPaused = false,
+  offlinePlayback = false,
 }: GigaSocialPostCardProps) {
   const features = useGigaSocialFeatures();
   const [liked, setLiked] = useState(Boolean(post.likedByMe));
@@ -102,6 +105,18 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   useEffect(() => {
     setPinned(Boolean(post.pinnedAt));
   }, [post._id, post.pinnedAt]);
+
+  // Cache viewed visual posts so offline reopen is near-instant.
+  useEffect(() => {
+    if (offlinePlayback || typeof navigator === "undefined" || !navigator.onLine) return;
+    if (!postHasVisualFeedMedia(post)) return;
+    const timer = window.setTimeout(() => {
+      void import("@/lib/gigasocial/feedMediaCache").then(({ cacheFeedPostMedia }) =>
+        cacheFeedPostMedia(post)
+      );
+    }, 1600);
+    return () => window.clearTimeout(timer);
+  }, [offlinePlayback, post]);
   const isOwnPost = Boolean(
     myUserId && post.author.userId && myUserId === post.author.userId
   );
@@ -381,6 +396,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
               allowFullView
               autoPlay={shouldAutoPlayMedia && isActiveVideo(post._id)}
               paused={feedPaused}
+              offlinePlayback={offlinePlayback}
             />
             {heartBurst ? (
               <span
@@ -438,7 +454,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
       ) : (
         <>
           {captionBlock}
-          <GigaSocialPostMedia post={post} />
+          <GigaSocialPostMedia post={post} offlinePlayback={offlinePlayback} />
         </>
       )}
 

@@ -52,6 +52,7 @@ import { handleFromEmail } from "@/lib/gigasocial/handleFromEmail";
 import { findFeaturedMediaPost, getPostMediaKind } from "@/lib/gigasocial/postMedia";
 import { sortPostsNewestFirst } from "@/lib/gigasocial/postSort";
 import { loadFeedSnapshot, saveFeedSnapshot } from "@/lib/gigasocial/feedOfflineSnapshot";
+import { prefetchFeedMedia, pruneFeedMediaCache } from "@/lib/gigasocial/feedMediaCache";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
@@ -270,6 +271,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     const livePosts = [...(cursor ? extraPosts : []), ...(feed?.posts ?? [])] as SocialPost[];
     if (livePosts.length > 0) {
       saveFeedSnapshot(livePosts);
+      prefetchFeedMedia(livePosts);
+      void pruneFeedMediaCache(livePosts.map((post) => post._id));
     }
   }, [cursor, debouncedSearch, effectiveOnline, extraPosts, feed?.posts, savedFeed]);
 
@@ -858,6 +861,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
             onVideoEnded={handleFeaturedVideoEnded}
             replayKey={featuredReplayKey}
             compact
+            offlinePlayback={!effectiveOnline}
           />
         ) : (
           <div
@@ -946,6 +950,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
                 sessionToken={sessionToken}
                 feedAutoPlay={autoPlay}
                 feedPaused={paused}
+                offlinePlayback={!effectiveOnline}
                 canDelete={Boolean(
                   (myHandle && post.author.handle === myHandle) ||
                     (getUserEmail() && post.author.userId === getUserEmail())

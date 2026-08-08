@@ -5,6 +5,11 @@ import {
   postBadgeMessageToServiceWorker,
   setAppBadgeCount,
 } from "@/lib/pwa/appBadge";
+import {
+  attentionBadgeFloor,
+  recordAppOpen,
+  shouldShowAttentionDot,
+} from "@/lib/pwa/attentionDot";
 import { shouldClearAppBadgeForPath } from "@/lib/pwa/badgeClearPaths";
 import { getSessionToken } from "@/lib/auth";
 import { getConvexClient } from "@/lib/convex";
@@ -49,15 +54,22 @@ function AppBadgeSyncInner() {
           typeof social?.unreadCount === "number" ? social.unreadCount : 0;
         const platformUnread =
           typeof platform?.unreadCount === "number" ? platform.unreadCount : 0;
-        const total = Math.max(0, socialUnread + platformUnread);
+        const unread = Math.max(0, socialUnread + platformUnread);
+        // Soft 24h attention: at most +1 when away; never inflates real unread.
+        const total = attentionBadgeFloor(unread);
         await setAppBadgeCount(total);
         postBadgeMessageToServiceWorker("GIGA3_SET_BADGE", total);
       } catch {
-        /* offline — leave SW badge as-is */
+        /* offline — if away ~24h, still surface a gentle attention badge */
+        if (shouldShowAttentionDot()) {
+          await setAppBadgeCount(1);
+          postBadgeMessageToServiceWorker("GIGA3_SET_BADGE", 1);
+        }
       }
     }
 
     async function clearBadge() {
+      recordAppOpen();
       await clearAppBadgeCount();
       postBadgeMessageToServiceWorker("GIGA3_CLEAR_BADGE");
     }
@@ -72,8 +84,12 @@ function AppBadgeSyncInner() {
 
     function onVisibilityChange() {
       if (document.visibilityState === "visible") {
+        const due = shouldShowAttentionDot();
+        recordAppOpen();
         if (!clearIfRelevantSection()) {
           void syncFromServer();
+        } else if (due) {
+          // Cleared on open after 24h away — attention reset.
         }
         return;
       }
