@@ -70,8 +70,7 @@ Creator tip: install the PWA before traveling, keep Series PDFs in My purchases 
       {
         h: "8. Workspaces map",
         body: `Giga3 workspaces (typical order): GigaSocial (community), GigaEdit (production), GigaLearn (lessons), Media Studio (generation), Marketplace (sell/buy), Chat (AI companion). Treat Chat as your always-on strategist; treat GigaEdit + GigaSocial as the public stage; treat Marketplace as the storefront.
-
-Render probes (?renderProbe=1) help engineers diagnose chat re-render storms — creators can ignore them unless support asks for console snapshots.`,
+`,
       },
       {
         h: "9. Credits, subscriptions & fair use",

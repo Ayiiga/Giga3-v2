@@ -4,7 +4,6 @@ import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
 import { ChatProviderBanner } from "@/components/chat/ChatProviderBanner";
 import { UserLearningBanner } from "@/components/chat/UserLearningBanner";
 import { creditBalancePrompt } from "@/lib/billing/creditPrompts";
-import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { cn } from "@/lib/utils";
 import { memo, useEffect, useState } from "react";
 
@@ -56,7 +55,6 @@ export const ChatBanners = memo(function ChatBanners({
   credits = null,
   subscriptionActive = false,
 }: ChatBannersProps) {
-  useRenderDiagnostic("ChatBanners");
 
   const balancePrompt = creditBalancePrompt(credits);
   const [lowCreditDismissed, setLowCreditDismissed] = useState(false);

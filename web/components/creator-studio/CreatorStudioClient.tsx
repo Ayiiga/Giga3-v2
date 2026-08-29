@@ -7,7 +7,6 @@ import { CreatorWorkspacePanel } from "@/components/creator-studio/CreatorWorksp
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { useMediaBilling } from "@/hooks/useMediaBilling";
-import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import {
   CREATOR_SECTIONS,
   type CreatorStudioSection,
@@ -25,7 +24,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 function CreatorStudioContent() {
-  useRenderDiagnostic("CreatorStudioContent");
 
   const router = useRouter();
   const params = useSearchParams();

@@ -1,7 +1,6 @@
 "use client";
 
 import { LoadingState } from "@/components/ui/LoadingState";
-import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import dynamic from "next/dynamic";
 
 const GigaEditClient = dynamic(
@@ -13,6 +12,5 @@ const GigaEditClient = dynamic(
 );
 
 export function GigaEditPageRoot() {
-  useRenderDiagnostic("GigaEditPageRoot");
   return <GigaEditClient />;
 }

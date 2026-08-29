@@ -9,7 +9,6 @@ import {
   type VideoGenerationOptions,
 } from "@/hooks/useMediaGeneration";
 import { useGenerationStages } from "@/hooks/useGenerationStages";
-import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import {
   IMAGE_CATEGORIES,
   VIDEO_CATEGORIES,
@@ -86,7 +85,6 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
   initialAction = null,
   initialImageSize = "square_hd",
 }: MediaGeneratePanelProps) {
-  useRenderDiagnostic("MediaGeneratePanel");
 
   const {
     loading,

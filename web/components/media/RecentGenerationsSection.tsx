@@ -2,7 +2,6 @@
 
 import { RecentGenerationsList } from "@/components/media/RecentGenerationsList";
 import { usePolledMediaJobs } from "@/hooks/usePolledMediaJobs";
-import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { mediaJobsRefreshRef } from "@/lib/media/jobsRefresh";
 import { memo, useEffect } from "react";
 
@@ -16,7 +15,6 @@ function RecentGenerationsSectionComponent({
   userId,
   mounted,
 }: RecentGenerationsSectionProps) {
-  useRenderDiagnostic("RecentGenerationsSection");
 
   const { jobs, refreshJobs } = usePolledMediaJobs(userId, mounted);
 

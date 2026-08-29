@@ -4,7 +4,6 @@ import { MessageBubbleActions } from "@/components/chat/MessageBubbleActions";
 import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
 import { MessageMarkdown } from "@/components/chat/MessageMarkdown";
 import { useStreamingReveal } from "@/hooks/useStreamingReveal";
-import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { formatMessageTime } from "@/lib/chat/groupMessagesByDate";
 import { splitAssistantResponseDisplay } from "@/lib/chat/deriveResponseDisplay";
 import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
@@ -55,7 +54,6 @@ export const MessageBubble = memo(function MessageBubble({
   onEdit,
   onDelete,
 }: MessageBubbleProps) {
-  useRenderDiagnostic("MessageBubble");
 
   const isUser = role === "user";
   const parsed = useMemo(() => parseMessageMedia(content), [content]);
