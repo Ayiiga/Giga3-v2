@@ -1,6 +1,7 @@
 "use client";
 
 import { LoadingState } from "@/components/ui/LoadingState";
+import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import dynamic from "next/dynamic";
 
 const GigaLearnClient = dynamic(
@@ -12,5 +13,6 @@ const GigaLearnClient = dynamic(
 );
 
 export function GigaLearnPageRoot() {
+  useRenderDiagnostic("GigaLearnPageRoot");
   return <GigaLearnClient />;
 }

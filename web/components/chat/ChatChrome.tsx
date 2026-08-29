@@ -10,6 +10,7 @@ import { PlatformChromeHost } from "@/components/platform/PlatformChromeHost";
 import { ChatGigaSocialStoryRingsSafe } from "@/components/chat/ChatGigaSocialStoryRingsSafe";
 import type { UiMessage } from "@/components/chat/MessageList";
 import { CreditBadge } from "@/components/billing/CreditBadge";
+import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { clearAllClientAuth } from "@/lib/auth";
 import type { GigaModelId } from "@/lib/chat/gigaModels";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
@@ -106,6 +107,7 @@ export const ChatChrome = memo(function ChatChrome({
   activeConversationId,
   onSelectConversation,
 }: ChatChromeProps) {
+  useRenderDiagnostic("ChatChrome");
 
   const router = useRouter();
 

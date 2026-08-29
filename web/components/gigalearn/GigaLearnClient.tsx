@@ -6,6 +6,7 @@ import { GigaLearnWorkspacePanel } from "@/components/gigalearn/GigaLearnWorkspa
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { useMediaBilling } from "@/hooks/useMediaBilling";
+import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import {
   GIGALEARN_SECTIONS,
   type GigaLearnSection,
@@ -26,6 +27,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 function GigaLearnContent() {
+  useRenderDiagnostic("GigaLearnContent");
 
   const router = useRouter();
   const params = useSearchParams();

@@ -7,6 +7,7 @@ import { getSuggestedPrompts } from "@/lib/chat/suggestedPrompts";
 import { GIGA3_CHAT_WELCOME } from "@/lib/assistantIdentity";
 import type { AiModeId } from "@/lib/aiRouter";
 import { formatCurrentDate, resolveTemplatePlaceholders } from "@/lib/datetime";
+import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { useScrollToLatestMessage } from "@/hooks/useScrollToLatestMessage";
 import { ScrollToLatestButton } from "@/components/chat/ScrollToLatestButton";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -54,6 +55,7 @@ function MessageListInner({
   onEditMessage,
   onDeleteMessage,
 }: MessageListProps) {
+  useRenderDiagnostic("MessageList");
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollKey = useMemo(() => messageListScrollKey(messages), [messages]);

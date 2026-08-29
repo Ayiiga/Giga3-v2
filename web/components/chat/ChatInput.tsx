@@ -3,6 +3,7 @@
 import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
 import { ChatInputToolbar } from "@/components/chat/ChatInputToolbar";
 import { EmojiPicker } from "@/components/chat/EmojiPicker";
+import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { Button } from "@/components/ui/Button";
 import { classifyChatMediaFiles } from "@/lib/chat/chatMediaPicker";
 import {
@@ -65,6 +66,7 @@ export const ChatInput = memo(function ChatInput({
   initialAttachments,
   conversationId = null,
 }: ChatInputProps) {
+  useRenderDiagnostic("ChatInput");
 
   const [value, setValue] = useState(() => readComposerDraft(conversationId));
   const [notice, setNotice] = useState<string | null>(null);

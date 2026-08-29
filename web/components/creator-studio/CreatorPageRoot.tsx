@@ -1,6 +1,7 @@
 "use client";
 
 import { LoadingState } from "@/components/ui/LoadingState";
+import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import dynamic from "next/dynamic";
 
 const CreatorStudioClient = dynamic(
@@ -12,5 +13,6 @@ const CreatorStudioClient = dynamic(
 );
 
 export function CreatorPageRoot() {
+  useRenderDiagnostic("CreatorPageRoot");
   return <CreatorStudioClient />;
 }

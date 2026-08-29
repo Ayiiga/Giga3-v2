@@ -6,12 +6,14 @@ import { ChatBanners } from "@/components/chat/ChatBanners";
 import { ChatChrome } from "@/components/chat/ChatChrome";
 import type { ChatActionsMenuHandle } from "@/components/chat/ChatActionsMenu";
 import { ChatConversationPane } from "@/components/chat/ChatConversationPane";
+import { ChatOverflowProbe } from "@/components/chat/ChatOverflowProbe";
 import { ChatWorkspacePanel } from "@/components/chat/ChatWorkspacePanel";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { useChatPlatform } from "@/hooks/useChatPlatform";
 import { useSupabaseChatPlatform } from "@/hooks/useSupabaseChatPlatform";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { useChatShareShortcuts } from "@/hooks/useChatShareShortcuts";
+import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { getSessionToken } from "@/lib/auth";
 import {
   readSidebarCollapsed,
@@ -97,6 +99,8 @@ function ChatShellInner({
     enabled: boolean
   ) => Promise<{ shareToken: string | null; sharePublic: boolean }>;
 }) {
+  useRenderDiagnostic("ChatShellInner");
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => readSidebarCollapsed());
   const [mobileOpen, setMobileOpen] = useState(false);
   const [templateNotice, setTemplateNotice] = useState<string | null>(null);
@@ -487,6 +491,7 @@ function ChatShellInner({
   return (
     <>
     <div className="flex h-full min-h-0 min-w-0 max-w-full flex-1 overflow-hidden bg-background">
+      <ChatOverflowProbe messageCount={displayMessages.length} />
       <ChatSidebar
         conversations={conversations}
         conversationsLoading={conversationsLoading}

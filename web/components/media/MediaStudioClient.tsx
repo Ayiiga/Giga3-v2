@@ -7,6 +7,7 @@ import { MediaQuickTemplates } from "@/components/media/MediaQuickTemplates";
 import { MediaStudioHeader } from "@/components/media/MediaStudioHeader";
 import { RecentGenerationsSection } from "@/components/media/RecentGenerationsSection";
 import { useMediaBilling } from "@/hooks/useMediaBilling";
+import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import {
   getImageStudioActionPrompt,
   parseImageStudioActionId,
@@ -23,6 +24,7 @@ type FormSeed = {
 };
 
 function MediaStudioContent() {
+  useRenderDiagnostic("MediaStudioContent");
 
   const router = useRouter();
   const params = useSearchParams();

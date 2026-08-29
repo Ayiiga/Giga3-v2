@@ -9,6 +9,7 @@ import { GigaSocialOfflineBanner } from "@/components/gigasocial/ux/GigaSocialOf
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ButtonLink } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { withChunkRetryLoader } from "@/lib/pwa/dynamicWithChunkRetry";
 import { getSessionToken } from "@/lib/auth";
 import { getGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
@@ -101,6 +102,7 @@ const GigaSocialNotificationsPanel = dynamic(
 );
 
 function GigaSocialContent() {
+  useRenderDiagnostic("GigaSocialContent");
 
   const router = useRouter();
   const params = useSearchParams();
