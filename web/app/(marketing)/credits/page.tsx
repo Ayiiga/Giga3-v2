@@ -13,6 +13,7 @@ const CreditsPageClient = dynamic(
 export const metadata: Metadata = {
   title: "Buy Credits",
   description: "Purchase Giga3 AI media credits in Ghana Cedis",
+  robots: { index: false, follow: false },
 };
 
 export default function CreditsPage() {

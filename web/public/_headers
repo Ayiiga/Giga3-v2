@@ -36,6 +36,9 @@
 /marketplace/purchases/*
   Cache-Control: no-store, no-cache, must-revalidate
 
+/workspace/*
+  Cache-Control: no-store, no-cache, must-revalidate
+
 /wallet/*
   Cache-Control: no-store, no-cache, must-revalidate
 

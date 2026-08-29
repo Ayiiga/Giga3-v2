@@ -5,6 +5,11 @@ Disallow: /payment/
 Disallow: /wallet/
 Disallow: /workspace/
 Disallow: /admin/
+Disallow: /creator-studio/
+Disallow: /credits/
+Disallow: /home/
+Disallow: /insights/
+Disallow: /subscribe/
 Disallow: /marketplace/purchases/
 Disallow: /marketplace/sell/
 

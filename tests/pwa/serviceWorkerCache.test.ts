@@ -3,14 +3,15 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("service worker cache version", () => {
-  it("uses marketplace-private cache name (v211)", () => {
+  it("uses private-route-audit cache name (v212)", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v211-marketplace-private"');
-    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v211"');
-    expect(sw).toContain('APP_SHELL_CACHE = "giga3-app-shell-v211"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v212-private-route-audit"');
+    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v212"');
+    expect(sw).toContain('APP_SHELL_CACHE = "giga3-app-shell-v212"');
     expect(sw).toContain('pathname.startsWith("/wallet/")');
     expect(sw).toContain('pathname.startsWith("/admin/")');
     expect(sw).toContain('pathname.startsWith("/marketplace/purchases/")');
+    expect(sw).toContain('pathname.startsWith("/workspace/")');
   });
 
   it("network-first caches chat/gigasocial/gigalearn/gigaedit shells for offline reopen", () => {

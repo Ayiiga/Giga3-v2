@@ -77,7 +77,7 @@ describe("GigaEdit routing & SW", () => {
 
   it("precaches gigaedit shell and bumps cache version", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v211-marketplace-private"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v212-private-route-audit"');
     expect(sw).toContain('"/gigaedit/"');
   });
 });
