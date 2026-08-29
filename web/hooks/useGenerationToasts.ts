@@ -6,6 +6,9 @@ import { useEffect, useRef, useSyncExternalStore } from "react";
 
 type DebugHypothesisId = "A" | "B" | "C";
 
+const EMPTY_TASKS: GenerationTask[] = [];
+const EMPTY_TOASTS: GenerationToast[] = [];
+
 function logGenerationStoreDebug(
   hypothesisId: DebugHypothesisId,
   message: string,
@@ -43,7 +46,7 @@ function getToastsSnapshot(): GenerationToast[] {
 }
 
 export function useGenerationTasks(): GenerationTask[] {
-  const tasks = useSyncExternalStore(subscribe, getTasksSnapshot, () => []);
+  const tasks = useSyncExternalStore(subscribe, getTasksSnapshot, () => EMPTY_TASKS);
   const firstSnapshot = useRef(tasks);
 
   // #region agent log
@@ -60,7 +63,7 @@ export function useGenerationTasks(): GenerationTask[] {
 }
 
 export function useGenerationToasts(): GenerationToast[] {
-  const toasts = useSyncExternalStore(subscribe, getToastsSnapshot, () => []);
+  const toasts = useSyncExternalStore(subscribe, getToastsSnapshot, () => EMPTY_TOASTS);
   const firstSnapshot = useRef(toasts);
 
   // #region agent log
