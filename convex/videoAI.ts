@@ -5,6 +5,10 @@ import type { Id } from "./_generated/dataModel";
 import { requireSessionWithMonitoring } from "./auth";
 import { buildVideoAiPrompt } from "./videoCatalog";
 import { videoCostForCategory } from "./videoCreditsConfig";
+import {
+  assertVideoDurationWithinPlan,
+  FREE_MAX_VIDEO_DURATION_SEC,
+} from "./videoDurationPolicy";
 
 const imageSizeValidator = v.optional(
   v.union(
@@ -60,6 +64,15 @@ export const generate = action({
 
     const walletBefore = await ctx.runQuery(api.videoCredits.getVideoWallet, {
       sessionToken: args.sessionToken,
+    });
+    const usage = await ctx.runQuery(api.credits.getUsageSnapshot, {
+      sessionToken: args.sessionToken,
+    });
+    if (!usage) throw new Error("User not found");
+    assertVideoDurationWithinPlan({
+      durationSec: args.duration ?? FREE_MAX_VIDEO_DURATION_SEC,
+      subscriptionPlan: usage.subscriptionPlan,
+      subscriptionExpiresAt: usage.subscriptionExpiresAt,
     });
     if (walletBefore.videoCredits < cost) {
       throw new Error(
