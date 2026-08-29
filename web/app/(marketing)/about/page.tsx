@@ -2,13 +2,14 @@ import { Container } from "@/components/ui/Container";
 import { VisionTagline } from "@/components/vision/VisionTagline";
 import { GIGA3_VISION } from "@/lib/vision";
 import { siteConfig } from "@/lib/site";
+import { publicMetadata } from "@/lib/seo/publicMetadata";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "About",
+export const metadata: Metadata = publicMetadata({
+  path: "/about",
+  title: "About Giga3 AI",
   description: GIGA3_VISION.mission,
-};
+});
 
 export default function AboutPage() {
   return (

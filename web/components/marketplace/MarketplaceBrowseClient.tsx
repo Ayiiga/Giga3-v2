@@ -10,7 +10,7 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { MARKETPLACE_CATEGORIES, PRODUCT_TYPES, formatGhs } from "@/lib/marketplace/catalog";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
-import { BadgeCheck, Search, ShoppingBag, Sparkles, Store } from "lucide-react";
+import { ArrowUpDown, BadgeCheck, Search, ShoppingBag, Sparkles, Store } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -23,6 +23,7 @@ function MarketplaceBrowseInner() {
   const debouncedQuery = useDebouncedValue(query, 300);
   const [category, setCategory] = useState<string>("");
   const [productType, setProductType] = useState<string>("");
+  const [sort, setSort] = useState<"newest" | "price-low" | "price-high" | "rating">("newest");
 
   useEffect(() => {
     const q = searchParams.get("q");
@@ -42,6 +43,18 @@ function MarketplaceBrowseInner() {
     const map = new Map(PRODUCT_TYPES.map((t) => [t.id, t.label]));
     return (id: string) => map.get(id as any) ?? id;
   }, []);
+
+  const sortedListings = useMemo(() => {
+    if (!listings) return listings;
+    return [...listings].sort((a, b) => {
+      if (sort === "price-low") return a.priceGhs - b.priceGhs;
+      if (sort === "price-high") return b.priceGhs - a.priceGhs;
+      if (sort === "rating") {
+        return b.ratingAvg - a.ratingAvg || b.ratingCount - a.ratingCount;
+      }
+      return 0;
+    });
+  }, [listings, sort]);
 
   return (
     <Container className="discover-stable py-8 sm:py-12">
@@ -90,7 +103,7 @@ function MarketplaceBrowseInner() {
           </div>
         </section>
 
-        <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto]">
+        <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto_auto]">
           <div className="relative flex items-center">
             <Search className="pointer-events-none absolute left-3 h-4 w-4 text-muted" aria-hidden />
             <input
@@ -127,11 +140,26 @@ function MarketplaceBrowseInner() {
               </option>
             ))}
           </select>
+          <label className="relative">
+            <span className="sr-only">Sort listings</span>
+            <ArrowUpDown className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted" aria-hidden />
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as typeof sort)}
+              className="w-full rounded-xl border border-border bg-card py-3 pl-9 pr-4"
+              aria-label="Sort listings"
+            >
+              <option value="newest">Newest</option>
+              <option value="price-low">Price: low to high</option>
+              <option value="price-high">Price: high to low</option>
+              <option value="rating">Top rated</option>
+            </select>
+          </label>
         </div>
 
-        {!listings ? (
+        {!sortedListings ? (
           <LoadingState label="Loading marketplace…" />
-        ) : listings.length === 0 ? (
+        ) : sortedListings.length === 0 ? (
           <EmptyState
             icon={Store}
             title="No listings found"
@@ -139,7 +167,7 @@ function MarketplaceBrowseInner() {
           />
         ) : (
           <div className="discover-card-grid discover-card-grid--3">
-            {listings.map((item: NonNullable<typeof listings>[number]) => (
+            {sortedListings.map((item: NonNullable<typeof sortedListings>[number]) => (
               <Link
                 key={item._id}
                 href={`/marketplace/item/?id=${item._id}`}
@@ -150,6 +178,7 @@ function MarketplaceBrowseInner() {
                   <img
                     src={item.coverImageUrl}
                     alt={item.title}
+                    loading="lazy"
                     className="mb-4 aspect-[4/3] w-full rounded-xl object-cover"
                   />
                 ) : (

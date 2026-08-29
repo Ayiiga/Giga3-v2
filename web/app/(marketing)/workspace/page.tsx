@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   title: "Workspace",
   description:
     "School and organization workspace — classrooms, assignments, analytics, and role-based dashboards.",
+  robots: { index: false, follow: false },
 };
 
 export default function WorkspacePage() {

@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   title: "Creator Studio",
   description:
     "Giga3 AI Creator Studio — writing tools, image generation, social media assistant, and creator workspace",
+  robots: { index: false, follow: false },
 };
 
 export default function CreatorStudioPage() {

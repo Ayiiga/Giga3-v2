@@ -1,7 +1,7 @@
 /** GigaSocial perf + offline feed/reels — refresh PWAs. */
-const CACHE_NAME = "giga3-shell-v210-social-perf-offline";
-const NEXT_STATIC_CACHE = "giga3-next-static-v210";
-const APP_SHELL_CACHE = "giga3-app-shell-v210";
+const CACHE_NAME = "giga3-shell-v212-private-route-audit";
+const NEXT_STATIC_CACHE = "giga3-next-static-v212";
+const APP_SHELL_CACHE = "giga3-app-shell-v212";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";
@@ -35,8 +35,10 @@ function isSensitiveDocumentPath(pathname) {
     pathname.startsWith("/payment/") ||
     pathname.startsWith("/credits/") ||
     pathname.startsWith("/wallet/") ||
+    pathname.startsWith("/workspace/") ||
     pathname.startsWith("/admin/") ||
     pathname.startsWith("/marketplace/sell/") ||
+    pathname.startsWith("/marketplace/purchases/") ||
     pathname.startsWith("/creator-studio/") ||
     pathname.startsWith("/creator/")
   );

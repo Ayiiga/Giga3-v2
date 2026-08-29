@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+/** Application routes are authenticated experiences, not search landing pages. */
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
+
 export default function AppShellLayout({
   children,
 }: {

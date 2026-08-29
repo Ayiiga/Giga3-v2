@@ -113,7 +113,8 @@ function MarketplaceItemInner() {
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={listing.coverImageUrl}
-              alt=""
+                alt={`${listing.title} product cover`}
+                loading="lazy"
               className="mb-6 aspect-video w-full rounded-2xl object-cover"
             />
           )}

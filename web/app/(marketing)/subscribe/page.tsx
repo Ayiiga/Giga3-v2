@@ -13,6 +13,7 @@ const SubscribePageClient = dynamic(
 export const metadata: Metadata = {
   title: "Subscribe",
   description: "Choose Basic, Pro, or Premium — Paystack billing in GHS",
+  robots: { index: false, follow: false },
 };
 
 export default function SubscribePage() {

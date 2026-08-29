@@ -583,14 +583,14 @@ export const initializeMarketplacePayment = action({
   handler: async (ctx, args) => {
     assertPaystackProductionReady();
     const userId = await requireSession(args.sessionToken);
-    const listing = await ctx.runQuery(api.marketplace.getListing, {
+    const listing = await ctx.runQuery(internal.marketplace.getListingForCheckoutInternal, {
       listingId: args.listingId,
     });
-    if (!listing?.listing) throw new Error("Listing not found");
-    if (listing.listing.creatorId === userId) {
+    if (!listing) throw new Error("Listing not found");
+    if (listing.creatorId === userId) {
       throw new Error("You cannot purchase your own listing");
     }
-    if (!listing.listing.hasFile) {
+    if (!listing.hasFile) {
       throw new Error(
         "This product isn't ready for purchase yet — the creator hasn't uploaded the file. Please check back soon."
       );
@@ -607,7 +607,7 @@ export const initializeMarketplacePayment = action({
       sessionToken: args.sessionToken,
     });
     const email = (user?.email ?? userId).trim().toLowerCase();
-    const catalog = getMarketplaceProduct(listing.listing);
+    const catalog = getMarketplaceProduct(listing);
     const productId = `marketplace_${args.listingId}`;
     const reference = `giga3_mk_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     const frontend = process.env.FRONTEND_URL ?? "https://www.giga3ai.com";

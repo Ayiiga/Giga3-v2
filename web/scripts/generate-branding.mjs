@@ -22,9 +22,9 @@ const BRAND_ASSET_VERSION = "20260803";
 
 const BRAND = {
   name: "Giga3 AI",
-  shortName: "Giga3",
+  shortName: "Giga3 AI",
   description:
-    "Intelligent conversations at scale — modern AI chat, writing, and media with credits & subscriptions.",
+    "Giga3 AI is Africa's AI Super App for social, AI tools, learning, creativity, marketplace and digital services.",
   themeColor: "#5b21b6",
   backgroundColor: "#ffffff",
   /** Solid violet — single background color for app icons. */
