@@ -2,6 +2,7 @@
 
 import { CreatorTemplatePicker } from "@/components/creator-studio/CreatorTemplatePicker";
 import { CreatorImagePanel } from "@/components/creator-studio/CreatorImagePanel";
+import { ContentGrowthStarter } from "@/components/creator-studio/ContentGrowthStarter";
 import { CreatorTextToolPanel } from "@/components/creator-studio/CreatorTextToolPanel";
 import { CreatorWorkspacePanel } from "@/components/creator-studio/CreatorWorkspacePanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
@@ -18,6 +19,7 @@ import {
   WRITING_TOOLS,
 } from "@/lib/creator-studio/tools";
 import { siteConfig } from "@/lib/site";
+import { isContentGrowthEngineEnabled } from "@/lib/content-engine/starter";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, Palette } from "lucide-react";
 import Link from "next/link";
@@ -88,6 +90,8 @@ function CreatorStudioContent() {
           </Link>
         </div>
       </header>
+
+      {isContentGrowthEngineEnabled() && <ContentGrowthStarter />}
 
       <CreatorTemplatePicker
         onSelectWriting={(template) => {
