@@ -1,5 +1,5 @@
 import { Container } from "@/components/ui/Container";
-import type { Metadata } from "next";
+import { publicMetadata } from "@/lib/seo/publicMetadata";
 import dynamic from "next/dynamic";
 
 const PricingPageClient = dynamic(
@@ -10,10 +10,11 @@ const PricingPageClient = dynamic(
   { ssr: false, loading: () => <p className="text-center text-muted">Loading…</p> }
 );
 
-export const metadata: Metadata = {
-  title: "Pricing",
-  description: "Giga3 AI plans in Ghana Cedis — Basic, Pro, Premium, and credit packs",
-};
+export const metadata = publicMetadata({
+  path: "/pricing",
+  title: "Giga3 AI Pricing",
+  description: "Explore Giga3 AI plans and credits for learning, creativity, and business workflows.",
+});
 
 export default function PricingPage() {
   return (

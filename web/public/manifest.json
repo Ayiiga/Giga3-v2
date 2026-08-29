@@ -1,8 +1,8 @@
 {
   "id": "/",
   "name": "Giga3 AI",
-  "short_name": "Giga3",
-  "description": "Intelligent conversations at scale — modern AI chat, writing, and media with credits & subscriptions.",
+  "short_name": "Giga3 AI",
+  "description": "Giga3 AI is Africa's AI Super App for social, AI tools, learning, creativity, marketplace and digital services.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

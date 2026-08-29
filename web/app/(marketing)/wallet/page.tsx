@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: "GigaWallet",
   description:
     "Credits, subscriptions, creator earnings, and billing history for Giga3 AI",
+  robots: { index: false, follow: false },
 };
 
 export default function WalletPage() {

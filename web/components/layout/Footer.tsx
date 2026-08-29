@@ -1,6 +1,6 @@
 import { Container } from "@/components/ui/Container";
 import { VisionTagline } from "@/components/vision/VisionTagline";
-import { navLinks, siteConfig } from "@/lib/site";
+import { siteConfig } from "@/lib/site";
 import { legalNavLinks } from "@/lib/legal/content";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import Link from "next/link";
@@ -32,18 +32,22 @@ export function Footer() {
           <div>
             <h3 className="text-sm font-semibold text-foreground">Product</h3>
             <ul className="mt-4 space-y-2 text-sm text-muted">
-              {navLinks.map((link) => (
+              {[
+                { href: "/", label: "Giga3 AI" },
+                { href: "/gigasocial", label: "GigaSocial" },
+                { href: "/gigaedits", label: "GigaEdits" },
+                { href: "/gigalearn", label: "GigaLearn" },
+                { href: "/ai-studio", label: "Giga3 AI Studio" },
+                { href: "/marketplace", label: "Giga3 AI Marketplace" },
+                { href: "/pricing", label: "Pricing" },
+                { href: "/about", label: "About" },
+              ].map((link) => (
                 <li key={link.href}>
                   <a href={link.href} className="hover:text-foreground">
                     {link.label}
                   </a>
                 </li>
               ))}
-              <li>
-                <a href="/pricing" className="hover:text-foreground">
-                  App pricing
-                </a>
-              </li>
             </ul>
           </div>
 

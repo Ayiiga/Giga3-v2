@@ -1,39 +1,17 @@
 import { siteConfig } from "@/lib/site";
 import type { MetadataRoute } from "next";
 
-/** Public marketing routes only — excludes authenticated /chat, /payment, and seller flows. */
+/** Canonical, crawlable marketing routes only — never include application or account pages. */
 const PUBLIC_PATHS = [
   "/",
-  "/pricing/",
-  "/subscribe/",
-  "/credits/",
-  "/creator-studio/",
-  "/gigaedit/",
-  "/gigalearn/",
-  "/enterprise/",
-  "/workspace/",
-  "/automation/",
   "/gigasocial/",
-  "/gigasocial/post/",
-  "/media/",
-  "/video/",
-  "/video/plans/",
+  "/gigaedits/",
+  "/gigalearn/",
+  "/ai-studio/",
   "/marketplace/",
-  "/wallet/",
   "/about/",
-  "/install/",
-  "/trending/",
-  "/discover/",
-  "/prompts/",
-  "/home/",
-  "/insights/",
-  "/offline/",
-  "/legal/",
-  "/legal/privacy/",
-  "/legal/terms/",
-  "/legal/cookies/",
-  "/legal/refunds/",
-  "/legal/acceptable-use/",
+  "/pricing/",
+  "/download/",
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {

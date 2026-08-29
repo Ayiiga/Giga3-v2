@@ -17,25 +17,23 @@ export function Hero() {
           </div>
 
           <h1 className="hero-title">
-            <span className="text-gradient">{siteConfig.name}</span>
-            <br />
-            <span>{siteConfig.tagline}</span>
+            Giga3 AI — Social, AI, Learning, Creativity &amp; Business in One App
           </h1>
 
           <p className="section-lead mx-auto mt-6 max-w-2xl">
-            {siteConfig.description} Run multiple chats with automatic AI failover,
-            credit-based billing, and a polished mobile experience.
+            Giga3 AI is Africa&apos;s AI Super App for people who want to learn, create,
+            connect, and grow their work from one mobile-ready platform.
           </p>
 
           <VisionTagline className="mx-auto mt-5 max-w-md text-center" variant="subtle" />
 
           <div className="discover-card-grid discover-card-grid--3 mx-auto mt-10 w-full max-w-3xl">
             <ButtonLink href="/chat/login" size="lg" className="w-full">
-              Start chatting
+              Get Started
               <ArrowRight aria-hidden />
             </ButtonLink>
             <ButtonLink href="#multi-chat" variant="secondary" size="lg" className="w-full">
-              See multi-AI
+              Open Giga3 AI
             </ButtonLink>
             <InstallButton size="lg" variant="outline" className="w-full" />
           </div>

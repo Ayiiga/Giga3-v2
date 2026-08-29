@@ -1,4 +1,10 @@
 import dynamic from "next/dynamic";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Administration",
+  robots: { index: false, follow: false },
+};
 
 const AdminDashboardClient = dynamic(
   () =>

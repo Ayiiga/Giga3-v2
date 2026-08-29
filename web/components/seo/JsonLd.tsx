@@ -3,7 +3,7 @@ import { brandingAssetUrl } from "@/lib/brandingAssets";
 import { siteConfig } from "@/lib/site";
 
 type JsonLdProps = {
-  type?: "WebSite" | "Organization";
+  type?: "WebSite" | "Organization" | "SoftwareApplication";
 };
 
 /** Structured data for public marketing pages — no authenticated or private URLs. */
@@ -24,7 +24,19 @@ export function JsonLd({ type = "WebSite" }: JsonLdProps) {
             name: siteConfig.founder.name,
           },
         }
-      : {
+      : type === "SoftwareApplication"
+        ? {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: branding.name,
+            applicationCategory: "BusinessApplication",
+            operatingSystem: "Web",
+            url: siteConfig.url,
+            image: logo,
+            description:
+              "Giga3 AI is an African AI-powered super app combining social media, AI tools, creator editing, learning, marketplace and digital services in one platform.",
+          }
+        : {
           "@context": "https://schema.org",
           "@type": "WebSite",
           name: branding.name,
