@@ -1,4 +1,5 @@
 import { internalMutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 
@@ -72,6 +73,21 @@ export const fulfillMarketplacePurchaseInternal = internalMutation({
         updatedAt: Date.now(),
       });
     }
+
+    await ctx.runMutation(internal.platformNotifications.createNotificationInternal, {
+      userId: args.buyerId,
+      category: "marketplace",
+      title: "Purchase complete",
+      body: `Your purchase of ${listing.title} is ready in My purchases.`,
+      href: "/marketplace/purchases",
+    });
+    await ctx.runMutation(internal.platformNotifications.createNotificationInternal, {
+      userId: listing.creatorId,
+      category: "marketplace",
+      title: "New marketplace sale",
+      body: `${listing.title} was purchased. View your seller dashboard for details.`,
+      href: "/marketplace/sell",
+    });
 
     return { alreadyFulfilled: false as const, creatorEarningsGhs };
   },

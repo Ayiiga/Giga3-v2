@@ -349,6 +349,22 @@ export const isListingPurchasedInternal = internalQuery({
   },
 });
 
+/** Checkout-only listing data. Never expose creator identity through public views. */
+export const getListingForCheckoutInternal = internalQuery({
+  args: { listingId: v.id("marketplaceListings") },
+  handler: async (ctx, args) => {
+    const listing = await ctx.db.get(args.listingId);
+    if (!listing || listing.status !== "published") return null;
+    return {
+      _id: listing._id,
+      title: listing.title,
+      priceGhs: listing.priceGhs,
+      creatorId: listing.creatorId,
+      hasFile: Boolean(listing.fileStorageId),
+    };
+  },
+});
+
 export const getMyPurchases = query({
   args: sessionArgs,
   handler: async (ctx, args) => {

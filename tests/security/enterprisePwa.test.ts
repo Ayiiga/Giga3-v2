@@ -28,6 +28,7 @@ describe("enterprise PWA security headers", () => {
     expect(headers).toContain("Cache-Control: no-store");
     expect(headers).toContain("/payment/*");
     expect(headers).toContain("/marketplace/sell/*");
+    expect(headers).toContain("/marketplace/purchases/*");
   });
 });
 
@@ -48,6 +49,7 @@ describe("enterprise service worker policy", () => {
     expect(sw).toContain("isSensitiveDocumentPath");
     expect(sw).toContain("/payment/");
     expect(sw).toContain("/wallet/");
+    expect(sw).toContain("/marketplace/purchases/");
     expect(sw).toContain("isOfflineAppShellPath");
   });
 
