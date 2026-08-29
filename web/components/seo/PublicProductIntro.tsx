@@ -36,6 +36,7 @@ export function PublicProductIntro({
           <div className="mt-8 flex flex-wrap gap-3">
             <ButtonLink href={primaryHref}>{primaryLabel}</ButtonLink>
             <ButtonLink href="/chat" variant="secondary">Open Giga3 AI</ButtonLink>
+            <ButtonLink href="/download" variant="outline">Install Giga3 AI</ButtonLink>
             <InstallButton variant="outline" />
           </div>
           <nav className="mt-10 flex flex-wrap gap-x-5 gap-y-3" aria-label="Explore Giga3 AI products">
