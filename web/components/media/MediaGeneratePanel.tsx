@@ -262,45 +262,6 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
           </p>
         )}
 
-        <button
-          type="button"
-          onClick={() => {
-            setAdvancedOpen(true);
-            requestAnimationFrame(() =>
-              document
-                .getElementById("advanced-creator-controls")
-                ?.scrollIntoView({ behavior: "smooth", block: "start" })
-            );
-          }}
-          className="flex w-full items-center justify-between gap-3 rounded-2xl border border-accent/20 bg-accent/5 px-4 py-3 text-left text-sm font-bold text-foreground"
-        >
-          Advanced Creator controls
-          <span className="text-xs font-medium text-accent">
-            Quality · 4K · formats · video modes
-          </span>
-        </button>
-
-        <label className="text-sm font-bold uppercase tracking-wide text-muted">
-          Category
-        </label>
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4">
-          {categories.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => setCategory(c.id)}
-              className={cn(
-                "min-h-12 rounded-xl border px-3 py-3 text-sm font-semibold sm:text-base",
-                category === c.id
-                  ? "border-accent bg-accent/15 text-foreground shadow-md"
-                  : "border-border text-muted hover:border-violet-500/40 hover:text-foreground"
-              )}
-            >
-              {c.label}
-            </button>
-          ))}
-        </div>
-
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
@@ -315,14 +276,37 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
             onClick={() => setAdvancedOpen((open) => !open)}
             className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-bold uppercase tracking-wide text-muted"
           >
-            Advanced Creator controls
+            Creative options
             <span className="text-xs font-medium normal-case text-accent">
-              {advancedOpen ? "Hide" : "Realism, 4K, formats, video modes"}
+              {advancedOpen
+                ? "Hide"
+                : `${categories.find((item) => item.id === category)?.label ?? "Style"} · ${imageQuality}`}
             </span>
           </button>
 
           {advancedOpen && (
             <div className="grid gap-4 border-t border-border p-4 sm:grid-cols-2">
+              <fieldset className="space-y-2 sm:col-span-2">
+                <legend className="text-sm font-semibold text-foreground">Style</legend>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+                  {categories.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      aria-pressed={category === item.id}
+                      onClick={() => setCategory(item.id)}
+                      className={cn(
+                        "min-h-11 rounded-xl border px-3 py-2 text-sm font-semibold",
+                        category === item.id
+                          ? "border-accent bg-accent/15 text-foreground"
+                          : "border-border text-muted hover:border-violet-500/40 hover:text-foreground"
+                      )}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
               <label className="space-y-2 text-sm font-semibold text-foreground">
                 Quality target
                 <select
