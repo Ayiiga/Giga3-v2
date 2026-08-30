@@ -5,7 +5,7 @@ export type VideoTrimRange = {
   endSec: number;
 };
 
-export const VIDEO_CLIP_LENGTH_OPTIONS_SEC = [15, 30, 40] as const;
+export const VIDEO_CLIP_LENGTH_OPTIONS_SEC = [60, 120, 180] as const;
 
 export function formatVideoTime(seconds: number): string {
   const total = Math.max(0, Math.floor(seconds));
@@ -24,7 +24,7 @@ export function needsVideoTrim(
 
 /**
  * Sliding clip window. `clipLengthSec` lets users shorten below the max
- * (e.g. 15s / 30s / 40s) while staying within source duration.
+ * (e.g. 60s / 120s / 180s) while staying within source duration.
  */
 export function computeTrimRange(
   durationSec: number,
@@ -127,7 +127,7 @@ export async function trimVideoFile(
     stream = getCaptureStream(video);
     if (!stream || stream.getVideoTracks().length === 0) {
       throw new Error(
-        "Video shortening is not supported on this device/browser. Try Chrome/Firefox, or pick a clip under 40 seconds."
+        `Video shortening is not supported on this device/browser. Try Chrome/Firefox, or pick a clip under ${SOCIAL_MAX_VIDEO_DURATION_SEC} seconds.`
       );
     }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { SOCIAL_MAX_VIDEO_DURATION_MIN } from "@/lib/gigasocial/constants";
 import { cn } from "@/lib/utils";
 import { FileStack, ImageIcon, Images, Music2, Sparkles, Video, Plus } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
@@ -37,7 +38,7 @@ const MENU_ITEMS: {
   },
   { id: "photo", label: "Photo", emoji: "📷", icon: ImageIcon, description: "Single image or camera" },
   { id: "photos", label: "Photos", emoji: "🖼", icon: Images, description: "Gallery or slideshow" },
-  { id: "video", label: "Video", emoji: "🎥", icon: Video, description: "Clip Studio · 40s max" },
+  { id: "video", label: "Video", emoji: "🎥", icon: Video, description: `Clip Studio · ${SOCIAL_MAX_VIDEO_DURATION_MIN} min max` },
   { id: "music", label: "Add Music", emoji: "🎵", icon: Music2, description: "Turns photos into a video with soundtrack" },
   { id: "templates", label: "Templates", emoji: "✨", icon: Sparkles, description: "Creator presets" },
 ];

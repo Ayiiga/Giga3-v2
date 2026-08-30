@@ -1,5 +1,6 @@
 /** Non-destructive capture modes — map to CSS filter presets at publish time. */
 import type { CameraFilterId } from "@/lib/gigasocial/cameraFilters";
+import { SOCIAL_MAX_VIDEO_DURATION_MIN } from "@/lib/gigasocial/constants";
 
 export type CameraCaptureModeId =
   | "standard"
@@ -37,7 +38,7 @@ export type CameraCaptureMode = {
 export const CAMERA_CAPTURE_MODES: CameraCaptureMode[] = [
   { id: "standard", label: "Standard (Auto)", description: "Balanced auto capture", group: "capture" },
   { id: "photo", label: "Photo", description: "Standard still capture", group: "capture" },
-  { id: "video", label: "Video", description: "Short-form video up to 40s", group: "capture" },
+  { id: "video", label: "Video", description: `Short-form video up to ${SOCIAL_MAX_VIDEO_DURATION_MIN} min`, group: "capture" },
   { id: "cinematic", label: "Cinematic Video", description: "Film-style color grade", filterId: "cinematic", group: "capture" },
   { id: "night", label: "Night Mode", description: "Low-light enhancement", filterId: "night", group: "capture" },
   { id: "portrait", label: "Portrait Mode", description: "Soft background depth look", filterId: "portrait", group: "capture" },
