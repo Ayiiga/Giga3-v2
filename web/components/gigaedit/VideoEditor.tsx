@@ -697,15 +697,15 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
           <p className="text-[11px] text-[var(--ge-muted)]">Tap a tool to edit</p>
         </div>
       <div className="gigaedit-tool-rail flex gap-2 overflow-x-auto overscroll-x-contain pb-1">
-        <ToolBtn icon={Scissors} label="Trim" onClick={trimActive} />
+        <ToolBtn icon={Scissors} label="Trim from playhead" onClick={trimActive} />
         <ToolBtn icon={SplitSquareVertical} label="Split" onClick={splitAtPlayhead} />
         <ToolBtn icon={Merge} label="Merge" onClick={mergeClips} />
         <ToolBtn icon={RotateCw} label="Rotate" onClick={() => setRotateDeg((d) => (d + 90) % 360)} />
         <ToolBtn icon={Crop} label="Reset crop" onClick={() => setCropScale(1)} />
         <ToolBtn icon={Gauge} label="1x speed" onClick={() => setSpeed(1)} />
-        <ToolBtn icon={Captions} label="Auto captions" onClick={autoCaptions} />
+        <ToolBtn icon={Captions} label="Draft captions" onClick={autoCaptions} />
         <ToolBtn icon={Type} label="Add text" onClick={addTextLayer} />
-        <ToolBtn icon={Sticker} label="Sticker" onClick={addStickerMarker} />
+        <ToolBtn icon={Sticker} label="Add emoji marker" onClick={addStickerMarker} />
       </div>
       </section>
 
