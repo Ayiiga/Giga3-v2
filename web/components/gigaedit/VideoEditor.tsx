@@ -527,10 +527,17 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <section className="gigaedit-glass space-y-3 p-3" aria-label="Video project actions">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--ge-muted)]">
+            Start or finish
+          </p>
+          <p className="text-[11px] text-[var(--ge-muted)]">Original stays safe</p>
+        </div>
+      <div className="grid grid-cols-2 gap-2">
         <button
           type="button"
-          className="rounded-xl bg-[var(--ge-gold)] px-3 py-2 text-xs font-bold text-[#0b1220]"
+          className="rounded-xl bg-[var(--ge-gold)] px-3 py-3 text-sm font-bold text-[#0b1220]"
           onClick={() => inputRef.current?.click()}
         >
           Import video
@@ -544,7 +551,7 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
         />
         <button
           type="button"
-          className="rounded-xl border border-[var(--ge-border)] px-3 py-2 text-xs"
+          className="rounded-xl border border-[var(--ge-border)] px-3 py-3 text-sm"
           onClick={() => void saveProject()}
         >
           Save draft
@@ -552,7 +559,7 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
         <button
           type="button"
           disabled={exporting}
-          className="rounded-xl bg-[var(--ge-gold)] px-3 py-2 text-xs font-bold text-[#0b1220] disabled:opacity-50"
+          className="col-span-2 rounded-xl bg-[var(--ge-gold)] px-3 py-3 text-sm font-bold text-[#0b1220] disabled:opacity-50"
           onClick={() => void readyToPublish()}
         >
           {exporting ? "Exporting…" : "Post to GigaSocial"}
@@ -567,7 +574,7 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
         </button>
         <button
           type="button"
-          className="inline-flex items-center gap-1 rounded-xl border border-[var(--ge-border)] px-3 py-2 text-xs"
+          className="inline-flex items-center justify-center gap-1 rounded-xl border border-[var(--ge-border)] px-3 py-2 text-xs"
           onClick={() => audioInputRef.current?.click()}
         >
           <Mic className="h-3.5 w-3.5" aria-hidden />
@@ -588,6 +595,7 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
           Use Audio Studio take
         </button>
       </div>
+      </section>
       {audioLabel ? (
         <p className="text-[11px] text-[var(--ge-gold)]">Audio: {audioLabel}</p>
       ) : null}
@@ -683,19 +691,29 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <ToolBtn icon={Scissors} label="Trim" onClick={trimActive} />
+      <section className="space-y-2" aria-labelledby="video-quick-tools">
+        <div className="flex items-center justify-between gap-2">
+          <h3 id="video-quick-tools" className="text-sm font-semibold">Quick tools</h3>
+          <p className="text-[11px] text-[var(--ge-muted)]">Tap a tool to edit</p>
+        </div>
+      <div className="gigaedit-tool-rail flex gap-2 overflow-x-auto overscroll-x-contain pb-1">
+        <ToolBtn icon={Scissors} label="Trim from playhead" onClick={trimActive} />
         <ToolBtn icon={SplitSquareVertical} label="Split" onClick={splitAtPlayhead} />
         <ToolBtn icon={Merge} label="Merge" onClick={mergeClips} />
         <ToolBtn icon={RotateCw} label="Rotate" onClick={() => setRotateDeg((d) => (d + 90) % 360)} />
         <ToolBtn icon={Crop} label="Reset crop" onClick={() => setCropScale(1)} />
         <ToolBtn icon={Gauge} label="1x speed" onClick={() => setSpeed(1)} />
-        <ToolBtn icon={Captions} label="Auto captions" onClick={autoCaptions} />
+        <ToolBtn icon={Captions} label="Draft captions" onClick={autoCaptions} />
         <ToolBtn icon={Type} label="Add text" onClick={addTextLayer} />
-        <ToolBtn icon={Sticker} label="Sticker" onClick={addStickerMarker} />
+        <ToolBtn icon={Sticker} label="Add emoji marker" onClick={addStickerMarker} />
       </div>
+      </section>
 
-      <div className="gigaedit-glass space-y-2 p-3">
+      <details className="gigaedit-glass group p-3">
+        <summary className="cursor-pointer list-none text-sm font-semibold text-white">
+          Timeline <span className="ml-2 text-xs font-normal text-[var(--ge-muted)]">Review clips and layers</span>
+        </summary>
+        <div className="mt-3 space-y-2">
         <p className="text-xs text-[var(--ge-muted)]">
           Playhead {formatVideoTime(playhead)} / {formatVideoTime(duration || timelineMax)}
         </p>
@@ -721,9 +739,14 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      </details>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <details className="gigaedit-glass group p-3">
+        <summary className="cursor-pointer list-none text-sm font-semibold text-white">
+          Captions &amp; text <span className="ml-2 text-xs font-normal text-[var(--ge-muted)]">Add your finishing touches</span>
+        </summary>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <label className="block text-xs text-[var(--ge-muted)]">
           Text overlay
           <input
@@ -744,6 +767,7 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
           />
         </label>
       </div>
+      </details>
 
       <p className="text-[11px] text-[var(--ge-muted)]">
         For generative background removal or AI music, open AI Studio. Local exports never replace your
