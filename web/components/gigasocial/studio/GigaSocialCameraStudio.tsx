@@ -85,7 +85,9 @@ export const GigaSocialCameraStudio = memo(function GigaSocialCameraStudio({
   const [beautyOn, setBeautyOn] = useState(false);
   const [filterId, setFilterId] = useState<CameraFilterId>("none");
   const [captureModeId, setCaptureModeId] = useState<CameraCaptureModeId>("standard");
-  const [showPreSnap, setShowPreSnap] = useState(true);
+  const [showPreSnap, setShowPreSnap] = useState(
+    () => typeof window === "undefined" || !window.matchMedia("(max-width: 1023px)").matches
+  );
   const [busy, setBusy] = useState(false);
   const [audioMuted, setAudioMuted] = useState(false);
   const [quality, setQuality] = useState<CameraQualityId>(() => {
