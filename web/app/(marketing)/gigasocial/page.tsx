@@ -24,7 +24,7 @@ export default function GigaSocialPage() {
   return (
     <div className="gigasocial-page-shell gigasocial-stable gigasocial-premium w-full max-w-full px-3 pb-3 pt-[3.75rem] sm:px-6 sm:pb-6 sm:pt-20">
       <Container className="!px-0">
-        <header className="mx-auto mb-8 max-w-3xl rounded-2xl border border-border bg-white p-6 sm:p-8">
+        <header className="mx-auto mb-8 hidden max-w-3xl rounded-2xl border border-border bg-white p-6 lg:block sm:p-8">
           <h1 className="page-title">GigaSocial — Connect, share, and collaborate with AI</h1>
           <p className="mt-4 text-base leading-7 text-muted">
             GigaSocial is Giga3 AI&apos;s community space for sharing ideas, discovering creators,
