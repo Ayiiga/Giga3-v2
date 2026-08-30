@@ -8,7 +8,7 @@ import {
   SOCIAL_IMAGE_ACCEPT,
   SOCIAL_MAX_PHOTOS_PER_POST,
   SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC,
-  SOCIAL_MAX_VIDEO_DURATION_SEC,
+  SOCIAL_MAX_VIDEO_DURATION_MIN,
   SOCIAL_VIDEO_ACCEPT,
   type SocialPostMediaItemInput,
 } from "@/lib/gigasocial/constants";
@@ -21,7 +21,7 @@ import {
   UNIFIED_MEDIA_ACCEPT,
 } from "@/lib/gigasocial/mediaComposer";
 import { composePhotoMusicVideo } from "@/lib/gigasocial/photoMusicVideo";
-import { needsVideoTrim } from "@/lib/gigasocial/videoTrim";
+import { needsVideoTrim, VIDEO_CLIP_LENGTH_OPTIONS_SEC } from "@/lib/gigasocial/videoTrim";
 import {
   getAudioDuration,
   getVideoDuration,
@@ -477,7 +477,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       setPostType("video");
       setError(null);
       if (args.trimmed) {
-        setSuccess(`Video trimmed to ${SOCIAL_MAX_VIDEO_DURATION_SEC} seconds for GigaSocial.`);
+        setSuccess(`Video trimmed to ${SOCIAL_MAX_VIDEO_DURATION_MIN} minutes for GigaSocial.`);
       }
     },
     [revokePreview]
@@ -539,13 +539,13 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         setPostType("video");
         setError(null);
         setSuccess(
-          `This video is ${Math.ceil(durationSec)}s. Shorten it in Clip Studio (15 / 30 / 40s), then post.`
+          `This video is ${Math.ceil(durationSec)}s. Shorten it in Clip Studio (${VIDEO_CLIP_LENGTH_OPTIONS_SEC.map((sec) => `${sec / 60} min`).join(" / ")}), then post.`
         );
         return;
       }
       if (!Number.isFinite(durationSec) || durationSec <= 0) {
         setError(
-          "Could not read this video length. Try another file, or record in-app (max 40s)."
+          `Could not read this video length. Try another file, or record in-app (max ${SOCIAL_MAX_VIDEO_DURATION_MIN} min).`
         );
         return;
       }
@@ -1072,7 +1072,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         <p className="text-xs text-muted">
           Add photos + music (publishes as a {SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC}s video with
           soundtrack), or a video. Long videos
-          open the trim editor (max {SOCIAL_MAX_VIDEO_DURATION_SEC}s).
+          open the trim editor (max {SOCIAL_MAX_VIDEO_DURATION_MIN} min).
         </p>
       )}
 

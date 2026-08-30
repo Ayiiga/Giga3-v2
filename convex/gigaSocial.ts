@@ -28,6 +28,7 @@ import {
 } from "./gigaSocialViews";
 import type { Doc, Id } from "./_generated/dataModel";
 import { ensureMonetizationUnlock, isMonetizationUnlocked, parsePrivacySettings } from "./gigaSocialEconomy";
+import { assertSocialVideoDuration } from "./gigaSocialMediaPolicy";
 import { consumeSocialWriteRateLimit } from "./socialRateLimit";
 
 const SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC = 15;
@@ -1239,10 +1240,7 @@ export const createPost = mutation({
           throw new Error("Invalid media URL.");
         }
         if (item.type === "video") {
-          const duration = item.durationSec ?? 0;
-          if (duration <= 0 || duration > 40) {
-            throw new Error("Videos must be 40 seconds or shorter.");
-          }
+          assertSocialVideoDuration(item.durationSec);
         }
         if (item.type === "audio") {
           const duration = item.durationSec ?? 0;
