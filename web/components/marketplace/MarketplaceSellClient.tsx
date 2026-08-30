@@ -59,6 +59,8 @@ function MarketplaceSellInner() {
     api.marketplace.getCreatorRevenue,
     sessionToken ? { sessionToken } : "skip"
   );
+  const uploadStatus = useQuery(api.marketplace.getUploadStatus, {});
+  const uploadsEnabled = uploadStatus?.enabled === true;
 
   const upsertProfile = useMutation(api.creatorProfiles.upsertProfile);
   const submitCreatorVerification = useMutation(api.creatorProfiles.submitCreatorVerification);
@@ -198,6 +200,9 @@ function MarketplaceSellInner() {
     setPublishing(true);
     try {
       let coverStorageId: Id<"_storage"> | undefined;
+      if (coverImageFile && !uploadsEnabled) {
+        throw new Error("Seller file uploads are not available yet.");
+      }
       if (coverImageFile) {
         coverStorageId = await uploadToStorage(coverImageFile);
       }
@@ -218,6 +223,9 @@ function MarketplaceSellInner() {
         publish: true,
       });
 
+      if (productFile && !uploadsEnabled) {
+        throw new Error("Seller file uploads are not available yet.");
+      }
       if (productFile) {
         await attachFile({
           sessionToken,
@@ -512,6 +520,7 @@ function MarketplaceSellInner() {
                 type="file"
                 accept="image/*"
                 className="hidden"
+                disabled={!uploadsEnabled}
                 onChange={(e) => setCoverImageFile(e.target.files?.[0] ?? null)}
               />
             </label>
@@ -524,12 +533,14 @@ function MarketplaceSellInner() {
               <input
                 type="file"
                 className="hidden"
+                disabled={!uploadsEnabled}
                 onChange={(e) => setProductFile(e.target.files?.[0] ?? null)}
               />
             </label>
             <p className="text-sm text-muted">
-              Upload your product file here or attach it later under “Your listings”.
-              Buyers cannot purchase until a file is attached.
+              {uploadsEnabled
+                ? "Upload your product file here or attach it later under “Your listings”. Buyers cannot purchase until a file is attached."
+                : "Seller uploads are coming soon. Existing Marketplace purchases and downloads are unchanged."}
             </p>
             <Button
               onClick={publishListing}
@@ -575,6 +586,7 @@ function MarketplaceSellInner() {
                       <input
                         type="file"
                         className="hidden"
+                        disabled={!uploadsEnabled}
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) void uploadFile(listing._id, file);

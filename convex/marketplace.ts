@@ -7,6 +7,7 @@ import {
   marketplaceLicenseValidator,
   marketplaceProductTypeValidator,
 } from "./schema";
+import { assertMarketplaceUploadsEnabled, marketplaceUploadsEnabled } from "./marketplaceUploadPolicy";
 import {
   toCreatorListing,
   toPublicCreatorProfile,
@@ -136,6 +137,7 @@ export const createListing = mutation({
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken);
+    if (args.coverStorageId) assertMarketplaceUploadsEnabled();
     const profile = await ctx.db
       .query("creatorProfiles")
       .withIndex("by_user", (q) => q.eq("userId", email))
@@ -200,6 +202,7 @@ export const updateListing = mutation({
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken);
+    assertMarketplaceUploadsEnabled();
     const listing = await ctx.db.get(args.listingId);
     if (!listing || listing.creatorId !== email) throw new Error("Listing not found");
 
@@ -241,8 +244,15 @@ export const generateUploadUrl = mutation({
   args: sessionArgs,
   handler: async (ctx, args) => {
     await requireSession(args.sessionToken);
+    assertMarketplaceUploadsEnabled();
     return await ctx.storage.generateUploadUrl();
   },
+});
+
+/** Public status only; enforcement remains in upload mutations. */
+export const getUploadStatus = query({
+  args: {},
+  handler: async () => ({ enabled: marketplaceUploadsEnabled() }),
 });
 
 export const recordView = mutation({
