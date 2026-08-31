@@ -65,7 +65,7 @@ export function LayerManager({
           return (
             <li key={layer} className="rounded-lg border border-[var(--ge-border)] p-2">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-medium">{layerDisplayName(layer)}</span>
+                <span className="text-xs font-medium">{layerDisplayName(layer, clips)}</span>
                 <div className="flex gap-1">
                   <button type="button" className="rounded p-1" aria-label="Toggle visibility" onClick={() => toggleLayerVisibility(layer)}>
                     {visible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}

@@ -310,9 +310,68 @@
   color: var(--ge-gold);
 }
 
-.gigaedit-timeline-track {
-  height: 2.25rem;
+.gigaedit-timeline-grid {
+  display: grid;
+  grid-template-columns: 6.75rem minmax(0, 1fr);
+  gap: 0.35rem 0.5rem;
+  align-items: center;
+}
+
+.gigaedit-timeline-corner {
+  min-height: 1.75rem;
+}
+
+.gigaedit-timeline-label {
+  margin: 0;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ge-muted);
+  line-height: 1.2;
+}
+
+.gigaedit-timeline-ruler {
   border-radius: 0.5rem;
+  background: #0f172a;
+  border: 1px solid var(--ge-border);
+  overflow: hidden;
+}
+
+.gigaedit-timeline-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(148, 163, 184, 0.35);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.gigaedit-timeline-tick-label {
+  position: absolute;
+  top: 0.15rem;
+  left: 0.2rem;
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.85);
+  white-space: nowrap;
+}
+
+.gigaedit-timeline-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--ge-gold);
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.gigaedit-timeline-track {
+  height: 1.65rem;
+  border-radius: 0.45rem;
   background: #0f172a;
   border: 1px solid var(--ge-border);
   position: relative;
@@ -321,18 +380,83 @@
 
 .gigaedit-timeline-clip {
   position: absolute;
-  top: 0.2rem;
-  bottom: 0.2rem;
-  border-radius: 0.35rem;
+  top: 0.15rem;
+  bottom: 0.15rem;
+  border-radius: 0.3rem;
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.85), rgba(251, 191, 36, 0.75));
   color: #0b1220;
-  font-size: 0.65rem;
+  font-size: 0.58rem;
   font-weight: 700;
   display: flex;
   align-items: center;
-  padding: 0 0.35rem;
+  padding: 0 0.3rem;
   white-space: nowrap;
   overflow: hidden;
+  border: none;
+  cursor: pointer;
+}
+
+.gigaedit-timeline-clip--main {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.95), rgba(37, 99, 235, 0.9));
+  color: #eff6ff;
+}
+
+.gigaedit-timeline-clip--broll {
+  background: linear-gradient(90deg, rgba(20, 184, 166, 0.95), rgba(13, 148, 136, 0.9));
+  color: #ecfeff;
+}
+
+.gigaedit-timeline-clip--cutout {
+  background: linear-gradient(90deg, rgba(168, 85, 247, 0.95), rgba(126, 34, 206, 0.9));
+  color: #faf5ff;
+}
+
+.gigaedit-timeline-clip--screen {
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.95), rgba(22, 163, 74, 0.9));
+  color: #f0fdf4;
+}
+
+.gigaedit-timeline-clip--logo {
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.95), rgba(245, 158, 11, 0.9));
+  color: #422006;
+}
+
+.gigaedit-timeline-clip--text {
+  background: linear-gradient(90deg, rgba(244, 114, 182, 0.95), rgba(219, 39, 119, 0.9));
+  color: #fdf2f8;
+}
+
+.gigaedit-timeline-clip--captions {
+  background: linear-gradient(90deg, rgba(100, 116, 139, 0.95), rgba(71, 85, 105, 0.9));
+  color: #f8fafc;
+}
+
+.gigaedit-timeline-playhead--track {
+  z-index: 1;
+  opacity: 0.65;
+}
+
+.gigaedit-timeline-track--drop-target {
+  border-color: var(--ge-gold);
+  box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.45);
+  background: rgba(251, 191, 36, 0.08);
+}
+
+.gigaedit-timeline-clip--dragging {
+  opacity: 0.72;
+  cursor: grabbing;
+  z-index: 3;
+  box-shadow: 0 0 0 2px var(--ge-gold);
+}
+
+.gigaedit-timeline-clip:not(.gigaedit-timeline-clip--synthetic):not(:disabled) {
+  cursor: grab;
+}
+
+.gigaedit-timeline-clip--synthetic {
+  cursor: default;
+  opacity: 0.92;
+  pointer-events: none;
 }
 
 /* Pro camera preview — keep filters/transforms; avoid layout thrash. */
