@@ -21,6 +21,8 @@ export type GigaEditBrandKit = {
   socialHandles: string;
   /** Data URL for logo preview (optional, user-uploaded). */
   logoDataUrl?: string;
+  /** When true, registered user branding may be auto-cleaned on import. */
+  autoCleanMyBranding?: boolean;
 };
 
 export const DEFAULT_BRAND_KIT: GigaEditBrandKit = {
@@ -36,6 +38,7 @@ export const DEFAULT_BRAND_KIT: GigaEditBrandKit = {
   outroText: "",
   ctaText: "",
   socialHandles: "",
+  autoCleanMyBranding: false,
 };
 
 function openDb(): Promise<IDBDatabase | null> {

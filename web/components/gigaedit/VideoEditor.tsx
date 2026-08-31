@@ -1,7 +1,44 @@
 "use client";
 
 import { CameraStylePreview } from "@/components/gigaedit/CameraStylePreview";
+import { BrandingPanel } from "@/components/gigaedit/BrandingPanel";
+import { ImportModeDialog } from "@/components/gigaedit/ImportModeDialog";
+import { LayerManager } from "@/components/gigaedit/LayerManager";
+import { MultiTrackTimeline } from "@/components/gigaedit/MultiTrackTimeline";
+import { OverlayInspector } from "@/components/gigaedit/OverlayInspector";
+import { OverlayPreviewStack } from "@/components/gigaedit/OverlayPreviewStack";
 import { PublishScreen } from "@/components/gigaedit/PublishScreen";
+import { DEFAULT_BRAND_KIT, loadBrandKit, type GigaEditBrandKit } from "@/lib/gigaedit/creatorStudio/brandKit";
+import {
+  detectBrandingFromImageData,
+  shouldAutoCleanUserBranding,
+  type BrandingDetection,
+} from "@/lib/gigaedit/brandingDetection";
+import { formatTimecodeMs } from "@/lib/gigaedit/frameTime";
+import { captureFileThumbnail, captureVideoElementThumbnail } from "@/lib/gigaedit/thumbnailCapture";
+import {
+  buildOverlayClip,
+  migrateTimelineClips,
+  nextOverlayLayer,
+  normalizeVideoClip,
+  projectTimelineDuration,
+  snapTimelineSec,
+  sortedMainVideoClips,
+  sortedOverlayClips,
+} from "@/lib/gigaedit/timelineLayers";
+import {
+  canRedo,
+  canUndo,
+  createUndoStack,
+  pushUndoState,
+  redoState,
+  undoState,
+} from "@/lib/gigaedit/undoStack";
+import {
+  exportCompositedTimeline,
+  mainTrackSegments,
+  timelineNeedsCompositeExport,
+} from "@/lib/gigaedit/videoCompositeExport";
 import { DEFAULT_CAMERA_LOOK, type CameraLookOptions } from "@/lib/gigaedit/cameraLook";
 import { detectDeviceTier } from "@/lib/gigaedit/deviceCapability";
 import { aspectRatioCss } from "@/lib/gigaedit/exportFormats";
@@ -27,14 +64,13 @@ import { exportEditedVideoFile, exportJoinedVideoClips, videoNeedsBake } from "@
 import {
   buildSequentialVideoClips,
   clipAtTimelineSec,
-  joinedTimelineDuration,
   readVideoDuration,
   remainingJoinSlots,
   sortedVideoClips,
   sourceSecToTimelineSec,
   timelineSecToSourceSec,
 } from "@/lib/gigaedit/timelineJoin";
-import { EXPORT_FORMATS, MAX_GIGAEDIT_JOIN_CLIPS, type ExportAspectRatio, type GigaEditTimelineClip } from "@/lib/gigaedit/types";
+import { EXPORT_FORMATS, MAX_GIGAEDIT_JOIN_CLIPS, type BrandingAction, type ExportAspectRatio, type GigaEditTimelineClip } from "@/lib/gigaedit/types";
 import { CAMERA_FILTERS, getCameraFilterCss } from "@/lib/gigasocial/cameraFilters";
 import { formatVideoTime } from "@/lib/gigasocial/videoTrim";
 import {
@@ -49,6 +85,8 @@ import {
   SplitSquareVertical,
   Sticker,
   Type,
+  Undo2,
+  Redo2,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -91,13 +129,29 @@ export function VideoEditor({
   const [cameraLook, setCameraLook] = useState<CameraLookOptions>(DEFAULT_CAMERA_LOOK);
   const [exporting, setExporting] = useState(false);
   const [audioLabel, setAudioLabel] = useState<string | null>(null);
+  const [selectedClipId, setSelectedClipId] = useState<string | null>(null);
+  const [snapEnabled, setSnapEnabled] = useState(true);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [pendingImportFiles, setPendingImportFiles] = useState<File[]>([]);
+  const [pendingImportMode, setPendingImportMode] = useState<"replace" | "append">("append");
+  const [undoStack, setUndoStack] = useState(() => createUndoStack<GigaEditTimelineClip[]>([]));
+  const [brandDetections, setBrandDetections] = useState<BrandingDetection[]>([]);
+  const [brandKit, setBrandKit] = useState<GigaEditBrandKit>(DEFAULT_BRAND_KIT);
   const originalFileRef = useRef<File | null>(null);
   const sourceFilesRef = useRef<Map<string, File>>(new Map());
   const importSessionActiveRef = useRef(false);
   const audioFileRef = useRef<File | null>(null);
   const tier = useMemo(() => detectDeviceTier(), []);
-  const videoClipCount = useMemo(() => sortedVideoClips(clips).length, [clips]);
-  const timelineDuration = useMemo(() => joinedTimelineDuration(clips) || duration, [clips, duration]);
+  const videoClipCount = useMemo(() => sortedMainVideoClips(clips).length, [clips]);
+  const overlayClipCount = useMemo(() => sortedOverlayClips(clips).length, [clips]);
+  const timelineDuration = useMemo(
+    () => projectTimelineDuration(clips) || duration,
+    [clips, duration]
+  );
+  const selectedClip = useMemo(
+    () => clips.find((c) => c.id === selectedClipId) ?? null,
+    [clips, selectedClipId]
+  );
 
   const filterCss = useMemo(() => {
     const base = getCameraFilterCss(filterId) ?? "none";
@@ -111,6 +165,51 @@ export function VideoEditor({
     () => `rotate(${rotateDeg}deg) scale(${cropScale})`,
     [rotateDeg, cropScale]
   );
+
+  function commitClips(
+    next: GigaEditTimelineClip[] | ((prev: GigaEditTimelineClip[]) => GigaEditTimelineClip[]),
+    opts?: { skipUndo?: boolean }
+  ) {
+    setClips((prev) => {
+      const resolved = typeof next === "function" ? next(prev) : next;
+      const migrated = migrateTimelineClips(resolved);
+      if (!opts?.skipUndo) {
+        setUndoStack((stack) => pushUndoState(stack, migrated));
+      }
+      return migrated;
+    });
+  }
+
+  function undoClips() {
+    setUndoStack((stack) => {
+      if (!canUndo(stack)) return stack;
+      const next = undoState(stack);
+      setClips(next.present);
+      return next;
+    });
+  }
+
+  function redoClips() {
+    setUndoStack((stack) => {
+      if (!canRedo(stack)) return stack;
+      const next = redoState(stack);
+      setClips(next.present);
+      return next;
+    });
+  }
+
+  useEffect(() => {
+    void loadBrandKit().then(setBrandKit);
+  }, []);
+
+  useEffect(() => {
+    if (clips.length === 0 && !projectId) return;
+    const timer = window.setTimeout(() => {
+      void saveProject();
+    }, 2500);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- debounced autosave
+  }, [clips, overlayText, filterId, aspectRatio, captions, projectId]);
 
   useEffect(() => {
     return () => revokeManagedObjectUrl(objectUrl);
@@ -142,7 +241,8 @@ export function VideoEditor({
       setAspectRatio(project.aspectRatio);
       setFilterId(project.filterId || "none");
       setOverlayText(project.overlayText || "");
-      setClips(project.clips || []);
+      commitClips(project.clips || [], { skipUndo: true });
+      setUndoStack(createUndoStack(migrateTimelineClips(project.clips || [])));
       const blob = await getProjectOriginalBlob(project.id);
       if (blob && !cancelled) {
         const file = new File([blob], `${project.title || "project"}.mp4`, {
@@ -239,7 +339,30 @@ export function VideoEditor({
     }
   }
 
-  async function importVideoFiles(files: File[], mode?: "replace" | "append") {
+  async function runBrandingScan(file: File) {
+    const thumb = await captureFileThumbnail(file);
+    if (!thumb || typeof document === "undefined") return;
+    const img = new Image();
+    await new Promise<void>((resolve) => {
+      img.onload = () => resolve();
+      img.onerror = () => resolve();
+      img.src = thumb;
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = 160;
+    canvas.height = 90;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(img, 0, 0, 160, 90);
+    const detections = await detectBrandingFromImageData(ctx.getImageData(0, 0, 160, 90), brandKit);
+    if (detections.length) setBrandDetections(detections);
+  }
+
+  async function importVideoFiles(
+    files: File[],
+    mode?: "replace" | "append",
+    placement?: "main" | "overlay"
+  ) {
     const videos = files.filter(isVideoImportFile);
     if (videos.length === 0) {
       setStatus("Please choose one or more video files.");
@@ -247,14 +370,61 @@ export function VideoEditor({
     }
 
     const importMode = mode ?? resolveImportMode();
+    if (importMode === "append" && projectHasVideos() && !placement) {
+      setPendingImportFiles(videos);
+      setPendingImportMode("append");
+      setImportDialogOpen(true);
+      return;
+    }
+
+    if (placement === "overlay") {
+      const tierSlots = remainingJoinSlots(clips);
+      void tierSlots;
+      let layerCursor = nextOverlayLayer(clips);
+      const added: GigaEditTimelineClip[] = [];
+      for (const file of videos) {
+        const durationSec = await readVideoDuration(file);
+        if (durationSec <= 0) continue;
+        const sourceKey = `src_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        registerSourceFile(sourceKey, file);
+        const thumb = await captureFileThumbnail(file);
+        const clip = buildOverlayClip({
+          sourceKey,
+          label: file.name.replace(/\.[^.]+$/, "").slice(0, 18) || `Overlay ${layerCursor}`,
+          durationSec,
+          playheadSec: snapTimelineSec(playhead, clips, playhead, snapEnabled),
+          videoLayer: layerCursor,
+          thumbnailDataUrl: thumb,
+        });
+        added.push(normalizeVideoClip(clip));
+        layerCursor += 1;
+        void runBrandingScan(file);
+      }
+      if (added.length === 0) {
+        setStatus("Could not add overlay videos.");
+        return;
+      }
+      commitClips((prev) => [...prev, ...added]);
+      const last = added[added.length - 1];
+      setSelectedClipId(last.id);
+      setPlayhead(last.startSec);
+      revokeManagedObjectUrl(objectUrl);
+      const previewFile = sourceFilesRef.current.get(last.sourceKey ?? "");
+      if (previewFile) setObjectUrl(createManagedObjectUrl(previewFile));
+      setStatus(
+        `Added ${added.length} overlay layer${added.length === 1 ? "" : "s"} at ${formatTimecodeMs(playhead)}.`
+      );
+      return;
+    }
+
     const slots = importMode === "replace" ? MAX_GIGAEDIT_JOIN_CLIPS : remainingJoinSlots(clips);
     if (slots <= 0) {
-      setStatus(`You can join up to ${MAX_GIGAEDIT_JOIN_CLIPS} videos in one project.`);
+      setStatus(`Main track supports up to ${MAX_GIGAEDIT_JOIN_CLIPS} sequential clips. Try “Add as overlay”.`);
       return;
     }
 
     const selected = videos.slice(0, slots);
-    const additions: Array<{ sourceKey: string; label: string; durationSec: number }> = [];
+    const additions: Array<{ sourceKey: string; label: string; durationSec: number; thumb?: string }> = [];
 
     if (importMode === "replace") {
       sourceFilesRef.current.clear();
@@ -273,11 +443,14 @@ export function VideoEditor({
           ? "primary"
           : `src_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
       registerSourceFile(sourceKey, file);
+      const thumb = await captureFileThumbnail(file);
       additions.push({
         sourceKey,
         label: file.name.replace(/\.[^.]+$/, "").slice(0, 18) || `Clip ${additions.length + 1}`,
         durationSec,
+        thumb,
       });
+      void runBrandingScan(file);
     }
 
     if (additions.length === 0) {
@@ -288,27 +461,31 @@ export function VideoEditor({
     const nextClips =
       importMode === "replace"
         ? buildSequentialVideoClips(
-            clips.filter((clip) => clip.track !== "video"),
-            additions
+            clips.filter((clip) => clip.track !== "video" || (clip.videoLayer ?? 0) > 0),
+            additions.map((a) => ({ sourceKey: a.sourceKey, label: a.label, durationSec: a.durationSec }))
           )
-        : buildSequentialVideoClips(clips, additions);
+        : buildSequentialVideoClips(clips, additions.map((a) => ({ sourceKey: a.sourceKey, label: a.label, durationSec: a.durationSec })));
 
-    setClips(nextClips);
-    setDuration(joinedTimelineDuration(nextClips));
-    const joinedVideos = sortedVideoClips(nextClips);
+    const withThumbs = nextClips.map((clip) => {
+      const add = additions.find((a) => a.sourceKey === clip.sourceKey);
+      return add?.thumb ? { ...clip, clipThumbnailDataUrl: add.thumb } : clip;
+    });
+
+    commitClips(withThumbs);
+    setDuration(projectTimelineDuration(withThumbs));
+    const joinedVideos = sortedMainVideoClips(withThumbs);
     const previewClip =
-      importMode === "append"
-        ? joinedVideos[joinedVideos.length - 1]
-        : joinedVideos[0];
+      importMode === "append" ? joinedVideos[joinedVideos.length - 1] : joinedVideos[0];
     setPlayhead(previewClip?.startSec ?? 0);
+    setSelectedClipId(previewClip?.id ?? null);
     revokeManagedObjectUrl(objectUrl);
     const previewKey = previewClip?.sourceKey ?? additions[0]?.sourceKey ?? "primary";
     const previewFile = sourceFilesRef.current.get(previewKey);
     if (previewFile) setObjectUrl(createManagedObjectUrl(previewFile));
     setStatus(
       importMode === "replace"
-        ? `Imported ${additions.length} video${additions.length === 1 ? "" : "s"}. Tap “Add more videos” to join up to ${MAX_GIGAEDIT_JOIN_CLIPS} clips.`
-        : `Added ${additions.length} more clip${additions.length === 1 ? "" : "s"}. ${joinedVideos.length}/${MAX_GIGAEDIT_JOIN_CLIPS} videos joined — keep adding or publish as one.`
+        ? `Imported ${additions.length} video${additions.length === 1 ? "" : "s"} on the main track.`
+        : `Added ${additions.length} clip${additions.length === 1 ? "" : "s"} to main track (${joinedVideos.length}/${MAX_GIGAEDIT_JOIN_CLIPS}).`
     );
   }
 
@@ -325,7 +502,7 @@ export function VideoEditor({
     }
     audioFileRef.current = file;
     setAudioLabel(file.name);
-    setClips((prev) => [
+    commitClips((prev) => [
       ...prev.filter((c) => c.track !== "audio"),
       newClip({
         track: "audio",
@@ -363,7 +540,7 @@ export function VideoEditor({
   function ensureBaseClip(dur: number) {
     if (projectHasVideos()) return;
     importSessionActiveRef.current = true;
-    setClips([
+    commitClips([
       newClip({
         track: "video",
         label: "Clip 1",
@@ -445,7 +622,7 @@ export function VideoEditor({
       sourceEndSec: sourceEnd,
       label: `${active.label} B`,
     });
-    setClips((prev) => [left, right, ...prev.filter((clip) => clip.id !== active.id)]);
+    commitClips((prev) => [left, right, ...prev.filter((clip) => clip.id !== active.id)]);
     setStatus("Clip split at playhead.");
   }
 
@@ -465,7 +642,7 @@ export function VideoEditor({
       setStatus("Enter overlay text first.");
       return;
     }
-    setClips((prev) => [
+    commitClips((prev) => [
       ...prev,
       newClip({
         track: "text",
@@ -482,7 +659,7 @@ export function VideoEditor({
   }
 
   function addStickerMarker() {
-    setClips((prev) => [
+    commitClips((prev) => [
       ...prev,
       newClip({
         track: "sticker",
@@ -550,7 +727,7 @@ export function VideoEditor({
       `${formatVideoTime(Math.max(2, (duration || 10) * 0.66))} Call to action`,
     ];
     setCaptions(lines.join("\n"));
-    setClips((prev) => [
+    commitClips((prev) => [
       ...prev.filter((c) => c.track !== "text" || !c.label.startsWith("Cap")),
       newClip({
         track: "text",
@@ -568,20 +745,84 @@ export function VideoEditor({
 
   async function captureThumbnail(): Promise<string | undefined> {
     const video = videoRef.current;
-    if (!video || video.readyState < 2) return undefined;
-    try {
-      const w = Math.min(320, video.videoWidth || 320);
-      const h = Math.min(180, video.videoHeight || 180);
-      const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return undefined;
-      ctx.drawImage(video, 0, 0, w, h);
-      return canvas.toDataURL("image/jpeg", 0.72);
-    } catch {
-      return undefined;
+    if (!video) return undefined;
+    return captureVideoElementThumbnail(video);
+  }
+
+  function updateClipById(nextClip: GigaEditTimelineClip) {
+    commitClips((prev) => prev.map((c) => (c.id === nextClip.id ? normalizeVideoClip(nextClip) : c)));
+  }
+
+  function deleteClipById(clipId: string) {
+    commitClips((prev) => prev.filter((c) => c.id !== clipId));
+    if (selectedClipId === clipId) setSelectedClipId(null);
+  }
+
+  function moveClipOnTimeline(clipId: string, nextStartSec: number, nextEndSec: number) {
+    const duration = Math.max(0.25, nextEndSec - nextStartSec);
+    commitClips((prev) =>
+      prev.map((c) => {
+        if (c.id !== clipId || c.locked) return c;
+        const start = snapTimelineSec(nextStartSec, prev, playhead, snapEnabled, clipId);
+        return { ...c, startSec: start, endSec: start + duration };
+      })
+    );
+  }
+
+  function trimClipEdge(clipId: string, edge: "start" | "end", sec: number) {
+    commitClips((prev) =>
+      prev.map((c) => {
+        if (c.id !== clipId || c.locked) return c;
+        const snapped = snapTimelineSec(sec, prev, playhead, snapEnabled, clipId);
+        if (edge === "start") {
+          const nextStart = Math.min(snapped, c.endSec - 0.25);
+          const delta = nextStart - c.startSec;
+          return {
+            ...c,
+            startSec: nextStart,
+            sourceStartSec: (c.sourceStartSec ?? 0) + delta * (c.speed ?? 1),
+          };
+        }
+        const nextEnd = Math.max(snapped, c.startSec + 0.25);
+        const timelineDur = nextEnd - c.startSec;
+        return {
+          ...c,
+          endSec: nextEnd,
+          sourceEndSec: (c.sourceStartSec ?? 0) + timelineDur * (c.speed ?? 1),
+        };
+      })
+    );
+  }
+
+  function applyBrandingAction(
+    clipId: string,
+    action: BrandingAction,
+    detection: BrandingDetection
+  ) {
+    if (detection.source === "unknown" && (action === "remove" || action === "replace")) {
+      setStatus("Third-party branding cannot be auto-removed. Use crop, blur, or cover.");
+      return;
     }
+    commitClips((prev) =>
+      prev.map((c) => {
+        if (c.id !== clipId) return c;
+        const next = { ...c, brandingAction: action, brandingSource: detection.source, brandingRegion: detection.region };
+        if (action === "crop" && detection.region) {
+          return {
+            ...next,
+            cropLeft: detection.region.x,
+            cropTop: detection.region.y,
+            cropRight: Math.max(0, 1 - detection.region.x - detection.region.w),
+            cropBottom: Math.max(0, 1 - detection.region.y - detection.region.h),
+          };
+        }
+        if (action === "remove" && shouldAutoCleanUserBranding(detection, brandKit.autoCleanMyBranding ?? false)) {
+          return { ...next, opacity: 0.02, muted: true };
+        }
+        return next;
+      })
+    );
+    setStatus(`Branding action “${action}” applied (non-destructive until export).`);
   }
 
   async function saveProject() {
@@ -620,23 +861,35 @@ export function VideoEditor({
   async function bakeEditedFile(): Promise<File> {
     const original = originalFileRef.current;
     if (!original) throw new Error("Import a video first.");
-    const videoClips = sortedVideoClips(clips);
-    const joinedDuration = joinedTimelineDuration(clips) || duration;
+    const exportDuration = timelineDuration || duration;
+
+    if (timelineNeedsCompositeExport(clips)) {
+      setStatus("Compositing main video + overlays…");
+      const exported = await exportCompositedTimeline({
+        clips,
+        resolveFile: resolveClipFile,
+        aspectRatio,
+        durationSec: exportDuration,
+        globalRotateDeg: rotateDeg,
+        globalCropScale: cropScale,
+        globalFilterCss: filterCss,
+        overlayText,
+        captions,
+        audioMode: audioFileRef.current ? "replace" : "original",
+        replaceAudio: audioFileRef.current,
+        tier,
+        onProgress: (p) => setStatus(`Compositing… ${Math.round(p * 100)}%`),
+      });
+      return exported.file;
+    }
+
+    const videoClips = sortedMainVideoClips(clips);
     const range = activeVideoRange();
     const needsJoin = videoClips.length > 1;
 
     if (needsJoin) {
       setStatus(`Joining ${videoClips.length} videos into one export…`);
-      const segments = videoClips.map((clip) => {
-        const file = resolveClipFile(clip);
-        if (!file) throw new Error("Missing source video for one of the joined clips.");
-        return {
-          file,
-          sourceStartSec: clip.sourceStartSec ?? 0,
-          sourceEndSec: clip.sourceEndSec ?? clip.endSec - clip.startSec,
-          speed: clip.speed ?? speed,
-        };
-      });
+      const segments = mainTrackSegments(clips, resolveClipFile);
       const exported = await exportJoinedVideoClips(segments, {
         rotateDeg,
         cropScale,
@@ -776,8 +1029,8 @@ export function VideoEditor({
       <div>
         <h2 className="text-lg font-semibold">Video editor</h2>
         <p className="mt-1 text-xs text-[var(--ge-muted)]">
-          Import or add up to {MAX_GIGAEDIT_JOIN_CLIPS} videos, trim and style them, then publish as one
-          joined clip ({tier}-tier). Originals stay untouched.
+          Multi-track timeline — main sequence plus overlay layers. Import up to {MAX_GIGAEDIT_JOIN_CLIPS}{" "}
+          main clips or add overlays at the playhead ({tier}-tier preview). Originals stay untouched.
         </p>
       </div>
 
@@ -874,10 +1127,9 @@ export function VideoEditor({
         </button>
       </div>
       <p className="text-[11px] font-semibold text-[var(--ge-gold)]">
-        {videoClipCount}/{MAX_GIGAEDIT_JOIN_CLIPS} videos joined
-        {videoClipCount > 0 && videoClipCount < MAX_GIGAEDIT_JOIN_CLIPS
-          ? " — add more with the buttons above"
-          : ""}
+        Main {videoClipCount}/{MAX_GIGAEDIT_JOIN_CLIPS}
+        {overlayClipCount > 0 ? ` · ${overlayClipCount} overlay${overlayClipCount === 1 ? "" : "s"}` : ""}
+        {videoClipCount > 0 && videoClipCount < MAX_GIGAEDIT_JOIN_CLIPS ? " — add main or overlay" : ""}
       </p>
       </section>
       {audioLabel ? (
@@ -885,6 +1137,7 @@ export function VideoEditor({
       ) : null}
 
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_16rem]">
+        <div className="relative">
         <CameraStylePreview
           kind="video"
           src={objectUrl}
@@ -905,16 +1158,16 @@ export function VideoEditor({
           }
           onLoadedMetadata={(el) => {
             const dur = el.duration || 0;
-            setDuration((current) => Math.max(current, joinedTimelineDuration(clips) || dur));
+            setDuration((current) => Math.max(current, projectTimelineDuration(clips) || dur));
             ensureBaseClip(dur);
           }}
           onTimeUpdate={(el) => {
             const active =
-              sortedVideoClips(clips).find((clip) => {
+              sortedMainVideoClips(clips).find((clip) => {
                 const sourceStart = clip.sourceStartSec ?? 0;
                 const sourceEnd = clip.sourceEndSec ?? clip.endSec - clip.startSec;
                 return el.currentTime >= sourceStart - 0.05 && el.currentTime <= sourceEnd + 0.05;
-              }) ?? sortedVideoClips(clips)[0];
+              }) ?? sortedMainVideoClips(clips)[0];
             if (!active) {
               setPlayhead(el.currentTime);
               return;
@@ -922,8 +1175,32 @@ export function VideoEditor({
             setPlayhead(sourceSecToTimelineSec(active, el.currentTime));
           }}
         />
+        <OverlayPreviewStack
+          clips={clips}
+          playheadSec={playhead}
+          resolveFile={resolveClipFile}
+          selectedClipId={selectedClipId}
+          onSelectClip={setSelectedClipId}
+          onMoveClip={(clipId, posX, posY) => {
+            commitClips((prev) =>
+              prev.map((c) => (c.id === clipId ? { ...c, posX, posY } : c))
+            );
+          }}
+        />
+        </div>
 
         <div className="space-y-3">
+          <OverlayInspector
+            clip={selectedClip}
+            clips={clips}
+            playheadSec={playhead}
+            onUpdateClip={updateClipById}
+            onDuplicateOverlay={(dup) => {
+              commitClips((prev) => [...prev, dup]);
+              setSelectedClipId(dup.id);
+            }}
+            onDeleteClip={deleteClipById}
+          />
           <label className="block text-xs text-[var(--ge-muted)]">
             Export format
             <select
@@ -1005,36 +1282,56 @@ export function VideoEditor({
       </div>
       </section>
 
-      <details className="gigaedit-glass group p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" className="gigaedit-chip inline-flex items-center gap-1" onClick={undoClips} disabled={!canUndo(undoStack)}>
+          <Undo2 className="h-3.5 w-3.5" /> Undo
+        </button>
+        <button type="button" className="gigaedit-chip inline-flex items-center gap-1" onClick={redoClips} disabled={!canRedo(undoStack)}>
+          <Redo2 className="h-3.5 w-3.5" /> Redo
+        </button>
+        <button
+          type="button"
+          className={`gigaedit-chip ${snapEnabled ? "gigaedit-chip--active" : ""}`}
+          onClick={() => setSnapEnabled((v) => !v)}
+        >
+          Snap {snapEnabled ? "ON" : "OFF"}
+        </button>
+        <span className="text-[11px] text-[var(--ge-muted)]">Preview quality: Auto</span>
+      </div>
+
+      <BrandingPanel
+        detections={brandDetections}
+        selectedClip={selectedClip}
+        autoCleanEnabled={brandKit.autoCleanMyBranding ?? false}
+        onApplyAction={applyBrandingAction}
+        onDismiss={() => setBrandDetections([])}
+      />
+
+      <details className="gigaedit-glass group p-3" open>
         <summary className="cursor-pointer list-none text-sm font-semibold text-white">
-          Timeline <span className="ml-2 text-xs font-normal text-[var(--ge-muted)]">Review clips and layers</span>
+          Multi-track timeline{" "}
+          <span className="ml-2 text-xs font-normal text-[var(--ge-muted)]">
+            {formatTimecodeMs(playhead)} · layers & overlays
+          </span>
         </summary>
-        <div className="mt-3 space-y-2">
-        <p className="text-xs text-[var(--ge-muted)]">
-          Playhead {formatVideoTime(playhead)} / {formatVideoTime(timelineMax)}
-        </p>
-        {(["video", "audio", "text", "sticker"] as const).map((track) => (
-          <div key={track}>
-            <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--ge-muted)]">{track}</p>
-            <div className="gigaedit-timeline-track">
-              {clips
-                .filter((c) => c.track === track)
-                .map((c) => (
-                  <div
-                    key={c.id}
-                    className="gigaedit-timeline-clip"
-                    style={{
-                      left: `${(c.startSec / timelineMax) * 100}%`,
-                      width: `${Math.max(4, ((c.endSec - c.startSec) / timelineMax) * 100)}%`,
-                    }}
-                    title={c.label}
-                  >
-                    {c.label}
-                  </div>
-                ))}
-            </div>
-          </div>
-        ))}
+        <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_14rem]">
+          <MultiTrackTimeline
+            clips={clips}
+            durationSec={timelineMax}
+            playheadSec={playhead}
+            selectedClipId={selectedClipId}
+            snapEnabled={snapEnabled}
+            onSelectClip={setSelectedClipId}
+            onPlayheadChange={setPlayhead}
+            onMoveClip={moveClipOnTimeline}
+            onTrimClip={trimClipEdge}
+          />
+          <LayerManager
+            clips={clips}
+            selectedClipId={selectedClipId}
+            onUpdateClips={(next) => commitClips(next)}
+            onSelectClip={setSelectedClipId}
+          />
         </div>
       </details>
 
@@ -1070,6 +1367,20 @@ export function VideoEditor({
         original upload.
       </p>
       {status ? <p className="text-xs text-[var(--ge-gold)]">{status}</p> : null}
+
+      <ImportModeDialog
+        open={importDialogOpen}
+        fileCount={pendingImportFiles.length}
+        onChoose={(mode) => {
+          setImportDialogOpen(false);
+          void importVideoFiles(pendingImportFiles, pendingImportMode, mode);
+          setPendingImportFiles([]);
+        }}
+        onCancel={() => {
+          setImportDialogOpen(false);
+          setPendingImportFiles([]);
+        }}
+      />
     </div>
   );
 }

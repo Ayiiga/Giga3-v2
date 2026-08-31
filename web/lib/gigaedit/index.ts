@@ -105,6 +105,26 @@ export {
   videoNeedsBake,
 } from "@/lib/gigaedit/videoExport";
 export {
+  exportCompositedTimeline,
+  timelineNeedsCompositeExport,
+  mainTrackSegments,
+} from "@/lib/gigaedit/videoCompositeExport";
+export {
+  sortedMainVideoClips,
+  projectTimelineDuration,
+  buildOverlayClip,
+  migrateTimelineClips,
+} from "@/lib/gigaedit/timelineLayers";
+export { formatTimecodeMs, roundToFrame, stepFrame } from "@/lib/gigaedit/frameTime";
+export {
+  createUndoStack,
+  pushUndoState,
+  undoState,
+  redoState,
+  canUndo,
+  canRedo,
+} from "@/lib/gigaedit/undoStack";
+export {
   putProjectAudioBlob,
   getProjectAudioBlob,
   sectionForProjectKind,

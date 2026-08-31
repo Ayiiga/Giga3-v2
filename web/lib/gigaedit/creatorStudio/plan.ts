@@ -24,11 +24,20 @@ export const CREATOR_STUDIO_PHASES: CreatorStudioPhase[] = [
       "Local Brand Kit (IndexedDB)",
       "Project summary helpers + duration metadata on save",
     ],
-    status: "in_progress",
+    status: "done",
   },
   {
-    id: "phase-1",
-    title: "Solidify local core",
+    id: "phase-1b",
+    title: "Multi-track overlays",
+    summary: "Overlay layers, compositing export, branding detection, undo/redo.",
+    items: [
+      "Automatic overlay placement at playhead",
+      "Multi-track timeline + layer manager",
+      "Overlay inspector (PiP, masks, smart resize)",
+      "Composite export pipeline",
+      "User-owned branding detection (no silent third-party removal)",
+    ],
+    status: "done",
     summary: "Export reliability, project versions, template assets, E2E import→export→publish.",
     items: [
       "Export queue with real MediaRecorder progress",

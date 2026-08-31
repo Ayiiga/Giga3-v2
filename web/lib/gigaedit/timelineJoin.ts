@@ -1,14 +1,18 @@
 import type { GigaEditTimelineClip } from "@/lib/gigaedit/types";
 import { MAX_GIGAEDIT_JOIN_CLIPS } from "@/lib/gigaedit/types";
+import {
+  mainTrackDuration,
+  remainingMainJoinSlots,
+  sortedMainVideoClips,
+} from "@/lib/gigaedit/timelineLayers";
 
+/** Main-track video clips in timeline order (layer 0). */
 export function sortedVideoClips(clips: GigaEditTimelineClip[]): GigaEditTimelineClip[] {
-  return clips.filter((clip) => clip.track === "video").sort((a, b) => a.startSec - b.startSec);
+  return sortedMainVideoClips(clips);
 }
 
 export function joinedTimelineDuration(clips: GigaEditTimelineClip[]): number {
-  const videoClips = sortedVideoClips(clips);
-  if (videoClips.length === 0) return 0;
-  return videoClips[videoClips.length - 1].endSec;
+  return mainTrackDuration(clips);
 }
 
 export function clipTimelineDuration(clip: GigaEditTimelineClip): number {
@@ -26,7 +30,7 @@ export function clipAtTimelineSec(
   timelineSec: number
 ): GigaEditTimelineClip | null {
   return (
-    sortedVideoClips(clips).find(
+    sortedMainVideoClips(clips).find(
       (clip) => timelineSec >= clip.startSec && timelineSec < clip.endSec - 0.001
     ) ?? null
   );
@@ -52,7 +56,7 @@ export function sourceSecToTimelineSec(
 }
 
 export function remainingJoinSlots(clips: GigaEditTimelineClip[]): number {
-  return Math.max(0, MAX_GIGAEDIT_JOIN_CLIPS - sortedVideoClips(clips).length);
+  return remainingMainJoinSlots(clips);
 }
 
 export function hasMultipleJoinSources(clips: GigaEditTimelineClip[]): boolean {
