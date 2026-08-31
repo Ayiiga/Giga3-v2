@@ -67,6 +67,10 @@ describe("GigaEdit device capability", () => {
 
 describe("Workspace shortcut order", () => {
   it("lists GigaSocial → GigaEdit → GigaLearn first in chat surfaces", () => {
+    const apps = readFileSync(
+      resolve(__dirname, "../../web/lib/chat/workspaceApps.ts"),
+      "utf8"
+    );
     const sidebar = readFileSync(
       resolve(__dirname, "../../web/components/chat/ChatSidebar.tsx"),
       "utf8"
@@ -83,24 +87,31 @@ describe("Workspace shortcut order", () => {
     const orderOf = (src: string, labels: string[]) =>
       labels.map((label) => src.indexOf(label)).filter((i) => i >= 0);
 
-    const sidebarOrder = orderOf(sidebar, [
+    const sidebarOrder = orderOf(apps, [
       'label: "GigaSocial"',
-      'label: "GigaEdit"',
+      'label: "GigaEdits"',
       'label: "GigaLearn"',
+      'label: "Media Studio"',
     ]);
-    expect(sidebarOrder).toHaveLength(3);
+    expect(sidebarOrder).toHaveLength(4);
     expect(sidebarOrder[0]).toBeLessThan(sidebarOrder[1]);
     expect(sidebarOrder[1]).toBeLessThan(sidebarOrder[2]);
+    expect(sidebarOrder[2]).toBeLessThan(sidebarOrder[3]);
+    expect(sidebar).toContain("CHAT_WORKSPACE_PRIMARY_APPS");
 
     const moreOrder = orderOf(more, [
       'label: "GigaSocial"',
-      'label: "GigaEdit"',
+      'label: "GigaEdits"',
       'label: "GigaLearn"',
+      'label: "Media Studio"',
     ]);
     expect(moreOrder[0]).toBeLessThan(moreOrder[1]);
     expect(moreOrder[1]).toBeLessThan(moreOrder[2]);
+    expect(moreOrder[2]).toBeLessThan(moreOrder[3]);
 
-    expect(workspace.indexOf("GigaSocial")).toBeLessThan(workspace.indexOf("GigaEdit"));
-    expect(workspace.indexOf("GigaEdit")).toBeLessThan(workspace.indexOf("GigaLearn"));
+    expect(workspace).toContain("CHAT_WORKSPACE_PRIMARY_APPS");
+    expect(apps.indexOf("GigaSocial")).toBeLessThan(apps.indexOf("GigaEdits"));
+    expect(apps.indexOf("GigaEdits")).toBeLessThan(apps.indexOf("GigaLearn"));
+    expect(apps.indexOf("GigaLearn")).toBeLessThan(apps.indexOf("Media Studio"));
   });
 });

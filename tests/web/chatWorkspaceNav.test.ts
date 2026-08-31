@@ -1,21 +1,29 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { CHAT_WORKSPACE_PRIMARY_APPS } from "../../web/lib/chat/workspaceApps";
 
 describe("chat workspace navigation", () => {
-  it("lists GigaSocial first and featured in the sidebar workspace nav", () => {
+  it("lists primary apps in GigaSocial → GigaEdits → GigaLearn → Media Studio order", () => {
+    expect(CHAT_WORKSPACE_PRIMARY_APPS.map((app) => app.label)).toEqual([
+      "GigaSocial",
+      "GigaEdits",
+      "GigaLearn",
+      "Media Studio",
+    ]);
+  });
+
+  it("builds sidebar workspace nav from the shared primary app list", () => {
     const src = readFileSync(
       resolve(__dirname, "../../web/components/chat/ChatSidebar.tsx"),
       "utf8"
     );
-    const navBlock = src.match(/const PRIMARY_NAV[\s\S]*?^= \[[\s\S]*?\];/)?.[0] ?? src;
-    const gigaIdx = navBlock.indexOf('label: "GigaSocial"');
-    const homeIdx = navBlock.indexOf('label: "Home"');
-    const learnIdx = navBlock.indexOf('label: "GigaLearn"');
-    expect(gigaIdx).toBeGreaterThan(-1);
-    expect(gigaIdx).toBeLessThan(homeIdx);
-    expect(gigaIdx).toBeLessThan(learnIdx);
-    expect(navBlock).toContain("featured: true");
+    expect(src).toContain("CHAT_WORKSPACE_PRIMARY_APPS");
+    expect(src).toContain('label: "Home"');
+    const homeIdx = src.indexOf('label: "Home"');
+    const primarySpreadIdx = src.indexOf("...CHAT_WORKSPACE_PRIMARY_APPS.map");
+    expect(primarySpreadIdx).toBeGreaterThan(-1);
+    expect(primarySpreadIdx).toBeLessThan(homeIdx);
   });
 
   it("avoids smooth scroll when opening workspace panels", () => {

@@ -49,14 +49,14 @@ type MenuLink = {
 
 const MORE_LINKS: MenuLink[] = [
   { href: "/gigasocial/", label: "GigaSocial", icon: UsersRound },
-  { href: "/gigaedit/", label: "GigaEdit", icon: Clapperboard },
+  { href: "/gigaedit/", label: "GigaEdits", icon: Clapperboard },
   { href: "/gigalearn/", label: "GigaLearn", icon: GraduationCap },
+  { href: siteConfig.links.media, label: "Media Studio", icon: Sparkles },
   { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
   { href: "/marketplace/", label: "Marketplace", icon: Store },
   { href: "/wallet/", label: "Wallet", icon: Wallet },
   { href: "/enterprise/", label: "Enterprise", icon: Briefcase },
   { href: "/automation/", label: "Automation", icon: Zap },
-  { href: siteConfig.links.media, label: "Media Studio", icon: Sparkles },
   { href: "/install/", label: "Invite Friends", icon: Users },
   { href: siteConfig.links.home, label: "Dashboard", icon: Settings },
   { href: "/about/", label: "About", icon: Info },
@@ -165,7 +165,11 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
 
           {MORE_LINKS.map((item) => {
             const Icon = item.icon;
-            const featured = item.label === "GigaSocial";
+            const primary =
+              item.label === "GigaSocial" ||
+              item.label === "GigaEdits" ||
+              item.label === "GigaLearn" ||
+              item.label === "Media Studio";
             return (
               <Link
                 key={item.href + item.label}
@@ -173,13 +177,13 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
                 role="menuitem"
                 onClick={close}
                 className={
-                  featured
+                  primary
                     ? "flex min-h-11 items-center gap-2 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-sm font-bold text-foreground hover:bg-accent/15"
                     : "flex min-h-10 items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
                 }
               >
                 <Icon
-                  className={featured ? "h-4 w-4 text-accent" : "h-4 w-4 text-muted"}
+                  className={primary ? "h-4 w-4 text-accent" : "h-4 w-4 text-muted"}
                   aria-hidden
                 />
                 {item.label}
