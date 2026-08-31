@@ -230,6 +230,7 @@ export const attachListingFile = mutation({
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken);
+    assertMarketplaceUploadsEnabled();
     const listing = await ctx.db.get(args.listingId);
     if (!listing || listing.creatorId !== email) throw new Error("Listing not found");
     await ctx.db.patch(args.listingId, {

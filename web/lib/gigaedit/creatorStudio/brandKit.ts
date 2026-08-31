@@ -6,7 +6,8 @@
 import { branding } from "@/lib/branding";
 
 const DB_NAME = "giga3-gigaedit-v1";
-const BRAND_KEY = "gigaedit-brand-kit";
+export const GIGAEDIT_BRAND_KIT_STORE_ID = "gigaedit-brand-kit" as const;
+const BRAND_KEY = GIGAEDIT_BRAND_KIT_STORE_ID;
 
 export type GigaEditBrandKit = {
   id: typeof BRAND_KEY;
