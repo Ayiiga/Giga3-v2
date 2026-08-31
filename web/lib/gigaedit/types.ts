@@ -8,7 +8,8 @@ export type GigaEditSection =
   | "audio"
   | "social"
   | "projects"
-  | "ai";
+  | "ai"
+  | "brand";
 
 export type GigaEditProjectKind =
   | "video"
@@ -26,6 +27,10 @@ export type ExportAspectRatio = "9:16" | "16:9" | "1:1" | "4:5" | "4:3";
 export type GigaEditOpenOptions = {
   projectId?: string;
   aspect?: ExportAspectRatio;
+  /** Open file picker on mount (video/photo import). */
+  autoImport?: boolean;
+  /** Focus recording UI (teleprompter / audio). */
+  record?: boolean;
 };
 
 export type GigaEditProjectMeta = {
@@ -39,6 +44,8 @@ export type GigaEditProjectMeta = {
   /** AI-assisted assets are always labeled for the user. */
   aiAssisted: boolean;
   thumbnailDataUrl?: string;
+  /** Cached timeline duration in seconds (video/audio). */
+  durationSec?: number;
   notes?: string;
   /** Original media kept separately — never overwritten. */
   hasOriginal: boolean;

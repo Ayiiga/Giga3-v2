@@ -59,9 +59,15 @@ function newClip(partial: Omit<GigaEditTimelineClip, "id">): GigaEditTimelineCli
 export type VideoEditorProps = {
   initialProjectId?: string | null;
   initialAspect?: ExportAspectRatio | null;
+  /** Open the file picker once on mount (Creator Home → Import Video). */
+  autoImport?: boolean;
 };
 
-export function VideoEditor({ initialProjectId = null, initialAspect = null }: VideoEditorProps) {
+export function VideoEditor({
+  initialProjectId = null,
+  initialAspect = null,
+  autoImport = false,
+}: VideoEditorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const addClipInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -119,6 +125,12 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
   useEffect(() => {
     if (initialAspect) setAspectRatio(initialAspect);
   }, [initialAspect]);
+
+  useEffect(() => {
+    if (!autoImport || initialProjectId) return;
+    const timer = window.setTimeout(() => inputRef.current?.click(), 150);
+    return () => window.clearTimeout(timer);
+  }, [autoImport, initialProjectId]);
 
   useEffect(() => {
     if (!initialProjectId) return;
@@ -554,6 +566,24 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
     setStatus("Draft caption template added. Edit freely — baked into export.");
   }
 
+  async function captureThumbnail(): Promise<string | undefined> {
+    const video = videoRef.current;
+    if (!video || video.readyState < 2) return undefined;
+    try {
+      const w = Math.min(320, video.videoWidth || 320);
+      const h = Math.min(180, video.videoHeight || 180);
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return undefined;
+      ctx.drawImage(video, 0, 0, w, h);
+      return canvas.toDataURL("image/jpeg", 0.72);
+    } catch {
+      return undefined;
+    }
+  }
+
   async function saveProject() {
     const project = createEmptyProject({
       kind: "video",
@@ -567,6 +597,9 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
     project.aiAssisted = Boolean(captions) || contrastBoost;
     project.hasOriginal = Boolean(originalFileRef.current);
     project.status = "draft";
+    project.durationSec = timelineDuration || duration || undefined;
+    const thumb = await captureThumbnail();
+    if (thumb) project.thumbnailDataUrl = thumb;
     await saveGigaEditProject(project);
     if (originalFileRef.current) {
       await putProjectOriginalBlob(project.id, originalFileRef.current);

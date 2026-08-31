@@ -4,7 +4,11 @@ import { createEmptyProject, putProjectOriginalBlob, saveGigaEditProject } from 
 import { Mic, Square } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-export function AudioStudio() {
+export type AudioStudioProps = {
+  focusRecord?: boolean;
+};
+
+export function AudioStudio({ focusRecord = false }: AudioStudioProps) {
   const [recording, setRecording] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -18,6 +22,11 @@ export function AudioStudio() {
       if (audioUrl) URL.revokeObjectURL(audioUrl);
     };
   }, [audioUrl]);
+
+  useEffect(() => {
+    if (!focusRecord) return;
+    setStatus("Tap Record to capture voiceover — saved as a local audio project.");
+  }, [focusRecord]);
 
   async function start() {
     try {

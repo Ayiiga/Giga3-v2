@@ -2,6 +2,8 @@
 
 import { AiCreatorAssistant } from "@/components/gigaedit/AiCreatorAssistant";
 import { AudioStudio } from "@/components/gigaedit/AudioStudio";
+import { BrandKitPanel } from "@/components/gigaedit/BrandKitPanel";
+import { EditorShell } from "@/components/gigaedit/EditorShell";
 import { GigaEditBottomNav } from "@/components/gigaedit/GigaEditBottomNav";
 import { GigaEditHome } from "@/components/gigaedit/GigaEditHome";
 import { OfflineManager } from "@/components/gigaedit/OfflineManager";
@@ -13,40 +15,39 @@ import { TemplateGallery } from "@/components/gigaedit/TemplateGallery";
 import { VideoEditor } from "@/components/gigaedit/VideoEditor";
 import { useGigaEditFeatures } from "@/lib/gigaedit/featureFlags";
 import { startGigaEditBackgroundSync } from "@/lib/gigaedit/offline";
-import type {
-  ExportAspectRatio,
-  GigaEditOpenOptions,
-  GigaEditSection,
-} from "@/lib/gigaedit/types";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import type { ExportAspectRatio, GigaEditOpenOptions, GigaEditSection } from "@/lib/gigaedit/types";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo } from "react";
 
-const SECTION_LABELS: Record<GigaEditSection, string> = {
-  home: "Home",
-  video: "Video",
-  photo: "Photo",
-  teleprompter: "Teleprompter",
-  script: "AI Script",
-  templates: "Templates",
-  audio: "Audio",
-  social: "Social",
-  projects: "Projects",
-  ai: "AI Assist",
-};
+const VALID_SECTIONS = new Set<GigaEditSection>([
+  "home",
+  "video",
+  "photo",
+  "teleprompter",
+  "script",
+  "templates",
+  "audio",
+  "social",
+  "projects",
+  "ai",
+  "brand",
+]);
 
 const ASPECTS = new Set<ExportAspectRatio>(["9:16", "16:9", "1:1", "4:5", "4:3"]);
 
 function parseSection(raw: string | null): GigaEditSection {
   if (!raw) return "home";
-  if (raw in SECTION_LABELS) return raw as GigaEditSection;
+  if (VALID_SECTIONS.has(raw as GigaEditSection)) return raw as GigaEditSection;
   return "home";
 }
 
 function parseAspect(raw: string | null): ExportAspectRatio | null {
   if (!raw) return null;
   return ASPECTS.has(raw as ExportAspectRatio) ? (raw as ExportAspectRatio) : null;
+}
+
+function parseBool(raw: string | null): boolean {
+  return raw === "1" || raw === "true";
 }
 
 export function GigaEditClient() {
@@ -62,6 +63,14 @@ export function GigaEditClient() {
     () => parseAspect(searchParams?.get("aspect") ?? null),
     [searchParams]
   );
+  const autoImport = useMemo(
+    () => parseBool(searchParams?.get("import") ?? null),
+    [searchParams]
+  );
+  const focusRecord = useMemo(
+    () => parseBool(searchParams?.get("record") ?? null),
+    [searchParams]
+  );
 
   const openSection = useCallback(
     (next: GigaEditSection, opts?: GigaEditOpenOptions) => {
@@ -71,12 +80,18 @@ export function GigaEditClient() {
         params.delete("tool");
         params.delete("project");
         params.delete("aspect");
+        params.delete("import");
+        params.delete("record");
       } else {
         params.set("tab", next);
         if (opts?.projectId) params.set("project", opts.projectId);
         else params.delete("project");
         if (opts?.aspect) params.set("aspect", opts.aspect);
         else if (!opts?.projectId) params.delete("aspect");
+        if (opts?.autoImport) params.set("import", "1");
+        else params.delete("import");
+        if (opts?.record) params.set("record", "1");
+        else params.delete("record");
       }
       const qs = params.toString();
       router.replace(qs ? `/gigaedit/?${qs}` : "/gigaedit/", { scroll: false });
@@ -99,42 +114,29 @@ export function GigaEditClient() {
   }
 
   return (
-    <div className="gigaedit-shell gigaedit-stable mx-auto max-w-5xl rounded-2xl px-3 py-4 sm:px-5 sm:py-6">
-      <div className="mb-4 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          {section !== "home" ? (
-            <button
-              type="button"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--ge-border)] text-[var(--ge-muted)]"
-              aria-label="Back to GigaEdit home"
-              onClick={() => openSection("home")}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </button>
-          ) : null}
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--ge-gold)]">
-              🎬 GigaEdit
-            </p>
-            <p className="text-xs text-[var(--ge-muted)]">{SECTION_LABELS[section]}</p>
-          </div>
-        </div>
-        <Link
-          href="/media/"
-          className="rounded-xl border border-[var(--ge-border)] px-3 py-1.5 text-[11px] text-[var(--ge-muted)]"
-        >
-          AI Studio
-        </Link>
-      </div>
-
+    <EditorShell
+      section={section}
+      onBackHome={() => openSection("home")}
+      footer={
+        <GigaEditBottomNav activeSection={section} onOpenSection={(s) => openSection(s)} />
+      }
+    >
       {section === "home" && <GigaEditHome onOpen={openSection} />}
       {section === "video" && (
-        <VideoEditor initialProjectId={projectId} initialAspect={aspect} />
+        <VideoEditor
+          initialProjectId={projectId}
+          initialAspect={aspect}
+          autoImport={autoImport}
+        />
       )}
       {section === "photo" && (
-        <PhotoEditor initialProjectId={projectId} initialAspect={aspect} />
+        <PhotoEditor
+          initialProjectId={projectId}
+          initialAspect={aspect}
+          autoImport={autoImport}
+        />
       )}
-      {section === "teleprompter" && <TeleprompterStudio />}
+      {section === "teleprompter" && <TeleprompterStudio focusRecord={focusRecord} />}
       {section === "script" && features.enableGigaEditAiAssist ? (
         <AiCreatorAssistant />
       ) : null}
@@ -151,16 +153,15 @@ export function GigaEditClient() {
           onUsePhoto={(opts) => openSection("photo", opts)}
         />
       )}
-      {section === "audio" && <AudioStudio />}
+      {section === "audio" && <AudioStudio focusRecord={focusRecord} />}
       {section === "social" && <SocialMediaCreator />}
+      {section === "brand" && <BrandKitPanel />}
       {section === "projects" && (
         <div className="space-y-4">
           <ProjectManager onOpen={openSection} />
           {features.enableGigaEditOffline ? <OfflineManager /> : null}
         </div>
       )}
-
-      <GigaEditBottomNav activeSection={section} onOpenSection={openSection} />
-    </div>
+    </EditorShell>
   );
 }

@@ -26,7 +26,12 @@ import { Camera, CameraOff, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-export function TeleprompterStudio() {
+export type TeleprompterStudioProps = {
+  /** Scroll to record controls (Creator Home → Record Video). */
+  focusRecord?: boolean;
+};
+
+export function TeleprompterStudio({ focusRecord = false }: TeleprompterStudioProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [cameraOn, setCameraOn] = useState(false);
@@ -45,6 +50,7 @@ export function TeleprompterStudio() {
   const chunksRef = useRef<Blob[]>([]);
   const recordedFileRef = useRef<File | null>(null);
   const recognitionRef = useRef<{ stop: () => void } | null>(null);
+  const recordControlsRef = useRef<HTMLDivElement>(null);
   const tier = useMemo(() => detectDeviceTier(), []);
 
   useEffect(() => {
@@ -53,6 +59,12 @@ export function TeleprompterStudio() {
       streamRef.current?.getTracks().forEach((t) => t.stop());
     };
   }, []);
+
+  useEffect(() => {
+    if (!focusRecord) return;
+    setStatus("Script ready? Tap Record when you're set — camera permission may be required.");
+    recordControlsRef.current?.scrollIntoView({ behavior: "auto", block: "nearest" });
+  }, [focusRecord]);
 
   async function enableCamera() {
     try {
@@ -304,7 +316,7 @@ export function TeleprompterStudio() {
               onModeChange={setCaptureModeId}
             />
           ) : null}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" ref={recordControlsRef}>
             <button
               type="button"
               className="rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-xs"
