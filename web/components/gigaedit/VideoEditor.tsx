@@ -14,6 +14,7 @@ import {
   shouldAutoCleanUserBranding,
   type BrandingDetection,
 } from "@/lib/gigaedit/brandingDetection";
+import { formatTimecodeMs } from "@/lib/gigaedit/frameTime";
 import { inferClipLane, laneLabel } from "@/lib/gigaedit/timelineLanes";
 import { captureFileThumbnail, captureVideoElementThumbnail } from "@/lib/gigaedit/thumbnailCapture";
 import {
