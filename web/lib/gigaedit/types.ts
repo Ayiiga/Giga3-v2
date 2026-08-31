@@ -84,6 +84,16 @@ export type BrandingAction = "keep" | "crop" | "blur" | "cover" | "replace" | "r
 
 export type BrandingSource = "user" | "unknown";
 
+/** Semantic timeline row — maps to the CapCut-style multi-track editor UI. */
+export type GigaEditTimelineLane =
+  | "main-video"
+  | "b-roll"
+  | "cutout-person"
+  | "screen-recording"
+  | "logo"
+  | "text"
+  | "captions";
+
 export type GigaEditTimelineClip = {
   id: string;
   track: "video" | "audio" | "text" | "sticker" | "effect";
@@ -140,6 +150,8 @@ export type GigaEditTimelineClip = {
   brandingRegion?: { x: number; y: number; w: number; h: number };
   /** Multi-camera foundation id (e.g. cam-a, screen). */
   cameraId?: string;
+  /** Semantic lane for timeline UI and import placement. */
+  timelineLane?: GigaEditTimelineLane;
 };
 
 export type GigaEditQuickAction = {

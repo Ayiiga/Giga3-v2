@@ -14,7 +14,7 @@ import {
   shouldAutoCleanUserBranding,
   type BrandingDetection,
 } from "@/lib/gigaedit/brandingDetection";
-import { formatTimecodeMs } from "@/lib/gigaedit/frameTime";
+import { laneLabel } from "@/lib/gigaedit/timelineLanes";
 import { captureFileThumbnail, captureVideoElementThumbnail } from "@/lib/gigaedit/thumbnailCapture";
 import {
   buildOverlayClip,
@@ -70,7 +70,7 @@ import {
   sourceSecToTimelineSec,
   timelineSecToSourceSec,
 } from "@/lib/gigaedit/timelineJoin";
-import { EXPORT_FORMATS, MAX_GIGAEDIT_JOIN_CLIPS, type BrandingAction, type ExportAspectRatio, type GigaEditTimelineClip } from "@/lib/gigaedit/types";
+import { EXPORT_FORMATS, MAX_GIGAEDIT_JOIN_CLIPS, type BrandingAction, type ExportAspectRatio, type GigaEditTimelineClip, type GigaEditTimelineLane } from "@/lib/gigaedit/types";
 import { CAMERA_FILTERS, getCameraFilterCss } from "@/lib/gigasocial/cameraFilters";
 import { formatVideoTime } from "@/lib/gigasocial/videoTrim";
 import {
@@ -361,7 +361,8 @@ export function VideoEditor({
   async function importVideoFiles(
     files: File[],
     mode?: "replace" | "append",
-    placement?: "main" | "overlay"
+    placement?: "main" | "overlay",
+    overlayLane?: GigaEditTimelineLane
   ) {
     const videos = files.filter(isVideoImportFile);
     if (videos.length === 0) {
@@ -388,13 +389,16 @@ export function VideoEditor({
         const sourceKey = `src_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
         registerSourceFile(sourceKey, file);
         const thumb = await captureFileThumbnail(file);
+        const lane = overlayLane ?? "b-roll";
         const clip = buildOverlayClip({
           sourceKey,
-          label: file.name.replace(/\.[^.]+$/, "").slice(0, 18) || `Overlay ${layerCursor}`,
+          label: file.name.replace(/\.[^.]+$/, "").slice(0, 18) || laneLabel(lane),
           durationSec,
           playheadSec: snapTimelineSec(playhead, clips, playhead, snapEnabled),
           videoLayer: layerCursor,
           thumbnailDataUrl: thumb,
+          timelineLane: lane,
+          cameraId: lane === "screen-recording" ? "screen" : undefined,
         });
         added.push(normalizeVideoClip(clip));
         layerCursor += 1;
@@ -412,7 +416,7 @@ export function VideoEditor({
       const previewFile = sourceFilesRef.current.get(last.sourceKey ?? "");
       if (previewFile) setObjectUrl(createManagedObjectUrl(previewFile));
       setStatus(
-        `Added ${added.length} overlay layer${added.length === 1 ? "" : "s"} at ${formatTimecodeMs(playhead)}.`
+        `Added ${added.length} ${laneLabel(overlayLane ?? "b-roll")} clip${added.length === 1 ? "" : "s"} at ${formatTimecodeMs(playhead)}.`
       );
       return;
     }
@@ -653,6 +657,7 @@ export function VideoEditor({
         rotateDeg: 0,
         filterId: "none",
         text: overlayText,
+        timelineLane: "text",
       }),
     ]);
     setStatus("Text overlay added — included in export.");
@@ -670,6 +675,7 @@ export function VideoEditor({
         rotateDeg: 0,
         filterId: "none",
         text: "✨",
+        timelineLane: "text",
       }),
     ]);
     if (!overlayText.includes("✨")) setOverlayText((t) => (t ? `${t} ✨` : "✨"));
@@ -1309,9 +1315,9 @@ export function VideoEditor({
 
       <details className="gigaedit-glass group p-3" open>
         <summary className="cursor-pointer list-none text-sm font-semibold text-white">
-          Multi-track timeline{" "}
+          Timeline{" "}
           <span className="ml-2 text-xs font-normal text-[var(--ge-muted)]">
-            {formatTimecodeMs(playhead)} · layers & overlays
+            {formatTimecodeMs(playhead)} · main, b-roll, cutout, screen, logo, text, captions
           </span>
         </summary>
         <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_14rem]">
@@ -1321,6 +1327,8 @@ export function VideoEditor({
             playheadSec={playhead}
             selectedClipId={selectedClipId}
             snapEnabled={snapEnabled}
+            brandWatermark={brandKit.watermarkText || brandKit.name}
+            hasCaptions={Boolean(captions.trim())}
             onSelectClip={setSelectedClipId}
             onPlayheadChange={setPlayhead}
             onMoveClip={moveClipOnTimeline}
@@ -1371,9 +1379,9 @@ export function VideoEditor({
       <ImportModeDialog
         open={importDialogOpen}
         fileCount={pendingImportFiles.length}
-        onChoose={(mode) => {
+        onChoose={(placement, overlayLane) => {
           setImportDialogOpen(false);
-          void importVideoFiles(pendingImportFiles, pendingImportMode, mode);
+          void importVideoFiles(pendingImportFiles, pendingImportMode, placement, overlayLane);
           setPendingImportFiles([]);
         }}
         onCancel={() => {

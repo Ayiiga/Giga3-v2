@@ -1,9 +1,12 @@
 "use client";
 
+import type { GigaEditTimelineLane } from "@/lib/gigaedit/types";
+import { overlayLanes, laneLabel } from "@/lib/gigaedit/timelineLanes";
+
 type ImportModeDialogProps = {
   open: boolean;
   fileCount: number;
-  onChoose: (mode: "main" | "overlay") => void;
+  onChoose: (mode: "main" | "overlay", overlayLane?: GigaEditTimelineLane) => void;
   onCancel: () => void;
 };
 
@@ -25,15 +28,21 @@ export function ImportModeDialog({ open, fileCount, onChoose, onCancel }: Import
         </p>
         <div className="grid gap-2">
           <button type="button" className="gigaedit-cta w-full" onClick={() => onChoose("main")}>
-            Add to main track
+            Main Video track
           </button>
-          <button
-            type="button"
-            className="gigaedit-cta gigaedit-cta--ghost w-full"
-            onClick={() => onChoose("overlay")}
-          >
-            Add as overlay layer
-          </button>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--ge-muted)]">
+            Overlay lane
+          </p>
+          {overlayLanes().map((lane) => (
+            <button
+              key={lane}
+              type="button"
+              className="gigaedit-cta gigaedit-cta--ghost w-full"
+              onClick={() => onChoose("overlay", lane)}
+            >
+              {laneLabel(lane)}
+            </button>
+          ))}
           <button type="button" className="text-xs text-[var(--ge-muted)]" onClick={onCancel}>
             Cancel
           </button>

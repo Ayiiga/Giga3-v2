@@ -1,11 +1,13 @@
 import { roundToFrame } from "@/lib/gigaedit/frameTime";
 import type {
   GigaEditTimelineClip,
+  GigaEditTimelineLane,
   OverlayLayoutPreset,
   OverlayPositionPreset,
   VideoResizeMode,
 } from "@/lib/gigaedit/types";
 import { MAX_GIGAEDIT_JOIN_CLIPS } from "@/lib/gigaedit/types";
+import { inferClipLane, laneLabel } from "@/lib/gigaedit/timelineLanes";
 import type { DeviceTier } from "@/lib/gigaedit/deviceCapability";
 
 export const MAIN_VIDEO_LAYER = 0;
@@ -58,7 +60,10 @@ export function normalizeVideoClip(clip: GigaEditTimelineClip): GigaEditTimeline
 }
 
 export function migrateTimelineClips(clips: GigaEditTimelineClip[]): GigaEditTimelineClip[] {
-  return clips.map((clip) => (clip.track === "video" ? normalizeVideoClip(clip) : clip));
+  return clips.map((clip) => {
+    const normalized = clip.track === "video" ? normalizeVideoClip(clip) : clip;
+    return { ...normalized, timelineLane: inferClipLane(normalized) };
+  });
 }
 
 export function sortedMainVideoClips(clips: GigaEditTimelineClip[]): GigaEditTimelineClip[] {
@@ -219,9 +224,12 @@ export function buildOverlayClip(input: {
   playheadSec: number;
   videoLayer: number;
   thumbnailDataUrl?: string;
+  timelineLane?: GigaEditTimelineLane;
+  cameraId?: string;
 }): GigaEditTimelineClip {
   const startSec = roundToFrame(Math.max(0, input.playheadSec));
   const endSec = roundToFrame(startSec + input.durationSec);
+  const lane = input.timelineLane ?? "b-roll";
   return normalizeVideoClip({
     id: `clip_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
     track: "video",
@@ -237,6 +245,8 @@ export function buildOverlayClip(input: {
     videoLayer: input.videoLayer,
     clipRole: "overlay",
     clipThumbnailDataUrl: input.thumbnailDataUrl,
+    timelineLane: lane,
+    cameraId: input.cameraId,
   });
 }
 
@@ -388,7 +398,9 @@ export function hasOverlayVideos(clips: GigaEditTimelineClip[]): boolean {
   return sortedOverlayClips(clips).length > 0;
 }
 
-export function layerDisplayName(layer: number): string {
-  if (layer === MAIN_VIDEO_LAYER) return "Main Video";
+export function layerDisplayName(layer: number, clips: GigaEditTimelineClip[] = []): string {
+  if (layer === MAIN_VIDEO_LAYER) return laneLabel("main-video");
+  const sample = clips.find((c) => clipVideoLayer(c) === layer);
+  if (sample) return laneLabel(inferClipLane(sample));
   return `Overlay ${layer}`;
 }
