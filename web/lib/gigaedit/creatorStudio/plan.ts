@@ -38,6 +38,10 @@ export const CREATOR_STUDIO_PHASES: CreatorStudioPhase[] = [
       "User-owned branding detection (no silent third-party removal)",
     ],
     status: "done",
+  },
+  {
+    id: "phase-1",
+    title: "Solidify local core",
     summary: "Export reliability, project versions, template assets, E2E import→export→publish.",
     items: [
       "Export queue with real MediaRecorder progress",

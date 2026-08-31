@@ -16,7 +16,7 @@ describe("Creator Studio plan", () => {
   it("names the product and defines phased rollout", () => {
     expect(CREATOR_STUDIO_PRODUCT_NAME).toContain("Creator Studio");
     expect(CREATOR_STUDIO_PHASES.length).toBeGreaterThanOrEqual(5);
-    expect(CREATOR_STUDIO_PHASES.some((p) => p.status === "in_progress")).toBe(true);
+    expect(CREATOR_STUDIO_PHASES.some((p) => p.status === "done")).toBe(true);
   });
 
   it("registers modular engines without fake active AI story", () => {
