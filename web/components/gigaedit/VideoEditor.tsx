@@ -814,6 +814,7 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
         {videoClipCount}/{MAX_GIGAEDIT_JOIN_CLIPS} videos joined
       </p>
       </section>
+      {audioLabel ? (
         <p className="text-[11px] text-[var(--ge-gold)]">Audio: {audioLabel}</p>
       ) : null}
 
