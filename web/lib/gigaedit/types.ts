@@ -45,16 +45,26 @@ export type GigaEditProjectMeta = {
   offlineReady: boolean;
 };
 
+/** Maximum number of source videos that can be joined in one GigaEdit project. */
+export const MAX_GIGAEDIT_JOIN_CLIPS = 10;
+
 export type GigaEditTimelineClip = {
   id: string;
   track: "video" | "audio" | "text" | "sticker" | "effect";
   label: string;
+  /** Position on the joined timeline. */
   startSec: number;
   endSec: number;
   speed: number;
   rotateDeg: number;
   filterId: string;
   text?: string;
+  /** Key for a joined source file (`sourceFiles` map / IndexedDB clip blob). */
+  sourceKey?: string;
+  /** In-point within the source file (defaults to 0). */
+  sourceStartSec?: number;
+  /** Out-point within the source file (defaults to full source duration). */
+  sourceEndSec?: number;
 };
 
 export type GigaEditQuickAction = {
