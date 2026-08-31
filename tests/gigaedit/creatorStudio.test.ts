@@ -77,6 +77,7 @@ describe("Project summary helpers", () => {
 describe("Brand Kit defaults", () => {
   it("ships sensible default colors", () => {
     expect(DEFAULT_BRAND_KIT.primaryColor).toMatch(/^#/);
-    expect(DEFAULT_BRAND_KIT.name).toBeTruthy();
+    expect(DEFAULT_BRAND_KIT.name).toBe("Giga3 AI");
+    expect(DEFAULT_BRAND_KIT.watermarkText).toBe("Giga3 AI");
   });
 });

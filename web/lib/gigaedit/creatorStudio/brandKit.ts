@@ -3,6 +3,8 @@
  * Applies branding metadata to projects; does not overwrite source media.
  */
 
+import { branding } from "@/lib/branding";
+
 const DB_NAME = "giga3-gigaedit-v1";
 const BRAND_KEY = "gigaedit-brand-kit";
 
@@ -28,16 +30,16 @@ export type GigaEditBrandKit = {
 export const DEFAULT_BRAND_KIT: GigaEditBrandKit = {
   id: BRAND_KEY,
   updatedAt: Date.now(),
-  name: "My Brand",
+  name: branding.name,
   primaryColor: "#fbbf24",
   secondaryColor: "#3b82f6",
   accentColor: "#ffffff",
   fontFamily: "system-ui, sans-serif",
-  watermarkText: "",
+  watermarkText: branding.name,
   introText: "",
   outroText: "",
-  ctaText: "",
-  socialHandles: "",
+  ctaText: `Created with ${branding.name}`,
+  socialHandles: "@giga3ai · giga3ai.com",
   autoCleanMyBranding: false,
 };
 
