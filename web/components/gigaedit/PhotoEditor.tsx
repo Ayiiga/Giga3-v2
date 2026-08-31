@@ -29,11 +29,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 export type PhotoEditorProps = {
   initialProjectId?: string | null;
   initialAspect?: ExportAspectRatio | null;
+  autoImport?: boolean;
 };
 
 export function PhotoEditor({
   initialProjectId = null,
   initialAspect = null,
+  autoImport = false,
 }: PhotoEditorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -56,6 +58,12 @@ export function PhotoEditor({
   useEffect(() => {
     if (initialAspect) setAspectRatio(initialAspect);
   }, [initialAspect]);
+
+  useEffect(() => {
+    if (!autoImport || initialProjectId) return;
+    const timer = window.setTimeout(() => inputRef.current?.click(), 150);
+    return () => window.clearTimeout(timer);
+  }, [autoImport, initialProjectId]);
 
   useEffect(() => {
     if (!initialProjectId) return;

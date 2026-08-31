@@ -109,3 +109,4 @@ export {
   getProjectAudioBlob,
   sectionForProjectKind,
 } from "@/lib/gigaedit/projects";
+export * from "@/lib/gigaedit/creatorStudio";

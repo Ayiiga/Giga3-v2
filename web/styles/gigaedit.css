@@ -180,6 +180,67 @@
   border-color: rgba(251, 191, 36, 0.7);
 }
 
+.gigaedit-input {
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--ge-border);
+  background: var(--ge-input);
+  color: var(--ge-text);
+  font-size: 0.82rem;
+}
+
+.gigaedit-recent-grid {
+  display: grid;
+  gap: 0.65rem;
+}
+
+@media (min-width: 640px) {
+  .gigaedit-recent-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.gigaedit-recent-card {
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+  padding: 0.65rem;
+  border-radius: 0.9rem;
+  border: 1px solid var(--ge-border);
+  background: rgba(15, 23, 42, 0.35);
+  text-align: left;
+}
+
+.gigaedit-recent-card--compact {
+  padding: 0.5rem 0.65rem;
+}
+
+.gigaedit-recent-card__thumb {
+  flex: 0 0 4.5rem;
+  width: 4.5rem;
+  height: 3.25rem;
+  border-radius: 0.55rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid var(--ge-border);
+}
+
+.gigaedit-recent-card__badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ge-gold);
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  border-radius: 999px;
+  padding: 0.12rem 0.4rem;
+}
+
 .gigaedit-tool-rail {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
