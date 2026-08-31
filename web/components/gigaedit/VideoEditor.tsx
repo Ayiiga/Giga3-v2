@@ -9,9 +9,11 @@ import {
   createEmptyProject,
   getGigaEditProject,
   getProjectAudioBlob,
+  getProjectClipBlob,
   getProjectOriginalBlob,
   listGigaEditProjects,
   putProjectAudioBlob,
+  putProjectClipBlob,
   putProjectOriginalBlob,
   saveGigaEditProject,
 } from "@/lib/gigaedit/projects";
@@ -21,8 +23,18 @@ import {
   revokeManagedObjectUrl,
 } from "@/lib/gigaedit/mediaPipeline";
 import { handoffAndOpenGigaSocial } from "@/lib/gigaedit/publishHandoff";
-import { exportEditedVideoFile, videoNeedsBake } from "@/lib/gigaedit/videoExport";
-import { EXPORT_FORMATS, type ExportAspectRatio, type GigaEditTimelineClip } from "@/lib/gigaedit/types";
+import { exportEditedVideoFile, exportJoinedVideoClips, videoNeedsBake } from "@/lib/gigaedit/videoExport";
+import {
+  buildSequentialVideoClips,
+  clipAtTimelineSec,
+  joinedTimelineDuration,
+  readVideoDuration,
+  remainingJoinSlots,
+  sortedVideoClips,
+  sourceSecToTimelineSec,
+  timelineSecToSourceSec,
+} from "@/lib/gigaedit/timelineJoin";
+import { EXPORT_FORMATS, MAX_GIGAEDIT_JOIN_CLIPS, type ExportAspectRatio, type GigaEditTimelineClip } from "@/lib/gigaedit/types";
 import { CAMERA_FILTERS, getCameraFilterCss } from "@/lib/gigasocial/cameraFilters";
 import { formatVideoTime } from "@/lib/gigasocial/videoTrim";
 import {
@@ -31,6 +43,7 @@ import {
   Gauge,
   Merge,
   Mic,
+  Plus,
   RotateCw,
   Scissors,
   SplitSquareVertical,
@@ -50,6 +63,7 @@ export type VideoEditorProps = {
 
 export function VideoEditor({ initialProjectId = null, initialAspect = null }: VideoEditorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const addClipInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
@@ -72,8 +86,11 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
   const [exporting, setExporting] = useState(false);
   const [audioLabel, setAudioLabel] = useState<string | null>(null);
   const originalFileRef = useRef<File | null>(null);
+  const sourceFilesRef = useRef<Map<string, File>>(new Map());
   const audioFileRef = useRef<File | null>(null);
   const tier = useMemo(() => detectDeviceTier(), []);
+  const videoClipCount = useMemo(() => sortedVideoClips(clips).length, [clips]);
+  const timelineDuration = useMemo(() => joinedTimelineDuration(clips) || duration, [clips, duration]);
 
   const filterCss = useMemo(() => {
     const base = getCameraFilterCss(filterId) ?? "none";
@@ -119,8 +136,25 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
           type: blob.type || "video/mp4",
         });
         originalFileRef.current = file;
+        sourceFilesRef.current.set("primary", file);
+      }
+      for (const clip of project.clips || []) {
+        if (!clip.sourceKey || clip.sourceKey === "primary" || cancelled) continue;
+        const clipBlob = await getProjectClipBlob(project.id, clip.sourceKey);
+        if (!clipBlob) continue;
+        sourceFilesRef.current.set(
+          clip.sourceKey,
+          new File([clipBlob], `${clip.label || clip.sourceKey}.mp4`, {
+            type: clipBlob.type || "video/mp4",
+          })
+        );
+      }
+      const firstClip = sortedVideoClips(project.clips || [])[0];
+      const previewKey = firstClip?.sourceKey ?? "primary";
+      const previewFile = sourceFilesRef.current.get(previewKey) ?? originalFileRef.current;
+      if (previewFile && !cancelled) {
         revokeManagedObjectUrl(objectUrl);
-        setObjectUrl(createManagedObjectUrl(file));
+        setObjectUrl(createManagedObjectUrl(previewFile));
         setStatus(`Opened project “${project.title}”. Original preserved.`);
       }
       const audioBlob = await getProjectAudioBlob(project.id);
@@ -137,17 +171,109 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
     // eslint-disable-next-line react-hooks/exhaustive-deps -- hydrate once per project id
   }, [initialProjectId]);
 
-  function onPickFile(file: File | null) {
+  function registerSourceFile(sourceKey: string, file: File) {
+    sourceFilesRef.current.set(sourceKey, file);
+    if (!originalFileRef.current) {
+      originalFileRef.current = file;
+    }
+  }
+
+  function resolveClipFile(clip: GigaEditTimelineClip): File | null {
+    const key = clip.sourceKey ?? "primary";
+    return sourceFilesRef.current.get(key) ?? originalFileRef.current;
+  }
+
+  function syncPreviewToTimeline(timelineSec: number) {
+    const clip = clipAtTimelineSec(clips, timelineSec) ?? sortedVideoClips(clips)[0];
+    if (!clip) return;
+    const file = resolveClipFile(clip);
     if (!file) return;
-    if (!file.type.startsWith("video/")) {
-      setStatus("Please choose a video file.");
+    const key = clip.sourceKey ?? "primary";
+    if (!objectUrl || sourceFilesRef.current.get(key) !== file) {
+      revokeManagedObjectUrl(objectUrl);
+      setObjectUrl(createManagedObjectUrl(file));
+    }
+    const video = videoRef.current;
+    if (!video) return;
+    const targetSourceSec = timelineSecToSourceSec(clip, timelineSec);
+    if (Math.abs(video.currentTime - targetSourceSec) > 0.12) {
+      try {
+        video.currentTime = targetSourceSec;
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  async function importVideoFiles(files: File[], mode: "replace" | "append") {
+    const videos = files.filter((file) => file.type.startsWith("video/"));
+    if (videos.length === 0) {
+      setStatus("Please choose one or more video files.");
       return;
     }
-    originalFileRef.current = file;
+
+    const slots = mode === "replace" ? MAX_GIGAEDIT_JOIN_CLIPS : remainingJoinSlots(clips);
+    if (slots <= 0) {
+      setStatus(`You can join up to ${MAX_GIGAEDIT_JOIN_CLIPS} videos in one project.`);
+      return;
+    }
+
+    const selected = videos.slice(0, slots);
+    const additions: Array<{ sourceKey: string; label: string; durationSec: number }> = [];
+
+    if (mode === "replace") {
+      sourceFilesRef.current.clear();
+      originalFileRef.current = null;
+    }
+
+    for (const file of selected) {
+      const durationSec = await readVideoDuration(file);
+      if (durationSec <= 0) {
+        setStatus(`Could not read duration for ${file.name}. Skipped.`);
+        continue;
+      }
+      const sourceKey =
+        mode === "replace" && additions.length === 0 && videoClipCount === 0
+          ? "primary"
+          : `src_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      registerSourceFile(sourceKey, file);
+      additions.push({
+        sourceKey,
+        label: file.name.replace(/\.[^.]+$/, "").slice(0, 18) || `Clip ${additions.length + 1}`,
+        durationSec,
+      });
+    }
+
+    if (additions.length === 0) {
+      setStatus("Could not import the selected videos.");
+      return;
+    }
+
+    const nextClips =
+      mode === "replace"
+        ? buildSequentialVideoClips(
+            clips.filter((clip) => clip.track !== "video"),
+            additions
+          )
+        : buildSequentialVideoClips(clips, additions);
+
+    setClips(nextClips);
+    setDuration(joinedTimelineDuration(nextClips));
+    setPlayhead(sortedVideoClips(nextClips)[0]?.startSec ?? 0);
     revokeManagedObjectUrl(objectUrl);
-    setObjectUrl(createManagedObjectUrl(file));
-    setClips([]);
-    setStatus("Original kept safely. Edits bake into a new file on publish.");
+    const firstKey = additions[0]?.sourceKey ?? "primary";
+    const firstFile = sourceFilesRef.current.get(firstKey);
+    if (firstFile) setObjectUrl(createManagedObjectUrl(firstFile));
+    setStatus(
+      mode === "replace"
+        ? `Imported ${additions.length} video${additions.length === 1 ? "" : "s"}. Join up to ${MAX_GIGAEDIT_JOIN_CLIPS} clips, then publish as one.`
+        : `Added ${additions.length} clip${additions.length === 1 ? "" : "s"}. ${sortedVideoClips(nextClips).length}/${MAX_GIGAEDIT_JOIN_CLIPS} videos joined.`
+    );
+  }
+
+  function onPickFiles(fileList: FileList | null, mode: "replace" | "append") {
+    if (!fileList?.length) return;
+    void importVideoFiles(Array.from(fileList), mode);
   }
 
   async function attachAudioFile(file: File | null) {
@@ -194,7 +320,7 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
   }
 
   function ensureBaseClip(dur: number) {
-    if (clips.length > 0) return;
+    if (sortedVideoClips(clips).length > 0) return;
     setClips([
       newClip({
         track: "video",
@@ -204,12 +330,15 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
         speed: 1,
         rotateDeg: 0,
         filterId: "none",
+        sourceKey: "primary",
+        sourceStartSec: 0,
+        sourceEndSec: dur || 5,
       }),
     ]);
   }
 
   function activeVideoRange() {
-    const videoClips = clips.filter((c) => c.track === "video").sort((a, b) => a.startSec - b.startSec);
+    const videoClips = sortedVideoClips(clips);
     if (videoClips.length === 0) {
       return { startSec: 0, endSec: Math.max(0.5, duration || 5) };
     }
@@ -220,51 +349,73 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
   }
 
   function trimActive() {
-    if (!clips[0]) return;
-    const start = Math.max(0, playhead);
-    const end = Math.min(duration || clips[0].endSec, start + Math.max(1, (duration || 8) * 0.35));
-    setClips((prev) =>
-      prev.map((c, i) => (i === 0 ? { ...c, startSec: start, endSec: end, label: "Trimmed" } : c))
+    const active = clipAtTimelineSec(clips, playhead) ?? sortedVideoClips(clips)[0];
+    if (!active) return;
+    const file = resolveClipFile(active);
+    const sourceDuration = (active.sourceEndSec ?? active.endSec) - (active.sourceStartSec ?? 0);
+    const sourcePlayhead = timelineSecToSourceSec(active, playhead);
+    const start = Math.max(active.sourceStartSec ?? 0, sourcePlayhead);
+    const end = Math.min(
+      active.sourceEndSec ?? active.endSec - active.startSec,
+      start + Math.max(1, sourceDuration * 0.35)
     );
-    const video = videoRef.current;
-    if (video) video.currentTime = start;
+    const trimmedDuration = Math.max(0.25, (end - start) / Math.max(0.25, active.speed || 1));
+    setClips((prev) =>
+      prev.map((clip) =>
+        clip.id === active.id
+          ? {
+              ...clip,
+              sourceStartSec: start,
+              sourceEndSec: end,
+              endSec: clip.startSec + trimmedDuration,
+              label: "Trimmed",
+            }
+          : clip
+      )
+    );
+    syncPreviewToTimeline(active.startSec);
     setStatus(`Trimmed to ${formatVideoTime(start)}–${formatVideoTime(end)} (baked on export).`);
   }
 
   function splitAtPlayhead() {
-    const active = clips.find((c) => c.track === "video");
+    const active = clipAtTimelineSec(clips, playhead);
     if (!active) return;
-    if (playhead <= active.startSec + 0.2 || playhead >= active.endSec - 0.2) {
+    const sourcePlayhead = timelineSecToSourceSec(active, playhead);
+    const sourceStart = active.sourceStartSec ?? 0;
+    const sourceEnd = active.sourceEndSec ?? active.endSec - active.startSec;
+    if (sourcePlayhead <= sourceStart + 0.2 || sourcePlayhead >= sourceEnd - 0.2) {
       setStatus("Move the playhead inside the clip to split.");
       return;
     }
-    const left = { ...active, endSec: playhead, label: "A" };
+    const leftDuration = (sourcePlayhead - sourceStart) / Math.max(0.25, active.speed || 1);
+    const rightDuration = (sourceEnd - sourcePlayhead) / Math.max(0.25, active.speed || 1);
+    const left = {
+      ...active,
+      endSec: active.startSec + leftDuration,
+      sourceEndSec: sourcePlayhead,
+      label: `${active.label} A`,
+    };
     const right = newClip({
       ...active,
-      startSec: playhead,
-      label: "B",
+      startSec: active.startSec + leftDuration,
+      endSec: active.startSec + leftDuration + rightDuration,
+      sourceStartSec: sourcePlayhead,
+      sourceEndSec: sourceEnd,
+      label: `${active.label} B`,
     });
-    setClips((prev) => [left, right, ...prev.filter((c) => c.id !== active.id)]);
+    setClips((prev) => [left, right, ...prev.filter((clip) => clip.id !== active.id)]);
     setStatus("Clip split at playhead.");
   }
 
   function mergeClips() {
-    const videoClips = clips.filter((c) => c.track === "video").sort((a, b) => a.startSec - b.startSec);
+    const videoClips = sortedVideoClips(clips);
     if (videoClips.length < 2) {
-      setStatus("Need at least two video clips to merge.");
+      setStatus("Add another video with “Add clip” to join up to 10 clips as one.");
       return;
     }
-    const merged = newClip({
-      track: "video",
-      label: "Merged",
-      startSec: videoClips[0].startSec,
-      endSec: videoClips[videoClips.length - 1].endSec,
-      speed,
-      rotateDeg,
-      filterId,
-    });
-    setClips((prev) => [merged, ...prev.filter((c) => c.track !== "video")]);
-    setStatus("Video clips merged on the timeline.");
+    setStatus(
+      `${videoClips.length}/${MAX_GIGAEDIT_JOIN_CLIPS} videos queued. Publish to export them as one video.`
+    );
   }
 
   function addTextLayer() {
@@ -390,6 +541,10 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
     if (originalFileRef.current) {
       await putProjectOriginalBlob(project.id, originalFileRef.current);
     }
+    for (const [sourceKey, file] of sourceFilesRef.current.entries()) {
+      if (sourceKey === "primary") continue;
+      await putProjectClipBlob(project.id, sourceKey, file);
+    }
     if (audioFileRef.current) {
       await putProjectAudioBlob(project.id, audioFileRef.current);
     }
@@ -402,12 +557,48 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
   async function bakeEditedFile(): Promise<File> {
     const original = originalFileRef.current;
     if (!original) throw new Error("Import a video first.");
+    const videoClips = sortedVideoClips(clips);
+    const joinedDuration = joinedTimelineDuration(clips) || duration;
     const range = activeVideoRange();
+    const needsJoin = videoClips.length > 1;
+
+    if (needsJoin) {
+      setStatus(`Joining ${videoClips.length} videos into one export…`);
+      const segments = videoClips.map((clip) => {
+        const file = resolveClipFile(clip);
+        if (!file) throw new Error("Missing source video for one of the joined clips.");
+        return {
+          file,
+          sourceStartSec: clip.sourceStartSec ?? 0,
+          sourceEndSec: clip.sourceEndSec ?? clip.endSec - clip.startSec,
+          speed: clip.speed ?? speed,
+        };
+      });
+      const exported = await exportJoinedVideoClips(segments, {
+        rotateDeg,
+        cropScale,
+        filterCss,
+        overlayText,
+        captions,
+        aspectRatio,
+        audioMode: audioFileRef.current ? "replace" : "original",
+        replaceAudio: audioFileRef.current,
+        tier,
+        onProgress: (p) => setStatus(`Joining clips… ${Math.round(p * 100)}%`),
+      });
+      return exported.file;
+    }
+
+    const active = videoClips[0];
+    const exportFile = resolveClipFile(active) ?? original;
+    const sourceStart = active?.sourceStartSec ?? range.startSec;
+    const sourceEnd = active?.sourceEndSec ?? range.endSec;
+    const sourceDuration = Math.max(0.25, sourceEnd - sourceStart);
     const needs = videoNeedsBake({
-      startSec: range.startSec,
-      endSec: range.endSec,
-      duration,
-      speed,
+      startSec: sourceStart,
+      endSec: sourceEnd,
+      duration: sourceDuration,
+      speed: active?.speed ?? speed,
       rotateDeg,
       cropScale,
       filterCss,
@@ -418,10 +609,10 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
     if (!needs) return original;
 
     setStatus("Baking edits into a new video file…");
-    const exported = await exportEditedVideoFile(original, {
-      startSec: range.startSec,
-      endSec: range.endSec,
-      speed,
+    const exported = await exportEditedVideoFile(exportFile, {
+      startSec: sourceStart,
+      endSec: sourceEnd,
+      speed: active?.speed ?? speed,
       rotateDeg,
       cropScale,
       filterCss,
@@ -456,7 +647,7 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
         destination: "feed",
         caption: overlayText,
         projectId: id,
-        durationSec: duration || undefined,
+        durationSec: timelineDuration || undefined,
         aiAssisted: Boolean(captions) || contrastBoost,
         audio: audioFileRef.current,
         audioMixMode: audioFileRef.current ? "replace" : "original",
@@ -499,7 +690,7 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
     }
   }
 
-  const timelineMax = Math.max(duration, 8);
+  const timelineMax = Math.max(timelineDuration, 8);
 
   if (publishReady && originalFileRef.current && editedPublishFile) {
     return (
@@ -508,7 +699,7 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
         editedFile={editedPublishFile}
         originalFile={originalFileRef.current}
         aspectRatio={aspectRatio}
-        durationSec={duration || undefined}
+        durationSec={timelineDuration || undefined}
         projectId={projectId}
         aiAssisted={Boolean(captions) || contrastBoost}
         defaultCaption={overlayText}
@@ -522,8 +713,8 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
       <div>
         <h2 className="text-lg font-semibold">Video editor</h2>
         <p className="mt-1 text-xs text-[var(--ge-muted)]">
-          Trim, filters, rotate, speed, text, captions, and audio mix bake into a new file on publish
-          ({tier}-tier). Originals stay untouched.
+          Import or add up to {MAX_GIGAEDIT_JOIN_CLIPS} videos, trim and style them, then publish as one
+          joined clip ({tier}-tier). Originals stay untouched.
         </p>
       </div>
 
@@ -546,8 +737,32 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
           ref={inputRef}
           type="file"
           accept="video/*"
+          multiple
           className="sr-only"
-          onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
+          onChange={(e) => {
+            onPickFiles(e.target.files, videoClipCount > 0 ? "append" : "replace");
+            e.target.value = "";
+          }}
+        />
+        <button
+          type="button"
+          disabled={videoClipCount >= MAX_GIGAEDIT_JOIN_CLIPS}
+          className="inline-flex items-center justify-center gap-1 rounded-xl border border-[var(--ge-border)] px-3 py-3 text-sm font-semibold disabled:opacity-50"
+          onClick={() => addClipInputRef.current?.click()}
+        >
+          <Plus className="h-4 w-4" aria-hidden />
+          Add clip
+        </button>
+        <input
+          ref={addClipInputRef}
+          type="file"
+          accept="video/*"
+          multiple
+          className="sr-only"
+          onChange={(e) => {
+            onPickFiles(e.target.files, "append");
+            e.target.value = "";
+          }}
         />
         <button
           type="button"
@@ -595,8 +810,10 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
           Use Audio Studio take
         </button>
       </div>
+      <p className="text-[11px] font-semibold text-[var(--ge-gold)]">
+        {videoClipCount}/{MAX_GIGAEDIT_JOIN_CLIPS} videos joined
+      </p>
       </section>
-      {audioLabel ? (
         <p className="text-[11px] text-[var(--ge-gold)]">Audio: {audioLabel}</p>
       ) : null}
 
@@ -621,10 +838,22 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
           }
           onLoadedMetadata={(el) => {
             const dur = el.duration || 0;
-            setDuration(dur);
+            setDuration((current) => Math.max(current, joinedTimelineDuration(clips) || dur));
             ensureBaseClip(dur);
           }}
-          onTimeUpdate={(el) => setPlayhead(el.currentTime)}
+          onTimeUpdate={(el) => {
+            const active =
+              sortedVideoClips(clips).find((clip) => {
+                const sourceStart = clip.sourceStartSec ?? 0;
+                const sourceEnd = clip.sourceEndSec ?? clip.endSec - clip.startSec;
+                return el.currentTime >= sourceStart - 0.05 && el.currentTime <= sourceEnd + 0.05;
+              }) ?? sortedVideoClips(clips)[0];
+            if (!active) {
+              setPlayhead(el.currentTime);
+              return;
+            }
+            setPlayhead(sourceSecToTimelineSec(active, el.currentTime));
+          }}
         />
 
         <div className="space-y-3">
@@ -699,7 +928,7 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
       <div className="gigaedit-tool-rail flex gap-2 overflow-x-auto overscroll-x-contain pb-1">
         <ToolBtn icon={Scissors} label="Trim from playhead" onClick={trimActive} />
         <ToolBtn icon={SplitSquareVertical} label="Split" onClick={splitAtPlayhead} />
-        <ToolBtn icon={Merge} label="Merge" onClick={mergeClips} />
+        <ToolBtn icon={Merge} label="Join status" onClick={mergeClips} />
         <ToolBtn icon={RotateCw} label="Rotate" onClick={() => setRotateDeg((d) => (d + 90) % 360)} />
         <ToolBtn icon={Crop} label="Reset crop" onClick={() => setCropScale(1)} />
         <ToolBtn icon={Gauge} label="1x speed" onClick={() => setSpeed(1)} />
@@ -715,7 +944,7 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
         </summary>
         <div className="mt-3 space-y-2">
         <p className="text-xs text-[var(--ge-muted)]">
-          Playhead {formatVideoTime(playhead)} / {formatVideoTime(duration || timelineMax)}
+          Playhead {formatVideoTime(playhead)} / {formatVideoTime(timelineMax)}
         </p>
         {(["video", "audio", "text", "sticker"] as const).map((track) => (
           <div key={track}>

@@ -103,6 +103,12 @@ export async function duplicateGigaEditProject(id: string): Promise<GigaEditProj
   await saveGigaEditProject(copy);
   const originalBlob = await getProjectOriginalBlob(id);
   if (originalBlob) await putProjectOriginalBlob(copy.id, originalBlob);
+  for (const clip of existing.clips) {
+    if (clip.sourceKey) {
+      const blob = await getProjectClipBlob(id, clip.sourceKey);
+      if (blob) await putProjectClipBlob(copy.id, clip.sourceKey, blob);
+    }
+  }
   return copy;
 }
 
@@ -163,6 +169,47 @@ export async function getProjectAudioBlob(projectId: string): Promise<Blob | nul
   try {
     const tx = db.transaction(BLOB_STORE, "readonly");
     const row = (await idbReq(tx.objectStore(BLOB_STORE).get(`${projectId}::audio`))) as
+      | { blob?: Blob }
+      | undefined;
+    return row?.blob ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function clipBlobId(projectId: string, sourceKey: string): string {
+  return `${projectId}::clip::${sourceKey}`;
+}
+
+/** Persist a joined clip source blob without overwriting the legacy original slot. */
+export async function putProjectClipBlob(
+  projectId: string,
+  sourceKey: string,
+  blob: Blob
+): Promise<void> {
+  const db = await openDb();
+  if (!db) return;
+  const tx = db.transaction(BLOB_STORE, "readwrite");
+  await idbReq(
+    tx.objectStore(BLOB_STORE).put({
+      id: clipBlobId(projectId, sourceKey),
+      blob,
+      role: "clip",
+      sourceKey,
+      savedAt: Date.now(),
+    })
+  );
+}
+
+export async function getProjectClipBlob(
+  projectId: string,
+  sourceKey: string
+): Promise<Blob | null> {
+  const db = await openDb();
+  if (!db) return null;
+  try {
+    const tx = db.transaction(BLOB_STORE, "readonly");
+    const row = (await idbReq(tx.objectStore(BLOB_STORE).get(clipBlobId(projectId, sourceKey)))) as
       | { blob?: Blob }
       | undefined;
     return row?.blob ?? null;

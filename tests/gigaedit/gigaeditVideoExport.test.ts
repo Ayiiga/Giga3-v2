@@ -72,7 +72,9 @@ describe("GigaEdit video export bake detection", () => {
       "utf8"
     );
     expect(src).toContain("exportEditedVideoFile");
+    expect(src).toContain("exportJoinedVideoClips");
     expect(src).toContain("bakeEditedFile");
     expect(src).toContain("attachLatestAudioProject");
+    expect(src).toContain("MAX_GIGAEDIT_JOIN_CLIPS");
   });
 });
