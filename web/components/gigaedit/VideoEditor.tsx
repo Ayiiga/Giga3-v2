@@ -87,6 +87,7 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
   const [audioLabel, setAudioLabel] = useState<string | null>(null);
   const originalFileRef = useRef<File | null>(null);
   const sourceFilesRef = useRef<Map<string, File>>(new Map());
+  const importSessionActiveRef = useRef(false);
   const audioFileRef = useRef<File | null>(null);
   const tier = useMemo(() => detectDeviceTier(), []);
   const videoClipCount = useMemo(() => sortedVideoClips(clips).length, [clips]);
@@ -153,6 +154,7 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
       const previewKey = firstClip?.sourceKey ?? "primary";
       const previewFile = sourceFilesRef.current.get(previewKey) ?? originalFileRef.current;
       if (previewFile && !cancelled) {
+        importSessionActiveRef.current = true;
         revokeManagedObjectUrl(objectUrl);
         setObjectUrl(createManagedObjectUrl(previewFile));
         setStatus(`Opened project “${project.title}”. Original preserved.`);
@@ -171,7 +173,27 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
     // eslint-disable-next-line react-hooks/exhaustive-deps -- hydrate once per project id
   }, [initialProjectId]);
 
+  function projectHasVideos(nextClips: GigaEditTimelineClip[] = clips): boolean {
+    return (
+      importSessionActiveRef.current ||
+      sortedVideoClips(nextClips).length > 0 ||
+      sourceFilesRef.current.size > 0 ||
+      Boolean(originalFileRef.current)
+    );
+  }
+
+  function isVideoImportFile(file: File): boolean {
+    if (file.type.startsWith("video/")) return true;
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    return ext === "mp4" || ext === "mov" || ext === "webm" || ext === "m4v";
+  }
+
+  function resolveImportMode(nextClips: GigaEditTimelineClip[] = clips): "replace" | "append" {
+    return projectHasVideos(nextClips) ? "append" : "replace";
+  }
+
   function registerSourceFile(sourceKey: string, file: File) {
+    importSessionActiveRef.current = true;
     sourceFilesRef.current.set(sourceKey, file);
     if (!originalFileRef.current) {
       originalFileRef.current = file;
@@ -205,14 +227,15 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
     }
   }
 
-  async function importVideoFiles(files: File[], mode: "replace" | "append") {
-    const videos = files.filter((file) => file.type.startsWith("video/"));
+  async function importVideoFiles(files: File[], mode?: "replace" | "append") {
+    const videos = files.filter(isVideoImportFile);
     if (videos.length === 0) {
       setStatus("Please choose one or more video files.");
       return;
     }
 
-    const slots = mode === "replace" ? MAX_GIGAEDIT_JOIN_CLIPS : remainingJoinSlots(clips);
+    const importMode = mode ?? resolveImportMode();
+    const slots = importMode === "replace" ? MAX_GIGAEDIT_JOIN_CLIPS : remainingJoinSlots(clips);
     if (slots <= 0) {
       setStatus(`You can join up to ${MAX_GIGAEDIT_JOIN_CLIPS} videos in one project.`);
       return;
@@ -221,9 +244,10 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
     const selected = videos.slice(0, slots);
     const additions: Array<{ sourceKey: string; label: string; durationSec: number }> = [];
 
-    if (mode === "replace") {
+    if (importMode === "replace") {
       sourceFilesRef.current.clear();
       originalFileRef.current = null;
+      importSessionActiveRef.current = false;
     }
 
     for (const file of selected) {
@@ -233,7 +257,7 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
         continue;
       }
       const sourceKey =
-        mode === "replace" && additions.length === 0 && videoClipCount === 0
+        importMode === "replace" && additions.length === 0
           ? "primary"
           : `src_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
       registerSourceFile(sourceKey, file);
@@ -250,7 +274,7 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
     }
 
     const nextClips =
-      mode === "replace"
+      importMode === "replace"
         ? buildSequentialVideoClips(
             clips.filter((clip) => clip.track !== "video"),
             additions
@@ -259,19 +283,24 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
 
     setClips(nextClips);
     setDuration(joinedTimelineDuration(nextClips));
-    setPlayhead(sortedVideoClips(nextClips)[0]?.startSec ?? 0);
+    const joinedVideos = sortedVideoClips(nextClips);
+    const previewClip =
+      importMode === "append"
+        ? joinedVideos[joinedVideos.length - 1]
+        : joinedVideos[0];
+    setPlayhead(previewClip?.startSec ?? 0);
     revokeManagedObjectUrl(objectUrl);
-    const firstKey = additions[0]?.sourceKey ?? "primary";
-    const firstFile = sourceFilesRef.current.get(firstKey);
-    if (firstFile) setObjectUrl(createManagedObjectUrl(firstFile));
+    const previewKey = previewClip?.sourceKey ?? additions[0]?.sourceKey ?? "primary";
+    const previewFile = sourceFilesRef.current.get(previewKey);
+    if (previewFile) setObjectUrl(createManagedObjectUrl(previewFile));
     setStatus(
-      mode === "replace"
-        ? `Imported ${additions.length} video${additions.length === 1 ? "" : "s"}. Join up to ${MAX_GIGAEDIT_JOIN_CLIPS} clips, then publish as one.`
-        : `Added ${additions.length} clip${additions.length === 1 ? "" : "s"}. ${sortedVideoClips(nextClips).length}/${MAX_GIGAEDIT_JOIN_CLIPS} videos joined.`
+      importMode === "replace"
+        ? `Imported ${additions.length} video${additions.length === 1 ? "" : "s"}. Tap “Add more videos” to join up to ${MAX_GIGAEDIT_JOIN_CLIPS} clips.`
+        : `Added ${additions.length} more clip${additions.length === 1 ? "" : "s"}. ${joinedVideos.length}/${MAX_GIGAEDIT_JOIN_CLIPS} videos joined — keep adding or publish as one.`
     );
   }
 
-  function onPickFiles(fileList: FileList | null, mode: "replace" | "append") {
+  function onPickFiles(fileList: FileList | null, mode?: "replace" | "append") {
     if (!fileList?.length) return;
     void importVideoFiles(Array.from(fileList), mode);
   }
@@ -320,7 +349,8 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
   }
 
   function ensureBaseClip(dur: number) {
-    if (sortedVideoClips(clips).length > 0) return;
+    if (projectHasVideos()) return;
+    importSessionActiveRef.current = true;
     setClips([
       newClip({
         track: "video",
@@ -731,32 +761,32 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
           className="rounded-xl bg-[var(--ge-gold)] px-3 py-3 text-sm font-bold text-[#0b1220]"
           onClick={() => inputRef.current?.click()}
         >
-          Import video
+          {videoClipCount > 0 ? "Add more videos" : "Import video"}
         </button>
         <input
           ref={inputRef}
           type="file"
-          accept="video/*"
+          accept="video/*,.mp4,.mov,.webm,.m4v"
           multiple
           className="sr-only"
           onChange={(e) => {
-            onPickFiles(e.target.files, videoClipCount > 0 ? "append" : "replace");
+            onPickFiles(e.target.files);
             e.target.value = "";
           }}
         />
         <button
           type="button"
-          disabled={videoClipCount >= MAX_GIGAEDIT_JOIN_CLIPS}
+          disabled={videoClipCount === 0 || videoClipCount >= MAX_GIGAEDIT_JOIN_CLIPS}
           className="inline-flex items-center justify-center gap-1 rounded-xl border border-[var(--ge-border)] px-3 py-3 text-sm font-semibold disabled:opacity-50"
           onClick={() => addClipInputRef.current?.click()}
         >
           <Plus className="h-4 w-4" aria-hidden />
-          Add clip
+          Add another clip
         </button>
         <input
           ref={addClipInputRef}
           type="file"
-          accept="video/*"
+          accept="video/*,.mp4,.mov,.webm,.m4v"
           multiple
           className="sr-only"
           onChange={(e) => {
@@ -812,6 +842,9 @@ export function VideoEditor({ initialProjectId = null, initialAspect = null }: V
       </div>
       <p className="text-[11px] font-semibold text-[var(--ge-gold)]">
         {videoClipCount}/{MAX_GIGAEDIT_JOIN_CLIPS} videos joined
+        {videoClipCount > 0 && videoClipCount < MAX_GIGAEDIT_JOIN_CLIPS
+          ? " — add more with the buttons above"
+          : ""}
       </p>
       </section>
       {audioLabel ? (
