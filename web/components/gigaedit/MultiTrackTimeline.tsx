@@ -13,7 +13,7 @@ import {
 import { canDropClipOnLane, snapTimelineSec } from "@/lib/gigaedit/timelineLayers";
 import type { GigaEditTimelineClip, GigaEditTimelineLane } from "@/lib/gigaedit/types";
 import { cn } from "@/lib/utils";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type MultiTrackTimelineProps = {
   clips: GigaEditTimelineClip[];
@@ -38,11 +38,15 @@ type ClipDragState = {
   clipId: string;
   pointerId: number;
   originX: number;
+  originY: number;
   origStart: number;
   origEnd: number;
   sourceLane: GigaEditTimelineLane;
   trackWidth: number;
+  moved: boolean;
 };
+
+const DRAG_THRESHOLD_PX = 4;
 
 function playheadFromPointer(clientX: number, rect: DOMRect, max: number): number {
   const ratio = (clientX - rect.left) / rect.width;
@@ -72,6 +76,8 @@ export function MultiTrackTimeline({
   const max = Math.max(durationSec, 8);
   const [drag, setDrag] = useState<ClipDragState | null>(null);
   const [hoverLane, setHoverLane] = useState<GigaEditTimelineLane | null>(null);
+  const onMoveClipRef = useRef(onMoveClip);
+  onMoveClipRef.current = onMoveClip;
 
   const ticks = useMemo(() => {
     const step = max <= 20 ? 5 : max <= 60 ? 10 : 15;
@@ -89,6 +95,12 @@ export function MultiTrackTimeline({
 
     const onMove = (e: PointerEvent) => {
       if (e.pointerId !== drag.pointerId) return;
+      if (
+        Math.abs(e.clientX - drag.originX) > DRAG_THRESHOLD_PX ||
+        Math.abs(e.clientY - drag.originY) > DRAG_THRESHOLD_PX
+      ) {
+        setDrag((prev) => (prev ? { ...prev, moved: true } : prev));
+      }
       setHoverLane(laneFromPoint(e.clientX, e.clientY));
     };
 
@@ -101,18 +113,24 @@ export function MultiTrackTimeline({
         return;
       }
 
-      const deltaSec = ((e.clientX - drag.originX) / drag.trackWidth) * max;
-      const duration = Math.max(0.25, drag.origEnd - drag.origStart);
-      const rawStart = Math.max(0, drag.origStart + deltaSec);
-      const nextStart = snapTimelineSec(rawStart, clips, playheadSec, snapEnabled, drag.clipId);
-      const nextEnd = nextStart + duration;
-
       const dropLane = laneFromPoint(e.clientX, e.clientY);
       const targetLane =
         dropLane && canDropClipOnLane(clip, dropLane) ? dropLane : drag.sourceLane;
       const laneChanged = targetLane !== inferClipLane(clip);
 
-      onMoveClip(drag.clipId, nextStart, nextEnd, laneChanged ? targetLane : undefined);
+      if (drag.moved || laneChanged) {
+        const deltaSec = ((e.clientX - drag.originX) / drag.trackWidth) * max;
+        const duration = Math.max(0.25, drag.origEnd - drag.origStart);
+        const rawStart = Math.max(0, drag.origStart + deltaSec);
+        const nextStart = snapTimelineSec(rawStart, clips, playheadSec, snapEnabled, drag.clipId);
+        const nextEnd = nextStart + duration;
+        onMoveClipRef.current(
+          drag.clipId,
+          nextStart,
+          nextEnd,
+          laneChanged ? targetLane : undefined
+        );
+      }
 
       setDrag(null);
       setHoverLane(null);
@@ -124,7 +142,7 @@ export function MultiTrackTimeline({
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
     };
-  }, [clips, drag, max, onMoveClip, playheadSec, snapEnabled]);
+  }, [clips, drag, max, playheadSec, snapEnabled]);
 
   function handleRulerClick(e: React.MouseEvent<HTMLDivElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -147,10 +165,12 @@ export function MultiTrackTimeline({
       clipId: clip.id,
       pointerId: e.pointerId,
       originX: e.clientX,
+      originY: e.clientY,
       origStart: clip.startSec,
       origEnd: clip.endSec,
       sourceLane: laneId,
       trackWidth: trackEl.clientWidth,
+      moved: false,
     });
     setHoverLane(laneId);
   }

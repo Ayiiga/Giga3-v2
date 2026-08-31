@@ -10,6 +10,7 @@ import type {
   GigaEditProjectStatus,
   GigaEditTimelineClip,
 } from "@/lib/gigaedit/types";
+import { GIGAEDIT_BRAND_KIT_STORE_ID } from "@/lib/gigaedit/creatorStudio/brandKit";
 
 const DB_NAME = "giga3-gigaedit-v1";
 const DB_VERSION = 1;
@@ -54,19 +55,29 @@ function idbReq<T>(request: IDBRequest<T>): Promise<T> {
   });
 }
 
+function isProjectMetaRow(row: unknown): row is GigaEditProjectRecord {
+  if (!row || typeof row !== "object") return false;
+  const record = row as Partial<GigaEditProjectRecord>;
+  if (record.id === GIGAEDIT_BRAND_KIT_STORE_ID) return false;
+  return typeof record.kind === "string" && typeof record.title === "string";
+}
+
 export async function listGigaEditProjects(): Promise<GigaEditProjectRecord[]> {
   const db = await openDb();
   if (!db) return [];
   try {
     const tx = db.transaction(META_STORE, "readonly");
     const rows = await idbReq(tx.objectStore(META_STORE).getAll());
-    return (rows as GigaEditProjectRecord[]).sort((a, b) => b.updatedAt - a.updatedAt);
+    return (rows as unknown[])
+      .filter(isProjectMetaRow)
+      .sort((a, b) => b.updatedAt - a.updatedAt);
   } catch {
     return [];
   }
 }
 
 export async function getGigaEditProject(id: string): Promise<GigaEditProjectRecord | null> {
+  if (id === GIGAEDIT_BRAND_KIT_STORE_ID) return null;
   const db = await openDb();
   if (!db) return null;
   try {
@@ -81,6 +92,9 @@ export async function getGigaEditProject(id: string): Promise<GigaEditProjectRec
 export async function saveGigaEditProject(
   project: GigaEditProjectRecord
 ): Promise<GigaEditProjectRecord> {
+  if (project.id === GIGAEDIT_BRAND_KIT_STORE_ID || !isProjectMetaRow(project)) {
+    return project;
+  }
   const db = await openDb();
   if (!db) return project;
   const next = { ...project, updatedAt: Date.now() };
@@ -90,6 +104,7 @@ export async function saveGigaEditProject(
 }
 
 export async function duplicateGigaEditProject(id: string): Promise<GigaEditProjectRecord | null> {
+  if (id === GIGAEDIT_BRAND_KIT_STORE_ID) return null;
   const existing = await getGigaEditProject(id);
   if (!existing) return null;
   const copy: GigaEditProjectRecord = {
@@ -113,6 +128,7 @@ export async function duplicateGigaEditProject(id: string): Promise<GigaEditProj
 }
 
 export async function deleteGigaEditProject(id: string): Promise<void> {
+  if (id === GIGAEDIT_BRAND_KIT_STORE_ID) return;
   const db = await openDb();
   if (!db) return;
   const tx = db.transaction([META_STORE, BLOB_STORE], "readwrite");

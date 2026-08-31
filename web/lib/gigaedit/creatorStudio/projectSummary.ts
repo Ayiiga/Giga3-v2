@@ -24,7 +24,7 @@ export function computeProjectDurationSec(project: GigaEditProjectRecord): numbe
   if (typeof project.durationSec === "number" && project.durationSec > 0) {
     return project.durationSec;
   }
-  const fromClips = joinedTimelineDuration(project.clips);
+  const fromClips = joinedTimelineDuration(project.clips ?? []);
   return fromClips > 0 ? fromClips : 0;
 }
 

@@ -43,6 +43,7 @@ export function clipsForLane(
   lane: GigaEditTimelineLane
 ): GigaEditTimelineClip[] {
   return clips
+    .filter((clip) => clip.track !== "audio" && clip.track !== "effect")
     .filter((clip) => inferClipLane(clip) === lane)
     .sort((a, b) => a.startSec - b.startSec || a.endSec - b.endSec);
 }
