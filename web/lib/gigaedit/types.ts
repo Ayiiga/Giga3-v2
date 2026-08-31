@@ -52,14 +52,43 @@ export type GigaEditProjectMeta = {
   offlineReady: boolean;
 };
 
-/** Maximum number of source videos that can be joined in one GigaEdit project. */
+/** Maximum number of source videos that can be joined in one GigaEdit project (main track). */
 export const MAX_GIGAEDIT_JOIN_CLIPS = 10;
+
+export type VideoResizeMode = "fit" | "fill" | "cover" | "contain" | "original";
+
+export type VideoMaskShape = "none" | "circle" | "rectangle" | "rounded" | "ellipse";
+
+export type OverlayPositionPreset =
+  | "top-left"
+  | "top-center"
+  | "top-right"
+  | "center-left"
+  | "center"
+  | "center-right"
+  | "bottom-left"
+  | "bottom-center"
+  | "bottom-right";
+
+export type OverlayLayoutPreset =
+  | "pip-25"
+  | "pip-40"
+  | "pip-50"
+  | "pip-75"
+  | "side-by-side"
+  | "split-top-bottom"
+  | "circle-camera"
+  | "floating";
+
+export type BrandingAction = "keep" | "crop" | "blur" | "cover" | "replace" | "remove";
+
+export type BrandingSource = "user" | "unknown";
 
 export type GigaEditTimelineClip = {
   id: string;
   track: "video" | "audio" | "text" | "sticker" | "effect";
   label: string;
-  /** Position on the joined timeline. */
+  /** Position on the project timeline (seconds). */
   startSec: number;
   endSec: number;
   speed: number;
@@ -72,6 +101,45 @@ export type GigaEditTimelineClip = {
   sourceStartSec?: number;
   /** Out-point within the source file (defaults to full source duration). */
   sourceEndSec?: number;
+  /** 0 = main sequence; 1+ = overlay video layers. */
+  videoLayer?: number;
+  /** Main timeline sequence vs composited overlay. */
+  clipRole?: "main" | "overlay";
+  /** Normalized canvas position (0–1), center anchor. */
+  posX?: number;
+  posY?: number;
+  /** Scale relative to smart-fit box (1 = default fit). */
+  scaleX?: number;
+  scaleY?: number;
+  opacity?: number;
+  volume?: number;
+  muted?: boolean;
+  locked?: boolean;
+  visible?: boolean;
+  resizeMode?: VideoResizeMode;
+  /** Normalized crop insets within source (0–1). */
+  cropLeft?: number;
+  cropTop?: number;
+  cropRight?: number;
+  cropBottom?: number;
+  maskShape?: VideoMaskShape;
+  maskFeather?: number;
+  /** Manual chroma key (hex). */
+  chromaKeyColor?: string;
+  chromaKeyTolerance?: number;
+  borderWidth?: number;
+  borderColor?: string;
+  shadowBlur?: number;
+  roundedRadius?: number;
+  blendMode?: GlobalCompositeOperation;
+  /** Per-clip thumbnail for media library (data URL). */
+  clipThumbnailDataUrl?: string;
+  brandingAction?: BrandingAction;
+  brandingSource?: BrandingSource;
+  /** Normalized region in frame (0–1). */
+  brandingRegion?: { x: number; y: number; w: number; h: number };
+  /** Multi-camera foundation id (e.g. cam-a, screen). */
+  cameraId?: string;
 };
 
 export type GigaEditQuickAction = {

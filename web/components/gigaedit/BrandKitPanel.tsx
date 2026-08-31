@@ -145,6 +145,18 @@ export function BrandKitPanel() {
         />
       </label>
 
+      <label className="mt-4 block space-y-1">
+        <span className="text-xs font-medium text-[var(--ge-muted)]">Auto clean my branding on import</span>
+        <input
+          type="checkbox"
+          checked={kit.autoCleanMyBranding ?? false}
+          onChange={(e) => updateField("autoCleanMyBranding", e.target.checked)}
+        />
+        <p className="text-[10px] text-[var(--ge-muted)]">
+          Only registered Brand Kit logos/watermarks. Never removes unknown third-party marks.
+        </p>
+      </label>
+
       <p className="text-[11px] text-[var(--ge-muted)]">
         Use <strong className="font-semibold text-[var(--ge-text)]">Apply Brand Kit</strong> in the
         video or photo editor to merge watermark and CTA text into exports. Cloud sync is not yet
