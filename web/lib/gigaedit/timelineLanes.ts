@@ -51,6 +51,13 @@ export function overlayLanes(): GigaEditTimelineLane[] {
   return ["b-roll", "cutout-person", "screen-recording"];
 }
 
+/** Lanes that accept dragged clips (logo/captions are synthetic). */
+export const DRAGGABLE_LANES: GigaEditTimelineLane[] = [
+  "main-video",
+  ...overlayLanes(),
+  "text",
+];
+
 export function formatRulerTime(sec: number): string {
   const safe = Math.max(0, sec);
   const totalSec = Math.floor(safe);

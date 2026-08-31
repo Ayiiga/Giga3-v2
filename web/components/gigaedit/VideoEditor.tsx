@@ -14,9 +14,10 @@ import {
   shouldAutoCleanUserBranding,
   type BrandingDetection,
 } from "@/lib/gigaedit/brandingDetection";
-import { laneLabel } from "@/lib/gigaedit/timelineLanes";
+import { inferClipLane, laneLabel } from "@/lib/gigaedit/timelineLanes";
 import { captureFileThumbnail, captureVideoElementThumbnail } from "@/lib/gigaedit/thumbnailCapture";
 import {
+  applyClipLaneChange,
   buildOverlayClip,
   migrateTimelineClips,
   nextOverlayLayer,
@@ -764,15 +765,31 @@ export function VideoEditor({
     if (selectedClipId === clipId) setSelectedClipId(null);
   }
 
-  function moveClipOnTimeline(clipId: string, nextStartSec: number, nextEndSec: number) {
+  function moveClipOnTimeline(
+    clipId: string,
+    nextStartSec: number,
+    nextEndSec: number,
+    targetLane?: GigaEditTimelineLane
+  ) {
     const duration = Math.max(0.25, nextEndSec - nextStartSec);
     commitClips((prev) =>
       prev.map((c) => {
         if (c.id !== clipId || c.locked) return c;
         const start = snapTimelineSec(nextStartSec, prev, playhead, snapEnabled, clipId);
-        return { ...c, startSec: start, endSec: start + duration };
+        let next: GigaEditTimelineClip = { ...c, startSec: start, endSec: start + duration };
+        if (targetLane && inferClipLane(c) !== targetLane) {
+          const others = prev.filter((row) => row.id !== clipId);
+          const reassigned = applyClipLaneChange(c, targetLane, nextOverlayLayer(others));
+          if (reassigned) {
+            next = { ...reassigned, startSec: start, endSec: start + duration };
+          }
+        }
+        return next;
       })
     );
+    if (targetLane) {
+      setStatus(`Moved to ${laneLabel(targetLane)} track.`);
+    }
   }
 
   function trimClipEdge(clipId: string, edge: "start" | "end", sec: number) {

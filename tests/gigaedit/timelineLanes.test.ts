@@ -82,3 +82,27 @@ describe("timelineLanes", () => {
     expect(syntheticLogoBar(15, false)).toBeNull();
   });
 });
+
+describe("timeline lane drops", () => {
+  it("allows video clips on droppable lanes but not logo/captions", async () => {
+    const { canDropClipOnLane, applyClipLaneChange } = await import(
+      "../../web/lib/gigaedit/timelineLayers"
+    );
+    const overlay = videoClip({ id: "ov", videoLayer: 1, clipRole: "overlay" });
+    expect(canDropClipOnLane(overlay, "b-roll")).toBe(true);
+    expect(canDropClipOnLane(overlay, "logo")).toBe(false);
+    expect(canDropClipOnLane(overlay, "captions")).toBe(false);
+    const moved = applyClipLaneChange(overlay, "cutout-person", 2);
+    expect(moved?.timelineLane).toBe("cutout-person");
+    expect(moved?.maskShape).toBe("rounded");
+  });
+
+  it("moves main video to b-roll overlay lane", async () => {
+    const { applyClipLaneChange } = await import("../../web/lib/gigaedit/timelineLayers");
+    const main = videoClip({ id: "main", videoLayer: 0, clipRole: "main" });
+    const moved = applyClipLaneChange(main, "b-roll", 1);
+    expect(moved?.clipRole).toBe("overlay");
+    expect(moved?.videoLayer).toBe(1);
+    expect(moved?.timelineLane).toBe("b-roll");
+  });
+});

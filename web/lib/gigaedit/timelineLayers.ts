@@ -404,3 +404,70 @@ export function layerDisplayName(layer: number, clips: GigaEditTimelineClip[] = 
   if (sample) return laneLabel(inferClipLane(sample));
   return `Overlay ${layer}`;
 }
+
+export function canDropClipOnLane(
+  clip: GigaEditTimelineClip,
+  lane: GigaEditTimelineLane
+): boolean {
+  if (lane === "logo" || lane === "captions") return false;
+  if (lane === "text") return clip.track === "text" || clip.track === "sticker";
+  return clip.track === "video";
+}
+
+export function applyClipLaneChange(
+  clip: GigaEditTimelineClip,
+  targetLane: GigaEditTimelineLane,
+  nextOverlayLayerId: number
+): GigaEditTimelineClip | null {
+  if (!canDropClipOnLane(clip, targetLane)) return null;
+  if (inferClipLane(clip) === targetLane && clip.timelineLane === targetLane) {
+    return clip;
+  }
+
+  if (targetLane === "text") {
+    return {
+      ...clip,
+      track: clip.track === "sticker" ? "sticker" : "text",
+      timelineLane: "text",
+    };
+  }
+
+  if (targetLane === "main-video") {
+    return normalizeVideoClip({
+      ...clip,
+      track: "video",
+      videoLayer: MAIN_VIDEO_LAYER,
+      clipRole: "main",
+      timelineLane: "main-video",
+      cameraId: undefined,
+    });
+  }
+
+  const overlayBase = normalizeVideoClip({
+    ...clip,
+    track: "video",
+    videoLayer:
+      clipVideoLayer(clip) > MAIN_VIDEO_LAYER ? clipVideoLayer(clip) : nextOverlayLayerId,
+    clipRole: "overlay",
+    timelineLane: targetLane,
+  });
+
+  if (targetLane === "screen-recording") {
+    return { ...overlayBase, cameraId: "screen" };
+  }
+
+  if (targetLane === "cutout-person") {
+    return {
+      ...overlayBase,
+      cameraId: undefined,
+      maskShape:
+        overlayBase.maskShape && overlayBase.maskShape !== "none" ? overlayBase.maskShape : "rounded",
+    };
+  }
+
+  return {
+    ...overlayBase,
+    cameraId: undefined,
+    maskShape: overlayBase.chromaKeyColor ? overlayBase.maskShape : "none",
+  };
+}
