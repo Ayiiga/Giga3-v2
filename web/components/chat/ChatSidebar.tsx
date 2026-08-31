@@ -8,12 +8,12 @@ import {
 import { listSavedPrompts, type SavedPrompt } from "@/lib/chat/savedPrompts";
 import { getModeDefinition, isValidMode } from "@/lib/aiRouter";
 import { dispatchWorkspaceNav, type WorkspaceNavTarget } from "@/lib/chat/workspaceNav";
+import { CHAT_WORKSPACE_PRIMARY_APPS } from "@/lib/chat/workspaceApps";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import {
   Archive,
   BookOpen,
-  Clapperboard,
   Coins,
   CreditCard,
   FileText,
@@ -85,33 +85,32 @@ type WorkspaceNavItem =
       href: string;
       label: string;
       icon: typeof Home;
-      featured?: boolean;
+      primary?: boolean;
+      gradient?: string;
+      badge?: string;
       hint?: string;
     }
   | {
       hash: WorkspaceNavTarget;
       label: string;
       icon: typeof Home;
-      featured?: boolean;
+      primary?: boolean;
+      gradient?: string;
+      badge?: string;
       hint?: string;
     };
 
-/** Workspace apps: GigaSocial → GigaEdit → GigaLearn, then remaining tools. */
+/** Workspace apps: GigaSocial → GigaEdits → GigaLearn → Media Studio, then remaining tools. */
 const PRIMARY_NAV: WorkspaceNavItem[] = [
-  {
-    href: "/gigasocial/",
-    label: "GigaSocial",
-    icon: UsersRound,
-    featured: true,
-    hint: "Feed · Stories · Create",
-  },
-  {
-    href: "/gigaedit/",
-    label: "GigaEdit",
-    icon: Clapperboard,
-    hint: "Video · Photo · Creator studio",
-  },
-  { href: "/gigalearn/", label: "GigaLearn", icon: BookOpen },
+  ...CHAT_WORKSPACE_PRIMARY_APPS.map((app) => ({
+    href: app.href,
+    label: app.label,
+    icon: app.icon,
+    primary: true,
+    gradient: app.gradient,
+    badge: app.badge,
+    hint: app.hint.split(" — ")[0],
+  })),
   { href: "/chat", label: "Home", icon: Home },
   { hash: "documents", label: "My Documents", icon: FileText },
   { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
@@ -447,24 +446,33 @@ function SidebarNavItem({
   onNavigate: () => void;
 }) {
   const Icon = item.icon;
-  const featured = Boolean(item.featured);
+  const isPrimary = Boolean(item.primary);
 
-  const content = featured ? (
+  const content = isPrimary ? (
     <>
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-emerald-500 text-white">
+      <span
+        className={cn(
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br text-white shadow-sm",
+          item.gradient
+        )}
+      >
         <Icon className="h-4 w-4" aria-hidden />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-bold text-foreground">{item.label}</span>
+        <span className="block truncate text-sm font-bold tracking-tight text-foreground">
+          {item.label}
+        </span>
         {item.hint ? (
-          <span className="mt-0.5 block truncate text-[11px] font-medium text-accent">
+          <span className="mt-0.5 block truncate text-[11px] font-medium text-muted">
             {item.hint}
           </span>
         ) : null}
       </span>
-      <span className="shrink-0 rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent-foreground">
-        Social
-      </span>
+      {item.badge ? (
+        <span className="shrink-0 rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent-foreground">
+          {item.badge}
+        </span>
+      ) : null}
     </>
   ) : (
     <>
@@ -473,8 +481,8 @@ function SidebarNavItem({
     </>
   );
 
-  const className = featured
-    ? "flex min-h-12 w-full items-center gap-3 rounded-xl border border-accent/35 bg-accent/10 px-3 text-left shadow-sm ring-1 ring-accent/15 hover:bg-accent/15"
+  const className = isPrimary
+    ? "flex min-h-12 w-full items-center gap-3 rounded-xl border border-accent/30 bg-gradient-to-r from-accent/10 via-card to-card px-3 text-left shadow-sm ring-1 ring-accent/10 hover:border-accent/45 hover:bg-accent/15 hover:ring-accent/20"
     : "flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-muted hover:bg-accent/5 hover:text-foreground";
 
   if ("hash" in item) {

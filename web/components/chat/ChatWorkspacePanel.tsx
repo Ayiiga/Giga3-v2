@@ -9,19 +9,19 @@ import { GenerationAlertsPanel } from "@/components/generation/GenerationAlertsP
 import { PushAlertsPanel } from "@/components/pwa/PushAlertsPanel";
 import { SportsDeskPanel } from "@/components/sports/SportsDeskPanel";
 import { getSessionToken } from "@/lib/auth";
+import { CHAT_WORKSPACE_PRIMARY_APPS } from "@/lib/chat/workspaceApps";
+import type { AiModeId } from "@/lib/aiRouter";
 import {
   buildMediaStudioUrl,
   MEDIA_STUDIO_TEMPLATES,
 } from "@/lib/media/studioTemplates";
-import type { AiModeId } from "@/lib/aiRouter";
 import {
   WORKSPACE_NAV_EVENT,
   scrollToChatHistory,
   type WorkspaceNavTarget,
 } from "@/lib/chat/workspaceNav";
-import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
-import { Bell, BookOpen, ChevronDown, ChevronUp, Clapperboard, FileText, Loader2, MessageCircle, Newspaper, Sparkles, Trophy, UsersRound, Workflow } from "lucide-react";
+import { Bell, BookOpen, ChevronDown, ChevronUp, FileText, Loader2, MessageCircle, Newspaper, Sparkles, Trophy, Workflow } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo, useEffect, useState } from "react";
 
@@ -189,64 +189,53 @@ function ChatWorkspacePanelComponent({
             )}
           >
             {tab === "modes" && (
-              <div className="space-y-3 px-3 py-3 sm:px-4">
-                <button
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => router.push(siteConfig.links.gigasocial)}
-                  className="flex min-h-16 w-full items-center gap-3 rounded-xl border border-accent/35 bg-accent/10 p-3 text-left shadow-sm ring-1 ring-accent/15 hover:bg-accent/15"
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-emerald-500">
-                    <UsersRound className="h-5 w-5 text-white" aria-hidden />
-                  </div>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-bold text-foreground">GigaSocial</span>
-                    <span className="mt-0.5 block line-clamp-2 text-xs font-medium text-accent">
-                      Feed, stories, and creator tools — open the social hub.
-                    </span>
-                  </span>
-                  <span className="shrink-0 rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent-foreground">
-                    Social
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => router.push(`${siteConfig.links.gigaedit}/`)}
-                  className="flex min-h-16 w-full items-center gap-3 rounded-xl border border-border bg-zinc-50/50 p-3 text-left hover:border-accent/25 hover:bg-accent/5"
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-600">
-                    <Clapperboard className="h-5 w-5 text-white" aria-hidden />
-                  </div>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-medium text-foreground">GigaEdit</span>
-                    <span className="mt-0.5 block line-clamp-2 text-xs text-muted">
-                      CapCut-style studio — video, photo, teleprompter, and offline edits.
-                    </span>
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => router.push(`${siteConfig.links.gigalearn}/`)}
-                  className="flex min-h-16 w-full items-center gap-3 rounded-xl border border-border bg-zinc-50/50 p-3 text-left hover:border-accent/25 hover:bg-accent/5"
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600">
-                    <BookOpen className="h-5 w-5 text-white" aria-hidden />
-                  </div>
-                  <span className="min-w-0">
-                    <span className="block text-sm font-medium text-foreground">GigaLearn</span>
-                    <span className="mt-0.5 block line-clamp-2 text-xs text-muted">
-                      AI learning studio — homework help, quizzes, lesson notes, and study plans.
-                    </span>
-                  </span>
-                </button>
-                <ToolSelector
-                  value={mode}
-                  onChange={onModeChange}
-                  disabled={disabled}
-                  embedded
-                />
+              <div className="space-y-4 px-3 py-3 sm:px-4">
+                <div className="space-y-2.5">
+                  {CHAT_WORKSPACE_PRIMARY_APPS.map((app) => {
+                    const Icon = app.icon;
+                    return (
+                      <button
+                        key={app.id}
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => router.push(app.href)}
+                        className="flex min-h-[4.25rem] w-full items-center gap-3 rounded-xl border border-accent/30 bg-gradient-to-r from-accent/10 via-card to-card p-3 text-left shadow-sm ring-1 ring-accent/10 transition-colors hover:border-accent/45 hover:bg-accent/15 hover:ring-accent/20"
+                      >
+                        <div
+                          className={cn(
+                            "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br shadow-md",
+                            app.gradient
+                          )}
+                        >
+                          <Icon className="h-5 w-5 text-white" aria-hidden />
+                        </div>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-bold tracking-tight text-foreground">
+                            {app.label}
+                          </span>
+                          <span className="mt-0.5 block line-clamp-2 text-xs font-medium leading-snug text-muted">
+                            {app.hint}
+                          </span>
+                        </span>
+                        <span className="shrink-0 rounded-md bg-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent-foreground">
+                          {app.badge}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="space-y-2 border-t border-border pt-3">
+                  <p className="px-0.5 text-[11px] font-bold uppercase tracking-wider text-muted">
+                    Other tools
+                  </p>
+                  <ToolSelector
+                    value={mode}
+                    onChange={onModeChange}
+                    disabled={disabled}
+                    embedded
+                  />
+                </div>
               </div>
             )}
 
