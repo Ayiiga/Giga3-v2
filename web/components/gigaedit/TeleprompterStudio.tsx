@@ -1,10 +1,9 @@
 "use client";
 
 import { CameraStylePreview } from "@/components/gigaedit/CameraStylePreview";
-import { PreSnapEditBar } from "@/components/gigasocial/studio/PreSnapEditBar";
 import { GigaSocialTeleprompter } from "@/components/gigasocial/studio/GigaSocialTeleprompter";
 import {
-  DEFAULT_CAMERA_LOOK,
+  ULTRA_CLEAR_CAMERA_LOOK,
   applyCameraTrackEnhancements,
   buildProCameraConstraints,
   type CameraLookOptions,
@@ -16,13 +15,8 @@ import {
   saveGigaEditProject,
 } from "@/lib/gigaedit/projects";
 import { handoffAndOpenGigaSocial } from "@/lib/gigaedit/publishHandoff";
-import {
-  getCameraFilterCss,
-  type CameraFilterId,
-} from "@/lib/gigasocial/cameraFilters";
-import type { CameraCaptureModeId } from "@/lib/gigasocial/cameraModes";
 import { generateTeleprompterScript, loadTeleprompterScript } from "@/lib/gigasocial/teleprompterScripts";
-import { Loader2, X } from "lucide-react";
+import { Circle, Loader2, Square, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -44,25 +38,15 @@ export function TeleprompterStudio({
   const [cameraLoading, setCameraLoading] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [recording, setRecording] = useState(false);
+  const [hasRecording, setHasRecording] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [topic, setTopic] = useState("");
   const [prompterKey, setPrompterKey] = useState(0);
-  const [cameraLook, setCameraLook] = useState<CameraLookOptions>({
-    ...DEFAULT_CAMERA_LOOK,
-    adaptiveBrightness: true,
-    autoExposure: true,
-    autofocus: true,
-    naturalColors: true,
-  });
-  const [voiceFollow, setVoiceFollow] = useState(false);
-  const [filterId, setFilterId] = useState<CameraFilterId>("none");
-  const [captureModeId, setCaptureModeId] = useState<CameraCaptureModeId>("standard");
-  const [showScriptPanel, setShowScriptPanel] = useState(false);
+  const [cameraLook] = useState<CameraLookOptions>(ULTRA_CLEAR_CAMERA_LOOK);
   const [mounted, setMounted] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const recordedFileRef = useRef<File | null>(null);
-  const recognitionRef = useRef<{ stop: () => void } | null>(null);
   const recordControlsRef = useRef<HTMLDivElement>(null);
   const tier = useMemo(() => detectDeviceTier(), []);
 
@@ -76,7 +60,7 @@ export function TeleprompterStudio({
   const enableCamera = useCallback(async () => {
     if (cameraLoading || cameraOn) return;
     setCameraLoading(true);
-    setStatus("Requesting camera and microphone…");
+    setStatus(null);
     try {
       const constraints = buildProCameraConstraints({
         facingMode: "user",
@@ -86,15 +70,10 @@ export function TeleprompterStudio({
       const next = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = next;
       setStream(next);
-      const applied = await applyCameraTrackEnhancements(next, cameraLook);
+      await applyCameraTrackEnhancements(next, cameraLook);
       setCameraOn(true);
-      setStatus(
-        applied.length
-          ? `Fullscreen camera ready (${applied.join(", ")}). Tap Edit to change your script.`
-          : "Fullscreen camera ready. Edit your script, then tap Record."
-      );
     } catch {
-      setStatus("Camera/microphone permission denied or unavailable. Allow access and tap Open camera.");
+      setStatus("Allow camera and microphone access, then tap Open camera.");
     } finally {
       setCameraLoading(false);
     }
@@ -118,6 +97,7 @@ export function TeleprompterStudio({
     if (videoRef.current) videoRef.current.srcObject = null;
     setCameraOn(false);
     setRecording(false);
+    setHasRecording(false);
     autoOpenAttemptedRef.current = false;
   }
 
@@ -139,6 +119,7 @@ export function TeleprompterStudio({
         type: blob.type || "video/webm",
       });
       recordedFileRef.current = file;
+      setHasRecording(true);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -151,12 +132,12 @@ export function TeleprompterStudio({
         project.scriptText = loadTeleprompterScript();
         await saveGigaEditProject(project);
         await putProjectOriginalBlob(project.id, file);
-        setStatus("Recording saved locally. Use Post to GigaSocial when ready.");
+        setStatus("Saved. Tap Post when ready.");
       })();
     };
     recorder.start();
     setRecording(true);
-    setStatus("Recording — script auto-scrolls. Tap Edit anytime to adjust text.");
+    setStatus(null);
   }
 
   function stopRecording() {
@@ -169,13 +150,13 @@ export function TeleprompterStudio({
     project.scriptText = loadTeleprompterScript();
     project.aiAssisted = Boolean(topic.trim());
     await saveGigaEditProject(project);
-    setStatus("Script draft saved locally for offline use.");
+    setStatus("Script saved.");
   }
 
   async function postRecording() {
     const file = recordedFileRef.current;
     if (!file) {
-      setStatus("Record a take first, then post to GigaSocial.");
+      setStatus("Record a take first.");
       return;
     }
     setStatus("Opening GigaSocial…");
@@ -189,55 +170,12 @@ export function TeleprompterStudio({
       aiAssisted: Boolean(topic.trim()),
     });
     if (result.error) setStatus(result.error);
-    if (result.queued) setStatus("Offline — recording queued for GigaSocial.");
+    if (result.queued) setStatus("Offline — queued for GigaSocial.");
   }
 
-  function toggleVoiceFollow() {
-    if (voiceFollow) {
-      recognitionRef.current?.stop();
-      recognitionRef.current = null;
-      setVoiceFollow(false);
-      setStatus("Voice-follow off. Script uses auto-scroll speed.");
-      return;
-    }
-    const w = window as Window & Record<string, unknown>;
-    const Ctor = (w.SpeechRecognition || w.webkitSpeechRecognition) as
-      | (new () => {
-          continuous: boolean;
-          interimResults: boolean;
-          onresult: ((ev: { results: ArrayLike<ArrayLike<{ transcript?: string }>> }) => void) | null;
-          onerror: (() => void) | null;
-          start: () => void;
-          stop: () => void;
-        })
-      | undefined;
-    if (!Ctor) {
-      setStatus("Voice-follow needs browser SpeechRecognition. Auto-scroll still works.");
-      return;
-    }
-    try {
-      const recognition = new Ctor();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.onresult = () => {
-        window.dispatchEvent(new CustomEvent("giga3:teleprompter-voice-tick"));
-      };
-      recognition.onerror = () => {
-        setVoiceFollow(false);
-        setStatus("Voice-follow stopped. Continue with auto-scroll.");
-      };
-      recognition.start();
-      recognitionRef.current = recognition;
-      setVoiceFollow(true);
-      setStatus("Voice-follow on — your speech advances the script.");
-    } catch {
-      setStatus("Could not start voice-follow on this device.");
-    }
+  function openScriptEditor() {
+    window.dispatchEvent(new CustomEvent("giga3:teleprompter-open-settings"));
   }
-
-  useEffect(() => {
-    return () => recognitionRef.current?.stop();
-  }, []);
 
   useEffect(() => {
     if (!cameraOn) return;
@@ -247,8 +185,6 @@ export function TeleprompterStudio({
       document.body.style.overflow = prev;
     };
   }, [cameraOn]);
-
-  const filterCss = getCameraFilterCss(filterId);
 
   const scriptPanel = (
     <div className="gigaedit-glass space-y-3 p-4">
@@ -272,7 +208,7 @@ export function TeleprompterStudio({
             /* ignore */
           }
           setPrompterKey((k) => k + 1);
-          setStatus("Script generated — edit it in the teleprompter panel.");
+          setStatus("Script generated.");
         }}
       >
         Generate script
@@ -290,88 +226,94 @@ export function TeleprompterStudio({
           muted
           aspectRatioCss="9 / 16"
           look={cameraLook}
-          onLookChange={setCameraLook}
           variant="immersive"
           showControls={false}
-          baseFilterCss={filterCss}
+          showChrome={false}
+          ultraClear
           emptyLabel="Starting camera…"
           className="min-h-0 flex-1"
           overlay={
-            <GigaSocialTeleprompter
-              key={prompterKey}
-              active
-              recording={recording}
-              presentation="studio"
-              defaultSettingsOpen
-              className="pointer-events-none absolute inset-0"
-            />
+            <>
+              <div
+                className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/55 to-transparent"
+                aria-hidden
+              />
+              <div
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/65 to-transparent"
+                aria-hidden
+              />
+              <GigaSocialTeleprompter
+                key={prompterKey}
+                active
+                recording={recording}
+                presentation="studio"
+                defaultSettingsOpen={false}
+                className="pointer-events-none absolute inset-0"
+              />
+            </>
           }
         />
 
-        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
           <button
             type="button"
-            className="pointer-events-auto inline-flex items-center gap-1 rounded-full bg-black/50 px-3 py-2 text-xs backdrop-blur-sm"
+            className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white"
             onClick={disableCamera}
+            aria-label="Close teleprompter"
           >
-            <X className="h-3.5 w-3.5" aria-hidden />
-            Close
+            <X className="h-4 w-4" aria-hidden />
           </button>
-          <p className="text-xs font-semibold tracking-wide text-white/95">Teleprompter · fullscreen</p>
+          <span className="rounded-full bg-black/35 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/90">
+            Ultra Clear · HDR
+          </span>
           <button
             type="button"
-            className="pointer-events-auto rounded-full bg-black/50 px-3 py-2 text-xs backdrop-blur-sm"
-            onClick={() => setShowScriptPanel((v) => !v)}
+            className="pointer-events-auto rounded-full bg-black/40 px-3 py-1.5 text-xs font-medium text-white"
+            onClick={openScriptEditor}
           >
-            Topic
+            Script
           </button>
         </div>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 space-y-2 bg-gradient-to-t from-black/85 via-black/55 to-transparent px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-8">
-          {!recording ? (
-            <div className="pointer-events-auto">
-              <PreSnapEditBar
-                filterId={filterId}
-                onFilterChange={setFilterId}
-                modeId={captureModeId}
-                onModeChange={setCaptureModeId}
-              />
-            </div>
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-6"
+          ref={recordControlsRef}
+        >
+          {status ? (
+            <p className="pointer-events-none text-center text-[11px] text-white/80">{status}</p>
           ) : null}
-          <div className="pointer-events-auto flex flex-wrap gap-2" ref={recordControlsRef}>
+
+          <div className="pointer-events-auto flex w-full max-w-xs items-center justify-between">
             <button
               type="button"
-              className={cnRecordButton(recording)}
-              onClick={() => (recording ? stopRecording() : startRecording())}
-            >
-              {recording ? "Stop" : "Record"}
-            </button>
-            <button
-              type="button"
-              className="rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-xs font-medium"
+              className="rounded-full bg-black/40 px-3 py-2 text-[11px] font-medium text-white/90"
               onClick={() => void saveScriptProject()}
             >
-              Save script
+              Save
             </button>
+
             <button
               type="button"
-              className="rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-xs font-medium"
-              onClick={toggleVoiceFollow}
+              className="flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-full border-[3px] border-white/90 bg-white/10 transition active:scale-95"
+              onClick={() => (recording ? stopRecording() : startRecording())}
+              aria-label={recording ? "Stop recording" : "Start recording"}
             >
-              {voiceFollow ? "Voice on" : "Voice-follow"}
+              {recording ? (
+                <Square className="h-6 w-6 fill-red-500 text-red-500" aria-hidden />
+              ) : (
+                <Circle className="h-12 w-12 fill-red-500 text-red-500" aria-hidden />
+              )}
             </button>
+
             <button
               type="button"
-              className="rounded-xl bg-[var(--ge-gold,#f5d76e)] px-3 py-2 text-xs font-bold text-[#0b1220]"
+              className="rounded-full bg-[var(--ge-gold,#f5d76e)] px-3 py-2 text-[11px] font-bold text-[#0b1220] disabled:opacity-40"
+              disabled={!hasRecording}
               onClick={() => void postRecording()}
             >
               Post
             </button>
           </div>
-          {showScriptPanel ? (
-            <div className="pointer-events-auto max-h-40 overflow-y-auto">{scriptPanel}</div>
-          ) : null}
-          {status ? <p className="text-xs text-[var(--ge-gold,#f5d76e)]">{status}</p> : null}
         </div>
       </div>,
       document.body
@@ -383,7 +325,7 @@ export function TeleprompterStudio({
       <div>
         <h2 className="text-lg font-semibold">Teleprompter</h2>
         <p className="mt-1 text-xs text-[var(--ge-muted)]">
-          Full-screen camera with a bright editable script, auto-scroll, and optional voice-follow.
+          Ultra Clear HDR camera with a clean script overlay. Tap Script to edit while recording.
         </p>
       </div>
 
@@ -410,10 +352,4 @@ export function TeleprompterStudio({
       {status ? <p className="text-xs text-[var(--ge-gold)]">{status}</p> : null}
     </div>
   );
-}
-
-function cnRecordButton(recording: boolean): string {
-  return recording
-    ? "rounded-xl border border-red-400/60 bg-red-500/90 px-4 py-2 text-xs font-bold text-white"
-    : "rounded-xl border border-white/30 bg-white px-4 py-2 text-xs font-bold text-[#0b1220]";
 }

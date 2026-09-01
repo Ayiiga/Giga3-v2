@@ -16,14 +16,14 @@ import {
   saveTeleprompterSettings,
 } from "@/lib/gigasocial/teleprompterScripts";
 import { cn } from "@/lib/utils";
-import { Pause, Play, Settings2 } from "lucide-react";
+import { Pause, Play, X } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
 
 type GigaSocialTeleprompterProps = {
   active: boolean;
   recording: boolean;
   className?: string;
-  /** GigaEdit studio: bright high-contrast script panel over fullscreen camera. */
+  /** GigaEdit studio: clean script overlay over fullscreen camera. */
   presentation?: "default" | "studio";
   /** Open script editor on first mount (studio). */
   defaultSettingsOpen?: boolean;
@@ -48,7 +48,7 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
   const [countdownSec, setCountdownSec] = useState(3);
   const [countdownLeft, setCountdownLeft] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(defaultSettingsOpen || isStudio);
+  const [settingsOpen, setSettingsOpen] = useState(defaultSettingsOpen);
   const [offsetPx, setOffsetPx] = useState(0);
   const [topicDraft, setTopicDraft] = useState("");
   const lastTickRef = useRef<number | null>(null);
@@ -61,14 +61,23 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
     const saved = loadTeleprompterSettings();
     setScript(loadTeleprompterScript());
     setSpeed(isStudio ? Math.max(saved.speed, 52) : saved.speed);
-    setFontSize(isStudio ? Math.max(saved.fontSize, 22) : saved.fontSize);
-    setMarginPx(saved.marginPx);
+    setFontSize(isStudio ? Math.max(saved.fontSize, 26) : saved.fontSize);
+    setMarginPx(isStudio ? Math.max(saved.marginPx, 16) : saved.marginPx);
     setMirror(saved.mirror);
     setDarkMode(isStudio ? false : saved.darkMode);
-    setTransparentMode(isStudio ? false : saved.transparentMode);
+    setTransparentMode(isStudio ? true : saved.transparentMode);
     setFloating(saved.floating);
     setCountdownSec(saved.countdownSec);
   }, [isStudio]);
+
+  useEffect(() => {
+    if (!active || !isStudio) return;
+    function onOpenSettings() {
+      setSettingsOpen(true);
+    }
+    window.addEventListener("giga3:teleprompter-open-settings", onOpenSettings);
+    return () => window.removeEventListener("giga3:teleprompter-open-settings", onOpenSettings);
+  }, [active, isStudio]);
 
   useEffect(() => {
     if (!active) return;
@@ -164,7 +173,6 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
   useEffect(() => {
     if (!active) return;
     const onKey = (event: KeyboardEvent) => {
-      // Bluetooth / media remote friendly: Space toggles pause while recording.
       if (event.code === "Space" && recording) {
         event.preventDefault();
         setPaused((value) => !value);
@@ -177,7 +185,7 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
   if (!active) return null;
 
   const panelBg = transparentMode
-    ? "bg-black/25"
+    ? "bg-transparent"
     : darkMode
       ? "bg-black/70"
       : isStudio
@@ -185,18 +193,202 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
         : "bg-white/90 text-zinc-900";
 
   const scrollMaxClass = isStudio
-    ? "max-h-[min(52vh,28rem)]"
+    ? settingsOpen
+      ? "max-h-[min(38vh,20rem)]"
+      : "max-h-none flex-1"
     : "max-h-32";
+
+  const scriptTextClass = isStudio && !settingsOpen
+    ? "text-white font-semibold [text-shadow:0_1px_3px_rgba(0,0,0,0.95),0_0_16px_rgba(0,0,0,0.65)]"
+    : cn(
+        darkMode || transparentMode ? "text-white/95" : "text-slate-900",
+        isStudio && !darkMode && !transparentMode && "text-slate-950 drop-shadow-sm"
+      );
+
+  if (isStudio && !settingsOpen) {
+    return (
+      <div
+        className={cn(
+          "gigasocial-teleprompter pointer-events-none absolute z-20 flex flex-col",
+          "inset-x-4 top-[max(4.5rem,env(safe-area-inset-top))] bottom-[max(9rem,env(safe-area-inset-bottom))]",
+          className
+        )}
+        style={{ marginLeft: marginPx, marginRight: marginPx }}
+      >
+        {recording ? (
+          <div className="pointer-events-auto mb-2 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setPaused((value) => !value)}
+              className="rounded-full bg-black/45 p-2 text-white backdrop-blur-sm"
+              aria-label={paused ? "Resume teleprompter" : "Pause teleprompter"}
+            >
+              {paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+            </button>
+          </div>
+        ) : null}
+
+        <div className={cn("relative min-h-0 flex-1 overflow-hidden", scrollMaxClass)}>
+          {countdownLeft > 0 ? (
+            <p className="absolute inset-0 z-10 flex items-center justify-center text-5xl font-bold text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.9)]">
+              {countdownLeft}
+            </p>
+          ) : null}
+          <p
+            className={cn("whitespace-pre-wrap leading-relaxed", scriptTextClass)}
+            style={{
+              fontSize: `${clampTeleprompterFontSize(fontSize)}px`,
+              transform: mirror ? "scaleX(-1)" : undefined,
+              marginTop: `-${offsetPx}px`,
+            }}
+          >
+            {script.trim() || DEFAULT_TELEPROMPTER_SCRIPT}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isStudio && settingsOpen) {
+    return (
+      <div
+        className={cn(
+          "gigasocial-teleprompter pointer-events-none absolute z-30 inset-x-0 bottom-0",
+          className
+        )}
+      >
+        <div className="pointer-events-auto mx-3 mb-[max(7.5rem,env(safe-area-inset-bottom))] max-h-[min(62vh,28rem)] overflow-y-auto rounded-2xl border border-white/15 bg-[#0b1220]/92 p-4 text-white shadow-2xl backdrop-blur-md">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/70">Script & settings</p>
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(false)}
+              className="rounded-full p-1.5 hover:bg-white/10"
+              aria-label="Close script editor"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <label className="block text-[11px] text-white/70">
+            Script
+            <textarea
+              value={script}
+              onChange={(event) => setScript(event.target.value)}
+              rows={5}
+              className="mt-1 w-full resize-none rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-sm text-white"
+            />
+          </label>
+
+          <div className="mt-2 flex gap-2">
+            <input
+              value={topicDraft}
+              onChange={(event) => setTopicDraft(event.target.value)}
+              placeholder="Topic for AI script"
+              className="min-w-0 flex-1 rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-xs text-white"
+            />
+            <button
+              type="button"
+              onClick={() => setScript(generateTeleprompterScript(topicDraft))}
+              className="shrink-0 rounded-xl bg-violet-600 px-3 py-2 text-xs font-semibold"
+            >
+              AI script
+            </button>
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-3 text-[11px] text-white/80">
+            <label className="space-y-1">
+              Speed
+              <input
+                type="range"
+                min={20}
+                max={120}
+                value={speed}
+                onChange={(event) => setSpeed(Number(event.target.value))}
+                className="w-full accent-violet-400"
+              />
+            </label>
+            <label className="space-y-1">
+              Font size
+              <input
+                type="range"
+                min={18}
+                max={40}
+                value={fontSize}
+                onChange={(event) => setFontSize(Number(event.target.value))}
+                className="w-full accent-violet-400"
+              />
+            </label>
+            <label className="space-y-1">
+              Margins
+              <input
+                type="range"
+                min={0}
+                max={48}
+                value={marginPx}
+                onChange={(event) => setMarginPx(clampTeleprompterMargin(Number(event.target.value)))}
+                className="w-full accent-violet-400"
+              />
+            </label>
+            <label className="space-y-1">
+              Countdown
+              <input
+                type="range"
+                min={0}
+                max={10}
+                value={countdownSec}
+                onChange={(event) =>
+                  setCountdownSec(clampTeleprompterCountdown(Number(event.target.value)))
+                }
+                className="w-full accent-violet-400"
+              />
+            </label>
+          </div>
+
+          <label className="mt-3 inline-flex items-center gap-2 text-[11px]">
+            <input
+              type="checkbox"
+              checked={mirror}
+              onChange={(event) => setMirror(event.target.checked)}
+            />
+            Mirror text
+          </label>
+
+          <p className="mt-2 text-[10px] text-white/50">
+            Auto-saves. Space pauses scroll while recording.
+          </p>
+        </div>
+
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-x-4 top-auto bottom-[max(9rem,env(safe-area-inset-bottom))] max-h-[28vh] overflow-hidden opacity-40",
+            scrollMaxClass
+          )}
+          style={{ marginLeft: marginPx, marginRight: marginPx }}
+          aria-hidden
+        >
+          <p
+            className={cn("whitespace-pre-wrap leading-relaxed", scriptTextClass)}
+            style={{
+              fontSize: `${clampTeleprompterFontSize(fontSize)}px`,
+              transform: mirror ? "scaleX(-1)" : undefined,
+              marginTop: `-${offsetPx}px`,
+            }}
+          >
+            {script.trim() || DEFAULT_TELEPROMPTER_SCRIPT}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
       className={cn(
         "gigasocial-teleprompter pointer-events-none absolute z-20 flex flex-col",
-        isStudio
-          ? "inset-x-2 top-[max(3.5rem,env(safe-area-inset-top))] bottom-[max(11rem,env(safe-area-inset-bottom))]"
-          : floating
-            ? "inset-x-6 bottom-24 top-auto max-h-[30%]"
-            : "inset-x-3 top-14 max-h-[38%]",
+        floating
+          ? "inset-x-6 bottom-24 top-auto max-h-[30%]"
+          : "inset-x-3 top-14 max-h-[38%]",
         className
       )}
       style={{ marginLeft: marginPx, marginRight: marginPx }}
@@ -204,7 +396,7 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
       <div
         className={cn(
           "pointer-events-auto flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border backdrop-blur-md",
-          transparentMode ? "border-white/10" : isStudio ? "border-white/50" : "border-white/20",
+          transparentMode ? "border-white/10" : "border-white/20",
           panelBg
         )}
       >
@@ -214,17 +406,12 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
             darkMode || transparentMode ? "border-white/10 text-white/80" : "border-zinc-200"
           )}
         >
-          <span className={cn("text-[10px] font-semibold uppercase tracking-wide", isStudio && "text-slate-700")}>
-            {isStudio ? "Script · auto-scroll" : "Teleprompter"}
-          </span>
+          <span className="text-[10px] font-semibold uppercase tracking-wide">Teleprompter</span>
           <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => setSettingsOpen((value) => !value)}
-              className={cn(
-                "rounded-lg px-2 py-1 text-[10px] font-semibold",
-                isStudio ? "bg-slate-900/10 text-slate-800" : "hover:bg-white/10"
-              )}
+              className="rounded-lg px-2 py-1 text-[10px] font-semibold hover:bg-white/10"
               aria-label="Edit teleprompter script"
             >
               Edit
@@ -239,14 +426,6 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
                 {paused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
               </button>
             ) : null}
-            <button
-              type="button"
-              onClick={() => setSettingsOpen((value) => !value)}
-              className="rounded-lg p-1.5 hover:bg-white/10"
-              aria-label="Teleprompter settings"
-            >
-              <Settings2 className="h-3.5 w-3.5" />
-            </button>
           </div>
         </div>
 
@@ -391,11 +570,7 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
             </p>
           ) : null}
           <p
-            className={cn(
-              "whitespace-pre-wrap font-medium leading-relaxed",
-              darkMode || transparentMode ? "text-white/95" : "text-slate-900",
-              isStudio && !darkMode && !transparentMode && "text-slate-950 drop-shadow-sm"
-            )}
+            className={cn("whitespace-pre-wrap font-medium leading-relaxed", scriptTextClass)}
             style={{
               fontSize: `${clampTeleprompterFontSize(fontSize)}px`,
               transform: mirror ? "scaleX(-1)" : undefined,
