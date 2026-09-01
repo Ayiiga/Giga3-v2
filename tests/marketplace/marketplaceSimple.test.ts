@@ -18,9 +18,10 @@ describe("marketplace simple catalog", () => {
 describe("marketplace fraud gates", () => {
   it("requires approved verification before publishing", () => {
     const source = readFileSync(resolve(__dirname, "../../convex/marketplace.ts"), "utf8");
-    expect(source).toContain('if (args.publish && verification !== "approved")');
+    expect(source).toContain("Save as draft first. Attach a PDF and wait for admin approval before publishing.");
     expect(source).toContain("Approved verification is required before publishing.");
     expect(source).toContain("Attach a product file before publishing.");
+    expect(source).toContain("Wait for admin approval of your PDF before publishing.");
   });
 
   it("allows text-only listing edits without the product upload gate", () => {
@@ -61,6 +62,7 @@ describe("marketplace simple UI", () => {
       "utf8"
     );
     expect(sell).toContain("generateVerificationUploadUrl");
+    expect(sell).toContain("prepareListingUpload");
     expect(sell).toContain("Save draft");
     expect(sell).not.toContain("CreatorNewsHub");
   });

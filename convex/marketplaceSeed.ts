@@ -226,6 +226,7 @@ export const upsertOfficialSeriesListing = internalMutation({
       coverImageUrl: args.coverImageUrl,
       fileStorageId: args.fileStorageId,
       fileName: args.fileName.slice(0, 200),
+      fileReviewStatus: "approved" as const,
       status: "published" as const,
       updatedAt: now,
     };

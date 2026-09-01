@@ -10,7 +10,7 @@ import { redirectToPaystack } from "@/lib/payments/paystackService";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
-import { BadgeCheck, Download, ShieldCheck } from "lucide-react";
+import { BadgeCheck, Download, Flag, ShieldCheck } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
@@ -30,10 +30,17 @@ function MarketplaceItemInner() {
   );
   const recordView = useMutation(api.marketplace.recordView);
   const addReview = useMutation(api.marketplace.addReview);
+  const reportListing = useMutation(api.marketplace.reportListing);
   const initPurchase = useAction(api.paystack.initializeMarketplacePayment);
 
   const [buying, setBuying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reportReason, setReportReason] = useState<"scam" | "copyright" | "misleading" | "other">("scam");
+  const [reportDetails, setReportDetails] = useState("");
+  const [reportMessage, setReportMessage] = useState<string | null>(null);
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [reporting, setReporting] = useState(false);
+  const [showReportForm, setShowReportForm] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [reviewMessage, setReviewMessage] = useState<string | null>(null);
@@ -73,6 +80,32 @@ function MarketplaceItemInner() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Checkout failed");
       setBuying(false);
+    }
+  }
+
+  async function handleReport() {
+    const token = getSessionToken();
+    if (!token) {
+      router.push(`/chat/login?next=/marketplace/item/?id=${listingId}`);
+      return;
+    }
+    setReporting(true);
+    setReportError(null);
+    setReportMessage(null);
+    try {
+      const result = await reportListing({
+        sessionToken: token,
+        listingId: listingId!,
+        reason: reportReason,
+        details: reportDetails.trim() || undefined,
+      });
+      setReportMessage(result.message);
+      setShowReportForm(false);
+      setReportDetails("");
+    } catch (err) {
+      setReportError(err instanceof Error ? err.message : "Could not submit report.");
+    } finally {
+      setReporting(false);
     }
   }
 
@@ -174,6 +207,10 @@ function MarketplaceItemInner() {
             <p className="mt-4 rounded-xl border border-dashed border-border px-4 py-3 text-center text-sm text-muted">
               Not available for purchase yet — the creator hasn&apos;t uploaded the file.
             </p>
+          ) : !listing.purchaseReady ? (
+            <p className="mt-4 rounded-xl border border-dashed border-border px-4 py-3 text-center text-sm text-muted">
+              Awaiting admin review — this product isn&apos;t purchasable yet.
+            </p>
           ) : (
             <>
               <Button className="mt-4 w-full min-h-12" onClick={handleBuy} disabled={buying}>
@@ -196,6 +233,50 @@ function MarketplaceItemInner() {
               </span>
             ))}
           </div>
+          <button
+            type="button"
+            className="mt-4 inline-flex items-center gap-1.5 text-xs text-muted underline-offset-2 hover:text-foreground hover:underline"
+            onClick={() => setShowReportForm((v) => !v)}
+          >
+            <Flag className="h-3.5 w-3.5" aria-hidden />
+            Report listing
+          </button>
+          {showReportForm && (
+            <div className="mt-3 space-y-2 rounded-xl border border-border bg-background p-3 text-left">
+              <label className="block text-xs font-medium" htmlFor="report-reason">
+                Reason
+              </label>
+              <select
+                id="report-reason"
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value as typeof reportReason)}
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+              >
+                <option value="scam">Scam or off-platform payment</option>
+                <option value="copyright">Copyright issue</option>
+                <option value="misleading">Misleading description</option>
+                <option value="other">Other</option>
+              </select>
+              <textarea
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                rows={2}
+                placeholder="Optional details"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={handleReport}
+                disabled={reporting}
+              >
+                {reporting ? "Sending…" : "Submit report"}
+              </Button>
+              {reportMessage && <p className="text-xs text-emerald-600">{reportMessage}</p>}
+              {reportError && <p className="text-xs text-red-600">{reportError}</p>}
+            </div>
+          )}
         </aside>
       </div>
 

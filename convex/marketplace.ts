@@ -6,8 +6,10 @@ import { sessionArgs } from "./validators";
 import {
   marketplaceLicenseValidator,
   marketplaceProductTypeValidator,
+  marketplaceReportReasonValidator,
 } from "./schema";
-import { assertMarketplaceUploadsEnabled, marketplaceUploadsEnabled } from "./marketplaceUploadPolicy";
+import { marketplaceUploadsEnabled } from "./marketplaceUploadPolicy";
+import { isListingFileApproved } from "./marketplaceListingHelpers";
 import {
   toCreatorListing,
   toPublicCreatorProfile,
@@ -81,7 +83,11 @@ export const searchListings = query({
       ? rows.filter((listing) => creators.get(listing.creatorId)?.verified === true)
       : rows;
 
-    return filtered.slice(0, cap).map((listing) => ({
+    const purchasable = filtered.filter(
+      (listing) => listing.status === "published" && isListingFileApproved(listing)
+    );
+
+    return purchasable.slice(0, cap).map((listing) => ({
       ...toPublicListing(listing),
       creator: creators.get(listing.creatorId) ?? null,
     }));
@@ -142,7 +148,6 @@ export const createListing = mutation({
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken);
-    if (args.coverStorageId) assertMarketplaceUploadsEnabled();
     const profile = await ctx.db
       .query("creatorProfiles")
       .withIndex("by_user", (q) => q.eq("userId", email))
@@ -155,10 +160,8 @@ export const createListing = mutation({
         "Submit national ID verification and GPS location before creating listings."
       );
     }
-    if (args.publish && verification !== "approved") {
-      throw new Error(
-        "Wait for admin approval before publishing. Save as a draft while verification is pending."
-      );
+    if (args.publish) {
+      throw new Error("Save as draft first. Attach a PDF and wait for admin approval before publishing.");
     }
 
     const title = args.title.trim().slice(0, 120);
@@ -168,8 +171,7 @@ export const createListing = mutation({
 
     let coverImageUrl = args.coverImageUrl?.trim();
     if (args.coverStorageId) {
-      const storedUrl = await ctx.storage.getUrl(args.coverStorageId);
-      if (storedUrl) coverImageUrl = storedUrl;
+      throw new Error("Use prepareListingUpload for cover images.");
     }
 
     const now = Date.now();
@@ -186,7 +188,7 @@ export const createListing = mutation({
       previewText: args.previewText?.trim().slice(0, 2000),
       previewUrl: args.previewUrl,
       coverImageUrl,
-      status: args.publish ? "published" : "draft",
+      status: "draft",
       ratingAvg: 0,
       ratingCount: 0,
       purchaseCount: 0,
@@ -226,6 +228,9 @@ export const updateListing = mutation({
       if (!listing.fileStorageId) {
         throw new Error("Attach a product file before publishing.");
       }
+      if (!isListingFileApproved(listing)) {
+        throw new Error("Wait for admin approval of your PDF before publishing.");
+      }
     }
 
     const patch: Record<string, unknown> = { updatedAt: Date.now() };
@@ -250,32 +255,87 @@ export const attachListingFile = mutation({
     storageId: v.id("_storage"),
     fileName: v.string(),
   },
-  handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
-    assertMarketplaceUploadsEnabled();
-    const listing = await ctx.db.get(args.listingId);
-    if (!listing || listing.creatorId !== email) throw new Error("Listing not found");
-    await ctx.db.patch(args.listingId, {
-      fileStorageId: args.storageId,
-      fileName: args.fileName.slice(0, 200),
-      updatedAt: Date.now(),
-    });
+  handler: async () => {
+    throw new Error("Use prepareListingUpload and completeListingUpload for PDF attachments.");
   },
 });
 
 export const generateUploadUrl = mutation({
   args: sessionArgs,
-  handler: async (ctx, args) => {
-    await requireSession(args.sessionToken);
-    assertMarketplaceUploadsEnabled();
-    return await ctx.storage.generateUploadUrl();
+  handler: async () => {
+    throw new Error("Use prepareListingUpload for seller file uploads.");
   },
 });
 
-/** Public status only; enforcement remains in upload mutations. */
+/** Public upload capabilities — PDF intents are always available for verified sellers. */
 export const getUploadStatus = query({
   args: {},
-  handler: async () => ({ enabled: marketplaceUploadsEnabled() }),
+  handler: async () => ({
+    enabled: true,
+    pdfOnly: true,
+    requiresAdminReview: true,
+    maxMegabytes: 25,
+    legacyEnvFlag: marketplaceUploadsEnabled(),
+  }),
+});
+
+const AUTO_ARCHIVE_REPORT_THRESHOLD = 3;
+
+export const reportListing = mutation({
+  args: {
+    sessionToken: v.string(),
+    listingId: v.id("marketplaceListings"),
+    reason: marketplaceReportReasonValidator,
+    details: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken);
+    const listing = await ctx.db.get(args.listingId);
+    if (!listing || listing.status !== "published") {
+      throw new Error("Listing not found");
+    }
+    if (listing.creatorId === email) {
+      throw new Error("You cannot report your own listing.");
+    }
+
+    const existing = await ctx.db
+      .query("marketplaceListingReports")
+      .withIndex("by_reporter_listing", (q) =>
+        q.eq("reporterId", email).eq("listingId", args.listingId)
+      )
+      .first();
+    if (existing) throw new Error("You already reported this listing.");
+
+    const now = Date.now();
+    await ctx.db.insert("marketplaceListingReports", {
+      listingId: args.listingId,
+      reporterId: email,
+      reason: args.reason,
+      details: args.details?.trim().slice(0, 500),
+      status: "open",
+      createdAt: now,
+    });
+
+    const reports = await ctx.db
+      .query("marketplaceListingReports")
+      .withIndex("by_listing", (q) => q.eq("listingId", args.listingId))
+      .collect();
+    const openCount = reports.filter((r) => r.status === "open").length;
+    if (openCount >= AUTO_ARCHIVE_REPORT_THRESHOLD) {
+      await ctx.db.patch(args.listingId, { status: "archived", updatedAt: now });
+      return {
+        ok: true as const,
+        autoArchived: true,
+        message: "Report submitted. Listing hidden pending admin review.",
+      };
+    }
+
+    return {
+      ok: true as const,
+      autoArchived: false,
+      message: "Report submitted. Our team will review it.",
+    };
+  },
 });
 
 export const recordView = mutation({
@@ -363,6 +423,9 @@ export const getDownloadAccess = query({
     const purchased = purchases.some((p) => p.listingId === args.listingId);
     if (!isCreator && !purchased) return { allowed: false as const };
     if (!listing.fileStorageId) return { allowed: false as const, reason: "no_file" as const };
+    if (!isCreator && !isListingFileApproved(listing)) {
+      return { allowed: false as const, reason: "file_pending_review" as const };
+    }
 
     const url = await ctx.storage.getUrl(listing.fileStorageId);
     return {
@@ -399,6 +462,7 @@ export const getListingForCheckoutInternal = internalQuery({
       priceGhs: listing.priceGhs,
       creatorId: listing.creatorId,
       hasFile: Boolean(listing.fileStorageId),
+      purchaseReady: isListingFileApproved(listing),
     };
   },
 });

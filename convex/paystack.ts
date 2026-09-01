@@ -595,6 +595,11 @@ export const initializeMarketplacePayment = action({
         "This product isn't ready for purchase yet — the creator hasn't uploaded the file. Please check back soon."
       );
     }
+    if (!listing.purchaseReady) {
+      throw new Error(
+        "This product is awaiting admin review. Please check back soon."
+      );
+    }
     const alreadyOwned = await ctx.runQuery(
       internal.marketplace.isListingPurchasedInternal,
       { buyerId: userId, listingId: args.listingId }
