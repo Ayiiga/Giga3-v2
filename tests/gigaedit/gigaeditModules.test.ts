@@ -77,7 +77,15 @@ describe("GigaEdit routing & SW", () => {
 
   it("precaches gigaedit shell and bumps cache version", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v212-private-route-audit"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v213-gigaedit-timecode-fix"');
     expect(sw).toContain('"/gigaedit/"');
+  });
+
+  it("imports formatTimecodeMs in VideoEditor (prevents runtime ReferenceError)", () => {
+    const src = readFileSync(
+      resolve(__dirname, "../../web/components/gigaedit/VideoEditor.tsx"),
+      "utf8"
+    );
+    expect(src).toMatch(/import\s*\{[^}]*formatTimecodeMs[^}]*\}\s*from\s*"@\/lib\/gigaedit\/frameTime"/);
   });
 });
