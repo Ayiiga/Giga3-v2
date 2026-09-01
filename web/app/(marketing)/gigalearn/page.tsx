@@ -33,6 +33,7 @@ export default function GigaLearnPage() {
         compact
         title="GigaLearn"
         description="AI tutor for JHS and SHS: homework help, BECE/WASSCE prep, quizzes, and study plans. Sign in to use your credits."
+        detail="Built on Giga3 AI for students, teachers, and parents in Ghana and across Africa who need structured study support alongside everyday AI chat."
         showProductNav={false}
       />
       <div className="marketing-stable section-padding pt-8 pb-8">

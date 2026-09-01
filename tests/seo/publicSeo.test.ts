@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { publicMetadata } from "../../web/lib/seo/publicMetadata";
-import { GIGA3_PRODUCT_LINKS } from "../../web/lib/seo/productLinks";
+import { GIGA3_PRODUCT_LINKS, FOOTER_PRODUCT_LINKS } from "../../web/lib/seo/productLinks";
 import {
   gigaSocialPostPath,
   gigaSocialProfilePath,
@@ -98,6 +98,13 @@ describe("productLinks", () => {
     expect(hrefs).toContain("/discover");
     expect(hrefs).toContain("/video");
     expect(hrefs).toContain("/enterprise");
+  });
+
+  it("footer links cover indexable ecosystem pages", () => {
+    const hrefs = FOOTER_PRODUCT_LINKS.map((l) => l.href);
+    for (const path of ["/video", "/trending", "/prompts", "/developers", "/enterprise"]) {
+      expect(hrefs).toContain(path);
+    }
   });
 });
 

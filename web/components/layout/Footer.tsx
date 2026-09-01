@@ -1,5 +1,6 @@
 import { Container } from "@/components/ui/Container";
 import { VisionTagline } from "@/components/vision/VisionTagline";
+import { FOOTER_PRODUCT_LINKS } from "@/lib/seo/productLinks";
 import { siteConfig } from "@/lib/site";
 import { legalNavLinks } from "@/lib/legal/content";
 import { BrandLogo } from "@/components/brand/BrandLogo";
@@ -32,21 +33,7 @@ export function Footer() {
           <div>
             <h3 className="text-sm font-semibold text-foreground">Product</h3>
             <ul className="mt-4 space-y-2 text-sm text-muted">
-              {[
-                { href: "/", label: "Giga3 AI" },
-                { href: "/chat", label: "AI Chat" },
-                { href: "/gigasocial", label: "GigaSocial" },
-                { href: "/gigaedits", label: "GigaEdits" },
-                { href: "/gigaedit", label: "GigaEdit" },
-                { href: "/media", label: "Media Studio" },
-                { href: "/gigalearn", label: "GigaLearn" },
-                { href: "/creator-studio", label: "Creator Studio" },
-                { href: "/discover", label: "Discover" },
-                { href: "/ai-studio", label: "Giga3 AI Studio" },
-                { href: "/marketplace", label: "Giga3 AI Marketplace" },
-                { href: "/pricing", label: "Pricing" },
-                { href: "/about", label: "About" },
-              ].map((link) => (
+              {FOOTER_PRODUCT_LINKS.map((link) => (
                 <li key={link.href}>
                   <a href={link.href} className="hover:text-foreground">
                     {link.label}
