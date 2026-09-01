@@ -15,3 +15,5 @@ Disallow: /marketplace/purchases/
 Disallow: /marketplace/sell/
 
 Sitemap: https://www.giga3ai.com/sitemap.xml
+Sitemap: https://www.giga3ai.com/sitemap-marketplace.xml
+Sitemap: https://www.giga3ai.com/sitemap-gigasocial.xml

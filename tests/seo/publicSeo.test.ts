@@ -3,6 +3,12 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { publicMetadata } from "../../web/lib/seo/publicMetadata";
 import { GIGA3_PRODUCT_LINKS } from "../../web/lib/seo/productLinks";
+import {
+  gigaSocialPostPath,
+  gigaSocialProfilePath,
+  marketplaceItemPath,
+} from "../../web/lib/seo/publicPaths";
+import { parsePostId, parseProfileHandle } from "../../web/lib/gigasocial/profileRoute";
 
 describe("publicMetadata", () => {
   it("sets canonical path and indexable robots by default", () => {
@@ -73,5 +79,22 @@ describe("productLinks", () => {
     expect(hrefs).toContain("/media");
     expect(hrefs).toContain("/gigaedit");
     expect(hrefs).toContain("/discover");
+  });
+});
+
+describe("publicPaths", () => {
+  it("builds canonical marketplace and GigaSocial paths", () => {
+    expect(marketplaceItemPath("abc123")).toBe("/marketplace/item/abc123/");
+    expect(gigaSocialPostPath("post1")).toBe("/gigasocial/post/post1/");
+    expect(gigaSocialProfilePath("@Creator")).toBe("/gigasocial/profile/creator/");
+  });
+});
+
+describe("gigasocial route parsing", () => {
+  it("reads ids from path segments and query params", () => {
+    expect(parsePostId("/gigasocial/post/abc/", "")).toBe("abc");
+    expect(parsePostId("/gigasocial/post/", "id=xyz")).toBe("xyz");
+    expect(parseProfileHandle("/gigasocial/profile/creator/", "")).toBe("creator");
+    expect(parseProfileHandle("/gigasocial/profile/", "handle=@User")).toBe("user");
   });
 });

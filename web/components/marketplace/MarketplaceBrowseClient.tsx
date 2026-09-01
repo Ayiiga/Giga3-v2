@@ -143,7 +143,7 @@ function MarketplaceBrowseInner() {
             {sortedListings.map((item: NonNullable<typeof sortedListings>[number]) => (
               <Link
                 key={item._id}
-                href={`/marketplace/item/?id=${item._id}`}
+                href={`/marketplace/item/${item._id}/`}
                 className="saas-card group flex gap-4 rounded-2xl p-4 hover:border-emerald-600/35"
               >
                 {item.coverImageUrl ? (

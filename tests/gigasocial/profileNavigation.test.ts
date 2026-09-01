@@ -3,11 +3,13 @@ import { buildGigaSocialFeedUrl, buildGigaSocialProfileUrl } from "@/lib/gigasoc
 import { parseProfileHandle } from "@/lib/gigasocial/profileRoute";
 
 describe("gigasocial profile navigation", () => {
-  it("builds static-export-safe profile URLs with handle query", () => {
+  it("builds static-export-safe profile URLs with path segments", () => {
     expect(buildGigaSocialProfileUrl("CreatorOne")).toBe(
-      "https://www.giga3ai.com/gigasocial/profile/?handle=creatorone"
+      "https://www.giga3ai.com/gigasocial/profile/creatorone/"
     );
-    expect(buildGigaSocialProfileUrl("@CreatorOne")).toContain("handle=creatorone");
+    expect(buildGigaSocialProfileUrl("@CreatorOne")).toBe(
+      "https://www.giga3ai.com/gigasocial/profile/creatorone/"
+    );
   });
 
   it("parses handle from query and path segments", () => {

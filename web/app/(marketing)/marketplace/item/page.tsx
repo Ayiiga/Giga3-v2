@@ -1,5 +1,14 @@
 import dynamic from "next/dynamic";
+import { Suspense } from "react";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
+
+const MarketplaceItemLegacyRedirect = dynamic(
+  () =>
+    import("@/components/marketplace/MarketplaceItemLegacyRedirect").then(
+      (m) => m.MarketplaceItemLegacyRedirect
+    ),
+  { ssr: false }
+);
 
 export const metadata = publicMetadata({
   path: "/marketplace/item",
@@ -8,14 +17,10 @@ export const metadata = publicMetadata({
     "View a digital product listing on the Giga3 AI Marketplace. Pay with Paystack in GHS to unlock downloads after purchase.",
 });
 
-const MarketplaceItemClient = dynamic(
-  () =>
-    import("@/components/marketplace/MarketplaceItemClient").then(
-      (m) => m.MarketplaceItemClient
-    ),
-  { ssr: false }
-);
-
-export default function MarketplaceItemPage() {
-  return <MarketplaceItemClient />;
+export default function MarketplaceItemLegacyPage() {
+  return (
+    <Suspense fallback={null}>
+      <MarketplaceItemLegacyRedirect />
+    </Suspense>
+  );
 }

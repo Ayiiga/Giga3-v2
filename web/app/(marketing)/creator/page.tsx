@@ -48,7 +48,7 @@ function CreatorProfileInner() {
           {creatorListings.map((item: NonNullable<typeof listings>[number]) => (
             <Link
               key={item._id}
-              href={`/marketplace/item/?id=${item._id}`}
+              href={`/marketplace/item/${item._id}/`}
               className="rounded-2xl border bg-card p-5 hover:border-accent/30"
             >
               <h3 className="font-semibold">{item.title}</h3>
