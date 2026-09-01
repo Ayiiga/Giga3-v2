@@ -9,6 +9,8 @@ type PublicProductIntroProps = {
   audience?: string;
   primaryHref?: string;
   primaryLabel?: string;
+  secondaryHref?: string;
+  secondaryLabel?: string;
   /** Tighter layout when the page app loads directly below. */
   compact?: boolean;
 };
@@ -20,6 +22,8 @@ export function PublicProductIntro({
   audience,
   primaryHref = "/chat/login",
   primaryLabel = "Get Started",
+  secondaryHref,
+  secondaryLabel,
   compact = false,
 }: PublicProductIntroProps) {
   return (
@@ -37,6 +41,11 @@ export function PublicProductIntro({
             <ButtonLink href={primaryHref} size={compact ? "sm" : "md"}>
               {primaryLabel}
             </ButtonLink>
+            {secondaryHref && secondaryLabel ? (
+              <ButtonLink href={secondaryHref} variant="secondary" size={compact ? "sm" : "md"}>
+                {secondaryLabel}
+              </ButtonLink>
+            ) : null}
             {!compact ? (
               <>
                 <ButtonLink href="/chat" variant="secondary">Open Giga3 AI</ButtonLink>
