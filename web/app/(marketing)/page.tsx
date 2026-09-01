@@ -1,6 +1,7 @@
 import { Contact } from "@/components/sections/Contact";
 import { Features } from "@/components/sections/Features";
 import { Hero } from "@/components/sections/Hero";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { MultiChat } from "@/components/sections/MultiChat";
 import { Pricing } from "@/components/sections/Pricing";
 import { TrendIntelligenceSection } from "@/components/sections/TrendIntelligenceSection";
@@ -16,6 +17,7 @@ export const metadata = publicMetadata({
 export default function HomePage() {
   return (
     <>
+      <JsonLd type="WebApplication" />
       <Hero />
       <TrendIntelligenceSection />
       <Features />

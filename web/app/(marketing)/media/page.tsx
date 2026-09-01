@@ -1,5 +1,7 @@
 import { Container } from "@/components/ui/Container";
-import type { Metadata } from "next";
+import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { publicMetadata } from "@/lib/seo/publicMetadata";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
@@ -11,20 +13,35 @@ const MediaPageRoot = dynamic(
   { ssr: false, loading: () => <p className="text-center text-muted">Loading…</p> }
 );
 
-export const metadata: Metadata = {
-  title: "Media Studio",
+export const metadata = publicMetadata({
+  path: "/media",
+  title: "Media Studio — AI Image Generation",
   description:
-    "Generate and edit images with Giga3 AI — fal.ai primary, Replicate and Google AI Studio backup",
-};
+    "Media Studio on Giga3 AI generates and edits images with fal.ai, Replicate, and Google AI Studio backup. Create visuals for chat, GigaEdit, and GigaSocial.",
+});
 
 export default function MediaPage() {
   return (
-    <div className="media-stable section-padding pt-28">
-      <Container>
-        <Suspense fallback={<p className="text-center text-muted">Loading studio…</p>}>
-          <MediaPageRoot />
-        </Suspense>
-      </Container>
-    </div>
+    <>
+      <JsonLd
+        breadcrumbs={[
+          { name: "Giga3 AI", path: "/" },
+          { name: "Media Studio", path: "/media" },
+        ]}
+      />
+      <ProductSeoHeader
+        title="Media Studio — Generate and edit images"
+        description="Create AI images from text prompts or edit an existing source image. Use results in chat, open GigaEdit for video workflows, or share on GigaSocial."
+        detail="Generation uses fal.ai with automatic failover to Replicate and Google AI Studio when needed. Sign in to track credits and recent generations."
+        showProductNav={false}
+      />
+      <div className="media-stable section-padding pt-8 pb-8">
+        <Container>
+          <Suspense fallback={<p className="text-center text-muted">Loading studio…</p>}>
+            <MediaPageRoot />
+          </Suspense>
+        </Container>
+      </div>
+    </>
   );
 }

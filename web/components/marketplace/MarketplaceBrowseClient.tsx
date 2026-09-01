@@ -57,7 +57,7 @@ function MarketplaceBrowseInner() {
                 <Store className="h-4 w-4" aria-hidden />
                 Giga3 Marketplace
               </p>
-              <h1 className="page-title font-serif tracking-tight">Buy. Pay. Download.</h1>
+              <h2 className="page-title font-serif tracking-tight">Buy. Pay. Download.</h2>
               <p className="mt-2 text-muted">
                 Digital guides and templates in GHS. Pay with Paystack — your file unlocks only
                 after payment.
