@@ -3,11 +3,11 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("service worker cache version", () => {
-  it("uses gigaedit timecode fix cache name (v213)", () => {
+  it("uses marketplace simple cache name (v214)", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v213-gigaedit-timecode-fix"');
-    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v213"');
-    expect(sw).toContain('APP_SHELL_CACHE = "giga3-app-shell-v213"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v214-marketplace-simple"');
+    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v214"');
+    expect(sw).toContain('APP_SHELL_CACHE = "giga3-app-shell-v214"');
     expect(sw).toContain('pathname.startsWith("/wallet/")');
     expect(sw).toContain('pathname.startsWith("/admin/")');
     expect(sw).toContain('pathname.startsWith("/marketplace/purchases/")');

@@ -41,7 +41,10 @@ function MarketplaceItemInner() {
   const [submittingReview, setSubmittingReview] = useState(false);
 
   useEffect(() => {
-    if (listingId) void recordView({ listingId }).catch(() => undefined);
+    if (!listingId) return;
+    const token = getSessionToken();
+    if (!token) return;
+    void recordView({ listingId, sessionToken: token }).catch(() => undefined);
   }, [listingId, recordView]);
 
   if (!listingId) {

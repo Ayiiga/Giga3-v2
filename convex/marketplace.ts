@@ -36,6 +36,7 @@ export const searchListings = query({
     query: v.optional(v.string()),
     category: v.optional(v.string()),
     productType: v.optional(marketplaceProductTypeValidator),
+    verifiedOnly: v.optional(v.boolean()),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
@@ -76,7 +77,11 @@ export const searchListings = query({
       }
     }
 
-    return rows.slice(0, cap).map((listing) => ({
+    const filtered = args.verifiedOnly
+      ? rows.filter((listing) => creators.get(listing.creatorId)?.verified === true)
+      : rows;
+
+    return filtered.slice(0, cap).map((listing) => ({
       ...toPublicListing(listing),
       creator: creators.get(listing.creatorId) ?? null,
     }));
@@ -150,6 +155,11 @@ export const createListing = mutation({
         "Submit national ID verification and GPS location before creating listings."
       );
     }
+    if (args.publish && verification !== "approved") {
+      throw new Error(
+        "Wait for admin approval before publishing. Save as a draft while verification is pending."
+      );
+    }
 
     const title = args.title.trim().slice(0, 120);
     const description = args.description.trim().slice(0, 4000);
@@ -202,9 +212,21 @@ export const updateListing = mutation({
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken);
-    assertMarketplaceUploadsEnabled();
     const listing = await ctx.db.get(args.listingId);
     if (!listing || listing.creatorId !== email) throw new Error("Listing not found");
+
+    if (args.status === "published") {
+      const profile = await ctx.db
+        .query("creatorProfiles")
+        .withIndex("by_user", (q) => q.eq("userId", email))
+        .first();
+      if (!profile || verificationStatusOf(profile) !== "approved") {
+        throw new Error("Approved verification is required before publishing.");
+      }
+      if (!listing.fileStorageId) {
+        throw new Error("Attach a product file before publishing.");
+      }
+    }
 
     const patch: Record<string, unknown> = { updatedAt: Date.now() };
     if (args.title !== undefined) patch.title = args.title.trim().slice(0, 120);
@@ -257,8 +279,13 @@ export const getUploadStatus = query({
 });
 
 export const recordView = mutation({
-  args: { listingId: v.id("marketplaceListings") },
+  args: {
+    listingId: v.id("marketplaceListings"),
+    sessionToken: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
+    if (!args.sessionToken) return;
+    await requireSession(args.sessionToken);
     const listing = await ctx.db.get(args.listingId);
     if (!listing || listing.status !== "published") return;
     await ctx.db.patch(args.listingId, {

@@ -135,6 +135,28 @@ export const upsertProfile = mutation({
   },
 });
 
+export const generateVerificationUploadUrl = mutation({
+  args: sessionArgs,
+  handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken);
+    const profile = await ctx.db
+      .query("creatorProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", email))
+      .first();
+    if (!profile) throw new Error("Create a creator profile first.");
+
+    const status = verificationStatusOf(profile);
+    if (status === "pending") {
+      throw new Error("Verification is already under review.");
+    }
+    if (status === "approved") {
+      throw new Error("You are already verified.");
+    }
+
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
 export const submitCreatorVerification = mutation({
   args: {
     sessionToken: v.string(),
