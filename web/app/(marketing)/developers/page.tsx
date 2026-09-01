@@ -1,13 +1,15 @@
 import { Container } from "@/components/ui/Container";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { buildGigaSocialDeveloperApiUrl } from "@/lib/gigasocial/developerApi";
+import { publicMetadata } from "@/lib/seo/publicMetadata";
 import { siteConfig } from "@/lib/site";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Developer API",
+export const metadata = publicMetadata({
+  path: "/developers",
+  title: "GigaSocial Developer API — Giga3 AI",
   description:
     "Read-only GigaSocial developer API for feeds, posts, profiles, and comments on Giga3 AI.",
-};
+});
 
 const ENDPOINTS = [
   {
@@ -53,7 +55,14 @@ export default function DevelopersPage() {
   const apiBase = buildGigaSocialDeveloperApiUrl("health").replace(/\/health$/, "");
 
   return (
-    <div className="marketing-stable bg-white">
+    <>
+      <JsonLd
+        breadcrumbs={[
+          { name: "Giga3 AI", path: "/" },
+          { name: "Developer API", path: "/developers" },
+        ]}
+      />
+      <div className="marketing-stable bg-white">
       <Container className="section-padding">
         <div className="mx-auto max-w-3xl">
           <h1 className="page-title">GigaSocial Developer API</h1>
@@ -137,5 +146,6 @@ X-Giga3-Api-Key: YOUR_API_KEY`}
         </div>
       </Container>
     </div>
+    </>
   );
 }

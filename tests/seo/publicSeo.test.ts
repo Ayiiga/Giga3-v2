@@ -39,6 +39,16 @@ describe("publicMetadata", () => {
       description: "Super app description.",
     });
     expect(meta.openGraph?.title).toBe("Giga3 AI — Africa's AI Super App");
+    expect(meta.title).toEqual({ absolute: "Giga3 AI — Africa's AI Super App" });
+  });
+
+  it("uses title template for pages without Giga3 in the title", () => {
+    const meta = publicMetadata({
+      path: "/gigalearn",
+      title: "GigaLearn — AI Tutor",
+      description: "Learning support.",
+    });
+    expect(meta.title).toBe("GigaLearn — AI Tutor");
   });
 });
 
@@ -51,10 +61,16 @@ describe("sitemap.xml", () => {
       "https://www.giga3ai.com/gigasocial/",
       "https://www.giga3ai.com/gigaedit/",
       "https://www.giga3ai.com/media/",
+      "https://www.giga3ai.com/video/",
       "https://www.giga3ai.com/gigalearn/",
       "https://www.giga3ai.com/marketplace/",
       "https://www.giga3ai.com/creator-studio/",
       "https://www.giga3ai.com/discover/",
+      "https://www.giga3ai.com/trending/",
+      "https://www.giga3ai.com/prompts/",
+      "https://www.giga3ai.com/enterprise/",
+      "https://www.giga3ai.com/developers/",
+      "https://www.giga3ai.com/legal/privacy/",
     ]) {
       expect(xml).toContain(path);
     }
@@ -66,6 +82,7 @@ describe("robots.txt", () => {
     const robots = readFileSync(resolve(__dirname, "../../web/public/robots.txt"), "utf8");
     expect(robots).toContain("Allow: /chat/");
     expect(robots).toContain("Disallow: /chat/login/");
+    expect(robots).toContain("Disallow: /chat/login/reset/");
     expect(robots).not.toContain("Disallow: /creator-studio/");
     expect(robots).toContain("Disallow: /marketplace/sell/");
     expect(robots).toContain("Sitemap: https://www.giga3ai.com/sitemap.xml");
@@ -79,6 +96,8 @@ describe("productLinks", () => {
     expect(hrefs).toContain("/media");
     expect(hrefs).toContain("/gigaedit");
     expect(hrefs).toContain("/discover");
+    expect(hrefs).toContain("/video");
+    expect(hrefs).toContain("/enterprise");
   });
 });
 

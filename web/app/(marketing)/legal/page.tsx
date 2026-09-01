@@ -1,16 +1,26 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { LEGAL_EFFECTIVE_DATE, legalDocuments } from "@/lib/legal/content";
-import type { Metadata } from "next";
+import { publicMetadata } from "@/lib/seo/publicMetadata";
 
-export const metadata: Metadata = {
-  title: "Legal",
-  description: "Giga3 AI legal policies — Terms of Service, Privacy Policy, Cookie Policy, Refund Policy, and Acceptable Use.",
-};
+export const metadata = publicMetadata({
+  path: "/legal",
+  title: "Legal — Giga3 AI Policies",
+  description:
+    "Giga3 AI legal policies — Terms of Service, Privacy Policy, Cookie Policy, Refund Policy, and Acceptable Use.",
+});
 
 export default function LegalIndexPage() {
   return (
-    <div className="section-padding pt-28 pb-[max(2rem,env(safe-area-inset-bottom))]">
+    <>
+      <JsonLd
+        breadcrumbs={[
+          { name: "Giga3 AI", path: "/" },
+          { name: "Legal", path: "/legal" },
+        ]}
+      />
+      <div className="section-padding pt-28 pb-[max(2rem,env(safe-area-inset-bottom))]">
       <Container>
         <div className="mx-auto max-w-3xl">
           <h1 className="hero-title">Legal</h1>
@@ -34,5 +44,6 @@ export default function LegalIndexPage() {
         </div>
       </Container>
     </div>
+    </>
   );
 }

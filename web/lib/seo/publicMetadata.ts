@@ -21,9 +21,11 @@ export function publicMetadata({
   const canonical = new URL(canonicalPath, siteConfig.url).toString();
   const socialTitle = title.includes("Giga3") ? title : `${title} | Giga3 AI`;
   const image = brandingAssetUrl("/images/logo.png");
+  /** Avoid root layout `%s | Giga3 AI` duplicating titles that already include the brand. */
+  const documentTitle = title.includes("Giga3") ? { absolute: title } : title;
 
   return {
-    title,
+    title: documentTitle,
     description,
     robots: index ? { index: true, follow: true } : { index: false, follow: false },
     alternates: { canonical: canonicalPath },

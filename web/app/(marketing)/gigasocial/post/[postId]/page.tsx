@@ -31,18 +31,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     });
   }
 
+  const base = publicMetadata({
+    path: gigaSocialPostPath(params.postId),
+    title: bundle.title,
+    description: bundle.description,
+  });
+
   return {
-    ...publicMetadata({
-      path: gigaSocialPostPath(params.postId),
-      title: bundle.title,
-      description: bundle.description,
-    }),
+    ...base,
     openGraph: {
+      ...base.openGraph,
       title: bundle.title,
       description: bundle.description,
       images: [{ url: bundle.imageUrl, alt: bundle.imageAlt }],
     },
     twitter: {
+      ...base.twitter,
       card: "summary_large_image",
       title: bundle.title,
       description: bundle.description,

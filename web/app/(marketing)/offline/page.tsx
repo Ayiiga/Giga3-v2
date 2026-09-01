@@ -3,11 +3,15 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { VisionTagline } from "@/components/vision/VisionTagline";
 import { branding } from "@/lib/branding";
+import { publicMetadata } from "@/lib/seo/publicMetadata";
 import { WifiOff } from "lucide-react";
 
-export const metadata = {
-  title: "Offline",
-};
+export const metadata = publicMetadata({
+  path: "/offline",
+  title: "Offline — Giga3 AI",
+  description: "Giga3 AI offline mode — cached chat and GigaSocial surfaces when your connection drops.",
+  index: false,
+});
 
 export default function OfflinePage() {
   return (
