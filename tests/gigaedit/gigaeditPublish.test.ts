@@ -85,7 +85,7 @@ describe("GigaEdit publish redirect helpers", () => {
     expect(photo).toContain("handoffAndOpenGigaSocial");
     expect(video).toContain("handoffAndOpenGigaSocial");
     expect(photo).toContain("Post to GigaSocial");
-    expect(video).toContain("Post to GigaSocial");
+    expect(video).toMatch(/Post to GigaSocial|readyToPublish|"Post"/);
   });
 });
 
@@ -102,7 +102,7 @@ describe("GigaEdit publish flags & offline", () => {
 
   it("bumps SW cache for publish integration", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v215-marketplace-upload-reports"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v216-gigaedit-compact-ui"');
   });
 });
 

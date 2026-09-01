@@ -71,7 +71,9 @@ function ToolCard({
         {tool.emoji}
       </span>
       <span className="gigaedit-tool-card__label">{tool.label}</span>
-      <span className="gigaedit-tool-card__desc">{tool.description}</span>
+      {!large ? (
+        <span className="gigaedit-tool-card__desc gigaedit-tool-card__desc--compact">{tool.description}</span>
+      ) : null}
       {isMedia ? (
         <span className="gigaedit-tool-card__badge">AI Studio</span>
       ) : (
@@ -102,7 +104,9 @@ function HomeActionTile({
         {action.emoji}
       </span>
       <span className="gigaedit-tool-card__label">{action.label}</span>
-      <span className="gigaedit-tool-card__desc">{action.description}</span>
+      {!action.featured ? (
+        <span className="gigaedit-tool-card__desc gigaedit-tool-card__desc--compact">{action.description}</span>
+      ) : null}
       {isMedia ? (
         <span className="gigaedit-tool-card__badge">AI Studio</span>
       ) : (
@@ -126,31 +130,30 @@ export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
 
   return (
     <div className="gigaedit-home space-y-6">
-      <header className="gigaedit-hero gigaedit-glass space-y-3 p-5 sm:p-6">
+      <header className="gigaedit-hero gigaedit-glass space-y-2 p-4 sm:p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--ge-gold)]">
           {CREATOR_STUDIO_PRODUCT_NAME}
         </p>
-        <h1 className="gigaedit-hero__title text-3xl font-bold tracking-tight sm:text-4xl">
-          Your unified creator workspace
+        <h1 className="gigaedit-hero__title text-2xl font-bold tracking-tight sm:text-3xl">
+          Create on device
         </h1>
-        <p className="max-w-2xl text-sm leading-relaxed text-[var(--ge-muted)] sm:text-base">
-          Video, audio, text, captions, branding, and AI — connected in one honest studio. Edit
-          on-device, then open AI Studio for cloud generation when you need it.
+        <p className="max-w-xl text-sm text-[var(--ge-muted)]">
+          Video, photo, audio, and templates — edit locally, publish when ready.
         </p>
-        <div className="flex flex-wrap gap-2 pt-1">
-          <button type="button" className="gigaedit-cta" onClick={() => onOpen("video")}>
+        <div className="flex flex-wrap gap-2 pt-0.5">
+          <button type="button" className="gigaedit-cta gigaedit-cta--sm" onClick={() => onOpen("video")}>
             New project
           </button>
           <button
             type="button"
-            className="gigaedit-cta gigaedit-cta--ghost"
+            className="gigaedit-cta gigaedit-cta--ghost gigaedit-cta--sm"
             onClick={() => onOpen("video", { autoImport: true })}
           >
             Import video
           </button>
           <button
             type="button"
-            className="gigaedit-cta gigaedit-cta--ghost"
+            className="gigaedit-cta gigaedit-cta--ghost gigaedit-cta--sm"
             onClick={() => onOpen("brand")}
           >
             Brand kit
