@@ -14,10 +14,10 @@ import { BadgeCheck, Download, Flag, ShieldCheck } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
-function MarketplaceItemInner() {
+function MarketplaceItemInner({ initialListingId }: { initialListingId?: string }) {
   const router = useRouter();
   const params = useSearchParams();
-  const listingId = params.get("id") as Id<"marketplaceListings"> | null;
+  const listingId = (initialListingId || params.get("id")) as Id<"marketplaceListings"> | null;
   const sessionToken = getSessionToken();
 
   const data = useQuery(
@@ -69,7 +69,7 @@ function MarketplaceItemInner() {
   async function handleBuy() {
     const token = getSessionToken();
     if (!token) {
-      router.push(`/chat/login?next=/marketplace/item/?id=${listingId}`);
+      router.push(`/chat/login?next=${encodeURIComponent(`/marketplace/item/${listingId}/`)}`);
       return;
     }
     setBuying(true);
@@ -86,7 +86,7 @@ function MarketplaceItemInner() {
   async function handleReport() {
     const token = getSessionToken();
     if (!token) {
-      router.push(`/chat/login?next=/marketplace/item/?id=${listingId}`);
+      router.push(`/chat/login?next=${encodeURIComponent(`/marketplace/item/${listingId}/`)}`);
       return;
     }
     setReporting(true);
@@ -345,11 +345,11 @@ function MarketplaceItemInner() {
   );
 }
 
-export function MarketplaceItemClient() {
+export function MarketplaceItemClient({ initialListingId }: { initialListingId?: string } = {}) {
   return (
     <ConvexAppShell>
       <Suspense fallback={<p className="text-center text-muted">Loading…</p>}>
-        <MarketplaceItemInner />
+        <MarketplaceItemInner initialListingId={initialListingId} />
       </Suspense>
     </ConvexAppShell>
   );

@@ -1,4 +1,5 @@
 import { getConvexSiteUrl } from "@/lib/convex/env";
+import { gigaSocialPostPath, gigaSocialProfilePath } from "@/lib/seo/publicPaths";
 import { GIGA3_APP_URL } from "@/lib/share/giga3Attribution";
 
 const DEFAULT_ORIGIN = GIGA3_APP_URL;
@@ -7,7 +8,7 @@ const DEFAULT_CONVEX_SITE = "https://perfect-lark-521.convex.site";
 /** Canonical public URL for a GigaSocial post (read-only landing page). */
 export function buildGigaSocialPostUrl(postId: string, origin?: string): string {
   const base = (origin?.replace(/\/$/, "") || DEFAULT_ORIGIN).replace(/\/$/, "");
-  return `${base}/gigasocial/post/?id=${encodeURIComponent(postId)}`;
+  return `${base}${gigaSocialPostPath(postId)}`;
 }
 
 /**
@@ -44,10 +45,10 @@ export function buildGigaSocialFeedPostUrl(postId: string, origin?: string): str
   return buildGigaSocialFeedUrl({ highlight: postId }, origin);
 }
 
-/** Public profile URL by @handle (query param for static-export client routing). */
+/** Public profile URL by @handle. */
 export function buildGigaSocialProfileUrl(handle: string, origin?: string): string {
   const base = (origin?.replace(/\/$/, "") || DEFAULT_ORIGIN).replace(/\/$/, "");
   const normalized = handle.replace(/^@/, "").trim().toLowerCase();
   if (!normalized) return `${base}/gigasocial/profile/`;
-  return `${base}/gigasocial/profile/?handle=${encodeURIComponent(normalized)}`;
+  return `${base}${gigaSocialProfilePath(normalized)}`;
 }

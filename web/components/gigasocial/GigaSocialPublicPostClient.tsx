@@ -6,6 +6,7 @@ import { BrandLogo } from "@/components/brand/BrandLogo";
 import { ButtonLink } from "@/components/ui/Button";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { buildGigaSocialFeedPostUrl } from "@/lib/gigasocial/shareLinks";
+import { parsePostId } from "@/lib/gigasocial/profileRoute";
 import { splitPostDisplay } from "@/lib/gigasocial/postDisplay";
 import { formatCompactCount, formatVideoDuration } from "@/lib/gigasocial/ogMeta";
 import type { SocialPost } from "@/lib/gigasocial/types";
@@ -16,12 +17,17 @@ import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { ExternalLink, UsersRound } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 
-function PublicPostInner() {
+function PublicPostInner({ initialPostId }: { initialPostId?: string }) {
   const params = useSearchParams();
-  const postId = params.get("id")?.trim() ?? "";
+  const pathname = usePathname();
+  const postId =
+    initialPostId?.trim() ||
+    parsePostId(pathname, params.toString()) ||
+    params.get("id")?.trim() ||
+    "";
   const viewedRef = useRef(false);
 
   const post = useQuery(
@@ -184,7 +190,7 @@ function ShareState({ title, body }: { title: string; body: string }) {
   );
 }
 
-export function GigaSocialPublicPostRoot() {
+export function GigaSocialPublicPostRoot({ initialPostId }: { initialPostId?: string } = {}) {
   return (
     <ConvexAppShell>
       <Suspense
@@ -192,7 +198,7 @@ export function GigaSocialPublicPostRoot() {
           <ShareState title="Loading…" body="Preparing GigaSocial post." />
         }
       >
-        <PublicPostInner />
+        <PublicPostInner initialPostId={initialPostId} />
       </Suspense>
     </ConvexAppShell>
   );

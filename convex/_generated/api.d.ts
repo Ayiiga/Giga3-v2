@@ -120,6 +120,7 @@ import type * as platformStats from "../platformStats.js";
 import type * as platformStatsRecorder from "../platformStatsRecorder.js";
 import type * as premiumImage from "../premiumImage.js";
 import type * as providerRouter from "../providerRouter.js";
+import type * as publicSeo from "../publicSeo.js";
 import type * as publicShareSanitizer from "../publicShareSanitizer.js";
 import type * as pushAlerts from "../pushAlerts.js";
 import type * as pushAlertsActions from "../pushAlertsActions.js";
@@ -274,6 +275,7 @@ declare const fullApi: ApiFromModules<{
   platformStatsRecorder: typeof platformStatsRecorder;
   premiumImage: typeof premiumImage;
   providerRouter: typeof providerRouter;
+  publicSeo: typeof publicSeo;
   publicShareSanitizer: typeof publicShareSanitizer;
   pushAlerts: typeof pushAlerts;
   pushAlertsActions: typeof pushAlertsActions;

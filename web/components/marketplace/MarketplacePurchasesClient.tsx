@@ -88,7 +88,7 @@ function MarketplacePurchasesInner() {
                     )}
                     <div className="min-w-0">
                       <Link
-                        href={`/marketplace/item/?id=${row.listing._id}`}
+                        href={`/marketplace/item/${row.listing._id}/`}
                         className="font-semibold hover:text-emerald-700 dark:hover:text-emerald-300"
                       >
                         {row.listing.title}
@@ -118,7 +118,7 @@ function MarketplacePurchasesInner() {
                       </span>
                     )}
                     <ButtonLink
-                      href={`/marketplace/item/?id=${row.listing._id}`}
+                      href={`/marketplace/item/${row.listing._id}/`}
                       variant="secondary"
                       size="sm"
                     >

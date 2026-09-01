@@ -7,7 +7,18 @@ const DEFAULT_CONVEX_SITE = "https://perfect-lark-521.convex.site";
 
 function isGigaSocialPostPath(pathname) {
   const normalized = pathname.replace(/\/$/, "") || "/";
-  return normalized === "/gigasocial/post";
+  if (normalized === "/gigasocial/post") return true;
+  return /^\/gigasocial\/post\/[^/]+$/.test(normalized);
+}
+
+function parsePostId(pathname, searchParams) {
+  const fromQuery = searchParams.get("id")?.trim();
+  if (fromQuery) return fromQuery;
+  const segments = pathname.replace(/\/$/, "").split("/").filter(Boolean);
+  if (segments[0] === "gigasocial" && segments[1] === "post" && segments[2]) {
+    return decodeURIComponent(segments[2]).trim();
+  }
+  return "";
 }
 
 export async function onRequest(context) {
@@ -17,7 +28,7 @@ export async function onRequest(context) {
     return context.next();
   }
 
-  const postId = url.searchParams.get("id")?.trim();
+  const postId = parsePostId(url.pathname, url.searchParams);
   if (!postId) {
     return context.next();
   }

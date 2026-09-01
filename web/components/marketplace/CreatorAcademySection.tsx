@@ -75,7 +75,7 @@ export function CreatorAcademySection() {
           const meta = CREATOR_SERIES[index] ?? CREATOR_SERIES[0]!;
           const listingId = series.listing?._id;
           const href = listingId
-            ? `/marketplace/item/?id=${listingId}`
+            ? `/marketplace/item/${listingId}/`
             : `/marketplace/?q=${encodeURIComponent(series.listingTag)}`;
           // Prefer refreshed public Academy covers over older seeded storage URLs.
           const cover =
