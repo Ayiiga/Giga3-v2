@@ -1,4 +1,3 @@
-import { CreatorWorkflowIntro } from "@/components/seo/CreatorWorkflowIntro";
 import { PublicProductIntro } from "@/components/seo/PublicProductIntro";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
@@ -20,13 +19,12 @@ export default function GigaEditsPage() {
         ]}
       />
       <PublicProductIntro
-        title="GigaEdits — Create, edit, and publish with AI"
-        description="GigaEdits is the creator experience in Giga3 AI for shaping ideas into polished visual and written content. Generate assets in Media Studio, refine video in GigaEdit, and publish to GigaSocial."
-        audience="African creators, small teams, and businesses creating for the web"
+        compact
+        title="GigaEdits"
+        description="Create with AI: generate in Media Studio, edit video in GigaEdit, publish to GigaSocial."
         primaryHref="/gigaedit"
         primaryLabel="Open GigaEdit"
       />
-      <CreatorWorkflowIntro />
     </>
   );
 }

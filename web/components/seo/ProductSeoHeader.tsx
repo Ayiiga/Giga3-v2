@@ -8,6 +8,8 @@ type ProductSeoHeaderProps = {
   detail?: string;
   /** Omit product nav when the page already includes rich linking. */
   showProductNav?: boolean;
+  /** Tighter padding for app pages that hydrate immediately below the header. */
+  compact?: boolean;
   className?: string;
 };
 
@@ -17,16 +19,21 @@ export function ProductSeoHeader({
   description,
   detail,
   showProductNav = true,
+  compact = false,
   className = "",
 }: ProductSeoHeaderProps) {
   return (
     <header className={`border-b border-border bg-white ${className}`.trim()}>
-      <Container className="py-8 sm:py-10">
+      <Container className={compact ? "py-4 sm:py-5" : "py-8 sm:py-10"}>
         <div className="mx-auto max-w-3xl">
-          <h1 className="page-title">{title}</h1>
-          <p className="section-lead mt-4">{description}</p>
+          <h1 className={compact ? "text-xl font-bold tracking-tight sm:text-2xl" : "page-title"}>
+            {title}
+          </h1>
+          <p className={compact ? "mt-2 text-sm leading-6 text-muted sm:text-base" : "section-lead mt-4"}>
+            {description}
+          </p>
           {detail ? (
-            <p className="mt-4 text-base leading-7 text-muted">{detail}</p>
+            <p className="mt-2 text-sm leading-6 text-muted">{detail}</p>
           ) : null}
           {showProductNav ? (
             <nav

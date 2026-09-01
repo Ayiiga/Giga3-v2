@@ -3,6 +3,7 @@
 import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
 import { ChatInputToolbar } from "@/components/chat/ChatInputToolbar";
 import { EmojiPicker } from "@/components/chat/EmojiPicker";
+import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { Button } from "@/components/ui/Button";
 import { classifyChatMediaFiles } from "@/lib/chat/chatMediaPicker";
@@ -86,16 +87,35 @@ export const ChatInput = memo(function ChatInput({
     requestAnimationFrame(() => textareaRef.current?.focus());
   }, []);
 
+  const insertVoiceText = useCallback((text: string) => {
+    setValue((prev) => {
+      const trimmed = prev.trimEnd();
+      if (!trimmed) return text;
+      const needsSpace = !/\s$/.test(trimmed);
+      return `${trimmed}${needsSpace ? " " : ""}${text}`;
+    });
+    setNotice("Voice captured — review and send when ready.");
+    requestAnimationFrame(() => textareaRef.current?.focus());
+  }, []);
+
+  const insertTemplateText = useCallback(
+    (text: string) => {
+      insertText(text);
+      setNotice("Template inserted — edit below, then send.");
+      setToolbarOpen(false);
+    },
+    [insertText]
+  );
+
   useEffect(() => {
     if (!insertRef) return;
     insertRef.current = (text: string) => {
-      insertText(text);
-      setNotice("Template inserted — edit below, then send.");
+      insertTemplateText(text);
     };
     return () => {
       insertRef.current = null;
     };
-  }, [insertRef, insertText]);
+  }, [insertRef, insertTemplateText]);
 
   useEffect(() => {
     setValue(readComposerDraft(conversationId));
@@ -338,11 +358,16 @@ export const ChatInput = memo(function ChatInput({
                 setEmojiOpen(false);
               }}
               onPickFiles={(files, kind) => void handlePickFiles(files, kind)}
-              onInsertTemplate={insertText}
+              onInsertTemplate={insertTemplateText}
               onError={(msg) => setNotice(msg)}
-              onVoiceTranscript={(text) => insertText(text)}
             />
           ) : null}
+
+          <VoiceInputButton
+            disabled={inputDisabled}
+            onTranscript={insertVoiceText}
+            onError={(msg) => setNotice(msg)}
+          />
 
           <div className="relative min-w-0 flex-1">
             <EmojiPicker

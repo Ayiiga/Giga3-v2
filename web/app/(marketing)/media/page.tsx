@@ -30,9 +30,9 @@ export default function MediaPage() {
         ]}
       />
       <ProductSeoHeader
-        title="Media Studio — Generate and edit images"
-        description="Create AI images from text prompts or edit an existing source image. Use results in chat, open GigaEdit for video workflows, or share on GigaSocial."
-        detail="Generation uses fal.ai with automatic failover to Replicate and Google AI Studio when needed. Sign in to track credits and recent generations."
+        compact
+        title="Media Studio"
+        description="Generate or edit AI images from prompts. Use results in chat, GigaEdit, or GigaSocial."
         showProductNav={false}
       />
       <div className="media-stable section-padding pt-8 pb-8">
