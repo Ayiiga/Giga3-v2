@@ -30,9 +30,9 @@ export default function GigaLearnPage() {
         ]}
       />
       <ProductSeoHeader
-        title="GigaLearn — AI tutor for Ghana and West Africa"
-        description="Practical learning support for JHS, SHS, and families: topic explainers, quiz generators, exam prep for BECE and WASSCE, homework photo analysis, and teacher planning tools."
-        detail="Student tools include practice questions, revision guides, and personalized study plans. Teachers can generate lesson notes, assessments, and rubrics. Parents get progress-friendly study tips. Sign in with Giga3 AI credits to use each tool."
+        compact
+        title="GigaLearn"
+        description="AI tutor for JHS and SHS: homework help, BECE/WASSCE prep, quizzes, and study plans. Sign in to use your credits."
         showProductNav={false}
       />
       <div className="marketing-stable section-padding pt-8 pb-8">

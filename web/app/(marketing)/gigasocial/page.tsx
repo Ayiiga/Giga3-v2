@@ -32,9 +32,9 @@ export default function GigaSocialPage() {
         ]}
       />
       <ProductSeoHeader
-        title="GigaSocial — Connect, share, and collaborate with AI"
-        description="GigaSocial is Giga3 AI's community space for sharing ideas, discovering creators, and learning together. Public posts and profiles are visible to signed-in members; private posts and messages stay private."
-        detail="Publish from GigaEdit, explore feeds and communities, and follow creators. Sign in to create your profile and join the conversation."
+        compact
+        title="GigaSocial"
+        description="Share posts, follow creators, and publish from GigaEdit and Media Studio. Sign in to join."
         showProductNav={false}
       />
       <div className="gigasocial-page-shell gigasocial-stable gigasocial-premium w-full max-w-full px-3 pb-3 pt-4 sm:px-6 sm:pb-6 sm:pt-6">

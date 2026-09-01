@@ -8,8 +8,7 @@ import {
   classifyChatMediaFiles,
 } from "@/lib/chat/chatMediaPicker";
 import type { AttachmentKind } from "@/lib/chat/multimodalAttachments";
-import { useVoiceDictation } from "@/hooks/useVoiceDictation";
-import { ChevronUp, Mic, Plus } from "lucide-react";
+import { ChevronUp, Plus } from "lucide-react";
 import { useId, useRef } from "react";
 
 interface ChatInputToolbarProps {
@@ -19,7 +18,6 @@ interface ChatInputToolbarProps {
   onPickFiles: (files: File[], kind: AttachmentKind) => void;
   onInsertTemplate: (text: string) => void;
   onError: (message: string) => void;
-  onVoiceTranscript?: (text: string) => void;
 }
 
 export function ChatInputToolbar({
@@ -29,13 +27,7 @@ export function ChatInputToolbar({
   onPickFiles,
   onInsertTemplate,
   onError,
-  onVoiceTranscript,
 }: ChatInputToolbarProps) {
-  const { supported: voiceSupported, listening, toggle: toggleVoice } =
-    useVoiceDictation((text) => {
-      onVoiceTranscript?.(text);
-      if (expanded) onToggle();
-    });
   const menuId = useId();
   const unifiedRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -150,24 +142,6 @@ export function ChatInputToolbar({
         aria-hidden
         onChange={(e) => handleChange(e, "file")}
       />
-
-      {voiceSupported && onVoiceTranscript && (
-        <button
-          type="button"
-          disabled={disabled}
-          aria-label={listening ? "Stop voice input" : "Voice input"}
-          title={listening ? "Listening…" : "Voice input"}
-          onClick={toggleVoice}
-          className={cn(
-            "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-foreground shadow-sm",
-            "hover:border-accent/30 hover:bg-accent/5",
-            listening && "border-accent/40 bg-accent/10 text-accent",
-            disabled && "pointer-events-none opacity-50"
-          )}
-        >
-          <Mic className="h-5 w-5" aria-hidden />
-        </button>
-      )}
 
       <button
         type="button"
