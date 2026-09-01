@@ -8,6 +8,8 @@ export const GIGA3_PRODUCT_LINKS = [
   { href: "/gigalearn", label: "GigaLearn" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/creator-studio", label: "Creator Studio" },
+  { href: "/video", label: "Video AI" },
+  { href: "/enterprise", label: "Enterprise" },
   { href: "/discover", label: "Discover" },
   { href: "/pricing", label: "Pricing" },
 ] as const;

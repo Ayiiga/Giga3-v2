@@ -6,12 +6,24 @@
   <url><loc>https://www.giga3ai.com/gigaedits/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.giga3ai.com/gigaedit/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.giga3ai.com/media/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.giga3ai.com/video/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.giga3ai.com/gigalearn/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.giga3ai.com/marketplace/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.giga3ai.com/creator-studio/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.giga3ai.com/discover/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.giga3ai.com/trending/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.giga3ai.com/prompts/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.giga3ai.com/ai-studio/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.giga3ai.com/enterprise/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.giga3ai.com/automation/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.giga3ai.com/developers/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://www.giga3ai.com/about/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://www.giga3ai.com/pricing/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.giga3ai.com/download/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.giga3ai.com/legal/</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://www.giga3ai.com/legal/terms/</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://www.giga3ai.com/legal/privacy/</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://www.giga3ai.com/legal/cookies/</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://www.giga3ai.com/legal/refunds/</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://www.giga3ai.com/legal/acceptable-use/</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
 </urlset>

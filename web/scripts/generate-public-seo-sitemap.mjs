@@ -29,11 +29,16 @@ async function convexQuery(queryPath, args = {}) {
   return payload.value;
 }
 
+// Keep in sync with web/lib/seo/convexBuildFetch.ts BUILD_* limits (SSG page count).
+const BUILD_LISTING_LIMIT = 200;
+const BUILD_POST_LIMIT = 120;
+const BUILD_PROFILE_LIMIT = 120;
+
 async function loadSitemapEntries() {
   const [seoListings, seoPosts, seoProfiles] = await Promise.all([
-    convexQuery("publicSeo:listMarketplaceSitemapEntries", { limit: 500 }),
-    convexQuery("publicSeo:listPublicPostSitemapEntries", { limit: 300 }),
-    convexQuery("publicSeo:listPublicProfileSitemapEntries", { limit: 300 }),
+    convexQuery("publicSeo:listMarketplaceSitemapEntries", { limit: BUILD_LISTING_LIMIT }),
+    convexQuery("publicSeo:listPublicPostSitemapEntries", { limit: BUILD_POST_LIMIT }),
+    convexQuery("publicSeo:listPublicProfileSitemapEntries", { limit: BUILD_PROFILE_LIMIT }),
   ]);
 
   if (seoListings || seoPosts || seoProfiles) {
@@ -45,8 +50,8 @@ async function loadSitemapEntries() {
   }
 
   const [listings, feed] = await Promise.all([
-    convexQuery("marketplace:searchListings", { limit: 500 }),
-    convexQuery("gigaSocial:listFeed", { limit: 300 }),
+    convexQuery("marketplace:searchListings", { limit: BUILD_LISTING_LIMIT }),
+    convexQuery("gigaSocial:listFeed", { limit: BUILD_POST_LIMIT }),
   ]);
 
   const profiles = new Set();

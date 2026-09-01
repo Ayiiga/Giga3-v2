@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/Container";
+import { CreatorWorkflowIntro } from "@/components/seo/CreatorWorkflowIntro";
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
@@ -35,6 +36,7 @@ export default function CreatorStudioPage() {
         detail="Sign in to save drafts and use Giga3 AI credits. For full video editing, open GigaEdit; for AI images, use Media Studio."
         showProductNav={false}
       />
+      <CreatorWorkflowIntro />
       <div className="creator-studio-stable section-padding pt-8 pb-8">
         <Container>
           <Suspense fallback={<p className="text-center text-muted">Loading Creator Studio…</p>}>
