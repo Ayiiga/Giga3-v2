@@ -49,6 +49,10 @@ type CommonProps = {
   emptyLabel?: string;
   /** Edge-to-edge preview for teleprompter / live capture shells. */
   variant?: "card" | "immersive";
+  /** Hide tier/HDR badges on immersive capture (teleprompter). */
+  showChrome?: boolean;
+  /** Brighter HDR-style preview pipeline. */
+  ultraClear?: boolean;
 };
 
 type ImageProps = CommonProps & {
@@ -115,8 +119,9 @@ export const CameraStylePreview = forwardRef<CameraStylePreviewHandle, CameraSty
           baseFilterCss,
           baseFilterId,
           tier,
+          ultraClear: props.ultraClear,
         }),
-      [look, analysis, baseFilterCss, baseFilterId, tier]
+      [look, analysis, baseFilterCss, baseFilterId, tier, props.ultraClear]
     );
 
     const transformCss = useMemo(() => {
@@ -193,6 +198,7 @@ export const CameraStylePreview = forwardRef<CameraStylePreviewHandle, CameraSty
 
     const showControls = props.showControls !== false;
     const immersive = props.variant === "immersive";
+    const showChrome = props.showChrome !== false;
 
     return (
       <div className={cn(immersive ? "flex h-full min-h-0 flex-col" : "space-y-2", props.className)}>
@@ -256,6 +262,7 @@ export const CameraStylePreview = forwardRef<CameraStylePreviewHandle, CameraSty
               </div>
             ) : null}
 
+            {showChrome ? (
             <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2">
               <span className="rounded-md bg-black/55 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--ge-gold)]">
                 Pro preview · {tier}
@@ -266,6 +273,7 @@ export const CameraStylePreview = forwardRef<CameraStylePreviewHandle, CameraSty
                 </span>
               ) : null}
             </div>
+            ) : null}
 
             {props.overlay}
           </div>

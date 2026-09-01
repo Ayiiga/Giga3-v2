@@ -40,6 +40,19 @@ export const DEFAULT_CAMERA_LOOK: CameraLookOptions = {
   naturalColors: true,
 };
 
+/** Teleprompter / talking-head preset — max clarity, HDR-style lift, no portrait softening. */
+export const ULTRA_CLEAR_CAMERA_LOOK: CameraLookOptions = {
+  adaptiveBrightness: true,
+  hdr: true,
+  autoExposure: true,
+  autofocus: true,
+  whiteBalance: "daylight",
+  stabilization: true,
+  portrait: false,
+  lowLight: true,
+  naturalColors: false,
+};
+
 const WB_CSS: Record<Exclude<WhiteBalancePreset, "auto">, string> = {
   daylight: "sepia(0.04) hue-rotate(-2deg) saturate(1.02)",
   cloudy: "sepia(0.08) hue-rotate(8deg) brightness(1.03)",
@@ -115,8 +128,10 @@ export function composeCameraLookCss(opts: {
   baseFilterId?: string | null;
   baseFilterCss?: string | null;
   tier?: DeviceTier;
+  /** Extra lift for teleprompter Ultra Clear mode. */
+  ultraClear?: boolean;
 }): string {
-  const { look, analysis, baseFilterId, tier = "mid" } = opts;
+  const { look, analysis, baseFilterId, tier = "mid", ultraClear = false } = opts;
   const base =
     opts.baseFilterCss ??
     (baseFilterId ? getCameraFilterCss(baseFilterId) : undefined) ??
@@ -157,6 +172,10 @@ export function composeCameraLookCss(opts: {
   if (look.naturalColors) {
     // Pull oversaturated HDR stacks back toward natural skin/sky.
     parts.push("saturate(0.97)");
+  }
+
+  if (ultraClear) {
+    parts.push("brightness(1.06) contrast(1.14) saturate(1.1)");
   }
 
   return parts.filter(Boolean).join(" ") || "none";

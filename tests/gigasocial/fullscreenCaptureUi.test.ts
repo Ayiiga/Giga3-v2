@@ -28,7 +28,7 @@ describe("fullscreen camera / live / teleprompter UI", () => {
     expect(source).toContain("Pre-live looks");
   });
 
-  it("teleprompter opens a fullscreen camera with pre-snap looks", () => {
+  it("teleprompter opens ultra-clear fullscreen camera without pre-snap bar", () => {
     const source = readFileSync(
       resolve(root, "web/components/gigaedit/TeleprompterStudio.tsx"),
       "utf8"
@@ -38,7 +38,9 @@ describe("fullscreen camera / live / teleprompter UI", () => {
     expect(source).toContain('variant="immersive"');
     expect(source).toContain("autoOpenCamera");
     expect(source).toContain('presentation="studio"');
-    expect(source).toContain("PreSnapEditBar");
+    expect(source).toContain("ULTRA_CLEAR_CAMERA_LOOK");
+    expect(source).toContain("ultraClear");
+    expect(source).not.toContain("PreSnapEditBar");
   });
 
   it("media review preview fills the immersive shell", () => {
