@@ -85,6 +85,7 @@ export const getAdminOverview = query({
         priceGhs: l.priceGhs,
         purchaseCount: l.purchaseCount,
         hasFile: Boolean(l.fileStorageId),
+        fileReviewStatus: l.fileReviewStatus ?? null,
         createdAt: l.createdAt,
       })),
       listingStats: {
@@ -95,7 +96,32 @@ export const getAdminOverview = query({
         publishedWithoutFile: listings.filter(
           (l) => l.status === "published" && !l.fileStorageId
         ).length,
+        pendingFileReview: listings.filter((l) => l.fileReviewStatus === "pending").length,
       },
+      pendingFileReviews: listings
+        .filter((l) => l.fileReviewStatus === "pending" && l.fileStorageId)
+        .map((l) => ({
+          _id: l._id,
+          title: l.title,
+          creatorId: l.creatorId,
+          fileName: l.fileName ?? null,
+          status: l.status,
+          updatedAt: l.updatedAt,
+        })),
+      openReports: (
+        await ctx.db
+          .query("marketplaceListingReports")
+          .withIndex("by_status", (q) => q.eq("status", "open"))
+          .order("desc")
+          .take(50)
+      ).map((r) => ({
+        _id: r._id,
+        listingId: r.listingId,
+        reporterId: r.reporterId,
+        reason: r.reason,
+        details: r.details ?? null,
+        createdAt: r.createdAt,
+      })),
       recentSales: successful
         .filter((p) => p.type === "marketplace")
         .slice(0, 20)
@@ -145,6 +171,61 @@ export const setPayoutStatus = mutation({
       reference: args.reference?.trim() || payout.reference,
       updatedAt: Date.now(),
     });
+    return { ok: true as const };
+  },
+});
+
+/** Approve or reject a seller PDF before it can be sold. */
+export const setListingFileReview = mutation({
+  args: {
+    ...adminCredentialArgs,
+    listingId: v.id("marketplaceListings"),
+    status: v.union(v.literal("approved"), v.literal("rejected")),
+  },
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    const listing = await ctx.db.get(args.listingId);
+    if (!listing) throw new Error("Listing not found");
+    if (!listing.fileStorageId) throw new Error("No file attached");
+
+    const now = Date.now();
+    if (args.status === "approved") {
+      await ctx.db.patch(args.listingId, {
+        fileReviewStatus: "approved",
+        updatedAt: now,
+      });
+    } else {
+      await ctx.db.patch(args.listingId, {
+        fileReviewStatus: "rejected",
+        fileStorageId: undefined,
+        fileName: undefined,
+        status: listing.status === "published" ? "draft" : listing.status,
+        updatedAt: now,
+      });
+    }
+    return { ok: true as const };
+  },
+});
+
+/** Resolve a buyer report on a listing. */
+export const resolveListingReport = mutation({
+  args: {
+    ...adminCredentialArgs,
+    reportId: v.id("marketplaceListingReports"),
+    status: v.union(v.literal("reviewed"), v.literal("dismissed")),
+    archiveListing: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    const report = await ctx.db.get(args.reportId);
+    if (!report) throw new Error("Report not found");
+
+    const now = Date.now();
+    await ctx.db.patch(args.reportId, { status: args.status });
+
+    if (args.archiveListing) {
+      await ctx.db.patch(report.listingId, { status: "archived", updatedAt: now });
+    }
     return { ok: true as const };
   },
 });

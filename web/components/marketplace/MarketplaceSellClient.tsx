@@ -4,9 +4,9 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import {
-  LICENSE_TYPES,
-  MARKETPLACE_CATEGORIES,
-  PRODUCT_TYPES,
+  SIMPLE_CATEGORIES,
+  SIMPLE_LICENSE_TYPES,
+  SIMPLE_PRODUCT_TYPES,
   formatGhs,
 } from "@/lib/marketplace/catalog";
 import { getSessionToken } from "@/lib/auth";
@@ -21,7 +21,6 @@ import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { CreatorNewsHub } from "@/components/marketplace/CreatorNewsHub";
 
 function RevenueStatsSkeleton() {
   return (
@@ -60,13 +59,14 @@ function MarketplaceSellInner() {
     sessionToken ? { sessionToken } : "skip"
   );
   const uploadStatus = useQuery(api.marketplace.getUploadStatus, {});
-  const uploadsEnabled = uploadStatus?.enabled === true;
 
   const upsertProfile = useMutation(api.creatorProfiles.upsertProfile);
   const submitCreatorVerification = useMutation(api.creatorProfiles.submitCreatorVerification);
+  const generateVerificationUploadUrl = useMutation(api.creatorProfiles.generateVerificationUploadUrl);
   const createListing = useMutation(api.marketplace.createListing);
-  const attachFile = useMutation(api.marketplace.attachListingFile);
-  const generateUploadUrl = useMutation(api.marketplace.generateUploadUrl);
+  const updateListing = useMutation(api.marketplace.updateListing);
+  const prepareListingUpload = useMutation(api.marketplaceUploadIntents.prepareListingUpload);
+  const completeListingUpload = useMutation(api.marketplaceUploadIntents.completeListingUpload);
   const requestPayout = useMutation(api.marketplace.requestPayout);
 
   const [displayName, setDisplayName] = useState("");
@@ -74,8 +74,8 @@ function MarketplaceSellInner() {
   const [bio, setBio] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<string>(MARKETPLACE_CATEGORIES[0]);
-  const [productType, setProductType] = useState<string>(PRODUCT_TYPES[0].id);
+  const [category, setCategory] = useState<string>(SIMPLE_CATEGORIES[0]);
+  const [productType, setProductType] = useState<string>(SIMPLE_PRODUCT_TYPES[0].id);
   const [priceGhs, setPriceGhs] = useState(20);
   const [license, setLicense] = useState("personal");
   const [tags, setTags] = useState("");
@@ -125,8 +125,8 @@ function MarketplaceSellInner() {
     setMessage("Profile saved.");
   }
 
-  async function uploadToStorage(file: File): Promise<Id<"_storage">> {
-    const uploadUrl = await generateUploadUrl({ sessionToken });
+  async function uploadVerificationDocument(file: File): Promise<Id<"_storage">> {
+    const uploadUrl = await generateVerificationUploadUrl({ sessionToken });
     const res = await fetch(uploadUrl, {
       method: "POST",
       headers: { "Content-Type": file.type || "application/octet-stream" },
@@ -136,8 +136,96 @@ function MarketplaceSellInner() {
     return storageId as Id<"_storage">;
   }
 
+  async function uploadViaIntent(
+    listingId: Id<"marketplaceListings">,
+    file: File,
+    purpose: "product_file" | "cover_image"
+  ) {
+    const prep = await prepareListingUpload({
+      sessionToken,
+      listingId,
+      purpose,
+      fileName: file.name,
+      contentType:
+        file.type ||
+        (purpose === "product_file" ? "application/pdf" : "image/jpeg"),
+      fileSizeBytes: file.size,
+    });
+    const res = await fetch(prep.uploadUrl, {
+      method: "POST",
+      headers: { "Content-Type": file.type || "application/octet-stream" },
+      body: file,
+    });
+    if (!res.ok) throw new Error("Upload failed");
+    const { storageId } = await res.json();
+    return completeListingUpload({
+      sessionToken,
+      intentId: prep.intentId,
+      storageId: storageId as Id<"_storage">,
+    });
+  }
+
+  async function saveListing(asDraft: boolean) {
+    setError(null);
+    setPublishing(true);
+    try {
+      const listingId = await createListing({
+        sessionToken,
+        title,
+        description,
+        category,
+        productType: productType as any,
+        priceGhs,
+        license: license as any,
+        copyrightNotice: copyrightNotice || undefined,
+        tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+        previewText: previewText || undefined,
+        coverImageUrl: coverImageUrl.trim() || undefined,
+      });
+
+      if (coverImageFile) {
+        await uploadViaIntent(listingId, coverImageFile, "cover_image");
+      }
+      if (productFile) {
+        const uploadResult = await uploadViaIntent(listingId, productFile, "product_file");
+        setMessage(uploadResult.message);
+      }
+
+      if (!asDraft) {
+        await updateListing({ sessionToken, listingId, status: "published" });
+        setMessage("Published — buyers can pay once your PDF is admin-approved.");
+      } else if (!productFile) {
+        setMessage("Draft saved. Upload a PDF under Your listings when ready.");
+      }
+
+      setTitle("");
+      setDescription("");
+      setCoverImageFile(null);
+      setProductFile(null);
+      setCoverImageUrl("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save listing.");
+    } finally {
+      setPublishing(false);
+    }
+  }
+
+  async function uploadFile(listingId: Id<"marketplaceListings">, file: File) {
+    const result = await uploadViaIntent(listingId, file, "product_file");
+    setMessage(result.message);
+  }
+
+  async function publishExistingListing(listingId: Id<"marketplaceListings">) {
+    setError(null);
+    try {
+      await updateListing({ sessionToken, listingId, status: "published" });
+      setMessage("Listing published.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not publish listing.");
+    }
+  }
   async function uploadIdDocument(file: File): Promise<Id<"_storage">> {
-    return uploadToStorage(file);
+    return uploadVerificationDocument(file);
   }
 
   async function handleCaptureLocation() {
@@ -195,74 +283,6 @@ function MarketplaceSellInner() {
     setIdDocumentFile(file);
   }
 
-  async function publishListing() {
-    setError(null);
-    setPublishing(true);
-    try {
-      let coverStorageId: Id<"_storage"> | undefined;
-      if (coverImageFile && !uploadsEnabled) {
-        throw new Error("Seller file uploads are not available yet.");
-      }
-      if (coverImageFile) {
-        coverStorageId = await uploadToStorage(coverImageFile);
-      }
-
-      const listingId = await createListing({
-        sessionToken,
-        title,
-        description,
-        category,
-        productType: productType as any,
-        priceGhs,
-        license: license as any,
-        copyrightNotice: copyrightNotice || undefined,
-        tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
-        previewText: previewText || undefined,
-        coverImageUrl: coverImageUrl.trim() || undefined,
-        coverStorageId,
-        publish: true,
-      });
-
-      if (productFile && !uploadsEnabled) {
-        throw new Error("Seller file uploads are not available yet.");
-      }
-      if (productFile) {
-        await attachFile({
-          sessionToken,
-          listingId,
-          storageId: await uploadToStorage(productFile),
-          fileName: productFile.name,
-        });
-        setMessage("Published with product file attached — ready to sell.");
-      } else {
-        setMessage(
-          "Published! Attach the downloadable file under “Your listings” if you have not uploaded one yet."
-        );
-      }
-
-      setTitle("");
-      setDescription("");
-      setCoverImageFile(null);
-      setProductFile(null);
-      setCoverImageUrl("");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not publish listing.");
-    } finally {
-      setPublishing(false);
-    }
-  }
-
-  async function uploadFile(listingId: Id<"marketplaceListings">, file: File) {
-    const storageId = await uploadToStorage(file);
-    await attachFile({
-      sessionToken,
-      listingId,
-      storageId,
-      fileName: file.name,
-    });
-    setMessage(`File attached to listing.`);
-  }
-
   return (
     <Container className="discover-stable py-8 sm:py-12">
       <div className="mx-auto max-w-5xl space-y-10">
@@ -271,11 +291,11 @@ function MarketplaceSellInner() {
             <div className="max-w-xl">
               <p className="text-sm font-medium text-emerald-200">Creator studio</p>
               <h1 className="mt-2 font-serif text-3xl tracking-tight text-white sm:text-4xl">
-                Sell products buyers trust
+                Sell digital products
               </h1>
               <p className="mt-2 text-sm text-emerald-100/90">
-                Publish eBooks, templates, and packs with verification, covers, and Paystack
-                delivery — then track payouts in one place.
+                Verify once, upload a PDF, set a price in GHS — buyers pay through Paystack and
+                download from their library.
               </p>
               <p className="mt-2 text-xs text-emerald-200/70">{formatCurrentDateTime()}</p>
             </div>
@@ -422,7 +442,8 @@ function MarketplaceSellInner() {
 
           {verificationStatus === "pending" && (
             <p className="mt-4 text-sm text-muted">
-              Your documents and coordinates are under review. You can create draft listings once approved.
+              Verification is under review. You can save drafts now; publishing unlocks after
+              approval.
             </p>
           )}
 
@@ -433,20 +454,21 @@ function MarketplaceSellInner() {
           )}
         </section>
 
-        <CreatorNewsHub sessionToken={sessionToken} />
-
         <section className="rounded-2xl border bg-card p-6">
-          <h2 className="font-serif text-xl font-semibold">New listing</h2>
+          <h2 className="font-serif text-xl font-semibold">New product</h2>
           <p className="mt-2 text-sm text-muted">
-            Lead with a sharp cover, a benefit-first description, and a ready-to-download file.
-            Tip: the official Creator Academy series are priced at GHS 150.00 each — a clear
-            premium reference for comprehensive guides.
+            PDFs and digital guides work best. Official Creator Academy guides are GHS 150 each.
           </p>
-          {(verificationStatus !== "pending" && verificationStatus !== "approved") && (
+          {verificationStatus === "none" || verificationStatus === "rejected" ? (
             <p className="mt-2 text-sm text-amber-700">
-              Complete identity verification above before publishing products.
+              Complete identity verification above before creating listings.
             </p>
-          )}
+          ) : null}
+          {verificationStatus === "pending" ? (
+            <p className="mt-2 text-sm text-amber-700">
+              Save drafts while pending. Publishing requires admin approval.
+            </p>
+          ) : null}
           <div className="mt-4 grid gap-4">
             <input
               value={title}
@@ -463,17 +485,17 @@ function MarketplaceSellInner() {
             />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <select value={category} onChange={(e) => setCategory(e.target.value as any)} className="rounded-xl border px-4 py-3">
-                {MARKETPLACE_CATEGORIES.map((c) => (
+                {SIMPLE_CATEGORIES.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
               <select value={productType} onChange={(e) => setProductType(e.target.value)} className="rounded-xl border px-4 py-3">
-                {PRODUCT_TYPES.map((t) => (
+                {SIMPLE_PRODUCT_TYPES.map((t) => (
                   <option key={t.id} value={t.id}>{t.label}</option>
                 ))}
               </select>
               <select value={license} onChange={(e) => setLicense(e.target.value)} className="rounded-xl border px-4 py-3">
-                {LICENSE_TYPES.map((l) => (
+                {SIMPLE_LICENSE_TYPES.map((l) => (
                   <option key={l.id} value={l.id}>{l.label}</option>
                 ))}
               </select>
@@ -520,37 +542,48 @@ function MarketplaceSellInner() {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                disabled={!uploadsEnabled}
+                disabled={verificationStatus !== "approved"}
                 onChange={(e) => setCoverImageFile(e.target.files?.[0] ?? null)}
               />
             </label>
             <label className="flex cursor-pointer flex-col gap-2 rounded-xl border border-dashed px-4 py-4 text-sm">
-              <span className="font-medium">Product file upload</span>
+              <span className="font-medium">Product PDF</span>
               <span className="text-muted">
-                {productFile?.name ??
-                  "eBook, template, audio, or zip — attach now or after publishing"}
+                {productFile?.name ?? "PDF only, max 25 MB — admin reviews before sales go live"}
               </span>
               <input
                 type="file"
+                accept="application/pdf,.pdf"
                 className="hidden"
-                disabled={!uploadsEnabled}
+                disabled={verificationStatus !== "approved"}
                 onChange={(e) => setProductFile(e.target.files?.[0] ?? null)}
               />
             </label>
             <p className="text-sm text-muted">
-              {uploadsEnabled
-                ? "Upload your product file here or attach it later under “Your listings”. Buyers cannot purchase until a file is attached."
-                : "Seller uploads are coming soon. Existing Marketplace purchases and downloads are unchanged."}
+              {uploadStatus?.requiresAdminReview
+                ? "PDFs are reviewed by Giga3 before buyers can purchase. Paystack checkout stays fraud-safe."
+                : "Upload a PDF after verification is approved."}
             </p>
-            <Button
-              onClick={publishListing}
-              disabled={
-                publishing ||
-                (verificationStatus !== "pending" && verificationStatus !== "approved")
-              }
-            >
-              {publishing ? "Publishing…" : "Publish listing"}
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => saveListing(true)}
+                disabled={
+                  publishing ||
+                  (verificationStatus !== "pending" && verificationStatus !== "approved")
+                }
+              >
+                {publishing ? "Saving…" : "Save draft"}
+              </Button>
+              <Button
+                type="button"
+                onClick={() => saveListing(false)}
+                disabled={publishing || verificationStatus !== "approved" || !productFile}
+              >
+                {publishing ? "Publishing…" : "Publish"}
+              </Button>
+            </div>
           </div>
         </section>
 
@@ -570,29 +603,45 @@ function MarketplaceSellInner() {
                           : ""}
                       </p>
                       <p className="mt-1 text-xs">
-                        {listing.hasFile ? (
-                          <span className="text-emerald-600">
-                            ✓ File attached — ready to sell
-                          </span>
+                        {!listing.hasFile ? (
+                          <span className="text-amber-600">⚠ Upload a PDF to sell</span>
+                        ) : listing.fileReviewLabel === "pending" ? (
+                          <span className="text-amber-600">⏳ PDF awaiting admin review</span>
+                        ) : listing.fileReviewLabel === "rejected" ? (
+                          <span className="text-red-600">✗ PDF rejected — upload again</span>
+                        ) : listing.purchaseReady ? (
+                          <span className="text-emerald-600">✓ Live — ready to sell</span>
                         ) : (
-                          <span className="text-amber-600">
-                            ⚠ No file yet — not purchasable until you attach one
-                          </span>
+                          <span className="text-emerald-600">✓ PDF approved — publish when ready</span>
                         )}
                       </p>
                     </div>
-                    <label className="cursor-pointer rounded-xl border px-4 py-2 text-sm">
-                      Attach file
-                      <input
-                        type="file"
-                        className="hidden"
-                        disabled={!uploadsEnabled}
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) void uploadFile(listing._id, file);
-                        }}
-                      />
-                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {listing.status === "draft" &&
+                        listing.fileReviewLabel === "approved" && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => publishExistingListing(listing._id)}
+                          >
+                            Publish
+                          </Button>
+                        )}
+                      <label className="cursor-pointer rounded-xl border px-4 py-2 text-sm">
+                        Upload PDF
+                        <input
+                          type="file"
+                          accept="application/pdf,.pdf"
+                          className="hidden"
+                          disabled={verificationStatus !== "approved"}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) void uploadFile(listing._id, file);
+                          }}
+                        />
+                      </label>
+                    </div>
                   </div>
                 </article>
               ))}

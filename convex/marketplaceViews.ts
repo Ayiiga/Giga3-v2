@@ -1,4 +1,8 @@
 import type { Doc } from "./_generated/dataModel";
+import {
+  isListingFileApproved,
+  listingFileReviewLabel,
+} from "./marketplaceListingHelpers";
 
 type ListingDoc = Doc<"marketplaceListings">;
 type ReviewDoc = Doc<"marketplaceReviews">;
@@ -10,6 +14,8 @@ export type PublicMarketplaceListing = Omit<
   "fileStorageId" | "creatorId"
 > & {
   hasFile: boolean;
+  purchaseReady: boolean;
+  fileReviewLabel: ReturnType<typeof listingFileReviewLabel>;
 };
 
 export type PublicMarketplaceReview = Omit<ReviewDoc, "buyerId">;
@@ -31,6 +37,8 @@ export function toPublicListing(listing: ListingDoc): PublicMarketplaceListing {
   return {
     ...rest,
     hasFile: Boolean(fileStorageId),
+    purchaseReady: listing.status === "published" && isListingFileApproved(listing),
+    fileReviewLabel: listingFileReviewLabel(listing),
   };
 }
 
@@ -60,5 +68,7 @@ export function toCreatorListing(listing: ListingDoc) {
   return {
     ...listing,
     hasFile: Boolean(listing.fileStorageId),
+    purchaseReady: listing.status === "published" && isListingFileApproved(listing),
+    fileReviewLabel: listingFileReviewLabel(listing),
   };
 }

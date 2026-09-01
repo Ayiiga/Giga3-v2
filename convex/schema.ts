@@ -71,6 +71,19 @@ export const marketplaceLicenseValidator = v.union(
   v.literal("exclusive")
 );
 
+export const marketplaceFileReviewStatusValidator = v.union(
+  v.literal("pending"),
+  v.literal("approved"),
+  v.literal("rejected")
+);
+
+export const marketplaceReportReasonValidator = v.union(
+  v.literal("scam"),
+  v.literal("copyright"),
+  v.literal("misleading"),
+  v.literal("other")
+);
+
 export const socialPostTypeValidator = v.union(
   v.literal("text"),
   v.literal("image"),
@@ -627,6 +640,7 @@ export default defineSchema({
     coverImageUrl: v.optional(v.string()),
     fileStorageId: v.optional(v.id("_storage")),
     fileName: v.optional(v.string()),
+    fileReviewStatus: v.optional(marketplaceFileReviewStatusValidator),
     status: v.union(
       v.literal("draft"),
       v.literal("published"),
@@ -642,6 +656,41 @@ export default defineSchema({
     .index("by_creator", ["creatorId", "updatedAt"])
     .index("by_status", ["status", "updatedAt"])
     .index("by_category", ["category", "updatedAt"]),
+
+  marketplaceUploadIntents: defineTable({
+    ownerId: v.string(),
+    listingId: v.id("marketplaceListings"),
+    purpose: v.union(v.literal("product_file"), v.literal("cover_image")),
+    fileName: v.string(),
+    contentType: v.string(),
+    maxBytes: v.number(),
+    expiresAt: v.number(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("uploaded"),
+      v.literal("approved"),
+      v.literal("rejected"),
+      v.literal("expired")
+    ),
+    storageId: v.optional(v.id("_storage")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_owner", ["ownerId", "createdAt"])
+    .index("by_listing", ["listingId", "createdAt"])
+    .index("by_status", ["status", "createdAt"]),
+
+  marketplaceListingReports: defineTable({
+    listingId: v.id("marketplaceListings"),
+    reporterId: v.string(),
+    reason: marketplaceReportReasonValidator,
+    details: v.optional(v.string()),
+    status: v.union(v.literal("open"), v.literal("reviewed"), v.literal("dismissed")),
+    createdAt: v.number(),
+  })
+    .index("by_listing", ["listingId", "createdAt"])
+    .index("by_reporter_listing", ["reporterId", "listingId"])
+    .index("by_status", ["status", "createdAt"]),
 
   marketplacePurchases: defineTable({
     buyerId: v.string(),

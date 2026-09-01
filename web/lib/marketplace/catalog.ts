@@ -34,6 +34,25 @@ export const LICENSE_TYPES = [
   { id: "exclusive", label: "Exclusive license" },
 ] as const;
 
+/** Shown in seller UI — keep the marketplace simple for v1. */
+export const SIMPLE_PRODUCT_TYPES = PRODUCT_TYPES.filter((t) =>
+  (["ebook", "template", "educational_resource", "business_document", "other"] as const).includes(
+    t.id as (typeof PRODUCT_TYPES)[number]["id"]
+  )
+);
+
+export const SIMPLE_LICENSE_TYPES = LICENSE_TYPES.filter((l) =>
+  (["personal", "commercial"] as const).includes(l.id)
+);
+
+export const SIMPLE_CATEGORIES = [
+  "Education",
+  "Business",
+  "Technology",
+  "Marketing",
+  "Faith & Inspiration",
+] as const;
+
 export function formatGhs(amount: number): string {
   return `GHS ${amount.toLocaleString()}`;
 }

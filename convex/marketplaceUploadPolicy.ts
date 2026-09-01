@@ -15,6 +15,11 @@ export function assertMarketplaceUploadsEnabled(): void {
   }
 }
 
+/** Identity verification uploads are always server-gated by session + profile status, not the product upload flag. */
+export function verificationUploadsAllowed(): boolean {
+  return true;
+}
+
 /** Contract for the future server-owned prepare → upload → finalize boundary. */
 export interface MarketplaceUploadIntent {
   ownerId: string;

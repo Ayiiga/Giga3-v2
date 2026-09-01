@@ -42,6 +42,8 @@ function AdminInner() {
   );
   const setPayoutStatus = useMutation(api.adminMarketplace.setPayoutStatus);
   const setListingStatus = useMutation(api.adminMarketplace.setListingStatus);
+  const setListingFileReview = useMutation(api.adminMarketplace.setListingFileReview);
+  const resolveListingReport = useMutation(api.adminMarketplace.resolveListingReport);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -247,13 +249,141 @@ function AdminInner() {
         )}
       </section>
 
+      {overview.pendingFileReviews.length > 0 && (
+        <section>
+          <h2 className="mb-4 text-lg font-semibold">PDF review queue</h2>
+          <div className="space-y-3">
+            {overview.pendingFileReviews.map(
+              (item: NonNullable<typeof overview>["pendingFileReviews"][number]) => (
+                <article
+                  key={item._id}
+                  className="flex flex-col gap-3 rounded-2xl border bg-card p-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">{item.title}</div>
+                    <div className="text-sm text-muted">
+                      {item.creatorId} · {item.fileName ?? "PDF"} · {item.status}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      disabled={busy === `file-${item._id}`}
+                      onClick={() =>
+                        void run(
+                          `file-${item._id}`,
+                          () =>
+                            setListingFileReview({
+                              ...adminCreds!,
+                              listingId: item._id as Id<"marketplaceListings">,
+                              status: "approved",
+                            }),
+                          "PDF approved."
+                        )
+                      }
+                    >
+                      Approve PDF
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={busy === `file-${item._id}`}
+                      onClick={() =>
+                        void run(
+                          `file-${item._id}`,
+                          () =>
+                            setListingFileReview({
+                              ...adminCreds!,
+                              listingId: item._id as Id<"marketplaceListings">,
+                              status: "rejected",
+                            }),
+                          "PDF rejected."
+                        )
+                      }
+                    >
+                      Reject PDF
+                    </Button>
+                  </div>
+                </article>
+              )
+            )}
+          </div>
+        </section>
+      )}
+
+      {overview.openReports.length > 0 && (
+        <section>
+          <h2 className="mb-4 text-lg font-semibold">Listing reports</h2>
+          <div className="space-y-3">
+            {overview.openReports.map(
+              (report: NonNullable<typeof overview>["openReports"][number]) => (
+                <article
+                  key={report._id}
+                  className="flex flex-col gap-3 rounded-2xl border bg-card p-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <div className="font-medium capitalize">{report.reason.replace(/_/g, " ")}</div>
+                    <div className="text-sm text-muted">
+                      Listing {report.listingId} · reporter {report.reporterId}
+                    </div>
+                    {report.details ? (
+                      <p className="mt-1 text-sm text-muted">{report.details}</p>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={busy === report._id}
+                      onClick={() =>
+                        void run(
+                          report._id,
+                          () =>
+                            resolveListingReport({
+                              ...adminCreds!,
+                              reportId: report._id as Id<"marketplaceListingReports">,
+                              status: "dismissed",
+                            }),
+                          "Report dismissed."
+                        )
+                      }
+                    >
+                      Dismiss
+                    </Button>
+                    <Button
+                      size="sm"
+                      disabled={busy === report._id}
+                      onClick={() =>
+                        void run(
+                          report._id,
+                          () =>
+                            resolveListingReport({
+                              ...adminCreds!,
+                              reportId: report._id as Id<"marketplaceListingReports">,
+                              status: "reviewed",
+                              archiveListing: true,
+                            }),
+                          "Report reviewed — listing archived."
+                        )
+                      }
+                    >
+                      Archive listing
+                    </Button>
+                  </div>
+                </article>
+              )
+            )}
+          </div>
+        </section>
+      )}
+
       <section>
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <h2 className="text-lg font-semibold">Listing moderation</h2>
           <span className="text-sm text-muted">
             {overview.listingStats.published} published · {overview.listingStats.draft} draft ·{" "}
             {overview.listingStats.archived} archived ·{" "}
-            {overview.listingStats.publishedWithoutFile} published w/o file
+            {overview.listingStats.pendingFileReview} PDFs pending review
           </span>
         </div>
         <div className="space-y-3">

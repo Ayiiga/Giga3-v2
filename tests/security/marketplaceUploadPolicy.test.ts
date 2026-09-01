@@ -25,9 +25,13 @@ describe("marketplace upload safety gate", () => {
     expect(intent.status).toBe("pending");
   });
 
-  it("enforces the server gate before raw upload URLs and attachment", () => {
+  it("enforces intent-based uploads instead of legacy env gate on attach", () => {
     const source = readFileSync(resolve(__dirname, "../../convex/marketplace.ts"), "utf8");
-    expect(source).toMatch(/generateUploadUrl[\s\S]*?assertMarketplaceUploadsEnabled/);
-    expect(source).toMatch(/attachListingFile[\s\S]*?assertMarketplaceUploadsEnabled/);
+    expect(source).toMatch(/prepareListingUpload and completeListingUpload/);
+    const intents = readFileSync(
+      resolve(__dirname, "../../convex/marketplaceUploadIntents.ts"),
+      "utf8"
+    );
+    expect(intents).toContain("prepareListingUpload");
   });
 });

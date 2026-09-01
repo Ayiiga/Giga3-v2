@@ -7,14 +7,13 @@ import { Container } from "@/components/ui/Container";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import { MARKETPLACE_CATEGORIES, PRODUCT_TYPES, formatGhs } from "@/lib/marketplace/catalog";
+import { SIMPLE_CATEGORIES, formatGhs } from "@/lib/marketplace/catalog";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
-import { ArrowUpDown, BadgeCheck, Search, ShoppingBag, Sparkles, Store } from "lucide-react";
+import { BadgeCheck, Search, ShieldCheck, ShoppingBag, Store } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect } from "react";
 
 function MarketplaceBrowseInner() {
   const searchParams = useSearchParams();
@@ -22,8 +21,8 @@ function MarketplaceBrowseInner() {
   const [query, setQuery] = useState(initialQ);
   const debouncedQuery = useDebouncedValue(query, 300);
   const [category, setCategory] = useState<string>("");
-  const [productType, setProductType] = useState<string>("");
-  const [sort, setSort] = useState<"newest" | "price-low" | "price-high" | "rating">("newest");
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [sort, setSort] = useState<"newest" | "price-low" | "price-high">("newest");
 
   useEffect(() => {
     const q = searchParams.get("q");
@@ -35,82 +34,65 @@ function MarketplaceBrowseInner() {
   const listings = useQuery(api.marketplace.searchListings, {
     query: debouncedQuery || undefined,
     category: category || undefined,
-    productType: (productType || undefined) as any,
+    verifiedOnly: verifiedOnly || undefined,
     limit: 40,
   });
-
-  const typeLabel = useMemo(() => {
-    const map = new Map(PRODUCT_TYPES.map((t) => [t.id, t.label]));
-    return (id: string) => map.get(id as any) ?? id;
-  }, []);
 
   const sortedListings = useMemo(() => {
     if (!listings) return listings;
     return [...listings].sort((a, b) => {
       if (sort === "price-low") return a.priceGhs - b.priceGhs;
       if (sort === "price-high") return b.priceGhs - a.priceGhs;
-      if (sort === "rating") {
-        return b.ratingAvg - a.ratingAvg || b.ratingCount - a.ratingCount;
-      }
       return 0;
     });
   }, [listings, sort]);
 
   return (
     <Container className="discover-stable py-8 sm:py-12">
-      <div className="mx-auto max-w-6xl space-y-10">
-        <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-          <div className="max-w-2xl">
-            <p className="mb-2 inline-flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-300">
-              <Store className="h-4 w-4" aria-hidden />
-              Giga3 Marketplace
-            </p>
-            <h1 className="page-title font-serif tracking-tight">
-              Buy. Pay. Download.
-            </h1>
-            <p className="mt-3 text-muted">
-              Simple digital products for Giga3 creators — eBooks, templates, and packs.
-              Paystack in GHS. Files unlock only after a successful payment.
-            </p>
+      <div className="mx-auto max-w-5xl space-y-8">
+        <header className="space-y-4">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-2xl">
+              <p className="mb-2 inline-flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-300">
+                <Store className="h-4 w-4" aria-hidden />
+                Giga3 Marketplace
+              </p>
+              <h1 className="page-title font-serif tracking-tight">Buy. Pay. Download.</h1>
+              <p className="mt-2 text-muted">
+                Digital guides and templates in GHS. Pay with Paystack — your file unlocks only
+                after payment.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <ButtonLink href="/marketplace/purchases" variant="secondary">
+                My purchases
+              </ButtonLink>
+              <ButtonLink href="/marketplace/sell">
+                <ShoppingBag className="mr-2 h-4 w-4" aria-hidden />
+                Sell
+              </ButtonLink>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <ButtonLink href="/marketplace/purchases" variant="secondary">
-              My purchases
-            </ButtonLink>
-            <ButtonLink href="/marketplace/sell">
-              <ShoppingBag className="mr-2 h-4 w-4" aria-hidden />
-              Sell on Giga3
-            </ButtonLink>
+
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-emerald-800/15 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-100">
+            <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden />
+            <span>
+              Paystack checkout only. Never pay sellers outside the app. Prefer{" "}
+              <strong>Verified</strong> creators.
+            </span>
           </div>
         </header>
 
         <CreatorAcademySection />
 
-        <section
-          className="rounded-3xl border border-border bg-card/80 px-5 py-5 sm:px-6"
-          aria-label="Safe buying"
-        >
-          <div className="flex items-start gap-3">
-            <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" aria-hidden />
-            <div>
-              <h2 className="font-serif text-xl text-foreground">Fraud-free by design</h2>
-              <p className="mt-1 max-w-3xl text-sm text-muted">
-                Checkout only through Paystack. Downloads require a signed-in buyer account
-                with a recorded purchase. Prefer Verified sellers. Never pay sellers outside
-                the app for Marketplace items.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto_auto]">
-          <div className="relative flex items-center">
-            <Search className="pointer-events-none absolute left-3 h-4 w-4 text-muted" aria-hidden />
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted" aria-hidden />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search titles, tags, descriptions…"
-              aria-label="Search marketplace listings"
+              placeholder="Search products…"
+              aria-label="Search marketplace"
               className="w-full rounded-xl border border-border bg-card py-3 pl-10 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/30"
             />
           </div>
@@ -121,39 +103,30 @@ function MarketplaceBrowseInner() {
             aria-label="Category"
           >
             <option value="">All categories</option>
-            {MARKETPLACE_CATEGORIES.map((c) => (
+            {SIMPLE_CATEGORIES.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
             ))}
           </select>
           <select
-            value={productType}
-            onChange={(e) => setProductType(e.target.value)}
+            value={sort}
+            onChange={(e) => setSort(e.target.value as typeof sort)}
             className="rounded-xl border border-border bg-card px-4 py-3"
-            aria-label="Product type"
+            aria-label="Sort"
           >
-            <option value="">All types</option>
-            {PRODUCT_TYPES.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
-              </option>
-            ))}
+            <option value="newest">Newest</option>
+            <option value="price-low">Price: low → high</option>
+            <option value="price-high">Price: high → low</option>
           </select>
-          <label className="relative">
-            <span className="sr-only">Sort listings</span>
-            <ArrowUpDown className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted" aria-hidden />
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as typeof sort)}
-              className="w-full rounded-xl border border-border bg-card py-3 pl-9 pr-4"
-              aria-label="Sort listings"
-            >
-              <option value="newest">Newest</option>
-              <option value="price-low">Price: low to high</option>
-              <option value="price-high">Price: high to low</option>
-              <option value="rating">Top rated</option>
-            </select>
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm">
+            <input
+              type="checkbox"
+              checked={verifiedOnly}
+              onChange={(e) => setVerifiedOnly(e.target.checked)}
+              className="rounded"
+            />
+            Verified only
           </label>
         </div>
 
@@ -162,57 +135,47 @@ function MarketplaceBrowseInner() {
         ) : sortedListings.length === 0 ? (
           <EmptyState
             icon={Store}
-            title="No listings found"
-            description="Try a different search — or publish the first product from the creator dashboard."
+            title="No products found"
+            description="Try another search, or browse the Creator Academy guides above."
           />
         ) : (
-          <div className="discover-card-grid discover-card-grid--3">
+          <div className="grid gap-4 sm:grid-cols-2">
             {sortedListings.map((item: NonNullable<typeof sortedListings>[number]) => (
               <Link
                 key={item._id}
                 href={`/marketplace/item/?id=${item._id}`}
-                className="saas-card group block rounded-2xl p-5 hover:border-emerald-600/35"
+                className="saas-card group flex gap-4 rounded-2xl p-4 hover:border-emerald-600/35"
               >
                 {item.coverImageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={item.coverImageUrl}
-                    alt={item.title}
+                    alt=""
                     loading="lazy"
-                    className="mb-4 aspect-[4/3] w-full rounded-xl object-cover"
+                    className="h-24 w-20 shrink-0 rounded-xl object-cover"
                   />
                 ) : (
-                  <div className="mb-4 flex aspect-[4/3] flex-col items-center justify-center gap-1 rounded-xl bg-gradient-to-br from-emerald-950/10 to-emerald-700/10 text-sm text-muted dark:from-emerald-400/10 dark:to-emerald-900/20">
-                    <span className="text-xs font-semibold uppercase tracking-wide">
-                      {typeLabel(item.productType)}
-                    </span>
-                    <span className="px-3 text-center text-xs line-clamp-2">{item.title}</span>
+                  <div className="flex h-24 w-20 shrink-0 items-center justify-center rounded-xl bg-emerald-950/5 text-[10px] font-semibold uppercase text-muted">
+                    PDF
                   </div>
                 )}
-                <div className="flex items-start justify-between gap-2">
-                  <h2 className="line-clamp-2 font-serif text-lg font-semibold group-hover:text-emerald-800 dark:group-hover:text-emerald-300">
-                    {item.title}
-                  </h2>
-                  <span className="shrink-0 font-bold tabular-nums">
-                    {formatGhs(item.priceGhs)}
-                  </span>
-                </div>
-                <p className="mt-2 line-clamp-2 text-sm text-muted">{item.description}</p>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
-                  <span>{item.category}</span>
-                  {item.creator?.verified ? (
-                    <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
-                      <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
-                      Verified
-                    </span>
-                  ) : (
-                    <span>Seller</span>
-                  )}
-                  {item.ratingCount > 0 ? (
-                    <span>
-                      ★ {item.ratingAvg.toFixed(1)} ({item.ratingCount})
-                    </span>
-                  ) : null}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <h2 className="line-clamp-2 font-serif text-lg font-semibold group-hover:text-emerald-800 dark:group-hover:text-emerald-300">
+                      {item.title}
+                    </h2>
+                    <span className="shrink-0 font-bold tabular-nums">{formatGhs(item.priceGhs)}</span>
+                  </div>
+                  <p className="mt-1 line-clamp-2 text-sm text-muted">{item.description}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted">
+                    <span>{item.category}</span>
+                    {item.creator?.verified ? (
+                      <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
+                        <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
+                        Verified
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
               </Link>
             ))}
