@@ -15,6 +15,7 @@ import {
 } from "./gigaSocialViews";
 
 const MAX_SITEMAP_LISTINGS = 500;
+/** Build-time and crawler SEO bundles for public Marketplace and GigaSocial pages. */
 const MAX_SITEMAP_POSTS = 300;
 const MAX_SITEMAP_PROFILES = 300;
 
