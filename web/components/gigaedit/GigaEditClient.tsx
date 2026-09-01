@@ -136,7 +136,9 @@ export function GigaEditClient() {
           autoImport={autoImport}
         />
       )}
-      {section === "teleprompter" && <TeleprompterStudio focusRecord={focusRecord} />}
+      {section === "teleprompter" && (
+        <TeleprompterStudio focusRecord={focusRecord} autoOpenCamera />
+      )}
       {section === "script" && features.enableGigaEditAiAssist ? (
         <AiCreatorAssistant />
       ) : null}

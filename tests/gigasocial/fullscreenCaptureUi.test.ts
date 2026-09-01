@@ -36,7 +36,8 @@ describe("fullscreen camera / live / teleprompter UI", () => {
     expect(source).toContain("createPortal");
     expect(source).toContain("gigaedit-teleprompter-immersive");
     expect(source).toContain('variant="immersive"');
-    expect(source).toContain("Open fullscreen camera");
+    expect(source).toContain("autoOpenCamera");
+    expect(source).toContain('presentation="studio"');
     expect(source).toContain("PreSnapEditBar");
   });
 

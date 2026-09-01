@@ -7,6 +7,7 @@ import {
   Home,
   Image as ImageIcon,
   MessageSquare,
+  Mic,
   UsersRound,
 } from "lucide-react";
 import Link from "next/link";
@@ -24,6 +25,7 @@ const STUDIO_TABS: {
   { id: "home", label: "Home", icon: Home },
   { id: "video", label: "Video", icon: Clapperboard },
   { id: "photo", label: "Photo", icon: ImageIcon },
+  { id: "teleprompter", label: "Prompt", icon: Mic },
   { id: "projects", label: "Projects", icon: FolderOpen },
 ];
 

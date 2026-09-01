@@ -21,9 +21,11 @@ export default function GigaEditsPage() {
       <PublicProductIntro
         compact
         title="GigaEdits"
-        description="Create with AI: generate in Media Studio, edit video in GigaEdit, publish to GigaSocial."
+        description="Create with AI: Media Studio, video editor, and a full-screen teleprompter with auto-scroll."
         primaryHref="/gigaedit"
         primaryLabel="Open GigaEdit"
+        secondaryHref="/gigaedit/?tab=teleprompter&record=1"
+        secondaryLabel="Teleprompter"
       />
     </>
   );

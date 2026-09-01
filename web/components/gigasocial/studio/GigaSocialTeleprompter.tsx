@@ -23,13 +23,20 @@ type GigaSocialTeleprompterProps = {
   active: boolean;
   recording: boolean;
   className?: string;
+  /** GigaEdit studio: bright high-contrast script panel over fullscreen camera. */
+  presentation?: "default" | "studio";
+  /** Open script editor on first mount (studio). */
+  defaultSettingsOpen?: boolean;
 };
 
 export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
   active,
   recording,
   className,
+  presentation = "default",
+  defaultSettingsOpen = false,
 }: GigaSocialTeleprompterProps) {
+  const isStudio = presentation === "studio";
   const [script, setScript] = useState(DEFAULT_TELEPROMPTER_SCRIPT);
   const [speed, setSpeed] = useState(48);
   const [fontSize, setFontSize] = useState(18);
@@ -41,7 +48,7 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
   const [countdownSec, setCountdownSec] = useState(3);
   const [countdownLeft, setCountdownLeft] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(defaultSettingsOpen || isStudio);
   const [offsetPx, setOffsetPx] = useState(0);
   const [topicDraft, setTopicDraft] = useState("");
   const lastTickRef = useRef<number | null>(null);
@@ -53,15 +60,15 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
     hydratedRef.current = true;
     const saved = loadTeleprompterSettings();
     setScript(loadTeleprompterScript());
-    setSpeed(saved.speed);
-    setFontSize(saved.fontSize);
+    setSpeed(isStudio ? Math.max(saved.speed, 52) : saved.speed);
+    setFontSize(isStudio ? Math.max(saved.fontSize, 22) : saved.fontSize);
     setMarginPx(saved.marginPx);
     setMirror(saved.mirror);
-    setDarkMode(saved.darkMode);
-    setTransparentMode(saved.transparentMode);
+    setDarkMode(isStudio ? false : saved.darkMode);
+    setTransparentMode(isStudio ? false : saved.transparentMode);
     setFloating(saved.floating);
     setCountdownSec(saved.countdownSec);
-  }, []);
+  }, [isStudio]);
 
   useEffect(() => {
     if (!active) return;
@@ -173,23 +180,31 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
     ? "bg-black/25"
     : darkMode
       ? "bg-black/70"
-      : "bg-white/90 text-zinc-900";
+      : isStudio
+        ? "bg-white/94 text-slate-900 shadow-xl"
+        : "bg-white/90 text-zinc-900";
+
+  const scrollMaxClass = isStudio
+    ? "max-h-[min(52vh,28rem)]"
+    : "max-h-32";
 
   return (
     <div
       className={cn(
         "gigasocial-teleprompter pointer-events-none absolute z-20 flex flex-col",
-        floating
-          ? "inset-x-6 bottom-24 top-auto max-h-[30%]"
-          : "inset-x-3 top-14 max-h-[38%]",
+        isStudio
+          ? "inset-x-2 top-[max(3.5rem,env(safe-area-inset-top))] bottom-[max(11rem,env(safe-area-inset-bottom))]"
+          : floating
+            ? "inset-x-6 bottom-24 top-auto max-h-[30%]"
+            : "inset-x-3 top-14 max-h-[38%]",
         className
       )}
       style={{ marginLeft: marginPx, marginRight: marginPx }}
     >
       <div
         className={cn(
-          "pointer-events-auto overflow-hidden rounded-xl border backdrop-blur-sm",
-          transparentMode ? "border-white/10" : "border-white/20",
+          "pointer-events-auto flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border backdrop-blur-md",
+          transparentMode ? "border-white/10" : isStudio ? "border-white/50" : "border-white/20",
           panelBg
         )}
       >
@@ -199,8 +214,21 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
             darkMode || transparentMode ? "border-white/10 text-white/80" : "border-zinc-200"
           )}
         >
-          <span className="text-[10px] font-semibold uppercase tracking-wide">Teleprompter</span>
+          <span className={cn("text-[10px] font-semibold uppercase tracking-wide", isStudio && "text-slate-700")}>
+            {isStudio ? "Script · auto-scroll" : "Teleprompter"}
+          </span>
           <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setSettingsOpen((value) => !value)}
+              className={cn(
+                "rounded-lg px-2 py-1 text-[10px] font-semibold",
+                isStudio ? "bg-slate-900/10 text-slate-800" : "hover:bg-white/10"
+              )}
+              aria-label="Edit teleprompter script"
+            >
+              Edit
+            </button>
             {recording ? (
               <button
                 type="button"
@@ -222,7 +250,7 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
           </div>
         </div>
 
-        {settingsOpen && !recording ? (
+        {settingsOpen ? (
           <div
             className={cn(
               "space-y-2 border-b px-3 py-2 text-[10px]",
@@ -351,7 +379,7 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
           </div>
         ) : null}
 
-        <div className="relative max-h-32 overflow-hidden px-3 py-2">
+        <div className={cn("relative min-h-0 flex-1 overflow-hidden px-3 py-2", scrollMaxClass)}>
           {countdownLeft > 0 ? (
             <p
               className={cn(
@@ -364,8 +392,9 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
           ) : null}
           <p
             className={cn(
-              "whitespace-pre-wrap leading-relaxed",
-              darkMode || transparentMode ? "text-white/95" : "text-zinc-900"
+              "whitespace-pre-wrap font-medium leading-relaxed",
+              darkMode || transparentMode ? "text-white/95" : "text-slate-900",
+              isStudio && !darkMode && !transparentMode && "text-slate-950 drop-shadow-sm"
             )}
             style={{
               fontSize: `${clampTeleprompterFontSize(fontSize)}px`,
