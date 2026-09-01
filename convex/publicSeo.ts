@@ -7,10 +7,9 @@ import {
   toPublicListing,
   toPublicReview,
 } from "./marketplaceViews";
-import { buildGigaSocialOgMeta } from "./gigaSocialOg";
+import { buildGigaSocialOgMeta, splitPostDisplay } from "./gigaSocialOg";
 import {
   normalizeSocialHandle,
-  splitPostDisplay,
   toPublicAuthor,
   toPublicPost,
 } from "./gigaSocialViews";
