@@ -10,13 +10,7 @@ type PublicProductIntroProps = {
   primaryLabel?: string;
 };
 
-const productLinks = [
-  { href: "/gigasocial", label: "Explore GigaSocial" },
-  { href: "/gigaedits", label: "Explore GigaEdits" },
-  { href: "/gigalearn", label: "Explore GigaLearn" },
-  { href: "/ai-studio", label: "Explore AI Studio" },
-  { href: "/marketplace", label: "Explore Marketplace" },
-] as const;
+import { GIGA3_PRODUCT_LINKS } from "@/lib/seo/productLinks";
 
 /** Static, lightweight copy that keeps public product pages useful before JavaScript loads. */
 export function PublicProductIntro({
@@ -40,7 +34,7 @@ export function PublicProductIntro({
             <InstallButton variant="outline" />
           </div>
           <nav className="mt-10 flex flex-wrap gap-x-5 gap-y-3" aria-label="Explore Giga3 AI products">
-            {productLinks.map((link) => (
+            {GIGA3_PRODUCT_LINKS.map((link) => (
               <a key={link.href} href={link.href} className="text-sm font-medium text-accent hover:underline">
                 {link.label}
               </a>

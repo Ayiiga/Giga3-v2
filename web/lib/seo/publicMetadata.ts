@@ -6,18 +6,26 @@ type PublicMetadataInput = {
   path: string;
   title: string;
   description: string;
+  /** Defaults to indexable public pages. Set false for authenticated-only surfaces. */
+  index?: boolean;
 };
 
 /** Consistent, canonical metadata for crawlable Giga3 AI marketing pages. */
-export function publicMetadata({ path, title, description }: PublicMetadataInput): Metadata {
+export function publicMetadata({
+  path,
+  title,
+  description,
+  index = true,
+}: PublicMetadataInput): Metadata {
   const canonicalPath = path === "/" ? "/" : `${path.replace(/\/$/, "")}/`;
   const canonical = new URL(canonicalPath, siteConfig.url).toString();
-  const socialTitle = `${title} | Giga3 AI`;
+  const socialTitle = title.includes("Giga3") ? title : `${title} | Giga3 AI`;
   const image = brandingAssetUrl("/images/logo.png");
 
   return {
     title,
     description,
+    robots: index ? { index: true, follow: true } : { index: false, follow: false },
     alternates: { canonical: canonicalPath },
     openGraph: {
       type: "website",

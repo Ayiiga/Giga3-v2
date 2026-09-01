@@ -34,9 +34,14 @@ export function Footer() {
             <ul className="mt-4 space-y-2 text-sm text-muted">
               {[
                 { href: "/", label: "Giga3 AI" },
+                { href: "/chat", label: "AI Chat" },
                 { href: "/gigasocial", label: "GigaSocial" },
                 { href: "/gigaedits", label: "GigaEdits" },
+                { href: "/gigaedit", label: "GigaEdit" },
+                { href: "/media", label: "Media Studio" },
                 { href: "/gigalearn", label: "GigaLearn" },
+                { href: "/creator-studio", label: "Creator Studio" },
+                { href: "/discover", label: "Discover" },
                 { href: "/ai-studio", label: "Giga3 AI Studio" },
                 { href: "/marketplace", label: "Giga3 AI Marketplace" },
                 { href: "/pricing", label: "Pricing" },

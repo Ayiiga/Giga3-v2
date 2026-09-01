@@ -1,4 +1,6 @@
+import { CreatorWorkflowIntro } from "@/components/seo/CreatorWorkflowIntro";
 import { PublicProductIntro } from "@/components/seo/PublicProductIntro";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 
 export const metadata = publicMetadata({
@@ -10,12 +12,21 @@ export const metadata = publicMetadata({
 
 export default function GigaEditsPage() {
   return (
-    <PublicProductIntro
-      title="GigaEdits — Create, edit, and publish with AI"
-      description="GigaEdits is the creator experience in Giga3 AI for shaping ideas into polished visual and written content."
-      audience="African creators, small teams, and businesses creating for the web."
-      primaryHref="/gigaedit"
-      primaryLabel="Open GigaEdits"
-    />
+    <>
+      <JsonLd
+        breadcrumbs={[
+          { name: "Giga3 AI", path: "/" },
+          { name: "GigaEdits", path: "/gigaedits" },
+        ]}
+      />
+      <PublicProductIntro
+        title="GigaEdits — Create, edit, and publish with AI"
+        description="GigaEdits is the creator experience in Giga3 AI for shaping ideas into polished visual and written content. Generate assets in Media Studio, refine video in GigaEdit, and publish to GigaSocial."
+        audience="African creators, small teams, and businesses creating for the web"
+        primaryHref="/gigaedit"
+        primaryLabel="Open GigaEdit"
+      />
+      <CreatorWorkflowIntro />
+    </>
   );
 }

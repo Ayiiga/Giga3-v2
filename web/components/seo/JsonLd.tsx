@@ -3,12 +3,33 @@ import { brandingAssetUrl } from "@/lib/brandingAssets";
 import { siteConfig } from "@/lib/site";
 
 type JsonLdProps = {
-  type?: "WebSite" | "Organization" | "SoftwareApplication";
+  type?: "WebSite" | "Organization" | "SoftwareApplication" | "WebApplication";
+  breadcrumbs?: { name: string; path: string }[];
 };
 
 /** Structured data for public marketing pages — no authenticated or private URLs. */
-export function JsonLd({ type = "WebSite" }: JsonLdProps) {
+export function JsonLd({ type = "WebSite", breadcrumbs }: JsonLdProps) {
   const logo = brandingAssetUrl("/images/logo.png");
+
+  if (breadcrumbs && breadcrumbs.length > 0) {
+    const payload = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: breadcrumbs.map((crumb, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: crumb.name,
+        item: new URL(crumb.path, siteConfig.url).toString(),
+      })),
+    };
+    return (
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(payload) }}
+      />
+    );
+  }
+
   const payload =
     type === "Organization"
       ? {
@@ -36,7 +57,19 @@ export function JsonLd({ type = "WebSite" }: JsonLdProps) {
             description:
               "Giga3 AI is an African AI-powered super app combining social media, AI tools, creator editing, learning, marketplace and digital services in one platform.",
           }
-        : {
+        : type === "WebApplication"
+          ? {
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: branding.name,
+              url: siteConfig.url,
+              applicationCategory: "ProductivityApplication",
+              operatingSystem: "Web",
+              browserRequirements: "Requires JavaScript",
+              description: branding.description,
+              image: logo,
+            }
+          : {
           "@context": "https://schema.org",
           "@type": "WebSite",
           name: branding.name,

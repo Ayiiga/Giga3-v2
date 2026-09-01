@@ -1,11 +1,12 @@
 User-Agent: *
 Allow: /
-Disallow: /chat/
+Allow: /chat/
+Disallow: /chat/login/
+Disallow: /chat/share/
 Disallow: /payment/
 Disallow: /wallet/
 Disallow: /workspace/
 Disallow: /admin/
-Disallow: /creator-studio/
 Disallow: /credits/
 Disallow: /home/
 Disallow: /insights/
