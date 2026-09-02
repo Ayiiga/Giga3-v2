@@ -182,6 +182,16 @@ describe("Media Studio async video pipeline — wiring", () => {
     expect(panel).not.toContain("Premium subscription and credits are required");
   });
 
+  it("polls the status_url/response_url fal returns (nested model ids 404 on rebuilt URLs)", () => {
+    const client = read("convex/falClient.ts");
+    expect(client).toContain("falQueueSubmitDetailed(");
+    expect(client).toContain("statusUrl: submission.statusUrl");
+    expect(client).toContain("body.status_url ??");
+    // The old URL construction from the full model id must be gone.
+    expect(client).not.toMatch(/\$\{FAL_QUEUE_BASE\}\/\$\{modelId\}\/requests\//);
+    expect(client).toContain('modelId.split("/").slice(0, 2).join("/")');
+  });
+
   it("CI provisions Seedance Lite models on fal for both modes", () => {
     const ci = read(".github/workflows/convex-deploy.yml");
     expect(ci).toContain("FAL_TEXT_VIDEO_MODEL");

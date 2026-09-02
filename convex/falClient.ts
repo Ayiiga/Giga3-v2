@@ -82,7 +82,18 @@ type FalImageResult = {
   image?: { url: string };
 };
 
-async function falQueueSubmit(modelId: string, input: Record<string, unknown>): Promise<string> {
+type FalSubmission = { requestId: string; statusUrl: string; responseUrl: string };
+
+/**
+ * fal's queue URLs use the endpoint's APP prefix (e.g. `fal-ai/bytedance`),
+ * not the full model path (`fal-ai/bytedance/seedance/v1/lite/text-to-video`),
+ * so we must poll the `status_url` / `response_url` fal returns rather than
+ * rebuilding them from the model id (that 404s for every nested model).
+ */
+async function falQueueSubmitDetailed(
+  modelId: string,
+  input: Record<string, unknown>
+): Promise<FalSubmission> {
   const res = await fetch(`${FAL_QUEUE_BASE}/${modelId}`, {
     method: "POST",
     headers: {
@@ -95,20 +106,32 @@ async function falQueueSubmit(modelId: string, input: Record<string, unknown>): 
     const text = await res.text();
     throw new Error(`fal submit failed (${res.status}): ${text.slice(0, 500)}`);
   }
-  const body = (await res.json()) as { request_id?: string };
+  const body = (await res.json()) as {
+    request_id?: string;
+    status_url?: string;
+    response_url?: string;
+  };
   if (!body.request_id) {
     throw new Error("fal submit did not return request_id");
   }
-  return body.request_id;
+  const appPrefix = modelId.split("/").slice(0, 2).join("/");
+  return {
+    requestId: body.request_id,
+    statusUrl:
+      body.status_url ?? `${FAL_QUEUE_BASE}/${appPrefix}/requests/${body.request_id}/status`,
+    responseUrl: body.response_url ?? `${FAL_QUEUE_BASE}/${appPrefix}/requests/${body.request_id}`,
+  };
 }
 
 async function falQueuePoll<T>(
   modelId: string,
   requestId: string,
-  options: { maxWaitMs: number; pollIntervalMs: number },
+  options: { maxWaitMs: number; pollIntervalMs: number; statusUrl?: string; responseUrl?: string },
 ): Promise<T> {
   const deadline = Date.now() + options.maxWaitMs;
-  const statusUrl = `${FAL_QUEUE_BASE}/${modelId}/requests/${requestId}/status`;
+  const appPrefix = modelId.split("/").slice(0, 2).join("/");
+  const statusUrl =
+    options.statusUrl ?? `${FAL_QUEUE_BASE}/${appPrefix}/requests/${requestId}/status`;
 
   while (Date.now() < deadline) {
     const res = await fetch(statusUrl, {
@@ -123,7 +146,8 @@ async function falQueuePoll<T>(
     if (status.status === "COMPLETED") {
       const resultUrl =
         status.response_url ??
-        `${FAL_QUEUE_BASE}/${modelId}/requests/${requestId}`;
+        options.responseUrl ??
+        `${FAL_QUEUE_BASE}/${appPrefix}/requests/${requestId}`;
       const resultRes = await fetch(resultUrl, {
         headers: { Authorization: `Key ${getFalKey()}` },
       });
@@ -184,10 +208,13 @@ export async function falGenerateVideo(
   const modelId =
     process.env.FAL_VIDEO_MODEL?.trim() || "nvidia/cosmos-3-super/image-to-video";
   const payload = defaultVideoInput(input);
-  const requestId = await falQueueSubmit(modelId, payload);
+  const submission = await falQueueSubmitDetailed(modelId, payload);
+  const requestId = submission.requestId;
   const result = await falQueuePoll<FalVideoResult>(modelId, requestId, {
     maxWaitMs: options?.maxWaitMs ?? 20 * 60 * 1000,
     pollIntervalMs: options?.pollIntervalMs ?? 3000,
+    statusUrl: submission.statusUrl,
+    responseUrl: submission.responseUrl,
   });
   if (!result.video?.url) {
     throw new Error("fal video response missing video.url");
@@ -221,7 +248,7 @@ const FAL_MAX_TRANSIENT_STATUS_ERRORS = 5;
  */
 async function falQueuePollWithProgress<T>(
   modelId: string,
-  requestId: string,
+  submission: FalSubmission,
   options: {
     maxWaitMs: number;
     pollIntervalMs: number;
@@ -229,7 +256,8 @@ async function falQueuePollWithProgress<T>(
   }
 ): Promise<T> {
   const deadline = Date.now() + options.maxWaitMs;
-  const statusUrl = `${FAL_QUEUE_BASE}/${modelId}/requests/${requestId}/status?logs=0`;
+  const { requestId } = submission;
+  const statusUrl = submission.statusUrl;
   let transientErrors = 0;
   let lastLabel = "";
 
@@ -278,8 +306,7 @@ async function falQueuePollWithProgress<T>(
     }
 
     if (status.status === "COMPLETED") {
-      const resultUrl =
-        status.response_url ?? `${FAL_QUEUE_BASE}/${modelId}/requests/${requestId}`;
+      const resultUrl = status.response_url ?? submission.responseUrl;
       const resultRes = await fetch(resultUrl, { headers: { Authorization: `Key ${getFalKey()}` } });
       if (!resultRes.ok) {
         const text = await resultRes.text();
@@ -312,14 +339,15 @@ export async function falGenerateVideoV2(
 }> {
   const modelId = options?.modelId ?? resolveFalVideoModel(Boolean(request.imageUrl?.trim()));
   const payload = buildFalVideoPayload(modelId, request);
-  const requestId = await falQueueSubmit(modelId, payload);
+  const submission = await falQueueSubmitDetailed(modelId, payload);
+  const requestId = submission.requestId;
   await options?.onProgress?.({
     stage: "queued",
     label: "Queued at fal.ai",
     modelId,
     requestId,
   });
-  const result = await falQueuePollWithProgress<Record<string, unknown>>(modelId, requestId, {
+  const result = await falQueuePollWithProgress<Record<string, unknown>>(modelId, submission, {
     maxWaitMs: options?.maxWaitMs ?? 8 * 60 * 1000,
     pollIntervalMs: options?.pollIntervalMs ?? 3000,
     onProgress: options?.onProgress,
@@ -352,10 +380,13 @@ export async function falGenerateImage(
     ...(input.seed !== undefined && { seed: input.seed }),
     enable_safety_checker: input.enable_safety_checker ?? true,
   };
-  const requestId = await falQueueSubmit(modelId, payload);
+  const submission = await falQueueSubmitDetailed(modelId, payload);
+  const requestId = submission.requestId;
   const result = await falQueuePoll<FalImageResult>(modelId, requestId, {
     maxWaitMs: options?.maxWaitMs ?? 5 * 60 * 1000,
     pollIntervalMs: options?.pollIntervalMs ?? 2000,
+    statusUrl: submission.statusUrl,
+    responseUrl: submission.responseUrl,
   });
   const imageUrl =
     result.images?.[0]?.url ?? result.image?.url;
