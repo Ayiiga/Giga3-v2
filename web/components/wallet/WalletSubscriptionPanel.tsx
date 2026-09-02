@@ -1,6 +1,7 @@
 "use client";
 
 import { SubscriptionCard } from "@/components/billing/SubscriptionCard";
+import { AutoRenewalCard } from "@/components/wallet/AutoRenewalCard";
 import { UsageTracker } from "@/components/billing/UsageTracker";
 import { ButtonLink } from "@/components/ui/Button";
 import type { UsageSnapshot } from "@/lib/credits/constants";
@@ -23,6 +24,7 @@ type WalletSubscriptionPanelProps = {
   onCheckout: (productId: string) => void;
   checkoutLoading: boolean;
   checkoutLabel: string;
+  sessionToken?: string | null;
 };
 
 export function WalletSubscriptionPanel({
@@ -31,6 +33,7 @@ export function WalletSubscriptionPanel({
   onCheckout,
   checkoutLoading,
   checkoutLabel,
+  sessionToken = null,
 }: WalletSubscriptionPanelProps) {
   const planId = dashboard.subscription.planId;
   const entitlements = planEntitlements(planId);
@@ -50,7 +53,7 @@ export function WalletSubscriptionPanel({
             </dd>
           </div>
           <div>
-            <dt className="text-muted">Renews</dt>
+            <dt className="text-muted">Current period ends</dt>
             <dd className="font-medium">
               {formatExpiry(dashboard.subscription.expiresAt)}
             </dd>
@@ -76,6 +79,8 @@ export function WalletSubscriptionPanel({
           </div>
         )}
       </section>
+
+      <AutoRenewalCard sessionToken={sessionToken} />
 
       <section>
         <h2 className="text-lg font-semibold">Plan entitlements</h2>

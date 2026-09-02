@@ -53,6 +53,9 @@ function SubscribePageClientInner() {
           Monthly billing in <span className="text-foreground">GHS</span> via
           Paystack · Credits refill on renewal
         </p>
+        <p className="mt-1 text-sm text-muted">
+          Renews automatically every 30 days · cancel anytime from your wallet
+        </p>
         <div className="mt-3 flex justify-center">
           <PaystackModeBadge mode={paystackMode} inlineEnabled={inlineEnabled} />
         </div>
