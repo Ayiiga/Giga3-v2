@@ -34,6 +34,7 @@ export const FOOTER_PRODUCT_LINKS = [
   { href: "/developers", label: "Developer API" },
   { href: "/pricing", label: "Pricing" },
   { href: "/ai-for-ghana", label: "AI for Ghana" },
+  { href: "/ai-tools-for-students-ghana", label: "AI tools for students" },
   { href: "/about", label: "About" },
 ] as const;
 
