@@ -18,6 +18,8 @@
   <url><loc>https://www.giga3ai.com/automation/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://www.giga3ai.com/developers/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://www.giga3ai.com/about/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.giga3ai.com/contact/</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://www.giga3ai.com/blog/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.giga3ai.com/ai-for-ghana/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.giga3ai.com/ai-tools-for-students-ghana/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.giga3ai.com/pricing/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>

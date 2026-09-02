@@ -37,7 +37,9 @@ export const FOOTER_PRODUCT_LINKS = [
   { href: "/ai-for-ghana", label: "AI for Ghana" },
   { href: "/ai-tools-for-students-ghana", label: "AI tools for students" },
   { href: "/install", label: "Install app" },
+  { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
 ] as const;
 
 export const CREATOR_WORKFLOW_STEPS = [
