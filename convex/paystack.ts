@@ -28,11 +28,6 @@ import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { toClientPaymentView } from "./paymentViews";
 import {
-  isBlockedFromNewSubscription,
-  normalizeSubscriberEmail,
-  SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE,
-} from "./subscriptionPolicy";
-import {
   appliesPlatformFee,
   computePlatformFeeGhs,
 } from "./platformRevenue";
@@ -341,13 +336,6 @@ export const fulfillPayment = internalMutation({
       if (strict) throw amountErr;
     }
 
-    if (
-      (record.type === "subscription" || record.type === "video_subscription") &&
-      isBlockedFromNewSubscription(normalizeSubscriberEmail(record.userId))
-    ) {
-      throw new Error(SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE);
-    }
-
     await ctx.db.patch(record._id, {
       status: "success",
       paystackResponse: args.paystackResponse,
@@ -487,13 +475,6 @@ export const initializePayment = action({
     const catalog = getProduct(args.productId);
     if (catalog.amountGhs <= 0) {
       throw new Error("Invalid product price");
-    }
-
-    if (
-      (catalog.type === "subscription" || catalog.type === "video_subscription") &&
-      isBlockedFromNewSubscription(email)
-    ) {
-      throw new Error(SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE);
     }
 
     const reference = `giga3_${args.productId}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
