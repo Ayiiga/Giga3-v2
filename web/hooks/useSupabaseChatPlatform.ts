@@ -750,6 +750,7 @@ export function useSupabaseChatPlatform() {
     freeOpenAiRemaining: 0,
     interestProfileJson,
     uploadUsage: null,
+    liveWebProgress: null,
   };
 }
 
