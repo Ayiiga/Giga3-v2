@@ -45,11 +45,13 @@ export const createCheckout = action({
 });
 
 export const confirmPurchase = action({
-  args: { sessionId: v.string() },
+  args: { sessionId: v.string(), sessionToken: v.string() },
   handler: async (ctx, args) => {
     if (!process.env.STRIPE_SECRET_KEY) {
       throw new Error("Stripe secret not configured");
     }
+    // Only the buyer may confirm their own checkout session.
+    const requester = await requireSession(args.sessionToken, ctx);
     const session = await stripe.checkout.sessions.retrieve(args.sessionId, {
       expand: ["payment_status"],
     });
@@ -62,6 +64,9 @@ export const confirmPurchase = action({
       session.customer_details?.email;
     const tokens = Number((session.metadata as { tokens?: string })?.tokens || 0);
     if (!email || tokens <= 0) throw new Error("Invalid session metadata");
+    if (email.trim().toLowerCase() !== requester) {
+      throw new Error("This checkout session belongs to a different account");
+    }
 
     const balance = await ctx.runMutation(internal.payments.grantPurchaseTokensInternal, {
       email,

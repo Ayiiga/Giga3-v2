@@ -96,6 +96,9 @@ Production deployment: **`perfect-lark-521`** (`https://perfect-lark-521.convex.
 - Sessions are minted **only** after proof of ownership: `authPasswordActions` (password / emailed reset token), `authActions.establishSessionFromSupabase` (verified JWT), `users.refreshSession` (valid token). User upsert for those flows is `internal.users.ensureUserInternal`.
 - `users:createUser`, `authActions.establishSessionFromEmail`, `authPasswordActions.setPasswordForEmail` are **disabled stubs** kept for stale clients — never re-enable session issuance from a bare email. `tests/security/owaspChecklist.test.ts` enforces this from source.
 - Ops-only mutations (`backfillMissingStarterCredits`, `runExpiryCheck`, `incrementUserCount`, `grantComplimentarySubscription`) are `internalMutation` — run with `npx convex run` + deploy key.
+- **Revocation:** pass `ctx` to `requireSession(token, ctx)` on anything touching money, credits, identity or chat sends; it rejects tokens with `iat < users.sessionsValidAfter`. Password reset and `users.signOutEverywhere` bump that field via `revokeSessionsInternal`.
+- **Password recovery:** reset base URL must be the exact `FRONTEND_URL` origin (`authResetLinks.ts`); responses never reveal account existence; sign-up refuses emails that already have a user row (claim via reset link). `SESSION_SIGNING_SECRET` is required — no fallback.
+- **Payments:** `fulfillPayment` marks a payment `failed` and logs `payment_amount_mismatch` on any amount/currency mismatch — there is no relaxed mode.
 
 ### Public SEO gate
 

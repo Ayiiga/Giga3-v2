@@ -70,13 +70,21 @@ async function verifySignature(
   );
 }
 
+/** Constant-time string comparison — admin keys must not leak via early-exit timing. */
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length || a.length === 0) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 export function isConfiguredAdminKey(adminKey: string): boolean {
   const key = adminKey.trim();
   if (!key) return false;
   const required =
     process.env.PLATFORM_STATS_ADMIN_KEY?.trim() ||
     process.env.QUALITY_DASHBOARD_ADMIN_KEY?.trim();
-  return Boolean(required && key === required);
+  return Boolean(required && constantTimeEqual(key, required));
 }
 
 export async function createAdminSessionToken(

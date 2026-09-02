@@ -15,9 +15,10 @@ function getSigningSecrets(): { current: string; previous?: string; kid: string 
   const current = process.env.SESSION_SIGNING_SECRET?.trim();
   const previous = process.env.SESSION_SIGNING_SECRET_PREVIOUS?.trim();
   if (!current) {
-    const fallback = process.env.ADMIN_SETTINGS_KEY?.trim();
-    if (!fallback) throw new Error("Session signing is not configured");
-    return { current: fallback, kid: "legacy" };
+    // Fail closed: never derive session signing from an unrelated admin key.
+    throw new Error(
+      "SESSION_SIGNING_SECRET is not configured — set it on the Convex deployment (npx convex env set SESSION_SIGNING_SECRET ...)"
+    );
   }
   return {
     current,
@@ -119,7 +120,10 @@ async function verifyWithSecret(
   return payload;
 }
 
-export async function verifySessionToken(token: string): Promise<string> {
+export type VerifiedSession = { email: string; iat: number; exp: number };
+
+/** Verify signature + expiry and return the normalized identity with issue time. */
+export async function verifySessionTokenDetailed(token: string): Promise<VerifiedSession> {
   const trimmed = token.trim();
   if (!trimmed.startsWith(`${TOKEN_PREFIX}.`)) {
     throw new UnauthorizedError();
@@ -132,12 +136,20 @@ export async function verifySessionToken(token: string): Promise<string> {
   if (!payloadB64 || !signature) throw new UnauthorizedError();
 
   const { current, previous } = getSigningSecrets();
+  let payload: SessionPayload;
   try {
-    const payload = await verifyWithSecret(payloadB64, signature, current);
-    return normalizeUserId(payload.email);
+    payload = await verifyWithSecret(payloadB64, signature, current);
   } catch (primaryError) {
     if (!previous) throw primaryError;
-    const payload = await verifyWithSecret(payloadB64, signature, previous);
-    return normalizeUserId(payload.email);
+    payload = await verifyWithSecret(payloadB64, signature, previous);
   }
+  return {
+    email: normalizeUserId(payload.email),
+    iat: typeof payload.iat === "number" ? payload.iat : 0,
+    exp: payload.exp,
+  };
+}
+
+export async function verifySessionToken(token: string): Promise<string> {
+  return (await verifySessionTokenDetailed(token)).email;
 }

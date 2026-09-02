@@ -8,7 +8,8 @@ type DbCtx = { db: any };
 /** Sliding-window rate limit for auth bootstrap endpoints. */
 export async function consumeAuthRateLimit(
   ctx: DbCtx,
-  bucketKey: string
+  bucketKey: string,
+  maxAttempts: number = AUTH_MAX_ATTEMPTS
 ): Promise<void> {
   const now = Date.now();
   const existing = await ctx.db
@@ -29,7 +30,7 @@ export async function consumeAuthRateLimit(
     return;
   }
 
-  if (existing.count >= AUTH_MAX_ATTEMPTS) {
+  if (existing.count >= maxAttempts) {
     throw new RateLimitError("Too many attempts. Try again later.");
   }
 

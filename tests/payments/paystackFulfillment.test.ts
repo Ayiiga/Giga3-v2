@@ -20,10 +20,11 @@ describe("Paystack fulfillment safety", () => {
     expect(fulfillBody).not.toContain("isBlockedFromNewSubscription");
   });
 
-  it("uses relaxed amount checks for client verify and webhook", () => {
+  it("enforces amount and currency on every fulfilment path (client verify, webhook, renewal)", () => {
     const src = readFileSync(resolve(__dirname, "../../convex/paystack.ts"), "utf8");
-    expect(src).toContain("strictAmountCheck: options?.strictAmountCheck ?? false");
-    expect(src).toContain("strictAmountCheck: false");
+    expect(src).not.toMatch(/strictAmountCheck:\s*(false|options)/);
+    expect(src).toContain("validatePaymentAmount(record, args.paystackResponse)");
+    expect(src).toContain('status: "failed",\n        paystackResponse: args.paystackResponse,');
   });
 
   it("allows Paystack popup via a single global COOP header", () => {

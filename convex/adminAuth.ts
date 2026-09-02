@@ -7,6 +7,11 @@ import {
   createAdminSessionToken,
   isConfiguredAdminKey,
 } from "./adminSessionAuth";
+import { consumeAuthRateLimit } from "./authRateLimit";
+import { SECURITY_EVENT_TYPES } from "./securityMonitoring";
+
+/** Global brute-force guard: the static key is one secret for the whole deployment. */
+const ADMIN_KEY_ATTEMPTS_PER_15_MIN = 10;
 
 /**
  * Exchange a one-time admin key for a short-lived bearer session token.
@@ -14,9 +19,17 @@ import {
  */
 export const exchangeAdminKey = mutation({
   args: { adminKey: v.string() },
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
+    await consumeAuthRateLimit(ctx, "admin:exchange-key", ADMIN_KEY_ATTEMPTS_PER_15_MIN);
     const key = args.adminKey.trim();
     if (!isConfiguredAdminKey(key)) {
+      await ctx.db.insert("securityEvents", {
+        eventType: SECURITY_EVENT_TYPES.AUTH_FORBIDDEN,
+        severity: "high",
+        message: "Invalid admin key presented",
+        dateKey: new Date().toISOString().slice(0, 10),
+        createdAt: Date.now(),
+      });
       throw new Error("Unauthorized");
     }
     const adminSessionToken = await createAdminSessionToken();

@@ -435,6 +435,8 @@ export const legalDocuments: readonly LegalDocument[] = [
         title: "1. Accounts and sessions",
         bullets: [
           "Sessions are signed tokens issued only after you prove ownership of your email: a password check, an emailed reset link that expires after one hour, or a verified Supabase sign-in.",
+          "Resetting your password signs out every other device. Reset links are single-use, point only at giga3ai.com, and the request response never reveals whether an account exists.",
+          "An email address that already has a Giga3 account cannot be re-registered by someone else; it can only be claimed through the emailed reset link.",
           "Passwords are stored as salted scrypt hashes; we never store or log plain-text passwords.",
           "Sign-in, sign-up and reset endpoints are rate-limited, and repeated failures are recorded as security events for review.",
         ],

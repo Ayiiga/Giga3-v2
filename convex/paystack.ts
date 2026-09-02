@@ -53,14 +53,35 @@ function paystackSecret(): string {
   return key;
 }
 
+function parsePaystackCurrency(paystackResponse: string): string | null {
+  try {
+    const parsed = JSON.parse(paystackResponse) as {
+      currency?: string;
+      data?: { currency?: string };
+    };
+    const currency = parsed.currency ?? parsed.data?.currency;
+    return typeof currency === "string" ? currency.toUpperCase() : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The charged amount/currency must match the record we created at initialize.
+ * Missing fields are tolerated (older payloads); any present mismatch is fatal.
+ */
 function validatePaymentAmount(record: { amountGhs: number }, paystackResponse: string) {
+  const currency = parsePaystackCurrency(paystackResponse);
+  if (currency && currency !== "GHS") {
+    throw new Error(`Payment currency mismatch: expected GHS, got ${currency}`);
+  }
   const pesewas = parsePaystackAmountPesewas(paystackResponse);
   if (pesewas === null) {
     console.warn("[paystack] Could not parse amount from Paystack response for reconciliation");
     return;
   }
   const expected = toPesewas(record.amountGhs);
-  if (pesewas !== expected) {
+  if (pesewas < expected) {
     throw new Error(
       `Payment amount mismatch: expected ${expected} pesewas, got ${pesewas}`
     );
@@ -224,7 +245,7 @@ export const getPaymentByReference = query({
     ...sessionArgs,
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const record = await ctx.db
       .query("payments")
       .withIndex("by_reference", (q) => q.eq("reference", args.reference))
@@ -320,7 +341,7 @@ export const fulfillPayment = internalMutation({
   args: {
     reference: v.string(),
     paystackResponse: v.string(),
-    /** When false, log amount mismatches but still fulfill (webhook recovery). */
+    /** @deprecated Ignored — amount/currency mismatches never fulfil. Kept for call-site compatibility. */
     strictAmountCheck: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -331,12 +352,23 @@ export const fulfillPayment = internalMutation({
     if (!record) throw new Error("Payment record not found");
     if (record.status === "success") return { alreadyFulfilled: true as const };
 
-    const strict = args.strictAmountCheck !== false;
     try {
       validatePaymentAmount(record, args.paystackResponse);
     } catch (amountErr) {
+      // Underpaid or wrong-currency charge: record it, alert, and never grant value.
       console.error("[paystack] amount validation:", amountErr);
-      if (strict) throw amountErr;
+      await ctx.db.patch(record._id, {
+        status: "failed",
+        paystackResponse: args.paystackResponse,
+      });
+      await ctx.runMutation(internal.securityMonitoring.recordSecurityEvent, {
+        eventType: "payment_amount_mismatch",
+        severity: "high",
+        message: amountErr instanceof Error ? amountErr.message : "Payment amount mismatch",
+        email: record.userId,
+        metadata: JSON.stringify({ reference: record.reference, productId: record.productId }),
+      });
+      throw amountErr;
     }
 
     await ctx.db.patch(record._id, {
@@ -480,7 +512,7 @@ export const initializePayment = action({
   },
   handler: async (ctx, args) => {
     assertPaystackProductionReady();
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const user = await ctx.runQuery(api.users.getUser, {
       sessionToken: args.sessionToken,
     });
@@ -551,8 +583,7 @@ export const initializePayment = action({
 
 async function verifyAndFulfill(
   ctx: ActionCtx,
-  reference: string,
-  options?: { strictAmountCheck?: boolean }
+  reference: string
 ): Promise<Doc<"payments"> | null> {
   const verified = await paystackGet(
     `/transaction/verify/${encodeURIComponent(reference)}`
@@ -569,7 +600,6 @@ async function verifyAndFulfill(
   await ctx.runMutation(internal.paystack.fulfillPayment, {
     reference,
     paystackResponse: JSON.stringify(verified.data),
-    strictAmountCheck: options?.strictAmountCheck ?? false,
   });
 
   return await ctx.runQuery(internal.paystack.getPaymentByReferenceInternal, {
@@ -584,7 +614,7 @@ export const initializeMarketplacePayment = action({
   },
   handler: async (ctx, args) => {
     assertPaystackProductionReady();
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const listing = await ctx.runQuery(internal.marketplace.getListingForCheckoutInternal, {
       listingId: args.listingId,
     });
@@ -666,7 +696,7 @@ export const initializeCreatorGiftPayment = action({
   },
   handler: async (ctx, args) => {
     assertPaystackProductionReady();
-    const senderId = await requireSession(args.sessionToken);
+    const senderId = await requireSession(args.sessionToken, ctx);
     if (senderId === args.creatorId) {
       throw new Error("You cannot tip yourself.");
     }
@@ -764,7 +794,7 @@ export const initializeBoostPayment = action({
   },
   handler: async (ctx, args) => {
     assertPaystackProductionReady();
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
 
     const prepared = await ctx.runQuery(
       internal.gigaSocialEconomy.validateBoostCheckoutInternal,
@@ -847,7 +877,7 @@ export const verifyPayment = action({
     ...sessionArgs,
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const existing = await ctx.runQuery(
       internal.paystack.getPaymentByReferenceInternal,
       { reference: args.reference }
@@ -874,7 +904,7 @@ export const reconcilePayment = action({
     ...sessionArgs,
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const existing = await ctx.runQuery(
       internal.paystack.getPaymentByReferenceInternal,
       { reference: args.reference }
@@ -928,7 +958,6 @@ export const processWebhookPayload = internalMutation({
     await ctx.runMutation(internal.paystack.fulfillPayment, {
       reference,
       paystackResponse: args.payload,
-      strictAmountCheck: false,
     });
 
     return { handled: true, reference, outcome: "success" as const };
