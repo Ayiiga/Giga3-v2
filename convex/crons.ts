@@ -18,6 +18,14 @@ crons.daily(
   {}
 );
 
+// Fail + refund Media Studio / Video AI jobs whose worker died (>30 min processing).
+crons.interval(
+  "recover stuck media and video jobs",
+  { minutes: 10 },
+  internal.mediaJobRecovery.recoverStuckJobs,
+  {}
+);
+
 // Safety net so chat never stays stuck: reschedule/finalize orphaned reply jobs.
 crons.interval(
   "recover stuck chat reply jobs",

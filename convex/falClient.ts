@@ -3,6 +3,14 @@
  * Uses FAL_KEY or FAL_API_KEY from Convex environment.
  */
 
+import {
+  buildFalVideoPayload,
+  describeFalQueueStatus,
+  extractFalVideoUrl,
+  resolveFalVideoModel,
+  type SimpleVideoRequest,
+} from "./falVideoModels";
+
 const FAL_QUEUE_BASE = "https://queue.fal.run";
 
 export function getFalApiKey(): string | undefined {
@@ -190,6 +198,136 @@ export async function falGenerateVideo(
     seed: result.seed,
     requestId,
   };
+}
+
+export type FalVideoProgress = {
+  stage: "queued" | "generating" | "finishing";
+  label: string;
+  queuePosition?: number;
+  modelId: string;
+  requestId: string;
+};
+
+export type FalVideoV2Options = FalPollOptions & {
+  onProgress?: (progress: FalVideoProgress) => void | Promise<void>;
+  modelId?: string;
+};
+
+const FAL_MAX_TRANSIENT_STATUS_ERRORS = 5;
+
+/**
+ * Submit-and-poll with progress callbacks and tolerance for transient status
+ * failures (network blips / 5xx) so a long render is not abandoned needlessly.
+ */
+async function falQueuePollWithProgress<T>(
+  modelId: string,
+  requestId: string,
+  options: {
+    maxWaitMs: number;
+    pollIntervalMs: number;
+    onProgress?: FalVideoV2Options["onProgress"];
+  }
+): Promise<T> {
+  const deadline = Date.now() + options.maxWaitMs;
+  const statusUrl = `${FAL_QUEUE_BASE}/${modelId}/requests/${requestId}/status?logs=0`;
+  let transientErrors = 0;
+  let lastLabel = "";
+
+  while (Date.now() < deadline) {
+    let status: QueueStatusResponse & { queue_position?: number };
+    try {
+      const res = await fetch(statusUrl, { headers: { Authorization: `Key ${getFalKey()}` } });
+      if (res.status === 429 || res.status >= 500) {
+        transientErrors += 1;
+        if (transientErrors > FAL_MAX_TRANSIENT_STATUS_ERRORS) {
+          throw new Error(`fal status failed repeatedly (${res.status})`);
+        }
+        await new Promise((r) => setTimeout(r, options.pollIntervalMs * 2));
+        continue;
+      }
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`fal status failed (${res.status}): ${text.slice(0, 300)}`);
+      }
+      status = (await res.json()) as typeof status;
+      transientErrors = 0;
+    } catch (err) {
+      if (err instanceof Error && /fal status failed/.test(err.message)) throw err;
+      transientErrors += 1;
+      if (transientErrors > FAL_MAX_TRANSIENT_STATUS_ERRORS) throw err;
+      await new Promise((r) => setTimeout(r, options.pollIntervalMs * 2));
+      continue;
+    }
+
+    const stage: FalVideoProgress["stage"] =
+      status.status === "COMPLETED"
+        ? "finishing"
+        : status.status === "IN_PROGRESS"
+          ? "generating"
+          : "queued";
+    const label = describeFalQueueStatus(status.status, status.queue_position);
+    if (label !== lastLabel && options.onProgress) {
+      lastLabel = label;
+      await options.onProgress({
+        stage,
+        label,
+        queuePosition: status.queue_position,
+        modelId,
+        requestId,
+      });
+    }
+
+    if (status.status === "COMPLETED") {
+      const resultUrl =
+        status.response_url ?? `${FAL_QUEUE_BASE}/${modelId}/requests/${requestId}`;
+      const resultRes = await fetch(resultUrl, { headers: { Authorization: `Key ${getFalKey()}` } });
+      if (!resultRes.ok) {
+        const text = await resultRes.text();
+        throw new Error(`fal result failed (${resultRes.status}): ${text.slice(0, 300)}`);
+      }
+      return (await resultRes.json()) as T;
+    }
+    if (status.status === "FAILED" || status.status === "CANCELLED") {
+      throw new Error(`fal request ${status.status}`);
+    }
+    await new Promise((r) => setTimeout(r, options.pollIntervalMs));
+  }
+  throw new Error(`fal request timed out after ${Math.round(options.maxWaitMs / 1000)}s`);
+}
+
+/**
+ * Text- or image-to-video on fal.ai. Model chosen per FAL_TEXT_VIDEO_MODEL /
+ * FAL_IMAGE_VIDEO_MODEL (Seedance Lite by default); payload adapted per model
+ * family so duration/aspect/resolution always reach the provider correctly.
+ */
+export async function falGenerateVideoV2(
+  request: SimpleVideoRequest,
+  options?: FalVideoV2Options
+): Promise<{
+  videoUrl: string;
+  contentType?: string;
+  seed?: number;
+  requestId: string;
+  modelId: string;
+}> {
+  const modelId = options?.modelId ?? resolveFalVideoModel(Boolean(request.imageUrl?.trim()));
+  const payload = buildFalVideoPayload(modelId, request);
+  const requestId = await falQueueSubmit(modelId, payload);
+  await options?.onProgress?.({
+    stage: "queued",
+    label: "Queued at fal.ai",
+    modelId,
+    requestId,
+  });
+  const result = await falQueuePollWithProgress<Record<string, unknown>>(modelId, requestId, {
+    maxWaitMs: options?.maxWaitMs ?? 8 * 60 * 1000,
+    pollIntervalMs: options?.pollIntervalMs ?? 3000,
+    onProgress: options?.onProgress,
+  });
+  const video = extractFalVideoUrl(result);
+  if (!video) throw new Error("fal video response missing video url");
+  const seed = typeof result.seed === "number" ? result.seed : undefined;
+  return { videoUrl: video.url, contentType: video.contentType, seed, requestId, modelId };
 }
 
 export async function falGenerateImage(

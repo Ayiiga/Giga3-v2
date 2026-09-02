@@ -7,7 +7,7 @@ import type { Id } from "./_generated/dataModel";
 import type { FalImageSize } from "./falClient";
 import { buildImagePrompt, buildVideoPrompt } from "./mediaCatalog";
 import { assertCreditsAvailable, chargeCreditsForMedia } from "./mediaCredits";
-import { generateImageWithFallback, generateVideoWithFallback } from "./mediaEngine";
+import { generateImageWithFallback, videoProviderAvailability } from "./mediaEngine";
 import { persistImageUrlIfNeeded } from "./mediaStorage";
 import { toUserMediaError } from "./mediaUtils";
 import { requireSessionWithMonitoring } from "./auth";
@@ -25,7 +25,6 @@ const imageSizeValidator = v.optional(
   ),
 );
 
-const VIDEO_TOKEN_COST = 5;
 const IMAGE_TOKEN_COST = 2;
 
 const sharedMediaArgs = {
@@ -65,101 +64,80 @@ export const generateVideo = action({
       )
     ),
   },
+  /**
+   * Enqueue a video job and return immediately. Credits are reserved up front
+   * (refunded automatically if generation fails); the client follows progress
+   * through `mediaQueries.getJob` / `listJobs`.
+   */
   handler: async (ctx, args) => {
     const email = await requireSessionWithMonitoring(args.sessionToken, ctx);
     const category = args.category ?? "anime_videos";
     const fullPrompt = buildVideoPrompt(category, args.prompt);
-    const creditMode = Boolean(args.category);
+    const imageUrl = args.imageUrl?.trim() || undefined;
+    if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
+      throw new Error("Source image must be a public https:// URL.");
+    }
+    const duration = clampDuration(args.duration);
+    const resolution = normalizeResolution(args.resolution);
 
-    const user = await ctx.runQuery(api.users.getUser, {
-      sessionToken: args.sessionToken,
+    const cost = await assertCreditsAvailable(ctx, args.sessionToken, "video");
+
+    const jobId: Id<"mediaJobs"> = await ctx.runMutation(internal.mediaInternal.createMediaJob, {
+      userId: email,
+      mediaType: "video",
+      category,
+      prompt: fullPrompt,
+      creditsCharged: 0,
+      sourceImageUrl: imageUrl,
+      durationSec: duration,
+      aspectRatio: args.aspectRatio,
+      resolution,
     });
-    if (!user) throw new Error("User not found");
 
-    let jobId: Id<"mediaJobs"> | undefined;
-
+    // Reserve credits now so concurrent requests cannot overspend; refunded on failure.
     try {
-      if (creditMode) {
-        await assertCreditsAvailable(ctx, args.sessionToken, "video");
-        jobId = await ctx.runMutation(internal.mediaInternal.createMediaJob, {
-          userId: email,
-          mediaType: "video",
-          category,
-          prompt: fullPrompt,
-          creditsCharged: 0,
-        });
-      } else if ((user.tokens ?? 0) < VIDEO_TOKEN_COST) {
-        throw new Error(`Insufficient tokens (need ${VIDEO_TOKEN_COST} for video)`);
-      }
-
-      const result = await generateVideoWithFallback({
-        prompt: fullPrompt,
-        category,
-        imageUrl: args.imageUrl,
-        negativePrompt: args.negativePrompt,
-        enablePromptExpansion: args.enablePromptExpansion,
-        agenticMaxIterations: args.agenticMaxIterations,
-        agenticSamplesPerIteration: args.agenticSamplesPerIteration,
-        agenticEarlyStop: args.agenticEarlyStop,
-        imageSize: args.imageSize as FalImageSize | undefined,
-        numFrames: args.numFrames,
-        framesPerSecond: args.framesPerSecond,
-        numInferenceSteps: args.numInferenceSteps,
-        guidanceScale: args.guidanceScale,
-        seed: args.seed,
-        enableSafetyChecker: args.enableSafetyChecker,
-        syncMode: args.syncMode,
-        duration: args.duration,
-        resolution: args.resolution,
-        generateAudio: args.generateAudio,
-        aspectRatio: args.aspectRatio,
-      });
-
-      if (creditMode && jobId) {
-        await chargeCreditsForMedia(ctx, args.sessionToken, "video", String(jobId));
-      }
-
-      if (jobId) {
-        await ctx.runMutation(internal.mediaInternal.completeMediaJob, {
-          jobId,
-          status: "succeeded",
-          outputUrl: result.videoUrl,
-          replicatePredictionId:
-            result.provider === "replicate" ? result.externalId : undefined,
-        });
-      }
-
-      let tokens = user.tokens ?? 0;
-      if (!creditMode) {
-        tokens = await ctx.runMutation(api.users.deductTokens, {
-          sessionToken: args.sessionToken,
-          amount: VIDEO_TOKEN_COST,
-        });
-      }
-
-      return {
-        videoUrl: result.videoUrl,
-        outputUrl: result.videoUrl,
-        contentType: result.contentType ?? "video/mp4",
-        seed: result.seed,
-        requestId: result.externalId,
-        provider: result.provider,
-        tokens,
-        jobId,
-      };
+      await chargeCreditsForMedia(ctx, args.sessionToken, "video", String(jobId));
+      await ctx.runMutation(internal.mediaInternal.setMediaJobCharge, { jobId, creditsCharged: cost });
     } catch (err) {
       const message = toUserMediaError(err, "video");
-      if (jobId) {
-        await ctx.runMutation(internal.mediaInternal.completeMediaJob, {
-          jobId,
-          status: "failed",
-          errorMessage: message,
-        });
-      }
+      await ctx.runMutation(internal.mediaInternal.completeMediaJob, {
+        jobId,
+        status: "failed",
+        errorMessage: message,
+      });
       throw new Error(message);
     }
+
+    await ctx.scheduler.runAfter(0, internal.mediaVideoWorker.processJob, {
+      jobId,
+      prompt: fullPrompt,
+      category,
+      imageUrl,
+      negativePrompt: args.negativePrompt,
+      seed: args.seed,
+      duration,
+      resolution,
+      generateAudio: args.generateAudio,
+      aspectRatio: args.aspectRatio,
+    });
+
+    return {
+      jobId,
+      status: "processing" as const,
+      creditsCharged: cost,
+      provider: videoProviderAvailability().fal ? "fal" : "replicate",
+    };
   },
 });
+
+function clampDuration(value: number | undefined): number {
+  if (!value || !Number.isFinite(value)) return 5;
+  return Math.min(12, Math.max(2, Math.round(value)));
+}
+
+function normalizeResolution(value: string | undefined): "480p" | "720p" | "1080p" {
+  return value === "480p" || value === "1080p" ? value : "720p";
+}
 
 export const generateImage = action({
   args: {

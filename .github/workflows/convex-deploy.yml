@@ -94,6 +94,8 @@ jobs:
           CONVEX_DEPLOY_KEY: ${{ env.DEPLOY_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           FAL_KEY: ${{ secrets.FAL_KEY }}
+          FAL_TEXT_VIDEO_MODEL: ${{ vars.FAL_TEXT_VIDEO_MODEL }}
+          FAL_IMAGE_VIDEO_MODEL: ${{ vars.FAL_IMAGE_VIDEO_MODEL }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PAYSTACK_SECRET_KEY: ${{ secrets.PAYSTACK_SECRET_KEY }}
           PAYSTACK_PUBLIC_KEY: ${{ secrets.PAYSTACK_PUBLIC_KEY }}
@@ -121,7 +123,10 @@ jobs:
           fi
           if [ -n "${FAL_KEY:-}" ]; then
             npx convex env set FAL_KEY "${FAL_KEY}"
-            npx convex env set FAL_VIDEO_MODEL "nvidia/cosmos-3-super/image-to-video"
+            # Seedance Lite on fal supports text- AND image-to-video with duration/aspect/resolution.
+            npx convex env set FAL_TEXT_VIDEO_MODEL "${FAL_TEXT_VIDEO_MODEL:-fal-ai/bytedance/seedance/v1/lite/text-to-video}"
+            npx convex env set FAL_IMAGE_VIDEO_MODEL "${FAL_IMAGE_VIDEO_MODEL:-fal-ai/bytedance/seedance/v1/lite/image-to-video}"
+            npx convex env set FAL_VIDEO_MODEL "${FAL_IMAGE_VIDEO_MODEL:-fal-ai/bytedance/seedance/v1/lite/image-to-video}"
             npx convex env set FAL_IMAGE_MODEL "fal-ai/nano-banana-pro"
           fi
           if [ -n "${OPENAI_API_KEY:-}" ]; then

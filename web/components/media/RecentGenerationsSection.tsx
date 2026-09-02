@@ -3,7 +3,7 @@
 import { RecentGenerationsList } from "@/components/media/RecentGenerationsList";
 import { usePolledMediaJobs } from "@/hooks/usePolledMediaJobs";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
-import { mediaJobsRefreshRef } from "@/lib/media/jobsRefresh";
+import { mediaJobsRefreshRef, publishRecentImageUrls } from "@/lib/media/jobsRefresh";
 import { memo, useEffect } from "react";
 
 interface RecentGenerationsSectionProps {
@@ -28,6 +28,14 @@ function RecentGenerationsSectionComponent({
       }
     };
   }, [refreshJobs]);
+
+  useEffect(() => {
+    publishRecentImageUrls(
+      jobs
+        .filter((j) => j.mediaType === "image" && j.status === "succeeded" && j.outputUrl)
+        .map((j) => j.outputUrl as string)
+    );
+  }, [jobs]);
 
   return <RecentGenerationsList jobs={jobs} />;
 }

@@ -6,7 +6,7 @@ import { formatMediaError } from "@/lib/media/errors";
 import type { ImageCategoryId, VideoCategoryId } from "@/lib/media/catalog";
 import {
   MEDIA_IMAGE_TIMEOUT_MS,
-  MEDIA_VIDEO_TIMEOUT_MS,
+  MEDIA_VIDEO_ENQUEUE_TIMEOUT_MS,
   withActionTimeout,
 } from "@/lib/media/actionTimeout";
 import { triggerMediaJobsRefresh } from "@/lib/media/jobsRefresh";
@@ -16,6 +16,7 @@ import {
   mediaGenerationTaskId,
 } from "@/lib/generation/coordinator";
 import { api } from "convex/_generated/api";
+import type { Id } from "convex/_generated/dataModel";
 import { useAction } from "convex/react";
 import { useCallback, useRef, useState } from "react";
 
@@ -23,6 +24,14 @@ type MediaActionResult = {
   imageUrl?: string;
   videoUrl?: string;
   outputUrl?: string;
+};
+
+/** New async video pipeline: the action returns a job to follow instead of a URL. */
+export type VideoEnqueueResult = {
+  jobId: Id<"mediaJobs">;
+  status: "processing";
+  creditsCharged: number;
+  provider?: string;
 };
 
 export type ImageGenerationOptions = {
@@ -35,15 +44,10 @@ export type ImageGenerationOptions = {
 };
 
 export type VideoGenerationOptions = {
-  imageSize?: ImageGenerationOptions["imageSize"];
   negativePrompt?: string;
-  numFrames?: number;
-  framesPerSecond?: number;
-  numInferenceSteps?: number;
-  guidanceScale?: number;
   seed?: number;
   duration?: number;
-  resolution?: string;
+  resolution?: "480p" | "720p" | "1080p";
   generateAudio?: boolean;
   aspectRatio?: "16:9" | "9:16" | "4:3" | "1:1" | "3:4" | "21:9";
 };
@@ -209,12 +213,17 @@ export function useMediaGeneration() {
     }
   }
 
+  /**
+   * Enqueue a video job. Resolves as soon as the server accepts the job; the
+   * caller follows progress with `useMediaVideoJob` and calls
+   * `resolveVideoJob` when the job reaches a terminal state.
+   */
   async function createVideo(
     category: VideoCategoryId,
     prompt: string,
     imageUrl?: string,
     options?: VideoGenerationOptions
-  ) {
+  ): Promise<VideoEnqueueResult | null> {
     if (!email) {
       setError("Sign in required");
       setPhase("error");
@@ -224,7 +233,6 @@ export function useMediaGeneration() {
     setError(null);
     setSuccessMessage(null);
     setLastOutputUrl(null);
-    const taskId = beginMediaTask("video");
     try {
       const sessionToken = requireSession();
       const result = (await withActionTimeout(
@@ -235,34 +243,46 @@ export function useMediaGeneration() {
           ...(imageUrl?.trim() ? { imageUrl: imageUrl.trim() } : {}),
           ...(options ?? {}),
         }),
-        MEDIA_VIDEO_TIMEOUT_MS,
-        "Video generation timed out. Try a source image URL or a shorter prompt."
-      )) as MediaActionResult;
-      const outputUrl = pickOutputUrl(result, "video");
-      setLastOutputUrl(outputUrl);
-      setLastMediaType("video");
-      if (isSupabaseDataBackend()) {
-        await createSupabaseGeneration({
-          email,
-          mediaType: "video",
-          category,
-          prompt,
-          outputUrl,
-        }).catch(() => null);
+        MEDIA_VIDEO_ENQUEUE_TIMEOUT_MS,
+        "Could not reach the video service. Check your connection and try again."
+      )) as VideoEnqueueResult;
+      if (!result?.jobId) {
+        throw new Error("The video service did not accept the job. Please try again.");
       }
-      setPhase("success");
-      setSuccessMessage("Video ready — saved to Recent generations.");
-      finishMediaTask(taskId, "video", true);
-      triggerMediaJobsRefresh();
       return result;
     } catch (e) {
       const msg = formatMediaError(e);
       setError(msg);
       setPhase("error");
-      finishMediaTask(taskId, "video", false);
       return null;
     }
   }
+
+  /** Called by the panel once the tracked job finishes. */
+  const resolveVideoJob = useCallback(
+    (outcome: { status: "succeeded" | "failed"; outputUrl?: string | null; errorMessage?: string | null; prompt?: string; category?: string }) => {
+      if (outcome.status === "succeeded") {
+        setLastOutputUrl(outcome.outputUrl ?? null);
+        setLastMediaType("video");
+        setPhase("success");
+        setSuccessMessage("Video ready — saved to Recent generations.");
+        if (isSupabaseDataBackend() && email && outcome.outputUrl) {
+          void createSupabaseGeneration({
+            email,
+            mediaType: "video",
+            category: outcome.category ?? "anime_videos",
+            prompt: outcome.prompt ?? "",
+            outputUrl: outcome.outputUrl,
+          }).catch(() => null);
+        }
+      } else {
+        setError(outcome.errorMessage || "Video generation failed. Please try again.");
+        setPhase("error");
+      }
+      triggerMediaJobsRefresh();
+    },
+    [email]
+  );
 
   return {
     email,
@@ -275,5 +295,6 @@ export function useMediaGeneration() {
     clearStatus,
     createImage,
     createVideo,
+    resolveVideoJob,
   };
 }

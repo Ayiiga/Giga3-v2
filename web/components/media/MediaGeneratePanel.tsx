@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/Button";
 import {
   useMediaGeneration,
   type ImageGenerationOptions,
-  type VideoGenerationOptions,
 } from "@/hooks/useMediaGeneration";
 import { useGenerationStages } from "@/hooks/useGenerationStages";
+import { useMediaVideoJob } from "@/hooks/useMediaVideoJob";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
+import { VideoGenerateForm, type VideoFormValues } from "@/components/media/VideoGenerateForm";
+import { getRecentImageUrls, subscribeRecentImageUrls } from "@/lib/media/jobsRefresh";
 import {
   IMAGE_CATEGORIES,
   VIDEO_CATEGORIES,
@@ -26,7 +28,7 @@ import { canGenerateImage, canGenerateVideo } from "@/lib/credits/rules";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, ImageIcon, Loader2, Video, XCircle } from "lucide-react";
 import Link from "next/link";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useState, useSyncExternalStore } from "react";
 
 interface MediaGeneratePanelProps {
   usage: UsageSnapshot | null;
@@ -98,14 +100,20 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
     clearStatus,
     createImage,
     createVideo,
+    resolveVideoJob,
   } = useMediaGeneration();
+  const videoJob = useMediaVideoJob();
+  const recentImageUrls = useSyncExternalStore(
+    subscribeRecentImageUrls,
+    getRecentImageUrls,
+    () => [] as string[]
+  );
 
   const [tab, setTab] = useState<"image" | "video">(initialTab);
   const generationStage = useGenerationStages(loading, tab);
 
   const [category, setCategory] = useState(initialCategory);
   const [prompt, setPrompt] = useState(initialPrompt);
-  const [videoImageUrl, setVideoImageUrl] = useState("");
   const [imageSourceUrl, setImageSourceUrl] = useState(initialSourceImageUrl);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [imageSize, setImageSize] =
@@ -114,15 +122,60 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
   const [transparentBackground, setTransparentBackground] = useState(false);
   const [negativePrompt, setNegativePrompt] = useState("");
   const [seed, setSeed] = useState("");
-  const [videoMode, setVideoMode] = useState<
-    "text-to-video" | "image-to-video" | "story-to-video" | "animation" | "talking-avatar"
-  >("text-to-video");
-  const [videoAspectRatio, setVideoAspectRatio] =
-    useState<NonNullable<VideoGenerationOptions["aspectRatio"]>>("16:9");
-  const [videoDuration, setVideoDuration] = useState("7");
-  const [videoResolution, setVideoResolution] = useState("720p");
-  const [videoAudio, setVideoAudio] = useState(true);
   const [creatorCanvasSize, setCreatorCanvasSize] = useState<CreatorCanvasSize>("a4");
+  const [videoForm, setVideoForm] = useState<VideoFormValues>({
+    prompt: initialTab === "video" ? initialPrompt : "",
+    category: (VIDEO_CATEGORIES.some((c) => c.id === initialCategory)
+      ? initialCategory
+      : "cinematic_trailers") as VideoCategoryId,
+    sourceImageUrl: initialTab === "video" ? initialSourceImageUrl : "",
+    aspectRatio: "16:9",
+    durationSec: 5,
+    quality: "720p",
+    audio: true,
+  });
+  const [videoSubmitting, setVideoSubmitting] = useState(false);
+  const [lastVideoRequest, setLastVideoRequest] = useState<VideoFormValues | null>(null);
+
+  const submitVideo = useCallback(
+    async (form: VideoFormValues) => {
+      const trimmed = form.prompt.trim();
+      if (!trimmed) return;
+      setVideoSubmitting(true);
+      setLastVideoRequest(form);
+      videoJob.clear();
+      const result = await createVideo(
+        form.category,
+        trimmed,
+        form.sourceImageUrl.trim() || undefined,
+        {
+          aspectRatio: form.aspectRatio,
+          duration: form.durationSec,
+          resolution: form.quality,
+          generateAudio: form.audio,
+        }
+      );
+      setVideoSubmitting(false);
+      if (result?.jobId) videoJob.track(result.jobId);
+    },
+    [createVideo, videoJob]
+  );
+
+  // Hand the terminal job state back to the generation hook (success/error banners, history refresh).
+  useEffect(() => {
+    const job = videoJob.job;
+    if (!job || job.status === "processing") return;
+    if (job.status === "succeeded") {
+      resolveVideoJob({
+        status: "succeeded",
+        outputUrl: job.outputUrl,
+        prompt: lastVideoRequest?.prompt,
+        category: lastVideoRequest?.category,
+      });
+    } else if (job.status === "failed") {
+      resolveVideoJob({ status: "failed", errorMessage: job.errorMessage });
+    }
+  }, [videoJob.job, resolveVideoJob, lastVideoRequest]);
 
   const editActionActive =
     tab === "image" &&
@@ -140,7 +193,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
     if (!trimmed) return;
     const seedValue = Number(seed);
     const parsedSeed = seed.trim() && Number.isFinite(seedValue) ? seedValue : undefined;
-    if (tab === "image") {
+    {
       const canvasLabel =
         CREATOR_CANVAS_OPTIONS.find((option) => option.id === creatorCanvasSize)
           ?.label ?? "A4";
@@ -165,51 +218,18 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
           enableSafetyChecker: true,
         }
       );
-    } else {
-      const canvasLabel =
-        CREATOR_CANVAS_OPTIONS.find((option) => option.id === creatorCanvasSize)
-          ?.label ?? "A4";
-      const modeInstruction = {
-        "text-to-video": "Create a text-to-video clip with coherent motion and cinematic pacing.",
-        "image-to-video": "Animate the source image naturally while preserving identity, composition, and lighting.",
-        "story-to-video": "Convert this story into a concise multi-scene video with clear scene progression.",
-        animation: "Create an AI animation with smooth movement and expressive timing.",
-        "talking-avatar": "Create a talking-avatar style video prompt with presenter framing, lip-sync-ready script beats, and natural gestures.",
-      }[videoMode];
-      await createVideo(
-        category as VideoCategoryId,
-        `${modeInstruction} ${trimmed} Target output frame: ${canvasLabel}.`,
-        videoImageUrl || undefined,
-        {
-          aspectRatio: videoAspectRatio,
-          duration: Number(videoDuration) || undefined,
-          resolution: videoResolution,
-          generateAudio: videoAudio,
-          negativePrompt: negativePrompt.trim() || undefined,
-          seed: parsedSeed,
-          numInferenceSteps: imageQuality === "ultra" ? 32 : undefined,
-        }
-      );
     }
   }, [
-    tab,
     category,
     prompt,
-    videoImageUrl,
     imageSourceUrl,
     seed,
     imageQuality,
     transparentBackground,
     imageSize,
     negativePrompt,
-    videoMode,
-    videoAspectRatio,
-    videoDuration,
-    videoResolution,
-    videoAudio,
     creatorCanvasSize,
     createImage,
-    createVideo,
   ]);
 
   return (
@@ -221,6 +241,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
             setTab("image");
             setCategory("anime_art");
             clearStatus();
+            videoJob.clear();
           }}
           className={cn(
             "inline-flex min-h-14 items-center justify-center gap-3 rounded-2xl px-6 py-4 text-lg font-bold",
@@ -234,7 +255,6 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
           type="button"
           onClick={() => {
             setTab("video");
-            setCategory("anime_videos");
             clearStatus();
           }}
           className={cn(
@@ -248,6 +268,27 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
       </div>
 
       <div className="saas-card space-y-6 p-6 shadow-premium sm:p-8">
+        {tab === "video" ? (
+          <VideoGenerateForm
+            values={videoForm}
+            onChange={(patch) => setVideoForm((prev) => ({ ...prev, ...patch }))}
+            onGenerate={() => void submitVideo(videoForm)}
+            onRetry={() => void submitVideo(lastVideoRequest ?? videoForm)}
+            onDismissResult={() => {
+              videoJob.clear();
+              clearStatus();
+            }}
+            canGenerate={Boolean(canGen)}
+            creditCost={usage?.creditCosts.video ?? 8}
+            creditsAvailable={usage ? usage.credits : null}
+            submitting={videoSubmitting}
+            job={videoJob.job}
+            jobStartedAt={videoJob.startedAt}
+            error={error}
+            recentImageUrls={recentImageUrls}
+          />
+        ) : (
+          <>
         {editActionActive && initialAction && (
           <p className="rounded-xl border border-accent/20 bg-accent/5 px-4 py-3 text-sm text-foreground">
             Image edit mode:{" "}
@@ -339,8 +380,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
                 </select>
               </label>
 
-              {tab === "image" ? (
-                <label className="space-y-2 text-sm font-semibold text-foreground">
+                              <label className="space-y-2 text-sm font-semibold text-foreground">
                   Image format
                   <select
                     value={imageSize}
@@ -356,77 +396,8 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
                     <option value="landscape_4_3">Social landscape</option>
                   </select>
                 </label>
-              ) : (
-                <label className="space-y-2 text-sm font-semibold text-foreground">
-                  Video mode
-                  <select
-                    value={videoMode}
-                    onChange={(e) =>
-                      setVideoMode(e.target.value as typeof videoMode)
-                    }
-                    className="input-surface py-2 text-sm"
-                  >
-                    <option value="text-to-video">Text-to-video</option>
-                    <option value="image-to-video">Image-to-video</option>
-                    <option value="story-to-video">Story-to-video</option>
-                    <option value="animation">AI animation</option>
-                    <option value="talking-avatar">Talking avatar prompt</option>
-                  </select>
-                </label>
-              )}
 
-              {tab === "video" && (
-                <>
-                  <label className="space-y-2 text-sm font-semibold text-foreground">
-                    Aspect ratio
-                    <select
-                      value={videoAspectRatio}
-                      onChange={(e) =>
-                        setVideoAspectRatio(e.target.value as typeof videoAspectRatio)
-                      }
-                      className="input-surface py-2 text-sm"
-                    >
-                      <option value="16:9">Landscape 16:9</option>
-                      <option value="9:16">Shorts/TikTok 9:16</option>
-                      <option value="1:1">Square 1:1</option>
-                      <option value="4:3">Classic 4:3</option>
-                      <option value="21:9">Cinematic 21:9</option>
-                    </select>
-                  </label>
-                  <label className="space-y-2 text-sm font-semibold text-foreground">
-                    Duration
-                    <select
-                      value={videoDuration}
-                      onChange={(e) => setVideoDuration(e.target.value)}
-                      className="input-surface py-2 text-sm"
-                    >
-                      <option value="5">5 seconds</option>
-                      <option value="7">7 seconds</option>
-                      <option value="10">10 seconds</option>
-                    </select>
-                  </label>
-                  <label className="space-y-2 text-sm font-semibold text-foreground">
-                    Resolution
-                    <select
-                      value={videoResolution}
-                      onChange={(e) => setVideoResolution(e.target.value)}
-                      className="input-surface py-2 text-sm"
-                    >
-                      <option value="720p">720p low-bandwidth</option>
-                      <option value="1080p">1080p HD</option>
-                    </select>
-                  </label>
-                  <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                    <input
-                      type="checkbox"
-                      checked={videoAudio}
-                      onChange={(e) => setVideoAudio(e.target.checked)}
-                    />
-                    Generate synced audio when supported
-                  </label>
-                </>
-              )}
-
+              
               {tab === "image" && (
                 <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
                   <input
@@ -480,21 +451,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
           </div>
         )}
 
-        {tab === "video" && (
-          <div className="space-y-2">
-            <label className="text-sm font-bold uppercase tracking-wide text-muted">
-              Source image URL (optional)
-            </label>
-            <input
-              type="url"
-              value={videoImageUrl}
-              onChange={(e) => setVideoImageUrl(e.target.value)}
-              placeholder="https://… — optional first frame for image-to-video (Seedance)"
-              className="w-full rounded-xl border border-border bg-black/40 px-4 py-3 text-base outline-none ring-accent focus:ring-2"
-            />
-          </div>
-        )}
-
+        
         {phase === "success" && lastOutputUrl && lastMediaType && (
           <div className="rounded-2xl border border-emerald-500/30 bg-white p-3">
             <MessageMediaBlock
@@ -536,21 +493,17 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
 
         {!canGen && usage && (
           <CreditPromptBanner
-            variant={tab === "video" ? "subscribe" : "empty"}
-            message={
-              tab === "video"
-                ? "Premium subscription and credits are required for video generation."
-                : "Daily image limit reached or you need more credits to generate."
-            }
+            variant="empty"
+            message="Daily image limit reached or you need more credits to generate."
             subscriptionActive={usage.subscriptionActive}
-            creditCost={tab === "video" ? usage.creditCosts.video : usage.creditCosts.image}
+            creditCost={usage.creditCosts.image}
             compact
           />
         )}
 
         <Button
           type="button"
-          variant={tab === "video" ? "video" : "image"}
+          variant="image"
           size="lg"
           disabled={
             loading ||
@@ -565,16 +518,24 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
             <>
               <Loader2 className="h-6 w-6 animate-spin" aria-hidden /> Generating…
             </>
-          ) : tab === "video" ? (
-            <>
-              <Video className="h-6 w-6" aria-hidden /> Generate video
-            </>
           ) : (
             <>
               <ImageIcon className="h-6 w-6" aria-hidden /> Generate image
             </>
           )}
         </Button>
+
+          </>
+        )}
+        {tab === "video" && !canGen && usage && (
+          <CreditPromptBanner
+            variant="empty"
+            message={`You need ${usage.creditCosts.video} credits for a video. Subscribe or buy a top-up pack to continue.`}
+            subscriptionActive={usage.subscriptionActive}
+            creditCost={usage.creditCosts.video}
+            compact
+          />
+        )}
       </div>
     </>
   );

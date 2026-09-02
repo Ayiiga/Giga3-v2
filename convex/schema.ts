@@ -25,7 +25,8 @@ export const creditActionValidator = v.union(
   v.literal("subscription_refill"),
   v.literal("credit_purchase"),
   v.literal("starter_grant"),
-  v.literal("admin_grant")
+  v.literal("admin_grant"),
+  v.literal("refund")
 );
 
 export const videoCreditActionValidator = v.union(
@@ -575,8 +576,24 @@ export default defineSchema({
     outputUrl: v.optional(v.string()),
     creditsCharged: v.number(),
     errorMessage: v.optional(v.string()),
+    /** Async video pipeline — provider + live progress (optional for legacy rows). */
+    provider: v.optional(v.string()),
+    externalId: v.optional(v.string()),
+    modelId: v.optional(v.string()),
+    progressStage: v.optional(v.string()),
+    progressLabel: v.optional(v.string()),
+    sourceImageUrl: v.optional(v.string()),
+    durationSec: v.optional(v.number()),
+    aspectRatio: v.optional(v.string()),
+    resolution: v.optional(v.string()),
+    creditsRefunded: v.optional(v.number()),
+    startedAt: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
     createdAt: v.number(),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"])
+    .index("by_status_created", ["status", "createdAt"]),
 
   videoCreditLogs: defineTable({
     userId: v.string(),
@@ -628,8 +645,11 @@ export default defineSchema({
     externalId: v.optional(v.string()),
     videoCreditsCharged: v.number(),
     errorMessage: v.optional(v.string()),
+    progressLabel: v.optional(v.string()),
     createdAt: v.number(),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"])
+    .index("by_status_created", ["status", "createdAt"]),
 
   creatorProfiles: defineTable({
     userId: v.string(),

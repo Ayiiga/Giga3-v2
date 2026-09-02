@@ -12,11 +12,12 @@ import { api } from "convex/_generated/api";
 import { useConvex } from "convex/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const POLL_ACTIVE_MS = 15_000;
+const POLL_ACTIVE_MS = 6_000;
 
 /**
  * Fetches media job history without a live subscription.
- * Active (processing) jobs poll every 15s; idle lists refresh only on mount/manual trigger.
+ * Active (processing) jobs poll every 6s (adaptive on slow networks); idle lists
+ * refresh only on mount/manual trigger.
  */
 export function usePolledMediaJobs(userId: string, mounted: boolean) {
   const convex = useConvex();
