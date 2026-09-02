@@ -21,7 +21,8 @@ function cardPropsEqual(
     a.mediaType === b.mediaType &&
     a.prompt === b.prompt &&
     a.outputUrl === b.outputUrl &&
-    a.errorMessage === b.errorMessage
+    a.errorMessage === b.errorMessage &&
+    (a.progressLabel ?? null) === (b.progressLabel ?? null)
   );
 }
 
@@ -32,8 +33,9 @@ export const MediaGenerationCard = memo(function MediaGenerationCard({
     <article className="saas-card overflow-hidden shadow-md">
       <div className="aspect-video w-full bg-black/40">
         {job.status === "processing" && (
-          <div className="flex h-full items-center justify-center text-muted">
+          <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center text-muted">
             <Loader2 className="h-8 w-8 animate-spin" aria-hidden />
+            {job.progressLabel && <span className="text-xs">{job.progressLabel}</span>}
           </div>
         )}
         {job.status === "failed" && job.errorMessage && (

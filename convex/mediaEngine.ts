@@ -2,7 +2,13 @@
  * Media provider orchestration: fal.ai primary, Replicate fallback, Google AI Studio backup.
  */
 
-import { falGenerateImage, falGenerateVideo, getFalApiKey, type FalImageSize } from "./falClient";
+import {
+  falGenerateImage,
+  falGenerateVideoV2,
+  getFalApiKey,
+  type FalImageSize,
+  type FalVideoProgress,
+} from "./falClient";
 import { imageCategoryAspectRatio, videoCategoryAspectRatio } from "./mediaCatalog";
 import {
   falImageSizeToAspectRatio,
@@ -238,44 +244,73 @@ export async function generateFreeImageForChat(
   );
 }
 
+export type VideoProgressEvent = {
+  provider: MediaProviderId;
+  stage: "queued" | "generating" | "finishing";
+  label: string;
+  externalId?: string;
+  modelId?: string;
+};
+
+export type VideoGenerateHooks = {
+  onProgress?: (event: VideoProgressEvent) => void | Promise<void>;
+};
+
+/** Which video providers are configured — lets the UI say what will actually run. */
+export function videoProviderAvailability(): { fal: boolean; replicate: boolean } {
+  return { fal: Boolean(getFalApiKey()), replicate: Boolean(getReplicateToken()) };
+}
+
+/**
+ * fal.ai first for BOTH text-to-video and image-to-video (model chosen per
+ * FAL_TEXT_VIDEO_MODEL / FAL_IMAGE_VIDEO_MODEL), Replicate Seedance as backup.
+ * Duration, aspect ratio and resolution are forwarded to every provider.
+ */
 export async function generateVideoWithFallback(
-  input: VideoGenerateParams
+  input: VideoGenerateParams,
+  hooks?: VideoGenerateHooks
 ): Promise<{
   videoUrl: string;
   contentType?: string;
   seed?: number;
   provider: MediaProviderId;
   externalId: string;
+  modelId?: string;
 }> {
   const errors: string[] = [];
-  const imageUrl = input.imageUrl?.trim();
+  const imageUrl = input.imageUrl?.trim() || undefined;
+  const aspectRatio =
+    input.aspectRatio ?? videoCategoryAspectRatio(input.category ?? "anime_videos");
 
-  if (getFalApiKey() && imageUrl) {
+  if (getFalApiKey()) {
     try {
       const result = await withRetries(
         "fal-video",
         () =>
-          falGenerateVideo(
+          falGenerateVideoV2(
             {
               prompt: input.prompt,
-              image_url: imageUrl,
-              negative_prompt: input.negativePrompt,
-              enable_prompt_expansion: input.enablePromptExpansion,
-              agentic_max_iterations: input.agenticMaxIterations,
-              agentic_samples_per_iteration: input.agenticSamplesPerIteration,
-              agentic_early_stop: input.agenticEarlyStop,
-              image_size: input.imageSize,
-              num_frames: input.numFrames,
-              frames_per_second: input.framesPerSecond,
-              num_inference_steps: input.numInferenceSteps,
-              guidance_scale: input.guidanceScale,
+              imageUrl,
+              durationSec: input.duration,
+              aspectRatio,
+              resolution: input.resolution,
+              negativePrompt: input.negativePrompt,
               seed: input.seed,
-              enable_safety_checker: input.enableSafetyChecker,
-              sync_mode: input.syncMode,
+              generateAudio: input.generateAudio,
             },
-            { maxWaitMs: videoMaxWaitMs() }
+            {
+              maxWaitMs: videoMaxWaitMs(),
+              onProgress: (p: FalVideoProgress) =>
+                hooks?.onProgress?.({
+                  provider: "fal",
+                  stage: p.stage,
+                  label: p.label,
+                  externalId: p.requestId,
+                  modelId: p.modelId,
+                }),
+            }
           ),
-        { attempts: 2 }
+        { attempts: 2, baseDelayMs: 1500 }
       );
       return {
         videoUrl: result.videoUrl,
@@ -283,19 +318,24 @@ export async function generateVideoWithFallback(
         seed: result.seed,
         provider: "fal",
         externalId: result.requestId,
+        modelId: result.modelId,
       };
     } catch (err) {
-      errors.push(err instanceof Error ? err.message : String(err));
+      errors.push(`fal: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 
   if (getReplicateToken()) {
     try {
+      await hooks?.onProgress?.({
+        provider: "replicate",
+        stage: "queued",
+        label: errors.length ? "Retrying with backup provider…" : "Queued at Replicate",
+      });
       const result = await replicateGenerateVideo(input.prompt, {
         imageUrl,
         seed: input.seed,
-        aspectRatio:
-          input.aspectRatio ?? videoCategoryAspectRatio(input.category ?? "anime_videos"),
+        aspectRatio,
         duration: input.duration,
         resolution: input.resolution,
         generateAudio: input.generateAudio,
@@ -306,13 +346,11 @@ export async function generateVideoWithFallback(
         externalId: result.predictionId,
       };
     } catch (err) {
-      errors.push(err instanceof Error ? err.message : String(err));
+      errors.push(`replicate: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 
-  if (!imageUrl && getFalApiKey()) {
-    errors.push("fal video requires a source image_url");
-  }
-
-  throw new Error(`All providers failed for video: ${errors.join(" | ") || "no providers configured"}`);
+  throw new Error(
+    `All providers failed for video: ${errors.join(" | ") || "no video providers configured"}`
+  );
 }

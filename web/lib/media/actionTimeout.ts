@@ -19,4 +19,7 @@ export function withActionTimeout<T>(
 }
 
 export const MEDIA_IMAGE_TIMEOUT_MS = 6 * 60 * 1000;
+/** Legacy synchronous video call (kept for old bundles). */
 export const MEDIA_VIDEO_TIMEOUT_MS = 13 * 60 * 1000;
+/** New async pipeline: the enqueue call only creates the job. */
+export const MEDIA_VIDEO_ENQUEUE_TIMEOUT_MS = 45 * 1000;
