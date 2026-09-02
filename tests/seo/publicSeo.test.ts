@@ -100,7 +100,7 @@ describe("AI for Ghana landing page", () => {
 
   it("links to real internal destinations (no placeholder citation URLs)", () => {
     expect(src).not.toContain("reference-url-citation");
-    expect(src).toContain('href="/#features"');
+    expect(src).toContain('href="/features"');
     expect(src).toContain('href="/pricing"');
     expect(src).toContain('href="/chat/login"');
   });

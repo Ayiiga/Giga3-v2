@@ -184,7 +184,7 @@ export default function AiToolsForStudentsGhanaPage() {
               </Prose>
               <Prose>
                 Explore the platform&apos;s capabilities on the{" "}
-                <ArticleLink href="/#features">Giga3 AI Features page</ArticleLink> or compare plans on
+                <ArticleLink href="/features">Giga3 AI Features page</ArticleLink> or compare plans on
                 the <ArticleLink href="/pricing">Giga3 AI Pricing page</ArticleLink>.
               </Prose>
             </section>

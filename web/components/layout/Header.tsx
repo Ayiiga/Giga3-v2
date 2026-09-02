@@ -63,6 +63,8 @@ export function Header() {
           size="sm"
           className="md:hidden"
           aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
+          aria-controls="mobile-nav"
           onClick={() => setOpen(!open)}
         >
           {open ? <X aria-hidden /> : <Menu aria-hidden />}
@@ -70,7 +72,7 @@ export function Header() {
       </Container>
 
       {open && (
-        <div className="border-t border-border bg-white md:hidden">
+        <nav id="mobile-nav" aria-label="Main menu" className="border-t border-border bg-white md:hidden">
           <Container className="grid grid-cols-1 gap-1 py-3">
             {navLinks.map((link) => (
               <a
@@ -90,7 +92,7 @@ export function Header() {
               Open app
             </ButtonLink>
           </Container>
-        </div>
+        </nav>
       )}
     </header>
   );

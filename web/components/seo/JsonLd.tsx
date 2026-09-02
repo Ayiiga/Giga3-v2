@@ -4,16 +4,55 @@ import { siteConfig } from "@/lib/site";
 
 export type FaqItem = { question: string; answer: string };
 
+export type OfferItem = {
+  name: string;
+  /** Price in major units (e.g. GHS 150 → 150). 0 is valid for a free tier. */
+  price: number;
+  priceCurrency: string;
+  description?: string;
+  /** Absolute or site-relative URL where the offer can be taken up. */
+  path: string;
+};
+
 type JsonLdProps = {
   type?: "WebSite" | "Organization" | "SoftwareApplication" | "WebApplication";
   breadcrumbs?: { name: string; path: string }[];
   /** FAQPage — answers must match the visible FAQ text on the page. */
   faq?: FaqItem[];
+  /** SoftwareApplication + Offer list — prices must match what the page shows. */
+  offers?: OfferItem[];
 };
 
 /** Structured data for public marketing pages — no authenticated or private URLs. */
-export function JsonLd({ type = "WebSite", breadcrumbs, faq }: JsonLdProps) {
+export function JsonLd({ type = "WebSite", breadcrumbs, faq, offers }: JsonLdProps) {
   const logo = brandingAssetUrl("/images/logo.png");
+
+  if (offers && offers.length > 0) {
+    const payload = {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: branding.name,
+      applicationCategory: "ProductivityApplication",
+      operatingSystem: "Web",
+      url: siteConfig.url,
+      image: logo,
+      offers: offers.map((offer) => ({
+        "@type": "Offer",
+        name: offer.name,
+        price: offer.price.toFixed(2),
+        priceCurrency: offer.priceCurrency,
+        availability: "https://schema.org/InStock",
+        url: new URL(offer.path, siteConfig.url).toString(),
+        ...(offer.description ? { description: offer.description } : {}),
+      })),
+    };
+    return (
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(payload) }}
+      />
+    );
+  }
 
   if (faq && faq.length > 0) {
     const payload = {

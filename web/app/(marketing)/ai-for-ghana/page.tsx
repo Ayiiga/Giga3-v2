@@ -195,7 +195,7 @@ export default function AiForGhanaPage() {
               </Prose>
               <Prose>
                 Explore the platform&apos;s capabilities on the{" "}
-                <ArticleLink href="/#features">Giga3 AI Features page</ArticleLink>{" "}
+                <ArticleLink href="/features">Giga3 AI Features page</ArticleLink>{" "}
                 and see the available plans on the{" "}
                 <ArticleLink href="/pricing">Giga3 AI Pricing page</ArticleLink>.
               </Prose>

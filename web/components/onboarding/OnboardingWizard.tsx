@@ -53,7 +53,7 @@ const ROLE_ACTIONS: Record<UserRoleId, { label: string; href: string; tip: strin
   ],
   general: [
     { label: "Start chatting", href: "/chat", tip: "Your AI assistant is ready" },
-    { label: "Explore features", href: "/#features", tip: "Discover what Giga3 can do" },
+    { label: "Explore features", href: "/features", tip: "Discover what Giga3 can do" },
     { label: "Install the app", href: "/install", tip: "Add Giga3 to your home screen" },
   ],
 };
