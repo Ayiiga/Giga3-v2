@@ -33,6 +33,7 @@ import {
 } from "./platformRevenue";
 import { withRetries } from "./mediaUtils";
 import { getCreatorTipTier } from "./gigaSocialEconomy";
+import { extractReusableAuthorization } from "./subscriptionRenewalLogic";
 
 const PAYSTACK_BASE = "https://api.paystack.co";
 
@@ -66,11 +67,11 @@ function validatePaymentAmount(record: { amountGhs: number }, paystackResponse: 
   }
 }
 
-function toPesewas(ghs: number): number {
+export function toPesewas(ghs: number): number {
   return Math.round(ghs * 100);
 }
 
-async function paystackPost(path: string, body: unknown) {
+export async function paystackPost(path: string, body: unknown) {
   return withRetries(
     `paystack POST ${path}`,
     async () => {
@@ -286,6 +287,7 @@ export const createPendingPayment = internalMutation({
     ),
     boostTargetId: v.optional(v.string()),
     boostDurationDays: v.optional(v.number()),
+    isRenewal: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("payments", {
@@ -307,6 +309,7 @@ export const createPendingPayment = internalMutation({
       boostTargetType: args.boostTargetType,
       boostTargetId: args.boostTargetId,
       boostDurationDays: args.boostDurationDays,
+      isRenewal: args.isRenewal,
       status: "pending",
       createdAt: Date.now(),
     });
@@ -344,6 +347,19 @@ export const fulfillPayment = internalMutation({
         : {}),
     });
 
+    // Save reusable card authorizations so subscriptions can renew automatically.
+    if (record.type === "subscription" || record.type === "video_subscription") {
+      const auth = extractReusableAuthorization(args.paystackResponse);
+      if (auth) {
+        await ctx.runMutation(internal.subscriptionRenewal.saveAuthorization, {
+          userId: record.userId,
+          sourceReference: record.reference,
+          ...auth,
+          customerEmail: auth.customerEmail ?? record.userId,
+        });
+      }
+    }
+
     if (record.type === "subscription" && record.planId) {
       const planId = record.planId as PaidPlanId;
       const creditsToGrant =
@@ -354,6 +370,7 @@ export const fulfillPayment = internalMutation({
         paystackReference: record.reference,
         paymentId: record._id,
         creditsToGrant,
+        source: record.isRenewal ? "renewal" : "checkout",
       });
       await ctx.runMutation(internal.credits.grantCreditsInternal, {
         userId: record.userId,
@@ -498,6 +515,7 @@ export const initializePayment = action({
       amount: toPesewas(catalog.amountGhs),
       currency: "GHS",
       reference,
+      channels: [...PAYSTACK_CHANNELS],
       callback_url: `${frontend}/payment/success/?reference=${encodeURIComponent(reference)}`,
       metadata: {
         userId,
