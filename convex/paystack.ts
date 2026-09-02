@@ -341,6 +341,13 @@ export const fulfillPayment = internalMutation({
       if (strict) throw amountErr;
     }
 
+    if (
+      (record.type === "subscription" || record.type === "video_subscription") &&
+      isBlockedFromNewSubscription(normalizeSubscriberEmail(record.userId))
+    ) {
+      throw new Error(SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE);
+    }
+
     await ctx.db.patch(record._id, {
       status: "success",
       paystackResponse: args.paystackResponse,
@@ -350,9 +357,6 @@ export const fulfillPayment = internalMutation({
     });
 
     if (record.type === "subscription" && record.planId) {
-      if (isBlockedFromNewSubscription(normalizeSubscriberEmail(record.userId))) {
-        throw new Error(SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE);
-      }
       const planId = record.planId as PaidPlanId;
       const creditsToGrant =
         record.creditsGranted ?? getPlanMonthlyCredits(planId);
@@ -378,9 +382,6 @@ export const fulfillPayment = internalMutation({
         reference: record.reference,
       });
     } else if (record.type === "video_subscription" && record.videoPlanId) {
-      if (isBlockedFromNewSubscription(normalizeSubscriberEmail(record.userId))) {
-        throw new Error(SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE);
-      }
       const videoCredits =
         record.videoCreditsGranted ??
         getVideoSubscription(record.videoPlanId)?.videoCredits ??
@@ -551,7 +552,8 @@ export const initializePayment = action({
 
 async function verifyAndFulfill(
   ctx: ActionCtx,
-  reference: string
+  reference: string,
+  options?: { strictAmountCheck?: boolean }
 ): Promise<Doc<"payments"> | null> {
   const verified = await paystackGet(
     `/transaction/verify/${encodeURIComponent(reference)}`
@@ -568,6 +570,7 @@ async function verifyAndFulfill(
   await ctx.runMutation(internal.paystack.fulfillPayment, {
     reference,
     paystackResponse: JSON.stringify(verified.data),
+    strictAmountCheck: options?.strictAmountCheck ?? false,
   });
 
   return await ctx.runQuery(internal.paystack.getPaymentByReferenceInternal, {
@@ -969,19 +972,22 @@ export const paystackWebhook = httpAction(async (ctx, request) => {
       });
     }
 
-    await ctx.runMutation(internal.paystack.processWebhookPayload, { payload });
-    return new Response(JSON.stringify({ ok: true }), {
+    const result = await ctx.runMutation(internal.paystack.processWebhookPayload, {
+      payload,
+    });
+    return new Response(JSON.stringify({ ok: true, ...result }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("[paystack webhook]", err);
+    // Acknowledge to avoid Paystack retry storms when fulfillment already ran.
     return new Response(
       JSON.stringify({
         ok: false,
         error: err instanceof Error ? err.message : "Webhook error",
       }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
+      { status: 200, headers: { "Content-Type": "application/json" } }
     );
   }
 });
