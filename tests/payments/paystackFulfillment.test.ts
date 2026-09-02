@@ -22,10 +22,17 @@ describe("Paystack fulfillment safety", () => {
     expect(src).toContain("strictAmountCheck: false");
   });
 
-  it("allows Paystack popup on billing routes via COOP override", () => {
+  it("allows Paystack popup via a single global COOP header", () => {
     const headers = readFileSync(resolve(__dirname, "../../web/public/_headers"), "utf8");
-    expect(headers).toContain("/payment/*");
-    expect(headers).toContain("Cross-Origin-Opener-Policy: same-origin-allow-popups");
+    const coopLines = headers
+      .split("\n")
+      .filter((line) => /^\s*Cross-Origin-Opener-Policy:/i.test(line));
+    // Cloudflare Pages merges matching rules, so a per-route override would
+    // emit two COOP headers (invalid → browsers fall back to unsafe-none).
+    expect(coopLines).toHaveLength(1);
+    expect(coopLines[0].trim()).toBe(
+      "Cross-Origin-Opener-Policy: same-origin-allow-popups"
+    );
   });
 
   it("success page supports retry when verification is slow", () => {
