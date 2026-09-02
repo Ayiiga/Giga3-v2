@@ -15,7 +15,7 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-5">
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-2.5 font-semibold">
-              <BrandLogo size={36} />
+              <BrandLogo size={36} alt="" />
               {siteConfig.name}
             </Link>
             <p className="mt-4 max-w-sm text-sm text-muted">{siteConfig.description}</p>

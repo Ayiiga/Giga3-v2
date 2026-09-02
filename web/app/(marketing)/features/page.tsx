@@ -89,6 +89,8 @@ export default function FeaturesPage() {
                     <li key={product.href}>
                       <Link
                         href={`${product.href}/`}
+                        // 16 route bundles would otherwise prefetch on scroll — costly on metered mobile data.
+                        prefetch={false}
                         className="saas-card block h-full rounded-2xl border border-border p-5 transition hover:border-violet-300 hover:shadow-md"
                       >
                         <h3 className="text-lg font-semibold text-foreground">{product.name}</h3>

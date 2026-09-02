@@ -22,7 +22,7 @@ export function Header() {
       <Container className="flex min-h-14 items-center justify-between gap-4 py-2">
         <div className="flex min-w-0 items-center gap-2">
           <Link href="/" className="flex min-w-0 items-center gap-2.5 text-base font-semibold tracking-tight text-foreground">
-            <BrandLogo size={32} priority className="shadow-none ring-0" />
+            <BrandLogo size={32} priority alt="" className="shadow-none ring-0" />
             <span>{siteConfig.name}</span>
           </Link>
           <Link

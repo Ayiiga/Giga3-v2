@@ -109,15 +109,15 @@ export default function PricingPage() {
             </div>
             <p className="mt-3 text-center text-xs text-muted">
               Enterprise and education workspaces are priced on request —{" "}
-              <Link href="/enterprise/" className="text-accent hover:underline">
+              <Link href="/enterprise/" className="text-accent underline decoration-accent/40 underline-offset-2 hover:decoration-accent">
                 see Enterprise
               </Link>
               . Video AI has its own{" "}
-              <Link href="/video/plans/" className="text-accent hover:underline">
+              <Link href="/video/plans/" className="text-accent underline decoration-accent/40 underline-offset-2 hover:decoration-accent">
                 video credit plans
               </Link>
               . Cancel automatic renewal any time from your{" "}
-              <Link href="/legal/refunds/" className="text-accent hover:underline">
+              <Link href="/legal/refunds/" className="text-accent underline decoration-accent/40 underline-offset-2 hover:decoration-accent">
                 wallet (see refund &amp; cancellation policy)
               </Link>
               .

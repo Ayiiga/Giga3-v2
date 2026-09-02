@@ -33,7 +33,10 @@ export function ArticleLink({
   children: React.ReactNode;
 }) {
   return (
-    <Link href={href} className="text-accent hover:underline">
+    <Link
+      href={href}
+      className="text-accent underline decoration-accent/40 underline-offset-2 hover:decoration-accent"
+    >
       {children}
     </Link>
   );
