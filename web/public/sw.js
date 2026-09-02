@@ -1,7 +1,7 @@
 /** GigaSocial perf + offline feed/reels — refresh PWAs. */
-const CACHE_NAME = "giga3-shell-v218-paystack-fix";
-const NEXT_STATIC_CACHE = "giga3-next-static-v218";
-const APP_SHELL_CACHE = "giga3-app-shell-v218";
+const CACHE_NAME = "giga3-shell-v219-media-video";
+const NEXT_STATIC_CACHE = "giga3-next-static-v219";
+const APP_SHELL_CACHE = "giga3-app-shell-v219";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";
