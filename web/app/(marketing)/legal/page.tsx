@@ -8,7 +8,7 @@ export const metadata = publicMetadata({
   path: "/legal",
   title: "Legal — Giga3 AI Policies",
   description:
-    "Giga3 AI legal policies — Terms of Service, Privacy Policy, Cookie Policy, Refund Policy, and Acceptable Use.",
+    "Giga3 AI legal policies — Terms of Service, Privacy, Cookies, Refunds and cancellation, Acceptable Use, AI Usage Policy and Security Overview.",
 });
 
 export default function LegalIndexPage() {

@@ -365,7 +365,7 @@ export const sendMessage = action({
       sessionToken: args.sessionToken,
     });
     if (!user) {
-      await ctx.runMutation(api.users.createUser, { email });
+      await ctx.runMutation(internal.users.ensureUserInternal, { email });
       user = await ctx.runQuery(api.users.getUser, {
         sessionToken: args.sessionToken,
       });

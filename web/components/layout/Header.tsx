@@ -22,7 +22,7 @@ export function Header() {
       <Container className="flex min-h-14 items-center justify-between gap-4 py-2">
         <div className="flex min-w-0 items-center gap-2">
           <Link href="/" className="flex min-w-0 items-center gap-2.5 text-base font-semibold tracking-tight text-foreground">
-            <BrandLogo size={32} priority className="shadow-none ring-0" />
+            <BrandLogo size={32} priority alt="" className="shadow-none ring-0" />
             <span>{siteConfig.name}</span>
           </Link>
           <Link
@@ -63,6 +63,8 @@ export function Header() {
           size="sm"
           className="md:hidden"
           aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
+          aria-controls="mobile-nav"
           onClick={() => setOpen(!open)}
         >
           {open ? <X aria-hidden /> : <Menu aria-hidden />}
@@ -70,7 +72,7 @@ export function Header() {
       </Container>
 
       {open && (
-        <div className="border-t border-border bg-white md:hidden">
+        <nav id="mobile-nav" aria-label="Main menu" className="border-t border-border bg-white md:hidden">
           <Container className="grid grid-cols-1 gap-1 py-3">
             {navLinks.map((link) => (
               <a
@@ -90,7 +92,7 @@ export function Header() {
               Open app
             </ButtonLink>
           </Container>
-        </div>
+        </nav>
       )}
     </header>
   );

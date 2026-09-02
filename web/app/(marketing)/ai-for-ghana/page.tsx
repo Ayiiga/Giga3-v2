@@ -1,7 +1,13 @@
-import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { ButtonLink } from "@/components/ui/Button";
 import { JsonLd, type FaqItem } from "@/components/seo/JsonLd";
+import {
+  ArticleH2,
+  ArticleLink,
+  FaqSection,
+  Prose,
+  RelatedReading,
+} from "@/components/seo/SeoArticleParts";
 import {
   FREE_STARTER_CREDITS,
   SUBSCRIPTION_PLANS,
@@ -58,10 +64,6 @@ const FAQ: FaqItem[] = [
   },
 ];
 
-function Prose({ children }: { children: React.ReactNode }) {
-  return <p className="text-base leading-relaxed text-muted">{children}</p>;
-}
-
 export default function AiForGhanaPage() {
   return (
     <>
@@ -103,7 +105,7 @@ export default function AiForGhanaPage() {
             </div>
 
             <section className="mt-12 space-y-5">
-              <h2 className="text-xl font-semibold text-foreground">Powerful AI Tools for Learning and Productivity</h2>
+              <ArticleH2>Powerful AI Tools for Learning and Productivity</ArticleH2>
               <Prose>
                 Students in Ghana often need AI for research, studying, writing, brainstorming, coding
                 and understanding difficult subjects. Giga3 AI helps bring these tasks into one
@@ -125,7 +127,7 @@ export default function AiForGhanaPage() {
             </section>
 
             <section className="mt-12 space-y-5">
-              <h2 className="text-xl font-semibold text-foreground">Multi-provider AI failover</h2>
+              <ArticleH2>Multi-provider AI failover</ArticleH2>
               <Prose>
                 Giga3 AI is designed with multi-provider AI resilience. Where supported by the
                 platform&apos;s configuration, requests can use a provider chain such as OpenAI →
@@ -143,7 +145,7 @@ export default function AiForGhanaPage() {
             </section>
 
             <section className="mt-12 space-y-5">
-              <h2 className="text-xl font-semibold text-foreground">Affordable AI Pricing in Ghana</h2>
+              <ArticleH2>Affordable AI Pricing in Ghana</ArticleH2>
               <Prose>
                 Paying for international AI services can be difficult for some users in Ghana because
                 pricing is often presented in foreign currencies and payment methods may not be
@@ -177,7 +179,7 @@ export default function AiForGhanaPage() {
             </section>
 
             <section className="mt-12 space-y-5">
-              <h2 className="text-xl font-semibold text-foreground">One AI Platform for Modern African Users</h2>
+              <ArticleH2>One AI Platform for Modern African Users</ArticleH2>
               <Prose>
                 Giga3 AI is more than a basic chatbot. Its wider vision is to create an accessible AI
                 platform for learning, research, coding and creativity.
@@ -193,33 +195,16 @@ export default function AiForGhanaPage() {
               </Prose>
               <Prose>
                 Explore the platform&apos;s capabilities on the{" "}
-                <Link href="/#features" className="text-accent hover:underline">
-                  Giga3 AI Features page
-                </Link>{" "}
+                <ArticleLink href="/features">Giga3 AI Features page</ArticleLink>{" "}
                 and see the available plans on the{" "}
-                <Link href="/pricing" className="text-accent hover:underline">
-                  Giga3 AI Pricing page
-                </Link>
-                .
+                <ArticleLink href="/pricing">Giga3 AI Pricing page</ArticleLink>.
               </Prose>
             </section>
 
-            <section className="mt-12" aria-labelledby="faq-heading">
-              <h2 id="faq-heading" className="text-xl font-semibold text-foreground">
-                Frequently Asked Questions
-              </h2>
-              <dl className="mt-5 space-y-4">
-                {FAQ.map((item) => (
-                  <div key={item.question} className="saas-card rounded-2xl border border-border p-5">
-                    <dt className="font-semibold text-foreground">{item.question}</dt>
-                    <dd className="mt-2 text-base leading-relaxed text-muted">{item.answer}</dd>
-                  </div>
-                ))}
-              </dl>
-            </section>
+            <FaqSection items={FAQ} />
 
             <section className="mt-14 rounded-3xl border border-border bg-slate-50 p-8 text-center">
-              <h2 className="text-xl font-semibold text-foreground">Start Using Giga3 AI</h2>
+              <ArticleH2>Start Using Giga3 AI</ArticleH2>
               <p className="mt-3 text-base text-muted">
                 Ready to explore AI for learning, research, coding and creativity?
               </p>
@@ -238,6 +223,17 @@ export default function AiForGhanaPage() {
                 Giga3 AI — Built in Africa. Powered by AI. Designed for Everyone.
               </p>
             </section>
+
+            <RelatedReading
+              links={[
+                {
+                  href: "/ai-tools-for-students-ghana",
+                  label: "Best AI Tools for University Students in Ghana 2026",
+                },
+                { href: "/gigalearn", label: "GigaLearn — AI tutor for students" },
+                { href: "/pricing", label: "Giga3 AI plans and GHS pricing" },
+              ]}
+            />
           </article>
         </Container>
       </div>

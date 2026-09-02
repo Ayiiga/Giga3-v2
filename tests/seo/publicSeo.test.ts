@@ -86,7 +86,7 @@ describe("AI for Ghana landing page", () => {
 
   it("emits FAQPage structured data from the same FAQ used for visible copy", () => {
     expect(src).toContain("<JsonLd faq={FAQ} />");
-    expect(src).toContain("{FAQ.map((item) =>");
+    expect(src).toContain("<FaqSection items={FAQ} />");
     expect(src).toContain("What is Giga3 AI?");
     expect(src).toContain("How much does Giga3 AI cost?");
     expect(src).toContain("Can students in Ghana use Giga3 AI?");
@@ -100,13 +100,51 @@ describe("AI for Ghana landing page", () => {
 
   it("links to real internal destinations (no placeholder citation URLs)", () => {
     expect(src).not.toContain("reference-url-citation");
-    expect(src).toContain('href="/#features"');
+    expect(src).toContain('href="/features"');
     expect(src).toContain('href="/pricing"');
     expect(src).toContain('href="/chat/login"');
   });
 
   it("is listed in footer product links", () => {
     expect(FOOTER_PRODUCT_LINKS.map((l) => l.href)).toContain("/ai-for-ghana");
+  });
+});
+
+describe("Best AI tools for students in Ghana article", () => {
+  const src = readFileSync(
+    resolve(__dirname, "../../web/app/(marketing)/ai-tools-for-students-ghana/page.tsx"),
+    "utf8"
+  );
+
+  it("emits FAQPage structured data and a visible FAQ from the same data", () => {
+    expect(src).toContain("<JsonLd faq={FAQ} />");
+    expect(src).toContain("<FaqSection items={FAQ} />");
+    expect(src).toContain("Which AI tool is cheapest for Ghanaian students?");
+  });
+
+  it("does not advertise a student-only plan that the catalog does not have", () => {
+    expect(src).not.toMatch(/student-only/i);
+    expect(src).not.toMatch(/exclusively for students/i);
+    expect(src).not.toMatch(/students only/i);
+    expect(src).toContain("SUBSCRIPTION_PLANS.basic");
+  });
+
+  it("derives all GHS figures from the subscription catalog", () => {
+    expect(src).not.toMatch(/GHS 60/);
+    expect(src).not.toMatch(/GHS 150/);
+    expect(src).toContain("FREE_STARTER_CREDITS");
+  });
+
+  it("is registered in sitemap and footer, and cross-links the Ghana landing page", () => {
+    const xml = readFileSync(resolve(__dirname, "../../web/public/sitemap.xml"), "utf8");
+    expect(xml).toContain("https://www.giga3ai.com/ai-tools-for-students-ghana/");
+    expect(FOOTER_PRODUCT_LINKS.map((l) => l.href)).toContain("/ai-tools-for-students-ghana");
+    expect(src).toContain('href: "/ai-for-ghana"');
+    const landing = readFileSync(
+      resolve(__dirname, "../../web/app/(marketing)/ai-for-ghana/page.tsx"),
+      "utf8"
+    );
+    expect(landing).toContain('href: "/ai-tools-for-students-ghana"');
   });
 });
 

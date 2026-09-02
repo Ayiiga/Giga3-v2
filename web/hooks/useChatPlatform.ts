@@ -11,7 +11,6 @@ import {
   clearAllClientAuth,
   getSessionToken,
   getUserEmail,
-  setSessionToken,
 } from "@/lib/auth";
 import { recoverInvalidSession } from "@/lib/auth/sessionRestore";
 import {
@@ -383,8 +382,6 @@ export function useChatPlatform() {
   const setArchivedMutation = useMutation(api.conversations.setArchived);
   const setFavoriteMutation = useMutation(api.conversations.setFavorite);
   const updateTitleMutation = useMutation(api.conversations.updateTitle);
-  const createUser = useMutation(api.users.createUser);
-
   useEffect(() => {
     if (!mounted || sessionIdentity === undefined) return;
     if (sessionIdentity.ok) {
@@ -399,20 +396,11 @@ export function useChatPlatform() {
     sessionRecoveryRef.current = true;
 
     void (async () => {
+      // Sessions are only minted after proof of ownership (password / reset link /
+      // Supabase). A stored email alone must never bootstrap a session.
       const recovered = await recoverInvalidSession({
         online: effectiveOnline,
-        bootstrapSession: async (bootstrapEmail) => {
-          try {
-            const result = await createUser({ email: bootstrapEmail });
-            if (result && typeof result === "object" && "sessionToken" in result) {
-              const next = (result as { sessionToken: string }).sessionToken;
-              return next || null;
-            }
-          } catch {
-            return null;
-          }
-          return null;
-        },
+        bootstrapSession: async () => null,
       });
 
       if (recovered.status === "refreshed" || recovered.status === "offline_cached") {
@@ -432,7 +420,7 @@ export function useChatPlatform() {
         window.location.replace(`/chat/login/?next=${next}`);
       }
     })();
-  }, [mounted, sessionIdentity, effectiveOnline, createUser]);
+  }, [mounted, sessionIdentity, effectiveOnline]);
 
   const conversationsLoading =
     effectiveOnline && conversationsRaw === undefined && !cachedConversations;
@@ -681,24 +669,17 @@ export function useChatPlatform() {
       setSessionTokenState(token);
       return;
     }
+    // Legacy state: email remembered but no session token. Never mint a session
+    // from the email alone — send the user through a verified sign-in.
     createUserAttempted.current = true;
-    void createUser({ email })
-      .then((result) => {
-        if (result && typeof result === "object" && "sessionToken" in result) {
-          const next = (result as { sessionToken: string }).sessionToken;
-          if (next) {
-            setSessionToken(next);
-            setSessionTokenState(next);
-          }
-        }
-      })
-      .catch((err) => {
-        logChatClient("session_bootstrap_fail", {
-          error: err instanceof Error ? err.message : String(err),
-        });
-        setError("Could not start your session. Please refresh and sign in again.");
-      });
-  }, [email, createUser]);
+    logChatClient("session_bootstrap_requires_login", {});
+    clearAllClientAuth();
+    setEmail(null);
+    if (typeof window !== "undefined") {
+      const next = encodeURIComponent("/chat/");
+      window.location.replace(`/chat/login/?next=${next}`);
+    }
+  }, [email]);
 
   useEffect(() => {
     if (conversations.length === 0) {

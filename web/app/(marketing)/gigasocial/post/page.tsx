@@ -15,6 +15,8 @@ export const metadata = publicMetadata({
   title: "GigaSocial post",
   description:
     "View a shared public post from GigaSocial on Giga3 AI — connect, share videos, and join the community.",
+  // Legacy ?id= redirect shell — the per-item static pages carry the indexable content.
+  index: false,
 });
 
 export default function GigaSocialPostLegacyPage() {

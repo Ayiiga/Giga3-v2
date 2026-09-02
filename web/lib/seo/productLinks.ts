@@ -17,6 +17,7 @@ export const GIGA3_PRODUCT_LINKS = [
 /** Footer product column — crawlable internal links across the public ecosystem. */
 export const FOOTER_PRODUCT_LINKS = [
   { href: "/", label: "Giga3 AI" },
+  { href: "/features", label: "All features" },
   { href: "/chat", label: "AI Chat" },
   { href: "/gigasocial", label: "GigaSocial" },
   { href: "/gigaedits", label: "GigaEdits" },
@@ -34,6 +35,8 @@ export const FOOTER_PRODUCT_LINKS = [
   { href: "/developers", label: "Developer API" },
   { href: "/pricing", label: "Pricing" },
   { href: "/ai-for-ghana", label: "AI for Ghana" },
+  { href: "/ai-tools-for-students-ghana", label: "AI tools for students" },
+  { href: "/install", label: "Install app" },
   { href: "/about", label: "About" },
 ] as const;
 

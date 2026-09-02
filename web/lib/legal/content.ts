@@ -15,7 +15,7 @@ export type LegalDocument = {
   outro?: readonly string[];
 };
 
-export const LEGAL_EFFECTIVE_DATE = "July 4, 2026";
+export const LEGAL_EFFECTIVE_DATE = "September 2, 2026";
 
 export const legalDocuments: readonly LegalDocument[] = [
   {
@@ -54,16 +54,21 @@ export const legalDocuments: readonly LegalDocument[] = [
       },
       {
         id: "subscriptions",
-        title: "5. Subscriptions",
+        title: "5. Subscriptions and automatic renewal",
         paragraphs: [
-          "Some features require a paid subscription. Subscription benefits, pricing, and limits may change with notice where required by law.",
+          "Some features require a paid subscription billed monthly in Ghanaian cedis (GHS). Each subscription period lasts 30 days and includes the monthly credit allowance shown at checkout; credits refill when a new period starts.",
+          "Subscriptions renew automatically. Where your payment method supports repeat charges (for example a bank card), we will charge it up to two days before your current period ends. Where it does not (for example mobile money), we will email you before your period ends so you can renew manually, and your plan will end if you do not.",
+          "You can turn off automatic renewal at any time from the Subscription tab in your Wallet, or by removing your saved payment method there. Turning renewal off keeps your plan until the end of the period you have already paid for; no further charges are made.",
+          "If an automatic charge fails we will notify you by email and retry for a short period. If it still cannot be completed, your plan returns to the Free tier at the end of the paid period.",
+          "Subscription benefits, pricing, and limits may change with notice where required by law.",
         ],
       },
       {
         id: "payments",
         title: "6. Payments",
         paragraphs: [
-          "Payments are securely processed by third-party payment providers. Giga3 AI does not store your complete payment card information.",
+          "Payments are processed by Paystack, a third-party payment provider. Card details are entered on Paystack's secure checkout and never on Giga3 AI servers.",
+          "To support automatic renewal, Paystack may return a tokenised payment authorisation which we store to charge future periods. This token is not your card number; you can delete it at any time from your Wallet, which also turns off automatic renewal.",
         ],
       },
       {
@@ -266,13 +271,22 @@ export const legalDocuments: readonly LegalDocument[] = [
     slug: "refunds",
     title: "Refund Policy",
     effectiveDate: LEGAL_EFFECTIVE_DATE,
-    description: "Giga3 AI subscription refund eligibility and process.",
+    description:
+      "Giga3 AI refund and cancellation policy: how automatic renewal works, how to cancel from your Wallet, and when refunds are considered.",
     sections: [
       {
         id: "general",
         title: "General policy",
         paragraphs: [
           "Subscription fees are generally non-refundable except where required by applicable law.",
+        ],
+      },
+      {
+        id: "cancellation",
+        title: "Cancelling automatic renewal",
+        paragraphs: [
+          "Paid plans renew automatically every 30 days unless you turn renewal off. To cancel, open your Wallet, choose the Subscription tab and select “Turn off auto-renewal” (or remove your saved payment method). You keep access until the end of the period you have paid for, and nothing further is charged.",
+          "Cancelling does not refund the current period. Credits already granted for that period remain available until it ends.",
         ],
       },
       {
@@ -307,7 +321,8 @@ export const legalDocuments: readonly LegalDocument[] = [
     slug: "acceptable-use",
     title: "Acceptable Use Policy",
     effectiveDate: LEGAL_EFFECTIVE_DATE,
-    description: "Responsible and lawful use of Giga3 AI.",
+    description:
+      "Giga3 AI Acceptable Use Policy — what you may not do with our AI, social, learning and marketplace tools, and how violations are handled.",
     intro: ["You agree to use Giga3 AI responsibly and lawfully.", "You must not use Giga3 AI to:"],
     sections: [
       {
@@ -331,6 +346,143 @@ export const legalDocuments: readonly LegalDocument[] = [
       "Users are responsible for verifying AI-generated content before relying on it.",
       "Violation of this policy may result in warnings, suspension, or permanent termination of your account.",
       "Giga3 AI reserves the right to investigate suspected misuse and cooperate with lawful requests from authorities where required by applicable law.",
+    ],
+  },
+  {
+    slug: "ai-usage",
+    title: "AI Usage Policy",
+    effectiveDate: LEGAL_EFFECTIVE_DATE,
+    description:
+      "How Giga3 AI generates answers, which third-party AI providers may process your prompts, how AI output is labelled, and what you should verify before relying on it.",
+    intro: [
+      "Giga3 AI combines several artificial-intelligence services into one platform. This policy explains, in plain language, how those services work and what they do not do.",
+    ],
+    sections: [
+      {
+        id: "providers",
+        title: "1. Third-party AI providers",
+        paragraphs: [
+          "Prompts, attached files and relevant conversation history are sent from our servers to third-party AI providers to generate a response. Depending on the feature and configuration these may include OpenAI, Google (Gemini) and fal.ai/OpenRouter for text, and fal.ai, Replicate and Google for images and video.",
+          "Requests use a server-side failover chain: if the first configured provider is unavailable or returns an eligible error, the request may be retried with the next provider. Provider credentials never leave our servers and are never sent to your browser.",
+          "Each provider processes data under its own terms. We do not control how a provider operates its models; do not include passwords, payment details or other secrets in prompts.",
+        ],
+      },
+      {
+        id: "accuracy",
+        title: "2. Accuracy and verification",
+        paragraphs: [
+          "AI output can be wrong, incomplete, outdated or biased, even when it sounds confident. Giga3 AI does not review individual answers for accuracy.",
+          "Verify important facts, figures, citations, code and legal, medical or financial information with reliable sources before acting on them. Educational answers in GigaLearn are study aids, not verified curriculum material, unless a resource is explicitly marked as verified.",
+        ],
+      },
+      {
+        id: "live-web",
+        title: "3. Live web and sources",
+        paragraphs: [
+          "When you enable Live Web, we search the public web and read publicly accessible pages to ground the answer, and we show the sources we used. A listed source means the page was consulted; it does not guarantee the statement attributed to it is correct. Open important sources yourself.",
+        ],
+      },
+      {
+        id: "labelling",
+        title: "4. Labelling of AI content",
+        paragraphs: [
+          "Text, images and video created with Giga3 AI tools are AI-generated. When you publish AI-generated media to GigaSocial or sell it on the Marketplace, do not present it as a human-made original where that would mislead others, and follow the Acceptable Use Policy.",
+        ],
+      },
+      {
+        id: "your-content",
+        title: "5. Your prompts and outputs",
+        paragraphs: [
+          "You keep ownership of the prompts you write and, to the extent permitted by law and the providers' terms, the outputs generated for you. We process prompts and outputs to provide the service, keep your conversation history, apply safety and abuse controls, and improve reliability.",
+          "We do not sell your prompts. We do not use them to train models ourselves; third-party providers apply their own data policies.",
+        ],
+      },
+      {
+        id: "credits",
+        title: "6. Credits",
+        paragraphs: [
+          "AI requests consume credits according to the rates shown in your account. For chat, credits are deducted only after a provider has produced a reply; if every configured provider fails and you receive our built-in fallback message instead, no credits are charged for that request.",
+        ],
+      },
+      {
+        id: "prohibited-ai",
+        title: "7. Prohibited AI uses",
+        bullets: [
+          "Generating content that is unlawful, defamatory, hateful or sexually explicit involving minors.",
+          "Creating deceptive impersonations of real people or organisations.",
+          "Producing malware, exploits or instructions for serious harm.",
+          "Automated bulk generation intended to spam or manipulate search engines, social platforms or the Marketplace.",
+          "Attempting to extract provider credentials, system prompts or other users' data.",
+        ],
+      },
+    ],
+    outro: [
+      "This policy supplements the Terms of Service and Acceptable Use Policy. Where they conflict, the stricter rule applies.",
+    ],
+  },
+  {
+    slug: "security",
+    title: "Security Overview",
+    effectiveDate: LEGAL_EFFECTIVE_DATE,
+    description:
+      "How Giga3 AI protects accounts, payments and data: server-side secrets, signed sessions, Paystack-verified payments, rate limiting and security monitoring.",
+    intro: [
+      "This page describes the security practices actually in place on Giga3 AI. It is written for users and evaluators and is kept in step with the platform; it is not a certification or a guarantee.",
+    ],
+    sections: [
+      {
+        id: "accounts",
+        title: "1. Accounts and sessions",
+        bullets: [
+          "Sessions are signed tokens issued only after you prove ownership of your email: a password check, an emailed reset link that expires after one hour, or a verified Supabase sign-in.",
+          "Passwords are stored as salted scrypt hashes; we never store or log plain-text passwords.",
+          "Sign-in, sign-up and reset endpoints are rate-limited, and repeated failures are recorded as security events for review.",
+        ],
+      },
+      {
+        id: "payments",
+        title: "2. Payments",
+        bullets: [
+          "Checkout runs on Paystack. Card and mobile-money details are entered on Paystack, not on Giga3 AI.",
+          "Every payment is verified server-side with Paystack before credits or plans are granted; webhook messages are checked against Paystack's signature before they are trusted.",
+          "For automatic renewal we store only the tokenised authorisation Paystack returns, never a card number. You can delete it from your Wallet.",
+        ],
+      },
+      {
+        id: "secrets",
+        title: "3. Keys and secrets",
+        bullets: [
+          "AI provider keys, payment secrets and signing secrets live only in server configuration. They are not included in the web app bundle or exposed to the browser.",
+          "AI provider failover happens on the server; the browser only ever talks to Giga3 AI.",
+        ],
+      },
+      {
+        id: "transport",
+        title: "4. Transport and browser protections",
+        bullets: [
+          "All traffic uses HTTPS with HTTP Strict Transport Security.",
+          "The site sends a Content Security Policy, frame-ancestors restrictions and other hardening headers to reduce cross-site scripting and clickjacking risk.",
+        ],
+      },
+      {
+        id: "authorization",
+        title: "5. Access control",
+        bullets: [
+          "Every request that reads or changes your data requires your session token; the server derives your identity from that token, never from values the browser sends.",
+          "Marketplace downloads are released only after the server confirms you purchased the item or created it, and that the file passed review.",
+          "Administrative functions require a separate admin credential.",
+        ],
+      },
+      {
+        id: "reporting",
+        title: "6. Reporting a vulnerability",
+        paragraphs: [
+          "If you believe you have found a security issue, email hello@giga3ai.com with the details and steps to reproduce. Please give us reasonable time to investigate and fix before disclosing publicly. We do not currently run a paid bug-bounty programme.",
+        ],
+      },
+    ],
+    outro: [
+      "No online service can guarantee absolute security. We continue to review and improve these controls and will update this page when they change.",
     ],
   },
 ] as const;

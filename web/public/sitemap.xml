@@ -19,12 +19,18 @@
   <url><loc>https://www.giga3ai.com/developers/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://www.giga3ai.com/about/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://www.giga3ai.com/ai-for-ghana/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.giga3ai.com/ai-tools-for-students-ghana/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.giga3ai.com/pricing/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.giga3ai.com/download/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.giga3ai.com/install/</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://www.giga3ai.com/video/plans/</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://www.giga3ai.com/features/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.giga3ai.com/legal/</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
   <url><loc>https://www.giga3ai.com/legal/terms/</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
   <url><loc>https://www.giga3ai.com/legal/privacy/</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
   <url><loc>https://www.giga3ai.com/legal/cookies/</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
   <url><loc>https://www.giga3ai.com/legal/refunds/</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
   <url><loc>https://www.giga3ai.com/legal/acceptable-use/</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://www.giga3ai.com/legal/ai-usage/</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://www.giga3ai.com/legal/security/</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
 </urlset>

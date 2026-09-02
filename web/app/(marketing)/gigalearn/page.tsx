@@ -17,7 +17,7 @@ export const metadata = publicMetadata({
   path: "/gigalearn",
   title: "GigaLearn — AI Tutor and Exam Prep",
   description:
-    "GigaLearn on Giga3 AI supports students, teachers, and parents with AI homework help, BECE and WASSCE preparation, practice questions, study plans, and classroom tools.",
+    "GigaLearn on Giga3 AI helps students, teachers and parents with AI homework help, BECE and WASSCE prep, practice questions, study plans and classroom tools.",
 });
 
 export default function GigaLearnPage() {

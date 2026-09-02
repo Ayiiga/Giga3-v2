@@ -27,12 +27,14 @@ export function PaystackModeBadge({
     <span
       className={cn(
         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1",
+        // Light backgrounds need the 700/800 shades for AA contrast; dark mode keeps the pale text.
         mode === "live" &&
-          "bg-emerald-500/15 text-emerald-200 ring-emerald-500/40",
-        mode === "test" && "bg-amber-500/15 text-amber-200 ring-amber-500/40",
+          "bg-emerald-50 text-emerald-800 ring-emerald-300 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-emerald-500/40",
+        mode === "test" &&
+          "bg-amber-50 text-amber-800 ring-amber-300 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-500/40",
         mode !== "live" &&
           mode !== "test" &&
-          "bg-white/10 text-muted ring-border",
+          "bg-slate-50 text-slate-700 ring-border dark:bg-white/10 dark:text-muted",
         className
       )}
     >

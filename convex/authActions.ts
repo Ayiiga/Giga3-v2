@@ -1,46 +1,33 @@
 "use node";
 
 import { action } from "./_generated/server";
-import { api } from "./_generated/api";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { createSessionToken } from "./sessionAuth";
 import { verifySupabaseAccessToken } from "./supabaseAuth";
 import { UnauthorizedError } from "./securityErrors";
-import { internal } from "./_generated/api";
 
 /** Exchange a verified Supabase magic-link/OAuth token for a Giga3 session token. */
 export const establishSessionFromSupabase = action({
   args: { supabaseAccessToken: v.string() },
   handler: async (ctx, args) => {
     const email = await verifySupabaseAccessToken(args.supabaseAccessToken);
-    await ctx.runMutation(api.users.createUser, { email });
+    await ctx.runMutation(internal.users.ensureUserInternal, { email });
     const sessionToken = await createSessionToken(email);
     return { email, sessionToken };
   },
 });
 
-/** Bootstrap session after email sign-in (Convex path). */
+/**
+ * @deprecated Issued a session from a bare email address (no proof of
+ * ownership). Disabled; kept so old clients receive a clear error instead of a
+ * missing-function failure. Use password sign-in or the emailed reset link.
+ */
 export const establishSessionFromEmail = action({
   args: { email: v.string() },
-  handler: async (ctx, args) => {
-    const email = args.email.trim().toLowerCase();
-    if (!email.includes("@")) throw new UnauthorizedError();
-
-    const hasCredentials = await ctx.runQuery(
-      internal.passwordAuth.hasCredentialsInternal,
-      { email }
+  handler: async () => {
+    throw new UnauthorizedError(
+      "Email-only sign-in is no longer available. Sign in with your password, or use “Forgot password” to set one."
     );
-    if (hasCredentials) {
-      throw new UnauthorizedError(
-        "This account uses a password. Sign in with your password instead."
-      );
-    }
-
-    const created = await ctx.runMutation(api.users.createUser, { email });
-    const sessionToken =
-      typeof created === "object" && created && "sessionToken" in created
-        ? String((created as { sessionToken: string }).sessionToken)
-        : await createSessionToken(email);
-    return { email, sessionToken };
   },
 });

@@ -44,7 +44,7 @@ export const siteConfig = {
 } as const;
 
 export const navLinks = [
-  { href: "/#features", label: "Features" },
+  { href: "/features", label: "Features" },
   { href: "/discover", label: "Discover" },
   { href: "/trending", label: "Trending" },
   { href: "/#multi-chat", label: "Multi-AI" },

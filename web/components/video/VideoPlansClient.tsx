@@ -37,7 +37,7 @@ function VideoPlansInner() {
         amountGhs={checkoutPreview?.amountGhs}
       />
       <div className="text-center">
-        <h1 className="page-title">Video AI Plans</h1>
+        <h2 className="page-title">Choose a video plan</h2>
         <p className="mt-2 text-muted">
           Independent video subscriptions and credit packs (~$15–$300). Never mixed with chat credits.
         </p>

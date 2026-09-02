@@ -44,7 +44,7 @@ export const askAI = action({
       sessionToken: args.sessionToken,
     });
     if (!user) {
-      await ctx.runMutation(api.users.createUser, { email: verifiedEmail });
+      await ctx.runMutation(internal.users.ensureUserInternal, { email: verifiedEmail });
       user = await ctx.runQuery(api.users.getUser, {
         sessionToken: args.sessionToken,
       });

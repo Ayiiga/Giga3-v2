@@ -186,6 +186,11 @@ jobs:
           NEXT_PUBLIC_CONVEX_URL: ${{ env.RESOLVED_CONVEX_URL }}
         run: node scripts/verify-convex-in-build.mjs
 
+      # Fails on duplicate titles/descriptions/canonicals, missing H1, invalid
+      # JSON-LD, or sitemap entries that point at missing/noindex pages.
+      - name: SEO audit of static export
+        run: npm run seo:audit
+
       - name: Verify Supabase configuration
         working-directory: .
         env:

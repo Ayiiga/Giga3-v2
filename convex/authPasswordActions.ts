@@ -1,7 +1,7 @@
 "use node";
 
 import { action } from "./_generated/server";
-import { api, internal } from "./_generated/api";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { createSessionToken } from "./sessionAuth";
 import { UnauthorizedError } from "./securityErrors";
@@ -33,11 +33,12 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+/** Only call after ownership of `email` has been proven (password, reset token). */
 async function issueSession(
   ctx: { runMutation: Function },
   email: string
 ): Promise<{ email: string; sessionToken: string }> {
-  await ctx.runMutation(api.users.createUser, { email });
+  await ctx.runMutation(internal.users.ensureUserInternal, { email });
   const sessionToken = await createSessionToken(email);
   return { email, sessionToken };
 }
@@ -397,34 +398,20 @@ export const resetPasswordWithToken = action({
   },
 });
 
-/** Set password on existing email-only account (first-time password setup via reset flow). */
+/**
+ * @deprecated Let anyone set a password (and get a session) for an email-only
+ * account without proving ownership. Disabled; `requestPasswordReset` already
+ * covers first-time password setup through an emailed, expiring link.
+ */
 export const setPasswordForEmail = action({
   args: {
     email: v.string(),
     password: v.string(),
   },
-  handler: async (ctx, args) => {
-    const email = normalizeEmail(args.email);
-    const passwordError = validatePasswordShape(args.password);
-    if (passwordError) throw new UnauthorizedError(passwordError);
-
-    const hasCredentials = await ctx.runQuery(
-      internal.passwordAuth.hasCredentialsInternal,
-      { email }
+  handler: async () => {
+    throw new UnauthorizedError(
+      "Use “Forgot password” — we will email you a secure link to set your password."
     );
-    if (hasCredentials) {
-      throw new UnauthorizedError(
-        "Password already set. Use sign in or forgot password."
-      );
-    }
-
-    const passwordHash = await hashPassword(args.password);
-    await ctx.runMutation(internal.passwordAuth.setCredentialsInternal, {
-      email,
-      passwordHash,
-    });
-
-    return await issueSession(ctx, email);
   },
 });
 

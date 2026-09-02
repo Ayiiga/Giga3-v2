@@ -8,7 +8,8 @@ import { BrandLogo } from "@/components/brand/BrandLogo";
 export const metadata: Metadata = publicMetadata({
   path: "/about",
   title: "About Giga3 AI",
-  description: GIGA3_VISION.mission,
+  description:
+    "Giga3 AI is an AI platform built in Ghana for learning, research, coding and creativity — designed for students, creators and businesses worldwide.",
 });
 
 export default function AboutPage() {
