@@ -97,6 +97,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PAYSTACK_SECRET_KEY: ${{ secrets.PAYSTACK_SECRET_KEY }}
           PAYSTACK_PUBLIC_KEY: ${{ secrets.PAYSTACK_PUBLIC_KEY }}
+          FRONTEND_URL: ${{ vars.FRONTEND_URL || 'https://www.giga3ai.com' }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           PLATFORM_ADMIN_EMAILS: ${{ secrets.PLATFORM_ADMIN_EMAILS }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
@@ -131,6 +132,10 @@ jobs:
           fi
           if [ -n "${PAYSTACK_PUBLIC_KEY:-}" ]; then
             npx convex env set PAYSTACK_PUBLIC_KEY "${PAYSTACK_PUBLIC_KEY}"
+          fi
+          if [ -n "${FRONTEND_URL:-}" ]; then
+            npx convex env set FRONTEND_URL "${FRONTEND_URL}"
+            echo "FRONTEND_URL synced for Paystack callback redirects."
           fi
           if [ -n "${RESEND_API_KEY:-}" ]; then
             npx convex env set RESEND_API_KEY "${RESEND_API_KEY}"
