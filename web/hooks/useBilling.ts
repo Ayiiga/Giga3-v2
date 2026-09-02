@@ -126,8 +126,8 @@ export function useBilling() {
               if (token) {
                 await verifyPaystackPayment(verifyPayment, reference, token);
               }
-            } catch {
-              /* Webhook may still fulfill; success page retries */
+            } catch (verifyErr) {
+              console.warn("[paystack] post-popup verify failed; success page will retry", verifyErr);
             }
             clearCheckout();
             router.push(
@@ -135,7 +135,11 @@ export function useBilling() {
             );
           },
           onCancel: () => {
+            const ref = result.reference;
             clearCheckout();
+            router.push(
+              `/payment/failed/?reference=${encodeURIComponent(ref)}&reason=${encodeURIComponent("Payment cancelled.")}`
+            );
           },
           onError: (message) => {
             clearCheckout();
@@ -154,6 +158,7 @@ export function useBilling() {
     },
     [
       email,
+      sessionToken,
       initPayment,
       publicKey,
       router,

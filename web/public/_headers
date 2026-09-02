@@ -29,6 +29,21 @@
 
 /payment/*
   Cache-Control: no-store, no-cache, must-revalidate
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+
+/wallet/*
+  Cache-Control: no-store, no-cache, must-revalidate
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+
+/credits/*
+  Cache-Control: no-store, no-cache, must-revalidate
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+
+/subscribe/*
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+
+/pricing/*
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
 
 /marketplace/sell/*
   Cache-Control: no-store, no-cache, must-revalidate
@@ -37,12 +52,6 @@
   Cache-Control: no-store, no-cache, must-revalidate
 
 /workspace/*
-  Cache-Control: no-store, no-cache, must-revalidate
-
-/wallet/*
-  Cache-Control: no-store, no-cache, must-revalidate
-
-/credits/*
   Cache-Control: no-store, no-cache, must-revalidate
 
 /admin/*
