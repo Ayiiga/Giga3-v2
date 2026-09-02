@@ -209,6 +209,7 @@ function WalletPageClientInner() {
             checkoutPhase,
             "Subscribe with Paystack"
           )}
+          sessionToken={sessionToken}
         />
       )}
 

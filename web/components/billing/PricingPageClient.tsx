@@ -56,8 +56,8 @@ function PricingPageClientInner() {
       <section>
         <h2 className="text-center text-2xl font-semibold">Subscription plans</h2>
         <p className="mx-auto mt-2 max-w-xl text-center text-sm text-muted">
-          Pay with Paystack (GHS). Credits refill each billing period. Webhook
-          activates your plan automatically.
+          Pay with Paystack (GHS). Plans renew automatically every 30 days and
+          credits refill each period — cancel anytime from your wallet.
         </p>
         <div className="mt-3 flex justify-center">
           <PaystackModeBadge mode={paystackMode} inlineEnabled={inlineEnabled} />

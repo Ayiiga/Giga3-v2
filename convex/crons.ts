@@ -3,6 +3,14 @@ import { internal } from "./_generated/api";
 
 const crons = cronJobs();
 
+// Charge saved cards for periods ending within 2 days (runs before the expiry sweep).
+crons.daily(
+  "renew subscriptions via saved payment methods",
+  { hourUTC: 2, minuteUTC: 0 },
+  internal.subscriptionRenewal.processDueRenewals,
+  {}
+);
+
 crons.daily(
   "expire subscriptions and downgrade to free",
   { hourUTC: 3, minuteUTC: 0 },

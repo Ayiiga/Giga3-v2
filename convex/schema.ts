@@ -264,10 +264,38 @@ export default defineSchema({
     emailEngagementOptIn: v.optional(v.boolean()),
     lastEngagementEmailAt: v.optional(v.number()),
     emailUnsubscribeToken: v.optional(v.string()),
+    /** Subscription auto-renewal — undefined means on (default for paid plans). */
+    autoRenew: v.optional(v.boolean()),
+    renewalFailures: v.optional(v.number()),
+    lastRenewalAttemptAt: v.optional(v.number()),
+    renewalReminderSentAt: v.optional(v.number()),
   })
     .index("by_email", ["email"])
     .index("by_referralCode", ["referralCode"])
-    .index("by_last_engagement_email", ["lastEngagementEmailAt"]),
+    .index("by_last_engagement_email", ["lastEngagementEmailAt"])
+    .index("by_subscription_expiry", ["subscriptionExpiresAt"]),
+
+  /** Reusable Paystack authorizations (cards) captured on successful charges — server-only. */
+  billingAuthorizations: defineTable({
+    userId: v.string(),
+    provider: v.literal("paystack"),
+    authorizationCode: v.string(),
+    signature: v.optional(v.string()),
+    channel: v.string(),
+    reusable: v.boolean(),
+    brand: v.optional(v.string()),
+    cardType: v.optional(v.string()),
+    last4: v.optional(v.string()),
+    expMonth: v.optional(v.string()),
+    expYear: v.optional(v.string()),
+    bank: v.optional(v.string()),
+    customerEmail: v.string(),
+    sourceReference: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_code", ["userId", "authorizationCode"]),
 
   /** Email + password credentials (scrypt hash). Separate from users for security. */
   userCredentials: defineTable({
@@ -292,6 +320,15 @@ export default defineSchema({
     periodStart: v.number(),
     periodEnd: v.number(),
     creditsGranted: v.number(),
+    /** How this period was paid — undefined means a regular Paystack checkout. */
+    source: v.optional(
+      v.union(
+        v.literal("checkout"),
+        v.literal("renewal"),
+        v.literal("complimentary")
+      )
+    ),
+    note: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -335,6 +372,8 @@ export default defineSchema({
     paystackResponse: v.optional(v.string()),
     /** Internal platform revenue — admin only; not shown in client payment views. */
     platformFeeGhs: v.optional(v.number()),
+    /** True when charged automatically via a saved authorization (renewal). */
+    isRenewal: v.optional(v.boolean()),
     createdAt: v.number(),
   })
     .index("by_reference", ["reference"])
