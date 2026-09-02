@@ -7,10 +7,8 @@ import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import {
   GRANDFATHERED_SUBSCRIBER_EMAIL,
-  isBlockedFromNewSubscription,
   isGrandfatheredSubscriber,
   normalizeSubscriberEmail,
-  SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE,
 } from "./subscriptionPolicy";
 
 export const getActiveSubscription = query({
@@ -40,10 +38,6 @@ export const activateSubscription = internalMutation({
       .withIndex("by_email", (q) => q.eq("email", args.userId))
       .first();
     if (!user) throw new Error("User not found");
-
-    if (isBlockedFromNewSubscription(user.email)) {
-      throw new Error(SUBSCRIPTION_CHECKOUT_BLOCKED_MESSAGE);
-    }
 
     const now = Date.now();
     const base = Math.max(user.subscriptionExpiresAt ?? now, now);

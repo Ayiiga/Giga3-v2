@@ -3,17 +3,21 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("Paystack fulfillment safety", () => {
-  it("blocks subscription checkout before marking payment success", () => {
+  it("validates amount and returns early for already-fulfilled payments before patching success", () => {
     const src = readFileSync(resolve(__dirname, "../../convex/paystack.ts"), "utf8");
     const fulfillStart = src.indexOf("export const fulfillPayment");
     expect(fulfillStart).toBeGreaterThan(-1);
     const fulfillBody = src.slice(fulfillStart, fulfillStart + 4500);
 
-    const blockIdx = fulfillBody.indexOf("isBlockedFromNewSubscription");
+    const alreadyIdx = fulfillBody.indexOf("alreadyFulfilled: true");
+    const amountIdx = fulfillBody.indexOf("validatePaymentAmount(record");
     const patchIdx = fulfillBody.indexOf('status: "success"');
-    expect(blockIdx).toBeGreaterThan(-1);
+    expect(alreadyIdx).toBeGreaterThan(-1);
+    expect(amountIdx).toBeGreaterThan(-1);
     expect(patchIdx).toBeGreaterThan(-1);
-    expect(blockIdx).toBeLessThan(patchIdx);
+    expect(alreadyIdx).toBeLessThan(patchIdx);
+    expect(amountIdx).toBeLessThan(patchIdx);
+    expect(fulfillBody).not.toContain("isBlockedFromNewSubscription");
   });
 
   it("uses relaxed amount checks for client verify and webhook", () => {
