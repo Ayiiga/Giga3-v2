@@ -378,6 +378,7 @@ export default defineSchema({
       v.literal("system")
     ),
     content: v.string(),
+    metadataJson: v.optional(v.string()),
     createdAt: v.number(),
   }).index("by_conversation", ["conversationId", "createdAt"]),
 
@@ -747,6 +748,11 @@ export default defineSchema({
     regenerateFromMessageId: v.optional(v.id("messages")),
     clientRequestId: v.optional(v.string()),
     chatSystem: v.optional(v.string()),
+    liveWeb: v.optional(v.boolean()),
+    liveWebMode: v.optional(
+      v.union(v.literal("research"), v.literal("actions"))
+    ),
+    liveWebProgress: v.optional(v.string()),
     cancelled: v.optional(v.boolean()),
     status: v.union(
       v.literal("pending"),

@@ -40,6 +40,13 @@ import {
   IMAGE_UPGRADE_MARKDOWN,
   resolveImageGenerationDecision,
 } from "./premiumImage";
+import { isLiveWebEnabled } from "./liveWeb/liveWebConfig";
+import {
+  buildLiveWebMetadata,
+  mergeLiveWebSources,
+  runWebResearch,
+} from "./liveWeb/webResearchOrchestrator";
+import { proposeWebAction } from "./liveWeb/webActionProvider";
 
 // Kept below the client reply-wait deadline (CHAT_REPLY_WAIT_MS = 150s) so the
 // worker persists a real or fallback reply — clearing "Thinking…" gracefully via
@@ -167,6 +174,7 @@ async function runHybridAiEngine(
     conversationId: string;
     subscriptionPlan: string;
     subscriptionExpiresAt?: number | null;
+    forceWebSearch?: boolean;
   }
 ): Promise<ChatEngineResult & { cached: boolean; requestKind: RequestKind }> {
   const routePlan = buildChatRoutePlan({
@@ -177,6 +185,9 @@ async function runHybridAiEngine(
     hasImageAttachment: args.hasImageAttachment,
     chatSystem: args.routing.chatSystem,
   });
+  if (args.forceWebSearch && routePlan.requestKind === "text_chat") {
+    routePlan.enableWebSearch = true;
+  }
 
   if (
     args.routing.tier === "free" &&
@@ -510,13 +521,97 @@ export const processJob = internalAction({
       if (segmentRecap) {
         systemPrompt += `\n\n${segmentRecap}`;
       }
+
+      let liveWebSources: import("./liveWeb/types").LiveWebSource[] = [];
+      let liveWebProviderId: string | null = null;
+      let liveWebUsed = false;
+
+      if (job.liveWeb && isLiveWebEnabled() && !attachments.some((a) => a.kind === "image")) {
+        try {
+          await ctx.runMutation(internal.liveWebRateLimit.consumeLiveWebRateLimitInternal, {
+            userId: email,
+          });
+        } catch (rateErr) {
+          if (isRateLimitError(rateErr)) {
+            await ctx.runMutation(internal.platform.appendMessage, {
+              conversationId: job.conversationId,
+              userId: email,
+              role: "assistant",
+              content: rateLimitReply(
+                rateErr instanceof Error ? rateErr.message : "Live web rate limit reached."
+              ),
+            });
+            await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
+              jobId: args.jobId,
+              status: "done",
+            });
+            return;
+          }
+          throw rateErr;
+        }
+
+        if (job.liveWebMode === "actions") {
+          const proposal = proposeWebAction(job.content);
+          const actionReply =
+            proposal.blockedReason ??
+            "Web Actions require explicit confirmation. No browser automation was performed.";
+          await ctx.runMutation(internal.platform.appendMessage, {
+            conversationId: job.conversationId,
+            userId: email,
+            role: "assistant",
+            content: actionReply,
+            metadataJson: JSON.stringify({
+              basis: "knowledge",
+              sources: [],
+              webActionsLog: [
+                {
+                  action: proposal.description,
+                  timestamp: Date.now(),
+                  status: proposal.blockedReason ? "blocked" : "unsupported",
+                },
+              ],
+            }),
+          });
+          await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
+            jobId: args.jobId,
+            status: "done",
+          });
+          return;
+        }
+
+        const research = await runWebResearch({
+          query: job.content,
+          onProgress: async (stage) => {
+            await ctx.runMutation(internal.chatReplyJobs.updateLiveWebProgress, {
+              jobId: args.jobId,
+              liveWebProgress: stage,
+            });
+          },
+        });
+        liveWebSources = research.sources;
+        liveWebProviderId = research.providerId;
+        liveWebUsed = research.usedLiveSearch || research.sources.length > 0;
+        if (research.contextBlock) {
+          systemPrompt += `\n\n${research.contextBlock}`;
+        }
+        if (research.warnings.length) {
+          systemPrompt += `\n\nLive web notes:\n${research.warnings.join("\n")}`;
+        }
+        systemPrompt +=
+          "\n\nWhen Live Web is enabled, label your answer basis: start with either \"Based on live web information.\" or \"Based on Giga3 AI knowledge.\" as appropriate.";
+      } else if (job.liveWeb && !isLiveWebEnabled()) {
+        systemPrompt +=
+          "\n\nLive web is currently unavailable on the server. Answer from Giga3 AI knowledge and say live web is unavailable.";
+      }
+
       if (
         isLiveNewsEnabled() &&
-        shouldEnableWebSearch(
-          job.content,
-          mode,
-          attachments.some((a) => a.kind === "image")
-        )
+        (job.liveWeb ||
+          shouldEnableWebSearch(
+            job.content,
+            mode,
+            attachments.some((a) => a.kind === "image")
+          ))
       ) {
         const briefing = await ctx.runQuery(internal.liveNewsInternal.getBriefingInternal, {});
         if (briefing) {
@@ -571,6 +666,7 @@ export const processJob = internalAction({
         conversationId: job.conversationId,
         subscriptionPlan: refreshedUser?.subscriptionPlan ?? "free",
         subscriptionExpiresAt: refreshedUser?.subscriptionExpiresAt,
+        forceWebSearch: Boolean(job.liveWeb && isLiveWebEnabled()),
       });
       const latencyMs = engineResult.latencyMs ?? Date.now() - started;
 
@@ -634,6 +730,20 @@ export const processJob = internalAction({
           userId: email,
           role: "assistant",
           content: assistantContent,
+          metadataJson:
+            job.liveWeb && isLiveWebEnabled()
+              ? buildLiveWebMetadata({
+                  sources: mergeLiveWebSources(
+                    liveWebSources,
+                    engineResult.groundingSources ?? []
+                  ),
+                  usedLiveWeb:
+                    liveWebUsed ||
+                    Boolean(engineResult.usedWebSearch) ||
+                    (engineResult.groundingSources?.length ?? 0) > 0,
+                  providerId: liveWebProviderId,
+                })
+              : undefined,
         });
 
         // Notify when the user is away — bumps installed PWA launcher badge.

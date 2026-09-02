@@ -51,7 +51,8 @@ import {
   RETRY_BASE_MS,
   RETRY_BASE_SLOW_MS,
 } from "@/lib/chat/chatNetwork";
-import { logChatClient } from "@/lib/chat/chatLog";
+import { currentLiveWebSendOptions } from "@/components/chat/LiveWebToggle";
+import { liveWebUnavailableMessage } from "@/lib/chat/liveWebPreferences";
 import {
   convexMutationWithTimeout,
   withClientTimeout,
@@ -323,6 +324,11 @@ export function useChatPlatform() {
     [mounted, sessionToken, activeId, awaitingReply, effectiveOnline]
   );
   const replyStatus = useQuery(api.chatMessaging.getReplyStatus, replyStatusQueryArgs);
+  const liveWebProgress =
+    pollSnapshot.liveWebProgress ??
+    (replyStatus && "active" in replyStatus && replyStatus.active
+      ? replyStatus.liveWebProgress
+      : undefined);
   const uploadUsage = useQuery(api.uploadLimits.getUploadUsageSnapshot, sessionQueryArgs);
   const credits =
     chatCreditsRow === undefined
@@ -511,6 +517,7 @@ export function useChatPlatform() {
           mode,
           clientRequestId,
           chatSystem,
+          ...currentLiveWebSendOptions(),
           ...(attachments?.length
             ? {
                 attachments: attachments.map(
@@ -920,6 +927,14 @@ export function useChatPlatform() {
         return;
       }
       setError(null);
+      const liveWebOptions = currentLiveWebSendOptions();
+      if (liveWebOptions.liveWeb) {
+        const offlineMsg = liveWebUnavailableMessage(effectiveOnline);
+        if (offlineMsg) {
+          setError(offlineMsg);
+          return;
+        }
+      }
       setPendingUserText(content);
       setIsSending(true);
       setAwaitingReply(false);
@@ -1236,5 +1251,6 @@ export function useChatPlatform() {
     freeOpenAiRemaining,
     interestProfileJson,
     uploadUsage: uploadUsage ?? null,
+    liveWebProgress: liveWebProgress ?? null,
   };
 }

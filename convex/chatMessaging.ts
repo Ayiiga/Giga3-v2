@@ -115,6 +115,10 @@ export const acceptMessage = mutation({
     attachments: attachmentValidator,
     clientRequestId: v.optional(v.string()),
     chatSystem: v.optional(v.string()),
+    liveWeb: v.optional(v.boolean()),
+    liveWebMode: v.optional(
+      v.union(v.literal("research"), v.literal("actions"))
+    ),
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken);
@@ -336,6 +340,8 @@ export const acceptMessage = mutation({
       kind: "reply",
       clientRequestId: args.clientRequestId,
       chatSystem: args.chatSystem,
+      liveWeb: args.liveWeb === true,
+      liveWebMode: args.liveWebMode,
       cancelled: false,
       status: "pending",
       createdAt: now,
@@ -392,6 +398,7 @@ export const getReplyStatus = query({
       status: active.status,
       createdAt: active.createdAt,
       cancelled: active.cancelled,
+      liveWebProgress: active.liveWebProgress,
     };
   },
 });

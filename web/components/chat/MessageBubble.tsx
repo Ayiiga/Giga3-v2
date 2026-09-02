@@ -1,5 +1,6 @@
 "use client";
 
+import { LiveWebSourceCards } from "@/components/chat/LiveWebSourceCards";
 import { MessageBubbleActions } from "@/components/chat/MessageBubbleActions";
 import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
 import { MessageMarkdown } from "@/components/chat/MessageMarkdown";
@@ -8,6 +9,10 @@ import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { formatMessageTime } from "@/lib/chat/groupMessagesByDate";
 import { splitAssistantResponseDisplay } from "@/lib/chat/deriveResponseDisplay";
 import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
+import {
+  parseLiveWebMetadata,
+  responseBasisLabel,
+} from "@/lib/chat/liveWebTypes";
 import { cn } from "@/lib/utils";
 import { Bot } from "lucide-react";
 import { memo, useMemo, useState } from "react";
@@ -17,6 +22,7 @@ export interface MessageBubbleProps {
   role: "user" | "assistant";
   content: string;
   createdAt?: number;
+  metadataJson?: string;
   pending?: boolean;
   showSending?: boolean;
   streaming?: boolean;
@@ -34,6 +40,7 @@ function bubblePropsEqual(
     prev.role === next.role &&
     prev.content === next.content &&
     prev.createdAt === next.createdAt &&
+    prev.metadataJson === next.metadataJson &&
     prev.pending === next.pending &&
     prev.showSending === next.showSending &&
     prev.streaming === next.streaming &&
@@ -48,6 +55,7 @@ export const MessageBubble = memo(function MessageBubble({
   role,
   content,
   createdAt,
+  metadataJson,
   pending,
   showSending,
   streaming,
@@ -76,6 +84,14 @@ export const MessageBubble = memo(function MessageBubble({
     if (isUser || streaming) return null;
     return splitAssistantResponseDisplay(displayContent);
   }, [isUser, displayContent, streaming]);
+  const liveWebMetadata = useMemo(
+    () => parseLiveWebMetadata(metadataJson),
+    [metadataJson]
+  );
+  const basisLabel = useMemo(
+    () => (isUser ? null : responseBasisLabel(liveWebMetadata)),
+    [isUser, liveWebMetadata]
+  );
   const timeLabel = formatMessageTime(createdAt);
 
   const [editing, setEditing] = useState(false);
@@ -130,6 +146,12 @@ export const MessageBubble = memo(function MessageBubble({
                   <h2 className="chat-response-title">{assistantDisplay.title}</h2>
                 ) : null}
                 <MessageMarkdown content={assistantDisplay?.content ?? displayContent} />
+                {basisLabel ? (
+                  <p className="mt-2 text-xs font-medium text-muted">{basisLabel}</p>
+                ) : null}
+                {liveWebMetadata?.sources?.length ? (
+                  <LiveWebSourceCards sources={liveWebMetadata.sources} />
+                ) : null}
               </>
             ))}
           {parsed.images.map((url) => (

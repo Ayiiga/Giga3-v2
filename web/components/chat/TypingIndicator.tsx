@@ -3,9 +3,9 @@
 import {
   CHAT_LOADING_STAGE_BOUNDARIES,
   CHAT_REPLYING_STAGE_BOUNDARIES,
-  chatLoadingStageLabel,
-  type ChatLoadingPhase,
 } from "@/lib/chat/loadingStatus";
+import type { ChatLoadingPhase } from "@/lib/chat/loadingStatus";
+import { chatLoadingStageLabelWithLiveWeb } from "@/lib/chat/liveWebLoading";
 import { useEffect, useState } from "react";
 
 /**
@@ -16,9 +16,11 @@ import { useEffect, useState } from "react";
 export function TypingIndicator({
   slowNetwork = false,
   phase = "replying",
+  liveWebProgress,
 }: {
   slowNetwork?: boolean;
   phase?: ChatLoadingPhase;
+  liveWebProgress?: string | null;
 }) {
   const [elapsedMs, setElapsedMs] = useState(0);
 
@@ -35,7 +37,12 @@ export function TypingIndicator({
     return () => timers.forEach(clearTimeout);
   }, [phase]);
 
-  const label = chatLoadingStageLabel(elapsedMs, slowNetwork, phase);
+  const label = chatLoadingStageLabelWithLiveWeb(
+    elapsedMs,
+    phase,
+    liveWebProgress,
+    slowNetwork
+  );
 
   return (
     <div
