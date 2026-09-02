@@ -22,6 +22,7 @@ export interface UiMessage {
   role: "user" | "assistant";
   content: string;
   createdAt?: number;
+  metadataJson?: string;
 }
 
 interface MessageListProps {
@@ -197,6 +198,7 @@ function MessageListInner({
                     id={m.id}
                     role={m.role}
                     content={typeof m.content === "string" ? m.content : ""}
+                    metadataJson={m.metadataJson}
                     createdAt={m.createdAt}
                     pending={m.id === "pending-user"}
                     showSending={false}

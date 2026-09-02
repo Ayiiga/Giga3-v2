@@ -4,6 +4,7 @@ import { falOpenRouterChatComplete, getFalApiKey } from "./falClient";
 import {
   appendGroundingCitations,
   geminiGenerateWithGrounding,
+  type GroundingSource,
 } from "./webSearch";
 import {
   buildChatRoutePlan,
@@ -45,6 +46,7 @@ export type ChatEngineResult = {
   /** True if not the tier's primary provider path */
   usedFallback: boolean;
   usedWebSearch?: boolean;
+  groundingSources?: GroundingSource[];
   latencyMs?: number;
 };
 
@@ -315,7 +317,7 @@ async function geminiComplete(
   maxTokens: number,
   enableWebSearch: boolean,
   temperature = 0.7
-): Promise<{ text: string; usedWebSearch: boolean }> {
+): Promise<{ text: string; usedWebSearch: boolean; groundingSources?: GroundingSource[] }> {
   const hasVisionImages = hasInlineImageAttachments(messages);
 
   if (enableWebSearch && !hasVisionImages) {
@@ -342,6 +344,7 @@ async function geminiComplete(
       return {
         text: appendGroundingCitations(grounded.text, grounded.sources),
         usedWebSearch: grounded.usedGrounding,
+        groundingSources: grounded.sources,
       };
     } catch (err) {
       console.warn("[chatEngine] Gemini grounding failed, falling back:", err);
@@ -434,7 +437,11 @@ async function geminiComplete(
 
 type Attempt = {
   id: ChatProviderId;
-  run: () => Promise<{ content: string; usedWebSearch?: boolean }>;
+  run: () => Promise<{
+    content: string;
+    usedWebSearch?: boolean;
+    groundingSources?: GroundingSource[];
+  }>;
 };
 
 function buildProviderAttempts(args: {
@@ -472,7 +479,11 @@ function buildProviderAttempts(args: {
             args.plan.enableWebSearch,
             args.temperature
           );
-          return { content: result.text, usedWebSearch: result.usedWebSearch };
+          return {
+            content: result.text,
+            usedWebSearch: result.usedWebSearch,
+            groundingSources: result.groundingSources,
+          };
         },
       });
       continue;
@@ -609,6 +620,7 @@ async function runSequentialPlan(
         providerId: attempt.id,
         usedFallback: attempt.id !== primaryProvider,
         usedWebSearch: result.usedWebSearch,
+        groundingSources: result.groundingSources,
         latencyMs,
       };
     } catch (err) {

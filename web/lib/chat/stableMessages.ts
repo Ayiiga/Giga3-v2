@@ -1,7 +1,13 @@
 import type { UiMessage } from "@/components/chat/MessageList";
 
 export function toUiMessages(
-  rows: { _id: string; role: string; content?: unknown; createdAt?: number }[]
+  rows: {
+    _id: string;
+    role: string;
+    content?: unknown;
+    createdAt?: number;
+    metadataJson?: string;
+  }[]
 ): UiMessage[] {
   return rows
     .filter((r) => r.role === "user" || r.role === "assistant")
@@ -15,6 +21,7 @@ export function toUiMessages(
             ? ""
             : String(r.content),
       createdAt: r.createdAt,
+      metadataJson: r.metadataJson,
     }));
 }
 
@@ -31,7 +38,8 @@ export function messagesEqual(a: UiMessage[], b: UiMessage[]): boolean {
       a[i].id !== b[i].id ||
       a[i].role !== b[i].role ||
       a[i].content !== b[i].content ||
-      a[i].createdAt !== b[i].createdAt
+      a[i].createdAt !== b[i].createdAt ||
+      a[i].metadataJson !== b[i].metadataJson
     ) {
       return false;
     }
@@ -55,7 +63,15 @@ export function messageListScrollKey(
 }
 
 export function buildUiMessages(
-  messagesRaw: { _id: string; role: string; content: string; createdAt?: number }[] | undefined,
+  messagesRaw:
+    | {
+        _id: string;
+        role: string;
+        content: string;
+        createdAt?: number;
+        metadataJson?: string;
+      }[]
+    | undefined,
   pendingUserText: string | null
 ): UiMessage[] {
   const base = toUiMessages(messagesRaw ?? []);

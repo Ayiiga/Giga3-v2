@@ -27,6 +27,7 @@ export const appendMessage = internalMutation({
       v.literal("system")
     ),
     content: v.string(),
+    metadataJson: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     await ctx.db.insert("messages", {
@@ -34,6 +35,7 @@ export const appendMessage = internalMutation({
       userId: normalizeUserId(args.userId),
       role: args.role,
       content: args.content,
+      metadataJson: args.metadataJson,
       createdAt: Date.now(),
     });
     await ctx.db.patch(args.conversationId, { updatedAt: Date.now() });

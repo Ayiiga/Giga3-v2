@@ -39,6 +39,8 @@ interface ChatConversationPaneProps {
   /** UI lock only (e.g. offline) — does not change send/outbox hooks. */
   inputDisabled?: boolean;
   conversationId?: string | null;
+  online?: boolean;
+  liveWebProgress?: string | null;
 }
 
 function panePropsEqual(
@@ -71,7 +73,9 @@ function panePropsEqual(
     prev.initialAttachments === next.initialAttachments &&
     prev.insertRef === next.insertRef &&
     prev.onRetryOutboxSync === next.onRetryOutboxSync &&
-    prev.conversationId === next.conversationId
+    prev.conversationId === next.conversationId &&
+    prev.online === next.online &&
+    prev.liveWebProgress === next.liveWebProgress
   );
 }
 
@@ -103,6 +107,8 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onRetryOutboxSync,
   inputDisabled = false,
   conversationId = null,
+  online = true,
+  liveWebProgress = null,
 }: ChatConversationPaneProps) {
   const showTyping = awaitingReply || isSending;
   const typingPhase = awaitingReply ? "replying" : "sending";
@@ -150,6 +156,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           visible={showTyping}
           slowNetwork={isSlowNetwork}
           phase={typingPhase}
+          liveWebProgress={liveWebProgress}
           onStop={awaitingReply ? onStopGenerating : undefined}
         />
         <ChatInput
@@ -163,6 +170,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           onSuggestVisionTier={onSuggestVisionTier}
           initialAttachments={initialAttachments}
           conversationId={conversationId}
+          online={online}
         />
       </div>
       </div>

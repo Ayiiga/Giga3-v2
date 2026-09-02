@@ -26,16 +26,24 @@ export type PolledMessageRow = {
   role: string;
   content: string;
   createdAt?: number;
+  metadataJson?: string;
 };
 
 type ReplyStatusSnapshot =
   | { active: false }
-  | { active: true; status: string; createdAt: number; cancelled: boolean };
+  | {
+      active: true;
+      status: string;
+      createdAt: number;
+      cancelled: boolean;
+      liveWebProgress?: string;
+    };
 
 export type ChatReplyPollSnapshot = {
   messages: PolledMessageRow[] | undefined;
   replyActive: boolean | undefined;
   pollFailures: number;
+  liveWebProgress?: string;
 };
 
 /**
@@ -53,6 +61,7 @@ export function useChatReplyPolling(
   const [polled, setPolled] = useState<PolledMessageRow[] | undefined>(undefined);
   const [replyActive, setReplyActive] = useState<boolean | undefined>(undefined);
   const [pollFailures, setPollFailures] = useState(0);
+  const [liveWebProgress, setLiveWebProgress] = useState<string | undefined>(undefined);
   const inFlightRef = useRef(false);
   const pollMs = tier === "slow" ? POLL_SLOW_MS : POLL_NORMAL_MS;
 
@@ -86,6 +95,7 @@ export function useChatReplyPolling(
       }
       setPolled(rows);
       setReplyActive(status.active);
+      setLiveWebProgress(status.active ? status.liveWebProgress : undefined);
       setPollFailures(0);
       logChatClient("poll_ok", {
         conversationId,
@@ -142,5 +152,5 @@ export function useChatReplyPolling(
     return () => clearInterval(id);
   }, [active, mounted, sessionToken, conversationId, pageVisible, pollMs, fetchSnapshot, tier]);
 
-  return { messages: polled, replyActive, pollFailures };
+  return { messages: polled, replyActive, pollFailures, liveWebProgress };
 }

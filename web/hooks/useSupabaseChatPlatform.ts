@@ -1,6 +1,7 @@
 "use client";
 
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
+import { currentLiveWebSendOptions } from "@/components/chat/LiveWebToggle";
 import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
 import { useConnectionQuality } from "@/hooks/useConnectionQuality";
@@ -15,6 +16,7 @@ import {
   type OutboxEntry,
 } from "@/lib/chat/offlineOutbox";
 import { emitOutboxStatus } from "@/lib/chat/outboxEvents";
+import { liveWebUnavailableMessage } from "@/lib/chat/liveWebPreferences";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import { chatSystemForModel, gigaModelForMode, type GigaModelId } from "@/lib/chat/gigaModels";
 import { getSessionToken, getUserEmail } from "@/lib/auth";
@@ -88,6 +90,8 @@ async function sendConvexMessage(
     mode: string;
     chatSystem?: GigaModelId;
     attachments?: Omit<PreparedChatAttachment, "previewUrl">[];
+    liveWeb?: boolean;
+    liveWebMode?: "research" | "actions";
   },
   slowNetwork: boolean
 ) {
@@ -365,6 +369,7 @@ export function useSupabaseChatPlatform() {
           content,
           mode,
           chatSystem: chatSystemForModel(modelTier),
+          ...currentLiveWebSendOptions(),
           ...(attachments?.length
             ? {
                 attachments: attachments.map(
@@ -496,6 +501,14 @@ export function useSupabaseChatPlatform() {
         return;
       }
       setError(null);
+      const liveWebOptions = currentLiveWebSendOptions();
+      if (liveWebOptions.liveWeb) {
+        const offlineMsg = liveWebUnavailableMessage(effectiveOnline);
+        if (offlineMsg) {
+          setError(offlineMsg);
+          return;
+        }
+      }
       setPendingUserText(content);
 
       if (!effectiveOnline) {
@@ -552,6 +565,7 @@ export function useSupabaseChatPlatform() {
             content,
             mode,
             chatSystem: chatSystemForModel(modelTier),
+            ...currentLiveWebSendOptions(),
             ...(attachments?.length
               ? {
                   attachments: attachments.map(
@@ -736,6 +750,7 @@ export function useSupabaseChatPlatform() {
     freeOpenAiRemaining: 0,
     interestProfileJson,
     uploadUsage: null,
+    liveWebProgress: null,
   };
 }
 

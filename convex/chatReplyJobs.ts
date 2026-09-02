@@ -12,6 +12,10 @@ export const createJob = internalMutation({
     regenerateFromMessageId: v.optional(v.id("messages")),
     clientRequestId: v.optional(v.string()),
     chatSystem: v.optional(v.string()),
+    liveWeb: v.optional(v.boolean()),
+    liveWebMode: v.optional(
+      v.union(v.literal("research"), v.literal("actions"))
+    ),
   },
   handler: async (ctx, args) => {
     if (args.clientRequestId) {
@@ -36,6 +40,8 @@ export const createJob = internalMutation({
       regenerateFromMessageId: args.regenerateFromMessageId,
       clientRequestId: args.clientRequestId,
       chatSystem: args.chatSystem,
+      liveWeb: args.liveWeb,
+      liveWebMode: args.liveWebMode,
       cancelled: false,
       status: "pending",
       createdAt: Date.now(),
@@ -65,6 +71,16 @@ export const getActiveJobForConversation = internalQuery({
         (row) => row.status === "pending" || row.status === "processing"
       ) ?? null
     );
+  },
+});
+
+export const updateLiveWebProgress = internalMutation({
+  args: {
+    jobId: v.id("chatReplyJobs"),
+    liveWebProgress: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.jobId, { liveWebProgress: args.liveWebProgress });
   },
 });
 

@@ -152,6 +152,7 @@ function ChatShellInner({
     interestProfileJson,
     uploadUsage,
     retryOutboxSync,
+    liveWebProgress,
   } = usePlatform();
 
   const { needsOnboarding, completeOnboarding, trackDailyActivity } = usePlatformProfile();
@@ -603,6 +604,8 @@ function ChatShellInner({
           onSuggestVisionTier={handleSuggestVisionTier}
           initialAttachments={handoffAttachments}
           conversationId={activeId}
+          online={effectiveOnline}
+          liveWebProgress={liveWebProgress}
         />
       </div>
     </div>

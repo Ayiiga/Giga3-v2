@@ -2,6 +2,7 @@
 
 import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
 import { ChatInputToolbar } from "@/components/chat/ChatInputToolbar";
+import { LiveWebToggle } from "@/components/chat/LiveWebToggle";
 import { EmojiPicker } from "@/components/chat/EmojiPicker";
 import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
@@ -52,6 +53,8 @@ interface ChatInputProps {
   initialAttachments?: PreparedChatAttachment[];
   /** Active conversation — drafts are restored per chat. */
   conversationId?: string | null;
+  /** Network availability for Live Web toggle. */
+  online?: boolean;
 }
 
 export const ChatInput = memo(function ChatInput({
@@ -66,6 +69,7 @@ export const ChatInput = memo(function ChatInput({
   onSuggestVisionTier,
   initialAttachments,
   conversationId = null,
+  online = true,
 }: ChatInputProps) {
   useRenderDiagnostic("ChatInput");
 
@@ -305,6 +309,8 @@ export const ChatInput = memo(function ChatInput({
         {notice && (
           <NoticeBanner message={notice} onDismiss={() => setNotice(null)} />
         )}
+
+        <LiveWebToggle disabled={inputDisabled} online={online} />
 
         {attachments.length > 0 && (
           <div className="flex max-h-32 flex-wrap gap-2 overflow-y-auto rounded-xl border border-border bg-card p-2">

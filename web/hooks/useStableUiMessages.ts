@@ -9,7 +9,13 @@ import { useMemo, useRef } from "react";
 
 /** Keeps the messages array reference stable when Convex re-emits identical rows. */
 export function useStableUiMessages(
-  messagesRaw: { _id: string; role: string; content: string; createdAt?: number }[] | undefined,
+  messagesRaw: {
+    _id: string;
+    role: string;
+    content: string;
+    createdAt?: number;
+    metadataJson?: string;
+  }[] | undefined,
   pendingUserText: string | null,
   cachedFallback?: UiMessage[] | null
 ): UiMessage[] {
