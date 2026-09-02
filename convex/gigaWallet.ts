@@ -98,7 +98,7 @@ export type WalletTransactionView = {
 export const getDashboard = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const user = await getUserByEmail(ctx, userId);
     if (!user) return null;
 
@@ -190,7 +190,7 @@ export const getDashboard = query({
 export const listMyPayments = query({
   args: { ...sessionArgs, limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const cap = Math.min(Math.max(args.limit ?? 40, 1), 100);
     const rows = await ctx.db
       .query("payments")
@@ -204,7 +204,7 @@ export const listMyPayments = query({
 export const listVideoCreditLogs = query({
   args: { ...sessionArgs, limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const cap = Math.min(Math.max(args.limit ?? 40, 1), 100);
     return await ctx.db
       .query("videoCreditLogs")
@@ -217,7 +217,7 @@ export const listVideoCreditLogs = query({
 export const listWalletTransactions = query({
   args: { ...sessionArgs, limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const cap = Math.min(Math.max(args.limit ?? 50, 1), 120);
     const perSource = Math.ceil(cap / 3);
 

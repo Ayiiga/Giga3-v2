@@ -171,7 +171,7 @@ export const deductCredits = mutation({
     metadata: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     return await performDeduct(
       ctx,
       userId,
@@ -189,7 +189,7 @@ export const deductForChatMode = mutation({
     reference: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const action = creditActionForMode(args.mode);
     return await performDeduct(
       ctx,
@@ -204,7 +204,7 @@ export const deductForChatMode = mutation({
 export const getUsageSnapshot = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const user = await getUserByEmail(ctx, userId);
     if (!user) return null;
 
@@ -234,7 +234,7 @@ export const getUsageSnapshot = query({
 export const listCreditLogs = query({
   args: { ...sessionArgs, limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const cap = args.limit ?? 50;
     const rows = await ctx.db
       .query("creditLogs")
@@ -249,7 +249,7 @@ export const listCreditLogs = query({
 export const assertCanGenerateImage = mutation({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const result = await performDeduct(ctx, userId, "image");
     return { chargedCredits: result.charged };
   },
@@ -259,7 +259,7 @@ export const assertCanGenerateImage = mutation({
 export const assertCanGenerateVideo = mutation({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const result = await performDeduct(ctx, userId, "video");
     return { chargedCredits: result.charged };
   },
@@ -269,7 +269,7 @@ export const assertCanGenerateVideo = mutation({
 export const assertCanChat = mutation({
   args: { ...sessionArgs, mode: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const action = creditActionForMode(args.mode ?? "general");
     await performDeduct(ctx, userId, action);
     return { allowed: true as const };

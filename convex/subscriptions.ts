@@ -21,7 +21,7 @@ const subscriptionSourceValidator = v.union(
 export const getActiveSubscription = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     return await ctx.db
       .query("subscriptions")
       .withIndex("by_user_status", (q) =>
@@ -35,7 +35,7 @@ export const getActiveSubscription = query({
 export const getRenewalSettings = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", userId))
@@ -78,7 +78,7 @@ export const getRenewalSettings = query({
 export const setAutoRenew = mutation({
   args: { ...sessionArgs, enabled: v.boolean() },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", userId))
@@ -96,7 +96,7 @@ export const setAutoRenew = mutation({
 export const removeSavedPaymentMethod = mutation({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const methods = await ctx.db
       .query("billingAuthorizations")
       .withIndex("by_user", (q) => q.eq("userId", userId))

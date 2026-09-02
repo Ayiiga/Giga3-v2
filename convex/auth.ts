@@ -1,5 +1,5 @@
 import { UnauthorizedError } from "./securityErrors";
-import { verifySessionToken } from "./sessionAuth";
+import { verifySessionTokenDetailed } from "./sessionAuth";
 import { normalizeUserId } from "./userIds";
 
 type AuthContext = {
@@ -7,14 +7,57 @@ type AuthContext = {
 };
 
 /**
- * Derives authenticated user email exclusively from a verified session token.
- * Never trusts client-supplied userId/email.
+ * Optional context that lets `requireSession` enforce server-side revocation
+ * (`users.sessionsValidAfter`). Queries/mutations pass `ctx` (has `db`);
+ * actions pass `ctx` (has `runQuery`). Without a ctx only the signature and
+ * expiry are checked.
  */
-export async function requireSession(sessionToken: string | undefined): Promise<string> {
+export type SessionCheckContext = {
+  db?: any;
+  runQuery?: (fn: any, args: any) => Promise<any>;
+  runMutation?: (fn: any, args: any) => Promise<any>;
+};
+
+async function readSessionsValidAfter(
+  ctx: SessionCheckContext,
+  email: string
+): Promise<number | undefined> {
+  if (ctx.db) {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q: any) => q.eq("email", email))
+      .first();
+    return user?.sessionsValidAfter ?? undefined;
+  }
+  if (ctx.runQuery) {
+    const { internal } = await import("./_generated/api");
+    const gate = await ctx.runQuery(internal.users.getSessionGateInternal, { email });
+    return gate?.sessionsValidAfter ?? undefined;
+  }
+  return undefined;
+}
+
+/**
+ * Derives authenticated user email exclusively from a verified session token.
+ * Never trusts client-supplied userId/email. When `ctx` is provided, tokens
+ * issued before the user's `sessionsValidAfter` (password reset, sign-out
+ * everywhere) are rejected.
+ */
+export async function requireSession(
+  sessionToken: string | undefined,
+  ctx?: SessionCheckContext
+): Promise<string> {
   if (!sessionToken?.trim()) {
     throw new UnauthorizedError();
   }
-  return await verifySessionToken(sessionToken);
+  const session = await verifySessionTokenDetailed(sessionToken);
+  if (ctx) {
+    const validAfter = await readSessionsValidAfter(ctx, session.email);
+    if (validAfter && session.iat < validAfter) {
+      throw new UnauthorizedError("This session was signed out. Please sign in again.");
+    }
+  }
+  return session.email;
 }
 
 /**
@@ -22,10 +65,11 @@ export async function requireSession(sessionToken: string | undefined): Promise<
  * expired/invalid token cannot crash the React error boundary via useQuery.
  */
 export async function tryRequireSession(
-  sessionToken: string | undefined
+  sessionToken: string | undefined,
+  ctx?: SessionCheckContext
 ): Promise<string | null> {
   try {
-    return await requireSession(sessionToken);
+    return await requireSession(sessionToken, ctx);
   } catch (error) {
     if (error instanceof UnauthorizedError) return null;
     throw error;
@@ -42,11 +86,11 @@ export async function requireAuthenticatedEmail(
 
 export async function requireSessionWithMonitoring(
   sessionToken: string | undefined,
-  ctx: AuthContext,
+  ctx: AuthContext & SessionCheckContext,
   eventMeta?: string
 ): Promise<string> {
   try {
-    return await requireSession(sessionToken);
+    return await requireSession(sessionToken, ctx);
   } catch (error) {
     if (ctx.runMutation) {
       const { internal } = await import("./_generated/api");

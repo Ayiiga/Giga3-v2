@@ -119,7 +119,7 @@ export const getListing = query({
 export const getMyListings = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     return (await ctx.db
       .query("marketplaceListings")
       .withIndex("by_creator", (q) => q.eq("creatorId", email))
@@ -147,7 +147,7 @@ export const createListing = mutation({
     publish: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     const profile = await ctx.db
       .query("creatorProfiles")
       .withIndex("by_user", (q) => q.eq("userId", email))
@@ -213,7 +213,7 @@ export const updateListing = mutation({
     tags: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     const listing = await ctx.db.get(args.listingId);
     if (!listing || listing.creatorId !== email) throw new Error("Listing not found");
 
@@ -289,7 +289,7 @@ export const reportListing = mutation({
     details: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     const listing = await ctx.db.get(args.listingId);
     if (!listing || listing.status !== "published") {
       throw new Error("Listing not found");
@@ -345,7 +345,7 @@ export const recordView = mutation({
   },
   handler: async (ctx, args) => {
     if (!args.sessionToken) return;
-    await requireSession(args.sessionToken);
+    await requireSession(args.sessionToken, ctx);
     const listing = await ctx.db.get(args.listingId);
     if (!listing || listing.status !== "published") return;
     await ctx.db.patch(args.listingId, {
@@ -363,7 +363,7 @@ export const addReview = mutation({
     comment: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     const rating = Math.max(1, Math.min(5, Math.round(args.rating)));
     const purchase = await ctx.db
       .query("marketplacePurchases")
@@ -411,7 +411,7 @@ export const getDownloadAccess = query({
     listingId: v.id("marketplaceListings"),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     const listing = await ctx.db.get(args.listingId);
     if (!listing) return { allowed: false as const };
 
@@ -470,7 +470,7 @@ export const getListingForCheckoutInternal = internalQuery({
 export const getMyPurchases = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     const purchases = await ctx.db
       .query("marketplacePurchases")
       .withIndex("by_buyer", (q) => q.eq("buyerId", email))
@@ -500,7 +500,7 @@ export const getMyPurchases = query({
 export const getCreatorRevenue = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     const profile = await ctx.db
       .query("creatorProfiles")
       .withIndex("by_user", (q) => q.eq("userId", email))
@@ -531,7 +531,7 @@ export const requestPayout = mutation({
     note: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     const profile = await ctx.db
       .query("creatorProfiles")
       .withIndex("by_user", (q) => q.eq("userId", email))

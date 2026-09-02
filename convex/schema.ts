@@ -264,6 +264,8 @@ export default defineSchema({
     emailEngagementOptIn: v.optional(v.boolean()),
     lastEngagementEmailAt: v.optional(v.number()),
     emailUnsubscribeToken: v.optional(v.string()),
+    /** Session tokens issued before this timestamp are rejected (password reset / sign-out everywhere). */
+    sessionsValidAfter: v.optional(v.number()),
     /** Subscription auto-renewal — undefined means on (default for paid plans). */
     autoRenew: v.optional(v.boolean()),
     renewalFailures: v.optional(v.number()),

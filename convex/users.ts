@@ -117,7 +117,8 @@ export const createUser = mutation({
 export const refreshSession = mutation({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    // ctx enables revocation: a revoked token must not be rotated into a fresh one.
+    const email = await requireSession(args.sessionToken, ctx);
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", email))
@@ -125,6 +126,57 @@ export const refreshSession = mutation({
     if (!user) throw new UnauthorizedError();
     const sessionToken = await createSessionToken(email);
     return { sessionToken };
+  },
+});
+
+/** Revocation gate read by `requireSession` from actions. */
+export const getSessionGateInternal = internalQuery({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
+    return user ? { sessionsValidAfter: user.sessionsValidAfter ?? null } : null;
+  },
+});
+
+/** Invalidate every session token issued before now (password reset, admin action). */
+export const revokeSessionsInternal = internalMutation({
+  args: { email: v.string(), reason: v.string() },
+  handler: async (ctx, args) => {
+    const email = args.email.trim().toLowerCase();
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    if (!user) return { revoked: false as const };
+    const now = Date.now();
+    await ctx.db.patch(user._id, { sessionsValidAfter: now });
+    await ctx.db.insert("securityEvents", {
+      eventType: SECURITY_EVENT_TYPES.SESSION_ROTATED,
+      severity: "low",
+      message: `Sessions revoked: ${args.reason}`,
+      emailHash: email.slice(0, 64),
+      dateKey: new Date(now).toISOString().slice(0, 10),
+      createdAt: now,
+    });
+    return { revoked: true as const, sessionsValidAfter: now };
+  },
+});
+
+/**
+ * Sign out on every device. The caller's own token is also revoked; the client
+ * must sign in again to obtain a token issued after this point.
+ */
+export const signOutEverywhere = mutation({
+  args: sessionArgs,
+  handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken, ctx);
+    return await ctx.runMutation(internal.users.revokeSessionsInternal, {
+      email,
+      reason: "user_sign_out_everywhere",
+    });
   },
 });
 
@@ -148,7 +200,7 @@ export const backfillMissingStarterCredits = internalMutation({
 export const getUser = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     return await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", email))
@@ -159,8 +211,8 @@ export const getUser = query({
 /** Lightweight probe so the chat shell can recover from expired tokens without crashing. */
 export const validateSession = query({
   args: sessionArgs,
-  handler: async (_ctx, args) => {
-    const email = await tryRequireSession(args.sessionToken);
+  handler: async (ctx, args) => {
+    const email = await tryRequireSession(args.sessionToken, ctx);
     if (!email) return { ok: false as const };
     return { ok: true as const, email };
   },
@@ -169,7 +221,7 @@ export const validateSession = query({
 export const getChatCredits = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await tryRequireSession(args.sessionToken);
+    const email = await tryRequireSession(args.sessionToken, ctx);
     if (!email) return null;
     const user = await ctx.db
       .query("users")
@@ -223,7 +275,7 @@ export const getChatCredits = query({
 export const getInterestProfile = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await tryRequireSession(args.sessionToken);
+    const email = await tryRequireSession(args.sessionToken, ctx);
     if (!email) return null;
     const user = await ctx.db
       .query("users")
@@ -243,7 +295,7 @@ export const recordChatInteraction = mutation({
     messageContent: v.string(),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", email))
@@ -270,7 +322,7 @@ export const recordChatInteraction = mutation({
 export const deductTokens = mutation({
   args: { ...sessionArgs, amount: v.number() },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", email))

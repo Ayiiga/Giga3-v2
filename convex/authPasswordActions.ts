@@ -22,8 +22,34 @@ import {
   sendEmail,
   wrapEmailHtml,
 } from "./emailClient";
+import {
+  buildResetUrl,
+  constantTimeEqualHex,
+  resolveResetBaseUrl,
+} from "./authResetLinks";
+import { SECURITY_EVENT_TYPES } from "./securityMonitoring";
 
 const RESET_TTL_MS = 60 * 60 * 1000;
+
+/** Per-email attempts per 15 minutes. Reset/sign-up are tighter than sign-in. */
+const LIMITS = { signup: 5, signin: 10, reset: 4, resetComplete: 6 } as const;
+
+async function logSecurityEvent(
+  ctx: { runMutation: Function },
+  eventType: string,
+  severity: "low" | "medium" | "high",
+  message: string,
+  email?: string
+) {
+  await ctx
+    .runMutation(internal.securityMonitoring.recordSecurityEvent, {
+      eventType,
+      severity,
+      message,
+      email,
+    })
+    .catch(() => null);
+}
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -164,6 +190,7 @@ export const signUpWithPassword = action({
 
     await ctx.runMutation(internal.passwordAuth.consumePasswordAuthRateLimit, {
       bucketKey: `signup:${email}`,
+      maxAttempts: LIMITS.signup,
     });
 
     const hasCredentials = await ctx.runQuery(
@@ -173,6 +200,24 @@ export const signUpWithPassword = action({
     if (hasCredentials) {
       throw new UnauthorizedError(
         "An account with this email already exists. Sign in instead."
+      );
+    }
+
+    // A legacy email-only account (user row, no password yet) must be claimed
+    // through the emailed reset link, never by whoever signs up first.
+    const existingUser = await ctx.runQuery(internal.users.getUserByEmailInternal, {
+      email,
+    });
+    if (existingUser) {
+      await logSecurityEvent(
+        ctx,
+        SECURITY_EVENT_TYPES.SUSPICIOUS_ACTIVITY,
+        "medium",
+        "Sign-up attempted for existing email-only account",
+        email
+      );
+      throw new UnauthorizedError(
+        "This email already has a Giga3 account. Use “Forgot password” and we will email you a link to set your password."
       );
     }
 
@@ -201,6 +246,7 @@ export const signInWithPassword = action({
 
     await ctx.runMutation(internal.passwordAuth.consumePasswordAuthRateLimit, {
       bucketKey: `signin:${email}`,
+      maxAttempts: LIMITS.signin,
     });
 
     const creds = await ctx.runQuery(internal.passwordAuth.getCredentialsInternal, {
@@ -214,6 +260,13 @@ export const signInWithPassword = action({
 
     const valid = await verifyPassword(args.password, creds.passwordHash);
     if (!valid) {
+      await logSecurityEvent(
+        ctx,
+        SECURITY_EVENT_TYPES.AUTH_FAILURE,
+        "low",
+        "Password sign-in failed",
+        email
+      );
       throw new UnauthorizedError("Incorrect email or password.");
     }
 
@@ -240,12 +293,13 @@ export const requestPasswordReset = action({
         ok: true as const,
         emailed: false,
         deliveryConfigured,
-        accountMatched: false,
+        accountMatched: true, // always true — never reveals account existence
       };
     }
 
     await ctx.runMutation(internal.passwordAuth.consumePasswordAuthRateLimit, {
       bucketKey: `reset:${email}`,
+      maxAttempts: LIMITS.reset,
     });
 
     let creds = await ctx.runQuery(internal.passwordAuth.getCredentialsInternal, {
@@ -256,11 +310,12 @@ export const requestPasswordReset = action({
         email,
       });
       if (!user) {
+        // Anti-enumeration: indistinguishable from the "link sent" response.
         return {
           ok: true as const,
-          emailed: false,
+          emailed: deliveryConfigured,
           deliveryConfigured,
-          accountMatched: false,
+          accountMatched: true,
         };
       }
       // Email-only accounts can set a password through the reset flow.
@@ -277,7 +332,7 @@ export const requestPasswordReset = action({
           ok: true as const,
           emailed: false,
           deliveryConfigured,
-          accountMatched: false,
+          accountMatched: true, // always true — never reveals account existence
         };
       }
     }
@@ -292,15 +347,19 @@ export const requestPasswordReset = action({
       expiresAt,
     });
 
-    const frontend = getFrontendBaseUrl();
-    const requestedBase = args.resetBaseUrl?.replace(/\/$/, "");
-    const base =
-      requestedBase &&
-      (requestedBase.startsWith(frontend) ||
-        /localhost|127\.0\.0\.1/.test(requestedBase))
-        ? requestedBase
-        : `${frontend}/chat/login/reset`;
-    const resetUrl = `${base}?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
+    const base = resolveResetBaseUrl({
+      requestedBase: args.resetBaseUrl,
+      frontendUrl: getFrontendBaseUrl(),
+      allowLoopback: process.env.AUTH_ALLOW_LOOPBACK_RESET_LINKS === "true",
+    });
+    const resetUrl = buildResetUrl(base, token, email);
+    await logSecurityEvent(
+      ctx,
+      SECURITY_EVENT_TYPES.SESSION_ROTATED,
+      "low",
+      "Password reset link issued",
+      email
+    );
 
     if (!deliveryConfigured) {
       console.error(
@@ -371,6 +430,7 @@ export const resetPasswordWithToken = action({
 
     await ctx.runMutation(internal.passwordAuth.consumePasswordAuthRateLimit, {
       bucketKey: `reset-complete:${email}`,
+      maxAttempts: LIMITS.resetComplete,
     });
 
     const creds = await ctx.runQuery(internal.passwordAuth.getCredentialsInternal, {
@@ -384,14 +444,27 @@ export const resetPasswordWithToken = action({
     }
 
     const tokenHash = hashResetToken(args.token.trim());
-    if (tokenHash !== creds.passwordResetTokenHash) {
+    if (!constantTimeEqualHex(tokenHash, creds.passwordResetTokenHash)) {
+      await logSecurityEvent(
+        ctx,
+        SECURITY_EVENT_TYPES.AUTH_FAILURE,
+        "medium",
+        "Password reset token mismatch",
+        email
+      );
       throw new UnauthorizedError("Reset link is invalid or expired.");
     }
 
     const passwordHash = await hashPassword(args.newPassword);
+    // Single-use: updatePasswordHashInternal clears the token fields.
     await ctx.runMutation(internal.passwordAuth.updatePasswordHashInternal, {
       email,
       passwordHash,
+    });
+    // Anyone holding an older token (including whoever prompted the reset) is signed out.
+    await ctx.runMutation(internal.users.revokeSessionsInternal, {
+      email,
+      reason: "password_reset",
     });
 
     return await issueSession(ctx, email);

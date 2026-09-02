@@ -115,10 +115,10 @@ export const updatePasswordHashInternal = internalMutation({
   },
 });
 
-/** Shared sliding-window limiter for password auth actions. */
+/** Shared sliding-window limiter for password auth actions (15-minute window). */
 export const consumePasswordAuthRateLimit = internalMutation({
-  args: { bucketKey: v.string() },
+  args: { bucketKey: v.string(), maxAttempts: v.optional(v.number()) },
   handler: async (ctx, args) => {
-    await consumeAuthRateLimit(ctx, `password:${args.bucketKey}`);
+    await consumeAuthRateLimit(ctx, `password:${args.bucketKey}`, args.maxAttempts);
   },
 });

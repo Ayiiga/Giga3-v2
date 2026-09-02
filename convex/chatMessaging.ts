@@ -121,7 +121,7 @@ export const acceptMessage = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     const normalizedEmail = normalizeUserId(email);
     const now = Date.now();
 
@@ -410,7 +410,7 @@ export const cancelReply = mutation({
     conversationId: v.id("conversations"),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     const conv = await ctx.db.get(args.conversationId);
     if (!conv || conv.userId !== email) {
       throw new Error("Conversation not found");
@@ -437,7 +437,7 @@ export const regenerateMessage = mutation({
     chatSystem: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     const conv = await ctx.db.get(args.conversationId);
     if (!conv || conv.userId !== email) {
       throw new Error("Conversation not found");
@@ -511,7 +511,7 @@ export const editAndResend = mutation({
     chatSystem: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     const message = await ctx.db.get(args.messageId);
     if (!message || message.role !== "user") throw new Error("Message not found");
 
@@ -569,7 +569,7 @@ export const deleteMessage = mutation({
     messageId: v.id("messages"),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     const message = await ctx.db.get(args.messageId);
     if (!message || message.role !== "user") {
       throw new Error("Message not found");
