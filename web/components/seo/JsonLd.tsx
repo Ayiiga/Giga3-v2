@@ -2,14 +2,36 @@ import { branding } from "@/lib/branding";
 import { brandingAssetUrl } from "@/lib/brandingAssets";
 import { siteConfig } from "@/lib/site";
 
+export type FaqItem = { question: string; answer: string };
+
 type JsonLdProps = {
   type?: "WebSite" | "Organization" | "SoftwareApplication" | "WebApplication";
   breadcrumbs?: { name: string; path: string }[];
+  /** FAQPage — answers must match the visible FAQ text on the page. */
+  faq?: FaqItem[];
 };
 
 /** Structured data for public marketing pages — no authenticated or private URLs. */
-export function JsonLd({ type = "WebSite", breadcrumbs }: JsonLdProps) {
+export function JsonLd({ type = "WebSite", breadcrumbs, faq }: JsonLdProps) {
   const logo = brandingAssetUrl("/images/logo.png");
+
+  if (faq && faq.length > 0) {
+    const payload = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faq.map((item) => ({
+        "@type": "Question",
+        name: item.question,
+        acceptedAnswer: { "@type": "Answer", text: item.answer },
+      })),
+    };
+    return (
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(payload) }}
+      />
+    );
+  }
 
   if (breadcrumbs && breadcrumbs.length > 0) {
     const payload = {

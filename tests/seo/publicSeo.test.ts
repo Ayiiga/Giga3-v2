@@ -70,10 +70,43 @@ describe("sitemap.xml", () => {
       "https://www.giga3ai.com/prompts/",
       "https://www.giga3ai.com/enterprise/",
       "https://www.giga3ai.com/developers/",
+      "https://www.giga3ai.com/ai-for-ghana/",
       "https://www.giga3ai.com/legal/privacy/",
     ]) {
       expect(xml).toContain(path);
     }
+  });
+});
+
+describe("AI for Ghana landing page", () => {
+  const src = readFileSync(
+    resolve(__dirname, "../../web/app/(marketing)/ai-for-ghana/page.tsx"),
+    "utf8"
+  );
+
+  it("emits FAQPage structured data from the same FAQ used for visible copy", () => {
+    expect(src).toContain("<JsonLd faq={FAQ} />");
+    expect(src).toContain("{FAQ.map((item) =>");
+    expect(src).toContain("What is Giga3 AI?");
+    expect(src).toContain("How much does Giga3 AI cost?");
+    expect(src).toContain("Can students in Ghana use Giga3 AI?");
+  });
+
+  it("derives pricing from the subscription catalog instead of hardcoding", () => {
+    expect(src).toContain("SUBSCRIPTION_PLANS");
+    expect(src).toContain("FREE_STARTER_CREDITS");
+    expect(src).not.toMatch(/GHS 150\/month/);
+  });
+
+  it("links to real internal destinations (no placeholder citation URLs)", () => {
+    expect(src).not.toContain("reference-url-citation");
+    expect(src).toContain('href="/#features"');
+    expect(src).toContain('href="/pricing"');
+    expect(src).toContain('href="/chat/login"');
+  });
+
+  it("is listed in footer product links", () => {
+    expect(FOOTER_PRODUCT_LINKS.map((l) => l.href)).toContain("/ai-for-ghana");
   });
 });
 
