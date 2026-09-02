@@ -1,6 +1,6 @@
 import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
-import { RateLimitError } from "../securityErrors";
+import { RateLimitError } from "./securityErrors";
 import { liveWebRateLimitPerHour } from "./liveWeb/liveWebConfig";
 
 const WINDOW_MS = 60 * 60 * 1000;
