@@ -279,7 +279,8 @@ export const expireStaleSubscriptions = internalMutation({
   },
 });
 
-export const runExpiryCheck = mutation({
+/** Ops-only manual trigger (`npx convex run`); the daily cron covers production. */
+export const runExpiryCheck = internalMutation({
   args: {},
   handler: async (ctx) => {
     return await ctx.runMutation(

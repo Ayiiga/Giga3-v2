@@ -217,7 +217,8 @@ export const recordPwaInstall = mutation({
   },
 });
 
-export const incrementUserCount = mutation({
+/** Ops-only counter fix-up; user creation increments via incrementRegisteredUserInternal. */
+export const incrementUserCount = internalMutation({
   args: {},
   handler: async (ctx) => {
     await incrementCounter(ctx, "registered_users");

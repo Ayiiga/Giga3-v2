@@ -1,4 +1,10 @@
-import { internalQuery, mutation, query } from "./_generated/server";
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+  type MutationCtx,
+} from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import {
@@ -25,15 +31,56 @@ import {
 } from "./featureFlags";
 import { shouldOfferOpenAiImageGeneration } from "./premiumImage";
 
-async function attachSessionToken<T extends Record<string, unknown>>(
-  email: string,
-  user: T
-): Promise<T & { sessionToken: string }> {
-  const sessionToken = await createSessionToken(email);
-  return { ...user, sessionToken };
+/**
+ * Upsert the user record for an email whose ownership has ALREADY been proven
+ * (password check, emailed reset token, or verified Supabase JWT). Never mints
+ * a session — callers do that after verification.
+ */
+async function ensureUserRecord(ctx: MutationCtx, rawEmail: string) {
+  const email = rawEmail.trim().toLowerCase();
+  const existing = await ctx.db
+    .query("users")
+    .withIndex("by_email", (q) => q.eq("email", email))
+    .first();
+  if (existing) {
+    if (existing.accountStatus === "suspended") {
+      throw new Error("This account has been suspended. Contact support.");
+    }
+    return await grantStarterCreditsIfNeeded(ctx, email, existing);
+  }
+
+  const userId = await ctx.db.insert("users", {
+    email,
+    tokens: 12,
+    plan: "free",
+    tier: "free",
+    subscriptionPlan: "free",
+    credits: 0,
+    starterCreditsGranted: false,
+  });
+  await ctx.runMutation(internal.platformStats.incrementRegisteredUserInternal, {});
+  const user = await ctx.db.get(userId);
+  if (!user) {
+    throw new Error("Failed to create user");
+  }
+  return await grantStarterCreditsIfNeeded(ctx, email, user);
 }
 
-/** Bootstrap login — issues session token. Email verified via magic link when using Supabase. */
+/** Server-only upsert used by verified auth flows (password, reset link, Supabase). */
+export const ensureUserInternal = internalMutation({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ensureUserRecord(ctx, args.email);
+    return { userId: user._id, email: user.email };
+  },
+});
+
+/**
+ * @deprecated Formerly issued a session token for any email with no proof of
+ * ownership (account takeover). Kept as a public function only so stale PWA
+ * bundles get a clear error instead of "function not found"; it never mints a
+ * session. Sign in with a password, the emailed reset link, or Supabase.
+ */
 export const createUser = mutation({
   args: { email: v.string() },
   handler: async (ctx, args) => {
@@ -53,34 +100,17 @@ export const createUser = mutation({
       }
       throw error;
     }
-    const existing = await ctx.db
-      .query("users")
-      .withIndex("by_email", (q) => q.eq("email", email))
-      .first();
-    if (existing) {
-      if (existing.accountStatus === "suspended") {
-        throw new Error("This account has been suspended. Contact support.");
-      }
-      const user = await grantStarterCreditsIfNeeded(ctx, email, existing);
-      return await attachSessionToken(email, user);
-    }
-
-    const userId = await ctx.db.insert("users", {
-      email,
-      tokens: 12,
-      plan: "free",
-      tier: "free",
-      subscriptionPlan: "free",
-      credits: 0,
-      starterCreditsGranted: false,
+    await ctx.db.insert("securityEvents", {
+      eventType: SECURITY_EVENT_TYPES.AUTH_FAILURE,
+      severity: "low",
+      message: "Legacy email-only session bootstrap rejected",
+      emailHash: email.slice(0, 64),
+      dateKey: new Date().toISOString().slice(0, 10),
+      createdAt: Date.now(),
     });
-    await ctx.runMutation(internal.platformStats.incrementRegisteredUserInternal, {});
-    const user = await ctx.db.get(userId);
-    if (!user) {
-      throw new Error("Failed to create user");
-    }
-    const granted = await grantStarterCreditsIfNeeded(ctx, email, user);
-    return await attachSessionToken(email, granted);
+    throw new UnauthorizedError(
+      "Email-only sign-in is no longer available. Sign in with your password, or use “Forgot password” to set one."
+    );
   },
 });
 
@@ -98,7 +128,8 @@ export const refreshSession = mutation({
   },
 });
 
-export const backfillMissingStarterCredits = mutation({
+/** Ops-only backfill — run via `npx convex run`; not callable from clients. */
+export const backfillMissingStarterCredits = internalMutation({
   args: { limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const cap = Math.min(args.limit ?? 100, 500);
