@@ -91,6 +91,18 @@ Production deployment: **`perfect-lark-521`** (`https://perfect-lark-521.convex.
 - Pull-to-refresh is **disabled** (no custom gesture, no page translate). Use normal navigation or hard refresh if needed.
 - Media in messages: URLs in assistant replies render with save/share actions (`MessageMediaBlock`). Chat export: header **Chat actions** menu.
 
+### Auth invariants (security)
+
+- Sessions are minted **only** after proof of ownership: `authPasswordActions` (password / emailed reset token), `authActions.establishSessionFromSupabase` (verified JWT), `users.refreshSession` (valid token). User upsert for those flows is `internal.users.ensureUserInternal`.
+- `users:createUser`, `authActions.establishSessionFromEmail`, `authPasswordActions.setPasswordForEmail` are **disabled stubs** kept for stale clients — never re-enable session issuance from a bare email. `tests/security/owaspChecklist.test.ts` enforces this from source.
+- Ops-only mutations (`backfillMissingStarterCredits`, `runExpiryCheck`, `incrementUserCount`, `grantComplimentarySubscription`) are `internalMutation` — run with `npx convex run` + deploy key.
+
+### Public SEO gate
+
+- `cd web && npm run build && npm run seo:audit` audits `web/out` (unique title/description/canonical, single H1, JSON-LD validity, sitemap ↔ pages, robots). It runs in the Pages workflow and **fails the deploy** on errors. Client-only pages (`"use client"` or `ssr:false`) need a server `layout.tsx`/`page.tsx` with `publicMetadata(...)` and an SSR `<h1>` (see `/video/plans`), or `index: false` if they are shells.
+- Product map for hubs/404: `web/lib/seo/productCatalog.ts`. Long-form article primitives: `web/components/seo/SeoArticleParts.tsx`; `JsonLd` supports `breadcrumbs`, `faq`, `offers`.
+- Legal docs live in `web/lib/legal/content.ts` (Terms, Privacy, Cookies, Refunds, Acceptable Use, AI Usage, Security). Keep them in step with billing/auth behaviour — no certification claims.
+
 ### Frontend HTTP paths (static `frontend/`)
 
 - Mutations: `/mutation/<module>:<name>` (e.g. `users:createUser`)
