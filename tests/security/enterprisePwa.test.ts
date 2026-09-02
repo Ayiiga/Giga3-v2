@@ -9,7 +9,8 @@ describe("enterprise PWA security headers", () => {
 
   it("includes HSTS and isolation headers", () => {
     expect(headers).toContain("Strict-Transport-Security:");
-    expect(headers).toContain("Cross-Origin-Opener-Policy: same-origin");
+    // allow-popups keeps origin isolation while letting Paystack Inline popups work.
+    expect(headers).toContain("Cross-Origin-Opener-Policy: same-origin-allow-popups");
     expect(headers).toContain("Cross-Origin-Resource-Policy: same-site");
     expect(headers).toContain("X-Permitted-Cross-Domain-Policies: none");
   });
