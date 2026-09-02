@@ -105,6 +105,9 @@ export function JsonLd({ type = "WebSite", breadcrumbs, faq, offers }: JsonLdPro
             "@type": "Person",
             name: siteConfig.founder.name,
           },
+          address: { "@type": "PostalAddress", addressCountry: "GH" },
+          foundingLocation: { "@type": "Place", name: "Ghana" },
+          areaServed: ["GH", "Africa", "Worldwide"],
         }
       : type === "SoftwareApplication"
         ? {

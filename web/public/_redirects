@@ -12,3 +12,6 @@
 /dashboard.html     /chat/                       301
 /pricing.html       /pricing/                    301
 /payment-success.html /payment/success/          301
+
+# Canonical host: apex → www (Cloudflare Pages honours absolute-URL redirects when both domains are attached)
+https://giga3ai.com/*  https://www.giga3ai.com/:splat  301

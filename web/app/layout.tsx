@@ -32,10 +32,30 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} — ${siteConfig.tagline}`,
+    default: "Giga3 AI — Africa's AI Super App | Multi-Provider AI Chat with Failover",
     template: `%s | ${siteConfig.name}`,
   },
   description: branding.description,
+  keywords: [
+    "Giga3 AI",
+    "Africa AI super app",
+    "AI chat Ghana",
+    "multi-provider AI failover",
+    "OpenAI Gemini failover",
+    "Paystack AI",
+    "Ghana AI",
+    "Convex AI chat",
+  ],
+  authors: [{ name: "Giga3 AI", url: siteConfig.url }],
+  creator: "Giga3 AI",
+  publisher: "Giga3 AI",
+  robots: {
+    index: true,
+    follow: true,
+    "max-image-preview": "large",
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
+  alternates: { canonical: "/" },
   applicationName: branding.name,
   appleWebApp: {
     capable: true,

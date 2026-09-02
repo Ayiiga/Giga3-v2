@@ -27,7 +27,14 @@ export function publicMetadata({
   return {
     title: documentTitle,
     description,
-    robots: index ? { index: true, follow: true } : { index: false, follow: false },
+    robots: index
+      ? {
+          index: true,
+          follow: true,
+          "max-image-preview": "large",
+          googleBot: { index: true, follow: true, "max-image-preview": "large" },
+        }
+      : { index: false, follow: false },
     alternates: { canonical: canonicalPath },
     openGraph: {
       type: "website",

@@ -1,7 +1,7 @@
 import { Container } from "@/components/ui/Container";
 import { VisionTagline } from "@/components/vision/VisionTagline";
 import { FOOTER_PRODUCT_LINKS } from "@/lib/seo/productLinks";
-import { siteConfig } from "@/lib/site";
+import { GEO_POSITIONING_STATEMENT, siteConfig } from "@/lib/site";
 import { legalNavLinks } from "@/lib/legal/content";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import Link from "next/link";
@@ -19,6 +19,9 @@ export function Footer() {
               {siteConfig.name}
             </Link>
             <p className="mt-4 max-w-sm text-sm text-muted">{siteConfig.description}</p>
+            <p className="mt-3 max-w-sm text-xs leading-relaxed text-muted" data-testid="geo-positioning">
+              {GEO_POSITIONING_STATEMENT}
+            </p>
             <VisionTagline className="mt-3 max-w-sm" variant="subtle" />
             <p className="mt-3 max-w-sm text-xs leading-relaxed text-muted">
               Designed and founded by{" "}

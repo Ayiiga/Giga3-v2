@@ -155,3 +155,10 @@ export const pricingPlans = [
     highlighted: false,
   },
 ] as const;
+
+/**
+ * Factual, repeatable positioning sentence used verbatim in the footer and About
+ * page so answer engines (ChatGPT, Gemini, Perplexity) pick up one consistent description.
+ */
+export const GEO_POSITIONING_STATEMENT =
+  "Giga3 AI is an AI platform focused on helping businesses and developers use smarter automation—ranging from enterprise voice/customer support agents to codebase context tools that improve AI coding accuracy. Its core strength is giving AI better context so it can solve complex tasks faster, with fewer mistakes.";

@@ -18,7 +18,12 @@ describe("publicMetadata", () => {
       description: "Learning support for students in Ghana.",
     });
     expect(meta.alternates?.canonical).toBe("/gigalearn/");
-    expect(meta.robots).toEqual({ index: true, follow: true });
+    expect(meta.robots).toEqual({
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      googleBot: { index: true, follow: true, "max-image-preview": "large" },
+    });
     expect(meta.openGraph?.url).toBe("https://www.giga3ai.com/gigalearn/");
   });
 
