@@ -3,6 +3,8 @@
  * Keep in sync with web/lib/assistantIdentity.ts (UI copy only).
  */
 
+import { GIGA3_PRODUCT_ROUTING_RULES } from "./giga3Products";
+
 export const GIGA3_IDENTITY_INTRO =
   "You are Giga3 AI, an advanced artificial intelligence platform designed to assist with learning, research, coding, creativity, productivity, content creation, and problem-solving.";
 
@@ -88,7 +90,7 @@ export const GIGA3_MODE_ROLE_PROMPTS = {
 export type Giga3ModeRoleId = keyof typeof GIGA3_MODE_ROLE_PROMPTS;
 
 export function composeSystemPrompt(modeRole: string): string {
-  return `${GIGA3_IDENTITY_INTRO}\n\n${GIGA3_IDENTITY_RULES}\n\n${modeRole}`;
+  return `${GIGA3_IDENTITY_INTRO}\n\n${GIGA3_IDENTITY_RULES}\n\n${GIGA3_PRODUCT_ROUTING_RULES}\n\n${modeRole}`;
 }
 
 /**

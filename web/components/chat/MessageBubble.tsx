@@ -4,10 +4,12 @@ import { LiveWebSourceCards } from "@/components/chat/LiveWebSourceCards";
 import { MessageBubbleActions } from "@/components/chat/MessageBubbleActions";
 import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
 import { MessageMarkdown } from "@/components/chat/MessageMarkdown";
+import { ProductRedirectCards } from "@/components/chat/ProductRedirectCards";
 import { useStreamingReveal } from "@/hooks/useStreamingReveal";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { formatMessageTime } from "@/lib/chat/groupMessagesByDate";
 import { splitAssistantResponseDisplay } from "@/lib/chat/deriveResponseDisplay";
+import { extractProductRedirectsFromText } from "@/lib/chat/productRedirects";
 import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
 import {
   parseLiveWebMetadata,
@@ -84,6 +86,10 @@ export const MessageBubble = memo(function MessageBubble({
     if (isUser || streaming) return null;
     return splitAssistantResponseDisplay(displayContent);
   }, [isUser, displayContent, streaming]);
+  const productRedirects = useMemo(
+    () => (isUser ? [] : extractProductRedirectsFromText(content)),
+    [isUser, content]
+  );
   const liveWebMetadata = useMemo(
     () => parseLiveWebMetadata(metadataJson),
     [metadataJson]
@@ -151,6 +157,9 @@ export const MessageBubble = memo(function MessageBubble({
                 ) : null}
                 {liveWebMetadata?.sources?.length ? (
                   <LiveWebSourceCards sources={liveWebMetadata.sources} />
+                ) : null}
+                {productRedirects.length > 0 ? (
+                  <ProductRedirectCards products={productRedirects} />
                 ) : null}
               </>
             ))}
