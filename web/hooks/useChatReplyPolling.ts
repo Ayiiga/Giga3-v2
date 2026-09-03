@@ -21,6 +21,13 @@ const SLOW_BURST_DELAYS_MS = [0, 700, 1400, 2200, 3200, 4500, 6000, 8000, 10_000
 /** Surface a user-visible hint when HTTP polling fails repeatedly. */
 export const POLL_FAIL_HINT_THRESHOLD = 4;
 
+/**
+ * Only every Nth poll re-downloads the message list while the reply is still
+ * pending; the tiny status query runs on every tick. On 3G the full thread
+ * (with Live Web metadata) each second was itself congesting the connection.
+ */
+const FULL_FETCH_EVERY_N_POLLS = 6;
+
 export type PolledMessageRow = {
   _id: string;
   role: string;
@@ -63,6 +70,8 @@ export function useChatReplyPolling(
   const [pollFailures, setPollFailures] = useState(0);
   const [liveWebProgress, setLiveWebProgress] = useState<string | undefined>(undefined);
   const inFlightRef = useRef(false);
+  const tickRef = useRef(0);
+  const lastActiveRef = useRef<boolean | undefined>(undefined);
   const pollMs = tier === "slow" ? POLL_SLOW_MS : POLL_NORMAL_MS;
 
   const fetchSnapshot = useCallback(async () => {
@@ -74,33 +83,41 @@ export function useChatReplyPolling(
         timeoutMs: tier === "slow" ? 30_000 : 20_000,
         retries: tier === "slow" ? 2 : 1,
       };
-      const [rows, status] = await Promise.all([
-        convexHttpCall<PolledMessageRow[]>(
+      const tick = tickRef.current++;
+      const status = await convexHttpCall<ReplyStatusSnapshot>(
+        convexUrl,
+        "query",
+        "chatMessaging:getReplyStatus",
+        { sessionToken, conversationId },
+        httpOpts
+      );
+      // Fetch the thread when the reply just landed (active → inactive), on the
+      // first tick, or periodically as a safety net — not on every status poll.
+      const justFinished = lastActiveRef.current === true && status.active === false;
+      lastActiveRef.current = status.active;
+      const wantRows = justFinished || tick === 0 || tick % FULL_FETCH_EVERY_N_POLLS === 0;
+      let rows: PolledMessageRow[] | undefined;
+      if (wantRows) {
+        rows = await convexHttpCall<PolledMessageRow[]>(
           convexUrl,
           "query",
           "messages:listByConversation",
           { sessionToken, conversationId },
           httpOpts
-        ),
-        convexHttpCall<ReplyStatusSnapshot>(
-          convexUrl,
-          "query",
-          "chatMessaging:getReplyStatus",
-          { sessionToken, conversationId },
-          httpOpts
-        ),
-      ]);
-      if (!Array.isArray(rows)) {
-        throw new Error("Invalid messages response");
+        );
+        if (!Array.isArray(rows)) {
+          throw new Error("Invalid messages response");
+        }
+        setPolled(rows);
       }
-      setPolled(rows);
       setReplyActive(status.active);
       setLiveWebProgress(status.active ? status.liveWebProgress : undefined);
       setPollFailures(0);
       logChatClient("poll_ok", {
         conversationId,
-        messageCount: rows.length,
+        messageCount: rows?.length,
         replyActive: status.active,
+        fetchedRows: wantRows,
       });
     } catch (err) {
       setPollFailures((n) => {
@@ -122,6 +139,8 @@ export function useChatReplyPolling(
       setPolled(undefined);
       setReplyActive(undefined);
       setPollFailures(0);
+      tickRef.current = 0;
+      lastActiveRef.current = undefined;
       return;
     }
     if (!mounted || !sessionToken || !conversationId || !pageVisible) return;
