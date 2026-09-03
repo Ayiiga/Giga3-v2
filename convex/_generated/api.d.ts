@@ -30,6 +30,7 @@ import type * as authRateLimit from "../authRateLimit.js";
 import type * as authResetLinks from "../authResetLinks.js";
 import type * as chat from "../chat.js";
 import type * as chatEngine from "../chatEngine.js";
+import type * as chatHedging from "../chatHedging.js";
 import type * as chatMessaging from "../chatMessaging.js";
 import type * as chatReplyJobs from "../chatReplyJobs.js";
 import type * as chatReplyLog from "../chatReplyLog.js";
@@ -225,6 +226,7 @@ declare const fullApi: ApiFromModules<{
   authResetLinks: typeof authResetLinks;
   chat: typeof chat;
   chatEngine: typeof chatEngine;
+  chatHedging: typeof chatHedging;
   chatMessaging: typeof chatMessaging;
   chatReplyJobs: typeof chatReplyJobs;
   chatReplyLog: typeof chatReplyLog;

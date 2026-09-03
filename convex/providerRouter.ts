@@ -223,23 +223,29 @@ export function shouldEnableWebSearch(
 export type ChatSystemProfile = {
   temperature: number;
   maxTokensMultiplier: number;
+  /**
+   * Gemini 2.5 "thinking" token budget. 0 disables thinking — on gemini-2.5-flash
+   * the default dynamic budget adds several seconds per reply, which is the
+   * dominant latency for free-tier users on slow mobile networks.
+   */
+  geminiThinkingBudget: number;
 };
 
 export function chatSystemProfile(chatSystem?: string): ChatSystemProfile {
   switch (chatSystem) {
     case "smart":
-      // Deeper reasoning: lower temperature, longer answers.
-      return { temperature: 0.35, maxTokensMultiplier: 1.5 };
+      // Deeper reasoning: lower temperature, longer answers, a bounded think budget.
+      return { temperature: 0.35, maxTokensMultiplier: 1.5, geminiThinkingBudget: 1024 };
     case "creator":
       // Creative writing: higher temperature.
-      return { temperature: 0.95, maxTokensMultiplier: 1.25 };
+      return { temperature: 0.95, maxTokensMultiplier: 1.25, geminiThinkingBudget: 0 };
     case "vision":
-      return { temperature: 0.6, maxTokensMultiplier: 1 };
+      return { temperature: 0.6, maxTokensMultiplier: 1, geminiThinkingBudget: 0 };
     case "pro":
-      return { temperature: 0.7, maxTokensMultiplier: 1.25 };
+      return { temperature: 0.7, maxTokensMultiplier: 1.25, geminiThinkingBudget: 512 };
     case "fast":
     default:
-      return { temperature: 0.7, maxTokensMultiplier: 1 };
+      return { temperature: 0.7, maxTokensMultiplier: 1, geminiThinkingBudget: 0 };
   }
 }
 
