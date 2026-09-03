@@ -100,6 +100,10 @@ const CATEGORY_PROMPTS: Record<ChatCategoryId, SuggestedPrompt[]> = {
   ],
   general: [
     {
+      label: "Open GigaSocial",
+      text: "Open GigaSocial",
+    },
+    {
       label: "Summarize",
       text: "Summarize the key points of climate change impacts in Africa.",
     },

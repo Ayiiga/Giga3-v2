@@ -4,6 +4,7 @@ import { MessageBubble } from "@/components/chat/MessageBubble";
 import { DOCUMENT_TEMPLATES } from "@/lib/chat/documentTemplates";
 import { getCategoryForMode } from "@/lib/chat/chatCategories";
 import { getSuggestedPrompts } from "@/lib/chat/suggestedPrompts";
+import { CHAT_WORKSPACE_PRIMARY_APPS } from "@/lib/chat/workspaceApps";
 import { GIGA3_CHAT_WELCOME } from "@/lib/assistantIdentity";
 import type { AiModeId } from "@/lib/aiRouter";
 import { formatCurrentDate, resolveTemplatePlaceholders } from "@/lib/datetime";
@@ -115,6 +116,21 @@ function MessageListInner({
               {GIGA3_CHAT_WELCOME} Pick a suggested prompt below, attach files for
               analysis, or explore templates in the workspace.
             </p>
+
+            {onInsertTemplate && (
+              <div className="mt-6 flex w-full flex-wrap justify-center gap-2">
+                {CHAT_WORKSPACE_PRIMARY_APPS.map((app) => (
+                  <button
+                    key={app.id}
+                    type="button"
+                    onClick={() => onInsertTemplate(`Open ${app.label}`)}
+                    className="min-h-11 rounded-full border border-accent/30 bg-accent/5 px-4 py-2 text-sm font-medium text-foreground"
+                  >
+                    Open {app.label}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {onInsertTemplate && (
               <>
