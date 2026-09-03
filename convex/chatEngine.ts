@@ -1,6 +1,7 @@
 
 import OpenAI from "openai";
 import { falOpenRouterChatComplete, getFalApiKey } from "./falClient";
+import { resolveHedgeDelayMs, runHedgedAttempts } from "./chatHedging";
 import {
   appendGroundingCitations,
   geminiGenerateWithGrounding,
@@ -10,7 +11,6 @@ import {
   buildChatRoutePlan,
   chatSystemProfile,
   resolveAiProviderTier,
-  shouldStartFailoverAttempt,
   type AiProviderTier,
   type ChatProviderId,
   type ChatRoutePlan,
@@ -309,6 +309,11 @@ function hasInlineImageAttachments(messages: ChatCompletionMessage[]): boolean {
   );
 }
 
+/** Only Gemini 2.5-series models accept thinkingConfig; older models reject it. */
+function supportsGeminiThinkingConfig(model: string): boolean {
+  return /gemini-2\.5|gemini-3/i.test(model);
+}
+
 async function geminiComplete(
   apiKey: string,
   model: string,
@@ -316,7 +321,8 @@ async function geminiComplete(
   timeoutMs: number,
   maxTokens: number,
   enableWebSearch: boolean,
-  temperature = 0.7
+  temperature = 0.7,
+  thinkingBudget?: number
 ): Promise<{ text: string; usedWebSearch: boolean; groundingSources?: GroundingSource[] }> {
   const hasVisionImages = hasInlineImageAttachments(messages);
 
@@ -393,6 +399,9 @@ async function geminiComplete(
     generationConfig: {
       temperature,
       maxOutputTokens: maxTokens,
+      ...(thinkingBudget !== undefined && supportsGeminiThinkingConfig(model)
+        ? { thinkingConfig: { thinkingBudget } }
+        : {}),
     },
   };
   if (systemText) {
@@ -457,6 +466,7 @@ function buildProviderAttempts(args: {
   secondaryKey?: string;
   geminiKey?: string;
   geminiModel: string;
+  geminiThinkingBudget?: number;
   falKey?: string;
   falModel: string;
   falTimeoutMs: number;
@@ -477,7 +487,8 @@ function buildProviderAttempts(args: {
             args.timeoutMs,
             args.maxTokens,
             args.plan.enableWebSearch,
-            args.temperature
+            args.temperature,
+            args.geminiThinkingBudget
           );
           return {
             content: result.text,
@@ -570,74 +581,59 @@ async function runSequentialPlan(
   budgetMs = Number.POSITIVE_INFINITY
 ): Promise<ChatEngineResult | null> {
   const planStarted = Date.now();
-  for (const attempt of attempts) {
-    // Stop starting new provider attempts once the overall budget is spent so
-    // the worker returns a fallback instead of stacking timeouts for minutes.
-    if (
-      !shouldStartFailoverAttempt({
-        elapsedMs: Date.now() - planStarted,
-        budgetMs,
-        isPrimary: attempt.id === primaryProvider,
-      })
-    ) {
-      console.warn(
-        JSON.stringify({
-          service: "giga3-chat-engine",
-          event: "failover_budget_exhausted",
-          skippedProviderId: attempt.id,
-          budgetMs,
-          totalMs: Date.now() - planStarted,
-          ts: Date.now(),
-        })
-      );
-      break;
+  const log = (level: "log" | "warn" | "error", payload: Record<string, unknown>) =>
+    console[level](JSON.stringify({ service: "giga3-chat-engine", ts: Date.now(), ...payload }));
+
+  const result = await runHedgedAttempts(
+    attempts.map((attempt) => ({
+      id: attempt.id,
+      run: () => withProviderTimeout(attempt.id, timeoutMs, attempt.run),
+    })),
+    {
+      hedgeDelayMs: resolveHedgeDelayMs(),
+      budgetMs,
+      onEvent: (event) => {
+        if (event.type === "start") {
+          log("log", {
+            event: "provider_attempt_start",
+            providerId: event.id,
+            timeoutMs,
+            hedged: event.hedged,
+          });
+        } else if (event.type === "success") {
+          log("log", {
+            event: "provider_attempt_success",
+            providerId: event.id,
+            latencyMs: event.latencyMs,
+            totalMs: Date.now() - planStarted,
+          });
+        } else if (event.type === "failure") {
+          log("error", {
+            event: "provider_attempt_failed",
+            providerId: event.id,
+            error: event.error,
+            latencyMs: event.latencyMs,
+          });
+        } else {
+          log("warn", {
+            event: "failover_budget_exhausted",
+            skippedProviderId: event.id,
+            budgetMs,
+            totalMs: Date.now() - planStarted,
+          });
+        }
+      },
     }
-    const attemptStarted = Date.now();
-    console.log(
-      JSON.stringify({
-        service: "giga3-chat-engine",
-        event: "provider_attempt_start",
-        providerId: attempt.id,
-        timeoutMs,
-        ts: attemptStarted,
-      })
-    );
-    try {
-      const result = await withProviderTimeout(attempt.id, timeoutMs, attempt.run);
-      const latencyMs = Date.now() - attemptStarted;
-      console.log(
-        JSON.stringify({
-          service: "giga3-chat-engine",
-          event: "provider_attempt_success",
-          providerId: attempt.id,
-          latencyMs,
-          totalMs: Date.now() - planStarted,
-          ts: Date.now(),
-        })
-      );
-      return {
-        content: result.content,
-        providerId: attempt.id,
-        usedFallback: attempt.id !== primaryProvider,
-        usedWebSearch: result.usedWebSearch,
-        groundingSources: result.groundingSources,
-        latencyMs,
-      };
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error(
-        JSON.stringify({
-          service: "giga3-chat-engine",
-          event: "provider_attempt_failed",
-          providerId: attempt.id,
-          error: msg,
-          latencyMs: Date.now() - attemptStarted,
-          ts: Date.now(),
-        })
-      );
-    }
-  }
-  return null;
+  );
+  if (!result) return null;
+  return {
+    content: result.value.content,
+    providerId: result.id as ChatProviderId,
+    usedFallback: result.id !== primaryProvider,
+    usedWebSearch: result.value.usedWebSearch,
+    groundingSources: result.value.groundingSources,
+    latencyMs: result.latencyMs,
+  };
 }
 
 export async function completeChatWithFailover(
@@ -718,6 +714,7 @@ export async function completeChatWithFailover(
     falTimeoutMs: cfg.falTimeoutMs,
     enableFalChat: cfg.enableFalChat,
     temperature: profile.temperature,
+    geminiThinkingBudget: profile.geminiThinkingBudget,
   });
 
   const sequential = await runSequentialPlan(

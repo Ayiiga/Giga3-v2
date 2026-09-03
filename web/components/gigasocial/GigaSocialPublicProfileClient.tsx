@@ -5,6 +5,7 @@ import { GigaSocialFanButton } from "@/components/gigasocial/fans/GigaSocialFanB
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
 import { GigaSocialAuthPrompt } from "@/components/gigasocial/ux/GigaSocialAuthPrompt";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { cn } from "@/lib/utils";
 import { getSessionToken, getUserEmail } from "@/lib/auth";
 import { BADGE_LABELS } from "@/lib/gigasocial/sections";
 import { buildGigaSocialProfileUrl } from "@/lib/gigasocial/shareLinks";

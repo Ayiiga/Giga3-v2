@@ -78,6 +78,12 @@ function withWorkerTimeout<T>(
   });
 }
 
+/** Rows loaded for prompt history — the engine trims to CHAT_MAX_HISTORY_TURNS turns anyway. */
+function replyHistoryLimit(): number {
+  const turns = Number(process.env.CHAT_MAX_HISTORY_TURNS) || 12;
+  return Math.max(8, Math.min(120, turns * 2 + 4));
+}
+
 function hasHallucinationRisk(flags: string[]): boolean {
   return flags.some((flag) =>
     [
@@ -439,9 +445,9 @@ export const processJob = internalAction({
       mode: job.mode,
     });
 
-    await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
+    // Marks processing and reports cancellation in one hop (was two).
+    const begin = await ctx.runMutation(internal.chatReplyJobs.beginProcessing, {
       jobId: args.jobId,
-      status: "processing",
     });
 
     const email = job.userId;
@@ -458,30 +464,21 @@ export const processJob = internalAction({
     };
 
     try {
-      if (await isCancelled()) {
-        await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
-          jobId: args.jobId,
-          status: "cancelled",
-        });
+      if (begin.cancelled) {
         return;
       }
 
-      const conv = await ctx.runQuery(internal.platform.getConversationInternal, {
-        conversationId: job.conversationId,
+      // Conversation, bounded history, recap and user in ONE round trip.
+      const context = await ctx.runQuery(internal.platform.loadReplyContextInternal, {
+        jobId: args.jobId,
+        historyLimit: replyHistoryLimit(),
       });
-      if (!conv) {
+      const conv = context?.conversation;
+      if (!context || !conv) {
         throw new Error("Conversation not found");
       }
-
-      const history = await ctx.runQuery(
-        internal.platform.listConversationMessagesInternal,
-        { conversationId: job.conversationId }
-      );
-
-      const segmentRecap = await ctx.runQuery(
-        internal.platform.listSegmentRecapInternal,
-        { conversationId: job.conversationId }
-      );
+      const history = context.history;
+      const segmentRecap = context.segmentRecap;
 
       const last = history[history.length - 1];
       if (
@@ -496,8 +493,13 @@ export const processJob = internalAction({
         return;
       }
 
-      const refreshedUser = await ctx.runQuery(internal.users.getUserByEmailInternal, {
-        email,
+      const refreshedUser = context.user;
+      logChatReply("worker_context_loaded", {
+        jobId: args.jobId,
+        conversationId: job.conversationId,
+        userId: email,
+        historyCount: history.length,
+        contextMs: Date.now() - workerStarted,
       });
 
       const qualityContext = prepareAnswerQualityContext({
@@ -693,6 +695,7 @@ export const processJob = internalAction({
       // answer-quality/auto-visual augmentation (it would append a broken
       // Mermaid block wrapping the image URL and redundant visual specs).
       let assistantContent: string;
+      let qualityReport: ReturnType<typeof validateAnswerQuality>["report"] | null = null;
       if (engineResult.requestKind === "image_generation") {
         assistantContent = engineResult.content;
       } else {
@@ -701,51 +704,62 @@ export const processJob = internalAction({
           context: qualityContext,
         });
         assistantContent = validated.content;
-        recordQualityObservation(validated.report);
-        await ctx.runMutation(internal.qualityDashboard.recordResponseMetric, {
-          responseMode: validated.report.responseMode,
-          confidenceLabel: validated.report.confidenceLabel,
-          citationCount: validated.report.citationCount,
-          verificationVisible: validated.report.verificationVisible,
-          verificationPassed: !hasHallucinationRisk(validated.report.flags),
-          hasHallucinationRisk: hasHallucinationRisk(validated.report.flags),
-        });
+        qualityReport = validated.report;
       }
 
       const chargedAi = engineResult.providerId !== "local_fallback";
 
-      const replyExists = await ctx.runQuery(
-        internal.chatReplyJobs.hasAssistantReplySince,
-        { conversationId: job.conversationId, since: job.createdAt }
-      );
-      if (replyExists) {
+      // Persist FIRST — this is the moment the user sees the answer. Duplicate
+      // protection happens inside the same transaction as the write.
+      const persisted = await ctx.runMutation(internal.platform.appendAssistantReplyIfMissing, {
+        conversationId: job.conversationId,
+        userId: email,
+        content: assistantContent,
+        since: job.createdAt,
+        metadataJson:
+          job.liveWeb && isLiveWebEnabled()
+            ? buildLiveWebMetadata({
+                sources: mergeLiveWebSources(
+                  liveWebSources,
+                  engineResult.groundingSources ?? []
+                ),
+                usedLiveWeb:
+                  liveWebUsed ||
+                  Boolean(engineResult.usedWebSearch) ||
+                  (engineResult.groundingSources?.length ?? 0) > 0,
+                providerId: liveWebProviderId,
+              })
+            : undefined,
+      });
+      logChatReply("worker_reply_persisted", {
+        jobId: args.jobId,
+        conversationId: job.conversationId,
+        userId: email,
+        written: persisted.written,
+        totalMs: Date.now() - workerStarted,
+        providerMs: latencyMs,
+      });
+
+      if (qualityReport) {
+        recordQualityObservation(qualityReport);
+        // Analytics only — after the reply is visible.
+        await ctx.runMutation(internal.qualityDashboard.recordResponseMetric, {
+          responseMode: qualityReport.responseMode,
+          confidenceLabel: qualityReport.confidenceLabel,
+          citationCount: qualityReport.citationCount,
+          verificationVisible: qualityReport.verificationVisible,
+          verificationPassed: !hasHallucinationRisk(qualityReport.flags),
+          hasHallucinationRisk: hasHallucinationRisk(qualityReport.flags),
+        });
+      }
+
+      if (!persisted.written) {
         logChatReply("worker_skip_duplicate_reply", {
           jobId: args.jobId,
           conversationId: job.conversationId,
           userId: email,
         });
       } else {
-        await ctx.runMutation(internal.platform.appendMessage, {
-          conversationId: job.conversationId,
-          userId: email,
-          role: "assistant",
-          content: assistantContent,
-          metadataJson:
-            job.liveWeb && isLiveWebEnabled()
-              ? buildLiveWebMetadata({
-                  sources: mergeLiveWebSources(
-                    liveWebSources,
-                    engineResult.groundingSources ?? []
-                  ),
-                  usedLiveWeb:
-                    liveWebUsed ||
-                    Boolean(engineResult.usedWebSearch) ||
-                    (engineResult.groundingSources?.length ?? 0) > 0,
-                  providerId: liveWebProviderId,
-                })
-              : undefined,
-        });
-
         // Notify when the user is away — bumps installed PWA launcher badge.
         if (engineResult.providerId !== "local_fallback") {
           const isImage = engineResult.requestKind === "image_generation";
@@ -839,18 +853,12 @@ export const processJob = internalAction({
       });
       console.error("[chatReplyWorker] failed:", err);
       if (!(await isCancelled())) {
-        const replyExists = await ctx.runQuery(
-          internal.chatReplyJobs.hasAssistantReplySince,
-          { conversationId: job.conversationId, since: job.createdAt }
-        );
-        if (!replyExists) {
-          await ctx.runMutation(internal.platform.appendMessage, {
-            conversationId: job.conversationId,
-            userId: email,
-            role: "assistant",
-            content: isRateLimitError(err) ? rateLimitReply(message) : FALLBACK_REPLY,
-          });
-        }
+        await ctx.runMutation(internal.platform.appendAssistantReplyIfMissing, {
+          conversationId: job.conversationId,
+          userId: email,
+          content: isRateLimitError(err) ? rateLimitReply(message) : FALLBACK_REPLY,
+          since: job.createdAt,
+        });
         await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
           jobId: args.jobId,
           status: "failed",

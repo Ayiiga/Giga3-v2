@@ -3,11 +3,11 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("service worker cache version", () => {
-  it("uses media video cache name (v219)", () => {
+  it("uses chat latency cache name (v220)", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v219-media-video"');
-    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v219"');
-    expect(sw).toContain('APP_SHELL_CACHE = "giga3-app-shell-v219"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v220-chat-latency"');
+    expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v220"');
+    expect(sw).toContain('APP_SHELL_CACHE = "giga3-app-shell-v220"');
     expect(sw).toContain('pathname.startsWith("/wallet/")');
     expect(sw).toContain('pathname.startsWith("/admin/")');
     expect(sw).toContain('pathname.startsWith("/marketplace/purchases/")');

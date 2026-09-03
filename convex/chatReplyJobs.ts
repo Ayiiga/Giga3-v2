@@ -100,6 +100,21 @@ export const markJobStatus = internalMutation({
   },
 });
 
+/** Mark processing and report cancellation in a single round trip. */
+export const beginProcessing = internalMutation({
+  args: { jobId: v.id("chatReplyJobs") },
+  handler: async (ctx, args) => {
+    const job = await ctx.db.get(args.jobId);
+    if (!job) return { cancelled: true as const };
+    if (job.cancelled || job.status === "cancelled") {
+      if (job.status !== "cancelled") await ctx.db.patch(args.jobId, { status: "cancelled" });
+      return { cancelled: true as const };
+    }
+    await ctx.db.patch(args.jobId, { status: "processing" });
+    return { cancelled: false as const };
+  },
+});
+
 export const cancelJob = internalMutation({
   args: { jobId: v.id("chatReplyJobs") },
   handler: async (ctx, args) => {
@@ -130,13 +145,15 @@ export const hasAssistantReplySince = internalQuery({
     since: v.number(),
   },
   handler: async (ctx, args) => {
-    const rows = await ctx.db
+    // Only the newest few rows can qualify — no need to load the whole thread.
+    const latest = await ctx.db
       .query("messages")
       .withIndex("by_conversation", (q) =>
         q.eq("conversationId", args.conversationId)
       )
-      .collect();
-    return rows.some(
+      .order("desc")
+      .take(6);
+    return latest.some(
       (m) => m.role === "assistant" && m.createdAt >= args.since
     );
   },

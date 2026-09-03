@@ -203,6 +203,7 @@ describe("chatSystemProfile", () => {
     expect(chatSystemProfile("smart")).toEqual({
       temperature: 0.35,
       maxTokensMultiplier: 1.5,
+      geminiThinkingBudget: 1024,
     });
   });
 
@@ -210,6 +211,7 @@ describe("chatSystemProfile", () => {
     expect(chatSystemProfile("creator")).toEqual({
       temperature: 0.95,
       maxTokensMultiplier: 1.25,
+      geminiThinkingBudget: 0,
     });
   });
 
@@ -217,10 +219,12 @@ describe("chatSystemProfile", () => {
     expect(chatSystemProfile(undefined)).toEqual({
       temperature: 0.7,
       maxTokensMultiplier: 1,
+      geminiThinkingBudget: 0,
     });
     expect(chatSystemProfile("unknown")).toEqual({
       temperature: 0.7,
       maxTokensMultiplier: 1,
+      geminiThinkingBudget: 0,
     });
   });
 });

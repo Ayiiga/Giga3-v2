@@ -57,7 +57,7 @@ function sampleRegionAverage(data: ImageData, region: BrandingRegion): number[] 
 }
 
 function regionVariance(data: ImageData, region: BrandingRegion): number {
-  const { width, data: px } = data;
+  const { width, height, data: px } = data;
   const x0 = Math.floor(region.x * width);
   const y0 = Math.floor(region.y * height);
   const x1 = Math.min(width, Math.ceil((region.x + region.w) * width));

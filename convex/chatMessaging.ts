@@ -177,12 +177,15 @@ export const acceptMessage = mutation({
     let segmented = false;
     const segmentLimit = getSegmentExchangeLimit();
     if (conversationId && conv && segmentLimit > 0) {
+      // Exchanges only need the newest 2×limit rows to be counted (and the recap
+      // uses the tail), so never load the whole thread on the send path.
       const existingRows = await ctx.db
         .query("messages")
         .withIndex("by_conversation", (q) =>
           q.eq("conversationId", conversationId!)
         )
-        .collect();
+        .order("desc")
+        .take(segmentLimit * 2 + 8);
       const sortedRows = existingRows.sort((a, b) => a.createdAt - b.createdAt);
       if (shouldSegmentConversation(sortedRows, segmentLimit)) {
         const recap = buildSegmentContinuityRecap(sortedRows);
@@ -222,14 +225,13 @@ export const acceptMessage = mutation({
         )
         .first();
       if (existing && existing.status !== "failed" && existing.status !== "cancelled") {
-        const messageRows = await ctx.db
+        const lastMessage = await ctx.db
           .query("messages")
           .withIndex("by_conversation", (q) =>
             q.eq("conversationId", conversationId!)
           )
-          .collect();
-        const sortedMessages = messageRows.sort((a, b) => a.createdAt - b.createdAt);
-        const lastMessage = sortedMessages[sortedMessages.length - 1];
+          .order("desc")
+          .first();
         if (
           lastMessage?.role === "assistant" &&
           lastMessage.createdAt >= existing.createdAt

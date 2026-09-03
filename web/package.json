@@ -13,7 +13,8 @@
     "test:chat-overflow": "node scripts/chat-overflow-viewport-test.mjs",
     "verify:convex-env": "node scripts/verify-convex-in-build.mjs",
     "seo:audit": "node scripts/seo-audit.mjs --out out",
-    "generate:creator-series-pdfs": "node scripts/generate-creator-series-pdfs.mjs"
+    "generate:creator-series-pdfs": "node scripts/generate-creator-series-pdfs.mjs",
+    "check:undefined": "node scripts/check-undefined-identifiers.mjs"
   },
   "dependencies": {
     "@paystack/inline-js": "^2.22.9",
