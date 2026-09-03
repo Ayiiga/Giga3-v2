@@ -1,3 +1,4 @@
+import type { SocialPostMediaItemInput } from "@/lib/gigasocial/constants";
 /** Client-side types mirroring Convex public projections. */
 
 export type SocialAuthor = {

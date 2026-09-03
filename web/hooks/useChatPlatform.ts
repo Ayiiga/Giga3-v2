@@ -13,6 +13,7 @@ import {
   getUserEmail,
 } from "@/lib/auth";
 import { recoverInvalidSession } from "@/lib/auth/sessionRestore";
+import { logChatClient } from "@/lib/chat/chatLog";
 import {
   readActiveConversationId,
   writeActiveConversationId,
@@ -304,11 +305,20 @@ export function useChatPlatform() {
     pollTargetId,
     mounted
   );
-  const effectiveMessagesRaw = Array.isArray(pollSnapshot.messages)
-    ? pollSnapshot.messages
-    : Array.isArray(messagesRaw)
-      ? messagesRaw
-      : undefined;
+  // Prefer whichever source has the newest message: the live subscription may
+  // deliver the reply before the (now sparser) HTTP poll re-fetches the thread.
+  const effectiveMessagesRaw = useMemo(() => {
+    const polled = Array.isArray(pollSnapshot.messages) ? pollSnapshot.messages : undefined;
+    const live = Array.isArray(messagesRaw) ? messagesRaw : undefined;
+    if (polled && live) {
+      const newest = (rows: Array<{ createdAt?: number }>) =>
+        rows.reduce((max, r) => Math.max(max, r.createdAt ?? 0), 0);
+      return newest(live) > newest(polled) || (live.length > polled.length && newest(live) >= newest(polled))
+        ? live
+        : polled;
+    }
+    return polled ?? live;
+  }, [pollSnapshot.messages, messagesRaw]);
   const polledReplyActive = pollSnapshot.replyActive;
   const messagesRawRef = useRef(effectiveMessagesRaw);
   messagesRawRef.current = effectiveMessagesRaw;

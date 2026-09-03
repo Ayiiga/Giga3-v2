@@ -191,6 +191,11 @@ jobs:
       - name: SEO audit of static export
         run: npm run seo:audit
 
+      # next build ignores TS errors; a missing import ships as a runtime
+      # ReferenceError. Fail the deploy on TS2304 in web/ only.
+      - name: Undefined identifier guard
+        run: npm run check:undefined
+
       - name: Verify Supabase configuration
         working-directory: .
         env:
