@@ -1,20 +1,5 @@
-User-Agent: *
+User-agent: *
 Allow: /
-Allow: /chat/
-Disallow: /chat/login/
-Disallow: /chat/login/reset/
-Disallow: /chat/share/
-Disallow: /payment/
-Disallow: /wallet/
-Disallow: /workspace/
+Disallow: /api/
 Disallow: /admin/
-Disallow: /credits/
-Disallow: /home/
-Disallow: /insights/
-Disallow: /subscribe/
-Disallow: /marketplace/purchases/
-Disallow: /marketplace/sell/
-
 Sitemap: https://www.giga3ai.com/sitemap.xml
-Sitemap: https://www.giga3ai.com/sitemap-marketplace.xml
-Sitemap: https://www.giga3ai.com/sitemap-gigasocial.xml
