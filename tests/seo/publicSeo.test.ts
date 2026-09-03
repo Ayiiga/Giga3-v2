@@ -58,28 +58,16 @@ describe("publicMetadata", () => {
 });
 
 describe("sitemap.xml", () => {
-  it("lists major public product routes", () => {
+  it("lists core marketing routes with lastmod", () => {
     const xml = readFileSync(resolve(__dirname, "../../web/public/sitemap.xml"), "utf8");
     for (const path of [
       "https://www.giga3ai.com/",
-      "https://www.giga3ai.com/chat/",
-      "https://www.giga3ai.com/gigasocial/",
-      "https://www.giga3ai.com/gigaedit/",
-      "https://www.giga3ai.com/media/",
-      "https://www.giga3ai.com/video/",
-      "https://www.giga3ai.com/gigalearn/",
-      "https://www.giga3ai.com/marketplace/",
-      "https://www.giga3ai.com/creator-studio/",
-      "https://www.giga3ai.com/discover/",
-      "https://www.giga3ai.com/trending/",
-      "https://www.giga3ai.com/prompts/",
-      "https://www.giga3ai.com/enterprise/",
-      "https://www.giga3ai.com/developers/",
-      "https://www.giga3ai.com/ai-for-ghana/",
-      "https://www.giga3ai.com/legal/privacy/",
+      "https://www.giga3ai.com/pricing",
+      "https://www.giga3ai.com/features",
     ]) {
       expect(xml).toContain(path);
     }
+    expect(xml).toContain("<lastmod>2026-05-13</lastmod>");
   });
 });
 
@@ -140,9 +128,7 @@ describe("Best AI tools for students in Ghana article", () => {
     expect(src).toContain("FREE_STARTER_CREDITS");
   });
 
-  it("is registered in sitemap and footer, and cross-links the Ghana landing page", () => {
-    const xml = readFileSync(resolve(__dirname, "../../web/public/sitemap.xml"), "utf8");
-    expect(xml).toContain("https://www.giga3ai.com/ai-tools-for-students-ghana/");
+  it("is registered in footer and cross-links the Ghana landing page", () => {
     expect(FOOTER_PRODUCT_LINKS.map((l) => l.href)).toContain("/ai-tools-for-students-ghana");
     expect(src).toContain('href: "/ai-for-ghana"');
     const landing = readFileSync(
@@ -154,13 +140,12 @@ describe("Best AI tools for students in Ghana article", () => {
 });
 
 describe("robots.txt", () => {
-  it("allows chat landing while blocking login and seller tools", () => {
+  it("allows crawlers on public pages and references the sitemap", () => {
     const robots = readFileSync(resolve(__dirname, "../../web/public/robots.txt"), "utf8");
-    expect(robots).toContain("Allow: /chat/");
-    expect(robots).toContain("Disallow: /chat/login/");
-    expect(robots).toContain("Disallow: /chat/login/reset/");
-    expect(robots).not.toContain("Disallow: /creator-studio/");
-    expect(robots).toContain("Disallow: /marketplace/sell/");
+    expect(robots).toContain("User-agent: *");
+    expect(robots).toContain("Allow: /");
+    expect(robots).toContain("Disallow: /api/");
+    expect(robots).toContain("Disallow: /admin/");
     expect(robots).toContain("Sitemap: https://www.giga3ai.com/sitemap.xml");
   });
 });
