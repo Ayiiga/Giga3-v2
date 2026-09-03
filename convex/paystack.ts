@@ -409,7 +409,8 @@ export const fulfillPayment = internalMutation({
         credits: creditsToGrant,
         action: "subscription_refill",
         reference: record.reference,
-        setBalance: true,
+        // Renewals reset to the monthly allotment; first checkout adds on top of packs.
+        setBalance: Boolean(record.isRenewal),
       });
     } else if (record.type === "credits" && record.creditsGranted) {
       await ctx.runMutation(internal.credits.grantCreditsInternal, {

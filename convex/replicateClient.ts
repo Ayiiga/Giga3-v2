@@ -46,7 +46,11 @@ export type ReplicateVideoOptions = {
   duration?: number;
   resolution?: string;
   generateAudio?: boolean;
+  onProgress?: (label: string) => void | Promise<void>;
 };
+
+/** Stay under Convex’s 10-minute Node action when fal already ran. */
+export const REPLICATE_VIDEO_MAX_SAFE_WAIT_MS = 4 * 60 * 1000;
 
 export type ReplicateImageOptions = {
   sourceImageUrl?: string;
@@ -150,12 +154,13 @@ function buildReplicateVideoInput(
   return legacy;
 }
 
-function videoMaxWaitMs(modelId: string): number {
+function videoMaxWaitMs(_modelId: string): number {
   const configured = Number(process.env.REPLICATE_VIDEO_MAX_WAIT_MS);
-  if (Number.isFinite(configured) && configured > 0) {
-    return configured;
-  }
-  return isSeedanceModel(modelId) ? 12 * 60 * 1000 : 8 * 60 * 1000;
+  const raw =
+    Number.isFinite(configured) && configured > 0
+      ? configured
+      : REPLICATE_VIDEO_MAX_SAFE_WAIT_MS;
+  return Math.min(raw, REPLICATE_VIDEO_MAX_SAFE_WAIT_MS);
 }
 
 async function replicateFetch(path: string, init?: RequestInit): Promise<PredictionResponse> {
@@ -180,7 +185,11 @@ async function replicateFetch(path: string, init?: RequestInit): Promise<Predict
 
 async function pollPrediction(
   id: string,
-  options: { maxWaitMs: number; pollIntervalMs: number }
+  options: {
+    maxWaitMs: number;
+    pollIntervalMs: number;
+    onProgress?: (label: string) => void | Promise<void>;
+  }
 ): Promise<PredictionResponse> {
   const deadline = Date.now() + options.maxWaitMs;
   while (Date.now() < deadline) {
@@ -189,6 +198,11 @@ async function pollPrediction(
     if (prediction.status === "failed" || prediction.status === "canceled") {
       throw new Error(prediction.error ?? `Replicate prediction ${prediction.status}`);
     }
+    const label =
+      prediction.status === "starting"
+        ? "Starting backup video provider…"
+        : "Generating video on backup provider…";
+    await options.onProgress?.(label);
     await sleep(options.pollIntervalMs);
   }
   throw new Error(`Replicate prediction timed out after ${options.maxWaitMs}ms`);
@@ -251,6 +265,7 @@ export async function replicateGenerateVideo(
       const done = await pollPrediction(created.id, {
         maxWaitMs: videoMaxWaitMs(modelId),
         pollIntervalMs: isSeedanceModel(modelId) ? 4000 : 3000,
+        onProgress: options?.onProgress,
       });
       const videoUrl = extractUrl(done.output);
       if (!videoUrl) {
@@ -258,6 +273,6 @@ export async function replicateGenerateVideo(
       }
       return { videoUrl, predictionId: done.id };
     },
-    { attempts: 2 }
+    { attempts: 1 }
   );
 }

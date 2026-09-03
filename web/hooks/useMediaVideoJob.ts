@@ -17,6 +17,7 @@ export type TrackedVideoJob = MediaJobRow & {
 
 const POLL_FAST_MS = 4_000;
 const POLL_SLOW_MS = 8_000;
+const TRACKED_JOB_KEY = "giga3_media_video_job";
 /** After this, keep polling but tell the user it is taking longer than usual. */
 export const VIDEO_SLOW_NOTICE_MS = 4 * 60 * 1000;
 
@@ -28,7 +29,15 @@ export const VIDEO_SLOW_NOTICE_MS = 4 * 60 * 1000;
 export function useMediaVideoJob() {
   const convex = useConvex();
   const pageVisible = usePageVisible();
-  const [jobId, setJobId] = useState<Id<"mediaJobs"> | null>(null);
+  const [jobId, setJobId] = useState<Id<"mediaJobs"> | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const saved = sessionStorage.getItem(TRACKED_JOB_KEY);
+      return saved ? (saved as Id<"mediaJobs">) : null;
+    } catch {
+      return null;
+    }
+  });
   const [job, setJob] = useState<TrackedVideoJob | null>(null);
   const [startedAt, setStartedAt] = useState<number>(0);
   const inFlight = useRef(false);
@@ -54,6 +63,11 @@ export function useMediaVideoJob() {
             : next
         );
         if (next.status === "succeeded" || next.status === "failed") {
+          try {
+            sessionStorage.removeItem(TRACKED_JOB_KEY);
+          } catch {
+            /* ignore */
+          }
           triggerMediaJobsRefresh();
         }
       }
@@ -65,6 +79,11 @@ export function useMediaVideoJob() {
   }, [convex, jobId]);
 
   const track = useCallback((id: Id<"mediaJobs">) => {
+    try {
+      sessionStorage.setItem(TRACKED_JOB_KEY, id);
+    } catch {
+      /* private mode */
+    }
     setJobId(id);
     setJob({
       _id: id,
@@ -78,6 +97,11 @@ export function useMediaVideoJob() {
   }, []);
 
   const clear = useCallback(() => {
+    try {
+      sessionStorage.removeItem(TRACKED_JOB_KEY);
+    } catch {
+      /* ignore */
+    }
     setJobId(null);
     setJob(null);
     setStartedAt(0);

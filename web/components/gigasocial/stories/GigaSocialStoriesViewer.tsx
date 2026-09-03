@@ -163,7 +163,7 @@ export const GigaSocialStoriesViewer = memo(function GigaSocialStoriesViewer({
         <div className="flex min-h-0 flex-1 items-center justify-center px-2 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
-            className="gigasocial-stories-slide relative h-full max-h-[min(78dvh,42rem)] w-full max-w-md overflow-hidden rounded-2xl bg-black"
+            className="gigasocial-stories-slide relative h-full max-h-[min(85svh,42rem)] w-full max-w-md overflow-hidden rounded-2xl bg-black"
             onClick={() => {
               if (suppressClickRef.current) {
                 suppressClickRef.current = false;
