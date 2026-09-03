@@ -7,6 +7,7 @@ import {
   type MarkdownBlock,
   type MarkdownListItem,
 } from "@/lib/chat/messageMarkdownParser";
+import { isInternalGiga3Href } from "@/lib/chat/productRedirects";
 import dynamic from "next/dynamic";
 import { memo, useMemo, type ReactNode } from "react";
 
@@ -167,12 +168,13 @@ function renderInline(text: string): ReactNode[] {
           lastIndex = pattern.lastIndex;
           continue;
         }
+        const internal = isInternalGiga3Href(href);
         parts.push(
           <a
             key={`a-${key++}`}
             href={href}
-            target="_blank"
-            rel="noopener noreferrer"
+            target={internal ? undefined : "_blank"}
+            rel={internal ? undefined : "noopener noreferrer"}
             className="chat-md-link"
           >
             {linkMatch[1]}

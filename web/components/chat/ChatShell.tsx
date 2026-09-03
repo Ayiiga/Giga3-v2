@@ -49,6 +49,10 @@ import {
   needsLocationEnrichment,
   resolveLocalDeviceAnswer,
 } from "@/lib/chat/deviceContextIntents";
+import {
+  buildProductRedirectAnswer,
+  matchProductRedirectIntent,
+} from "@/lib/chat/productRedirects";
 import { captureCoordinates } from "@/lib/geolocation";
 import { getConvexUrl } from "@/lib/convex";
 import { convexHttpCall } from "@/lib/network/convexCall";
@@ -62,6 +66,7 @@ import {
   templateInsertNotice,
   writingModeForTemplate,
 } from "@/lib/chat/writingWorkflow";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function ChatShell() {
@@ -115,6 +120,7 @@ function ChatShellInner({
   ) => Promise<{ shareToken: string | null; sharePublic: boolean }>;
 }) {
   useRenderDiagnostic("ChatShellInner");
+  const router = useRouter();
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => readSidebarCollapsed());
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -284,6 +290,18 @@ function ChatShellInner({
         const trimmed = msg.trim();
         if (!trimmed && !attachments?.length) return;
 
+        // Open GigaSocial / GigaEdits / GigaLearn / Media Studio (and other apps) locally.
+        if (trimmed && !attachments?.length) {
+          const product = matchProductRedirectIntent(trimmed);
+          if (product) {
+            appendLocalTurn(trimmed, buildProductRedirectAnswer(product));
+            if (product.kind === "navigate") {
+              router.push(product.product.href);
+            }
+            return;
+          }
+        }
+
         // Device/calendar/clock/connectivity answers use browser APIs — work offline too.
         if (trimmed && !attachments?.length) {
           if (isLocationIntent(trimmed)) {
@@ -362,7 +380,7 @@ function ChatShellInner({
         void sendMessage(wire || msg, attachments, modelTier);
       })();
     },
-    [appendLocalTurn, effectiveOnline, modelTier, sendMessage]
+    [appendLocalTurn, effectiveOnline, modelTier, router, sendMessage]
   );
 
   const handleSuggestVisionTier = useCallback(() => {
