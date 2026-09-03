@@ -71,6 +71,10 @@ export const generateVideo = action({
    */
   handler: async (ctx, args) => {
     const email = await requireSessionWithMonitoring(args.sessionToken, ctx);
+    const providers = videoProviderAvailability();
+    if (!providers.fal && !providers.replicate) {
+      throw new Error("Media service is not configured yet. Please try again later.");
+    }
     const category = args.category ?? "anime_videos";
     const fullPrompt = buildVideoPrompt(category, args.prompt);
     const imageUrl = args.imageUrl?.trim() || undefined;

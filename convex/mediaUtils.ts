@@ -71,6 +71,9 @@ export function toUserMediaError(err: unknown, mediaType: "image" | "video"): st
     return "Video generation needs a source image. Add an image in Media Studio or use image mode first.";
   }
   if (/All providers failed/i.test(raw)) {
+    if (mediaType === "video") {
+      return "We couldn't generate your video right now. fal.ai and Replicate were busy or unavailable — please try again in a minute.";
+    }
     if (isMediaProviderBillingError({ message: raw })) {
       return `We couldn't generate your ${mediaType} right now. Our image providers (fal.ai, Replicate, Google AI) need billing top-up — OpenAI backup was attempted automatically. Try again in a minute or contact support if this persists.`;
     }

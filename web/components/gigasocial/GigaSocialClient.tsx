@@ -197,7 +197,15 @@ function GigaSocialContent() {
       <GigaSocialOfflineBanner />
       {isGuest ? <GigaSocialGuestBanner /> : null}
       {authPromptOpen && !showAuthGate ? (
-        <GigaSocialAuthPrompt variant="modal" onDismiss={() => setAuthPromptOpen(false)} />
+        <GigaSocialAuthPrompt
+          variant="modal"
+          nextPath={
+            typeof window !== "undefined"
+              ? `${window.location.pathname}${window.location.search}`
+              : "/gigasocial/"
+          }
+          onDismiss={() => setAuthPromptOpen(false)}
+        />
       ) : null}
       <header
         className={cn(

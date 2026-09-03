@@ -169,9 +169,10 @@ export const listStuckMediaJobs = internalQuery({
   args: { olderThanMs: v.number(), limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const cutoff = Date.now() - args.olderThanMs;
-    return await ctx.db
+    const rows = await ctx.db
       .query("mediaJobs")
       .withIndex("by_status_created", (q) => q.eq("status", "processing").lt("createdAt", cutoff))
       .take(args.limit ?? 50);
+    return rows.filter((job) => (job.updatedAt ?? job.createdAt) < cutoff);
   },
 });

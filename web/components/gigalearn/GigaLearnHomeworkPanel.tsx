@@ -218,7 +218,7 @@ export const GigaLearnHomeworkPanel = memo(function GigaLearnHomeworkPanel() {
             ) : (
               <MessageSquare className="h-4 w-4" aria-hidden />
             )}
-            Solve in chat
+            Open in chat to solve
           </Button>
           <ButtonLink
             href={`${siteConfig.links.dashboard}?category=education`}
@@ -235,7 +235,7 @@ export const GigaLearnHomeworkPanel = memo(function GigaLearnHomeworkPanel() {
         <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-muted">
           <li>Upload a clear photo of the homework question or worksheet.</li>
           <li>Choose your curriculum, subject, and level for accurate answers.</li>
-          <li>Tap Solve in chat — Giga3 opens Education mode with vision AI.</li>
+          <li>Tap Open in chat to solve — Giga3 opens Education mode with vision AI. Review the prompt, then send.</li>
           <li>Review the step-by-step solution and ask follow-up questions.</li>
         </ol>
         <p className="mt-4 text-xs text-muted">

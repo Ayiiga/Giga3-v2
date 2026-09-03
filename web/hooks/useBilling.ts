@@ -148,7 +148,7 @@ export function useBilling() {
         });
 
         if (mode === "redirect") {
-          setCheckoutPhase("opening");
+          clearCheckout();
           return;
         }
       } catch (e) {

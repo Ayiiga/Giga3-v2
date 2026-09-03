@@ -4,6 +4,8 @@ import { v } from "convex/values";
 
 /** A job still "processing" after this long has lost its worker (crash/timeout). */
 export const STUCK_JOB_AFTER_MS = 30 * 60 * 1000;
+/** Fail sooner when progress stops (worker death ~10 min Convex action limit). */
+export const STALE_PROGRESS_AFTER_MS = 12 * 60 * 1000;
 
 const STUCK_MESSAGE =
   "Video generation took too long and was stopped. Your credits were refunded — please try again.";
@@ -27,7 +29,7 @@ export const recoverStuckJobs = internalMutation({
   args: {},
   handler: async (ctx) => {
     const media = await ctx.runQuery(internal.mediaInternal.listStuckMediaJobs, {
-      olderThanMs: STUCK_JOB_AFTER_MS,
+      olderThanMs: STALE_PROGRESS_AFTER_MS,
     });
     let mediaRecovered = 0;
     for (const job of media) {

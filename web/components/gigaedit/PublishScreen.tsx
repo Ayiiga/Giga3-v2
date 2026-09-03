@@ -141,6 +141,7 @@ export function PublishScreen({
     try {
       if (privacy === "private") {
         setStatus("Private is draft-only. Choose Public or Followers to publish.");
+        setBusy(false);
         return;
       }
       const { audioBlob, soundId, reuse } = await prepareAudioPackage();

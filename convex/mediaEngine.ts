@@ -69,8 +69,14 @@ function imageMaxWaitMs(): number {
   return Number(process.env.FAL_IMAGE_MAX_WAIT_MS ?? 5 * 60 * 1000);
 }
 
+/** Keep one fal attempt inside Convex’s 10-minute Node action budget. */
+export const FAL_VIDEO_MAX_SAFE_WAIT_MS = 4.5 * 60 * 1000;
+
 function videoMaxWaitMs(): number {
-  return Number(process.env.FAL_VIDEO_MAX_WAIT_MS ?? 8 * 60 * 1000);
+  const configured = Number(process.env.FAL_VIDEO_MAX_WAIT_MS);
+  const raw =
+    Number.isFinite(configured) && configured > 0 ? configured : FAL_VIDEO_MAX_SAFE_WAIT_MS;
+  return Math.min(raw, FAL_VIDEO_MAX_SAFE_WAIT_MS);
 }
 
 async function falGenerateImageWithModel(
@@ -310,7 +316,7 @@ export async function generateVideoWithFallback(
                 }),
             }
           ),
-        { attempts: 2, baseDelayMs: 1500 }
+        { attempts: 1, baseDelayMs: 1500 }
       );
       return {
         videoUrl: result.videoUrl,
@@ -339,6 +345,12 @@ export async function generateVideoWithFallback(
         duration: input.duration,
         resolution: input.resolution,
         generateAudio: input.generateAudio,
+        onProgress: (label) =>
+          hooks?.onProgress?.({
+            provider: "replicate",
+            stage: "processing",
+            label,
+          }),
       });
       return {
         videoUrl: result.videoUrl,

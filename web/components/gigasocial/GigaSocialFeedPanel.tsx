@@ -416,9 +416,15 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       return false;
     }
 
+    const visibility = privacyToSocialVisibility(meta.privacy);
+    if (!visibility) {
+      setErrorToast(
+        "This GigaEdit draft is private. Open GigaEdit to keep editing, or choose Public or Followers before publishing."
+      );
+      return false;
+    }
     const consumed = consumePublishHandoffMeta() ?? meta;
     const seed = destinationComposerSeed(consumed.destination ?? "feed");
-    const visibility = privacyToSocialVisibility(consumed.privacy) ?? "public";
     let attribution: string | undefined;
     if (consumed.soundId) {
       const sound = await getSound(consumed.soundId);
@@ -801,13 +807,13 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       ) : null}
 
       {features.enableFeedCategories ? (
-        <div className="hidden sm:block">
+        <div className="overflow-x-auto overscroll-x-contain">
           <FeedCategoryBar value={feedCategory} onChange={setFeedCategory} />
         </div>
       ) : null}
 
       <div
-        className="hidden flex-wrap items-center gap-1.5 sm:flex sm:gap-2"
+        className="flex flex-wrap items-center gap-1.5 sm:gap-2"
         role="tablist"
         aria-label="Filter feed by post type"
       >

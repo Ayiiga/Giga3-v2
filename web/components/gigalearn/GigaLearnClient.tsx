@@ -68,7 +68,11 @@ function GigaLearnContent() {
   }
 
   if (!email) {
-    return <p className="text-center text-base text-muted">Redirecting…</p>;
+    return (
+      <p className="text-center text-base text-muted">
+        {hasPersistedAuth() ? "Loading GigaLearn…" : "Redirecting…"}
+      </p>
+    );
   }
 
   return (

@@ -82,6 +82,12 @@ export function VideoGenerateForm({
     return () => window.clearInterval(id);
   }, [processing, jobStartedAt]);
 
+  useEffect(() => {
+    if (values.category === "social_shorts" && values.aspectRatio !== "9:16") {
+      onChange({ aspectRatio: "9:16" });
+    }
+  }, [onChange, values.aspectRatio, values.category]);
+
   const imageInvalid = values.sourceImageUrl.trim().length > 0 && !isHttpUrl(values.sourceImageUrl);
   const promptReady = values.prompt.trim().length >= 3;
   const disabled = processing || !canGenerate || !promptReady || imageInvalid;
