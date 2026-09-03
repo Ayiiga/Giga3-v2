@@ -62,8 +62,8 @@ describe("sitemap.xml", () => {
     const xml = readFileSync(resolve(__dirname, "../../web/public/sitemap.xml"), "utf8");
     for (const path of [
       "https://www.giga3ai.com/",
-      "https://www.giga3ai.com/pricing",
-      "https://www.giga3ai.com/features",
+      "https://www.giga3ai.com/pricing/",
+      "https://www.giga3ai.com/features/",
     ]) {
       expect(xml).toContain(path);
     }
