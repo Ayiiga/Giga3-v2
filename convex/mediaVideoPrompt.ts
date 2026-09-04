@@ -21,6 +21,32 @@ export function motionOnlyVideoPromptFromImage(userPrompt: string): string {
   return `Subtle cinematic motion only: gentle camera push-in or slow parallax. Preserve every English letter, logo, and UI element exactly as in the source frame — no new text, no warping, no invented characters, no foreign symbols. ${trimmed}`;
 }
 
+export type VideoPromptImageMode = "none" | "user" | "generated";
+
+/**
+ * Build the final video prompt for text-only, user image + prompt, or auto-generated frame + prompt.
+ * The text prompt always drives motion/story; an image (when present) anchors the first frame.
+ */
+export function buildVideoPromptWithOptionalImage(
+  builtPrompt: string,
+  userPrompt: string,
+  imageMode: VideoPromptImageMode = "none"
+): string {
+  const core = builtPrompt.trim() || userPrompt.trim();
+
+  if (imageMode === "none") {
+    return refineVideoPromptForGeneration(core, false);
+  }
+
+  const scene = core || userPrompt.trim() || "Smooth cinematic motion.";
+  const withImage =
+    imageMode === "generated"
+      ? `${scene}. Animate from the generated opening frame using the scene description above for camera movement, pacing, and mood. Preserve every English letter, logo, and UI element in the frame — no warping or invented text.`
+      : `${scene}. Use the provided source image as the first frame and follow the prompt above for motion, pacing, camera work, and story while keeping the composition stable.`;
+
+  return refineVideoPromptForGeneration(withImage, true);
+}
+
 /** Steer generation away from unreadable on-screen text unless a source image anchors it. */
 export function refineVideoPromptForGeneration(
   userPrompt: string,
