@@ -25,7 +25,8 @@ import {
 } from "@/lib/chat/imageStudioLinks";
 import type { UsageSnapshot } from "@/lib/credits/constants";
 import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
-import { canGenerateImage, canGenerateVideo } from "@/lib/credits/rules";
+import { canGenerateImage } from "@/lib/credits/rules";
+import { mediaVideoCreditCost } from "@/lib/media/videoCredits";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, ImageIcon, Loader2, Video, XCircle } from "lucide-react";
 import Link from "next/link";
@@ -185,9 +186,10 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
     tab === "image" && (Boolean(imageSourceUrl.trim()) || editActionActive);
 
   const categories = tab === "image" ? IMAGE_CATEGORIES : VIDEO_CATEGORIES;
+  const videoCreditCost = mediaVideoCreditCost(videoForm.durationSec);
   const canGen =
     usage &&
-    (tab === "image" ? canGenerateImage(usage) : canGenerateVideo(usage));
+    (tab === "image" ? canGenerateImage(usage) : usage.credits >= videoCreditCost);
 
   const handleGenerate = useCallback(async () => {
     const trimmed = prompt.trim();
@@ -280,7 +282,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
               clearStatus();
             }}
             canGenerate={Boolean(canGen)}
-            creditCost={usage?.creditCosts.video ?? 8}
+            creditCost={videoCreditCost}
             creditsAvailable={usage ? usage.credits : null}
             submitting={videoSubmitting}
             job={videoJob.job}
@@ -531,9 +533,9 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
         {tab === "video" && !canGen && usage && (
           <CreditPromptBanner
             variant="empty"
-            message={`You need ${usage.creditCosts.video} credits for a video. Subscribe or buy a top-up pack to continue.`}
+            message={`You need ${videoCreditCost} credits for this ${videoForm.durationSec}s video. Subscribe or buy a top-up pack to continue.`}
             subscriptionActive={usage.subscriptionActive}
-            creditCost={usage.creditCosts.video}
+            creditCost={videoCreditCost}
             compact
           />
         )}

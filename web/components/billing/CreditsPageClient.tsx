@@ -49,8 +49,8 @@ function CreditsPageClientInner() {
       <div className="text-center">
         <h1 className="page-title">Buy credits</h1>
         <p className="mt-2 text-lg font-medium text-foreground">
-          Images cost {CREDIT_COSTS.image} credits · Videos cost{" "}
-          {CREDIT_COSTS.video} credits. Payments in GHS via Paystack.
+          Images cost {CREDIT_COSTS.image} credits · Videos from {CREDIT_COSTS.video}{" "}
+          credits (5s) — 10s = 20, 15s = 30. Payments in GHS via Paystack.
         </p>
         <div className="mt-3 flex justify-center">
           <PaystackModeBadge mode={paystackMode} inlineEnabled={inlineEnabled} />

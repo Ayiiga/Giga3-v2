@@ -55,7 +55,7 @@ export function UsageTracker({ usage, className }: UsageTrackerProps) {
       <p className="text-xs text-muted">
         Chat {usage.creditCosts.chat} · Writing {usage.creditCosts.writing} ·
         Research {usage.creditCosts.research} · Image {usage.creditCosts.image}{" "}
-        · Video {usage.creditCosts.video}
+        · Video from {usage.creditCosts.video} (5s/10s/15s = 9/20/30)
       </p>
       {low && (
         <p className="text-xs text-amber-300">
