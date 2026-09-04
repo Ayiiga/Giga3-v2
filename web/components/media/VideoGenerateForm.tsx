@@ -7,6 +7,11 @@ import { VIDEO_CATEGORIES, type VideoCategoryId } from "@/lib/media/catalog";
 import { progressForStage, providerDisplayName } from "@/lib/media/stableJobs";
 import type { TrackedVideoJob } from "@/hooks/useMediaVideoJob";
 import { VIDEO_SLOW_NOTICE_MS } from "@/hooks/useMediaVideoJob";
+import {
+  MEDIA_VIDEO_DEFAULT_DURATION_SEC,
+  MEDIA_VIDEO_DURATION_OPTIONS,
+  type MediaVideoDurationSec,
+} from "@/lib/media/videoLimits";
 import { cn } from "@/lib/utils";
 import { Clapperboard, ImagePlus, Loader2, RefreshCw, Video } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -19,7 +24,7 @@ export type VideoFormValues = {
   category: VideoCategoryId;
   sourceImageUrl: string;
   aspectRatio: VideoAspect;
-  durationSec: 5 | 8 | 10;
+  durationSec: MediaVideoDurationSec;
   quality: VideoQuality;
   audio: boolean;
 };
@@ -30,7 +35,7 @@ const ASPECTS: { id: VideoAspect; label: string; hint: string }[] = [
   { id: "1:1", label: "Square", hint: "Feed · 1:1" },
 ];
 
-const DURATIONS: VideoFormValues["durationSec"][] = [5, 8, 10];
+const DURATIONS = MEDIA_VIDEO_DURATION_OPTIONS;
 
 type VideoGenerateFormProps = {
   values: VideoFormValues;
@@ -169,7 +174,7 @@ export function VideoGenerateForm({
                     : "border-border text-muted hover:text-foreground"
                 )}
               >
-                {d}s
+                {d >= 60 ? "1 min" : `${d}s`}
               </button>
             ))}
           </div>

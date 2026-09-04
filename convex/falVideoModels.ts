@@ -5,6 +5,8 @@
  * so switching FAL_TEXT_VIDEO_MODEL / FAL_IMAGE_VIDEO_MODEL never breaks the UI.
  */
 
+import { MEDIA_VIDEO_MAX_DURATION_SEC } from "./mediaVideoLimits";
+
 export const DEFAULT_FAL_TEXT_VIDEO_MODEL = "fal-ai/bytedance/seedance/v1/lite/text-to-video";
 export const DEFAULT_FAL_IMAGE_VIDEO_MODEL = "fal-ai/bytedance/seedance/v1/lite/image-to-video";
 
@@ -103,7 +105,7 @@ export function buildFalVideoPayload(
         : (["21:9", "16:9", "4:3", "1:1", "3:4", "9:16", "9:21"] as const);
       return {
         ...base,
-        duration: String(clamp(req.durationSec ?? 5, 2, 12)),
+        duration: String(clamp(req.durationSec ?? 5, 4, 15)),
         resolution: normalizeResolution(req.resolution, ["480p", "720p", "1080p"], "720p"),
         aspect_ratio: pickEnum(req.aspectRatio, aspectAllowed, image ? "auto" : "16:9"),
         ...(req.seed !== undefined ? { seed: req.seed } : {}),
@@ -173,7 +175,9 @@ export function buildFalVideoPayload(
       return {
         ...base,
         ...(req.aspectRatio ? { aspect_ratio: req.aspectRatio } : {}),
-        ...(req.durationSec ? { duration: String(clamp(req.durationSec, 2, 12)) } : {}),
+        ...(req.durationSec
+          ? { duration: String(clamp(req.durationSec, 4, MEDIA_VIDEO_MAX_DURATION_SEC)) }
+          : {}),
         ...(req.negativePrompt ? { negative_prompt: req.negativePrompt } : {}),
         ...(req.seed !== undefined ? { seed: req.seed } : {}),
       };

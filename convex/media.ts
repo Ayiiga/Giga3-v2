@@ -6,6 +6,7 @@ import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import type { FalImageSize } from "./falClient";
 import { buildImagePrompt, buildVideoPrompt } from "./mediaCatalog";
+import { clampMediaVideoDurationSec } from "./mediaVideoLimits";
 import { assertCreditsAvailable, chargeCreditsForMedia } from "./mediaCredits";
 import { generateImageWithFallback, videoProviderAvailability } from "./mediaEngine";
 import { persistImageUrlIfNeeded } from "./mediaStorage";
@@ -77,7 +78,7 @@ export const generateVideo = action({
     if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
       throw new Error("Source image must be a public https:// URL.");
     }
-    const duration = clampDuration(args.duration);
+    const duration = clampMediaVideoDurationSec(args.duration);
     const resolution = normalizeResolution(args.resolution);
 
     const cost = await assertCreditsAvailable(ctx, args.sessionToken, "video");
@@ -129,11 +130,6 @@ export const generateVideo = action({
     };
   },
 });
-
-function clampDuration(value: number | undefined): number {
-  if (!value || !Number.isFinite(value)) return 5;
-  return Math.min(12, Math.max(2, Math.round(value)));
-}
 
 function normalizeResolution(value: string | undefined): "480p" | "720p" | "1080p" {
   return value === "480p" || value === "1080p" ? value : "720p";

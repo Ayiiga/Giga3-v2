@@ -13,6 +13,7 @@ import {
   REPLICATE_VIDEO_RESOLUTION,
   type SeedanceAspectRatio,
 } from "./mediaCatalog";
+import { clampMediaVideoDurationSec } from "./mediaVideoLimits";
 
 const REPLICATE_API = "https://api.replicate.com/v1";
 
@@ -127,7 +128,10 @@ function buildReplicateVideoInput(
   if (isSeedanceModel(modelId)) {
     const input: Record<string, unknown> = {
       prompt,
-      duration: options?.duration ?? REPLICATE_VIDEO_DURATION,
+      duration:
+        options?.duration !== undefined
+          ? clampMediaVideoDurationSec(options.duration)
+          : REPLICATE_VIDEO_DURATION,
       resolution: options?.resolution ?? REPLICATE_VIDEO_RESOLUTION,
       aspect_ratio: options?.aspectRatio ?? "16:9",
       generate_audio: options?.generateAudio ?? REPLICATE_VIDEO_GENERATE_AUDIO,
