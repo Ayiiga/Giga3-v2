@@ -79,6 +79,15 @@ export const createVideoJob = internalMutation({
   },
 });
 
+export const setVideoJobSourceImage = internalMutation({
+  args: { jobId: v.id("videoJobs"), sourceImageUrl: v.string() },
+  handler: async (ctx, args) => {
+    const job = await ctx.db.get(args.jobId);
+    if (!job || job.status !== "processing") return;
+    await ctx.db.patch(args.jobId, { sourceImageUrl: args.sourceImageUrl });
+  },
+});
+
 export const completeVideoJob = internalMutation({
   args: {
     jobId: v.id("videoJobs"),

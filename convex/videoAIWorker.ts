@@ -5,6 +5,7 @@ import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import type { FalImageSize } from "./falClient";
 import { generateVideoWithFallback } from "./mediaEngine";
+import { resolveVideoTextPipeline } from "./mediaVideoTextPipeline";
 import { toUserMediaError } from "./mediaUtils";
 import { videoAiAspectRatio } from "./videoCatalog";
 import { videoCostForCategory } from "./videoCreditsConfig";
@@ -27,7 +28,8 @@ export const processJob = internalAction({
     jobId: v.id("videoJobs"),
     userId: v.string(),
     category: v.string(),
-    prompt: v.string(),
+    userPrompt: v.string(),
+    builtPrompt: v.string(),
     imageUrl: v.optional(v.string()),
     negativePrompt: v.optional(v.string()),
     imageSize: imageSizeValidator,
@@ -49,11 +51,27 @@ export const processJob = internalAction({
     const cost = videoCostForCategory(args.category);
 
     try {
-      const result = await generateVideoWithFallback({
-        prompt: args.prompt,
+      const pipeline = await resolveVideoTextPipeline(ctx, {
+        userPrompt: args.userPrompt,
+        builtPrompt: args.builtPrompt,
         category: args.category,
         imageUrl: args.imageUrl,
+        aspectRatio: args.aspectRatio ?? videoAiAspectRatio(args.category),
         negativePrompt: args.negativePrompt,
+      });
+
+      if (pipeline.usedImageFirst && pipeline.imageUrl) {
+        await ctx.runMutation(internal.videoInternal.setVideoJobSourceImage, {
+          jobId: args.jobId,
+          sourceImageUrl: pipeline.imageUrl,
+        });
+      }
+
+      const result = await generateVideoWithFallback({
+        prompt: pipeline.videoPrompt,
+        category: args.category,
+        imageUrl: pipeline.imageUrl,
+        negativePrompt: pipeline.negativePrompt,
         imageSize: args.imageSize as FalImageSize | undefined,
         duration: args.duration,
         resolution: args.resolution,

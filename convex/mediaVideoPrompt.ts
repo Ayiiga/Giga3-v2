@@ -16,6 +16,11 @@ export function videoPromptNeedsTextGuard(userPrompt: string): boolean {
   return /"[^"]{2,}"/.test(p) || /'[^']{2,}'/.test(p);
 }
 
+export function motionOnlyVideoPromptFromImage(userPrompt: string): string {
+  const trimmed = userPrompt.trim();
+  return `Subtle cinematic motion only: gentle camera push-in or slow parallax. Preserve every English letter, logo, and UI element exactly as in the source frame — no new text, no warping, no invented characters, no foreign symbols. ${trimmed}`;
+}
+
 /** Steer generation away from unreadable on-screen text unless a source image anchors it. */
 export function refineVideoPromptForGeneration(
   userPrompt: string,
@@ -26,7 +31,7 @@ export function refineVideoPromptForGeneration(
   if (!videoPromptNeedsTextGuard(trimmed)) return trimmed;
 
   if (hasSourceImage) {
-    return `${trimmed}. Animate with smooth natural motion while preserving the source image composition. Keep any existing text and UI stable — do not warp letters or invent new characters.`;
+    return `${trimmed}. Animate with smooth natural motion while preserving the source image composition. Keep all English text and UI perfectly stable — do not warp letters, change spelling, or invent non-English symbols.`;
   }
 
   return `${trimmed}. Cinematic scene with natural motion and lighting. Do not generate readable text, logos, or detailed app UI on screens — show devices with blurred screens, soft bokeh, or abstract light instead. Focus on people, environment, and camera movement.`;
@@ -40,7 +45,7 @@ export function defaultVideoNegativePrompt(
   if (userNegative?.trim()) parts.push(userNegative.trim());
   if (videoPromptNeedsTextGuard(userPrompt)) {
     parts.push(
-      "garbled text, illegible letters, misspelled words, distorted typography, fake UI, gibberish characters, warped logos, unreadable screen content, glitched interface, melted faces on screens"
+      "garbled text, illegible letters, misspelled words, distorted typography, fake UI, gibberish characters, warped logos, unreadable screen content, glitched interface, melted faces on screens, non-english characters, cyrillic text, greek letters, arabic script, hieroglyphs, alien symbols, mirrored letters, nonsense typography"
     );
   }
   return parts.length > 0 ? parts.join(", ") : undefined;

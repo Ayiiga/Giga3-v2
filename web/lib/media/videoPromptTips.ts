@@ -14,4 +14,4 @@ export function videoPromptNeedsTextGuard(userPrompt: string): boolean {
 }
 
 export const VIDEO_TEXT_TIP =
-  "AI video models often garble on-screen text and app UI. For logos or readable words, create the frame in Images first, then use Start from an image to animate it.";
+  "Prompts with logos, app UI, or readable words automatically get an English text frame first, then we animate it — for best results, upload your own frame with Start from an image.";
