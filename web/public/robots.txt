@@ -3,3 +3,4 @@ Allow: /
 Disallow: /api/
 Disallow: /admin/
 Sitemap: https://www.giga3ai.com/sitemap.xml
+Sitemap: https://www.giga3ai.com/sitemap-blog.xml

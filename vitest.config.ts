@@ -6,8 +6,11 @@ export default defineConfig({
     environment: "node",
     include: ["tests/**/*.test.ts"],
   },
+  esbuild: {
+    jsx: "automatic",
+  },
   resolve: {
-    extensions: [".ts", ".js"],
+    extensions: [".ts", ".tsx", ".js"],
     alias: {
       "@": path.resolve(__dirname, "web"),
     },
