@@ -9,6 +9,11 @@ import {
   type FalImageSize,
   type FalVideoProgress,
 } from "./falClient";
+import {
+  falModelMaxDurationSec,
+  falModelSupportsAudio,
+  resolveFalVideoModel,
+} from "./falVideoModels";
 import { imageCategoryAspectRatio, videoCategoryAspectRatio } from "./mediaCatalog";
 import {
   falImageSizeToAspectRatio,
@@ -281,6 +286,55 @@ export async function generateVideoWithFallback(
   const imageUrl = input.imageUrl?.trim() || undefined;
   const aspectRatio =
     input.aspectRatio ?? videoCategoryAspectRatio(input.category ?? "anime_videos");
+  const wantsAudio = input.generateAudio !== false;
+  const requestedDuration = input.duration ?? 0;
+  const falModel = resolveFalVideoModel(Boolean(imageUrl));
+  const falSupportsAudio = falModelSupportsAudio(falModel);
+  const falMaxDuration = falModelMaxDurationSec(falModel);
+  const preferReplicateFirst =
+    Boolean(getReplicateToken()) &&
+    ((wantsAudio && !falSupportsAudio) ||
+      (requestedDuration > falMaxDuration && wantsAudio));
+
+  const tryReplicate = async (label: string) => {
+    if (!getReplicateToken()) return null;
+    try {
+      await hooks?.onProgress?.({
+        provider: "replicate",
+        stage: "queued",
+        label,
+      });
+      const result = await replicateGenerateVideo(input.prompt, {
+        imageUrl,
+        seed: input.seed,
+        aspectRatio,
+        duration: input.duration,
+        resolution: input.resolution,
+        generateAudio: input.generateAudio,
+      });
+      return {
+        videoUrl: result.videoUrl,
+        provider: "replicate" as const,
+        externalId: result.predictionId,
+      };
+    } catch (err) {
+      errors.push(`replicate: ${err instanceof Error ? err.message : String(err)}`);
+      return null;
+    }
+  };
+
+  if (preferReplicateFirst) {
+    const replicateResult = await tryReplicate(
+      errors.length ? "Retrying with backup provider…" : "Queued at Replicate (audio/long clip)"
+    );
+    if (replicateResult) {
+      return {
+        videoUrl: replicateResult.videoUrl,
+        provider: replicateResult.provider,
+        externalId: replicateResult.externalId,
+      };
+    }
+  }
 
   if (getFalApiKey()) {
     try {
@@ -325,29 +379,15 @@ export async function generateVideoWithFallback(
     }
   }
 
-  if (getReplicateToken()) {
-    try {
-      await hooks?.onProgress?.({
-        provider: "replicate",
-        stage: "queued",
-        label: errors.length ? "Retrying with backup provider…" : "Queued at Replicate",
-      });
-      const result = await replicateGenerateVideo(input.prompt, {
-        imageUrl,
-        seed: input.seed,
-        aspectRatio,
-        duration: input.duration,
-        resolution: input.resolution,
-        generateAudio: input.generateAudio,
-      });
-      return {
-        videoUrl: result.videoUrl,
-        provider: "replicate",
-        externalId: result.predictionId,
-      };
-    } catch (err) {
-      errors.push(`replicate: ${err instanceof Error ? err.message : String(err)}`);
-    }
+  const replicateResult = await tryReplicate(
+    errors.length ? "Retrying with backup provider…" : "Queued at Replicate"
+  );
+  if (replicateResult) {
+    return {
+      videoUrl: replicateResult.videoUrl,
+      provider: replicateResult.provider,
+      externalId: replicateResult.externalId,
+    };
   }
 
   throw new Error(

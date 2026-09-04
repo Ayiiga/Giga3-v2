@@ -267,10 +267,31 @@ export async function exportCompositedTimeline(
   };
 
   const canvasStream = canvas.captureStream(fps);
+  const composed = new MediaStream(canvasStream.getVideoTracks());
+  const audioTracksToStop: MediaStreamTrack[] = [];
+  let audioCtx: AudioContext | null = null;
+  const audioMode = options.audioMode ?? "original";
+  if (audioMode === "replace" && options.replaceAudio) {
+    audioCtx = new AudioContext();
+    await audioCtx.resume();
+    const dest = audioCtx.createMediaStreamDestination();
+    const data = await options.replaceAudio.arrayBuffer();
+    const buffer = await audioCtx.decodeAudioData(data.slice(0));
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(dest);
+    source.start(0, 0, Math.min(buffer.duration, durationSec));
+    dest.stream.getAudioTracks().forEach((track) => {
+      composed.addTrack(track);
+      audioTracksToStop.push(track);
+    });
+  }
+
   const mimeType = pickRecorderMimeType();
-  const recorder = new MediaRecorder(canvasStream, {
+  const recorder = new MediaRecorder(composed, {
     mimeType,
     videoBitsPerSecond: tier === "low" ? 2_500_000 : 5_000_000,
+    audioBitsPerSecond: 128_000,
   });
   const chunks: BlobPart[] = [];
   const recorded = new Promise<Blob>((resolve, reject) => {
@@ -325,6 +346,14 @@ export async function exportCompositedTimeline(
       video.load();
       if (src.startsWith("blob:")) URL.revokeObjectURL(src);
     }
+    audioTracksToStop.forEach((track) => {
+      try {
+        track.stop();
+      } catch {
+        /* ignore */
+      }
+    });
+    void audioCtx?.close().catch(() => undefined);
     canvasStream.getTracks().forEach((track) => {
       try {
         track.stop();

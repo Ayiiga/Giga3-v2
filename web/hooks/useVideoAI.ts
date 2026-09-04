@@ -37,6 +37,7 @@ export function useVideoWallet() {
       prompt: string;
       imageUrl?: string;
       aspectRatio?: "16:9" | "9:16";
+      generateAudio?: boolean;
     }) => {
       const token = getSessionToken();
       if (!token) throw new Error("Sign in required");
@@ -46,6 +47,7 @@ export function useVideoWallet() {
         prompt: args.prompt,
         imageUrl: args.imageUrl,
         aspectRatio: args.aspectRatio,
+        generateAudio: args.generateAudio,
       });
     },
     [generate]

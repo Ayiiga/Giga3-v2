@@ -85,12 +85,48 @@ function fitExportSize(
 async function loadAudioBufferSource(
   ctx: AudioContext,
   blob: Blob
-): Promise<AudioBufferSourceNode> {
+): Promise<{ source: AudioBufferSourceNode; durationSec: number }> {
   const data = await blob.arrayBuffer();
   const buffer = await ctx.decodeAudioData(data.slice(0));
   const source = ctx.createBufferSource();
   source.buffer = buffer;
-  return source;
+  return { source, durationSec: buffer.duration };
+}
+
+async function resumeAudioContext(ctx: AudioContext): Promise<void> {
+  if (ctx.state === "suspended") {
+    await ctx.resume();
+  }
+}
+
+type VideoWithCapture = HTMLVideoElement & { captureStream?: () => MediaStream };
+
+async function attachVideoElementAudio(
+  audioCtx: AudioContext,
+  video: HTMLVideoElement,
+  dest: MediaStreamAudioDestinationNode,
+  composed: MediaStream,
+  tracksToStop: MediaStreamTrack[]
+): Promise<boolean> {
+  const captureStream = (video as VideoWithCapture).captureStream?.();
+  const captureTrack = captureStream?.getAudioTracks()[0];
+  if (captureTrack) {
+    composed.addTrack(captureTrack);
+    tracksToStop.push(captureTrack);
+    video.muted = false;
+    video.volume = 1;
+    return true;
+  }
+
+  const elSource = audioCtx.createMediaElementSource(video);
+  elSource.connect(dest);
+  video.muted = false;
+  video.volume = 1;
+  dest.stream.getAudioTracks().forEach((track) => {
+    composed.addTrack(track);
+    tracksToStop.push(track);
+  });
+  return dest.stream.getAudioTracks().length > 0;
 }
 
 /**
@@ -142,28 +178,49 @@ export async function exportEditedVideoFile(
     const composed = new MediaStream(canvasStream.getVideoTracks());
 
     const audioMode = options.audioMode ?? "original";
+    let audioAttachError: string | null = null;
     if (audioMode !== "mute") {
       try {
         audioCtx = new AudioContext();
+        await resumeAudioContext(audioCtx);
         dest = audioCtx.createMediaStreamDestination();
         if (audioMode === "replace" && options.replaceAudio) {
-          const source = await loadAudioBufferSource(audioCtx, options.replaceAudio);
+          const { source, durationSec } = await loadAudioBufferSource(
+            audioCtx,
+            options.replaceAudio
+          );
           source.connect(dest);
-          source.start(0, startSec, endSec - startSec);
+          const playDuration = Math.min(durationSec, clipDuration);
+          source.start(0, 0, playDuration);
         } else {
-          // Tap source video element audio when available.
-          const elSource = audioCtx.createMediaElementSource(video);
-          elSource.connect(dest);
-          video.muted = false;
-          video.volume = 1;
+          const attached = await attachVideoElementAudio(
+            audioCtx,
+            video,
+            dest,
+            composed,
+            tracksToStop
+          );
+          if (!attached) {
+            audioAttachError = "Could not capture source audio.";
+          }
         }
-        dest.stream.getAudioTracks().forEach((t) => {
-          composed.addTrack(t);
-          tracksToStop.push(t);
-        });
-      } catch {
-        /* continue video-only */
+        if (audioMode === "replace" && options.replaceAudio) {
+          dest.stream.getAudioTracks().forEach((track) => {
+            composed.addTrack(track);
+            tracksToStop.push(track);
+          });
+        }
+      } catch (err) {
+        audioAttachError =
+          err instanceof Error ? err.message : "Could not attach audio to export.";
       }
+    }
+    if (audioMode !== "mute" && audioAttachError && composed.getAudioTracks().length === 0) {
+      throw new Error(
+        audioMode === "replace"
+          ? `Voiceover export failed: ${audioAttachError}`
+          : `Video export failed: ${audioAttachError}`
+      );
     }
 
     canvasStream.getVideoTracks().forEach((t) => tracksToStop.push(t));
@@ -503,6 +560,42 @@ export async function exportJoinedVideoClips(
   const canvasStream = canvas.captureStream(30);
   const composed = new MediaStream(canvasStream.getVideoTracks());
   const tracksToStop: MediaStreamTrack[] = canvasStream.getVideoTracks();
+  let audioCtx: AudioContext | null = null;
+  let totalDurationSec = 0;
+
+  const audioMode = options.audioMode ?? "original";
+  if (audioMode !== "mute") {
+    try {
+      audioCtx = new AudioContext();
+      await resumeAudioContext(audioCtx);
+      const dest = audioCtx.createMediaStreamDestination();
+      if (audioMode === "replace" && options.replaceAudio) {
+        const { source, durationSec } = await loadAudioBufferSource(
+          audioCtx,
+          options.replaceAudio
+        );
+        source.connect(dest);
+        source.start(0, 0, durationSec);
+      } else {
+        // Original audio is mixed per segment below via the active video element.
+      }
+      if (audioMode === "replace" && options.replaceAudio) {
+        dest.stream.getAudioTracks().forEach((track) => {
+          composed.addTrack(track);
+          tracksToStop.push(track);
+        });
+      }
+    } catch (err) {
+      if (audioMode === "replace") {
+        throw new Error(
+          err instanceof Error
+            ? `Voiceover export failed: ${err.message}`
+            : "Voiceover export failed."
+        );
+      }
+    }
+  }
+
   const mimeType = pickRecorderMimeType();
   const recorder = new MediaRecorder(composed, {
     mimeType,
@@ -519,11 +612,10 @@ export async function exportJoinedVideoClips(
   });
 
   recorder.start(200);
-  let totalDurationSec = 0;
   const video = document.createElement("video");
   video.playsInline = true;
   video.preload = "auto";
-  video.muted = true;
+  video.muted = audioMode === "replace";
 
   try {
     for (let index = 0; index < segments.length; index += 1) {
@@ -571,6 +663,7 @@ export async function exportJoinedVideoClips(
         /* ignore */
       }
     });
+    void audioCtx?.close().catch(() => undefined);
     video.pause();
     video.removeAttribute("src");
     video.load();

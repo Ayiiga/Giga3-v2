@@ -53,7 +53,10 @@ export function buildVideoAiPrompt(category: string, userPrompt: string): string
   const def = VIDEO_AI_CATEGORIES[key];
   const trimmed = userPrompt.trim();
   if (!trimmed) return def.promptSuffix;
-  return `${trimmed}. Style: ${def.promptSuffix}`;
+  if (category === "talking_avatar" && !/lip|speak|talk|voice|dialog|present/i.test(trimmed)) {
+    return `${trimmed}. Talking-head presenter with natural lip sync and clear speech.`;
+  }
+  return trimmed;
 }
 
 export function videoAiAspectRatio(category: string): "16:9" | "9:16" | "1:1" {
