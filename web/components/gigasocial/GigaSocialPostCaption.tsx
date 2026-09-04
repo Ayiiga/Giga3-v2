@@ -28,7 +28,7 @@ export const GigaSocialPostCaption = memo(function GigaSocialPostCaption({
   return (
     <div className={cn("gigasocial-post-caption", className)}>
       {captionText ? (
-        <p className="gigasocial-post-description whitespace-pre-wrap">{captionText}</p>
+        <p className="gigasocial-post-description whitespace-pre-wrap text-foreground">{captionText}</p>
       ) : null}
       {hashtagLine ? (
         <p

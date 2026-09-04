@@ -67,10 +67,13 @@
 
 .gigasocial-premium .gigasocial-post-card .text-foreground,
 .gigasocial-premium .gigasocial-post-card h2,
-.gigasocial-premium .gigasocial-post-card .gigasocial-post-title {
+.gigasocial-premium .gigasocial-post-card .gigasocial-post-title,
+.gigasocial-premium .gigasocial-post-card .gigasocial-post-description,
+.gigasocial-premium .gigasocial-post-card .gigasocial-post-caption {
   color: var(--gs-text) !important;
 }
 
+.gigasocial-premium .gigasocial-post-card .gigasocial-post-hashtags,
 .gigasocial-premium .gigasocial-post-card .text-muted {
   color: var(--gs-muted) !important;
 }
