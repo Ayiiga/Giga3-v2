@@ -1,12 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { SOCIAL_CAPTION_MAX_LENGTH } from "@/lib/gigasocial/constants";
+import { socialCaptionMaxLength } from "@/lib/gigasocial/constants";
 import { extractHashtagsFromText, formatCompactHashtags } from "@/lib/gigasocial/hashtags";
 import { POST_TYPE_OPTIONS, type SocialPostTypeId } from "@/lib/gigasocial/sections";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { X } from "lucide-react";
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 
 export const GigaSocialPostEditor = memo(function GigaSocialPostEditor({
   post,
@@ -19,6 +19,7 @@ export const GigaSocialPostEditor = memo(function GigaSocialPostEditor({
 }) {
   const [body, setBody] = useState(post.body);
   const [postType, setPostType] = useState<SocialPostTypeId>(post.postType);
+  const captionMaxLength = useMemo(() => socialCaptionMaxLength(postType), [postType]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,7 +58,7 @@ export const GigaSocialPostEditor = memo(function GigaSocialPostEditor({
       <textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}
-        maxLength={SOCIAL_CAPTION_MAX_LENGTH}
+        maxLength={captionMaxLength}
         rows={4}
         className="w-full resize-none rounded-xl border border-border bg-white px-3 py-2 text-sm"
         placeholder="Update your caption…"

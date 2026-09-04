@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { GigaSocialPendingMediaPreview } from "@/components/gigasocial/GigaSocialPostMedia";
 import {
   SOCIAL_AUDIO_ACCEPT,
-  SOCIAL_CAPTION_MAX_LENGTH,
+  socialCaptionMaxLength,
   SOCIAL_IMAGE_ACCEPT,
   SOCIAL_MAX_PHOTOS_PER_POST,
   SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC,
@@ -158,6 +158,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
 }: GigaSocialComposerProps) {
   const [body, setBody] = useState("");
   const [postType, setPostType] = useState<SocialPostTypeId>("text");
+  const captionMaxLength = useMemo(() => socialCaptionMaxLength(postType), [postType]);
   const [visibility, setVisibility] = useState<"public" | "followers">(
     () => initialVisibility ?? "public"
   );
@@ -986,7 +987,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         value={body}
         onChange={(e) => setBody(e.target.value)}
         rows={compact ? 2 : 4}
-        maxLength={SOCIAL_CAPTION_MAX_LENGTH}
+        maxLength={captionMaxLength}
         placeholder="Share your thoughts with the world..."
         className={
           compact
@@ -997,7 +998,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       />
       <div className="flex items-center justify-between text-xs text-muted">
         <span>
-          {body.length}/{SOCIAL_CAPTION_MAX_LENGTH}
+          {body.length}/{captionMaxLength}
         </span>
         {detectedHashtagPreview ? (
           <span className="max-w-[58%] truncate text-[11px] text-muted" aria-label="Detected hashtags">

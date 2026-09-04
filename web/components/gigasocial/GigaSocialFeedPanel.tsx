@@ -493,7 +493,10 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       return;
     }
     const creatorDraft = consumeCreatorComposeHandoff();
-    if (creatorDraft) setComposeInitialBody(creatorDraft);
+    if (creatorDraft) {
+      setComposeInitialBody(creatorDraft.body);
+      if (creatorDraft.kind === "blog") setComposeInitialPostType("education");
+    }
     openComposer("text-post");
     try {
       const url = new URL(window.location.href);

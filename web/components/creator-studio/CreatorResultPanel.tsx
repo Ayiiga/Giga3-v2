@@ -19,6 +19,8 @@ interface CreatorResultPanelProps {
   onFavorite?: () => void;
   favorited?: boolean;
   className?: string;
+  /** When publishing to GigaSocial, use blog (6000 chars) vs social (4000). */
+  publishKind?: "blog" | "social";
 }
 
 export const CreatorResultPanel = memo(function CreatorResultPanel({
@@ -29,6 +31,7 @@ export const CreatorResultPanel = memo(function CreatorResultPanel({
   onFavorite,
   favorited,
   className,
+  publishKind = "social",
 }: CreatorResultPanelProps) {
   const router = useRouter();
   const { feedback, runAction, busy } = useShareAction();
@@ -50,8 +53,8 @@ export const CreatorResultPanel = memo(function CreatorResultPanel({
   }, [content]);
 
   const stagePublishHandoff = useCallback(() => {
-    if (content?.trim()) stageCreatorComposeHandoff(content);
-  }, [content]);
+    if (content?.trim()) stageCreatorComposeHandoff(content, publishKind);
+  }, [content, publishKind]);
 
   if (loading) {
     return (
