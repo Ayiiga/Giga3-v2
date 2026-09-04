@@ -15,6 +15,7 @@ interface CreatorTextToolPanelProps {
   credits: number | null;
   platform?: string;
   platformOptions?: Array<{ id: string; label: string; emoji: string }>;
+  initialToolId?: string;
 }
 
 export const CreatorTextToolPanel = memo(function CreatorTextToolPanel({
@@ -23,9 +24,14 @@ export const CreatorTextToolPanel = memo(function CreatorTextToolPanel({
   credits,
   platform: fixedPlatform,
   platformOptions,
+  initialToolId,
 }: CreatorTextToolPanelProps) {
   const { phase, loading, error, result, run, regenerate, clear } = useCreatorGeneration();
-  const [activeToolId, setActiveToolId] = useState(tools[0]?.id ?? "");
+  const defaultToolId =
+    initialToolId && tools.some((t) => t.id === initialToolId)
+      ? initialToolId
+      : tools[0]?.id ?? "";
+  const [activeToolId, setActiveToolId] = useState(defaultToolId);
   const [prompt, setPrompt] = useState("");
   const [context, setContext] = useState("");
   const [platform, setPlatform] = useState(platformOptions?.[0]?.id ?? fixedPlatform ?? "");

@@ -1,6 +1,6 @@
 import { siteConfig } from "@/lib/site";
 import type { LucideIcon } from "lucide-react";
-import { BookOpen, Clapperboard, Sparkles, UsersRound } from "lucide-react";
+import { BookOpen, Clapperboard, Newspaper, Sparkles, UsersRound } from "lucide-react";
 
 export type ChatWorkspaceApp = {
   id: string;
@@ -49,5 +49,14 @@ export const CHAT_WORKSPACE_PRIMARY_APPS: ChatWorkspaceApp[] = [
     gradient: "from-fuchsia-500 to-violet-600",
     badge: "Create",
     hint: "Generate and edit images and video — templates, 4K, and creator modes.",
+  },
+  {
+    id: "blog",
+    label: "Giga3 Blog",
+    href: `${siteConfig.links.blog}/`,
+    icon: Newspaper,
+    gradient: "from-blue-600 to-indigo-700",
+    badge: "Read",
+    hint: "Guides on AI, education and Ghana — draft articles in Creator Studio or post on GigaSocial.",
   },
 ];

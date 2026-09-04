@@ -113,6 +113,7 @@ const PRIMARY_NAV: WorkspaceNavItem[] = [
   })),
   { href: "/chat", label: "Home", icon: Home },
   { hash: "documents", label: "My Documents", icon: FileText },
+  { href: `${siteConfig.links.blog}/`, label: "Giga3 Blog", icon: Newspaper },
   { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
   { href: "/marketplace/", label: "Marketplace", icon: LayoutGrid },
   { hash: "modes", label: "AI Tools", icon: Wand2 },

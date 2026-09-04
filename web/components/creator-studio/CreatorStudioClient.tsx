@@ -33,6 +33,7 @@ function CreatorStudioContent() {
   const params = useSearchParams();
   const { email, usage, mounted } = useMediaBilling();
   const initialTab = (params.get("tab") as CreatorStudioSection) || "writing";
+  const initialWritingTool = params.get("tool") ?? undefined;
   const [section, setSection] = useState<CreatorStudioSection>(
     CREATOR_SECTIONS.some((s) => s.id === initialTab) ? initialTab : "writing"
   );
@@ -140,6 +141,7 @@ function CreatorStudioContent() {
               tools={WRITING_TOOLS}
               kind="writing"
               credits={usage?.credits ?? null}
+              initialToolId={initialWritingTool}
             />
           </>
         )}

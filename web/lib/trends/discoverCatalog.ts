@@ -39,6 +39,15 @@ export const DISCOVER_ITEMS: DiscoverItem[] = [
     badge: "Featured",
   },
   {
+    id: "giga3-blog",
+    kind: "education",
+    title: "Giga3 AI Blog",
+    description: "Guides on AI in Ghana — study tips, tools for students, and creator workflows.",
+    href: "/blog",
+    category: "education",
+    badge: "New",
+  },
+  {
     id: "creator-studio",
     kind: "creator-tool",
     title: "Creator Studio",

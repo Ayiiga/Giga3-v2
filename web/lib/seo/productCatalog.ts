@@ -73,6 +73,14 @@ export const PRODUCT_CATALOG: readonly ProductEntry[] = [
     group: "learn",
   },
   {
+    href: "/blog",
+    name: "Giga3 Blog",
+    tagline: "AI, education and technology in Ghana",
+    description:
+      "Practical guides on AI tools, BECE and WASSCE study tips, creator workflows, and digital opportunities in Ghana and across Africa.",
+    group: "learn",
+  },
+  {
     href: "/media",
     name: "Media Studio",
     tagline: "AI image generation and editing",
