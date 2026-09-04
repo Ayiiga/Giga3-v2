@@ -10,6 +10,7 @@ import {
   isSubscriptionActive,
   type CreditAction,
 } from "./creditsConfig";
+import { minMediaVideoCreditCost } from "./mediaVideoCredits";
 import type { SubscriptionPlanId } from "./subscriptionPlans";
 
 type DbCtx = { db: any; runMutation: any };
@@ -65,14 +66,18 @@ async function performDeduct(
   userId: string,
   action: CreditAction,
   reference?: string,
-  metadata?: string
+  metadata?: string,
+  amountOverride?: number
 ) {
   await ctx.runMutation(internal.subscriptions.expireStaleSubscriptions, {});
 
   const user = await getUserByEmail(ctx, userId);
   if (!user) throw new Error("User not found");
 
-  const cost = CREDIT_COSTS[action];
+  const cost = amountOverride ?? CREDIT_COSTS[action];
+  if (!Number.isFinite(cost) || cost <= 0) {
+    throw new Error("Invalid credit amount");
+  }
   const balance = user.credits ?? 0;
   if (balance < cost) {
     throw new Error(
@@ -133,6 +138,7 @@ export const deductCreditsInternal = internalMutation({
     action: creditActionValidator,
     reference: v.optional(v.string()),
     metadata: v.optional(v.string()),
+    amount: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     return await performDeduct(
@@ -140,7 +146,8 @@ export const deductCreditsInternal = internalMutation({
       args.userId,
       args.action as CreditAction,
       args.reference,
-      args.metadata
+      args.metadata,
+      args.amount
     );
   },
 });
@@ -169,6 +176,7 @@ export const deductCredits = mutation({
     action: creditActionValidator,
     reference: v.optional(v.string()),
     metadata: v.optional(v.string()),
+    amount: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken, ctx);
@@ -177,7 +185,8 @@ export const deductCredits = mutation({
       userId,
       args.action as CreditAction,
       args.reference,
-      args.metadata
+      args.metadata,
+      args.amount
     );
   },
 });
@@ -225,8 +234,13 @@ export const getUsageSnapshot = query({
       tokens: user.tokens ?? 0,
       subscriptionExpiresAt: user.subscriptionExpiresAt ?? null,
       planLabel: subscription?.planId ?? plan,
-      canGenerateVideo: (user.credits ?? 0) >= CREDIT_COSTS.video,
+      canGenerateVideo: (user.credits ?? 0) >= minMediaVideoCreditCost(),
       creditCosts: CREDIT_COSTS,
+      videoCreditTiers: [
+        { durationSec: 5, credits: 9 },
+        { durationSec: 10, credits: 20 },
+        { durationSec: 15, credits: 30 },
+      ],
     };
   },
 });

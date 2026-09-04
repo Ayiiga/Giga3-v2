@@ -81,7 +81,9 @@ export const generateVideo = action({
     const duration = clampMediaVideoDurationSec(args.duration);
     const resolution = normalizeResolution(args.resolution);
 
-    const cost = await assertCreditsAvailable(ctx, args.sessionToken, "video");
+    const cost = await assertCreditsAvailable(ctx, args.sessionToken, "video", {
+      videoDurationSec: duration,
+    });
 
     const jobId: Id<"mediaJobs"> = await ctx.runMutation(internal.mediaInternal.createMediaJob, {
       userId: email,
@@ -97,7 +99,7 @@ export const generateVideo = action({
 
     // Reserve credits now so concurrent requests cannot overspend; refunded on failure.
     try {
-      await chargeCreditsForMedia(ctx, args.sessionToken, "video", String(jobId));
+      await chargeCreditsForMedia(ctx, args.sessionToken, "video", String(jobId), cost);
       await ctx.runMutation(internal.mediaInternal.setMediaJobCharge, { jobId, creditsCharged: cost });
     } catch (err) {
       const message = toUserMediaError(err, "video");
@@ -197,7 +199,13 @@ export const generateImage = action({
       const imageUrl = await persistImageUrlIfNeeded(ctx, result.imageUrl);
 
       if (creditMode && jobId) {
-        await chargeCreditsForMedia(ctx, args.sessionToken, "image", String(jobId));
+        await chargeCreditsForMedia(
+          ctx,
+          args.sessionToken,
+          "image",
+          String(jobId),
+          IMAGE_TOKEN_COST
+        );
       }
 
       if (jobId) {

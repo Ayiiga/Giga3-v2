@@ -12,6 +12,7 @@ import {
   MEDIA_VIDEO_DURATION_OPTIONS,
   type MediaVideoDurationSec,
 } from "@/lib/media/videoLimits";
+import { mediaVideoCreditCost } from "@/lib/media/videoCredits";
 import { cn } from "@/lib/utils";
 import { Clapperboard, ImagePlus, Loader2, RefreshCw, Video } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -174,7 +175,10 @@ export function VideoGenerateForm({
                     : "border-border text-muted hover:text-foreground"
                 )}
               >
-                {d >= 60 ? "1 min" : `${d}s`}
+                {d}s
+                <span className="block text-[11px] font-normal text-muted">
+                  {mediaVideoCreditCost(d)} credits
+                </span>
               </button>
             ))}
           </div>

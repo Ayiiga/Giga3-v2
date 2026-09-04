@@ -156,7 +156,7 @@ describe("Media Studio async video pipeline — wiring", () => {
   it("enqueues a job, reserves credits, schedules the worker and returns immediately", () => {
     const media = read("convex/media.ts");
     expect(media).toContain("internal.mediaVideoWorker.processJob");
-    expect(media).toContain("chargeCreditsForMedia(ctx, args.sessionToken, \"video\", String(jobId))");
+    expect(media).toContain("chargeCreditsForMedia(ctx, args.sessionToken, \"video\", String(jobId), cost)");
     expect(media).toContain('status: "processing" as const');
     expect(media).not.toContain("await generateVideoWithFallback(");
   });

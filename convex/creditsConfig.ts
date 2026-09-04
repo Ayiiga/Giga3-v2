@@ -6,7 +6,7 @@ export const CREDIT_COSTS = {
   writing: 2,
   research: 3,
   image: 2,
-  video: 23,
+  video: 9,
 } as const;
 
 export type CreditAction = keyof typeof CREDIT_COSTS;

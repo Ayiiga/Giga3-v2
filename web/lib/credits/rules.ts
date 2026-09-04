@@ -1,5 +1,6 @@
 import type { UsageSnapshot } from "./constants";
 import { CREDIT_COSTS } from "./constants";
+import { mediaVideoCreditCost } from "@/lib/media/videoCredits";
 
 export function formatExpiry(expiresAt: number | null): string {
   if (!expiresAt) return "—";
@@ -28,6 +29,6 @@ export function canGenerateImage(usage: UsageSnapshot): boolean {
   return usage.credits >= CREDIT_COSTS.image;
 }
 
-export function canGenerateVideo(usage: UsageSnapshot): boolean {
-  return usage.credits >= CREDIT_COSTS.video;
+export function canGenerateVideo(usage: UsageSnapshot, durationSec?: number): boolean {
+  return usage.credits >= mediaVideoCreditCost(durationSec);
 }
