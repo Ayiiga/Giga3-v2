@@ -43,8 +43,8 @@ interface ChatInputProps {
   onSend: (message: string, attachments?: PreparedChatAttachment[]) => void;
   disabled?: boolean;
   placeholder?: string;
-  /** Parent can call `.current(text)` to insert templates into the textarea. */
-  insertRef?: MutableRefObject<((text: string) => void) | null>;
+  /** Parent can call `.current(text, notice?)` to insert templates into the textarea. */
+  insertRef?: MutableRefObject<((text: string, notice?: string) => void) | null>;
   uploadUsage?: UploadUsageSnapshot | null;
   credits?: number | null;
   subscriptionActive?: boolean;
@@ -106,9 +106,9 @@ export const ChatInput = memo(function ChatInput({
   }, []);
 
   const insertTemplateText = useCallback(
-    (text: string) => {
+    (text: string, customNotice?: string) => {
       insertText(text);
-      setNotice("Template inserted — edit below, then send.");
+      setNotice(customNotice ?? "Template inserted — edit below, then send.");
       setToolbarOpen(false);
     },
     [insertText]
@@ -116,8 +116,8 @@ export const ChatInput = memo(function ChatInput({
 
   useEffect(() => {
     if (!insertRef) return;
-    insertRef.current = (text: string) => {
-      insertTemplateText(text);
+    insertRef.current = (text: string, customNotice?: string) => {
+      insertTemplateText(text, customNotice);
     };
     return () => {
       insertRef.current = null;

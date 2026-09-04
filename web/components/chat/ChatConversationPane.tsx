@@ -21,7 +21,7 @@ interface ChatConversationPaneProps {
   awaitingReply?: boolean;
   isAcceptingMessage?: boolean;
   isSlowNetwork?: boolean;
-  insertRef: MutableRefObject<((text: string) => void) | null>;
+  insertRef: MutableRefObject<((text: string, notice?: string) => void) | null>;
   onSend: (msg: string, attachments?: PreparedChatAttachment[]) => void;
   onInsertTemplate: (text: string) => void;
   onSelectDocumentTemplate?: (templateId: DocumentTemplateId) => void;

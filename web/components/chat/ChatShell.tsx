@@ -114,14 +114,13 @@ function ChatShellInner({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => readSidebarCollapsed());
   const [mobileOpen, setMobileOpen] = useState(false);
   const [templateNotice, setTemplateNotice] = useState<string | null>(null);
-  const [writingNotice, setWritingNotice] = useState<string | null>(null);
   const [dismissedError, setDismissedError] = useState<string | null>(null);
   const [modelTier, setModelTier] = useState<GigaModelId>("fast");
   const [handoffAttachments, setHandoffAttachments] = useState<PreparedChatAttachment[]>([]);
   const [conversationSearch, setConversationSearch] = useState("");
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const [localTurns, setLocalTurns] = useState<UiMessage[]>([]);
-  const insertRef = useRef<((text: string) => void) | null>(null);
+  const insertRef = useRef<((text: string, notice?: string) => void) | null>(null);
   const chatActionsRef = useRef<ChatActionsMenuHandle | null>(null);
   const { effectiveOnline } = useEffectiveOnline();
 
@@ -203,7 +202,6 @@ function ChatShellInner({
     if (insertRef.current) {
       insertRef.current(text);
       setTemplateNotice(null);
-      setWritingNotice(null);
     } else {
       setTemplateNotice("Could not insert template. Refresh and try again.");
     }
@@ -229,10 +227,10 @@ function ChatShellInner({
       }
 
       const body = resolveTemplatePlaceholders(template.body);
+      const notice = templateInsertNotice(templateId);
       if (insertRef.current) {
-        insertRef.current(body);
+        insertRef.current(body, notice ?? undefined);
         setTemplateNotice(null);
-        setWritingNotice(templateInsertNotice(templateId));
       } else {
         setTemplateNotice("Could not insert template. Refresh and try again.");
       }
@@ -615,12 +613,6 @@ function ChatShellInner({
             onInsertChatText={handleInsertDocument}
             onError={handleTemplateError}
           />
-
-          {writingNotice && (
-            <p className="border-b border-accent/20 bg-accent/10 px-4 py-2.5 text-center text-sm text-foreground">
-              {writingNotice}
-            </p>
-          )}
 
           {templateNotice && (
             <p className="border-b border-red-500/20 bg-red-500/10 px-4 py-2.5 text-center text-sm text-red-200">

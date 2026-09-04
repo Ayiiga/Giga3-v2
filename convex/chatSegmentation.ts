@@ -8,6 +8,13 @@ const DEFAULT_EXCHANGES = 20;
 const RECAP_TAIL_MESSAGES = 8;
 const RECAP_CHAR_LIMIT = 400;
 
+/** Long-form writing modes keep one thread for multi-chapter books and theses. */
+export const WRITING_SEGMENT_EXEMPT_MODES = new Set([
+  "book",
+  "research",
+  "university",
+]);
+
 export function getSegmentExchangeLimit(): number {
   const raw = process.env.CHAT_SEGMENT_EXCHANGE_LIMIT?.trim().toLowerCase();
   if (raw === "0" || raw === "off" || raw === "false" || raw === "disabled") {
@@ -63,9 +70,13 @@ export function buildSegmentContinuityRecap(
 
 export function shouldSegmentConversation(
   messages: ReadonlyArray<{ role: string }>,
-  limit = getSegmentExchangeLimit()
+  limit = getSegmentExchangeLimit(),
+  options?: { mode?: string }
 ): boolean {
   if (limit <= 0) return false;
+  if (options?.mode && WRITING_SEGMENT_EXEMPT_MODES.has(options.mode)) {
+    return false;
+  }
   return countCompletedExchanges(messages) >= limit;
 }
 
