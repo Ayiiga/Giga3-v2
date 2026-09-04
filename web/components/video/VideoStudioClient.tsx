@@ -20,6 +20,7 @@ function VideoStudioInner() {
   const [category, setCategory] = useState("text_to_video");
   const [prompt, setPrompt] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [generateAudio, setGenerateAudio] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [queuedJobId, setQueuedJobId] = useState<string | null>(null);
@@ -56,6 +57,7 @@ function VideoStudioInner() {
         prompt: prompt.trim(),
         imageUrl: imageUrl.trim() || undefined,
         aspectRatio: category === "social_reel" ? "9:16" : "16:9",
+        generateAudio,
       });
       setQueuedJobId(String(result.jobId));
       void refreshJobs();
@@ -149,6 +151,15 @@ function VideoStudioInner() {
             />
           </div>
         )}
+        <label className="mt-4 flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={generateAudio}
+            onChange={(e) => setGenerateAudio(e.target.checked)}
+            className="h-4 w-4 rounded border-border"
+          />
+          Include synced AI audio / voiceover when supported
+        </label>
         {error && (
           <p className="mt-3 rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300">
             {error}

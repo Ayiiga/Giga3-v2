@@ -123,9 +123,9 @@ jobs:
           fi
           # fal video models (Seedance Lite: text- AND image-to-video with duration/aspect/resolution).
           # Set regardless of whether FAL_KEY is managed here — the deployment may hold its own key.
-          npx convex env set FAL_TEXT_VIDEO_MODEL "${FAL_TEXT_VIDEO_MODEL:-fal-ai/bytedance/seedance/v1/lite/text-to-video}"
-          npx convex env set FAL_IMAGE_VIDEO_MODEL "${FAL_IMAGE_VIDEO_MODEL:-fal-ai/bytedance/seedance/v1/lite/image-to-video}"
-          npx convex env set FAL_VIDEO_MODEL "${FAL_IMAGE_VIDEO_MODEL:-fal-ai/bytedance/seedance/v1/lite/image-to-video}"
+          npx convex env set FAL_TEXT_VIDEO_MODEL "${FAL_TEXT_VIDEO_MODEL:-fal-ai/bytedance/seedance/v1.5/pro/text-to-video}"
+          npx convex env set FAL_IMAGE_VIDEO_MODEL "${FAL_IMAGE_VIDEO_MODEL:-fal-ai/bytedance/seedance/v1.5/pro/image-to-video}"
+          npx convex env set FAL_VIDEO_MODEL "${FAL_IMAGE_VIDEO_MODEL:-fal-ai/bytedance/seedance/v1.5/pro/image-to-video}"
           if [ -n "${FAL_KEY:-}" ]; then
             npx convex env set FAL_KEY "${FAL_KEY}"
             npx convex env set FAL_IMAGE_MODEL "fal-ai/nano-banana-pro"

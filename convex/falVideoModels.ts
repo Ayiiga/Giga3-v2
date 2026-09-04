@@ -7,8 +7,11 @@
 
 import { MEDIA_VIDEO_MAX_DURATION_SEC } from "./mediaVideoLimits";
 
-export const DEFAULT_FAL_TEXT_VIDEO_MODEL = "fal-ai/bytedance/seedance/v1/lite/text-to-video";
-export const DEFAULT_FAL_IMAGE_VIDEO_MODEL = "fal-ai/bytedance/seedance/v1/lite/image-to-video";
+/** Seedance 1.5 Pro supports synced `generate_audio`; Lite does not. */
+export const DEFAULT_FAL_TEXT_VIDEO_MODEL =
+  "fal-ai/bytedance/seedance/v1.5/pro/text-to-video";
+export const DEFAULT_FAL_IMAGE_VIDEO_MODEL =
+  "fal-ai/bytedance/seedance/v1.5/pro/image-to-video";
 
 export type VideoAspectRatio = "16:9" | "9:16" | "1:1" | "4:3" | "3:4" | "21:9";
 export type VideoResolution = "480p" | "720p" | "1080p";
@@ -49,6 +52,30 @@ export function detectFalModelFamily(modelId: string): FalModelFamily {
 /** Whether the endpoint animates a first frame (needs image_url) or is text-only. */
 export function falModelExpectsImage(modelId: string): boolean {
   return /image-to-video|img2vid|i2v/i.test(modelId);
+}
+
+/** Whether the fal endpoint can emit synced audio (Seedance 1.5 Pro, Veo, etc.). */
+export function falModelSupportsAudio(modelId: string): boolean {
+  const id = modelId.toLowerCase();
+  if (id.includes("veo")) return true;
+  if (id.includes("seedance") && id.includes("v1.5") && id.includes("pro")) return true;
+  return false;
+}
+
+/** Max clip length the configured fal model can render in one request. */
+export function falModelMaxDurationSec(modelId: string): number {
+  const id = modelId.toLowerCase();
+  if (id.includes("seedance") && id.includes("v1.5")) return 12;
+  if (id.includes("seedance")) return 15;
+  if (id.includes("kling")) return 10;
+  if (id.includes("veo")) return 8;
+  if (id.includes("minimax") || id.includes("hailuo")) return 10;
+  return 15;
+}
+
+function isSeedance15Pro(modelId: string): boolean {
+  const id = modelId.toLowerCase();
+  return id.includes("seedance") && id.includes("v1.5") && id.includes("pro");
 }
 
 export function resolveFalVideoModel(
@@ -100,16 +127,22 @@ export function buildFalVideoPayload(
 
   switch (family) {
     case "seedance": {
+      const pro15 = isSeedance15Pro(modelId);
+      const durationMax = pro15 ? 12 : 15;
+      const resolutionAllowed = pro15
+        ? (["480p", "720p"] as const)
+        : (["480p", "720p", "1080p"] as const);
       const aspectAllowed = image
         ? (["21:9", "16:9", "4:3", "1:1", "3:4", "9:16", "auto"] as const)
         : (["21:9", "16:9", "4:3", "1:1", "3:4", "9:16", "9:21"] as const);
       return {
         ...base,
-        duration: String(clamp(req.durationSec ?? 5, 4, 15)),
-        resolution: normalizeResolution(req.resolution, ["480p", "720p", "1080p"], "720p"),
+        duration: String(clamp(req.durationSec ?? 5, 4, durationMax)),
+        resolution: normalizeResolution(req.resolution, resolutionAllowed, "720p"),
         aspect_ratio: pickEnum(req.aspectRatio, aspectAllowed, image ? "auto" : "16:9"),
         ...(req.seed !== undefined ? { seed: req.seed } : {}),
         enable_safety_checker: true,
+        ...(pro15 ? { generate_audio: req.generateAudio !== false } : {}),
       };
     }
     case "kling":
@@ -144,7 +177,7 @@ export function buildFalVideoPayload(
       return {
         ...base,
         duration: String(nearestDuration(req.durationSec, [6, 10], 6)),
-        prompt_optimizer: true,
+        prompt_optimizer: false,
       };
     case "ltx":
       return {

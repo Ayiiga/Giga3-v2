@@ -131,7 +131,7 @@ export const REPLICATE_VIDEO_MODEL =
 
 /** Seedance defaults (override via Convex env). */
 export const REPLICATE_VIDEO_DURATION = Number(
-  process.env.REPLICATE_VIDEO_DURATION ?? 30
+  process.env.REPLICATE_VIDEO_DURATION ?? 10
 );
 export const REPLICATE_VIDEO_RESOLUTION =
   process.env.REPLICATE_VIDEO_RESOLUTION?.trim() || "720p";
@@ -154,13 +154,31 @@ export const GEMINI_IMAGE_EDIT_MODEL =
   process.env.GEMINI_IMAGE_EDIT_MODEL?.trim() || "gemini-2.5-flash-image";
 
 export function buildImagePrompt(category: string, userPrompt: string): string {
+  const trimmed = userPrompt.trim();
+  if (!trimmed) {
+    const cat =
+      IMAGE_CATEGORIES[category as ImageCategoryId] ?? IMAGE_CATEGORIES.anime_art;
+    return cat.promptSuffix;
+  }
+  // Media Studio already enriches prompts client-side — avoid double-stacking style text.
+  if (
+    trimmed.includes("Target canvas size:") ||
+    /ultra-realistic|high-detail composition/i.test(trimmed)
+  ) {
+    return trimmed;
+  }
   const cat =
     IMAGE_CATEGORIES[category as ImageCategoryId] ?? IMAGE_CATEGORIES.anime_art;
-  return `${userPrompt.trim()}. ${cat.promptSuffix}`;
+  return `${trimmed}. ${cat.promptSuffix}`;
 }
 
 export function buildVideoPrompt(category: string, userPrompt: string): string {
-  const cat =
-    VIDEO_CATEGORIES[category as VideoCategoryId] ?? VIDEO_CATEGORIES.anime_videos;
-  return `${userPrompt.trim()}. ${cat.promptSuffix}`;
+  const trimmed = userPrompt.trim();
+  if (!trimmed) {
+    const cat =
+      VIDEO_CATEGORIES[category as VideoCategoryId] ?? VIDEO_CATEGORIES.anime_videos;
+    return cat.promptSuffix;
+  }
+  // User description is primary — category styling is optional and light.
+  return trimmed;
 }

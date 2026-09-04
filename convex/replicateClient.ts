@@ -7,13 +7,12 @@ import { sleep, withRetries } from "./mediaUtils";
 import {
   REPLICATE_IMAGE_EDIT_MODEL,
   REPLICATE_IMAGE_MODEL,
-  REPLICATE_VIDEO_DURATION,
   REPLICATE_VIDEO_GENERATE_AUDIO,
   REPLICATE_VIDEO_MODEL,
   REPLICATE_VIDEO_RESOLUTION,
   type SeedanceAspectRatio,
 } from "./mediaCatalog";
-import { clampMediaVideoDurationSec } from "./mediaVideoLimits";
+import { clampReplicateVideoDurationSec } from "./mediaVideoLimits";
 
 const REPLICATE_API = "https://api.replicate.com/v1";
 
@@ -128,10 +127,7 @@ function buildReplicateVideoInput(
   if (isSeedanceModel(modelId)) {
     const input: Record<string, unknown> = {
       prompt,
-      duration:
-        options?.duration !== undefined
-          ? clampMediaVideoDurationSec(options.duration)
-          : REPLICATE_VIDEO_DURATION,
+      duration: clampReplicateVideoDurationSec(options?.duration),
       resolution: options?.resolution ?? REPLICATE_VIDEO_RESOLUTION,
       aspect_ratio: options?.aspectRatio ?? "16:9",
       generate_audio: options?.generateAudio ?? REPLICATE_VIDEO_GENERATE_AUDIO,

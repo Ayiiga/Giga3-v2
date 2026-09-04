@@ -9,13 +9,15 @@ import {
   detectFalModelFamily,
   extractFalVideoUrl,
   falModelExpectsImage,
+  falModelMaxDurationSec,
+  falModelSupportsAudio,
   resolveFalVideoModel,
 } from "../../convex/falVideoModels";
 
 const read = (p: string) => readFileSync(resolve(__dirname, "../..", p), "utf8");
 
 describe("fal video model resolution", () => {
-  it("defaults to Seedance Lite for text and image and honours env overrides", () => {
+  it("defaults to Seedance 1.5 Pro for text and image and honours env overrides", () => {
     expect(resolveFalVideoModel(false, {})).toBe(DEFAULT_FAL_TEXT_VIDEO_MODEL);
     expect(resolveFalVideoModel(true, {})).toBe(DEFAULT_FAL_IMAGE_VIDEO_MODEL);
     expect(resolveFalVideoModel(false, { FAL_TEXT_VIDEO_MODEL: "fal-ai/wan/v2.2-a14b/text-to-video" })).toBe(
@@ -32,6 +34,9 @@ describe("fal video model resolution", () => {
 
   it("detects families and image requirements", () => {
     expect(detectFalModelFamily(DEFAULT_FAL_TEXT_VIDEO_MODEL)).toBe("seedance");
+    expect(falModelSupportsAudio(DEFAULT_FAL_TEXT_VIDEO_MODEL)).toBe(true);
+    expect(falModelMaxDurationSec(DEFAULT_FAL_TEXT_VIDEO_MODEL)).toBe(12);
+    expect(falModelSupportsAudio("fal-ai/bytedance/seedance/v1/lite/text-to-video")).toBe(false);
     expect(detectFalModelFamily("fal-ai/kling-video/v2.1/standard/image-to-video")).toBe("kling");
     expect(detectFalModelFamily("fal-ai/veo3/fast")).toBe("veo"); // pragma: allowlist secret
     expect(detectFalModelFamily("fal-ai/minimax/hailuo-02/standard/text-to-video")).toBe("minimax");
@@ -49,14 +54,16 @@ describe("buildFalVideoPayload", () => {
       aspectRatio: "9:16",
       resolution: "1080p",
       seed: 7,
+      generateAudio: true,
     });
     expect(p).toEqual({
       prompt: "A market in Accra",
       duration: "8",
-      resolution: "1080p",
+      resolution: "720p",
       aspect_ratio: "9:16",
       seed: 7,
       enable_safety_checker: true,
+      generate_audio: true,
     });
   });
 
@@ -67,9 +74,10 @@ describe("buildFalVideoPayload", () => {
       durationSec: 30,
     });
     expect(p.image_url).toBe("https://example.com/a.png");
-    expect(p.duration).toBe("15");
+    expect(p.duration).toBe("12");
     expect(p.aspect_ratio).toBe("auto");
     expect(p.resolution).toBe("720p");
+    expect(p.generate_audio).toBe(true);
   });
 
   it("throws (so the engine falls back) when an image-to-video model gets no image", () => {
@@ -140,7 +148,8 @@ describe("Media Studio async video pipeline — wiring", () => {
     const engine = read("convex/mediaEngine.ts");
     expect(engine).toContain("falGenerateVideoV2(");
     expect(engine).not.toMatch(/getFalApiKey\(\) && imageUrl/);
-    expect(engine).toContain("durationSec: input.duration");
+    expect(engine).toContain("durationSec,");
+    expect(engine).toContain("clampVideoDurationForProvider");
     expect(engine).toContain("replicateGenerateVideo(input.prompt");
   });
 
@@ -192,10 +201,23 @@ describe("Media Studio async video pipeline — wiring", () => {
     expect(client).toContain('modelId.split("/").slice(0, 2).join("/")');
   });
 
-  it("CI provisions Seedance Lite models on fal for both modes", () => {
+  it("does not route long clips to Replicate before fal", () => {
+    const engine = read("convex/mediaEngine.ts");
+    expect(engine).toContain("replicateCanServeRequest");
+    expect(engine).toContain("clampReplicateVideoDurationSec");
+    expect(engine).not.toContain("audio/long clip");
+  });
+
+  it("prefers Replicate only when fal lacks audio and duration fits Replicate", () => {
+    const engine = read("convex/mediaEngine.ts");
+    expect(engine).toContain("preferReplicateFirst");
+    expect(engine).toContain("falModelSupportsAudio");
+  });
+
+  it("CI provisions Seedance 1.5 Pro models on fal for both modes", () => {
     const ci = read(".github/workflows/convex-deploy.yml");
     expect(ci).toContain("FAL_TEXT_VIDEO_MODEL");
-    expect(ci).toContain("fal-ai/bytedance/seedance/v1/lite/text-to-video");
-    expect(ci).toContain("fal-ai/bytedance/seedance/v1/lite/image-to-video");
+    expect(ci).toContain("fal-ai/bytedance/seedance/v1.5/pro/text-to-video");
+    expect(ci).toContain("fal-ai/bytedance/seedance/v1.5/pro/image-to-video");
   });
 });

@@ -1,5 +1,5 @@
 /** GigaSocial perf + offline feed/reels — refresh PWAs. */
-const CACHE_NAME = "giga3-shell-v222-video-pricing";
+const CACHE_NAME = "giga3-shell-v224-video-provider-fix";
 const NEXT_STATIC_CACHE = "giga3-next-static-v220";
 const APP_SHELL_CACHE = "giga3-app-shell-v220";
 const BADGE_DB = "giga3-badge-v1";
