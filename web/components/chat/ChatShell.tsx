@@ -47,6 +47,16 @@ import {
   resolveLocalDeviceAnswer,
 } from "@/lib/chat/deviceContextIntents";
 import { captureCoordinates } from "@/lib/geolocation";
+import {
+  getDocumentTemplate,
+  type DocumentTemplateId,
+} from "@/lib/chat/documentTemplates";
+import { resolveTemplatePlaceholders } from "@/lib/datetime";
+import {
+  modelTierForTemplate,
+  templateInsertNotice,
+  writingModeForTemplate,
+} from "@/lib/chat/writingWorkflow";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function ChatShell() {
@@ -104,6 +114,7 @@ function ChatShellInner({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => readSidebarCollapsed());
   const [mobileOpen, setMobileOpen] = useState(false);
   const [templateNotice, setTemplateNotice] = useState<string | null>(null);
+  const [writingNotice, setWritingNotice] = useState<string | null>(null);
   const [dismissedError, setDismissedError] = useState<string | null>(null);
   const [modelTier, setModelTier] = useState<GigaModelId>("fast");
   const [handoffAttachments, setHandoffAttachments] = useState<PreparedChatAttachment[]>([]);
@@ -192,10 +203,42 @@ function ChatShellInner({
     if (insertRef.current) {
       insertRef.current(text);
       setTemplateNotice(null);
+      setWritingNotice(null);
     } else {
       setTemplateNotice("Could not insert template. Refresh and try again.");
     }
   }, []);
+
+  const handleSelectDocumentTemplate = useCallback(
+    (templateId: DocumentTemplateId) => {
+      const template = getDocumentTemplate(templateId);
+      if (!template) {
+        setTemplateNotice("Template not found.");
+        return;
+      }
+
+      const nextMode = writingModeForTemplate(templateId);
+      if (nextMode) {
+        void changeMode(nextMode);
+      }
+
+      const nextTier = modelTierForTemplate(templateId);
+      if (nextTier) {
+        setModelTier(nextTier);
+        storeGigaModel(nextTier);
+      }
+
+      const body = resolveTemplatePlaceholders(template.body);
+      if (insertRef.current) {
+        insertRef.current(body);
+        setTemplateNotice(null);
+        setWritingNotice(templateInsertNotice(templateId));
+      } else {
+        setTemplateNotice("Could not insert template. Refresh and try again.");
+      }
+    },
+    [changeMode]
+  );
 
   useEffect(() => {
     setLocalTurns([]);
@@ -533,6 +576,7 @@ function ChatShellInner({
             subscriptionActive={subscriptionActive}
             freeOpenAiRemaining={freeOpenAiRemaining}
             modelTier={modelTier}
+            mode={mode}
             onModelTierChange={handleModelTierChange}
             onOpenSidebar={handleOpenSidebar}
             onSetPublicShare={onSetPublicShare}
@@ -567,9 +611,16 @@ function ChatShellInner({
             disabled={isSending || awaitingReply}
             hasMessages={displayMessages.length > 0}
             sourceImageUrl={latestImageUrl}
-            onInsertDocument={handleInsertDocument}
+            onSelectDocumentTemplate={handleSelectDocumentTemplate}
+            onInsertChatText={handleInsertDocument}
             onError={handleTemplateError}
           />
+
+          {writingNotice && (
+            <p className="border-b border-accent/20 bg-accent/10 px-4 py-2.5 text-center text-sm text-foreground">
+              {writingNotice}
+            </p>
+          )}
 
           {templateNotice && (
             <p className="border-b border-red-500/20 bg-red-500/10 px-4 py-2.5 text-center text-sm text-red-200">
@@ -591,6 +642,7 @@ function ChatShellInner({
           insertRef={insertRef}
           onSend={handleSend}
           onInsertTemplate={handleInsertTemplate}
+          onSelectDocumentTemplate={handleSelectDocumentTemplate}
           onRegenerate={handleRegenerate}
           onEditMessage={handleEditMessage}
           onDeleteMessage={handleDeleteMessage}

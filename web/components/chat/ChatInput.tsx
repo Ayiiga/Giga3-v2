@@ -26,6 +26,7 @@ import {
   writeComposerDraft,
 } from "@/lib/chat/composerDraft";
 import { Send, Smile, X } from "lucide-react";
+import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
 import { cn } from "@/lib/utils";
 import {
   FormEvent,
@@ -55,6 +56,7 @@ interface ChatInputProps {
   conversationId?: string | null;
   /** Network availability for Live Web toggle. */
   online?: boolean;
+  onSelectDocumentTemplate?: (templateId: DocumentTemplateId) => void;
 }
 
 export const ChatInput = memo(function ChatInput({
@@ -70,6 +72,7 @@ export const ChatInput = memo(function ChatInput({
   initialAttachments,
   conversationId = null,
   online = true,
+  onSelectDocumentTemplate,
 }: ChatInputProps) {
   useRenderDiagnostic("ChatInput");
 
@@ -365,6 +368,7 @@ export const ChatInput = memo(function ChatInput({
               }}
               onPickFiles={(files, kind) => void handlePickFiles(files, kind)}
               onInsertTemplate={insertTemplateText}
+              onSelectDocumentTemplate={onSelectDocumentTemplate}
               onError={(msg) => setNotice(msg)}
             />
           ) : null}

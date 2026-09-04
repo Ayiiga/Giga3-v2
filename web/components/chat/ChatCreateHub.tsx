@@ -5,10 +5,7 @@ import {
   resolveChatCreateRoute,
   type ChatCreateActionId,
 } from "@/lib/chat/chatCreateMenu";
-import {
-  DOCUMENT_TEMPLATES,
-} from "@/lib/chat/documentTemplates";
-import { resolveTemplatePlaceholders } from "@/lib/datetime";
+import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { memo } from "react";
@@ -17,6 +14,7 @@ export const ChatCreateHub = memo(function ChatCreateHub({
   menuId,
   disabled,
   onMediaAction,
+  onSelectDocumentTemplate,
   onInsertTemplate,
   onError,
   onClose,
@@ -24,6 +22,7 @@ export const ChatCreateHub = memo(function ChatCreateHub({
   menuId: string;
   disabled?: boolean;
   onMediaAction: (action: ChatCreateActionId) => void;
+  onSelectDocumentTemplate: (templateId: DocumentTemplateId) => void;
   onInsertTemplate: (text: string) => void;
   onError: (message: string) => void;
   onClose: () => void;
@@ -46,12 +45,7 @@ export const ChatCreateHub = memo(function ChatCreateHub({
     }
 
     if (route.kind === "template") {
-      const template = DOCUMENT_TEMPLATES.find((item) => item.id === route.documentId);
-      if (!template) {
-        onError("Template not found.");
-        return;
-      }
-      onInsertTemplate(resolveTemplatePlaceholders(template.body));
+      onSelectDocumentTemplate(route.documentId);
       onClose();
       return;
     }
