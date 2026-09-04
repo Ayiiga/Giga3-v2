@@ -6,6 +6,10 @@ import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import type { FalImageSize } from "./falClient";
 import { buildImagePrompt, buildVideoPrompt } from "./mediaCatalog";
+import {
+  defaultVideoNegativePrompt,
+  refineVideoPromptForGeneration,
+} from "./mediaVideoPrompt";
 import { clampMediaVideoDurationSec } from "./mediaVideoLimits";
 import { assertCreditsAvailable, chargeCreditsForMedia } from "./mediaCredits";
 import { generateImageWithFallback, videoProviderAvailability } from "./mediaEngine";
@@ -73,11 +77,15 @@ export const generateVideo = action({
   handler: async (ctx, args) => {
     const email = await requireSessionWithMonitoring(args.sessionToken, ctx);
     const category = args.category ?? "anime_videos";
-    const fullPrompt = buildVideoPrompt(category, args.prompt);
     const imageUrl = args.imageUrl?.trim() || undefined;
     if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
       throw new Error("Source image must be a public https:// URL.");
     }
+    const fullPrompt = refineVideoPromptForGeneration(
+      buildVideoPrompt(category, args.prompt),
+      Boolean(imageUrl)
+    );
+    const negativePrompt = defaultVideoNegativePrompt(args.prompt, args.negativePrompt);
     const duration = clampMediaVideoDurationSec(args.duration);
     const resolution = normalizeResolution(args.resolution);
 
@@ -116,7 +124,7 @@ export const generateVideo = action({
       prompt: fullPrompt,
       category,
       imageUrl,
-      negativePrompt: args.negativePrompt,
+      negativePrompt,
       seed: args.seed,
       duration,
       resolution,

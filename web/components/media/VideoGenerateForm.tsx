@@ -13,6 +13,7 @@ import {
   type MediaVideoDurationSec,
 } from "@/lib/media/videoLimits";
 import { mediaVideoCreditCost } from "@/lib/media/videoCredits";
+import { VIDEO_TEXT_TIP, videoPromptNeedsTextGuard } from "@/lib/media/videoPromptTips";
 import { cn } from "@/lib/utils";
 import { Clapperboard, ImagePlus, Loader2, RefreshCw, Video } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -90,6 +91,7 @@ export function VideoGenerateForm({
 
   const imageInvalid = values.sourceImageUrl.trim().length > 0 && !isHttpUrl(values.sourceImageUrl);
   const promptReady = values.prompt.trim().length >= 3;
+  const textRisk = videoPromptNeedsTextGuard(values.prompt);
   const disabled = processing || !canGenerate || !promptReady || imageInvalid;
   const provider = providerDisplayName(job?.provider);
   const elapsedLabel = elapsedMs
@@ -105,9 +107,14 @@ export function VideoGenerateForm({
           onChange={(e) => onChange({ prompt: e.target.value })}
           rows={4}
           disabled={processing}
-          placeholder="A market street in Accra at golden hour, slow camera push-in, people passing, cinematic…"
+          placeholder="Cinematic office scene with people presenting a phone — avoid asking for readable text on screens…"
           className="input-surface mt-2 sm:text-lg"
         />
+        {textRisk && !values.sourceImageUrl.trim() && (
+          <p className="mt-2 rounded-xl border border-amber-200/80 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-500/20 dark:bg-amber-950/40 dark:text-amber-100">
+            {VIDEO_TEXT_TIP}
+          </p>
+        )}
       </label>
 
       <fieldset className="space-y-2">
