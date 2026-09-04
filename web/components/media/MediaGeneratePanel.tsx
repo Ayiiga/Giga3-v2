@@ -18,6 +18,7 @@ import {
   type ImageCategoryId,
   type VideoCategoryId,
 } from "@/lib/media/catalog";
+import { MEDIA_VIDEO_DEFAULT_DURATION_SEC } from "@/lib/media/videoLimits";
 import {
   type ImageStudioActionId,
   imageStudioActionRequiresSource,
@@ -130,7 +131,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
       : "cinematic_trailers") as VideoCategoryId,
     sourceImageUrl: initialTab === "video" ? initialSourceImageUrl : "",
     aspectRatio: "16:9",
-    durationSec: 5,
+    durationSec: MEDIA_VIDEO_DEFAULT_DURATION_SEC,
     quality: "720p",
     audio: true,
   });

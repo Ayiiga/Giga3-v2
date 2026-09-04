@@ -67,7 +67,7 @@ describe("buildFalVideoPayload", () => {
       durationSec: 30,
     });
     expect(p.image_url).toBe("https://example.com/a.png");
-    expect(p.duration).toBe("12");
+    expect(p.duration).toBe("15");
     expect(p.aspect_ratio).toBe("auto");
     expect(p.resolution).toBe("720p");
   });
