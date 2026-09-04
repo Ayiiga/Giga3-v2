@@ -4,6 +4,10 @@ import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { requireSessionWithMonitoring } from "./auth";
 import { buildVideoAiPrompt } from "./videoCatalog";
+import {
+  defaultVideoNegativePrompt,
+  refineVideoPromptForGeneration,
+} from "./mediaVideoPrompt";
 import { videoCostForCategory } from "./videoCreditsConfig";
 import {
   assertVideoDurationWithinPlan,
@@ -55,7 +59,12 @@ export const generate = action({
   handler: async (ctx, args) => {
     const email = await requireSessionWithMonitoring(args.sessionToken, ctx);
     const category = args.category || "text_to_video";
-    const fullPrompt = buildVideoAiPrompt(category, args.prompt);
+    const imageUrl = args.imageUrl?.trim() || undefined;
+    const fullPrompt = refineVideoPromptForGeneration(
+      buildVideoAiPrompt(category, args.prompt),
+      Boolean(imageUrl)
+    );
+    const negativePrompt = defaultVideoNegativePrompt(args.prompt, args.negativePrompt);
     const cost = videoCostForCategory(category);
 
     await ctx.runMutation(internal.videoCredits.grantVideoStarterCreditsInternal, {
@@ -97,8 +106,8 @@ export const generate = action({
       userId: email,
       category,
       prompt: fullPrompt,
-      imageUrl: args.imageUrl,
-      negativePrompt: args.negativePrompt,
+      imageUrl,
+      negativePrompt,
       imageSize: args.imageSize,
       duration: args.duration,
       resolution: args.resolution,

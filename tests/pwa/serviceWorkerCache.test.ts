@@ -3,9 +3,9 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("service worker cache version", () => {
-  it("uses video duration credits cache name (v225)", () => {
+  it("uses video text guard cache name (v226)", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v225-video-duration-credits"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v226-video-text-guard"');
     expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v220"');
     expect(sw).toContain('APP_SHELL_CACHE = "giga3-app-shell-v220"');
     expect(sw).toContain('pathname.startsWith("/wallet/")');
