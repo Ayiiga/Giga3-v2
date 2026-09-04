@@ -41,6 +41,39 @@ export default function BlogIndexPage() {
               </p>
             </header>
 
+            <section
+              aria-labelledby="create-content-heading"
+              className="mx-auto mt-10 max-w-3xl rounded-2xl border border-violet-200 bg-violet-50/50 p-6"
+            >
+              <h2 id="create-content-heading" className="text-lg font-semibold text-foreground">
+                Create and share your story
+              </h2>
+              <p className="mt-2 text-base leading-relaxed text-muted">
+                The Giga3 Blog publishes editorial guides from the team. To write and share your own
+                updates, use Creator Studio for article drafts or post directly to GigaSocial.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Link
+                  href="/creator-studio/?tab=writing&tool=blog-article"
+                  className="inline-flex min-h-11 items-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-violet-700"
+                >
+                  Draft a blog article
+                </Link>
+                <Link
+                  href="/gigasocial/?compose=text"
+                  className="inline-flex min-h-11 items-center rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-foreground hover:border-violet-300"
+                >
+                  Post on GigaSocial
+                </Link>
+                <Link
+                  href="/chat/"
+                  className="inline-flex min-h-11 items-center rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-foreground hover:border-violet-300"
+                >
+                  Open chat workspace
+                </Link>
+              </div>
+            </section>
+
             <nav aria-label="Blog categories" className="mt-10">
               <h2 className="sr-only">Browse by category</h2>
               <ul className="flex flex-wrap justify-center gap-2">

@@ -483,6 +483,25 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   }, [openGigaEditPublishHandoff, requireAuth, sessionToken]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const compose = params.get("compose");
+    if (compose !== "text" && compose !== "post") return;
+    if (!sessionToken) {
+      requireAuth();
+      return;
+    }
+    openComposer("text-post");
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("compose");
+      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    } catch {
+      /* ignore */
+    }
+  }, [openComposer, requireAuth, sessionToken]);
+
+  useEffect(() => {
     function onOnline() {
       if (gigaEditPublishHandledRef.current && composerOpen) return;
       void flushPublishQueueToHandoff().then((n) => {

@@ -10,6 +10,7 @@ describe("chat workspace navigation", () => {
       "GigaEdits",
       "GigaLearn",
       "Media Studio",
+      "Giga3 Blog",
     ]);
   });
 
@@ -19,7 +20,7 @@ describe("chat workspace navigation", () => {
       "utf8"
     );
     expect(src).toContain("CHAT_WORKSPACE_PRIMARY_APPS");
-    expect(src).toContain('label: "Home"');
+    expect(src).toContain('label: "Giga3 Blog"');
     const homeIdx = src.indexOf('label: "Home"');
     const primarySpreadIdx = src.indexOf("...CHAT_WORKSPACE_PRIMARY_APPS.map");
     expect(primarySpreadIdx).toBeGreaterThan(-1);

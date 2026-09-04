@@ -36,6 +36,7 @@ export const siteConfig = {
     prompts: "/prompts",
     video: "/video",
     marketplace: "/marketplace",
+    blog: "/blog",
     github: "https://github.com/Ayiiga/Giga3-v2",
   },
   contact: {
