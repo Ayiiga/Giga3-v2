@@ -15,3 +15,9 @@ export function videoPromptNeedsTextGuard(userPrompt: string): boolean {
 
 export const VIDEO_TEXT_TIP =
   "Prompts with logos, app UI, or readable words automatically get an English text frame first, then we animate it — for best results, upload your own frame with Start from an image.";
+
+export const VIDEO_IMAGE_PROMPT_TIP =
+  "Your prompt guides motion and story. The optional start image sets the first frame — both are sent to the video model together.";
+
+export const VIDEO_IMAGE_AND_TEXT_TIP =
+  "We will animate your uploaded frame using your prompt for motion, pacing, and camera work.";

@@ -13,9 +13,9 @@ import {
   type MediaVideoDurationSec,
 } from "@/lib/media/videoLimits";
 import { mediaVideoCreditCost } from "@/lib/media/videoCredits";
-import { VIDEO_TEXT_TIP, videoPromptNeedsTextGuard } from "@/lib/media/videoPromptTips";
+import { VIDEO_IMAGE_AND_TEXT_TIP, VIDEO_IMAGE_PROMPT_TIP, VIDEO_TEXT_TIP, videoPromptNeedsTextGuard } from "@/lib/media/videoPromptTips";
 import { cn } from "@/lib/utils";
-import { Clapperboard, ImagePlus, Loader2, RefreshCw, Video } from "lucide-react";
+import { Clapperboard, Loader2, RefreshCw, Video } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export type VideoAspect = "16:9" | "9:16" | "1:1";
@@ -77,7 +77,7 @@ export function VideoGenerateForm({
   const processing = submitting || job?.status === "processing";
   const succeeded = job?.status === "succeeded" && Boolean(job.outputUrl);
   const failed = job?.status === "failed" || (Boolean(error) && !processing);
-  const [showImageField, setShowImageField] = useState(Boolean(values.sourceImageUrl));
+  const hasSourceImage = Boolean(values.sourceImageUrl.trim());
   const [elapsedMs, setElapsedMs] = useState(0);
 
   useEffect(() => {
@@ -110,9 +110,14 @@ export function VideoGenerateForm({
           placeholder="Cinematic office scene with people presenting a phone — avoid asking for readable text on screens…"
           className="input-surface mt-2 sm:text-lg"
         />
-        {textRisk && !values.sourceImageUrl.trim() && (
+        {textRisk && !hasSourceImage && (
           <p className="mt-2 rounded-xl border border-amber-200/80 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-500/20 dark:bg-amber-950/40 dark:text-amber-100">
             {VIDEO_TEXT_TIP}
+          </p>
+        )}
+        {hasSourceImage && (
+          <p className="mt-2 rounded-xl border border-violet-200/80 bg-violet-50 px-3 py-2 text-sm text-violet-900 dark:border-violet-500/20 dark:bg-violet-950/40 dark:text-violet-100">
+            {VIDEO_IMAGE_AND_TEXT_TIP}
           </p>
         )}
       </label>
@@ -216,71 +221,58 @@ export function VideoGenerateForm({
         </fieldset>
       </div>
 
-      <div className="space-y-2">
-        {!showImageField ? (
+      <div className="space-y-2 rounded-2xl border border-border p-3">
+        <label className="text-sm font-bold uppercase tracking-wide text-muted">
+          Start image <span className="font-normal normal-case text-muted">(optional)</span>
+        </label>
+        <p className="text-xs text-muted">{VIDEO_IMAGE_PROMPT_TIP}</p>
+        <input
+          type="url"
+          value={values.sourceImageUrl}
+          disabled={processing}
+          onChange={(e) => onChange({ sourceImageUrl: e.target.value })}
+          placeholder="https://… public image URL — optional first frame"
+          className="input-surface py-2 text-sm"
+          aria-invalid={imageInvalid}
+        />
+        {imageInvalid && (
+          <p className="text-xs text-red-600">Enter a full https:// image link, or leave blank for text-only video.</p>
+        )}
+        {recentImageUrls.length > 0 && (
+          <div>
+            <p className="text-xs text-muted">Or pick one of your recent images:</p>
+            <div className="mt-1 flex gap-2 overflow-x-auto pb-1">
+              {recentImageUrls.slice(0, 6).map((url) => (
+                <button
+                  key={url}
+                  type="button"
+                  disabled={processing}
+                  onClick={() => onChange({ sourceImageUrl: url })}
+                  className={cn(
+                    "h-14 w-14 shrink-0 overflow-hidden rounded-lg border",
+                    values.sourceImageUrl === url ? "border-accent ring-2 ring-accent/40" : "border-border"
+                  )}
+                  aria-label="Use this image as the first frame"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {isHttpUrl(values.sourceImageUrl) && (
+          <MessageMediaBlock url={values.sourceImageUrl.trim()} kind="image" />
+        )}
+        {hasSourceImage && (
           <button
             type="button"
             disabled={processing}
-            onClick={() => setShowImageField(true)}
-            className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-accent hover:underline"
+            onClick={() => onChange({ sourceImageUrl: "" })}
+            className="text-xs text-muted hover:text-foreground"
           >
-            <ImagePlus className="h-4 w-4" aria-hidden /> Start from an image (optional)
+            Remove image (text-only video)
           </button>
-        ) : (
-          <div className="space-y-2 rounded-2xl border border-border p-3">
-            <label className="text-sm font-bold uppercase tracking-wide text-muted">
-              Start from an image
-            </label>
-            <input
-              type="url"
-              value={values.sourceImageUrl}
-              disabled={processing}
-              onChange={(e) => onChange({ sourceImageUrl: e.target.value })}
-              placeholder="https://… public image URL — becomes the first frame"
-              className="input-surface py-2 text-sm"
-              aria-invalid={imageInvalid}
-            />
-            {imageInvalid && (
-              <p className="text-xs text-red-600">Enter a full https:// image link.</p>
-            )}
-            {recentImageUrls.length > 0 && (
-              <div>
-                <p className="text-xs text-muted">Or pick one of your recent images:</p>
-                <div className="mt-1 flex gap-2 overflow-x-auto pb-1">
-                  {recentImageUrls.slice(0, 6).map((url) => (
-                    <button
-                      key={url}
-                      type="button"
-                      disabled={processing}
-                      onClick={() => onChange({ sourceImageUrl: url })}
-                      className={cn(
-                        "h-14 w-14 shrink-0 overflow-hidden rounded-lg border",
-                        values.sourceImageUrl === url ? "border-accent ring-2 ring-accent/40" : "border-border"
-                      )}
-                      aria-label="Use this image as the first frame"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            {isHttpUrl(values.sourceImageUrl) && (
-              <MessageMediaBlock url={values.sourceImageUrl.trim()} kind="image" />
-            )}
-            <button
-              type="button"
-              disabled={processing}
-              onClick={() => {
-                onChange({ sourceImageUrl: "" });
-                setShowImageField(false);
-              }}
-              className="text-xs text-muted hover:text-foreground"
-            >
-              Remove image
-            </button>
-          </div>
         )}
         <label className="flex items-center gap-2 text-sm text-muted">
           <input

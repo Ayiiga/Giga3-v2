@@ -9,9 +9,8 @@ import { buildImagePrompt } from "./mediaCatalog";
 import { generateImageWithFallback } from "./mediaEngine";
 import { persistImageUrlIfNeeded } from "./mediaStorage";
 import {
+  buildVideoPromptWithOptionalImage,
   defaultVideoNegativePrompt,
-  motionOnlyVideoPromptFromImage,
-  refineVideoPromptForGeneration,
   videoPromptNeedsTextGuard,
 } from "./mediaVideoPrompt";
 
@@ -76,9 +75,10 @@ export async function resolveVideoTextPipeline(
       { allowOpenAi: true }
     );
     const persisted = await persistImageUrlIfNeeded(ctx, imageResult.imageUrl);
-    const videoPrompt = refineVideoPromptForGeneration(
-      motionOnlyVideoPromptFromImage(userPrompt),
-      true
+    const videoPrompt = buildVideoPromptWithOptionalImage(
+      args.builtPrompt,
+      userPrompt,
+      "generated"
     );
     return {
       imageUrl: persisted,
@@ -90,7 +90,11 @@ export async function resolveVideoTextPipeline(
 
   return {
     imageUrl,
-    videoPrompt: refineVideoPromptForGeneration(args.builtPrompt, Boolean(imageUrl)),
+    videoPrompt: buildVideoPromptWithOptionalImage(
+      args.builtPrompt,
+      userPrompt,
+      imageUrl ? "user" : "none"
+    ),
     negativePrompt,
     usedImageFirst: false,
   };

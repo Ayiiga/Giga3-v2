@@ -134,23 +134,24 @@ function VideoStudioInner() {
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           rows={4}
-          placeholder="Describe the video you want to create…"
+          placeholder="Describe motion, story, and camera work. Add an optional start image below to anchor the first frame."
           className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-base outline-none focus:ring-2 focus:ring-violet-500/30"
         />
-        {(category === "image_to_video" || category === "talking_avatar") && (
-          <div className="mt-4">
-            <label className="block text-sm font-medium" htmlFor="video-source">
-              Source image URL
-            </label>
-            <input
-              id="video-source"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://…"
-              className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-base outline-none focus:ring-2 focus:ring-violet-500/30"
-            />
-          </div>
-        )}
+        <div className="mt-4">
+          <label className="block text-sm font-medium" htmlFor="video-source">
+            Start image <span className="font-normal text-muted">(optional)</span>
+          </label>
+          <p className="mt-1 text-xs text-muted">
+            Your prompt and image are used together — leave blank for text-only video.
+          </p>
+          <input
+            id="video-source"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            placeholder="https://… public image URL"
+            className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-base outline-none focus:ring-2 focus:ring-violet-500/30"
+          />
+        </div>
         <label className="mt-4 flex items-center gap-2 text-sm">
           <input
             type="checkbox"
