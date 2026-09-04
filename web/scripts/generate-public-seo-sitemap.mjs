@@ -118,7 +118,65 @@ function isoDate(ms) {
   return new Date(ms).toISOString().slice(0, 10);
 }
 
+/** Parse slug and dates from web/lib/blog/postRegistry.ts without a TS compiler. */
+function loadBlogSitemapEntries() {
+  const registryPath = path.resolve(__dirname, "../lib/blog/postRegistry.ts");
+  if (!existsSync(registryPath)) return [];
+  const src = readFileSync(registryPath, "utf8");
+  const blocks = src.split(/slug:\s*"/).slice(1);
+  const entries = [];
+  for (const block of blocks) {
+    const slug = block.match(/^([^"]+)"/)?.[1];
+    if (!slug) continue;
+    const publishedAt = block.match(/publishedAt:\s*"([^"]+)"/)?.[1];
+    const updatedAt = block.match(/updatedAt:\s*"([^"]+)"/)?.[1];
+    entries.push({
+      slug,
+      lastmod: updatedAt ?? publishedAt ?? "2026-09-04",
+    });
+  }
+  return entries;
+}
+
+function writeBlogSitemap() {
+  const posts = loadBlogSitemapEntries();
+  const urls = [
+    {
+      loc: `${siteOrigin}/blog/`,
+      lastmod: posts.reduce((max, p) => (p.lastmod > max ? p.lastmod : max), "2026-09-04"),
+      changefreq: "weekly",
+      priority: "0.8",
+    },
+    ...posts.map((post) => ({
+      loc: `${siteOrigin}/blog/${post.slug}/`,
+      lastmod: post.lastmod,
+      changefreq: "monthly",
+      priority: "0.7",
+    })),
+    ...[
+      "ai-in-ghana",
+      "education",
+      "bece-wassce",
+      "ai-tools",
+      "creators",
+      "business",
+      "technology",
+    ].map((slug) => ({
+      loc: `${siteOrigin}/blog/category/${slug}/`,
+      lastmod: "2026-09-04",
+      changefreq: "monthly",
+      priority: "0.6",
+    })),
+  ];
+
+  if (writeUrlset("sitemap-blog.xml", urls)) {
+    ensureRobotsSitemap("sitemap-blog.xml");
+  }
+}
+
 async function main() {
+  writeBlogSitemap();
+
   if (!convexUrl()) {
     console.warn("generate-public-seo-sitemap: NEXT_PUBLIC_CONVEX_URL unset — skipping dynamic sitemaps");
     return;

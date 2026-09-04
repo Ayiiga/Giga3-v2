@@ -58,6 +58,7 @@ export const navLinks = [
   { href: "/ai-studio", label: "Giga3 AI Studio" },
   { href: "/video", label: "Video AI" },
   { href: "/marketplace", label: "Marketplace" },
+  { href: "/blog", label: "Blog" },
   { href: "/chat/login", label: "Chat" },
   { href: "/#contact", label: "Contact" },
 ] as const;
