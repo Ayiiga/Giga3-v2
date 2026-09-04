@@ -5,6 +5,7 @@ import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { generateVideoWithFallback } from "./mediaEngine";
 import { persistVideoUrlIfPossible } from "./mediaStorage";
+import { resolveVideoTextPipeline } from "./mediaVideoTextPipeline";
 import { toUserMediaError } from "./mediaUtils";
 
 /**
@@ -16,7 +17,8 @@ import { toUserMediaError } from "./mediaUtils";
 export const processJob = internalAction({
   args: {
     jobId: v.id("mediaJobs"),
-    prompt: v.string(),
+    userPrompt: v.string(),
+    builtPrompt: v.string(),
     category: v.string(),
     imageUrl: v.optional(v.string()),
     negativePrompt: v.optional(v.string()),
@@ -49,12 +51,38 @@ export const processJob = internalAction({
 
     let lastLabel = "";
     try {
-      const result = await generateVideoWithFallback(
+      const pipeline = await resolveVideoTextPipeline(
+        ctx,
         {
-          prompt: args.prompt,
+          userPrompt: args.userPrompt,
+          builtPrompt: args.builtPrompt,
           category: args.category,
           imageUrl: args.imageUrl,
+          aspectRatio: args.aspectRatio,
           negativePrompt: args.negativePrompt,
+        },
+        async (label) => {
+          await ctx.runMutation(internal.mediaInternal.updateMediaJobProgress, {
+            jobId: args.jobId,
+            stage: "image",
+            label,
+          });
+        }
+      );
+
+      if (pipeline.usedImageFirst && pipeline.imageUrl) {
+        await ctx.runMutation(internal.mediaInternal.setMediaJobSourceImage, {
+          jobId: args.jobId,
+          sourceImageUrl: pipeline.imageUrl,
+        });
+      }
+
+      const result = await generateVideoWithFallback(
+        {
+          prompt: pipeline.videoPrompt,
+          category: args.category,
+          imageUrl: pipeline.imageUrl,
+          negativePrompt: pipeline.negativePrompt,
           seed: args.seed,
           duration: args.duration,
           resolution: args.resolution,

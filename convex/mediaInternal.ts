@@ -66,6 +66,18 @@ export const updateMediaJobProgress = internalMutation({
 });
 
 /** Mark a job charged up-front; used by the async video pipeline. */
+export const setMediaJobSourceImage = internalMutation({
+  args: { jobId: v.id("mediaJobs"), sourceImageUrl: v.string() },
+  handler: async (ctx, args) => {
+    const job = await ctx.db.get(args.jobId);
+    if (!job || job.status !== "processing") return;
+    await ctx.db.patch(args.jobId, {
+      sourceImageUrl: args.sourceImageUrl,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
 export const setMediaJobCharge = internalMutation({
   args: { jobId: v.id("mediaJobs"), creditsCharged: v.number() },
   handler: async (ctx, args) => {

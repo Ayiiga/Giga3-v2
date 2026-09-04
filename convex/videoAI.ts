@@ -4,10 +4,7 @@ import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { requireSessionWithMonitoring } from "./auth";
 import { buildVideoAiPrompt } from "./videoCatalog";
-import {
-  defaultVideoNegativePrompt,
-  refineVideoPromptForGeneration,
-} from "./mediaVideoPrompt";
+import { defaultVideoNegativePrompt } from "./mediaVideoPrompt";
 import { videoCostForCategory } from "./videoCreditsConfig";
 import {
   assertVideoDurationWithinPlan,
@@ -58,13 +55,11 @@ export const generate = action({
   args: generateArgs,
   handler: async (ctx, args) => {
     const email = await requireSessionWithMonitoring(args.sessionToken, ctx);
+    const userPrompt = args.prompt.trim();
     const category = args.category || "text_to_video";
     const imageUrl = args.imageUrl?.trim() || undefined;
-    const fullPrompt = refineVideoPromptForGeneration(
-      buildVideoAiPrompt(category, args.prompt),
-      Boolean(imageUrl)
-    );
-    const negativePrompt = defaultVideoNegativePrompt(args.prompt, args.negativePrompt);
+    const builtPrompt = buildVideoAiPrompt(category, userPrompt);
+    const negativePrompt = defaultVideoNegativePrompt(userPrompt, args.negativePrompt);
     const cost = videoCostForCategory(category);
 
     await ctx.runMutation(internal.videoCredits.grantVideoStarterCreditsInternal, {
@@ -95,7 +90,7 @@ export const generate = action({
         userId: email,
         category,
         mode: category,
-        prompt: fullPrompt,
+        prompt: builtPrompt,
         sourceImageUrl: args.imageUrl,
         cost,
       }
@@ -105,7 +100,8 @@ export const generate = action({
       jobId,
       userId: email,
       category,
-      prompt: fullPrompt,
+      userPrompt,
+      builtPrompt,
       imageUrl,
       negativePrompt,
       imageSize: args.imageSize,
