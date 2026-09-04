@@ -5,6 +5,7 @@
 /gigasocial/post/*    /gigasocial/post/index.html    200
 /gigasocial/profile/* /gigasocial/profile/index.html 200
 /gigasocial/*         /gigasocial/index.html         200
+/marketplace/item/*   /marketplace/item/index.html   200
 
 # Legacy static site paths → App Router
 /login.html         /chat/login/                 301

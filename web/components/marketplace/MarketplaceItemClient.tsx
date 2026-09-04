@@ -4,6 +4,7 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { formatGhs } from "@/lib/marketplace/catalog";
+import { parseMarketplaceListingId } from "@/lib/marketplace/listingRoute";
 import { formatTimestampDateTime } from "@/lib/datetime";
 import { getSessionToken } from "@/lib/auth";
 import { redirectToPaystack } from "@/lib/payments/paystackService";
@@ -11,13 +12,19 @@ import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { BadgeCheck, Download, Flag, ShieldCheck } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 function MarketplaceItemInner({ initialListingId }: { initialListingId?: string }) {
   const router = useRouter();
+  const pathname = usePathname();
   const params = useSearchParams();
-  const listingId = (initialListingId || params.get("id")) as Id<"marketplaceListings"> | null;
+  const listingId = (
+    initialListingId?.trim() ||
+    parseMarketplaceListingId(pathname, params.toString()) ||
+    params.get("id")?.trim() ||
+    ""
+  ) as Id<"marketplaceListings"> | null;
   const sessionToken = getSessionToken();
 
   const data = useQuery(

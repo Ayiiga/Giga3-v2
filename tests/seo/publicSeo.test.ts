@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { publicMetadata } from "../../web/lib/seo/publicMetadata";
 import { GIGA3_PRODUCT_LINKS, FOOTER_PRODUCT_LINKS } from "../../web/lib/seo/productLinks";
@@ -9,6 +9,7 @@ import {
   marketplaceItemPath,
 } from "../../web/lib/seo/publicPaths";
 import { parsePostId, parseProfileHandle } from "../../web/lib/gigasocial/profileRoute";
+import { parseMarketplaceListingId } from "../../web/lib/marketplace/listingRoute";
 
 describe("publicMetadata", () => {
   it("sets canonical path and indexable robots by default", () => {
@@ -183,5 +184,38 @@ describe("gigasocial route parsing", () => {
     expect(parsePostId("/gigasocial/post/", "id=xyz")).toBe("xyz");
     expect(parseProfileHandle("/gigasocial/profile/creator/", "")).toBe("creator");
     expect(parseProfileHandle("/gigasocial/profile/", "handle=@User")).toBe("user");
+  });
+});
+
+describe("marketplace route parsing", () => {
+  it("reads listing ids from path segments and query params", () => {
+    expect(parseMarketplaceListingId("/marketplace/item/abc123/", "")).toBe("abc123");
+    expect(parseMarketplaceListingId("/marketplace/item/", "id=xyz")).toBe("xyz");
+    expect(parseMarketplaceListingId("/marketplace/item/", "")).toBe("");
+  });
+});
+
+describe("marketplace SPA redirects", () => {
+  it("rewrites dynamic item paths to the item shell", () => {
+    const redirects = readFileSync(join(process.cwd(), "web/public/_redirects"), "utf8");
+    expect(redirects).toContain("/marketplace/item/*   /marketplace/item/index.html   200");
+  });
+
+  it("ships a route shell that parses listing ids from the pathname", () => {
+    const src = readFileSync(
+      join(process.cwd(), "web/components/marketplace/MarketplaceItemRouteShell.tsx"),
+      "utf8"
+    );
+    expect(src).toContain("parseMarketplaceListingId");
+    expect(src).toContain("MarketplaceItemClient");
+  });
+
+  it("keeps download-after-purchase UX on the item client", () => {
+    const src = readFileSync(
+      join(process.cwd(), "web/components/marketplace/MarketplaceItemClient.tsx"),
+      "utf8"
+    );
+    expect(src).toContain("Download PDF");
+    expect(src).toContain("getDownloadAccess");
   });
 });
