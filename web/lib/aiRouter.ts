@@ -49,8 +49,8 @@ export const AI_MODE_DEFINITIONS: AiModeDefinition[] = [
   },
   {
     id: "research",
-    label: "Research Assistant",
-    description: "Structure and analyze research",
+    label: "GigaResearch",
+    description: "Research deeper — books, reports, articles, and evidence-based writing",
     icon: "Search",
     systemPrompt: getSystemPrompt("research"),
   },
@@ -64,7 +64,7 @@ export const AI_MODE_DEFINITIONS: AiModeDefinition[] = [
   {
     id: "book",
     label: "Book Writer",
-    description: "Stories, outlines, and chapters",
+    description: "Books, ebooks, chapters, and long-form manuscripts",
     icon: "PenLine",
     systemPrompt: getSystemPrompt("book"),
   },

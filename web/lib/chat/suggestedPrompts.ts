@@ -159,6 +159,42 @@ const MODE_OVERRIDES: Partial<Record<AiModeId, SuggestedPrompt[]>> = {
       text: "Help me verify whether this claim is likely true or misinformation.",
     },
   ],
+  research: [
+    {
+      label: "Research report",
+      text: "Write a research report about artificial intelligence in Africa with clear findings and analysis.",
+    },
+    {
+      label: "Book concept",
+      text: "Help me plan a book about Ghana's tech ecosystem — title, audience, outline, and Chapter 1.",
+    },
+    {
+      label: "Article draft",
+      text: "Draft a professional article on renewable energy policy in West Africa with key findings and sources where available.",
+    },
+    {
+      label: "Topic analysis",
+      text: "Research and analyze the mobile money industry in Ghana — overview, key findings, and implications.",
+    },
+  ],
+  book: [
+    {
+      label: "Book plan",
+      text: "Write a book about artificial intelligence in Africa — start with concept, table of contents, and Chapter 1.",
+    },
+    {
+      label: "Chapter draft",
+      text: "Draft Chapter 2 of my book, keeping the same tone and terminology as Chapter 1.",
+    },
+    {
+      label: "Non-fiction outline",
+      text: "Create a detailed book outline on entrepreneurship in Ghana with chapter summaries.",
+    },
+    {
+      label: "Personal memoir",
+      text: "Help me structure a memoir about my teaching career — use my experiences, not invented research.",
+    },
+  ],
 };
 
 export function getSuggestedPrompts(mode: AiModeId, limit = 4): SuggestedPrompt[] {

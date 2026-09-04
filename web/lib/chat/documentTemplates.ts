@@ -100,6 +100,19 @@ Instructions for AI: Personalize tone, tighten prose, and match the job descript
     icon: BookOpen,
     body: `# Book project — started {{DATETIME}}
 
+## GigaResearch — Book workflow
+**Step 1 — Book Concept** (fill in or ask AI to propose)
+- **Title:**
+- **Subtitle:**
+- **Target audience:**
+- **Purpose / core message:**
+- **Suggested length:** (short · medium · long · custom)
+
+**Step 2 — Table of Contents** (adapt to topic; not every section is required)
+- Front matter: title page, copyright/disclaimer, dedication (optional), preface, introduction
+- Main content: chapters, sections, examples, case studies
+- End matter: conclusion, references, bibliography, glossary (optional), about the author
+
 ## Working title
 
 ## Genre & audience
@@ -108,23 +121,21 @@ Instructions for AI: Personalize tone, tighten prose, and match the job descript
 
 ## Themes
 
-## Main characters
+## Main characters (if applicable)
 | Name | Role | Goal | Conflict |
 |------|------|------|----------|
-
-## Three-act outline
-1. **Act I — Setup:**
-2. **Act II — Confrontation:**
-3. **Act III — Resolution:**
 
 ## Chapter plan
 - Chapter 1:
 - Chapter 2:
+- Chapter 3:
 
-## Tone & style notes
+## Tone & style
+- Tone: (professional · academic · simple · conversational · inspirational · technical)
+- Writing style notes:
 
 ---
-Instructions for AI: Help expand the outline, suggest chapter beats, and maintain consistent voice.`,
+Instructions for AI: Start with Book Concept, then propose a Table of Contents, then draft chapters one at a time. Maintain consistency across chapters. For research-backed books, synthesize evidence — do not invent citations. Export-ready markdown.`,
   },
   {
     id: "thesis",
@@ -169,6 +180,9 @@ Instructions for AI: Strengthen academic tone, suggest citations to search for, 
     icon: FileBarChart,
     body: `# Research paper — {{DATE}}
 
+## GigaResearch structure
+Use: 🔎 Research Overview → 📚 Key Findings → 💡 Analysis → ⚠️ Limitations (if needed) → 📖 Sources (only when used)
+
 ## Title
 
 ## Authors
@@ -194,10 +208,10 @@ Interpretation, limitations, future work.
 
 ## 6. Conclusion
 
-## References (placeholder)
+## References (only verified sources)
 
 ---
-Instructions for AI: Improve clarity, suggest section transitions, and highlight where evidence is needed.`,
+Instructions for AI: Improve clarity, suggest section transitions, and highlight where evidence is needed. Never fabricate citations. If sources are unavailable, say so and draft from general knowledge with a brief note.`,
   },
   {
     id: "business-plan",
@@ -277,6 +291,9 @@ Instructions for AI: Tighten scope, improve persuasion, and align deliverables w
     icon: FileBarChart,
     body: `# Report — {{DATE}}
 
+## GigaResearch structure
+Use: 🔎 Overview → 📚 Key Findings → 💡 Analysis → Recommendations → 📖 Sources (if used)
+
 ## Report title
 
 ## Prepared for
@@ -303,7 +320,7 @@ Instructions for AI: Tighten scope, improve persuasion, and align deliverables w
 ## Appendices (optional)
 
 ---
-Instructions for AI: Improve structure, use clear headings, and make recommendations actionable.`,
+Instructions for AI: Improve structure, use clear headings and short paragraphs, and make recommendations actionable. Cite sources only when available.`,
   },
   {
     id: "essay",
@@ -311,6 +328,15 @@ Instructions for AI: Improve structure, use clear headings, and make recommendat
     description: "Argumentative or analytical essay scaffold",
     icon: PenLine,
     body: `# Essay — {{DATE}}
+
+## Content type
+- [ ] Argumentative essay
+- [ ] Analytical essay
+- [ ] Research essay
+- [ ] Personal essay
+
+## Tone
+Professional · Academic · Simple · Conversational
 
 ## Title
 
@@ -339,7 +365,7 @@ One clear claim answering the prompt.
 ## Word target:
 
 ---
-Instructions for AI: Strengthen thesis, improve flow, and suggest evidence. Match academic level I specify.`,
+Instructions for AI: Strengthen thesis, improve flow, and suggest evidence where needed. Match academic level I specify. Do not require citations for personal or creative essays.`,
   },
   {
     id: "presentation",

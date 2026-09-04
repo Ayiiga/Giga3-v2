@@ -82,7 +82,7 @@ const MAX_EXCERPT_LENGTH = 420;
 const MAX_RANKED_SOURCES = 6;
 const MAX_HISTORY_CANDIDATES = 8;
 
-const HIGH_STAKES_MODES = new Set<AiModeId>(["news", "research"]);
+const HIGH_STAKES_MODES = new Set<AiModeId>(["news"]);
 const CONVERSATIONAL_MODES = new Set<AiModeId>(["social", "book", "resume"]);
 
 const qualityStats = {
@@ -133,7 +133,37 @@ function hasAcademicIntent(query: string): boolean {
 }
 
 function hasCreativeIntent(query: string): boolean {
-  return /\b(poem|story|lyrics|creative writing|fiction|brainstorm|caption|slogan|joke)\b/i.test(
+  return /\b(poem|story|novel|fiction|fictional|creative writing|brainstorm|caption|slogan|joke|screenplay|narrative)\b/i.test(
+    query
+  );
+}
+
+function hasResearchBackedIntent(query: string): boolean {
+  return /\b(research[- ]backed|evidence[- ]based|with citations?|cite sources?|peer[- ]reviewed|literature review|academic paper|research paper|research report|white paper|case study report)\b/i.test(
+    query
+  );
+}
+
+function hasResearchWritingIntent(query: string): boolean {
+  return (
+    /\b(write|create|draft|compose|develop|outline|prepare)\b[\s\S]{0,48}\b(book|ebook|report|article|essay|paper|thesis|dissertation|manuscript|chapter|monograph)\b/i.test(
+      query
+    ) ||
+    /\b(research and write|write (a |an )?research|research (report|paper|article|essay)|analyze this topic)\b/i.test(
+      query
+    ) ||
+    /\bresearch\b[\s\S]{0,36}\b(about|on|into)\b/i.test(query)
+  );
+}
+
+function hasPersonalNarrativeIntent(query: string): boolean {
+  return /\b(my (life|story|experience|journey)|personal (story|memoir|experience)|autobiograph|memoir)\b/i.test(
+    query
+  );
+}
+
+function hasFactCheckIntent(query: string): boolean {
+  return /\b(fact[- ]?check|verify (this )?claim|is this (true|accurate)|authentic or misinformation|confirm whether)\b/i.test(
     query
   );
 }
@@ -155,7 +185,7 @@ function hasConversationalIntent(query: string): boolean {
 }
 
 function hasHighStakesIntent(query: string): boolean {
-  return /\b(medical|medicine|diagnosis|symptom|treatment|drug|dosage|legal|law|contract|lawsuit|financial|finance|investment|stock|inflation|interest rate|tax|government|policy|election|breaking news|latest news|latest figures|research)\b/i.test(
+  return /\b(medical|medicine|diagnosis|symptom|treatment|drug|dosage|legal|law|contract|lawsuit|financial|finance|investment|stock|inflation|interest rate|tax|government policy|election|breaking news|latest news|latest figures|safety[- ]critical|life[- ]threatening)\b/i.test(
     query
   );
 }
@@ -497,7 +527,13 @@ function inferResponseMode(mode: AiModeId, query: string): ResponseMode {
   if (hasConversationalIntent(query) || CONVERSATIONAL_MODES.has(mode)) {
     return "conversational";
   }
-  if (HIGH_STAKES_MODES.has(mode) || hasHighStakesIntent(query)) {
+  if (hasCreativeIntent(query) && !hasResearchBackedIntent(query)) {
+    return "conversational";
+  }
+  if (HIGH_STAKES_MODES.has(mode) || hasFactCheckIntent(query)) {
+    return "high_stakes";
+  }
+  if (hasHighStakesIntent(query)) {
     return "high_stakes";
   }
   return "educational";
@@ -599,6 +635,7 @@ function learnerInstruction(level: LearnerLevel): string {
 }
 
 function buildSystemPromptAddon(params: {
+  mode: AiModeId;
   query: string;
   queryClass: QueryClass;
   responseMode: ResponseMode;
@@ -613,6 +650,32 @@ function buildSystemPromptAddon(params: {
   hasInlineImageData: boolean;
   rankedSources: RankedSource[];
 }): string {
+  const researchWritingTask =
+    params.mode === "research" ||
+    hasResearchWritingIntent(params.query) ||
+    (params.mode === "book" && hasResearchBackedIntent(params.query));
+
+  const researchWritingRule =
+    params.responseMode === "educational" && researchWritingTask
+      ? [
+          "GigaResearch — Research & Writing workflow:",
+          "- Recognize this as a research/writing task. Use clear headings, short paragraphs, and mobile-friendly hierarchy.",
+          "- Structure (use sections that fit the request; skip empty sections):",
+          "  🔎 Research Overview — what is being researched, scope, audience, objective",
+          "  📚 Key Findings — concise, specific bullets; cite only when sources exist",
+          "  💡 Analysis — synthesis, comparisons, and interpretation (do not just list sources)",
+          "  ⚠️ Important Limitations — only when meaningful uncertainty exists",
+          "  📖 Sources — only when external sources were actually used (title, author/org, date, link when available); never fabricate citations",
+          "- Evidence indicators (compact): Strong / Moderate / Limited evidence; Primary / Academic / Official / Secondary source",
+          "- Do not show numeric confidence scores unless the user asks or the topic is high-stakes.",
+          "- For books: start with Book Concept (title, subtitle, audience, purpose, length) → Table of Contents → chapters one at a time; maintain consistency across chapters.",
+          "- For long manuscripts: Book Plan → Chapter 1 → Chapter 2 → … → Review; do not dump an entire book in one reply unless it is short.",
+          hasPersonalNarrativeIntent(params.query)
+            ? "- Personal narrative: prioritize the user's supplied experiences; do not pretend to conduct external research."
+            : "- If external verification is unavailable, say so briefly and continue with a useful draft using available information.",
+        ].join("\n")
+      : "";
+
   const conversationalRule =
     params.responseMode === "conversational"
       ? "- Conversational mode: reply naturally and warmly. Do not include transparency notices, confidence scores, citation panels, verification warnings, or evidence sections."
@@ -695,6 +758,7 @@ function buildSystemPromptAddon(params: {
     "Accuracy, Authenticity, and Trustworthiness Engine:",
     "- Prioritize factual correctness, authenticity, and clarity.",
     conversationalRule,
+    researchWritingRule,
     educationalRule,
     learnerInstruction(params.learnerLevel),
     examRule,
@@ -764,6 +828,7 @@ export function prepareAnswerQualityContext(params: {
     hasDocumentAttachment,
     hasInlineImageData,
     systemPromptAddon: buildSystemPromptAddon({
+      mode: params.mode,
       query,
       queryClass,
       responseMode,
