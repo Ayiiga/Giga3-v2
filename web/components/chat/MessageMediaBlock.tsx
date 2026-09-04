@@ -1,6 +1,7 @@
 "use client";
 
 import { ShareActionFeedback } from "@/components/chat/ShareActionFeedback";
+import { MediaVideoPlayer } from "@/components/media/MediaVideoPlayer";
 import { useConnectionQuality } from "@/hooks/useConnectionQuality";
 import { COPY_SUCCESS, SHARE_SUCCESS } from "@/lib/chat/chatContentFormat";
 import {
@@ -142,17 +143,7 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
             />
           </>
         ) : (
-          <video
-            src={url}
-            controls
-            playsInline
-            preload="none"
-            poster={undefined}
-            className="h-auto max-h-[min(70vh,24rem)] w-full max-w-full bg-black object-contain"
-            width={640}
-            height={360}
-            onError={handleMediaError}
-          />
+          <MediaVideoPlayer url={url} className="absolute inset-0" />
         )}
       </div>
       <div className="flex flex-wrap items-center gap-2">
