@@ -131,7 +131,7 @@ export const REPLICATE_VIDEO_MODEL =
 
 /** Seedance defaults (override via Convex env). */
 export const REPLICATE_VIDEO_DURATION = Number(
-  process.env.REPLICATE_VIDEO_DURATION ?? 30
+  process.env.REPLICATE_VIDEO_DURATION ?? 10
 );
 export const REPLICATE_VIDEO_RESOLUTION =
   process.env.REPLICATE_VIDEO_RESOLUTION?.trim() || "720p";

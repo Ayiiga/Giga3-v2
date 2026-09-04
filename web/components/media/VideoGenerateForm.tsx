@@ -278,7 +278,7 @@ export function VideoGenerateForm({
             disabled={processing}
             onChange={(e) => onChange({ audio: e.target.checked })}
           />
-          Add AI audio when the provider supports it
+          Add AI audio when the provider supports it (clips render at up to 12–15s per provider)
         </label>
       </div>
 

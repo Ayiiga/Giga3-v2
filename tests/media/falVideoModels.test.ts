@@ -148,7 +148,8 @@ describe("Media Studio async video pipeline — wiring", () => {
     const engine = read("convex/mediaEngine.ts");
     expect(engine).toContain("falGenerateVideoV2(");
     expect(engine).not.toMatch(/getFalApiKey\(\) && imageUrl/);
-    expect(engine).toContain("durationSec: input.duration");
+    expect(engine).toContain("durationSec,");
+    expect(engine).toContain("clampVideoDurationForProvider");
     expect(engine).toContain("replicateGenerateVideo(input.prompt");
   });
 
@@ -200,7 +201,14 @@ describe("Media Studio async video pipeline — wiring", () => {
     expect(client).toContain('modelId.split("/").slice(0, 2).join("/")');
   });
 
-  it("prefers Replicate when audio is requested but fal model lacks audio support", () => {
+  it("does not route long clips to Replicate before fal", () => {
+    const engine = read("convex/mediaEngine.ts");
+    expect(engine).toContain("replicateCanServeRequest");
+    expect(engine).toContain("clampReplicateVideoDurationSec");
+    expect(engine).not.toContain("audio/long clip");
+  });
+
+  it("prefers Replicate only when fal lacks audio and duration fits Replicate", () => {
     const engine = read("convex/mediaEngine.ts");
     expect(engine).toContain("preferReplicateFirst");
     expect(engine).toContain("falModelSupportsAudio");

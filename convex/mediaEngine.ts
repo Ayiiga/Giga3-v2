@@ -14,6 +14,12 @@ import {
   falModelSupportsAudio,
   resolveFalVideoModel,
 } from "./falVideoModels";
+import {
+  clampMediaVideoDurationSec,
+  clampReplicateVideoDurationSec,
+  clampVideoDurationForProvider,
+  REPLICATE_VIDEO_MAX_DURATION_SEC,
+} from "./mediaVideoLimits";
 import { imageCategoryAspectRatio, videoCategoryAspectRatio } from "./mediaCatalog";
 import {
   falImageSizeToAspectRatio,
@@ -287,16 +293,20 @@ export async function generateVideoWithFallback(
   const aspectRatio =
     input.aspectRatio ?? videoCategoryAspectRatio(input.category ?? "anime_videos");
   const wantsAudio = input.generateAudio !== false;
-  const requestedDuration = input.duration ?? 0;
+  const requestedDuration = clampMediaVideoDurationSec(input.duration);
   const falModel = resolveFalVideoModel(Boolean(imageUrl));
   const falSupportsAudio = falModelSupportsAudio(falModel);
   const falMaxDuration = falModelMaxDurationSec(falModel);
+  const falDuration = clampVideoDurationForProvider(requestedDuration, falMaxDuration);
+  const replicateDuration = clampReplicateVideoDurationSec(requestedDuration);
+  const replicateCanServeRequest = requestedDuration <= REPLICATE_VIDEO_MAX_DURATION_SEC;
   const preferReplicateFirst =
     Boolean(getReplicateToken()) &&
-    ((wantsAudio && !falSupportsAudio) ||
-      (requestedDuration > falMaxDuration && wantsAudio));
+    replicateCanServeRequest &&
+    wantsAudio &&
+    !falSupportsAudio;
 
-  const tryReplicate = async (label: string) => {
+  const tryReplicate = async (label: string, durationSec = replicateDuration) => {
     if (!getReplicateToken()) return null;
     try {
       await hooks?.onProgress?.({
@@ -308,7 +318,7 @@ export async function generateVideoWithFallback(
         imageUrl,
         seed: input.seed,
         aspectRatio,
-        duration: input.duration,
+        duration: durationSec,
         resolution: input.resolution,
         generateAudio: input.generateAudio,
       });
@@ -323,20 +333,8 @@ export async function generateVideoWithFallback(
     }
   };
 
-  if (preferReplicateFirst) {
-    const replicateResult = await tryReplicate(
-      errors.length ? "Retrying with backup provider…" : "Queued at Replicate (audio/long clip)"
-    );
-    if (replicateResult) {
-      return {
-        videoUrl: replicateResult.videoUrl,
-        provider: replicateResult.provider,
-        externalId: replicateResult.externalId,
-      };
-    }
-  }
-
-  if (getFalApiKey()) {
+  const tryFal = async (generateAudio: boolean | undefined, durationSec: number) => {
+    if (!getFalApiKey()) return null;
     try {
       const result = await withRetries(
         "fal-video",
@@ -345,12 +343,12 @@ export async function generateVideoWithFallback(
             {
               prompt: input.prompt,
               imageUrl,
-              durationSec: input.duration,
+              durationSec,
               aspectRatio,
               resolution: input.resolution,
               negativePrompt: input.negativePrompt,
               seed: input.seed,
-              generateAudio: input.generateAudio,
+              generateAudio,
             },
             {
               maxWaitMs: videoMaxWaitMs(),
@@ -370,13 +368,37 @@ export async function generateVideoWithFallback(
         videoUrl: result.videoUrl,
         contentType: result.contentType,
         seed: result.seed,
-        provider: "fal",
+        provider: "fal" as const,
         externalId: result.requestId,
         modelId: result.modelId,
       };
     } catch (err) {
       errors.push(`fal: ${err instanceof Error ? err.message : String(err)}`);
+      return null;
     }
+  };
+
+  if (preferReplicateFirst) {
+    const replicateResult = await tryReplicate("Queued at Replicate (synced audio)");
+    if (replicateResult) {
+      return {
+        videoUrl: replicateResult.videoUrl,
+        provider: replicateResult.provider,
+        externalId: replicateResult.externalId,
+      };
+    }
+  }
+
+  const falResult = await tryFal(input.generateAudio, falDuration);
+  if (falResult) {
+    return {
+      videoUrl: falResult.videoUrl,
+      contentType: falResult.contentType,
+      seed: falResult.seed,
+      provider: falResult.provider,
+      externalId: falResult.externalId,
+      modelId: falResult.modelId,
+    };
   }
 
   const replicateResult = await tryReplicate(
@@ -388,6 +410,20 @@ export async function generateVideoWithFallback(
       provider: replicateResult.provider,
       externalId: replicateResult.externalId,
     };
+  }
+
+  if (wantsAudio) {
+    const silentFal = await tryFal(false, falDuration);
+    if (silentFal) {
+      return {
+        videoUrl: silentFal.videoUrl,
+        contentType: silentFal.contentType,
+        seed: silentFal.seed,
+        provider: silentFal.provider,
+        externalId: silentFal.externalId,
+        modelId: silentFal.modelId,
+      };
+    }
   }
 
   throw new Error(
