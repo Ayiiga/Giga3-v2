@@ -14,6 +14,7 @@ import {
   type ChatRoutingContext,
 } from "./chatEngine";
 import { getSystemPrompt, isValidMode, type AiModeId } from "./aiModes";
+import { buildChatSubscriptionGuidanceAddon } from "./chatSubscriptionGuidance";
 import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
 import {
   prepareAnswerQualityContext,
@@ -603,7 +604,15 @@ export const regenerateMessage = action({
       "\n\n" +
       qualityContext.systemPromptAddon;
 
-    let systemPrompt = systemPromptBase;
+    let systemPrompt =
+      systemPromptBase +
+      "\n\n" +
+      buildChatSubscriptionGuidanceAddon({
+        subscriptionPlan: refreshedUser?.subscriptionPlan,
+        subscriptionExpiresAt: refreshedUser?.subscriptionExpiresAt,
+        credits: refreshedUser?.credits,
+        query,
+      });
     if (isLiveNewsEnabled() && shouldEnableWebSearch(query, mode)) {
       const briefing = await ctx.runQuery(internal.liveNewsInternal.getBriefingInternal, {});
       if (briefing) {
