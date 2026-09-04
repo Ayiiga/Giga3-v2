@@ -3,10 +3,12 @@
 import { ShareActionFeedback } from "@/components/chat/ShareActionFeedback";
 import { Button } from "@/components/ui/Button";
 import { COPY_SUCCESS } from "@/lib/chat/chatContentFormat";
+import { stageCreatorComposeHandoff } from "@/lib/creator-studio/composeHandoff";
 import { shareText, copyMarkdownToClipboard, type ShareResult } from "@/lib/share/clientShare";
 import { useShareAction } from "@/hooks/useShareAction";
 import { cn } from "@/lib/utils";
-import { Check, Copy, RefreshCw, Share2, Star } from "lucide-react";
+import { Check, Copy, RefreshCw, Send, Share2, Star } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { memo, useCallback, useState } from "react";
 
 interface CreatorResultPanelProps {
@@ -28,6 +30,7 @@ export const CreatorResultPanel = memo(function CreatorResultPanel({
   favorited,
   className,
 }: CreatorResultPanelProps) {
+  const router = useRouter();
   const { feedback, runAction, busy } = useShareAction();
   const [copied, setCopied] = useState(false);
 
@@ -44,6 +47,10 @@ export const CreatorResultPanel = memo(function CreatorResultPanel({
   const runShare = useCallback(async (): Promise<ShareResult> => {
     if (!content?.trim()) return { ok: false, reason: "Nothing to share" };
     return shareText({ title: "Giga3 AI Creator", text: content.slice(0, 8000) });
+  }, [content]);
+
+  const stagePublishHandoff = useCallback(() => {
+    if (content?.trim()) stageCreatorComposeHandoff(content);
   }, [content]);
 
   if (loading) {
@@ -116,6 +123,19 @@ export const CreatorResultPanel = memo(function CreatorResultPanel({
           >
             <Share2 className="h-4 w-4" aria-hidden />
             Share
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            className="min-h-9"
+            onClick={() => {
+              stagePublishHandoff();
+              router.push("/gigasocial/?compose=text");
+            }}
+          >
+            <Send className="h-4 w-4" aria-hidden />
+            Publish
           </Button>
           {onFavorite && (
             <Button

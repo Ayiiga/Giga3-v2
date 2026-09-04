@@ -786,10 +786,25 @@ button:focus-visible {
   }
 }
 
-/* Creator Studio — column tool grids on phones. */
+/* Creator Studio — column tool grids on phones; allow horizontal section tabs. */
 .creator-studio-stable {
-  overflow-x: clip;
+  overflow-x: visible;
   touch-action: pan-y;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.creator-studio-stable .creator-section-nav {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.creator-studio-stable .creator-section-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .creator-studio-stable .creator-tool-grid {

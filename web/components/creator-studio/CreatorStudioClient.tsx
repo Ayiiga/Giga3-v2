@@ -21,7 +21,7 @@ import {
 import { siteConfig } from "@/lib/site";
 import { isContentGrowthEngineEnabled } from "@/lib/content-engine/starter";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Palette } from "lucide-react";
+import { ArrowLeft, Palette, PenSquare, Send } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -83,12 +83,31 @@ function CreatorStudioContent() {
             </div>
           </div>
         </div>
-        <div className="saas-card rounded-2xl border border-border px-4 py-3 text-right">
-          <p className="text-xs text-muted">Credits</p>
-          <p className="text-xl font-semibold text-foreground">{usage?.credits ?? "—"}</p>
-          <Link href={siteConfig.links.credits} className="text-xs text-accent hover:underline">
-            Get more
-          </Link>
+        <div className="flex flex-col items-stretch gap-3 sm:items-end">
+          <div className="flex flex-wrap gap-2">
+            <ButtonLink
+              href="/gigasocial/?compose=text"
+              className="min-h-11 flex-1 sm:flex-none"
+            >
+              <PenSquare className="h-4 w-4" aria-hidden />
+              New post
+            </ButtonLink>
+            <ButtonLink
+              href="/gigasocial/"
+              variant="outline"
+              className="min-h-11 flex-1 sm:flex-none"
+            >
+              <Send className="h-4 w-4" aria-hidden />
+              Open GigaSocial
+            </ButtonLink>
+          </div>
+          <div className="saas-card rounded-2xl border border-border px-4 py-3 text-right">
+            <p className="text-xs text-muted">Credits</p>
+            <p className="text-xl font-semibold text-foreground">{usage?.credits ?? "—"}</p>
+            <Link href={siteConfig.links.credits} className="text-xs text-accent hover:underline">
+              Get more
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -105,7 +124,7 @@ function CreatorStudioContent() {
       />
 
       <nav
-        className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1"
+        className="creator-section-nav flex gap-2 pb-1"
         aria-label="Creator Studio sections"
       >
         {CREATOR_SECTIONS.map((item) => {

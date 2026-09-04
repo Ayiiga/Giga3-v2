@@ -32,18 +32,19 @@ export default function CreatorStudioPage() {
       />
       <ProductSeoHeader
         title="Creator Studio — Draft, design, and plan content"
-        description="Plan posts, generate copy, and jump to Media Studio or GigaEdit when you need visuals or video. Creator Studio complements GigaSocial publishing workflows."
-        detail="Sign in to save drafts and use Giga3 AI credits. For full video editing, open GigaEdit; for AI images, use Media Studio."
+        description="Plan posts, generate copy, and jump to Media Studio or GigaEdit when you need visuals or video."
+        detail="Sign in to save drafts and use Giga3 AI credits."
         showProductNav={false}
+        compact
       />
-      <CreatorWorkflowIntro />
-      <div className="creator-studio-stable section-padding pt-8 pb-8">
+      <div className="creator-studio-stable section-padding pt-4 pb-8">
         <Container>
           <Suspense fallback={<p className="text-center text-muted">Loading Creator Studio…</p>}>
             <CreatorPageRoot />
           </Suspense>
         </Container>
       </div>
+      <CreatorWorkflowIntro />
     </>
   );
 }

@@ -9,6 +9,7 @@ import {
   loadPublishHandoffFiles,
   peekPublishHandoff,
 } from "@/lib/gigaedit/publishHandoff";
+import { consumeCreatorComposeHandoff } from "@/lib/creator-studio/composeHandoff";
 import { flushPublishQueueToHandoff } from "@/lib/gigaedit/publishQueue";
 import {
   destinationComposerSeed,
@@ -491,6 +492,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       requireAuth();
       return;
     }
+    const creatorDraft = consumeCreatorComposeHandoff();
+    if (creatorDraft) setComposeInitialBody(creatorDraft);
     openComposer("text-post");
     try {
       const url = new URL(window.location.href);
