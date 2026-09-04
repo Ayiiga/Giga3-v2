@@ -50,6 +50,8 @@ describe("mobile stability CSS", () => {
 
   it("defines creator-studio-stable column tool grid", () => {
     expect(globalsCss).toContain(".creator-studio-stable .creator-tool-grid");
+    expect(globalsCss).toContain(".creator-studio-stable .creator-section-nav");
+    expect(globalsCss).toContain("touch-action: pan-x pan-y");
   });
 
   it("keeps discover grids single-column until desktop breakpoint", () => {

@@ -55,7 +55,7 @@ export const CREATOR_WORKFLOW_STEPS = [
   },
   {
     step: "Publish",
-    href: "/gigasocial",
+    href: "/gigasocial/?compose=text",
     description: "Share finished work to GigaSocial and your audience.",
   },
 ] as const;
