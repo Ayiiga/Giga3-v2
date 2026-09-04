@@ -46,16 +46,16 @@ export function creditPromptMessage(args: {
   }
 
   if (variant === "subscribe") {
-    return "Giga3 Pro uses OpenAI GPT-4. Subscribe for monthly credits or buy a pack to unlock Pro.";
+    return "Unlock Giga3 Pro (OpenAI GPT-4) with a subscription. We recommend **Giga3 Pro — GHC 150/month** (250 credits) at /subscribe/, or buy a credit pack.";
   }
 
   if (variant === "empty") {
-    return `You're out of credits (${creditCost} per message). Subscribe for monthly refills or buy a credit pack to continue.`;
+    return `You're out of credits (${creditCost} per message). Subscribe for monthly refills — **Giga3 Pro is GHC 150/month** (250 credits) at /subscribe/ — or buy a credit pack to continue.`;
   }
 
   if (variant === "low" && credits != null) {
-    return `You have ${credits} credit${credits === 1 ? "" : "s"} left. Subscribe or top up before you run out.`;
+    return `You have ${credits} credit${credits === 1 ? "" : "s"} left. Subscribe (**Giga3 Pro — GHC 150/month**) or top up before you run out.`;
   }
 
-  return "Subscribe or buy credits to continue using Giga3 AI.";
+  return "Subscribe to Giga3 Pro (GHC 150/month) or buy credits to continue using Giga3 AI.";
 }

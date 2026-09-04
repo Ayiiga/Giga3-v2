@@ -11,6 +11,7 @@ import { buildRoutingContextFromUser,
 } from "./chatEngine";
 import { getSystemPrompt, isValidMode, type AiModeId } from "./aiModes";
 import { chatSystemStyleAddon } from "./assistantIdentity";
+import { buildChatSubscriptionGuidanceAddon } from "./chatSubscriptionGuidance";
 import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
 import {
   prepareAnswerQualityContext,
@@ -519,7 +520,15 @@ export const processJob = internalAction({
         "\n\n" +
         qualityContext.systemPromptAddon;
 
-      let systemPrompt = systemPromptBase;
+      let systemPrompt =
+        systemPromptBase +
+        "\n\n" +
+        buildChatSubscriptionGuidanceAddon({
+          subscriptionPlan: refreshedUser?.subscriptionPlan,
+          subscriptionExpiresAt: refreshedUser?.subscriptionExpiresAt,
+          credits: refreshedUser?.credits,
+          query: job.content,
+        });
       if (segmentRecap) {
         systemPrompt += `\n\n${segmentRecap}`;
       }
