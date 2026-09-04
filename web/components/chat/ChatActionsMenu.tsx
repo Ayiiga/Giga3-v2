@@ -1,6 +1,13 @@
 "use client";
 
 import type { UiMessage } from "@/components/chat/MessageList";
+import type { AiModeId } from "@/lib/aiRouter";
+import {
+  conversationLooksLikeManuscript,
+  formatManuscriptMarkdown,
+  isWritingMode,
+  manuscriptExportFilename,
+} from "@/lib/chat/writingWorkflow";
 import { ShareActionFeedback } from "@/components/chat/ShareActionFeedback";
 import {
   COPY_SUCCESS,
@@ -42,6 +49,7 @@ export type ChatActionsMenuHandle = {
 
 interface ChatActionsMenuProps {
   messages: UiMessage[];
+  mode?: AiModeId;
   conversationTitle?: string;
   conversationId?: string | null;
   sharePublic?: boolean;
@@ -59,6 +67,7 @@ export const ChatActionsMenu = memo(
   forwardRef<ChatActionsMenuHandle, ChatActionsMenuProps>(function ChatActionsMenu(
   {
   messages,
+  mode = "general",
   conversationTitle,
   conversationId,
   sharePublic,
@@ -97,6 +106,18 @@ export const ChatActionsMenu = memo(
         shareUrl,
       }),
     [messages, conversationTitle, email, shareUrl]
+  );
+
+  const manuscriptMarkdown = useMemo(
+    () => formatManuscriptMarkdown(messages, { title: conversationTitle }),
+    [messages, conversationTitle]
+  );
+
+  const showManuscriptExport = useMemo(
+    () =>
+      manuscriptMarkdown.trim().length > 0 &&
+      (isWritingMode(mode) || conversationLooksLikeManuscript(messages)),
+    [manuscriptMarkdown, mode, messages]
   );
 
   const empty = messages.length === 0;
@@ -168,6 +189,16 @@ export const ChatActionsMenu = memo(
     void runAction(async () => ({ ok: true as const }), EXPORT_SUCCESS);
     closeMenu();
   }, [markdown, conversationTitle, runAction, closeMenu]);
+
+  const runExportManuscript = useCallback(() => {
+    if (!manuscriptMarkdown.trim()) return;
+    downloadMarkdownFile(
+      manuscriptExportFilename(conversationTitle),
+      manuscriptMarkdown
+    );
+    void runAction(async () => ({ ok: true as const }), EXPORT_SUCCESS);
+    closeMenu();
+  }, [manuscriptMarkdown, conversationTitle, runAction, closeMenu]);
 
   const runExportDocx = useCallback(() => {
     if (!markdown.trim()) return;
@@ -278,6 +309,14 @@ export const ChatActionsMenu = memo(
           />
           <MenuItem icon={FileText} label="Export chat (TXT)" disabled={busy} onClick={runExportTxt} />
           <MenuItem icon={FileText} label="Export chat (DOCX)" disabled={busy} onClick={runExportDocx} />
+          {showManuscriptExport ? (
+            <MenuItem
+              icon={FileText}
+              label="Export manuscript (Markdown)"
+              disabled={busy}
+              onClick={runExportManuscript}
+            />
+          ) : null}
           <MenuItem icon={Printer} label="Export chat (PDF)" disabled={busy} onClick={() => void runExportPdf()} />
           {canManageShareLink && (
             <>

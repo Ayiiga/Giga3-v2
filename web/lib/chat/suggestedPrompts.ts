@@ -137,8 +137,12 @@ const MODE_OVERRIDES: Partial<Record<AiModeId, SuggestedPrompt[]>> = {
   homework: CATEGORY_PROMPTS.education,
   university: [
     {
-      label: "Concept review",
-      text: "Explain supply and demand with a Ghanaian market example.",
+      label: "Essay outline",
+      text: "Create an argumentative essay outline on climate policy with thesis, body points, and conclusion.",
+    },
+    {
+      label: "Thesis chapter",
+      text: "Help me draft the literature review chapter for my thesis on renewable energy adoption.",
     },
     {
       label: "Essay structure",

@@ -12,6 +12,7 @@ export type ChatCreateActionId =
   | "doc-pdf"
   | "doc-research"
   | "doc-essay"
+  | "doc-thesis"
   | "doc-cv-resume"
   | "doc-book"
   | "doc-lesson-notes"
@@ -72,6 +73,7 @@ export const CHAT_CREATE_SECTIONS: ChatCreateMenuSection[] = [
         description: "Research plan template",
       },
       { id: "doc-essay", label: "Essay", emoji: "✍️", description: "Essay scaffold" },
+      { id: "doc-thesis", label: "Thesis", emoji: "🎓", description: "Graduate thesis structure" },
       { id: "doc-cv-resume", label: "CV / Resume", emoji: "💼", description: "Professional CV template" },
       { id: "doc-book", label: "Books", emoji: "📚", description: "Book outline" },
       { id: "doc-lesson-notes", label: "Lesson Notes", emoji: "📓", description: "Class notes template" },
@@ -113,6 +115,7 @@ export const CHAT_CREATE_SECTIONS: ChatCreateMenuSection[] = [
 const DOCUMENT_TEMPLATE_MAP: Partial<Record<ChatCreateActionId, DocumentTemplateId>> = {
   "doc-cv-resume": "resume",
   "doc-essay": "essay",
+  "doc-thesis": "thesis",
   "doc-book": "book-writing",
   "doc-research": "research-paper",
 };

@@ -2,6 +2,8 @@
 
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import { DOCUMENT_TEMPLATES } from "@/lib/chat/documentTemplates";
+import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
+import { WRITING_QUICK_START } from "@/lib/chat/writingWorkflow";
 import { getCategoryForMode } from "@/lib/chat/chatCategories";
 import { getSuggestedPrompts } from "@/lib/chat/suggestedPrompts";
 import { GIGA3_CHAT_WELCOME } from "@/lib/assistantIdentity";
@@ -33,6 +35,7 @@ interface MessageListProps {
   isAcceptingMessage?: boolean;
   awaitingReply?: boolean;
   onInsertTemplate?: (text: string) => void;
+  onSelectDocumentTemplate?: (templateId: DocumentTemplateId) => void;
   onRegenerate?: (messageId: string) => void;
   onEditMessage?: (messageId: string, content: string) => void;
   onDeleteMessage?: (messageId: string) => void;
@@ -52,6 +55,7 @@ function MessageListInner({
   isAcceptingMessage = false,
   awaitingReply = false,
   onInsertTemplate,
+  onSelectDocumentTemplate,
   onRegenerate,
   onEditMessage,
   onDeleteMessage,
@@ -116,6 +120,24 @@ function MessageListInner({
               analysis, or explore templates in the workspace.
             </p>
 
+            {onSelectDocumentTemplate && (
+              <div className="mt-8 w-full">
+                <p className="mb-3 text-sm font-medium text-muted">Start writing</p>
+                <div className="flex w-full flex-wrap justify-center gap-2">
+                  {WRITING_QUICK_START.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => onSelectDocumentTemplate(item.id)}
+                      className="min-h-11 rounded-full border border-accent/25 bg-accent/5 px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:border-accent/40 hover:bg-accent/10"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {onInsertTemplate && (
               <>
                 <div className="mt-8 flex w-full flex-wrap justify-center gap-2">
@@ -158,6 +180,10 @@ function MessageListInner({
                           key={template.id}
                           type="button"
                           onClick={() => {
+                            if (onSelectDocumentTemplate) {
+                              onSelectDocumentTemplate(template.id);
+                              return;
+                            }
                             try {
                               onInsertTemplate(
                                 resolveTemplatePlaceholders(template.body)
@@ -231,6 +257,7 @@ function propsEqual(prev: MessageListProps, next: MessageListProps): boolean {
     prev.isAcceptingMessage === next.isAcceptingMessage &&
     prev.awaitingReply === next.awaitingReply &&
     prev.onInsertTemplate === next.onInsertTemplate &&
+    prev.onSelectDocumentTemplate === next.onSelectDocumentTemplate &&
     prev.onRegenerate === next.onRegenerate &&
     prev.onEditMessage === next.onEditMessage &&
     prev.onDeleteMessage === next.onDeleteMessage &&

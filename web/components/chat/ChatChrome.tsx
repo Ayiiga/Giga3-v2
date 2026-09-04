@@ -13,6 +13,7 @@ import { CreditBadge } from "@/components/billing/CreditBadge";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { clearAllClientAuth } from "@/lib/auth";
 import type { GigaModelId } from "@/lib/chat/gigaModels";
+import type { AiModeId } from "@/lib/aiRouter";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { branding } from "@/lib/branding";
 import { signOutSupabase } from "@/lib/supabase/auth";
@@ -36,6 +37,7 @@ interface ChatChromeProps {
   subscriptionActive?: boolean;
   freeOpenAiRemaining?: number;
   modelTier: GigaModelId;
+  mode: AiModeId;
   onModelTierChange: (id: GigaModelId) => void;
   onOpenSidebar: () => void;
   onOpenWorkspace?: () => void;
@@ -67,6 +69,7 @@ function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean
     prev.subscriptionActive === next.subscriptionActive &&
     prev.freeOpenAiRemaining === next.freeOpenAiRemaining &&
     prev.modelTier === next.modelTier &&
+    prev.mode === next.mode &&
     prev.onModelTierChange === next.onModelTierChange &&
     prev.onOpenSidebar === next.onOpenSidebar &&
     prev.onOpenWorkspace === next.onOpenWorkspace &&
@@ -95,6 +98,7 @@ export const ChatChrome = memo(function ChatChrome({
   subscriptionActive = false,
   freeOpenAiRemaining = 0,
   modelTier,
+  mode,
   onModelTierChange,
   onOpenSidebar,
   onOpenWorkspace,
@@ -168,6 +172,7 @@ export const ChatChrome = memo(function ChatChrome({
             <ChatActionsMenu
               ref={chatActionsRef}
               messages={messages}
+              mode={mode}
               conversationTitle={conversationTitle}
               conversationId={conversationId}
               sharePublic={sharePublic}

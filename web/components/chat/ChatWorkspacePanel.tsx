@@ -10,6 +10,7 @@ import { PushAlertsPanel } from "@/components/pwa/PushAlertsPanel";
 import { SportsDeskPanel } from "@/components/sports/SportsDeskPanel";
 import { getSessionToken } from "@/lib/auth";
 import { CHAT_WORKSPACE_PRIMARY_APPS } from "@/lib/chat/workspaceApps";
+import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
 import type { AiModeId } from "@/lib/aiRouter";
 import {
   buildMediaStudioUrl,
@@ -31,7 +32,8 @@ interface ChatWorkspacePanelProps {
   disabled?: boolean;
   hasMessages: boolean;
   sourceImageUrl?: string;
-  onInsertDocument: (text: string) => void;
+  onSelectDocumentTemplate: (templateId: DocumentTemplateId) => void;
+  onInsertChatText: (text: string) => void;
   onError: (message: string) => void;
 }
 
@@ -43,7 +45,8 @@ function ChatWorkspacePanelComponent({
   disabled,
   hasMessages,
   sourceImageUrl,
-  onInsertDocument,
+  onSelectDocumentTemplate,
+  onInsertChatText,
   onError,
 }: ChatWorkspacePanelProps) {
   const router = useRouter();
@@ -183,7 +186,7 @@ function ChatWorkspacePanelComponent({
               "overflow-y-auto overscroll-y-contain border-t border-border bg-background",
               tab === "news" || tab === "sports" || tab === "alerts" || tab === "automation"
                 ? "max-h-[min(50vh,420px)]"
-                : tab === "modes"
+                : tab === "modes" || tab === "documents"
                   ? "max-h-[min(42vh,300px)]"
                   : "max-h-[200px]"
             )}
@@ -246,7 +249,7 @@ function ChatWorkspacePanelComponent({
                 compact={hasMessages}
                 embedded
                 defaultOpen={!hasMessages}
-                onInsert={onInsertDocument}
+                onSelectTemplate={onSelectDocumentTemplate}
                 onError={onError}
               />
               </div>
@@ -288,7 +291,7 @@ function ChatWorkspacePanelComponent({
                 <AutomationPanel
                   embedded
                   disabled={disabled}
-                  onInsertChat={onInsertDocument}
+                  onInsertChat={onInsertChatText}
                 />
               </div>
             )}
@@ -357,7 +360,8 @@ function workspacePropsEqual(
     prev.disabled === next.disabled &&
     prev.hasMessages === next.hasMessages &&
     prev.sourceImageUrl === next.sourceImageUrl &&
-    prev.onInsertDocument === next.onInsertDocument &&
+    prev.onSelectDocumentTemplate === next.onSelectDocumentTemplate &&
+    prev.onInsertChatText === next.onInsertChatText &&
     prev.onError === next.onError
   );
 }

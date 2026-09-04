@@ -67,10 +67,11 @@ export function getCategoryForMode(mode: AiModeId): ChatCategoryDefinition {
   return (
     CHAT_CATEGORIES.find((c) => c.mode === mode) ??
     CHAT_CATEGORIES.find((c) => {
-      if (mode === "homework" || mode === "waec" || mode === "university") {
+      if (mode === "homework" || mode === "waec") {
         return c.id === "education";
       }
-      if (mode === "research") return c.id === "general";
+      if (mode === "university") return c.id === "writing";
+      if (mode === "research" || mode === "book") return c.id === "writing";
       if (mode === "news") return c.id === "general";
       return false;
     }) ??

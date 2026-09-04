@@ -9,6 +9,7 @@ import { MessageList, type UiMessage } from "@/components/chat/MessageList";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import type { UploadUsageSnapshot } from "@/lib/chat/uploadLimits";
 import type { AiModeId } from "@/lib/aiRouter";
+import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
 import { memo, type MutableRefObject } from "react";
 
 interface ChatConversationPaneProps {
@@ -20,9 +21,10 @@ interface ChatConversationPaneProps {
   awaitingReply?: boolean;
   isAcceptingMessage?: boolean;
   isSlowNetwork?: boolean;
-  insertRef: MutableRefObject<((text: string) => void) | null>;
+  insertRef: MutableRefObject<((text: string, notice?: string) => void) | null>;
   onSend: (msg: string, attachments?: PreparedChatAttachment[]) => void;
   onInsertTemplate: (text: string) => void;
+  onSelectDocumentTemplate?: (templateId: DocumentTemplateId) => void;
   onRegenerate?: (messageId: string) => void;
   onEditMessage?: (messageId: string, content: string) => void;
   onDeleteMessage?: (messageId: string) => void;
@@ -59,6 +61,7 @@ function panePropsEqual(
     prev.messages === next.messages &&
     prev.onSend === next.onSend &&
     prev.onInsertTemplate === next.onInsertTemplate &&
+    prev.onSelectDocumentTemplate === next.onSelectDocumentTemplate &&
     prev.onRegenerate === next.onRegenerate &&
     prev.onEditMessage === next.onEditMessage &&
     prev.onDeleteMessage === next.onDeleteMessage &&
@@ -92,6 +95,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   insertRef,
   onSend,
   onInsertTemplate,
+  onSelectDocumentTemplate,
   onRegenerate,
   onEditMessage,
   onDeleteMessage,
@@ -124,6 +128,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         isAcceptingMessage={false}
         awaitingReply={awaitingReply}
         onInsertTemplate={onInsertTemplate}
+        onSelectDocumentTemplate={onSelectDocumentTemplate}
         onRegenerate={onRegenerate}
         onEditMessage={onEditMessage}
         onDeleteMessage={onDeleteMessage}
@@ -171,6 +176,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           initialAttachments={initialAttachments}
           conversationId={conversationId}
           online={online}
+          onSelectDocumentTemplate={onSelectDocumentTemplate}
         />
       </div>
       </div>

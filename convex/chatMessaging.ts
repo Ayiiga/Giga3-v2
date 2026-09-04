@@ -187,7 +187,7 @@ export const acceptMessage = mutation({
         .order("desc")
         .take(segmentLimit * 2 + 8);
       const sortedRows = existingRows.sort((a, b) => a.createdAt - b.createdAt);
-      if (shouldSegmentConversation(sortedRows, segmentLimit)) {
+      if (shouldSegmentConversation(sortedRows, segmentLimit, { mode })) {
         const recap = buildSegmentContinuityRecap(sortedRows);
         const nextTitle = continuedConversationTitle(conv.title);
         conversationId = await ctx.db.insert("conversations", {

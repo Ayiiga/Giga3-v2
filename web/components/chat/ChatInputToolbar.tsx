@@ -3,6 +3,7 @@
 import { ChatCreateHub } from "@/components/chat/ChatCreateHub";
 import { cn } from "@/lib/utils";
 import type { ChatCreateActionId } from "@/lib/chat/chatCreateMenu";
+import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
 import {
   CHAT_UNIFIED_MEDIA_ACCEPT,
   classifyChatMediaFiles,
@@ -17,6 +18,7 @@ interface ChatInputToolbarProps {
   onToggle: () => void;
   onPickFiles: (files: File[], kind: AttachmentKind) => void;
   onInsertTemplate: (text: string) => void;
+  onSelectDocumentTemplate?: (templateId: DocumentTemplateId) => void;
   onError: (message: string) => void;
 }
 
@@ -26,6 +28,7 @@ export function ChatInputToolbar({
   onToggle,
   onPickFiles,
   onInsertTemplate,
+  onSelectDocumentTemplate,
   onError,
 }: ChatInputToolbarProps) {
   const menuId = useId();
@@ -171,6 +174,12 @@ export function ChatInputToolbar({
           menuId={menuId}
           disabled={disabled}
           onMediaAction={triggerMediaAction}
+          onSelectDocumentTemplate={
+            onSelectDocumentTemplate ??
+            (() => {
+              onError("Writing templates are unavailable right now.");
+            })
+          }
           onInsertTemplate={onInsertTemplate}
           onError={onError}
           onClose={onToggle}

@@ -30,6 +30,17 @@ describe("chatSegmentation", () => {
     expect(shouldSegmentConversation(messages, 21)).toBe(false);
   });
 
+  it("does not segment long-form writing conversations", () => {
+    const messages = Array.from({ length: 40 }, (_, i) => ({
+      role: i % 2 === 0 ? "user" : "assistant",
+      content: `m${i}`,
+    }));
+    expect(shouldSegmentConversation(messages, 20, { mode: "book" })).toBe(false);
+    expect(shouldSegmentConversation(messages, 20, { mode: "university" })).toBe(false);
+    expect(shouldSegmentConversation(messages, 20, { mode: "research" })).toBe(false);
+    expect(shouldSegmentConversation(messages, 20, { mode: "general" })).toBe(true);
+  });
+
   it("builds a continuity recap from recent turns", () => {
     const recap = buildSegmentContinuityRecap([
       { role: "user", content: "Hello", createdAt: 1 },

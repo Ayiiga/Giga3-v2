@@ -4,14 +4,13 @@ import {
   DOCUMENT_TEMPLATES,
   type DocumentTemplateId,
 } from "@/lib/chat/documentTemplates";
-import { resolveTemplatePlaceholders } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, LayoutTemplate } from "lucide-react";
 import { useState } from "react";
 
 interface DocumentTemplatePickerProps {
   disabled?: boolean;
-  onInsert: (text: string) => void;
+  onSelectTemplate: (id: DocumentTemplateId) => void;
   onError: (message: string) => void;
   compact?: boolean;
   embedded?: boolean;
@@ -20,7 +19,7 @@ interface DocumentTemplatePickerProps {
 
 export function DocumentTemplatePicker({
   disabled,
-  onInsert,
+  onSelectTemplate,
   onError,
   compact = false,
   embedded = false,
@@ -36,7 +35,7 @@ export function DocumentTemplatePicker({
         onError("Template not found.");
         return;
       }
-      onInsert(resolveTemplatePlaceholders(template.body));
+      onSelectTemplate(id);
     } catch {
       onError("Could not load template. Please try again.");
     }
@@ -102,8 +101,7 @@ export function DocumentTemplatePicker({
 
       {open && (
         <p className="mt-3 text-sm text-muted">
-          Templates insert editable text with today&apos;s date — refine in the message box before
-          sending.
+          Templates open the right writing mode and insert editable text with today&apos;s date.
         </p>
       )}
     </div>
