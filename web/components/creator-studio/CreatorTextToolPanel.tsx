@@ -162,6 +162,7 @@ export const CreatorTextToolPanel = memo(function CreatorTextToolPanel({
         loading={loading}
         error={error}
         onRegenerate={() => void regenerate()}
+        publishKind={activeToolId === "blog-article" ? "blog" : "social"}
       />
     </div>
   );

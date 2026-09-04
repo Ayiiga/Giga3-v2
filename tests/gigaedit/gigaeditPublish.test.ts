@@ -102,7 +102,7 @@ describe("GigaEdit publish flags & offline", () => {
 
   it("bumps SW cache for publish integration", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v235-marketplace-item-spa"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v236-blog-6000-chars"');
   });
 });
 

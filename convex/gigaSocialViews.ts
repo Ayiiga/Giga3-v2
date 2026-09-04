@@ -48,6 +48,7 @@ export type PublicSocialComment = {
 };
 
 const MAX_BODY = 4000;
+const MAX_BLOG_BODY = 6000;
 const MAX_BIO = 600;
 const MAX_HANDLE = 32;
 const MAX_HASHTAGS = 30;
@@ -135,6 +136,10 @@ export function inferPostTypeFromMedia(
       : "image";
   }
   return requested ?? "text";
+}
+
+export function socialBodyMaxLength(postType?: PostDoc["postType"]): number {
+  return postType === "education" ? MAX_BLOG_BODY : MAX_BODY;
 }
 
 export function sanitizeSocialText(

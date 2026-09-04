@@ -1,6 +1,12 @@
 /** GigaSocial media upload limits and MIME allowlists. */
 
 export const SOCIAL_CAPTION_MAX_LENGTH = 4000;
+/** Long-form blog / education posts published from Creator Studio or GigaSocial. */
+export const BLOG_POST_MAX_LENGTH = 6000;
+
+export function socialCaptionMaxLength(postType?: string): number {
+  return postType === "education" ? BLOG_POST_MAX_LENGTH : SOCIAL_CAPTION_MAX_LENGTH;
+}
 export const SOCIAL_MAX_VIDEO_DURATION_SEC = 180;
 export const SOCIAL_MAX_VIDEO_DURATION_MIN = SOCIAL_MAX_VIDEO_DURATION_SEC / 60;
 export const SOCIAL_MAX_IMAGE_BYTES = 15 * 1024 * 1024;

@@ -27,6 +27,6 @@ describe("Creator Studio mobile UX", () => {
       join(root, "web/components/gigasocial/GigaSocialFeedPanel.tsx"),
       "utf8"
     );
-    expect(feed).toContain("consumeCreatorComposeHandoff");
+    expect(feed).toContain('creatorDraft.kind === "blog"');
   });
 });

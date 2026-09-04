@@ -20,6 +20,7 @@ import {
   parseMediaMetaJson,
   sanitizeBio,
   sanitizeSocialText,
+  socialBodyMaxLength,
   serializeMediaMeta,
   toPublicAuthor,
   toPublicComment,
@@ -1210,7 +1211,7 @@ export const createPost = mutation({
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
     await consumeSocialWriteRateLimit(ctx, userId, "create_post");
-    const body = sanitizeSocialText(args.body);
+    const body = sanitizeSocialText(args.body, socialBodyMaxLength(args.postType));
     const hashtags = extractHashtags(body);
     const mentions = extractMentions(body);
 
@@ -1369,8 +1370,11 @@ export const updatePost = mutation({
     if (!post || post.deletedAt) throw new Error("Post not found.");
     if (post.authorId !== userId) throw new Error("You can only edit your own posts.");
 
+    const nextPostType = args.postType ?? post.postType;
     const body =
-      args.body !== undefined ? sanitizeSocialText(args.body) : sanitizeSocialText(post.body);
+      args.body !== undefined
+        ? sanitizeSocialText(args.body, socialBodyMaxLength(nextPostType))
+        : sanitizeSocialText(post.body, socialBodyMaxLength(nextPostType));
     if (!body.trim()) throw new Error("Post caption cannot be empty.");
 
     const hashtags = extractHashtags(body);
@@ -1380,7 +1384,7 @@ export const updatePost = mutation({
       body,
       hashtags: hashtags.length ? hashtags : undefined,
       mentions: mentions.length ? mentions : undefined,
-      postType: args.postType ?? post.postType,
+      postType: nextPostType,
       updatedAt: Date.now(),
     });
 
@@ -1451,7 +1455,7 @@ export const addComment = mutation({
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
     await consumeSocialWriteRateLimit(ctx, userId, "add_comment");
-    const body = sanitizeSocialText(args.body);
+    const body = sanitizeSocialText(args.body, socialBodyMaxLength(args.postType));
     if (!body) throw new Error("Comment cannot be empty.");
 
     const post = await ctx.db.get(args.postId);
