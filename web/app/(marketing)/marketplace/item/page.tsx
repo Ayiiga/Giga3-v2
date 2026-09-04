@@ -2,10 +2,10 @@ import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 
-const MarketplaceItemLegacyRedirect = dynamic(
+const MarketplaceItemRouteShell = dynamic(
   () =>
-    import("@/components/marketplace/MarketplaceItemLegacyRedirect").then(
-      (m) => m.MarketplaceItemLegacyRedirect
+    import("@/components/marketplace/MarketplaceItemRouteShell").then(
+      (m) => m.MarketplaceItemRouteShell
     ),
   { ssr: false }
 );
@@ -22,7 +22,7 @@ export const metadata = publicMetadata({
 export default function MarketplaceItemLegacyPage() {
   return (
     <Suspense fallback={null}>
-      <MarketplaceItemLegacyRedirect />
+      <MarketplaceItemRouteShell />
     </Suspense>
   );
 }
