@@ -25,9 +25,19 @@ export type EditorShellProps = {
   onBackHome: () => void;
   children: ReactNode;
   footer?: ReactNode;
+  /** CapCut-style full editor chrome (video tab). */
+  immersive?: boolean;
 };
 
-export function EditorShell({ section, onBackHome, children, footer }: EditorShellProps) {
+export function EditorShell({ section, onBackHome, children, footer, immersive = false }: EditorShellProps) {
+  if (immersive) {
+    return (
+      <div className="gigaedit-shell gigaedit-shell--editor gigaedit-stable -mx-3 flex min-h-[calc(100vh-4.5rem)] flex-col sm:-mx-5">
+        {children}
+      </div>
+    );
+  }
+
   return (
     <div className="gigaedit-shell gigaedit-stable mx-auto max-w-5xl rounded-2xl px-3 py-4 sm:px-5 sm:py-6">
       <div className="mb-4 flex items-center justify-between gap-2">

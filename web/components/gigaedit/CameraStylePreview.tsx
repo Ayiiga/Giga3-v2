@@ -48,7 +48,7 @@ type CommonProps = {
   showControls?: boolean;
   emptyLabel?: string;
   /** Edge-to-edge preview for teleprompter / live capture shells. */
-  variant?: "card" | "immersive";
+  variant?: "card" | "immersive" | "editor";
   /** Hide tier/HDR badges on immersive capture (teleprompter). */
   showChrome?: boolean;
   /** Brighter HDR-style preview pipeline. */
@@ -198,22 +198,25 @@ export const CameraStylePreview = forwardRef<CameraStylePreviewHandle, CameraSty
 
     const showControls = props.showControls !== false;
     const immersive = props.variant === "immersive";
-    const showChrome = props.showChrome !== false;
+    const editor = props.variant === "editor";
+    const showChrome = props.showChrome !== false && !editor;
 
     return (
-      <div className={cn(immersive ? "flex h-full min-h-0 flex-col" : "space-y-2", props.className)}>
-        <div className={cn(immersive ? "min-h-0 flex-1" : "gigaedit-glass p-3")}>
+      <div className={cn(immersive || editor ? "flex h-full min-h-0 flex-col" : "space-y-2", props.className)}>
+        <div className={cn(immersive || editor ? "min-h-0 flex-1" : "gigaedit-glass p-3")}>
           <div
             className={cn(
               "gigaedit-allow-effects gigaedit-camera-preview relative overflow-hidden bg-black",
               immersive
                 ? "h-full w-full rounded-none"
-                : "mx-auto max-h-[55vh] rounded-xl"
+                : editor
+                  ? "mx-auto h-full max-h-[min(52vh,34rem)] w-auto rounded-xl"
+                  : "mx-auto max-h-[55vh] rounded-xl"
             )}
             style={
               immersive
                 ? undefined
-                : { aspectRatio: props.aspectRatioCss, width: "min(100%, 420px)" }
+                : { aspectRatio: props.aspectRatioCss, width: editor ? "auto" : "min(100%, 420px)" }
             }
           >
             {props.kind === "image" && props.src ? (

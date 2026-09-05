@@ -7,7 +7,15 @@ import { LayerManager } from "@/components/gigaedit/LayerManager";
 import { MultiTrackTimeline } from "@/components/gigaedit/MultiTrackTimeline";
 import { OverlayInspector } from "@/components/gigaedit/OverlayInspector";
 import { OverlayPreviewStack } from "@/components/gigaedit/OverlayPreviewStack";
+import { PreviewTransport } from "@/components/gigaedit/PreviewTransport";
 import { PublishScreen } from "@/components/gigaedit/PublishScreen";
+import { VideoEditorHeader } from "@/components/gigaedit/VideoEditorHeader";
+import {
+  ToolGrid,
+  ToolTile,
+  VideoEditorToolStrip,
+  type VideoEditorToolTab,
+} from "@/components/gigaedit/VideoEditorToolStrip";
 import { DEFAULT_BRAND_KIT, loadBrandKit, type GigaEditBrandKit } from "@/lib/gigaedit/creatorStudio/brandKit";
 import {
   detectBrandingFromImageData,
@@ -75,21 +83,6 @@ import {
 import { EXPORT_FORMATS, MAX_GIGAEDIT_JOIN_CLIPS, type BrandingAction, type ExportAspectRatio, type GigaEditTimelineClip, type GigaEditTimelineLane } from "@/lib/gigaedit/types";
 import { CAMERA_FILTERS, getCameraFilterCss } from "@/lib/gigasocial/cameraFilters";
 import { formatVideoTime } from "@/lib/gigasocial/videoTrim";
-import {
-  Captions,
-  Crop,
-  Gauge,
-  Merge,
-  Mic,
-  Plus,
-  RotateCw,
-  Scissors,
-  SplitSquareVertical,
-  Sticker,
-  Type,
-  Undo2,
-  Redo2,
-} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 function newClip(partial: Omit<GigaEditTimelineClip, "id">): GigaEditTimelineClip {
@@ -101,12 +94,14 @@ export type VideoEditorProps = {
   initialAspect?: ExportAspectRatio | null;
   /** Open the file picker once on mount (Creator Home → Import Video). */
   autoImport?: boolean;
+  onBackHome?: () => void;
 };
 
 export function VideoEditor({
   initialProjectId = null,
   initialAspect = null,
   autoImport = false,
+  onBackHome,
 }: VideoEditorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const addClipInputRef = useRef<HTMLInputElement>(null);
@@ -139,6 +134,7 @@ export function VideoEditor({
   const [undoStack, setUndoStack] = useState(() => createUndoStack<GigaEditTimelineClip[]>([]));
   const [brandDetections, setBrandDetections] = useState<BrandingDetection[]>([]);
   const [brandKit, setBrandKit] = useState<GigaEditBrandKit>(DEFAULT_BRAND_KIT);
+  const [activeToolTab, setActiveToolTab] = useState<VideoEditorToolTab>("edit");
   const originalFileRef = useRef<File | null>(null);
   const sourceFilesRef = useRef<Map<string, File>>(new Map());
   const importSessionActiveRef = useRef(false);
@@ -1031,6 +1027,177 @@ export function VideoEditor({
   }
 
   const timelineMax = Math.max(timelineDuration, 8);
+  const hasVideo = videoClipCount > 0 || Boolean(objectUrl);
+
+  function renderToolPanel() {
+    switch (activeToolTab) {
+      case "edit":
+        return (
+          <div className="space-y-3">
+            <ToolGrid>
+              <ToolTile label="Trim" onClick={trimActive} disabled={!hasVideo} />
+              <ToolTile label="Split" onClick={splitAtPlayhead} disabled={!hasVideo} />
+              <ToolTile label="Join" onClick={mergeClips} disabled={videoClipCount < 2} />
+              <ToolTile label="Rotate" onClick={() => setRotateDeg((d) => (d + 90) % 360)} disabled={!hasVideo} />
+              <ToolTile label="Reset crop" onClick={() => setCropScale(1)} disabled={!hasVideo} />
+              <ToolTile label="Speed 1x" onClick={() => setSpeed(1)} disabled={!hasVideo} />
+              <ToolTile label="Import" onClick={() => inputRef.current?.click()} />
+              <ToolTile
+                label="Add clip"
+                onClick={() => addClipInputRef.current?.click()}
+                disabled={!hasVideo || videoClipCount >= MAX_GIGAEDIT_JOIN_CLIPS}
+              />
+              <ToolTile label="Save" onClick={() => void saveProject()} disabled={!hasVideo} />
+            </ToolGrid>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <label className="block text-xs text-[var(--ge-muted)]">
+                Export format
+                <select
+                  className="mt-1 w-full rounded-lg border border-[var(--ge-border)] bg-[var(--ge-input)] px-2 py-2 text-sm text-white"
+                  value={aspectRatio}
+                  onChange={(e) => setAspectRatio(e.target.value as ExportAspectRatio)}
+                >
+                  {EXPORT_FORMATS.map((f) => (
+                    <option key={f.id} value={f.aspectRatio}>
+                      {f.label} ({f.aspectRatio})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block text-xs text-[var(--ge-muted)]">
+                Speed {speed.toFixed(2)}x
+                <input
+                  type="range"
+                  min={0.25}
+                  max={3}
+                  step={0.05}
+                  value={speed}
+                  onChange={(e) => setSpeed(Number(e.target.value))}
+                  className="mt-1 w-full accent-[var(--ge-cyan)]"
+                  disabled={!hasVideo}
+                />
+              </label>
+              <label className="block text-xs text-[var(--ge-muted)] sm:col-span-2">
+                Crop / resize {cropScale.toFixed(2)}x
+                <input
+                  type="range"
+                  min={1}
+                  max={2.2}
+                  step={0.01}
+                  value={cropScale}
+                  onChange={(e) => setCropScale(Number(e.target.value))}
+                  className="mt-1 w-full accent-[var(--ge-cyan)]"
+                  disabled={!hasVideo}
+                />
+              </label>
+            </div>
+            <LayerManager
+              clips={clips}
+              selectedClipId={selectedClipId}
+              onUpdateClips={(next) => commitClips(next)}
+              onSelectClip={setSelectedClipId}
+            />
+          </div>
+        );
+      case "audio":
+        return (
+          <div className="space-y-3">
+            <ToolGrid>
+              <ToolTile label="Add audio" onClick={() => audioInputRef.current?.click()} />
+              <ToolTile label="Latest take" onClick={() => void attachLatestAudioProject()} />
+            </ToolGrid>
+            {audioLabel ? (
+              <p className="text-xs text-[var(--ge-gold)]">Attached: {audioLabel}</p>
+            ) : (
+              <p className="text-xs text-[var(--ge-muted)]">Import music or voiceover for your timeline.</p>
+            )}
+          </div>
+        );
+      case "text":
+        return (
+          <div className="space-y-3">
+            <ToolGrid>
+              <ToolTile label="Add text" onClick={addTextLayer} disabled={!hasVideo} />
+              <ToolTile label="Sticker" onClick={addStickerMarker} disabled={!hasVideo} />
+            </ToolGrid>
+            <label className="block text-xs text-[var(--ge-muted)]">
+              Text overlay
+              <input
+                value={overlayText}
+                onChange={(e) => setOverlayText(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[var(--ge-border)] bg-[var(--ge-input)] px-2.5 py-1.5 text-sm text-white"
+                placeholder="Add text…"
+              />
+            </label>
+            <OverlayInspector
+              clip={selectedClip}
+              clips={clips}
+              playheadSec={playhead}
+              onUpdateClip={updateClipById}
+              onDuplicateOverlay={(dup) => {
+                commitClips((prev) => [...prev, dup]);
+                setSelectedClipId(dup.id);
+              }}
+              onDeleteClip={deleteClipById}
+            />
+          </div>
+        );
+      case "effects":
+        return (
+          <div className="space-y-3">
+            <label className="block text-xs text-[var(--ge-muted)]">
+              Filter / effect
+              <select
+                className="mt-1 w-full rounded-lg border border-[var(--ge-border)] bg-[var(--ge-input)] px-2 py-2 text-sm text-white"
+                value={filterId}
+                onChange={(e) => setFilterId(e.target.value)}
+              >
+                {CAMERA_FILTERS.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="inline-flex items-center gap-2 text-xs text-[var(--ge-muted)]">
+              <input
+                type="checkbox"
+                checked={contrastBoost}
+                onChange={(e) => setContrastBoost(e.target.checked)}
+              />
+              Contrast boost (baked on export)
+            </label>
+            <BrandingPanel
+              detections={brandDetections}
+              selectedClip={selectedClip}
+              autoCleanEnabled={brandKit.autoCleanMyBranding ?? false}
+              onApplyAction={applyBrandingAction}
+              onDismiss={() => setBrandDetections([])}
+            />
+          </div>
+        );
+      case "captions":
+        return (
+          <div className="space-y-3">
+            <ToolGrid>
+              <ToolTile label="Auto captions" onClick={autoCaptions} disabled={!hasVideo} />
+            </ToolGrid>
+            <label className="block text-xs text-[var(--ge-muted)]">
+              Subtitles
+              <textarea
+                value={captions}
+                onChange={(e) => setCaptions(e.target.value)}
+                rows={4}
+                className="mt-1 w-full rounded-lg border border-[var(--ge-border)] bg-[var(--ge-input)] px-2.5 py-1.5 text-sm text-white"
+                placeholder="Edit captions…"
+              />
+            </label>
+          </div>
+        );
+      default:
+        return null;
+    }
+  }
 
   if (publishReady && originalFileRef.current && editedPublishFile) {
     return (
@@ -1049,336 +1216,152 @@ export function VideoEditor({
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-base font-semibold">Video editor</h2>
-        <div className="flex flex-wrap items-center gap-1.5">
-          <button
-            type="button"
-            className="rounded-lg border border-[var(--ge-border)] px-2.5 py-1.5 text-xs"
-            onClick={() => void saveProject()}
-          >
-            Save
-          </button>
-          <button
-            type="button"
-            disabled={exporting}
-            className="rounded-lg bg-[var(--ge-gold)] px-2.5 py-1.5 text-xs font-bold text-[#0b1220] disabled:opacity-50"
-            onClick={() => void readyToPublish()}
-          >
-            {exporting ? "Exporting…" : "Post"}
-          </button>
-          <button
-            type="button"
-            disabled={exporting}
-            className="rounded-lg border border-[var(--ge-border)] px-2.5 py-1.5 text-xs disabled:opacity-50"
-            onClick={() => void openPublishOptions()}
-          >
-            Publish
-          </button>
-        </div>
-      </div>
-
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_15rem]">
-        <div className="space-y-2">
-          <div className="relative">
-            <CameraStylePreview
-              kind="video"
-              src={objectUrl}
-              videoRef={videoRef}
-              controls
-              aspectRatioCss={aspectRatioCss(aspectRatio)}
-              baseFilterCss={filterCss}
-              extraTransform={editTransform}
-              look={cameraLook}
-              onLookChange={setCameraLook}
-              emptyLabel="Import a video to start editing."
-              overlay={
-                overlayText ? (
-                  <p className="pointer-events-none absolute inset-x-3 bottom-10 text-center text-sm font-bold text-white drop-shadow">
-                    {overlayText}
-                  </p>
-                ) : null
-              }
-              onLoadedMetadata={(el) => {
-                const dur = el.duration || 0;
-                setDuration((current) => Math.max(current, projectTimelineDuration(clips) || dur));
-                ensureBaseClip(dur);
-              }}
-              onTimeUpdate={(el) => {
-                const active =
-                  sortedMainVideoClips(clips).find((clip) => {
-                    const sourceStart = clip.sourceStartSec ?? 0;
-                    const sourceEnd = clip.sourceEndSec ?? clip.endSec - clip.startSec;
-                    return el.currentTime >= sourceStart - 0.05 && el.currentTime <= sourceEnd + 0.05;
-                  }) ?? sortedMainVideoClips(clips)[0];
-                if (!active) {
-                  setPlayhead(el.currentTime);
-                  return;
-                }
-                setPlayhead(sourceSecToTimelineSec(active, el.currentTime));
-              }}
-            />
-            <OverlayPreviewStack
-              clips={clips}
-              playheadSec={playhead}
-              resolveFile={resolveClipFile}
-              selectedClipId={selectedClipId}
-              onSelectClip={setSelectedClipId}
-              onMoveClip={(clipId, posX, posY) => {
-                commitClips((prev) =>
-                  prev.map((c) => (c.id === clipId ? { ...c, posX, posY } : c))
-                );
-              }}
-            />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 rounded-lg bg-[var(--ge-gold)] px-2.5 py-1.5 text-xs font-bold text-[#0b1220]"
-              onClick={() => inputRef.current?.click()}
-            >
-              {videoClipCount > 0 ? "Add video" : "Import video"}
-            </button>
-            <input
-              ref={inputRef}
-              type="file"
-              accept="video/*,.mp4,.mov,.webm,.m4v"
-              multiple
-              className="sr-only"
-              onChange={(e) => {
-                onPickFiles(e.target.files);
-                e.target.value = "";
-              }}
-            />
-            <button
-              type="button"
-              disabled={videoClipCount === 0 || videoClipCount >= MAX_GIGAEDIT_JOIN_CLIPS}
-              className="inline-flex items-center gap-1 rounded-lg border border-[var(--ge-border)] px-2.5 py-1.5 text-xs font-semibold disabled:opacity-50"
-              onClick={() => addClipInputRef.current?.click()}
-            >
-              <Plus className="h-3.5 w-3.5" aria-hidden />
-              Add clip
-            </button>
-            <input
-              ref={addClipInputRef}
-              type="file"
-              accept="video/*,.mp4,.mov,.webm,.m4v"
-              multiple
-              className="sr-only"
-              onChange={(e) => {
-                onPickFiles(e.target.files, "append");
-                e.target.value = "";
-              }}
-            />
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 rounded-lg border border-[var(--ge-border)] px-2 py-1.5 text-[11px]"
-              onClick={() => audioInputRef.current?.click()}
-            >
-              <Mic className="h-3.5 w-3.5" aria-hidden />
-              Audio
-            </button>
-            <input
-              ref={audioInputRef}
-              type="file"
-              accept="audio/*"
-              className="sr-only"
-              onChange={(e) => void attachAudioFile(e.target.files?.[0] ?? null)}
-            />
-            <span className="text-[11px] text-[var(--ge-muted)]">
-              Main {videoClipCount}/{MAX_GIGAEDIT_JOIN_CLIPS}
-              {overlayClipCount > 0 ? ` · ${overlayClipCount} overlay${overlayClipCount === 1 ? "" : "s"}` : ""}
-            </span>
-          </div>
-          {audioLabel ? (
-            <p className="text-[11px] text-[var(--ge-gold)]">Audio: {audioLabel}</p>
-          ) : null}
-
-          <div className="gigaedit-glass space-y-2 p-2.5">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs font-semibold text-white">
-                Timeline{" "}
-                <span className="font-normal text-[var(--ge-muted)]">
-                  {formatTimecodeMs(playhead)}
-                </span>
-              </p>
-              <div className="flex flex-wrap items-center gap-1.5">
-                <button type="button" className="gigaedit-chip inline-flex items-center gap-1 px-2 py-1 text-[10px]" onClick={undoClips} disabled={!canUndo(undoStack)}>
-                  <Undo2 className="h-3 w-3" /> Undo
-                </button>
-                <button type="button" className="gigaedit-chip inline-flex items-center gap-1 px-2 py-1 text-[10px]" onClick={redoClips} disabled={!canRedo(undoStack)}>
-                  <Redo2 className="h-3 w-3" /> Redo
-                </button>
-                <button
-                  type="button"
-                  className={`gigaedit-chip px-2 py-1 text-[10px] ${snapEnabled ? "gigaedit-chip--active" : ""}`}
-                  onClick={() => setSnapEnabled((v) => !v)}
-                >
-                  Snap
-                </button>
-              </div>
-            </div>
-            <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_12rem]">
-              <MultiTrackTimeline
-                clips={clips}
-                durationSec={timelineMax}
-                playheadSec={playhead}
-                selectedClipId={selectedClipId}
-                snapEnabled={snapEnabled}
-                brandWatermark={brandKit.watermarkText || brandKit.name}
-                hasCaptions={Boolean(captions.trim())}
-                onSelectClip={setSelectedClipId}
-                onPlayheadChange={setPlayhead}
-                onMoveClip={moveClipOnTimeline}
-                onTrimClip={trimClipEdge}
-              />
-              <LayerManager
-                clips={clips}
-                selectedClipId={selectedClipId}
-                onUpdateClips={(next) => commitClips(next)}
-                onSelectClip={setSelectedClipId}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <OverlayInspector
-            clip={selectedClip}
-            clips={clips}
-            playheadSec={playhead}
-            onUpdateClip={updateClipById}
-            onDuplicateOverlay={(dup) => {
-              commitClips((prev) => [...prev, dup]);
-              setSelectedClipId(dup.id);
-            }}
-            onDeleteClip={deleteClipById}
-          />
-          <label className="block text-xs text-[var(--ge-muted)]">
-            Export format
-            <select
-              className="mt-1 w-full rounded-lg border border-[var(--ge-border)] bg-[var(--ge-input)] px-2 py-2 text-sm text-white"
-              value={aspectRatio}
-              onChange={(e) => setAspectRatio(e.target.value as ExportAspectRatio)}
-            >
-              {EXPORT_FORMATS.map((f) => (
-                <option key={f.id} value={f.aspectRatio}>
-                  {f.label} ({f.aspectRatio})
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block text-xs text-[var(--ge-muted)]">
-            Filter / effect
-            <select
-              className="mt-1 w-full rounded-lg border border-[var(--ge-border)] bg-[var(--ge-input)] px-2 py-2 text-sm text-white"
-              value={filterId}
-              onChange={(e) => setFilterId(e.target.value)}
-            >
-              {CAMERA_FILTERS.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block text-xs text-[var(--ge-muted)]">
-            Speed {speed.toFixed(2)}x
-            <input
-              type="range"
-              min={0.25}
-              max={3}
-              step={0.05}
-              value={speed}
-              onChange={(e) => setSpeed(Number(e.target.value))}
-              className="mt-1 w-full"
-            />
-          </label>
-          <label className="block text-xs text-[var(--ge-muted)]">
-            Crop / resize {cropScale.toFixed(2)}x
-            <input
-              type="range"
-              min={1}
-              max={2.2}
-              step={0.01}
-              value={cropScale}
-              onChange={(e) => setCropScale(Number(e.target.value))}
-              className="mt-1 w-full"
-            />
-          </label>
-          <label className="inline-flex items-center gap-2 text-xs text-[var(--ge-muted)]">
-            <input
-              type="checkbox"
-              checked={contrastBoost}
-              onChange={(e) => setContrastBoost(e.target.checked)}
-            />
-            Contrast boost (baked on export)
-          </label>
-        </div>
-      </div>
-
-      <section className="space-y-1.5" aria-labelledby="video-quick-tools">
-        <h3 id="video-quick-tools" className="text-xs font-semibold text-[var(--ge-muted)]">
-          Quick tools
-        </h3>
-        <div className="gigaedit-tool-rail flex gap-1.5 overflow-x-auto overscroll-x-contain pb-0.5">
-          <ToolBtn icon={Scissors} label="Trim" onClick={trimActive} />
-          <ToolBtn icon={SplitSquareVertical} label="Split" onClick={splitAtPlayhead} />
-          <ToolBtn icon={Merge} label="Join" onClick={mergeClips} />
-          <ToolBtn icon={RotateCw} label="Rotate" onClick={() => setRotateDeg((d) => (d + 90) % 360)} />
-          <ToolBtn icon={Crop} label="Reset crop" onClick={() => setCropScale(1)} />
-          <ToolBtn icon={Gauge} label="1x" onClick={() => setSpeed(1)} />
-          <ToolBtn icon={Captions} label="Captions" onClick={autoCaptions} />
-          <ToolBtn icon={Type} label="Text" onClick={addTextLayer} />
-          <ToolBtn icon={Sticker} label="Sticker" onClick={addStickerMarker} />
-        </div>
-      </section>
-
-      <BrandingPanel
-        detections={brandDetections}
-        selectedClip={selectedClip}
-        autoCleanEnabled={brandKit.autoCleanMyBranding ?? false}
-        onApplyAction={applyBrandingAction}
-        onDismiss={() => setBrandDetections([])}
+    <div className="gigaedit-editor-root">
+      <VideoEditorHeader
+        onClose={() => onBackHome?.()}
+        onExport={() => void openPublishOptions()}
+        onUndo={undoClips}
+        onRedo={redoClips}
+        canUndo={canUndo(undoStack)}
+        canRedo={canRedo(undoStack)}
+        exporting={exporting}
       />
 
-      <details className="gigaedit-glass group p-2.5">
-        <summary className="cursor-pointer list-none text-xs font-semibold text-white">
-          Captions &amp; text
-        </summary>
-      <div className="mt-2 grid gap-2 sm:grid-cols-2">
-        <label className="block text-xs text-[var(--ge-muted)]">
-          Text overlay
-          <input
-            value={overlayText}
-            onChange={(e) => setOverlayText(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-[var(--ge-border)] bg-[var(--ge-input)] px-2.5 py-1.5 text-sm text-white"
-            placeholder="Add text…"
+      <div className="gigaedit-preview-stage">
+        <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center px-2 py-2">
+          <CameraStylePreview
+            kind="video"
+            variant="editor"
+            src={objectUrl}
+            videoRef={videoRef}
+            controls={false}
+            showControls={false}
+            aspectRatioCss={aspectRatioCss(aspectRatio)}
+            baseFilterCss={filterCss}
+            extraTransform={editTransform}
+            look={cameraLook}
+            onLookChange={setCameraLook}
+            emptyLabel="Import a video to start editing."
+            overlay={
+              overlayText ? (
+                <p className="pointer-events-none absolute inset-x-3 bottom-10 text-center text-sm font-bold text-white drop-shadow">
+                  {overlayText}
+                </p>
+              ) : null
+            }
+            onLoadedMetadata={(el) => {
+              const dur = el.duration || 0;
+              setDuration((current) => Math.max(current, projectTimelineDuration(clips) || dur));
+              ensureBaseClip(dur);
+            }}
+            onTimeUpdate={(el) => {
+              const active =
+                sortedMainVideoClips(clips).find((clip) => {
+                  const sourceStart = clip.sourceStartSec ?? 0;
+                  const sourceEnd = clip.sourceEndSec ?? clip.endSec - clip.startSec;
+                  return el.currentTime >= sourceStart - 0.05 && el.currentTime <= sourceEnd + 0.05;
+                }) ?? sortedMainVideoClips(clips)[0];
+              if (!active) {
+                setPlayhead(el.currentTime);
+                return;
+              }
+              setPlayhead(sourceSecToTimelineSec(active, el.currentTime));
+            }}
           />
-        </label>
-        <label className="block text-xs text-[var(--ge-muted)]">
-          Subtitles
-          <textarea
-            value={captions}
-            onChange={(e) => setCaptions(e.target.value)}
-            rows={2}
-            className="mt-1 w-full rounded-lg border border-[var(--ge-border)] bg-[var(--ge-input)] px-2.5 py-1.5 text-sm text-white"
-            placeholder="Edit captions…"
+          <OverlayPreviewStack
+            clips={clips}
+            playheadSec={playhead}
+            resolveFile={resolveClipFile}
+            selectedClipId={selectedClipId}
+            onSelectClip={setSelectedClipId}
+            onMoveClip={(clipId, posX, posY) => {
+              commitClips((prev) =>
+                prev.map((c) => (c.id === clipId ? { ...c, posX, posY } : c))
+              );
+            }}
           />
-        </label>
-      </div>
-      </details>
+        </div>
 
-      <button
-        type="button"
-        className="text-[11px] text-[var(--ge-muted)] underline-offset-2 hover:underline"
-        onClick={() => void attachLatestAudioProject()}
-      >
-        Use latest Audio Studio take
-      </button>
-      {status ? <p className="text-xs text-[var(--ge-gold)]">{status}</p> : null}
+        <PreviewTransport
+          videoRef={videoRef}
+          playheadSec={playhead}
+          durationSec={timelineMax}
+        />
+      </div>
+
+      <div className="gigaedit-timeline-dock">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-[11px] font-semibold text-white/90">
+            Timeline
+            <span className="ml-1.5 font-normal text-white/45">
+              Main {videoClipCount}/{MAX_GIGAEDIT_JOIN_CLIPS}
+              {overlayClipCount > 0
+                ? ` · ${overlayClipCount} overlay${overlayClipCount === 1 ? "" : "s"}`
+                : ""}
+            </span>
+          </p>
+          <button
+            type="button"
+            className={`gigaedit-chip px-2 py-1 text-[10px] ${snapEnabled ? "gigaedit-chip--active" : ""}`}
+            onClick={() => setSnapEnabled((v) => !v)}
+          >
+            Snap
+          </button>
+        </div>
+        <MultiTrackTimeline
+          clips={clips}
+          durationSec={timelineMax}
+          playheadSec={playhead}
+          selectedClipId={selectedClipId}
+          snapEnabled={snapEnabled}
+          brandWatermark={brandKit.watermarkText || brandKit.name}
+          hasCaptions={Boolean(captions.trim())}
+          onSelectClip={setSelectedClipId}
+          onPlayheadChange={setPlayhead}
+          onMoveClip={moveClipOnTimeline}
+          onTrimClip={trimClipEdge}
+        />
+      </div>
+
+      <VideoEditorToolStrip
+        activeTab={activeToolTab}
+        onTabChange={setActiveToolTab}
+        panel={renderToolPanel()}
+      />
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="video/*,.mp4,.mov,.webm,.m4v"
+        multiple
+        className="sr-only"
+        onChange={(e) => {
+          onPickFiles(e.target.files);
+          e.target.value = "";
+        }}
+      />
+      <input
+        ref={addClipInputRef}
+        type="file"
+        accept="video/*,.mp4,.mov,.webm,.m4v"
+        multiple
+        className="sr-only"
+        onChange={(e) => {
+          onPickFiles(e.target.files, "append");
+          e.target.value = "";
+        }}
+      />
+      <input
+        ref={audioInputRef}
+        type="file"
+        accept="audio/*"
+        className="sr-only"
+        onChange={(e) => void attachAudioFile(e.target.files?.[0] ?? null)}
+      />
+
+      {status ? (
+        <p className="px-3 pb-2 text-center text-xs text-[var(--ge-gold)]">{status}</p>
+      ) : null}
 
       <ImportModeDialog
         open={importDialogOpen}
@@ -1394,26 +1377,5 @@ export function VideoEditor({
         }}
       />
     </div>
-  );
-}
-
-function ToolBtn({
-  icon: Icon,
-  label,
-  onClick,
-}: {
-  icon: typeof Scissors;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex items-center gap-1 rounded-lg border border-[var(--ge-border)] px-2 py-1 text-[10px] font-medium text-[var(--ge-muted)] hover:text-white"
-    >
-      <Icon className="h-3.5 w-3.5" aria-hidden />
-      {label}
-    </button>
   );
 }

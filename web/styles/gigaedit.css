@@ -522,3 +522,174 @@
     will-change: auto !important;
   }
 }
+
+/* ── CapCut-style video editor ───────────────────────────────────────── */
+
+.gigaedit-shell--editor {
+  --ge-cyan: #22d3ee;
+  --ge-editor-bg: #05070b;
+  background: var(--ge-editor-bg) !important;
+  border-radius: 0 !important;
+  max-width: none !important;
+}
+
+.gigaedit-editor-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(5, 7, 11, 0.96);
+}
+
+.gigaedit-editor-icon-btn {
+  display: inline-flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.88);
+  transition: background-color 0.15s ease;
+}
+
+.gigaedit-editor-icon-btn:hover:not(:disabled),
+.gigaedit-editor-icon-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.gigaedit-editor-icon-btn:disabled {
+  opacity: 0.35;
+}
+
+.gigaedit-editor-quality-chip {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+}
+
+.gigaedit-editor-export-btn {
+  border-radius: 0.55rem;
+  background: linear-gradient(180deg, #2dd4bf 0%, #14b8a6 100%);
+  padding: 0.45rem 0.95rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #042f2e;
+  box-shadow: 0 8px 24px -10px rgba(45, 212, 191, 0.65);
+}
+
+.gigaedit-editor-export-btn:disabled {
+  opacity: 0.55;
+}
+
+.gigaedit-editor-root {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.gigaedit-preview-stage {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  background: #000;
+}
+
+.gigaedit-preview-transport {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(8, 10, 14, 0.92);
+}
+
+.gigaedit-preview-play-btn {
+  display: inline-flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.gigaedit-timeline-dock {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, #0d1118 0%, #080b10 100%);
+  padding: 0.5rem 0.75rem 0.65rem;
+}
+
+.gigaedit-editor-toolstrip {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: #10141c;
+  padding-bottom: max(0.35rem, env(safe-area-inset-bottom));
+}
+
+.gigaedit-editor-toolpanel {
+  max-height: min(34vh, 16rem);
+  overflow-y: auto;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0.75rem;
+}
+
+.gigaedit-editor-tooltabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.15rem;
+  padding: 0.35rem 0.5rem 0.15rem;
+}
+
+.gigaedit-editor-tooltab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  border-radius: 0.65rem;
+  padding: 0.35rem 0.15rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.48);
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.gigaedit-editor-tooltab[data-active="true"] {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.gigaedit-editor-tooltab-badge {
+  position: absolute;
+  top: -0.35rem;
+  right: -0.55rem;
+  border-radius: 0.25rem;
+  background: var(--ge-cyan);
+  padding: 0 0.2rem;
+  font-size: 0.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #042f2e;
+}
+
+.gigaedit-editor-tooltile {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.65rem 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.gigaedit-editor-tooltile:hover:not(:disabled) {
+  border-color: rgba(45, 212, 191, 0.35);
+  background: rgba(45, 212, 191, 0.08);
+}
+
+.gigaedit-timeline-dock .gigaedit-timeline-track {
+  min-height: 2.1rem;
+}
+
+.gigaedit-timeline-dock .gigaedit-timeline-clip {
+  min-height: 1.85rem;
+}
