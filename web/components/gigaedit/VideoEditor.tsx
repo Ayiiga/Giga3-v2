@@ -135,6 +135,7 @@ export function VideoEditor({
   const [brandDetections, setBrandDetections] = useState<BrandingDetection[]>([]);
   const [brandKit, setBrandKit] = useState<GigaEditBrandKit>(DEFAULT_BRAND_KIT);
   const [activeToolTab, setActiveToolTab] = useState<VideoEditorToolTab>("edit");
+  const [toolPanelOpen, setToolPanelOpen] = useState(false);
   const originalFileRef = useRef<File | null>(null);
   const sourceFilesRef = useRef<Map<string, File>>(new Map());
   const importSessionActiveRef = useRef(false);
@@ -199,6 +200,23 @@ export function VideoEditor({
   useEffect(() => {
     void loadBrandKit().then(setBrandKit);
   }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 640px)");
+    const sync = () => setToolPanelOpen(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  function handleToolTabChange(tab: VideoEditorToolTab) {
+    if (tab === activeToolTab) {
+      setToolPanelOpen((open) => !open);
+      return;
+    }
+    setActiveToolTab(tab);
+    setToolPanelOpen(true);
+  }
 
   useEffect(() => {
     if (clips.length === 0 && !projectId) return;
@@ -1325,8 +1343,8 @@ export function VideoEditor({
 
       <VideoEditorToolStrip
         activeTab={activeToolTab}
-        onTabChange={setActiveToolTab}
-        panel={renderToolPanel()}
+        onTabChange={handleToolTabChange}
+        panel={toolPanelOpen ? renderToolPanel() : null}
       />
 
       <input
