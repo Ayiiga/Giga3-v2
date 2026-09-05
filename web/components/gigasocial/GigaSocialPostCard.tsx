@@ -256,17 +256,15 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   }
 
   async function handleShare() {
-    if (!sessionToken) {
-      promptAuth();
-      return;
-    }
     if (busy) return;
     setBusy(true);
     try {
       const result = await shareGigaSocialPost(post);
       if (result.ok) {
         setShareCount((c) => c + 1);
-        await onShare(post._id);
+        if (sessionToken) {
+          await onShare(post._id);
+        }
       }
     } catch {
       /* cancelled */
