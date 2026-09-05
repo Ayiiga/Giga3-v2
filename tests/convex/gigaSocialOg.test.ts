@@ -21,17 +21,32 @@ function mockPost(overrides: Partial<PublicSocialPost> = {}): PublicSocialPost {
 }
 
 describe("buildGigaSocialOgMeta", () => {
-  it("always points og:image at the Convex proxy endpoint", () => {
+  it("uses direct thumbnail URLs for og:image when available", () => {
     const meta = buildGigaSocialOgMeta(mockPost(), "https://www.giga3ai.com");
-    expect(meta.imageUrl).toMatch(/\/gigasocial\/post\/og-image\?id=post123$/);
-    expect(meta.imageUrl).not.toContain("thumb.jpg");
-    expect(meta.imageUrl).not.toContain("video.mp4");
+    expect(meta.imageUrl).toBe("https://cdn.example.com/thumb.jpg");
+    expect(meta.imageUrl).not.toContain("convex.site");
   });
 
-  it("uses canonical post URL for og:url", () => {
-    const meta = buildGigaSocialOgMeta(mockPost(), "https://www.giga3ai.com");
-    expect(meta.canonicalUrl).toBe(
-      "https://www.giga3ai.com/gigasocial/post/?id=post123"
+  it("uses giga3ai og-image proxy when no direct thumbnail exists", () => {
+    const meta = buildGigaSocialOgMeta(
+      mockPost({ videoThumbnailUrl: undefined, mediaUrl: "https://cdn.example.com/video.mp4" }),
+      "https://www.giga3ai.com"
     );
+    expect(meta.imageUrl).toBe("https://www.giga3ai.com/gigasocial/post/post123/og-image/");
+  });
+
+  it("uses canonical giga3ai post URL for og:url", () => {
+    const meta = buildGigaSocialOgMeta(mockPost(), "https://www.giga3ai.com");
+    expect(meta.canonicalUrl).toBe("https://www.giga3ai.com/gigasocial/post/post123/");
+  });
+
+  it("uses article-style titles instead of raw stats", () => {
+    const meta = buildGigaSocialOgMeta(
+      mockPost({ body: "Breaking news headline\n\nMore details." }),
+      "https://www.giga3ai.com"
+    );
+    expect(meta.title).toContain("Breaking news headline");
+    expect(meta.title).toContain("GigaSocial");
+    expect(meta.description).toContain("views");
   });
 });
