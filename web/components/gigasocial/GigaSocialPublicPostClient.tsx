@@ -6,6 +6,7 @@ import { BrandLogo } from "@/components/brand/BrandLogo";
 import { ButtonLink } from "@/components/ui/Button";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { buildGigaSocialFeedPostUrl } from "@/lib/gigasocial/shareLinks";
+import { shareGigaSocialPost } from "@/lib/gigasocial/sharePost";
 import { parsePostId } from "@/lib/gigasocial/profileRoute";
 import { splitPostDisplay } from "@/lib/gigasocial/postDisplay";
 import { formatCompactCount, formatVideoDuration } from "@/lib/gigasocial/ogMeta";
@@ -15,10 +16,10 @@ import { siteConfig } from "@/lib/site";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { ExternalLink, UsersRound } from "lucide-react";
+import { ExternalLink, Share2, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 
 function PublicPostInner({ initialPostId }: { initialPostId?: string }) {
   const params = useSearchParams();
@@ -35,6 +36,7 @@ function PublicPostInner({ initialPostId }: { initialPostId?: string }) {
     postId ? { postId: postId as Id<"socialPosts"> } : "skip"
   );
   const recordView = useMutation(api.gigaSocial.recordPostView);
+  const [sharing, setSharing] = useState(false);
 
   const display = useMemo(
     () => (post ? splitPostDisplay(post.body) : null),
@@ -143,10 +145,24 @@ function PublicPostInner({ initialPostId }: { initialPostId?: string }) {
             {formatCompactCount(views)} views · {formatCompactCount(likes)} likes
             {durationLabel ? ` · ${durationLabel}` : ""}
           </p>
-          <p className="inline-flex items-center gap-1.5">
-            <UsersRound className="h-3.5 w-3.5" aria-hidden />
-            {siteConfig.url.replace(/^https?:\/\//, "")}
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              disabled={sharing}
+              onClick={() => {
+                setSharing(true);
+                void shareGigaSocialPost(post as SocialPost).finally(() => setSharing(false));
+              }}
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-violet-300 hover:bg-violet-50 disabled:opacity-60"
+            >
+              <Share2 className="h-3.5 w-3.5" aria-hidden />
+              {sharing ? "Sharing…" : "Share"}
+            </button>
+            <p className="inline-flex items-center gap-1.5">
+              <UsersRound className="h-3.5 w-3.5" aria-hidden />
+              {siteConfig.url.replace(/^https?:\/\//, "")}
+            </p>
+          </div>
         </div>
       </article>
 

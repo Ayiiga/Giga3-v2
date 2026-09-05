@@ -29,6 +29,22 @@ export function isLikelyImageUrl(url: string): boolean {
   return true;
 }
 
+const INTERNAL_STORAGE_HOST =
+  /\.convex\.(cloud|site)\//i;
+
+/** Direct og:image URLs must be public CDNs with explicit image extensions — not Convex storage. */
+export function isTrustedDirectOgImageUrl(url: string): boolean {
+  const trimmed = url.trim();
+  if (!isPublicHttpUrl(trimmed)) return false;
+  if (INTERNAL_STORAGE_HOST.test(trimmed)) return false;
+  if (/\/api\/storage\//i.test(trimmed)) return false;
+  if (VIDEO_EXTENSIONS.test(trimmed)) return false;
+  if (/\/video\//i.test(trimmed)) return false;
+
+  const withoutQuery = trimmed.split(/[?#]/)[0] ?? trimmed;
+  return /\.(jpe?g|png|gif|webp|avif|bmp)(\?|#|$)/i.test(withoutQuery);
+}
+
 export function resolveShareThumbnail(bundle: OgImageBundle): string | null {
   const mediaItems = parseMediaMetaJson(bundle.mediaMetaJson);
   const candidates: Array<string | undefined> = [

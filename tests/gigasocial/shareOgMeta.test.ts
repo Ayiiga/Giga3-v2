@@ -48,6 +48,20 @@ describe("gigasocial share og meta", () => {
     expect(imageUrl).toBe("https://cdn.example.com/photo.jpg");
   });
 
+  it("uses giga3ai og-image proxy for Convex storage thumbnails", () => {
+    const imageUrl = previewImageUrl(
+      mockPost({
+        postType: "image",
+        mediaType: "image",
+        videoThumbnailUrl: undefined,
+        mediaUrl:
+          "https://perfect-lark-521.convex.cloud/api/storage/b028a5a6-f594-4284-bcc4-e44dd06ebcae",
+      })
+    );
+    expect(imageUrl).toBe("https://www.giga3ai.com/gigasocial/post/post123/og-image/");
+    expect(imageUrl).not.toContain("convex.cloud");
+  });
+
   it("falls back to giga3ai og-image proxy when no direct thumbnail exists", () => {
     const imageUrl = previewImageUrl(
       mockPost({ videoThumbnailUrl: undefined, mediaUrl: "https://cdn.example.com/video.mp4" })

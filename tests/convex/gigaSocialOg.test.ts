@@ -27,6 +27,21 @@ describe("buildGigaSocialOgMeta", () => {
     expect(meta.imageUrl).not.toContain("convex.site");
   });
 
+  it("uses giga3ai og-image proxy for Convex storage thumbnails", () => {
+    const meta = buildGigaSocialOgMeta(
+      mockPost({
+        postType: "image",
+        mediaType: "image",
+        videoThumbnailUrl: undefined,
+        mediaUrl:
+          "https://perfect-lark-521.convex.cloud/api/storage/b028a5a6-f594-4284-bcc4-e44dd06ebcae",
+      }),
+      "https://www.giga3ai.com"
+    );
+    expect(meta.imageUrl).toBe("https://www.giga3ai.com/gigasocial/post/post123/og-image/");
+    expect(meta.imageUrl).not.toContain("convex.cloud");
+  });
+
   it("uses giga3ai og-image proxy when no direct thumbnail exists", () => {
     const meta = buildGigaSocialOgMeta(
       mockPost({ videoThumbnailUrl: undefined, mediaUrl: "https://cdn.example.com/video.mp4" }),

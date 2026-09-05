@@ -2,7 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { BlogAuthor } from "@/components/blog/BlogAuthor";
 import { BlogBreadcrumbs } from "@/components/blog/BlogBreadcrumbs";
-import { BlogShare } from "@/components/blog/BlogShare";
+import {
+  BlogArticleMetaStats,
+  BlogArticleShareSection,
+} from "@/components/blog/BlogArticleEngagement";
 import { BlogTableOfContents } from "@/components/blog/BlogTableOfContents";
 import { RelatedPosts } from "@/components/blog/RelatedPosts";
 import { categorySlugForName, blogCategoryPath } from "@/lib/blog/categories";
@@ -74,6 +77,7 @@ export function BlogArticleLayout({ post, toc, children, cta }: BlogArticleLayou
               <dt className="sr-only">Reading time</dt>
               <dd>{post.readingTime}</dd>
             </div>
+            <BlogArticleMetaStats slug={post.slug} />
           </dl>
         </div>
 
@@ -101,7 +105,7 @@ export function BlogArticleLayout({ post, toc, children, cta }: BlogArticleLayou
       <RelatedPosts current={post} />
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2">
-        <BlogShare title={post.title} path={path} />
+        <BlogArticleShareSection slug={post.slug} title={post.title} path={path} />
         <nav aria-label="Back to blog" className="flex items-center">
           <Link
             href="/blog/"

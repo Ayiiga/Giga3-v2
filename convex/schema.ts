@@ -1348,4 +1348,11 @@ export default defineSchema({
   })
     .index("by_user_date", ["userId", "dateKey"])
     .index("by_challenge", ["challengeId"]),
+
+  /** View counts for static editorial blog articles (keyed by slug). */
+  blogPostStats: defineTable({
+    slug: v.string(),
+    viewCount: v.number(),
+    updatedAt: v.number(),
+  }).index("by_slug", ["slug"]),
 });
