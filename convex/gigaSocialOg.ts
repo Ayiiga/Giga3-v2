@@ -1,7 +1,7 @@
 import type { PublicSocialAuthor, PublicSocialPost } from "./gigaSocialViews";
+import { isLikelyImageUrl, resolveShareThumbnail } from "./gigaSocialOgImageUtils";
 
 const DEFAULT_ORIGIN = "https://www.giga3ai.com";
-const DEFAULT_CONVEX_SITE = "https://perfect-lark-521.convex.site";
 const DEFAULT_OG_IMAGE = `${DEFAULT_ORIGIN}/images/logo.png`;
 
 export type GigaSocialOgMeta = {
@@ -70,9 +70,9 @@ function primaryMediaUrl(post: PublicSocialPost): string | undefined {
   return post.mediaUrls?.[0] ?? post.mediaUrl;
 }
 
-export function buildGigaSocialOgImageProxyUrl(postId: string, siteUrl?: string): string {
-  const site = (siteUrl ?? process.env.CONVEX_SITE_URL ?? DEFAULT_CONVEX_SITE).replace(/\/$/, "");
-  return `${site}/gigasocial/post/og-image?id=${encodeURIComponent(postId)}`;
+export function buildGigaSocialOgImageProxyUrl(postId: string, origin?: string): string {
+  const base = (origin ?? process.env.FRONTEND_URL ?? DEFAULT_ORIGIN).replace(/\/$/, "");
+  return `${base}/gigasocial/post/${encodeURIComponent(postId)}/og-image/`;
 }
 
 function hasShareableContent(post: PublicSocialPost): boolean {
@@ -83,17 +83,27 @@ function hasShareableContent(post: PublicSocialPost): boolean {
   );
 }
 
-/** Always proxy through Convex so crawlers get stable image bytes (no redirects / mp4 mistaken as image). */
-function previewImageUrl(post: PublicSocialPost, _mediaMetaJson?: string | null, siteUrl?: string): string {
-  if (hasShareableContent(post)) {
-    return buildGigaSocialOgImageProxyUrl(String(post._id), siteUrl);
+/** Always proxy through Giga3 when no stable public image URL is available. */
+function previewImageUrl(
+  post: PublicSocialPost,
+  mediaMetaJson?: string | null,
+  origin?: string
+): string {
+  if (!hasShareableContent(post)) {
+    return DEFAULT_OG_IMAGE;
   }
-  return DEFAULT_OG_IMAGE;
+
+  const direct = resolveShareThumbnail({ post, mediaMetaJson });
+  if (direct && (direct.startsWith("data:image/") || isLikelyImageUrl(direct))) {
+    return direct;
+  }
+
+  return buildGigaSocialOgImageProxyUrl(String(post._id), origin);
 }
 
 export function buildGigaSocialPostUrl(postId: string, origin?: string): string {
   const base = (origin ?? process.env.FRONTEND_URL ?? DEFAULT_ORIGIN).replace(/\/$/, "");
-  return `${base}/gigasocial/post/?id=${encodeURIComponent(postId)}`;
+  return `${base}/gigasocial/post/${encodeURIComponent(postId)}/`;
 }
 
 export function buildGigaSocialOgMeta(
@@ -106,11 +116,21 @@ export function buildGigaSocialOgMeta(
   const likes = post.likeCount ?? 0;
   const label = mediaLabel(post);
   const author = post.author.displayName;
-  const title = `${formatCompactCount(views)} views • ${formatCompactCount(likes)} likes | ${label} by ${author}`;
-  const excerpt = (display.title || display.description || post.body).replace(/\s+/g, " ").trim();
-  const description = excerpt.slice(0, 240);
+  const headline = (display.title || display.description || post.body)
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 120);
+  const title = headline
+    ? `${headline} — ${author} on GigaSocial`
+    : `${label} by ${author} on GigaSocial`;
+  const bodyExcerpt = (display.title ? display.description : display.description || post.body)
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 180);
+  const stats = `${formatCompactCount(views)} views · ${formatCompactCount(likes)} likes`;
+  const description = [bodyExcerpt, stats].filter(Boolean).join(" · ").slice(0, 240);
   const canonicalUrl = buildGigaSocialPostUrl(String(post._id), origin);
-  const imageUrl = previewImageUrl(post, mediaMetaJson, process.env.CONVEX_SITE_URL);
+  const imageUrl = previewImageUrl(post, mediaMetaJson, origin);
   const videoUrl =
     post.mediaType === "video" || post.postType === "video"
       ? primaryMediaUrl(post)
@@ -122,7 +142,7 @@ export function buildGigaSocialOgMeta(
     description: description || `${author} shared on GigaSocial`,
     imageUrl,
     imageAlt: display.title || `${label} by ${author} on GigaSocial`,
-    siteName: "GigaSocial",
+    siteName: "GigaSocial · Giga3 AI",
     type: videoUrl ? "video.other" : "article",
     videoUrl,
     videoDurationSec: post.videoDurationSec,
@@ -213,7 +233,7 @@ export function renderGigaSocialUnavailableHtml(postId: string, origin?: string)
     description,
     imageUrl: DEFAULT_OG_IMAGE,
     imageAlt: "GigaSocial on Giga3 AI",
-    siteName: "GigaSocial",
+    siteName: "GigaSocial · Giga3 AI",
     type: "website",
   });
 }

@@ -4,10 +4,7 @@ import { copyTextToClipboard, type ShareResult } from "@/lib/share/clientShare";
 
 /**
  * Share a GigaSocial post as a link so WhatsApp, Facebook, and other apps
- * render a rich preview card (thumbnail, views/likes, creator).
- *
- * Skips the generic Giga3 homepage attribution so crawlers scrape the Convex
- * preview URL (with per-post og:image) instead of the site logo.
+ * render a rich preview card (thumbnail, title, creator) on giga3ai.com.
  */
 export async function shareGigaSocialPost(post: SocialPost): Promise<ShareResult> {
   const { title, text, url } = buildGigaSocialShareCopy(post);

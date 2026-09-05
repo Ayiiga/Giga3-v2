@@ -1,9 +1,7 @@
-import { getConvexSiteUrl } from "@/lib/convex/env";
-import { gigaSocialPostPath, gigaSocialProfilePath } from "@/lib/seo/publicPaths";
 import { GIGA3_APP_URL } from "@/lib/share/giga3Attribution";
+import { gigaSocialPostPath, gigaSocialProfilePath } from "@/lib/seo/publicPaths";
 
 const DEFAULT_ORIGIN = GIGA3_APP_URL;
-const DEFAULT_CONVEX_SITE = "https://perfect-lark-521.convex.site";
 
 /** Canonical public URL for a GigaSocial post (read-only landing page). */
 export function buildGigaSocialPostUrl(postId: string, origin?: string): string {
@@ -11,13 +9,17 @@ export function buildGigaSocialPostUrl(postId: string, origin?: string): string 
   return `${base}${gigaSocialPostPath(postId)}`;
 }
 
+/** Crawler-facing OG image on the Giga3 domain (proxied to Convex in Pages middleware). */
+export function buildGigaSocialOgImageUrl(postId: string, origin?: string): string {
+  const base = (origin?.replace(/\/$/, "") || DEFAULT_ORIGIN).replace(/\/$/, "");
+  return `${base}/gigasocial/post/${encodeURIComponent(postId)}/og-image/`;
+}
+
 /**
- * Crawler-facing share URL with per-post Open Graph HTML.
- * Messaging apps fetch this directly; humans are redirected to the canonical post page.
+ * @deprecated Use buildGigaSocialPostUrl for user-facing shares. Middleware fetches OG HTML internally.
  */
 export function buildGigaSocialSharePreviewUrl(postId: string): string {
-  const site = (getConvexSiteUrl() || DEFAULT_CONVEX_SITE).replace(/\/$/, "");
-  return `${site}/gigasocial/post/preview?id=${encodeURIComponent(postId)}`;
+  return buildGigaSocialPostUrl(postId);
 }
 
 /** Deep link into the authenticated GigaSocial feed. */

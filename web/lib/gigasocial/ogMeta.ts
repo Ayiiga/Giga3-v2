@@ -1,16 +1,12 @@
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { siteConfig } from "@/lib/site";
 import { splitPostDisplay } from "@/lib/gigasocial/postDisplay";
-import { buildGigaSocialSharePreviewUrl } from "@/lib/gigasocial/shareLinks";
-import { getConvexSiteUrl } from "@/lib/convex/env";
+import {
+  buildGigaSocialOgImageUrl,
+  buildGigaSocialPostUrl,
+} from "@/lib/gigasocial/shareLinks";
 
 const DEFAULT_OG_IMAGE = `${siteConfig.url.replace(/\/$/, "")}/images/logo.png`;
-const DEFAULT_CONVEX_SITE = "https://perfect-lark-521.convex.site";
-
-function buildGigaSocialOgImageProxyUrl(postId: string): string {
-  const site = (getConvexSiteUrl() || DEFAULT_CONVEX_SITE).replace(/\/$/, "");
-  return `${site}/gigasocial/post/og-image?id=${encodeURIComponent(postId)}`;
-}
 
 function hasShareableContent(post: SocialPost): boolean {
   return Boolean(
@@ -18,6 +14,29 @@ function hasShareableContent(post: SocialPost): boolean {
       post.mediaUrl ||
       (post.mediaUrls && post.mediaUrls.length > 0)
   );
+}
+
+function isLikelyImageUrl(url: string): boolean {
+  const trimmed = url.trim();
+  if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) return false;
+  if (/\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(trimmed)) return false;
+  const withoutQuery = trimmed.split(/[?#]/)[0] ?? trimmed;
+  if (/\.(jpe?g|png|gif|webp|avif|bmp|svg)(\?|#|$)/i.test(withoutQuery)) return true;
+  return !/\/video\//i.test(trimmed);
+}
+
+function resolveDirectThumbnail(post: SocialPost): string | null {
+  const candidates = [
+    post.videoThumbnailUrl,
+    ...(post.mediaUrls ?? []),
+    post.mediaUrl,
+  ];
+  for (const candidate of candidates) {
+    if (!candidate?.trim()) continue;
+    const value = candidate.trim();
+    if (value.startsWith("data:image/") || isLikelyImageUrl(value)) return value;
+  }
+  return null;
 }
 
 export function formatCompactCount(value: number): string {
@@ -45,24 +64,35 @@ function mediaLabel(post: SocialPost): string {
 }
 
 export function previewImageUrl(post: SocialPost): string {
-  if (hasShareableContent(post)) {
-    return buildGigaSocialOgImageProxyUrl(post._id);
-  }
-  return DEFAULT_OG_IMAGE;
+  if (!hasShareableContent(post)) return DEFAULT_OG_IMAGE;
+  const direct = resolveDirectThumbnail(post);
+  if (direct) return direct;
+  return buildGigaSocialOgImageUrl(post._id);
 }
 
-/** Facebook / WhatsApp-style preview title: views • likes | type by author */
+/** Article-style headline for link previews (WhatsApp, Facebook, etc.). */
 export function buildGigaSocialOgTitle(post: SocialPost): string {
-  const views = post.viewCount ?? 0;
-  const likes = post.likeCount ?? 0;
-  const label = mediaLabel(post);
-  return `${formatCompactCount(views)} views • ${formatCompactCount(likes)} likes | ${label} by ${post.author.displayName}`;
+  const display = splitPostDisplay(post.body);
+  const headline = (display.title || display.description || post.body)
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 120);
+  if (headline) {
+    return `${headline} — ${post.author.displayName} on GigaSocial`;
+  }
+  return `${mediaLabel(post)} by ${post.author.displayName} on GigaSocial`;
 }
 
 export function buildGigaSocialOgDescription(post: SocialPost): string {
   const display = splitPostDisplay(post.body);
-  const excerpt = (display.title || display.description || post.body).replace(/\s+/g, " ").trim();
-  return excerpt.slice(0, 240) || `${post.author.displayName} shared on GigaSocial`;
+  const bodyExcerpt = (display.title ? display.description : display.description || post.body)
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 180);
+  const views = post.viewCount ?? 0;
+  const likes = post.likeCount ?? 0;
+  const stats = `${formatCompactCount(views)} views · ${formatCompactCount(likes)} likes`;
+  return [bodyExcerpt, stats].filter(Boolean).join(" · ").slice(0, 240) || `${post.author.displayName} on GigaSocial`;
 }
 
 export function buildGigaSocialShareCopy(post: SocialPost): {
@@ -70,12 +100,12 @@ export function buildGigaSocialShareCopy(post: SocialPost): {
   text: string;
   url: string;
 } {
-  const url = buildGigaSocialSharePreviewUrl(post._id);
+  const url = buildGigaSocialPostUrl(post._id);
   const title = buildGigaSocialOgTitle(post);
   const description = buildGigaSocialOgDescription(post);
   return {
     title,
-    text: `${title}\n${description}`,
+    text: description,
     url,
   };
 }

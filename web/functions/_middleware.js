@@ -16,6 +16,20 @@ function parsePostId(pathname, searchParams) {
   if (fromQuery) return fromQuery;
   const segments = pathname.replace(/\/$/, "").split("/").filter(Boolean);
   if (segments[0] === "gigasocial" && segments[1] === "post" && segments[2]) {
+    if (segments[2] === "og-image" || segments[3] === "og-image") return "";
+    return decodeURIComponent(segments[2]).trim();
+  }
+  return "";
+}
+
+function parseOgImagePostId(pathname) {
+  const segments = pathname.replace(/\/$/, "").split("/").filter(Boolean);
+  if (
+    segments[0] === "gigasocial" &&
+    segments[1] === "post" &&
+    segments[3] === "og-image" &&
+    segments[2]
+  ) {
     return decodeURIComponent(segments[2]).trim();
   }
   return "";
@@ -23,6 +37,25 @@ function parsePostId(pathname, searchParams) {
 
 export async function onRequest(context) {
   const url = new URL(context.request.url);
+  const convexSite = (context.env?.CONVEX_SITE_URL || DEFAULT_CONVEX_SITE).replace(/\/$/, "");
+
+  const ogImagePostId = parseOgImagePostId(url.pathname);
+  if (ogImagePostId) {
+    const imageUrl = `${convexSite}/gigasocial/post/og-image?id=${encodeURIComponent(ogImagePostId)}`;
+    try {
+      const response = await fetch(imageUrl, {
+        headers: { "User-Agent": context.request.headers.get("User-Agent") || "" },
+      });
+      if (response.ok) {
+        const headers = new Headers(response.headers);
+        headers.set("Cache-Control", "public, max-age=300");
+        return new Response(response.body, { status: response.status, headers });
+      }
+    } catch {
+      /* fall through */
+    }
+    return context.next();
+  }
 
   if (!isGigaSocialPostPath(url.pathname)) {
     return context.next();
@@ -38,7 +71,6 @@ export async function onRequest(context) {
     return context.next();
   }
 
-  const convexSite = (context.env?.CONVEX_SITE_URL || DEFAULT_CONVEX_SITE).replace(/\/$/, "");
   const previewUrl = `${convexSite}/gigasocial/post/preview?id=${encodeURIComponent(postId)}`;
 
   try {
