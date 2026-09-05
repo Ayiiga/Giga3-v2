@@ -4,20 +4,25 @@ import type { GigaEditTimelineClip, GigaEditTimelineLane } from "@/lib/gigaedit/
 export type TimelineLaneDef = {
   id: GigaEditTimelineLane;
   label: string;
+  /** Compact label for narrow rails. */
+  shortLabel: string;
   /** CSS modifier for clip bar color. */
   tone: string;
 };
 
 /** Fixed lane order — matches Creator Studio timeline spec. */
 export const TIMELINE_LANES: TimelineLaneDef[] = [
-  { id: "main-video", label: "Main Video", tone: "main" },
-  { id: "b-roll", label: "B-Roll", tone: "broll" },
-  { id: "cutout-person", label: "Cutout Person", tone: "cutout" },
-  { id: "screen-recording", label: "Screen Recording", tone: "screen" },
-  { id: "logo", label: "Logo", tone: "logo" },
-  { id: "text", label: "Text", tone: "text" },
-  { id: "captions", label: "Captions", tone: "captions" },
+  { id: "main-video", label: "Main Video", shortLabel: "Main", tone: "main" },
+  { id: "b-roll", label: "B-Roll", shortLabel: "B-roll", tone: "broll" },
+  { id: "cutout-person", label: "Cutout Person", shortLabel: "Cutout", tone: "cutout" },
+  { id: "screen-recording", label: "Screen Recording", shortLabel: "Screen", tone: "screen" },
+  { id: "logo", label: "Logo", shortLabel: "Logo", tone: "logo" },
+  { id: "text", label: "Text", shortLabel: "Text", tone: "text" },
+  { id: "captions", label: "Captions", shortLabel: "Caps", tone: "captions" },
 ];
+
+/** Minimum horizontal pixels per second of timeline (enables sideways scroll). */
+export const TIMELINE_PX_PER_SEC = 56;
 
 export function laneLabel(lane: GigaEditTimelineLane): string {
   return TIMELINE_LANES.find((row) => row.id === lane)?.label ?? lane;

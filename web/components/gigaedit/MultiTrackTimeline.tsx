@@ -8,12 +8,33 @@ import {
   syntheticCaptionsBar,
   syntheticLogoBar,
   TIMELINE_LANES,
+  TIMELINE_PX_PER_SEC,
   type SyntheticLaneBar,
 } from "@/lib/gigaedit/timelineLanes";
 import { canDropClipOnLane, snapTimelineSec } from "@/lib/gigaedit/timelineLayers";
 import type { GigaEditTimelineClip, GigaEditTimelineLane } from "@/lib/gigaedit/types";
 import { cn } from "@/lib/utils";
+import {
+  Captions,
+  Clapperboard,
+  Layers,
+  Monitor,
+  Sparkles,
+  Type,
+  UserRound,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+
+const LANE_ICONS: Record<GigaEditTimelineLane, LucideIcon> = {
+  "main-video": Clapperboard,
+  "b-roll": Layers,
+  "cutout-person": UserRound,
+  "screen-recording": Monitor,
+  logo: Sparkles,
+  text: Type,
+  captions: Captions,
+};
 
 type MultiTrackTimelineProps = {
   clips: GigaEditTimelineClip[];
@@ -74,6 +95,8 @@ export function MultiTrackTimeline({
   onTrimClip,
 }: MultiTrackTimelineProps) {
   const max = Math.max(durationSec, 8);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const trackMinWidthPx = Math.max(280, Math.ceil(max * TIMELINE_PX_PER_SEC));
   const [drag, setDrag] = useState<ClipDragState | null>(null);
   const [hoverLane, setHoverLane] = useState<GigaEditTimelineLane | null>(null);
   const onMoveClipRef = useRef(onMoveClip);
@@ -89,6 +112,17 @@ export function MultiTrackTimeline({
 
   const logoBar = syntheticLogoBar(max, Boolean(brandWatermark?.trim()), brandWatermark?.trim() || "Logo");
   const captionsBar = syntheticCaptionsBar(max, Boolean(hasCaptions));
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const playheadX = (playheadSec / max) * trackMinWidthPx;
+    const nextLeft = playheadX - el.clientWidth * 0.35;
+    const clamped = Math.max(0, Math.min(nextLeft, el.scrollWidth - el.clientWidth));
+    if (Math.abs(el.scrollLeft - clamped) > 24) {
+      el.scrollLeft = clamped;
+    }
+  }, [max, playheadSec, trackMinWidthPx]);
 
   useEffect(() => {
     if (!drag) return;
@@ -178,76 +212,93 @@ export function MultiTrackTimeline({
   return (
     <div className="gigaedit-timeline space-y-2">
       <div className="flex items-center justify-between gap-2 text-xs text-[var(--ge-muted)]">
-        <span>
+        <span className="hidden sm:inline">
           {formatTimecodeMs(playheadSec)} / {formatTimecodeMs(durationSec)}
         </span>
-        <span>
-          Snap: {snapEnabled ? "ON" : "OFF"}
-          {drag ? " · Drag to another lane" : ""}
+        <span className="text-[10px] sm:text-xs">
+          Swipe timeline sideways
+          <span className="hidden sm:inline"> · Snap {snapEnabled ? "ON" : "OFF"}</span>
+          {drag ? " · Drag to lane" : ""}
         </span>
       </div>
 
-      <div className="gigaedit-timeline-grid">
-        <div className="gigaedit-timeline-corner" aria-hidden />
-        <div
-          className="gigaedit-timeline-ruler relative h-7 cursor-pointer"
-          onClick={handleRulerClick}
-          role="slider"
-          aria-label="Timeline playhead"
-          aria-valuemin={0}
-          aria-valuemax={max}
-          aria-valuenow={playheadSec}
-        >
-          {ticks.map((tick) => (
-            <span
-              key={tick}
-              className="gigaedit-timeline-tick"
-              style={{ left: `${(tick / max) * 100}%` }}
-            >
-              <span className="gigaedit-timeline-tick-label">{formatRulerTime(tick)}</span>
-            </span>
-          ))}
-          <div
-            className="gigaedit-timeline-playhead"
-            style={{ left: `${(playheadSec / max) * 100}%` }}
-          />
+      <div className="gigaedit-timeline-body">
+        <div className="gigaedit-timeline-rail" aria-hidden>
+          <div className="gigaedit-timeline-rail-spacer" />
+          {TIMELINE_LANES.map((lane) => {
+            const Icon = LANE_ICONS[lane.id];
+            return (
+              <div key={lane.id} className="gigaedit-timeline-rail-lane" title={lane.label}>
+                <Icon className="gigaedit-timeline-rail-icon h-3.5 w-3.5" aria-hidden />
+                <span className="gigaedit-timeline-rail-label">{lane.shortLabel}</span>
+              </div>
+            );
+          })}
         </div>
 
-        {TIMELINE_LANES.map((lane) => {
-          const laneClips = clipsForLane(clips, lane.id);
-          const synthetic: SyntheticLaneBar[] = [];
-          if (lane.id === "logo" && logoBar) synthetic.push(logoBar);
-          if (lane.id === "captions" && captionsBar) synthetic.push(captionsBar);
-          const dropActive =
-            Boolean(drag) &&
-            hoverLane === lane.id &&
-            (() => {
-              const clip = clips.find((c) => c.id === drag?.clipId);
-              return clip ? canDropClipOnLane(clip, lane.id) : false;
-            })();
+        <div ref={scrollRef} className="gigaedit-timeline-scroll">
+          <div className="gigaedit-timeline-canvas" style={{ minWidth: `${trackMinWidthPx}px` }}>
+            <div
+              className="gigaedit-timeline-ruler relative h-7 cursor-pointer"
+              onClick={handleRulerClick}
+              role="slider"
+              aria-label="Timeline playhead"
+              aria-valuemin={0}
+              aria-valuemax={max}
+              aria-valuenow={playheadSec}
+            >
+              {ticks.map((tick) => (
+                <span
+                  key={tick}
+                  className="gigaedit-timeline-tick"
+                  style={{ left: `${(tick / max) * 100}%` }}
+                >
+                  <span className="gigaedit-timeline-tick-label">{formatRulerTime(tick)}</span>
+                </span>
+              ))}
+              <div
+                className="gigaedit-timeline-playhead"
+                style={{ left: `${(playheadSec / max) * 100}%` }}
+              />
+            </div>
 
-          return (
-            <TimelineRow
-              key={lane.id}
-              laneId={lane.id}
-              laneLabel={lane.label}
-              tone={lane.tone}
-              max={max}
-              clips={laneClips}
-              synthetic={synthetic}
-              selectedClipId={selectedClipId}
-              draggingClipId={drag?.clipId ?? null}
-              dropActive={dropActive}
-              onSelectClip={onSelectClip}
-              onPlayheadChange={onPlayheadChange}
-              onTrimClip={onTrimClip}
-              onBeginDrag={beginClipDrag}
-              snapEnabled={snapEnabled}
-              allClips={clips}
-              playheadSec={playheadSec}
-            />
-          );
-        })}
+            {TIMELINE_LANES.map((lane) => {
+              const laneClips = clipsForLane(clips, lane.id);
+              const synthetic: SyntheticLaneBar[] = [];
+              if (lane.id === "logo" && logoBar) synthetic.push(logoBar);
+              if (lane.id === "captions" && captionsBar) synthetic.push(captionsBar);
+              const dropActive =
+                Boolean(drag) &&
+                hoverLane === lane.id &&
+                (() => {
+                  const clip = clips.find((c) => c.id === drag?.clipId);
+                  return clip ? canDropClipOnLane(clip, lane.id) : false;
+                })();
+
+              return (
+                <TimelineRow
+                  key={lane.id}
+                  laneId={lane.id}
+                  laneLabel={lane.label}
+                  tone={lane.tone}
+                  max={max}
+                  clips={laneClips}
+                  synthetic={synthetic}
+                  selectedClipId={selectedClipId}
+                  draggingClipId={drag?.clipId ?? null}
+                  dropActive={dropActive}
+                  onSelectClip={onSelectClip}
+                  onPlayheadChange={onPlayheadChange}
+                  onTrimClip={onTrimClip}
+                  onBeginDrag={beginClipDrag}
+                  snapEnabled={snapEnabled}
+                  allClips={clips}
+                  playheadSec={playheadSec}
+                />
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 pt-1">
@@ -272,7 +323,7 @@ export function MultiTrackTimeline({
 
 type TimelineRowProps = {
   laneId: GigaEditTimelineLane;
-  laneLabel: string;
+  laneLabel?: string;
   tone: string;
   max: number;
   clips: GigaEditTimelineClip[];
@@ -296,7 +347,6 @@ type TimelineRowProps = {
 
 function TimelineRow({
   laneId,
-  laneLabel,
   tone,
   max,
   clips,
@@ -313,18 +363,16 @@ function TimelineRow({
   onBeginDrag,
 }: TimelineRowProps) {
   return (
-    <>
-      <p className="gigaedit-timeline-label">{laneLabel}</p>
-      <div
-        data-lane-id={laneId}
-        className={cn("gigaedit-timeline-track relative", dropActive && "gigaedit-timeline-track--drop-target")}
-        onClick={(e) => {
-          if (e.target !== e.currentTarget) return;
-          const rect = e.currentTarget.getBoundingClientRect();
-          const sec = playheadFromPointer(e.clientX, rect, max);
-          onPlayheadChange(snapTimelineSec(sec, allClips, playheadSec, snapEnabled));
-        }}
-      >
+    <div
+      data-lane-id={laneId}
+      className={cn("gigaedit-timeline-track relative", dropActive && "gigaedit-timeline-track--drop-target")}
+      onClick={(e) => {
+        if (e.target !== e.currentTarget) return;
+        const rect = e.currentTarget.getBoundingClientRect();
+        const sec = playheadFromPointer(e.clientX, rect, max);
+        onPlayheadChange(snapTimelineSec(sec, allClips, playheadSec, snapEnabled));
+      }}
+    >
         <div
           className="gigaedit-timeline-playhead gigaedit-timeline-playhead--track"
           style={{ left: `${(playheadSec / max) * 100}%` }}
@@ -357,8 +405,7 @@ function TimelineRow({
             onTrimClip={onTrimClip}
           />
         ))}
-      </div>
-    </>
+    </div>
   );
 }
 

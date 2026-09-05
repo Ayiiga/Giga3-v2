@@ -6,6 +6,7 @@ import {
   syntheticCaptionsBar,
   syntheticLogoBar,
   TIMELINE_LANES,
+  TIMELINE_PX_PER_SEC,
   timelineRulerTicks,
 } from "../../web/lib/gigaedit/timelineLanes";
 import type { GigaEditTimelineClip } from "../../web/lib/gigaedit/types";
@@ -27,6 +28,11 @@ function videoClip(partial: Partial<GigaEditTimelineClip>): GigaEditTimelineClip
 }
 
 describe("timelineLanes", () => {
+  it("exposes horizontal scroll density for timeline lanes", () => {
+    expect(TIMELINE_PX_PER_SEC).toBeGreaterThanOrEqual(48);
+    expect(TIMELINE_LANES.every((lane) => lane.shortLabel.length > 0)).toBe(true);
+  });
+
   it("defines seven semantic lanes in spec order", () => {
     expect(TIMELINE_LANES.map((l) => l.id)).toEqual([
       "main-video",

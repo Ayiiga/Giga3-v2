@@ -103,7 +103,7 @@ describe("GigaEdit publish flags & offline", () => {
 
   it("bumps SW cache for publish integration", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v241-creator-studio-capcut"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v242-timeline-scroll"');
   });
 });
 
@@ -113,7 +113,7 @@ describe("GigaEdit mobile stability", () => {
     expect(css).not.toContain("100dvh");
     expect(css).toContain("gigaedit-stable");
     expect(css).toContain("gigaedit-allow-effects");
-    expect(css).toContain("gigaedit-editor-root");
+    expect(css).toContain("gigaedit-timeline-scroll");
     expect(css).toContain("gigaedit-editor-toolstrip");
   });
 });
