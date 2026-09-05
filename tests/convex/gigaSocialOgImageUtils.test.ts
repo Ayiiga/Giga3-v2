@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   isLikelyImageUrl,
+  isTrustedDirectOgImageUrl,
   resolveShareThumbnail,
 } from "../../convex/gigaSocialOgImageUtils";
 import type { PublicSocialPost } from "../../convex/gigaSocialViews";
@@ -32,6 +33,25 @@ describe("isLikelyImageUrl", () => {
 
   it("rejects non-http URLs", () => {
     expect(isLikelyImageUrl("data:image/jpeg;base64,abc")).toBe(false);
+  });
+});
+
+describe("isTrustedDirectOgImageUrl", () => {
+  it("accepts CDN image URLs with extensions", () => {
+    expect(isTrustedDirectOgImageUrl("https://cdn.example.com/photo.jpg")).toBe(true);
+    expect(isTrustedDirectOgImageUrl("https://cdn.example.com/photo.webp?token=abc")).toBe(true);
+  });
+
+  it("rejects Convex storage URLs without extensions", () => {
+    const convexUrl =
+      "https://perfect-lark-521.convex.cloud/api/storage/b028a5a6-f594-4284-bcc4-e44dd06ebcae";
+    expect(isLikelyImageUrl(convexUrl)).toBe(true);
+    expect(isTrustedDirectOgImageUrl(convexUrl)).toBe(false);
+  });
+
+  it("rejects data URLs and video URLs", () => {
+    expect(isTrustedDirectOgImageUrl("data:image/jpeg;base64,abc")).toBe(false);
+    expect(isTrustedDirectOgImageUrl("https://cdn.example.com/clip.mp4")).toBe(false);
   });
 });
 

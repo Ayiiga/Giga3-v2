@@ -16,13 +16,15 @@ function hasShareableContent(post: SocialPost): boolean {
   );
 }
 
-function isLikelyImageUrl(url: string): boolean {
+function isTrustedDirectOgImageUrl(url: string): boolean {
   const trimmed = url.trim();
   if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) return false;
+  if (/\.convex\.(cloud|site)\//i.test(trimmed)) return false;
+  if (/\/api\/storage\//i.test(trimmed)) return false;
   if (/\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(trimmed)) return false;
+  if (/\/video\//i.test(trimmed)) return false;
   const withoutQuery = trimmed.split(/[?#]/)[0] ?? trimmed;
-  if (/\.(jpe?g|png|gif|webp|avif|bmp|svg)(\?|#|$)/i.test(withoutQuery)) return true;
-  return !/\/video\//i.test(trimmed);
+  return /\.(jpe?g|png|gif|webp|avif|bmp)(\?|#|$)/i.test(withoutQuery);
 }
 
 function resolveDirectThumbnail(post: SocialPost): string | null {
@@ -34,7 +36,7 @@ function resolveDirectThumbnail(post: SocialPost): string | null {
   for (const candidate of candidates) {
     if (!candidate?.trim()) continue;
     const value = candidate.trim();
-    if (value.startsWith("data:image/") || isLikelyImageUrl(value)) return value;
+    if (isTrustedDirectOgImageUrl(value)) return value;
   }
   return null;
 }

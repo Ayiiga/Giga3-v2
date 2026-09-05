@@ -1,5 +1,5 @@
 import type { PublicSocialAuthor, PublicSocialPost } from "./gigaSocialViews";
-import { isLikelyImageUrl, resolveShareThumbnail } from "./gigaSocialOgImageUtils";
+import { isTrustedDirectOgImageUrl, resolveShareThumbnail } from "./gigaSocialOgImageUtils";
 
 const DEFAULT_ORIGIN = "https://www.giga3ai.com";
 const DEFAULT_OG_IMAGE = `${DEFAULT_ORIGIN}/images/logo.png`;
@@ -94,7 +94,7 @@ function previewImageUrl(
   }
 
   const direct = resolveShareThumbnail({ post, mediaMetaJson });
-  if (direct && (direct.startsWith("data:image/") || isLikelyImageUrl(direct))) {
+  if (direct && isTrustedDirectOgImageUrl(direct)) {
     return direct;
   }
 
