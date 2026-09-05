@@ -16,7 +16,7 @@ import {
 } from "@/lib/gigaedit/projects";
 import { handoffAndOpenGigaSocial } from "@/lib/gigaedit/publishHandoff";
 import { generateTeleprompterScript, loadTeleprompterScript } from "@/lib/gigasocial/teleprompterScripts";
-import { Circle, Loader2, Square, X } from "lucide-react";
+import { Circle, Image as ImageIcon, Loader2, Smile, Square, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -44,6 +44,8 @@ export function TeleprompterStudio({
   const [prompterKey, setPrompterKey] = useState(0);
   const [cameraLook] = useState<CameraLookOptions>(ULTRA_CLEAR_CAMERA_LOOK);
   const [mounted, setMounted] = useState(false);
+  const [captureMode, setCaptureMode] = useState<"multi" | "single">("multi");
+  const [durationPreset, setDurationPreset] = useState<"3min" | "60s" | "15s">("15s");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const recordedFileRef = useRef<File | null>(null);
@@ -177,6 +179,10 @@ export function TeleprompterStudio({
     window.dispatchEvent(new CustomEvent("giga3:teleprompter-open-settings"));
   }
 
+  function showTeleprompterOverlay() {
+    window.dispatchEvent(new CustomEvent("giga3:teleprompter-show-overlay"));
+  }
+
   useEffect(() => {
     if (!cameraOn) return;
     const prev = document.body.style.overflow;
@@ -269,7 +275,10 @@ export function TeleprompterStudio({
           <button
             type="button"
             className="pointer-events-auto rounded-full bg-black/40 px-3 py-1.5 text-xs font-medium text-white"
-            onClick={openScriptEditor}
+            onClick={() => {
+              showTeleprompterOverlay();
+              openScriptEditor();
+            }}
           >
             Script
           </button>
@@ -283,7 +292,71 @@ export function TeleprompterStudio({
             <p className="pointer-events-none text-center text-[11px] text-white/80">{status}</p>
           ) : null}
 
-          <div className="pointer-events-auto flex w-full max-w-xs items-center justify-between">
+          <div className="pointer-events-auto flex items-center gap-2">
+            {(["3min", "60s", "15s"] as const).map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                className="gigaedit-teleprompter-duration-pill"
+                data-active={durationPreset === preset}
+                onClick={() => setDurationPreset(preset)}
+              >
+                {preset}
+              </button>
+            ))}
+          </div>
+
+          <div className="pointer-events-auto flex w-full max-w-sm items-center justify-between">
+            <button
+              type="button"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/45 text-white"
+              aria-label="Effects"
+            >
+              <Smile className="h-5 w-5" aria-hidden />
+            </button>
+
+            <button
+              type="button"
+              className="gigaedit-teleprompter-shutter flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full transition active:scale-95"
+              onClick={() => (recording ? stopRecording() : startRecording())}
+              aria-label={recording ? "Stop recording" : "Start recording"}
+            >
+              {recording ? (
+                <Square className="h-6 w-6 fill-white text-white" aria-hidden />
+              ) : (
+                <Circle className="h-12 w-12 fill-white/95 text-white/95" aria-hidden />
+              )}
+            </button>
+
+            <button
+              type="button"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/45 text-white"
+              aria-label="Album"
+            >
+              <ImageIcon className="h-5 w-5" aria-hidden />
+            </button>
+          </div>
+
+          <div className="pointer-events-auto flex items-center gap-8">
+            <button
+              type="button"
+              className="gigaedit-teleprompter-mode-tab"
+              data-active={captureMode === "multi"}
+              onClick={() => setCaptureMode("multi")}
+            >
+              Multi-clips
+            </button>
+            <button
+              type="button"
+              className="gigaedit-teleprompter-mode-tab"
+              data-active={captureMode === "single"}
+              onClick={() => setCaptureMode("single")}
+            >
+              One shot
+            </button>
+          </div>
+
+          <div className="pointer-events-auto flex w-full max-w-xs items-center justify-between pt-1">
             <button
               type="button"
               className="rounded-full bg-black/40 px-3 py-2 text-[11px] font-medium text-white/90"
@@ -291,20 +364,6 @@ export function TeleprompterStudio({
             >
               Save
             </button>
-
-            <button
-              type="button"
-              className="flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-full border-[3px] border-white/90 bg-white/10 transition active:scale-95"
-              onClick={() => (recording ? stopRecording() : startRecording())}
-              aria-label={recording ? "Stop recording" : "Start recording"}
-            >
-              {recording ? (
-                <Square className="h-6 w-6 fill-red-500 text-red-500" aria-hidden />
-              ) : (
-                <Circle className="h-12 w-12 fill-red-500 text-red-500" aria-hidden />
-              )}
-            </button>
-
             <button
               type="button"
               className="rounded-full bg-[var(--ge-gold,#f5d76e)] px-3 py-2 text-[11px] font-bold text-[#0b1220] disabled:opacity-40"

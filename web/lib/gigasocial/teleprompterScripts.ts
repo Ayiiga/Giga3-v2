@@ -1,4 +1,8 @@
 import { DEFAULT_TELEPROMPTER_SCRIPT } from "@/lib/gigasocial/teleprompter";
+import {
+  DEFAULT_TELEPROMPTER_COLOR_ID,
+  type TeleprompterColorId,
+} from "@/lib/gigasocial/teleprompterDisplay";
 
 const STORAGE_KEY = "giga3_gigasocial_teleprompter_script";
 const SETTINGS_KEY = "giga3_gigasocial_teleprompter_settings";
@@ -12,6 +16,7 @@ export type TeleprompterSettings = {
   transparentMode: boolean;
   countdownSec: number;
   floating: boolean;
+  textColorId: TeleprompterColorId;
 };
 
 export const DEFAULT_TELEPROMPTER_SETTINGS: TeleprompterSettings = {
@@ -23,6 +28,7 @@ export const DEFAULT_TELEPROMPTER_SETTINGS: TeleprompterSettings = {
   transparentMode: false,
   countdownSec: 3,
   floating: false,
+  textColorId: DEFAULT_TELEPROMPTER_COLOR_ID,
 };
 
 export function loadTeleprompterScript(): string {
