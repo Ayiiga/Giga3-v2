@@ -116,9 +116,12 @@ export function GigaEditClient() {
   return (
     <EditorShell
       section={section}
+      immersive={section === "video"}
       onBackHome={() => openSection("home")}
       footer={
-        <GigaEditBottomNav activeSection={section} onOpenSection={(s) => openSection(s)} />
+        section === "video" ? undefined : (
+          <GigaEditBottomNav activeSection={section} onOpenSection={(s) => openSection(s)} />
+        )
       }
     >
       {section === "home" && <GigaEditHome onOpen={openSection} />}
@@ -127,6 +130,7 @@ export function GigaEditClient() {
           initialProjectId={projectId}
           initialAspect={aspect}
           autoImport={autoImport}
+          onBackHome={() => openSection("home")}
         />
       )}
       {section === "photo" && (
