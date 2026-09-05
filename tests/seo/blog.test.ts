@@ -3,7 +3,11 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { BLOG_CATEGORIES, categorySlugForName } from "../../web/lib/blog/categories";
 import { BLOG_POST_REGISTRY } from "../../web/lib/blog/postRegistry";
-import { getAllBlogPosts, getBlogPostBySlug, getRelatedBlogPosts } from "../../web/lib/blog/posts";
+import {
+  getRegistryBlogPosts,
+  getRegistryBlogPostBySlug,
+  getRelatedRegistryBlogPosts,
+} from "../../web/lib/blog/postListing";
 import { blogArticleMetadata, blogIndexMetadata } from "../../web/lib/blog/metadata";
 
 const WEB_ROOT = resolve(__dirname, "../../web");
@@ -22,7 +26,7 @@ describe("blog post registry", () => {
   });
 
   it("exposes posts with hrefs and reading time", () => {
-    const posts = getAllBlogPosts();
+    const posts = getRegistryBlogPosts();
     expect(posts).toHaveLength(3);
     for (const post of posts) {
       expect(post.href).toBe(`/blog/${post.slug}/`);
@@ -31,8 +35,8 @@ describe("blog post registry", () => {
   });
 
   it("returns related posts by category and tags", () => {
-    const current = getBlogPostBySlug("best-ai-tools-in-ghana-2026")!.post;
-    const related = getRelatedBlogPosts(current, 2);
+    const current = getRegistryBlogPostBySlug("best-ai-tools-in-ghana-2026")!;
+    const related = getRelatedRegistryBlogPosts(current, 2);
     expect(related.length).toBeGreaterThan(0);
     expect(related.every((p) => p.slug !== current.slug)).toBe(true);
   });
@@ -40,7 +44,7 @@ describe("blog post registry", () => {
 
 describe("blog metadata", () => {
   it("sets article openGraph type and canonical for posts", () => {
-    const post = getAllBlogPosts()[0];
+    const post = getRegistryBlogPosts()[0];
     const meta = blogArticleMetadata(post);
     expect(meta.alternates?.canonical).toBe(`/blog/${post.slug}/`);
     expect(meta.openGraph?.type).toBe("article");
@@ -87,7 +91,7 @@ describe("blog sitemap", () => {
   it("lists blog index and all article URLs", () => {
     const xml = readFileSync(resolve(WEB_ROOT, "public/sitemap-blog.xml"), "utf8");
     expect(xml).toContain("https://www.giga3ai.com/blog/");
-    for (const post of getAllBlogPosts()) {
+    for (const post of getRegistryBlogPosts()) {
       expect(xml).toContain(`https://www.giga3ai.com${post.href}`);
     }
   });
