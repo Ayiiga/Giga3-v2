@@ -16,6 +16,7 @@ export const createJob = internalMutation({
     liveWebMode: v.optional(
       v.union(v.literal("research"), v.literal("actions"))
     ),
+    researchCapability: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     if (args.clientRequestId) {
@@ -42,6 +43,7 @@ export const createJob = internalMutation({
       chatSystem: args.chatSystem,
       liveWeb: args.liveWeb,
       liveWebMode: args.liveWebMode,
+      researchCapability: args.researchCapability,
       cancelled: false,
       status: "pending",
       createdAt: Date.now(),

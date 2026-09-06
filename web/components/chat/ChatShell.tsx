@@ -42,11 +42,16 @@ import { useRemoteConfig } from "@/hooks/useRemoteConfig";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import {
   buildLocationContextLine,
+  formatLocationAnswer,
+  formatLocationUnavailableMessage,
+  isLocationIntent,
   isNewsOrWeatherIntent,
   needsLocationEnrichment,
   resolveLocalDeviceAnswer,
 } from "@/lib/chat/deviceContextIntents";
 import { captureCoordinates } from "@/lib/geolocation";
+import { getConvexUrl } from "@/lib/convex";
+import { convexHttpCall } from "@/lib/network/convexCall";
 import {
   getDocumentTemplate,
   type DocumentTemplateId,
@@ -277,8 +282,54 @@ function ChatShellInner({
 
         // Device/calendar/clock/connectivity answers use browser APIs — work offline too.
         if (trimmed && !attachments?.length) {
+          if (isLocationIntent(trimmed)) {
+            if (!effectiveOnline) {
+              appendLocalTurn(
+                trimmed,
+                "📍 Location lookup needs an internet connection. Reconnect and ask again."
+              );
+              return;
+            }
+            try {
+              const coords = await captureCoordinates();
+              const token = getSessionToken();
+              const convexUrl = getConvexUrl();
+              if (!token || !convexUrl) {
+                throw new Error("Sign in to use device location lookup.");
+              }
+              const geocoded = await convexHttpCall<{
+                formattedAddress: string;
+                accuracyMeters?: number;
+                mapUrl: string;
+              }>(
+                convexUrl,
+                "action",
+                "geolocationActions:reverseGeocode",
+                {
+                  sessionToken: token,
+                  latitude: coords.latitude,
+                  longitude: coords.longitude,
+                  accuracyMeters: coords.accuracyMeters,
+                },
+                { timeoutMs: 15_000, retries: 0 }
+              );
+              appendLocalTurn(
+                trimmed,
+                formatLocationAnswer({
+                  formattedAddress: geocoded.formattedAddress,
+                  accuracyMeters: geocoded.accuracyMeters ?? coords.accuracyMeters,
+                  mapUrl: geocoded.mapUrl,
+                })
+              );
+              return;
+            } catch (err) {
+              appendLocalTurn(trimmed, formatLocationUnavailableMessage(err));
+              return;
+            }
+          }
+
           const local = await resolveLocalDeviceAnswer(trimmed);
-          if (local) {
+          if (local && local.intent !== "location") {
             appendLocalTurn(trimmed, local.answer);
             return;
           }

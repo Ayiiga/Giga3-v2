@@ -119,6 +119,7 @@ export const acceptMessage = mutation({
     liveWebMode: v.optional(
       v.union(v.literal("research"), v.literal("actions"))
     ),
+    researchCapability: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);
@@ -344,6 +345,7 @@ export const acceptMessage = mutation({
       chatSystem: args.chatSystem,
       liveWeb: args.liveWeb === true,
       liveWebMode: args.liveWebMode,
+      researchCapability: args.researchCapability,
       cancelled: false,
       status: "pending",
       createdAt: now,

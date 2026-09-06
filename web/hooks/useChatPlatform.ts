@@ -515,7 +515,12 @@ export function useChatPlatform() {
           mode,
           clientRequestId,
           chatSystem,
-          ...currentLiveWebSendOptions(),
+          ...currentLiveWebSendOptions({
+            query: content,
+            hasImageAttachment: Boolean(
+              attachments?.some((attachment) => attachment.kind === "image")
+            ),
+          }),
           ...(attachments?.length
             ? {
                 attachments: attachments.map(
@@ -918,7 +923,12 @@ export function useChatPlatform() {
         return;
       }
       setError(null);
-      const liveWebOptions = currentLiveWebSendOptions();
+      const liveWebOptions = currentLiveWebSendOptions({
+        query: content,
+        hasImageAttachment: Boolean(
+          attachments?.some((attachment) => attachment.kind === "image")
+        ),
+      });
       if (liveWebOptions.liveWeb) {
         const offlineMsg = liveWebUnavailableMessage(effectiveOnline);
         if (offlineMsg) {

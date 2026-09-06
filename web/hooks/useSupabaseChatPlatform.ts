@@ -369,7 +369,12 @@ export function useSupabaseChatPlatform() {
           content,
           mode,
           chatSystem: chatSystemForModel(modelTier),
-          ...currentLiveWebSendOptions(),
+          ...currentLiveWebSendOptions({
+            query: content,
+            hasImageAttachment: Boolean(
+              attachments?.some((attachment) => attachment.kind === "image")
+            ),
+          }),
           ...(attachments?.length
             ? {
                 attachments: attachments.map(
@@ -501,7 +506,12 @@ export function useSupabaseChatPlatform() {
         return;
       }
       setError(null);
-      const liveWebOptions = currentLiveWebSendOptions();
+      const liveWebOptions = currentLiveWebSendOptions({
+        query: content,
+        hasImageAttachment: Boolean(
+          attachments?.some((attachment) => attachment.kind === "image")
+        ),
+      });
       if (liveWebOptions.liveWeb) {
         const offlineMsg = liveWebUnavailableMessage(effectiveOnline);
         if (offlineMsg) {
@@ -565,7 +575,12 @@ export function useSupabaseChatPlatform() {
             content,
             mode,
             chatSystem: chatSystemForModel(modelTier),
-            ...currentLiveWebSendOptions(),
+            ...currentLiveWebSendOptions({
+            query: content,
+            hasImageAttachment: Boolean(
+              attachments?.some((attachment) => attachment.kind === "image")
+            ),
+          }),
             ...(attachments?.length
               ? {
                   attachments: attachments.map(

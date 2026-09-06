@@ -33,10 +33,41 @@ export type LiveWebSource = {
   accessedAt: number;
 };
 
+export type LiveWebResponseBasis =
+  | "live_web"
+  | "knowledge"
+  | "current_news"
+  | "fact_checked"
+  | "device_location";
+
+export type LiveWebVerificationMetadata = {
+  verdict:
+    | "confirmed"
+    | "partially_true"
+    | "misleading"
+    | "false"
+    | "insufficient_evidence"
+    | "developing";
+  confidence: "high" | "medium" | "low";
+  summary?: string;
+};
+
+export type LiveWebLocationMetadata = {
+  formattedAddress: string;
+  accuracyMeters?: number;
+  mapUrl?: string;
+  permissionGranted: boolean;
+};
+
 export type LiveWebMessageMetadata = {
-  basis: "live_web" | "knowledge";
+  basis: LiveWebResponseBasis;
   sources: LiveWebSource[];
   providerId?: string;
+  researchCapability?: string;
+  checkedAt?: number;
+  sourcesChecked?: number;
+  verification?: LiveWebVerificationMetadata;
+  location?: LiveWebLocationMetadata;
   webActionsLog?: Array<{
     action: string;
     timestamp: number;

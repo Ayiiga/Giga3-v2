@@ -52,6 +52,11 @@ describe("matchDeviceContextIntent", () => {
     expect(needsLocationEnrichment("What's the weather today?")).toBe(true);
     expect(needsLocationEnrichment("What is today's date?")).toBe(false);
   });
+
+  it("detects where-am-i location intent", () => {
+    expect(matchDeviceContextIntent("Where am I?")).toBe("location");
+    expect(matchDeviceContextIntent("What is my location")).toBe("location");
+  });
 });
 
 describe("answerDeviceContextIntent", () => {

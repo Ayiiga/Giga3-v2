@@ -28,6 +28,7 @@ export type DeviceContextIntent =
   | "device_info"
   | "news_offline"
   | "weather_offline"
+  | "location"
   | null;
 
 function normalize(text: string): string {
@@ -164,6 +165,14 @@ export function matchDeviceContextIntent(raw: string): DeviceContextIntent {
     return "date_today";
   }
 
+  if (
+    /\b(where am i|what('s| is) my location|my (current )?location|where do i live|locate me)\b/.test(
+      text
+    )
+  ) {
+    return "location";
+  }
+
   return null;
 }
 
@@ -274,6 +283,8 @@ export function answerDeviceContextIntent(
       return "Recent news needs an internet connection. You’re offline right now — reconnect and ask again for the latest headlines.";
     case "weather_offline":
       return "Current weather needs an internet connection. You’re offline right now — reconnect and ask again for an updated forecast.";
+    case "location":
+      return "📍 I need your permission to use device location. Allow location access when prompted, then ask again.";
     default:
       return "I can share local date, time, timezone, and basic device details from your browser when available.";
   }
@@ -286,6 +297,70 @@ export async function resolveLocalDeviceAnswer(
   if (!intent) return null;
   const ctx = await getDeviceContextSnapshot();
   return { intent, answer: answerDeviceContextIntent(intent, ctx) };
+}
+
+export function isLocationIntent(raw: string): boolean {
+  return matchDeviceContextIntent(raw) === "location";
+}
+
+export function formatLocationDeniedMessage(): string {
+  return [
+    "📍 Location permission is disabled.",
+    "",
+    "Please allow location access in your browser/device settings and try again.",
+    "Giga3 does not guess your GPS location without device permission.",
+  ].join("\n");
+}
+
+export function formatLocationUnavailableMessage(error: unknown): string {
+  const message =
+    error instanceof Error ? error.message : "Location is unavailable on this device.";
+  if (/denied/i.test(message)) return formatLocationDeniedMessage();
+  if (/timed out/i.test(message)) {
+    return "📍 Location request timed out. Please try again in an open area with GPS signal.";
+  }
+  if (/not available/i.test(message)) {
+    return "📍 Location is not supported in this browser or device.";
+  }
+  return `📍 ${message}`;
+}
+
+export function formatLocationAnswer(args: {
+  formattedAddress: string;
+  accuracyMeters?: number;
+  mapUrl?: string;
+}): string {
+  const lines = [
+    "📍 Your approximate location",
+    "",
+    args.formattedAddress,
+  ];
+  if (args.accuracyMeters != null) {
+    lines.push("", `Accuracy: approximately ${Math.round(args.accuracyMeters)} m`);
+  }
+  if (args.mapUrl) {
+    lines.push("", `[View Map](${args.mapUrl})`);
+  }
+  lines.push("", "Refresh your question to update location.");
+  return lines.join("\n");
+}
+
+export function buildLocationMetadata(args: {
+  formattedAddress: string;
+  accuracyMeters?: number;
+  mapUrl?: string;
+}): string {
+  return JSON.stringify({
+    basis: "device_location",
+    sources: [],
+    checkedAt: Date.now(),
+    location: {
+      formattedAddress: args.formattedAddress,
+      accuracyMeters: args.accuracyMeters,
+      mapUrl: args.mapUrl,
+      permissionGranted: true,
+    },
+  });
 }
 
 /** Compact ephemeral context for weather/nearby AI turns — never stored separately. */

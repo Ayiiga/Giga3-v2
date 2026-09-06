@@ -51,6 +51,11 @@ export const LiveWebSourceCards = memo(function LiveWebSourceCards({
                 {source.excerpt}
               </p>
             ) : null}
+            {source.publishedAt ? (
+              <p className="mt-1 text-[11px] text-muted/80">
+                Published {source.publishedAt}
+              </p>
+            ) : null}
             <p className="mt-1 text-[11px] text-muted/80">
               Accessed {formatAccessTime(source.accessedAt)}
             </p>

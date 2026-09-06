@@ -1,6 +1,7 @@
 "use client";
 
 import { LiveWebSourceCards } from "@/components/chat/LiveWebSourceCards";
+import { ResearchResponseBadge } from "@/components/chat/ResearchResponseBadge";
 import { MessageBubbleActions } from "@/components/chat/MessageBubbleActions";
 import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
 import { MessageMarkdown } from "@/components/chat/MessageMarkdown";
@@ -11,7 +12,6 @@ import { splitAssistantResponseDisplay } from "@/lib/chat/deriveResponseDisplay"
 import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
 import {
   parseLiveWebMetadata,
-  responseBasisLabel,
 } from "@/lib/chat/liveWebTypes";
 import { cn } from "@/lib/utils";
 import { Bot } from "lucide-react";
@@ -89,7 +89,7 @@ export const MessageBubble = memo(function MessageBubble({
     [metadataJson]
   );
   const basisLabel = useMemo(
-    () => (isUser ? null : responseBasisLabel(liveWebMetadata)),
+    () => (isUser ? null : liveWebMetadata),
     [isUser, liveWebMetadata]
   );
   const timeLabel = formatMessageTime(createdAt);
@@ -146,9 +146,7 @@ export const MessageBubble = memo(function MessageBubble({
                   <h2 className="chat-response-title">{assistantDisplay.title}</h2>
                 ) : null}
                 <MessageMarkdown content={assistantDisplay?.content ?? displayContent} />
-                {basisLabel ? (
-                  <p className="mt-2 text-xs font-medium text-muted">{basisLabel}</p>
-                ) : null}
+                {basisLabel ? <ResearchResponseBadge metadata={basisLabel} /> : null}
                 {liveWebMetadata?.sources?.length ? (
                   <LiveWebSourceCards sources={liveWebMetadata.sources} />
                 ) : null}

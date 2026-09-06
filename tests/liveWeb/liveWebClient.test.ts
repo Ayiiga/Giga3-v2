@@ -6,6 +6,8 @@ import {
 import {
   parseLiveWebMetadata,
   responseBasisLabel,
+  responseBasisDetail,
+  verificationVerdictLabel,
 } from "../../web/lib/chat/liveWebTypes";
 import {
   liveWebUnavailableMessage,
@@ -36,7 +38,25 @@ describe("source attribution metadata", () => {
     const parsed = parseLiveWebMetadata(json);
     expect(parsed?.basis).toBe("live_web");
     expect(parsed?.sources).toHaveLength(1);
-    expect(responseBasisLabel(parsed)).toBe("Based on live web information.");
+    expect(responseBasisLabel(parsed)).toBe("🌐 Live Web research");
+    expect(responseBasisDetail(parsed)).toContain("Sources checked");
+  });
+
+  it("labels fact-checked metadata", () => {
+    const parsed = parseLiveWebMetadata(
+      JSON.stringify({
+        basis: "fact_checked",
+        sources: [],
+        verification: {
+          verdict: "confirmed",
+          confidence: "high",
+          summary: "Supported by multiple sources.",
+        },
+        checkedAt: Date.now(),
+      })
+    );
+    expect(responseBasisLabel(parsed)).toBe("✅ Fact checked");
+    expect(verificationVerdictLabel("confirmed")).toBe("🟢 CONFIRMED");
   });
 
   it("merges orchestrator and grounding sources without duplicates", () => {

@@ -5,18 +5,45 @@ import {
   liveWebUnavailableMessage,
   readLiveWebEnabled,
   readLiveWebMode,
+  readResearchCapability,
   writeLiveWebEnabled,
   writeLiveWebMode,
+  writeResearchCapability,
+  resolveSendResearchOptions,
   type LiveWebMode,
 } from "@/lib/chat/liveWebPreferences";
+import {
+  RESEARCH_CAPABILITY_LABELS,
+  type ResearchCapabilityId,
+} from "convex/researchCapabilities";
 import { Globe, ShieldAlert } from "lucide-react";
 import { memo, useEffect, useId, useState } from "react";
 
 interface LiveWebToggleProps {
   disabled?: boolean;
   online?: boolean;
-  onChange?: (enabled: boolean, mode: LiveWebMode) => void;
+  onChange?: (enabled: boolean, mode: LiveWebMode, capability: ResearchCapabilityId) => void;
 }
+
+const RESEARCH_OPTIONS: ResearchCapabilityId[] = [
+  "general",
+  "live_web",
+  "current_news",
+  "ghana_news",
+  "africa_news",
+  "world_news",
+  "technology",
+  "business",
+  "education",
+  "sports",
+  "entertainment",
+  "science",
+  "politics",
+  "breaking_news",
+  "fact_check",
+  "verify_image",
+  "deep_research",
+];
 
 export const LiveWebToggle = memo(function LiveWebToggle({
   disabled,
@@ -25,21 +52,30 @@ export const LiveWebToggle = memo(function LiveWebToggle({
 }: LiveWebToggleProps) {
   const inputId = useId();
   const modeId = useId();
+  const capabilityId = useId();
   const [enabled, setEnabled] = useState(false);
   const [mode, setMode] = useState<LiveWebMode>("research");
+  const [capability, setCapability] = useState<ResearchCapabilityId>("general");
   const offlineMessage = liveWebUnavailableMessage(online);
 
   useEffect(() => {
     setEnabled(readLiveWebEnabled());
     setMode(readLiveWebMode());
+    setCapability(readResearchCapability());
   }, []);
 
-  function update(nextEnabled: boolean, nextMode: LiveWebMode = mode) {
+  function update(
+    nextEnabled: boolean,
+    nextMode: LiveWebMode = mode,
+    nextCapability: ResearchCapabilityId = capability
+  ) {
     setEnabled(nextEnabled);
     setMode(nextMode);
+    setCapability(nextCapability);
     writeLiveWebEnabled(nextEnabled);
     writeLiveWebMode(nextMode);
-    onChange?.(nextEnabled, nextMode);
+    writeResearchCapability(nextCapability);
+    onChange?.(nextEnabled, nextMode, nextCapability);
   }
 
   const toggleDisabled = disabled || !online;
@@ -83,20 +119,40 @@ export const LiveWebToggle = memo(function LiveWebToggle({
       </label>
 
       {enabled && online ? (
-        <label htmlFor={modeId} className="inline-flex items-center gap-2 text-xs text-muted">
-          <ShieldAlert className="h-3.5 w-3.5" aria-hidden />
-          <span className="sr-only">Live web mode</span>
-          <select
-            id={modeId}
-            disabled={toggleDisabled}
-            value={mode}
-            onChange={(e) => update(true, e.target.value as LiveWebMode)}
-            className="rounded-lg border border-border bg-card px-2 py-1 text-xs text-foreground"
-          >
-            <option value="research">Research</option>
-            <option value="actions">Web Actions</option>
-          </select>
-        </label>
+        <>
+          <label htmlFor={capabilityId} className="inline-flex items-center gap-2 text-xs text-muted">
+            <span className="sr-only">Research mode</span>
+            <select
+              id={capabilityId}
+              disabled={toggleDisabled}
+              value={capability}
+              onChange={(e) =>
+                update(true, mode, e.target.value as ResearchCapabilityId)
+              }
+              className="max-w-[11rem] rounded-lg border border-border bg-card px-2 py-1 text-xs text-foreground"
+            >
+              {RESEARCH_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {RESEARCH_CAPABILITY_LABELS[option]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label htmlFor={modeId} className="inline-flex items-center gap-2 text-xs text-muted">
+            <ShieldAlert className="h-3.5 w-3.5" aria-hidden />
+            <span className="sr-only">Live web mode</span>
+            <select
+              id={modeId}
+              disabled={toggleDisabled}
+              value={mode}
+              onChange={(e) => update(true, e.target.value as LiveWebMode)}
+              className="rounded-lg border border-border bg-card px-2 py-1 text-xs text-foreground"
+            >
+              <option value="research">Research</option>
+              <option value="actions">Web Actions</option>
+            </select>
+          </label>
+        </>
       ) : null}
 
       {offlineMessage ? (
@@ -106,11 +162,13 @@ export const LiveWebToggle = memo(function LiveWebToggle({
   );
 });
 
-export function currentLiveWebSendOptions(): {
+export function currentLiveWebSendOptions(args?: {
+  query?: string;
+  hasImageAttachment?: boolean;
+}): {
   liveWeb: boolean;
   liveWebMode?: LiveWebMode;
+  researchCapability?: ResearchCapabilityId;
 } {
-  const liveWeb = readLiveWebEnabled();
-  if (!liveWeb) return { liveWeb: false };
-  return { liveWeb: true, liveWebMode: readLiveWebMode() };
+  return resolveSendResearchOptions(args);
 }
