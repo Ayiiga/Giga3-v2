@@ -87,6 +87,9 @@ describe("GigaEdit publish redirect helpers", () => {
     expect(video).toContain("handoffAndOpenGigaSocial");
     expect(video).toContain("VideoEditorHeader");
     expect(video).toContain("openPublishOptions");
+    expect(video).toContain('"noise"');
+    expect(video).toContain('"overlays"');
+    expect(video).toContain("deleteSelectedClip");
   });
 });
 
@@ -103,7 +106,7 @@ describe("GigaEdit publish flags & offline", () => {
 
   it("bumps SW cache for publish integration", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v242-timeline-scroll"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v243-gigaedit-nav-timeline"');
   });
 });
 
@@ -113,6 +116,7 @@ describe("GigaEdit mobile stability", () => {
     expect(css).not.toContain("100dvh");
     expect(css).toContain("gigaedit-stable");
     expect(css).toContain("gigaedit-allow-effects");
+    expect(css).toContain("gigaedit-video-mode");
     expect(css).toContain("gigaedit-timeline-scroll");
     expect(css).toContain("gigaedit-editor-toolstrip");
   });

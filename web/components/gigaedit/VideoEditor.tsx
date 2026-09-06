@@ -12,6 +12,7 @@ import { PublishScreen } from "@/components/gigaedit/PublishScreen";
 import { VideoEditorHeader } from "@/components/gigaedit/VideoEditorHeader";
 import {
   ToolGrid,
+  ToolPanelHint,
   ToolTile,
   VideoEditorToolStrip,
   type VideoEditorToolTab,
@@ -105,6 +106,7 @@ export function VideoEditor({
 }: VideoEditorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const addClipInputRef = useRef<HTMLInputElement>(null);
+  const overlayInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
@@ -136,6 +138,7 @@ export function VideoEditor({
   const [brandKit, setBrandKit] = useState<GigaEditBrandKit>(DEFAULT_BRAND_KIT);
   const [activeToolTab, setActiveToolTab] = useState<VideoEditorToolTab>("edit");
   const [toolPanelOpen, setToolPanelOpen] = useState(false);
+  const [audioNoiseReduction, setAudioNoiseReduction] = useState(false);
   const originalFileRef = useRef<File | null>(null);
   const sourceFilesRef = useRef<Map<string, File>>(new Map());
   const importSessionActiveRef = useRef(false);
@@ -780,6 +783,19 @@ export function VideoEditor({
     if (selectedClipId === clipId) setSelectedClipId(null);
   }
 
+  function deleteSelectedClip() {
+    if (!selectedClipId) {
+      setStatus("Select a clip on the timeline first.");
+      return;
+    }
+    deleteClipById(selectedClipId);
+    setStatus("Clip deleted.");
+  }
+
+  function openOverlayImport() {
+    overlayInputRef.current?.click();
+  }
+
   function moveClipOnTimeline(
     clipId: string,
     nextStartSec: number,
@@ -1054,7 +1070,6 @@ export function VideoEditor({
           <div className="space-y-3">
             <ToolGrid>
               <ToolTile label="Trim" onClick={trimActive} disabled={!hasVideo} />
-              <ToolTile label="Split" onClick={splitAtPlayhead} disabled={!hasVideo} />
               <ToolTile label="Join" onClick={mergeClips} disabled={videoClipCount < 2} />
               <ToolTile label="Rotate" onClick={() => setRotateDeg((d) => (d + 90) % 360)} disabled={!hasVideo} />
               <ToolTile label="Reset crop" onClick={() => setCropScale(1)} disabled={!hasVideo} />
@@ -1117,6 +1132,15 @@ export function VideoEditor({
             />
           </div>
         );
+      case "split":
+        return (
+          <div className="space-y-3">
+            <ToolGrid>
+              <ToolTile label="Split here" onClick={splitAtPlayhead} disabled={!hasVideo} />
+            </ToolGrid>
+            <ToolPanelHint>Splits the active clip at the playhead. Swipe the timeline sideways to line up the cut.</ToolPanelHint>
+          </div>
+        );
       case "audio":
         return (
           <div className="space-y-3">
@@ -1131,12 +1155,35 @@ export function VideoEditor({
             )}
           </div>
         );
+      case "noise":
+        return (
+          <div className="space-y-3">
+            <label className="flex items-center justify-between gap-3 rounded-xl border border-[var(--ge-border)] bg-[var(--ge-input)] px-3 py-2.5 text-xs text-white">
+              <span>Reduce background noise on export</span>
+              <input
+                type="checkbox"
+                checked={audioNoiseReduction}
+                onChange={(e) => {
+                  setAudioNoiseReduction(e.target.checked);
+                  setStatus(
+                    e.target.checked
+                      ? "Noise reduction enabled — softer background on export."
+                      : "Noise reduction off."
+                  );
+                }}
+              />
+            </label>
+            <ToolGrid>
+              <ToolTile label="AI cleanup" onClick={() => window.open("/media/?action=denoise", "_blank", "noopener")} />
+            </ToolGrid>
+            <ToolPanelHint>Light noise reduction is baked into export. For heavy cleanup, open AI Studio.</ToolPanelHint>
+          </div>
+        );
       case "text":
         return (
           <div className="space-y-3">
             <ToolGrid>
               <ToolTile label="Add text" onClick={addTextLayer} disabled={!hasVideo} />
-              <ToolTile label="Sticker" onClick={addStickerMarker} disabled={!hasVideo} />
             </ToolGrid>
             <label className="block text-xs text-[var(--ge-muted)]">
               Text overlay
@@ -1147,6 +1194,42 @@ export function VideoEditor({
                 placeholder="Add text…"
               />
             </label>
+            <OverlayInspector
+              clip={selectedClip}
+              clips={clips}
+              playheadSec={playhead}
+              onUpdateClip={updateClipById}
+              onDuplicateOverlay={(dup) => {
+                commitClips((prev) => [...prev, dup]);
+                setSelectedClipId(dup.id);
+              }}
+              onDeleteClip={deleteClipById}
+            />
+          </div>
+        );
+      case "stickers":
+        return (
+          <div className="space-y-3">
+            <ToolGrid>
+              <ToolTile label="Add sticker" onClick={addStickerMarker} disabled={!hasVideo} />
+              <ToolTile label="Emoji burst" onClick={() => setOverlayText((t) => (t ? `${t} ✨` : "✨"))} disabled={!hasVideo} />
+            </ToolGrid>
+            <ToolPanelHint>Stickers appear on the Text track and export with your video.</ToolPanelHint>
+          </div>
+        );
+      case "overlays":
+        return (
+          <div className="space-y-3">
+            <ToolGrid>
+              <ToolTile label="Add overlay" onClick={openOverlayImport} disabled={!hasVideo} />
+              <ToolTile label="Add text" onClick={addTextLayer} disabled={!hasVideo} />
+            </ToolGrid>
+            <LayerManager
+              clips={clips}
+              selectedClipId={selectedClipId}
+              onUpdateClips={(next) => commitClips(next)}
+              onSelectClip={setSelectedClipId}
+            />
             <OverlayInspector
               clip={selectedClip}
               clips={clips}
@@ -1210,6 +1293,15 @@ export function VideoEditor({
                 placeholder="Edit captions…"
               />
             </label>
+          </div>
+        );
+      case "delete":
+        return (
+          <div className="space-y-3">
+            <ToolGrid>
+              <ToolTile label="Delete clip" onClick={deleteSelectedClip} disabled={!selectedClipId} />
+            </ToolGrid>
+            <ToolPanelHint>Select a clip on the timeline, then delete it. Swipe sideways to find the clip you want.</ToolPanelHint>
           </div>
         );
       default:
@@ -1366,6 +1458,17 @@ export function VideoEditor({
         className="sr-only"
         onChange={(e) => {
           onPickFiles(e.target.files, "append");
+          e.target.value = "";
+        }}
+      />
+      <input
+        ref={overlayInputRef}
+        type="file"
+        accept="video/*,.mp4,.mov,.webm,.m4v"
+        multiple
+        className="sr-only"
+        onChange={(e) => {
+          void importVideoFiles(e.target.files ? Array.from(e.target.files) : [], "append", "overlay");
           e.target.value = "";
         }}
       />
