@@ -1,4 +1,8 @@
 import {
+  buildResearchSearchQuery,
+  type ResearchCapabilityId,
+} from "../researchCapabilities";
+import {
   isLiveWebEnabled,
   liveWebMaxPagesToRead,
   liveWebMaxSearchResults,
@@ -9,6 +13,7 @@ import { resolveWebSearchProvider } from "./providers/registry";
 import { defaultFetchOptions, defaultPageReader } from "./webPageReader";
 import type {
   LiveWebProgressStage,
+  LiveWebResponseBasis,
   LiveWebSource,
   WebResearchResult,
 } from "./types";
@@ -77,6 +82,7 @@ function buildContextBlock(
 
 export async function runWebResearch(args: {
   query: string;
+  researchCapability?: ResearchCapabilityId;
   onProgress?: ProgressCallback;
 }): Promise<WebResearchResult> {
   const warnings: string[] = [];
@@ -97,10 +103,15 @@ export async function runWebResearch(args: {
 
   await args.onProgress?.("searching");
 
+  const searchQuery = buildResearchSearchQuery(
+    args.query,
+    args.researchCapability ?? "live_web"
+  );
+
   let searchResults: LiveWebSource[] = [];
   if (searchProvider) {
     try {
-      const rows = await searchProvider.search(args.query, {
+      const rows = await searchProvider.search(searchQuery, {
         maxResults: liveWebMaxSearchResults(),
         timeoutMs: liveWebSearchTimeoutMs(),
       });
@@ -208,11 +219,24 @@ export function buildLiveWebMetadata(args: {
   sources: LiveWebSource[];
   usedLiveWeb: boolean;
   providerId?: string | null;
+  basis?: LiveWebResponseBasis;
+  researchCapability?: string;
+  checkedAt?: number;
+  verification?: import("./types").LiveWebVerificationMetadata;
+  location?: import("./types").LiveWebLocationMetadata;
 }): string {
+  const basis: LiveWebResponseBasis =
+    args.basis ??
+    (args.usedLiveWeb && args.sources.length ? "live_web" : "knowledge");
   const metadata = {
-    basis: args.usedLiveWeb && args.sources.length ? ("live_web" as const) : ("knowledge" as const),
+    basis,
     sources: args.sources,
     providerId: args.providerId ?? undefined,
+    researchCapability: args.researchCapability,
+    checkedAt: args.checkedAt ?? (args.usedLiveWeb ? Date.now() : undefined),
+    sourcesChecked: args.sources.length || undefined,
+    verification: args.verification,
+    location: args.location,
   };
   return JSON.stringify(metadata);
 }

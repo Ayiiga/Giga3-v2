@@ -48,6 +48,18 @@ import {
   runWebResearch,
 } from "./liveWeb/webResearchOrchestrator";
 import { proposeWebAction } from "./liveWeb/webActionProvider";
+import {
+  isNewsCapability,
+  researchSystemPromptAddon,
+  resolveResearchCapability,
+  responseBasisForCapability,
+  shouldRunLiveWebResearch,
+  type ResearchCapabilityId,
+} from "./researchCapabilities";
+import {
+  formatVerificationContextBlock,
+  verifyChatClaim,
+} from "./factVerification";
 
 // Kept below the client reply-wait deadline (CHAT_REPLY_WAIT_MS = 150s) so the
 // worker persists a real or fallback reply — clearing "Thinking…" gracefully via
@@ -536,8 +548,36 @@ export const processJob = internalAction({
       let liveWebSources: import("./liveWeb/types").LiveWebSource[] = [];
       let liveWebProviderId: string | null = null;
       let liveWebUsed = false;
+      let liveWebBasis = responseBasisForCapability("general", false);
+      let verificationMetadata:
+        | import("./liveWeb/types").LiveWebVerificationMetadata
+        | undefined;
 
-      if (job.liveWeb && isLiveWebEnabled() && !attachments.some((a) => a.kind === "image")) {
+      const hasImageAttachment = attachments.some((a) => a.kind === "image");
+      const researchCapability = resolveResearchCapability({
+        explicit: job.researchCapability,
+        query: job.content,
+        liveWebEnabled: Boolean(job.liveWeb),
+        hasImageAttachment,
+      }) as ResearchCapabilityId;
+      const capabilityPrompt = researchSystemPromptAddon(researchCapability);
+      if (capabilityPrompt) {
+        systemPrompt += `\n\n${capabilityPrompt}`;
+      }
+
+      const shouldResearch = shouldRunLiveWebResearch(researchCapability);
+      const effectiveLiveWeb =
+        Boolean(job.liveWeb) ||
+        shouldResearch ||
+        shouldEnableWebSearch(job.content, mode, hasImageAttachment);
+
+      if (
+        effectiveLiveWeb &&
+        isLiveWebEnabled() &&
+        (!hasImageAttachment ||
+          researchCapability === "verify_image" ||
+          researchCapability === "fact_check")
+      ) {
         try {
           await ctx.runMutation(internal.liveWebRateLimit.consumeLiveWebRateLimitInternal, {
             userId: email,
@@ -592,6 +632,7 @@ export const processJob = internalAction({
 
         const research = await runWebResearch({
           query: job.content,
+          researchCapability,
           onProgress: async (stage) => {
             await ctx.runMutation(internal.chatReplyJobs.updateLiveWebProgress, {
               jobId: args.jobId,
@@ -602,6 +643,49 @@ export const processJob = internalAction({
         liveWebSources = research.sources;
         liveWebProviderId = research.providerId;
         liveWebUsed = research.usedLiveSearch || research.sources.length > 0;
+        liveWebBasis = responseBasisForCapability(researchCapability, liveWebUsed);
+
+        if (
+          researchCapability === "fact_check" ||
+          researchCapability === "verify_image"
+        ) {
+          try {
+            const verification = await verifyChatClaim({
+              claim: job.content,
+              context: research.contextBlock || undefined,
+              imageNote:
+                researchCapability === "verify_image"
+                  ? "User attached an image containing a claim to verify."
+                  : undefined,
+            });
+            verificationMetadata = {
+              verdict: verification.verdict,
+              confidence: verification.confidence,
+              summary: verification.summary,
+            };
+            liveWebSources = mergeLiveWebSources(
+              liveWebSources,
+              verification.trustedSources.map((source) => ({
+                title: source.title,
+                uri: source.uri,
+                domain: source.uri.includes("://")
+                  ? new URL(source.uri).hostname.replace(/^www\./i, "")
+                  : source.uri,
+                accessedAt: verification.checkedAt,
+              }))
+            );
+            liveWebUsed = true;
+            liveWebBasis = "fact_checked";
+            systemPrompt += `\n\n${formatVerificationContextBlock(verification)}`;
+          } catch (verifyErr) {
+            systemPrompt += `\n\nFact verification note: ${
+              verifyErr instanceof Error
+                ? verifyErr.message
+                : "Verification is temporarily unavailable."
+            }`;
+          }
+        }
+
         if (research.contextBlock) {
           systemPrompt += `\n\n${research.contextBlock}`;
         }
@@ -609,19 +693,20 @@ export const processJob = internalAction({
           systemPrompt += `\n\nLive web notes:\n${research.warnings.join("\n")}`;
         }
         systemPrompt +=
-          "\n\nWhen Live Web is enabled, label your answer basis: start with either \"Based on live web information.\" or \"Based on Giga3 AI knowledge.\" as appropriate.";
-      } else if (job.liveWeb && !isLiveWebEnabled()) {
+          "\n\nWhen live research is enabled, label your answer basis clearly (live web, current news, fact-checked, or Giga3 AI knowledge) and cite sources with publication dates when available.";
+      } else if (effectiveLiveWeb && !isLiveWebEnabled()) {
         systemPrompt +=
-          "\n\nLive web is currently unavailable on the server. Answer from Giga3 AI knowledge and say live web is unavailable.";
+          "\n\nLive web is temporarily unavailable. Provide general AI knowledge, but do not claim to verify the latest information right now.";
       }
 
       if (
         isLiveNewsEnabled() &&
-        (job.liveWeb ||
+        (effectiveLiveWeb ||
+          isNewsCapability(researchCapability) ||
           shouldEnableWebSearch(
             job.content,
             mode,
-            attachments.some((a) => a.kind === "image")
+            hasImageAttachment
           ))
       ) {
         const briefing = await ctx.runQuery(internal.liveNewsInternal.getBriefingInternal, {});
@@ -677,7 +762,7 @@ export const processJob = internalAction({
         conversationId: job.conversationId,
         subscriptionPlan: refreshedUser?.subscriptionPlan ?? "free",
         subscriptionExpiresAt: refreshedUser?.subscriptionExpiresAt,
-        forceWebSearch: Boolean(job.liveWeb && isLiveWebEnabled()),
+        forceWebSearch: Boolean(effectiveLiveWeb && isLiveWebEnabled()),
       });
       const latencyMs = engineResult.latencyMs ?? Date.now() - started;
 
@@ -726,7 +811,7 @@ export const processJob = internalAction({
         content: assistantContent,
         since: job.createdAt,
         metadataJson:
-          job.liveWeb && isLiveWebEnabled()
+          effectiveLiveWeb && isLiveWebEnabled()
             ? buildLiveWebMetadata({
                 sources: mergeLiveWebSources(
                   liveWebSources,
@@ -737,6 +822,9 @@ export const processJob = internalAction({
                   Boolean(engineResult.usedWebSearch) ||
                   (engineResult.groundingSources?.length ?? 0) > 0,
                 providerId: liveWebProviderId,
+                basis: liveWebBasis,
+                researchCapability,
+                verification: verificationMetadata,
               })
             : undefined,
       });

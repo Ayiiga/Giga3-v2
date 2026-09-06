@@ -17,21 +17,23 @@ describe("videoTrim helpers", () => {
   it("detects when trim is required", () => {
     expect(needsVideoTrim(SOCIAL_MAX_VIDEO_DURATION_SEC)).toBe(false);
     expect(needsVideoTrim(SOCIAL_MAX_VIDEO_DURATION_SEC + 0.1)).toBe(true);
-    expect(needsVideoTrim(300)).toBe(true);
+    expect(needsVideoTrim(300)).toBe(false);
+    expect(needsVideoTrim(420)).toBe(true);
     expect(needsVideoTrim(0)).toBe(false);
   });
 
   it("computes a sliding window with optional shorter clip length", () => {
     const max = SOCIAL_MAX_VIDEO_DURATION_SEC;
-    expect(computeTrimRange(300, 0, max)).toEqual({ startSec: 0, endSec: max });
-    expect(computeTrimRange(300, 50, max)).toEqual({ startSec: 50, endSec: 50 + max });
-    expect(computeTrimRange(300, 200, max)).toEqual({ startSec: 120, endSec: 300 });
+    expect(computeTrimRange(300, 0, max)).toEqual({ startSec: 0, endSec: 300 });
+    expect(computeTrimRange(500, 0, max)).toEqual({ startSec: 0, endSec: max });
+    expect(computeTrimRange(500, 50, max)).toEqual({ startSec: 50, endSec: 50 + max });
+    expect(computeTrimRange(500, 200, max)).toEqual({ startSec: 140, endSec: 500 });
     expect(computeTrimRange(90, 0, max)).toEqual({ startSec: 0, endSec: 90 });
-    expect(computeTrimRange(300, 10, max, 60)).toEqual({ startSec: 10, endSec: 70 });
-    expect(computeTrimRange(300, 250, max, 60)).toEqual({ startSec: 240, endSec: 300 });
+    expect(computeTrimRange(500, 10, max, 60)).toEqual({ startSec: 10, endSec: 70 });
+    expect(computeTrimRange(500, 250, max, 60)).toEqual({ startSec: 250, endSec: 310 });
   });
 
-  it("exposes 60/120/180 clip length options", () => {
-    expect(VIDEO_CLIP_LENGTH_OPTIONS_SEC).toEqual([60, 120, 180]);
+  it("exposes 60/120/180/360 clip length options", () => {
+    expect(VIDEO_CLIP_LENGTH_OPTIONS_SEC).toEqual([60, 120, 180, 360]);
   });
 });

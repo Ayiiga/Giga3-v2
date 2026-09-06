@@ -813,6 +813,7 @@ export default defineSchema({
     liveWebMode: v.optional(
       v.union(v.literal("research"), v.literal("actions"))
     ),
+    researchCapability: v.optional(v.string()),
     liveWebProgress: v.optional(v.string()),
     cancelled: v.optional(v.boolean()),
     status: v.union(

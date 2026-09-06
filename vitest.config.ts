@@ -13,6 +13,10 @@ export default defineConfig({
     extensions: [".ts", ".tsx", ".js"],
     alias: {
       "@": path.resolve(__dirname, "web"),
+      "convex/researchCapabilities": path.resolve(
+        __dirname,
+        "convex/researchCapabilities.ts"
+      ),
     },
   },
 });
