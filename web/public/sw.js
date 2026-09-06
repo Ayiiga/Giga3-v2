@@ -1,5 +1,5 @@
 /** GigaSocial perf + offline feed/reels — refresh PWAs. */
-const CACHE_NAME = "giga3-shell-v243-gigaedit-nav-timeline";
+const CACHE_NAME = "giga3-shell-v244-social-video-6min";
 const NEXT_STATIC_CACHE = "giga3-next-static-v220";
 const APP_SHELL_CACHE = "giga3-app-shell-v220";
 const BADGE_DB = "giga3-badge-v1";
