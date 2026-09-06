@@ -1,19 +1,50 @@
 "use client";
 
-import { Captions, Music2, Scissors, Sparkles, Type } from "lucide-react";
+import {
+  Captions,
+  Layers,
+  Music2,
+  Scissors,
+  Sparkles,
+  SplitSquareVertical,
+  Sticker,
+  Trash2,
+  Type,
+  Volume2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-export type VideoEditorToolTab = "edit" | "audio" | "text" | "effects" | "captions";
+export type VideoEditorToolTab =
+  | "edit"
+  | "split"
+  | "audio"
+  | "noise"
+  | "text"
+  | "stickers"
+  | "overlays"
+  | "effects"
+  | "captions"
+  | "delete";
 
-const TABS: Array<{ id: VideoEditorToolTab; label: string; icon: typeof Scissors; badge?: string }> =
-  [
-    { id: "edit", label: "Edit", icon: Scissors },
-    { id: "audio", label: "Audio", icon: Music2 },
-    { id: "text", label: "Text", icon: Type },
-    { id: "effects", label: "Effects", icon: Sparkles, badge: "AI" },
-    { id: "captions", label: "Captions", icon: Captions },
-  ];
+const TABS: Array<{
+  id: VideoEditorToolTab;
+  label: string;
+  icon: LucideIcon;
+  badge?: string;
+}> = [
+  { id: "edit", label: "Edit", icon: Scissors },
+  { id: "split", label: "Split", icon: SplitSquareVertical },
+  { id: "audio", label: "Audio", icon: Music2 },
+  { id: "noise", label: "Noise", icon: Volume2, badge: "AI" },
+  { id: "text", label: "Text", icon: Type },
+  { id: "stickers", label: "Stickers", icon: Sticker },
+  { id: "overlays", label: "Overlays", icon: Layers },
+  { id: "effects", label: "Effects", icon: Sparkles },
+  { id: "captions", label: "Captions", icon: Captions },
+  { id: "delete", label: "Delete", icon: Trash2 },
+];
 
 type VideoEditorToolStripProps = {
   activeTab: VideoEditorToolTab;
@@ -65,22 +96,26 @@ export function ToolTile({
   label,
   onClick,
   disabled,
+  icon: Icon,
 }: {
   label: string;
   onClick: () => void;
   disabled?: boolean;
+  icon?: LucideIcon;
 }) {
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={cn(
-        "gigaedit-editor-tooltile",
-        disabled && "opacity-40"
-      )}
+      className={cn("gigaedit-editor-tooltile", disabled && "opacity-40")}
     >
+      {Icon ? <Icon className="mx-auto mb-1 h-4 w-4 opacity-80" aria-hidden /> : null}
       {label}
     </button>
   );
+}
+
+export function ToolPanelHint({ children }: { children: ReactNode }) {
+  return <p className="text-xs leading-relaxed text-[var(--ge-muted)]">{children}</p>;
 }

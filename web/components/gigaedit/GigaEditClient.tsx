@@ -104,6 +104,12 @@ export function GigaEditClient() {
     return startGigaEditBackgroundSync();
   }, [features.enableGigaEditOffline]);
 
+  useEffect(() => {
+    const immersive = section === "video";
+    document.documentElement.classList.toggle("gigaedit-video-mode", immersive);
+    return () => document.documentElement.classList.remove("gigaedit-video-mode");
+  }, [section]);
+
   if (!features.enableGigaEdit) {
     return (
       <div className="gigaedit-shell rounded-2xl p-6 text-sm text-[var(--ge-muted)]">

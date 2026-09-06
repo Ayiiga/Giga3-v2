@@ -36,6 +36,7 @@ export default function GigaEditPage() {
         description="Edit video and photos in the browser, then share finished work to GigaSocial. Pair with Media Studio when you need AI-generated images first."
         detail="Available tools include multi-clip timelines, audio tracks, teleprompter recording, templates, and offline project storage on supported devices."
         showProductNav={false}
+        className="gigaedit-seo-header"
       />
       <div className="gigaedit-page gigaedit-stable px-0 pb-3 pt-4 sm:px-3 sm:pb-6 sm:pt-6">
         <Container className="!px-0 sm:!px-4">

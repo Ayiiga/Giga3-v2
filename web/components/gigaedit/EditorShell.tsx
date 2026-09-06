@@ -32,7 +32,7 @@ export type EditorShellProps = {
 export function EditorShell({ section, onBackHome, children, footer, immersive = false }: EditorShellProps) {
   if (immersive) {
     return (
-      <div className="gigaedit-shell gigaedit-shell--editor gigaedit-stable -mx-3 flex min-h-[calc(100vh-4.5rem)] flex-col sm:-mx-5">
+      <div className="gigaedit-shell gigaedit-shell--editor gigaedit-stable flex h-full min-h-0 flex-col">
         {children}
       </div>
     );
