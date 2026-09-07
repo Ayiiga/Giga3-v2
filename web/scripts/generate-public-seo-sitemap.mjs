@@ -161,6 +161,8 @@ function writeBlogSitemap() {
       "creators",
       "business",
       "technology",
+      "digital-literacy",
+      "ghana",
     ].map((slug) => ({
       loc: `${siteOrigin}/blog/category/${slug}/`,
       lastmod: "2026-09-04",

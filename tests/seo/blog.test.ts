@@ -13,12 +13,22 @@ import { blogArticleMetadata, blogIndexMetadata } from "../../web/lib/blog/metad
 const WEB_ROOT = resolve(__dirname, "../../web");
 
 describe("blog post registry", () => {
-  it("has three launch articles with valid categories", () => {
-    expect(BLOG_POST_REGISTRY).toHaveLength(3);
+  it("has thirteen articles with valid categories", () => {
+    expect(BLOG_POST_REGISTRY).toHaveLength(13);
     const slugs = BLOG_POST_REGISTRY.map((p) => p.slug);
     expect(slugs).toContain("best-ai-tools-in-ghana-2026");
     expect(slugs).toContain("ai-for-bece-wassce-preparation-ghana");
     expect(slugs).toContain("top-ai-apps-in-ghana-2026");
+    expect(slugs).toContain("wassce-2026-results-ghana");
+    expect(slugs).toContain("ghana-wage-system-ghc-60000-vs-ghc-21-77");
+    expect(slugs).toContain("one-million-coders-ghana-tech-future");
+    expect(slugs).toContain("ai-tools-for-ghanaian-students-2026");
+    expect(slugs).toContain("ai-for-ghanaian-teachers");
+    expect(slugs).toContain("wassce-ai-study-guide");
+    expect(slugs).toContain("ai-money-making-opportunities-ghana");
+    expect(slugs).toContain("facebook-tiktok-whatsapp-fact-checking");
+    expect(slugs).toContain("african-youth-ai-future-jobs");
+    expect(slugs).toContain("ghana-ai-future-opportunities-challenges");
     for (const post of BLOG_POST_REGISTRY) {
       expect(categorySlugForName(post.category)).toBeTruthy();
       expect(post.featuredImageAlt.length).toBeGreaterThan(10);
@@ -27,7 +37,7 @@ describe("blog post registry", () => {
 
   it("exposes posts with hrefs and reading time", () => {
     const posts = getRegistryBlogPosts();
-    expect(posts).toHaveLength(3);
+    expect(posts).toHaveLength(13);
     for (const post of posts) {
       expect(post.href).toBe(`/blog/${post.slug}/`);
       expect(post.readingTime).toMatch(/min read/);
@@ -75,7 +85,7 @@ describe("blog routes (source)", () => {
       "utf8"
     );
     expect(categoryPage).toContain("generateStaticParams");
-    expect(BLOG_CATEGORIES).toHaveLength(7);
+    expect(BLOG_CATEGORIES).toHaveLength(9);
   });
 
   it("has not-found handling for invalid slugs", () => {

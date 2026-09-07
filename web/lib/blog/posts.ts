@@ -9,6 +9,16 @@ import {
 import { BestAiToolsInGhana2026Body } from "@/content/blog/best-ai-tools-in-ghana-2026";
 import { AiForBeceWassceBody } from "@/content/blog/ai-for-bece-wassce-preparation-ghana";
 import { TopAiAppsInGhana2026Body } from "@/content/blog/top-ai-apps-in-ghana-2026";
+import { Wassce2026ResultsGhanaBody } from "@/content/blog/wassce-2026-results-ghana";
+import { GhanaWageSystemBody } from "@/content/blog/ghana-wage-system-ghc-60000-vs-ghc-21-77";
+import { OneMillionCodersGhanaBody } from "@/content/blog/one-million-coders-ghana-tech-future";
+import { AiToolsForGhanaianStudents2026Body } from "@/content/blog/ai-tools-for-ghanaian-students-2026";
+import { AiForGhanaianTeachersBody } from "@/content/blog/ai-for-ghanaian-teachers";
+import { WassceAiStudyGuideBody } from "@/content/blog/wassce-ai-study-guide";
+import { AiMoneyMakingOpportunitiesGhanaBody } from "@/content/blog/ai-money-making-opportunities-ghana";
+import { FacebookTiktokWhatsappFactCheckingBody } from "@/content/blog/facebook-tiktok-whatsapp-fact-checking";
+import { AfricanYouthAiFutureJobsBody } from "@/content/blog/african-youth-ai-future-jobs";
+import { GhanaAiFutureOpportunitiesChallengesBody } from "@/content/blog/ghana-ai-future-opportunities-challenges";
 import type { ComponentType } from "react";
 
 export type BlogArticleBodyProps = {
@@ -26,6 +36,16 @@ const BODY_BY_SLUG: Record<string, { Body: ComponentType<BlogArticleBodyProps>; 
     "best-ai-tools-in-ghana-2026": BestAiToolsInGhana2026Body,
     "ai-for-bece-wassce-preparation-ghana": AiForBeceWassceBody,
     "top-ai-apps-in-ghana-2026": TopAiAppsInGhana2026Body,
+    "wassce-2026-results-ghana": Wassce2026ResultsGhanaBody,
+    "ghana-wage-system-ghc-60000-vs-ghc-21-77": GhanaWageSystemBody,
+    "one-million-coders-ghana-tech-future": OneMillionCodersGhanaBody,
+    "ai-tools-for-ghanaian-students-2026": AiToolsForGhanaianStudents2026Body,
+    "ai-for-ghanaian-teachers": AiForGhanaianTeachersBody,
+    "wassce-ai-study-guide": WassceAiStudyGuideBody,
+    "ai-money-making-opportunities-ghana": AiMoneyMakingOpportunitiesGhanaBody,
+    "facebook-tiktok-whatsapp-fact-checking": FacebookTiktokWhatsappFactCheckingBody,
+    "african-youth-ai-future-jobs": AfricanYouthAiFutureJobsBody,
+    "ghana-ai-future-opportunities-challenges": GhanaAiFutureOpportunitiesChallengesBody,
   };
 
 function withPath(post: BlogPost, readingTime: string): BlogPostWithPath {
