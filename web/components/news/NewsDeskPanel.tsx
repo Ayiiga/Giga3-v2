@@ -38,6 +38,7 @@ const VERDICT_CLASS: Record<VerificationResult["verdict"], string> = {
 };
 
 const LIVE_NEWS_CATEGORIES = [
+  { id: "ghana", label: "Ghana" },
   { id: "", label: "All topics" },
   { id: "politics", label: "Politics" },
   { id: "world", label: "World" },
@@ -124,10 +125,10 @@ export function NewsDeskPanel({
   }
 
   const title =
-    variant === "chat" ? "Latest news & fact-check" : "Latest news & social headlines";
+    variant === "chat" ? "Ghana & world news assistant" : "Latest news & social headlines";
   const subtitle =
     variant === "chat"
-      ? "Load trusted headlines by topic (politics, world, business, tech, sports, and more). Verify claims before you share or cite them."
+      ? "Load live headlines from credible sources. Each story should show date, outlet, and link. Verify claims before you share — labels: Verified, Developing, or Unverified."
       : "Read headlines from major news outlets and social discussion feeds. Verify claims before you reference them in your products.";
 
   return (
@@ -145,7 +146,7 @@ export function NewsDeskPanel({
             )}
           >
             <Newspaper className="h-4 w-4" aria-hidden />
-            {variant === "chat" ? "Giga3 news desk" : "Creator news desk"}
+            {variant === "chat" ? "Giga3 news assistant" : "Creator news desk"}
           </div>
           <h2 className={cn("font-semibold", embedded ? "text-base" : "text-lg")}>
             {title}

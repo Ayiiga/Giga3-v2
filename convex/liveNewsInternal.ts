@@ -45,14 +45,18 @@ export const readCategoryCache = internalQuery({
 
 /** Compact briefing for chat system prompts (current-events answers with citations). */
 export const getBriefingInternal = internalQuery({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    categories: v.optional(v.array(v.string())),
+  },
+  handler: async (ctx, args) => {
     if (!isLiveNewsEnabled()) return null;
 
     const now = Date.now();
     const rows: Array<{ category: string; items: LiveNewsHeadline[] }> = [];
+    const filter = args.categories?.length ? new Set(args.categories) : null;
 
     for (const cat of LIVE_NEWS_CATEGORIES) {
+      if (filter && !filter.has(cat.id)) continue;
       const cached = await ctx.db
         .query("liveNewsCache")
         .withIndex("by_category", (q) => q.eq("category", cat.id))

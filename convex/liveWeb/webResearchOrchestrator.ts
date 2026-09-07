@@ -1,5 +1,7 @@
 import {
   buildResearchSearchQuery,
+  isNewsCapability,
+  NEWS_RESPONSE_FORMAT_GUIDANCE,
   type ResearchCapabilityId,
 } from "../researchCapabilities";
 import {
@@ -38,12 +40,24 @@ function sourceFromSearch(row: {
 function buildContextBlock(
   query: string,
   pages: Array<{ title: string; domain: string; uri: string; text: string }>,
-  searchSnippets: LiveWebSource[]
+  searchSnippets: LiveWebSource[],
+  capability?: ResearchCapabilityId
 ): string {
   const lines: string[] = [
     "LIVE WEB RESEARCH CONTEXT (public sources only — cite these in your answer):",
     `User query: ${query.slice(0, 500)}`,
   ];
+
+  if (capability === "ghana_news" || capability === "breaking_news") {
+    lines.push(
+      "",
+      "Ghana news assistant rules:",
+      "- Cross-check important claims across multiple credible Ghana outlets.",
+      "- Show publication dates and markdown source links for each story.",
+      "- Label items Verified / Developing / Unverified / Disputed.",
+      "- Never invent current Ghana news."
+    );
+  }
 
   if (searchSnippets.length) {
     lines.push("", "Search results:");
@@ -74,7 +88,8 @@ function buildContextBlock(
     "- Compare multiple sources when they disagree.",
     "- If information may be outdated, say so and note when it was accessed.",
     "- Do not invent URLs or sources.",
-    "- Clearly distinguish live web facts from general knowledge."
+    "- Clearly distinguish live web facts from general knowledge.",
+    NEWS_RESPONSE_FORMAT_GUIDANCE
   );
 
   return lines.filter(Boolean).join("\n");
@@ -172,7 +187,7 @@ export async function runWebResearch(args: {
   const uniqueSources = dedupeSources(sources);
   const contextBlock =
     uniqueSources.length || pages.length
-      ? buildContextBlock(args.query, pages, searchResults)
+      ? buildContextBlock(args.query, pages, searchResults, args.researchCapability)
       : searchProvider
         ? ""
         : "";
