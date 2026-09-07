@@ -71,6 +71,7 @@ export function GigaEditClient() {
     () => parseBool(searchParams?.get("record") ?? null),
     [searchParams]
   );
+  const initialOverlayText = searchParams?.get("overlayText")?.trim() ?? "";
 
   const openSection = useCallback(
     (next: GigaEditSection, opts?: GigaEditOpenOptions) => {
@@ -136,6 +137,7 @@ export function GigaEditClient() {
           initialProjectId={projectId}
           initialAspect={aspect}
           autoImport={autoImport}
+          initialOverlayText={initialOverlayText || undefined}
           onBackHome={() => openSection("home")}
         />
       )}

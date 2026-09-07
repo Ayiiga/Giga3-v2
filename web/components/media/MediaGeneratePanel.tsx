@@ -11,6 +11,7 @@ import { useGenerationStages } from "@/hooks/useGenerationStages";
 import { useMediaVideoJob } from "@/hooks/useMediaVideoJob";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { VideoGenerateForm, type VideoFormValues } from "@/components/media/VideoGenerateForm";
+import { VideoProjectStudio } from "@/components/media/VideoProjectStudio";
 import { getRecentImageUrls, subscribeRecentImageUrls } from "@/lib/media/jobsRefresh";
 import {
   IMAGE_CATEGORIES,
@@ -136,6 +137,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
     quality: "720p",
     audio: true,
   });
+  const [videoWorkflow, setVideoWorkflow] = useState<"quick" | "project">("quick");
   const [videoSubmitting, setVideoSubmitting] = useState(false);
   const [lastVideoRequest, setLastVideoRequest] = useState<VideoFormValues | null>(null);
 
@@ -272,24 +274,56 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
 
       <div className="saas-card space-y-6 p-6 shadow-premium sm:p-8">
         {tab === "video" ? (
-          <VideoGenerateForm
-            values={videoForm}
-            onChange={(patch) => setVideoForm((prev) => ({ ...prev, ...patch }))}
-            onGenerate={() => void submitVideo(videoForm)}
-            onRetry={() => void submitVideo(lastVideoRequest ?? videoForm)}
-            onDismissResult={() => {
-              videoJob.clear();
-              clearStatus();
-            }}
-            canGenerate={Boolean(canGen)}
-            creditCost={videoCreditCost}
-            creditsAvailable={usage ? usage.credits : null}
-            submitting={videoSubmitting}
-            job={videoJob.job}
-            jobStartedAt={videoJob.startedAt}
-            error={error}
-            recentImageUrls={recentImageUrls}
-          />
+          <>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setVideoWorkflow("quick")}
+                className={cn(
+                  "min-h-11 rounded-xl px-4 py-2 text-sm font-semibold",
+                  videoWorkflow === "quick"
+                    ? "bg-violet-600 text-white"
+                    : "border border-border text-muted hover:text-foreground"
+                )}
+              >
+                Quick clip
+              </button>
+              <button
+                type="button"
+                onClick={() => setVideoWorkflow("project")}
+                className={cn(
+                  "min-h-11 rounded-xl px-4 py-2 text-sm font-semibold",
+                  videoWorkflow === "project"
+                    ? "bg-violet-600 text-white"
+                    : "border border-border text-muted hover:text-foreground"
+                )}
+              >
+                Video project (Scene Director)
+              </button>
+            </div>
+            {videoWorkflow === "project" ? (
+              <VideoProjectStudio usage={usage} initialPrompt={videoForm.prompt || initialPrompt} />
+            ) : (
+              <VideoGenerateForm
+                values={videoForm}
+                onChange={(patch) => setVideoForm((prev) => ({ ...prev, ...patch }))}
+                onGenerate={() => void submitVideo(videoForm)}
+                onRetry={() => void submitVideo(lastVideoRequest ?? videoForm)}
+                onDismissResult={() => {
+                  videoJob.clear();
+                  clearStatus();
+                }}
+                canGenerate={Boolean(canGen)}
+                creditCost={videoCreditCost}
+                creditsAvailable={usage ? usage.credits : null}
+                submitting={videoSubmitting}
+                job={videoJob.job}
+                jobStartedAt={videoJob.startedAt}
+                error={error}
+                recentImageUrls={recentImageUrls}
+              />
+            )}
+          </>
         ) : (
           <>
         {editActionActive && initialAction && (

@@ -95,6 +95,8 @@ export type VideoEditorProps = {
   initialAspect?: ExportAspectRatio | null;
   /** Open the file picker once on mount (Creator Home → Import Video). */
   autoImport?: boolean;
+  /** Pre-fill overlay text from Media Studio handoff (exact user text). */
+  initialOverlayText?: string;
   onBackHome?: () => void;
 };
 
@@ -102,6 +104,7 @@ export function VideoEditor({
   initialProjectId = null,
   initialAspect = null,
   autoImport = false,
+  initialOverlayText = "",
   onBackHome,
 }: VideoEditorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -203,6 +206,12 @@ export function VideoEditor({
   useEffect(() => {
     void loadBrandKit().then(setBrandKit);
   }, []);
+
+  useEffect(() => {
+    if (initialOverlayText.trim()) {
+      setOverlayText(initialOverlayText.trim());
+    }
+  }, [initialOverlayText]);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 640px)");
