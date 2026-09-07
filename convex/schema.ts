@@ -942,10 +942,29 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     deletedAt: v.optional(v.number()),
+    /** Creator-controlled template permission — default off for new posts. */
+    templatePolicy: v.optional(
+      v.union(
+        v.literal("off"),
+        v.literal("fans"),
+        v.literal("public"),
+        v.literal("owner")
+      )
+    ),
+    templateUseCount: v.optional(v.number()),
   })
     .index("by_created", ["createdAt"])
     .index("by_author_created", ["authorId", "createdAt"])
     .index("by_community_created", ["communitySlug", "createdAt"]),
+
+  /** Cached GigaSocial post template analysis — avoids re-processing media. */
+  socialTemplateCache: defineTable({
+    postId: v.id("socialPosts"),
+    analysisJson: v.string(),
+    categories: v.optional(v.array(v.string())),
+    templateUseCount: v.optional(v.number()),
+    updatedAt: v.number(),
+  }).index("by_post", ["postId"]),
 
   socialComments: defineTable({
     postId: v.id("socialPosts"),

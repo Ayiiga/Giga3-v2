@@ -40,6 +40,7 @@ export type SocialPost = {
   shareCount: number;
   createdAt: number;
   pinnedAt?: number;
+  templatePolicy?: "off" | "fans" | "public" | "owner";
   author: SocialAuthor;
   likedByMe?: boolean;
   bookmarkedByMe?: boolean;

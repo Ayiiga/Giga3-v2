@@ -53,6 +53,8 @@ export type GigaSocialFeatureFlags = {
   enableLoyaltyLevels: boolean;
   /** Personal AI assistant card (summaries / reminders). */
   enablePersonalAssistant: boolean;
+  /** GigaSocial posts as creative templates for AI Studio. */
+  enableUseAsTemplate: boolean;
 };
 
 const STORAGE_KEY = "giga3_gigasocial_flags";
@@ -94,6 +96,7 @@ export const GIGASOCIAL_FEATURE_DEFAULTS: GigaSocialFeatureFlags = {
   enableSmartNotifications: envFlag("NEXT_PUBLIC_GIGASOCIAL_SMART_NOTIFICATIONS", true),
   enableLoyaltyLevels: envFlag("NEXT_PUBLIC_GIGASOCIAL_LOYALTY", true),
   enablePersonalAssistant: envFlag("NEXT_PUBLIC_GIGASOCIAL_PERSONAL_ASSISTANT", true),
+  enableUseAsTemplate: envFlag("NEXT_PUBLIC_GIGASOCIAL_USE_AS_TEMPLATE", true),
 };
 
 export function readGigaSocialFeatureOverrides(): Partial<GigaSocialFeatureFlags> {

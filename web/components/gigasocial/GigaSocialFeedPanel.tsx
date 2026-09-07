@@ -30,6 +30,13 @@ import { GigaSocialFeedHero } from "@/components/gigasocial/GigaSocialFeedHero";
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
 import { GigaRemixStudio } from "@/components/gigasocial/remix/GigaRemixStudio";
 import type { GigaRemixModeId } from "@/lib/gigasocial/remixMeta";
+import { GigaTemplateStudio } from "@/components/gigasocial/template/GigaTemplateStudio";
+import type { GigaTemplateModeId } from "@/lib/gigasocial/templateMeta";
+import {
+  buildTemplateHandoffFromPost,
+  persistTemplateHandoff,
+  templateStudioHref,
+} from "@/lib/gigasocial/templateHandoff";
 import type { AIStudioLaunch } from "@/components/gigasocial/studio/GigaSocialAIStudioHub";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -144,6 +151,9 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const [remixSource, setRemixSource] = useState<SocialPost | null>(null);
   const [remixMode, setRemixMode] = useState<GigaRemixModeId>("classic");
   const [remixStudioPost, setRemixStudioPost] = useState<SocialPost | null>(null);
+  const [templateStudioPost, setTemplateStudioPost] = useState<SocialPost | null>(null);
+  const [templateBusy, setTemplateBusy] = useState(false);
+  const [templateError, setTemplateError] = useState<string | null>(null);
   const [errorToast, setErrorToast] = useState<string | null>(null);
   const gigaEditPublishHandledRef = useRef(false);
   const [activeFeaturedVideoId, setActiveFeaturedVideoId] = useState<string | null>(null);
@@ -208,8 +218,17 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const recordShare = useMutation(api.gigaSocial.recordShare);
   const deletePost = useMutation(api.gigaSocial.deletePost);
   const setPostPinned = useMutation(api.gigaSocial.setPostPinned);
+  const recordTemplateUse = useMutation(api.gigaSocialTemplates.recordTemplateUse);
 
-  const searchLoading =
+  const templateAnalysis = useQuery(
+    api.gigaSocialTemplates.getPostTemplateAnalysis,
+    templateStudioPost && sessionToken
+      ? {
+          sessionToken,
+          postId: templateStudioPost._id as Id<"socialPosts">,
+        }
+      : "skip"
+  );
     Boolean(debouncedSearch.trim()) && searchResults === undefined && effectiveOnline;
   const initialFeedLoading =
     !savedFeed && !debouncedSearch.trim() && feed === undefined && effectiveOnline;
@@ -709,6 +728,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         profileId: (args.profileId ?? activeProfileId ?? undefined) as
           | Id<"socialProfiles">
           | undefined,
+        ...(args.templatePolicy ? { templatePolicy: args.templatePolicy } : {}),
       });
       resetFeedPagination();
       setComposeAction(undefined);
@@ -726,16 +746,49 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   );
 
   const handleEditPost = useCallback(
-    async (postId: string, args: { body: string; postType: SocialPostTypeId }) => {
+    async (
+      postId: string,
+      args: {
+        body: string;
+        postType: SocialPostTypeId;
+        templatePolicy?: "off" | "fans" | "public" | "owner";
+      }
+    ) => {
       if (!sessionToken) throw new Error("Sign in to edit.");
       await updatePost({
         sessionToken,
         postId: postId as Id<"socialPosts">,
         body: args.body,
         postType: args.postType,
+        ...(args.templatePolicy !== undefined ? { templatePolicy: args.templatePolicy } : {}),
       });
     },
     [sessionToken, updatePost]
+  );
+
+  const handleStartTemplate = useCallback(
+    async (mode: GigaTemplateModeId, userIdea: string) => {
+      if (!sessionToken || !templateStudioPost) return;
+      setTemplateBusy(true);
+      setTemplateError(null);
+      try {
+        await recordTemplateUse({
+          sessionToken,
+          postId: templateStudioPost._id as Id<"socialPosts">,
+          mode,
+          userIdea,
+        });
+        const payload = buildTemplateHandoffFromPost(templateStudioPost, mode, userIdea);
+        persistTemplateHandoff(payload);
+        setTemplateStudioPost(null);
+        window.location.assign(templateStudioHref(payload));
+      } catch (error) {
+        setTemplateError(error instanceof Error ? error.message : "Could not start template.");
+      } finally {
+        setTemplateBusy(false);
+      }
+    },
+    [recordTemplateUse, sessionToken, templateStudioPost]
   );
 
   const loadMore = useCallback(() => {
@@ -981,6 +1034,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
                     (getUserEmail() && post.author.userId === getUserEmail())
                 )}
                 enableRemix={features.enableGigaRemix}
+                enableUseAsTemplate={features.enableUseAsTemplate}
                 enableEdit
                 enablePostAIActions={features.enablePostAIActions}
                 enablePostTips={features.enablePostTips}
@@ -993,6 +1047,18 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
                           return;
                         }
                         setRemixStudioPost(source);
+                      }
+                    : undefined
+                }
+                onUseAsTemplate={
+                  features.enableUseAsTemplate
+                    ? (source) => {
+                        if (!sessionToken) {
+                          requireAuth();
+                          return;
+                        }
+                        setTemplateError(null);
+                        setTemplateStudioPost(source);
                       }
                     : undefined
                 }
@@ -1095,6 +1161,30 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
             }
             openComposer("remix", source, { remixMode: mode });
           }}
+        />
+      ) : null}
+
+      {features.enableUseAsTemplate && templateStudioPost ? (
+        <GigaTemplateStudio
+          open
+          post={templateStudioPost}
+          availableModes={templateAnalysis?.eligibility.availableModes ?? []}
+          attributionLine={
+            templateAnalysis?.eligibility.attributionLine ??
+            `Inspired by a GigaSocial template by @${templateStudioPost.author.handle}.`
+          }
+          loading={templateBusy || templateAnalysis === undefined}
+          error={
+            templateError ??
+            (templateAnalysis && !templateAnalysis.eligibility.eligible
+              ? templateAnalysis.eligibility.reason ?? "Template use is not allowed."
+              : null)
+          }
+          onClose={() => {
+            setTemplateStudioPost(null);
+            setTemplateError(null);
+          }}
+          onStart={handleStartTemplate}
         />
       ) : null}
     </div>

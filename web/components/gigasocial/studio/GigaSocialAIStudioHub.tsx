@@ -152,7 +152,7 @@ export function resolveAIStudioLaunch(toolId: AIStudioToolId): AIStudioLaunch {
     case "voice-studio":
       return { kind: "navigate", href: siteConfig.links.dashboard };
     case "template-library":
-      return { kind: "navigate", href: siteConfig.links.creatorStudio };
+      return { kind: "navigate", href: "/gigasocial/?tab=discover&view=templates" };
     case "analytics":
       return { kind: "navigate", href: "/gigasocial/?tab=creator" };
     case "publishing-scheduler":

@@ -11,6 +11,7 @@ export const MEDIA_CAPABILITY_IDS = [
   "video_timeline_edit",
   "video_generate",
   "video_file_attached",
+  "gigasocial_template",
 ] as const;
 
 export type MediaCapabilityId = (typeof MEDIA_CAPABILITY_IDS)[number];
@@ -62,6 +63,12 @@ const VIDEO_EDIT_INTENT_RE =
 const VIDEO_GENERATE_INTENT_RE =
   /\b(generate|create|make|produce)\b[\s\S]{0,32}\b(video|clip|reel|short|animation)\b/i;
 
+const GIGASOCIAL_TEMPLATE_INTENT_RE =
+  /\b(make|create|generate|produce|remix)\b[\s\S]{0,40}\b(like|similar to|inspired by|based on)\b[\s\S]{0,40}\b(this )?(gigasocial )?(post|video|clip|reel|template)\b/i;
+
+const GIGASOCIAL_TEMPLATE_ALT_RE =
+  /\b(use (this )?(gigasocial )?post as (a )?template|gigasocial template|use as template)\b/i;
+
 export function detectMediaToolsQuestion(query: string): boolean {
   const q = query.trim();
   return MEDIA_TOOLS_QUESTION_RE.test(q) || MEDIA_TOOLS_QUESTION_ALT_RE.test(q);
@@ -77,6 +84,11 @@ export function detectVideoEditIntent(query: string): boolean {
 
 export function detectVideoGenerateIntent(query: string): boolean {
   return VIDEO_GENERATE_INTENT_RE.test(query.trim());
+}
+
+export function detectGigaSocialTemplateIntent(query: string): boolean {
+  const q = query.trim();
+  return GIGASOCIAL_TEMPLATE_INTENT_RE.test(q) || GIGASOCIAL_TEMPLATE_ALT_RE.test(q);
 }
 
 export function isVideoAttachment(mimeType?: string, name?: string): boolean {
@@ -98,6 +110,10 @@ export function resolveMediaCapability(args: {
 
   if (detectMediaToolsQuestion(query)) {
     return "tools_overview";
+  }
+
+  if (detectGigaSocialTemplateIntent(query)) {
+    return "gigasocial_template";
   }
 
   if (detectVideoEditIntent(query)) {
@@ -136,6 +152,7 @@ function buildMediaStudioImageUrl(action: string, sourceUrl?: string): string {
 const MEDIA_STUDIO_VIDEO_URL = "/media?tab=video";
 const GIGAEDIT_URL = "/gigaedit/";
 const MEDIA_STUDIO_IMAGE_URL = "/media?tab=image";
+const GIGASOCIAL_TEMPLATES_URL = "/gigasocial/?tab=discover&view=templates";
 
 const MEDIA_SAFETY_RULES = [
   "Media safety (mandatory):",
@@ -269,6 +286,20 @@ export function mediaSystemPromptAddon(
         "Chat cannot visually analyze video pixels. Suggest: (1) export key frames as images for Vision analysis in chat, or (2) import the video into GigaEdit for editing.",
         tools.gigaEdit ? `[Open GigaEdit](${GIGAEDIT_URL})` : "",
         tools.videoStudio ? `[Media Studio Video](${MEDIA_STUDIO_VIDEO_URL}) for AI clip generation.` : ""
+      );
+      break;
+
+    case "gigasocial_template":
+      parts.push(
+        "The user wants to create content inspired by a GigaSocial post template.",
+        "Workflow:",
+        "1) Confirm the post is eligible — creator must allow templates (public, fans, or owner-only).",
+        "2) Ask what new topic or idea they want if they have not provided one.",
+        "3) Explain that Giga3 analyzes structure/style only — never copies the original media, voice, music, watermarks, or likeness.",
+        "4) Guide them to GigaSocial → Use as Template, or browse [Creative Templates](" + GIGASOCIAL_TEMPLATES_URL + ").",
+        "5) After generation, they can preview, edit in Media Studio or GigaEdit, export, or publish a new original post.",
+        "Include attribution when appropriate: \"Inspired by a GigaSocial template by @creator.\"",
+        "Refuse if the request would impersonate someone, remove watermarks, or reuse copyrighted audio without rights."
       );
       break;
   }

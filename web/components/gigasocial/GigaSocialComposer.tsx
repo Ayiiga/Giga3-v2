@@ -32,6 +32,7 @@ import {
 } from "@/lib/gigasocial/mediaUpload";
 import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
 import { GigaSocialComposerMeta } from "@/components/gigasocial/composer/GigaSocialComposerMeta";
+import { GigaSocialTemplatePolicyPicker } from "@/components/gigasocial/template/GigaSocialTemplatePolicyPicker";
 import { SoundLibraryPicker } from "@/components/gigaedit/SoundLibraryPicker";
 import { soundAttributionLine } from "@/lib/gigaedit/soundLibrary";
 import {
@@ -59,12 +60,14 @@ import {
   type GigaRemixModeId,
 } from "@/lib/gigasocial/remixMeta";
 import { POST_TYPE_OPTIONS, type SocialPostTypeId } from "@/lib/gigasocial/sections";
+import type { GigaTemplatePolicy } from "@/lib/gigasocial/templateMeta";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { api } from "convex/_generated/api";
 import { useAction, useMutation } from "convex/react";
 import { Camera, Loader2, Send, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 
 interface PendingImage {
   id: string;
@@ -127,6 +130,7 @@ interface GigaSocialComposerProps {
     communitySlug?: string;
     visibility?: "public" | "followers";
     profileId?: string;
+    templatePolicy?: GigaTemplatePolicy;
   }) => Promise<void>;
   /** Active multi-account profile for this post. */
   profileId?: string;
@@ -156,12 +160,14 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   onFullscreenFlowChange,
   onSubmit,
 }: GigaSocialComposerProps) {
+  const features = useGigaSocialFeatures();
   const [body, setBody] = useState("");
   const [postType, setPostType] = useState<SocialPostTypeId>("text");
   const captionMaxLength = useMemo(() => socialCaptionMaxLength(postType), [postType]);
   const [visibility, setVisibility] = useState<"public" | "followers">(
     () => initialVisibility ?? "public"
   );
+  const [templatePolicy, setTemplatePolicy] = useState<GigaTemplatePolicy>("off");
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [pendingVideo, setPendingVideo] = useState<PendingVideo | null>(null);
   const [videoTrimDraft, setVideoTrimDraft] = useState<VideoTrimDraft | null>(null);
@@ -849,6 +855,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         communitySlug,
         visibility,
         profileId,
+        ...(features.enableUseAsTemplate ? { templatePolicy } : {}),
       });
 
       setBody("");
@@ -937,6 +944,14 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         disabled={disabled || busy}
         compact={compact}
       />
+      {features.enableUseAsTemplate ? (
+        <GigaSocialTemplatePolicyPicker
+          value={templatePolicy}
+          onChange={setTemplatePolicy}
+          disabled={disabled || busy}
+          compact={compact}
+        />
+      ) : null}
       {soundAttribution ? (
         <p className="rounded-lg border border-amber-200/40 bg-amber-50/80 px-3 py-1.5 text-xs text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100">
           🎵 {soundAttribution}
