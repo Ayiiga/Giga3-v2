@@ -1,3 +1,4 @@
+export * from "@/lib/media/videoProject/directorMode";
 export * from "@/lib/media/videoProject/types";
 export * from "@/lib/media/videoProject/sceneDirector";
 export * from "@/lib/media/videoProject/cinematicPrompt";

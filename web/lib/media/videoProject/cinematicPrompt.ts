@@ -82,12 +82,14 @@ export const MEDIA_STUDIO_VIDEO_CAPABILITIES: ProviderVideoCapabilities = {
 export function buildSceneGenerationPrompt(
   scenePrompt: string,
   settings: VideoProjectGenerationSettings,
-  consistency: ConsistencyProfile
+  consistency: ConsistencyProfile,
+  sceneCamera?: CameraMovementId
 ): string {
+  const camera = sceneCamera ?? settings.cameraMovement;
   const parts = [
     scenePrompt.trim(),
     VISUAL_STYLE_PROMPTS[settings.visualStyle],
-    CAMERA_MOVEMENT_PROMPTS[settings.cameraMovement],
+    CAMERA_MOVEMENT_PROMPTS[camera],
     LIGHTING_PROMPTS[settings.lighting],
     MOTION_INTENSITY_PROMPTS[settings.motionIntensity],
     ENVIRONMENT_PROMPTS[settings.environment],

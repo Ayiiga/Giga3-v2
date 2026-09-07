@@ -19,14 +19,20 @@ import {
   validateOverlayTextExact,
 } from "../../web/lib/media/videoProject/textOverlays";
 import {
-  runVideoProjectQualityCheck,
-  estimateProjectCredits,
-} from "../../web/lib/media/videoProject/qualityCheck";
+  buildDirectorPlanFromIdea,
+  buildDirectorScenePrompt,
+  applyDirectorPlanToProject,
+  formatDirectorPlanSummary,
+} from "../../web/lib/media/videoProject/directorMode";
 import {
   beginSceneGeneration,
   completeSceneGeneration,
   newGenerationNonce,
 } from "../../web/lib/media/videoProject/idempotency";
+import {
+  runVideoProjectQualityCheck,
+  estimateProjectCredits,
+} from "../../web/lib/media/videoProject/qualityCheck";
 import { parseLocationFromPrompt } from "../../web/lib/media/videoProject/locationContext";
 
 describe("sceneDirector", () => {
@@ -103,6 +109,9 @@ describe("qualityCheck", () => {
       createdAt: 1,
       updatedAt: 1,
       masterPrompt: "Test",
+      sourceIdea: "Test",
+      directorMode: false,
+      directorPlan: null,
       settings: DEFAULT_GENERATION_SETTINGS,
       consistency: createDefaultConsistencyProfile("Test"),
       scenes,
@@ -110,6 +119,54 @@ describe("qualityCheck", () => {
     });
     expect(report.headline).toBe("NEEDS REVIEW");
     expect(report.disclaimer).toContain("heuristics");
+  });
+});
+
+describe("directorMode", () => {
+  it("builds a Ghana 2050 Accra plan matching the Director Mode structure", () => {
+    const idea = "Ghana in 2050 — show what Accra might look like.";
+    const plan = buildDirectorPlanFromIdea({ sourceIdea: idea });
+    expect(plan.title).toBe("Ghana in 2050 — Accra");
+    expect(plan.format).toBe("9:16");
+    expect(plan.totalDurationSec).toBe(25);
+    expect(plan.visualStyleLabel).toContain("futuristic");
+    expect(plan.scenes).toHaveLength(5);
+    expect(plan.scenes[0].slug).toBe("ESTABLISHING SHOT");
+    expect(plan.scenes[0].description).toContain("Accra");
+    expect(formatDirectorPlanSummary(plan)).toContain("Ghana in 2050 — Accra");
+  });
+
+  it("preserves source idea in scene prompts without rewriting the user's words", () => {
+    const idea = "Ghana in 2050 — show what Accra might look like.";
+    const plan = buildDirectorPlanFromIdea({ sourceIdea: idea });
+    const prompt = buildDirectorScenePrompt(idea, plan.scenes[0]);
+    expect(prompt).toContain(idea);
+  });
+
+  it("syncs director plan into editable video scenes", () => {
+    const idea = "Ghana in 2050 — show what Accra might look like.";
+    const plan = buildDirectorPlanFromIdea({ sourceIdea: idea });
+    const project = applyDirectorPlanToProject(
+      {
+        id: "p1",
+        title: "x",
+        status: "draft",
+        createdAt: 1,
+        updatedAt: 1,
+        masterPrompt: idea,
+        sourceIdea: idea,
+        directorMode: true,
+        directorPlan: plan,
+        settings: DEFAULT_GENERATION_SETTINGS,
+        consistency: createDefaultConsistencyProfile("x"),
+        scenes: [],
+        textOverlays: [],
+      },
+      plan
+    );
+    expect(project.scenes).toHaveLength(5);
+    expect(project.scenes[0].durationSec).toBe(5);
+    expect(project.scenes[0].cameraMovement).toBe("aerial");
   });
 });
 

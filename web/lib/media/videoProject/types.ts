@@ -158,6 +158,12 @@ export type VideoScene = {
   order: number;
   title: string;
   prompt: string;
+  /** Director Mode: short scene brief (user-editable). */
+  description?: string;
+  /** Per-scene duration when supported (5/10/15s). */
+  durationSec?: MediaVideoDurationSec;
+  /** Per-scene camera override for prompt steering. */
+  cameraMovement?: CameraMovementId;
   locked: boolean;
   status: SceneGenerationState;
   jobId?: string;
@@ -170,6 +176,29 @@ export type VideoScene = {
   generationNonce?: string;
 };
 
+/** Structured production plan from Director Mode — fully editable before generation. */
+export type DirectorPlanScene = {
+  id: string;
+  order: number;
+  /** Display slug e.g. ESTABLISHING SHOT */
+  slug: string;
+  title: string;
+  durationSec: MediaVideoDurationSec;
+  cameraMovement: CameraMovementId;
+  cameraLabel: string;
+  description: string;
+};
+
+export type DirectorProductionPlan = {
+  title: string;
+  format: VideoAspect;
+  /** Target total runtime (sum of scene durations may differ slightly from provider caps). */
+  totalDurationSec: number;
+  visualStyle: VisualStyleId;
+  visualStyleLabel: string;
+  scenes: DirectorPlanScene[];
+};
+
 export type VideoProject = {
   id: string;
   title: string;
@@ -177,6 +206,10 @@ export type VideoProject = {
   createdAt: number;
   updatedAt: number;
   masterPrompt: string;
+  /** Original user idea — never auto-modified by Director Mode. */
+  sourceIdea: string;
+  directorMode: boolean;
+  directorPlan: DirectorProductionPlan | null;
   settings: VideoProjectGenerationSettings;
   consistency: ConsistencyProfile;
   scenes: VideoScene[];

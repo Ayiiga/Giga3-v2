@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
 import type { UsageSnapshot } from "@/lib/credits/constants";
 import { mediaVideoCreditCost } from "@/lib/media/videoCredits";
+import { DirectorModePanel } from "@/components/media/videoProject/DirectorModePanel";
 import {
   applyExportPresetToProject,
   applyRegenerationModeToSettings,
@@ -14,6 +15,7 @@ import {
   createTextOverlay,
   DEFAULT_GENERATION_SETTINGS,
   duplicateScene,
+  estimateDirectorPlanCredits,
   EXPORT_PRESETS,
   gigaEditHandoffHref,
   MEDIA_STUDIO_VIDEO_CAPABILITIES,
@@ -28,6 +30,7 @@ import {
   saveVideoProject,
   scheduleVideoProjectAutosave,
   suggestedTitleOverlaysFromPrompt,
+  syncProjectFromDirectorPlan,
   type CameraMovementId,
   type LightingStyleId,
   type SceneRegenerationMode,
@@ -106,6 +109,9 @@ function createEmptyProject(prompt = ""): VideoProject {
     createdAt: Date.now(),
     updatedAt: Date.now(),
     masterPrompt: prompt,
+    sourceIdea: prompt,
+    directorMode: false,
+    directorPlan: null,
     settings: { ...DEFAULT_GENERATION_SETTINGS },
     consistency: createDefaultConsistencyProfile(title),
     scenes: [],
@@ -122,10 +128,22 @@ export function VideoProjectStudio({ usage, initialPrompt = "" }: VideoProjectSt
   const [saveHint, setSaveHint] = useState<string | null>(null);
   const autosaveRef = useRef<ReturnType<typeof scheduleVideoProjectAutosave> | null>(null);
   const generatingSceneRef = useRef<{ sceneId: string; nonce: string } | null>(null);
+  const batchQueueRef = useRef<string[]>([]);
+  const scenesSectionRef = useRef<HTMLElement | null>(null);
+  const projectRef = useRef(project);
+  projectRef.current = project;
+  const generateSceneRef = useRef<
+    (scene: VideoScene, mode?: SceneRegenerationMode, projectOverride?: VideoProject) => Promise<void>
+  >(async () => {});
   const category: VideoCategoryId = "cinematic_trailers";
 
   const costPerScene = mediaVideoCreditCost(project.settings.durationSec);
-  const estimatedCredits = costPerScene * project.scenes.length;
+  const estimatedCredits = project.directorPlan
+    ? estimateDirectorPlanCredits(project.directorPlan, mediaVideoCreditCost)
+    : project.scenes.reduce(
+        (sum, scene) => sum + mediaVideoCreditCost(scene.durationSec ?? project.settings.durationSec),
+        0
+      ) || costPerScene * project.scenes.length;
   const creditsAvailable = usage?.credits ?? null;
   const canAfford = creditsAvailable === null || creditsAvailable >= costPerScene;
 
@@ -176,6 +194,18 @@ export function VideoProjectStudio({ usage, initialPrompt = "" }: VideoProjectSt
         updatedAt: Date.now(),
       };
       void saveVideoProject(next);
+
+      if (batchQueueRef.current.length > 0 && job.status === "succeeded") {
+        batchQueueRef.current = batchQueueRef.current.filter((id) => id !== gen.sceneId);
+        const nextId = batchQueueRef.current[0];
+        const nextScene = next.scenes.find((s) => s.id === nextId);
+        if (nextScene) {
+          window.setTimeout(() => {
+            void generateSceneRef.current(nextScene);
+          }, 400);
+        }
+      }
+
       return next;
     });
   }, [videoJob.job, costPerScene]);
@@ -194,18 +224,29 @@ export function VideoProjectStudio({ usage, initialPrompt = "" }: VideoProjectSt
   }, [project, persist]);
 
   const generateScene = useCallback(
-    async (scene: VideoScene, mode: SceneRegenerationMode = "same_prompt") => {
+    async (
+      scene: VideoScene,
+      mode: SceneRegenerationMode = "same_prompt",
+      projectOverride?: VideoProject
+    ) => {
+      const activeProject = projectOverride ?? projectRef.current;
       if (scene.locked) return;
       const nonce = newGenerationNonce();
-      if (!beginSceneGeneration(project.id, scene.id, nonce)) return;
+      if (!beginSceneGeneration(activeProject.id, scene.id, nonce)) return;
 
       const settings =
         mode === "same_prompt" || mode === "edit_prompt"
-          ? project.settings
-          : applyRegenerationModeToSettings(project.settings, mode);
+          ? activeProject.settings
+          : applyRegenerationModeToSettings(activeProject.settings, mode);
 
-      const prompt = buildSceneGenerationPrompt(scene.prompt, settings, project.consistency);
-      const scenes = project.scenes.map((s) =>
+      const durationSec = scene.durationSec ?? settings.durationSec;
+      const prompt = buildSceneGenerationPrompt(
+        scene.prompt,
+        settings,
+        activeProject.consistency,
+        scene.cameraMovement
+      );
+      const scenes = activeProject.scenes.map((s) =>
         s.id === scene.id
           ? {
               ...s,
@@ -216,7 +257,7 @@ export function VideoProjectStudio({ usage, initialPrompt = "" }: VideoProjectSt
             }
           : s
       );
-      persist({ ...project, scenes, status: "generating" });
+      persist({ ...activeProject, scenes, status: "generating" });
       generatingSceneRef.current = { sceneId: scene.id, nonce };
       videoJob.clear();
 
@@ -226,7 +267,7 @@ export function VideoProjectStudio({ usage, initialPrompt = "" }: VideoProjectSt
         undefined,
         {
           aspectRatio: settings.aspectRatio,
-          duration: settings.durationSec,
+          duration: durationSec,
           resolution: settings.resolution,
           generateAudio: settings.generateAudio,
         }
@@ -234,11 +275,11 @@ export function VideoProjectStudio({ usage, initialPrompt = "" }: VideoProjectSt
       if (result?.jobId) {
         videoJob.track(result.jobId);
       } else {
-        completeSceneGeneration(project.id, scene.id, nonce);
+        completeSceneGeneration(activeProject.id, scene.id, nonce);
         generatingSceneRef.current = null;
         persist({
-          ...project,
-          scenes: project.scenes.map((s) =>
+          ...activeProject,
+          scenes: activeProject.scenes.map((s) =>
             s.id === scene.id
               ? { ...s, status: "failed", errorMessage: "Could not start generation." }
               : s
@@ -247,8 +288,28 @@ export function VideoProjectStudio({ usage, initialPrompt = "" }: VideoProjectSt
         });
       }
     },
-    [project, persist, createVideo, videoJob]
+    [persist, createVideo, videoJob]
   );
+
+  generateSceneRef.current = generateScene;
+
+  const generateAllScenes = useCallback(() => {
+    const synced = project.directorPlan ? syncProjectFromDirectorPlan(project) : project;
+    const pending = [...synced.scenes]
+      .sort((a, b) => a.order - b.order)
+      .filter((s) => !s.locked && s.status !== "succeeded" && s.status !== "generating");
+    if (!pending.length) return;
+    batchQueueRef.current = pending.map((s) => s.id);
+    if (synced !== project) persist(synced);
+    void generateSceneRef.current(pending[0], "same_prompt", synced);
+  }, [project, persist]);
+
+  const startSceneByScene = useCallback(() => {
+    if (project.directorPlan) {
+      persist(syncProjectFromDirectorPlan(project));
+    }
+    scenesSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [project, persist]);
 
   const updateScene = (sceneId: string, patch: Partial<VideoScene>) => {
     persist({
@@ -289,10 +350,25 @@ export function VideoProjectStudio({ usage, initialPrompt = "" }: VideoProjectSt
         {saveHint && <p className="mt-2 text-xs text-muted">{saveHint}</p>}
       </div>
 
-      {usage && creditsAvailable !== null && creditsAvailable < costPerScene && (
-        <CreditPromptBanner requiredCredits={costPerScene} availableCredits={creditsAvailable} />
+      {usage &&
+        creditsAvailable !== null &&
+        creditsAvailable < (project.directorPlan ? estimatedCredits : costPerScene) && (
+        <CreditPromptBanner
+          requiredCredits={project.directorPlan ? estimatedCredits : costPerScene}
+          availableCredits={creditsAvailable}
+        />
       )}
 
+      <DirectorModePanel
+        project={project}
+        onChange={persist}
+        onGenerateAll={generateAllScenes}
+        onGenerateSceneByScene={startSceneByScene}
+        generating={project.status === "generating" || Boolean(generatingSceneRef.current)}
+        creditsAvailable={creditsAvailable}
+      />
+
+      {!project.directorMode && (
       <section className="saas-card space-y-4 p-4 sm:p-6">
         <h2 className="text-lg font-semibold">1. Describe your video</h2>
         <textarea
@@ -333,7 +409,9 @@ export function VideoProjectStudio({ usage, initialPrompt = "" }: VideoProjectSt
           </Button>
         </div>
       </section>
+      )}
 
+      {!project.directorMode && (
       <section className="saas-card space-y-4 p-4 sm:p-6">
         <h2 className="text-lg font-semibold">2. Format & cinematic controls</h2>
         <p className="text-sm text-muted">
@@ -488,11 +566,21 @@ export function VideoProjectStudio({ usage, initialPrompt = "" }: VideoProjectSt
           </p>
         )}
       </section>
+      )}
 
-      <section className="saas-card space-y-4 p-4 sm:p-6">
-        <h2 className="text-lg font-semibold">3. Scenes</h2>
+      <section
+        ref={scenesSectionRef}
+        className="saas-card space-y-4 p-4 sm:p-6"
+      >
+        <h2 className="text-lg font-semibold">
+          {project.directorMode ? "Scenes" : "3. Scenes"}
+        </h2>
         {sortedScenes.length === 0 ? (
-          <p className="text-sm text-muted">Run Scene Director or add a scene to begin.</p>
+          <p className="text-sm text-muted">
+            {project.directorMode
+              ? "Enable Director Mode, enter your idea, and create a production plan."
+              : "Run Scene Director or add a scene to begin."}
+          </p>
         ) : (
           <ul className="space-y-3">
             {sortedScenes.map((scene, index) => (
@@ -532,6 +620,12 @@ export function VideoProjectStudio({ usage, initialPrompt = "" }: VideoProjectSt
                   disabled={scene.locked}
                   onChange={(e) => updateScene(scene.id, { prompt: e.target.value })}
                 />
+                {scene.durationSec && (
+                  <p className="mt-1 text-xs text-muted">
+                    Duration: {scene.durationSec}s
+                    {scene.cameraMovement ? ` · Camera: ${scene.cameraMovement.replace(/_/g, " ")}` : ""}
+                  </p>
+                )}
                 {scene.outputUrl && (
                   <video
                     src={scene.outputUrl}
