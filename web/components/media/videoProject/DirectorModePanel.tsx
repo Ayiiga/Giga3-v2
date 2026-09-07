@@ -44,7 +44,7 @@ export function DirectorModePanel({
   generating,
   creditsAvailable,
 }: DirectorModePanelProps) {
-  const [planEditing, setPlanEditing] = useState(true);
+  const [planEditing, setPlanEditing] = useState(false);
   const plan = project.directorPlan;
 
   const estimatedCredits = useMemo(
@@ -66,7 +66,7 @@ export function DirectorModePanel({
         directorPlan: nextPlan,
       })
     );
-    setPlanEditing(true);
+    setPlanEditing(false);
   };
 
   const patchPlan = (nextPlan: DirectorProductionPlan) => {
@@ -137,21 +137,9 @@ export function DirectorModePanel({
           {plan && (
             <>
               <div className="rounded-xl border border-violet-200/60 bg-violet-50/40 p-4 dark:border-violet-500/20 dark:bg-violet-950/20">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs font-bold uppercase tracking-wider text-violet-800 dark:text-violet-200">
-                    Production plan
-                  </p>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="gap-1"
-                    onClick={() => setPlanEditing((v) => !v)}
-                  >
-                    <Pencil className="h-3.5 w-3.5" aria-hidden />
-                    {planEditing ? "Preview plan" : "Edit plan"}
-                  </Button>
-                </div>
+                <p className="text-xs font-bold uppercase tracking-wider text-violet-800 dark:text-violet-200">
+                  Production plan
+                </p>
 
                 {planEditing ? (
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -292,10 +280,19 @@ export function DirectorModePanel({
                 </p>
               </div>
 
-              <div className="flex flex-col gap-2 sm:flex-row">
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                 <Button
                   type="button"
-                  className="min-h-12 flex-1 gap-2 text-base"
+                  variant={planEditing ? "default" : "outline"}
+                  className="min-h-12 flex-1 gap-2 text-base uppercase tracking-wide"
+                  onClick={() => setPlanEditing(true)}
+                >
+                  <Pencil className="h-5 w-5" aria-hidden />
+                  Edit plan
+                </Button>
+                <Button
+                  type="button"
+                  className="min-h-12 flex-1 gap-2 text-base uppercase tracking-wide"
                   disabled={
                     generating ||
                     (creditsAvailable !== null && creditsAvailable < estimatedCredits)
@@ -308,12 +305,23 @@ export function DirectorModePanel({
                 <Button
                   type="button"
                   variant="outline"
-                  className="min-h-12 flex-1 text-base"
+                  className="min-h-12 flex-1 text-base uppercase tracking-wide"
                   onClick={onGenerateSceneByScene}
                 >
                   Generate scene-by-scene
                 </Button>
               </div>
+              {planEditing && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="self-start"
+                  onClick={() => setPlanEditing(false)}
+                >
+                  Preview formatted plan
+                </Button>
+              )}
               <p className="text-sm text-muted">
                 Estimated credits: <strong>{estimatedCredits}</strong>
                 {creditsAvailable !== null && (

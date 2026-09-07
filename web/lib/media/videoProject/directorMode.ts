@@ -57,7 +57,7 @@ const FUTURE_CITY_SCENE_TEMPLATES: SceneTemplate[] = [
     title: "Smart transport",
     cameraMovement: "tracking",
     cameraLabel: "tracking shot",
-    description: "futuristic public transportation in motion",
+    description: "futuristic public transportation",
   },
   {
     slug: "CITY LIFE",
