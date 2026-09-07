@@ -66,6 +66,11 @@ function mediaLabel(post: PublicSocialPost): string {
   return "Post";
 }
 
+function postRef(postId: string): string {
+  const id = String(postId);
+  return id.length > 8 ? id.slice(-8) : id;
+}
+
 function primaryMediaUrl(post: PublicSocialPost): string | undefined {
   return post.mediaUrls?.[0] ?? post.mediaUrl;
 }
@@ -120,15 +125,21 @@ export function buildGigaSocialOgMeta(
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 120);
+  const ref = postRef(String(post._id));
   const title = headline
     ? `${headline} — ${author} on GigaSocial`
-    : `${label} by ${author} on GigaSocial`;
+    : `${label} by ${author} on GigaSocial · ${ref}`;
   const bodyExcerpt = (display.title ? display.description : display.description || post.body)
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 180);
   const stats = `${formatCompactCount(views)} views · ${formatCompactCount(likes)} likes`;
-  const description = [bodyExcerpt, stats].filter(Boolean).join(" · ").slice(0, 240);
+  const description = (
+    bodyExcerpt ? [bodyExcerpt, stats] : [`${label} by ${author}`, stats, ref]
+  )
+    .filter(Boolean)
+    .join(" · ")
+    .slice(0, 240);
   const canonicalUrl = buildGigaSocialPostUrl(String(post._id), origin);
   const imageUrl = previewImageUrl(post, mediaMetaJson, origin);
   const videoUrl =
