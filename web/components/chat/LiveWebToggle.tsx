@@ -9,7 +9,6 @@ import {
   writeLiveWebEnabled,
   writeLiveWebMode,
   writeResearchCapability,
-  resolveSendResearchOptions,
   type LiveWebMode,
 } from "@/lib/chat/liveWebPreferences";
 import {
@@ -161,15 +160,3 @@ export const LiveWebToggle = memo(function LiveWebToggle({
     </div>
   );
 });
-
-export function currentLiveWebSendOptions(args?: {
-  query?: string;
-  hasImageAttachment?: boolean;
-}): {
-  liveWeb: boolean;
-  liveWebMode?: LiveWebMode;
-  researchCapability?: ResearchCapabilityId;
-} {
-  const { autoEnabled: _autoEnabled, ...payload } = resolveSendResearchOptions(args);
-  return payload;
-}

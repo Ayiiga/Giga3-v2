@@ -2,7 +2,6 @@
 
 import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
 import { ChatInputToolbar } from "@/components/chat/ChatInputToolbar";
-import { LiveWebToggle } from "@/components/chat/LiveWebToggle";
 import { EmojiPicker } from "@/components/chat/EmojiPicker";
 import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
@@ -312,9 +311,6 @@ export const ChatInput = memo(function ChatInput({
         {notice && (
           <NoticeBanner message={notice} onDismiss={() => setNotice(null)} />
         )}
-
-        <LiveWebToggle disabled={inputDisabled} online={online} />
-
         {attachments.length > 0 && (
           <div className="flex max-h-32 flex-wrap gap-2 overflow-y-auto rounded-xl border border-border bg-card p-2">
             {attachments.map((attachment, index) => (

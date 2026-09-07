@@ -41,12 +41,6 @@ const TEMPLATE_MODEL_TIER_MAP: Partial<Record<DocumentTemplateId, GigaModelId>> 
   report: "smart",
 };
 
-const LIVE_WEB_TEMPLATE_IDS = new Set<DocumentTemplateId>([
-  "thesis",
-  "research-paper",
-  "report",
-]);
-
 const WRITING_MODES = new Set<AiModeId>(["book", "research", "university"]);
 
 export function writingModeForTemplate(
@@ -61,18 +55,16 @@ export function modelTierForTemplate(
   return TEMPLATE_MODEL_TIER_MAP[templateId];
 }
 
-export function shouldSuggestLiveWebForTemplate(
-  templateId: DocumentTemplateId
-): boolean {
-  return LIVE_WEB_TEMPLATE_IDS.has(templateId);
+export function shouldSuggestLiveWebForTemplate(_templateId: DocumentTemplateId): boolean {
+  return false;
 }
 
-export function shouldSuggestLiveWebForMode(mode: AiModeId): boolean {
-  return mode === "research" || mode === "university";
+export function shouldSuggestLiveWebForMode(_mode: AiModeId): boolean {
+  return false;
 }
 
 export function liveWebSuggestionMessage(): string {
-  return "Tip: Turn on Live Web in the composer for cited research and up-to-date sources.";
+  return "";
 }
 
 export function templateInsertNotice(templateId: DocumentTemplateId): string | null {

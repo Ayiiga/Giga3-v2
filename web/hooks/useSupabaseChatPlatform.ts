@@ -1,7 +1,7 @@
 "use client";
 
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
-import { currentLiveWebSendOptions } from "@/components/chat/LiveWebToggle";
+import { currentLiveWebSendOptions } from "@/lib/chat/liveWebPreferences";
 import { useStableConversations } from "@/hooks/useStableConversations";
 import { useStableUiMessages } from "@/hooks/useStableUiMessages";
 import { useConnectionQuality } from "@/hooks/useConnectionQuality";
@@ -16,7 +16,6 @@ import {
   type OutboxEntry,
 } from "@/lib/chat/offlineOutbox";
 import { emitOutboxStatus } from "@/lib/chat/outboxEvents";
-import { liveWebUnavailableMessage } from "@/lib/chat/liveWebPreferences";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import { chatSystemForModel, gigaModelForMode, type GigaModelId } from "@/lib/chat/gigaModels";
 import { getSessionToken, getUserEmail } from "@/lib/auth";
@@ -374,6 +373,7 @@ export function useSupabaseChatPlatform() {
             hasImageAttachment: Boolean(
               attachments?.some((attachment) => attachment.kind === "image")
             ),
+            online: effectiveOnline,
           }),
           ...(attachments?.length
             ? {
@@ -506,19 +506,6 @@ export function useSupabaseChatPlatform() {
         return;
       }
       setError(null);
-      const liveWebOptions = currentLiveWebSendOptions({
-        query: content,
-        hasImageAttachment: Boolean(
-          attachments?.some((attachment) => attachment.kind === "image")
-        ),
-      });
-      if (liveWebOptions.liveWeb) {
-        const offlineMsg = liveWebUnavailableMessage(effectiveOnline);
-        if (offlineMsg) {
-          setError(offlineMsg);
-          return;
-        }
-      }
       setPendingUserText(content);
 
       if (!effectiveOnline) {
@@ -580,6 +567,7 @@ export function useSupabaseChatPlatform() {
             hasImageAttachment: Boolean(
               attachments?.some((attachment) => attachment.kind === "image")
             ),
+            online: effectiveOnline,
           }),
             ...(attachments?.length
               ? {

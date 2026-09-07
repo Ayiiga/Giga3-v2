@@ -1,10 +1,7 @@
 /** Client-side Live Web preferences — no secrets. */
 
 import {
-  detectFactCheckIntent,
-  detectVerifyImageIntent,
   resolveResearchCapability,
-  shouldAutoEnableLiveWeb,
   type ResearchCapabilityId,
 } from "convex/researchCapabilities";
 
@@ -81,40 +78,49 @@ export function liveWebUnavailableMessage(online: boolean): string | null {
   return null;
 }
 
+/** Live Web runs automatically for every online chat send (UI toggle hidden). */
+export const CHAT_LIVE_WEB_ALWAYS_ON = true;
+
 export function resolveSendResearchOptions(args?: {
   query?: string;
   hasImageAttachment?: boolean;
+  /** When false, fall back to general knowledge without blocking the send. */
+  online?: boolean;
 }): {
   liveWeb: boolean;
   liveWebMode?: LiveWebMode;
   researchCapability?: ResearchCapabilityId;
   autoEnabled?: boolean;
 } {
-  const manualEnabled = readLiveWebEnabled();
-  const capability = resolveResearchCapability({
-    explicit: readResearchCapability(),
-    query: args?.query ?? "",
-    liveWebEnabled: manualEnabled,
-    hasImageAttachment: args?.hasImageAttachment,
-  });
-  const autoEnabled =
-    !manualEnabled &&
-    (shouldAutoEnableLiveWeb(args?.query ?? "") ||
-      detectFactCheckIntent(args?.query ?? "") ||
-      detectVerifyImageIntent(args?.query ?? "", Boolean(args?.hasImageAttachment)));
-  const liveWeb =
-    manualEnabled ||
-    autoEnabled ||
-    capability !== "general";
-
-  if (!liveWeb) {
+  if (args?.online === false) {
     return { liveWeb: false, researchCapability: "general" };
   }
 
+  const capability = resolveResearchCapability({
+    explicit: readResearchCapability(),
+    query: args?.query ?? "",
+    liveWebEnabled: CHAT_LIVE_WEB_ALWAYS_ON,
+    hasImageAttachment: args?.hasImageAttachment,
+  });
+
   return {
     liveWeb: true,
-    liveWebMode: readLiveWebMode(),
+    liveWebMode: "research",
     researchCapability: capability,
-    autoEnabled,
+    autoEnabled: true,
   };
+}
+
+/** Payload for chatMessaging:acceptMessage — omits client-only autoEnabled. */
+export function currentLiveWebSendOptions(args?: {
+  query?: string;
+  hasImageAttachment?: boolean;
+  online?: boolean;
+}): {
+  liveWeb: boolean;
+  liveWebMode?: LiveWebMode;
+  researchCapability?: ResearchCapabilityId;
+} {
+  const { autoEnabled: _autoEnabled, ...payload } = resolveSendResearchOptions(args);
+  return payload;
 }

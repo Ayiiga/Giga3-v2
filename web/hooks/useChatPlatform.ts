@@ -51,8 +51,7 @@ import {
   RETRY_BASE_MS,
   RETRY_BASE_SLOW_MS,
 } from "@/lib/chat/chatNetwork";
-import { currentLiveWebSendOptions } from "@/components/chat/LiveWebToggle";
-import { liveWebUnavailableMessage } from "@/lib/chat/liveWebPreferences";
+import { currentLiveWebSendOptions } from "@/lib/chat/liveWebPreferences";
 import {
   convexMutationWithTimeout,
   withClientTimeout,
@@ -520,6 +519,7 @@ export function useChatPlatform() {
             hasImageAttachment: Boolean(
               attachments?.some((attachment) => attachment.kind === "image")
             ),
+            online: effectiveOnline,
           }),
           ...(attachments?.length
             ? {
@@ -613,7 +613,7 @@ export function useChatPlatform() {
         throw new Error(message);
       }
     },
-    [mode, beginReplyWait, trackChatGeneration]
+    [mode, beginReplyWait, trackChatGeneration, effectiveOnline]
   );
 
   const flushOutbox = useCallback(async () => {
@@ -923,19 +923,6 @@ export function useChatPlatform() {
         return;
       }
       setError(null);
-      const liveWebOptions = currentLiveWebSendOptions({
-        query: content,
-        hasImageAttachment: Boolean(
-          attachments?.some((attachment) => attachment.kind === "image")
-        ),
-      });
-      if (liveWebOptions.liveWeb) {
-        const offlineMsg = liveWebUnavailableMessage(effectiveOnline);
-        if (offlineMsg) {
-          setError(offlineMsg);
-          return;
-        }
-      }
       setPendingUserText(content);
       setIsSending(true);
       setAwaitingReply(false);

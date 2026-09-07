@@ -146,7 +146,9 @@ export const MessageBubble = memo(function MessageBubble({
                   <h2 className="chat-response-title">{assistantDisplay.title}</h2>
                 ) : null}
                 <MessageMarkdown content={assistantDisplay?.content ?? displayContent} />
-                {basisLabel ? <ResearchResponseBadge metadata={basisLabel} /> : null}
+                {basisLabel && basisLabel.basis !== "live_web" ? (
+                  <ResearchResponseBadge metadata={basisLabel} />
+                ) : null}
                 {liveWebMetadata?.sources?.length ? (
                   <LiveWebSourceCards sources={liveWebMetadata.sources} />
                 ) : null}

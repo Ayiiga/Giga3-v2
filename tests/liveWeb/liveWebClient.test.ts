@@ -12,7 +12,14 @@ import {
 import {
   liveWebUnavailableMessage,
   readLiveWebEnabled,
+  readLiveWebMode,
+  readResearchCapability,
   writeLiveWebEnabled,
+  writeLiveWebMode,
+  writeResearchCapability,
+  resolveSendResearchOptions,
+  currentLiveWebSendOptions,
+  type LiveWebMode,
 } from "../../web/lib/chat/liveWebPreferences";
 import { liveWebProgressLabel } from "../../web/lib/chat/liveWebLoading";
 import {
@@ -117,5 +124,31 @@ describe("live web preferences", () => {
     writeLiveWebEnabled(true);
     expect(readLiveWebEnabled()).toBe(true);
     vi.unstubAllGlobals();
+  });
+
+  it("always enables live web for online chat sends without manual toggle", () => {
+    expect(
+      resolveSendResearchOptions({
+        query: "Explain photosynthesis",
+        online: true,
+      })
+    ).toEqual({
+      liveWeb: true,
+      liveWebMode: "research",
+      researchCapability: "live_web",
+      autoEnabled: true,
+    });
+    expect(currentLiveWebSendOptions({ query: "hello", online: true })).toEqual({
+      liveWeb: true,
+      liveWebMode: "research",
+      researchCapability: "live_web",
+    });
+  });
+
+  it("falls back to general knowledge when offline", () => {
+    expect(resolveSendResearchOptions({ query: "hello", online: false })).toEqual({
+      liveWeb: false,
+      researchCapability: "general",
+    });
   });
 });
