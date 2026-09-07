@@ -10,7 +10,7 @@
  * Usage: node scripts/seo-audit.mjs [--out out] [--json report.json]
  * Exit code 1 when any error-level issue is found (warnings do not fail).
  */
-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
 const args = process.argv.slice(2);
@@ -149,11 +149,36 @@ dupes(indexable, "title", "<title>");
 dupes(indexable, "description", "meta description");
 dupes(indexable, "canonical", "canonical");
 
-// Sitemap consistency.
+// Sitemap consistency — supports sitemap index + child urlsets.
+function collectSitemapLocs(outDir) {
+  const allLocs = [];
+  const sitemapPath = join(outDir, "sitemap.xml");
+  if (!existsSync(sitemapPath)) return allLocs;
+
+  const rootXml = readFileSync(sitemapPath, "utf8");
+  const isIndex = rootXml.includes("<sitemapindex");
+
+  if (isIndex) {
+    const childFiles = [...rootXml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim());
+    for (const childUrl of childFiles) {
+      if (!childUrl.startsWith(SITE)) continue;
+      const childName = childUrl.slice(SITE.length).replace(/^\//, "");
+      const childPath = join(outDir, childName);
+      if (!existsSync(childPath)) continue;
+      const childXml = readFileSync(childPath, "utf8");
+      allLocs.push(...[...childXml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim()));
+    }
+  } else {
+    allLocs.push(...[...rootXml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim()));
+  }
+
+  return allLocs;
+}
+
 let sitemapLocs = [];
 try {
-  const xml = readFileSync(join(outDir, "sitemap.xml"), "utf8");
-  sitemapLocs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim());
+  sitemapLocs = collectSitemapLocs(outDir);
+  if (!sitemapLocs.length) err("/sitemap.xml", "sitemap.xml missing or empty");
 } catch {
   err("/sitemap.xml", "sitemap.xml missing from build output");
 }
@@ -170,7 +195,7 @@ for (const loc of sitemapLocs) {
 }
 const sitemapRoutes = new Set(sitemapLocs.map((l) => l.slice(SITE.length) || "/"));
 for (const p of indexable) {
-  if (!sitemapRoutes.has(p.route)) warn(p.route, "indexable page not listed in sitemap.xml");
+  if (!sitemapRoutes.has(p.route)) warn(p.route, "indexable page not listed in sitemap (index or child sitemaps)");
 }
 
 // robots.txt sanity.
