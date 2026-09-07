@@ -65,6 +65,11 @@ function mediaLabel(post: SocialPost): string {
   return "Post";
 }
 
+function postRef(postId: string): string {
+  const id = String(postId);
+  return id.length > 8 ? id.slice(-8) : id;
+}
+
 export function previewImageUrl(post: SocialPost): string {
   if (!hasShareableContent(post)) return DEFAULT_OG_IMAGE;
   const direct = resolveDirectThumbnail(post);
@@ -82,7 +87,7 @@ export function buildGigaSocialOgTitle(post: SocialPost): string {
   if (headline) {
     return `${headline} — ${post.author.displayName} on GigaSocial`;
   }
-  return `${mediaLabel(post)} by ${post.author.displayName} on GigaSocial`;
+  return `${mediaLabel(post)} by ${post.author.displayName} on GigaSocial · ${postRef(post._id)}`;
 }
 
 export function buildGigaSocialOgDescription(post: SocialPost): string {
@@ -94,7 +99,15 @@ export function buildGigaSocialOgDescription(post: SocialPost): string {
   const views = post.viewCount ?? 0;
   const likes = post.likeCount ?? 0;
   const stats = `${formatCompactCount(views)} views · ${formatCompactCount(likes)} likes`;
-  return [bodyExcerpt, stats].filter(Boolean).join(" · ").slice(0, 240) || `${post.author.displayName} on GigaSocial`;
+  const ref = postRef(post._id);
+  return (
+    bodyExcerpt
+      ? [bodyExcerpt, stats]
+      : [`${mediaLabel(post)} by ${post.author.displayName}`, stats, ref]
+  )
+    .filter(Boolean)
+    .join(" · ")
+    .slice(0, 240);
 }
 
 export function buildGigaSocialShareCopy(post: SocialPost): {

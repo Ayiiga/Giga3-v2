@@ -71,7 +71,12 @@ export function blogIndexMetadata(): Metadata {
       "max-image-preview": "large",
       googleBot: { index: true, follow: true, "max-image-preview": "large" },
     },
-    alternates: { canonical: canonicalPath },
+    alternates: {
+      canonical: canonicalPath,
+      types: {
+        "application/rss+xml": "/blog/rss.xml",
+      },
+    },
     openGraph: {
       type: "website",
       url: canonical,

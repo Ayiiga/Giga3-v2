@@ -105,6 +105,12 @@ describe("blog sitemap", () => {
       expect(xml).toContain(`https://www.giga3ai.com${post.href}`);
     }
   });
+
+  it("ships an RSS feed for blog discovery", () => {
+    const rss = readFileSync(resolve(WEB_ROOT, "public/blog/rss.xml"), "utf8");
+    expect(rss).toContain("<rss");
+    expect(rss).toContain("wassce-2026-results-ghana");
+  });
 });
 
 describe("blog accessibility (source)", () => {

@@ -1,15 +1,26 @@
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { GigaSocialPostJsonLd } from "@/components/seo/DynamicPublicJsonLd";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { GigaSocialPostDetailShell } from "@/components/gigasocial/GigaSocialPostDetailShell";
 import { fetchPublicPostIds, fetchPublicPostSeoBundle } from "@/lib/seo/convexBuildFetch";
 import { gigaSocialPostPath } from "@/lib/seo/publicPaths";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
+import nextDynamic from "next/dynamic";
 import type { Metadata } from "next";
+
+const GigaSocialPostDetailShell = nextDynamic(
+  () =>
+    import("@/components/gigasocial/GigaSocialPostDetailShell").then((m) => ({
+      default: m.GigaSocialPostDetailShell,
+    })),
+  { ssr: false }
+);
 
 type PageProps = {
   params: { postId: string };
 };
+
+export const dynamic = "force-static";
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
   try {

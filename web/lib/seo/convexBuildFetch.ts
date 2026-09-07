@@ -17,11 +17,13 @@ async function convexQuery<T>(queryPath: string, args: Record<string, unknown> =
   const url = convexUrl();
   if (!url) return null;
   try {
+    // force-cache is required for Next.js static export — no-store prevents SSG HTML
+    // from being written for GigaSocial and Marketplace SEO pages at build time.
     const response = await fetch(`${url.replace(/\/$/, "")}/api/query`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ path: queryPath, args, format: "json" }),
-      cache: "no-store",
+      cache: "force-cache",
     });
     if (!response.ok) return null;
     const payload = await response.json();
@@ -73,6 +75,23 @@ type PublicPostBundle = {
   createdAt: number;
   author: { displayName: string; handle: string };
 };
+
+function postRef(postId: string): string {
+  const id = String(postId);
+  return id.length > 8 ? id.slice(-8) : id;
+}
+
+/** Convex SEO bundles can share generic fallbacks until backend deploy; keep static HTML unique. */
+function ensureUniquePostSeo(postId: string, bundle: PublicPostBundle): PublicPostBundle {
+  const ref = postRef(postId);
+  const title = bundle.title.includes(ref) ? bundle.title : `${bundle.title} · ${ref}`;
+  const statsOnly = /^\d[\d.KM]* views · \d[\d.KM]* likes$/.test(bundle.description.trim());
+  const description =
+    statsOnly && !bundle.description.includes(ref)
+      ? `${bundle.description} · ${ref}`
+      : bundle.description;
+  return { ...bundle, title, description };
+}
 
 type PublicProfileBundle = {
   handle: string;
@@ -163,7 +182,7 @@ export async function fetchPublicPostSeoBundle(postId: string): Promise<PublicPo
     "publicSeo:getPublicPostSeoBundle",
     { postId }
   );
-  if (fromSeo) return fromSeo;
+  if (fromSeo) return ensureUniquePostSeo(postId, fromSeo);
 
   const post = await convexQuery<PublicPostRow & { mediaUrl?: string; videoThumbnailUrl?: string }>(
     "gigaSocial:getPublicPost",
@@ -175,7 +194,7 @@ export async function fetchPublicPostSeoBundle(postId: string): Promise<PublicPo
   const title = buildGigaSocialOgTitle(post as never);
   const description = buildGigaSocialOgDescription(post as never);
 
-  return {
+  return ensureUniquePostSeo(postId, {
     title,
     description,
     imageUrl: post.videoThumbnailUrl ?? post.mediaUrl ?? "/images/logo.png",
@@ -187,7 +206,7 @@ export async function fetchPublicPostSeoBundle(postId: string): Promise<PublicPo
       displayName: post.author.displayName,
       handle: post.author.handle,
     },
-  };
+  });
 }
 
 export async function fetchPublicProfileHandles(): Promise<string[]> {

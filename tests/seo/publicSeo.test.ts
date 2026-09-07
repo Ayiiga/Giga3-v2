@@ -59,16 +59,23 @@ describe("publicMetadata", () => {
 });
 
 describe("sitemap.xml", () => {
-  it("lists core marketing routes with lastmod", () => {
+  it("is a sitemap index pointing at static and blog child sitemaps", () => {
     const xml = readFileSync(resolve(__dirname, "../../web/public/sitemap.xml"), "utf8");
+    expect(xml).toContain("<sitemapindex");
+    expect(xml).toContain("https://www.giga3ai.com/sitemap-static.xml");
+    expect(xml).toContain("https://www.giga3ai.com/sitemap-blog.xml");
+  });
+
+  it("lists core marketing routes in sitemap-static.xml", () => {
+    const xml = readFileSync(resolve(__dirname, "../../web/public/sitemap-static.xml"), "utf8");
     for (const path of [
       "https://www.giga3ai.com/",
+      "https://www.giga3ai.com/blog/",
+      "https://www.giga3ai.com/gigasocial/",
       "https://www.giga3ai.com/pricing/",
-      "https://www.giga3ai.com/features/",
     ]) {
       expect(xml).toContain(path);
     }
-    expect(xml).toContain("<lastmod>2026-05-13</lastmod>");
   });
 });
 
@@ -196,9 +203,9 @@ describe("marketplace route parsing", () => {
 });
 
 describe("marketplace SPA redirects", () => {
-  it("rewrites dynamic item paths to the item shell", () => {
+  it("does not rewrite pre-rendered marketplace item paths to the noindex shell", () => {
     const redirects = readFileSync(join(process.cwd(), "web/public/_redirects"), "utf8");
-    expect(redirects).toContain("/marketplace/item/*   /marketplace/item/index.html   200");
+    expect(redirects).not.toContain("/marketplace/item/*   /marketplace/item/index.html   200");
   });
 
   it("ships a route shell that parses listing ids from the pathname", () => {

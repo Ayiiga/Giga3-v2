@@ -1,15 +1,26 @@
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { MarketplaceProductJsonLd } from "@/components/seo/DynamicPublicJsonLd";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { MarketplaceItemDetailShell } from "@/components/marketplace/MarketplaceItemDetailShell";
 import { fetchMarketplaceListingIds, fetchMarketplaceSeoBundle } from "@/lib/seo/convexBuildFetch";
 import { marketplaceItemPath } from "@/lib/seo/publicPaths";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
+import nextDynamic from "next/dynamic";
 import type { Metadata } from "next";
+
+const MarketplaceItemDetailShell = nextDynamic(
+  () =>
+    import("@/components/marketplace/MarketplaceItemDetailShell").then((m) => ({
+      default: m.MarketplaceItemDetailShell,
+    })),
+  { ssr: false }
+);
 
 type PageProps = {
   params: { listingId: string };
 };
+
+export const dynamic = "force-static";
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
   try {
