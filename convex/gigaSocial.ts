@@ -1207,6 +1207,14 @@ export const createPost = mutation({
     communitySlug: v.optional(v.string()),
     visibility: v.optional(v.union(v.literal("public"), v.literal("followers"))),
     profileId: v.optional(v.id("socialProfiles")),
+    templatePolicy: v.optional(
+      v.union(
+        v.literal("off"),
+        v.literal("fans"),
+        v.literal("public"),
+        v.literal("owner")
+      )
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
@@ -1312,6 +1320,7 @@ export const createPost = mutation({
       likeCount: 0,
       commentCount: 0,
       shareCount: 0,
+      templatePolicy: args.templatePolicy ?? "off",
       createdAt: now,
       updatedAt: now,
     });
@@ -1363,6 +1372,14 @@ export const updatePost = mutation({
     postId: v.id("socialPosts"),
     body: v.optional(v.string()),
     postType: v.optional(socialPostTypeValidator),
+    templatePolicy: v.optional(
+      v.union(
+        v.literal("off"),
+        v.literal("fans"),
+        v.literal("public"),
+        v.literal("owner")
+      )
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
@@ -1385,6 +1402,9 @@ export const updatePost = mutation({
       hashtags: hashtags.length ? hashtags : undefined,
       mentions: mentions.length ? mentions : undefined,
       postType: nextPostType,
+      ...(args.templatePolicy !== undefined
+        ? { templatePolicy: args.templatePolicy }
+        : {}),
       updatedAt: Date.now(),
     });
 

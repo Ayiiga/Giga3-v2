@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  detectGigaSocialTemplateIntent,
   detectMediaToolsQuestion,
   mediaSystemPromptAddon,
   mediaToolsOverviewTemplate,
@@ -56,5 +57,12 @@ describe("mediaCapabilities", () => {
     });
     expect(text).toContain("Media Studio");
     expect(text).toContain("GigaEdit");
+  });
+
+  it("detects GigaSocial template remix intent", () => {
+    expect(detectGigaSocialTemplateIntent("Make a video like this GigaSocial post")).toBe(true);
+    expect(
+      resolveMediaCapability({ query: "Make a video like this GigaSocial post" })
+    ).toBe("gigasocial_template");
   });
 });

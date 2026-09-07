@@ -302,10 +302,13 @@ function GigaSocialContent() {
           <>
             <SectionIntro
               title="Discover"
-              description="Trending posts, creators, educational content, and popular AI topics."
+              description="Trending posts, creative templates, creators, and educational content."
             />
             <GigaSocialPanelErrorBoundary panelName="Discover">
-              <GigaSocialDiscoverPanel sessionToken={sessionToken} />
+              <GigaSocialDiscoverPanel
+                sessionToken={sessionToken}
+                initialView={params.get("view") === "templates" ? "templates" : "posts"}
+              />
             </GigaSocialPanelErrorBoundary>
           </>
         )}

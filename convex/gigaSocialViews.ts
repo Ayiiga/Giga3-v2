@@ -32,6 +32,7 @@ export type PublicSocialPost = {
   shareCount: number;
   createdAt: number;
   pinnedAt?: number;
+  templatePolicy?: "off" | "fans" | "public" | "owner";
   author: PublicSocialAuthor;
   likedByMe?: boolean;
   bookmarkedByMe?: boolean;
@@ -220,6 +221,7 @@ export function toPublicPost(
     shareCount: post.shareCount,
     createdAt: post.createdAt,
     pinnedAt: post.pinnedAt,
+    templatePolicy: post.templatePolicy,
     author,
     likedByMe: extras?.likedByMe,
     bookmarkedByMe: extras?.bookmarkedByMe,

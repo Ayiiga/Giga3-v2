@@ -1,9 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { GigaSocialTemplatePolicyPicker } from "@/components/gigasocial/template/GigaSocialTemplatePolicyPicker";
 import { socialCaptionMaxLength } from "@/lib/gigasocial/constants";
 import { extractHashtagsFromText, formatCompactHashtags } from "@/lib/gigasocial/hashtags";
+import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { POST_TYPE_OPTIONS, type SocialPostTypeId } from "@/lib/gigasocial/sections";
+import type { GigaTemplatePolicy } from "@/lib/gigasocial/templateMeta";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { X } from "lucide-react";
 import { memo, useMemo, useState } from "react";
@@ -15,10 +18,18 @@ export const GigaSocialPostEditor = memo(function GigaSocialPostEditor({
 }: {
   post: SocialPost;
   onClose: () => void;
-  onSave: (args: { body: string; postType: SocialPostTypeId }) => Promise<void>;
+  onSave: (args: {
+    body: string;
+    postType: SocialPostTypeId;
+    templatePolicy?: GigaTemplatePolicy;
+  }) => Promise<void>;
 }) {
+  const features = useGigaSocialFeatures();
   const [body, setBody] = useState(post.body);
   const [postType, setPostType] = useState<SocialPostTypeId>(post.postType);
+  const [templatePolicy, setTemplatePolicy] = useState<GigaTemplatePolicy>(
+    post.templatePolicy ?? "off"
+  );
   const captionMaxLength = useMemo(() => socialCaptionMaxLength(postType), [postType]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +44,11 @@ export const GigaSocialPostEditor = memo(function GigaSocialPostEditor({
     setBusy(true);
     setError(null);
     try {
-      await onSave({ body: body.trim(), postType });
+      await onSave({
+        body: body.trim(),
+        postType,
+        ...(features.enableUseAsTemplate ? { templatePolicy } : {}),
+      });
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save changes.");
@@ -79,6 +94,15 @@ export const GigaSocialPostEditor = memo(function GigaSocialPostEditor({
           </button>
         ))}
       </div>
+      {features.enableUseAsTemplate ? (
+        <div className="mt-3">
+          <GigaSocialTemplatePolicyPicker
+            value={templatePolicy}
+            onChange={setTemplatePolicy}
+            disabled={busy}
+          />
+        </div>
+      ) : null}
       {hashtags.length > 0 ? (
         <p className="mt-2 truncate text-[11px] text-muted">
           Hashtags: {formatCompactHashtags(hashtags, 5)}

@@ -2,6 +2,7 @@
 
 import { GigaSocialPostEditor } from "@/components/gigasocial/editor/GigaSocialPostEditor";
 import { GigaRemixBadge, GigaRemixButton } from "@/components/gigasocial/remix/GigaRemixButton";
+import { GigaTemplateButton } from "@/components/gigasocial/template/GigaTemplateButton";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import type { SocialPost } from "@/lib/gigasocial/types";
@@ -52,12 +53,21 @@ interface GigaSocialPostCardProps {
   onShare: (postId: string) => Promise<void>;
   onDelete?: (postId: string) => Promise<void>;
   onPin?: (postId: string, pinned: boolean) => Promise<void>;
-  onEdit?: (postId: string, args: { body: string; postType: SocialPostTypeId }) => Promise<void>;
+  onEdit?: (
+    postId: string,
+    args: {
+      body: string;
+      postType: SocialPostTypeId;
+      templatePolicy?: "off" | "fans" | "public" | "owner";
+    }
+  ) => Promise<void>;
   onRemix?: (post: SocialPost) => void;
+  onUseAsTemplate?: (post: SocialPost) => void;
   onRequireAuth?: () => void;
   canDelete?: boolean;
   enableEdit?: boolean;
   enableRemix?: boolean;
+  enableUseAsTemplate?: boolean;
   enablePostAIActions?: boolean;
   enablePostTips?: boolean;
   feedAutoPlay?: boolean;
@@ -76,10 +86,12 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   onPin,
   onEdit,
   onRemix,
+  onUseAsTemplate,
   onRequireAuth,
   canDelete = false,
   enableEdit = true,
   enableRemix = false,
+  enableUseAsTemplate = false,
   enablePostAIActions = false,
   /** Tips are open on all posts/photos/videos — not gated by 500-fan earn unlock. */
   enablePostTips = true,
@@ -533,6 +545,18 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
                 return;
               }
               onRemix(post);
+            }}
+          />
+        ) : null}
+        {enableUseAsTemplate && onUseAsTemplate ? (
+          <GigaTemplateButton
+            disabled={busy}
+            onUseTemplate={() => {
+              if (!sessionToken) {
+                promptAuth();
+                return;
+              }
+              onUseAsTemplate(post);
             }}
           />
         ) : null}
