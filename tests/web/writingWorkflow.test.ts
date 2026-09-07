@@ -23,7 +23,7 @@ describe("writingWorkflow", () => {
 
   it("builds helpful insert notices for thesis and research", () => {
     expect(templateInsertNotice("thesis")).toContain("University mode");
-    expect(templateInsertNotice("thesis")).toContain("Live Web");
+    expect(templateInsertNotice("thesis")).not.toContain("Live Web");
     expect(templateInsertNotice("book-writing")).toContain("Book Writer");
   });
 
