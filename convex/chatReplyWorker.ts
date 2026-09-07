@@ -60,6 +60,11 @@ import {
   formatVerificationContextBlock,
   verifyChatClaim,
 } from "./factVerification";
+import {
+  isVideoAttachment,
+  mediaSystemPromptAddon,
+  resolveMediaCapability,
+} from "./mediaCapabilities";
 
 // Kept below the client reply-wait deadline (CHAT_REPLY_WAIT_MS = 150s) so the
 // worker persists a real or fallback reply — clearing "Thinking…" gracefully via
@@ -554,6 +559,9 @@ export const processJob = internalAction({
         | undefined;
 
       const hasImageAttachment = attachments.some((a) => a.kind === "image");
+      const hasVideoAttachment = attachments.some((a) =>
+        isVideoAttachment(a.mimeType, a.name)
+      );
       const researchCapability = resolveResearchCapability({
         explicit: job.researchCapability,
         query: job.content,
@@ -563,6 +571,19 @@ export const processJob = internalAction({
       const capabilityPrompt = researchSystemPromptAddon(researchCapability);
       if (capabilityPrompt) {
         systemPrompt += `\n\n${capabilityPrompt}`;
+      }
+
+      const mediaCapability = resolveMediaCapability({
+        query: job.content,
+        hasImageAttachment,
+        hasVideoAttachment,
+      });
+      const mediaPrompt = mediaSystemPromptAddon(mediaCapability, {
+        hasImageAttachment,
+        hasVideoAttachment,
+      });
+      if (mediaPrompt) {
+        systemPrompt += `\n\n${mediaPrompt}`;
       }
 
       const shouldResearch = shouldRunLiveWebResearch(researchCapability);
