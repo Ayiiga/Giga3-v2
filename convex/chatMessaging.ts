@@ -120,6 +120,8 @@ export const acceptMessage = mutation({
       v.union(v.literal("research"), v.literal("actions"))
     ),
     researchCapability: v.optional(v.string()),
+    /** Client hint when Live Web was auto-enabled from query intent (ignored server-side). */
+    autoEnabled: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);

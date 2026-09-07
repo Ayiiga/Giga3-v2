@@ -170,5 +170,6 @@ export function currentLiveWebSendOptions(args?: {
   liveWebMode?: LiveWebMode;
   researchCapability?: ResearchCapabilityId;
 } {
-  return resolveSendResearchOptions(args);
+  const { autoEnabled: _autoEnabled, ...payload } = resolveSendResearchOptions(args);
+  return payload;
 }
