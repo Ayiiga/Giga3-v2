@@ -229,6 +229,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         }
       : "skip"
   );
+
+  const searchLoading =
     Boolean(debouncedSearch.trim()) && searchResults === undefined && effectiveOnline;
   const initialFeedLoading =
     !savedFeed && !debouncedSearch.trim() && feed === undefined && effectiveOnline;
