@@ -1,6 +1,14 @@
-import { buildImageStudioActionUrl } from "@/lib/chat/imageStudioLinks";
 import type { GigaTemplateModeId } from "@/lib/gigasocial/templateMeta";
 import type { SocialPost } from "@/lib/gigasocial/types";
+
+export type TemplateAnalysisHints = {
+  sceneStructure?: string[];
+  visualStyle?: string;
+  captionStructure?: string;
+  generationConstraints?: string[];
+  aspectRatio?: string;
+  attributionLine?: string;
+};
 
 export type TemplateHandoffPayload = {
   sourcePostId: string;
@@ -8,9 +16,11 @@ export type TemplateHandoffPayload = {
   userIdea: string;
   attributionLine: string;
   creatorHandle: string;
-  primaryImageUrl?: string;
-  primaryVideoUrl?: string;
   aspectRatio?: string;
+  sceneStructure?: string[];
+  visualStyle?: string;
+  captionStructure?: string;
+  generationConstraints?: string[];
 };
 
 const STORAGE_KEY = "giga3_gigasocial_template_handoff";
@@ -18,20 +28,53 @@ const STORAGE_KEY = "giga3_gigasocial_template_handoff";
 export function buildTemplateHandoffFromPost(
   post: SocialPost,
   mode: GigaTemplateModeId,
-  userIdea: string
+  userIdea: string,
+  analysis?: TemplateAnalysisHints | null
 ): TemplateHandoffPayload {
-  const image = post.mediaItems?.find((m) => m.type === "image");
-  const video = post.mediaItems?.find((m) => m.type === "video");
   return {
     sourcePostId: post._id,
     mode,
     userIdea: userIdea.trim(),
-    attributionLine: `Inspired by a GigaSocial template by @${post.author.handle}.`,
+    attributionLine:
+      analysis?.attributionLine ??
+      `Inspired by a GigaSocial template by @${post.author.handle}.`,
     creatorHandle: post.author.handle,
-    primaryImageUrl: image?.url ?? (post.mediaType === "image" ? post.mediaUrl : undefined),
-    primaryVideoUrl: video?.url ?? (post.mediaType === "video" ? post.mediaUrl : undefined),
-    aspectRatio: post.mediaType === "video" || post.postType === "video" ? "9:16" : "1:1",
+    aspectRatio: analysis?.aspectRatio ?? (post.mediaType === "video" ? "9:16" : "1:1"),
+    sceneStructure: analysis?.sceneStructure,
+    visualStyle: analysis?.visualStyle,
+    captionStructure: analysis?.captionStructure,
+    generationConstraints: analysis?.generationConstraints,
   };
+}
+
+/** Full generation prompt — stored in sessionStorage, not duplicated in long URLs. */
+export function buildTemplatePrompt(payload: TemplateHandoffPayload): string {
+  const lines = [
+    payload.userIdea,
+    "",
+    payload.attributionLine,
+    "",
+  ];
+  if (payload.sceneStructure?.length) {
+    lines.push(
+      `Suggested scene structure (inspiration only): ${payload.sceneStructure.join(" → ")}`
+    );
+  }
+  if (payload.visualStyle) {
+    lines.push(`Visual style reference: ${payload.visualStyle}`);
+  }
+  if (payload.captionStructure) {
+    lines.push(`Caption pattern: ${payload.captionStructure}`);
+  }
+  lines.push(
+    "",
+    "Create completely original content inspired by structure and style only.",
+    "Do not copy, edit, reproduce, or import the source creator's media, voice, music, watermarks, captions, or likeness."
+  );
+  if (payload.generationConstraints?.length) {
+    lines.push("", ...payload.generationConstraints);
+  }
+  return lines.join("\n").trim();
 }
 
 export function persistTemplateHandoff(payload: TemplateHandoffPayload): void {
@@ -50,38 +93,46 @@ export function readTemplateHandoff(): TemplateHandoffPayload | null {
   }
 }
 
+export function consumeTemplateHandoff(): TemplateHandoffPayload | null {
+  const payload = readTemplateHandoff();
+  if (payload) clearTemplateHandoff();
+  return payload;
+}
+
 export function clearTemplateHandoff(): void {
   if (typeof window === "undefined") return;
   sessionStorage.removeItem(STORAGE_KEY);
 }
 
-function encodePrompt(text: string): string {
-  return encodeURIComponent(text.slice(0, 1200));
-}
-
+/** Short URL only — prompt and analysis travel via sessionStorage. Never pass source media URLs. */
 export function templateStudioHref(payload: TemplateHandoffPayload): string {
-  const idea =
-    payload.userIdea ||
-    "Create original content inspired by this GigaSocial template structure.";
-  const prompt = `${idea}\n\n${payload.attributionLine}\n\nCreate original content — do not copy the source media.`;
-
+  const base = `templatePost=${encodeURIComponent(payload.sourcePostId)}&templateMode=${encodeURIComponent(payload.mode)}`;
   switch (payload.mode) {
     case "image":
-      return `${buildImageStudioActionUrl("edit", payload.primaryImageUrl)}&prompt=${encodePrompt(prompt)}&templatePost=${payload.sourcePostId}`;
+      return `/media?tab=image&action=generate&${base}`;
     case "video":
-      return `/media?tab=video&templatePost=${payload.sourcePostId}&prompt=${encodePrompt(prompt)}${
-        payload.primaryVideoUrl ? `&source=${encodeURIComponent(payload.primaryVideoUrl)}` : ""
-      }`;
+      return `/media?tab=video&${base}`;
     case "sound":
-      return `/gigasocial/?compose=1&templatePost=${payload.sourcePostId}&templateMode=sound&prompt=${encodePrompt(prompt)}`;
+      return `/gigasocial/?compose=template&${base}`;
     case "full":
     default:
-      if (payload.primaryVideoUrl) {
-        return `/gigaedit/?templatePost=${payload.sourcePostId}&prompt=${encodePrompt(prompt)}&import=${encodeURIComponent(payload.primaryVideoUrl)}`;
-      }
-      if (payload.primaryImageUrl) {
-        return `/media?tab=image&action=edit&source=${encodeURIComponent(payload.primaryImageUrl)}&templatePost=${payload.sourcePostId}&prompt=${encodePrompt(prompt)}`;
-      }
-      return `/media?tab=video&templatePost=${payload.sourcePostId}&prompt=${encodePrompt(prompt)}`;
+      return `/gigaedit/?tab=video&${base}`;
   }
+}
+
+export function applyTemplateHandoffToMediaSeed(args: {
+  handoff: TemplateHandoffPayload;
+  tab: "image" | "video";
+}): {
+  tab: "image" | "video";
+  category: string;
+  prompt: string;
+  action: "generate" | null;
+} {
+  return {
+    tab: args.tab,
+    category: "anime_art",
+    prompt: buildTemplatePrompt(args.handoff),
+    action: args.tab === "image" ? "generate" : null,
+  };
 }

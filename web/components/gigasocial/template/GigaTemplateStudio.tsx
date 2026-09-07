@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { LoadingState } from "@/components/ui/LoadingState";
 import {
   GIGA_TEMPLATE_MODES,
   type GigaTemplateModeId,
@@ -8,7 +9,7 @@ import {
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { cn } from "@/lib/utils";
 import { Sparkles, X } from "lucide-react";
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 type GigaTemplateStudioProps = {
@@ -35,13 +36,30 @@ export const GigaTemplateStudio = memo(function GigaTemplateStudio({
   const [mode, setMode] = useState<GigaTemplateModeId | null>(null);
   const [userIdea, setUserIdea] = useState("");
 
+  useEffect(() => {
+    if (!open) return;
+    setMode(null);
+    setUserIdea("");
+  }, [open, post._id]);
+
+  useEffect(() => {
+    if (!open || typeof document === "undefined") return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
   if (!open || typeof document === "undefined") return null;
 
   const modes = GIGA_TEMPLATE_MODES.filter((m) => availableModes.includes(m.id));
+  const blocked = Boolean(error);
+  const waiting = Boolean(loading && !modes.length && !blocked);
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[66] flex items-end justify-center bg-black/55 p-3 sm:items-center"
+      className="gigasocial-stable fixed inset-0 z-[66] flex items-end justify-center bg-black/55 p-3 sm:items-center"
       role="dialog"
       aria-modal="true"
       aria-label="Use as Template"
@@ -56,11 +74,10 @@ export const GigaTemplateStudio = memo(function GigaTemplateStudio({
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--gs-gold,#fbbf24)]">
               Use as Template
             </p>
-            <h2 className="text-lg font-bold tracking-tight">
-              @{post.author.handle}
-            </h2>
+            <h2 className="text-lg font-bold tracking-tight">@{post.author.handle}</h2>
             <p className="mt-1 text-xs text-[var(--gs-muted,#94a3b8)]">
-              Giga3 analyzes structure and style — your result stays original. {attributionLine}
+              Giga3 uses post metadata to suggest structure and style — your result stays original.{" "}
+              {attributionLine}
             </p>
           </div>
           <button
@@ -79,29 +96,36 @@ export const GigaTemplateStudio = memo(function GigaTemplateStudio({
           </p>
         ) : null}
 
-        {!mode ? (
-          <ul className="grid gap-2 sm:grid-cols-2">
-            {modes.map((item) => (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  className={cn(
-                    "flex h-full w-full flex-col gap-1 rounded-xl border border-border bg-black/20 p-3 text-left",
-                    "hover:border-accent/40 hover:bg-accent/5"
-                  )}
-                  onClick={() => setMode(item.id)}
-                >
-                  <span className="text-lg" aria-hidden>
-                    {item.emoji}
-                  </span>
-                  <span className="text-sm font-semibold">{item.label}</span>
-                  <span className="text-[11px] leading-snug text-muted">
-                    {item.description}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
+        {waiting ? (
+          <LoadingState label="Checking template permissions…" className="py-8" />
+        ) : !mode ? (
+          modes.length ? (
+            <ul className="grid gap-2 sm:grid-cols-2">
+              {modes.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    disabled={loading || blocked}
+                    className={cn(
+                      "flex h-full w-full flex-col gap-1 rounded-xl border border-border bg-black/20 p-3 text-left",
+                      "hover:border-accent/40 hover:bg-accent/5 disabled:opacity-50"
+                    )}
+                    onClick={() => setMode(item.id)}
+                  >
+                    <span className="text-lg" aria-hidden>
+                      {item.emoji}
+                    </span>
+                    <span className="text-sm font-semibold">{item.label}</span>
+                    <span className="text-[11px] leading-snug text-muted">{item.description}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="rounded-xl border border-border bg-black/20 px-3 py-4 text-sm text-muted">
+              No template modes are available for this post.
+            </p>
+          )
         ) : (
           <div className="space-y-3">
             <p className="text-sm font-medium">
@@ -117,8 +141,8 @@ export const GigaTemplateStudio = memo(function GigaTemplateStudio({
               />
             </label>
             <p className="text-xs text-muted">
-              Upload privacy: your idea and any media you add are processed to generate your original
-              content. Giga3 never overwrites the original GigaSocial post.
+              Giga3 generates original content from your idea and structural hints — never copies the
+              source post media. The original GigaSocial post is never modified.
             </p>
             <div className="flex gap-2">
               <Button type="button" variant="outline" onClick={() => setMode(null)}>
@@ -127,7 +151,7 @@ export const GigaTemplateStudio = memo(function GigaTemplateStudio({
               <Button
                 type="button"
                 className="flex-1 gap-2"
-                disabled={loading || !userIdea.trim()}
+                disabled={loading || blocked || !userIdea.trim()}
                 onClick={() => onStart(mode, userIdea.trim())}
               >
                 <Sparkles className="h-4 w-4" aria-hidden />

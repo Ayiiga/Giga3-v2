@@ -35,6 +35,7 @@ import { VerifiedBadge } from "@/components/gigasocial/VerifiedBadge";
 import { GigaSocialTipButton } from "@/components/gigasocial/economy/GigaSocialTipButton";
 import { getUserEmail } from "@/lib/auth";
 import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
+import { canShowTemplateButton } from "@/lib/gigasocial/templateVisibility";
 import { triggerHaptic } from "@/lib/gigasocial/haptics";
 
 const GigaSocialPostAIActions = dynamic(
@@ -113,6 +114,10 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   const [pinned, setPinned] = useState(Boolean(post.pinnedAt));
   const lastTapRef = useRef(0);
   const myUserId = useMemo(() => getUserEmail(), []);
+  const showTemplateButton = useMemo(
+    () => enableUseAsTemplate && Boolean(onUseAsTemplate) && canShowTemplateButton(post, myUserId),
+    [enableUseAsTemplate, myUserId, onUseAsTemplate, post]
+  );
 
   useEffect(() => {
     setPinned(Boolean(post.pinnedAt));
@@ -548,7 +553,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
             }}
           />
         ) : null}
-        {enableUseAsTemplate && onUseAsTemplate ? (
+        {showTemplateButton ? (
           <GigaTemplateButton
             disabled={busy}
             onUseTemplate={() => {
@@ -556,7 +561,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
                 promptAuth();
                 return;
               }
-              onUseAsTemplate(post);
+              onUseAsTemplate!(post);
             }}
           />
         ) : null}

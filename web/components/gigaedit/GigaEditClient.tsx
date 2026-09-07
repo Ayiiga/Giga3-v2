@@ -16,6 +16,10 @@ import { VideoEditor } from "@/components/gigaedit/VideoEditor";
 import { useGigaEditFeatures } from "@/lib/gigaedit/featureFlags";
 import { startGigaEditBackgroundSync } from "@/lib/gigaedit/offline";
 import type { ExportAspectRatio, GigaEditOpenOptions, GigaEditSection } from "@/lib/gigaedit/types";
+import {
+  buildTemplatePrompt,
+  consumeTemplateHandoff,
+} from "@/lib/gigasocial/templateHandoff";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo } from "react";
 
@@ -72,6 +76,25 @@ export function GigaEditClient() {
     [searchParams]
   );
   const initialOverlayText = searchParams?.get("overlayText")?.trim() ?? "";
+  const templatePostId = searchParams?.get("templatePost")?.trim() ?? "";
+
+  useEffect(() => {
+    if (!templatePostId) return;
+    const handoff = consumeTemplateHandoff();
+    if (!handoff || handoff.sourcePostId !== templatePostId) return;
+    const prompt = buildTemplatePrompt(handoff);
+    const shortOverlay = handoff.userIdea.slice(0, 160);
+    const aspect = (handoff.aspectRatio as ExportAspectRatio | undefined) ?? "9:16";
+    const params = new URLSearchParams(searchParams?.toString() ?? "");
+    params.set("tab", "video");
+    params.delete("templatePost");
+    params.delete("templateMode");
+    if (shortOverlay) params.set("overlayText", shortOverlay);
+    if (aspect) params.set("aspect", aspect);
+    sessionStorage.setItem("giga3_gigaedit_template_prompt", prompt);
+    const qs = params.toString();
+    router.replace(qs ? `/gigaedit/?${qs}` : "/gigaedit/", { scroll: false });
+  }, [router, searchParams, templatePostId]);
 
   const openSection = useCallback(
     (next: GigaEditSection, opts?: GigaEditOpenOptions) => {

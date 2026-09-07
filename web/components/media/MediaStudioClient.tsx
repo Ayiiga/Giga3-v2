@@ -13,6 +13,10 @@ import {
   parseImageStudioActionId,
 } from "@/lib/chat/imageStudioLinks";
 import { getMediaStudioTemplate } from "@/lib/media/studioTemplates";
+import {
+  applyTemplateHandoffToMediaSeed,
+  consumeTemplateHandoff,
+} from "@/lib/gigasocial/templateHandoff";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
@@ -51,6 +55,17 @@ function MediaStudioContent() {
   }, [email, router]);
 
   useEffect(() => {
+    const templatePost = params.get("templatePost");
+    if (!templatePost) return;
+    const handoff = consumeTemplateHandoff();
+    if (!handoff || handoff.sourcePostId !== templatePost) return;
+    const tab = params.get("tab") === "video" ? "video" : "image";
+    const seed = applyTemplateHandoffToMediaSeed({ handoff, tab });
+    setFormSeed(seed);
+    setFormRevision((r) => r + 1);
+  }, [params]);
+
+  useEffect(() => {
     const templateId = params.get("template");
     if (!templateId) return;
     const template = getMediaStudioTemplate(templateId);
@@ -65,6 +80,7 @@ function MediaStudioContent() {
   }, [params]);
 
   useEffect(() => {
+    if (params.get("templatePost")) return;
     const action = parseImageStudioActionId(params.get("action"));
     const tab = params.get("tab") === "video" ? "video" : "image";
     const category = params.get("category") ?? "anime_art";
