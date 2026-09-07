@@ -10,6 +10,7 @@ import type { GigaTemplateModeId } from "@/lib/gigasocial/templateMeta";
 import { TEMPLATE_DISCOVER_CATEGORIES } from "@/lib/gigasocial/templateMeta";
 import {
   buildTemplateHandoffFromPost,
+  buildTemplatePrompt,
   persistTemplateHandoff,
   templateStudioHref,
 } from "@/lib/gigasocial/templateHandoff";
@@ -82,13 +83,14 @@ export const GigaSocialTemplatesPanel = memo(function GigaSocialTemplatesPanel({
       setTemplateBusy(true);
       setTemplateError(null);
       try {
-        await recordTemplateUse({
+        const result = await recordTemplateUse({
           sessionToken,
           postId: studioPost._id as Id<"socialPosts">,
           mode,
           userIdea,
         });
-        const payload = buildTemplateHandoffFromPost(studioPost, mode, userIdea);
+        const payload = buildTemplateHandoffFromPost(studioPost, mode, userIdea, result.analysis);
+        payload.attributionLine = result.attributionLine;
         persistTemplateHandoff(payload);
         setStudioPost(null);
         window.location.assign(templateStudioHref(payload));
@@ -126,7 +128,7 @@ export const GigaSocialTemplatesPanel = memo(function GigaSocialTemplatesPanel({
             <h2 className="text-base font-semibold text-foreground">Creative Templates</h2>
             <p className="mt-1 text-sm text-muted">
               Discover eligible GigaSocial posts and remix their structure with Giga3 AI — always
-              original, never a blind copy.
+              original, never a blind copy. Structure hints come from post metadata, not copied media.
             </p>
           </div>
         </div>
@@ -179,7 +181,7 @@ export const GigaSocialTemplatesPanel = memo(function GigaSocialTemplatesPanel({
             >
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/80 px-3 py-2">
                 <p className="text-xs text-muted">
-                  {analysis.visualStyle}
+                  Suggested style preview
                   {templateUseCount > 0 ? ` · ${templateUseCount} uses` : ""}
                 </p>
                 <GigaTemplateButton

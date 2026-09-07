@@ -34,6 +34,8 @@ import { GigaTemplateStudio } from "@/components/gigasocial/template/GigaTemplat
 import type { GigaTemplateModeId } from "@/lib/gigasocial/templateMeta";
 import {
   buildTemplateHandoffFromPost,
+  buildTemplatePrompt,
+  consumeTemplateHandoff,
   persistTemplateHandoff,
   templateStudioHref,
 } from "@/lib/gigasocial/templateHandoff";
@@ -508,6 +510,27 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const compose = params.get("compose");
+    if (compose === "template") {
+      const handoff = consumeTemplateHandoff();
+      if (!handoff || handoff.mode !== "sound") return;
+      if (!sessionToken) {
+        requireAuth();
+        return;
+      }
+      setComposeInitialBody(buildTemplatePrompt(handoff));
+      setComposeInitialPostType("creator");
+      openComposer("text-post");
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("compose");
+        url.searchParams.delete("templatePost");
+        url.searchParams.delete("templateMode");
+        window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
     if (compose !== "text" && compose !== "post") return;
     if (!sessionToken) {
       requireAuth();
@@ -774,13 +797,19 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       setTemplateBusy(true);
       setTemplateError(null);
       try {
-        await recordTemplateUse({
+        const result = await recordTemplateUse({
           sessionToken,
           postId: templateStudioPost._id as Id<"socialPosts">,
           mode,
           userIdea,
         });
-        const payload = buildTemplateHandoffFromPost(templateStudioPost, mode, userIdea);
+        const payload = buildTemplateHandoffFromPost(
+          templateStudioPost,
+          mode,
+          userIdea,
+          result.analysis
+        );
+        payload.attributionLine = result.attributionLine;
         persistTemplateHandoff(payload);
         setTemplateStudioPost(null);
         window.location.assign(templateStudioHref(payload));
