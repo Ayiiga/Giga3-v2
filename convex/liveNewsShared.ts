@@ -7,6 +7,7 @@ export type NewsFeedItem = {
 };
 
 export type LiveNewsCategoryId =
+  | "ghana"
   | "politics"
   | "world"
   | "business"
@@ -26,6 +27,19 @@ export type CategoryConfig = {
 };
 
 export const LIVE_NEWS_CATEGORIES: CategoryConfig[] = [
+  {
+    id: "ghana",
+    label: "Ghana",
+    feeds: [
+      { url: "https://www.ghanaweb.com/GhanaHomePage/rss/news.xml", source: "GhanaWeb" },
+      { url: "https://citinewsroom.com/feed/", source: "Citi Newsroom" },
+      { url: "https://www.myjoyonline.com/feed/", source: "MyJoyOnline" },
+      {
+        url: "https://news.google.com/rss/search?q=Ghana+when:1d&hl=en-GH&gl=GH&ceid=GH:en",
+        source: "Google News Ghana",
+      },
+    ],
+  },
   {
     id: "politics",
     label: "Politics",
@@ -104,13 +118,15 @@ export function formatLiveNewsBriefing(
   rows: Array<{ category: string; items: LiveNewsHeadline[] }>
 ): string {
   const lines: string[] = [
-    "Trusted headline briefing (cite these sources when answering current-events questions):",
+    "Trusted headline briefing (cite these sources with dates when answering current-events questions):",
+    "Label each story Verified / Developing / Unverified based on how many independent sources report it.",
   ];
   for (const row of rows) {
     if (row.items.length === 0) continue;
     lines.push(`\n[${row.category}]`);
     for (const item of row.items.slice(0, 4)) {
-      lines.push(`- ${item.title} (${item.source}) ${item.link}`);
+      const date = item.publishedAt ? ` · ${item.publishedAt}` : "";
+      lines.push(`- ${item.title} (${item.source}${date}) ${item.link}`);
     }
   }
   return lines.join("\n").slice(0, 3500);

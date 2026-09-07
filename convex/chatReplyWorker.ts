@@ -50,6 +50,7 @@ import {
 import { proposeWebAction } from "./liveWeb/webActionProvider";
 import {
   isNewsCapability,
+  liveSearchUnavailableNewsFallback,
   researchSystemPromptAddon,
   resolveResearchCapability,
   responseBasisForCapability,
@@ -714,10 +715,15 @@ export const processJob = internalAction({
           systemPrompt += `\n\nLive web notes:\n${research.warnings.join("\n")}`;
         }
         systemPrompt +=
-          "\n\nWhen live research is enabled, label your answer basis clearly (live web, current news, fact-checked, or Giga3 AI knowledge) and cite sources with publication dates when available.";
+          "\n\nWhen live research is enabled, label your answer basis clearly (live web, current news, fact-checked, or Giga3 AI knowledge). Cite sources with publication dates. Label stories **Verified**, **Developing**, or **Unverified**. Never invent current news.";
       } else if (effectiveLiveWeb && !isLiveWebEnabled()) {
-        systemPrompt +=
-          "\n\nLive web is temporarily unavailable. Provide general AI knowledge, but do not claim to verify the latest information right now.";
+        systemPrompt += `\n\n${liveSearchUnavailableNewsFallback(researchCapability)}`;
+      } else if (
+        shouldResearch &&
+        isNewsCapability(researchCapability) &&
+        !liveWebUsed
+      ) {
+        systemPrompt += `\n\n${liveSearchUnavailableNewsFallback(researchCapability)}`;
       }
 
       if (
@@ -730,9 +736,18 @@ export const processJob = internalAction({
             hasImageAttachment
           ))
       ) {
-        const briefing = await ctx.runQuery(internal.liveNewsInternal.getBriefingInternal, {});
+        const briefingCategories =
+          researchCapability === "ghana_news" || researchCapability === "breaking_news"
+            ? ["ghana"]
+            : undefined;
+        const briefing = await ctx.runQuery(internal.liveNewsInternal.getBriefingInternal, {
+          categories: briefingCategories,
+        });
         if (briefing) {
           systemPrompt += `\n\n${briefing}`;
+        } else if (briefingCategories) {
+          systemPrompt +=
+            "\n\nGhana headline cache is warming. Use live web results only — do not invent Ghana news.";
         }
       }
 
