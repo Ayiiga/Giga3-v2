@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Young Ghanaians using AI for online work">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffedd5"/>
+      <stop offset="100%" stop-color="#c2410c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#g)"/>
+  <rect x="80" y="80" width="1040" height="515" rx="24" fill="#ffffff" fill-opacity="0.85"/>
+  <circle cx="200" cy="200" r="60" fill="#c2410c" fill-opacity="0.2"/>
+  <circle cx="1000" cy="480" r="80" fill="#c2410c" fill-opacity="0.15"/>
+  <text x="600" y="340" text-anchor="middle" font-family="system-ui,sans-serif" font-size="42" font-weight="700" fill="#1e293b">AI Side Hustles</text>
+  <text x="600" y="400" text-anchor="middle" font-family="system-ui,sans-serif" font-size="24" font-weight="500" fill="#475569">Giga3 AI Blog</text>
+</svg>

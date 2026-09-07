@@ -7,6 +7,8 @@ export const BLOG_CATEGORIES = [
   { name: "Creators", slug: "creators" },
   { name: "Business", slug: "business" },
   { name: "Technology", slug: "technology" },
+  { name: "Digital Literacy", slug: "digital-literacy" },
+  { name: "Ghana", slug: "ghana" },
 ] as const;
 
 export type BlogCategoryName = (typeof BLOG_CATEGORIES)[number]["name"];
