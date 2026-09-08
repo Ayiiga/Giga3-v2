@@ -4,6 +4,7 @@ import {
   buildResearchSearchQuery,
   detectFactCheckIntent,
   detectGhanaNewsIntent,
+  detectNewsRetrievalIntent,
   detectLocationIntent,
   detectVerifyImageIntent,
   liveSearchUnavailableNewsFallback,
@@ -24,6 +25,12 @@ describe("research capability routing", () => {
     expect(detectGhanaNewsIntent("What is the latest Ghana news today?")).toBe(true);
     expect(detectGhanaNewsIntent("Breaking news in Accra")).toBe(true);
     expect(detectGhanaNewsIntent("Explain photosynthesis")).toBe(false);
+  });
+
+  it("detects general news retrieval intent", () => {
+    expect(detectNewsRetrievalIntent("What's the latest news today?")).toBe(true);
+    expect(detectNewsRetrievalIntent("Headlines from Ghana")).toBe(true);
+    expect(detectNewsRetrievalIntent("Explain photosynthesis")).toBe(false);
   });
 
   it("detects fact-check and verify-image intents", () => {

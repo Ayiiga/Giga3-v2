@@ -112,6 +112,17 @@ export function detectBreakingNewsIntent(query: string): boolean {
   return BREAKING_NEWS_RE.test(query.trim());
 }
 
+/** Headline/news lookup — not fact-check verification (handled separately). */
+export function detectNewsRetrievalIntent(query: string): boolean {
+  const q = query.trim();
+  if (detectGhanaNewsIntent(q) || detectBreakingNewsIntent(q)) return true;
+  return (
+    /\b(latest|current|today'?s?|recent|breaking)\b[\s\S]{0,32}\bnews\b/i.test(q) ||
+    /\bnews (today|update|updates|headlines|briefing)\b/i.test(q) ||
+    /\b(headlines|what(?:'s| is) (?:in|on) the news)\b/i.test(q)
+  );
+}
+
 export function detectFactCheckIntent(query: string): boolean {
   return FACT_CHECK_RE.test(query.trim());
 }
