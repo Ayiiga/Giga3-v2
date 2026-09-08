@@ -34,6 +34,14 @@ import {
   estimateProjectCredits,
 } from "../../web/lib/media/videoProject/qualityCheck";
 import { parseLocationFromPrompt } from "../../web/lib/media/videoProject/locationContext";
+import {
+  allScenesReady,
+  orderedSceneOutputUrls,
+  sceneOutputFingerprint,
+  shouldRebuildCombinedVideo,
+} from "../../web/lib/media/videoProject/combineScenes";
+import { buildGigaEditHandoff } from "../../web/lib/media/videoProject/gigaEditHandoff";
+import type { VideoProject, VideoScene } from "../../web/lib/media/videoProject/types";
 
 describe("sceneDirector", () => {
   it("splits a future Accra prompt into multiple editable scenes", () => {
@@ -191,5 +199,50 @@ describe("locationContext", () => {
 describe("credit estimate", () => {
   it("multiplies scene count by per-clip cost", () => {
     expect(estimateProjectCredits(3, 10, 20)).toBe(60);
+  });
+});
+
+function sceneWithUrl(order: number, url: string): VideoScene {
+  return {
+    id: `sc_${order}`,
+    order,
+    title: `Scene ${order + 1}`,
+    prompt: "Test",
+    locked: false,
+    status: "succeeded",
+    outputUrl: url,
+  };
+}
+
+describe("combineScenes helpers", () => {
+  it("orders scene output URLs and fingerprints them", () => {
+    const scenes = [sceneWithUrl(1, "https://a.test/2"), sceneWithUrl(0, "https://a.test/1")];
+    expect(orderedSceneOutputUrls(scenes)).toEqual(["https://a.test/1", "https://a.test/2"]);
+    expect(sceneOutputFingerprint(scenes)).toBe("https://a.test/1|https://a.test/2");
+  });
+
+  it("rebuilds combined video when scene outputs change", () => {
+    const scenes = [sceneWithUrl(0, "https://a.test/1")];
+    expect(allScenesReady(scenes)).toBe(true);
+    expect(shouldRebuildCombinedVideo(scenes, undefined, "idle")).toBe(true);
+    expect(shouldRebuildCombinedVideo(scenes, "https://a.test/1", "ready")).toBe(false);
+    const updated = [sceneWithUrl(0, "https://a.test/2")];
+    expect(shouldRebuildCombinedVideo(updated, "https://a.test/1", "ready")).toBe(true);
+  });
+});
+
+describe("gigaEditHandoff", () => {
+  it("prefers the combined video URL when ready", () => {
+    const project = {
+      title: "Test project",
+      settings: { aspectRatio: "16:9" },
+      scenes: [sceneWithUrl(0, "https://scene.test/1"), sceneWithUrl(1, "https://scene.test/2")],
+      textOverlays: [],
+      consistency: { aiVisualizationLabel: false },
+      combinedOutputUrl: "https://combined.test/full",
+      combinedVideoStatus: "ready",
+    } as VideoProject;
+
+    expect(buildGigaEditHandoff(project).importUrls).toEqual(["https://combined.test/full"]);
   });
 });

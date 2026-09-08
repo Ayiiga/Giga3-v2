@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
+import { MediaCardActions } from "@/components/media/MediaCardActions";
 import type { UsageSnapshot } from "@/lib/credits/constants";
 import { mediaVideoCreditCost } from "@/lib/media/videoCredits";
 import { DirectorModePanel } from "@/components/media/videoProject/DirectorModePanel";
@@ -10,6 +11,7 @@ import {
   applyRegenerationModeToSettings,
   beginSceneGeneration,
   buildSceneGenerationPrompt,
+  combineSceneVideos,
   completeSceneGeneration,
   createDefaultConsistencyProfile,
   createTextOverlay,
@@ -28,7 +30,9 @@ import {
   reorderScenes,
   runVideoProjectQualityCheck,
   saveVideoProject,
+  sceneOutputFingerprint,
   scheduleVideoProjectAutosave,
+  shouldRebuildCombinedVideo,
   suggestedTitleOverlaysFromPrompt,
   syncProjectFromDirectorPlan,
   type CameraMovementId,
@@ -39,7 +43,9 @@ import {
   type VisualStyleId,
   VIDEO_PROJECT_AUTOSAVE_MS,
 } from "@/lib/media/videoProject";
+import { uploadCombinedVideoToGallery } from "@/lib/media/videoProject/uploadCombinedVideo";
 import type { VideoCategoryId } from "@/lib/media/catalog";
+import { triggerMediaJobsRefresh } from "@/lib/media/jobsRefresh";
 import { useMediaGeneration } from "@/hooks/useMediaGeneration";
 import { useMediaVideoJob } from "@/hooks/useMediaVideoJob";
 import { cn } from "@/lib/utils";
@@ -57,6 +63,7 @@ import {
   Trash2,
   Wand2,
 } from "lucide-react";
+import { useConvex } from "convex/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const CAMERA_OPTIONS: { id: CameraMovementId; label: string }[] = [
@@ -120,16 +127,19 @@ function createEmptyProject(prompt = ""): VideoProject {
 }
 
 export function VideoProjectStudio({ usage, initialPrompt = "" }: VideoProjectStudioProps) {
+  const convex = useConvex();
   const { createVideo } = useMediaGeneration();
   const videoJob = useMediaVideoJob();
   const [project, setProject] = useState<VideoProject>(() => createEmptyProject(initialPrompt));
   const [compareSceneId, setCompareSceneId] = useState<string | null>(null);
   const [qualityReport, setQualityReport] = useState(() => runVideoProjectQualityCheck(project));
   const [saveHint, setSaveHint] = useState<string | null>(null);
+  const [combineProgress, setCombineProgress] = useState(0);
   const autosaveRef = useRef<ReturnType<typeof scheduleVideoProjectAutosave> | null>(null);
   const generatingSceneRef = useRef<{ sceneId: string; nonce: string } | null>(null);
   const batchQueueRef = useRef<string[]>([]);
   const scenesSectionRef = useRef<HTMLElement | null>(null);
+  const combineAbortRef = useRef<AbortController | null>(null);
   const projectRef = useRef(project);
   projectRef.current = project;
   const generateSceneRef = useRef<
@@ -329,6 +339,106 @@ export function VideoProjectStudio({ usage, initialPrompt = "" }: VideoProjectSt
     [project.scenes]
   );
 
+  const combineScenesIntoOne = useCallback(async () => {
+    const activeProject = projectRef.current;
+    const sceneUrls = [...activeProject.scenes]
+      .sort((a, b) => a.order - b.order)
+      .map((scene) => scene.outputUrl)
+      .filter((url): url is string => Boolean(url));
+    if (!sceneUrls.length) return;
+
+    combineAbortRef.current?.abort();
+    const controller = new AbortController();
+    combineAbortRef.current = controller;
+    const fingerprint = sceneOutputFingerprint(activeProject.scenes);
+
+    persist({
+      ...activeProject,
+      combinedVideoStatus: "combining",
+      combinedVideoError: undefined,
+      combinedOutputUrl: undefined,
+      combinedVideoJobId: undefined,
+      status: "exporting",
+    });
+    setCombineProgress(0);
+
+    try {
+      const { file, durationSec } = await combineSceneVideos({
+        sceneUrls,
+        aspectRatio: activeProject.settings.aspectRatio,
+        projectTitle: activeProject.title,
+        onProgress: setCombineProgress,
+        signal: controller.signal,
+      });
+
+      const registered = await uploadCombinedVideoToGallery(convex, file, {
+        title: activeProject.title,
+        prompt: activeProject.masterPrompt,
+        aspectRatio: activeProject.settings.aspectRatio,
+        durationSec,
+        projectId: activeProject.id,
+      });
+
+      const next: VideoProject = {
+        ...projectRef.current,
+        combinedVideoStatus: "ready",
+        combinedOutputUrl: registered.outputUrl,
+        combinedVideoJobId: String(registered.jobId),
+        combinedVideoFingerprint: fingerprint,
+        combinedVideoDurationSec: durationSec,
+        combinedVideoError: undefined,
+        status: "completed",
+        updatedAt: Date.now(),
+      };
+      setProject(next);
+      void saveVideoProject(next);
+      triggerMediaJobsRefresh();
+      setSaveHint("Combined video saved to your gallery");
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      const message =
+        error instanceof Error ? error.message : "Could not combine scenes into one video.";
+      const next: VideoProject = {
+        ...projectRef.current,
+        combinedVideoStatus: "failed",
+        combinedVideoError: message,
+        status: "needs_review",
+        updatedAt: Date.now(),
+      };
+      setProject(next);
+      void saveVideoProject(next);
+    } finally {
+      if (combineAbortRef.current === controller) {
+        combineAbortRef.current = null;
+      }
+    }
+  }, [convex, persist]);
+
+  useEffect(() => {
+    if (
+      !shouldRebuildCombinedVideo(
+        project.scenes,
+        project.combinedVideoFingerprint,
+        project.combinedVideoStatus
+      )
+    ) {
+      return;
+    }
+    if (project.combinedVideoStatus === "combining" || generatingSceneRef.current) {
+      return;
+    }
+    void combineScenesIntoOne();
+  }, [
+    project.scenes,
+    project.combinedVideoFingerprint,
+    project.combinedVideoStatus,
+    combineScenesIntoOne,
+  ]);
+
+  useEffect(() => {
+    return () => combineAbortRef.current?.abort();
+  }, []);
+
   return (
     <div className="space-y-6" data-testid="video-project-studio">
       <div className="rounded-2xl border border-violet-200/80 bg-gradient-to-br from-violet-50 to-white p-4 dark:border-violet-500/20 dark:from-violet-950/40 dark:to-zinc-950">
@@ -339,8 +449,8 @@ export function VideoProjectStudio({ usage, initialPrompt = "" }: VideoProjectSt
               Video Project — Scene Director
             </p>
             <p className="mt-1 max-w-2xl text-sm text-muted">
-              Prompt → plan scenes → generate individually → polish text in overlays → quality check →
-              export in GigaEdit (timeline, captions, voice, music).
+              Prompt → plan scenes → generate individually → scenes are stitched into one video for
+              gallery save, export, and share. Polish captions and audio in GigaEdit if needed.
             </p>
           </div>
           <span className="rounded-full bg-white px-3 py-1 text-xs font-medium capitalize text-foreground shadow-sm dark:bg-zinc-900">
@@ -843,15 +953,63 @@ export function VideoProjectStudio({ usage, initialPrompt = "" }: VideoProjectSt
         <p className="text-xs text-muted">{qualityReport.disclaimer}</p>
       </section>
 
+      <section className="saas-card space-y-4 p-4 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold">Your combined video</h2>
+          {project.combinedVideoStatus === "combining" && (
+            <span className="inline-flex items-center gap-2 text-sm text-muted">
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              Stitching scenes… {Math.round(combineProgress * 100)}%
+            </span>
+          )}
+        </div>
+        {project.combinedVideoStatus === "failed" && (
+          <div className="space-y-3">
+            <p className="text-sm text-red-600">
+              {project.combinedVideoError ?? "Could not combine scenes."}
+            </p>
+            <Button type="button" variant="outline" onClick={() => void combineScenesIntoOne()}>
+              <RefreshCw className="mr-2 h-4 w-4" aria-hidden />
+              Retry combine
+            </Button>
+          </div>
+        )}
+        {project.combinedOutputUrl && project.combinedVideoStatus === "ready" ? (
+          <div className="overflow-hidden rounded-xl border border-border bg-black">
+            <video
+              src={project.combinedOutputUrl}
+              controls
+              playsInline
+              className="max-h-80 w-full object-contain"
+            />
+            <MediaCardActions url={project.combinedOutputUrl} kind="video" />
+          </div>
+        ) : project.combinedVideoStatus === "combining" ? (
+          <p className="text-sm text-muted">
+            Joining {sortedScenes.filter((scene) => scene.outputUrl).length} scene clips into one
+            video. This runs in your browser and may take a minute.
+          </p>
+        ) : (
+          <p className="text-sm text-muted">
+            When every scene finishes generating, Giga3 stitches them into a single video you can
+            save, share, or open in GigaEdit.
+          </p>
+        )}
+      </section>
+
       <section className="saas-card flex flex-col gap-3 p-4 sm:flex-row sm:p-6">
         <Link href={gigaEditHandoffHref(project)} className="inline-flex flex-1">
-          <Button type="button" className="min-h-12 w-full gap-2 text-base" disabled={!sortedScenes.some((s) => s.outputUrl)}>
-            Open in GigaEdit (timeline, captions, audio)
+          <Button
+            type="button"
+            className="min-h-12 w-full gap-2 text-base"
+            disabled={!project.combinedOutputUrl && !sortedScenes.some((s) => s.outputUrl)}
+          >
+            Open in GigaEdit (captions, audio)
           </Button>
         </Link>
         <p className="text-xs text-muted sm:max-w-xs">
-          Polish in GigaEdit: multi-track timeline, captions, voiceover, music, and social export.
-          Save each scene clip first if remote import is blocked by your browser.
+          Opens your combined video when ready. Add captions, voiceover, music, and social export in
+          GigaEdit.
         </p>
       </section>
     </div>

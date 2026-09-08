@@ -1,3 +1,6 @@
+import {
+  orderedSceneOutputUrls,
+} from "@/lib/media/videoProject/combineScenes";
 import type { VideoProject } from "@/lib/media/videoProject/types";
 import type { ExportAspectRatio } from "@/lib/gigaedit/types";
 
@@ -12,10 +15,10 @@ export type GigaEditHandoffPayload = {
 };
 
 export function buildGigaEditHandoff(project: VideoProject): GigaEditHandoffPayload {
-  const urls = [...project.scenes]
-    .sort((a, b) => a.order - b.order)
-    .map((s) => s.outputUrl)
-    .filter((u): u is string => Boolean(u));
+  const urls =
+    project.combinedOutputUrl && project.combinedVideoStatus === "ready"
+      ? [project.combinedOutputUrl]
+      : orderedSceneOutputUrls(project.scenes);
 
   const titleOverlay = project.textOverlays.find((o) => o.kind === "title" && o.text.trim());
   const labelOverlay = project.consistency.aiVisualizationLabel
