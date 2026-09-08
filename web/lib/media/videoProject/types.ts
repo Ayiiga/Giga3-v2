@@ -218,6 +218,13 @@ export type VideoProject = {
   gigaEditProjectId?: string;
   lastQualityCheckAt?: number;
   lastQualityCheckReady?: boolean;
+  /** Combined export of all generated scenes (single gallery/share target). */
+  combinedVideoStatus?: "idle" | "combining" | "ready" | "failed";
+  combinedOutputUrl?: string;
+  combinedVideoJobId?: string;
+  combinedVideoFingerprint?: string;
+  combinedVideoError?: string;
+  combinedVideoDurationSec?: number;
 };
 
 export const DEFAULT_GENERATION_SETTINGS: VideoProjectGenerationSettings = {

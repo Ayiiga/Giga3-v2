@@ -8,3 +8,4 @@ export * from "@/lib/media/videoProject/qualityCheck";
 export * from "@/lib/media/videoProject/projectStore";
 export * from "@/lib/media/videoProject/idempotency";
 export * from "@/lib/media/videoProject/gigaEditHandoff";
+export * from "@/lib/media/videoProject/combineScenes";
