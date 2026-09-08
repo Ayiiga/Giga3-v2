@@ -3,6 +3,7 @@ import type {
   ChatCompletionAttachment,
   ChatCompletionMessage,
 } from "./chatEngine";
+import { detectNewsRetrievalIntent } from "./researchCapabilities";
 
 type QueryClass =
   | "factual"
@@ -82,7 +83,7 @@ const MAX_EXCERPT_LENGTH = 420;
 const MAX_RANKED_SOURCES = 6;
 const MAX_HISTORY_CANDIDATES = 8;
 
-const HIGH_STAKES_MODES = new Set<AiModeId>(["news"]);
+const HIGH_STAKES_MODES = new Set<AiModeId>();
 const CONVERSATIONAL_MODES = new Set<AiModeId>(["social", "book", "resume"]);
 
 const qualityStats = {
@@ -185,9 +186,17 @@ function hasConversationalIntent(query: string): boolean {
 }
 
 function hasHighStakesIntent(query: string): boolean {
-  return /\b(medical|medicine|diagnosis|symptom|treatment|drug|dosage|legal|law|contract|lawsuit|financial|finance|investment|stock|inflation|interest rate|tax|government policy|election|breaking news|latest news|latest figures|safety[- ]critical|life[- ]threatening)\b/i.test(
+  return /\b(medical|medicine|diagnosis|symptom|treatment|drug|dosage|legal|law|contract|lawsuit|financial|finance|investment|stock|inflation|interest rate|tax|government policy|election|latest figures|safety[- ]critical|life[- ]threatening)\b/i.test(
     query
   );
+}
+
+function hasExternalSourceCitations(answer: string): boolean {
+  return /\[.+?\]\(https?:\/\/[^\s)]+\)/.test(answer);
+}
+
+function hasNewsStatusLabels(answer: string): boolean {
+  return /\*\*(Verified|Developing|Unverified|Disputed)\*\*/i.test(answer);
 }
 
 function hasImageTextExtractionIntent(query: string): boolean {
@@ -530,7 +539,13 @@ function inferResponseMode(mode: AiModeId, query: string): ResponseMode {
   if (hasCreativeIntent(query) && !hasResearchBackedIntent(query)) {
     return "conversational";
   }
-  if (HIGH_STAKES_MODES.has(mode) || hasFactCheckIntent(query)) {
+  if (hasFactCheckIntent(query)) {
+    return "high_stakes";
+  }
+  if (mode === "news" || detectNewsRetrievalIntent(query)) {
+    return "educational";
+  }
+  if (HIGH_STAKES_MODES.has(mode)) {
     return "high_stakes";
   }
   if (hasHighStakesIntent(query)) {
@@ -952,9 +967,13 @@ export function validateAnswerQuality(params: {
   context: AnswerQualityContext;
 }): ValidatedAnswer {
   const originalAnswer = params.answer.trim();
+  const isNewsRetrieval = detectNewsRetrievalIntent(params.context.query);
   const citationIds = extractCitationIds(originalAnswer);
   const claimDensity = estimateClaimDensity(originalAnswer);
-  const uncertaintyDisclosure = hasUncertaintyDisclosure(originalAnswer);
+  const hasUrlCitations = hasExternalSourceCitations(originalAnswer);
+  const uncertaintyDisclosure =
+    hasUncertaintyDisclosure(originalAnswer) ||
+    (isNewsRetrieval && hasNewsStatusLabels(originalAnswer));
 
   let confidence = 0.7;
   const flags: string[] = [];
@@ -978,15 +997,21 @@ export function validateAnswerQuality(params: {
   }
 
   if (params.context.requiresCitation && citedKnownSourceIds.length === 0) {
-    confidence -= 0.22;
-    flags.push("missing_citations");
+    const newsHasUrlCitations = isNewsRetrieval && hasUrlCitations;
+    if (!newsHasUrlCitations) {
+      confidence -= 0.22;
+      flags.push("missing_citations");
+    }
   }
 
   if (params.context.responseMode === "high_stakes" && claimDensity >= 2) {
     confidence -= 0.1;
     if (citedKnownSourceIds.length === 0) {
-      confidence -= 0.16;
-      flags.push("unsupported_claims");
+      const newsHasUrlCitations = isNewsRetrieval && hasUrlCitations;
+      if (!newsHasUrlCitations) {
+        confidence -= 0.16;
+        flags.push("unsupported_claims");
+      }
     }
   }
 
@@ -1047,6 +1072,7 @@ export function validateAnswerQuality(params: {
   const highStakesNeedsFallback =
     params.context.responseMode === "high_stakes" &&
     !ocrNeedsSafeFallback &&
+    !(isNewsRetrieval && hasUrlCitations) &&
     (flags.includes("fabricated_citations") || flags.includes("unsupported_claims"));
   if (highStakesNeedsFallback) {
     normalizedAnswer = fallbackHighStakesUnverified(params.context.query);
