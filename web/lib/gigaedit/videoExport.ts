@@ -15,6 +15,36 @@ export type JoinedVideoSegment = {
   speed?: number;
 };
 
+/** Clamp export segment bounds to the real media duration (prevents hangs near clip end). */
+export function normalizeJoinSegmentBounds(
+  segment: JoinedVideoSegment,
+  videoDurationSec: number
+): JoinedVideoSegment {
+  const mediaDuration =
+    Number.isFinite(videoDurationSec) && videoDurationSec > 0 ? videoDurationSec : null;
+  let startSec = Math.max(0, segment.sourceStartSec);
+  let endSec = Math.max(startSec + 0.1, segment.sourceEndSec);
+  if (mediaDuration !== null) {
+    startSec = Math.min(startSec, mediaDuration);
+    endSec = Math.min(endSec, mediaDuration);
+  }
+  if (endSec <= startSec) {
+    endSec = Math.min(startSec + 0.25, mediaDuration ?? startSec + 0.25);
+  }
+  return { ...segment, sourceStartSec: startSec, sourceEndSec: endSec };
+}
+
+function stopMediaRecorderSafely(recorder: MediaRecorder): void {
+  try {
+    if (recorder.state === "recording") {
+      recorder.requestData();
+      recorder.stop();
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 export type VideoExportOptions = {
   startSec: number;
   endSec: number;
@@ -140,10 +170,9 @@ export async function exportEditedVideoFile(
     throw new Error("Video export is not supported in this environment.");
   }
 
-  const startSec = Math.max(0, options.startSec);
-  const endSec = Math.max(startSec + 0.25, options.endSec);
+  let startSec = Math.max(0, options.startSec);
+  let endSec = Math.max(startSec + 0.25, options.endSec);
   const speed = Math.min(3, Math.max(0.25, options.speed ?? 1));
-  const clipDuration = (endSec - startSec) / speed;
   const tier = options.tier ?? detectDeviceTier();
   const target = aspectRatioSize(options.aspectRatio);
   const { width, height } = fitExportSize(target.width, target.height, tier);
@@ -173,6 +202,13 @@ export async function exportEditedVideoFile(
     if (!Number.isFinite(video.duration) || video.duration <= 0) {
       throw new Error("Could not read this video length.");
     }
+    const bounded = normalizeJoinSegmentBounds(
+      { file: sourceFile, sourceStartSec: startSec, sourceEndSec: endSec, speed },
+      video.duration
+    );
+    startSec = bounded.sourceStartSec;
+    endSec = bounded.sourceEndSec;
+    const clipDuration = (endSec - startSec) / speed;
 
     const canvasStream = canvas.captureStream(30);
     const composed = new MediaStream(canvasStream.getVideoTracks());
@@ -456,16 +492,21 @@ async function recordVideoSegment(
     signal?: AbortSignal;
   }
 ): Promise<void> {
-  const startSec = Math.max(0, segment.sourceStartSec);
-  const endSec = Math.max(startSec + 0.25, segment.sourceEndSec);
-  const speed = Math.min(3, Math.max(0.25, segment.speed ?? 1));
-  const span = endSec - startSec;
+  const bounded = normalizeJoinSegmentBounds(
+    segment,
+    Number.isFinite(video.duration) ? video.duration : segment.sourceEndSec
+  );
+  const startSec = bounded.sourceStartSec;
+  const endSec = bounded.sourceEndSec;
+  const speed = Math.min(3, Math.max(0.25, bounded.speed ?? 1));
+  const span = Math.max(0.1, endSec - startSec);
+  const wallClockMs = Math.ceil((span / speed) * 1000) + 2500;
 
   if (Math.abs(video.currentTime - startSec) > 0.05) {
     await new Promise<void>((resolve) => {
       const done = () => resolve();
       video.onseeked = done;
-      window.setTimeout(done, 500);
+      window.setTimeout(done, 800);
       try {
         video.currentTime = startSec;
       } catch {
@@ -475,17 +516,33 @@ async function recordVideoSegment(
   }
 
   video.playbackRate = speed;
+  video.muted = true;
   try {
     await video.play();
   } catch {
-    video.muted = true;
-    await video.play();
+    await new Promise((r) => window.setTimeout(r, 120));
+    await video.play().catch(() => undefined);
   }
 
   await new Promise<void>((resolve, reject) => {
     let raf = 0;
+    let timeoutId = 0;
+    const startedAt = performance.now();
+    let lastAdvanceAt = startedAt;
+    let lastCurrentTime = video.currentTime;
+
+    const finish = () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(timeoutId);
+      video.pause();
+      drawVideoFrame(ctx, video, drawOptions);
+      options.onProgress?.(options.segmentIndex, options.segmentCount, 1);
+      resolve();
+    };
+
     const onAbort = () => {
       cancelAnimationFrame(raf);
+      window.clearTimeout(timeoutId);
       video.pause();
       reject(new Error("Export cancelled."));
     };
@@ -496,26 +553,41 @@ async function recordVideoSegment(
         onAbort();
         return;
       }
+
       drawVideoFrame(ctx, video, drawOptions);
-      const progress = (video.currentTime - startSec) / Math.max(0.001, span);
-      options.onProgress?.(options.segmentIndex, options.segmentCount, Math.min(1, Math.max(0, progress)));
-      if (video.currentTime >= endSec - 0.05 || video.ended) {
-        video.pause();
-        drawVideoFrame(ctx, video, drawOptions);
-        resolve();
+      const now = performance.now();
+      if (video.currentTime > lastCurrentTime + 0.008) {
+        lastCurrentTime = video.currentTime;
+        lastAdvanceAt = now;
+      }
+
+      const elapsed = (now - startedAt) / 1000;
+      const timeProgress = Math.min(1, elapsed / (span / speed));
+      const mediaProgress = (video.currentTime - startSec) / span;
+      const progress = Math.min(1, Math.max(timeProgress * 0.15, mediaProgress));
+      options.onProgress?.(options.segmentIndex, options.segmentCount, progress);
+
+      const nearEnd =
+        video.ended ||
+        video.currentTime >= endSec - 0.06 ||
+        (Number.isFinite(video.duration) && video.currentTime >= video.duration - 0.06);
+      const stalled = now - lastAdvanceAt > 1800 && progress < 0.98;
+      const timedOut = now - startedAt >= wallClockMs;
+
+      if (nearEnd || stalled || timedOut) {
+        finish();
         return;
       }
+
+      if (video.paused && now - startedAt > 400) {
+        void video.play().catch(() => undefined);
+      }
+
       raf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(tick);
 
-    window.setTimeout(() => {
-      if (!video.paused) {
-        cancelAnimationFrame(raf);
-        video.pause();
-        resolve();
-      }
-    }, Math.ceil((span / speed) * 1000) + 6000);
+    raf = requestAnimationFrame(tick);
+    timeoutId = window.setTimeout(finish, wallClockMs);
   });
 }
 
@@ -641,13 +713,18 @@ export async function exportJoinedVideoClips(
       const video = document.createElement("video");
       video.playsInline = true;
       video.preload = "auto";
-      video.muted = audioMode === "replace";
+      video.setAttribute("playsinline", "true");
+      video.setAttribute("webkit-playsinline", "true");
+      video.muted = true;
       video.src = url;
       await waitForEvent(video, "loadedmetadata", "Could not load video for export.");
+      const safeSegment = normalizeJoinSegmentBounds(
+        segment,
+        Number.isFinite(video.duration) ? video.duration : segment.sourceEndSec
+      );
 
       if (audioMode === "original" && audioCtx && audioDest) {
         disconnectSegmentElementSource();
-        video.muted = false;
         video.volume = 1;
         try {
           segmentElementSource = audioCtx.createMediaElementSource(video);
@@ -665,11 +742,11 @@ export async function exportJoinedVideoClips(
       }
 
       if (!recorderStarted) {
-        recorder.start(200);
+        recorder.start(250);
         recorderStarted = true;
       }
 
-      await recordVideoSegment(video, canvas, ctx, recorder, segment, drawOptions, {
+      await recordVideoSegment(video, canvas, ctx, recorder, safeSegment, drawOptions, {
         segmentIndex: index,
         segmentCount: segments.length,
         signal: options.signal,
@@ -687,13 +764,17 @@ export async function exportJoinedVideoClips(
 
     disconnectSegmentElementSource();
 
-    try {
-      if (recorder.state !== "inactive") recorder.stop();
-    } catch {
-      /* ignore */
-    }
+    stopMediaRecorderSafely(recorder);
 
-    const blob = await recorded;
+    const blob = await Promise.race([
+      recorded,
+      new Promise<Blob>((_, reject) => {
+        window.setTimeout(
+          () => reject(new Error("Export timed out while finalizing the video file.")),
+          30_000
+        );
+      }),
+    ]);
     if (!blob.size) throw new Error("Export produced an empty video.");
 
     const ext = mimeType.includes("mp4") ? "mp4" : "webm";

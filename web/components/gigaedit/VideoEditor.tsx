@@ -70,7 +70,7 @@ import {
   createManagedObjectUrl,
   revokeManagedObjectUrl,
 } from "@/lib/gigaedit/mediaPipeline";
-import { downloadExportedFile } from "@/lib/gigaedit/downloadExport";
+import { downloadExportedFile, saveExportedFileToDevice } from "@/lib/gigaedit/downloadExport";
 import { handoffAndOpenGigaSocial } from "@/lib/gigaedit/publishHandoff";
 import { fetchRemoteVideosForImport } from "@/lib/gigaedit/urlVideoImport";
 import {
@@ -1204,7 +1204,7 @@ export function VideoEditor({
       }
       setEditedPublishFile(edited);
       setPublishReady(true);
-      setStatus("Export complete — review, save to device, or publish.");
+      setStatus("Export complete — save to gallery, publish, or share below.");
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Export failed. Try again or remove a clip.");
     } finally {
@@ -1225,9 +1225,13 @@ export function VideoEditor({
       if (!edited.size) {
         throw new Error("Export produced an empty file.");
       }
-      downloadExportedFile(edited);
+      const savedVia = await saveExportedFileToDevice(edited, overlayText);
       setEditedPublishFile(edited);
-      setStatus(`Saved ${edited.name} to your device.`);
+      setStatus(
+        savedVia === "shared"
+          ? "Opened share sheet — pick Gallery/Files to save, or another app."
+          : `Saved ${edited.name} to your device.`
+      );
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Export failed.");
     } finally {

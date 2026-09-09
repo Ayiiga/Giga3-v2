@@ -13,6 +13,7 @@ import type {
   GigaEditPublishPrivacy,
 } from "@/lib/gigaedit/publishTypes";
 import { saveSound, type GigaEditSoundAsset } from "@/lib/gigaedit/soundLibrary";
+import { saveExportedFileToDevice } from "@/lib/gigaedit/downloadExport";
 import type { ExportAspectRatio } from "@/lib/gigaedit/types";
 import { useEffect, useState } from "react";
 
@@ -211,31 +212,41 @@ export function PublishScreen({
     }
   }
 
-  function saveToDevice() {
-    const url = URL.createObjectURL(editedFile);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = editedFile.name || `gigaedit-export-${Date.now()}`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setStatus("Saved edited file to device. Original remains untouched.");
+  async function saveToDevice() {
+    setBusy(true);
+    try {
+      const savedVia = await saveExportedFileToDevice(
+        editedFile,
+        caption || "Made with GigaEdit on Giga3 AI"
+      );
+      setStatus(
+        savedVia === "shared"
+          ? "Choose Gallery, Files, or Drive in the share sheet to save your video."
+          : "Saved edited file to device. Original remains untouched."
+      );
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Could not save to device.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function shareExternal() {
+    setBusy(true);
     try {
-      if (navigator.share && navigator.canShare?.({ files: [editedFile] })) {
-        await navigator.share({
-          files: [editedFile],
-          title: "GigaEdit creation",
-          text: caption || "Made with GigaEdit on Giga3 AI",
-        });
-        setStatus("Shared via device apps.");
-        return;
-      }
-      saveToDevice();
-      setStatus("Share API unavailable — downloaded file instead.");
+      const savedVia = await saveExportedFileToDevice(
+        editedFile,
+        caption || "Made with GigaEdit on Giga3 AI"
+      );
+      setStatus(
+        savedVia === "shared"
+          ? "Shared via device apps."
+          : "Share API unavailable — downloaded file instead."
+      );
     } catch {
       setStatus("Share cancelled.");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -430,7 +441,7 @@ export function PublishScreen({
           className="rounded-xl border border-[var(--ge-border)] px-3 py-3 text-sm"
           onClick={saveToDevice}
         >
-          📱 Save to Device
+          📱 Save to Gallery
         </button>
         <button
           type="button"

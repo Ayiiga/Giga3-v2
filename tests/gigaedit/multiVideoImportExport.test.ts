@@ -12,7 +12,7 @@ import {
 import { parseClipUrlsFromSearchParams } from "../../web/lib/gigaedit/urlVideoImport";
 import { mainTrackSegments } from "../../web/lib/gigaedit/videoCompositeExport";
 import { sortedMainVideoClips } from "../../web/lib/gigaedit/timelineLayers";
-import { videoNeedsBake } from "../../web/lib/gigaedit/videoExport";
+import { normalizeJoinSegmentBounds, videoNeedsBake } from "../../web/lib/gigaedit/videoExport";
 import {
   chatUrlForGeneratedTemplate,
   gigaEditUrlForGeneratedTemplate,
@@ -127,6 +127,21 @@ describe("URL handoff clip params", () => {
   });
 });
 
+describe("join export segment bounds", () => {
+  it("clamps source end to real media duration", () => {
+    const bounded = normalizeJoinSegmentBounds(
+      {
+        file: new File([], "a.mp4"),
+        sourceStartSec: 0,
+        sourceEndSec: 15.5,
+      },
+      15.133
+    );
+    expect(bounded.sourceEndSec).toBeLessThanOrEqual(15.133);
+    expect(bounded.sourceEndSec).toBeGreaterThan(bounded.sourceStartSec);
+  });
+});
+
 describe("join export segments", () => {
   it("builds one segment per main-track clip in order", () => {
     const clips = [
@@ -204,10 +219,11 @@ describe("VideoEditor wiring", () => {
     expect(src).not.toContain("Export successful");
   });
 
-  it("captures per-segment audio in joined export", () => {
+  it("keeps join playback muted for mobile reliability", () => {
     const src = readFileSync(resolve(__dirname, "../../web/lib/gigaedit/videoExport.ts"), "utf8");
-    expect(src).toContain("attachVideoElementAudio");
-    expect(src).toContain("Joined export could not capture audio");
+    expect(src).toContain("normalizeJoinSegmentBounds");
+    expect(src).toContain("video.muted = true");
+    expect(src).toContain("stopMediaRecorderSafely");
   });
 
   it("initializes IndexedDB stores from brand kit opener", () => {
