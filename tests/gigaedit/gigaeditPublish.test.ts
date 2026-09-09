@@ -73,6 +73,19 @@ describe("GigaEdit publish redirect helpers", () => {
     expect(gigasocialPublishUrl("reel")).toContain("gigaeditPublish=1");
   });
 
+  it("exposes mobile publish actions and voiceover flow", () => {
+    const publish = readFileSync(
+      resolve(__dirname, "../../web/components/gigaedit/PublishScreen.tsx"),
+      "utf8"
+    );
+    expect(publish).toContain("gigaedit-publish-screen");
+    expect(publish).toContain("gigaedit-publish-sticky");
+    expect(publish).toContain("Save to Gallery");
+    expect(publish).toContain("Post on GigaSocial");
+    expect(publish).toContain("Edit voiceover in timeline");
+    expect(publish).toContain("Record voiceover");
+  });
+
   it("wires Post to GigaSocial from editors", () => {
     const photo = readFileSync(
       resolve(__dirname, "../../web/components/gigaedit/PhotoEditor.tsx"),
@@ -106,7 +119,7 @@ describe("GigaEdit publish flags & offline", () => {
 
   it("bumps SW cache for publish integration", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v245-gigasocial-templates"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v246-gigaedit-publish"');
   });
 });
 
