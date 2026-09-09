@@ -564,23 +564,33 @@ export async function exportJoinedVideoClips(
   let totalDurationSec = 0;
 
   const audioMode = options.audioMode ?? "original";
+  let audioDest: MediaStreamAudioDestinationNode | null = null;
+  let segmentElementSource: MediaElementAudioSourceNode | null = null;
+  let audioAttachError: string | null = null;
+
+  const disconnectSegmentElementSource = () => {
+    if (!segmentElementSource) return;
+    try {
+      segmentElementSource.disconnect();
+    } catch {
+      /* ignore */
+    }
+    segmentElementSource = null;
+  };
+
   if (audioMode !== "mute") {
     try {
       audioCtx = new AudioContext();
       await resumeAudioContext(audioCtx);
-      const dest = audioCtx.createMediaStreamDestination();
+      audioDest = audioCtx.createMediaStreamDestination();
       if (audioMode === "replace" && options.replaceAudio) {
         const { source, durationSec } = await loadAudioBufferSource(
           audioCtx,
           options.replaceAudio
         );
-        source.connect(dest);
+        source.connect(audioDest);
         source.start(0, 0, durationSec);
-      } else {
-        // Original audio is mixed per segment below via the active video element.
-      }
-      if (audioMode === "replace" && options.replaceAudio) {
-        dest.stream.getAudioTracks().forEach((track) => {
+        audioDest.stream.getAudioTracks().forEach((track) => {
           composed.addTrack(track);
           tracksToStop.push(track);
         });
@@ -593,6 +603,8 @@ export async function exportJoinedVideoClips(
             : "Voiceover export failed."
         );
       }
+      audioAttachError =
+        err instanceof Error ? err.message : "Could not initialize audio for export.";
     }
   }
 
@@ -604,18 +616,20 @@ export async function exportJoinedVideoClips(
   });
   const chunks: BlobPart[] = [];
   const recorded = new Promise<Blob>((resolve, reject) => {
-    recorder.onerror = () => reject(new Error("Video export failed."));
+    recorder.onerror = (event) => {
+      const detail = (event as Event & { error?: DOMException }).error;
+      reject(new Error(detail?.message || "Video export failed."));
+    };
     recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType }));
     recorder.ondataavailable = (event) => {
       if (event.data.size > 0) chunks.push(event.data);
     };
   });
 
-  recorder.start(200);
-  let audioAttachError: string | null = null;
-  let audioDest: MediaStreamAudioDestinationNode | null = null;
-  if (audioMode === "original" && audioCtx) {
-    audioDest = audioCtx.createMediaStreamDestination();
+  let recorderStarted = false;
+  if (audioMode === "replace" && composed.getAudioTracks().length > 0) {
+    recorder.start(200);
+    recorderStarted = true;
   }
 
   try {
@@ -631,17 +645,28 @@ export async function exportJoinedVideoClips(
       video.src = url;
       await waitForEvent(video, "loadedmetadata", "Could not load video for export.");
 
-      if (audioMode === "original" && audioCtx && audioDest && composed.getAudioTracks().length === 0) {
-        const attached = await attachVideoElementAudio(
-          audioCtx,
-          video,
-          audioDest,
-          composed,
-          tracksToStop
-        );
-        if (!attached) {
-          audioAttachError = "Could not capture source audio for joined export.";
+      if (audioMode === "original" && audioCtx && audioDest) {
+        disconnectSegmentElementSource();
+        video.muted = false;
+        video.volume = 1;
+        try {
+          segmentElementSource = audioCtx.createMediaElementSource(video);
+          segmentElementSource.connect(audioDest);
+          if (composed.getAudioTracks().length === 0) {
+            audioDest.stream.getAudioTracks().forEach((track) => {
+              composed.addTrack(track);
+              tracksToStop.push(track);
+            });
+          }
+        } catch (err) {
+          audioAttachError =
+            err instanceof Error ? err.message : "Could not route segment audio.";
         }
+      }
+
+      if (!recorderStarted) {
+        recorder.start(200);
+        recorderStarted = true;
       }
 
       await recordVideoSegment(video, canvas, ctx, recorder, segment, drawOptions, {
@@ -654,10 +679,13 @@ export async function exportJoinedVideoClips(
         },
       });
       video.pause();
+      disconnectSegmentElementSource();
       video.removeAttribute("src");
       video.load();
       URL.revokeObjectURL(url);
     }
+
+    disconnectSegmentElementSource();
 
     try {
       if (recorder.state !== "inactive") recorder.stop();
