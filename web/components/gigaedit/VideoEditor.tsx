@@ -70,7 +70,18 @@ import {
   createManagedObjectUrl,
   revokeManagedObjectUrl,
 } from "@/lib/gigaedit/mediaPipeline";
+import { downloadExportedFile, saveExportedFileToDevice } from "@/lib/gigaedit/downloadExport";
 import { handoffAndOpenGigaSocial } from "@/lib/gigaedit/publishHandoff";
+import { fetchRemoteVideosForImport } from "@/lib/gigaedit/urlVideoImport";
+import {
+  buildClipsFromImportCandidates,
+  clipLabelFromFileName,
+  formatImportResultMessage,
+  makeImportSourceKey,
+  planVideoFileImport,
+  type VideoFileImportCandidate,
+  type VideoFileImportFailure,
+} from "@/lib/gigaedit/videoImport";
 import { exportEditedVideoFile, exportJoinedVideoClips, videoNeedsBake } from "@/lib/gigaedit/videoExport";
 import {
   buildSequentialVideoClips,
@@ -97,6 +108,8 @@ export type VideoEditorProps = {
   autoImport?: boolean;
   /** Pre-fill overlay text from Media Studio handoff (exact user text). */
   initialOverlayText?: string;
+  /** Remote video URLs from Media Studio / template handoff (`clip0`, `clip1`, …). */
+  initialImportUrls?: string[];
   onBackHome?: () => void;
 };
 
@@ -105,6 +118,7 @@ export function VideoEditor({
   initialAspect = null,
   autoImport = false,
   initialOverlayText = "",
+  initialImportUrls = [],
   onBackHome,
 }: VideoEditorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -145,6 +159,8 @@ export function VideoEditor({
   const originalFileRef = useRef<File | null>(null);
   const sourceFilesRef = useRef<Map<string, File>>(new Map());
   const importSessionActiveRef = useRef(false);
+  const importInFlightRef = useRef(false);
+  const initialUrlImportDoneRef = useRef(false);
   const audioFileRef = useRef<File | null>(null);
   const tier = useMemo(() => detectDeviceTier(), []);
   const videoClipCount = useMemo(() => sortedMainVideoClips(clips).length, [clips]);
@@ -260,6 +276,20 @@ export function VideoEditor({
   }, [autoImport, initialProjectId]);
 
   useEffect(() => {
+    if (initialUrlImportDoneRef.current || initialProjectId) return;
+    if (!initialImportUrls.length) return;
+    initialUrlImportDoneRef.current = true;
+    void importRemoteVideoUrls(initialImportUrls, "replace");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once for handoff URLs
+  }, [initialImportUrls, initialProjectId]);
+
+  useEffect(() => {
+    if (!clips.length) return;
+    syncPreviewToTimeline(playhead);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- preview follows playhead
+  }, [playhead, clips, objectUrl]);
+
+  useEffect(() => {
     if (!initialProjectId) return;
     let cancelled = false;
     void (async () => {
@@ -322,12 +352,6 @@ export function VideoEditor({
     );
   }
 
-  function isVideoImportFile(file: File): boolean {
-    if (file.type.startsWith("video/")) return true;
-    const ext = file.name.split(".").pop()?.toLowerCase();
-    return ext === "mp4" || ext === "mov" || ext === "webm" || ext === "m4v";
-  }
-
   function resolveImportMode(nextClips: GigaEditTimelineClip[] = clips): "replace" | "append" {
     return projectHasVideos(nextClips) ? "append" : "replace";
   }
@@ -386,123 +410,12 @@ export function VideoEditor({
     if (detections.length) setBrandDetections(detections);
   }
 
-  async function importVideoFiles(
-    files: File[],
-    mode?: "replace" | "append",
-    placement?: "main" | "overlay",
-    overlayLane?: GigaEditTimelineLane
+  function applyMainTrackImport(
+    importMode: "replace" | "append",
+    candidates: VideoFileImportCandidate[],
+    failures: VideoFileImportFailure[]
   ) {
-    const videos = files.filter(isVideoImportFile);
-    if (videos.length === 0) {
-      setStatus("Please choose one or more video files.");
-      return;
-    }
-
-    const importMode = mode ?? resolveImportMode();
-    if (importMode === "append" && projectHasVideos() && !placement) {
-      setPendingImportFiles(videos);
-      setPendingImportMode("append");
-      setImportDialogOpen(true);
-      return;
-    }
-
-    if (placement === "overlay") {
-      const tierSlots = remainingJoinSlots(clips);
-      void tierSlots;
-      let layerCursor = nextOverlayLayer(clips);
-      const added: GigaEditTimelineClip[] = [];
-      for (const file of videos) {
-        const durationSec = await readVideoDuration(file);
-        if (durationSec <= 0) continue;
-        const sourceKey = `src_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-        registerSourceFile(sourceKey, file);
-        const thumb = await captureFileThumbnail(file);
-        const lane = overlayLane ?? "b-roll";
-        const clip = buildOverlayClip({
-          sourceKey,
-          label: file.name.replace(/\.[^.]+$/, "").slice(0, 18) || laneLabel(lane),
-          durationSec,
-          playheadSec: snapTimelineSec(playhead, clips, playhead, snapEnabled),
-          videoLayer: layerCursor,
-          thumbnailDataUrl: thumb,
-          timelineLane: lane,
-          cameraId: lane === "screen-recording" ? "screen" : undefined,
-        });
-        added.push(normalizeVideoClip(clip));
-        layerCursor += 1;
-        void runBrandingScan(file);
-      }
-      if (added.length === 0) {
-        setStatus("Could not add overlay videos.");
-        return;
-      }
-      commitClips((prev) => [...prev, ...added]);
-      const last = added[added.length - 1];
-      setSelectedClipId(last.id);
-      setPlayhead(last.startSec);
-      revokeManagedObjectUrl(objectUrl);
-      const previewFile = sourceFilesRef.current.get(last.sourceKey ?? "");
-      if (previewFile) setObjectUrl(createManagedObjectUrl(previewFile));
-      setStatus(
-        `Added ${added.length} ${laneLabel(overlayLane ?? "b-roll")} clip${added.length === 1 ? "" : "s"} at ${formatTimecodeMs(playhead)}.`
-      );
-      return;
-    }
-
-    const slots = importMode === "replace" ? MAX_GIGAEDIT_JOIN_CLIPS : remainingJoinSlots(clips);
-    if (slots <= 0) {
-      setStatus(`Main track supports up to ${MAX_GIGAEDIT_JOIN_CLIPS} sequential clips. Try “Add as overlay”.`);
-      return;
-    }
-
-    const selected = videos.slice(0, slots);
-    const additions: Array<{ sourceKey: string; label: string; durationSec: number; thumb?: string }> = [];
-
-    if (importMode === "replace") {
-      sourceFilesRef.current.clear();
-      originalFileRef.current = null;
-      importSessionActiveRef.current = false;
-    }
-
-    for (const file of selected) {
-      const durationSec = await readVideoDuration(file);
-      if (durationSec <= 0) {
-        setStatus(`Could not read duration for ${file.name}. Skipped.`);
-        continue;
-      }
-      const sourceKey =
-        importMode === "replace" && additions.length === 0
-          ? "primary"
-          : `src_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-      registerSourceFile(sourceKey, file);
-      const thumb = await captureFileThumbnail(file);
-      additions.push({
-        sourceKey,
-        label: file.name.replace(/\.[^.]+$/, "").slice(0, 18) || `Clip ${additions.length + 1}`,
-        durationSec,
-        thumb,
-      });
-      void runBrandingScan(file);
-    }
-
-    if (additions.length === 0) {
-      setStatus("Could not import the selected videos.");
-      return;
-    }
-
-    const nextClips =
-      importMode === "replace"
-        ? buildSequentialVideoClips(
-            clips.filter((clip) => clip.track !== "video" || (clip.videoLayer ?? 0) > 0),
-            additions.map((a) => ({ sourceKey: a.sourceKey, label: a.label, durationSec: a.durationSec }))
-          )
-        : buildSequentialVideoClips(clips, additions.map((a) => ({ sourceKey: a.sourceKey, label: a.label, durationSec: a.durationSec })));
-
-    const withThumbs = nextClips.map((clip) => {
-      const add = additions.find((a) => a.sourceKey === clip.sourceKey);
-      return add?.thumb ? { ...clip, clipThumbnailDataUrl: add.thumb } : clip;
-    });
-
+    const withThumbs = buildClipsFromImportCandidates(clips, importMode, candidates);
     commitClips(withThumbs);
     setDuration(projectTimelineDuration(withThumbs));
     const joinedVideos = sortedMainVideoClips(withThumbs);
@@ -511,14 +424,222 @@ export function VideoEditor({
     setPlayhead(previewClip?.startSec ?? 0);
     setSelectedClipId(previewClip?.id ?? null);
     revokeManagedObjectUrl(objectUrl);
-    const previewKey = previewClip?.sourceKey ?? additions[0]?.sourceKey ?? "primary";
+    const previewKey = previewClip?.sourceKey ?? candidates[0]?.sourceKey ?? "primary";
     const previewFile = sourceFilesRef.current.get(previewKey);
     if (previewFile) setObjectUrl(createManagedObjectUrl(previewFile));
     setStatus(
-      importMode === "replace"
-        ? `Imported ${additions.length} video${additions.length === 1 ? "" : "s"} on the main track.`
-        : `Added ${additions.length} clip${additions.length === 1 ? "" : "s"} to main track (${joinedVideos.length}/${MAX_GIGAEDIT_JOIN_CLIPS}).`
+      formatImportResultMessage(importMode, candidates.length, joinedVideos.length, failures)
     );
+  }
+
+  async function importVideoFiles(
+    files: File[],
+    mode?: "replace" | "append",
+    placement?: "main" | "overlay",
+    overlayLane?: GigaEditTimelineLane
+  ) {
+    if (importInFlightRef.current) {
+      setStatus("Import already in progress — please wait.");
+      return;
+    }
+    if (files.length === 0) {
+      setStatus("Please choose one or more video files.");
+      return;
+    }
+
+    const importMode = mode ?? resolveImportMode();
+    if (importMode === "append" && projectHasVideos() && !placement) {
+      const plan = planVideoFileImport({
+        files,
+        mode: "append",
+        existingClips: clips,
+        remainingSlots: remainingJoinSlots(clips),
+      });
+      if (plan.selectedFiles.length === 0 && plan.failures.length > 0) {
+        setStatus(formatImportResultMessage("append", 0, sortedMainVideoClips(clips).length, plan.failures));
+        return;
+      }
+      setPendingImportFiles(plan.selectedFiles);
+      setPendingImportMode("append");
+      setImportDialogOpen(true);
+      return;
+    }
+
+    importInFlightRef.current = true;
+    const failures: VideoFileImportFailure[] = [];
+
+    try {
+      if (placement === "overlay") {
+        const plan = planVideoFileImport({
+          files,
+          mode: "append",
+          existingClips: clips,
+          remainingSlots: remainingJoinSlots(clips),
+        });
+        failures.push(...plan.failures);
+        let layerCursor = nextOverlayLayer(clips);
+        const added: GigaEditTimelineClip[] = [];
+        for (const file of plan.selectedFiles) {
+          try {
+            const durationSec = await readVideoDuration(file);
+            if (durationSec <= 0) {
+              failures.push({ fileName: file.name, reason: "Could not read video duration." });
+              continue;
+            }
+            const sourceKey = makeImportSourceKey(added.length, "append");
+            registerSourceFile(sourceKey, file);
+            const thumb = await captureFileThumbnail(file);
+            const lane = overlayLane ?? "b-roll";
+            const clip = buildOverlayClip({
+              sourceKey,
+              label: clipLabelFromFileName(file.name, added.length) || laneLabel(lane),
+              durationSec,
+              playheadSec: snapTimelineSec(playhead, clips, playhead, snapEnabled),
+              videoLayer: layerCursor,
+              thumbnailDataUrl: thumb,
+              timelineLane: lane,
+              cameraId: lane === "screen-recording" ? "screen" : undefined,
+            });
+            added.push(normalizeVideoClip(clip));
+            layerCursor += 1;
+            void runBrandingScan(file);
+          } catch (err) {
+            failures.push({
+              fileName: file.name,
+              reason: err instanceof Error ? err.message : "Could not import overlay video.",
+            });
+          }
+        }
+        if (added.length === 0) {
+          setStatus(formatImportResultMessage("append", 0, sortedMainVideoClips(clips).length, failures));
+          return;
+        }
+        commitClips((prev) => [...prev, ...added]);
+        const last = added[added.length - 1];
+        setSelectedClipId(last.id);
+        setPlayhead(last.startSec);
+        revokeManagedObjectUrl(objectUrl);
+        const previewFile = sourceFilesRef.current.get(last.sourceKey ?? "");
+        if (previewFile) setObjectUrl(createManagedObjectUrl(previewFile));
+        setStatus(
+          `Added ${added.length} ${laneLabel(overlayLane ?? "b-roll")} clip${added.length === 1 ? "" : "s"} at ${formatTimecodeMs(playhead)}.` +
+            (failures.length ? ` ${failures.length} file(s) failed.` : "")
+        );
+        return;
+      }
+
+      const slots =
+        importMode === "replace" ? MAX_GIGAEDIT_JOIN_CLIPS : remainingJoinSlots(clips);
+      if (slots <= 0) {
+        setStatus(`Main track supports up to ${MAX_GIGAEDIT_JOIN_CLIPS} sequential clips. Try “Add as overlay”.`);
+        return;
+      }
+
+      const plan = planVideoFileImport({
+        files,
+        mode: importMode,
+        existingClips: clips,
+        remainingSlots: slots,
+      });
+      failures.push(...plan.failures);
+
+      if (plan.selectedFiles.length === 0) {
+        setStatus(formatImportResultMessage(importMode, 0, sortedMainVideoClips(clips).length, failures));
+        return;
+      }
+
+      if (importMode === "replace") {
+        sourceFilesRef.current.clear();
+        originalFileRef.current = null;
+      }
+      importSessionActiveRef.current = true;
+
+      const candidates: VideoFileImportCandidate[] = [];
+      for (let index = 0; index < plan.selectedFiles.length; index += 1) {
+        const file = plan.selectedFiles[index];
+        try {
+          const durationSec = await readVideoDuration(file);
+          if (durationSec <= 0) {
+            failures.push({ fileName: file.name, reason: "Could not read video duration." });
+            continue;
+          }
+          const sourceKey = makeImportSourceKey(candidates.length, importMode);
+          registerSourceFile(sourceKey, file);
+          const thumb = await captureFileThumbnail(file);
+          candidates.push({
+            file,
+            sourceKey,
+            label: clipLabelFromFileName(file.name, candidates.length),
+            durationSec,
+            thumb,
+          });
+          void runBrandingScan(file);
+        } catch (err) {
+          failures.push({
+            fileName: file.name,
+            reason: err instanceof Error ? err.message : "Could not import video.",
+          });
+        }
+      }
+
+      if (candidates.length === 0) {
+        setStatus(formatImportResultMessage(importMode, 0, sortedMainVideoClips(clips).length, failures));
+        return;
+      }
+
+      applyMainTrackImport(importMode, candidates, failures);
+    } finally {
+      importInFlightRef.current = false;
+    }
+  }
+
+  async function importRemoteVideoUrls(urls: string[], mode: "replace" | "append" = "replace") {
+    if (importInFlightRef.current) {
+      setStatus("Import already in progress — please wait.");
+      return;
+    }
+    if (urls.length === 0) return;
+
+    importInFlightRef.current = true;
+    setStatus(`Downloading ${urls.length} video${urls.length === 1 ? "" : "s"}…`);
+
+    try {
+      const result = await fetchRemoteVideosForImport(urls, {
+        maxCount: mode === "replace" ? MAX_GIGAEDIT_JOIN_CLIPS : remainingJoinSlots(clips),
+      });
+      const failures: VideoFileImportFailure[] = result.failures.map((f) => ({
+        fileName: f.fileName,
+        reason: f.reason,
+      }));
+
+      if (result.successes.length === 0) {
+        setStatus(formatImportResultMessage(mode, 0, sortedMainVideoClips(clips).length, failures));
+        return;
+      }
+
+      if (mode === "replace") {
+        sourceFilesRef.current.clear();
+        originalFileRef.current = null;
+      }
+      importSessionActiveRef.current = true;
+
+      const candidates: VideoFileImportCandidate[] = result.successes.map((item, index) => {
+        const sourceKey = makeImportSourceKey(index, mode);
+        registerSourceFile(sourceKey, item.file);
+        return {
+          file: item.file,
+          sourceKey,
+          label: clipLabelFromFileName(item.file.name, index),
+          durationSec: item.durationSec,
+        };
+      });
+
+      applyMainTrackImport(mode, candidates, failures);
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Could not import remote videos.");
+    } finally {
+      importInFlightRef.current = false;
+    }
   }
 
   function onPickFiles(fileList: FileList | null, mode?: "replace" | "append") {
@@ -570,7 +691,7 @@ export function VideoEditor({
   }
 
   function ensureBaseClip(dur: number) {
-    if (projectHasVideos()) return;
+    if (projectHasVideos() || importInFlightRef.current) return;
     importSessionActiveRef.current = true;
     commitClips([
       newClip({
@@ -888,7 +1009,7 @@ export function VideoEditor({
     setStatus(`Branding action “${action}” applied (non-destructive until export).`);
   }
 
-  async function saveProject() {
+  async function saveProject(): Promise<string | undefined> {
     const project = createEmptyProject({
       kind: "video",
       title: originalFileRef.current?.name.replace(/\.[^.]+$/, "") || "Video project",
@@ -904,25 +1025,43 @@ export function VideoEditor({
     project.durationSec = timelineDuration || duration || undefined;
     const thumb = await captureThumbnail();
     if (thumb) project.thumbnailDataUrl = thumb;
-    await saveGigaEditProject(project);
-    if (originalFileRef.current) {
-      await putProjectOriginalBlob(project.id, originalFileRef.current);
+    try {
+      await saveGigaEditProject(project);
+      if (originalFileRef.current) {
+        await putProjectOriginalBlob(project.id, originalFileRef.current);
+      }
+      for (const [sourceKey, file] of sourceFilesRef.current.entries()) {
+        if (sourceKey === "primary") continue;
+        await putProjectClipBlob(project.id, sourceKey, file);
+      }
+      if (audioFileRef.current) {
+        await putProjectAudioBlob(project.id, audioFileRef.current);
+      }
+      enqueueGigaEditSync({ projectId: project.id, action: "backup" });
+      setProjectId(project.id);
+      setStatus("Draft auto-saved locally. Original file preserved.");
+      return project.id;
+    } catch (err) {
+      setProjectId(project.id);
+      setStatus(
+        err instanceof Error
+          ? `Draft save failed (${err.message}) — edits kept in memory.`
+          : "Draft save failed — edits kept in memory."
+      );
+      return project.id;
     }
-    for (const [sourceKey, file] of sourceFilesRef.current.entries()) {
-      if (sourceKey === "primary") continue;
-      await putProjectClipBlob(project.id, sourceKey, file);
-    }
-    if (audioFileRef.current) {
-      await putProjectAudioBlob(project.id, audioFileRef.current);
-    }
-    enqueueGigaEditSync({ projectId: project.id, action: "backup" });
-    setProjectId(project.id);
-    setStatus("Draft auto-saved locally. Original file preserved.");
-    return project.id;
   }
 
   async function bakeEditedFile(): Promise<File> {
-    const original = originalFileRef.current;
+    let original = originalFileRef.current;
+    if (!original) {
+      const firstMain = sortedMainVideoClips(clips)[0];
+      const fallback = firstMain ? resolveClipFile(firstMain) : null;
+      if (fallback) {
+        originalFileRef.current = fallback;
+        original = fallback;
+      }
+    }
     if (!original) throw new Error("Import a video first.");
     const exportDuration = timelineDuration || duration;
 
@@ -1015,7 +1154,7 @@ export function VideoEditor({
     setStatus("Preparing edited video for GigaSocial…");
     try {
       const id = await saveProject();
-      setProjectId(id);
+      if (id) setProjectId(id);
       const edited = await bakeEditedFile();
       setEditedPublishFile(edited);
       const result = await handoffAndOpenGigaSocial({
@@ -1050,20 +1189,51 @@ export function VideoEditor({
   }
 
   async function openPublishOptions() {
-    if (!originalFileRef.current) {
+    if (!originalFileRef.current && sortedMainVideoClips(clips).length === 0) {
       setStatus("Import a video first.");
       return;
     }
     setExporting(true);
+    setStatus("Exporting joined video…");
     try {
       const id = await saveProject();
-      setProjectId(id);
+      if (id) setProjectId(id);
       const edited = await bakeEditedFile();
+      if (!edited.size) {
+        throw new Error("Export produced an empty file.");
+      }
       setEditedPublishFile(edited);
       setPublishReady(true);
-      setStatus("Review privacy & destination, then publish.");
+      setStatus("Export complete — save to gallery, publish, or share below.");
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : "Could not bake edited video.");
+      setStatus(err instanceof Error ? err.message : "Export failed. Try again or remove a clip.");
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function exportAndDownload() {
+    if (!originalFileRef.current && sortedMainVideoClips(clips).length === 0) {
+      setStatus("Import a video first.");
+      return;
+    }
+    setExporting(true);
+    setStatus("Exporting…");
+    try {
+      await saveProject();
+      const edited = await bakeEditedFile();
+      if (!edited.size) {
+        throw new Error("Export produced an empty file.");
+      }
+      const savedVia = await saveExportedFileToDevice(edited, overlayText);
+      setEditedPublishFile(edited);
+      setStatus(
+        savedVia === "shared"
+          ? "Opened share sheet — pick Gallery/Files to save, or another app."
+          : `Saved ${edited.name} to your device.`
+      );
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Export failed.");
     } finally {
       setExporting(false);
     }
@@ -1090,6 +1260,11 @@ export function VideoEditor({
                 disabled={!hasVideo || videoClipCount >= MAX_GIGAEDIT_JOIN_CLIPS}
               />
               <ToolTile label="Save" onClick={() => void saveProject()} disabled={!hasVideo} />
+              <ToolTile
+                label="Download"
+                onClick={() => void exportAndDownload()}
+                disabled={!hasVideo || exporting}
+              />
             </ToolGrid>
             <div className="grid gap-2 sm:grid-cols-2">
               <label className="block text-xs text-[var(--ge-muted)]">
@@ -1370,21 +1545,64 @@ export function VideoEditor({
             }
             onLoadedMetadata={(el) => {
               const dur = el.duration || 0;
-              setDuration((current) => Math.max(current, projectTimelineDuration(clips) || dur));
-              ensureBaseClip(dur);
+              const timelineDur = projectTimelineDuration(clips);
+              setDuration((current) => Math.max(current, timelineDur || dur));
+              if (!timelineDur) ensureBaseClip(dur);
             }}
             onTimeUpdate={(el) => {
+              const mainClips = sortedMainVideoClips(clips);
               const active =
-                sortedMainVideoClips(clips).find((clip) => {
+                clipAtTimelineSec(clips, playhead) ??
+                mainClips.find((clip) => {
                   const sourceStart = clip.sourceStartSec ?? 0;
                   const sourceEnd = clip.sourceEndSec ?? clip.endSec - clip.startSec;
                   return el.currentTime >= sourceStart - 0.05 && el.currentTime <= sourceEnd + 0.05;
-                }) ?? sortedMainVideoClips(clips)[0];
+                }) ??
+                mainClips[0];
               if (!active) {
                 setPlayhead(el.currentTime);
                 return;
               }
-              setPlayhead(sourceSecToTimelineSec(active, el.currentTime));
+              const nextPlayhead = sourceSecToTimelineSec(active, el.currentTime);
+              setPlayhead(nextPlayhead);
+
+              const sourceEnd = active.sourceEndSec ?? active.endSec - active.startSec;
+              if (el.currentTime >= sourceEnd - 0.08) {
+                const index = mainClips.findIndex((clip) => clip.id === active.id);
+                const nextClip = index >= 0 ? mainClips[index + 1] : null;
+                if (nextClip) {
+                  const nextFile = resolveClipFile(nextClip);
+                  if (nextFile) {
+                    revokeManagedObjectUrl(objectUrl);
+                    setObjectUrl(createManagedObjectUrl(nextFile));
+                    const nextSourceStart = nextClip.sourceStartSec ?? 0;
+                    window.setTimeout(() => {
+                      const video = videoRef.current;
+                      if (!video) return;
+                      try {
+                        video.currentTime = nextSourceStart;
+                      } catch {
+                        /* ignore */
+                      }
+                      void video.play().catch(() => undefined);
+                    }, 0);
+                    setPlayhead(nextClip.startSec);
+                    setSelectedClipId(nextClip.id);
+                  }
+                }
+              }
+            }}
+            onEnded={() => {
+              const mainClips = sortedMainVideoClips(clips);
+              const active = clipAtTimelineSec(clips, playhead) ?? mainClips[0];
+              if (!active) return;
+              const index = mainClips.findIndex((clip) => clip.id === active.id);
+              const nextClip = index >= 0 ? mainClips[index + 1] : null;
+              if (!nextClip) return;
+              setPlayhead(nextClip.startSec);
+              setSelectedClipId(nextClip.id);
+              syncPreviewToTimeline(nextClip.startSec);
+              void videoRef.current?.play().catch(() => undefined);
             }}
           />
           <OverlayPreviewStack

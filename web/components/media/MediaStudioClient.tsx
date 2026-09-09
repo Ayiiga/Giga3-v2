@@ -12,6 +12,7 @@ import {
   getImageStudioActionPrompt,
   parseImageStudioActionId,
 } from "@/lib/chat/imageStudioLinks";
+import { getGeneratedMediaTemplate } from "@/lib/media/generatedMediaTemplates";
 import { getMediaStudioTemplate } from "@/lib/media/studioTemplates";
 import {
   applyTemplateHandoffToMediaSeed,
@@ -77,6 +78,21 @@ function MediaStudioContent() {
       action: null,
     });
     setFormRevision((r) => r + 1);
+  }, [params]);
+
+  useEffect(() => {
+    const generatedId = params.get("generatedTemplate");
+    if (!generatedId) return;
+    void getGeneratedMediaTemplate(generatedId).then((template) => {
+      if (!template) return;
+      setFormSeed({
+        tab: template.mediaType === "video" ? "video" : "image",
+        category: "anime_art",
+        prompt: template.prompt,
+        action: null,
+      });
+      setFormRevision((r) => r + 1);
+    });
   }, [params]);
 
   useEffect(() => {
