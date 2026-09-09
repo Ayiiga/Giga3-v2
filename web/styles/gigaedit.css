@@ -707,6 +707,86 @@ html.gigaedit-video-mode .gigaedit-shell--editor {
   overflow: hidden;
 }
 
+/* Post-export publish screen — scrollable body + sticky save/post bar on mobile */
+.gigaedit-publish-screen {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  background: var(--ge-editor-bg, #05070b);
+}
+
+.gigaedit-publish-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.75rem 0.75rem 1rem;
+}
+
+.gigaedit-publish-preview {
+  max-height: min(38vh, 14rem);
+  width: auto;
+  max-width: 100%;
+}
+
+@media (min-width: 640px) {
+  .gigaedit-publish-preview {
+    max-height: 16rem;
+  }
+}
+
+.gigaedit-publish-primary-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.gigaedit-publish-btn {
+  border-radius: 0.75rem;
+  padding: 0.85rem 0.65rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.gigaedit-publish-btn:disabled {
+  opacity: 0.55;
+}
+
+.gigaedit-publish-btn--gold {
+  background: var(--ge-gold, #fbbf24);
+  color: #0b1220;
+}
+
+.gigaedit-publish-btn--gold-outline {
+  border: 2px solid var(--ge-gold, #fbbf24);
+  background: rgba(251, 191, 36, 0.12);
+  color: #fff;
+}
+
+.gigaedit-publish-btn--cyan {
+  background: var(--ge-cyan, #22d3ee);
+  color: #0b1220;
+}
+
+.gigaedit-publish-sticky {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(5, 7, 11, 0.98);
+  padding: 0.6rem 0.75rem max(0.6rem, env(safe-area-inset-bottom));
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45);
+}
+
 .gigaedit-preview-stage {
   display: flex;
   min-height: 0;

@@ -1505,6 +1505,12 @@ export function VideoEditor({
         aiAssisted={Boolean(captions) || contrastBoost}
         defaultCaption={overlayText}
         onClose={() => setPublishReady(false)}
+        onEditAudio={() => {
+          setPublishReady(false);
+          setActiveToolTab("audio");
+          setToolPanelOpen(true);
+          setStatus("Attach voiceover or music, then tap Export again to bake it into the video.");
+        }}
       />
     );
   }
