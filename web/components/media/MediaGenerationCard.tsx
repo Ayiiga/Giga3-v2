@@ -79,7 +79,13 @@ export const MediaGenerationCard = memo(function MediaGenerationCard({
       </div>
 
       {succeeded && job.outputUrl && (
-        <MediaCardActions url={job.outputUrl} kind={kind} />
+        <MediaCardActions
+          url={job.outputUrl}
+          kind={kind}
+          prompt={job.prompt}
+          jobId={job._id}
+          provider={job.provider}
+        />
       )}
 
       <div className="border-t border-border p-4 text-sm sm:text-base">

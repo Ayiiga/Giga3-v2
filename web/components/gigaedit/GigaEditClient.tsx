@@ -16,6 +16,7 @@ import { VideoEditor } from "@/components/gigaedit/VideoEditor";
 import { useGigaEditFeatures } from "@/lib/gigaedit/featureFlags";
 import { startGigaEditBackgroundSync } from "@/lib/gigaedit/offline";
 import type { ExportAspectRatio, GigaEditOpenOptions, GigaEditSection } from "@/lib/gigaedit/types";
+import { parseClipUrlsFromSearchParams } from "@/lib/gigaedit/urlVideoImport";
 import {
   buildTemplatePrompt,
   consumeTemplateHandoff,
@@ -77,6 +78,10 @@ export function GigaEditClient() {
   );
   const initialOverlayText = searchParams?.get("overlayText")?.trim() ?? "";
   const templatePostId = searchParams?.get("templatePost")?.trim() ?? "";
+  const initialImportUrls = useMemo(
+    () => (searchParams ? parseClipUrlsFromSearchParams(searchParams) : []),
+    [searchParams]
+  );
 
   useEffect(() => {
     if (!templatePostId) return;
@@ -161,6 +166,7 @@ export function GigaEditClient() {
           initialAspect={aspect}
           autoImport={autoImport}
           initialOverlayText={initialOverlayText || undefined}
+          initialImportUrls={initialImportUrls}
           onBackHome={() => openSection("home")}
         />
       )}

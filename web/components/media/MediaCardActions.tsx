@@ -11,14 +11,22 @@ import {
   type ShareResult,
 } from "@/lib/share/clientShare";
 import { cn } from "@/lib/utils";
-import { Copy, Download, Loader2, Pencil, Share2, Wand2 } from "lucide-react";
+import {
+  gigaEditUrlForGeneratedTemplate,
+  saveGeneratedMediaTemplate,
+} from "@/lib/media/generatedMediaTemplates";
+import { Copy, Download, LayoutTemplate, Loader2, Pencil, Share2, Wand2 } from "lucide-react";
 import Link from "next/link";
-import { useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
 import type { ReactNode } from "react";
 
 interface MediaCardActionsProps {
   url: string;
   kind: "image" | "video";
+  prompt?: string;
+  jobId?: string;
+  provider?: string | null;
   className?: string;
 }
 
@@ -47,8 +55,18 @@ function ActionButton({
   );
 }
 
-export function MediaCardActions({ url, kind, className }: MediaCardActionsProps) {
+export function MediaCardActions({
+  url,
+  kind,
+  prompt = "",
+  jobId,
+  provider,
+  className,
+}: MediaCardActionsProps) {
+  const router = useRouter();
   const { feedback, runAction, busy } = useShareAction();
+  const [templateBusy, setTemplateBusy] = useState(false);
+  const [templateStatus, setTemplateStatus] = useState<string | null>(null);
 
   const run = useCallback(
     async (action: () => Promise<ShareResult>, successMessage: string) => {
@@ -57,9 +75,37 @@ export function MediaCardActions({ url, kind, className }: MediaCardActionsProps
     [runAction]
   );
 
+  const saveAsTemplate = useCallback(async () => {
+    if (!prompt.trim()) {
+      setTemplateStatus("Add a prompt before saving as a template.");
+      return;
+    }
+    setTemplateBusy(true);
+    setTemplateStatus(null);
+    try {
+      const template = await saveGeneratedMediaTemplate({
+        mediaType: kind,
+        mediaUrl: url,
+        prompt: prompt.trim(),
+        jobId,
+        provider: provider ?? undefined,
+      });
+      setTemplateStatus(`Template saved — open in Chat, Studio, GigaSocial, or GigaEdit.`);
+      return template;
+    } catch (err) {
+      setTemplateStatus(err instanceof Error ? err.message : "Could not save template.");
+      return null;
+    } finally {
+      setTemplateBusy(false);
+    }
+  }, [kind, jobId, prompt, provider, url]);
+
   return (
     <div className={cn("relative border-t border-border bg-muted/20 px-3 py-2.5", className)}>
       <ShareActionFeedback feedback={feedback} />
+      {templateStatus ? (
+        <p className="mb-2 text-xs text-amber-200/90">{templateStatus}</p>
+      ) : null}
       <div className="flex flex-wrap items-center gap-2">
         <ActionButton
           label={kind === "image" ? "Save image" : "Save video"}
@@ -87,6 +133,23 @@ export function MediaCardActions({ url, kind, className }: MediaCardActionsProps
           onClick={() => void run(() => copyUrlToClipboard(url), COPY_SUCCESS)}
         >
           <Copy className="h-4 w-4" aria-hidden />
+        </ActionButton>
+        <ActionButton
+          label="Use as Template"
+          disabled={busy || templateBusy || !prompt.trim()}
+          onClick={() => {
+            void (async () => {
+              const template = await saveAsTemplate();
+              if (!template) return;
+              router.push(gigaEditUrlForGeneratedTemplate(template));
+            })();
+          }}
+        >
+          {templateBusy ? (
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+          ) : (
+            <LayoutTemplate className="h-4 w-4" aria-hidden />
+          )}
         </ActionButton>
         {kind === "image" && (
           <>

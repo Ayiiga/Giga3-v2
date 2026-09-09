@@ -612,10 +612,11 @@ export async function exportJoinedVideoClips(
   });
 
   recorder.start(200);
-  const video = document.createElement("video");
-  video.playsInline = true;
-  video.preload = "auto";
-  video.muted = audioMode === "replace";
+  let audioAttachError: string | null = null;
+  let audioDest: MediaStreamAudioDestinationNode | null = null;
+  if (audioMode === "original" && audioCtx) {
+    audioDest = audioCtx.createMediaStreamDestination();
+  }
 
   try {
     for (let index = 0; index < segments.length; index += 1) {
@@ -623,8 +624,26 @@ export async function exportJoinedVideoClips(
       const speed = Math.min(3, Math.max(0.25, segment.speed ?? 1));
       totalDurationSec += (segment.sourceEndSec - segment.sourceStartSec) / speed;
       const url = URL.createObjectURL(segment.file);
+      const video = document.createElement("video");
+      video.playsInline = true;
+      video.preload = "auto";
+      video.muted = audioMode === "replace";
       video.src = url;
       await waitForEvent(video, "loadedmetadata", "Could not load video for export.");
+
+      if (audioMode === "original" && audioCtx && audioDest && composed.getAudioTracks().length === 0) {
+        const attached = await attachVideoElementAudio(
+          audioCtx,
+          video,
+          audioDest,
+          composed,
+          tracksToStop
+        );
+        if (!attached) {
+          audioAttachError = "Could not capture source audio for joined export.";
+        }
+      }
+
       await recordVideoSegment(video, canvas, ctx, recorder, segment, drawOptions, {
         segmentIndex: index,
         segmentCount: segments.length,
@@ -638,6 +657,12 @@ export async function exportJoinedVideoClips(
       video.removeAttribute("src");
       video.load();
       URL.revokeObjectURL(url);
+    }
+
+    if (audioMode === "original" && composed.getAudioTracks().length === 0) {
+      throw new Error(
+        audioAttachError ?? "Joined export could not capture audio from the source clips."
+      );
     }
 
     try {
@@ -664,9 +689,6 @@ export async function exportJoinedVideoClips(
       }
     });
     void audioCtx?.close().catch(() => undefined);
-    video.pause();
-    video.removeAttribute("src");
-    video.load();
   }
 }
 
