@@ -659,12 +659,6 @@ export async function exportJoinedVideoClips(
       URL.revokeObjectURL(url);
     }
 
-    if (audioMode === "original" && composed.getAudioTracks().length === 0) {
-      throw new Error(
-        audioAttachError ?? "Joined export could not capture audio from the source clips."
-      );
-    }
-
     try {
       if (recorder.state !== "inactive") recorder.stop();
     } catch {
@@ -676,10 +670,14 @@ export async function exportJoinedVideoClips(
 
     const ext = mimeType.includes("mp4") ? "mp4" : "webm";
     const base = segments[0]?.file.name.replace(/\.[^.]+$/, "") || "gigaedit-joined";
-    return {
+    const result = {
       file: new File([blob], `${base}-joined.${ext}`, { type: mimeType }),
       durationSec: totalDurationSec,
     };
+    if (audioMode === "original" && composed.getAudioTracks().length === 0 && audioAttachError) {
+      console.warn(`Joined export is video-only: ${audioAttachError}`);
+    }
+    return result;
   } finally {
     tracksToStop.forEach((track) => {
       try {

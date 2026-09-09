@@ -50,7 +50,7 @@ function openDb(): Promise<IDBDatabase | null> {
       resolve(null);
       return;
     }
-    const req = indexedDB.open(DB_NAME, 1);
+    const req = indexedDB.open(DB_NAME, 2);
     req.onupgradeneeded = () => {
       const db = req.result;
       if (!db.objectStoreNames.contains("projects")) {

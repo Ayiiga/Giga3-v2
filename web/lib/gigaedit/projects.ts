@@ -13,7 +13,7 @@ import type {
 import { GIGAEDIT_BRAND_KIT_STORE_ID } from "@/lib/gigaedit/creatorStudio/brandKit";
 
 const DB_NAME = "giga3-gigaedit-v1";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const META_STORE = "projects";
 const BLOB_STORE = "media";
 
