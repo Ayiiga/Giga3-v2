@@ -1009,7 +1009,7 @@ export function VideoEditor({
     setStatus(`Branding action “${action}” applied (non-destructive until export).`);
   }
 
-  async function saveProject() {
+  async function saveProject(): Promise<string | undefined> {
     const project = createEmptyProject({
       kind: "video",
       title: originalFileRef.current?.name.replace(/\.[^.]+$/, "") || "Video project",
@@ -1025,21 +1025,31 @@ export function VideoEditor({
     project.durationSec = timelineDuration || duration || undefined;
     const thumb = await captureThumbnail();
     if (thumb) project.thumbnailDataUrl = thumb;
-    await saveGigaEditProject(project);
-    if (originalFileRef.current) {
-      await putProjectOriginalBlob(project.id, originalFileRef.current);
+    try {
+      await saveGigaEditProject(project);
+      if (originalFileRef.current) {
+        await putProjectOriginalBlob(project.id, originalFileRef.current);
+      }
+      for (const [sourceKey, file] of sourceFilesRef.current.entries()) {
+        if (sourceKey === "primary") continue;
+        await putProjectClipBlob(project.id, sourceKey, file);
+      }
+      if (audioFileRef.current) {
+        await putProjectAudioBlob(project.id, audioFileRef.current);
+      }
+      enqueueGigaEditSync({ projectId: project.id, action: "backup" });
+      setProjectId(project.id);
+      setStatus("Draft auto-saved locally. Original file preserved.");
+      return project.id;
+    } catch (err) {
+      setProjectId(project.id);
+      setStatus(
+        err instanceof Error
+          ? `Draft save failed (${err.message}) — edits kept in memory.`
+          : "Draft save failed — edits kept in memory."
+      );
+      return project.id;
     }
-    for (const [sourceKey, file] of sourceFilesRef.current.entries()) {
-      if (sourceKey === "primary") continue;
-      await putProjectClipBlob(project.id, sourceKey, file);
-    }
-    if (audioFileRef.current) {
-      await putProjectAudioBlob(project.id, audioFileRef.current);
-    }
-    enqueueGigaEditSync({ projectId: project.id, action: "backup" });
-    setProjectId(project.id);
-    setStatus("Draft auto-saved locally. Original file preserved.");
-    return project.id;
   }
 
   async function bakeEditedFile(): Promise<File> {
@@ -1144,7 +1154,7 @@ export function VideoEditor({
     setStatus("Preparing edited video for GigaSocial…");
     try {
       const id = await saveProject();
-      setProjectId(id);
+      if (id) setProjectId(id);
       const edited = await bakeEditedFile();
       setEditedPublishFile(edited);
       const result = await handoffAndOpenGigaSocial({
@@ -1187,7 +1197,7 @@ export function VideoEditor({
     setStatus("Exporting joined video…");
     try {
       const id = await saveProject();
-      setProjectId(id);
+      if (id) setProjectId(id);
       const edited = await bakeEditedFile();
       if (!edited.size) {
         throw new Error("Export produced an empty file.");

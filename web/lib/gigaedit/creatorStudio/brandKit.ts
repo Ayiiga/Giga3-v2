@@ -51,6 +51,15 @@ function openDb(): Promise<IDBDatabase | null> {
       return;
     }
     const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains("projects")) {
+        db.createObjectStore("projects", { keyPath: "id" });
+      }
+      if (!db.objectStoreNames.contains("media")) {
+        db.createObjectStore("media", { keyPath: "id" });
+      }
+    };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => resolve(null);
   });

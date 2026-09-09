@@ -209,4 +209,14 @@ describe("VideoEditor wiring", () => {
     expect(src).toContain("attachVideoElementAudio");
     expect(src).toContain("Joined export could not capture audio");
   });
+
+  it("initializes IndexedDB stores from brand kit opener", () => {
+    const src = readFileSync(
+      resolve(__dirname, "../../web/lib/gigaedit/creatorStudio/brandKit.ts"),
+      "utf8"
+    );
+    expect(src).toContain("onupgradeneeded");
+    expect(src).toContain('createObjectStore("projects"');
+    expect(src).toContain('createObjectStore("media"');
+  });
 });
