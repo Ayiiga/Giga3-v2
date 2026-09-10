@@ -38,10 +38,9 @@ export function DiscoverPageClient() {
     <div className="space-y-10">
       <header className="mx-auto max-w-3xl text-center">
         <p className="section-heading">Discover</p>
-        <h1 className="page-title mt-3">Explore Giga3 AI</h1>
+        <h2 className="page-title mt-3">Filters &amp; personalization</h2>
         <p className="section-lead mx-auto mt-4">
-          Popular prompts, learning resources, creator tools, marketplace picks, and communities —
-          curated for how people actually search.
+          Refine the curated feed below — activity-based picks stay on your device only.
         </p>
       </header>
 

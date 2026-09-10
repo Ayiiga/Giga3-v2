@@ -1,6 +1,8 @@
 import { Container } from "@/components/ui/Container";
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { TrendingStaticShell } from "@/components/trends/TrendingStaticShell";
+import { TrendCardSkeletonGrid } from "@/components/trends/TrendCardSkeletonGrid";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
@@ -10,7 +12,7 @@ const TrendingPageClient = dynamic(
     import("@/components/trends/TrendingPageClient").then((m) => ({
       default: m.TrendingPageClient,
     })),
-  { ssr: false, loading: () => <p className="text-center text-muted">Loading trends…</p> }
+  { ssr: false, loading: () => <TrendCardSkeletonGrid count={4} /> }
 );
 
 export const metadata = publicMetadata({
@@ -36,9 +38,12 @@ export default function TrendingPage() {
       />
       <div className="discover-stable section-padding pt-8 pb-8">
         <Container>
-          <Suspense fallback={<p className="text-center text-muted">Loading trends…</p>}>
-            <TrendingPageClient />
-          </Suspense>
+          <TrendingStaticShell />
+          <div className="mt-12 border-t border-border pt-10">
+            <Suspense fallback={<TrendCardSkeletonGrid count={4} />}>
+              <TrendingPageClient />
+            </Suspense>
+          </div>
         </Container>
       </div>
     </>

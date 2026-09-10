@@ -22,10 +22,9 @@ export function TrendingPageClient() {
     <div className="space-y-12">
       <header className="mx-auto max-w-3xl text-center">
         <p className="section-heading">Trend Intelligence</p>
-        <h1 className="page-title mt-3">Trending on Giga3 AI</h1>
+        <h2 className="page-title mt-3">Live filters &amp; activity</h2>
         <p className="section-lead mx-auto mt-4">
-          Explore what students, creators, and professionals are searching for — from AI and coding
-          to education, business, and the creator economy.
+          Category filters and on-device activity tracking — no fabricated live metrics.
         </p>
       </header>
 
