@@ -147,6 +147,8 @@ function ChatShellInner({
     selectConversation,
     deleteConversation,
     changeMode,
+    changePersona,
+    personaId,
     sendMessage,
     stopGenerating,
     regenerateMessage,
@@ -432,6 +434,13 @@ function ChatShellInner({
     [changeMode]
   );
 
+  const handlePersonaChange = useCallback(
+    (next: Parameters<typeof changePersona>[0]) => {
+      void changePersona(next);
+    },
+    [changePersona]
+  );
+
   const handleTemplateError = useCallback((msg: string) => {
     setTemplateNotice(msg);
   }, []);
@@ -657,6 +666,8 @@ function ChatShellInner({
           <ChatWorkspacePanel
             mode={mode}
             onModeChange={handleModeChange}
+            personaId={personaId}
+            onPersonaChange={handlePersonaChange}
             disabled={isSending || awaitingReply}
             hasMessages={displayMessages.length > 0}
             sourceImageUrl={latestImageUrl}

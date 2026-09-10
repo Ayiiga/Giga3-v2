@@ -19,6 +19,12 @@ import {
   writeActiveConversationId,
 } from "@/lib/chat/workspacePersist";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
+import {
+  GIGA_PERSONA_DEFINITIONS,
+  readStoredPersonaId,
+  writeStoredPersonaId,
+  type GigaPersonaId,
+} from "@/lib/personas/gigaPersonas";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import {
   bumpOutboxAttempt,
@@ -105,6 +111,9 @@ export function useChatPlatform() {
   const [email, setEmail] = useState<string | null>(() => getUserEmail());
   const [activeId, setActiveId] = useState<string | null>(() => readActiveConversationId());
   const [mode, setMode] = useState<AiModeId>("general");
+  const [personaId, setPersonaId] = useState<GigaPersonaId | null>(() =>
+    readStoredPersonaId()
+  );
   const [isSending, setIsSending] = useState(false);
   const [awaitingReply, setAwaitingReply] = useState(false);
   const [pendingUserText, setPendingUserText] = useState<string | null>(null);
@@ -387,6 +396,7 @@ export function useChatPlatform() {
   const createConversation = useMutation(api.conversations.create);
   const removeConversation = useMutation(api.conversations.remove);
   const setConversationMode = useMutation(api.conversations.setMode);
+  const setConversationPersona = useMutation(api.conversations.setPersona);
   const setPinnedMutation = useMutation(api.conversations.setPinned);
   const setArchivedMutation = useMutation(api.conversations.setArchived);
   const setFavoriteMutation = useMutation(api.conversations.setFavorite);
@@ -512,6 +522,7 @@ export function useChatPlatform() {
             : {}),
           content,
           mode,
+          ...(personaId ? { personaId } : {}),
           clientRequestId,
           chatSystem,
           ...currentLiveWebSendOptions({
@@ -613,7 +624,7 @@ export function useChatPlatform() {
         throw new Error(message);
       }
     },
-    [mode, beginReplyWait, trackChatGeneration, effectiveOnline]
+    [mode, personaId, beginReplyWait, trackChatGeneration, effectiveOnline]
   );
 
   const flushOutbox = useCallback(async () => {
@@ -714,6 +725,12 @@ export function useChatPlatform() {
       const nextMode = conv.mode;
       setMode((prev) => (prev === nextMode ? prev : nextMode));
     }
+    const nextPersona =
+      conv?.personaId &&
+      (GIGA_PERSONA_DEFINITIONS[conv.personaId as GigaPersonaId]
+        ? (conv.personaId as GigaPersonaId)
+        : null);
+    setPersonaId((prev) => (prev === nextPersona ? prev : nextPersona));
   }, [activeId, conversations]);
 
   useEffect(() => {
@@ -893,6 +910,26 @@ export function useChatPlatform() {
       }
     },
     [sessionToken, removeConversation, activeId]
+  );
+
+  const changePersona = useCallback(
+    async (next: GigaPersonaId | null) => {
+      setPersonaId(next);
+      writeStoredPersonaId(next);
+      const nextMode = next ? GIGA_PERSONA_DEFINITIONS[next].defaultMode : mode;
+      if (nextMode !== mode) {
+        setMode(nextMode);
+      }
+      const token = sessionToken ?? getSessionToken();
+      if (!token || !activeId) return;
+      await setConversationPersona({
+        conversationId: activeId as Id<"conversations">,
+        sessionToken: token,
+        personaId: next ?? undefined,
+        mode: nextMode,
+      });
+    },
+    [sessionToken, activeId, mode, setConversationPersona]
   );
 
   const changeMode = useCallback(
@@ -1207,6 +1244,7 @@ export function useChatPlatform() {
     activeId,
     messages,
     mode,
+    personaId,
     isSending,
     awaitingReply,
     isAcceptingMessage: false,
@@ -1219,6 +1257,7 @@ export function useChatPlatform() {
     selectConversation,
     deleteConversation,
     changeMode,
+    changePersona,
     sendMessage,
     stopGenerating,
     regenerateMessage,

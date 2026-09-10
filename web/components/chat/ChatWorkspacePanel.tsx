@@ -3,6 +3,7 @@
 import { AutomationPanel } from "@/components/automation/AutomationPanel";
 import { DocumentTemplatePicker } from "@/components/chat/DocumentTemplatePicker";
 import { ImageStudioQuickPanel } from "@/components/chat/ImageStudioQuickPanel";
+import { PersonaSelector } from "@/components/chat/PersonaSelector";
 import { ToolSelector } from "@/components/chat/ToolSelector";
 import { NewsDeskPanel } from "@/components/news/NewsDeskPanel";
 import { GenerationAlertsPanel } from "@/components/generation/GenerationAlertsPanel";
@@ -12,6 +13,7 @@ import { getSessionToken } from "@/lib/auth";
 import { CHAT_WORKSPACE_PRIMARY_APPS } from "@/lib/chat/workspaceApps";
 import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
 import type { AiModeId } from "@/lib/aiRouter";
+import type { GigaPersonaId } from "@/lib/personas/gigaPersonas";
 import {
   buildMediaStudioUrl,
   MEDIA_STUDIO_TEMPLATES,
@@ -29,6 +31,8 @@ import { memo, useEffect, useState } from "react";
 interface ChatWorkspacePanelProps {
   mode: AiModeId;
   onModeChange: (mode: AiModeId) => void;
+  personaId: GigaPersonaId | null;
+  onPersonaChange: (personaId: GigaPersonaId | null) => void;
   disabled?: boolean;
   hasMessages: boolean;
   sourceImageUrl?: string;
@@ -42,6 +46,8 @@ type WorkspaceTab = "modes" | "documents" | "media" | "news" | "sports" | "alert
 function ChatWorkspacePanelComponent({
   mode,
   onModeChange,
+  personaId,
+  onPersonaChange,
   disabled,
   hasMessages,
   sourceImageUrl,
@@ -230,6 +236,18 @@ function ChatWorkspacePanelComponent({
 
                 <div className="space-y-2 border-t border-border pt-3">
                   <p className="px-0.5 text-[11px] font-bold uppercase tracking-wider text-muted">
+                    Giga3 personas
+                  </p>
+                  <PersonaSelector
+                    value={personaId}
+                    onChange={onPersonaChange}
+                    disabled={disabled}
+                    embedded
+                  />
+                </div>
+
+                <div className="space-y-2 border-t border-border pt-3">
+                  <p className="px-0.5 text-[11px] font-bold uppercase tracking-wider text-muted">
                     Other tools
                   </p>
                   <ToolSelector
@@ -357,6 +375,8 @@ function workspacePropsEqual(
   return (
     prev.mode === next.mode &&
     prev.onModeChange === next.onModeChange &&
+    prev.personaId === next.personaId &&
+    prev.onPersonaChange === next.onPersonaChange &&
     prev.disabled === next.disabled &&
     prev.hasMessages === next.hasMessages &&
     prev.sourceImageUrl === next.sourceImageUrl &&

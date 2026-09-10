@@ -82,6 +82,7 @@ export const create = mutation({
     ...sessionArgs,
     mode: v.string(),
     title: v.optional(v.string()),
+    personaId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
@@ -92,6 +93,7 @@ export const create = mutation({
       userId: normalizeUserId(userId),
       title: title.slice(0, 80),
       mode,
+      personaId: args.personaId,
       createdAt: now,
       updatedAt: now,
     });
@@ -129,6 +131,30 @@ export const setMode = mutation({
     if (!userOwnsConversation(conv, userId)) throw new Error("Not found");
     const mode = isValidMode(args.mode) ? args.mode : "general";
     await ctx.db.patch(args.conversationId, { mode, updatedAt: Date.now() });
+  },
+});
+
+export const setPersona = mutation({
+  args: {
+    conversationId: v.id("conversations"),
+    ...sessionArgs,
+    personaId: v.optional(v.string()),
+    mode: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken);
+    const conv = await ctx.db.get(args.conversationId);
+    if (!userOwnsConversation(conv, userId)) throw new Error("Not found");
+    const patch: Record<string, unknown> = { updatedAt: Date.now() };
+    if (args.personaId === undefined || args.personaId === "") {
+      patch.personaId = undefined;
+    } else {
+      patch.personaId = args.personaId;
+    }
+    if (args.mode && isValidMode(args.mode)) {
+      patch.mode = args.mode;
+    }
+    await ctx.db.patch(args.conversationId, patch);
   },
 });
 

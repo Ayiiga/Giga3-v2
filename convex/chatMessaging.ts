@@ -8,6 +8,9 @@ import {
 } from "./chatEngine";
 import { isValidMode, type AiModeId } from "./aiModes";
 import {
+  resolvePersonaForSend,
+} from "./gigaPersonas";
+import {
   prepareAnswerQualityContext,
   recordQualityObservation,
   validateAnswerQuality,
@@ -120,6 +123,7 @@ export const acceptMessage = mutation({
       v.union(v.literal("research"), v.literal("actions"))
     ),
     researchCapability: v.optional(v.string()),
+    personaId: v.optional(v.string()),
     /** Client hint when Live Web was auto-enabled from query intent (ignored server-side). */
     autoEnabled: v.optional(v.boolean()),
   },
@@ -136,12 +140,17 @@ export const acceptMessage = mutation({
         throw new Error("Conversation not found");
       }
     } else {
-      const mode =
-        (args.mode && isValidMode(args.mode) ? args.mode : "general") as AiModeId;
+      const resolved = resolvePersonaForSend({
+        personaId: args.personaId,
+        mode: args.mode,
+        researchCapability: args.researchCapability,
+      });
+      const mode = resolved.mode;
       conversationId = await ctx.db.insert("conversations", {
         userId: normalizedEmail,
         title: "New chat",
         mode,
+        personaId: resolved.personaId ?? undefined,
         createdAt: now,
         updatedAt: now,
       });
@@ -155,8 +164,14 @@ export const acceptMessage = mutation({
 
     await ensureChatUser(ctx, email);
 
-    const mode =
-      (args.mode && isValidMode(args.mode) ? args.mode : conv?.mode ?? "general") as AiModeId;
+    const resolved = resolvePersonaForSend({
+      personaId: args.personaId ?? conv?.personaId,
+      mode: args.mode ?? conv?.mode,
+      researchCapability: args.researchCapability,
+    });
+    const mode = resolved.mode;
+    const personaId = resolved.personaId;
+    const resolvedResearchCapability = resolved.researchCapability;
     const rawAttachments = (args.attachments ?? []) as RawAttachmentInput[];
     const attachments = rawAttachments as ChatCompletionAttachment[];
     const imageCapability = assessImageProcessingCapability(attachments);
@@ -173,8 +188,15 @@ export const acceptMessage = mutation({
       });
     }
 
-    if (conv && mode !== conv.mode) {
-      await ctx.db.patch(conversationId!, { mode, updatedAt: now });
+    if (conv) {
+      const patch: Record<string, unknown> = { updatedAt: now };
+      if (mode !== conv.mode) patch.mode = mode;
+      if (personaId !== (conv.personaId ?? null)) {
+        patch.personaId = personaId ?? undefined;
+      }
+      if (Object.keys(patch).length > 1) {
+        await ctx.db.patch(conversationId!, patch);
+      }
     }
 
     let segmented = false;
@@ -197,6 +219,7 @@ export const acceptMessage = mutation({
           userId: normalizedEmail,
           title: nextTitle,
           mode,
+          personaId: personaId ?? conv.personaId,
           createdAt: now,
           updatedAt: now,
         });
@@ -347,7 +370,8 @@ export const acceptMessage = mutation({
       chatSystem: args.chatSystem,
       liveWeb: args.liveWeb === true,
       liveWebMode: args.liveWebMode,
-      researchCapability: args.researchCapability,
+      researchCapability: resolvedResearchCapability,
+      personaId: personaId ?? undefined,
       cancelled: false,
       status: "pending",
       createdAt: now,

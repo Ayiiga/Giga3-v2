@@ -398,6 +398,7 @@ export default defineSchema({
     userId: v.string(),
     title: v.string(),
     mode: aiModeValidator,
+    personaId: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
     /** When true, `shareToken` exposes read-only chat at /chat/share/?t=… */
@@ -814,6 +815,7 @@ export default defineSchema({
       v.union(v.literal("research"), v.literal("actions"))
     ),
     researchCapability: v.optional(v.string()),
+    personaId: v.optional(v.string()),
     liveWebProgress: v.optional(v.string()),
     cancelled: v.optional(v.boolean()),
     status: v.union(
