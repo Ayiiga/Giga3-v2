@@ -12,6 +12,7 @@ import { gigaSocialPostPreview } from "./gigaSocialPostPreview";
 import { unsubscribeEngagementEmail } from "./engagementEmailHttp";
 import { healthCheck } from "./health";
 import { paystackWebhook } from "./paystack";
+import { developerApiHealth, developerApiMe } from "./developerApi";
 
 const http = httpRouter();
 
@@ -79,6 +80,18 @@ http.route({
   path: "/gigasocial/api/v1/comments",
   method: "GET",
   handler: gigaSocialDeveloperApiComments,
+});
+
+http.route({
+  path: "/api/v1/health",
+  method: "GET",
+  handler: developerApiHealth,
+});
+
+http.route({
+  path: "/api/v1/me",
+  method: "GET",
+  handler: developerApiMe,
 });
 
 export default http;

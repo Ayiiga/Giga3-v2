@@ -1238,6 +1238,7 @@ export function useChatPlatform() {
   return {
     email,
     mounted,
+    sessionToken,
     conversations,
     conversationsLoading,
     messagesLoading,
@@ -1257,6 +1258,7 @@ export function useChatPlatform() {
     selectConversation,
     deleteConversation,
     changeMode,
+    personaId,
     changePersona,
     sendMessage,
     stopGenerating,
