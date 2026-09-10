@@ -1,5 +1,6 @@
 "use client";
 
+import { OfflineManager } from "@/components/gigaedit/OfflineManager";
 import { SurfaceRecommendations } from "@/components/recommendations/SurfaceRecommendations";
 import { RecentProjectsGrid } from "@/components/gigaedit/RecentProjectsGrid";
 import {
