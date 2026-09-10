@@ -398,6 +398,7 @@ export default defineSchema({
     userId: v.string(),
     title: v.string(),
     mode: aiModeValidator,
+    personaId: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
     /** When true, `shareToken` exposes read-only chat at /chat/share/?t=… */
@@ -814,6 +815,7 @@ export default defineSchema({
       v.union(v.literal("research"), v.literal("actions"))
     ),
     researchCapability: v.optional(v.string()),
+    personaId: v.optional(v.string()),
     liveWebProgress: v.optional(v.string()),
     cancelled: v.optional(v.boolean()),
     status: v.union(
@@ -1375,4 +1377,44 @@ export default defineSchema({
     viewCount: v.number(),
     updatedAt: v.number(),
   }).index("by_slug", ["slug"]),
+
+  /** GigaLearn weakness → practice → reassess loop (server sync). */
+  gigaLearnProgress: defineTable({
+    userId: v.string(),
+    topicKey: v.string(),
+    subject: v.optional(v.string()),
+    curriculum: v.optional(v.string()),
+    weakness: v.optional(v.string()),
+    practiceCount: v.number(),
+    lastScore: v.optional(v.number()),
+    lastAssessedAt: v.optional(v.number()),
+    needsReassess: v.boolean(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_topic", ["userId", "topicKey"])
+    .index("by_user_updated", ["userId", "updatedAt"]),
+
+  /** Per-user developer API keys (hashed at rest). */
+  apiKeys: defineTable({
+    userId: v.string(),
+    label: v.string(),
+    keyPrefix: v.string(),
+    keyHash: v.string(),
+    scopes: v.array(v.string()),
+    createdAt: v.number(),
+    revokedAt: v.optional(v.number()),
+    lastUsedAt: v.optional(v.number()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_prefix", ["keyPrefix"])
+    .index("by_hash", ["keyHash"]),
+
+  /** Daily API usage metering per key. */
+  apiKeyUsageDaily: defineTable({
+    apiKeyId: v.id("apiKeys"),
+    userId: v.string(),
+    dateKey: v.string(),
+    requestCount: v.number(),
+    updatedAt: v.number(),
+  }).index("by_key_date", ["apiKeyId", "dateKey"]),
 });

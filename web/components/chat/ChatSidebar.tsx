@@ -46,6 +46,7 @@ export interface ConversationItem {
   _id: string;
   title: string;
   mode: string;
+  personaId?: string;
   updatedAt: number;
   convexConversationId?: string | null;
   sharePublic?: boolean;

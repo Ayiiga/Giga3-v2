@@ -73,6 +73,14 @@ export const generateVideo = action({
    */
   handler: async (ctx, args) => {
     const email = await requireSessionWithMonitoring(args.sessionToken, ctx);
+    await ctx.runQuery(internal.entitlements.assertFeatureInternal, {
+      userId: email,
+      feature: "media_studio",
+    });
+    await ctx.runQuery(internal.entitlements.assertFeatureInternal, {
+      userId: email,
+      feature: "video_generation",
+    });
     const userPrompt = args.prompt.trim();
     const category = args.category ?? "anime_videos";
     const imageUrl = args.imageUrl?.trim() || undefined;
@@ -155,6 +163,10 @@ export const generateImage = action({
   },
   handler: async (ctx, args) => {
     const email = await requireSessionWithMonitoring(args.sessionToken, ctx);
+    await ctx.runQuery(internal.entitlements.assertFeatureInternal, {
+      userId: email,
+      feature: "media_studio",
+    });
     const category = args.category ?? "anime_art";
     const fullPrompt = buildImagePrompt(category, args.prompt);
     const creditMode = Boolean(args.category);
@@ -184,6 +196,12 @@ export const generateImage = action({
         user.subscriptionPlan ?? "free",
         user.subscriptionExpiresAt
       );
+      if (allowOpenAi) {
+        await ctx.runQuery(internal.entitlements.assertFeatureInternal, {
+          userId: email,
+          feature: "openai_image",
+        });
+      }
 
       const result = await generateImageWithFallback(
         {

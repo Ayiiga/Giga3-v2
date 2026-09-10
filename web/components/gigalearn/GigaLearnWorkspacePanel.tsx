@@ -12,10 +12,18 @@ import {
 import { getGigaLearnTool } from "@/lib/gigalearn/tools";
 import { getGigaLearnProfile } from "@/lib/gigalearn/profile";
 import { cn } from "@/lib/utils";
-import { Award, Copy, Star, Trash2 } from "lucide-react";
+import { api } from "convex/_generated/api";
+import { useMutation, useQuery } from "convex/react";
+import { Award, Copy, Star, Target, Trash2 } from "lucide-react";
 import { memo, useCallback, useEffect, useState } from "react";
 
-export const GigaLearnWorkspacePanel = memo(function GigaLearnWorkspacePanel() {
+interface GigaLearnWorkspacePanelProps {
+  sessionToken: string | null;
+}
+
+export const GigaLearnWorkspacePanel = memo(function GigaLearnWorkspacePanel({
+  sessionToken,
+}: GigaLearnWorkspacePanelProps) {
   const [artifacts, setArtifacts] = useState<LearningArtifact[]>([]);
   const [prompts, setPrompts] = useState(() => listPromptHistory());
   const [progress, setProgress] = useState(() => getProgressSnapshot());
@@ -23,6 +31,13 @@ export const GigaLearnWorkspacePanel = memo(function GigaLearnWorkspacePanel() {
   const [filter, setFilter] = useState<"all" | "favorites" | "quiz" | "notes" | "study-plan">(
     "all"
   );
+
+  const serverProgress = useQuery(
+    api.gigaLearnProgress.listProgress,
+    sessionToken ? { sessionToken, limit: 8 } : "skip"
+  );
+  const recordPractice = useMutation(api.gigaLearnProgress.recordPractice);
+  const weaknesses = (serverProgress ?? []).filter((row) => row.weakness || row.needsReassess);
 
   const refresh = useCallback(() => {
     setArtifacts(listArtifacts());
@@ -120,6 +135,48 @@ export const GigaLearnWorkspacePanel = memo(function GigaLearnWorkspacePanel() {
           </p>
         )}
       </div>
+
+      {weaknesses.length > 0 && (
+        <section className="saas-card rounded-2xl border border-amber-200 bg-amber-50/80 p-4 dark:border-amber-900/40 dark:bg-amber-950/20">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <Target className="h-4 w-4 text-amber-600" aria-hidden />
+            Focus areas — practice then reassess
+          </h3>
+          <ul className="mt-3 space-y-2">
+            {weaknesses.slice(0, 5).map((row) => (
+              <li
+                key={row.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-white px-3 py-2 text-sm dark:bg-card"
+              >
+                <div>
+                  <p className="font-medium text-foreground">
+                    {row.weakness ?? row.topicKey.replace(/\//g, " · ")}
+                  </p>
+                  <p className="text-xs text-muted">
+                    Score {row.lastScore ?? "—"}% · {row.practiceCount} practice
+                    {row.needsReassess ? " · reassess soon" : ""}
+                  </p>
+                </div>
+                {sessionToken && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() =>
+                      void recordPractice({
+                        sessionToken,
+                        topicKey: row.topicKey,
+                      })
+                    }
+                  >
+                    Log practice
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {progress.achievements.length > 0 && (
         <section>

@@ -11,6 +11,7 @@ import { buildRoutingContextFromUser,
 } from "./chatEngine";
 import { getSystemPrompt, isValidMode, type AiModeId } from "./aiModes";
 import { chatSystemStyleAddon } from "./assistantIdentity";
+import { personaSystemPromptAddon } from "./gigaPersonas";
 import { buildChatSubscriptionGuidanceAddon } from "./chatSubscriptionGuidance";
 import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
 import {
@@ -547,6 +548,10 @@ export const processJob = internalAction({
           credits: refreshedUser?.credits,
           query: job.content,
         });
+      const personaAddon = personaSystemPromptAddon(job.personaId);
+      if (personaAddon) {
+        systemPrompt += `\n\n${personaAddon}`;
+      }
       if (segmentRecap) {
         systemPrompt += `\n\n${segmentRecap}`;
       }

@@ -147,6 +147,8 @@ function ChatShellInner({
     selectConversation,
     deleteConversation,
     changeMode,
+    changePersona,
+    personaId,
     sendMessage,
     stopGenerating,
     regenerateMessage,
@@ -168,6 +170,7 @@ function ChatShellInner({
     uploadUsage,
     retryOutboxSync,
     liveWebProgress,
+    sessionToken,
   } = usePlatform();
 
   const { needsOnboarding, completeOnboarding, trackDailyActivity } = usePlatformProfile();
@@ -432,6 +435,13 @@ function ChatShellInner({
     [changeMode]
   );
 
+  const handlePersonaChange = useCallback(
+    (next: Parameters<typeof changePersona>[0]) => {
+      void changePersona(next);
+    },
+    [changePersona]
+  );
+
   const handleTemplateError = useCallback((msg: string) => {
     setTemplateNotice(msg);
   }, []);
@@ -469,6 +479,10 @@ function ChatShellInner({
     setModelTier("vision");
     storeGigaModel("vision");
 
+    if (handoff.personaId) {
+      void changePersona(handoff.personaId);
+    }
+
     if (handoff.attachment) {
       setHandoffAttachments([handoff.attachment]);
     }
@@ -485,7 +499,7 @@ function ChatShellInner({
       const timer = window.setTimeout(applyPrompt, 120);
       return () => window.clearTimeout(timer);
     }
-  }, [mounted, email, changeMode]);
+  }, [mounted, email, changeMode, changePersona]);
 
   useEffect(() => {
     if (!mounted || !email) return;
@@ -657,6 +671,8 @@ function ChatShellInner({
           <ChatWorkspacePanel
             mode={mode}
             onModeChange={handleModeChange}
+            personaId={personaId}
+            onPersonaChange={handlePersonaChange}
             disabled={isSending || awaitingReply}
             hasMessages={displayMessages.length > 0}
             sourceImageUrl={latestImageUrl}
@@ -701,6 +717,9 @@ function ChatShellInner({
           conversationId={activeId}
           online={effectiveOnline}
           liveWebProgress={liveWebProgress}
+          sessionToken={sessionToken}
+          personaId={personaId}
+          onSelectPersona={(id) => void changePersona(id)}
         />
       </div>
     </div>

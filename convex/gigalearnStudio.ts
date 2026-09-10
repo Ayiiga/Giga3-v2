@@ -17,6 +17,10 @@ import {
 } from "./answerQuality";
 import { requireSessionWithMonitoring } from "./auth";
 import { CREDIT_COSTS } from "./creditsConfig";
+import {
+  personaSystemPromptAddon,
+  resolvePersonaForGigaLearnTool,
+} from "./gigaPersonas";
 
 const TOOL_MODE_MAP: Record<string, AiModeId> = {
   "quiz-generator": "gigalearn",
@@ -111,12 +115,17 @@ export const generateContent = action({
     subject: v.optional(v.string()),
     level: v.optional(v.string()),
     context: v.optional(v.string()),
+    practiceScore: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const verifiedEmail = await requireSessionWithMonitoring(
       args.sessionToken,
       ctx
     );
+    await ctx.runQuery(internal.entitlements.assertFeatureInternal, {
+      userId: verifiedEmail,
+      feature: "creator_studio",
+    });
     const trimmed = args.prompt.trim();
     if (!trimmed) {
       throw new Error("Please describe what you want to learn or create.");
@@ -133,6 +142,11 @@ export const generateContent = action({
     }
 
     const mode = TOOL_MODE_MAP[args.toolId] ?? "gigalearn";
+    const personaId = resolvePersonaForGigaLearnTool({
+      toolId: args.toolId,
+      curriculum: args.curriculum,
+    });
+    const personaAddon = personaSystemPromptAddon(personaId);
     const userMessage = buildToolPrompt(
       args.toolId,
       trimmed,
@@ -166,7 +180,7 @@ export const generateContent = action({
         [
           {
             role: "system",
-            content: `${getSystemPrompt(mode)}\n\n${qualityContext.systemPromptAddon}`,
+            content: `${getSystemPrompt(mode)}${personaAddon ? `\n\n${personaAddon}` : ""}\n\n${qualityContext.systemPromptAddon}`,
           },
           ...toRetrievalSystemMessage(qualityContext),
           { role: "user", content: userMessage },
@@ -196,6 +210,14 @@ export const generateContent = action({
       });
     }
 
+    await ctx.runMutation(internal.gigaLearnProgress.recordAssessmentInternal, {
+      userId: verifiedEmail,
+      toolId: args.toolId,
+      subject: args.subject,
+      curriculum: args.curriculum,
+      score: args.practiceScore,
+    });
+
     const updatedUsage = await ctx.runQuery(api.credits.getUsageSnapshot, {
       sessionToken: args.sessionToken,
     });
@@ -204,6 +226,7 @@ export const generateContent = action({
       content: validated.content,
       toolId: args.toolId,
       mode,
+      personaId,
       credits: updatedUsage?.credits ?? usage.credits,
       usedFallback: engineResult.usedFallback,
       provider: engineResult.providerId,
