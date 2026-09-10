@@ -6,7 +6,9 @@ import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatErrorBanner } from "@/components/chat/ChatErrorBanner";
 import { ChatTypingBar } from "@/components/chat/ChatTypingBar";
 import { MessageList, type UiMessage } from "@/components/chat/MessageList";
+import { RecommendationChips } from "@/components/recommendations/RecommendationChips";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
+import type { GigaPersonaId } from "@/lib/personas/gigaPersonas";
 import type { UploadUsageSnapshot } from "@/lib/chat/uploadLimits";
 import type { AiModeId } from "@/lib/aiRouter";
 import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
@@ -43,6 +45,9 @@ interface ChatConversationPaneProps {
   conversationId?: string | null;
   online?: boolean;
   liveWebProgress?: string | null;
+  sessionToken?: string | null;
+  personaId?: GigaPersonaId | null;
+  onSelectPersona?: (personaId: GigaPersonaId) => void;
 }
 
 function panePropsEqual(
@@ -78,7 +83,10 @@ function panePropsEqual(
     prev.onRetryOutboxSync === next.onRetryOutboxSync &&
     prev.conversationId === next.conversationId &&
     prev.online === next.online &&
-    prev.liveWebProgress === next.liveWebProgress
+    prev.liveWebProgress === next.liveWebProgress &&
+    prev.sessionToken === next.sessionToken &&
+    prev.personaId === next.personaId &&
+    prev.onSelectPersona === next.onSelectPersona
   );
 }
 
@@ -113,6 +121,9 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   conversationId = null,
   online = true,
   liveWebProgress = null,
+  sessionToken = null,
+  personaId = null,
+  onSelectPersona,
 }: ChatConversationPaneProps) {
   const showTyping = awaitingReply || isSending;
   const typingPhase = awaitingReply ? "replying" : "sending";
@@ -133,6 +144,18 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         onEditMessage={onEditMessage}
         onDeleteMessage={onDeleteMessage}
       />
+      {messages.length > 0 ? (
+        <div className="shrink-0 border-t border-border/60 px-3 py-2 sm:px-4">
+          <RecommendationChips
+            surface="chat"
+            sessionToken={sessionToken}
+            currentPersonaId={personaId}
+            limit={3}
+            onApplyPrompt={onInsertTemplate}
+            onSelectPersona={onSelectPersona}
+          />
+        </div>
+      ) : null}
       <div className="chat-composer-stack min-w-0 max-w-full shrink-0">
         <ChatCategorySwitcher
           mode={mode}

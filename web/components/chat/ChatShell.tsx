@@ -170,6 +170,7 @@ function ChatShellInner({
     uploadUsage,
     retryOutboxSync,
     liveWebProgress,
+    sessionToken,
   } = usePlatform();
 
   const { needsOnboarding, completeOnboarding, trackDailyActivity } = usePlatformProfile();
@@ -712,6 +713,9 @@ function ChatShellInner({
           conversationId={activeId}
           online={effectiveOnline}
           liveWebProgress={liveWebProgress}
+          sessionToken={sessionToken}
+          personaId={personaId}
+          onSelectPersona={(id) => void changePersona(id)}
         />
       </div>
     </div>

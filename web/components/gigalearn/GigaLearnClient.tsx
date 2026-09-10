@@ -3,6 +3,7 @@
 import { GigaLearnHomeworkPanel } from "@/components/gigalearn/GigaLearnHomeworkPanel";
 import { GigaLearnToolPanel } from "@/components/gigalearn/GigaLearnToolPanel";
 import { GigaLearnWorkspacePanel } from "@/components/gigalearn/GigaLearnWorkspacePanel";
+import { RecommendationEmptyState } from "@/components/recommendations/RecommendationEmptyState";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { useMediaBilling } from "@/hooks/useMediaBilling";
@@ -17,6 +18,7 @@ import {
   TEACHER_TOOLS,
 } from "@/lib/gigalearn/tools";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
+import { getSessionToken } from "@/lib/auth";
 import { getGigaLearnProfile, saveGigaLearnProfile } from "@/lib/gigalearn/profile";
 import type { LearnerRole } from "@/lib/gigalearn/curricula";
 import { siteConfig } from "@/lib/site";
@@ -73,6 +75,12 @@ function GigaLearnContent() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
+      <RecommendationEmptyState
+        surface="learn"
+        sessionToken={getSessionToken()}
+        title="Recommended for your learning path"
+        description="Start with a tutor persona, GigaLearn practice, or a quick chat prompt."
+      />
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link

@@ -5,6 +5,7 @@ import { DocumentTemplatePicker } from "@/components/chat/DocumentTemplatePicker
 import { ImageStudioQuickPanel } from "@/components/chat/ImageStudioQuickPanel";
 import { PersonaSelector } from "@/components/chat/PersonaSelector";
 import { ToolSelector } from "@/components/chat/ToolSelector";
+import { RecommendationChips } from "@/components/recommendations/RecommendationChips";
 import { NewsDeskPanel } from "@/components/news/NewsDeskPanel";
 import { GenerationAlertsPanel } from "@/components/generation/GenerationAlertsPanel";
 import { PushAlertsPanel } from "@/components/pwa/PushAlertsPanel";
@@ -243,6 +244,15 @@ function ChatWorkspacePanelComponent({
                     onChange={onPersonaChange}
                     disabled={disabled}
                     embedded
+                  />
+                  <RecommendationChips
+                    surface="chat"
+                    sessionToken={sessionToken}
+                    currentPersonaId={personaId}
+                    limit={4}
+                    onApplyPrompt={onInsertChatText}
+                    onSelectPersona={onPersonaChange}
+                    className="pt-1"
                   />
                 </div>
 
