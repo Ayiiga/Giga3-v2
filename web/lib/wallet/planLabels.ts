@@ -1,11 +1,12 @@
+import { subscriptionPlanLabel } from "@/lib/payments/marketingPricing";
 import type { SubscriptionPlanId } from "@/lib/payments/types";
 
-/** GigaWallet display names — maps Convex plan ids to product tiers. */
+/** Wallet display names — aligned with billing labels (subscriptionCatalog). */
 export const WALLET_PLAN_LABELS: Record<SubscriptionPlanId, string> = {
   free: "Free",
-  basic: "Student",
-  pro: "Creator Pro",
-  premium: "Business",
+  basic: subscriptionPlanLabel("basic"),
+  pro: subscriptionPlanLabel("pro"),
+  premium: subscriptionPlanLabel("premium"),
 };
 
 export const FUTURE_PLAN_LABEL = "Enterprise";

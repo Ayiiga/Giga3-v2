@@ -107,9 +107,9 @@ export const PRODUCT_CATALOG: readonly ProductEntry[] = [
   {
     href: "/gigaedits",
     name: "GigaEdits",
-    tagline: "AI creator tools",
+    tagline: "Creator editing product",
     description:
-      "GigaEdits brings creator editing tools, AI-assisted content workflows, and practical creative support into one mobile-ready space.",
+      "GigaEdits is the creator editing entry point on Giga3 AI — open GigaEdit to trim, caption, and publish video, then share on GigaSocial.",
     group: "create",
   },
   {
@@ -123,9 +123,9 @@ export const PRODUCT_CATALOG: readonly ProductEntry[] = [
   {
     href: "/ai-studio",
     name: "Giga3 AI Studio",
-    tagline: "Creative AI workflows",
+    tagline: "Creative umbrella — Media Studio & Video AI",
     description:
-      "Giga3 AI Studio helps creators explore AI-assisted image and media workflows from one mobile-ready African AI super app.",
+      "Giga3 AI Studio is the marketing hub for creative workflows — start in Media Studio for images or Video AI for clips, then edit in GigaEdit and publish on GigaSocial.",
     group: "create",
   },
   {

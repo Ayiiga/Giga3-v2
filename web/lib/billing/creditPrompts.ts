@@ -1,4 +1,5 @@
 import { CREDIT_COSTS } from "@/lib/credits/constants";
+import { defaultPaidPlanUpsell } from "@/lib/payments/marketingPricing";
 
 export const CHAT_CREDIT_COST = CREDIT_COSTS.chat;
 export const LOW_CREDIT_THRESHOLD = 5;
@@ -45,17 +46,19 @@ export function creditPromptMessage(args: {
     return errorMessage;
   }
 
+  const proUpsell = defaultPaidPlanUpsell();
+
   if (variant === "subscribe") {
-    return "Unlock Giga3 Pro (OpenAI GPT-4) with a subscription. We recommend **Giga3 Pro — GHC 150/month** (250 credits) at /subscribe/, or buy a credit pack.";
+    return `Unlock the Pro chat model with a subscription. We recommend **${proUpsell}** at /subscribe/, or buy a credit pack.`;
   }
 
   if (variant === "empty") {
-    return `You're out of credits (${creditCost} per message). Subscribe for monthly refills — **Giga3 Pro is GHC 150/month** (250 credits) at /subscribe/ — or buy a credit pack to continue.`;
+    return `You're out of credits (${creditCost} per message). Subscribe for monthly refills — **${proUpsell}** at /subscribe/ — or buy a credit pack to continue.`;
   }
 
   if (variant === "low" && credits != null) {
-    return `You have ${credits} credit${credits === 1 ? "" : "s"} left. Subscribe (**Giga3 Pro — GHC 150/month**) or top up before you run out.`;
+    return `You have ${credits} credit${credits === 1 ? "" : "s"} left. Subscribe (**${proUpsell}**) or top up before you run out.`;
   }
 
-  return "Subscribe to Giga3 Pro (GHC 150/month) or buy credits to continue using Giga3 AI.";
+  return `Subscribe (${proUpsell}) or buy credits to continue using Giga3 AI.`;
 }

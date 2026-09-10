@@ -1,5 +1,6 @@
-import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
+import { PublicProductPageShell } from "@/components/seo/PublicProductPageShell";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { VIDEO_PAGE_SHELL } from "@/lib/seo/productPageContent";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
@@ -26,14 +27,8 @@ export default function VideoPage() {
           { name: "Video AI", path: "/video" },
         ]}
       />
-      <ProductSeoHeader
-        compact
-        title="Video AI"
-        description="Explore AI-assisted video generation and creative workflows inside Giga3 AI."
-        detail="Use Video AI alongside GigaEdit and GigaSocial to create, refine, and share video content."
-        showProductNav={false}
-      />
-      <div className="media-stable section-padding pt-8 pb-8">
+      <PublicProductPageShell {...VIDEO_PAGE_SHELL} />
+      <div className="media-stable section-padding pt-0 pb-8">
         <Suspense fallback={<p className="text-center text-muted">Loading…</p>}>
           <VideoStudioClient />
         </Suspense>

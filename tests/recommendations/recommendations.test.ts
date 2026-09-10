@@ -66,4 +66,28 @@ describe("recommendations engine", () => {
     });
     expect(recs.some((item) => item.title.includes("Short explain"))).toBe(true);
   });
+
+  it("returns marketplace defaults for anonymous users", () => {
+    const recs = buildRecommendations({
+      surface: "marketplace",
+      limit: 4,
+      entitlements: null,
+      creditsLeft: null,
+      recentTopics: [],
+    });
+    expect(recs.length).toBeGreaterThan(0);
+    expect(recs.every((item) => item.action.startsWith("/"))).toBe(true);
+  });
+
+  it("mixes intent and exploratory studio actions", () => {
+    const recs = buildRecommendations({
+      surface: "studio",
+      limit: 4,
+      entitlements: computeEntitlements({ subscriptionPlan: "pro", credits: 100 }),
+      creditsLeft: 100,
+      recentTopics: ["BECE maths revision"],
+    });
+    expect(recs.length).toBeLessThanOrEqual(4);
+    expect(recs.some((item) => item.entitlement === "free")).toBe(true);
+  });
 });

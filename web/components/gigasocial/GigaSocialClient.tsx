@@ -2,6 +2,7 @@
 
 import { GigaSocialPanelErrorBoundary } from "@/components/gigasocial/GigaSocialPanelErrorBoundary";
 import { GigaSocialUnreadLoader } from "@/components/gigasocial/GigaSocialUnreadLoader";
+import { SurfaceRecommendations } from "@/components/recommendations/SurfaceRecommendations";
 import { GigaSocialAuthPrompt } from "@/components/gigasocial/ux/GigaSocialAuthPrompt";
 import { GigaSocialBottomDock } from "@/components/gigasocial/ux/GigaSocialBottomDock";
 import { GigaSocialGuestBanner } from "@/components/gigasocial/ux/GigaSocialGuestBanner";
@@ -303,6 +304,12 @@ function GigaSocialContent() {
             <SectionIntro
               title="Discover"
               description="Trending posts, creative templates, creators, and educational content."
+            />
+            <SurfaceRecommendations
+              surface="social"
+              title="Suggested community actions"
+              limit={4}
+              variant="chips"
             />
             <GigaSocialPanelErrorBoundary panelName="Discover">
               <GigaSocialDiscoverPanel

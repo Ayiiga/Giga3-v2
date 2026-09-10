@@ -30,7 +30,7 @@ export const CHAT_WORKSPACE_PRIMARY_APPS: ChatWorkspaceApp[] = [
     icon: Clapperboard,
     gradient: "from-amber-500 to-orange-600",
     badge: "Edit",
-    hint: "CapCut-style studio — video, photo, teleprompter, and offline edits.",
+    hint: "GigaEdits product — opens the GigaEdit video & photo editor.",
   },
   {
     id: "gigalearn",

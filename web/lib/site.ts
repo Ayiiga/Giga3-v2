@@ -1,3 +1,5 @@
+import { buildHomepagePricingTeasers } from "@/lib/payments/marketingPricing";
+
 export const siteConfig = {
   name: "Giga3 AI",
   tagline: "Intelligent conversations at scale",
@@ -109,54 +111,8 @@ export const features = [
   },
 ] as const;
 
-/** Marketing teaser plans — full catalog at /pricing */
-export const pricingPlans = [
-  {
-    name: "Free",
-    price: "GHS 0",
-    period: "",
-    description: "25 starter credits to explore chat, writing, and media.",
-    features: [
-      "25 starter credits",
-      "Chat & research modes",
-      "Image & video studio",
-      "Email sign-in",
-    ],
-    cta: "Get started",
-    href: "/chat/login",
-    highlighted: false,
-  },
-  {
-    name: "Pro",
-    price: "GHS 150",
-    period: "/ month",
-    description: "250 monthly credits (150 GHS) for daily creators.",
-    features: [
-      "250 credits / month",
-      "Paystack billing",
-      "Media studio",
-      "PWA install",
-    ],
-    cta: "View plans",
-    href: "/pricing",
-    highlighted: true,
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    period: "",
-    description: "Volume pricing and dedicated support for organizations.",
-    features: [
-      "Custom credit pools",
-      "SLA options",
-      "Dedicated onboarding",
-      "Invoice billing",
-    ],
-    cta: "Contact sales",
-    href: "/#contact",
-    highlighted: false,
-  },
-] as const;
+/** Marketing teaser plans — derived from subscriptionCatalog; full catalog at /pricing */
+export const pricingPlans = buildHomepagePricingTeasers();
 
 /**
  * Factual, repeatable positioning sentence used verbatim in the footer and About

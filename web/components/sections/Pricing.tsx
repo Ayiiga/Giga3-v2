@@ -18,7 +18,7 @@ export function Pricing() {
           </p>
         </div>
 
-        <div className="discover-card-grid discover-card-grid--3 mt-14">
+        <div className="discover-card-grid discover-card-grid--4 mt-14">
           {pricingPlans.map((plan) => (
             <article
               key={plan.name}

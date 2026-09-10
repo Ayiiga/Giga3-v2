@@ -1,5 +1,6 @@
-import { PublicProductIntro } from "@/components/seo/PublicProductIntro";
+import { PublicProductPageShell } from "@/components/seo/PublicProductPageShell";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { GIGAEDITS_PAGE } from "@/lib/seo/productPageContent";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 
 export const metadata = publicMetadata({
@@ -18,15 +19,7 @@ export default function GigaEditsPage() {
           { name: "GigaEdits", path: "/gigaedits" },
         ]}
       />
-      <PublicProductIntro
-        compact
-        title="GigaEdits"
-        description="Create with AI: Media Studio, video editor, and a full-screen teleprompter with auto-scroll."
-        primaryHref="/gigaedit"
-        primaryLabel="Open GigaEdit"
-        secondaryHref="/gigaedit/?tab=teleprompter&record=1"
-        secondaryLabel="Teleprompter"
-      />
+      <PublicProductPageShell {...GIGAEDITS_PAGE} />
     </>
   );
 }

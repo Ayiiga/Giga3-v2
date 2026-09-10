@@ -1,6 +1,7 @@
 "use client";
 
 import { CreatorAcademySection } from "@/components/marketplace/CreatorAcademySection";
+import { SurfaceRecommendations } from "@/components/recommendations/SurfaceRecommendations";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
@@ -84,6 +85,12 @@ function MarketplaceBrowseInner() {
         </header>
 
         <CreatorAcademySection />
+
+        <SurfaceRecommendations
+          surface="marketplace"
+          title="Suggested marketplace actions"
+          limit={4}
+        />
 
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <div className="relative min-w-0 flex-1">

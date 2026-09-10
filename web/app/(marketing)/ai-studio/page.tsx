@@ -1,5 +1,6 @@
-import { PublicProductIntro } from "@/components/seo/PublicProductIntro";
+import { PublicProductPageShell } from "@/components/seo/PublicProductPageShell";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { AI_STUDIO_PAGE } from "@/lib/seo/productPageContent";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 
 export const metadata = publicMetadata({
@@ -13,13 +14,13 @@ export default function AiStudioPage() {
   return (
     <>
       <JsonLd type="SoftwareApplication" />
-      <PublicProductIntro
-        title="Giga3 AI Studio — Bring creative ideas to life"
-        description="Giga3 AI Studio connects practical AI tools with creative workflows, so you can move from prompt to project in one place."
-        audience="creators, students, and businesses exploring AI-powered media."
-        primaryHref="/media"
-        primaryLabel="Open Giga3 AI Studio"
+      <JsonLd
+        breadcrumbs={[
+          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 AI Studio", path: "/ai-studio" },
+        ]}
       />
+      <PublicProductPageShell {...AI_STUDIO_PAGE} />
     </>
   );
 }

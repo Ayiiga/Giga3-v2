@@ -48,8 +48,9 @@ describe("isInsufficientCreditsMessage", () => {
 describe("creditPromptMessage", () => {
   it("covers proactive variants", () => {
     expect(creditPromptMessage({ variant: "empty", creditCost: 1 })).toMatch(/out of credits/i);
-    expect(creditPromptMessage({ variant: "empty", creditCost: 1 })).toMatch(/GHC 150/i);
+    expect(creditPromptMessage({ variant: "empty", creditCost: 1 })).toMatch(/Pro/i);
+    expect(creditPromptMessage({ variant: "empty", creditCost: 1 })).toMatch(/150/);
     expect(creditPromptMessage({ variant: "low", credits: 3 })).toMatch(/3 credits left/i);
-    expect(creditPromptMessage({ variant: "subscribe" })).toMatch(/GHC 150/i);
+    expect(creditPromptMessage({ variant: "subscribe" })).toMatch(/150/);
   });
 });

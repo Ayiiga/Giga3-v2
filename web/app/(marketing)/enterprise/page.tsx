@@ -1,6 +1,7 @@
 import { Container } from "@/components/ui/Container";
-import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
+import { PublicProductPageShell } from "@/components/seo/PublicProductPageShell";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { ENTERPRISE_PAGE_SHELL } from "@/lib/seo/productPageContent";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 import dynamic from "next/dynamic";
 
@@ -28,13 +29,8 @@ export default function EnterprisePage() {
           { name: "Enterprise", path: "/enterprise" },
         ]}
       />
-      <ProductSeoHeader
-        title="Enterprise & Education"
-        description="Deploy Giga3 AI for schools, universities, NGOs, and teams with workspace roles, classroom tools, and organization analytics."
-        detail="Explore workspace features for educators and administrators who need secure, role-based access to AI chat, GigaLearn, and creator tools."
-        showProductNav={false}
-      />
-      <div className="marketing-stable section-padding pt-8 pb-8">
+      <PublicProductPageShell {...ENTERPRISE_PAGE_SHELL} />
+      <div className="marketing-stable section-padding pt-0 pb-8">
         <Container>
           <EnterpriseLandingClient />
         </Container>
