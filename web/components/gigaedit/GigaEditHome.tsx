@@ -1,6 +1,6 @@
 "use client";
 
-import { OfflineManager } from "@/components/gigaedit/OfflineManager";
+import { SurfaceRecommendations } from "@/components/recommendations/SurfaceRecommendations";
 import { RecentProjectsGrid } from "@/components/gigaedit/RecentProjectsGrid";
 import {
   CREATOR_HOME_ACTIONS,
@@ -257,6 +257,13 @@ export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
           ))}
         </div>
       </section>
+
+      <SurfaceRecommendations
+        surface="edit"
+        title="Suggested editing workflows"
+        limit={4}
+        variant="chips"
+      />
     </div>
   );
 }

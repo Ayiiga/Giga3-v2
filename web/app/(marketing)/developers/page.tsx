@@ -1,6 +1,7 @@
 import { Container } from "@/components/ui/Container";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { buildGigaSocialDeveloperApiUrl } from "@/lib/gigasocial/developerApi";
+import { BulletList, Prose } from "@/components/seo/SeoArticleParts";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 import { siteConfig } from "@/lib/site";
 
@@ -132,6 +133,65 @@ X-Giga3-Api-Key: YOUR_API_KEY`}
 {`curl -s \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   "${buildGigaSocialDeveloperApiUrl("feed", { limit: 5 })}"`}
+            </pre>
+          </section>
+
+          <section className="mt-10 space-y-4">
+            <h2 className="text-lg font-semibold text-foreground">Security &amp; privacy</h2>
+            <BulletList
+              items={[
+                "Read-only GET endpoints — no writes through this API.",
+                "Only public posts and profiles are returned; followers-only content is omitted.",
+                "API keys are server-side secrets — never embed them in client apps or public repos.",
+                "Rate limited to 120 requests per hour per key to protect community data.",
+                "Use HTTPS only; rotate keys by requesting a replacement from Giga3 support.",
+              ]}
+            />
+            <Prose>
+              A dedicated API hostname (for example{" "}
+              <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">api.giga3ai.com</code>
+              ) would require infrastructure changes — today the Convex site URL above is the supported
+              base path.
+            </Prose>
+          </section>
+
+          <section className="mt-10 space-y-4">
+            <h2 className="text-lg font-semibold text-foreground">Error codes</h2>
+            <div className="overflow-x-auto rounded-2xl border border-border">
+              <table className="w-full min-w-[28rem] text-left text-sm">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold">HTTP</th>
+                    <th className="px-4 py-3 font-semibold">code</th>
+                    <th className="px-4 py-3 font-semibold">Meaning</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ["401", "unauthorized", "Missing or invalid API key"],
+                    ["404", "not_found", "Post, profile, or resource not public"],
+                    ["429", "rate_limited", "Hourly quota exceeded — back off and retry"],
+                    ["503", "api_not_configured", "Developer API disabled on this deployment"],
+                  ].map(([http, code, meaning]) => (
+                    <tr key={code} className="border-t border-border">
+                      <td className="px-4 py-3">{http}</td>
+                      <td className="px-4 py-3">
+                        <code>{code}</code>
+                      </td>
+                      <td className="px-4 py-3 text-muted">{meaning}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="mt-10 space-y-4">
+            <h2 className="text-lg font-semibold text-foreground">Example — public profile</h2>
+            <pre className="overflow-x-auto rounded-xl border border-border bg-slate-50 p-4 text-sm">
+{`curl -s \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  "${buildGigaSocialDeveloperApiUrl("profile", { handle: "example" })}"`}
             </pre>
           </section>
 

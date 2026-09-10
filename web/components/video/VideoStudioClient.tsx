@@ -80,7 +80,7 @@ function VideoStudioInner() {
             <Video className="h-4 w-4" aria-hidden />
             Independent Video AI
           </div>
-          <h1 className="page-title">Video AI Studio</h1>
+          <h2 className="page-title">Video AI Studio</h2>
           <p className="mt-2 max-w-2xl text-muted">
             Dedicated video generation with its own credits — never uses chat or image credits.
           </p>

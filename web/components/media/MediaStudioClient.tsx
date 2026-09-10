@@ -6,6 +6,7 @@ import { MediaGeneratePanel } from "@/components/media/MediaGeneratePanel";
 import { MediaQuickTemplates } from "@/components/media/MediaQuickTemplates";
 import { MediaStudioHeader } from "@/components/media/MediaStudioHeader";
 import { RecentGenerationsSection } from "@/components/media/RecentGenerationsSection";
+import { SurfaceRecommendations } from "@/components/recommendations/SurfaceRecommendations";
 import { useMediaBilling } from "@/hooks/useMediaBilling";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import {
@@ -132,6 +133,12 @@ function MediaStudioContent() {
           setFormSeed({ ...template, action: null });
           setFormRevision((r) => r + 1);
         }}
+      />
+
+      <SurfaceRecommendations
+        surface="studio"
+        title="Suggested next steps in Media Studio"
+        limit={4}
       />
 
       <RecentGenerationsSection userId={email} mounted={mounted} />

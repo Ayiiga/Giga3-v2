@@ -22,12 +22,12 @@ export function useRecommendations(args: {
   offline: boolean;
 } {
   const online = useEffectiveOnline();
-  const enabled = args.enabled !== false && Boolean(args.sessionToken) && online;
+  const queryEnabled = args.enabled !== false && online;
   const result = useQuery(
     api.recommendations.getRecommendations,
-    enabled
+    queryEnabled
       ? {
-          sessionToken: args.sessionToken!,
+          sessionToken: args.sessionToken ?? "",
           surface: args.surface,
           currentPersonaId: args.currentPersonaId ?? undefined,
           limit: args.limit,
@@ -37,7 +37,7 @@ export function useRecommendations(args: {
   const [queryTimedOut, setQueryTimedOut] = useState(false);
 
   useEffect(() => {
-    if (!enabled) {
+    if (!queryEnabled) {
       setQueryTimedOut(false);
       return;
     }
@@ -47,7 +47,7 @@ export function useRecommendations(args: {
     }
     const timer = window.setTimeout(() => setQueryTimedOut(true), 6000);
     return () => window.clearTimeout(timer);
-  }, [enabled, result]);
+  }, [queryEnabled, result]);
 
   return useMemo(() => {
     if (!online || queryTimedOut) {
@@ -56,9 +56,6 @@ export function useRecommendations(args: {
         loading: false,
         offline: !online || queryTimedOut,
       };
-    }
-    if (!args.sessionToken) {
-      return { recommendations: [], loading: false, offline: false };
     }
     if (result === undefined) {
       return { recommendations: [], loading: true, offline: false };
