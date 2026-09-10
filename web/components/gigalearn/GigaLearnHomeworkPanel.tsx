@@ -10,6 +10,7 @@ import {
   buildHomeworkChatPrompt,
   storeGigaLearnChatHandoff,
 } from "@/lib/gigalearn/chatHandoff";
+import { resolveGigaLearnPersona } from "@/lib/gigalearn/personaMap";
 import { getGigaLearnProfile, saveGigaLearnProfile } from "@/lib/gigalearn/profile";
 import { prepareChatAttachment } from "@/lib/chat/multimodalAttachments";
 import { siteConfig } from "@/lib/site";
@@ -77,7 +78,17 @@ export const GigaLearnHomeworkPanel = memo(function GigaLearnHomeworkPanel() {
         level,
         notes,
       });
-      storeGigaLearnChatHandoff({ prompt, attachment, curriculum, subject, level });
+      storeGigaLearnChatHandoff({
+        prompt,
+        attachment,
+        curriculum,
+        subject,
+        level,
+        personaId: resolveGigaLearnPersona({
+          toolId: "homework-explain",
+          curriculum,
+        }),
+      });
       saveGigaLearnProfile({
         examBoard: curriculum as import("@/lib/gigalearn/curricula").ExamBoardId,
         level,

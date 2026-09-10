@@ -204,7 +204,7 @@ function GigaLearnContent() {
               title="Learning progress"
               description="Track achievements, subjects studied, and saved learning materials."
             />
-            <GigaLearnWorkspacePanel />
+            <GigaLearnWorkspacePanel sessionToken={getSessionToken()} />
           </>
         )}
       </section>

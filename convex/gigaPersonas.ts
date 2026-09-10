@@ -374,3 +374,27 @@ export function resolvePersonaForSend(args: {
 
   return { personaId, mode, researchCapability };
 }
+
+const GIGALEARN_TOOL_PERSONA: Record<string, GigaPersonaId> = {
+  "practice-questions": "bece_tutor",
+  "exam-prep": "wassce_tutor",
+  "revision-guide": "wassce_tutor",
+  "homework-explain": "ghana_teacher",
+};
+
+/** Pick a tutor persona for GigaLearn tool flows from curriculum + tool id. */
+export function resolvePersonaForGigaLearnTool(args: {
+  toolId: string;
+  curriculum?: string | null;
+}): GigaPersonaId {
+  const mapped = GIGALEARN_TOOL_PERSONA[args.toolId];
+  if (mapped) return mapped;
+
+  const curriculum = (args.curriculum ?? "").toLowerCase();
+  if (curriculum.includes("wassce")) return "wassce_tutor";
+  if (curriculum.includes("bece")) return "bece_tutor";
+  if (curriculum.includes("jhs") || curriculum.includes("shs")) {
+    return "ghana_teacher";
+  }
+  return "ghana_teacher";
+}

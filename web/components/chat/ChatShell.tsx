@@ -479,6 +479,10 @@ function ChatShellInner({
     setModelTier("vision");
     storeGigaModel("vision");
 
+    if (handoff.personaId) {
+      void changePersona(handoff.personaId);
+    }
+
     if (handoff.attachment) {
       setHandoffAttachments([handoff.attachment]);
     }
@@ -495,7 +499,7 @@ function ChatShellInner({
       const timer = window.setTimeout(applyPrompt, 120);
       return () => window.clearTimeout(timer);
     }
-  }, [mounted, email, changeMode]);
+  }, [mounted, email, changeMode, changePersona]);
 
   useEffect(() => {
     if (!mounted || !email) return;

@@ -1,5 +1,7 @@
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 
+import type { GigaPersonaId } from "@/lib/personas/gigaPersonas";
+
 const HANDOFF_KEY = "giga3_gigalearn_handoff";
 
 export interface GigaLearnChatHandoff {
@@ -8,6 +10,7 @@ export interface GigaLearnChatHandoff {
   curriculum?: string;
   subject?: string;
   level?: string;
+  personaId?: GigaPersonaId;
 }
 
 export function storeGigaLearnChatHandoff(handoff: GigaLearnChatHandoff): void {
