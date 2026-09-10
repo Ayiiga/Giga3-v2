@@ -4,7 +4,10 @@
  *
  * Wallet UI copy lives in web/lib/wallet/planLabels.ts; enforce access here.
  */
-import type { QueryCtx } from "./_generated/server";
+import { internalQuery } from "./_generated/server";
+import { v } from "convex/values";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
+import { getFreeOpenAiSnapshotDb } from "./freeOpenAiQuota";
 import { resolveAiProviderTier, type AiProviderTier } from "./providerRouter";
 import { isSubscriptionActive } from "./creditsConfig";
 import type { SubscriptionPlanId } from "./subscriptionPlans";
@@ -120,3 +123,57 @@ export async function getEntitlementsForUser(
   if (!user) return null;
   return computeEntitlements(user);
 }
+
+type EntitlementCtx = Pick<QueryCtx, "db"> | Pick<MutationCtx, "db">;
+
+/** Server-side gate — throws when the user lacks a feature. */
+export async function requireEntitlementForEmail(
+  ctx: EntitlementCtx,
+  email: string,
+  feature: GigaFeatureId,
+  message?: string
+): Promise<GigaEntitlements> {
+  const entitlements = await getEntitlementsForUser(ctx as QueryCtx, email);
+  if (!entitlements) throw new Error("User not found");
+  requireFeature(entitlements, feature, message);
+  return entitlements;
+}
+
+/** Pro model: paid tier or remaining free OpenAI daily quota. */
+export async function requireProModelAccess(
+  ctx: EntitlementCtx,
+  email: string
+): Promise<void> {
+  const entitlements = await getEntitlementsForUser(ctx as QueryCtx, email);
+  if (!entitlements) throw new Error("User not found");
+  if (hasFeature(entitlements, "chat_pro_model")) return;
+
+  const snapshot = await getFreeOpenAiSnapshotDb(ctx, email);
+  if (snapshot.remaining > 0) return;
+
+  throw new Error(
+    "Giga3 Pro requires a Pro or Premium subscription, or available free daily Pro messages. Upgrade your plan or switch to Fast / Smart / Creator."
+  );
+}
+
+/** Callable from Node actions via ctx.runQuery. */
+export const assertFeatureInternal = internalQuery({
+  args: {
+    userId: v.string(),
+    feature: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireEntitlementForEmail(
+      ctx,
+      args.userId,
+      args.feature as GigaFeatureId
+    );
+  },
+});
+
+export const assertProModelInternal = internalQuery({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    await requireProModelAccess(ctx, args.userId);
+  },
+});

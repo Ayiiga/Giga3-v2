@@ -10,6 +10,7 @@ import {
 } from "./schema";
 import { marketplaceUploadsEnabled } from "./marketplaceUploadPolicy";
 import { isListingFileApproved } from "./marketplaceListingHelpers";
+import { requireEntitlementForEmail } from "./entitlements";
 import {
   toCreatorListing,
   toPublicCreatorProfile,
@@ -148,6 +149,12 @@ export const createListing = mutation({
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);
+    await requireEntitlementForEmail(
+      ctx,
+      email,
+      "marketplace_listing",
+      "Marketplace listings require an active Pro or Premium subscription."
+    );
     const profile = await ctx.db
       .query("creatorProfiles")
       .withIndex("by_user", (q) => q.eq("userId", email))
@@ -218,6 +225,12 @@ export const updateListing = mutation({
     if (!listing || listing.creatorId !== email) throw new Error("Listing not found");
 
     if (args.status === "published") {
+      await requireEntitlementForEmail(
+        ctx,
+        email,
+        "marketplace_listing",
+        "Marketplace listings require an active Pro or Premium subscription."
+      );
       const profile = await ctx.db
         .query("creatorProfiles")
         .withIndex("by_user", (q) => q.eq("userId", email))

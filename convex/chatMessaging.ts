@@ -11,6 +11,10 @@ import {
   resolvePersonaForSend,
 } from "./gigaPersonas";
 import {
+  requireEntitlementForEmail,
+  requireProModelAccess,
+} from "./entitlements";
+import {
   prepareAnswerQualityContext,
   recordQualityObservation,
   validateAnswerQuality,
@@ -164,6 +168,10 @@ export const acceptMessage = mutation({
 
     await ensureChatUser(ctx, email);
 
+    if (args.chatSystem === "pro") {
+      await requireProModelAccess(ctx, email);
+    }
+
     const resolved = resolvePersonaForSend({
       personaId: args.personaId ?? conv?.personaId,
       mode: args.mode ?? conv?.mode,
@@ -171,6 +179,14 @@ export const acceptMessage = mutation({
     });
     const mode = resolved.mode;
     const personaId = resolved.personaId;
+    if (personaId) {
+      await requireEntitlementForEmail(
+        ctx,
+        email,
+        "advanced_personas",
+        "Advanced personas require a paid subscription."
+      );
+    }
     const resolvedResearchCapability = resolved.researchCapability;
     const rawAttachments = (args.attachments ?? []) as RawAttachmentInput[];
     const attachments = rawAttachments as ChatCompletionAttachment[];

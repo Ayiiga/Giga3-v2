@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { computeEntitlements, hasFeature } from "../../convex/entitlements";
+import {
+  computeEntitlements,
+  hasFeature,
+  requireFeature,
+} from "../../convex/entitlements";
 
 describe("entitlements layer", () => {
   it("free users can chat but not use pro model tier", () => {
@@ -32,5 +36,13 @@ describe("entitlements layer", () => {
     });
     expect(hasFeature(entitlements, "team_storage")).toBe(true);
     expect(hasFeature(entitlements, "api_access")).toBe(true);
+  });
+
+  it("requireFeature throws with readable upgrade message", () => {
+    const entitlements = computeEntitlements({
+      subscriptionPlan: "free",
+      subscriptionExpiresAt: null,
+    });
+    expect(() => requireFeature(entitlements, "media_studio")).toThrow(/plan upgrade/i);
   });
 });
