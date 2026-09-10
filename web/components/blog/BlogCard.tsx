@@ -2,6 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import type { BlogPostWithPath } from "@/lib/blog/types";
 import { categorySlugForName, blogCategoryPath } from "@/lib/blog/categories";
+import { formatBlogViewLabel } from "@/lib/blog/viewStats";
+import { Eye } from "lucide-react";
 
 function formatDate(iso: string): string {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", {
@@ -12,7 +14,15 @@ function formatDate(iso: string): string {
   });
 }
 
-export function BlogCard({ post }: { post: BlogPostWithPath }) {
+export function BlogCard({
+  post,
+  viewCount,
+  viewsLoading = false,
+}: {
+  post: BlogPostWithPath;
+  viewCount?: number;
+  viewsLoading?: boolean;
+}) {
   const categorySlug = categorySlugForName(post.category);
 
   return (
@@ -58,6 +68,15 @@ export function BlogCard({ post }: { post: BlogPostWithPath }) {
           <div>
             <dt className="sr-only">Author</dt>
             <dd>{post.author}</dd>
+          </div>
+          <div>
+            <dt className="sr-only">Views</dt>
+            <dd className="inline-flex items-center gap-1">
+              <Eye className="h-3.5 w-3.5" aria-hidden />
+              {viewsLoading || viewCount === undefined
+                ? "…"
+                : formatBlogViewLabel(viewCount)}
+            </dd>
           </div>
         </dl>
         <p className="mt-4">

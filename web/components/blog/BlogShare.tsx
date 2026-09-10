@@ -1,5 +1,6 @@
 "use client";
 
+import { BlogViewCount } from "@/components/blog/BlogViewCount";
 import { siteConfig } from "@/lib/site";
 import { shareText } from "@/lib/share/clientShare";
 import { useMemo, useState } from "react";
@@ -7,9 +8,10 @@ import { useMemo, useState } from "react";
 type BlogShareProps = {
   title: string;
   path: string;
+  slug: string;
 };
 
-export function BlogShare({ title, path }: BlogShareProps) {
+export function BlogShare({ title, path, slug }: BlogShareProps) {
   const url = useMemo(
     () => new URL(path.endsWith("/") ? path : `${path}/`, siteConfig.url).toString(),
     [path]
@@ -49,7 +51,10 @@ export function BlogShare({ title, path }: BlogShareProps) {
 
   return (
     <section aria-label="Share this article" className="rounded-2xl border border-border p-5">
-      <h2 className="text-sm font-semibold text-foreground">Share</h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold text-foreground">Share</h2>
+        <BlogViewCount slug={slug} compact className="inline-flex items-center gap-1.5 text-xs text-muted" />
+      </div>
       <ul className="mt-3 flex flex-wrap gap-2">
         <li>
           <button

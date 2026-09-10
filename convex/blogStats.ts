@@ -28,6 +28,25 @@ export const getStats = query({
   },
 });
 
+export const getStatsBatch = query({
+  args: {
+    slugs: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const counts: Record<string, number> = {};
+    for (const raw of args.slugs) {
+      const slug = normalizeSlug(raw);
+      if (!slug) continue;
+      const row = await ctx.db
+        .query("blogPostStats")
+        .withIndex("by_slug", (q) => q.eq("slug", slug))
+        .unique();
+      counts[slug] = row?.viewCount ?? 0;
+    }
+    return counts;
+  },
+});
+
 export const recordView = mutation({
   args: {
     slug: v.string(),
