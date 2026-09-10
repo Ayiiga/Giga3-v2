@@ -1,6 +1,7 @@
 "use client";
 
-import { formatBlogViewLabel, useBlogViewStats } from "@/hooks/useBlogViewStats";
+import { formatBlogViewLabel } from "@/lib/blog/viewStats";
+import { useBlogViewStats } from "@/hooks/useBlogViewStats";
 import { Eye } from "lucide-react";
 
 type BlogViewCountProps = {

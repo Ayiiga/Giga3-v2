@@ -5,6 +5,9 @@ import { api } from "convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect, useRef, useState } from "react";
 
+// Re-export for convenience
+export { formatBlogViewLabel };
+
 /** Live blog view count — optionally records one view on mount. */
 export function useBlogViewStats(slug: string, recordOnMount = false) {
   const stats = useQuery(api.blogStats.getStats, { slug });
