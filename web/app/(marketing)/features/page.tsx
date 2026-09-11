@@ -131,6 +131,9 @@ export default function FeaturesPage() {
                 links={[
                   { href: "/pricing", label: "Plans and GHS pricing" },
                   { href: "/ai-for-ghana", label: "AI for Students, Creators and Businesses in Ghana" },
+                  { href: "/african-ai-tools", label: "African AI tools on Giga3" },
+                  { href: "/ai-for-teachers-ghana", label: "AI for teachers in Ghana" },
+                  { href: "/ai-for-bece-wassce-ghana", label: "AI for BECE & WASSCE preparation" },
                   { href: "/ai-tools-for-students-ghana", label: "Best AI tools for university students in Ghana 2026" },
                   { href: "/install", label: "Install the Giga3 AI app" },
                 ]}

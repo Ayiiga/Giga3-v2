@@ -26,6 +26,7 @@ const TECH_STACK = [
 export default function AboutPage() {
   return (
     <>
+    <JsonLd type="Organization" />
     <JsonLd
       breadcrumbs={[
         { name: "Giga3 AI", path: "/" },

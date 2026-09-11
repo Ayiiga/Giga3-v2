@@ -214,6 +214,11 @@ export default function AiForGhanaPage() {
                   href: "/ai-tools-for-students-ghana",
                   label: "Best AI Tools for University Students in Ghana 2026",
                 },
+                { href: "/ai-for-teachers-ghana", label: "AI for teachers in Ghana" },
+                { href: "/ai-for-bece-wassce-ghana", label: "AI for BECE & WASSCE preparation" },
+                { href: "/ai-for-business-ghana", label: "AI tools for Ghanaian businesses" },
+                { href: "/ai-for-creators-ghana", label: "AI for creators in Ghana" },
+                { href: "/african-ai-tools", label: "African AI tools on Giga3" },
                 { href: "/gigalearn", label: "GigaLearn — AI tutor for students" },
                 { href: "/pricing", label: "Giga3 AI plans and GHS pricing" },
               ]}
