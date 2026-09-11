@@ -1,5 +1,6 @@
-import { Container } from "@/components/ui/Container";
+import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { PublicProductPageShell } from "@/components/seo/PublicProductPageShell";
+import { Container } from "@/components/ui/Container";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { ENTERPRISE_PAGE_SHELL } from "@/lib/seo/productPageContent";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
@@ -10,7 +11,7 @@ const EnterpriseLandingClient = dynamic(
     import("@/components/enterprise/EnterpriseLandingClient").then((m) => ({
       default: m.EnterpriseLandingClient,
     })),
-  { ssr: false, loading: () => <p className="text-center text-muted">Loading…</p> }
+  { ssr: false, loading: () => <ClientAppHydrationNotice productName="Enterprise workspace" signInHref="/chat/login?next=/workspace" /> }
 );
 
 export const metadata = publicMetadata({

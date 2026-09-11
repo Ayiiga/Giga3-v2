@@ -1,9 +1,10 @@
 import { Container } from "@/components/ui/Container";
 import { JsonLd, type OfferItem } from "@/components/seo/JsonLd";
 import {
+  buildPublicPlanSummaryLines,
   FREE_STARTER_CREDITS,
   SUBSCRIPTION_PLANS,
-} from "@/lib/payments/subscriptionCatalog";
+} from "@/lib/payments/marketingPricing";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -26,20 +27,17 @@ export const metadata = publicMetadata({
   ).join(", ")} per month. Pay in Ghana cedis with Paystack; renews monthly, cancel anytime.`,
 });
 
-const PLAN_ROWS = [
-  {
-    name: "Free",
-    price: "GHS 0",
-    credits: `${FREE_STARTER_CREDITS} starter credits`,
-    note: "One-time, no card required",
-  },
-  ...PAID_PLAN_IDS.map((id) => ({
-    name: SUBSCRIPTION_PLANS[id].label,
-    price: `GHS ${SUBSCRIPTION_PLANS[id].priceGhs} / month`,
-    credits: `${SUBSCRIPTION_PLANS[id].credits} credits / month`,
-    note: "Renews automatically · cancel anytime",
-  })),
-];
+const PLAN_ROWS = buildPublicPlanSummaryLines().slice(0, 4).map((row) => ({
+  name: row.name,
+  price: row.price.replace("/month", " / month"),
+  credits: row.detail,
+  note:
+    row.name === "Free"
+      ? "One-time, no card required"
+      : row.name === "Enterprise"
+        ? "Contact sales — not self-serve checkout"
+        : "Renews automatically · cancel anytime",
+}));
 
 const OFFERS: OfferItem[] = [
   {

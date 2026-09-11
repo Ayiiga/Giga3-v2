@@ -14,7 +14,12 @@ export function Pricing() {
             Simple, transparent plans
           </h2>
           <p className="section-lead">
-            Start free with credits. Upgrade when you&apos;re ready—no hidden fees.
+            Start free with credits. Upgrade when you&apos;re ready—no hidden fees. Full plan
+            details and Paystack checkout at{" "}
+            <a href="/pricing/" className="font-medium text-accent underline underline-offset-2">
+              /pricing
+            </a>
+            .
           </p>
         </div>
 

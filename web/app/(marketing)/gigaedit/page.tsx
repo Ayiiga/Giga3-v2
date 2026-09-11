@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/Container";
+import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { withChunkRetryLoader } from "@/lib/pwa/dynamicWithChunkRetry";
@@ -12,7 +13,7 @@ const GigaEditPageRoot = dynamic(
       default: m.GigaEditPageRoot,
     }))
   ),
-  { ssr: false, loading: () => <p className="text-center text-muted">Loading…</p> }
+  { ssr: false, loading: () => <ClientAppHydrationNotice productName="GigaEdit" /> }
 );
 
 export const metadata = publicMetadata({
@@ -40,7 +41,7 @@ export default function GigaEditPage() {
       />
       <div className="gigaedit-page gigaedit-stable px-0 pb-3 pt-4 sm:px-3 sm:pb-6 sm:pt-6">
         <Container className="!px-0 sm:!px-4">
-          <Suspense fallback={<p className="text-center text-[var(--ge-muted,#94a3b8)]">Loading GigaEdit…</p>}>
+          <Suspense fallback={<ClientAppHydrationNotice productName="GigaEdit" />}>
             <GigaEditPageRoot />
           </Suspense>
         </Container>

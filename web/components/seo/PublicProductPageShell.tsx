@@ -76,6 +76,17 @@ export function PublicProductPageShell({
             <Prose>{giga3Connection}</Prose>
           </section>
 
+          <noscript>
+            <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+              JavaScript is required for the interactive studio below. The product overview above
+              remains available without scripts. Sign in at{" "}
+              <a href="/chat/login" className="font-medium underline">
+                /chat/login
+              </a>{" "}
+              to use your credits when the app loads.
+            </p>
+          </noscript>
+
           <nav
             className="flex flex-wrap gap-x-5 gap-y-3 border-t border-border pt-8"
             aria-label="Explore Giga3 AI products"

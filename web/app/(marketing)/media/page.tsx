@@ -1,6 +1,7 @@
-import { Container } from "@/components/ui/Container";
-import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
+import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
+import { PublicProductPageShell } from "@/components/seo/PublicProductPageShell";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { MEDIA_PAGE_SHELL } from "@/lib/seo/productPageContent";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
@@ -10,7 +11,10 @@ const MediaPageRoot = dynamic(
     import("@/components/media/MediaPageRoot").then((m) => ({
       default: m.MediaPageRoot,
     })),
-  { ssr: false, loading: () => <p className="text-center text-muted">Loading…</p> }
+  {
+    ssr: false,
+    loading: () => <ClientAppHydrationNotice productName="Media Studio" />,
+  }
 );
 
 export const metadata = publicMetadata({
@@ -29,18 +33,11 @@ export default function MediaPage() {
           { name: "Media Studio", path: "/media" },
         ]}
       />
-      <ProductSeoHeader
-        compact
-        title="Media Studio"
-        description="Generate or edit AI images from prompts. Use results in chat, GigaEdit, or GigaSocial."
-        showProductNav={false}
-      />
-      <div className="media-stable section-padding pt-8 pb-8">
-        <Container>
-          <Suspense fallback={<p className="text-center text-muted">Loading studio…</p>}>
-            <MediaPageRoot />
-          </Suspense>
-        </Container>
+      <PublicProductPageShell {...MEDIA_PAGE_SHELL} />
+      <div className="media-stable section-padding pt-0 pb-8">
+        <Suspense fallback={<ClientAppHydrationNotice productName="Media Studio" />}>
+          <MediaPageRoot />
+        </Suspense>
       </div>
     </>
   );

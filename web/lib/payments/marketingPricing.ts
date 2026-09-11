@@ -21,6 +21,50 @@ export function subscriptionPlanLabel(planId: keyof typeof SUBSCRIPTION_PLANS): 
   return SUBSCRIPTION_PLANS[planId].label;
 }
 
+export type PublicPlanSummaryLine = {
+  name: string;
+  price: string;
+  detail: string;
+};
+
+/** Enterprise is quote-based — separate from subscription tiers. */
+export const ENTERPRISE_PRICING_TEASER = {
+  name: "Enterprise",
+  price: "Custom",
+  period: "",
+  description: "Volume pricing and dedicated support for organizations.",
+  features: [
+    "Custom credit pools",
+    "SLA options",
+    "Dedicated onboarding",
+    "Invoice billing",
+  ],
+  cta: "Contact sales",
+  href: "/enterprise",
+  highlighted: false,
+} as const satisfies MarketingPlanTeaser;
+
+/** Shared public pricing rows — single source for /pricing, /ai-for-ghana, and JSON-LD copy. */
+export function buildPublicPlanSummaryLines(): readonly PublicPlanSummaryLine[] {
+  return [
+    {
+      name: "Free",
+      price: formatGhs(0),
+      detail: `${FREE_STARTER_CREDITS} starter credits`,
+    },
+    ...(["basic", "pro", "premium"] as const).map((id) => ({
+      name: SUBSCRIPTION_PLANS[id].label,
+      price: `${formatGhs(SUBSCRIPTION_PLANS[id].priceGhs)}/month`,
+      detail: `${SUBSCRIPTION_PLANS[id].credits} credits / month`,
+    })),
+    {
+      name: ENTERPRISE_PRICING_TEASER.name,
+      price: ENTERPRISE_PRICING_TEASER.price,
+      detail: "Contact sales for volume pricing",
+    },
+  ] as const;
+}
+
 /** One-line upsell for the default paid plan (Pro). */
 export function defaultPaidPlanUpsell(): string {
   const pro = SUBSCRIPTION_PLANS.pro;
@@ -95,19 +139,4 @@ export function buildHomepagePricingTeasers(): readonly MarketingPlanTeaser[] {
   ] as const;
 }
 
-/** Enterprise is quote-based — separate from subscription tiers. */
-export const ENTERPRISE_PRICING_TEASER = {
-  name: "Enterprise",
-  price: "Custom",
-  period: "",
-  description: "Volume pricing and dedicated support for organizations.",
-  features: [
-    "Custom credit pools",
-    "SLA options",
-    "Dedicated onboarding",
-    "Invoice billing",
-  ],
-  cta: "Contact sales",
-  href: "/enterprise",
-  highlighted: false,
-} as const satisfies MarketingPlanTeaser;
+export { FREE_STARTER_CREDITS, SUBSCRIPTION_PLANS } from "./subscriptionCatalog";

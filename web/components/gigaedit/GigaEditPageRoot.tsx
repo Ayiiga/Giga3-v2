@@ -1,18 +1,25 @@
 "use client";
 
-import { LoadingState } from "@/components/ui/LoadingState";
+import { GigaEditShellBoundary } from "@/components/gigaedit/GigaEditShellBoundary";
+import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
+import { withChunkRetryLoader } from "@/lib/pwa/dynamicWithChunkRetry";
 import dynamic from "next/dynamic";
 
 const GigaEditClient = dynamic(
-  () =>
+  withChunkRetryLoader(() =>
     import("@/components/gigaedit/GigaEditClient").then((m) => ({
       default: m.GigaEditClient,
-    })),
-  { ssr: false, loading: () => <LoadingState label="Loading GigaEdit…" /> }
+    }))
+  ),
+  { ssr: false, loading: () => <ClientAppHydrationNotice productName="GigaEdit" /> }
 );
 
 export function GigaEditPageRoot() {
   useRenderDiagnostic("GigaEditPageRoot");
-  return <GigaEditClient />;
+  return (
+    <GigaEditShellBoundary>
+      <GigaEditClient />
+    </GigaEditShellBoundary>
+  );
 }

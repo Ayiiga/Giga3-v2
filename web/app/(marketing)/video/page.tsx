@@ -1,3 +1,4 @@
+import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { PublicProductPageShell } from "@/components/seo/PublicProductPageShell";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { VIDEO_PAGE_SHELL } from "@/lib/seo/productPageContent";
@@ -8,7 +9,7 @@ import { Suspense } from "react";
 const VideoStudioClient = dynamic(
   () =>
     import("@/components/video/VideoStudioClient").then((m) => m.VideoStudioClient),
-  { ssr: false, loading: () => <p className="text-center text-muted">Loading…</p> }
+  { ssr: false, loading: () => <ClientAppHydrationNotice productName="Video AI" /> }
 );
 
 export const metadata = publicMetadata({
@@ -29,7 +30,7 @@ export default function VideoPage() {
       />
       <PublicProductPageShell {...VIDEO_PAGE_SHELL} />
       <div className="media-stable section-padding pt-0 pb-8">
-        <Suspense fallback={<p className="text-center text-muted">Loading…</p>}>
+        <Suspense fallback={<ClientAppHydrationNotice productName="Video AI" />}>
           <VideoStudioClient />
         </Suspense>
       </div>
