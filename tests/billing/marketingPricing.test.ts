@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildHomepagePricingTeasers,
+  buildPublicPlanSummaryLines,
   defaultPaidPlanUpsell,
   subscriptionPlanLabel,
 } from "@/lib/payments/marketingPricing";
@@ -34,5 +35,13 @@ describe("marketingPricing", () => {
     expect(upsell).toContain(SUBSCRIPTION_PLANS.pro.label);
     expect(upsell).toContain(formatGhs(SUBSCRIPTION_PLANS.pro.priceGhs));
     expect(upsell).toContain(String(SUBSCRIPTION_PLANS.pro.credits));
+  });
+
+  it("buildPublicPlanSummaryLines includes all public tiers", () => {
+    const rows = buildPublicPlanSummaryLines();
+    expect(rows).toHaveLength(5);
+    expect(rows[0].name).toBe("Free");
+    expect(rows[1].name).toBe(SUBSCRIPTION_PLANS.basic.label);
+    expect(rows[4].name).toBe("Enterprise");
   });
 });

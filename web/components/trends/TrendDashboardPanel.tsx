@@ -1,7 +1,6 @@
 "use client";
 
-import { TrendCard } from "@/components/trends/TrendCard";
-import { TREND_DASHBOARD_SECTIONS } from "@/lib/trends/trendDashboard";
+import { TREND_CURATED_SECTIONS } from "@/lib/trends/trendDashboard";
 import Link from "next/link";
 
 export function TrendDashboardPanel() {
@@ -9,42 +8,32 @@ export function TrendDashboardPanel() {
     <section aria-labelledby="trend-dashboard-heading" className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="section-heading">Platform pulse</p>
+          <p className="section-heading">Curated picks</p>
           <h2 id="trend-dashboard-heading" className="page-title mt-2">
-            Trending dashboard
+            Where to start on Giga3
           </h2>
           <p className="section-lead mt-2 max-w-2xl">
-            Modular metrics ready for live analytics — updated from curated platform signals today.
+            These are editorial starting points — not live platform analytics. Live usage rankings
+            will appear here when production metrics are wired in.
           </p>
         </div>
       </div>
 
       <div className="discover-card-grid discover-card-grid--panels">
-        {TREND_DASHBOARD_SECTIONS.map((section) => (
+        {TREND_CURATED_SECTIONS.map((section) => (
           <div key={section.id} className="saas-card rounded-2xl p-5">
             <h3 className="text-sm font-semibold text-foreground">{section.title}</h3>
+            <p className="mt-1 text-xs text-muted">{section.note}</p>
             <ul className="mt-4 space-y-2">
-              {section.metrics.map((metric) => (
-                <li key={metric.id}>
-                  {metric.href ? (
-                    <Link
-                      href={metric.href}
-                      className="flex items-center justify-between rounded-xl border border-border px-3 py-2.5 text-sm hover:border-accent/30"
-                    >
-                      <span className="font-medium">{metric.label}</span>
-                      <span className="text-accent">
-                        {metric.value}
-                        {metric.change ? (
-                          <span className="ml-1 text-xs text-muted">{metric.change}</span>
-                        ) : null}
-                      </span>
-                    </Link>
-                  ) : (
-                    <div className="flex items-center justify-between rounded-xl border border-border px-3 py-2.5 text-sm">
-                      <span className="font-medium">{metric.label}</span>
-                      <span className="text-accent">{metric.value}</span>
-                    </div>
-                  )}
+              {section.links.map((link) => (
+                <li key={link.id}>
+                  <Link
+                    href={link.href}
+                    className="block rounded-xl border border-border px-3 py-2.5 text-sm transition hover:border-accent/30"
+                  >
+                    <span className="font-medium text-foreground">{link.label}</span>
+                    <span className="mt-0.5 block text-xs text-muted">{link.blurb}</span>
+                  </Link>
                 </li>
               ))}
             </ul>

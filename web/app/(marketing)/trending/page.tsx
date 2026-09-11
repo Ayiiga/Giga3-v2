@@ -33,7 +33,7 @@ export default function TrendingPage() {
       />
       <ProductSeoHeader
         title="Trending topics"
-        description="See what creators, students, and professionals are exploring across AI, education, business, and technology on Giga3 AI."
+        description="Curated category links and editorial picks across AI, education, business, and technology — not live platform usage rankings."
         showProductNav={false}
       />
       <div className="discover-stable section-padding pt-8 pb-8">

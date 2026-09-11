@@ -32,6 +32,7 @@ export function planEntitlements(planId: SubscriptionPlanId): PlanEntitlement[] 
     { label: "GigaSocial communities", included: true },
     { label: "Marketplace listing privileges", included: isCreator },
     { label: "Premium media tools", included: isCreator },
+    { label: "Developer API keys (Premium)", included: isBusiness },
     { label: "Team storage & admin tools", included: isBusiness },
     { label: `${FUTURE_PLAN_LABEL} (coming soon)`, included: false },
   ];

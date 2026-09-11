@@ -56,26 +56,74 @@ export const GIGAEDITS_PAGE: PublicProductPageShellProps = {
   secondaryLabel: "Creator Studio",
 };
 
+export const MEDIA_PAGE_SHELL: PublicProductPageShellProps = {
+  title: "Media Studio — AI image generation on Giga3",
+  description: catalogEntry("/media").description,
+  audience: "creators, students, and marketers making visuals",
+  whatItDoes:
+    "Media Studio generates and edits AI images from text prompts. Optional source-image edit mode uses your upload as a starting point. Credits are checked server-side before each job.",
+  whoFor: [
+    "Chat users who need images inline or in Creator Studio",
+    "Social creators making post visuals before GigaEdit or GigaSocial",
+    "Students illustrating projects and presentations",
+  ],
+  capabilities: [
+    "Text-to-image generation with provider failover on the backend",
+    "Edit-with-source when you pass a reference image URL",
+    "Recent generations list and hand-off links to chat and GigaEdit",
+  ],
+  giga3Connection:
+    "Media Studio shares the same Giga3 account, credits, and entitlements as chat. Sign in to generate; results can be saved, downloaded, or opened in GigaEdit and GigaSocial.",
+  primaryHref: "/media",
+  primaryLabel: "Open Media Studio",
+  secondaryHref: "/chat",
+  secondaryLabel: "Open chat",
+};
+
+export const GIGALEARN_PAGE_SHELL: PublicProductPageShellProps = {
+  title: "GigaLearn — AI tutor and exam prep on Giga3",
+  description: catalogEntry("/gigalearn").description,
+  audience: "students, teachers, and parents in Ghana and across Africa",
+  whatItDoes:
+    "GigaLearn provides structured study support: homework help, practice questions, study plans, and exam prep for JHS and SHS. Personas and progress tracking require a signed-in Giga3 account.",
+  whoFor: [
+    "JHS and SHS students preparing for BECE and WASSCE",
+    "Teachers building classroom activities and quizzes",
+    "Parents supporting revision at home",
+  ],
+  capabilities: [
+    "Study modes with Ghana-focused curriculum context",
+    "Practice questions and progress saved to your account",
+    "Persona hand-off from chat when you choose a tutor style",
+  ],
+  giga3Connection:
+    "GigaLearn uses the same credits and entitlements as Giga3 chat. Organisation workspaces can route students through /workspace when your school is onboarded.",
+  primaryHref: "/gigalearn",
+  primaryLabel: "Open GigaLearn",
+  secondaryHref: "/chat/login",
+  secondaryLabel: "Sign in",
+};
+
 export const ENTERPRISE_PAGE_SHELL: PublicProductPageShellProps = {
   title: "Enterprise & Education — Giga3 workspaces",
   description: catalogEntry("/enterprise").description,
   audience: "schools, universities, NGOs, and business teams",
   whatItDoes:
-    "Enterprise & Education workspaces give organisations role-based access to Giga3 AI Chat, GigaLearn, and creator tools — with admin visibility and classroom-friendly flows.",
+    "Signed-in users can create organisation workspaces at /workspace with roles (admin, teacher, student, parent), classrooms, assignments, and aggregated usage dashboards. Volume billing and custom credit pools are arranged via sales — not self-serve checkout.",
   whoFor: [
-    "Schools and universities rolling out AI study support",
+    "Schools rolling out AI study support with classroom structure",
     "NGOs training staff on responsible AI use",
-    "Business teams needing shared access without exposing API keys",
+    "Business teams exploring shared org access before a sales conversation",
   ],
   capabilities: [
-    "Organisation workspaces with role-based access",
-    "Classroom and educator flows via GigaLearn",
-    "Central billing conversation — custom credit pools and onboarding",
+    "Create org workspaces, invite members, and assign roles",
+    "Classrooms, assignments, and submission flows (teacher/student dashboards)",
+    "Aggregated org analytics — AI requests, learning sessions, assignment counts",
   ],
   giga3Connection:
-    "Workspaces reuse the same Giga3 chat, learning, and creator products. Entitlements and credits are validated server-side; contact us for volume pricing instead of self-serve checkout.",
+    "Workspaces reuse Giga3 chat, GigaLearn, and creator tools under the same server-side entitlements. Individual consumer accounts are unchanged. Contact sales for enterprise billing and onboarding.",
   primaryHref: "/workspace",
-  primaryLabel: "Explore workspaces",
+  primaryLabel: "Open workspace",
   secondaryHref: "/#contact",
   secondaryLabel: "Contact sales",
 };

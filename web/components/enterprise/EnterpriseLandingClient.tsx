@@ -20,10 +20,11 @@ function EnterpriseLandingInner() {
           <Building2 className="h-4 w-4" aria-hidden />
           Enterprise & Education
         </div>
-        <h1 className="page-title">Schools, organizations & teams</h1>
+        <h2 className="page-title">Schools, organizations & teams</h2>
         <p className="mx-auto mt-3 max-w-2xl text-lg text-muted">
-          Giga3 AI workspaces for schools, universities, NGOs, and businesses —
-          isolated from the consumer experience with role-based access control.
+          Create organisation workspaces at /workspace with classrooms, assignments, and role-based
+          dashboards. Volume billing and custom credit pools are arranged via sales — not
+          self-serve checkout.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <ButtonLink href="/workspace" variant="primary" size="lg">
@@ -38,34 +39,34 @@ function EnterpriseLandingInner() {
       <section className="grid gap-6 md:grid-cols-2">
         <article className="glass rounded-2xl border border-border p-6">
           <GraduationCap className="h-8 w-8 text-violet-600" aria-hidden />
-          <h2 className="mt-4 text-lg font-semibold">School management</h2>
+          <h2 className="mt-4 text-lg font-semibold">School workspaces</h2>
           <p className="mt-2 text-sm text-muted">
-            School profiles, teacher and student accounts, parent visibility,
-            classroom management, assignments, and learning analytics.
+            Create org workspaces, classrooms, assignments, and teacher/student dashboards. Parent
+            visibility depends on org setup and invited roles.
           </p>
         </article>
         <article className="glass rounded-2xl border border-border p-6">
           <Users className="h-8 w-8 text-sky-600" aria-hidden />
-          <h2 className="mt-4 text-lg font-semibold">Organization workspace</h2>
+          <h2 className="mt-4 text-lg font-semibold">Organisation members</h2>
           <p className="mt-2 text-sm text-muted">
-            Team management, AI resource allocation, usage monitoring, and
-            permission controls for businesses and institutions.
+            Invite admins, teachers, students, and parents. Roles are enforced on the server when
+            accessing org data — not a separate consumer account.
           </p>
         </article>
         <article className="glass rounded-2xl border border-border p-6">
           <Shield className="h-8 w-8 text-emerald-600" aria-hidden />
           <h2 className="mt-4 text-lg font-semibold">Role-based access</h2>
           <p className="mt-2 text-sm text-muted">
-            Administrators, teachers, parents, students, and creators — enforced
-            on both client and server with audit logging.
+            Administrators, teachers, parents, students, and creators — enforced on both client and
+            server. Org audit events are recorded server-side for membership changes.
           </p>
         </article>
         <article className="glass rounded-2xl border border-border p-6">
           <BarChart3 className="h-8 w-8 text-amber-600" aria-hidden />
           <h2 className="mt-4 text-lg font-semibold">Aggregated analytics</h2>
           <p className="mt-2 text-sm text-muted">
-            AI usage, learning engagement, and assignment completion — aggregated
-            insights only, with data isolation between organizations.
+            Org dashboards show aggregated AI requests, learning sessions, assignment submissions,
+            and credit usage — not individual chat transcripts.
           </p>
         </article>
       </section>

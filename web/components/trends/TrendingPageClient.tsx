@@ -54,7 +54,7 @@ export function TrendingPageClient() {
       <section aria-labelledby="trend-spotlight-heading">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <h2 id="trend-spotlight-heading" className="text-lg font-semibold">
-            {activeCategory ? `${activeCategory.label} highlights` : "Featured right now"}
+            {activeCategory ? `${activeCategory.label} highlights` : "Featured picks"}
           </h2>
           <a href="/discover" className="text-sm text-accent hover:underline">
             Open Discover →

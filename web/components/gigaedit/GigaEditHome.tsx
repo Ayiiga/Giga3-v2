@@ -135,9 +135,9 @@ export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--ge-gold)]">
           {CREATOR_STUDIO_PRODUCT_NAME}
         </p>
-        <h1 className="gigaedit-hero__title text-2xl font-bold tracking-tight sm:text-3xl">
+        <h2 className="gigaedit-hero__title text-2xl font-bold tracking-tight sm:text-3xl">
           Create on device
-        </h1>
+        </h2>
         <p className="max-w-xl text-sm text-[var(--ge-muted)]">
           Video, photo, audio, and templates — edit locally, publish when ready.
         </p>

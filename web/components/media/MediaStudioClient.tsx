@@ -7,6 +7,8 @@ import { MediaQuickTemplates } from "@/components/media/MediaQuickTemplates";
 import { MediaStudioHeader } from "@/components/media/MediaStudioHeader";
 import { RecentGenerationsSection } from "@/components/media/RecentGenerationsSection";
 import { SurfaceRecommendations } from "@/components/recommendations/SurfaceRecommendations";
+import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
+import { ProductSignInPrompt } from "@/components/seo/ProductSignInPrompt";
 import { useMediaBilling } from "@/hooks/useMediaBilling";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import {
@@ -19,7 +21,7 @@ import {
   applyTemplateHandoffToMediaSeed,
   consumeTemplateHandoff,
 } from "@/lib/gigasocial/templateHandoff";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 type FormSeed = {
@@ -32,7 +34,6 @@ type FormSeed = {
 function MediaStudioContent() {
   useRenderDiagnostic("MediaStudioContent");
 
-  const router = useRouter();
   const params = useSearchParams();
   const { email, usage, mounted } = useMediaBilling();
 
@@ -51,10 +52,6 @@ function MediaStudioContent() {
     prompt: initialPrompt,
     action: initialAction,
   });
-
-  useEffect(() => {
-    if (!email) router.replace("/chat/login?next=/media");
-  }, [email, router]);
 
   useEffect(() => {
     const templatePost = params.get("templatePost");
@@ -110,8 +107,18 @@ function MediaStudioContent() {
     setFormRevision((r) => r + 1);
   }, [params]);
 
+  if (!mounted) {
+    return <ClientAppHydrationNotice productName="Media Studio" />;
+  }
+
   if (!email) {
-    return <p className="text-center text-base text-muted">Redirecting…</p>;
+    return (
+      <ProductSignInPrompt
+        productName="Media Studio"
+        description="Sign in to generate and edit AI images with your Giga3 credits. Recent generations stay on your account."
+        nextPath="/media"
+      />
+    );
   }
 
   return (

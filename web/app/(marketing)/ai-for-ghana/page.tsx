@@ -9,9 +9,10 @@ import {
   RelatedReading,
 } from "@/components/seo/SeoArticleParts";
 import {
+  buildPublicPlanSummaryLines,
   FREE_STARTER_CREDITS,
   SUBSCRIPTION_PLANS,
-} from "@/lib/payments/subscriptionCatalog";
+} from "@/lib/payments/marketingPricing";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 
 const PATH = "/ai-for-ghana";
@@ -23,23 +24,7 @@ export const metadata = publicMetadata({
     "Giga3 AI is an AI platform from Ghana for learning, research, coding and creativity. Start free with 25 credits; paid plans billed in GHS via Paystack.",
 });
 
-const PLAN_LINES = [
-  {
-    name: "Free",
-    price: "GHS 0",
-    detail: `${FREE_STARTER_CREDITS} credits`,
-  },
-  ...(["basic", "pro", "premium"] as const).map((id) => ({
-    name: SUBSCRIPTION_PLANS[id].label,
-    price: `GHS ${SUBSCRIPTION_PLANS[id].priceGhs}/month`,
-    detail: `${SUBSCRIPTION_PLANS[id].credits} credits`,
-  })),
-  {
-    name: "Enterprise",
-    price: "Custom",
-    detail: "Designed for organizations with specific requirements",
-  },
-];
+const PLAN_LINES = buildPublicPlanSummaryLines();
 
 const PAID_PLAN_SUMMARY = (["basic", "pro", "premium"] as const)
   .map(
