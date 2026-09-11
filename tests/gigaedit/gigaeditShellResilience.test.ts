@@ -35,12 +35,15 @@ describe("GigaEdit shell resilience", () => {
     expect(client).toContain("GigaEditClientInner");
   });
 
-  it("registers route-level error.tsx for uncaught errors", () => {
+  it("registers route-level error.tsx with chunk recovery and safe messaging", () => {
     const errorPage = readFileSync(
       resolve(__dirname, "../../web/app/(marketing)/gigaedit/error.tsx"),
       "utf8"
     );
-    expect(errorPage).toContain("GigaEdit encountered an error");
+    expect(errorPage).toContain("GigaEdit couldn");
+    expect(errorPage).toContain("toUserFacingError");
+    expect(errorPage).toContain("recoverFromStaleChunks");
+    expect(errorPage).not.toContain("error.message");
   });
 
   it("avoids duplicate H1 in hydrated home (SEO header owns h1)", () => {

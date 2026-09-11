@@ -80,7 +80,9 @@ export function PlatformChromeHost({
         ) : null}
 
         {showNotifications && sessionToken && (
-          <NotificationBellWithCount onClick={() => setNotifOpen(true)} />
+          <ConvexAppShell>
+            <NotificationBellWithCount onClick={() => setNotifOpen(true)} />
+          </ConvexAppShell>
         )}
 
         {!ultraCompact && (
