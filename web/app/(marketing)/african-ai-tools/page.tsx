@@ -1,0 +1,10 @@
+import { GhanaSeoLandingPage } from "@/components/seo/GhanaSeoLandingPage";
+import { GHANA_LANDING_PAGES, ghanaLandingMetadata } from "@/lib/seo/ghanaLandingPages";
+
+const CONFIG = GHANA_LANDING_PAGES.africanAiTools;
+
+export const metadata = ghanaLandingMetadata(CONFIG);
+
+export default function AfricanAiToolsPage() {
+  return <GhanaSeoLandingPage config={CONFIG} />;
+}
