@@ -1,6 +1,7 @@
 "use client";
 
 import { clearAllClientAuth } from "@/lib/auth";
+import { toUserFacingError } from "@/lib/errors/userMessage";
 import { Component, type ReactNode } from "react";
 import { Button, ButtonLink } from "@/components/ui/Button";
 
@@ -60,7 +61,7 @@ function friendlyMessage(message: string): string {
   if (message.includes("NEXT_PUBLIC_CONVEX_URL")) {
     return "Chat is misconfigured: missing NEXT_PUBLIC_CONVEX_URL at build time. Rebuild with GitHub Actions or Cloudflare env set.";
   }
-  return message;
+  return toUserFacingError(message);
 }
 
 export class ChatErrorBoundary extends Component<
@@ -96,12 +97,6 @@ export class ChatErrorBoundary extends Component<
             {this.state.sessionExpired ? "Session expired" : "Chat could not load"}
           </h1>
           <p className="max-w-md text-sm leading-relaxed text-muted">{display}</p>
-          {!this.state.sessionExpired && raw && raw !== display && (
-            <p className="max-w-md truncate text-xs text-muted/70" title={raw}>
-              {raw.slice(0, 120)}
-              {raw.length > 120 ? "…" : ""}
-            </p>
-          )}
           <div className="grid w-full max-w-md grid-cols-1 gap-3 sm:grid-cols-3">
             {this.state.sessionExpired ? (
               <ButtonLink href={loginHref} variant="primary" size="md" className="w-full sm:col-span-2">

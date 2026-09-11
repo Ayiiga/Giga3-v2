@@ -20,8 +20,7 @@ const PATH = "/ai-for-ghana";
 export const metadata = publicMetadata({
   path: PATH,
   title: "AI for Students, Creators and Businesses in Ghana — Giga3 AI",
-  description:
-    "Giga3 AI is an AI platform from Ghana for learning, research, coding and creativity. Start free with 25 credits; paid plans billed in GHS via Paystack.",
+  description: `Giga3 AI is an AI platform from Ghana for learning, research, coding and creativity. Start free with ${FREE_STARTER_CREDITS} credits; paid plans billed in GHS via Paystack.`,
 });
 
 const PLAN_LINES = buildPublicPlanSummaryLines();
