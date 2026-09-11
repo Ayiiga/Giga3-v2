@@ -3,15 +3,15 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 describe("GigaEdit shell resilience", () => {
-  it("wraps client in chunk-retry loader, ConvexAppShell, and error boundary", () => {
+  it("wraps client in chunk-retry loader and error boundary at page root", () => {
     const pageRoot = readFileSync(
       resolve(__dirname, "../../web/components/gigaedit/GigaEditPageRoot.tsx"),
       "utf8"
     );
     expect(pageRoot).toContain("withChunkRetryLoader");
-    expect(pageRoot).toContain("ConvexAppShell");
     expect(pageRoot).toContain("GigaEditShellBoundary");
     expect(pageRoot).toContain("ClientAppHydrationNotice");
+    expect(pageRoot).not.toContain("ConvexAppShell");
   });
 
   it("exports a real error boundary with chunk recovery (not silent fallback)", () => {
@@ -23,6 +23,16 @@ describe("GigaEdit shell resilience", () => {
     expect(boundary).toContain("recoverFromStaleChunks");
     expect(boundary).toContain("GigaEdit couldn");
     expect(boundary).toContain("toUserFacingError");
+  });
+
+  it("wraps editor in ConvexAppShell with Suspense for search params", () => {
+    const client = readFileSync(
+      resolve(__dirname, "../../web/components/gigaedit/GigaEditClient.tsx"),
+      "utf8"
+    );
+    expect(client).toContain("ConvexAppShell");
+    expect(client).toContain("Suspense");
+    expect(client).toContain("GigaEditClientInner");
   });
 
   it("registers route-level error.tsx for uncaught errors", () => {

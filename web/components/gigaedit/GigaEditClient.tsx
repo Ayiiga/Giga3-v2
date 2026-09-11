@@ -22,7 +22,9 @@ import {
   consumeTemplateHandoff,
 } from "@/lib/gigasocial/templateHandoff";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo } from "react";
+import { Suspense, useCallback, useEffect, useMemo } from "react";
+import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
+import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 
 const VALID_SECTIONS = new Set<GigaEditSection>([
   "home",
@@ -56,6 +58,16 @@ function parseBool(raw: string | null): boolean {
 }
 
 export function GigaEditClient() {
+  return (
+    <ConvexAppShell>
+      <Suspense fallback={<ClientAppHydrationNotice productName="GigaEdit" />}>
+        <GigaEditClientInner />
+      </Suspense>
+    </ConvexAppShell>
+  );
+}
+
+function GigaEditClientInner() {
   const features = useGigaEditFeatures();
   const searchParams = useSearchParams();
   const router = useRouter();
