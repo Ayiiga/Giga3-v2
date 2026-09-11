@@ -31,6 +31,10 @@ export type LiveWebSource = {
   domain: string;
   excerpt?: string;
   accessedAt: number;
+  publishedAt?: string;
+  tier?: 1 | 2 | 3 | 4;
+  articleRetrieved?: boolean;
+  searchResultOnly?: boolean;
 };
 
 export type LiveWebResponseBasis =
@@ -81,6 +85,9 @@ export type WebResearchResult = {
   usedLiveSearch: boolean;
   providerId: string | null;
   warnings: string[];
+  pagesReadUrls: string[];
+  evidenceContextBlock?: string;
+  newsEvidence?: import("../newsEvidence/types").NewsEvidenceContext | null;
 };
 
 export interface WebSearchProvider {

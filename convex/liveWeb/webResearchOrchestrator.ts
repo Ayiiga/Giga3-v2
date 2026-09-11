@@ -1,4 +1,9 @@
 import {
+  buildEvidenceContextBlock,
+  buildNewsEvidencePackage,
+  logNewsEvidenceEvent,
+} from "../newsEvidence/pipeline";
+import {
   buildResearchSearchQuery,
   isNewsCapability,
   NEWS_RESPONSE_FORMAT_GUIDANCE,
@@ -108,6 +113,7 @@ export async function runWebResearch(args: {
       usedLiveSearch: false,
       providerId: null,
       warnings: ["Live web is disabled on the server."],
+      pagesReadUrls: [],
     };
   }
 
@@ -185,6 +191,32 @@ export async function runWebResearch(args: {
   await args.onProgress?.("preparing_answer");
 
   const uniqueSources = dedupeSources(sources);
+  const pagesReadUrls = pages.map((page) => page.uri);
+  let evidenceContextBlock = "";
+
+  let newsEvidence: import("../newsEvidence/types").NewsEvidenceContext | null = null;
+
+  if (isNewsCapability(args.researchCapability ?? "live_web") || args.researchCapability === "live_web") {
+    newsEvidence = buildNewsEvidencePackage({
+      query: args.query,
+      capability: args.researchCapability,
+      sources: uniqueSources,
+      pagesReadUrls,
+      warnings,
+      liveSearchUsed: Boolean(searchProvider && searchResults.length),
+      retrievalFailed: uniqueSources.length === 0,
+    });
+    evidenceContextBlock = buildEvidenceContextBlock(newsEvidence);
+    logNewsEvidenceEvent("research_evidence_built", {
+      query: args.query.slice(0, 120),
+      capability: args.researchCapability,
+      evidenceCount: newsEvidence.contract.evidenceCount,
+      independentSourceCount: newsEvidence.contract.independentSourceCount,
+      articleRetrievedCount: newsEvidence.contract.articleRetrievedCount,
+      retrievalFailed: newsEvidence.retrievalFailed,
+    });
+  }
+
   const contextBlock =
     uniqueSources.length || pages.length
       ? buildContextBlock(args.query, pages, searchResults, args.researchCapability)
@@ -192,12 +224,17 @@ export async function runWebResearch(args: {
         ? ""
         : "";
 
+  const combinedContext = [contextBlock, evidenceContextBlock].filter(Boolean).join("\n\n");
+
   return {
-    contextBlock,
+    contextBlock: combinedContext,
     sources: uniqueSources,
     usedLiveSearch: Boolean(searchProvider && searchResults.length),
     providerId: searchProvider?.id ?? (searchResults.length ? "gemini_grounding" : null),
     warnings,
+    pagesReadUrls,
+    evidenceContextBlock,
+    newsEvidence,
   };
 }
 

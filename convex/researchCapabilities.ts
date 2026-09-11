@@ -75,17 +75,9 @@ const VERIFY_IMAGE_RE =
 const LOCATION_INTENT_RE =
   /\b(where am i|what('s| is) my location|my (current )?location|where do i live|locate me)\b/i;
 
-/** Credible Ghana news domains for search bias (not exclusive). */
-export const GHANA_NEWS_SOURCE_HINTS = [
-  "graphic.com.gh",
-  "myjoyonline.com",
-  "ghanaweb.com",
-  "citinewsroom.com",
-  "thebftonline.com",
-  "pulse.com.gh",
-  "3news.com",
-  "dailyguidenetwork.com",
-] as const;
+import { GHANA_NEWS_SOURCE_HINTS } from "./newsEvidence/sourceRegistry";
+
+export { GHANA_NEWS_SOURCE_HINTS };
 
 export function isValidResearchCapability(
   value: string | undefined | null
@@ -116,6 +108,9 @@ export function detectBreakingNewsIntent(query: string): boolean {
 export function detectNewsRetrievalIntent(query: string): boolean {
   const q = query.trim();
   if (detectGhanaNewsIntent(q) || detectBreakingNewsIntent(q)) return true;
+  if (/\bghana\b/i.test(q) && /\b(latest|today|current|breaking|figures|inflation|economy|news|headlines)\b/i.test(q)) {
+    return true;
+  }
   return (
     /\b(latest|current|today'?s?|recent|breaking)\b[\s\S]{0,32}\bnews\b/i.test(q) ||
     /\bnews (today|update|updates|headlines|briefing)\b/i.test(q) ||
@@ -230,11 +225,12 @@ export function buildResearchSearchQuery(
 export const NEWS_RESPONSE_FORMAT_GUIDANCE = [
   "News assistant response format (mandatory when answering current-events questions):",
   "- Be concise and user-friendly — lead with the headline answer, then 2–4 bullet points max.",
-  "- Search multiple credible sources; cross-check important claims before stating them as fact.",
+  "- Use evidence states from the NEWS EVIDENCE PACKAGE only: Official, Verified/Corroborated, Reported, Developing, Unverified, Conflicting, Insufficient evidence.",
+  "- Never upgrade a story to Verified unless the evidence package status supports it.",
   "- For each key story: include publication date (or 'date unknown'), outlet name, and a markdown link to the source.",
-  "- Label each item clearly: **Verified**, **Developing**, **Unverified**, or **Disputed**.",
+  "- **Breaking** may only be used when the evidence package assigns breakingLabel=BREAKING.",
   "- Never invent current news, quotes, dates, or URLs. If you cannot verify a claim, say so.",
-  "- If live search is unavailable, say that briefly in one sentence, then share only the latest reliable information you have from provided context — and label it as unverified if stale.",
+  "- If live search is unavailable and evidence count is zero, say evidence is insufficient — do not invent headlines.",
 ].join("\n");
 
 export function researchSystemPromptAddon(capability: ResearchCapabilityId): string {

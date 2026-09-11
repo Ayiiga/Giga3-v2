@@ -3,7 +3,9 @@ import type {
   ChatCompletionAttachment,
   ChatCompletionMessage,
 } from "./chatEngine";
-import { detectNewsRetrievalIntent } from "./researchCapabilities";
+import { detectNewsRetrievalIntent, detectGhanaNewsIntent } from "./researchCapabilities";
+import type { NewsEvidenceContext } from "./newsEvidence/types";
+import { enforceNewsEvidenceIntegrity } from "./newsEvidence/postValidation";
 
 type QueryClass =
   | "factual"
@@ -199,6 +201,14 @@ function hasNewsStatusLabels(answer: string): boolean {
   return /\*\*(Verified|Developing|Unverified|Disputed)\*\*/i.test(answer);
 }
 
+function hasPartialOcrExtraction(answer: string): boolean {
+  return (
+    /\b(readable|partially readable|unclear|could not read|couldn't read)\b/i.test(answer) &&
+    (/\bheading:|paragraph:|section:|top |middle |bottom /i.test(answer) ||
+      /```[\s\S]{8,}```/.test(answer) ||
+      /\*\*Extracted Text\*\*/i.test(answer))
+  );
+}
 function hasImageTextExtractionIntent(query: string): boolean {
   return (
     /\b(ocr|read|extract|transcribe|write\s*down|copy|detect)\b[\s\S]{0,48}\b(text|words?|letters?|writing)\b/i.test(
@@ -543,6 +553,9 @@ function inferResponseMode(mode: AiModeId, query: string): ResponseMode {
     return "high_stakes";
   }
   if (mode === "news" || detectNewsRetrievalIntent(query)) {
+    return "educational";
+  }
+  if (detectGhanaNewsIntent(query) && /\b(latest|today|news|headlines|breaking|figures|inflation|economy)\b/i.test(query)) {
     return "educational";
   }
   if (HIGH_STAKES_MODES.has(mode)) {
@@ -939,7 +952,7 @@ function buildVerificationBlock(
 
 function fallbackImageOcrFailureMessage(hasInlineImageData: boolean): string {
   const reason = hasInlineImageData
-    ? "I couldn't reliably read the words in the uploaded image from this pass."
+    ? "I couldn't reliably read all of the text in the uploaded image."
     : "I couldn't verify OCR because image pixel data was not available in this request.";
   return `${reason}
 
@@ -948,7 +961,7 @@ Please retry with one of these:
 2. Use a clearer image with higher contrast and minimal blur.
 3. Send a close-up crop of just the text area.
 
-I won't guess unreadable text.`;
+I won't guess unreadable text — I'll tell you which parts are clear and which are uncertain.`;
 }
 
 function fallbackHighStakesUnverified(query: string): string {
@@ -965,6 +978,7 @@ Request received: "${truncateText(query, 180)}"`;
 export function validateAnswerQuality(params: {
   answer: string;
   context: AnswerQualityContext;
+  newsEvidence?: NewsEvidenceContext | null;
 }): ValidatedAnswer {
   const originalAnswer = params.answer.trim();
   const isNewsRetrieval = detectNewsRetrievalIntent(params.context.query);
@@ -1036,6 +1050,7 @@ export function validateAnswerQuality(params: {
     hasImageTextExtractionIntent(params.context.query);
   const ocrNeedsSafeFallback =
     isImageTextExtraction &&
+    !hasPartialOcrExtraction(originalAnswer) &&
     (confidenceLabel(confidence) === "low" ||
       citedAttachmentSourceIds.length === 0 ||
       !params.context.hasInlineImageData);
@@ -1089,6 +1104,17 @@ export function validateAnswerQuality(params: {
       normalizedAnswer = `${normalizedAnswer}\n\n${visualAugmentation}`.trim();
       flags.push("visual_content_generated");
     }
+  }
+
+  if (params.newsEvidence && (detectNewsRetrievalIntent(params.context.query) || isNewsRetrieval)) {
+    const enforced = enforceNewsEvidenceIntegrity({
+      answer: normalizedAnswer,
+      query: params.context.query,
+      evidence: params.newsEvidence,
+      isNewsQuery: true,
+    });
+    normalizedAnswer = enforced.content;
+    for (const flag of enforced.flags) flags.push(flag);
   }
 
   const confidenceVisibility =

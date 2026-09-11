@@ -36,7 +36,8 @@ import { generateFreeImageForChat } from "./mediaEngine";
 import { openaiGenerateImage } from "./openaiImageClient";
 import { persistImageUrlIfNeeded } from "./mediaStorage";
 import type { FalImageSize } from "./falClient";
-import { logChatReply } from "./chatReplyLog";
+import type { NewsEvidenceContext } from "./newsEvidence/types";
+import { buildNewsEvidencePackage } from "./newsEvidence/pipeline";
 import { isLiveNewsEnabled } from "./featureFlags";
 import {
   IMAGE_UPGRADE_MARKDOWN,
@@ -563,6 +564,7 @@ export const processJob = internalAction({
       let verificationMetadata:
         | import("./liveWeb/types").LiveWebVerificationMetadata
         | undefined;
+      let newsEvidenceContext: NewsEvidenceContext | null = null;
 
       const hasImageAttachment = attachments.some((a) => a.kind === "image");
       const hasVideoAttachment = attachments.some((a) =>
@@ -671,6 +673,7 @@ export const processJob = internalAction({
         liveWebProviderId = research.providerId;
         liveWebUsed = research.usedLiveSearch || research.sources.length > 0;
         liveWebBasis = responseBasisForCapability(researchCapability, liveWebUsed);
+        newsEvidenceContext = research.newsEvidence ?? null;
 
         if (
           researchCapability === "fact_check" ||
@@ -723,12 +726,32 @@ export const processJob = internalAction({
           "\n\nWhen live research is enabled, label your answer basis clearly (live web, current news, fact-checked, or Giga3 AI knowledge). Cite sources with publication dates. Label stories **Verified**, **Developing**, or **Unverified**. Never invent current news.";
       } else if (effectiveLiveWeb && !isLiveWebEnabled()) {
         systemPrompt += `\n\n${liveSearchUnavailableNewsFallback(researchCapability)}`;
+        if (isNewsCapability(researchCapability)) {
+          newsEvidenceContext = buildNewsEvidencePackage({
+            query: job.content,
+            capability: researchCapability,
+            sources: [],
+            pagesReadUrls: [],
+            warnings: ["Live web disabled"],
+            liveSearchUsed: false,
+            retrievalFailed: true,
+          });
+        }
       } else if (
         shouldResearch &&
         isNewsCapability(researchCapability) &&
         !liveWebUsed
       ) {
         systemPrompt += `\n\n${liveSearchUnavailableNewsFallback(researchCapability)}`;
+        newsEvidenceContext = buildNewsEvidencePackage({
+          query: job.content,
+          capability: researchCapability,
+          sources: [],
+          pagesReadUrls: [],
+          warnings: ["Live web search unavailable"],
+          liveSearchUsed: false,
+          retrievalFailed: true,
+        });
       }
 
       if (
@@ -837,6 +860,7 @@ export const processJob = internalAction({
         const validated = validateAnswerQuality({
           answer: engineResult.content,
           context: qualityContext,
+          newsEvidence: newsEvidenceContext,
         });
         assistantContent = validated.content;
         qualityReport = validated.report;

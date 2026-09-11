@@ -56,6 +56,14 @@ describe("news retrieval answer quality", () => {
     expect(validated.content).not.toContain("### Verification");
   });
 
+  it("uses educational mode for Ghana economic news queries", () => {
+    const ctx = prepareAnswerQualityContext({
+      mode: "general",
+      query: "What are the latest figures on inflation in Ghana?",
+    });
+    expect(ctx.responseMode).toBe("educational");
+  });
+
   it("still blocks unsupported high-stakes medical answers without citations", () => {
     const ctx = prepareAnswerQualityContext({
       mode: "general",
