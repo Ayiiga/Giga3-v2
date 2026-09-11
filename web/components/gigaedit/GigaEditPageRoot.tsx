@@ -1,6 +1,7 @@
 "use client";
 
 import { GigaEditShellBoundary } from "@/components/gigaedit/GigaEditShellBoundary";
+import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { withChunkRetryLoader } from "@/lib/pwa/dynamicWithChunkRetry";
@@ -19,7 +20,9 @@ export function GigaEditPageRoot() {
   useRenderDiagnostic("GigaEditPageRoot");
   return (
     <GigaEditShellBoundary>
-      <GigaEditClient />
+      <ConvexAppShell>
+        <GigaEditClient />
+      </ConvexAppShell>
     </GigaEditShellBoundary>
   );
 }

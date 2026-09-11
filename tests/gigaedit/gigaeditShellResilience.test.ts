@@ -3,12 +3,13 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 describe("GigaEdit shell resilience", () => {
-  it("wraps client in chunk-retry loader and error boundary", () => {
+  it("wraps client in chunk-retry loader, ConvexAppShell, and error boundary", () => {
     const pageRoot = readFileSync(
       resolve(__dirname, "../../web/components/gigaedit/GigaEditPageRoot.tsx"),
       "utf8"
     );
     expect(pageRoot).toContain("withChunkRetryLoader");
+    expect(pageRoot).toContain("ConvexAppShell");
     expect(pageRoot).toContain("GigaEditShellBoundary");
     expect(pageRoot).toContain("ClientAppHydrationNotice");
   });
