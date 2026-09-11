@@ -1,3 +1,4 @@
+import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { Container } from "@/components/ui/Container";
 import { JsonLd, type OfferItem } from "@/components/seo/JsonLd";
 import {
@@ -14,7 +15,7 @@ const PricingPageClient = dynamic(
     import("@/components/billing/PricingPageClient").then((m) => ({
       default: m.PricingPageClient,
     })),
-  { ssr: false, loading: () => <p className="text-center text-muted">Loading…</p> }
+  { ssr: false, loading: () => <ClientAppHydrationNotice productName="Paystack checkout" signInHref="/chat/login?next=/pricing" /> }
 );
 
 const PAID_PLAN_IDS = ["basic", "pro", "premium"] as const;

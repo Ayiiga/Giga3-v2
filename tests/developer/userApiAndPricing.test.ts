@@ -56,8 +56,9 @@ describe("developers page honesty", () => {
     );
     expect(page).toContain("GigaSocial read API");
     expect(page).toContain("Premium user API");
-    expect(page).toContain("GET /api/v1/me");
+    expect(page).toContain("DeveloperApiKeysPanel");
+    expect(page).toContain('id="user-api-keys"');
     expect(page).toContain("not available yet");
-    expect(page).not.toContain("chat:write endpoint");
+    expect(page).not.toContain("no public self-serve key UI yet");
   });
 });

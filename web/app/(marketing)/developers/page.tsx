@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/Container";
+import { DeveloperApiKeysPanel } from "@/components/developer/DeveloperApiKeysPanel";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { buildUserDeveloperApiUrl } from "@/lib/developer/userApi";
 import { buildGigaSocialDeveloperApiUrl } from "@/lib/gigasocial/developerApi";
@@ -187,9 +188,9 @@ X-Giga3-Api-Key: YOUR_PLATFORM_KEY`}
                 ) via <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">Authorization: Bearer</code>{" "}
                 or <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">X-Giga3-Api-Key</code>.
                 Keys require an active Premium subscription (<code>api_access</code> entitlement).
-                Create keys through the authenticated{" "}
-                <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">apiKeysActions.createKey</code>{" "}
-                Convex action when signed in — there is no public self-serve key UI yet.
+                Create keys below when signed in with Premium — scopes beyond{" "}
+                <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">chat:read</code> are
+                reserved for future routes.
               </p>
             </section>
 
@@ -212,6 +213,11 @@ X-Giga3-Api-Key: YOUR_PLATFORM_KEY`}
                   </div>
                 ))}
               </div>
+            </section>
+
+            <section id="user-api-keys" className="mt-8 space-y-4">
+              <h3 className="text-lg font-semibold text-foreground">Manage your API keys</h3>
+              <DeveloperApiKeysPanel />
             </section>
 
             <section className="mt-8 space-y-4">

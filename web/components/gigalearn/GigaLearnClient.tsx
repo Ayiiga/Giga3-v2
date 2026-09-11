@@ -5,6 +5,8 @@ import { GigaLearnToolPanel } from "@/components/gigalearn/GigaLearnToolPanel";
 import { GigaLearnWorkspacePanel } from "@/components/gigalearn/GigaLearnWorkspacePanel";
 import { RecommendationEmptyState } from "@/components/recommendations/RecommendationEmptyState";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
+import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
+import { ProductSignInPrompt } from "@/components/seo/ProductSignInPrompt";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { useMediaBilling } from "@/hooks/useMediaBilling";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
@@ -25,13 +27,12 @@ import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, GraduationCap } from "lucide-react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 function GigaLearnContent() {
   useRenderDiagnostic("GigaLearnContent");
 
-  const router = useRouter();
   const params = useSearchParams();
   const { email, usage, mounted } = useMediaBilling();
   const initialTab = (params.get("tab") as GigaLearnSection) || "student";
@@ -39,13 +40,6 @@ function GigaLearnContent() {
     GIGALEARN_SECTIONS.some((s) => s.id === initialTab) ? initialTab : "student"
   );
   const [role, setRole] = useState<LearnerRole>("student");
-  useEffect(() => {
-    // Keep offline learners in-app when a session is already on device.
-    if (!email && !hasPersistedAuth()) {
-      router.replace("/chat/login?next=/gigalearn");
-    }
-  }, [email, router]);
-
   useEffect(() => {
     const tab = params.get("tab") as GigaLearnSection;
     if (tab && GIGALEARN_SECTIONS.some((s) => s.id === tab)) {
@@ -69,8 +63,22 @@ function GigaLearnContent() {
     if (next === "parent") setSection("parent");
   }
 
+  if (!mounted) {
+    return <ClientAppHydrationNotice productName="GigaLearn" />;
+  }
+
+  if (!email && !hasPersistedAuth()) {
+    return (
+      <ProductSignInPrompt
+        productName="GigaLearn"
+        description="Sign in to use homework help, practice questions, and study plans with your Giga3 credits."
+        nextPath="/gigalearn"
+      />
+    );
+  }
+
   if (!email) {
-    return <p className="text-center text-base text-muted">Redirecting…</p>;
+    return <ClientAppHydrationNotice productName="GigaLearn" signInHref="/chat/login?next=/gigalearn" />;
   }
 
   return (
