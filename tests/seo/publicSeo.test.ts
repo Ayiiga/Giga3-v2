@@ -148,13 +148,14 @@ describe("Best AI tools for students in Ghana article", () => {
 });
 
 describe("robots.txt", () => {
-  it("allows crawlers on public pages and references the sitemap", () => {
+  it("allows crawlers on public pages and references the sitemap index only", () => {
     const robots = readFileSync(resolve(__dirname, "../../web/public/robots.txt"), "utf8");
     expect(robots).toContain("User-agent: *");
     expect(robots).toContain("Allow: /");
     expect(robots).toContain("Disallow: /api/");
     expect(robots).toContain("Disallow: /admin/");
     expect(robots).toContain("Sitemap: https://www.giga3ai.com/sitemap.xml");
+    expect(robots).not.toContain("sitemap-blog.xml");
   });
 });
 

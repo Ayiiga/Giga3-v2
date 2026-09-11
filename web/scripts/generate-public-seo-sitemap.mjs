@@ -168,15 +168,16 @@ function writeSitemapIndex(filename, sitemaps) {
   return true;
 }
 
-function ensureRobotsSitemap(filename) {
+function ensureRobotsSitemapIndex() {
   const robotsPath = path.join(publicDir, "robots.txt");
-  if (!existsSync(robotsPath)) return;
-  const loc = `${siteOrigin}/${filename}`;
-  let robots = readFileSync(robotsPath, "utf8");
-  if (robots.includes(loc)) return;
-  robots = `${robots.trim()}\nSitemap: ${loc}\n`;
-  writeFileSync(robotsPath, robots, "utf8");
-  console.log(`generate-public-seo-sitemap: added robots.txt entry for ${filename}`);
+  const loc = `${siteOrigin}/sitemap.xml`;
+  const preferred = `User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Sitemap: ${loc}
+`;
+  writeFileSync(robotsPath, preferred, "utf8");
 }
 
 function isoDate(ms) {
@@ -257,7 +258,6 @@ function writeBlogSitemap() {
   ];
 
   if (!writeUrlset("sitemap-blog.xml", urls)) return null;
-  ensureRobotsSitemap("sitemap-blog.xml");
   return "sitemap-blog.xml";
 }
 
@@ -325,7 +325,6 @@ async function main() {
           }))
         )
       ) {
-        ensureRobotsSitemap("sitemap-marketplace.xml");
         childSitemaps.push({ loc: `${siteOrigin}/sitemap-marketplace.xml`, lastmod });
       }
 
@@ -354,7 +353,6 @@ async function main() {
           ]
         )
       ) {
-        ensureRobotsSitemap("sitemap-gigasocial.xml");
         childSitemaps.push({ loc: `${siteOrigin}/sitemap-gigasocial.xml`, lastmod });
       }
     } catch (err) {
@@ -366,7 +364,7 @@ async function main() {
   }
 
   writeSitemapIndex("sitemap.xml", childSitemaps);
-  ensureRobotsSitemap("sitemap.xml");
+  ensureRobotsSitemapIndex();
 }
 
 main().catch((err) => {

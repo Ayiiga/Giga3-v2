@@ -55,6 +55,7 @@ describe("Ghana SEO landing pages", () => {
       expect(sitemapScript).toContain(`"${path}/"`);
     }
     expect(sitemapScript).toContain('"/chat/"');
+    expect(sitemapScript).toContain("ensureRobotsSitemapIndex");
   });
 
   it("GhanaSeoLandingPage component is static (no use client)", () => {
