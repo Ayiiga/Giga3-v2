@@ -107,9 +107,10 @@ export function useVoiceDictation({
       if (finalText) callbacksRef.current.onTranscript(finalText);
     };
 
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      if (event.error !== "aborted") {
-        callbacksRef.current.onError?.(speechErrorMessage(event.error));
+    recognition.onerror = (event: Event) => {
+      const code = (event as Event & { error?: string }).error ?? "unknown";
+      if (code !== "aborted") {
+        callbacksRef.current.onError?.(speechErrorMessage(code));
       }
       setListeningState(false);
       recognitionRef.current = null;
