@@ -22,6 +22,7 @@ export const AI_STUDIO_PAGE: PublicProductPageShellProps = {
     "AI image generation and edit-with-source in Media Studio",
     "Text-to-video workflows in Video AI with tiered credit costs",
     "Hand-offs from chat, Creator Studio, and GigaEdit when you are signed in",
+    "Responsible use: verify AI outputs before publishing; credits enforced server-side",
   ],
   giga3Connection:
     "Open Media Studio or Video AI from here, then publish through GigaEdit or GigaSocial. Billing, entitlements, and credits stay on your Giga3 account — nothing runs client-side without server checks.",
@@ -37,7 +38,7 @@ export const GIGAEDITS_PAGE: PublicProductPageShellProps = {
     "GigaEdits is the creator editing product on Giga3 AI — trim, caption, and publish video with GigaEdit, then share on GigaSocial.",
   audience: "creators, educators, and social publishers",
   whatItDoes:
-    "GigaEdits covers the edit step in the Giga3 creator workflow. The GigaEdit app handles trimming, joining, captions, and publishing — after you generate clips in Video AI or Media Studio.",
+    "GigaEdits is the marketing home for creator editing on Giga3. The GigaEdit app at /gigaedit/ is where you trim, join, caption, and publish — after you generate clips in Video AI or Media Studio.",
   whoFor: [
     "Short-form creators polishing reels and social clips",
     "Educators packaging lesson segments",

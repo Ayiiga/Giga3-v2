@@ -34,7 +34,7 @@ export default function GigaEditPage() {
       />
       <ProductSeoHeader
         title="GigaEdit — Trim, join, and publish video"
-        description="Edit video and photos in the browser, then share finished work to GigaSocial. Pair with Media Studio when you need AI-generated images first."
+        description="Edit video and photos in the browser, then share finished work to GigaSocial. Pair with Media Studio when you need AI-generated images first. See /gigaedits/ for the creator editing product overview."
         detail="Available tools include multi-clip timelines, audio tracks, teleprompter recording, templates, and offline project storage on supported devices."
         showProductNav={false}
         className="gigaedit-seo-header"

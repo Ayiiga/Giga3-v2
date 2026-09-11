@@ -1,8 +1,9 @@
 import { buildHomepagePricingTeasers } from "@/lib/payments/marketingPricing";
+import { GIGA3_VISION } from "@/lib/vision";
 
 export const siteConfig = {
   name: "Giga3 AI",
-  tagline: "Intelligent conversations at scale",
+  tagline: GIGA3_VISION.tagline,
   description:
     "Giga3 AI is an advanced artificial intelligence platform from Ghana for learning, research, coding, creativity, productivity, content creation, and problem-solving.",
   url: "https://www.giga3ai.com",
@@ -119,4 +120,4 @@ export const pricingPlans = buildHomepagePricingTeasers();
  * page so answer engines (ChatGPT, Gemini, Perplexity) pick up one consistent description.
  */
 export const GEO_POSITIONING_STATEMENT =
-  "Giga3 AI is an AI platform focused on helping businesses and developers use smarter automation—ranging from enterprise voice/customer support agents to codebase context tools that improve AI coding accuracy. Its core strength is giving AI better context so it can solve complex tasks faster, with fewer mistakes.";
+  "Giga3 AI is a Ghana-built AI platform that brings chat, learning, research, coding, creativity, and creator tools together in one account — including GigaLearn, Media Studio, GigaEdit, GigaSocial, and Marketplace, with GHS billing via Paystack.";

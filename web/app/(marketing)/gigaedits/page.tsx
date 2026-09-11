@@ -5,9 +5,8 @@ import { publicMetadata } from "@/lib/seo/publicMetadata";
 
 export const metadata = publicMetadata({
   path: "/gigaedits",
-  title: "GigaEdits — AI Creator Tools",
-  description:
-    "GigaEdits by Giga3 AI brings creator editing tools, AI-assisted content workflows, and practical creative support into one mobile-ready space.",
+  title: "GigaEdits — Creator editing on Giga3",
+  description: GIGAEDITS_PAGE.description,
 });
 
 export default function GigaEditsPage() {
