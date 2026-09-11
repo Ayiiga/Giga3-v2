@@ -3,15 +3,14 @@
 import { getConvexClient } from "@/lib/convex";
 import { getConvexUrl } from "@/lib/convex/env";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
-import { ReactNode, useLayoutEffect, useState } from "react";
+import { ReactNode } from "react";
+
+function createBrowserConvexClient(): ConvexReactClient | null {
+  if (typeof window === "undefined") return null;
+  return getConvexClient();
+}
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
-  const [client, setClient] = useState<ConvexReactClient | null>(null);
-
-  useLayoutEffect(() => {
-    setClient(getConvexClient());
-  }, []);
-
   const convexUrl = getConvexUrl();
 
   if (!convexUrl) {
@@ -25,6 +24,7 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
     );
   }
 
+  const client = createBrowserConvexClient();
   if (!client) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center p-6 text-sm text-muted">
