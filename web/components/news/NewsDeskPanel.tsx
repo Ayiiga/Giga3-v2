@@ -128,7 +128,7 @@ export function NewsDeskPanel({
     variant === "chat" ? "Ghana & world news assistant" : "Latest news & social headlines";
   const subtitle =
     variant === "chat"
-      ? "Load live headlines from credible sources. Each story should show date, outlet, and link. Verify claims before you share — labels: Verified, Developing, or Unverified."
+      ? "Load live headlines from credible sources. RSS/cache items are editorial picks — verify before sharing. Giga3 labels stories Reported, Corroborated, or Insufficient evidence based on retrieved proof."
       : "Read headlines from major news outlets and social discussion feeds. Verify claims before you reference them in your products.";
 
   return (
@@ -205,6 +205,9 @@ export function NewsDeskPanel({
               className="rounded-xl border border-border bg-background p-4"
             >
               <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+                <span className="rounded-full bg-amber-500/10 px-2 py-0.5 font-medium text-amber-800">
+                  🟡 Reported
+                </span>
                 <span className="rounded-full bg-accent/10 px-2 py-0.5 font-medium text-accent">
                   {item.platform}
                 </span>

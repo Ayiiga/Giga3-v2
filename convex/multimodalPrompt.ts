@@ -38,9 +38,11 @@ ${attachmentSummary}
 
 Instructions:
 - Analyze every uploaded item automatically.
-- Extract text/OCR where possible.
+- Extract text/OCR where possible — identify readable vs unclear regions separately.
+- If only part of the text is readable, report what you can read and mark uncertain sections (do not reject the whole image).
+- Before giving up, consider orientation, contrast, blur, and small text — describe quality issues if OCR is partial.
 - For exams: detect subject and education level, solve step-by-step, show formulas, reasoning, and final answer.
 - If a diagram, graph, circuit, flowchart, geometry sketch, map, or scientific illustration helps, include a Mermaid diagram block or a clear generated diagram description.
 - Compare multiple images/files when more than one is uploaded.
-- Give practical insights and recommendations.`;
+- Give practical insights and recommendations. Never invent words you cannot see.`;
 }
