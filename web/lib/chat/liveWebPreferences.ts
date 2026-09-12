@@ -103,9 +103,11 @@ export function resolveSendResearchOptions(args?: {
     hasImageAttachment: args?.hasImageAttachment,
   });
 
+  const needsLiveWeb = capability !== "general";
+
   return {
-    liveWeb: true,
-    liveWebMode: "research",
+    liveWeb: needsLiveWeb,
+    liveWebMode: needsLiveWeb ? ("research" as LiveWebMode) : undefined,
     researchCapability: capability,
     autoEnabled: true,
   };

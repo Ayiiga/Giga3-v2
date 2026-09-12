@@ -135,6 +135,20 @@ export function detectLocationIntent(query: string): boolean {
   return LOCATION_INTENT_RE.test(query.trim());
 }
 
+/** Greetings and small talk — skip live web even when a news persona is active. */
+const CONVERSATIONAL_GREETING_RE =
+  /^(hi|hello|hey|yo|hiya|good\s+(morning|afternoon|evening|night)|thanks?|thank\s+you|ok(?:ay)?|please|help|how\s+are\s+you|what(?:'s|\s+is)\s+up)[\s!.,?]*$/i;
+
+export function isConversationalChatQuery(query: string): boolean {
+  const q = query.trim();
+  if (!q || q.length > 96) return false;
+  if (CONVERSATIONAL_GREETING_RE.test(q)) return true;
+  if (q.length <= 28 && !TIME_SENSITIVE_RE.test(q) && !/\?/.test(q)) {
+    return /^[\p{L}\p{N}\s'.,!-]+$/u.test(q);
+  }
+  return false;
+}
+
 export function resolveResearchCapability(args: {
   explicit?: string | null;
   query: string;
@@ -142,6 +156,17 @@ export function resolveResearchCapability(args: {
   hasImageAttachment?: boolean;
 }): ResearchCapabilityId {
   if (isValidResearchCapability(args.explicit) && args.explicit !== "general") {
+    if (isConversationalChatQuery(args.query)) {
+      return "general";
+    }
+    if (
+      isNewsCapability(args.explicit) &&
+      !detectNewsRetrievalIntent(args.query) &&
+      !detectGhanaNewsIntent(args.query) &&
+      !detectBreakingNewsIntent(args.query)
+    ) {
+      return "general";
+    }
     return args.explicit;
   }
 

@@ -27,6 +27,7 @@ export const POLL_FAIL_HINT_THRESHOLD = 4;
  * (with Live Web metadata) each second was itself congesting the connection.
  */
 const FULL_FETCH_EVERY_N_POLLS = 6;
+const FULL_FETCH_EVERY_N_POLLS_SLOW = 2;
 
 export type PolledMessageRow = {
   _id: string;
@@ -80,8 +81,8 @@ export function useChatReplyPolling(
     inFlightRef.current = true;
     try {
       const httpOpts = {
-        timeoutMs: tier === "slow" ? 30_000 : 20_000,
-        retries: tier === "slow" ? 2 : 1,
+        timeoutMs: tier === "slow" ? 60_000 : 20_000,
+        retries: tier === "slow" ? 3 : 1,
       };
       const tick = tickRef.current++;
       const status = await convexHttpCall<ReplyStatusSnapshot>(
@@ -95,7 +96,12 @@ export function useChatReplyPolling(
       // first tick, or periodically as a safety net — not on every status poll.
       const justFinished = lastActiveRef.current === true && status.active === false;
       lastActiveRef.current = status.active;
-      const wantRows = justFinished || tick === 0 || tick % FULL_FETCH_EVERY_N_POLLS === 0;
+      const wantRows =
+        justFinished ||
+        tick === 0 ||
+        tick %
+          (tier === "slow" ? FULL_FETCH_EVERY_N_POLLS_SLOW : FULL_FETCH_EVERY_N_POLLS) ===
+          0;
       let rows: PolledMessageRow[] | undefined;
       if (wantRows) {
         rows = await convexHttpCall<PolledMessageRow[]>(
