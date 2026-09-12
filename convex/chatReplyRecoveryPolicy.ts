@@ -61,7 +61,9 @@ function isRecentlyActive(
   now: number,
   graceMs: number
 ): boolean {
-  const last = job.lastActivityAt ?? job.processingStartedAt ?? job.createdAt;
+  if (job.status !== "processing") return false;
+  const last = job.lastActivityAt ?? job.processingStartedAt;
+  if (!last) return false;
   return now - last < graceMs;
 }
 
