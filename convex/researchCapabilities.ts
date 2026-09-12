@@ -170,6 +170,11 @@ export function resolveResearchCapability(args: {
     return args.explicit;
   }
 
+  const q = args.query.trim();
+  if (isConversationalChatQuery(q)) {
+    return "general";
+  }
+
   if (detectVerifyImageIntent(args.query, Boolean(args.hasImageAttachment))) {
     return "verify_image";
   }
@@ -178,7 +183,6 @@ export function resolveResearchCapability(args: {
     return "fact_check";
   }
 
-  const q = args.query.trim();
   if (detectGhanaNewsIntent(q)) {
     return detectBreakingNewsIntent(q) ? "breaking_news" : "ghana_news";
   }
@@ -187,11 +191,51 @@ export function resolveResearchCapability(args: {
     return "breaking_news";
   }
 
-  if (args.liveWebEnabled || shouldAutoEnableLiveWeb(q)) {
+  if (shouldAutoEnableLiveWeb(q)) {
     return "live_web";
   }
 
   return "general";
+}
+
+/**
+ * Whether this turn should run live web / news research before the model call.
+ * Persona and workspace (News desk) set tone — they do NOT force live web on
+ * greetings or general chat.
+ */
+export function queryNeedsLiveWeb(args: {
+  query: string;
+  capability: ResearchCapabilityId;
+  mode?: string;
+  hasImageAttachment?: boolean;
+}): boolean {
+  const q = args.query.trim();
+  if (!q || args.hasImageAttachment) return false;
+  if (isConversationalChatQuery(q)) return false;
+
+  if (detectVerifyImageIntent(q, true)) return true;
+  if (detectFactCheckIntent(q)) return true;
+  if (detectGhanaNewsIntent(q) || detectBreakingNewsIntent(q)) return true;
+  if (detectNewsRetrievalIntent(q)) return true;
+  if (shouldAutoEnableLiveWeb(q)) return true;
+
+  if (shouldRunLiveWebResearch(args.capability)) {
+    if (isNewsCapability(args.capability)) {
+      return (
+        detectNewsRetrievalIntent(q) ||
+        detectGhanaNewsIntent(q) ||
+        detectBreakingNewsIntent(q)
+      );
+    }
+    return (
+      args.capability === "live_web" ||
+      args.capability === "deep_research" ||
+      args.capability === "fact_check" ||
+      args.capability === "verify_image"
+    );
+  }
+
+  return false;
 }
 
 export function shouldRunLiveWebResearch(capability: ResearchCapabilityId): boolean {

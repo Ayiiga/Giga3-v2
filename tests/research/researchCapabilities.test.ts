@@ -9,6 +9,7 @@ import {
   detectVerifyImageIntent,
   isConversationalChatQuery,
   liveSearchUnavailableNewsFallback,
+  queryNeedsLiveWeb,
   resolveResearchCapability,
   researchSystemPromptAddon,
   responseBasisForCapability,
@@ -63,6 +64,20 @@ describe("research capability routing", () => {
     expect(isConversationalChatQuery("What is the latest Ghana news today?")).toBe(
       false
     );
+    expect(
+      queryNeedsLiveWeb({
+        query: "Hi",
+        capability: "ghana_news",
+        mode: "news",
+      })
+    ).toBe(false);
+    expect(
+      queryNeedsLiveWeb({
+        query: "Latest Ghana headlines today",
+        capability: "ghana_news",
+        mode: "news",
+      })
+    ).toBe(true);
   });
 
   it("auto-resolves Ghana news from query text", () => {

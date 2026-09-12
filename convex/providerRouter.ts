@@ -6,6 +6,14 @@
 import type { AiModeId } from "./aiModes";
 import { isSubscriptionActive } from "./creditsConfig";
 import type { SubscriptionPlanId } from "./subscriptionPlans";
+import {
+  detectBreakingNewsIntent,
+  detectFactCheckIntent,
+  detectGhanaNewsIntent,
+  detectNewsRetrievalIntent,
+  isConversationalChatQuery,
+  shouldAutoEnableLiveWeb,
+} from "./researchCapabilities";
 
 /** User-facing AI access tier — drives default LLM provider. */
 export type AiProviderTier = "free" | "premium";
@@ -208,11 +216,15 @@ export function shouldEnableWebSearch(
   hasImageAttachment?: boolean
 ): boolean {
   if (hasImageAttachment) return false;
-  if (RESEARCH_MODES.has(mode)) return true;
-  if (mode === "news") return true;
-  if (FACT_CHECK_RE.test(query)) return true;
+  if (isConversationalChatQuery(query)) return false;
+  if (detectFactCheckIntent(query)) return true;
   if (SPORTS_SCORES_RE.test(query)) return true;
-  return CURRENT_INFO_RE.test(query);
+  if (detectGhanaNewsIntent(query) || detectBreakingNewsIntent(query)) return true;
+  if (detectNewsRetrievalIntent(query)) return true;
+  if (shouldAutoEnableLiveWeb(query)) return true;
+  // News/research workspace modes shape the assistant tone — live web only when
+  // the user's message asks for current information (not on "Hi" / "Hello").
+  return false;
 }
 
 /**
