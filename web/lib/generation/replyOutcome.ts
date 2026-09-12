@@ -4,7 +4,7 @@ import {
   type AssistantFingerprint,
 } from "@/lib/chat/replyDetection";
 
-export type ReplyAssessResult = "success" | "partial" | "waiting" | "no_reply";
+export type ReplyAssessResult = "success" | "partial" | "waiting" | "failed_stub" | "no_reply";
 
 /** True when assistant text is non-empty and not a known server-side failure stub. */
 export function hasUsableAssistantContent(content: string | undefined): boolean {
@@ -59,6 +59,7 @@ export function assessReplyFromMessages(
   if (newByFingerprint || newByCount || streamingSameRow) {
     const content = after?.content ?? "";
     if (hasUsableAssistantContent(content)) return "success";
+    if (content.trim()) return "failed_stub";
     return "waiting";
   }
 

@@ -186,6 +186,24 @@ export function useChatPlatform() {
       if (assessment === "success") {
         return completeReplySuccess(via);
       }
+      if (assessment === "failed_stub") {
+        replyOutcomeRef.current = "failed";
+        clearReplyFailureTimer();
+        setAwaitingReply(false);
+        clearPendingSyncUi();
+        setPendingUserText(null);
+        setPollConversationId(null);
+        const taskId = activeGenTaskIdRef.current;
+        if (taskId) {
+          generationCoordinator.fail(taskId);
+          activeGenTaskIdRef.current = null;
+        }
+        logChatClient("reply_stub", { via });
+        setError(
+          "Giga3 couldn't finish on this connection. Your message was saved — tap send to try again."
+        );
+        return true;
+      }
       return false;
     },
     [completeReplySuccess]

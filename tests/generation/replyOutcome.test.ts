@@ -26,7 +26,7 @@ describe("hasUsableAssistantContent", () => {
 });
 
 describe("assessReplyFromMessages", () => {
-  it("keeps waiting when only a recovery timeout stub arrived", () => {
+  it("fails fast when a server timeout stub arrives", () => {
     const before = fingerprintLastAssistant([
       { _id: "a1", role: "assistant", content: "Hi", createdAt: 1000 },
     ]);
@@ -40,7 +40,7 @@ describe("assessReplyFromMessages", () => {
         createdAt: 5000,
       },
     ];
-    expect(assessReplyFromMessages(rows, before, 4000, 1)).toBe("waiting");
+    expect(assessReplyFromMessages(rows, before, 4000, 1)).toBe("failed_stub");
   });
 
   it("detects success when a new assistant row arrives after wait start", () => {
