@@ -5,9 +5,10 @@ import { internal } from "./_generated/api";
 import { normalizeUserId } from "./userIds";
 import { logChatReply } from "./chatReplyLog";
 import {
-  DEFAULT_JOB_RECOVERY_CONFIG,
   decideJobRecovery,
+  getJobRecoveryConfig,
 } from "./chatReplyRecoveryPolicy";
+import { CHAT_RECOVERY_TIMEOUT_SNIPPET } from "./chatTiming";
 
 /**
  * Safety net for chat reply jobs whose background worker never ran or died
@@ -36,18 +37,21 @@ async function conversationHasReplyAfter(
     .withIndex("by_conversation", (q) =>
       q.eq("conversationId", conversationId)
     )
-    .collect();
-  const last = rows
-    .filter((m) => m.role !== "system")
-    .sort((a, b) => a.createdAt - b.createdAt)
-    .at(-1);
-  return Boolean(last && last.role === "assistant" && last.createdAt >= since);
+    .order("desc")
+    .take(8);
+  return rows.some(
+    (m) =>
+      m.role === "assistant" &&
+      m.createdAt >= since &&
+      !m.content.includes(CHAT_RECOVERY_TIMEOUT_SNIPPET)
+  );
 }
 
 export const recoverStuckJobs = internalMutation({
   args: {},
   handler: async (ctx) => {
     const now = Date.now();
+    const config = getJobRecoveryConfig();
     const jobs = await ctx.db.query("chatReplyJobs").take(MAX_JOBS_PER_SWEEP);
 
     let rescheduled = 0;
@@ -62,9 +66,11 @@ export const recoverStuckJobs = internalMutation({
           cancelled: job.cancelled,
           createdAt: job.createdAt,
           processingStartedAt: job.processingStartedAt,
+          lastActivityAt: job.lastActivityAt,
+          rescheduleCount: job.rescheduleCount,
         },
         now,
-        DEFAULT_JOB_RECOVERY_CONFIG
+        config
       );
 
       if (action === "cleanup") {
@@ -113,6 +119,9 @@ export const recoverStuckJobs = internalMutation({
       }
 
       if (action === "reschedule") {
+        await ctx.runMutation(internal.chatReplyJobs.incrementJobReschedule, {
+          jobId: job._id,
+        });
         await ctx.scheduler.runAfter(0, internal.chatReplyWorker.processJob, {
           jobId: job._id,
         });
@@ -122,6 +131,7 @@ export const recoverStuckJobs = internalMutation({
           conversationId: job.conversationId,
           userId: job.userId,
           ageMs: age,
+          status: job.status,
         });
       }
     }

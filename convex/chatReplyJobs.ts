@@ -82,7 +82,32 @@ export const updateLiveWebProgress = internalMutation({
     liveWebProgress: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.jobId, { liveWebProgress: args.liveWebProgress });
+    const now = Date.now();
+    await ctx.db.patch(args.jobId, {
+      liveWebProgress: args.liveWebProgress,
+      lastActivityAt: now,
+    });
+  },
+});
+
+export const touchJobActivity = internalMutation({
+  args: { jobId: v.id("chatReplyJobs") },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.jobId, { lastActivityAt: Date.now() });
+  },
+});
+
+export const incrementJobReschedule = internalMutation({
+  args: { jobId: v.id("chatReplyJobs") },
+  handler: async (ctx, args) => {
+    const job = await ctx.db.get(args.jobId);
+    if (!job) return { rescheduleCount: 0 };
+    const rescheduleCount = (job.rescheduleCount ?? 0) + 1;
+    await ctx.db.patch(args.jobId, {
+      rescheduleCount,
+      lastActivityAt: Date.now(),
+    });
+    return { rescheduleCount };
   },
 });
 
@@ -112,9 +137,11 @@ export const beginProcessing = internalMutation({
       if (job.status !== "cancelled") await ctx.db.patch(args.jobId, { status: "cancelled" });
       return { cancelled: true as const };
     }
+    const now = Date.now();
     await ctx.db.patch(args.jobId, {
       status: "processing",
-      processingStartedAt: Date.now(),
+      processingStartedAt: job.processingStartedAt ?? now,
+      lastActivityAt: now,
     });
     return { cancelled: false as const };
   },

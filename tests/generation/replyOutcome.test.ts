@@ -17,10 +17,32 @@ describe("hasUsableAssistantContent", () => {
         "AI could not complete this reply. Your message was saved — please try again."
       )
     ).toBe(false);
+    expect(
+      hasUsableAssistantContent(
+        "I'm Giga3 AI — I couldn't finish this reply because our AI service didn't respond in time. Your message was saved — please tap send again."
+      )
+    ).toBe(false);
   });
 });
 
 describe("assessReplyFromMessages", () => {
+  it("keeps waiting when only a recovery timeout stub arrived", () => {
+    const before = fingerprintLastAssistant([
+      { _id: "a1", role: "assistant", content: "Hi", createdAt: 1000 },
+    ]);
+    const rows = [
+      { _id: "a1", role: "assistant", content: "Hi", createdAt: 1000 },
+      {
+        _id: "a2",
+        role: "assistant",
+        content:
+          "I'm Giga3 AI — I couldn't finish this reply because our AI service didn't respond in time. Your message was saved — please tap send again.",
+        createdAt: 5000,
+      },
+    ];
+    expect(assessReplyFromMessages(rows, before, 4000, 1)).toBe("waiting");
+  });
+
   it("detects success when a new assistant row arrives after wait start", () => {
     const before = fingerprintLastAssistant([
       { _id: "a1", role: "assistant", content: "Hi", createdAt: 1000 },

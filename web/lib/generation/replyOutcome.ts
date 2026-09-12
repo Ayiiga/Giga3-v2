@@ -15,6 +15,18 @@ export function hasUsableAssistantContent(content: string | undefined): boolean 
   if (lower.includes("ai could not complete") && lower.includes("try again")) {
     return false;
   }
+  if (
+    lower.includes("couldn't finish this reply") &&
+    lower.includes("didn't respond in time")
+  ) {
+    return false;
+  }
+  if (
+    lower.includes("having trouble reaching our ai services") &&
+    lower.includes("tap send again")
+  ) {
+    return false;
+  }
   return true;
 }
 
@@ -47,7 +59,6 @@ export function assessReplyFromMessages(
   if (newByFingerprint || newByCount || streamingSameRow) {
     const content = after?.content ?? "";
     if (hasUsableAssistantContent(content)) return "success";
-    if (content.trim().length > 0) return "partial";
     return "waiting";
   }
 

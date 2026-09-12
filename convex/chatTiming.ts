@@ -7,47 +7,81 @@
  * is dropped by appendAssistantReplyIfMissing dedupe.
  */
 
-export const CHAT_WORKER_TEXT_TIMEOUT_MS =
-  Number(process.env.CHAT_WORKER_TIMEOUT_MS) || 120_000;
-export const CHAT_WORKER_IMAGE_TIMEOUT_MS =
-  Number(process.env.CHAT_WORKER_IMAGE_TIMEOUT_MS) || 150_000;
+function envMs(name: string, fallback: number): number {
+  const raw = Number(process.env[name]);
+  return Number.isFinite(raw) && raw > 0 ? raw : fallback;
+}
+
+export function chatWorkerTextTimeoutMs(): number {
+  return envMs("CHAT_WORKER_TIMEOUT_MS", 120_000);
+}
+
+export function chatWorkerImageTimeoutMs(): number {
+  return envMs("CHAT_WORKER_IMAGE_TIMEOUT_MS", 180_000);
+}
 
 /** Upper bound for search + page reads before the model call. */
-export const CHAT_LIVE_WEB_BUDGET_MS =
-  Number(process.env.CHAT_LIVE_WEB_BUDGET_MS) || 60_000;
+export function chatLiveWebBudgetMs(): number {
+  return envMs("CHAT_LIVE_WEB_BUDGET_MS", 60_000);
+}
 
 /** Upper bound for optional fact-verification pass after live web. */
-export const CHAT_VERIFICATION_BUDGET_MS =
-  Number(process.env.CHAT_VERIFICATION_BUDGET_MS) || 45_000;
+export function chatVerificationBudgetMs(): number {
+  return envMs("CHAT_VERIFICATION_BUDGET_MS", 45_000);
+}
 
-const PROCESSING_BUFFER_MS = 15_000;
+const PROCESSING_BUFFER_MS = 30_000;
 
 /** Wall-clock budget once the worker marks a job as processing. */
 export function chatJobProcessingBudgetMs(options?: {
   hasImageAttachment?: boolean;
 }): number {
   const workerMs = options?.hasImageAttachment
-    ? CHAT_WORKER_IMAGE_TIMEOUT_MS
-    : CHAT_WORKER_TEXT_TIMEOUT_MS;
+    ? chatWorkerImageTimeoutMs()
+    : chatWorkerTextTimeoutMs();
   return (
     workerMs +
-    CHAT_LIVE_WEB_BUDGET_MS +
-    CHAT_VERIFICATION_BUDGET_MS +
+    chatLiveWebBudgetMs() +
+    chatVerificationBudgetMs() +
     PROCESSING_BUFFER_MS
+  );
+}
+
+/** Recovery waits if the worker reported activity within this window. */
+export function chatJobActivityGraceMs(): number {
+  return envMs("CHAT_JOB_ACTIVITY_GRACE_MS", 120_000);
+}
+
+/** Read env at call time — not module init — so deploy-time env updates apply. */
+export function chatRecoveryRescheduleAfterMs(): number {
+  return envMs("CHAT_JOB_RESCHEDULE_AFTER_MS", 30_000);
+}
+
+export function chatRecoveryPendingGiveUpAfterMs(): number {
+  return envMs("CHAT_JOB_PENDING_GIVE_UP_AFTER_MS", 180_000);
+}
+
+export function chatRecoveryProcessingGiveUpAfterMs(): number {
+  return (
+    envMs("CHAT_JOB_PROCESSING_GIVE_UP_AFTER_MS", 0) ||
+    chatJobProcessingBudgetMs({ hasImageAttachment: true })
   );
 }
 
 /** Client should outlive server recovery so users see the real reply, not a spinner timeout. */
 export function chatClientReplyWaitMs(slowNetwork: boolean): number {
-  const serverBudget = chatJobProcessingBudgetMs({ hasImageAttachment: true });
-  const clientMs =
-    Number(process.env.CHAT_CLIENT_REPLY_WAIT_MS) ||
-    serverBudget + 30_000;
+  const serverBudget = chatRecoveryProcessingGiveUpAfterMs();
+  const clientMs = envMs("CHAT_CLIENT_REPLY_WAIT_MS", serverBudget + 60_000);
   if (slowNetwork) {
-    return (
-      Number(process.env.CHAT_CLIENT_REPLY_WAIT_SLOW_MS) ||
-      clientMs + 45_000
-    );
+    return envMs("CHAT_CLIENT_REPLY_WAIT_SLOW_MS", clientMs + 60_000);
   }
   return clientMs;
+}
+
+/** Marker shared with appendAssistantReplyIfMissing — recovery fallback replies. */
+export const CHAT_RECOVERY_TIMEOUT_SNIPPET =
+  "couldn't finish this reply because our AI service didn't respond in time";
+
+export function isChatRecoveryTimeoutReply(content: string): boolean {
+  return content.includes(CHAT_RECOVERY_TIMEOUT_SNIPPET);
 }
