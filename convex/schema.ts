@@ -819,6 +819,10 @@ export default defineSchema({
     liveWebProgress: v.optional(v.string()),
     /** When the background worker began processing (recovery budget anchor). */
     processingStartedAt: v.optional(v.number()),
+    /** Updated while the worker is alive — recovery must not finalize during grace. */
+    lastActivityAt: v.optional(v.number()),
+    /** How many times recovery re-scheduled this job. */
+    rescheduleCount: v.optional(v.number()),
     cancelled: v.optional(v.boolean()),
     status: v.union(
       v.literal("pending"),

@@ -2,6 +2,7 @@ import { internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { normalizeUserId } from "./userIds";
+import { isChatRecoveryTimeoutReply } from "./chatTiming";
 import { SEGMENT_RECAP_PREFIX } from "./chatSegmentation";
 
 function userOwnsConversation(
@@ -154,8 +155,28 @@ export const appendAssistantReplyIfMissing = internalMutation({
       .withIndex("by_conversation", (q) => q.eq("conversationId", args.conversationId))
       .order("desc")
       .take(6);
-    const duplicate = latest.some((m) => m.role === "assistant" && m.createdAt >= args.since);
-    if (duplicate) return { written: false as const };
+    const existing = latest.find(
+      (m) => m.role === "assistant" && m.createdAt >= args.since
+    );
+    if (existing) {
+      if (
+        isChatRecoveryTimeoutReply(existing.content) &&
+        !isChatRecoveryTimeoutReply(args.content)
+      ) {
+        const now = Date.now();
+        await ctx.db.patch(existing._id, {
+          content: args.content,
+          metadataJson: args.metadataJson,
+          createdAt: now,
+        });
+        await ctx.db.patch(args.conversationId, { updatedAt: now });
+        await ctx.scheduler.runAfter(0, internal.platformStatsRecorder.recordMessageInternal, {
+          role: "assistant",
+        });
+        return { written: true as const, replaced: true as const };
+      }
+      return { written: false as const };
+    }
     const now = Date.now();
     await ctx.db.insert("messages", {
       conversationId: args.conversationId,

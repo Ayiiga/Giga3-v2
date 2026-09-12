@@ -16,42 +16,59 @@ export type JobRecoveryInput = {
   status: JobRecoveryStatus;
   cancelled?: boolean;
   createdAt: number;
-  /** Set when beginProcessing runs — used for active worker budget. */
   processingStartedAt?: number;
+  lastActivityAt?: number;
+  rescheduleCount?: number;
 };
 
 export type JobRecoveryAction =
-  /** Job finished/cancelled — just remove the leftover row. */
   | "cleanup"
-  /** Pending job that was never picked up — schedule the worker again. */
   | "reschedule"
-  /** Worker is dead — write a fallback reply (if none) and remove the job. */
   | "finalize"
-  /** Job is young / actively processing — leave it alone. */
   | "wait";
 
 export type JobRecoveryConfig = {
   rescheduleAfterMs: number;
-  /** Pending jobs that never start processing. */
   pendingGiveUpAfterMs: number;
-  /** Active worker budget from processingStartedAt (live web + AI). */
   processingGiveUpAfterMs: number;
+  activityGraceMs: number;
+  maxReschedulesBeforeFinalize: number;
 };
 
-export const DEFAULT_JOB_RECOVERY_CONFIG: JobRecoveryConfig = {
-  rescheduleAfterMs:
-    Number(process.env.CHAT_JOB_RESCHEDULE_AFTER_MS) || 30_000,
-  pendingGiveUpAfterMs:
-    Number(process.env.CHAT_JOB_PENDING_GIVE_UP_AFTER_MS) || 90_000,
-  processingGiveUpAfterMs:
-    Number(process.env.CHAT_JOB_PROCESSING_GIVE_UP_AFTER_MS) ||
-    chatJobProcessingBudgetMs({ hasImageAttachment: true }),
-};
+export function getJobRecoveryConfig(
+  env: Record<string, string | undefined> = process.env
+): JobRecoveryConfig {
+  const envMs = (name: string, fallback: number) => {
+    const raw = Number(env[name]);
+    return Number.isFinite(raw) && raw > 0 ? raw : fallback;
+  };
+  return {
+    rescheduleAfterMs: envMs("CHAT_JOB_RESCHEDULE_AFTER_MS", 30_000),
+    pendingGiveUpAfterMs: envMs("CHAT_JOB_PENDING_GIVE_UP_AFTER_MS", 180_000),
+    processingGiveUpAfterMs:
+      envMs("CHAT_JOB_PROCESSING_GIVE_UP_AFTER_MS", 0) ||
+      chatJobProcessingBudgetMs({ hasImageAttachment: true }),
+    activityGraceMs: envMs("CHAT_JOB_ACTIVITY_GRACE_MS", 120_000),
+    maxReschedulesBeforeFinalize: envMs("CHAT_JOB_MAX_RESCHEDULES", 4),
+  };
+}
+
+/** @deprecated Use getJobRecoveryConfig() for runtime env reads. */
+export const DEFAULT_JOB_RECOVERY_CONFIG: JobRecoveryConfig = getJobRecoveryConfig();
+
+function isRecentlyActive(
+  job: JobRecoveryInput,
+  now: number,
+  graceMs: number
+): boolean {
+  const last = job.lastActivityAt ?? job.processingStartedAt ?? job.createdAt;
+  return now - last < graceMs;
+}
 
 export function decideJobRecovery(
   job: JobRecoveryInput,
   now: number,
-  config: JobRecoveryConfig = DEFAULT_JOB_RECOVERY_CONFIG
+  config: JobRecoveryConfig = getJobRecoveryConfig()
 ): JobRecoveryAction {
   if (
     job.cancelled ||
@@ -63,23 +80,34 @@ export function decideJobRecovery(
   }
 
   const age = now - job.createdAt;
+  const reschedules = job.rescheduleCount ?? 0;
 
   if (job.status === "processing") {
+    if (isRecentlyActive(job, now, config.activityGraceMs)) {
+      return "wait";
+    }
     const processingAge = job.processingStartedAt
       ? now - job.processingStartedAt
       : age;
     if (processingAge >= config.processingGiveUpAfterMs) {
+      if (reschedules < config.maxReschedulesBeforeFinalize) {
+        return "reschedule";
+      }
       return "finalize";
     }
     return "wait";
   }
 
-  if (job.status === "pending" && age >= config.pendingGiveUpAfterMs) {
-    return "finalize";
-  }
-
-  if (job.status === "pending" && age >= config.rescheduleAfterMs) {
-    return "reschedule";
+  if (job.status === "pending") {
+    if (age >= config.pendingGiveUpAfterMs) {
+      if (reschedules < config.maxReschedulesBeforeFinalize) {
+        return "reschedule";
+      }
+      return "finalize";
+    }
+    if (age >= config.rescheduleAfterMs) {
+      return "reschedule";
+    }
   }
 
   return "wait";

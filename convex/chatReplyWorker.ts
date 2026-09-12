@@ -68,14 +68,17 @@ import {
   mediaSystemPromptAddon,
   resolveMediaCapability,
 } from "./mediaCapabilities";
+import {
+  chatJobProcessingBudgetMs,
+  chatWorkerImageTimeoutMs,
+  chatWorkerTextTimeoutMs,
+} from "./chatTiming";
 
 // Kept below the client reply-wait deadline (CHAT_REPLY_WAIT_MS) so the worker
 // persists a real or fallback reply — clearing "Thinking…" gracefully via the
 // live query — before the client's own failsafe error fires.
-const WORKER_TEXT_TIMEOUT_MS =
-  Number(process.env.CHAT_WORKER_TIMEOUT_MS) || 120_000;
-const WORKER_IMAGE_TIMEOUT_MS =
-  Number(process.env.CHAT_WORKER_IMAGE_TIMEOUT_MS) || 150_000;
+const WORKER_TEXT_TIMEOUT_MS = chatWorkerTextTimeoutMs();
+const WORKER_IMAGE_TIMEOUT_MS = chatWorkerImageTimeoutMs();
 
 function withWorkerTimeout<T>(
   promise: Promise<T>,
@@ -522,6 +525,9 @@ export const processJob = internalAction({
         historyCount: history.length,
         contextMs: Date.now() - workerStarted,
       });
+      await ctx.runMutation(internal.chatReplyJobs.touchJobActivity, {
+        jobId: args.jobId,
+      });
 
       const qualityContext = prepareAnswerQualityContext({
         mode,
@@ -669,6 +675,9 @@ export const processJob = internalAction({
             });
           },
         });
+        await ctx.runMutation(internal.chatReplyJobs.touchJobActivity, {
+          jobId: args.jobId,
+        });
         liveWebSources = research.sources;
         liveWebProviderId = research.providerId;
         liveWebUsed = research.usedLiveSearch || research.sources.length > 0;
@@ -814,19 +823,38 @@ export const processJob = internalAction({
       });
 
       const started = Date.now();
-      const engineResult = await runHybridAiEngine(ctx, {
-        email,
-        mode,
-        query: job.content,
-        systemPrompt,
-        chatMessages,
-        routing,
-        hasAttachments: attachments.length > 0,
+      const jobBudgetMs = chatJobProcessingBudgetMs({
         hasImageAttachment: attachments.some((a) => a.kind === "image"),
-        conversationId: job.conversationId,
-        subscriptionPlan: refreshedUser?.subscriptionPlan ?? "free",
-        subscriptionExpiresAt: refreshedUser?.subscriptionExpiresAt,
-        forceWebSearch: Boolean(effectiveLiveWeb && isLiveWebEnabled()),
+      });
+      const remainingBudgetMs = Math.max(
+        WORKER_TEXT_TIMEOUT_MS,
+        jobBudgetMs - (Date.now() - workerStarted)
+      );
+      const engineResult = await withWorkerTimeout(
+        runHybridAiEngine(ctx, {
+          email,
+          mode,
+          query: job.content,
+          systemPrompt,
+          chatMessages,
+          routing,
+          hasAttachments: attachments.length > 0,
+          hasImageAttachment: attachments.some((a) => a.kind === "image"),
+          conversationId: job.conversationId,
+          subscriptionPlan: refreshedUser?.subscriptionPlan ?? "free",
+          subscriptionExpiresAt: refreshedUser?.subscriptionExpiresAt,
+          forceWebSearch: Boolean(effectiveLiveWeb && isLiveWebEnabled()),
+        }),
+        Math.min(
+          attachments.some((a) => a.kind === "image")
+            ? WORKER_IMAGE_TIMEOUT_MS
+            : WORKER_TEXT_TIMEOUT_MS,
+          remainingBudgetMs
+        ),
+        "runHybridAiEngine"
+      );
+      await ctx.runMutation(internal.chatReplyJobs.touchJobActivity, {
+        jobId: args.jobId,
       });
       const latencyMs = engineResult.latencyMs ?? Date.now() - started;
 
