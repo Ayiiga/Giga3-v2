@@ -3,18 +3,22 @@ import {
   DEFAULT_JOB_RECOVERY_CONFIG,
   decideJobRecovery,
 } from "../../convex/chatReplyRecoveryPolicy";
+import { chatJobProcessingBudgetMs } from "../../convex/chatTiming";
 
 import type { JobRecoveryConfig } from "../../convex/chatReplyRecoveryPolicy";
 
 describe("DEFAULT_JOB_RECOVERY_CONFIG", () => {
-  it("gives up after the worker timeout budget", () => {
-    expect(DEFAULT_JOB_RECOVERY_CONFIG.giveUpAfterMs).toBeGreaterThanOrEqual(125_000);
+  it("allows the full live-web + AI worker budget before finalizing", () => {
+    expect(DEFAULT_JOB_RECOVERY_CONFIG.processingGiveUpAfterMs).toBeGreaterThanOrEqual(
+      chatJobProcessingBudgetMs({ hasImageAttachment: true })
+    );
   });
 });
 
 const cfg: JobRecoveryConfig = {
   rescheduleAfterMs: 30_000,
-  giveUpAfterMs: 125_000,
+  pendingGiveUpAfterMs: 90_000,
+  processingGiveUpAfterMs: 270_000,
 };
 
 const now = 1_000_000_000;
@@ -41,7 +45,11 @@ describe("decideJobRecovery", () => {
     ).toBe("wait");
     expect(
       decideJobRecovery(
-        { status: "processing", createdAt: now - 30_000 },
+        {
+          status: "processing",
+          createdAt: now - 120_000,
+          processingStartedAt: now - 30_000,
+        },
         now,
         cfg
       )
@@ -61,24 +69,45 @@ describe("decideJobRecovery", () => {
   it("does NOT reschedule a processing job (avoids duplicate workers)", () => {
     expect(
       decideJobRecovery(
-        { status: "processing", createdAt: now - 31_000 },
+        {
+          status: "processing",
+          createdAt: now - 31_000,
+          processingStartedAt: now - 20_000,
+        },
         now,
         cfg
       )
     ).toBe("wait");
   });
 
-  it("finalizes jobs that blew past the give-up window", () => {
+  it("finalizes pending jobs stuck before processing starts", () => {
     expect(
       decideJobRecovery(
-        { status: "pending", createdAt: now - 126_000 },
+        { status: "pending", createdAt: now - 91_000 },
         now,
         cfg
       )
     ).toBe("finalize");
+  });
+
+  it("finalizes processing jobs that exceed the worker budget", () => {
     expect(
       decideJobRecovery(
-        { status: "processing", createdAt: now - 200_000 },
+        {
+          status: "processing",
+          createdAt: now - 60_000,
+          processingStartedAt: now - 271_000,
+        },
+        now,
+        cfg
+      )
+    ).toBe("finalize");
+  });
+
+  it("uses createdAt when processingStartedAt is missing (legacy rows)", () => {
+    expect(
+      decideJobRecovery(
+        { status: "processing", createdAt: now - 271_000 },
         now,
         cfg
       )

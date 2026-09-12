@@ -107,14 +107,15 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           set -euo pipefail
-          # Keep the whole failover chain (CHAT_TOTAL_BUDGET_MS) and the worker
-          # timeouts BELOW the client reply-wait deadline (150s) so a real or
-          # fallback reply is always persisted before the client gives up —
-          # otherwise chat can appear stuck on "Thinking…".
+          # Recovery must outlive live web + verification + worker timeouts so
+          # the cron does not write a timeout fallback while the worker is still
+          # generating a real reply (which would then be dropped by dedupe).
           npx convex env set CHAT_PROVIDER_TIMEOUT_MS "22000"
           npx convex env set CHAT_TOTAL_BUDGET_MS "100000"
           npx convex env set CHAT_WORKER_TIMEOUT_MS "120000"
           npx convex env set CHAT_WORKER_IMAGE_TIMEOUT_MS "150000"
+          npx convex env set CHAT_JOB_PROCESSING_GIVE_UP_AFTER_MS "270000"
+          npx convex env set CHAT_JOB_PENDING_GIVE_UP_AFTER_MS "90000"
           npx convex env set CHAT_MAX_TOKENS "1024"
           npx convex env set CHAT_MAX_HISTORY_TURNS "12"
           npx convex env set CHAT_ENABLE_FAL "false"
