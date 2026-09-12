@@ -8,7 +8,9 @@ export const createJob = internalMutation({
     mode: v.string(),
     content: v.string(),
     attachmentsJson: v.optional(v.string()),
-    kind: v.optional(v.union(v.literal("reply"), v.literal("regenerate"))),
+    kind: v.optional(
+      v.union(v.literal("reply"), v.literal("regenerate"), v.literal("conversational"))
+    ),
     regenerateFromMessageId: v.optional(v.id("messages")),
     clientRequestId: v.optional(v.string()),
     chatSystem: v.optional(v.string()),

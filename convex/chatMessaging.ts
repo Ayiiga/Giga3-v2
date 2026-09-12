@@ -33,7 +33,7 @@ import {
   SEGMENT_RECAP_PREFIX,
   shouldSegmentConversation,
 } from "./chatSegmentation";
-import { queryNeedsLiveWeb, resolveResearchCapability } from "./researchCapabilities";
+import { queryNeedsLiveWeb, resolveResearchCapability, isConversationalChatQuery } from "./researchCapabilities";
 
 const attachmentValidator = v.optional(
   v.array(
@@ -305,7 +305,11 @@ export const acceptMessage = mutation({
           existing.status === "pending" ||
           (existing.status === "processing" && jobAge > STUCK_JOB_RESCHEDULE_MS);
         if (shouldReschedule) {
-          await ctx.scheduler.runAfter(0, internal.chatReplyWorker.processJob, {
+          const worker =
+            existing.kind === "conversational"
+              ? internal.chatConversationalReply.processTurn
+              : internal.chatReplyWorker.processJob;
+          await ctx.scheduler.runAfter(0, worker, {
             jobId: existing._id,
           });
         }
@@ -393,7 +397,12 @@ export const acceptMessage = mutation({
       content: args.content,
       attachmentsJson:
         attachments.length > 0 ? JSON.stringify(attachments) : undefined,
-      kind: "reply",
+      kind:
+        attachments.length === 0 &&
+        !needsLiveWeb &&
+        isConversationalChatQuery(args.content.trim())
+          ? ("conversational" as const)
+          : ("reply" as const),
       clientRequestId: args.clientRequestId,
       chatSystem: args.chatSystem,
       liveWeb: needsLiveWeb,
@@ -405,7 +414,14 @@ export const acceptMessage = mutation({
       createdAt: now,
     });
 
-    await ctx.scheduler.runAfter(0, internal.chatReplyWorker.processJob, {
+    const worker =
+      attachments.length === 0 &&
+      !needsLiveWeb &&
+      isConversationalChatQuery(args.content.trim())
+        ? internal.chatConversationalReply.processTurn
+        : internal.chatReplyWorker.processJob;
+
+    await ctx.scheduler.runAfter(0, worker, {
       jobId,
     });
 

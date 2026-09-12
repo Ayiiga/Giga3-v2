@@ -8,6 +8,7 @@ import {
   decideJobRecovery,
   getJobRecoveryConfig,
 } from "./chatReplyRecoveryPolicy";
+import { isConversationalChatQuery } from "./researchCapabilities";
 
 /**
  * Safety net for chat reply jobs whose background worker never ran or died
@@ -65,6 +66,7 @@ export const recoverStuckJobs = internalMutation({
           lastActivityAt: job.lastActivityAt,
           rescheduleCount: job.rescheduleCount,
           content: job.content,
+          kind: job.kind,
         },
         now,
         config
@@ -83,11 +85,17 @@ export const recoverStuckJobs = internalMutation({
           job.createdAt
         );
         if (!alreadyReplied) {
+          const isConversational =
+            job.kind === "conversational" ||
+            isConversationalChatQuery(job.content);
+          const fallbackContent = isConversational
+            ? "I'm Giga3 AI — I'm having trouble reaching our AI services on this connection. Your message was saved — please tap send again. On slower mobile networks, replies usually arrive within a minute when the connection is stable."
+            : FALLBACK_REPLY;
           await ctx.db.insert("messages", {
             conversationId: job.conversationId,
             userId: normalizeUserId(job.userId),
             role: "assistant",
-            content: FALLBACK_REPLY,
+            content: fallbackContent,
             createdAt: Date.now(),
           });
           await ctx.db.patch(job.conversationId, { updatedAt: Date.now() });
@@ -119,7 +127,11 @@ export const recoverStuckJobs = internalMutation({
         await ctx.runMutation(internal.chatReplyJobs.incrementJobReschedule, {
           jobId: job._id,
         });
-        await ctx.scheduler.runAfter(0, internal.chatReplyWorker.processJob, {
+        const worker =
+          job.kind === "conversational"
+            ? internal.chatConversationalReply.processTurn
+            : internal.chatReplyWorker.processJob;
+        await ctx.scheduler.runAfter(0, worker, {
           jobId: job._id,
         });
         rescheduled += 1;

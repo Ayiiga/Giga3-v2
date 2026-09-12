@@ -70,6 +70,7 @@ import {
 } from "@/lib/chat/replyDetection";
 import {
   assessReplyFromMessages,
+  hasUsableAssistantContent,
 } from "@/lib/generation/replyOutcome";
 import {
   chatGenerationTaskId,
@@ -584,6 +585,17 @@ export function useChatPlatform() {
           const nextFallback = Boolean(result.usedFallback);
           setChatProviderLabel((prev) => (prev === nextLabel ? prev : nextLabel));
           setUsedFallback((prev) => (prev === nextFallback ? prev : nextFallback));
+
+          if (result.content && !hasUsableAssistantContent(result.content)) {
+            setIsSending(false);
+            setAwaitingReply(false);
+            setPendingUserText(null);
+            setError(
+              "Giga3 couldn't finish on this connection. Your message was saved — tap send to try again."
+            );
+            logChatClient("quick_reply_stub", { conversationId: result.conversationId });
+            return { ok: false as const, conversationId: result.conversationId };
+          }
 
           setIsSending(false);
           setAwaitingReply(false);

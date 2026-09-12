@@ -30,6 +30,9 @@ import {
   RETRY_BASE_MS,
   RETRY_BASE_SLOW_MS,
 } from "@/lib/chat/chatNetwork";
+import { withClientTimeout } from "@/lib/chat/convexMutation";
+import { shouldUseQuickConversationalReply } from "@/lib/chat/quickReplyRouting";
+import { hasUsableAssistantContent } from "@/lib/generation/replyOutcome";
 import { toUserFacingError } from "@/lib/errors/userMessage";
 import { getConvexUrl } from "@/lib/convex";
 import { convexHttpCall } from "@/lib/network/convexCall";
@@ -55,9 +58,11 @@ type MessageRow = { _id: string; role: string; content: string; createdAt?: numb
 type ConvexSendResult = {
   status?: "processing" | "complete";
   conversationId?: string;
+  content?: string;
   chatProviderLabel?: string;
   usedFallback?: boolean;
   segmented?: boolean;
+  jobId?: string;
 };
 
 function countAssistantMessages(rows: MessageRow[] | undefined): number {
@@ -87,10 +92,12 @@ async function sendConvexMessage(
     conversationId: string;
     content: string;
     mode: string;
+    clientRequestId?: string;
     chatSystem?: GigaModelId;
     attachments?: Omit<PreparedChatAttachment, "previewUrl">[];
     liveWeb?: boolean;
     liveWebMode?: "research" | "actions";
+    researchCapability?: string;
   },
   slowNetwork: boolean
 ) {
@@ -104,8 +111,35 @@ async function sendConvexMessage(
     args,
     {
       timeoutMs: acceptTimeoutMs(slowNetwork, hasImages),
-      retries: slowNetwork ? 2 : 1,
+      retries: 0,
     }
+  );
+}
+
+async function sendConvexQuickReply(
+  args: {
+    sessionToken: string;
+    conversationId: string;
+    content: string;
+    mode: string;
+    clientRequestId: string;
+    chatSystem?: GigaModelId;
+  },
+  slowNetwork: boolean
+) {
+  const convexUrl = getConvexUrl();
+  if (!convexUrl) throw new Error("Convex URL is required while Supabase chat is in migration mode.");
+  const quickTimeoutMs = Math.max(acceptTimeoutMs(slowNetwork), 75_000);
+  return await withClientTimeout(
+    convexHttpCall<ConvexSendResult>(
+      convexUrl,
+      "action",
+      "chatQuickReply:conversational",
+      args,
+      { timeoutMs: quickTimeoutMs, retries: slowNetwork ? 2 : 1 }
+    ),
+    quickTimeoutMs,
+    "Giga3 is replying on this connection — please wait a moment."
   );
 }
 
@@ -142,11 +176,75 @@ async function waitForAssistantReply(
   const pollMs = slowNetwork ? CHAT_REPLY_POLL_SLOW_MS : CHAT_REPLY_POLL_MS;
   while (Date.now() - started < maxWaitMs) {
     const messages = await fetchConvexMessages(sessionToken, conversationId, slowNetwork);
-    if (countAssistantMessages(messages) > baselineAssistants) return messages;
+    if (countAssistantMessages(messages) > baselineAssistants) {
+      const latestAssistant = [...messages].reverse().find((m) => m.role === "assistant");
+      if (latestAssistant && hasUsableAssistantContent(latestAssistant.content)) {
+        return messages;
+      }
+      if (latestAssistant?.content?.trim()) {
+        throw new Error(
+          "Giga3 couldn't finish on this connection. Your message was saved — tap send to try again."
+        );
+      }
+    }
     await new Promise((resolve) => setTimeout(resolve, pollMs));
   }
   throw new Error(
     "Reply is taking longer on this connection. Your message was saved — please wait or try again."
+  );
+}
+
+async function dispatchConvexReply(
+  args: {
+    sessionToken: string;
+    conversationId: string;
+    content: string;
+    mode: string;
+    clientRequestId: string;
+    chatSystem: GigaModelId;
+    attachments?: Omit<PreparedChatAttachment, "previewUrl">[];
+    liveWeb?: boolean;
+    liveWebMode?: "research" | "actions";
+    researchCapability?: string;
+    online: boolean;
+  },
+  slowNetwork: boolean
+): Promise<ConvexSendResult> {
+  const hasImages = args.attachments?.some((a) => a.kind === "image") ?? false;
+  const useQuickReply =
+    shouldUseQuickConversationalReply({
+      query: args.content,
+      hasImageAttachment: hasImages,
+    }) && args.online;
+
+  if (useQuickReply) {
+    return await sendConvexQuickReply(
+      {
+        sessionToken: args.sessionToken,
+        conversationId: args.conversationId,
+        content: args.content,
+        mode: args.mode,
+        clientRequestId: args.clientRequestId,
+        chatSystem: args.chatSystem,
+      },
+      slowNetwork
+    );
+  }
+
+  return await sendConvexMessageWithRetry(
+    {
+      sessionToken: args.sessionToken,
+      conversationId: args.conversationId,
+      content: args.content,
+      mode: args.mode,
+      clientRequestId: args.clientRequestId,
+      chatSystem: args.chatSystem,
+      liveWeb: args.liveWeb,
+      liveWebMode: args.liveWebMode,
+      researchCapability: args.researchCapability,
+      attachments: args.attachments,
+    },
+    slowNetwork
   );
 }
 
@@ -335,7 +433,8 @@ export function useSupabaseChatPlatform() {
       content: string,
       attachments: PreparedChatAttachment[] | undefined,
       modelTier: GigaModelId,
-      chatId: string | null
+      chatId: string | null,
+      clientRequestId: string
     ) => {
       if (!email) throw new Error("Please sign in");
       const sessionToken = getSessionToken();
@@ -361,20 +460,24 @@ export function useSupabaseChatPlatform() {
         await fetchConvexMessages(sessionToken, convexConversationId, isSlowNetwork)
       );
 
-      const result = await sendConvexMessageWithRetry(
+      const liveWebOpts = currentLiveWebSendOptions({
+        query: content,
+        hasImageAttachment: Boolean(
+          attachments?.some((attachment) => attachment.kind === "image")
+        ),
+        online: effectiveOnline,
+      });
+
+      const result = await dispatchConvexReply(
         {
           sessionToken,
           conversationId: convexConversationId,
           content,
           mode,
+          clientRequestId,
           chatSystem: chatSystemForModel(modelTier),
-          ...currentLiveWebSendOptions({
-            query: content,
-            hasImageAttachment: Boolean(
-              attachments?.some((attachment) => attachment.kind === "image")
-            ),
-            online: effectiveOnline,
-          }),
+          ...liveWebOpts,
+          online: effectiveOnline,
           ...(attachments?.length
             ? {
                 attachments: attachments.map(
@@ -386,6 +489,21 @@ export function useSupabaseChatPlatform() {
         },
         isSlowNetwork
       );
+
+      if (result.status === "complete" && result.content) {
+        const convexMessages = await fetchConvexMessages(
+          sessionToken,
+          convexConversationId,
+          isSlowNetwork
+        );
+        await replaceSupabaseMessages(chat._id, convexMessages);
+        setMessagesRaw(await listSupabaseMessages(chat._id));
+        setChatProviderLabel(
+          typeof result.chatProviderLabel === "string" ? result.chatProviderLabel : null
+        );
+        setUsedFallback(Boolean(result.usedFallback));
+        return;
+      }
 
       if (result.status === "processing") {
         await waitForAssistantReply(
@@ -404,7 +522,7 @@ export function useSupabaseChatPlatform() {
       await replaceSupabaseMessages(chat._id, convexMessages);
       setMessagesRaw(await listSupabaseMessages(chat._id));
     },
-    [activeConversation, conversations, email, isSlowNetwork, mode]
+    [activeConversation, conversations, email, isSlowNetwork, mode, effectiveOnline]
   );
 
   const flushOutbox = useCallback(async () => {
@@ -427,7 +545,8 @@ export function useSupabaseChatPlatform() {
             row.content,
             row.attachments as PreparedChatAttachment[] | undefined,
             gigaModelForMode(row.mode as AiModeId),
-            row.conversationId
+            row.conversationId,
+            row.clientRequestId
           );
           await removeOutbox(row.id);
         } catch (e) {
@@ -507,9 +626,9 @@ export function useSupabaseChatPlatform() {
       }
       setError(null);
       setPendingUserText(content);
+      const clientRequestId = newClientRequestId();
 
       if (!effectiveOnline) {
-        const clientRequestId = newClientRequestId();
         const entry: OutboxEntry = {
           id: clientRequestId,
           clientRequestId,
@@ -555,20 +674,24 @@ export function useSupabaseChatPlatform() {
           await fetchConvexMessages(sessionToken, convexConversationId, isSlowNetwork)
         );
 
-        const result = await sendConvexMessageWithRetry(
+        const liveWebOpts = currentLiveWebSendOptions({
+          query: content,
+          hasImageAttachment: Boolean(
+            attachments?.some((attachment) => attachment.kind === "image")
+          ),
+          online: effectiveOnline,
+        });
+
+        const result = await dispatchConvexReply(
           {
             sessionToken,
             conversationId: convexConversationId,
             content,
             mode,
+            clientRequestId,
             chatSystem: chatSystemForModel(modelTier),
-            ...currentLiveWebSendOptions({
-            query: content,
-            hasImageAttachment: Boolean(
-              attachments?.some((attachment) => attachment.kind === "image")
-            ),
+            ...liveWebOpts,
             online: effectiveOnline,
-          }),
             ...(attachments?.length
               ? {
                   attachments: attachments.map(
@@ -583,6 +706,22 @@ export function useSupabaseChatPlatform() {
 
         setIsSending(false);
         setAwaitingReply(result.status === "processing");
+
+        if (result.status === "complete" && result.content) {
+          const convexMessages = await fetchConvexMessages(
+            sessionToken,
+            convexConversationId,
+            isSlowNetwork
+          );
+          await replaceSupabaseMessages(chat._id, convexMessages);
+          setMessagesRaw(await listSupabaseMessages(chat._id));
+          setPendingUserText(null);
+          setChatProviderLabel(
+            typeof result.chatProviderLabel === "string" ? result.chatProviderLabel : null
+          );
+          setUsedFallback(Boolean(result.usedFallback));
+          return;
+        }
 
         let activeChat = chat;
         let activeConvexId = convexConversationId;
