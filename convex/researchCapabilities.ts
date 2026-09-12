@@ -104,9 +104,25 @@ export function detectBreakingNewsIntent(query: string): boolean {
   return BREAKING_NEWS_RE.test(query.trim());
 }
 
+const CURRENT_EVENTS_RE =
+  /\b(what(?:'s|\s+is)\s+(?:happening|going on)|what\s+happened|status\s+of|update\s+on|situation\s+in|developments\s+in)\b/i;
+
+export function detectCurrentEventsIntent(query: string): boolean {
+  const q = query.trim();
+  if (CURRENT_EVENTS_RE.test(q)) return true;
+  if (
+    /\b(ghana|nepal|africa|world|country|countries)\b/i.test(q) &&
+    /\b(happening|going on|situation|update|news|developments)\b/i.test(q)
+  ) {
+    return true;
+  }
+  return false;
+}
+
 /** Headline/news lookup — not fact-check verification (handled separately). */
 export function detectNewsRetrievalIntent(query: string): boolean {
   const q = query.trim();
+  if (detectCurrentEventsIntent(q)) return true;
   if (detectGhanaNewsIntent(q) || detectBreakingNewsIntent(q)) return true;
   if (/\bghana\b/i.test(q) && /\b(latest|today|current|breaking|figures|inflation|economy|news|headlines)\b/i.test(q)) {
     return true;
@@ -215,6 +231,7 @@ export function queryNeedsLiveWeb(args: {
 
   if (detectVerifyImageIntent(q, true)) return true;
   if (detectFactCheckIntent(q)) return true;
+  if (detectCurrentEventsIntent(q)) return true;
   if (detectGhanaNewsIntent(q) || detectBreakingNewsIntent(q)) return true;
   if (detectNewsRetrievalIntent(q)) return true;
   if (shouldAutoEnableLiveWeb(q)) return true;

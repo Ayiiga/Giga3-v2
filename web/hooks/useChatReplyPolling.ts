@@ -27,7 +27,7 @@ export const POLL_FAIL_HINT_THRESHOLD = 4;
  * (with Live Web metadata) each second was itself congesting the connection.
  */
 const FULL_FETCH_EVERY_N_POLLS = 6;
-const FULL_FETCH_EVERY_N_POLLS_SLOW = 2;
+const FULL_FETCH_EVERY_N_POLLS_SLOW = 1;
 
 export type PolledMessageRow = {
   _id: string;

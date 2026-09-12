@@ -58,6 +58,7 @@ import {
   RETRY_BASE_SLOW_MS,
 } from "@/lib/chat/chatNetwork";
 import { currentLiveWebSendOptions } from "@/lib/chat/liveWebPreferences";
+import { shouldUseQuickConversationalReply } from "@/lib/chat/quickReplyRouting";
 import {
   convexMutationWithTimeout,
   withClientTimeout,
@@ -533,6 +534,66 @@ export function useChatPlatform() {
           throw new Error("Chat backend is not configured.");
         }
 
+        const liveWebOpts = currentLiveWebSendOptions({
+          query: content,
+          hasImageAttachment: Boolean(
+            attachments?.some((attachment) => attachment.kind === "image")
+          ),
+          online: effectiveOnline,
+        });
+
+        const useQuickReply =
+          shouldUseQuickConversationalReply({
+            query: content,
+            hasImageAttachment: hasImages,
+          }) && effectiveOnline;
+
+        if (useQuickReply) {
+          const quickTimeoutMs = Math.max(acceptTimeoutMsValue, 75_000);
+          const result = await withClientTimeout(
+            convexHttpCall<AcceptMessageResult>(
+              convexUrl,
+              "action",
+              "chatQuickReply:conversational",
+              {
+                sessionToken: token,
+                ...(conversationId
+                  ? { conversationId: conversationId as Id<"conversations"> }
+                  : {}),
+                content,
+                mode,
+                ...(personaId ? { personaId } : {}),
+                clientRequestId,
+                chatSystem,
+              },
+              { timeoutMs: quickTimeoutMs, retries: slowNetwork ? 2 : 1 }
+            ),
+            quickTimeoutMs,
+            "Giga3 is replying on this connection — please wait a moment."
+          );
+
+          if (result.conversationId && result.conversationId !== conversationId) {
+            setPollConversationId(result.conversationId);
+            setActiveId(result.conversationId);
+          }
+
+          const nextLabel =
+            typeof result.chatProviderLabel === "string"
+              ? result.chatProviderLabel
+              : null;
+          const nextFallback = Boolean(result.usedFallback);
+          setChatProviderLabel((prev) => (prev === nextLabel ? prev : nextLabel));
+          setUsedFallback((prev) => (prev === nextFallback ? prev : nextFallback));
+
+          setIsSending(false);
+          setAwaitingReply(false);
+          setPendingUserText(null);
+          logChatClient("quick_reply_complete", {
+            conversationId: result.conversationId,
+          });
+          return { ok: true as const, conversationId: result.conversationId };
+        }
+
         const mutationArgs = {
           sessionToken: token,
           ...(conversationId
@@ -543,13 +604,7 @@ export function useChatPlatform() {
           ...(personaId ? { personaId } : {}),
           clientRequestId,
           chatSystem,
-          ...currentLiveWebSendOptions({
-            query: content,
-            hasImageAttachment: Boolean(
-              attachments?.some((attachment) => attachment.kind === "image")
-            ),
-            online: effectiveOnline,
-          }),
+          ...liveWebOpts,
           ...(attachments?.length
             ? {
                 attachments: attachments.map(

@@ -139,7 +139,6 @@ describe("live web preferences", () => {
     });
     expect(currentLiveWebSendOptions({ query: "hello", online: true })).toEqual({
       liveWeb: false,
-      researchCapability: "general",
     });
     expect(
       currentLiveWebSendOptions({

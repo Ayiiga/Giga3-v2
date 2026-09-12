@@ -129,5 +129,9 @@ export function currentLiveWebSendOptions(args?: {
   researchCapability?: ResearchCapabilityId;
 } {
   const { autoEnabled: _autoEnabled, ...payload } = resolveSendResearchOptions(args);
+  if (payload.researchCapability === "general") {
+    const { researchCapability: _cap, ...rest } = payload;
+    return rest;
+  }
   return payload;
 }

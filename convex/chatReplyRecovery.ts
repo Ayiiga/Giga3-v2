@@ -64,6 +64,7 @@ export const recoverStuckJobs = internalMutation({
           processingStartedAt: job.processingStartedAt,
           lastActivityAt: job.lastActivityAt,
           rescheduleCount: job.rescheduleCount,
+          content: job.content,
         },
         now,
         config
