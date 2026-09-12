@@ -136,6 +136,45 @@ export const loadReplyContextInternal = internalQuery({
   },
 });
 
+/** Load bounded history + user for synchronous conversational replies (no job row). */
+export const loadReplyContextByConversation = internalQuery({
+  args: {
+    conversationId: v.id("conversations"),
+    historyLimit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation) return null;
+
+    const limit = Math.max(4, Math.min(args.historyLimit ?? 40, 200));
+    const recent = await ctx.db
+      .query("messages")
+      .withIndex("by_conversation", (q) => q.eq("conversationId", args.conversationId))
+      .order("desc")
+      .take(limit + 8);
+    const history = recent
+      .filter((m) => m.role !== "system")
+      .slice(0, limit)
+      .sort((a, b) => a.createdAt - b.createdAt)
+      .map((m) => ({ _id: m._id, role: m.role, content: m.content, createdAt: m.createdAt }));
+
+    let segmentRecap: string | null = null;
+    const recapCandidate = recent.find(
+      (m) => m.role === "system" && m.content.startsWith(SEGMENT_RECAP_PREFIX)
+    );
+    if (recapCandidate) {
+      segmentRecap = recapCandidate.content.slice(SEGMENT_RECAP_PREFIX.length);
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", conversation.userId))
+      .first();
+
+    return { conversation, history, segmentRecap, user };
+  },
+});
+
 /**
  * Persist the assistant reply unless one already exists for this job — checked
  * and written in the same transaction, so a recovered/duplicate worker can never

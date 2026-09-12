@@ -4,6 +4,7 @@
  */
 
 import { chatJobProcessingBudgetMs } from "./chatTiming";
+import { isConversationalChatQuery } from "./researchCapabilities";
 
 export type JobRecoveryStatus =
   | "pending"
@@ -19,6 +20,8 @@ export type JobRecoveryInput = {
   processingStartedAt?: number;
   lastActivityAt?: number;
   rescheduleCount?: number;
+  /** Used to avoid recovery timeout stubs on greetings / small talk. */
+  content?: string;
 };
 
 export type JobRecoveryAction =
@@ -83,6 +86,8 @@ export function decideJobRecovery(
 
   const age = now - job.createdAt;
   const reschedules = job.rescheduleCount ?? 0;
+  const conversational =
+    typeof job.content === "string" && isConversationalChatQuery(job.content);
 
   if (job.status === "processing") {
     if (isRecentlyActive(job, now, config.activityGraceMs)) {
@@ -91,7 +96,10 @@ export function decideJobRecovery(
     const processingAge = job.processingStartedAt
       ? now - job.processingStartedAt
       : age;
-    if (processingAge >= config.processingGiveUpAfterMs) {
+    const processingLimit = conversational
+      ? config.processingGiveUpAfterMs + 120_000
+      : config.processingGiveUpAfterMs;
+    if (processingAge >= processingLimit) {
       if (reschedules < config.maxReschedulesBeforeFinalize) {
         return "reschedule";
       }
@@ -101,7 +109,10 @@ export function decideJobRecovery(
   }
 
   if (job.status === "pending") {
-    if (age >= config.pendingGiveUpAfterMs) {
+    const pendingLimit = conversational
+      ? config.pendingGiveUpAfterMs * 2
+      : config.pendingGiveUpAfterMs;
+    if (age >= pendingLimit) {
       if (reschedules < config.maxReschedulesBeforeFinalize) {
         return "reschedule";
       }

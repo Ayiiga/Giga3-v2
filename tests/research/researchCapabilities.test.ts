@@ -4,6 +4,7 @@ import {
   buildResearchSearchQuery,
   detectFactCheckIntent,
   detectGhanaNewsIntent,
+  detectCurrentEventsIntent,
   detectNewsRetrievalIntent,
   detectLocationIntent,
   detectVerifyImageIntent,
@@ -32,7 +33,13 @@ describe("research capability routing", () => {
   it("detects general news retrieval intent", () => {
     expect(detectNewsRetrievalIntent("What's the latest news today?")).toBe(true);
     expect(detectNewsRetrievalIntent("Headlines from Ghana")).toBe(true);
+    expect(detectNewsRetrievalIntent("What is happening in Ghana and Nepal")).toBe(true);
     expect(detectNewsRetrievalIntent("Explain photosynthesis")).toBe(false);
+  });
+
+  it("detects current-events phrasing", () => {
+    expect(detectCurrentEventsIntent("What is happening in Ghana and Nepal")).toBe(true);
+    expect(detectCurrentEventsIntent("Hello")).toBe(false);
   });
 
   it("detects fact-check and verify-image intents", () => {

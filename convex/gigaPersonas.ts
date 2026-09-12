@@ -368,7 +368,9 @@ export function resolvePersonaForSend(args: {
     ? personaDefaultResearchCapability(personaId)
     : undefined;
   const researchCapability =
-    args.researchCapability && isValidResearchCapability(args.researchCapability)
+    args.researchCapability &&
+    isValidResearchCapability(args.researchCapability) &&
+    args.researchCapability !== "general"
       ? args.researchCapability
       : personaResearch;
 
