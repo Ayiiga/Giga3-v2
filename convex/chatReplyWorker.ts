@@ -608,6 +608,8 @@ export const processJob = internalAction({
         hasImageAttachment,
       });
 
+      let liveWebSkippedReason: string | null = null;
+
       if (
         needsLiveWeb &&
         isLiveWebEnabled() &&
@@ -621,24 +623,19 @@ export const processJob = internalAction({
           });
         } catch (rateErr) {
           if (isRateLimitError(rateErr)) {
-            await ctx.runMutation(internal.platform.appendMessage, {
-              conversationId: job.conversationId,
-              userId: email,
-              role: "assistant",
-              content: rateLimitReply(
-                rateErr instanceof Error ? rateErr.message : "Live web rate limit reached."
-              ),
-            });
-            await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
-              jobId: args.jobId,
-              status: "done",
-            });
-            return;
+            // Live web complements AI — rate limit skips research, not the reply.
+            liveWebSkippedReason =
+              rateErr instanceof Error
+                ? rateErr.message
+                : "Live web rate limit reached.";
+          } else {
+            throw rateErr;
           }
-          throw rateErr;
         }
 
-        if (job.liveWebMode === "actions") {
+        if (liveWebSkippedReason) {
+          systemPrompt += `\n\nLive web is temporarily unavailable (${liveWebSkippedReason}). Answer using Giga3 AI knowledge. If the user asked for today's news or live scores, say you cannot verify the very latest information right now.`;
+        } else if (job.liveWebMode === "actions") {
           const proposal = proposeWebAction(job.content);
           const actionReply =
             proposal.blockedReason ??
@@ -665,8 +662,7 @@ export const processJob = internalAction({
             status: "done",
           });
           return;
-        }
-
+        } else {
         const research = await runWebResearch({
           query: job.content,
           researchCapability,
@@ -735,6 +731,7 @@ export const processJob = internalAction({
         }
         systemPrompt +=
           "\n\nWhen live research is enabled, label your answer basis clearly (live web, current news, fact-checked, or Giga3 AI knowledge). Cite sources with publication dates. Label stories **Verified**, **Developing**, or **Unverified**. Never invent current news.";
+        }
       } else if (needsLiveWeb && !isLiveWebEnabled()) {
         systemPrompt += `\n\n${liveSearchUnavailableNewsFallback(researchCapability)}`;
         if (isNewsCapability(researchCapability)) {

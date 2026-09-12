@@ -1,6 +1,10 @@
 /**
  * Research capability routing — shared detection and query shaping for
  * Live Web, current news, fact-check, and deep research modes.
+ *
+ * Design: **AI chat is primary.** Live web complements the model — it runs
+ * only when the user's message needs current information (headlines, scores,
+ * fact-checks). Personas and workspaces set tone; they do not replace the AI.
  */
 
 export const RESEARCH_CAPABILITY_IDS = [
@@ -200,8 +204,9 @@ export function resolveResearchCapability(args: {
 
 /**
  * Whether this turn should run live web / news research before the model call.
- * Persona and workspace (News desk) set tone — they do NOT force live web on
- * greetings or general chat.
+ * Live web **complements** AI chat — it gathers fresh context the model then
+ * synthesizes. Persona and workspace (News desk) set tone; they do NOT force
+ * live web on greetings or general chat.
  */
 export function queryNeedsLiveWeb(args: {
   query: string;
