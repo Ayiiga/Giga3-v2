@@ -8,7 +8,6 @@ import {
   decideJobRecovery,
   getJobRecoveryConfig,
 } from "./chatReplyRecoveryPolicy";
-import { CHAT_RECOVERY_TIMEOUT_SNIPPET } from "./chatTiming";
 
 /**
  * Safety net for chat reply jobs whose background worker never ran or died
@@ -40,10 +39,7 @@ async function conversationHasReplyAfter(
     .order("desc")
     .take(8);
   return rows.some(
-    (m) =>
-      m.role === "assistant" &&
-      m.createdAt >= since &&
-      !m.content.includes(CHAT_RECOVERY_TIMEOUT_SNIPPET)
+    (m) => m.role === "assistant" && m.createdAt >= since
   );
 }
 

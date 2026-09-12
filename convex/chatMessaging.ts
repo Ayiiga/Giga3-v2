@@ -33,7 +33,7 @@ import {
   SEGMENT_RECAP_PREFIX,
   shouldSegmentConversation,
 } from "./chatSegmentation";
-import { resolveResearchCapability } from "./researchCapabilities";
+import { queryNeedsLiveWeb, resolveResearchCapability } from "./researchCapabilities";
 
 const attachmentValidator = v.optional(
   v.array(
@@ -194,6 +194,12 @@ export const acceptMessage = mutation({
       explicit: resolved.researchCapability,
       query: args.content,
       liveWebEnabled: args.liveWeb === true,
+      hasImageAttachment: attachments.some((a) => a.kind === "image"),
+    });
+    const needsLiveWeb = queryNeedsLiveWeb({
+      query: args.content,
+      capability: resolvedResearchCapability,
+      mode,
       hasImageAttachment: attachments.some((a) => a.kind === "image"),
     });
     const imageCapability = assessImageProcessingCapability(attachments);
@@ -390,7 +396,7 @@ export const acceptMessage = mutation({
       kind: "reply",
       clientRequestId: args.clientRequestId,
       chatSystem: args.chatSystem,
-      liveWeb: args.liveWeb === true && resolvedResearchCapability !== "general",
+      liveWeb: needsLiveWeb,
       liveWebMode: args.liveWebMode,
       researchCapability: resolvedResearchCapability,
       personaId: personaId ?? undefined,

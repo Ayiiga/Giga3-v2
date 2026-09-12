@@ -177,8 +177,13 @@ describe("buildChatRoutePlan", () => {
 });
 
 describe("shouldEnableWebSearch", () => {
-  it("enables search for news mode", () => {
+  it("enables search for news-intent queries in news mode", () => {
     expect(shouldEnableWebSearch("What happened today?", "news")).toBe(true);
+  });
+
+  it("skips search for greetings in news mode", () => {
+    expect(shouldEnableWebSearch("Hi", "news")).toBe(false);
+    expect(shouldEnableWebSearch("Hello", "news")).toBe(false);
   });
 
   it("enables search for current-events phrasing", () => {

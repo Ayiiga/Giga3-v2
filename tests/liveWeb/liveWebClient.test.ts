@@ -126,22 +126,30 @@ describe("live web preferences", () => {
     vi.unstubAllGlobals();
   });
 
-  it("always enables live web for online chat sends without manual toggle", () => {
+  it("enables live web only when the query needs research", () => {
     expect(
       resolveSendResearchOptions({
         query: "Explain photosynthesis",
         online: true,
       })
     ).toEqual({
-      liveWeb: true,
-      liveWebMode: "research",
-      researchCapability: "live_web",
-      autoEnabled: true,
+      liveWeb: false,
+      researchCapability: "general",
+      autoEnabled: false,
     });
     expect(currentLiveWebSendOptions({ query: "hello", online: true })).toEqual({
+      liveWeb: false,
+      researchCapability: "general",
+    });
+    expect(
+      currentLiveWebSendOptions({
+        query: "Latest Ghana headlines today",
+        online: true,
+      })
+    ).toEqual({
       liveWeb: true,
       liveWebMode: "research",
-      researchCapability: "live_web",
+      researchCapability: "ghana_news",
     });
   });
 

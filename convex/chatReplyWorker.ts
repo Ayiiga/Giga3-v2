@@ -28,7 +28,6 @@ import {
   buildPromptCacheKey,
   enhanceImageGenerationPrompt,
   imageAssetOrientation,
-  shouldEnableWebSearch,
   shouldUseResponseCache,
   type RequestKind,
 } from "./providerRouter";
@@ -54,6 +53,7 @@ import {
   isNewsCapability,
   liveSearchUnavailableNewsFallback,
   researchSystemPromptAddon,
+  queryNeedsLiveWeb,
   resolveResearchCapability,
   responseBasisForCapability,
   shouldRunLiveWebResearch,
@@ -601,13 +601,15 @@ export const processJob = internalAction({
       }
 
       const shouldResearch = shouldRunLiveWebResearch(researchCapability);
-      const effectiveLiveWeb =
-        Boolean(job.liveWeb) ||
-        shouldResearch ||
-        shouldEnableWebSearch(job.content, mode, hasImageAttachment);
+      const needsLiveWeb = queryNeedsLiveWeb({
+        query: job.content,
+        capability: researchCapability,
+        mode,
+        hasImageAttachment,
+      });
 
       if (
-        effectiveLiveWeb &&
+        needsLiveWeb &&
         isLiveWebEnabled() &&
         (!hasImageAttachment ||
           researchCapability === "verify_image" ||
@@ -733,7 +735,7 @@ export const processJob = internalAction({
         }
         systemPrompt +=
           "\n\nWhen live research is enabled, label your answer basis clearly (live web, current news, fact-checked, or Giga3 AI knowledge). Cite sources with publication dates. Label stories **Verified**, **Developing**, or **Unverified**. Never invent current news.";
-      } else if (effectiveLiveWeb && !isLiveWebEnabled()) {
+      } else if (needsLiveWeb && !isLiveWebEnabled()) {
         systemPrompt += `\n\n${liveSearchUnavailableNewsFallback(researchCapability)}`;
         if (isNewsCapability(researchCapability)) {
           newsEvidenceContext = buildNewsEvidencePackage({
@@ -763,16 +765,7 @@ export const processJob = internalAction({
         });
       }
 
-      if (
-        isLiveNewsEnabled() &&
-        (effectiveLiveWeb ||
-          isNewsCapability(researchCapability) ||
-          shouldEnableWebSearch(
-            job.content,
-            mode,
-            hasImageAttachment
-          ))
-      ) {
+      if (isLiveNewsEnabled() && needsLiveWeb) {
         const briefingCategories =
           researchCapability === "ghana_news" || researchCapability === "breaking_news"
             ? ["ghana"]
@@ -843,7 +836,7 @@ export const processJob = internalAction({
           conversationId: job.conversationId,
           subscriptionPlan: refreshedUser?.subscriptionPlan ?? "free",
           subscriptionExpiresAt: refreshedUser?.subscriptionExpiresAt,
-          forceWebSearch: Boolean(effectiveLiveWeb && isLiveWebEnabled()),
+          forceWebSearch: Boolean(needsLiveWeb && isLiveWebEnabled()),
         }),
         Math.min(
           attachments.some((a) => a.kind === "image")
@@ -904,7 +897,7 @@ export const processJob = internalAction({
         content: assistantContent,
         since: job.createdAt,
         metadataJson:
-          effectiveLiveWeb && isLiveWebEnabled()
+          needsLiveWeb && isLiveWebEnabled()
             ? buildLiveWebMetadata({
                 sources: mergeLiveWebSources(
                   liveWebSources,

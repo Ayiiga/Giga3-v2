@@ -1,6 +1,7 @@
 /** Client-side Live Web preferences — no secrets. */
 
 import {
+  queryNeedsLiveWeb,
   resolveResearchCapability,
   type ResearchCapabilityId,
 } from "convex/researchCapabilities";
@@ -78,8 +79,8 @@ export function liveWebUnavailableMessage(online: boolean): string | null {
   return null;
 }
 
-/** Live Web runs automatically for every online chat send (UI toggle hidden). */
-export const CHAT_LIVE_WEB_ALWAYS_ON = true;
+/** Live Web is intent-driven — greetings skip research even on News desk. */
+export const CHAT_LIVE_WEB_ALWAYS_ON = false;
 
 export function resolveSendResearchOptions(args?: {
   query?: string;
@@ -99,17 +100,21 @@ export function resolveSendResearchOptions(args?: {
   const capability = resolveResearchCapability({
     explicit: readResearchCapability(),
     query: args?.query ?? "",
-    liveWebEnabled: CHAT_LIVE_WEB_ALWAYS_ON,
+    liveWebEnabled: CHAT_LIVE_WEB_ALWAYS_ON || readLiveWebEnabled(),
     hasImageAttachment: args?.hasImageAttachment,
   });
 
-  const needsLiveWeb = capability !== "general";
+  const needsLiveWeb = queryNeedsLiveWeb({
+    query: args?.query ?? "",
+    capability,
+    hasImageAttachment: args?.hasImageAttachment,
+  });
 
   return {
     liveWeb: needsLiveWeb,
     liveWebMode: needsLiveWeb ? ("research" as LiveWebMode) : undefined,
     researchCapability: capability,
-    autoEnabled: true,
+    autoEnabled: needsLiveWeb,
   };
 }
 
