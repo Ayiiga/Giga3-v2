@@ -1,4 +1,5 @@
-/** Client-side Live Web preferences — no secrets. */
+/** Client-side Live Web preferences — no secrets.
+ * Live web complements AI chat; it is not a substitute for the model. */
 
 import {
   queryNeedsLiveWeb,
