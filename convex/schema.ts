@@ -817,6 +817,8 @@ export default defineSchema({
     researchCapability: v.optional(v.string()),
     personaId: v.optional(v.string()),
     liveWebProgress: v.optional(v.string()),
+    /** When the background worker began processing (recovery budget anchor). */
+    processingStartedAt: v.optional(v.number()),
     cancelled: v.optional(v.boolean()),
     status: v.union(
       v.literal("pending"),

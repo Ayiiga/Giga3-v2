@@ -7,8 +7,9 @@
 export const CHAT_ACCEPT_TIMEOUT_MS = 45_000;
 export const CHAT_ACCEPT_TIMEOUT_SLOW_MS = 90_000;
 export const CHAT_ACCEPT_TIMEOUT_IMAGE_MS = 120_000;
-export const CHAT_REPLY_WAIT_MS = 150_000;
-export const CHAT_REPLY_WAIT_SLOW_MS = 180_000;
+/** Must exceed server recovery budget (live web + verification + AI worker). */
+export const CHAT_REPLY_WAIT_MS = 300_000;
+export const CHAT_REPLY_WAIT_SLOW_MS = 345_000;
 export const CHAT_REPLY_POLL_MS = 2_000;
 export const CHAT_REPLY_POLL_SLOW_MS = 1_000;
 export const CHAT_REPLY_POLL_NORMAL_MS = 5_000;

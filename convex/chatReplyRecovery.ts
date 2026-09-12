@@ -57,7 +57,12 @@ export const recoverStuckJobs = internalMutation({
     for (const job of jobs) {
       const age = now - job.createdAt;
       const action = decideJobRecovery(
-        { status: job.status, cancelled: job.cancelled, createdAt: job.createdAt },
+        {
+          status: job.status,
+          cancelled: job.cancelled,
+          createdAt: job.createdAt,
+          processingStartedAt: job.processingStartedAt,
+        },
         now,
         DEFAULT_JOB_RECOVERY_CONFIG
       );

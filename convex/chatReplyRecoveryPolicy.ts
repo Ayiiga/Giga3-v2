@@ -3,6 +3,8 @@
  * imports so it can be unit tested in isolation.
  */
 
+import { chatJobProcessingBudgetMs } from "./chatTiming";
+
 export type JobRecoveryStatus =
   | "pending"
   | "processing"
@@ -14,6 +16,8 @@ export type JobRecoveryInput = {
   status: JobRecoveryStatus;
   cancelled?: boolean;
   createdAt: number;
+  /** Set when beginProcessing runs — used for active worker budget. */
+  processingStartedAt?: number;
 };
 
 export type JobRecoveryAction =
@@ -28,14 +32,20 @@ export type JobRecoveryAction =
 
 export type JobRecoveryConfig = {
   rescheduleAfterMs: number;
-  giveUpAfterMs: number;
+  /** Pending jobs that never start processing. */
+  pendingGiveUpAfterMs: number;
+  /** Active worker budget from processingStartedAt (live web + AI). */
+  processingGiveUpAfterMs: number;
 };
 
 export const DEFAULT_JOB_RECOVERY_CONFIG: JobRecoveryConfig = {
-  rescheduleAfterMs: Number(process.env.CHAT_JOB_RESCHEDULE_AFTER_MS) || 30_000,
-  // Must exceed CHAT_WORKER_TIMEOUT_MS (120s) so recovery does not write a
-  // fallback reply while the worker is still legitimately running.
-  giveUpAfterMs: Number(process.env.CHAT_JOB_GIVE_UP_AFTER_MS) || 125_000,
+  rescheduleAfterMs:
+    Number(process.env.CHAT_JOB_RESCHEDULE_AFTER_MS) || 30_000,
+  pendingGiveUpAfterMs:
+    Number(process.env.CHAT_JOB_PENDING_GIVE_UP_AFTER_MS) || 90_000,
+  processingGiveUpAfterMs:
+    Number(process.env.CHAT_JOB_PROCESSING_GIVE_UP_AFTER_MS) ||
+    chatJobProcessingBudgetMs({ hasImageAttachment: true }),
 };
 
 export function decideJobRecovery(
@@ -54,10 +64,17 @@ export function decideJobRecovery(
 
   const age = now - job.createdAt;
 
-  if (
-    (job.status === "pending" || job.status === "processing") &&
-    age >= config.giveUpAfterMs
-  ) {
+  if (job.status === "processing") {
+    const processingAge = job.processingStartedAt
+      ? now - job.processingStartedAt
+      : age;
+    if (processingAge >= config.processingGiveUpAfterMs) {
+      return "finalize";
+    }
+    return "wait";
+  }
+
+  if (job.status === "pending" && age >= config.pendingGiveUpAfterMs) {
     return "finalize";
   }
 

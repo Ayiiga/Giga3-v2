@@ -112,7 +112,10 @@ export const beginProcessing = internalMutation({
       if (job.status !== "cancelled") await ctx.db.patch(args.jobId, { status: "cancelled" });
       return { cancelled: true as const };
     }
-    await ctx.db.patch(args.jobId, { status: "processing" });
+    await ctx.db.patch(args.jobId, {
+      status: "processing",
+      processingStartedAt: Date.now(),
+    });
     return { cancelled: false as const };
   },
 });
