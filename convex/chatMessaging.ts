@@ -33,6 +33,7 @@ import {
   SEGMENT_RECAP_PREFIX,
   shouldSegmentConversation,
 } from "./chatSegmentation";
+import { resolveResearchCapability } from "./researchCapabilities";
 
 const attachmentValidator = v.optional(
   v.array(
@@ -187,9 +188,14 @@ export const acceptMessage = mutation({
         "Advanced personas require a paid subscription."
       );
     }
-    const resolvedResearchCapability = resolved.researchCapability;
     const rawAttachments = (args.attachments ?? []) as RawAttachmentInput[];
     const attachments = rawAttachments as ChatCompletionAttachment[];
+    const resolvedResearchCapability = resolveResearchCapability({
+      explicit: resolved.researchCapability,
+      query: args.content,
+      liveWebEnabled: args.liveWeb === true,
+      hasImageAttachment: attachments.some((a) => a.kind === "image"),
+    });
     const imageCapability = assessImageProcessingCapability(attachments);
 
     if (attachments.length > 0) {
@@ -384,7 +390,7 @@ export const acceptMessage = mutation({
       kind: "reply",
       clientRequestId: args.clientRequestId,
       chatSystem: args.chatSystem,
-      liveWeb: args.liveWeb === true,
+      liveWeb: args.liveWeb === true && resolvedResearchCapability !== "general",
       liveWebMode: args.liveWebMode,
       researchCapability: resolvedResearchCapability,
       personaId: personaId ?? undefined,

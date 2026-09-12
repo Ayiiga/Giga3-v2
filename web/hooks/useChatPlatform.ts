@@ -183,7 +183,7 @@ export function useChatPlatform() {
         replyWaitStartedAtRef.current,
         assistantBaselineRef.current
       );
-      if (assessment === "success" || assessment === "partial") {
+      if (assessment === "success") {
         return completeReplySuccess(via);
       }
       return false;
@@ -192,7 +192,7 @@ export function useChatPlatform() {
   );
 
   const scheduleReplyFailureCheck = useCallback(
-    (source: string, message: string) => {
+    (source: string, message: string, delayMs = 2800) => {
       clearReplyFailureTimer();
       replyFailureTimerRef.current = setTimeout(() => {
         replyFailureTimerRef.current = null;
@@ -210,7 +210,7 @@ export function useChatPlatform() {
         }
         logChatClient("reply_status_inactive", { via: source });
         setError(message);
-      }, 2800);
+      }, delayMs);
     },
     [clearPendingSyncUi, clearReplyFailureTimer, tryResolveReplyFromMessages]
   );
@@ -757,13 +757,15 @@ export function useChatPlatform() {
     if (!statusInactive && !pollInactive) return;
 
     const elapsed = Date.now() - replyWaitStartedAtRef.current;
-    if (elapsed < 4000) return;
+    const minElapsed = isSlowNetworkRef.current ? 12_000 : 4_000;
+    if (elapsed < minElapsed) return;
 
     if (tryResolveReplyFromMessages(statusInactive ? "reply_status" : "poll")) return;
 
     scheduleReplyFailureCheck(
       statusInactive ? "reply_status" : "poll",
-      CHAT_REPLY_INCOMPLETE_ERROR
+      CHAT_REPLY_INCOMPLETE_ERROR,
+      isSlowNetworkRef.current ? 20_000 : 2_800
     );
   }, [
     replyStatus,

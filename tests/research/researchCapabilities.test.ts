@@ -7,6 +7,7 @@ import {
   detectNewsRetrievalIntent,
   detectLocationIntent,
   detectVerifyImageIntent,
+  isConversationalChatQuery,
   liveSearchUnavailableNewsFallback,
   resolveResearchCapability,
   researchSystemPromptAddon,
@@ -39,14 +40,29 @@ describe("research capability routing", () => {
     expect(detectLocationIntent("Where am I?")).toBe(true);
   });
 
-  it("resolves explicit research capability", () => {
+  it("resolves explicit research capability for news queries only", () => {
     expect(
       resolveResearchCapability({
         explicit: "ghana_news",
         query: "hello",
         liveWebEnabled: false,
       })
+    ).toBe("general");
+    expect(
+      resolveResearchCapability({
+        explicit: "ghana_news",
+        query: "Latest Ghana headlines today",
+        liveWebEnabled: false,
+      })
     ).toBe("ghana_news");
+  });
+
+  it("skips live web for conversational greetings", () => {
+    expect(isConversationalChatQuery("Hello")).toBe(true);
+    expect(isConversationalChatQuery("Hello dear")).toBe(true);
+    expect(isConversationalChatQuery("What is the latest Ghana news today?")).toBe(
+      false
+    );
   });
 
   it("auto-resolves Ghana news from query text", () => {

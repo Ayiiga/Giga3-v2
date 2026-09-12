@@ -7,7 +7,7 @@ import {
 import { getConvexRetryCount } from "@/lib/network/polling";
 
 const DEFAULT_TIMEOUT_MS = 90_000;
-const SLOW_NETWORK_TIMEOUT_MS = 120_000;
+const SLOW_NETWORK_TIMEOUT_MS = 180_000;
 
 function isRetryableNetworkError(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : String(err);
