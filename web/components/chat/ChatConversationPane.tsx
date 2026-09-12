@@ -6,6 +6,7 @@ import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatErrorBanner } from "@/components/chat/ChatErrorBanner";
 import { ChatTypingBar } from "@/components/chat/ChatTypingBar";
 import { MessageList, type UiMessage } from "@/components/chat/MessageList";
+import { MessageListErrorBoundary } from "@/components/chat/MessageListErrorBoundary";
 import { RecommendationChips } from "@/components/recommendations/RecommendationChips";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import type { GigaPersonaId } from "@/lib/personas/gigaPersonas";
@@ -131,19 +132,21 @@ export const ChatConversationPane = memo(function ChatConversationPane({
 
   return (
     <div className="chat-conversation-grid min-h-0 min-w-0 max-w-full overflow-x-clip overflow-y-hidden bg-background">
-      <MessageList
-        messages={messages}
-        mode={mode}
-        isLoading={isLoading}
-        isSending={isSending}
-        isAcceptingMessage={false}
-        awaitingReply={awaitingReply}
-        onInsertTemplate={onInsertTemplate}
-        onSelectDocumentTemplate={onSelectDocumentTemplate}
-        onRegenerate={onRegenerate}
-        onEditMessage={onEditMessage}
-        onDeleteMessage={onDeleteMessage}
-      />
+      <MessageListErrorBoundary>
+        <MessageList
+          messages={messages}
+          mode={mode}
+          isLoading={isLoading}
+          isSending={isSending}
+          isAcceptingMessage={false}
+          awaitingReply={awaitingReply}
+          onInsertTemplate={onInsertTemplate}
+          onSelectDocumentTemplate={onSelectDocumentTemplate}
+          onRegenerate={onRegenerate}
+          onEditMessage={onEditMessage}
+          onDeleteMessage={onDeleteMessage}
+        />
+      </MessageListErrorBoundary>
       {messages.length > 0 ? (
         <div className="shrink-0 border-t border-border/60 px-3 py-2 sm:px-4">
           <RecommendationChips

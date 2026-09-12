@@ -805,7 +805,7 @@ export default defineSchema({
     content: v.string(),
     attachmentsJson: v.optional(v.string()),
     kind: v.optional(
-      v.union(v.literal("reply"), v.literal("regenerate"))
+      v.union(v.literal("reply"), v.literal("regenerate"), v.literal("conversational"))
     ),
     regenerateFromMessageId: v.optional(v.id("messages")),
     clientRequestId: v.optional(v.string()),

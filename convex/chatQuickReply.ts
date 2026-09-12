@@ -10,43 +10,13 @@ import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
-import {
-  buildRoutingContextFromUser,
-  completeChatWithFailover,
-  getChatProviderLabel,
-  trimChatMessages,
-} from "./chatEngine";
-import { getSystemPrompt } from "./aiModes";
-import { chatSystemStyleAddon } from "./assistantIdentity";
-import { personaSystemPromptAddon } from "./gigaPersonas";
-import { buildChatSubscriptionGuidanceAddon } from "./chatSubscriptionGuidance";
-import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
-import { prepareAnswerQualityContext, validateAnswerQuality } from "./answerQuality";
+import { getChatProviderLabel } from "./chatEngine";
+import { executeConversationalReply } from "./chatConversationalCore";
 import {
   isConversationalChatQuery,
   queryNeedsLiveWeb,
 } from "./researchCapabilities";
 import { logChatReply } from "./chatReplyLog";
-
-const QUICK_REPLY_TIMEOUT_MS = 45_000;
-
-function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(
-      () => reject(new Error(`${label} timed out after ${ms}ms`)),
-      ms
-    );
-    promise
-      .then((value) => {
-        clearTimeout(timer);
-        resolve(value);
-      })
-      .catch((err) => {
-        clearTimeout(timer);
-        reject(err);
-      });
-  });
-}
 
 export const conversational = action({
   args: {
@@ -94,107 +64,22 @@ export const conversational = action({
       };
     }
 
-    const context = await ctx.runQuery(internal.platform.loadReplyContextByConversation, {
-      conversationId: setup.conversationId,
-      historyLimit: 6,
-    });
-    const user = context?.user;
-    const history = context?.history ?? [];
-
-    const qualityContext = prepareAnswerQualityContext({
-      mode: setup.mode,
-      query: content,
-      attachments: [],
-      history: history.map((turn) => ({ role: turn.role, content: turn.content })),
-    });
-
-    let systemPrompt =
-      getSystemPrompt(setup.mode) +
-      chatSystemStyleAddon("fast") +
-      buildInterestSystemAddon(parseInterestProfile(user?.interestProfile)) +
-      "\n\n" +
-      qualityContext.systemPromptAddon +
-      "\n\n" +
-      buildChatSubscriptionGuidanceAddon({
-        subscriptionPlan: user?.subscriptionPlan,
-        subscriptionExpiresAt: user?.subscriptionExpiresAt,
-        credits: user?.credits,
-        query: content,
-      });
-
-    const personaAddon = personaSystemPromptAddon(setup.personaId);
-    if (personaAddon) {
-      systemPrompt += `\n\n${personaAddon}`;
-    }
-    systemPrompt +=
-      "\n\nReply naturally and briefly to this greeting or small-talk message. Do not invent current news or run web research.";
-
-    const chatMessages = trimChatMessages([
-      { role: "system" as const, content: systemPrompt },
-      ...history.slice(0, -1).map((m) => ({
-        role: m.role as "user" | "assistant",
-        content: m.content,
-      })),
-      { role: "user" as const, content },
-    ]);
-
-    const routing = buildRoutingContextFromUser({
-      subscriptionPlan: user?.subscriptionPlan ?? "free",
-      subscriptionExpiresAt: user?.subscriptionExpiresAt,
-      hasPurchasedCredits: user?.hasPurchasedCredits,
-      mode: setup.mode,
-      query: content,
-      chatSystem: "fast",
-    });
-
-    const started = Date.now();
-    let engineResult;
-    try {
-      engineResult = await withTimeout(
-        completeChatWithFailover(chatMessages, routing),
-        QUICK_REPLY_TIMEOUT_MS,
-        "conversationalReply"
-      );
-    } catch (err) {
-      logChatReply("quick_reply_failed", {
-        conversationId: setup.conversationId,
-        userId: email,
-        error: err instanceof Error ? err.message : String(err),
-        durationMs: Date.now() - started,
-      });
-      throw err;
-    }
-
-    const validated = validateAnswerQuality({
-      answer: engineResult.content,
-      context: qualityContext,
-    });
-
-    await ctx.runMutation(internal.platform.appendAssistantReplyIfMissing, {
+    const result = await executeConversationalReply(ctx, {
+      requestId: args.clientRequestId,
       conversationId: setup.conversationId,
       userId: email,
-      content: validated.content,
+      content,
+      mode: setup.mode,
+      personaId: setup.personaId,
       since: setup.since,
-    });
-
-    await ctx.runMutation(internal.platformStatsRecorder.recordAiRequestInternal, {
-      latencyMs: Date.now() - started,
-      failed: engineResult.usedFallback,
-    });
-
-    logChatReply("quick_reply_done", {
-      conversationId: setup.conversationId,
-      userId: email,
-      providerId: engineResult.providerId,
-      durationMs: Date.now() - started,
     });
 
     return {
       status: "complete" as const,
       conversationId: setup.conversationId,
-      content: validated.content,
-      chatProviderLabel: getChatProviderLabel(engineResult.providerId),
-      usedFallback: engineResult.usedFallback,
+      content: result.content,
+      chatProviderLabel: result.chatProviderLabel,
+      usedFallback: result.usedFallback,
       segmented: false,
     };
   },

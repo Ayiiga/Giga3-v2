@@ -22,6 +22,7 @@ export type JobRecoveryInput = {
   rescheduleCount?: number;
   /** Used to avoid recovery timeout stubs on greetings / small talk. */
   content?: string;
+  kind?: "reply" | "regenerate" | "conversational";
 };
 
 export type JobRecoveryAction =
@@ -87,7 +88,35 @@ export function decideJobRecovery(
   const age = now - job.createdAt;
   const reschedules = job.rescheduleCount ?? 0;
   const conversational =
-    typeof job.content === "string" && isConversationalChatQuery(job.content);
+    job.kind === "conversational" ||
+    (typeof job.content === "string" && isConversationalChatQuery(job.content));
+
+  // Fast conversational jobs must never get the generic recovery timeout stub.
+  if (conversational) {
+    const conversationalPendingLimit = 90_000;
+    const conversationalProcessingLimit = 120_000;
+    if (job.status === "processing") {
+      if (isRecentlyActive(job, now, 45_000)) {
+        return "wait";
+      }
+      const processingAge = job.processingStartedAt
+        ? now - job.processingStartedAt
+        : age;
+      if (processingAge >= conversationalProcessingLimit) {
+        return reschedules < 2 ? "reschedule" : "finalize";
+      }
+      return "wait";
+    }
+    if (job.status === "pending") {
+      if (age >= conversationalPendingLimit) {
+        return reschedules < 2 ? "reschedule" : "finalize";
+      }
+      if (age >= 20_000) {
+        return "reschedule";
+      }
+    }
+    return "wait";
+  }
 
   if (job.status === "processing") {
     if (isRecentlyActive(job, now, config.activityGraceMs)) {
