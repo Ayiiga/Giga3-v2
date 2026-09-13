@@ -47,8 +47,6 @@ export type NewsStory = {
 
 export type NewsQueryClassification = {
   country?: string;
-  /** All explicitly requested countries in the user query (e.g. Ghana + Nepal). */
-  countries?: string[];
   region?: string;
   city?: string;
   topic?: string;
@@ -59,24 +57,12 @@ export type NewsQueryClassification = {
   developingStory: boolean;
 };
 
-export type CountryNewsSection = {
-  country: string;
-  stories: NewsStory[];
-  retrievalFailed: boolean;
-  confidenceLabel: "High" | "Medium" | "Low" | "Unavailable";
-  confidenceReason: string;
-  evidenceCount: number;
-  warnings: string[];
-};
-
 export type NewsResponseContract = {
   query: string;
   classification: NewsQueryClassification;
   location?: string;
   requestedTime?: string;
   stories: NewsStory[];
-  /** Per-country evidence when the user asked about multiple countries. */
-  countrySections?: CountryNewsSection[];
   retrievalTimestamp: number;
   evidenceCount: number;
   independentSourceCount: number;
