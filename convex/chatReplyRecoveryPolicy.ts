@@ -4,7 +4,7 @@
  */
 
 import { chatJobProcessingBudgetMs } from "./chatTiming";
-import { isConversationalChatQuery } from "./researchCapabilities";
+import { isFastTextReplyJob } from "./researchCapabilities";
 
 export type JobRecoveryStatus =
   | "pending"
@@ -87,9 +87,7 @@ export function decideJobRecovery(
 
   const age = now - job.createdAt;
   const reschedules = job.rescheduleCount ?? 0;
-  const conversational =
-    job.kind === "conversational" ||
-    (typeof job.content === "string" && isConversationalChatQuery(job.content));
+  const conversational = isFastTextReplyJob(job);
 
   // Fast conversational jobs must never get the generic recovery timeout stub.
   if (conversational) {

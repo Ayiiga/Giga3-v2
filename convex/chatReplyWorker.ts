@@ -75,6 +75,7 @@ import {
 } from "./chatTiming";
 import { CHAT_ERROR_CODES } from "./chatErrorCodes";
 import { chatUserFacingMessage } from "./chatUserMessages";
+import { logChatReply } from "./chatReplyLog";
 
 // Kept below the client reply-wait deadline (CHAT_REPLY_WAIT_MS) so the worker
 // persists a real or fallback reply — clearing "Thinking…" gracefully via the
