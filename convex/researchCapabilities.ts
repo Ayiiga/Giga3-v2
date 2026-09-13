@@ -291,6 +291,26 @@ export function buildGhanaNewsSearchQuery(query: string): string {
   return `${query.trim()} Ghana news today (${siteBias})`.trim();
 }
 
+/** Focused search query for one country within a multi-country news request. */
+export function buildCountryResearchSearchQuery(
+  country: string,
+  baseQuery: string,
+  capability: ResearchCapabilityId
+): string {
+  const trimmed = baseQuery.trim();
+  if (country === "Ghana" && (capability === "ghana_news" || detectGhanaNewsIntent(trimmed))) {
+    return buildGhanaNewsSearchQuery(`${country} latest news today`);
+  }
+
+  const timeHint = detectBreakingNewsIntent(trimmed)
+    ? "breaking news"
+    : detectCurrentEventsIntent(trimmed) || detectNewsRetrievalIntent(trimmed)
+      ? "latest news today"
+      : "news";
+
+  return `${country} ${timeHint}`.trim();
+}
+
 export function buildResearchSearchQuery(
   query: string,
   capability: ResearchCapabilityId
@@ -338,6 +358,10 @@ export const NEWS_RESPONSE_FORMAT_GUIDANCE = [
   "- **Breaking** may only be used when the evidence package assigns breakingLabel=BREAKING.",
   "- Never invent current news, quotes, dates, or URLs. If you cannot verify a claim, say so.",
   "- If live search is unavailable and evidence count is zero, say evidence is insufficient — do not invent headlines.",
+  "- When multiple countries are requested, use separate ## Country sections (e.g. ## Ghana, ## Nepal).",
+  "- End multi-country answers with ### Confidence listing each country (High / Medium / Low) and why.",
+  "- If one country lacks verified evidence, say so for that country only — still answer countries with evidence.",
+  "- Add a brief note that news is developing and details may change as reporting continues.",
 ].join("\n");
 
 export function researchSystemPromptAddon(capability: ResearchCapabilityId): string {

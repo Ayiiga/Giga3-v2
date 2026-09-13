@@ -85,12 +85,23 @@ export function enforceNewsEvidenceIntegrity(args: {
 
   const { contract, retrievalFailed } = args.evidence;
 
+  const hasPartialCountryEvidence =
+    Boolean(contract.countrySections?.length) &&
+    contract.countrySections.some(
+      (section) => !section.retrievalFailed && section.stories.length > 0
+    );
+
   if (
     (retrievalFailed || contract.evidenceCount === 0) &&
-    contract.classification.requiresRetrieval
+    contract.classification.requiresRetrieval &&
+    !hasPartialCountryEvidence
   ) {
     flags.push("news_insufficient_evidence");
     return { content: insufficientEvidenceFallback(args.query), flags };
+  }
+
+  if (hasPartialCountryEvidence && (retrievalFailed || contract.evidenceCount === 0)) {
+    flags.push("news_partial_country_evidence");
   }
 
   const hadVerified = VERIFIED_LABEL_RE.test(content);
