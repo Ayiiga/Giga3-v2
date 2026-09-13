@@ -136,7 +136,7 @@ async function sendConvexQuickReply(
       "action",
       "chatQuickReply:conversational",
       args,
-      { timeoutMs: quickTimeoutMs, retries: slowNetwork ? 2 : 1 }
+      { timeoutMs: quickTimeoutMs, retries: 0 }
     ),
     quickTimeoutMs,
     "Giga3 is replying on this connection — please wait a moment."

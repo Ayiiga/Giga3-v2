@@ -64,16 +64,7 @@ export const conversational = action({
       };
     }
 
-    const jobId = await ctx.runMutation(internal.chatReplyJobs.createJob, {
-      conversationId: setup.conversationId,
-      userId: email,
-      mode: setup.mode,
-      content,
-      kind: "conversational",
-      clientRequestId: args.clientRequestId,
-      personaId: setup.personaId,
-    });
-
+    const jobId = setup.jobId;
     const begin = await ctx.runMutation(internal.chatReplyJobs.beginProcessing, {
       jobId,
     });

@@ -139,6 +139,7 @@ export function useChatPlatform() {
   const replyFailureTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeGenTaskIdRef = useRef<string | null>(null);
   const syncingOutboxRef = useRef(false);
+  const sendInFlightRef = useRef(false);
   const lastChatSystemRef = useRef<GigaModelId>("fast");
   const { isSlowNetwork } = useConnectionQuality();
   const { effectiveOnline } = useEffectiveOnline();
@@ -528,6 +529,11 @@ export function useChatPlatform() {
       const hasImages = attachments?.some((a) => a.kind === "image") ?? false;
       const maxRetries = slowNetwork ? MAX_SEND_RETRIES_SLOW : MAX_SEND_RETRIES;
       const acceptTimeoutMsValue = acceptTimeoutMs(slowNetwork, hasImages);
+      const useQuickReply =
+        shouldUseQuickConversationalReply({
+          query: content,
+          hasImageAttachment: hasImages,
+        }) && effectiveOnline;
 
       try {
         const convexUrl = getConvexUrl();
@@ -542,12 +548,6 @@ export function useChatPlatform() {
           ),
           online: effectiveOnline,
         });
-
-        const useQuickReply =
-          shouldUseQuickConversationalReply({
-            query: content,
-            hasImageAttachment: hasImages,
-          }) && effectiveOnline;
 
         if (useQuickReply) {
           const quickTimeoutMs = Math.max(acceptTimeoutMsValue, 75_000);
@@ -567,7 +567,7 @@ export function useChatPlatform() {
                 clientRequestId,
                 chatSystem,
               },
-              { timeoutMs: quickTimeoutMs, retries: slowNetwork ? 2 : 1 }
+              { timeoutMs: quickTimeoutMs, retries: 0 }
             ),
             quickTimeoutMs,
             "Giga3 is replying on this connection — please wait a moment."
@@ -701,6 +701,7 @@ export function useChatPlatform() {
       } catch (e) {
         const message = e instanceof Error ? e.message : "Failed to send";
         const shouldRetry =
+          !useQuickReply &&
           attempt < maxRetries - 1 &&
           typeof navigator !== "undefined" &&
           navigator.onLine;
@@ -1058,6 +1059,11 @@ export function useChatPlatform() {
         setError("Session expired. Please sign in again.");
         return;
       }
+      if (sendInFlightRef.current) {
+        logChatClient("send_blocked_inflight", {});
+        return;
+      }
+      sendInFlightRef.current = true;
       setError(null);
       setPendingUserText(content);
       setIsSending(true);
@@ -1083,6 +1089,7 @@ export function useChatPlatform() {
         await refreshOutboxCount();
         setIsSending(false);
         setAwaitingReply(false);
+        sendInFlightRef.current = false;
         // Keep pendingUserText so the bubble stays visible; sync is silent.
         logChatClient("send_offline_queued", { clientRequestId });
         return;
@@ -1090,15 +1097,17 @@ export function useChatPlatform() {
 
       logChatClient("send_start", { clientRequestId, slowNetwork: isSlowNetwork });
 
-      void dispatchAccept(
-        token,
-        activeId,
-        content,
-        attachments,
-        clientRequestId,
-        chatSystem,
-        isSlowNetwork
-      ).catch(async (e) => {
+      try {
+        await dispatchAccept(
+          token,
+          activeId,
+          content,
+          attachments,
+          clientRequestId,
+          chatSystem,
+          isSlowNetwork
+        );
+      } catch (e) {
         const entry: OutboxEntry = {
           id: clientRequestId,
           clientRequestId,
@@ -1124,7 +1133,9 @@ export function useChatPlatform() {
         logChatClient("send_fail", {
           error: e instanceof Error ? e.message : String(e),
         });
-      });
+      } finally {
+        sendInFlightRef.current = false;
+      }
     },
     [
       sessionToken,
