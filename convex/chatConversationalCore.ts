@@ -22,7 +22,6 @@ import { buildChatSubscriptionGuidanceAddon } from "./chatSubscriptionGuidance";
 import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
 import { prepareAnswerQualityContext, validateAnswerQuality } from "./answerQuality";
 import { CHAT_ERROR_CODES, classifyProviderError } from "./chatErrorCodes";
-import { chatUserFacingMessage } from "./chatUserMessages";
 import { logChatReply } from "./chatReplyLog";
 
 export const CONVERSATIONAL_REPLY_TIMEOUT_MS = 45_000;
@@ -112,7 +111,7 @@ export async function executeConversationalReply(
     systemPrompt += `\n\n${personaAddon}`;
   }
   systemPrompt +=
-    "\n\nReply naturally and briefly to this greeting or small-talk message. Do not invent current news or run web research.";
+    "\n\nReply helpfully and concisely. Do not invent current news or run web research unless the user asks for live information.";
 
   const chatMessages = trimChatMessages([
     { role: "system" as const, content: systemPrompt },
@@ -140,7 +139,6 @@ export async function executeConversationalReply(
   });
 
   let engineResult: ChatEngineResult;
-  let errorCode: string | undefined;
   try {
     engineResult = await withTimeout(
       completeChatWithFailover(chatMessages, routing),
@@ -148,11 +146,11 @@ export async function executeConversationalReply(
       "conversationalReply"
     );
     if (engineResult.usedFallback || engineResult.providerId === "local_fallback") {
-      errorCode = CHAT_ERROR_CODES.ALL_PROVIDERS_FAILED;
+      throw new Error(CHAT_ERROR_CODES.ALL_PROVIDERS_FAILED);
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    errorCode = classifyProviderError(message);
+    const errorCode = classifyProviderError(message);
     logChatReply("conversational_provider_failed", {
       requestId,
       conversationId: args.conversationId,
@@ -161,12 +159,7 @@ export async function executeConversationalReply(
       error: message,
       durationMs: Date.now() - started,
     });
-    engineResult = {
-      content: chatUserFacingMessage(CHAT_ERROR_CODES.ALL_PROVIDERS_FAILED),
-      providerId: "local_fallback",
-      usedFallback: true,
-      latencyMs: Date.now() - started,
-    };
+    throw err instanceof Error ? err : new Error(message);
   }
 
   const validated = validateAnswerQuality({
@@ -183,7 +176,7 @@ export async function executeConversationalReply(
 
   await ctx.runMutation(internal.platformStatsRecorder.recordAiRequestInternal, {
     latencyMs: Date.now() - started,
-    failed: engineResult.usedFallback,
+    failed: false,
   });
 
   logChatReply("conversational_done", {
@@ -191,17 +184,16 @@ export async function executeConversationalReply(
     conversationId: args.conversationId,
     userId: args.userId,
     providerId: engineResult.providerId,
-    errorCode: errorCode ?? null,
+    errorCode: null,
     durationMs: Date.now() - started,
-    fallbackUsed: engineResult.usedFallback,
+    fallbackUsed: false,
   });
 
   return {
     content: validated.content,
     chatProviderLabel: getChatProviderLabel(engineResult.providerId),
-    usedFallback: engineResult.usedFallback,
+    usedFallback: false,
     providerId: engineResult.providerId,
     durationMs: Date.now() - started,
-    errorCode,
   };
 }

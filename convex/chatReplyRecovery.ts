@@ -7,7 +7,7 @@ import {
   decideJobRecovery,
   getJobRecoveryConfig,
 } from "./chatReplyRecoveryPolicy";
-import { isConversationalChatQuery } from "./researchCapabilities";
+import { isFastTextReplyJob } from "./researchCapabilities";
 import {
   chatUserFacingMessage,
   recoveryErrorCodeForJob,
@@ -116,9 +116,7 @@ export const recoverStuckJobs = internalMutation({
           status: job.status,
           ageMs: age,
           wroteFallback,
-          conversational:
-            job.kind === "conversational" ||
-            isConversationalChatQuery(job.content),
+          conversational: isFastTextReplyJob(job),
         });
         continue;
       }

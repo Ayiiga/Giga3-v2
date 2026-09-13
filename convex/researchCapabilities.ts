@@ -165,6 +165,27 @@ export function isConversationalChatQuery(query: string): boolean {
   return false;
 }
 
+/** Text-only chat without live web — use the lightweight conversational worker. */
+export function shouldUseConversationalWorker(args: {
+  needsLiveWeb: boolean;
+  attachmentCount: number;
+}): boolean {
+  return !args.needsLiveWeb && args.attachmentCount === 0;
+}
+
+/** Fast text jobs that should not inherit long research recovery timeouts. */
+export function isFastTextReplyJob(job: {
+  kind?: "reply" | "regenerate" | "conversational";
+  liveWeb?: boolean;
+  attachmentsJson?: string;
+  content?: string;
+}): boolean {
+  if (job.kind === "conversational") return true;
+  if (job.liveWeb) return false;
+  if (job.attachmentsJson) return false;
+  return typeof job.content === "string" && job.content.trim().length > 0;
+}
+
 export function resolveResearchCapability(args: {
   explicit?: string | null;
   query: string;

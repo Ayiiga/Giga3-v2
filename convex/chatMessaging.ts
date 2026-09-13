@@ -36,7 +36,7 @@ import {
 import {
   queryNeedsLiveWeb,
   resolveResearchCapability,
-  isConversationalChatQuery,
+  shouldUseConversationalWorker,
 } from "./researchCapabilities";
 import { isChatAssistantFailureStub } from "./chatUserMessages";
 
@@ -403,9 +403,10 @@ export const acceptMessage = mutation({
       attachmentsJson:
         attachments.length > 0 ? JSON.stringify(attachments) : undefined,
       kind:
-        attachments.length === 0 &&
-        !needsLiveWeb &&
-        isConversationalChatQuery(args.content.trim())
+        shouldUseConversationalWorker({
+          needsLiveWeb,
+          attachmentCount: attachments.length,
+        })
           ? ("conversational" as const)
           : ("reply" as const),
       clientRequestId: args.clientRequestId,
@@ -419,12 +420,12 @@ export const acceptMessage = mutation({
       createdAt: now,
     });
 
-    const worker =
-      attachments.length === 0 &&
-      !needsLiveWeb &&
-      isConversationalChatQuery(args.content.trim())
-        ? internal.chatConversationalReply.processTurn
-        : internal.chatReplyWorker.processJob;
+    const worker = shouldUseConversationalWorker({
+      needsLiveWeb,
+      attachmentCount: attachments.length,
+    })
+      ? internal.chatConversationalReply.processTurn
+      : internal.chatReplyWorker.processJob;
 
     await ctx.scheduler.runAfter(0, worker, {
       jobId,
@@ -721,7 +722,10 @@ export const retryFailedReply = mutation({
       mode,
       content: lastUser.content,
       kind:
-        !needsLiveWeb && isConversationalChatQuery(lastUser.content.trim())
+        shouldUseConversationalWorker({
+          needsLiveWeb,
+          attachmentCount: 0,
+        })
           ? ("conversational" as const)
           : ("reply" as const),
       clientRequestId: args.clientRequestId,
@@ -730,10 +734,12 @@ export const retryFailedReply = mutation({
       liveWeb: needsLiveWeb,
     });
 
-    const worker =
-      !needsLiveWeb && isConversationalChatQuery(lastUser.content.trim())
-        ? internal.chatConversationalReply.processTurn
-        : internal.chatReplyWorker.processJob;
+    const worker = shouldUseConversationalWorker({
+      needsLiveWeb,
+      attachmentCount: 0,
+    })
+      ? internal.chatConversationalReply.processTurn
+      : internal.chatReplyWorker.processJob;
 
     await ctx.scheduler.runAfter(0, worker, { jobId });
 
