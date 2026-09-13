@@ -727,8 +727,7 @@ export async function completeChatWithFailover(
 
   return {
     content:
-      "I'm Giga3 AI — I'm having trouble reaching our AI services on this connection. Your message was saved — please tap send again. " +
-      "On slower mobile networks, replies usually arrive within a minute when the connection is stable.",
+      "Giga3 AI is temporarily unable to generate a response. Your message has been saved safely.",
     providerId: "local_fallback",
     usedFallback: true,
     latencyMs: Date.now() - started,

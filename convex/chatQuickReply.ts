@@ -64,23 +64,75 @@ export const conversational = action({
       };
     }
 
-    const result = await executeConversationalReply(ctx, {
-      requestId: args.clientRequestId,
+    const jobId = await ctx.runMutation(internal.chatReplyJobs.createJob, {
       conversationId: setup.conversationId,
       userId: email,
-      content,
       mode: setup.mode,
+      content,
+      kind: "conversational",
+      clientRequestId: args.clientRequestId,
       personaId: setup.personaId,
-      since: setup.since,
     });
 
-    return {
-      status: "complete" as const,
-      conversationId: setup.conversationId,
-      content: result.content,
-      chatProviderLabel: result.chatProviderLabel,
-      usedFallback: result.usedFallback,
-      segmented: false,
-    };
+    const begin = await ctx.runMutation(internal.chatReplyJobs.beginProcessing, {
+      jobId,
+    });
+    if (begin.cancelled) {
+      await ctx.runMutation(internal.chatReplyJobs.deleteJob, { jobId });
+      throw new Error("Reply was cancelled.");
+    }
+    if (!begin.claimed) {
+      return {
+        status: "processing" as const,
+        conversationId: setup.conversationId,
+        jobId,
+        chatProviderLabel: getChatProviderLabel("gemini"),
+        usedFallback: false,
+        segmented: false,
+      };
+    }
+
+    try {
+      const result = await executeConversationalReply(ctx, {
+        requestId: args.clientRequestId ?? String(jobId),
+        jobId,
+        conversationId: setup.conversationId,
+        userId: email,
+        content,
+        mode: setup.mode,
+        personaId: setup.personaId,
+        since: setup.since,
+      });
+
+      await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
+        jobId,
+        status: "done",
+      });
+      await ctx.runMutation(internal.chatReplyJobs.deleteJob, { jobId });
+
+      return {
+        status: "complete" as const,
+        conversationId: setup.conversationId,
+        content: result.content,
+        chatProviderLabel: result.chatProviderLabel,
+        usedFallback: result.usedFallback,
+        segmented: false,
+      };
+    } catch (err) {
+      logChatReply("quick_reply_failed", {
+        jobId,
+        conversationId: setup.conversationId,
+        userId: email,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      await ctx.runMutation(internal.chatReplyJobs.markJobStatus, {
+        jobId,
+        status: "failed",
+      });
+      await ctx.scheduler.runAfter(0, internal.chatConversationalReply.processTurn, {
+        jobId,
+      });
+      throw err;
+    }
   },
 });

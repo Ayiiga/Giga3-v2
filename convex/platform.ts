@@ -2,7 +2,7 @@ import { internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { normalizeUserId } from "./userIds";
-import { isChatRecoveryTimeoutReply } from "./chatTiming";
+import { isChatAssistantFailureStub } from "./chatUserMessages";
 import { SEGMENT_RECAP_PREFIX } from "./chatSegmentation";
 
 function userOwnsConversation(
@@ -199,8 +199,8 @@ export const appendAssistantReplyIfMissing = internalMutation({
     );
     if (existing) {
       if (
-        isChatRecoveryTimeoutReply(existing.content) &&
-        !isChatRecoveryTimeoutReply(args.content)
+        isChatAssistantFailureStub(existing.content) &&
+        !isChatAssistantFailureStub(args.content)
       ) {
         const now = Date.now();
         await ctx.db.patch(existing._id, {

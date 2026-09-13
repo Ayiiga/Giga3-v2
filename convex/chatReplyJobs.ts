@@ -129,23 +129,38 @@ export const markJobStatus = internalMutation({
   },
 });
 
-/** Mark processing and report cancellation in a single round trip. */
+const STALE_PROCESSING_MS = 90_000;
+
+/** Atomically claim a job for processing — concurrent workers skip if another is active. */
 export const beginProcessing = internalMutation({
   args: { jobId: v.id("chatReplyJobs") },
   handler: async (ctx, args) => {
     const job = await ctx.db.get(args.jobId);
-    if (!job) return { cancelled: true as const };
+    if (!job) return { cancelled: true as const, claimed: false as const };
     if (job.cancelled || job.status === "cancelled") {
       if (job.status !== "cancelled") await ctx.db.patch(args.jobId, { status: "cancelled" });
-      return { cancelled: true as const };
+      return { cancelled: true as const, claimed: false as const };
     }
+    if (job.status === "done" || job.status === "failed") {
+      return { cancelled: false as const, claimed: false as const };
+    }
+
     const now = Date.now();
+    if (job.status === "processing") {
+      const lastActive = job.lastActivityAt ?? job.processingStartedAt ?? job.createdAt;
+      if (now - lastActive < STALE_PROCESSING_MS) {
+        return { cancelled: false as const, claimed: false as const };
+      }
+    } else if (job.status !== "pending") {
+      return { cancelled: false as const, claimed: false as const };
+    }
+
     await ctx.db.patch(args.jobId, {
       status: "processing",
       processingStartedAt: job.processingStartedAt ?? now,
       lastActivityAt: now,
     });
-    return { cancelled: false as const };
+    return { cancelled: false as const, claimed: true as const };
   },
 });
 

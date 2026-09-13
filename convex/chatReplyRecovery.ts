@@ -2,13 +2,16 @@ import { internalMutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
-import { normalizeUserId } from "./userIds";
 import { logChatReply } from "./chatReplyLog";
 import {
   decideJobRecovery,
   getJobRecoveryConfig,
 } from "./chatReplyRecoveryPolicy";
 import { isConversationalChatQuery } from "./researchCapabilities";
+import {
+  chatUserFacingMessage,
+  recoveryErrorCodeForJob,
+} from "./chatUserMessages";
 
 /**
  * Safety net for chat reply jobs whose background worker never ran or died
@@ -23,9 +26,6 @@ import { isConversationalChatQuery } from "./researchCapabilities";
  */
 
 const MAX_JOBS_PER_SWEEP = 200;
-
-const FALLBACK_REPLY =
-  "I'm Giga3 AI — I couldn't finish this reply because our AI service didn't respond in time. Your message was saved — please tap send again.";
 
 async function conversationHasReplyAfter(
   ctx: MutationCtx,
@@ -84,31 +84,28 @@ export const recoverStuckJobs = internalMutation({
           job.conversationId,
           job.createdAt
         );
+        let wroteFallback = false;
         if (!alreadyReplied) {
-          const isConversational =
-            job.kind === "conversational" ||
-            isConversationalChatQuery(job.content);
-          const fallbackContent = isConversational
-            ? "I'm Giga3 AI — I'm having trouble reaching our AI services on this connection. Your message was saved — please tap send again. On slower mobile networks, replies usually arrive within a minute when the connection is stable."
-            : FALLBACK_REPLY;
-          await ctx.db.insert("messages", {
-            conversationId: job.conversationId,
-            userId: normalizeUserId(job.userId),
-            role: "assistant",
-            content: fallbackContent,
-            createdAt: Date.now(),
+          const errorCode = recoveryErrorCodeForJob(job);
+          const fallbackContent = chatUserFacingMessage(errorCode, {
+            research: Boolean(job.liveWeb),
           });
-          await ctx.db.patch(job.conversationId, { updatedAt: Date.now() });
-          await ctx.scheduler.runAfter(
-            0,
-            internal.platformStatsRecorder.recordMessageInternal,
-            { role: "assistant" }
+          const persisted = await ctx.runMutation(
+            internal.platform.appendAssistantReplyIfMissing,
+            {
+              conversationId: job.conversationId,
+              userId: job.userId,
+              content: fallbackContent,
+              since: job.createdAt,
+            }
           );
-          await ctx.scheduler.runAfter(
-            0,
-            internal.platformStatsRecorder.recordAiRequestInternal,
-            { failed: true }
-          );
+          wroteFallback = persisted.written;
+          if (wroteFallback) {
+            await ctx.runMutation(
+              internal.platformStatsRecorder.recordAiRequestInternal,
+              { failed: true }
+            );
+          }
         }
         await ctx.db.delete(job._id);
         recovered += 1;
@@ -118,7 +115,10 @@ export const recoverStuckJobs = internalMutation({
           userId: job.userId,
           status: job.status,
           ageMs: age,
-          wroteFallback: !alreadyReplied,
+          wroteFallback,
+          conversational:
+            job.kind === "conversational" ||
+            isConversationalChatQuery(job.content),
         });
         continue;
       }

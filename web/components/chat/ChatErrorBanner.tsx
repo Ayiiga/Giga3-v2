@@ -7,10 +7,12 @@ import { X } from "lucide-react";
 export function ChatErrorBanner({
   message,
   onDismiss,
+  onRetry,
   subscriptionActive,
 }: {
   message: string;
   onDismiss?: () => void;
+  onRetry?: () => void;
   subscriptionActive?: boolean;
 }) {
   const billingError = isBillingRelatedError(message);
@@ -34,6 +36,15 @@ export function ChatErrorBanner({
     >
       <div className="min-w-0 flex-1">
         <p className="leading-snug">{typeof message === "string" ? message : "Something went wrong."}</p>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-2 rounded-md border border-amber-300 bg-white px-2.5 py-1 text-xs font-medium text-amber-950 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100 dark:hover:bg-amber-900/60"
+          >
+            Retry
+          </button>
+        )}
       </div>
       {onDismiss && (
         <button

@@ -202,7 +202,7 @@ export function useChatPlatform() {
         }
         logChatClient("reply_stub", { via });
         setError(
-          "Giga3 couldn't finish on this connection. Your message was saved — tap send to try again."
+          "Giga3 AI is temporarily unable to generate a response. Your message was saved safely — tap Retry."
         );
         return true;
       }
@@ -586,12 +586,24 @@ export function useChatPlatform() {
           setChatProviderLabel((prev) => (prev === nextLabel ? prev : nextLabel));
           setUsedFallback((prev) => (prev === nextFallback ? prev : nextFallback));
 
+          if (result.status === "processing") {
+            setIsSending(false);
+            beginReplyWait(messagesRawRef.current);
+            setAwaitingReply(true);
+            trackChatGeneration(result.conversationId ?? conversationId);
+            logChatClient("quick_reply_processing", {
+              conversationId: result.conversationId,
+              jobId: result.jobId,
+            });
+            return { ok: true as const, conversationId: result.conversationId };
+          }
+
           if (result.content && !hasUsableAssistantContent(result.content)) {
             setIsSending(false);
             setAwaitingReply(false);
             setPendingUserText(null);
             setError(
-              "Giga3 couldn't finish on this connection. Your message was saved — tap send to try again."
+              "Giga3 AI is temporarily unable to generate a response. Your message was saved safely — tap Retry."
             );
             logChatClient("quick_reply_stub", { conversationId: result.conversationId });
             return { ok: false as const, conversationId: result.conversationId };
@@ -1294,6 +1306,50 @@ export function useChatPlatform() {
     [sessionToken]
   );
 
+  const retryFailedReply = useCallback(async () => {
+    const token = sessionToken ?? getSessionToken();
+    if (!token || !activeId) return;
+    setError(null);
+    setIsSending(true);
+    setAwaitingReply(true);
+    beginReplyWait(messagesRawRef.current);
+    setPollConversationId(activeId);
+    trackChatGeneration(activeId);
+    logChatClient("retry_failed_reply_start", { conversationId: activeId });
+
+    try {
+      const result = await convexMutationWithTimeout<ProcessingMutationResult>(
+        "chatMessaging:retryFailedReply",
+        {
+          sessionToken: token,
+          conversationId: activeId,
+          clientRequestId: newClientRequestId(),
+        },
+        {
+          timeoutMs: acceptTimeoutMs(isSlowNetworkRef.current),
+          timeoutMessage: "Retry is taking longer on this connection. Please wait.",
+        }
+      );
+      setIsSending(false);
+      if (result.status === "processing") {
+        logChatClient("retry_failed_reply_processing", {
+          conversationId: result.conversationId,
+          jobId: result.jobId,
+        });
+        return;
+      }
+      setAwaitingReply(false);
+      setPendingUserText(null);
+      logChatClient("retry_failed_reply_complete", {
+        conversationId: result.conversationId,
+      });
+    } catch (e) {
+      setIsSending(false);
+      setAwaitingReply(false);
+      setError(e instanceof Error ? e.message : "Could not retry this reply");
+    }
+  }, [sessionToken, activeId, beginReplyWait, trackChatGeneration]);
+
   const renameConversation = useCallback(
     async (conversationId: string, title: string) => {
       const token = sessionToken ?? getSessionToken();
@@ -1340,6 +1396,7 @@ export function useChatPlatform() {
     outboxCount,
     isSyncingOutbox,
     retryOutboxSync: flushOutbox,
+    retryFailedReply,
     error,
     startNewChat,
     selectConversation,

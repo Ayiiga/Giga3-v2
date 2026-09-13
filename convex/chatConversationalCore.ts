@@ -22,6 +22,7 @@ import { buildChatSubscriptionGuidanceAddon } from "./chatSubscriptionGuidance";
 import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
 import { prepareAnswerQualityContext, validateAnswerQuality } from "./answerQuality";
 import { CHAT_ERROR_CODES, classifyProviderError } from "./chatErrorCodes";
+import { chatUserFacingMessage } from "./chatUserMessages";
 import { logChatReply } from "./chatReplyLog";
 
 export const CONVERSATIONAL_REPLY_TIMEOUT_MS = 45_000;
@@ -161,9 +162,7 @@ export async function executeConversationalReply(
       durationMs: Date.now() - started,
     });
     engineResult = {
-      content:
-        "I'm Giga3 AI — I'm having trouble reaching our AI services on this connection. Your message was saved — please tap send again. " +
-        "On slower mobile networks, replies usually arrive within a minute when the connection is stable.",
+      content: chatUserFacingMessage(CHAT_ERROR_CODES.ALL_PROVIDERS_FAILED),
       providerId: "local_fallback",
       usedFallback: true,
       latencyMs: Date.now() - started,

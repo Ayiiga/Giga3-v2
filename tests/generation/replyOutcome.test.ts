@@ -22,6 +22,16 @@ describe("hasUsableAssistantContent", () => {
         "I'm Giga3 AI — I couldn't finish this reply because our AI service didn't respond in time. Your message was saved — please tap send again."
       )
     ).toBe(false);
+    expect(
+      hasUsableAssistantContent(
+        "Giga3 AI is temporarily unable to generate a response. Your message has been saved safely."
+      )
+    ).toBe(false);
+    expect(
+      hasUsableAssistantContent(
+        "Giga3 is taking longer than expected. We're trying another AI service."
+      )
+    ).toBe(false);
   });
 });
 

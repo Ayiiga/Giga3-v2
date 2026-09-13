@@ -73,6 +73,8 @@ import {
   chatWorkerImageTimeoutMs,
   chatWorkerTextTimeoutMs,
 } from "./chatTiming";
+import { CHAT_ERROR_CODES } from "./chatErrorCodes";
+import { chatUserFacingMessage } from "./chatUserMessages";
 
 // Kept below the client reply-wait deadline (CHAT_REPLY_WAIT_MS) so the worker
 // persists a real or fallback reply — clearing "Thinking…" gracefully via the
@@ -422,8 +424,7 @@ async function runHybridAiEngine(
   return { ...engineResult, cached: false, requestKind: "text_chat" };
 }
 
-const FALLBACK_REPLY =
-  "I'm Giga3 AI — I'm having trouble reaching our AI services on this connection. Your message was saved — please tap send again. On slower mobile networks, replies usually arrive within a minute when the connection is stable.";
+const FALLBACK_REPLY = chatUserFacingMessage(CHAT_ERROR_CODES.ALL_PROVIDERS_FAILED);
 
 /** Clear, honest reply when the user hit the AI rate limit (not a service outage). */
 function rateLimitReply(message: string): string {
@@ -473,6 +474,20 @@ export const processJob = internalAction({
     const begin = await ctx.runMutation(internal.chatReplyJobs.beginProcessing, {
       jobId: args.jobId,
     });
+    if (begin.cancelled) {
+      await ctx.runMutation(internal.chatReplyJobs.deleteJob, {
+        jobId: args.jobId,
+      });
+      return;
+    }
+    if (!begin.claimed) {
+      logChatReply("worker_skip_duplicate", {
+        jobId: args.jobId,
+        conversationId: job.conversationId,
+        userId: job.userId,
+      });
+      return;
+    }
 
     const email = job.userId;
     const mode = (isValidMode(job.mode) ? job.mode : "general") as AiModeId;

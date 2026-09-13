@@ -33,7 +33,12 @@ import {
   SEGMENT_RECAP_PREFIX,
   shouldSegmentConversation,
 } from "./chatSegmentation";
-import { queryNeedsLiveWeb, resolveResearchCapability, isConversationalChatQuery } from "./researchCapabilities";
+import {
+  queryNeedsLiveWeb,
+  resolveResearchCapability,
+  isConversationalChatQuery,
+} from "./researchCapabilities";
+import { isChatAssistantFailureStub } from "./chatUserMessages";
 
 const attachmentValidator = v.optional(
   v.array(
@@ -629,6 +634,112 @@ export const editAndResend = mutation({
 
     return {
       status: "processing" as const,
+      jobId,
+      chatProviderLabel: getChatProviderLabel("gemini"),
+      usedFallback: false,
+    };
+  },
+});
+
+/** Retry the last failed assistant reply without inserting another user message. */
+export const retryFailedReply = mutation({
+  args: {
+    sessionToken: v.string(),
+    conversationId: v.id("conversations"),
+    clientRequestId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken, ctx);
+    const conv = await ctx.db.get(args.conversationId);
+    if (!conv || conv.userId !== email) {
+      throw new Error("Conversation not found");
+    }
+
+    const active = await ctx.runQuery(internal.chatReplyJobs.getActiveJobForConversation, {
+      conversationId: args.conversationId,
+    });
+    if (active) {
+      const worker =
+        active.kind === "conversational"
+          ? internal.chatConversationalReply.processTurn
+          : internal.chatReplyWorker.processJob;
+      await ctx.scheduler.runAfter(0, worker, { jobId: active._id });
+      return {
+        status: "processing" as const,
+        conversationId: args.conversationId,
+        jobId: active._id,
+        chatProviderLabel: getChatProviderLabel("gemini"),
+        usedFallback: false,
+      };
+    }
+
+    const rows = await ctx.db
+      .query("messages")
+      .withIndex("by_conversation", (q) =>
+        q.eq("conversationId", args.conversationId)
+      )
+      .order("desc")
+      .take(12);
+    const sorted = [...rows].sort((a, b) => a.createdAt - b.createdAt);
+    const lastUser = [...sorted].reverse().find((m) => m.role === "user");
+    if (!lastUser) {
+      throw new Error("No message to retry");
+    }
+
+    const assistantAfter = sorted.find(
+      (m) => m.role === "assistant" && m.createdAt >= lastUser.createdAt
+    );
+    if (assistantAfter && !isChatAssistantFailureStub(assistantAfter.content)) {
+      return {
+        status: "complete" as const,
+        conversationId: args.conversationId,
+        content: assistantAfter.content,
+        chatProviderLabel: getChatProviderLabel("gemini"),
+        usedFallback: false,
+      };
+    }
+
+    if (assistantAfter && isChatAssistantFailureStub(assistantAfter.content)) {
+      await ctx.db.delete(assistantAfter._id);
+    }
+
+    const mode = (isValidMode(conv.mode) ? conv.mode : "general") as AiModeId;
+    const resolvedResearchCapability = resolveResearchCapability({
+      explicit: conv.personaId ? undefined : undefined,
+      query: lastUser.content,
+      liveWebEnabled: false,
+    });
+    const needsLiveWeb = queryNeedsLiveWeb({
+      query: lastUser.content,
+      capability: resolvedResearchCapability,
+      mode,
+    });
+
+    const jobId = await ctx.runMutation(internal.chatReplyJobs.createJob, {
+      conversationId: args.conversationId,
+      userId: email,
+      mode,
+      content: lastUser.content,
+      kind:
+        !needsLiveWeb && isConversationalChatQuery(lastUser.content.trim())
+          ? ("conversational" as const)
+          : ("reply" as const),
+      clientRequestId: args.clientRequestId,
+      researchCapability: resolvedResearchCapability,
+      personaId: conv.personaId,
+      liveWeb: needsLiveWeb,
+    });
+
+    const worker =
+      !needsLiveWeb && isConversationalChatQuery(lastUser.content.trim())
+        ? internal.chatConversationalReply.processTurn
+        : internal.chatReplyWorker.processJob;
+
+    await ctx.scheduler.runAfter(0, worker, { jobId });
+
+    return {
+      status: "processing" as const,
+      conversationId: args.conversationId,
       jobId,
       chatProviderLabel: getChatProviderLabel("gemini"),
       usedFallback: false,

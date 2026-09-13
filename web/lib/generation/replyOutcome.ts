@@ -27,6 +27,18 @@ export function hasUsableAssistantContent(content: string | undefined): boolean 
   ) {
     return false;
   }
+  if (lower.includes("temporarily unable to generate a response")) {
+    return false;
+  }
+  if (lower.includes("live research is temporarily unavailable")) {
+    return false;
+  }
+  if (
+    lower.includes("taking longer than expected") &&
+    lower.includes("trying another ai service")
+  ) {
+    return false;
+  }
   return true;
 }
 

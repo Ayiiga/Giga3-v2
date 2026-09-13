@@ -41,6 +41,7 @@ interface ChatConversationPaneProps {
   onSuggestVisionTier?: () => void;
   initialAttachments?: PreparedChatAttachment[];
   onRetryOutboxSync?: () => void;
+  onRetryFailedReply?: () => void;
   /** UI lock only (e.g. offline) — does not change send/outbox hooks. */
   inputDisabled?: boolean;
   conversationId?: string | null;
@@ -82,6 +83,7 @@ function panePropsEqual(
     prev.initialAttachments === next.initialAttachments &&
     prev.insertRef === next.insertRef &&
     prev.onRetryOutboxSync === next.onRetryOutboxSync &&
+    prev.onRetryFailedReply === next.onRetryFailedReply &&
     prev.conversationId === next.conversationId &&
     prev.online === next.online &&
     prev.liveWebProgress === next.liveWebProgress &&
@@ -118,6 +120,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onSuggestVisionTier,
   initialAttachments,
   onRetryOutboxSync,
+  onRetryFailedReply,
   inputDisabled = false,
   conversationId = null,
   online = true,
@@ -180,6 +183,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           <ChatErrorBanner
             message={error}
             onDismiss={onDismissError}
+            onRetry={onRetryFailedReply}
             subscriptionActive={subscriptionActive}
           />
         )}

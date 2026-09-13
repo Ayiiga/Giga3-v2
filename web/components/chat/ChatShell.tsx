@@ -169,6 +169,7 @@ function ChatShellInner({
     interestProfileJson,
     uploadUsage,
     retryOutboxSync,
+    retryFailedReply,
     liveWebProgress,
     sessionToken,
   } = usePlatform();
@@ -711,6 +712,11 @@ function ChatShellInner({
           subscriptionActive={subscriptionActive}
           error={visibleError}
           onDismissError={() => setDismissedError(error)}
+          onRetryFailedReply={
+            visibleError && /retry/i.test(visibleError)
+              ? () => void retryFailedReply()
+              : undefined
+          }
           onAttachmentsChange={handleAttachmentsChange}
           onSuggestVisionTier={handleSuggestVisionTier}
           initialAttachments={handoffAttachments}
