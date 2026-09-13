@@ -1,6 +1,7 @@
 import { internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
 import { normalizeUserId } from "./userIds";
 import { resolvePersonaForSend } from "./gigaPersonas";
 
@@ -29,7 +30,56 @@ async function ensureChatUser(
   });
 }
 
-/** Insert user turn for synchronous conversational reply — no background job. */
+async function resolveExistingQuickReplyTurn(
+  ctx: { db: any },
+  args: {
+    email: string;
+    clientRequestId: string;
+  }
+) {
+  const existingJob = await ctx.db
+    .query("chatReplyJobs")
+    .withIndex("by_clientRequest", (q: any) =>
+      q.eq("clientRequestId", args.clientRequestId)
+    )
+    .first();
+  if (
+    !existingJob ||
+    existingJob.status === "failed" ||
+    existingJob.status === "cancelled"
+  ) {
+    return null;
+  }
+
+  const conv = await ctx.db.get(existingJob.conversationId);
+  if (!conv || conv.userId !== args.email) {
+    throw new Error("Conversation not found");
+  }
+
+  const rows = await ctx.db
+    .query("messages")
+    .withIndex("by_conversation", (q: any) =>
+      q.eq("conversationId", existingJob.conversationId)
+    )
+    .order("desc")
+    .take(6);
+  const assistant = rows.find(
+    (m: { role: string; createdAt: number; content: string }) =>
+      m.role === "assistant" && m.createdAt >= existingJob.createdAt
+  );
+
+  return {
+    conversationId: existingJob.conversationId,
+    since: existingJob.createdAt,
+    mode: conv.mode,
+    personaId: conv.personaId,
+    jobId: existingJob._id,
+    deduped: true as const,
+    ...(assistant ? { content: assistant.content } : {}),
+  };
+}
+
+/** Insert user turn for synchronous conversational reply — idempotent on clientRequestId. */
 export const insertConversationalTurn = internalMutation({
   args: {
     email: v.string(),
@@ -47,39 +97,21 @@ export const insertConversationalTurn = internalMutation({
 
     await ensureChatUser(ctx, email);
 
+    if (args.clientRequestId) {
+      const existing = await resolveExistingQuickReplyTurn(ctx, {
+        email,
+        clientRequestId: args.clientRequestId,
+      });
+      if (existing) {
+        return existing;
+      }
+    }
+
     let conversationId = args.conversationId;
     if (conversationId) {
       const conv = await ctx.db.get(conversationId);
       if (!conv || conv.userId !== email) {
         throw new Error("Conversation not found");
-      }
-      if (args.clientRequestId) {
-        const rows = await ctx.db
-          .query("messages")
-          .withIndex("by_conversation", (q) =>
-            q.eq("conversationId", conversationId!)
-          )
-          .order("desc")
-          .take(6);
-        const duplicateUser = rows.find(
-          (m) => m.role === "user" && m.content === content && now - m.createdAt < 120_000
-        );
-        const duplicateAssistant = rows.find(
-          (m) =>
-            m.role === "assistant" &&
-            duplicateUser &&
-            m.createdAt >= duplicateUser.createdAt
-        );
-        if (duplicateUser && duplicateAssistant) {
-          return {
-            conversationId: conversationId!,
-            since: duplicateUser.createdAt,
-            content: duplicateAssistant.content,
-            mode: conv.mode,
-            personaId: conv.personaId,
-            deduped: true as const,
-          };
-        }
       }
     } else {
       const resolved = resolvePersonaForSend({
@@ -125,11 +157,25 @@ export const insertConversationalTurn = internalMutation({
       role: "user",
     });
 
+    const jobId = await ctx.db.insert("chatReplyJobs", {
+      conversationId: conversationId!,
+      userId: email,
+      mode: resolved.mode,
+      content,
+      kind: "conversational",
+      clientRequestId: args.clientRequestId,
+      personaId: resolved.personaId ?? undefined,
+      cancelled: false,
+      status: "pending",
+      createdAt: now,
+    });
+
     return {
       conversationId: conversationId!,
       since: now,
       mode: resolved.mode,
       personaId: resolved.personaId ?? undefined,
+      jobId: jobId as Id<"chatReplyJobs">,
       deduped: false as const,
     };
   },

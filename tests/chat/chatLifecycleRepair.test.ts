@@ -25,11 +25,13 @@ describe("chat lifecycle repair wiring", () => {
     expect(recovery).not.toContain("couldn't finish this reply because our AI service didn't respond in time");
   });
 
-  it("quick reply creates a durable conversational job", () => {
+  it("quick reply creates a durable conversational job atomically with the user turn", () => {
     const quick = read("convex/chatQuickReply.ts");
-    expect(quick).toContain("internal.chatReplyJobs.createJob");
-    expect(quick).toContain('kind: "conversational"');
+    expect(quick).toContain("const jobId = setup.jobId");
     expect(quick).toContain("internal.chatConversationalReply.processTurn");
+    const mutations = read("convex/chatQuickReplyMutations.ts");
+    expect(mutations).toContain('kind: "conversational"');
+    expect(mutations).toContain("clientRequestId: args.clientRequestId");
   });
 
   it("exposes idempotent retryFailedReply mutation", () => {
