@@ -20,10 +20,4 @@ describe("news query classification", () => {
     const verify = classifyNewsQuery("Fact-check this claim about Ghana elections");
     expect(verify.verificationRequested).toBe(true);
   });
-
-  it("detects Ghana and Nepal together", () => {
-    const multi = classifyNewsQuery("What is happening in Ghana and Nepal?");
-    expect(multi.countries).toEqual(["Ghana", "Nepal"]);
-    expect(multi.requiresRetrieval).toBe(true);
-  });
 });

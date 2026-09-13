@@ -1,12 +1,9 @@
 import {
   buildEvidenceContextBlock,
-  buildMultiCountryNewsEvidencePackage,
   buildNewsEvidencePackage,
   logNewsEvidenceEvent,
 } from "../newsEvidence/pipeline";
-import { extractRequestedCountries } from "../newsEvidence/queryClassification";
 import {
-  buildCountryResearchSearchQuery,
   buildResearchSearchQuery,
   isNewsCapability,
   NEWS_RESPONSE_FORMAT_GUIDANCE,
@@ -127,57 +124,25 @@ export async function runWebResearch(args: {
 
   await args.onProgress?.("searching");
 
-  const requestedCountries = extractRequestedCountries(args.query);
-  const multiCountry = requestedCountries.length >= 2;
   const searchQuery = buildResearchSearchQuery(
     args.query,
     args.researchCapability ?? "live_web"
   );
 
   let searchResults: LiveWebSource[] = [];
-  const countryWarnings: Record<string, string[]> = {};
-
   if (searchProvider) {
-    if (multiCountry) {
-      const perCountryMax = Math.max(
-        2,
-        Math.floor(liveWebMaxSearchResults() / requestedCountries.length)
+    try {
+      const rows = await searchProvider.search(searchQuery, {
+        maxResults: liveWebMaxSearchResults(),
+        timeoutMs: liveWebSearchTimeoutMs(),
+      });
+      searchResults = rows.map(sourceFromSearch);
+      sources.push(...searchResults);
+    } catch (err) {
+      warnings.push(
+        `Search provider failed: ${err instanceof Error ? err.message : String(err)}`
       );
-      for (const country of requestedCountries) {
-        await args.onProgress?.("searching");
-        const countryQuery = buildCountryResearchSearchQuery(
-          country,
-          args.query,
-          args.researchCapability ?? "live_web"
-        );
-        try {
-          const rows = await searchProvider.search(countryQuery, {
-            maxResults: perCountryMax,
-            timeoutMs: liveWebSearchTimeoutMs(),
-          });
-          const countryResults = rows.map(sourceFromSearch);
-          searchResults.push(...countryResults);
-        } catch (err) {
-          const message = err instanceof Error ? err.message : String(err);
-          const warning = `${country}: search failed (${message})`;
-          warnings.push(warning);
-          countryWarnings[country] = [warning];
-        }
-      }
-    } else {
-      try {
-        const rows = await searchProvider.search(searchQuery, {
-          maxResults: liveWebMaxSearchResults(),
-          timeoutMs: liveWebSearchTimeoutMs(),
-        });
-        searchResults = rows.map(sourceFromSearch);
-      } catch (err) {
-        warnings.push(
-          `Search provider failed: ${err instanceof Error ? err.message : String(err)}`
-        );
-      }
     }
-    sources.push(...searchResults);
   } else {
     warnings.push(
       "No dedicated search API configured (SERPER_API_KEY or BRAVE_SEARCH_API_KEY). Gemini Google Search grounding will be used during answer generation."
@@ -232,26 +197,15 @@ export async function runWebResearch(args: {
   let newsEvidence: import("../newsEvidence/types").NewsEvidenceContext | null = null;
 
   if (isNewsCapability(args.researchCapability ?? "live_web") || args.researchCapability === "live_web") {
-    newsEvidence = multiCountry
-      ? buildMultiCountryNewsEvidencePackage({
-          query: args.query,
-          capability: args.researchCapability,
-          countries: requestedCountries,
-          sources: uniqueSources,
-          pagesReadUrls,
-          warnings,
-          countryWarnings,
-          liveSearchUsed: Boolean(searchProvider && searchResults.length),
-        })
-      : buildNewsEvidencePackage({
-          query: args.query,
-          capability: args.researchCapability,
-          sources: uniqueSources,
-          pagesReadUrls,
-          warnings,
-          liveSearchUsed: Boolean(searchProvider && searchResults.length),
-          retrievalFailed: uniqueSources.length === 0,
-        });
+    newsEvidence = buildNewsEvidencePackage({
+      query: args.query,
+      capability: args.researchCapability,
+      sources: uniqueSources,
+      pagesReadUrls,
+      warnings,
+      liveSearchUsed: Boolean(searchProvider && searchResults.length),
+      retrievalFailed: uniqueSources.length === 0,
+    });
     evidenceContextBlock = buildEvidenceContextBlock(newsEvidence);
     logNewsEvidenceEvent("research_evidence_built", {
       query: args.query.slice(0, 120),
