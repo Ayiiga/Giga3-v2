@@ -99,8 +99,28 @@ export function MultiTrackTimeline({
   const trackMinWidthPx = Math.max(280, Math.ceil(max * TIMELINE_PX_PER_SEC));
   const [drag, setDrag] = useState<ClipDragState | null>(null);
   const [hoverLane, setHoverLane] = useState<GigaEditTimelineLane | null>(null);
+  const [scrollLeftPx, setScrollLeftPx] = useState(0);
+  const [viewportWidthPx, setViewportWidthPx] = useState(320);
   const onMoveClipRef = useRef(onMoveClip);
   onMoveClipRef.current = onMoveClip;
+
+  const visibleWindowSec = useMemo(() => {
+    const scrollStart = (scrollLeftPx / trackMinWidthPx) * max;
+    const scrollEnd = ((scrollLeftPx + viewportWidthPx) / trackMinWidthPx) * max;
+    const pad = 2.5;
+    return {
+      start: Math.max(0, Math.min(scrollStart, playheadSec - pad)),
+      end: Math.min(max, Math.max(scrollEnd, playheadSec + pad)),
+    };
+  }, [max, playheadSec, scrollLeftPx, trackMinWidthPx, viewportWidthPx]);
+
+  const visibleClips = useMemo(
+    () =>
+      clips.filter(
+        (clip) => clip.endSec >= visibleWindowSec.start && clip.startSec <= visibleWindowSec.end
+      ),
+    [clips, visibleWindowSec.end, visibleWindowSec.start]
+  );
 
   const ticks = useMemo(() => {
     const step = max <= 20 ? 5 : max <= 60 ? 10 : 15;
@@ -112,6 +132,23 @@ export function MultiTrackTimeline({
 
   const logoBar = syntheticLogoBar(max, Boolean(brandWatermark?.trim()), brandWatermark?.trim() || "Logo");
   const captionsBar = syntheticCaptionsBar(max, Boolean(hasCaptions));
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const sync = () => {
+      setScrollLeftPx(el.scrollLeft);
+      setViewportWidthPx(el.clientWidth);
+    };
+    sync();
+    el.addEventListener("scroll", sync, { passive: true });
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(sync) : null;
+    ro?.observe(el);
+    return () => {
+      el.removeEventListener("scroll", sync);
+      ro?.disconnect();
+    };
+  }, [trackMinWidthPx]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -263,7 +300,7 @@ export function MultiTrackTimeline({
             </div>
 
             {TIMELINE_LANES.map((lane) => {
-              const laneClips = clipsForLane(clips, lane.id);
+              const laneClips = clipsForLane(visibleClips, lane.id);
               const synthetic: SyntheticLaneBar[] = [];
               if (lane.id === "logo" && logoBar) synthetic.push(logoBar);
               if (lane.id === "captions" && captionsBar) synthetic.push(captionsBar);

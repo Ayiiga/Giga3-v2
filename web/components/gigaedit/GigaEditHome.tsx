@@ -19,6 +19,7 @@ import {
 } from "@/lib/gigaedit/toolCatalog";
 import type { CreatorHomeAction } from "@/lib/gigaedit/creatorStudio/homeActions";
 import type { GigaEditOpenOptions, GigaEditSection } from "@/lib/gigaedit/types";
+import { shouldUseSolidPanels } from "@/lib/gigaedit/lowEndUi";
 import { cn } from "@/lib/utils";
 import { Pin, PinOff } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
@@ -141,8 +142,10 @@ export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
   const toolCount = useMemo(() => countToolsForFilter(category), [category]);
   const filters = useMemo(() => creatorToolkitFilterLabels(), []);
 
+  const solidPanels = useMemo(() => shouldUseSolidPanels(), []);
+
   return (
-    <div className="gigaedit-home space-y-6">
+    <div className={cn("gigaedit-home space-y-6", solidPanels && "gigaedit-solid-panels")}>
       <header className="gigaedit-hero gigaedit-glass space-y-2 p-4 sm:p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--ge-gold)]">
           {CREATOR_STUDIO_PRODUCT_NAME}

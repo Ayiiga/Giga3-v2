@@ -29,6 +29,50 @@
   overscroll-behavior-y: auto;
 }
 
+.gigaedit-solid-panels .gigaedit-glass,
+.gigaedit-solid-panels .gigaedit-tool-card,
+.gigaedit-solid-panels .gigaedit-editor-toolpanel {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(20, 28, 47, 0.95) !important;
+}
+
+.gigaedit-voiceover-wave {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  height: 2.5rem;
+}
+
+.gigaedit-voiceover-wave__bar {
+  width: 4px;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #eab308, #f59e0b);
+  transform-origin: bottom;
+  transition: transform 0.08s linear;
+}
+
+.gigaedit-mic-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.gigaedit-mic-sheet {
+  width: min(100%, 24rem);
+  border-radius: 1rem 1rem 0.5rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(20, 28, 47, 0.98);
+  padding: 1rem 1rem 1.25rem;
+}
+
 .gigaedit-shell {
   color: var(--ge-text);
   background:

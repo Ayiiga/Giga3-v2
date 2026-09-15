@@ -13,7 +13,7 @@ export function stepFrame(sec: number, deltaFrames: number, fps = DEFAULT_TIMELI
 }
 
 export function formatTimecodeMs(sec: number, fps = DEFAULT_TIMELINE_FPS): string {
-  const safe = Math.max(0, sec);
+  const safe = Number.isFinite(sec) && !Number.isNaN(sec) ? Math.max(0, sec) : 0;
   const totalMs = Math.round(safe * 1000);
   const minutes = Math.floor(totalMs / 60_000);
   const seconds = Math.floor((totalMs % 60_000) / 1000);
