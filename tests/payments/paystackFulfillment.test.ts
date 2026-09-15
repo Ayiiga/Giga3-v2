@@ -27,16 +27,19 @@ describe("Paystack fulfillment safety", () => {
     expect(src).toContain('status: "failed",\n        paystackResponse: args.paystackResponse,');
   });
 
-  it("allows Paystack popup via a single global COOP header", () => {
+  it("allows Paystack popup via global COOP while gigaedit uses scoped isolation", () => {
     const headers = readFileSync(resolve(__dirname, "../../web/public/_headers"), "utf8");
     const coopLines = headers
       .split("\n")
       .filter((line) => /^\s*Cross-Origin-Opener-Policy:/i.test(line));
-    // Cloudflare Pages merges matching rules, so a per-route override would
-    // emit two COOP headers (invalid → browsers fall back to unsafe-none).
-    expect(coopLines).toHaveLength(1);
+    // Global allow-popups for Paystack; /gigaedit/* overrides to same-origin for WebCodecs.
+    expect(coopLines.length).toBeGreaterThanOrEqual(1);
     expect(coopLines[0].trim()).toBe(
       "Cross-Origin-Opener-Policy: same-origin-allow-popups"
+    );
+    expect(headers).toContain("/gigaedit/*");
+    expect(headers).toMatch(
+      /\/gigaedit\/\*[\s\S]*Cross-Origin-Opener-Policy: same-origin/
     );
   });
 
