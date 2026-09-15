@@ -36,7 +36,24 @@ describe("PrimaryNav UI wiring", () => {
 
     expect(host).toContain("gigaedit-video-mode");
     expect(host).toContain("chat-keyboard-open");
+    expect(host).toContain("primary-nav-bar-visible");
     expect(css).toContain(".gigasocial-bottom-dock");
+    expect(css).toContain("primary-nav-bar-visible");
     expect(css).toContain("padding-bottom: var(--primary-nav-offset)");
+  });
+
+  it("keeps PrimaryNav lightweight without product bundle imports", () => {
+    const nav = readFileSync(
+      resolve(__dirname, "../../web/components/navigation/PrimaryNav.tsx"),
+      "utf8"
+    );
+    const host = readFileSync(
+      resolve(__dirname, "../../web/components/navigation/PrimaryNavHost.tsx"),
+      "utf8"
+    );
+    expect(nav).not.toMatch(/from "@\/components\/(gigaedit|gigasocial|media)/);
+    expect(host).not.toMatch(/from "@\/components\/(gigaedit|gigasocial|media)/);
+    expect(nav).toContain('aria-label="Giga3 primary navigation"');
+    expect(nav).toContain("primary-nav__label");
   });
 });

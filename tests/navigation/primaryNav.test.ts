@@ -40,4 +40,19 @@ describe("primaryNav route matching", () => {
     expect(shouldShowDesktopRail("/gigasocial/")).toBe(true);
     expect(shouldShowDesktopRail("/chat")).toBe(false);
   });
+
+  it("resolves nested product routes to the correct tab", () => {
+    expect(resolvePrimaryNavTab("/gigaedit/?tab=video")).toBe("edits");
+    expect(resolvePrimaryNavTab("/gigasocial/profile")).toBe("social");
+    expect(resolvePrimaryNavTab("/gigasocial/post/abc")).toBe("social");
+    expect(resolvePrimaryNavTab("/media/?tab=video")).toBe("studio");
+  });
+
+  it("keeps navigation hidden on auth and payment routes", () => {
+    expect(isPrimaryNavRoute("/chat/login")).toBe(false);
+    expect(isPrimaryNavRoute("/chat/share/token123")).toBe(false);
+    expect(isPrimaryNavRoute("/payment/success")).toBe(false);
+    expect(isPrimaryNavRoute("/payment/failed")).toBe(false);
+    expect(resolvePrimaryNavTab("/chat/login")).toBeNull();
+  });
 });

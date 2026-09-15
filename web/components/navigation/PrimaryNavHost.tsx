@@ -24,6 +24,8 @@ export function PrimaryNavHost() {
   const onProductRoute = isPrimaryNavRoute(pathname);
   const showRail = shouldShowDesktopRail(pathname);
   const [flags, setFlags] = useState({ immersive: false, keyboardOpen: false });
+  const navBarVisible =
+    onProductRoute && !flags.immersive && !flags.keyboardOpen;
 
   useEffect(() => {
     if (!onProductRoute) return;
@@ -41,10 +43,15 @@ export function PrimaryNavHost() {
     const html = document.documentElement;
     html.classList.toggle("primary-nav-route", onProductRoute);
     html.classList.toggle("primary-nav-rail", onProductRoute && showRail);
+    html.classList.toggle("primary-nav-bar-visible", navBarVisible);
     return () => {
-      html.classList.remove("primary-nav-route", "primary-nav-rail");
+      html.classList.remove(
+        "primary-nav-route",
+        "primary-nav-rail",
+        "primary-nav-bar-visible"
+      );
     };
-  }, [onProductRoute, showRail]);
+  }, [onProductRoute, showRail, navBarVisible]);
 
   if (!onProductRoute) return null;
 
