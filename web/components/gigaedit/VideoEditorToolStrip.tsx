@@ -2,31 +2,17 @@
 
 import {
   Captions,
-  Layers,
   Music2,
   Scissors,
   Sparkles,
-  SplitSquareVertical,
-  Sticker,
   Trash2,
   Type,
-  Volume2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-export type VideoEditorToolTab =
-  | "edit"
-  | "split"
-  | "audio"
-  | "noise"
-  | "text"
-  | "stickers"
-  | "overlays"
-  | "effects"
-  | "captions"
-  | "delete";
+export type VideoEditorToolTab = "edit" | "audio" | "text" | "fx" | "delete";
 
 const TABS: Array<{
   id: VideoEditorToolTab;
@@ -35,14 +21,9 @@ const TABS: Array<{
   badge?: string;
 }> = [
   { id: "edit", label: "Edit", icon: Scissors },
-  { id: "split", label: "Split", icon: SplitSquareVertical },
-  { id: "audio", label: "Audio", icon: Music2 },
-  { id: "noise", label: "Noise", icon: Volume2, badge: "AI" },
+  { id: "audio", label: "Audio", icon: Music2, badge: "AI" },
   { id: "text", label: "Text", icon: Type },
-  { id: "stickers", label: "Stickers", icon: Sticker },
-  { id: "overlays", label: "Overlays", icon: Layers },
-  { id: "effects", label: "Effects", icon: Sparkles },
-  { id: "captions", label: "Captions", icon: Captions },
+  { id: "fx", label: "FX", icon: Sparkles },
   { id: "delete", label: "Delete", icon: Trash2 },
 ];
 

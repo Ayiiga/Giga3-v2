@@ -3,23 +3,25 @@
 import { OfflineManager } from "@/components/gigaedit/OfflineManager";
 import { SurfaceRecommendations } from "@/components/recommendations/SurfaceRecommendations";
 import { RecentProjectsGrid } from "@/components/gigaedit/RecentProjectsGrid";
+import { CREATOR_STUDIO_PRODUCT_NAME } from "@/lib/gigaedit/creatorStudio";
 import {
-  CREATOR_HOME_ACTIONS,
-  CREATOR_STUDIO_PRODUCT_NAME,
-  featuredCreatorHomeActions,
-  type CreatorHomeAction,
-} from "@/lib/gigaedit/creatorStudio";
+  buildCreatorToolkitItems,
+  countToolsForFilter,
+  creatorToolkitFilterLabels,
+  isTeleprompterPinned,
+  setTeleprompterPinned,
+  type CreatorToolkitFilter,
+  type CreatorToolkitItem,
+} from "@/lib/gigaedit/creatorToolkit";
 import {
-  featuredGigaEditTools,
-  GIGAEDIT_TOOL_CATEGORIES,
   resolveGigaEditToolHref,
-  toolsForCategory,
   type GigaEditCatalogTool,
-  type GigaEditToolCategory,
 } from "@/lib/gigaedit/toolCatalog";
+import type { CreatorHomeAction } from "@/lib/gigaedit/creatorStudio/homeActions";
 import type { GigaEditOpenOptions, GigaEditSection } from "@/lib/gigaedit/types";
 import { cn } from "@/lib/utils";
-import { useMemo, useState } from "react";
+import { Pin, PinOff } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 
 type GigaEditHomeProps = {
   onOpen: (section: GigaEditSection, opts?: GigaEditOpenOptions) => void;
@@ -52,82 +54,92 @@ function launchTool(
   }
 }
 
-function ToolCard({
-  tool,
+function ToolkitCard({
+  item,
   onOpen,
-  large,
+  teleprompterPinned,
+  onTogglePin,
 }: {
-  tool: GigaEditCatalogTool;
+  item: CreatorToolkitItem;
   onOpen: GigaEditHomeProps["onOpen"];
-  large?: boolean;
+  teleprompterPinned: boolean;
+  onTogglePin: () => void;
 }) {
-  const isMedia = tool.kind === "media";
-  return (
-    <button
-      type="button"
-      className={cn("gigaedit-action-tile gigaedit-tool-card", large && "gigaedit-tool-card--featured")}
-      onClick={() => launchTool(tool, onOpen)}
-    >
-      <span className="gigaedit-tool-card__icon" aria-hidden>
-        {tool.emoji}
-      </span>
-      <span className="gigaedit-tool-card__label">{tool.label}</span>
-      {!large ? (
-        <span className="gigaedit-tool-card__desc gigaedit-tool-card__desc--compact">{tool.description}</span>
-      ) : null}
-      {isMedia ? (
-        <span className="gigaedit-tool-card__badge">AI Studio</span>
-      ) : (
-        <span className="gigaedit-tool-card__badge gigaedit-tool-card__badge--local">On device</span>
-      )}
-    </button>
-  );
-}
+  const isTeleprompter = item.kind === "tool" && item.tool.id === "teleprompter";
+  const isMedia = item.kind === "action" ? item.action.kind === "media" : item.tool.kind === "media";
+  const emoji = item.kind === "action" ? item.action.emoji : item.tool.emoji;
+  const label = item.kind === "action" ? item.action.label : item.tool.label;
+  const description = item.kind === "action" ? item.action.description : item.tool.description;
+  const featured = item.kind === "action" ? item.action.featured : item.tool.featured;
 
-function HomeActionTile({
-  action,
-  onOpen,
-}: {
-  action: CreatorHomeAction;
-  onOpen: GigaEditHomeProps["onOpen"];
-}) {
-  const isMedia = action.kind === "media";
   return (
-    <button
-      type="button"
+    <div
       className={cn(
         "gigaedit-action-tile gigaedit-tool-card",
-        action.featured && "gigaedit-tool-card--featured"
+        (featured || isTeleprompter) && "gigaedit-tool-card--featured",
+        isTeleprompter && "gigaedit-tool-card--teleprompter-top"
       )}
-      onClick={() => launchHomeAction(action, onOpen)}
     >
-      <span className="gigaedit-tool-card__icon" aria-hidden>
-        {action.emoji}
-      </span>
-      <span className="gigaedit-tool-card__label">{action.label}</span>
-      {!action.featured ? (
-        <span className="gigaedit-tool-card__desc gigaedit-tool-card__desc--compact">{action.description}</span>
+      {isTeleprompter ? (
+        <span className="gigaedit-tool-card__top-badge" aria-label="Top priority">
+          ★ TOP
+        </span>
       ) : null}
-      {isMedia ? (
-        <span className="gigaedit-tool-card__badge">AI Studio</span>
-      ) : (
-        <span className="gigaedit-tool-card__badge gigaedit-tool-card__badge--local">On device</span>
-      )}
-    </button>
+      <button
+        type="button"
+        className="gigaedit-tool-card__hit flex min-h-0 w-full flex-1 flex-col items-start text-left"
+        onClick={() =>
+          item.kind === "action" ? launchHomeAction(item.action, onOpen) : launchTool(item.tool, onOpen)
+        }
+      >
+        <span className="gigaedit-tool-card__icon" aria-hidden>
+          {emoji}
+        </span>
+        <span className="gigaedit-tool-card__label">{label}</span>
+        <span className="gigaedit-tool-card__desc gigaedit-tool-card__desc--compact">{description}</span>
+        {isMedia ? (
+          <span className="gigaedit-tool-card__badge">AI Studio</span>
+        ) : (
+          <span className="gigaedit-tool-card__badge gigaedit-tool-card__badge--local">On device</span>
+        )}
+      </button>
+      {isTeleprompter ? (
+        <button
+          type="button"
+          className="gigaedit-tool-card__pin"
+          aria-label={teleprompterPinned ? "Unpin teleprompter" : "Pin teleprompter to top"}
+          aria-pressed={teleprompterPinned}
+          onClick={onTogglePin}
+        >
+          {teleprompterPinned ? (
+            <Pin className="h-3 w-3" aria-hidden />
+          ) : (
+            <PinOff className="h-3 w-3" aria-hidden />
+          )}
+        </button>
+      ) : null}
+    </div>
   );
 }
 
 export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
-  const [category, setCategory] = useState<GigaEditToolCategory | "all">("all");
-  const featuredActions = useMemo(() => featuredCreatorHomeActions(), []);
-  const featured = useMemo(() => featuredGigaEditTools(), []);
+  const [category, setCategory] = useState<CreatorToolkitFilter>("all");
+  const [teleprompterPinned, setTeleprompterPinnedState] = useState(isTeleprompterPinned);
+
+  const togglePin = useCallback(() => {
+    setTeleprompterPinnedState((prev) => {
+      const next = !prev;
+      setTeleprompterPinned(next);
+      return next;
+    });
+  }, []);
+
   const catalog = useMemo(
-    () =>
-      category === "all"
-        ? GIGAEDIT_TOOL_CATEGORIES.flatMap((c) => toolsForCategory(c.id))
-        : toolsForCategory(category),
-    [category]
+    () => buildCreatorToolkitItems(category, teleprompterPinned),
+    [category, teleprompterPinned]
   );
+  const toolCount = useMemo(() => countToolsForFilter(category), [category]);
+  const filters = useMemo(() => creatorToolkitFilterLabels(), []);
 
   return (
     <div className="gigaedit-home space-y-6">
@@ -164,25 +176,6 @@ export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
 
       <OfflineManager compact />
 
-      <section aria-labelledby="gigaedit-creator-actions">
-        <div className="mb-2 flex items-end justify-between gap-2">
-          <h2 id="gigaedit-creator-actions" className="text-sm font-semibold sm:text-base">
-            Creator actions
-          </h2>
-          <p className="text-[11px] text-[var(--ge-muted)]">{CREATOR_HOME_ACTIONS.length} tools</p>
-        </div>
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-3">
-          {featuredActions.map((action) => (
-            <HomeActionTile key={action.id} action={action} onOpen={onOpen} />
-          ))}
-        </div>
-        <div className="mt-2.5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-          {CREATOR_HOME_ACTIONS.filter((a) => !a.featured).map((action) => (
-            <HomeActionTile key={action.id} action={action} onOpen={onOpen} />
-          ))}
-        </div>
-      </section>
-
       <section aria-labelledby="gigaedit-recent" className="gigaedit-glass p-4 sm:p-5">
         <div className="mb-3 flex items-center justify-between gap-2">
           <h2 id="gigaedit-recent" className="text-sm font-semibold">
@@ -199,62 +192,47 @@ export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
         <RecentProjectsGrid limit={4} onOpen={onOpen} onViewAll={() => onOpen("projects")} />
       </section>
 
-      <section aria-labelledby="gigaedit-featured">
-        <div className="mb-2 flex items-end justify-between gap-2">
-          <h2 id="gigaedit-featured" className="text-sm font-semibold sm:text-base">
-            Featured AI tools
-          </h2>
-          <p className="text-[11px] text-[var(--ge-muted)]">{featured.length} ready</p>
-        </div>
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
-          {featured.map((tool) => (
-            <ToolCard key={tool.id} tool={tool} onOpen={onOpen} large />
-          ))}
-        </div>
-      </section>
-
-      <section aria-labelledby="gigaedit-pro-tools">
+      <section aria-labelledby="gigaedit-creator-toolkit">
         <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h2 id="gigaedit-pro-tools" className="text-sm font-semibold sm:text-base">
-            Professional toolkit
-          </h2>
-          <div
-            className="gigaedit-category-rail flex gap-1.5 overflow-x-auto overscroll-x-contain pb-0.5"
-            role="tablist"
-            aria-label="Tool categories"
-          >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={category === "all"}
-              className={cn(
-                "gigaedit-chip shrink-0",
-                category === "all" && "gigaedit-chip--active"
-              )}
-              onClick={() => setCategory("all")}
+          <div>
+            <h2 id="gigaedit-creator-toolkit" className="text-sm font-semibold sm:text-base">
+              Creator toolkit
+            </h2>
+            <p className="text-[11px] text-[var(--ge-muted)]">{toolCount} tools</p>
+          </div>
+          <div className="gigaedit-category-rail-wrap relative min-w-0 flex-1 sm:max-w-xl">
+            <div
+              className="gigaedit-category-rail flex gap-1.5 overflow-x-auto overscroll-x-contain pb-0.5"
+              role="tablist"
+              aria-label="Tool categories"
             >
-              All
-            </button>
-            {GIGAEDIT_TOOL_CATEGORIES.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                aria-selected={category === item.id}
-                className={cn(
-                  "gigaedit-chip shrink-0",
-                  category === item.id && "gigaedit-chip--active"
-                )}
-                onClick={() => setCategory(item.id)}
-              >
-                {item.label}
-              </button>
-            ))}
+              {filters.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={category === item.id}
+                  className={cn(
+                    "gigaedit-chip shrink-0",
+                    category === item.id && "gigaedit-chip--active"
+                  )}
+                  onClick={() => setCategory(item.id)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
-          {catalog.map((tool) => (
-            <ToolCard key={`${tool.category}-${tool.id}`} tool={tool} onOpen={onOpen} />
+          {catalog.map((item) => (
+            <ToolkitCard
+              key={item.kind === "action" ? `action-${item.action.id}` : `tool-${item.tool.id}`}
+              item={item}
+              onOpen={onOpen}
+              teleprompterPinned={teleprompterPinned}
+              onTogglePin={togglePin}
+            />
           ))}
         </div>
       </section>

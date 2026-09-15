@@ -138,8 +138,39 @@
   background: #fff;
 }
 
+.gigasocial-teleprompter-studio-band {
+  will-change: transform;
+  contain: layout style;
+}
+
+.gigasocial-teleprompter-mini-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  accent-color: #eab308;
+}
+
+.gigasocial-teleprompter-mini-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.gigasocial-teleprompter-safe-area {
+  pointer-events: none;
+}
+
 @media (max-width: 1023px) {
   .gigasocial-teleprompter-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .gigasocial-teleprompter-studio-band .backdrop-blur-md {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }

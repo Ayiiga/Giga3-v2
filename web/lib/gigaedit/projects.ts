@@ -62,15 +62,29 @@ function isProjectMetaRow(row: unknown): row is GigaEditProjectRecord {
   return typeof record.kind === "string" && typeof record.title === "string";
 }
 
+/** Deduplicate by project id — keep the row with the latest updatedAt. */
+export function deduplicateGigaEditProjects(
+  rows: GigaEditProjectRecord[]
+): GigaEditProjectRecord[] {
+  const byId = new Map<string, GigaEditProjectRecord>();
+  for (const row of rows) {
+    const existing = byId.get(row.id);
+    if (!existing || row.updatedAt >= existing.updatedAt) {
+      byId.set(row.id, row);
+    }
+  }
+  return Array.from(byId.values()).sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
 export async function listGigaEditProjects(): Promise<GigaEditProjectRecord[]> {
   const db = await openDb();
   if (!db) return [];
   try {
     const tx = db.transaction(META_STORE, "readonly");
     const rows = await idbReq(tx.objectStore(META_STORE).getAll());
-    return (rows as unknown[])
-      .filter(isProjectMetaRow)
-      .sort((a, b) => b.updatedAt - a.updatedAt);
+    return deduplicateGigaEditProjects(
+      (rows as unknown[]).filter(isProjectMetaRow) as GigaEditProjectRecord[]
+    );
   } catch {
     return [];
   }

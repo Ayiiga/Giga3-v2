@@ -190,8 +190,94 @@
 
 .gigaedit-chip--active {
   color: #0b1220;
-  background: var(--ge-gold);
-  border-color: rgba(251, 191, 36, 0.7);
+  background: #eab308;
+  border-color: rgba(234, 179, 8, 0.85);
+  font-weight: 700;
+}
+
+.gigaedit-category-rail-wrap::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0.25rem;
+  width: 2rem;
+  pointer-events: none;
+  background: linear-gradient(to left, var(--ge-bg, #0b1220) 10%, transparent);
+}
+
+.gigaedit-category-rail {
+  scrollbar-width: none;
+}
+
+.gigaedit-category-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.gigaedit-tool-card--teleprompter-top {
+  border: 2px solid #eab308;
+}
+
+.gigaedit-tool-card__top-badge {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #0b1220;
+  background: #eab308;
+  border-radius: 999px;
+  padding: 0.12rem 0.38rem;
+}
+
+.gigaedit-tool-card__pin {
+  position: absolute;
+  bottom: 0.45rem;
+  right: 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(234, 179, 8, 0.45);
+  background: rgba(15, 23, 42, 0.85);
+  color: #eab308;
+}
+
+.gigaedit-tool-card__hit {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+}
+
+.gigaedit-autosave-toast {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  margin: 0 0.75rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(234, 179, 8, 0.45);
+  background: rgba(15, 23, 42, 0.95);
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #eab308;
+  animation: gigaedit-toast-in 0.2s ease-out;
+}
+
+@keyframes gigaedit-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.35rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .gigaedit-input {
@@ -844,8 +930,8 @@ html.gigaedit-video-mode .gigaedit-shell--editor {
 }
 
 .gigaedit-editor-toolstrip {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: #10141c;
+  border-top: 1px solid #1e293b;
+  background: rgba(15, 23, 42, 0.95);
   padding-bottom: max(0.35rem, env(safe-area-inset-bottom));
   flex: 0 0 auto;
 }
@@ -876,10 +962,12 @@ html.gigaedit-video-mode .gigaedit-shell--editor {
 
 .gigaedit-editor-tooltab {
   display: flex;
-  flex: 0 0 auto;
-  min-width: 3.65rem;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 2.75rem;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 0.2rem;
   border-radius: 0.65rem;
   padding: 0.35rem 0.15rem;

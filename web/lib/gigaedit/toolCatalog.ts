@@ -73,11 +73,12 @@ export const GIGAEDIT_TOOL_CATALOG: GigaEditCatalogTool[] = [
   {
     id: "teleprompter",
     label: "Teleprompter",
-    description: "Scroll scripts while you record",
+    description: "Most used for voiceover",
     emoji: "🎤",
     category: "create",
     kind: "section",
     section: "teleprompter",
+    featured: true,
   },
   {
     id: "audio-studio",
