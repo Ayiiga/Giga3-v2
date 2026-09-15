@@ -1,0 +1,215 @@
+/* Giga3 primary 4-tab navigation — Home | Studio | Edits | Social */
+
+:root {
+  --primary-nav-height: 3.25rem;
+  --primary-nav-rail-width: 4.75rem;
+  --marketing-header-height: 3.5rem;
+  --primary-nav-offset: 0px;
+  --primary-nav-inline-start: 0px;
+}
+
+/* Offsets apply only while the bar/rail is actually visible (not keyboard/immersive). */
+html.primary-nav-route.primary-nav-bar-visible {
+  --primary-nav-offset: calc(var(--primary-nav-height) + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 1024px) {
+  html.primary-nav-rail.primary-nav-bar-visible {
+    --primary-nav-offset: 0px;
+    --primary-nav-inline-start: var(--primary-nav-rail-width);
+  }
+}
+
+/* Shared item styles */
+.primary-nav__inner {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  gap: 0.15rem;
+}
+
+.primary-nav__item {
+  display: inline-flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0.35rem 0.25rem;
+  border-radius: 999px;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.primary-nav__item:focus-visible {
+  outline: 2px solid #eab308;
+  outline-offset: 2px;
+}
+
+.primary-nav__item--active {
+  color: #0f172a;
+  background: #eab308;
+}
+
+.primary-nav__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.primary-nav__label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 359px) {
+  .primary-nav__label {
+    font-size: 0.62rem;
+  }
+
+  .primary-nav__item {
+    padding-inline: 0.15rem;
+  }
+}
+
+/* Mobile bottom bar */
+.primary-nav--mobile {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 55;
+  padding: 0.35rem 0.5rem calc(0.35rem + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    hsl(var(--background)) 70%,
+    hsl(var(--background) / 0.92) 100%
+  );
+  border-top: 1px solid hsl(var(--border) / 0.65);
+}
+
+.primary-nav--mobile .primary-nav__inner {
+  pointer-events: auto;
+  margin: 0 auto;
+  max-width: 28rem;
+  padding: 0.2rem 0.35rem;
+  border-radius: 1.1rem;
+  background: hsl(var(--background) / 0.98);
+  box-shadow: 0 -4px 24px -12px rgba(0, 0, 0, 0.35);
+}
+
+@media (min-width: 1024px) {
+  .primary-nav--mobile {
+    display: none;
+  }
+}
+
+/* Desktop left rail */
+.primary-nav--desktop {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .primary-nav--desktop {
+    display: flex;
+    position: fixed;
+    top: var(--marketing-header-height);
+    left: 0;
+    bottom: 0;
+    z-index: 45;
+    width: var(--primary-nav-rail-width);
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.75rem 0.35rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    border-right: 1px solid hsl(var(--border) / 0.65);
+    background: hsl(var(--background));
+  }
+
+  .primary-nav--desktop .primary-nav__inner {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0.35rem;
+    height: 100%;
+  }
+
+  .primary-nav--desktop .primary-nav__item {
+    flex: 0 0 auto;
+    width: 100%;
+    padding: 0.55rem 0.35rem;
+    border-radius: 0.85rem;
+    font-size: 0.62rem;
+  }
+}
+
+/* Content offsets — marketing product pages */
+html.primary-nav-route.primary-nav-bar-visible [data-marketing="true"] .marketing-scroll-main {
+  padding-bottom: calc(1.5rem + var(--primary-nav-offset));
+}
+
+@media (min-width: 1024px) {
+  html.primary-nav-rail.primary-nav-bar-visible [data-marketing="true"] .marketing-scroll-main {
+    padding-left: var(--primary-nav-inline-start);
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Chat mobile shell — keep composer above bottom nav */
+@media (max-width: 1023px) {
+  html.primary-nav-route.primary-nav-bar-visible.chat-route .chat-keyboard-shell {
+    padding-bottom: var(--primary-nav-offset);
+  }
+}
+
+/* GigaSocial in-app dock stacks above global nav */
+html.primary-nav-route.primary-nav-bar-visible .gigasocial-bottom-dock {
+  bottom: var(--primary-nav-offset);
+  padding-bottom: 0.45rem;
+}
+
+html.primary-nav-route.primary-nav-bar-visible .gigasocial-premium .gigasocial-feed-panel-compact,
+html.primary-nav-route.primary-nav-bar-visible .gigasocial-premium .gigasocial-client-main {
+  padding-bottom: calc(5.75rem + var(--primary-nav-offset));
+}
+
+@media (min-width: 1024px) {
+  html.primary-nav-rail .gigasocial-premium .gigasocial-feed-panel-compact,
+  html.primary-nav-rail .gigasocial-premium .gigasocial-client-main {
+    padding-bottom: 1.5rem;
+  }
+}
+
+/* GigaEdit section nav — leave room for global nav on phones */
+@media (max-width: 1023px) {
+  html.primary-nav-route.primary-nav-bar-visible .gigaedit-bottom-nav {
+    margin-bottom: var(--primary-nav-offset);
+  }
+}
+
+/* Tablet: slightly wider nav pill without changing phone architecture */
+@media (min-width: 600px) and (max-width: 1023px) {
+  .primary-nav--mobile .primary-nav__inner {
+    max-width: 32rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .primary-nav__item {
+    transition: color 160ms ease, background-color 160ms ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primary-nav__item {
+    transition: none;
+  }
+}

@@ -6,11 +6,8 @@ import {
   FolderOpen,
   Home,
   Image as ImageIcon,
-  MessageSquare,
   Mic,
-  UsersRound,
 } from "lucide-react";
-import Link from "next/link";
 
 type GigaEditBottomNavProps = {
   activeSection?: GigaEditSection;
@@ -25,7 +22,7 @@ const STUDIO_TABS: {
   { id: "home", label: "Home", icon: Home },
   { id: "video", label: "Video", icon: Clapperboard },
   { id: "photo", label: "Photo", icon: ImageIcon },
-  { id: "teleprompter", label: "Prompt", icon: Mic },
+  { id: "teleprompter", label: "Teleprompt", icon: Mic },
   { id: "projects", label: "Projects", icon: FolderOpen },
 ];
 
@@ -52,14 +49,6 @@ export function GigaEditBottomNav({
             </button>
           );
         })}
-        <Link href="/gigasocial/" className="min-h-11" aria-label="Open GigaSocial">
-          <UsersRound className="h-4 w-4" aria-hidden />
-          <span className="truncate">Social</span>
-        </Link>
-        <Link href="/chat" className="min-h-11" aria-label="Open Chat">
-          <MessageSquare className="h-4 w-4" aria-hidden />
-          <span className="truncate">Chat</span>
-        </Link>
       </div>
     </nav>
   );

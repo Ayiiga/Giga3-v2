@@ -70,10 +70,11 @@ export const CREATOR_HOME_ACTIONS: CreatorHomeAction[] = [
     id: "record-voice",
     label: "Record Voice",
     emoji: "🎙",
-    description: "Capture voiceover in Audio Studio",
+    description: "Capture voiceover in GigaEdits Audio Studio",
     kind: "section",
     section: "audio",
     openFlags: { record: true },
+    featured: true,
   },
   {
     id: "generate-ai",

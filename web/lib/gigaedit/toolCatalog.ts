@@ -73,7 +73,7 @@ export const GIGAEDIT_TOOL_CATALOG: GigaEditCatalogTool[] = [
   {
     id: "teleprompter",
     label: "Teleprompter",
-    description: "Most used for voiceover",
+    description: "Scroll scripts while you record — most used for voiceover",
     emoji: "🎤",
     category: "create",
     kind: "section",
@@ -83,11 +83,12 @@ export const GIGAEDIT_TOOL_CATALOG: GigaEditCatalogTool[] = [
   {
     id: "audio-studio",
     label: "Audio Studio",
-    description: "Record and sync audio tracks",
+    description: "Record voice and sync audio tracks",
     emoji: "🎵",
     category: "create",
     kind: "section",
     section: "audio",
+    featured: true,
   },
 
   // Photo AI → Media Studio
