@@ -31,6 +31,12 @@ describe("enterprise PWA security headers", () => {
     expect(headers).toContain("/marketplace/sell/*");
     expect(headers).toContain("/marketplace/purchases/*");
   });
+
+  it("enables cross-origin isolation for GigaEdit voiceover / WebCodecs", () => {
+    expect(headers).toContain("/gigaedit/*");
+    expect(headers).toContain("Cross-Origin-Embedder-Policy: require-corp");
+    expect(headers).toMatch(/\/gigaedit\/\*[\s\S]*Cross-Origin-Opener-Policy: same-origin/);
+  });
 });
 
 describe("enterprise service worker policy", () => {
