@@ -13,14 +13,8 @@ import {
 import { useShareAction } from "@/hooks/useShareAction";
 import { cn } from "@/lib/utils";
 import { memo, useCallback, useState, type ReactNode } from "react";
-import {
-  buildChatImageVariationUrl,
-  buildGigaEditImageHandoffUrl,
-  buildGigaSocialImageHandoffUrl,
-} from "@/lib/chat/chatMediaHandoffs";
 import { buildImageStudioActionUrl } from "@/lib/chat/imageStudioLinks";
 import {
-  Clapperboard,
   Copy,
   Download,
   ImageIcon,
@@ -28,8 +22,6 @@ import {
   Pencil,
   RefreshCw,
   Share2,
-  Sparkles,
-  UsersRound,
   Video,
   Wand2,
 } from "lucide-react";
@@ -204,30 +196,6 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
               title="Enhance"
             >
               <Wand2 className="h-4 w-4" aria-hidden />
-            </Link>
-            <Link
-              href={buildChatImageVariationUrl(url)}
-              className="touch-target inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-border bg-card px-2 text-sm font-medium text-foreground shadow-sm hover:bg-accent/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
-              aria-label="Create image variation"
-              title="Create variation"
-            >
-              <Sparkles className="h-4 w-4" aria-hidden />
-            </Link>
-            <Link
-              href={buildGigaEditImageHandoffUrl(url)}
-              className="touch-target inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-border bg-card px-2 text-sm font-medium text-foreground shadow-sm hover:bg-accent/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
-              aria-label="Edit in GigaEdit"
-              title="Edit in GigaEdit"
-            >
-              <Clapperboard className="h-4 w-4" aria-hidden />
-            </Link>
-            <Link
-              href={buildGigaSocialImageHandoffUrl(url)}
-              className="touch-target inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-border bg-card px-2 text-sm font-medium text-foreground shadow-sm hover:bg-accent/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
-              aria-label="Post to GigaSocial"
-              title="Post to GigaSocial"
-            >
-              <UsersRound className="h-4 w-4" aria-hidden />
             </Link>
           </>
         )}
