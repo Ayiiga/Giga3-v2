@@ -14,6 +14,7 @@ export const ChatCreateHub = memo(function ChatCreateHub({
   menuId,
   disabled,
   onMediaAction,
+  onOpenImageMode,
   onSelectDocumentTemplate,
   onInsertTemplate,
   onError,
@@ -22,6 +23,7 @@ export const ChatCreateHub = memo(function ChatCreateHub({
   menuId: string;
   disabled?: boolean;
   onMediaAction: (action: ChatCreateActionId) => void;
+  onOpenImageMode?: () => void;
   onSelectDocumentTemplate: (templateId: DocumentTemplateId) => void;
   onInsertTemplate: (text: string) => void;
   onError: (message: string) => void;
@@ -31,6 +33,12 @@ export const ChatCreateHub = memo(function ChatCreateHub({
 
   function handleSelect(action: ChatCreateActionId) {
     const route = resolveChatCreateRoute(action);
+
+    if (route.kind === "image-mode") {
+      onOpenImageMode?.();
+      onClose();
+      return;
+    }
 
     if (route.kind === "media") {
       onMediaAction(route.action);

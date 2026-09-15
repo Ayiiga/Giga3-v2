@@ -24,7 +24,7 @@ describe("PrimaryNav UI wiring", () => {
     expect(layout).toContain("primary-nav.css");
   });
 
-  it("stacks GigaSocial dock above global nav and hides during immersive edit", () => {
+  it("offsets GigaSocial content for global nav and hides during immersive edit", () => {
     const host = readFileSync(
       resolve(__dirname, "../../web/components/navigation/PrimaryNavHost.tsx"),
       "utf8"
@@ -37,9 +37,10 @@ describe("PrimaryNav UI wiring", () => {
     expect(host).toContain("gigaedit-video-mode");
     expect(host).toContain("chat-keyboard-open");
     expect(host).toContain("primary-nav-bar-visible");
-    expect(css).toContain(".gigasocial-bottom-dock");
+    expect(css).not.toContain(".gigasocial-bottom-dock");
+    expect(css).toContain(".gigasocial-client-main");
     expect(css).toContain("primary-nav-bar-visible");
-    expect(css).toContain("padding-bottom: var(--primary-nav-offset)");
+    expect(css).toContain("var(--primary-nav-offset)");
   });
 
   it("keeps PrimaryNav lightweight without product bundle imports", () => {

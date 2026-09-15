@@ -18,6 +18,7 @@ interface ChatInputToolbarProps {
   onToggle: () => void;
   onPickFiles: (files: File[], kind: AttachmentKind) => void;
   onInsertTemplate: (text: string) => void;
+  onOpenImageMode?: () => void;
   onSelectDocumentTemplate?: (templateId: DocumentTemplateId) => void;
   onError: (message: string) => void;
 }
@@ -28,6 +29,7 @@ export function ChatInputToolbar({
   onToggle,
   onPickFiles,
   onInsertTemplate,
+  onOpenImageMode,
   onSelectDocumentTemplate,
   onError,
 }: ChatInputToolbarProps) {
@@ -174,6 +176,7 @@ export function ChatInputToolbar({
           menuId={menuId}
           disabled={disabled}
           onMediaAction={triggerMediaAction}
+          onOpenImageMode={onOpenImageMode}
           onSelectDocumentTemplate={
             onSelectDocumentTemplate ??
             (() => {

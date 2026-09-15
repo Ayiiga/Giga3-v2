@@ -1,6 +1,7 @@
 "use client";
 
 import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
+import { ChatImageCreatePanel } from "@/components/chat/ChatImageCreatePanel";
 import { ChatInputToolbar } from "@/components/chat/ChatInputToolbar";
 import { EmojiPicker } from "@/components/chat/EmojiPicker";
 import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
@@ -80,6 +81,7 @@ export const ChatInput = memo(function ChatInput({
   const [attachments, setAttachments] = useState<PreparedChatAttachment[]>([]);
   const [busy, setBusy] = useState(false);
   const [toolbarOpen, setToolbarOpen] = useState(false);
+  const [imageModeOpen, setImageModeOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [composerFocused, setComposerFocused] = useState(false);
@@ -268,7 +270,16 @@ export const ChatInput = memo(function ChatInput({
     setAttachments([]);
     setNotice(null);
     setToolbarOpen(false);
+    setImageModeOpen(false);
     setEmojiOpen(false);
+  }
+
+  function handleImageGenerate(message: string) {
+    if (disabled || busy || outOfCredits) return;
+    onSend(message);
+    setImageModeOpen(false);
+    setToolbarOpen(false);
+    setNotice(null);
   }
 
   function handleSubmit(e: FormEvent) {
@@ -311,6 +322,14 @@ export const ChatInput = memo(function ChatInput({
         {notice && (
           <NoticeBanner message={notice} onDismiss={() => setNotice(null)} />
         )}
+        {imageModeOpen && (
+          <ChatImageCreatePanel
+            disabled={inputDisabled}
+            onGenerate={handleImageGenerate}
+            onClose={() => setImageModeOpen(false)}
+          />
+        )}
+
         {attachments.length > 0 && (
           <div className="flex max-h-32 flex-wrap gap-2 overflow-y-auto rounded-xl border border-border bg-card p-2">
             {attachments.map((attachment, index) => (
@@ -360,10 +379,16 @@ export const ChatInput = memo(function ChatInput({
               expanded={toolbarOpen}
               onToggle={() => {
                 setToolbarOpen((open) => !open);
+                setImageModeOpen(false);
                 setEmojiOpen(false);
               }}
               onPickFiles={(files, kind) => void handlePickFiles(files, kind)}
               onInsertTemplate={insertTemplateText}
+              onOpenImageMode={() => {
+                setImageModeOpen(true);
+                setToolbarOpen(false);
+                setEmojiOpen(false);
+              }}
               onSelectDocumentTemplate={onSelectDocumentTemplate}
               onError={(msg) => setNotice(msg)}
             />

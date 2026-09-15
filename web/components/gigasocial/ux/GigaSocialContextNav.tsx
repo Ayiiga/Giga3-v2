@@ -9,23 +9,27 @@ import {
 import { Bell, Compass, Home, Plus, User } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 
-type DockId = "feed" | "discover" | "create" | "notifications" | "profile";
+type ContextNavId = "feed" | "discover" | "create" | "notifications" | "profile";
 
-const DOCK_ITEMS: {
-  id: DockId;
+const CONTEXT_NAV_ITEMS: {
+  id: ContextNavId;
   label: string;
   section?: GigaSocialSection;
   create?: boolean;
   icon: typeof Home;
 }[] = [
-  { id: "feed", label: "Home", section: "feed", icon: Home },
+  { id: "feed", label: "Feed", section: "feed", icon: Home },
   { id: "discover", label: "Discover", section: "discover", icon: Compass },
   { id: "create", label: "Create", create: true, icon: Plus },
   { id: "notifications", label: "Inbox", section: "notifications", icon: Bell },
   { id: "profile", label: "Profile", section: "profile", icon: User },
 ];
 
-export const GigaSocialBottomDock = memo(function GigaSocialBottomDock({
+/**
+ * GigaSocial secondary navigation — inline top bar on mobile/tablet.
+ * Must NOT be a fixed bottom bar (global primary nav owns the bottom).
+ */
+export const GigaSocialContextNav = memo(function GigaSocialContextNav({
   activeSection,
   unread = 0,
   onNavigate,
@@ -39,7 +43,6 @@ export const GigaSocialBottomDock = memo(function GigaSocialBottomDock({
   const [attention, setAttention] = useState(() => shouldShowAttentionDot());
 
   useEffect(() => {
-    // Capture 24h-away state once, then reset the clock so the next day can trigger again.
     if (shouldShowAttentionDot()) setAttention(true);
     recordAppOpen();
   }, []);
@@ -51,19 +54,23 @@ export const GigaSocialBottomDock = memo(function GigaSocialBottomDock({
   }, [activeSection, attention]);
 
   return (
-    <nav className="gigasocial-bottom-dock" aria-label="GigaSocial primary">
-      <div className="gigasocial-bottom-dock__bar">
-        {DOCK_ITEMS.map((item) => {
+    <nav
+      className="gigasocial-context-nav lg:hidden"
+      aria-label="GigaSocial sections"
+    >
+      <div className="gigasocial-context-nav__scroll">
+        {CONTEXT_NAV_ITEMS.map((item) => {
           if (item.create) {
             return (
               <button
                 key={item.id}
                 type="button"
-                className="gigasocial-bottom-dock__item gigasocial-bottom-dock__create mx-auto"
+                className="gigasocial-context-nav__create"
                 aria-label="Create post"
                 onClick={onCreate}
               >
-                <Plus className="h-6 w-6" aria-hidden />
+                <Plus className="h-5 w-5" aria-hidden />
+                <span>{item.label}</span>
               </button>
             );
           }
@@ -71,11 +78,15 @@ export const GigaSocialBottomDock = memo(function GigaSocialBottomDock({
           const Icon = item.icon;
           const active = item.section === activeSection;
           const showAttention = item.id === "feed" && attention && unread === 0;
+
           return (
             <button
               key={item.id}
               type="button"
-              className={cn("gigasocial-bottom-dock__item")}
+              className={cn(
+                "gigasocial-context-nav__item",
+                active && "gigasocial-context-nav__item--active"
+              )}
               aria-current={active ? "true" : undefined}
               aria-label={
                 showAttention ? `${item.label} (welcome back)` : item.label
@@ -85,8 +96,8 @@ export const GigaSocialBottomDock = memo(function GigaSocialBottomDock({
                 if (item.section) onNavigate(item.section);
               }}
             >
-              <span className="gigasocial-bottom-dock__icon relative">
-                <Icon className="h-5 w-5" aria-hidden />
+              <span className="relative inline-flex">
+                <Icon className="h-4 w-4" aria-hidden />
                 {item.id === "notifications" && unread > 0 ? (
                   <span className="absolute -right-2 -top-1 rounded-full bg-[var(--gs-gold)] px-1 text-[9px] font-bold text-[#0b1220]">
                     {unread > 9 ? "9+" : unread}
@@ -94,7 +105,7 @@ export const GigaSocialBottomDock = memo(function GigaSocialBottomDock({
                 ) : null}
                 {showAttention ? (
                   <span
-                    className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-[var(--gs-card,#0b1220)]"
+                    className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-[var(--gs-card,#0b1220)]"
                     aria-hidden
                   />
                 ) : null}

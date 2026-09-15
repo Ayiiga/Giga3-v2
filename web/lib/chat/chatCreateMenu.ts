@@ -4,6 +4,7 @@ import { siteConfig } from "@/lib/site";
 export type ChatCreateCategoryId = "media" | "documents" | "ai" | "education";
 
 export type ChatCreateActionId =
+  | "chat-create-image"
   | "media-unified"
   | "media-camera"
   | "media-photos"
@@ -49,6 +50,12 @@ export const CHAT_CREATE_SECTIONS: ChatCreateMenuSection[] = [
     id: "media",
     title: "Media",
     items: [
+      {
+        id: "chat-create-image",
+        label: "Create image",
+        emoji: "🎨",
+        description: "Generate an image directly in this chat",
+      },
       {
         id: "media-unified",
         label: "Media",
@@ -139,12 +146,17 @@ const INLINE_TEMPLATES: Partial<Record<ChatCreateActionId, string>> = {
 
 export type ChatCreateRoute =
   | { kind: "media"; action: ChatCreateActionId }
+  | { kind: "image-mode" }
   | { kind: "template"; documentId: DocumentTemplateId }
   | { kind: "insert"; body: string }
   | { kind: "navigate"; href: string }
   | { kind: "noop" };
 
 export function resolveChatCreateRoute(action: ChatCreateActionId): ChatCreateRoute {
+  if (action === "chat-create-image") {
+    return { kind: "image-mode" };
+  }
+
   if (
     action === "media-unified" ||
     action === "media-camera" ||
