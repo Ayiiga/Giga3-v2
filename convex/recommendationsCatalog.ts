@@ -61,6 +61,25 @@ export const STUDIO_CANDIDATE: RecommendationCandidate = {
   freeAlternative: LEARN_LINK,
 };
 
+/** Teleprompter and recording live in GigaEdits — not Media Studio. */
+export const EDIT_TELEPROMPTER_CANDIDATE: RecommendationCandidate = {
+  title: "Teleprompter recording",
+  action: "/gigaedit/?tab=teleprompter&record=1",
+  prompt: "",
+  reason: "Record video with a scrolling script",
+  entitlement: "free",
+  weight: 2,
+};
+
+export const EDIT_VOICE_CANDIDATE: RecommendationCandidate = {
+  title: "Record voiceover",
+  action: "/gigaedit/?tab=audio&record=1",
+  prompt: "",
+  reason: "Capture audio in GigaEdits Audio Studio",
+  entitlement: "free",
+  weight: 2,
+};
+
 const CHAT_PERSONA_STARTERS: RecommendationItem[] = [
   {
     title: "BECE Tutor",

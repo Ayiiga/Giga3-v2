@@ -142,7 +142,7 @@ export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
           Create on device
         </h2>
         <p className="max-w-xl text-sm text-[var(--ge-muted)]">
-          Video, photo, audio, and templates — edit locally, publish when ready.
+          Video, photo, teleprompter, voice and camera recording — edit on-device, publish when ready.
         </p>
         <div className="flex flex-wrap gap-2 pt-0.5">
           <button type="button" className="gigaedit-cta gigaedit-cta--sm" onClick={() => onOpen("video")}>

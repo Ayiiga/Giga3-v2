@@ -1,6 +1,10 @@
+import { PRIMARY_NAV_PRODUCT_SCOPE } from "@/lib/navigation/editsDestinations";
 import { siteConfig } from "@/lib/site";
 import type { LucideIcon } from "lucide-react";
 import { Home, Play, Scissors, Sparkles } from "lucide-react";
+
+/** Re-export scope notes for docs and UI copy. */
+export { PRIMARY_NAV_PRODUCT_SCOPE };
 
 export type PrimaryNavTabId = "home" | "studio" | "edits" | "social";
 

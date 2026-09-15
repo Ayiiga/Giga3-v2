@@ -22,7 +22,7 @@ const STUDIO_TABS: {
   { id: "home", label: "Home", icon: Home },
   { id: "video", label: "Video", icon: Clapperboard },
   { id: "photo", label: "Photo", icon: ImageIcon },
-  { id: "teleprompter", label: "Prompt", icon: Mic },
+  { id: "teleprompter", label: "Teleprompt", icon: Mic },
   { id: "projects", label: "Projects", icon: FolderOpen },
 ];
 

@@ -85,7 +85,7 @@ export const PRODUCT_CATALOG: readonly ProductEntry[] = [
     name: "Media Studio",
     tagline: "AI image generation and editing",
     description:
-      "Media Studio generates and edits images with fal.ai, Replicate, and Google AI Studio backup. Create visuals for chat, GigaEdit, and GigaSocial.",
+      "Media Studio generates and enhances AI images and video with fal.ai, Replicate, and Google AI Studio backup. For teleprompter, voice recording, and timeline editing, open GigaEdits.",
     group: "create",
   },
   {
@@ -101,7 +101,7 @@ export const PRODUCT_CATALOG: readonly ProductEntry[] = [
     name: "GigaEdit",
     tagline: "Video and photo editor",
     description:
-      "GigaEdit is a creator studio for trimming, joining, captioning, and publishing video. Import clips, add audio, and post to GigaSocial when ready.",
+      "GigaEdits is the on-device editor for trimming, joining, captions, teleprompter, voice and video recording, voiceover, and export. Import clips, record takes, and post to GigaSocial when ready.",
     group: "create",
   },
   {
