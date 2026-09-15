@@ -1,6 +1,6 @@
 {
   "id": "/",
-  "name": "Giga3 AI",
+  "name": "Giga3 AI — Africa's AI Super App",
   "short_name": "Giga3 AI",
   "description": "Giga3 AI is Africa's AI Super App for social, AI tools, learning, creativity, marketplace and digital services.",
   "start_url": "/",
@@ -11,8 +11,8 @@
     "window-controls-overlay"
   ],
   "orientation": "portrait-primary",
-  "background_color": "#5b21b6",
-  "theme_color": "#5b21b6",
+  "background_color": "#0A0F1E",
+  "theme_color": "#0A1931",
   "categories": [
     "productivity",
     "utilities"
