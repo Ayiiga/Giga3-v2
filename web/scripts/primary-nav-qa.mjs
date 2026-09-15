@@ -272,6 +272,75 @@ async function auditKeyboardPadding(page) {
   else fail("keyboard: bar not restored");
 }
 
+async function auditGigaSocialNoDualDock(page) {
+  for (const vp of [
+    { w: 390, h: 844, name: "phone-390" },
+    { w: 768, h: 1024, name: "tablet-768" },
+  ]) {
+    await page.setViewportSize({ width: vp.w, height: vp.h });
+    await page.goto(`http://127.0.0.1:${PORT}/gigasocial/`, {
+      waitUntil: "networkidle",
+      timeout: 60000,
+    });
+    if (!(await waitForNav(page))) {
+      blocked(`gigasocial ${vp.name}: nav did not hydrate`);
+      continue;
+    }
+    const data = await page.evaluate(() => {
+      const visible = (el) => {
+        if (!el) return false;
+        const s = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return s.display !== "none" && s.visibility !== "hidden" && r.width > 0 && r.height > 0;
+      };
+      const primaryMobile = document.querySelector(".primary-nav--mobile");
+      const legacyDock = document.querySelector(".gigasocial-bottom-dock");
+      const contextNav = document.querySelector(".gigasocial-context-nav");
+      const dockStyle = legacyDock ? getComputedStyle(legacyDock) : null;
+      const dockFixedBottom =
+        legacyDock &&
+        dockStyle?.position === "fixed" &&
+        parseFloat(dockStyle.bottom || "0") <= 4 &&
+        visible(legacyDock);
+      return {
+        primaryVisible: visible(primaryMobile),
+        dockFixedBottom,
+        contextNavVisible: visible(contextNav),
+        primaryLabels: primaryMobile
+          ? [...primaryMobile.querySelectorAll(".primary-nav__label")].map((n) =>
+              n.textContent?.trim()
+            )
+          : [],
+      };
+    });
+
+    if (!data.primaryVisible) {
+      fail(`gigasocial ${vp.name}: missing global primary nav`);
+    } else {
+      pass(`gigasocial ${vp.name}: global primary nav visible`);
+    }
+
+    if (data.dockFixedBottom) {
+      fail(`gigasocial ${vp.name}: legacy fixed bottom dock still visible`);
+    } else {
+      pass(`gigasocial ${vp.name}: no legacy fixed bottom dock`);
+    }
+
+    if (vp.w < 1024 && !data.contextNavVisible) {
+      fail(`gigasocial ${vp.name}: missing top context nav`);
+    } else if (vp.w < 1024) {
+      pass(`gigasocial ${vp.name}: top context nav visible`);
+    }
+
+    const expected = ["Home", "Studio", "Edits", "Social"];
+    if (!expected.every((l) => data.primaryLabels.includes(l))) {
+      fail(`gigasocial ${vp.name}: primary labels ${JSON.stringify(data.primaryLabels)}`);
+    } else {
+      pass(`gigasocial ${vp.name}: four global tabs present`);
+    }
+  }
+}
+
 async function auditImmersivePadding(page) {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`http://127.0.0.1:${PORT}/gigaedit/`, { waitUntil: "networkidle" });
@@ -319,6 +388,7 @@ async function main() {
 
   await auditExcluded(page);
   await auditKeyboardPadding(page);
+  await auditGigaSocialNoDualDock(page);
   await auditImmersivePadding(page);
 
   await browser.close();

@@ -104,7 +104,7 @@
   background: transparent !important;
 }
 
-.gigasocial-premium .gigasocial-bottom-dock__item[aria-current="true"]::after {
+.gigasocial-premium .gigasocial-context-nav__item--active::after {
   content: "";
   display: block;
   width: 1.1rem;
@@ -221,81 +221,70 @@
   box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.25);
 }
 
-/* Bottom dock */
-.gigasocial-bottom-dock {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 40;
-  padding: 0.5rem 0.75rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
-  pointer-events: none;
+/* Context nav — inline top bar on mobile (not a fixed bottom bar) */
+.gigasocial-context-nav {
+  margin: 0 -0.15rem;
 }
 
-.gigasocial-bottom-dock__bar {
-  pointer-events: auto;
-  margin: 0 auto;
-  max-width: 28rem;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  align-items: end;
-  gap: 0.15rem;
-  padding: 0.45rem 0.55rem;
-  border-radius: 1.35rem;
-  background: rgba(22, 32, 51, 0.94);
-  border: 1px solid var(--gs-border);
-  box-shadow: 0 12px 40px -16px rgba(0, 0, 0, 0.7);
+.gigasocial-context-nav__scroll {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 0.15rem 0.15rem 0.35rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
 
-.gigasocial-bottom-dock__item {
+.gigasocial-context-nav__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.gigasocial-context-nav__item,
+.gigasocial-context-nav__create {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.15rem;
-  min-height: 48px;
+  gap: 0.2rem;
+  min-height: 44px;
+  min-width: 3.5rem;
+  flex-shrink: 0;
   border-radius: 0.85rem;
-  color: var(--gs-muted);
+  padding: 0.35rem 0.65rem;
   font-size: 0.65rem;
   font-weight: 600;
   letter-spacing: 0.01em;
+  color: var(--gs-muted);
+  border: 1px solid var(--gs-border);
+  background: var(--gs-input);
 }
 
-.gigasocial-bottom-dock__item[aria-current="true"] {
+.gigasocial-context-nav__item--active {
   color: var(--gs-text);
+  border-color: rgba(59, 130, 246, 0.55);
+  background: rgba(59, 130, 246, 0.18);
 }
 
-.gigasocial-bottom-dock__item[aria-current="true"] .gigasocial-bottom-dock__icon {
-  color: var(--gs-blue);
-}
-
-.gigasocial-bottom-dock__create {
-  transform: translateY(-0.55rem);
-  width: 3.35rem;
-  height: 3.35rem;
-  min-height: 3.35rem;
-  border-radius: 999px;
-  background: linear-gradient(145deg, #3b82f6, #2563eb);
+.gigasocial-context-nav__create {
   color: #fff;
-  box-shadow: 0 10px 24px -10px rgba(59, 130, 246, 0.85);
-  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-color: rgba(59, 130, 246, 0.45);
+  background: linear-gradient(145deg, #3b82f6, #2563eb);
+  box-shadow: 0 6px 16px -8px rgba(59, 130, 246, 0.85);
 }
 
-.gigasocial-bottom-dock__create:focus-visible {
+.gigasocial-context-nav__create:focus-visible,
+.gigasocial-context-nav__item:focus-visible {
   outline: 3px solid rgba(251, 191, 36, 0.55);
   outline-offset: 2px;
 }
 
 .gigasocial-premium .gigasocial-create-fab-button {
-  /* Dock owns create on mobile; keep FAB available as fallback above dock. */
-  bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
 }
 
 @media (min-width: 1024px) {
-  .gigasocial-bottom-dock {
-    display: none;
-  }
-
   .gigasocial-premium .gigasocial-create-fab-button {
     bottom: 1.25rem;
   }
@@ -457,16 +446,16 @@
     transition: border-color 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
   }
 
-  .gigasocial-premium .gigasocial-bottom-dock__item,
+  .gigasocial-premium .gigasocial-context-nav__item,
   .gigasocial-premium .gigasocial-quick-action {
     transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
   }
 }
 
-/* Clear dock space on feed */
+/* Feed padding — global primary nav offset handled in primary-nav.css */
 .gigasocial-premium .gigasocial-feed-panel-compact,
 .gigasocial-premium .gigasocial-client-main {
-  padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: 0.5rem;
 }
 
 @media (min-width: 1024px) {

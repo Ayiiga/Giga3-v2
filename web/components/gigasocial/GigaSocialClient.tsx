@@ -4,7 +4,7 @@ import { GigaSocialPanelErrorBoundary } from "@/components/gigasocial/GigaSocial
 import { GigaSocialUnreadLoader } from "@/components/gigasocial/GigaSocialUnreadLoader";
 import { SurfaceRecommendations } from "@/components/recommendations/SurfaceRecommendations";
 import { GigaSocialAuthPrompt } from "@/components/gigasocial/ux/GigaSocialAuthPrompt";
-import { GigaSocialBottomDock } from "@/components/gigasocial/ux/GigaSocialBottomDock";
+import { GigaSocialContextNav } from "@/components/gigasocial/ux/GigaSocialContextNav";
 import { GigaSocialGuestBanner } from "@/components/gigasocial/ux/GigaSocialGuestBanner";
 import { GigaSocialOfflineBanner } from "@/components/gigasocial/ux/GigaSocialOfflineBanner";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
@@ -241,6 +241,13 @@ function GigaSocialContent() {
         ) : null}
       </header>
 
+      <GigaSocialContextNav
+        activeSection={section}
+        unread={unread}
+        onNavigate={openSection}
+        onCreate={handleCreate}
+      />
+
       <nav
         className="gigasocial-section-nav hidden gap-1 overflow-x-auto overscroll-x-contain lg:flex lg:gap-1.5"
         aria-label="GigaSocial sections"
@@ -412,12 +419,6 @@ function GigaSocialContent() {
         </ButtonLink>
       </div>
 
-      <GigaSocialBottomDock
-        activeSection={section}
-        unread={unread}
-        onNavigate={openSection}
-        onCreate={handleCreate}
-      />
     </div>
   );
 }

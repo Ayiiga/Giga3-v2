@@ -1,5 +1,6 @@
+import { Container } from "@/components/ui/Container";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
-import { PublicProductPageShell } from "@/components/seo/PublicProductPageShell";
+import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { MEDIA_PAGE_SHELL } from "@/lib/seo/productPageContent";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
@@ -33,11 +34,19 @@ export default function MediaPage() {
           { name: "Media Studio", path: "/media" },
         ]}
       />
-      <PublicProductPageShell {...MEDIA_PAGE_SHELL} />
-      <div className="media-stable section-padding pt-0 pb-8">
-        <Suspense fallback={<ClientAppHydrationNotice productName="Media Studio" />}>
-          <MediaPageRoot />
-        </Suspense>
+      <ProductSeoHeader
+        className="sr-only"
+        compact
+        title={MEDIA_PAGE_SHELL.title}
+        description={MEDIA_PAGE_SHELL.description}
+        showProductNav={false}
+      />
+      <div className="media-stable w-full max-w-full px-3 pb-3 pt-4 sm:px-6 sm:pb-6 sm:pt-6">
+        <Container className="!px-0">
+          <Suspense fallback={<ClientAppHydrationNotice productName="Media Studio" />}>
+            <MediaPageRoot />
+          </Suspense>
+        </Container>
       </div>
     </>
   );

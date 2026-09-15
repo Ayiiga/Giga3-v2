@@ -43,7 +43,7 @@ describe("productPageContent", () => {
     expect(GIGALEARN_PAGE_SHELL.primaryHref).toBe("/gigalearn");
   });
 
-  it("uses PublicProductPageShell on media and gigalearn pages", () => {
+  it("loads Media Studio app first on /media (SEO header is sr-only)", () => {
     const media = readFileSync(
       resolve(__dirname, "../../web/app/(marketing)/media/page.tsx"),
       "utf8"
@@ -52,7 +52,10 @@ describe("productPageContent", () => {
       resolve(__dirname, "../../web/app/(marketing)/gigalearn/page.tsx"),
       "utf8"
     );
-    expect(media).toContain("PublicProductPageShell");
+    expect(media).toContain("MediaPageRoot");
+    expect(media).toContain("ProductSeoHeader");
+    expect(media).toContain('className="sr-only"');
+    expect(media).not.toContain("PublicProductPageShell");
     expect(media).toContain("ClientAppHydrationNotice");
     expect(gigalearn).toContain("PublicProductPageShell");
     expect(gigalearn).not.toMatch(/Loading…/);

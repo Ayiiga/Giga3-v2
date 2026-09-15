@@ -170,15 +170,10 @@ html.primary-nav-route.primary-nav-bar-visible [data-marketing="true"] .marketin
   }
 }
 
-/* GigaSocial in-app dock stacks above global nav */
-html.primary-nav-route.primary-nav-bar-visible .gigasocial-bottom-dock {
-  bottom: var(--primary-nav-offset);
-  padding-bottom: 0.45rem;
-}
-
+/* GigaSocial — reserve space for global primary nav only (no secondary bottom bar) */
 html.primary-nav-route.primary-nav-bar-visible .gigasocial-premium .gigasocial-feed-panel-compact,
 html.primary-nav-route.primary-nav-bar-visible .gigasocial-premium .gigasocial-client-main {
-  padding-bottom: calc(5.75rem + var(--primary-nav-offset));
+  padding-bottom: calc(0.5rem + var(--primary-nav-offset));
 }
 
 @media (min-width: 1024px) {
