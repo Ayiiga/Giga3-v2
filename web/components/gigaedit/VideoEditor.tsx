@@ -4,7 +4,18 @@ import { CameraStylePreview } from "@/components/gigaedit/CameraStylePreview";
 import { BrandingPanel } from "@/components/gigaedit/BrandingPanel";
 import { ImportModeDialog } from "@/components/gigaedit/ImportModeDialog";
 import { LayerManager } from "@/components/gigaedit/LayerManager";
+import dynamic from "next/dynamic";
 import { MultiTrackTimeline } from "@/components/gigaedit/MultiTrackTimeline";
+
+const VoiceoverPanel = dynamic(
+  () => import("@/components/gigaedit/VoiceoverPanel").then((m) => m.VoiceoverPanel),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-24 animate-pulse rounded-xl bg-white/5" aria-label="Loading voiceover tools" />
+    ),
+  }
+);
 import { OverlayInspector } from "@/components/gigaedit/OverlayInspector";
 import { OverlayPreviewStack } from "@/components/gigaedit/OverlayPreviewStack";
 import { PreviewTransport } from "@/components/gigaedit/PreviewTransport";
@@ -52,6 +63,7 @@ import {
 } from "@/lib/gigaedit/videoCompositeExport";
 import { DEFAULT_CAMERA_LOOK, type CameraLookOptions } from "@/lib/gigaedit/cameraLook";
 import { detectDeviceTier } from "@/lib/gigaedit/deviceCapability";
+import { shouldUseSolidPanels } from "@/lib/gigaedit/lowEndUi";
 import { aspectRatioCss } from "@/lib/gigaedit/exportFormats";
 import {
   createEmptyProject,
@@ -163,6 +175,8 @@ export function VideoEditor({
   const initialUrlImportDoneRef = useRef(false);
   const audioFileRef = useRef<File | null>(null);
   const tier = useMemo(() => detectDeviceTier(), []);
+  const solidPanels = useMemo(() => shouldUseSolidPanels(), []);
+  const [voiceoverPlaybackUrl, setVoiceoverPlaybackUrl] = useState<string | null>(null);
   const videoClipCount = useMemo(() => sortedMainVideoClips(clips).length, [clips]);
   const overlayClipCount = useMemo(() => sortedOverlayClips(clips).length, [clips]);
   const timelineDuration = useMemo(
@@ -1328,14 +1342,24 @@ export function VideoEditor({
       case "audio":
         return (
           <div className="space-y-3">
+            <VoiceoverPanel
+              hasVideo={hasVideo}
+              videoFile={originalFileRef.current}
+              onVoiceoverAttached={(file, playbackUrl) => {
+                if (voiceoverPlaybackUrl) URL.revokeObjectURL(voiceoverPlaybackUrl);
+                setVoiceoverPlaybackUrl(playbackUrl);
+                void attachAudioFile(file);
+              }}
+              onStatus={setStatus}
+            />
             <ToolGrid>
-              <ToolTile label="Add audio" onClick={() => audioInputRef.current?.click()} />
+              <ToolTile label="Import audio" onClick={() => audioInputRef.current?.click()} />
               <ToolTile label="Latest take" onClick={() => void attachLatestAudioProject()} />
             </ToolGrid>
             {audioLabel ? (
               <p className="text-xs text-[var(--ge-gold)]">Attached: {audioLabel}</p>
             ) : (
-              <p className="text-xs text-[var(--ge-muted)]">Import music or voiceover for your timeline.</p>
+              <p className="text-xs text-[var(--ge-muted)]">Or import music from your device.</p>
             )}
           </div>
         );
@@ -1516,7 +1540,7 @@ export function VideoEditor({
   }
 
   return (
-    <div className="gigaedit-editor-root">
+    <div className={solidPanels ? "gigaedit-editor-root gigaedit-solid-panels" : "gigaedit-editor-root"}>
       <VideoEditorHeader
         onClose={() => onBackHome?.()}
         onExport={() => void openPublishOptions()}

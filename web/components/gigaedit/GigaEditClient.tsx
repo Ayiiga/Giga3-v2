@@ -1,7 +1,12 @@
 "use client";
 
 import { AiCreatorAssistant } from "@/components/gigaedit/AiCreatorAssistant";
-import { AudioStudio } from "@/components/gigaedit/AudioStudio";
+import dynamic from "next/dynamic";
+
+const AudioStudio = dynamic(
+  () => import("@/components/gigaedit/AudioStudio").then((m) => m.AudioStudio),
+  { ssr: false, loading: () => <div className="h-32 animate-pulse rounded-xl bg-white/5" /> }
+);
 import { BrandKitPanel } from "@/components/gigaedit/BrandKitPanel";
 import { EditorShell } from "@/components/gigaedit/EditorShell";
 import { GigaEditBottomNav } from "@/components/gigaedit/GigaEditBottomNav";
@@ -12,7 +17,10 @@ import { ProjectManager } from "@/components/gigaedit/ProjectManager";
 import { SocialMediaCreator } from "@/components/gigaedit/SocialMediaCreator";
 import { TeleprompterStudio } from "@/components/gigaedit/TeleprompterStudio";
 import { TemplateGallery } from "@/components/gigaedit/TemplateGallery";
-import { VideoEditor } from "@/components/gigaedit/VideoEditor";
+const VideoEditor = dynamic(
+  () => import("@/components/gigaedit/VideoEditor").then((m) => m.VideoEditor),
+  { ssr: false, loading: () => <div className="h-40 animate-pulse rounded-xl bg-white/5" /> }
+);
 import { useGigaEditFeatures } from "@/lib/gigaedit/featureFlags";
 import { startGigaEditBackgroundSync } from "@/lib/gigaedit/offline";
 import type { ExportAspectRatio, GigaEditOpenOptions, GigaEditSection } from "@/lib/gigaedit/types";
