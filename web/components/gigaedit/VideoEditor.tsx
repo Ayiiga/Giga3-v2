@@ -151,6 +151,7 @@ export function VideoEditor({
   const [contrastBoost, setContrastBoost] = useState(false);
   const [clips, setClips] = useState<GigaEditTimelineClip[]>([]);
   const [status, setStatus] = useState<string | null>(null);
+  const [autosaveToast, setAutosaveToast] = useState<string | null>(null);
   const [publishReady, setPublishReady] = useState(false);
   const [editedPublishFile, setEditedPublishFile] = useState<File | null>(null);
   const [projectId, setProjectId] = useState<string | undefined>(initialProjectId ?? undefined);
@@ -1053,7 +1054,8 @@ export function VideoEditor({
       }
       enqueueGigaEditSync({ projectId: project.id, action: "backup" });
       setProjectId(project.id);
-      setStatus("Draft auto-saved locally. Original file preserved.");
+      setAutosaveToast("Draft auto-saved locally. Original file preserved.");
+      window.setTimeout(() => setAutosaveToast(null), 4000);
       return project.id;
     } catch (err) {
       setProjectId(project.id);
@@ -1263,6 +1265,7 @@ export function VideoEditor({
           <div className="space-y-3">
             <ToolGrid>
               <ToolTile label="Trim" onClick={trimActive} disabled={!hasVideo} />
+              <ToolTile label="Split" onClick={splitAtPlayhead} disabled={!hasVideo} />
               <ToolTile label="Join" onClick={mergeClips} disabled={videoClipCount < 2} />
               <ToolTile label="Rotate" onClick={() => setRotateDeg((d) => (d + 90) % 360)} disabled={!hasVideo} />
               <ToolTile label="Reset crop" onClick={() => setCropScale(1)} disabled={!hasVideo} />
@@ -1330,15 +1333,6 @@ export function VideoEditor({
             />
           </div>
         );
-      case "split":
-        return (
-          <div className="space-y-3">
-            <ToolGrid>
-              <ToolTile label="Split here" onClick={splitAtPlayhead} disabled={!hasVideo} />
-            </ToolGrid>
-            <ToolPanelHint>Splits the active clip at the playhead. Swipe the timeline sideways to line up the cut.</ToolPanelHint>
-          </div>
-        );
       case "audio":
         return (
           <div className="space-y-3">
@@ -1356,17 +1350,7 @@ export function VideoEditor({
               <ToolTile label="Import audio" onClick={() => audioInputRef.current?.click()} />
               <ToolTile label="Latest take" onClick={() => void attachLatestAudioProject()} />
             </ToolGrid>
-            {audioLabel ? (
-              <p className="text-xs text-[var(--ge-gold)]">Attached: {audioLabel}</p>
-            ) : (
-              <p className="text-xs text-[var(--ge-muted)]">Or import music from your device.</p>
-            )}
-          </div>
-        );
-      case "noise":
-        return (
-          <div className="space-y-3">
-            <label className="flex items-center justify-between gap-3 rounded-xl border border-[var(--ge-border)] bg-[var(--ge-input)] px-3 py-2.5 text-xs text-white">
+            <label className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-[var(--ge-border)] bg-[var(--ge-input)] px-3 py-2.5 text-xs text-white">
               <span>Reduce background noise on export</span>
               <input
                 type="checkbox"
@@ -1381,10 +1365,14 @@ export function VideoEditor({
                 }}
               />
             </label>
+            {audioLabel ? (
+              <p className="text-xs text-[var(--ge-gold)]">Attached: {audioLabel}</p>
+            ) : (
+              <p className="text-xs text-[var(--ge-muted)]">Import music or voiceover for your timeline.</p>
+            )}
             <ToolGrid>
               <ToolTile label="AI cleanup" onClick={() => window.open("/media/?action=denoise", "_blank", "noopener")} />
             </ToolGrid>
-            <ToolPanelHint>Light noise reduction is baked into export. For heavy cleanup, open AI Studio.</ToolPanelHint>
           </div>
         );
       case "text":
@@ -1392,6 +1380,7 @@ export function VideoEditor({
           <div className="space-y-3">
             <ToolGrid>
               <ToolTile label="Add text" onClick={addTextLayer} disabled={!hasVideo} />
+              <ToolTile label="Auto captions" onClick={autoCaptions} disabled={!hasVideo} />
             </ToolGrid>
             <label className="block text-xs text-[var(--ge-muted)]">
               Text overlay
@@ -1400,6 +1389,16 @@ export function VideoEditor({
                 onChange={(e) => setOverlayText(e.target.value)}
                 className="mt-1 w-full rounded-lg border border-[var(--ge-border)] bg-[var(--ge-input)] px-2.5 py-1.5 text-sm text-white"
                 placeholder="Add text…"
+              />
+            </label>
+            <label className="block text-xs text-[var(--ge-muted)]">
+              Subtitles
+              <textarea
+                value={captions}
+                onChange={(e) => setCaptions(e.target.value)}
+                rows={3}
+                className="mt-1 w-full rounded-lg border border-[var(--ge-border)] bg-[var(--ge-input)] px-2.5 py-1.5 text-sm text-white"
+                placeholder="Edit captions…"
               />
             </label>
             <OverlayInspector
@@ -1415,45 +1414,14 @@ export function VideoEditor({
             />
           </div>
         );
-      case "stickers":
+      case "fx":
         return (
           <div className="space-y-3">
             <ToolGrid>
-              <ToolTile label="Add sticker" onClick={addStickerMarker} disabled={!hasVideo} />
-              <ToolTile label="Emoji burst" onClick={() => setOverlayText((t) => (t ? `${t} ✨` : "✨"))} disabled={!hasVideo} />
+              <ToolTile label="Sticker" onClick={addStickerMarker} disabled={!hasVideo} />
+              <ToolTile label="Overlay" onClick={openOverlayImport} disabled={!hasVideo} />
+              <ToolTile label="Emoji" onClick={() => setOverlayText((t) => (t ? `${t} ✨` : "✨"))} disabled={!hasVideo} />
             </ToolGrid>
-            <ToolPanelHint>Stickers appear on the Text track and export with your video.</ToolPanelHint>
-          </div>
-        );
-      case "overlays":
-        return (
-          <div className="space-y-3">
-            <ToolGrid>
-              <ToolTile label="Add overlay" onClick={openOverlayImport} disabled={!hasVideo} />
-              <ToolTile label="Add text" onClick={addTextLayer} disabled={!hasVideo} />
-            </ToolGrid>
-            <LayerManager
-              clips={clips}
-              selectedClipId={selectedClipId}
-              onUpdateClips={(next) => commitClips(next)}
-              onSelectClip={setSelectedClipId}
-            />
-            <OverlayInspector
-              clip={selectedClip}
-              clips={clips}
-              playheadSec={playhead}
-              onUpdateClip={updateClipById}
-              onDuplicateOverlay={(dup) => {
-                commitClips((prev) => [...prev, dup]);
-                setSelectedClipId(dup.id);
-              }}
-              onDeleteClip={deleteClipById}
-            />
-          </div>
-        );
-      case "effects":
-        return (
-          <div className="space-y-3">
             <label className="block text-xs text-[var(--ge-muted)]">
               Filter / effect
               <select
@@ -1476,6 +1444,12 @@ export function VideoEditor({
               />
               Contrast boost (baked on export)
             </label>
+            <LayerManager
+              clips={clips}
+              selectedClipId={selectedClipId}
+              onUpdateClips={(next) => commitClips(next)}
+              onSelectClip={setSelectedClipId}
+            />
             <BrandingPanel
               detections={brandDetections}
               selectedClip={selectedClip}
@@ -1483,24 +1457,6 @@ export function VideoEditor({
               onApplyAction={applyBrandingAction}
               onDismiss={() => setBrandDetections([])}
             />
-          </div>
-        );
-      case "captions":
-        return (
-          <div className="space-y-3">
-            <ToolGrid>
-              <ToolTile label="Auto captions" onClick={autoCaptions} disabled={!hasVideo} />
-            </ToolGrid>
-            <label className="block text-xs text-[var(--ge-muted)]">
-              Subtitles
-              <textarea
-                value={captions}
-                onChange={(e) => setCaptions(e.target.value)}
-                rows={4}
-                className="mt-1 w-full rounded-lg border border-[var(--ge-border)] bg-[var(--ge-input)] px-2.5 py-1.5 text-sm text-white"
-                placeholder="Edit captions…"
-              />
-            </label>
           </div>
         );
       case "delete":
@@ -1550,6 +1506,12 @@ export function VideoEditor({
         canRedo={canRedo(undoStack)}
         exporting={exporting}
       />
+
+      {autosaveToast ? (
+        <div className="gigaedit-autosave-toast" role="status" aria-live="polite">
+          {autosaveToast}
+        </div>
+      ) : null}
 
       <div className="gigaedit-preview-stage">
         <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center px-2 py-2">

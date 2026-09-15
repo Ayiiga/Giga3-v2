@@ -27,10 +27,12 @@ import {
 } from "@/lib/gigasocial/teleprompterScripts";
 import { cn } from "@/lib/utils";
 import {
-  Move,
+  Eye,
+  EyeOff,
+  Minus,
   Pause,
-  Pencil,
   Play,
+  Plus,
   Settings,
   Sparkles,
   X,
@@ -78,16 +80,17 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
     defaultSettingsOpen ? "edit" : "none"
   );
   const [overlayVisible, setOverlayVisible] = useState(true);
+  const [overlayOpacity, setOverlayOpacity] = useState(70);
+  const [speedMultiplier, setSpeedMultiplier] = useState(1);
+  const [overlayPosition, setOverlayPosition] = useState<"top" | "bottom">("top");
   const [textColorId, setTextColorId] = useState<TeleprompterColorId>("mint");
   const [offsetPx, setOffsetPx] = useState(0);
   const [topicDraft, setTopicDraft] = useState("");
-  const [cardOffset, setCardOffset] = useState({ x: 0, y: 0 });
   const lastTickRef = useRef<number | null>(null);
   const rafRef = useRef<number>(0);
   const hydratedRef = useRef(false);
-  const dragRef = useRef<{ startX: number; startY: number; originX: number; originY: number } | null>(
-    null
-  );
+  const longPressRef = useRef<{ timer: number; startY: number } | null>(null);
+  const dragPositionRef = useRef<{ startY: number; origin: "top" | "bottom" } | null>(null);
 
   useEffect(() => {
     if (hydratedRef.current) return;
@@ -95,7 +98,7 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
     const saved = loadTeleprompterSettings();
     setScript(loadTeleprompterScript());
     setSpeed(isStudio ? Math.max(saved.speed, 56) : saved.speed);
-    setFontSize(isStudio ? Math.max(saved.fontSize, 28) : saved.fontSize);
+    setFontSize(isStudio ? Math.max(saved.fontSize, 14) : saved.fontSize);
     setMarginPx(isStudio ? Math.max(saved.marginPx, 16) : saved.marginPx);
     setMirror(saved.mirror);
     setDarkMode(isStudio ? false : saved.darkMode);
@@ -103,6 +106,9 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
     setFloating(saved.floating);
     setCountdownSec(saved.countdownSec);
     setTextColorId(saved.textColorId ?? "mint");
+    setOverlayOpacity(saved.overlayOpacity ?? 70);
+    setSpeedMultiplier(saved.speedMultiplier ?? 1);
+    setOverlayPosition(saved.overlayPosition ?? "top");
   }, [isStudio]);
 
   useEffect(() => {
@@ -140,6 +146,9 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
       floating,
       countdownSec,
       textColorId,
+      overlayOpacity,
+      speedMultiplier,
+      overlayPosition,
     });
   }, [
     active,
@@ -149,7 +158,10 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
     fontSize,
     marginPx,
     mirror,
+    overlayOpacity,
+    overlayPosition,
     speed,
+    speedMultiplier,
     textColorId,
     transparentMode,
   ]);
@@ -186,7 +198,12 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
       if (lastTickRef.current != null) {
         const delta = now - lastTickRef.current;
         setOffsetPx((current) =>
-          advanceTeleprompterOffset(current, clampTeleprompterSpeed(speed), delta, paused)
+          advanceTeleprompterOffset(
+            current,
+            clampTeleprompterSpeed(speed) * speedMultiplier,
+            delta,
+            paused
+          )
         );
       }
       lastTickRef.current = now;
@@ -195,7 +212,7 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
 
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [active, countdownLeft, paused, recording, speed]);
+  }, [active, countdownLeft, paused, recording, speed, speedMultiplier]);
 
   useEffect(() => {
     if (!recording) {
@@ -209,12 +226,17 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
     if (!active) return;
     function onVoiceTick() {
       setOffsetPx((current) =>
-        advanceTeleprompterOffset(current, clampTeleprompterSpeed(speed), 280, false)
+        advanceTeleprompterOffset(
+          current,
+          clampTeleprompterSpeed(speed) * speedMultiplier,
+          280,
+          false
+        )
       );
     }
     window.addEventListener("giga3:teleprompter-voice-tick", onVoiceTick);
     return () => window.removeEventListener("giga3:teleprompter-voice-tick", onVoiceTick);
-  }, [active, speed]);
+  }, [active, speed, speedMultiplier]);
 
   useEffect(() => {
     if (!active) return;
@@ -231,14 +253,20 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
   useEffect(() => {
     if (!isStudio) return;
     const onPointerMove = (event: PointerEvent) => {
-      if (!dragRef.current) return;
-      setCardOffset({
-        x: dragRef.current.originX + (event.clientX - dragRef.current.startX),
-        y: dragRef.current.originY + (event.clientY - dragRef.current.startY),
-      });
+      const drag = dragPositionRef.current;
+      if (!drag) return;
+      const deltaY = event.clientY - drag.startY;
+      if (Math.abs(deltaY) > 48) {
+        setOverlayPosition(deltaY > 0 ? "bottom" : "top");
+        dragPositionRef.current = null;
+      }
     };
     const onPointerUp = () => {
-      dragRef.current = null;
+      if (longPressRef.current) {
+        window.clearTimeout(longPressRef.current.timer);
+        longPressRef.current = null;
+      }
+      dragPositionRef.current = null;
     };
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
@@ -279,16 +307,25 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
         isStudio && !darkMode && !transparentMode && "text-slate-950 drop-shadow-sm"
       );
 
-  function beginCardDrag(event: React.PointerEvent<HTMLButtonElement>) {
-    dragRef.current = {
-      startX: event.clientX,
-      startY: event.clientY,
-      originX: cardOffset.x,
-      originY: cardOffset.y,
-    };
+  function beginOverlayLongPress(event: React.PointerEvent<HTMLDivElement>) {
+    const startY = event.clientY;
+    const timer = window.setTimeout(() => {
+      dragPositionRef.current = { startY, origin: overlayPosition };
+      longPressRef.current = null;
+    }, 420);
+    longPressRef.current = { timer, startY };
   }
 
-  function renderStudioScript() {
+  function endOverlayLongPress() {
+    if (longPressRef.current) {
+      window.clearTimeout(longPressRef.current.timer);
+      longPressRef.current = null;
+    }
+    dragPositionRef.current = null;
+  }
+
+  function renderStudioScript(opts?: { whiteText?: boolean }) {
+    const whiteText = opts?.whiteText ?? false;
     return (
       <div
         className={cn("relative min-h-0 flex-1 overflow-hidden", scrollMaxClass)}
@@ -311,12 +348,12 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
             return (
               <p
                 key={`${index}-${line.slice(0, 12)}`}
-                className="whitespace-pre-wrap leading-[1.38]"
+                className="whitespace-pre-wrap leading-[1.5]"
                 style={{
-                  fontSize: `${resolvedFontSize}px`,
-                  color: appearance.color,
-                  opacity: appearance.opacity,
-                  fontWeight: appearance.fontWeight,
+                  fontSize: `${Math.max(14, resolvedFontSize)}px`,
+                  color: whiteText ? "#ffffff" : appearance.color,
+                  opacity: whiteText ? (index === activeLineIndex ? 1 : 0.82) : appearance.opacity,
+                  fontWeight: whiteText ? 500 : appearance.fontWeight,
                 }}
               >
                 {line || "\u00a0"}
@@ -498,6 +535,11 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
   }
 
   if (isStudio) {
+    const overlayVerticalClass =
+      overlayPosition === "top"
+        ? "top-0"
+        : "bottom-0";
+
     return (
       <div
         className={cn(
@@ -506,69 +548,112 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
         )}
         style={{ "--tp-accent": accentColor } as React.CSSProperties}
       >
+        {panelMode === "edit" ? (
+          <div
+            className="gigasocial-teleprompter-safe-area pointer-events-none absolute inset-x-2 bottom-2 top-[calc(25%+0.5rem)] rounded-lg border-2 border-dashed border-emerald-400/80"
+            aria-hidden
+          >
+            <span className="absolute bottom-2 left-2 rounded bg-black/55 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
+              Safe area — subject visible
+            </span>
+          </div>
+        ) : null}
+
         {overlayVisible && panelMode === "none" ? (
           <div
-            className="pointer-events-none absolute inset-x-0 top-[max(4.75rem,env(safe-area-inset-top))] flex justify-center px-4"
-            style={{ transform: `translate(${cardOffset.x}px, ${cardOffset.y}px)` }}
+            className={cn(
+              "gigasocial-teleprompter-studio-band pointer-events-auto absolute inset-x-0 flex flex-col p-2",
+              overlayVerticalClass
+            )}
+            style={{
+              height: "25%",
+              transform: "translateZ(0)",
+              opacity: overlayOpacity / 100,
+            }}
+            onPointerDown={beginOverlayLongPress}
+            onPointerUp={endOverlayLongPress}
+            onPointerCancel={endOverlayLongPress}
+            onClick={() => setPanelMode("edit")}
           >
-            <div
-              className="gigasocial-teleprompter-card pointer-events-auto flex w-[min(92vw,24rem)] max-h-[min(44vh,21rem)] flex-col rounded-[1.35rem] px-4 pb-2 pt-3"
-            >
-              <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="flex min-h-0 flex-1 flex-col rounded-lg bg-black/70 p-3 backdrop-blur-md">
+              <div
+                className="mb-2 flex items-center justify-end gap-1.5"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  className="gigasocial-teleprompter-toolbar-btn rounded-md p-1.5"
+                  aria-label={overlayVisible ? "Hide teleprompter" : "Show teleprompter"}
+                  onClick={() => setOverlayVisible((value) => !value)}
+                >
+                  {overlayVisible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                </button>
+                <label className="flex items-center gap-1 text-[10px] text-white/75">
+                  <span className="sr-only">Opacity</span>
+                  <input
+                    type="range"
+                    min={50}
+                    max={100}
+                    value={overlayOpacity}
+                    onChange={(event) => setOverlayOpacity(Number(event.target.value))}
+                    className="gigasocial-teleprompter-mini-slider w-14"
+                    aria-label="Overlay opacity"
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="gigasocial-teleprompter-toolbar-btn rounded-md px-1.5 py-1 text-[10px]"
+                  aria-label="Decrease font size"
+                  onClick={() => setFontSize((value) => clampTeleprompterFontSize(value - 1))}
+                >
+                  <Minus className="h-3 w-3" aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  className="gigasocial-teleprompter-toolbar-btn rounded-md px-1.5 py-1 text-[10px]"
+                  aria-label="Increase font size"
+                  onClick={() => setFontSize((value) => clampTeleprompterFontSize(value + 1))}
+                >
+                  <Plus className="h-3 w-3" aria-hidden />
+                </button>
+                <label className="flex items-center gap-1 text-[10px] text-white/75">
+                  <span>{speedMultiplier.toFixed(1)}x</span>
+                  <input
+                    type="range"
+                    min={0.5}
+                    max={2}
+                    step={0.1}
+                    value={speedMultiplier}
+                    onChange={(event) => setSpeedMultiplier(Number(event.target.value))}
+                    className="gigasocial-teleprompter-mini-slider w-12"
+                    aria-label="Scroll speed multiplier"
+                  />
+                </label>
                 {recording ? (
                   <button
                     type="button"
                     onClick={() => setPaused((value) => !value)}
-                    className="gigasocial-teleprompter-toolbar-btn rounded-full p-2"
+                    className="gigasocial-teleprompter-toolbar-btn rounded-md p-1.5"
                     aria-label={paused ? "Resume teleprompter" : "Pause teleprompter"}
                   >
-                    {paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+                    {paused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
                   </button>
-                ) : (
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55">
-                    Teleprompter
-                  </span>
-                )}
+                ) : null}
                 <button
                   type="button"
-                  onClick={() => setOverlayVisible(false)}
-                  className="gigasocial-teleprompter-toolbar-btn ml-auto rounded-full p-2"
-                  aria-label="Hide teleprompter"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-
-              {renderStudioScript()}
-
-              <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-2">
-                <button
-                  type="button"
-                  className="gigasocial-teleprompter-toolbar-btn rounded-xl p-2.5"
-                  aria-label="Move teleprompter"
-                  onPointerDown={beginCardDrag}
-                >
-                  <Move className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  className="gigasocial-teleprompter-toolbar-btn relative rounded-xl p-2.5"
-                  aria-label="Edit script"
-                  onClick={() => setPanelMode("edit")}
-                >
-                  <Pencil className="h-5 w-5" />
-                  <span className="absolute -right-0.5 -top-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-violet-500 text-white">
-                    <Sparkles className="h-2.5 w-2.5" />
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className="gigasocial-teleprompter-toolbar-btn rounded-xl p-2.5"
+                  className="gigasocial-teleprompter-toolbar-btn rounded-md p-1.5"
                   aria-label="Teleprompter settings"
                   onClick={() => setPanelMode("settings")}
                 >
-                  <Settings className="h-5 w-5" />
+                  <Settings className="h-3.5 w-3.5" />
                 </button>
+              </div>
+
+              <div
+                className="gigasocial-teleprompter-script min-h-0 flex-1 overflow-hidden font-[Inter,system-ui,sans-serif] text-sm leading-[1.5] text-white"
+                onClick={(event) => event.stopPropagation()}
+              >
+                {renderStudioScript({ whiteText: true })}
               </div>
             </div>
           </div>
