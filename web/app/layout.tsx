@@ -11,12 +11,14 @@ import { ChunkLoadRecoveryBootstrap } from "@/components/pwa/ChunkLoadRecoveryBo
 import { PlatformAnalyticsHost } from "@/components/analytics/PlatformAnalyticsHost";
 import { GlobalChatPrefetch } from "@/components/chat/GlobalChatPrefetch";
 import { AuthenticatedChatRedirect } from "@/components/chat/AuthenticatedChatRedirect";
+import { PrimaryNavHost } from "@/components/navigation/PrimaryNavHost";
 import { branding } from "@/lib/branding";
 import { brandingAssetUrl } from "@/lib/brandingAssets";
 import { DEFAULT_HTML_LANG, DEFAULT_OG_LOCALE } from "@/lib/locale";
 import { pwaStartupImages } from "@/lib/pwaSplash";
 import { siteConfig } from "@/lib/site";
 import "@/styles/globals.css";
+import "@/styles/primary-nav.css";
 import "@/styles/a11y.css";
 import "@/styles/generation.css";
 import "@/styles/install-prompt.css";
@@ -142,6 +144,7 @@ export default function RootLayout({
           <PlatformAnalyticsHost />
           <DeferredPwaChrome />
           <GenerationToastHost />
+          <PrimaryNavHost />
         </PwaInstallProvider>
       </body>
     </html>

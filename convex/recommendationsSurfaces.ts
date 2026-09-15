@@ -1,5 +1,7 @@
 import {
   chatSurfaceCandidates,
+  EDIT_TELEPROMPTER_CANDIDATE,
+  EDIT_VOICE_CANDIDATE,
   LEARN_LINK,
   STUDIO_CANDIDATE,
   type RecommendationCandidate,
@@ -61,6 +63,8 @@ export function surfaceDefaults(surface: RecommendationSurface): RecommendationC
           entitlement: "free",
           weight: 3,
         },
+        { ...EDIT_TELEPROMPTER_CANDIDATE, weight: 3 },
+        { ...EDIT_VOICE_CANDIDATE, weight: 2 },
         {
           title: "Video script",
           action: "persona:video_producer",
