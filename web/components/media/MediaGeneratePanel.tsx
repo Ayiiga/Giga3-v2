@@ -315,7 +315,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
               </button>
             </div>
             {videoWorkflow === "preprod" ? (
-              <VideoPreProductionFlow usage={usage} />
+              <VideoPreProductionFlow usage={usage} recentImageUrls={recentImageUrls} />
             ) : videoWorkflow === "project" ? (
               <VideoProjectStudio usage={usage} initialPrompt={videoForm.prompt || initialPrompt} />
             ) : (
