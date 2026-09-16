@@ -212,11 +212,10 @@ describe("video pre-production workflow — integration surfaces", () => {
     expect(panel).toContain("recentImageUrls={recentImageUrls}");
   });
 
-  it("passes recent gallery URLs into pre-production flow", () => {
-    const flow = read("web/components/media/videoPreProduction/VideoPreProductionFlow.tsx");
+  it("exposes optional images panel and gallery URLs in Media Studio", () => {
+    const panel = read("web/components/media/MediaGeneratePanel.tsx");
     const images = read("web/components/media/videoPreProduction/OptionalImagesPanel.tsx");
-    expect(flow).toContain("recentImageUrls");
-    expect(flow).toContain("OptionalImagesPanel");
+    expect(panel).toContain("recentImageUrls={recentImageUrls}");
     expect(images).toContain("Continue without images");
   });
 

@@ -5,8 +5,7 @@ import {
   computeSingleClipVideoCredits,
   computeVideoCreditQuote,
 } from "../../convex/mediaVideoCreditPricing";
-import { pricingTierFromFalModel } from "../../convex/mediaVideoProviderPricing";
-import { DEFAULT_FAL_TEXT_VIDEO_MODEL } from "../../convex/falVideoModels";
+import { getVideoModelTierConfig } from "../../convex/mediaVideoProviderPricing";
 
 const read = (p: string) => readFileSync(resolve(__dirname, "../..", p), "utf8");
 
@@ -20,15 +19,14 @@ describe("video provider architecture — fal primary, Replicate fallback", () =
     expect(falIndex).toBeGreaterThan(-1);
     expect(replicateFallbackIndex).toBeGreaterThan(falIndex);
     expect(engine).toContain("resolveFalVideoModel(Boolean(imageUrl))");
-    expect(engine).not.toContain("falModelOverride");
+    expect(engine).toContain("falModelOverride");
   });
 
-  it("worker does not override fal model selection per UI tier", () => {
+  it("worker passes tier-aware fal model override into generation", () => {
     const worker = read("convex/mediaVideoWorker.ts");
     expect(worker).toContain("generateVideoWithFallback");
-    expect(worker).not.toContain("falModelOverride");
-    expect(worker).not.toContain("resolveModelIdForTier");
-    expect(worker).not.toContain("FAL_VEO_TEXT_VIDEO_MODEL");
+    expect(worker).toContain("falModelOverride");
+    expect(worker).toContain("resolveModelIdForTier");
   });
 
   it("charges credits once up front and refunds on worker failure", () => {
@@ -40,13 +38,10 @@ describe("video provider architecture — fal primary, Replicate fallback", () =
     expect(worker).toContain("refundMediaJobCredits");
   });
 
-  it("derives pricing tier from configured fal model family", () => {
-    expect(pricingTierFromFalModel(DEFAULT_FAL_TEXT_VIDEO_MODEL)).toBe("economy");
-    expect(pricingTierFromFalModel("fal-ai/kling-video/v2.1/standard/text-to-video")).toBe(
-      "standard"
-    );
-    const premiumLikeId = ["fal-ai", "veo3", "fast", "text-to-video"].join("/");
-    expect(pricingTierFromFalModel(premiumLikeId)).toBe("premium");
+  it("exposes tier pricing config for economy, standard, and premium", () => {
+    expect(getVideoModelTierConfig("economy").tier).toBe("economy");
+    expect(getVideoModelTierConfig("standard").tier).toBe("standard");
+    expect(getVideoModelTierConfig("premium").tier).toBe("premium");
   });
 
   it("preserves economy single-clip pricing for default fal model", () => {
