@@ -100,8 +100,9 @@ describe("GigaEdit publish redirect helpers", () => {
     expect(video).toContain("handoffAndOpenGigaSocial");
     expect(video).toContain("VideoEditorHeader");
     expect(video).toContain("openPublishOptions");
-    expect(video).toContain('"noise"');
-    expect(video).toContain('"overlays"');
+    expect(video).toContain("VoiceoverPanel");
+    expect(video).toContain("audioNoiseReduction");
+    expect(video).toContain('case "fx"');
     expect(video).toContain("deleteSelectedClip");
   });
 });

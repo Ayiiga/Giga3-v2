@@ -13,6 +13,7 @@ import {
   sectionForProjectKind,
   type GigaEditProjectRecord,
 } from "@/lib/gigaedit/projects";
+import { getCachedThumbnail, primeThumbnailCache } from "@/lib/gigaedit/thumbnailCache";
 import type { GigaEditOpenOptions, GigaEditSection } from "@/lib/gigaedit/types";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -37,6 +38,7 @@ export function RecentProjectsGrid({
     let cancelled = false;
     void listGigaEditProjects().then((rows) => {
       if (cancelled) return;
+      primeThumbnailCache(rows);
       setProjects(rows.slice(0, limit));
       setLoading(false);
     });
@@ -90,6 +92,7 @@ function RecentProjectCard({
 }) {
   const durationSec = computeProjectDurationSec(project);
   const resolution = resolutionLabelForAspect(project.aspectRatio);
+  const thumbSrc = getCachedThumbnail(project.id) ?? project.thumbnailDataUrl ?? undefined;
 
   return (
     <button
@@ -106,9 +109,9 @@ function RecentProjectCard({
       }
     >
       <div className="gigaedit-recent-card__thumb" aria-hidden>
-        {project.thumbnailDataUrl ? (
+        {thumbSrc ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={project.thumbnailDataUrl} alt="" className="h-full w-full object-cover" />
+          <img src={thumbSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
         ) : (
           <span className="text-2xl">{projectKindEmoji(project.kind)}</span>
         )}

@@ -7,6 +7,8 @@ import {
 const STORAGE_KEY = "giga3_gigasocial_teleprompter_script";
 const SETTINGS_KEY = "giga3_gigasocial_teleprompter_settings";
 
+export type TeleprompterOverlayPosition = "top" | "bottom";
+
 export type TeleprompterSettings = {
   speed: number;
   fontSize: number;
@@ -17,6 +19,12 @@ export type TeleprompterSettings = {
   countdownSec: number;
   floating: boolean;
   textColorId: TeleprompterColorId;
+  /** Overlay opacity 50–100 (default 70). */
+  overlayOpacity: number;
+  /** Speed multiplier 0.5–2 (default 1). */
+  speedMultiplier: number;
+  /** Pin overlay to top or bottom of preview (default top). */
+  overlayPosition: TeleprompterOverlayPosition;
 };
 
 export const DEFAULT_TELEPROMPTER_SETTINGS: TeleprompterSettings = {
@@ -29,6 +37,9 @@ export const DEFAULT_TELEPROMPTER_SETTINGS: TeleprompterSettings = {
   countdownSec: 3,
   floating: false,
   textColorId: DEFAULT_TELEPROMPTER_COLOR_ID,
+  overlayOpacity: 70,
+  speedMultiplier: 1,
+  overlayPosition: "top",
 };
 
 export function loadTeleprompterScript(): string {
