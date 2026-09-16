@@ -117,8 +117,26 @@ export function PracticeSession({
     return questions;
   }, [questions, mode, weakTopicHints]);
 
-  const current = activeQuestions[index];
+  const safeIndex =
+    activeQuestions.length === 0
+      ? 0
+      : Math.min(index, activeQuestions.length - 1);
+  const current = activeQuestions[safeIndex];
   const answerStreak = useMemo(() => computeAnswerStreak(results), [results]);
+
+  useEffect(() => {
+    if (!focusWeakRevision) return;
+    setMode("revision");
+    setIndex(0);
+    setResults([]);
+    setFinished(false);
+  }, [focusWeakRevision]);
+
+  useEffect(() => {
+    if (activeQuestions.length > 0 && index >= activeQuestions.length) {
+      setIndex(activeQuestions.length - 1);
+    }
+  }, [activeQuestions.length, index]);
 
   useEffect(() => {
     const snap = loadPracticeSession();
@@ -415,7 +433,7 @@ export function PracticeSession({
         <PracticeQuestionCard
           question={current}
           ageBand={ageBand}
-          index={index}
+          index={safeIndex}
           total={activeQuestions.length}
           examMode={examMode}
           onAnswered={handleAnswered}

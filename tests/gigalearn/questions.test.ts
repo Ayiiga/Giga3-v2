@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   computePracticeScore,
+  filterRenderableQuestions,
   formatCorrectAnswer,
   getPracticeFallbackQuestions,
   gradeAnswer,
   isInteractivePracticeTool,
+  isRenderablePracticeQuestion,
   parseQuestionsFromContent,
   parseQuestionsJsonBlock,
 } from "../../web/lib/gigalearn/questions";
@@ -108,5 +110,26 @@ describe("GigaLearn question engine", () => {
     expect(coding[0].type).toBe("ordering");
     const robotics = getPracticeFallbackQuestions("jhs-2", "robotics");
     expect(robotics[0].topic).toBe("robotics");
+  });
+
+  it("filters unsupported matching questions from practice sets", () => {
+    const blocked = {
+      id: "m1",
+      type: "matching" as const,
+      stem: "Match items",
+      options: ["A", "B"],
+      correctAnswer: "A",
+      explanation: "Because.",
+    };
+    expect(isRenderablePracticeQuestion(blocked)).toBe(false);
+    expect(filterRenderableQuestions([blocked])).toHaveLength(0);
+  });
+
+  it("falls back when AI JSON contains only unrenderable questions", () => {
+    const content = `
+\`\`\`json
+{"questions":[{"id":"x","type":"matching","stem":"Match","options":["a"],"correctAnswer":"a","explanation":"x"}]}
+\`\`\``;
+    expect(parseQuestionsFromContent(content)).toHaveLength(0);
   });
 });

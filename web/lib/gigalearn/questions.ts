@@ -183,8 +183,39 @@ function finalizeMarkdownQuestion(
 
 export function parseQuestionsFromContent(content: string): GigaLearnQuestion[] {
   const fromJson = parseQuestionsJsonBlock(content);
-  if (fromJson.length) return fromJson;
-  return parseQuestionsFromMarkdown(content);
+  const raw = fromJson.length ? fromJson : parseQuestionsFromMarkdown(content);
+  return filterRenderableQuestions(raw);
+}
+
+const RENDERABLE_PRACTICE_TYPES = new Set<GigaLearnQuestionType>([
+  "mcq",
+  "poll",
+  "true_false",
+  "short_answer",
+  "fill_blank",
+  "ordering",
+]);
+
+/** Drop AI question types/fields the interactive UI cannot render safely. */
+export function isRenderablePracticeQuestion(question: GigaLearnQuestion): boolean {
+  if (!RENDERABLE_PRACTICE_TYPES.has(question.type)) return false;
+  if (!question.stem.trim() || !question.explanation.trim()) return false;
+  if (
+    (question.type === "mcq" ||
+      question.type === "poll" ||
+      question.type === "true_false") &&
+    !question.options?.length
+  ) {
+    return false;
+  }
+  if (question.type === "ordering" && !question.options?.length) return false;
+  return true;
+}
+
+export function filterRenderableQuestions(
+  questions: GigaLearnQuestion[]
+): GigaLearnQuestion[] {
+  return questions.filter(isRenderablePracticeQuestion);
 }
 
 export function resolveSelectedAnswerText(
