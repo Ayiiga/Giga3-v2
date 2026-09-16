@@ -56,12 +56,13 @@ const PrimaryNavBar = memo(function PrimaryNavBar({
             <Link
               key={tab.id}
               href={href}
+              data-nav={tab.id}
               className={cn("primary-nav__item", active && "primary-nav__item--active")}
               aria-current={active ? "page" : undefined}
               prefetch={tab.id === "home"}
             >
               <span className="primary-nav__icon" aria-hidden>
-                <Icon active={active} />
+                <Icon active={active} className="primary-nav__glyph" />
               </span>
               <span className="primary-nav__label">{tab.label}</span>
             </Link>
