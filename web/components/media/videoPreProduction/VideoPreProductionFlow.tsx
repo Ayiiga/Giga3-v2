@@ -17,10 +17,24 @@ import {
   newPreProdNonce,
 } from "@/lib/media/videoPreProduction/idempotency";
 import {
+  buildPreProductionScenePrompt,
+  clipDurationForGeneration,
+  createSceneJobsFromScenes,
+  estimateLongVideoCredits,
+  extractCharacterContext,
+  formatTargetDurationLabel,
+  planLongVideoScenes,
+  sceneCountForTargetDuration,
+  TARGET_VIDEO_DURATION_OPTIONS,
+} from "@/lib/media/videoPreProduction/longVideo";
+import {
   countWords,
   estimateSpeechDurationSec,
   splitScriptIntoScenes,
 } from "@/lib/media/videoPreProduction/scriptUtils";
+import { combineSceneVideos } from "@/lib/media/videoProject/combineScenes";
+import { uploadCombinedVideoToGallery } from "@/lib/media/videoProject/uploadCombinedVideo";
+import { triggerMediaJobsRefresh } from "@/lib/media/jobsRefresh";
 import {
   isBrowserVoiceoverSupported,
   listBrowserVoices,
@@ -30,6 +44,7 @@ import {
 } from "@/lib/media/videoPreProduction/browserVoiceover";
 import {
   createEmptyDraft,
+  type PreProductionScene,
   type PreProductionStep,
   type VideoPreProductionDraft,
 } from "@/lib/media/videoPreProduction/types";
@@ -44,7 +59,7 @@ import { useMediaVideoJob } from "@/hooks/useMediaVideoJob";
 import { progressForStage, providerDisplayName } from "@/lib/media/stableJobs";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
-import { useAction } from "convex/react";
+import { useAction, useConvex } from "convex/react";
 import {
   CheckCircle2,
   Clapperboard,
@@ -86,10 +101,17 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
   const [videoSubmitting, setVideoSubmitting] = useState(false);
   const scriptRequestRef = useRef<string | null>(null);
 
+  const convex = useConvex();
   const generateScript = useAction(api.mediaVideoScript.generateVideoScript);
   const rewriteScript = useAction(api.mediaVideoScript.rewriteVideoScript);
   const { createVideo, resolveVideoJob, error: videoError, clearStatus } = useMediaGeneration();
   const videoJob = useMediaVideoJob();
+  const batchQueueRef = useRef<string[]>([]);
+  const generatingSceneRef = useRef<{ sceneId: string; nonce: string } | null>(null);
+  const combineAbortRef = useRef<AbortController | null>(null);
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
+  const [combineProgress, setCombineProgress] = useState(0);
 
   const patchDraft = useCallback((patch: Partial<VideoPreProductionDraft>) => {
     setDraft((prev) => {
@@ -111,9 +133,15 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
 
   const wordCount = countWords(draft.workingScript);
   const durationEst = estimateSpeechDurationSec(draft.workingScript);
-  const videoCreditCost = mediaVideoCreditCost(draft.durationSec);
+  const sceneCount = sceneCountForTargetDuration(draft.targetDurationSec);
+  const clipDurationSec = clipDurationForGeneration(
+    sceneCount === 1 ? draft.durationSec : 15
+  );
+  const costPerClip = mediaVideoCreditCost(clipDurationSec);
+  const videoCreditCost = estimateLongVideoCredits(draft.targetDurationSec, costPerClip);
   const canAffordScript = (usage?.credits ?? 0) >= WRITING_CREDIT_COST;
   const canAffordVideo = (usage?.credits ?? 0) >= videoCreditCost;
+  const isLongVideo = sceneCount > 1;
 
   const stepIndex = STEPS.findIndex((s) => s.id === draft.step);
 
@@ -211,8 +239,145 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
     [draft.optionalImageUrls, patchDraft]
   );
 
+  const combineSceneClips = useCallback(
+    async (sceneUrls: string[]) => {
+      const active = draftRef.current;
+      combineAbortRef.current?.abort();
+      const controller = new AbortController();
+      combineAbortRef.current = controller;
+      patchDraft({
+        combinedVideoStatus: "combining",
+        combinedVideoError: undefined,
+        combinedVideoUrl: undefined,
+      });
+      setCombineProgress(0);
+
+      try {
+        const { file, durationSec } = await combineSceneVideos({
+          sceneUrls,
+          aspectRatio: active.aspectRatio,
+          projectTitle: active.idea.trim() || "Giga3 video",
+          onProgress: setCombineProgress,
+          signal: controller.signal,
+        });
+        const registered = await uploadCombinedVideoToGallery(convex, file, {
+          title: active.idea.trim() || "Giga3 video",
+          prompt: active.workingScript,
+          aspectRatio: active.aspectRatio,
+          durationSec,
+        });
+        patchDraft({
+          combinedVideoStatus: "ready",
+          combinedVideoUrl: registered.outputUrl,
+          lastJobId: String(registered.jobId),
+        });
+        triggerMediaJobsRefresh();
+        resolveVideoJob({
+          status: "succeeded",
+          outputUrl: registered.outputUrl,
+          prompt: active.workingScript,
+          category: active.videoCategory,
+        });
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        patchDraft({
+          combinedVideoStatus: "failed",
+          combinedVideoError:
+            error instanceof Error ? error.message : "Could not stitch scenes together.",
+        });
+      } finally {
+        if (combineAbortRef.current === controller) {
+          combineAbortRef.current = null;
+        }
+      }
+    },
+    [convex, patchDraft, resolveVideoJob]
+  );
+
+  const generateSceneClip = useCallback(
+    async (sceneIndex: number, scenes: PreProductionScene[]) => {
+      const active = draftRef.current;
+      const scene = scenes[sceneIndex];
+      if (!scene) return;
+      const nonce = newPreProdNonce();
+      generatingSceneRef.current = { sceneId: scene.id, nonce };
+
+      const characterContext = extractCharacterContext(active.workingScript, active.idea);
+      const prompt = buildPreProductionScenePrompt({
+        scene,
+        sceneIndex,
+        totalScenes: scenes.length,
+        approvedScript: active.workingScript,
+        characterContext,
+        voiceover: active.voiceover,
+      });
+      const sourceImage = active.optionalImageUrls.find((u) => /^https?:\/\//i.test(u));
+
+      const sceneJobs = (active.sceneJobs ?? createSceneJobsFromScenes(scenes)).map((job) =>
+        job.id === scene.id
+          ? { ...job, status: "generating" as const, errorMessage: undefined }
+          : job
+      );
+      patchDraft({ sceneJobs, step: "preview" });
+      videoJob.clear();
+
+      const result = await createVideo(
+        active.videoCategory as VideoCategoryId,
+        prompt,
+        sourceImage,
+        {
+          aspectRatio: active.aspectRatio,
+          duration: clipDurationSec,
+          resolution: active.quality,
+          generateAudio: true,
+        }
+      );
+      if (result?.jobId) {
+        videoJob.track(result.jobId);
+        patchDraft({
+          sceneJobs: sceneJobs.map((job) =>
+            job.id === scene.id ? { ...job, jobId: String(result.jobId) } : job
+          ),
+        });
+      } else {
+        generatingSceneRef.current = null;
+        patchDraft({
+          sceneJobs: sceneJobs.map((job) =>
+            job.id === scene.id
+              ? { ...job, status: "failed", errorMessage: "Could not start generation." }
+              : job
+          ),
+        });
+      }
+    },
+    [clipDurationSec, createVideo, patchDraft, videoJob]
+  );
+
+  const retryFailedScenes = useCallback(async () => {
+    const active = draftRef.current;
+    const failed = (active.sceneJobs ?? []).filter((job) => job.status === "failed");
+    if (!failed.length) return;
+    const scenes = active.scenes;
+    batchQueueRef.current = failed.map((job) => job.id);
+    patchDraft({
+      sceneJobs: (active.sceneJobs ?? []).map((job) =>
+        job.status === "failed"
+          ? { ...job, status: "pending" as const, errorMessage: undefined }
+          : job
+      ),
+      combinedVideoStatus: "idle",
+      combinedVideoUrl: undefined,
+      combinedVideoError: undefined,
+    });
+    const firstIndex = scenes.findIndex((scene) => scene.id === failed[0].id);
+    if (firstIndex >= 0) {
+      await generateSceneClip(firstIndex, scenes);
+    }
+  }, [generateSceneClip, patchDraft]);
+
   const submitVideo = useCallback(async () => {
-    if (!draft.scriptApproved || !draft.voiceoverApproved || videoSubmitting) return;
+    const active = draftRef.current;
+    if (!active.scriptApproved || !active.voiceoverApproved || videoSubmitting) return;
     const token = getSessionToken();
     if (!token) return;
     const nonce = newPreProdNonce();
@@ -222,45 +387,100 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
     videoJob.clear();
     clearStatus();
 
-    const prompt = buildPreProductionVideoPrompt({
-      approvedScript: draft.workingScript,
-      scenes: draft.scenes,
-      voiceover: draft.voiceover,
+    const scenes = planLongVideoScenes(active.workingScript, active.targetDurationSec);
+    const sceneJobs = createSceneJobsFromScenes(scenes);
+    patchDraft({
+      scenes,
+      sceneJobs,
+      combinedVideoStatus: "idle",
+      combinedVideoUrl: undefined,
+      combinedVideoError: undefined,
     });
-    const sourceImage = draft.optionalImageUrls.find((u) => /^https?:\/\//i.test(u));
 
     try {
-      const result = await createVideo(
-        draft.videoCategory as VideoCategoryId,
-        prompt,
-        sourceImage,
-        {
-          aspectRatio: draft.aspectRatio,
-          duration: draft.durationSec,
-          resolution: draft.quality,
-          generateAudio: true,
+      if (scenes.length === 1) {
+        const prompt = buildPreProductionVideoPrompt({
+          approvedScript: active.workingScript,
+          scenes,
+          voiceover: active.voiceover,
+        });
+        const sourceImage = active.optionalImageUrls.find((u) => /^https?:\/\//i.test(u));
+        const result = await createVideo(
+          active.videoCategory as VideoCategoryId,
+          prompt,
+          sourceImage,
+          {
+            aspectRatio: active.aspectRatio,
+            duration: active.durationSec,
+            resolution: active.quality,
+            generateAudio: true,
+          }
+        );
+        if (result?.jobId) {
+          videoJob.track(result.jobId);
+          patchDraft({ step: "preview", lastJobId: String(result.jobId) });
         }
-      );
-      if (result?.jobId) {
-        videoJob.track(result.jobId);
-        patchDraft({ step: "preview", lastJobId: String(result.jobId) });
+      } else {
+        batchQueueRef.current = scenes.map((s) => s.id);
+        patchDraft({ step: "preview" });
+        await generateSceneClip(0, scenes);
       }
     } finally {
       completePreProdRequest("video", nonce);
       setVideoSubmitting(false);
     }
-  }, [
-    clearStatus,
-    createVideo,
-    draft,
-    patchDraft,
-    videoJob,
-    videoSubmitting,
-  ]);
+  }, [clearStatus, createVideo, generateSceneClip, patchDraft, videoJob, videoSubmitting]);
 
   useEffect(() => {
     const job = videoJob.job;
+    const gen = generatingSceneRef.current;
     if (!job || job.status === "processing") return;
+
+    if (gen) {
+      const active = draftRef.current;
+      const scenes = active.scenes;
+      const sceneJobs = (active.sceneJobs ?? []).map((entry) => {
+        if (entry.id !== gen.sceneId) return entry;
+        if (job.status === "succeeded") {
+          return {
+            ...entry,
+            status: "succeeded" as const,
+            outputUrl: job.outputUrl,
+            jobId: job.jobId,
+            creditsCharged: costPerClip,
+            errorMessage: undefined,
+          };
+        }
+        return {
+          ...entry,
+          status: "failed" as const,
+          errorMessage: job.errorMessage ?? "Generation failed",
+        };
+      });
+      patchDraft({ sceneJobs });
+      generatingSceneRef.current = null;
+
+      if (job.status === "succeeded") {
+        batchQueueRef.current = batchQueueRef.current.filter((id) => id !== gen.sceneId);
+        const nextId = batchQueueRef.current[0];
+        if (nextId) {
+          const nextIndex = scenes.findIndex((s) => s.id === nextId);
+          window.setTimeout(() => {
+            void generateSceneClip(nextIndex, scenes);
+          }, 400);
+        } else {
+          const urls = sceneJobs
+            .filter((entry) => entry.status === "succeeded" && entry.outputUrl)
+            .sort((a, b) => a.sceneNumber - b.sceneNumber)
+            .map((entry) => entry.outputUrl as string);
+          if (urls.length === scenes.length) {
+            void combineSceneClips(urls);
+          }
+        }
+      }
+      return;
+    }
+
     if (job.status === "succeeded") {
       resolveVideoJob({
         status: "succeeded",
@@ -271,11 +491,39 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
     } else if (job.status === "failed") {
       resolveVideoJob({ status: "failed", errorMessage: job.errorMessage });
     }
-  }, [videoJob.job, resolveVideoJob, draft.workingScript, draft.videoCategory]);
+  }, [
+    combineSceneClips,
+    costPerClip,
+    draft.videoCategory,
+    draft.workingScript,
+    generateSceneClip,
+    patchDraft,
+    resolveVideoJob,
+    videoJob.job,
+  ]);
 
-  const processing = videoSubmitting || videoJob.job?.status === "processing";
-  const succeeded = videoJob.job?.status === "succeeded" && Boolean(videoJob.job.outputUrl);
-  const failed = videoJob.job?.status === "failed" || Boolean(videoError);
+  useEffect(() => {
+    return () => combineAbortRef.current?.abort();
+  }, []);
+
+  const sceneJobs = draft.sceneJobs ?? [];
+  const completedScenes = sceneJobs.filter((job) => job.status === "succeeded").length;
+  const failedScenes = sceneJobs.filter((job) => job.status === "failed");
+  const combining = draft.combinedVideoStatus === "combining";
+  const processing =
+    videoSubmitting ||
+    videoJob.job?.status === "processing" ||
+    combining ||
+    (isLongVideo && sceneJobs.some((job) => job.status === "generating"));
+  const succeeded =
+    draft.combinedVideoStatus === "ready" && Boolean(draft.combinedVideoUrl)
+      ? true
+      : !isLongVideo && videoJob.job?.status === "succeeded" && Boolean(videoJob.job.outputUrl);
+  const failed =
+    draft.combinedVideoStatus === "failed" ||
+    failedScenes.length > 0 ||
+    (!isLongVideo && (videoJob.job?.status === "failed" || Boolean(videoError)));
+  const previewUrl = draft.combinedVideoUrl ?? videoJob.job?.outputUrl;
 
   const englishVoices = useMemo(
     () => voices.filter((v) => v.lang.toLowerCase().startsWith("en")),
@@ -609,30 +857,60 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
               </select>
             </label>
             <label className="text-sm font-medium text-muted">
-              Duration
+              Total video length
               <select
                 className="input-surface mt-2 w-full"
-                value={draft.durationSec}
-                onChange={(e) =>
+                value={draft.targetDurationSec}
+                onChange={(e) => {
+                  const targetDurationSec = Number(e.target.value);
                   patchDraft({
-                    durationSec: Number(e.target.value) as MediaVideoDurationSec,
-                  })
-                }
+                    targetDurationSec,
+                    scenes: planLongVideoScenes(draft.workingScript, targetDurationSec),
+                  });
+                }}
               >
-                {MEDIA_VIDEO_DURATION_OPTIONS.map((d) => (
-                  <option key={d} value={d}>{d}s</option>
+                {TARGET_VIDEO_DURATION_OPTIONS.map((d) => (
+                  <option key={d} value={d}>
+                    {formatTargetDurationLabel(d)}
+                  </option>
                 ))}
               </select>
             </label>
+            {!isLongVideo && (
+              <label className="text-sm font-medium text-muted">
+                Clip duration
+                <select
+                  className="input-surface mt-2 w-full"
+                  value={draft.durationSec}
+                  onChange={(e) =>
+                    patchDraft({
+                      durationSec: Number(e.target.value) as MediaVideoDurationSec,
+                    })
+                  }
+                >
+                  {MEDIA_VIDEO_DURATION_OPTIONS.map((d) => (
+                    <option key={d} value={d}>{d}s</option>
+                  ))}
+                </select>
+              </label>
+            )}
           </div>
+          {isLongVideo && (
+            <p className="rounded-xl border border-violet-500/30 bg-violet-600/10 px-4 py-3 text-sm text-foreground">
+              Giga3 will generate <strong>{sceneCount} scenes</strong> (15s each) with the same
+              character and stitch them into one <strong>{formatTargetDurationLabel(draft.targetDurationSec)}</strong> video
+              for download.
+            </p>
+          )}
           <p className="rounded-xl border border-border bg-card/50 px-4 py-3 text-sm">
             Estimated cost: <strong>{videoCreditCost} credits</strong>
-            {usage ? ` (${usage.credits} available)` : ""}
+            {isLongVideo ? ` (${sceneCount} × ${costPerClip})` : ""}
+            {usage ? ` · ${usage.credits} available` : ""}
           </p>
           {!canAffordVideo && usage && (
             <CreditPromptBanner
               variant="empty"
-              message={`You need ${videoCreditCost} credits for this ${draft.durationSec}s video.`}
+              message={`You need ${videoCreditCost} credits for this ${formatTargetDurationLabel(draft.targetDurationSec)} video.`}
               creditCost={videoCreditCost}
               subscriptionActive={usage.subscriptionActive}
               compact
@@ -664,9 +942,15 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
                 type="button"
                 variant="outline"
                 className="mt-3 min-h-11"
-                onClick={() => void submitVideo()}
+                onClick={() =>
+                  void (isLongVideo && failedScenes.length > 0
+                    ? retryFailedScenes()
+                    : submitVideo())
+                }
               >
-                Retry video only
+                {isLongVideo && failedScenes.length > 0
+                  ? "Retry failed scenes only"
+                  : "Retry video only"}
               </Button>
             </p>
           )}
@@ -676,32 +960,83 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
       {draft.step === "preview" && (
         <section className="space-y-4" aria-label="Preview and export">
           <h2 className="text-lg font-bold text-foreground">6. Preview & export</h2>
+          {isLongVideo && sceneJobs.length > 0 && (
+            <div className="space-y-2 rounded-2xl border border-border bg-card/50 p-4">
+              <p className="text-sm font-semibold text-foreground">
+                Scene progress: {completedScenes} of {sceneJobs.length} complete
+              </p>
+              <div className="space-y-2">
+                {sceneJobs.map((job) => (
+                  <div
+                    key={job.id}
+                    className="flex items-center justify-between gap-2 rounded-xl bg-muted/20 px-3 py-2 text-sm"
+                  >
+                    <span>Scene {job.sceneNumber}</span>
+                    <span className="text-muted">
+                      {job.status === "succeeded" && "Ready"}
+                      {job.status === "generating" && "Generating…"}
+                      {job.status === "pending" && "Waiting"}
+                      {job.status === "failed" && (job.errorMessage || "Failed")}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {processing && (
             <GenerationProgressStrip
               label={
-                videoJob.job?.progressLabel
-                  ? `${videoJob.job.progressLabel} · ${providerDisplayName(videoJob.job?.provider)}`
-                  : "Creating your video…"
+                combining
+                  ? `Stitching ${sceneCount} scenes together… ${combineProgress}%`
+                  : isLongVideo && sceneJobs.some((job) => job.status === "generating")
+                    ? `Generating scene ${completedScenes + 1} of ${sceneJobs.length} · ${providerDisplayName(videoJob.job?.provider)}`
+                    : videoJob.job?.progressLabel
+                      ? `${videoJob.job.progressLabel} · ${providerDisplayName(videoJob.job?.provider)}`
+                      : "Creating your video…"
               }
-              progress={progressForStage(videoJob.job?.progressStage)}
+              progress={
+                combining
+                  ? combineProgress
+                  : progressForStage(videoJob.job?.progressStage)
+              }
               state="processing"
             />
           )}
-          {succeeded && videoJob.job?.outputUrl && (
+          {succeeded && previewUrl && (
             <>
               <div className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-200">
                 <CheckCircle2 className="h-5 w-5" aria-hidden />
-                Video ready
+                {isLongVideo ? "Combined video ready" : "Video ready"}
               </div>
-              <MessageMediaBlock url={videoJob.job.outputUrl} kind="video" />
+              <MessageMediaBlock url={previewUrl} kind="video" />
             </>
           )}
           {failed && !processing && (
-            <div className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
-              <XCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
-              <span>
-                {videoJob.job?.errorMessage || videoError || "Generation failed."}
-              </span>
+            <div className="space-y-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+              <div className="flex items-start gap-2">
+                <XCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
+                <span>
+                  {draft.combinedVideoError ||
+                    failedScenes[0]?.errorMessage ||
+                    videoJob.job?.errorMessage ||
+                    videoError ||
+                    "Generation failed."}
+                </span>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11"
+                onClick={() =>
+                  void (isLongVideo && failedScenes.length > 0
+                    ? retryFailedScenes()
+                    : submitVideo())
+                }
+              >
+                {isLongVideo && failedScenes.length > 0
+                  ? "Retry failed scenes only"
+                  : "Retry video"}
+              </Button>
             </div>
           )}
           <div className="flex flex-wrap gap-2">

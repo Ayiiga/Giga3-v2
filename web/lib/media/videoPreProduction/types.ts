@@ -23,6 +23,8 @@ export type VoiceoverSettings = {
   pitch: number;
 };
 
+export type CombinedVideoStatus = "idle" | "combining" | "ready" | "failed";
+
 export type VideoPreProductionDraft = {
   version: 1;
   updatedAt: number;
@@ -35,12 +37,26 @@ export type VideoPreProductionDraft = {
   voiceover: VoiceoverSettings;
   voiceoverApproved: boolean;
   scenes: PreProductionScene[];
+  /** Total desired output length — longer videos are stitched from 15s clips. */
+  targetDurationSec: number;
   optionalImageUrls: string[];
   videoCategory: string;
   aspectRatio: "16:9" | "9:16" | "1:1";
   durationSec: 5 | 10 | 15;
   quality: "720p" | "1080p";
   lastJobId?: string;
+  sceneJobs?: Array<{
+    id: string;
+    sceneNumber: number;
+    status: "pending" | "generating" | "succeeded" | "failed";
+    jobId?: string;
+    outputUrl?: string;
+    errorMessage?: string;
+    creditsCharged?: number;
+  }>;
+  combinedVideoUrl?: string;
+  combinedVideoStatus?: CombinedVideoStatus;
+  combinedVideoError?: string;
 };
 
 export const DEFAULT_VOICEOVER: VoiceoverSettings = {
@@ -67,7 +83,10 @@ export function createEmptyDraft(): VideoPreProductionDraft {
     optionalImageUrls: [],
     videoCategory: "cinematic_trailers",
     aspectRatio: "9:16",
-    durationSec: 10,
+    targetDurationSec: 30,
+    durationSec: 15,
     quality: "720p",
+    sceneJobs: [],
+    combinedVideoStatus: "idle",
   };
 }
