@@ -65,6 +65,9 @@ export const generateVideo = action({
         v.literal("21:9")
       )
     ),
+    videoModelTier: v.optional(
+      v.union(v.literal("economy"), v.literal("standard"), v.literal("premium"))
+    ),
   },
   /**
    * Enqueue a video job and return immediately. Credits are reserved up front
@@ -94,6 +97,10 @@ export const generateVideo = action({
 
     const cost = await assertCreditsAvailable(ctx, args.sessionToken, "video", {
       videoDurationSec: duration,
+      videoModelTier: args.videoModelTier,
+      resolution,
+      generateAudio: args.generateAudio,
+      hasImage: Boolean(imageUrl),
     });
 
     const jobId: Id<"mediaJobs"> = await ctx.runMutation(internal.mediaInternal.createMediaJob, {
@@ -134,6 +141,7 @@ export const generateVideo = action({
       resolution,
       generateAudio: args.generateAudio,
       aspectRatio: args.aspectRatio,
+      videoModelTier: args.videoModelTier,
     });
 
     return {
