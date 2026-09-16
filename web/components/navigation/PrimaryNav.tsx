@@ -1,5 +1,6 @@
 "use client";
 
+import { CreateSubNav } from "@/components/navigation/CreateSubNav";
 import {
   CreateNavIcon,
   HomeNavIcon,
@@ -30,22 +31,29 @@ const PRIMARY_NAV_ICONS: Record<
 type PrimaryNavBarProps = {
   variant: "mobile" | "desktop";
   activeTab: ReturnType<typeof resolvePrimaryNavTab>;
+  pathname: string;
 };
 
 const PrimaryNavBar = memo(function PrimaryNavBar({
   variant,
   activeTab,
+  pathname,
 }: PrimaryNavBarProps) {
   const isMobile = variant === "mobile";
+  const showCreateSub = activeTab === "create";
 
   return (
     <nav
       className={cn(
         "primary-nav",
-        isMobile ? "primary-nav--mobile" : "primary-nav--desktop"
+        isMobile ? "primary-nav--mobile" : "primary-nav--desktop",
+        showCreateSub && "primary-nav--with-create-sub"
       )}
       aria-label="Giga3 primary navigation"
     >
+      {showCreateSub ? (
+        <CreateSubNav pathname={pathname} variant="bar" className="primary-nav__create-sub" />
+      ) : null}
       <div className={cn("primary-nav__inner", isMobile && "primary-nav__inner--mobile")}>
         {PRIMARY_NAV_TABS.map((tab) => {
           const Icon = PRIMARY_NAV_ICONS[tab.id];
@@ -91,8 +99,10 @@ export const PrimaryNav = memo(function PrimaryNav({
 
   return (
     <>
-      <PrimaryNavBar variant="mobile" activeTab={activeTab} />
-      {showRail ? <PrimaryNavBar variant="desktop" activeTab={activeTab} /> : null}
+      <PrimaryNavBar variant="mobile" activeTab={activeTab} pathname={pathname} />
+      {showRail ? (
+        <PrimaryNavBar variant="desktop" activeTab={activeTab} pathname={pathname} />
+      ) : null}
     </>
   );
 });

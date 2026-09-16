@@ -2,10 +2,18 @@
 
 :root {
   --primary-nav-height: 3.25rem;
+  --primary-nav-create-sub-height: 2.15rem;
   --primary-nav-rail-width: 4.75rem;
   --marketing-header-height: 3.5rem;
   --primary-nav-offset: 0px;
   --primary-nav-inline-start: 0px;
+}
+
+html.primary-nav-create-sub.primary-nav-bar-visible {
+  --primary-nav-offset: calc(
+    var(--primary-nav-height) + var(--primary-nav-create-sub-height) +
+      env(safe-area-inset-bottom, 0px)
+  );
 }
 
 /* Offsets apply only while the bar/rail is actually visible (not keyboard/immersive). */
@@ -158,6 +166,117 @@ html.primary-nav-route.primary-nav-bar-visible {
   border-radius: 1.1rem;
   background: hsl(var(--background) / 0.98);
   box-shadow: 0 -4px 24px -12px rgba(0, 0, 0, 0.35);
+}
+
+.primary-nav__create-sub {
+  pointer-events: auto;
+  margin: 0 auto 0.2rem;
+  max-width: 28rem;
+  width: 100%;
+}
+
+.primary-nav--desktop .primary-nav__create-sub {
+  margin: 0 0 0.45rem;
+  max-width: none;
+}
+
+/* Create sub-nav — Media Studio | GigaEdits */
+.create-sub-nav {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.create-sub-nav--bar {
+  padding: 0.15rem 0.2rem;
+  border-radius: 0.85rem;
+  background: hsl(var(--background) / 0.94);
+  border: 1px solid hsl(var(--border) / 0.55);
+}
+
+.create-sub-nav--inline {
+  margin-bottom: 1rem;
+}
+
+.create-sub-nav__item {
+  display: inline-flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.7rem;
+  text-decoration: none;
+  color: #64748b;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.create-sub-nav--inline .create-sub-nav__item {
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 3rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid hsl(var(--border) / 0.65);
+  background: hsl(var(--background));
+}
+
+.create-sub-nav__item--active {
+  color: #0f172a;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.14) 0%, rgba(168, 85, 247, 0.1) 100%);
+  border-color: rgba(124, 58, 237, 0.28);
+  box-shadow: 0 1px 6px -2px rgba(91, 33, 182, 0.2);
+}
+
+.create-sub-nav--bar .create-sub-nav__item--active {
+  background: linear-gradient(135deg, #ede9fe 0%, #f3e8ff 100%);
+}
+
+.create-sub-nav__icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.create-sub-nav--inline .create-sub-nav__icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  color: #7c3aed;
+}
+
+.create-sub-nav__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+
+.create-sub-nav--inline .create-sub-nav__label {
+  font-size: 0.82rem;
+}
+
+.create-sub-nav__hint {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: #94a3b8;
+  line-height: 1.2;
+}
+
+.create-sub-nav--inline .create-sub-nav__item {
+  flex: 1;
+  min-width: 0;
+}
+
+.create-sub-nav__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  min-width: 0;
 }
 
 @media (min-width: 1024px) {

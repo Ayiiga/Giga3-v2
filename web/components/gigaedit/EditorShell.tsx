@@ -1,9 +1,10 @@
 "use client";
 
+import { CreateSubNav } from "@/components/navigation/CreateSubNav";
 import type { GigaEditSection } from "@/lib/gigaedit/types";
 import { CREATOR_STUDIO_PRODUCT_NAME } from "@/lib/gigaedit/creatorStudio";
 import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 const SECTION_LABELS: Record<GigaEditSection, string> = {
@@ -30,6 +31,8 @@ export type EditorShellProps = {
 };
 
 export function EditorShell({ section, onBackHome, children, footer, immersive = false }: EditorShellProps) {
+  const pathname = usePathname() ?? "/gigaedit";
+
   if (immersive) {
     return (
       <div className="gigaedit-shell gigaedit-shell--editor gigaedit-stable flex h-full min-h-0 flex-col">
@@ -40,6 +43,7 @@ export function EditorShell({ section, onBackHome, children, footer, immersive =
 
   return (
     <div className="gigaedit-shell gigaedit-stable mx-auto max-w-5xl rounded-2xl px-3 py-4 sm:px-5 sm:py-6">
+      <CreateSubNav pathname={pathname} variant="inline" className="mb-4" />
       <div className="mb-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {section !== "home" ? (
@@ -59,12 +63,6 @@ export function EditorShell({ section, onBackHome, children, footer, immersive =
             <p className="text-xs text-[var(--ge-muted)]">{SECTION_LABELS[section]}</p>
           </div>
         </div>
-        <Link
-          href="/media/"
-          className="rounded-xl border border-[var(--ge-border)] px-3 py-1.5 text-[11px] text-[var(--ge-muted)]"
-        >
-          AI Studio
-        </Link>
       </div>
 
       {children}

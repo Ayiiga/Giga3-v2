@@ -4,6 +4,7 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { MediaErrorBoundary } from "@/components/media/MediaErrorBoundary";
 import { MediaGeneratePanel } from "@/components/media/MediaGeneratePanel";
 import { MediaQuickTemplates } from "@/components/media/MediaQuickTemplates";
+import { CreateSubNav } from "@/components/navigation/CreateSubNav";
 import { MediaStudioHeader } from "@/components/media/MediaStudioHeader";
 import { RecentGenerationsSection } from "@/components/media/RecentGenerationsSection";
 import { SurfaceRecommendations } from "@/components/recommendations/SurfaceRecommendations";
@@ -21,7 +22,7 @@ import {
   applyTemplateHandoffToMediaSeed,
   consumeTemplateHandoff,
 } from "@/lib/gigasocial/templateHandoff";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 type FormSeed = {
@@ -35,6 +36,7 @@ function MediaStudioContent() {
   useRenderDiagnostic("MediaStudioContent");
 
   const params = useSearchParams();
+  const pathname = usePathname() ?? "/media";
   const { email, usage, mounted } = useMediaBilling();
 
   const initialTab = params.get("tab") === "video" ? "video" : "image";
@@ -123,6 +125,7 @@ function MediaStudioContent() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-10">
+      <CreateSubNav pathname={pathname} variant="inline" />
       <MediaStudioHeader usage={usage} />
 
       <MediaGeneratePanel

@@ -57,5 +57,22 @@ describe("PrimaryNav UI wiring", () => {
     expect(nav).toContain('aria-label="Giga3 primary navigation"');
     expect(nav).toContain("primary-nav__label");
     expect(nav).toContain("PrimaryNavIcons");
+    expect(nav).toContain("CreateSubNav");
+  });
+
+  it("offsets layout when Create sub-nav is visible", () => {
+    const host = readFileSync(
+      resolve(__dirname, "../../web/components/navigation/PrimaryNavHost.tsx"),
+      "utf8"
+    );
+    const css = readFileSync(
+      resolve(__dirname, "../../web/styles/primary-nav.css"),
+      "utf8"
+    );
+
+    expect(host).toContain("primary-nav-create-sub");
+    expect(host).toContain("isCreateSubRoute");
+    expect(css).toContain(".create-sub-nav");
+    expect(css).toContain("primary-nav-create-sub");
   });
 });
