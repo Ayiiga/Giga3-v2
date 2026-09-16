@@ -20,13 +20,17 @@ import {
   buildPreProductionScenePrompt,
   clipDurationForGeneration,
   createSceneJobsFromScenes,
-  estimateLongVideoCredits,
   extractCharacterContext,
   formatTargetDurationLabel,
   planLongVideoScenes,
   sceneCountForTargetDuration,
   TARGET_VIDEO_DURATION_OPTIONS,
 } from "@/lib/media/videoPreProduction/longVideo";
+import {
+  estimateLegacyVideoCredits,
+  formatQualityLabel,
+  VIDEO_MODEL_TIER_OPTIONS,
+} from "@/lib/media/videoPreProduction/videoCreditPricing";
 import {
   countWords,
   estimateSpeechDurationSec,
@@ -59,7 +63,7 @@ import { useMediaVideoJob } from "@/hooks/useMediaVideoJob";
 import { progressForStage, providerDisplayName } from "@/lib/media/stableJobs";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
-import { useAction, useConvex } from "convex/react";
+import { useAction, useConvex, useQuery } from "convex/react";
 import {
   CheckCircle2,
   Clapperboard,
@@ -137,11 +141,29 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
   const clipDurationSec = clipDurationForGeneration(
     sceneCount === 1 ? draft.durationSec : 15
   );
-  const costPerClip = mediaVideoCreditCost(clipDurationSec);
-  const videoCreditCost = estimateLongVideoCredits(draft.targetDurationSec, costPerClip);
-  const canAffordScript = (usage?.credits ?? 0) >= WRITING_CREDIT_COST;
-  const canAffordVideo = (usage?.credits ?? 0) >= videoCreditCost;
+  const hasHttpsImage = draft.optionalImageUrls.some((u) => /^https?:\/\//i.test(u));
+  const creditQuote = useQuery(api.mediaVideoPricing.estimateVideoProductionCredits, {
+    targetDurationSec: draft.targetDurationSec,
+    clipDurationSec,
+    videoModelTier: draft.videoModelTier,
+    resolution: draft.quality,
+    generateAudio: true,
+    hasImage: hasHttpsImage,
+    includeScriptCredits: false,
+  });
+  const legacyVideoCredits = estimateLegacyVideoCredits(draft.targetDurationSec, clipDurationSec);
+  const videoCreditCost = creditQuote?.totalCredits ?? legacyVideoCredits;
+  const costPerClip = creditQuote
+    ? Math.max(1, Math.round(creditQuote.totalCredits / Math.max(1, creditQuote.sceneCount)))
+    : mediaVideoCreditCost(clipDurationSec);
+  const creditsAvailable = usage?.credits ?? 0;
+  const creditsRemaining = creditsAvailable - videoCreditCost;
+  const canAffordScript = creditsAvailable >= WRITING_CREDIT_COST;
+  const canAffordVideo = creditsAvailable >= videoCreditCost;
   const isLongVideo = sceneCount > 1;
+  const selectedModel =
+    VIDEO_MODEL_TIER_OPTIONS.find((t) => t.id === draft.videoModelTier) ??
+    VIDEO_MODEL_TIER_OPTIONS[0];
 
   const stepIndex = STEPS.findIndex((s) => s.id === draft.step);
 
@@ -330,6 +352,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
           duration: clipDurationSec,
           resolution: active.quality,
           generateAudio: true,
+          videoModelTier: active.videoModelTier,
         }
       );
       if (result?.jobId) {
@@ -414,6 +437,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
             duration: active.durationSec,
             resolution: active.quality,
             generateAudio: true,
+            videoModelTier: active.videoModelTier,
           }
         );
         if (result?.jobId) {
@@ -857,6 +881,22 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
               </select>
             </label>
             <label className="text-sm font-medium text-muted">
+              Model
+              <select
+                className="input-surface mt-2 w-full"
+                value={draft.videoModelTier}
+                onChange={(e) =>
+                  patchDraft({
+                    videoModelTier: e.target.value as VideoPreProductionDraft["videoModelTier"],
+                  })
+                }
+              >
+                {VIDEO_MODEL_TIER_OPTIONS.map((tier) => (
+                  <option key={tier.id} value={tier.id}>{tier.label}</option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm font-medium text-muted">
               Total video length
               <select
                 className="input-surface mt-2 w-full"
@@ -902,11 +942,57 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
               for download.
             </p>
           )}
-          <p className="rounded-xl border border-border bg-card/50 px-4 py-3 text-sm">
-            Estimated cost: <strong>{videoCreditCost} credits</strong>
-            {isLongVideo ? ` (${sceneCount} × ${costPerClip})` : ""}
-            {usage ? ` · ${usage.credits} available` : ""}
-          </p>
+          <div
+            className="space-y-2 rounded-xl border border-border bg-card/50 px-4 py-3 text-sm"
+            data-testid="video-credit-estimate"
+          >
+            <p className="font-semibold text-foreground">Credit estimate</p>
+            <dl className="grid gap-1 sm:grid-cols-2">
+              <div>
+                <dt className="text-muted">Video length</dt>
+                <dd>{formatTargetDurationLabel(draft.targetDurationSec)}</dd>
+              </div>
+              <div>
+                <dt className="text-muted">Model</dt>
+                <dd>{selectedModel.label}</dd>
+              </div>
+              <div>
+                <dt className="text-muted">Quality</dt>
+                <dd className="capitalize">{formatQualityLabel(draft.videoModelTier)}</dd>
+              </div>
+              <div>
+                <dt className="text-muted">Audio</dt>
+                <dd>{creditQuote?.usesNativeAudio ? "Native (on)" : "Synced (on)"}</dd>
+              </div>
+              {isLongVideo && (
+                <div>
+                  <dt className="text-muted">Scenes</dt>
+                  <dd>{sceneCount}</dd>
+                </div>
+              )}
+              {creditQuote && creditQuote.providerJobsPerScene > 1 && (
+                <div>
+                  <dt className="text-muted">Provider jobs / scene</dt>
+                  <dd>{creditQuote.providerJobsPerScene}</dd>
+                </div>
+              )}
+            </dl>
+            <p>
+              Estimated credits: <strong>{videoCreditCost}</strong>
+              {isLongVideo ? ` (${sceneCount} × ~${costPerClip})` : ""}
+            </p>
+            {usage && (
+              <p className="text-muted">
+                Your balance: {creditsAvailable} · Remaining after:{" "}
+                <strong className={creditsRemaining < 0 ? "text-red-400" : "text-foreground"}>
+                  {creditsRemaining}
+                </strong>
+              </p>
+            )}
+            {creditQuote?.usesLegacyEconomyPricing && draft.videoModelTier === "economy" && (
+              <p className="text-xs text-muted">Economy pricing — standard Giga3 video rates apply.</p>
+            )}
+          </div>
           {!canAffordVideo && usage && (
             <CreditPromptBanner
               variant="empty"

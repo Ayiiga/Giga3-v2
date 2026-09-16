@@ -4,6 +4,7 @@ import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { generateVideoWithFallback } from "./mediaEngine";
+import { resolveModelIdForTier, type VideoModelTierId } from "./mediaVideoProviderPricing";
 import { persistVideoUrlIfPossible } from "./mediaStorage";
 import { resolveVideoTextPipeline } from "./mediaVideoTextPipeline";
 import { toUserMediaError } from "./mediaUtils";
@@ -35,6 +36,9 @@ export const processJob = internalAction({
         v.literal("3:4"),
         v.literal("21:9")
       )
+    ),
+    videoModelTier: v.optional(
+      v.union(v.literal("economy"), v.literal("standard"), v.literal("premium"))
     ),
   },
   handler: async (ctx, args) => {
@@ -77,6 +81,12 @@ export const processJob = internalAction({
         });
       }
 
+      const tier = args.videoModelTier as VideoModelTierId | undefined;
+      const falModelOverride =
+        tier && tier !== "economy"
+          ? resolveModelIdForTier(tier, Boolean(pipeline.imageUrl))
+          : undefined;
+
       const result = await generateVideoWithFallback(
         {
           prompt: pipeline.videoPrompt,
@@ -88,6 +98,7 @@ export const processJob = internalAction({
           resolution: args.resolution,
           generateAudio: args.generateAudio,
           aspectRatio: args.aspectRatio,
+          falModelOverride,
         },
         {
           onProgress: async (event) => {

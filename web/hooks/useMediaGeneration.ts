@@ -50,6 +50,7 @@ export type VideoGenerationOptions = {
   resolution?: "480p" | "720p" | "1080p";
   generateAudio?: boolean;
   aspectRatio?: "16:9" | "9:16" | "4:3" | "1:1" | "3:4" | "21:9";
+  videoModelTier?: "economy" | "standard" | "premium";
 };
 
 function pickOutputUrl(result: MediaActionResult, kind: "image" | "video"): string | null {

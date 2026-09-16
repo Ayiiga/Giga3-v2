@@ -1,22 +1,37 @@
 import type { ActionCtx } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { CREDIT_COSTS } from "./creditsConfig";
-import { mediaVideoCreditCost } from "./mediaVideoCredits";
+import { computeSingleClipVideoCredits } from "./mediaVideoCreditPricing";
+import type { VideoModelTierId } from "./mediaVideoProviderPricing";
 
 export type MediaCreditAction = "image" | "video";
+
+export type VideoCreditChargeOptions = {
+  videoDurationSec?: number;
+  videoModelTier?: VideoModelTierId;
+  resolution?: string;
+  generateAudio?: boolean;
+  hasImage?: boolean;
+};
 
 /** Read-only balance check — does not deduct. */
 export async function assertCreditsAvailable(
   ctx: ActionCtx,
   sessionToken: string,
   action: MediaCreditAction,
-  options?: { videoDurationSec?: number }
+  options?: VideoCreditChargeOptions
 ): Promise<number> {
   const usage = await ctx.runQuery(api.credits.getUsageSnapshot, { sessionToken });
   if (!usage) throw new Error("User not found");
   const cost =
     action === "video" && options?.videoDurationSec !== undefined
-      ? mediaVideoCreditCost(options.videoDurationSec)
+      ? computeSingleClipVideoCredits({
+          durationSec: options.videoDurationSec,
+          videoModelTier: options.videoModelTier,
+          resolution: options.resolution,
+          generateAudio: options.generateAudio,
+          hasImage: options.hasImage,
+        })
       : CREDIT_COSTS[action];
   if (usage.credits < cost) {
     throw new Error(

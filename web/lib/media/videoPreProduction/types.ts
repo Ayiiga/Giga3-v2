@@ -25,6 +25,8 @@ export type VoiceoverSettings = {
 
 export type CombinedVideoStatus = "idle" | "combining" | "ready" | "failed";
 
+import type { VideoModelTierId } from "@/lib/media/videoPreProduction/videoCreditPricing";
+
 export type VideoPreProductionDraft = {
   version: 1;
   updatedAt: number;
@@ -44,6 +46,7 @@ export type VideoPreProductionDraft = {
   aspectRatio: "16:9" | "9:16" | "1:1";
   durationSec: 5 | 10 | 15;
   quality: "720p" | "1080p";
+  videoModelTier: VideoModelTierId;
   lastJobId?: string;
   sceneJobs?: Array<{
     id: string;
@@ -86,6 +89,7 @@ export function createEmptyDraft(): VideoPreProductionDraft {
     targetDurationSec: 30,
     durationSec: 15,
     quality: "720p",
+    videoModelTier: "economy",
     sceneJobs: [],
     combinedVideoStatus: "idle",
   };
