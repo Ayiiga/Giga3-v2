@@ -97,9 +97,9 @@ function GigaLearnContent() {
               <GraduationCap className="h-6 w-6" aria-hidden />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 GigaLearn
-              </h1>
+              </h2>
               <p className="text-sm text-muted">
                 AI tutor for students, teachers, and parents — BECE, WASSCE, WAEC, and beyond.
               </p>
