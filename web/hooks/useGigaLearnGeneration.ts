@@ -1,6 +1,12 @@
 "use client";
 
 import { formatMediaError } from "@/lib/media/errors";
+import {
+  getPracticeFallbackQuestions,
+  isInteractivePracticeTool,
+  parseQuestionsFromContent,
+  type GigaLearnQuestion,
+} from "@/lib/gigalearn/questions";
 import { getGigaLearnTool } from "@/lib/gigalearn/tools";
 import {
   canGenerateToday,
@@ -20,6 +26,7 @@ export function useGigaLearnGeneration() {
   const [phase, setPhase] = useState<GigaLearnGenerationPhase>("idle");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<GigaLearnQuestion[]>([]);
   const [lastToolId, setLastToolId] = useState<string | null>(null);
   const [lastPrompt, setLastPrompt] = useState("");
   const [lastCurriculum, setLastCurriculum] = useState<string | undefined>();
@@ -30,6 +37,7 @@ export function useGigaLearnGeneration() {
   const clear = useCallback(() => {
     setError(null);
     setResult(null);
+    setQuestions([]);
     setPhase("idle");
   }, []);
 
@@ -69,6 +77,7 @@ export function useGigaLearnGeneration() {
       setPhase("generating");
       setError(null);
       setResult(null);
+      setQuestions([]);
       setLastToolId(args.toolId);
       setLastPrompt(args.prompt);
       setLastCurriculum(args.curriculum);
@@ -114,6 +123,18 @@ export function useGigaLearnGeneration() {
         });
 
         setResult(content);
+
+        if (isInteractivePracticeTool(args.toolId)) {
+          const parsed = parseQuestionsFromContent(content);
+          setQuestions(
+            parsed.length
+              ? parsed
+              : getPracticeFallbackQuestions(args.level ?? "jhs-2", args.subject ?? "mathematics")
+          );
+        } else {
+          setQuestions([]);
+        }
+
         setPhase("success");
         return content;
       } catch (e) {
@@ -151,6 +172,7 @@ export function useGigaLearnGeneration() {
     loading: phase === "generating",
     error,
     result,
+    questions,
     clear,
     run,
     regenerate,

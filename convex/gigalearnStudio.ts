@@ -56,9 +56,32 @@ function buildToolPrompt(
     ? `Additional context:\n${context.trim()}`
     : "";
 
+  const practiceJsonFooter = `
+After the markdown content, append a fenced JSON block exactly like this (required for interactive practice):
+\`\`\`json
+{
+  "questions": [
+    {
+      "id": "q1",
+      "type": "mcq",
+      "stem": "Question text with African/Ghanaian context where appropriate",
+      "options": ["A", "B", "C", "D"],
+      "correctAnswer": "B",
+      "explanation": "Age-appropriate explanation teaching the concept",
+      "hint": "Optional hint",
+      "difficulty": "medium",
+      "learningObjective": "What the learner should understand",
+      "points": 1,
+      "visualCue": "Optional emoji for early learners e.g. 🍎 🍎 🍎"
+    }
+  ]
+}
+\`\`\`
+Use types: mcq, true_false, fill_blank, short_answer, ordering, matching, poll. Every question must include explanation.`;
+
   const instructions: Record<string, string> = {
     "quiz-generator":
-      "Generate a structured quiz with numbered questions, multiple-choice options where appropriate, and an answer key at the end.",
+      `Generate a structured quiz with numbered questions, multiple-choice options where appropriate, and an answer key. Use Ghanaian/African examples naturally.${practiceJsonFooter}`,
     "assignment-generator":
       "Create a clear assignment with instructions, tasks, marking criteria, and expected deliverables.",
     "lesson-notes":
@@ -66,9 +89,9 @@ function buildToolPrompt(
     "study-plan":
       "Create a personalized study plan with daily/weekly goals, topics to cover, revision slots, and exam preparation tips.",
     "practice-questions":
-      "Generate exam-style practice questions aligned to the stated curriculum. Include worked solutions step by step.",
+      `Generate exam-style practice questions aligned to the stated curriculum. Include worked solutions step by step. Use BECE/JHS or WASSCE/SHS style as appropriate.${practiceJsonFooter}`,
     "exam-prep":
-      "Provide focused exam preparation: likely topics, common question types, revision checklist, and 3 timed practice questions with answers.",
+      `Provide focused exam preparation: likely topics, common question types, revision checklist, and timed practice questions with answers.${practiceJsonFooter}`,
     "worksheet-generator":
       "Create a printable worksheet for teachers with exercises, space for student answers, and a teacher answer key.",
     "parent-summary":
@@ -78,7 +101,7 @@ function buildToolPrompt(
     "topic-explainer":
       "Explain the topic simply for the learner's level with examples, analogies, and a quick recap.",
     "revision-guide":
-      "Create a revision guide with key facts, common mistakes, memory tips, and mini self-test questions.",
+      `Create a revision guide with key facts, common mistakes, memory tips, and mini self-test questions.${practiceJsonFooter}`,
     "class-activity":
       "Design an engaging classroom activity with materials, steps, timing, and learning outcomes.",
     "progress-report":

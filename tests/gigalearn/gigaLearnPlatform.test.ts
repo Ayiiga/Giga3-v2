@@ -46,3 +46,22 @@ describe("GigaLearn progress loop wiring", () => {
     );
   });
 });
+
+describe("GigaLearn interactive practice wiring", () => {
+  it("exposes practice session in tool panel for interactive tools", () => {
+    expect(read("web/components/gigalearn/GigaLearnToolPanel.tsx")).toContain("PracticeSession");
+    expect(read("web/components/gigalearn/GigaLearnToolPanel.tsx")).toContain(
+      "Answering is free"
+    );
+  });
+
+  it("parses questions in generation hook for practice tools", () => {
+    expect(read("web/hooks/useGigaLearnGeneration.ts")).toContain("parseQuestionsFromContent");
+    expect(read("web/hooks/useGigaLearnGeneration.ts")).toContain("getPracticeFallbackQuestions");
+  });
+
+  it("requests structured JSON from studio for practice tools", () => {
+    expect(read("convex/gigalearnStudio.ts")).toContain('"questions"');
+    expect(read("convex/gigalearnStudio.ts")).toContain("practice-questions");
+  });
+});

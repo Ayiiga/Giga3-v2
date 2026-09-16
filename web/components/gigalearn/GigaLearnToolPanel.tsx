@@ -2,8 +2,11 @@
 
 import { CreditPromptLinks } from "@/components/billing/CreditPromptLinks";
 import { CreatorResultPanel } from "@/components/creator-studio/CreatorResultPanel";
+import { PracticeSession } from "@/components/gigalearn/PracticeSession";
 import { Button } from "@/components/ui/Button";
 import { useGigaLearnGeneration } from "@/hooks/useGigaLearnGeneration";
+import { getSessionToken } from "@/lib/auth";
+import { isInteractivePracticeTool } from "@/lib/gigalearn/questions";
 import {
   EDUCATION_LEVELS,
   EXAM_BOARDS,
@@ -24,7 +27,8 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
   tools,
   credits,
 }: GigaLearnToolPanelProps) {
-  const { phase, loading, error, result, run, regenerate, clear } = useGigaLearnGeneration();
+  const { phase, loading, error, result, questions, run, regenerate, clear } =
+    useGigaLearnGeneration();
   const [activeToolId, setActiveToolId] = useState(tools[0]?.id ?? "");
   const [prompt, setPrompt] = useState("");
   const [context, setContext] = useState("");
@@ -41,6 +45,8 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
 
   const activeTool = tools.find((t) => t.id === activeToolId) ?? tools[0];
   const insufficientCredits = credits != null && credits < (activeTool?.creditCost ?? 2);
+  const isPracticeTool = isInteractivePracticeTool(activeToolId);
+  const practiceTopic = prompt.trim().slice(0, 80) || subject;
 
   function persistProfile() {
     saveGigaLearnProfile({
@@ -198,12 +204,32 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
         </div>
       </div>
 
-      <CreatorResultPanel
-        content={result}
-        loading={loading}
-        error={error}
-        onRegenerate={() => void regenerate()}
-      />
+      <div className="space-y-4">
+        {isPracticeTool && phase === "success" && questions.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-sm font-semibold text-foreground">Interactive practice</h3>
+              <p className="text-xs text-muted">Answering is free — credits were used for generation only.</p>
+            </div>
+            <PracticeSession
+              questions={questions}
+              level={level}
+              subject={subject}
+              topic={practiceTopic}
+              toolId={activeToolId}
+              curriculum={curriculum}
+              sessionToken={getSessionToken()}
+            />
+          </div>
+        )}
+
+        <CreatorResultPanel
+          content={result}
+          loading={loading}
+          error={error}
+          onRegenerate={() => void regenerate()}
+        />
+      </div>
     </div>
   );
 });

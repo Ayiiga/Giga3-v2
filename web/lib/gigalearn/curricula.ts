@@ -94,6 +94,7 @@ export const SUBJECTS: SubjectDefinition[] = [
 ];
 
 export const EDUCATION_LEVELS: EducationLevelDefinition[] = [
+  { id: "kg", label: "KG / Nursery", boards: ["primary", "waec"] },
   { id: "primary", label: "Primary", boards: ["primary", "waec"] },
   { id: "jhs-1", label: "JHS 1", boards: ["jhs", "bece", "waec"] },
   { id: "jhs-2", label: "JHS 2", boards: ["jhs", "bece", "waec"] },
