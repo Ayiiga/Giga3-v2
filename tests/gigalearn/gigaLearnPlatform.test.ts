@@ -42,7 +42,7 @@ describe("GigaLearn progress loop wiring", () => {
 
   it("surfaces weaknesses in workspace UI", () => {
     expect(read("web/components/gigalearn/GigaLearnWorkspacePanel.tsx")).toContain(
-      "Focus areas — practice then reassess"
+      "strengthen these skills"
     );
   });
 });
@@ -63,5 +63,18 @@ describe("GigaLearn interactive practice wiring", () => {
   it("requests structured JSON from studio for practice tools", () => {
     expect(read("convex/gigalearnStudio.ts")).toContain('"questions"');
     expect(read("convex/gigalearnStudio.ts")).toContain("practice-questions");
+  });
+
+  it("wires teaching feedback and weak-topic practice", () => {
+    expect(read("web/lib/gigalearn/teachingFeedback.ts")).toContain("buildTeachingFeedback");
+    expect(read("web/components/gigalearn/GigaLearnToolPanel.tsx")).toContain(
+      "Practice what you need most"
+    );
+    expect(read("web/lib/gigalearn/practiceGamification.ts")).toContain("computeAnswerStreak");
+  });
+
+  it("records practice completion locally without credits", () => {
+    expect(read("web/lib/gigalearn/workspace.ts")).toContain("recordPracticeCompletion");
+    expect(read("web/hooks/useGigaLearnGeneration.ts")).not.toContain("recordPracticeCompletion");
   });
 });

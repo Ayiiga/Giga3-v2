@@ -41,6 +41,7 @@ export interface LearningProgressSnapshot {
   quizzesCompleted: number;
   studyPlansCreated: number;
   lessonsCreated: number;
+  practiceSessionsCompleted: number;
   subjectsStudied: Record<string, number>;
   streakDays: number;
   lastActiveDate: string | null;
@@ -123,6 +124,18 @@ const ACHIEVEMENT_DEFS: Array<{
     description: "Studied three or more subjects",
     check: (p) => Object.keys(p.subjectsStudied).length >= 3,
   },
+  {
+    id: "practice_sessions_3",
+    label: "Practice champion",
+    description: "Completed three interactive practice sessions",
+    check: (p) => p.practiceSessionsCompleted >= 3,
+  },
+  {
+    id: "practice_sessions_10",
+    label: "Mastery builder",
+    description: "Completed ten interactive practice sessions",
+    check: (p) => p.practiceSessionsCompleted >= 10,
+  },
 ];
 
 function defaultProgress(): LearningProgressSnapshot {
@@ -131,6 +144,7 @@ function defaultProgress(): LearningProgressSnapshot {
     quizzesCompleted: 0,
     studyPlansCreated: 0,
     lessonsCreated: 0,
+    practiceSessionsCompleted: 0,
     subjectsStudied: {},
     streakDays: 0,
     lastActiveDate: null,
@@ -294,6 +308,31 @@ export function recordLearningActivity(args: {
     dailyCounts,
     lastGenerationAt: Date.now(),
     dailyLimit: DAILY_LIMIT,
+  };
+
+  next.achievements = syncAchievements(next);
+  writeJson(PROGRESS_KEY, next);
+  return next;
+}
+
+/** Record a completed interactive practice session (local only — no credits). */
+export function recordPracticeCompletion(args: {
+  subject?: string;
+  score: number;
+}): LearningProgressSnapshot {
+  let progress = getProgressSnapshot();
+  progress = updateStreak(progress);
+
+  const subjectsStudied = { ...progress.subjectsStudied };
+  if (args.subject) {
+    subjectsStudied[args.subject] = (subjectsStudied[args.subject] ?? 0) + 1;
+  }
+
+  const next: LearningProgressSnapshot = {
+    ...progress,
+    practiceSessionsCompleted: progress.practiceSessionsCompleted + 1,
+    quizzesCompleted: progress.quizzesCompleted + 1,
+    subjectsStudied,
   };
 
   next.achievements = syncAchievements(next);

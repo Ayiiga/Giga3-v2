@@ -13,6 +13,8 @@ export type PracticeSessionSnapshot = {
   index: number;
   answers: Record<string, string>;
   results: Record<string, boolean>;
+  finished?: boolean;
+  streak?: number;
   startedAt: number;
   updatedAt: number;
 };

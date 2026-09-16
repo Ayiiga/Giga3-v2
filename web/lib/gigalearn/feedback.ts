@@ -33,8 +33,8 @@ export function incorrectFeedback(band: AgeBand): AnswerFeedback {
   switch (band) {
     case "kg":
       return {
-        title: "Let's learn together",
-        subtitle: "Not quite — here's the answer.",
+        title: "Not quite. Let's learn why.",
+        subtitle: "Here's the right answer — let's count together.",
         showTryAgain: true,
       };
     case "primary":

@@ -6,10 +6,23 @@ import { api } from "convex/_generated/api";
 import { ageBandFromLevel, ageUiConfig } from "@/lib/gigalearn/ageUi";
 import { correctFeedback, incorrectFeedback } from "@/lib/gigalearn/feedback";
 import {
+  computeAnswerStreak,
+  getPersonalBest,
+  masteryLabel,
+  sessionBadges,
+  updateBestAnswerStreak,
+  updatePersonalBest,
+} from "@/lib/gigalearn/practiceGamification";
+import {
   getPracticeMode,
   PRACTICE_MODES,
   type PracticeModeId,
 } from "@/lib/gigalearn/practiceModes";
+import {
+  revisionQuestionIds,
+  selectQuestionsForWeakTopics,
+  type WeakTopicHint,
+} from "@/lib/gigalearn/practiceRecommendations";
 import {
   computePracticeScore,
   formatCorrectAnswer,
@@ -20,10 +33,13 @@ import {
   loadPracticeSession,
   savePracticeSession,
 } from "@/lib/gigalearn/practiceSessionStorage";
+import { recordPracticeCompletion } from "@/lib/gigalearn/workspace";
 import {
   PracticeQuestionCard,
   type PracticeQuestionResult,
 } from "./PracticeQuestionCard";
+
+const MISSED_KEY = "giga3_gigalearn_missed_questions";
 
 type PracticeSessionProps = {
   questions: GigaLearnQuestion[];
@@ -34,8 +50,29 @@ type PracticeSessionProps = {
   curriculum?: string;
   sessionToken: string | null;
   initialMode?: PracticeModeId;
+  weakTopicHints?: WeakTopicHint[];
+  focusWeakRevision?: boolean;
   onComplete?: (score: number) => void;
 };
+
+function saveMissedIds(ids: string[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(MISSED_KEY, JSON.stringify(ids));
+  } catch {
+    /* quota */
+  }
+}
+
+function loadMissedIds(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(MISSED_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
 
 export function PracticeSession({
   questions,
@@ -46,29 +83,42 @@ export function PracticeSession({
   curriculum,
   sessionToken,
   initialMode = "quick",
+  weakTopicHints = [],
+  focusWeakRevision = false,
   onComplete,
 }: PracticeSessionProps) {
   const ageBand = ageBandFromLevel(level);
   const ui = ageUiConfig(ageBand);
   const recordAssessment = useMutation(api.gigaLearnProgress.recordAssessment);
 
-  const [mode, setMode] = useState<PracticeModeId>(initialMode);
+  const [mode, setMode] = useState<PracticeModeId>(
+    focusWeakRevision ? "revision" : initialMode
+  );
   const [index, setIndex] = useState(0);
   const [results, setResults] = useState<PracticeQuestionResult[]>([]);
   const [finished, setFinished] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [recorded, setRecorded] = useState(false);
+  const [sessionRestored, setSessionRestored] = useState(false);
 
   const modeConfig = getPracticeMode(mode);
   const examMode = modeConfig.delayFeedback;
 
   const activeQuestions = useMemo(() => {
+    if (mode === "revision") {
+      const missed = new Set(loadMissedIds());
+      const fromMissed = questions.filter((q) => missed.has(q.id));
+      const fromWeak = selectQuestionsForWeakTopics(questions, weakTopicHints, 5);
+      const pool = fromMissed.length ? fromMissed : fromWeak.length ? fromWeak : questions;
+      return pool.slice(0, Math.min(5, pool.length));
+    }
     if (mode === "mission") return questions.slice(0, Math.min(5, questions.length));
     if (mode === "rapid-fire") return questions.slice(0, Math.min(8, questions.length));
     return questions;
-  }, [questions, mode]);
+  }, [questions, mode, weakTopicHints]);
 
   const current = activeQuestions[index];
+  const answerStreak = useMemo(() => computeAnswerStreak(results), [results]);
 
   useEffect(() => {
     const snap = loadPracticeSession();
@@ -80,7 +130,7 @@ export function PracticeSession({
     ) {
       setIndex(snap.index);
       setMode(snap.mode);
-      setFinished(false);
+      setFinished(Boolean(snap.finished));
       const restored: PracticeQuestionResult[] = Object.entries(snap.results).map(
         ([questionId, correct]) => ({
           questionId,
@@ -90,10 +140,11 @@ export function PracticeSession({
       );
       setResults(restored);
     }
+    setSessionRestored(true);
   }, [toolId, level, questions.length]);
 
   useEffect(() => {
-    if (finished) return;
+    if (!sessionRestored || finished) return;
     const answers: Record<string, string> = {};
     const resultMap: Record<string, boolean> = {};
     for (const r of results) {
@@ -111,10 +162,24 @@ export function PracticeSession({
       index,
       answers,
       results: resultMap,
+      finished,
+      streak: answerStreak,
       startedAt: Date.now(),
       updatedAt: Date.now(),
     });
-  }, [toolId, mode, level, subject, curriculum, questions, index, results, finished]);
+  }, [
+    sessionRestored,
+    toolId,
+    mode,
+    level,
+    subject,
+    curriculum,
+    questions,
+    index,
+    results,
+    finished,
+    answerStreak,
+  ]);
 
   useEffect(() => {
     if (!modeConfig.secondsPerQuestion || finished || !current) {
@@ -151,10 +216,24 @@ export function PracticeSession({
 
   const score = useMemo(() => computePracticeScore(results), [results]);
   const correctCount = results.filter((r) => r.correct).length;
+  const prevBest = getPersonalBest(subject);
+  const isNewBest = finished && (prevBest == null || score > prevBest);
+  const badges = finished
+    ? sessionBadges({ score, streak: answerStreak, mode, isNewBest })
+    : [];
 
   useEffect(() => {
     if (!finished || recorded || !sessionToken) return;
     setRecorded(true);
+
+    const missed = revisionQuestionIds(
+      Object.fromEntries(results.map((r) => [r.questionId, r.correct]))
+    );
+    saveMissedIds(missed);
+    updatePersonalBest(subject, score);
+    updateBestAnswerStreak(answerStreak);
+    recordPracticeCompletion({ subject, score });
+
     void recordAssessment({
       sessionToken,
       subject,
@@ -178,6 +257,8 @@ export function PracticeSession({
     score,
     toolId,
     onComplete,
+    results,
+    answerStreak,
   ]);
 
   if (!questions.length) {
@@ -190,8 +271,8 @@ export function PracticeSession({
   }
 
   if (finished) {
-    const label =
-      score >= 85 ? "Strong" : score >= 70 ? "Improving" : score >= 50 ? "Practicing" : "Keep going";
+    const label = masteryLabel(score);
+    const best = Math.max(getPersonalBest(subject) ?? 0, score);
 
     return (
       <section className="space-y-4" aria-label="Practice results">
@@ -201,6 +282,12 @@ export function PracticeSession({
             {correctCount} / {activeQuestions.length} correct
           </p>
           <p className="mt-1 text-lg font-semibold text-accent">{score}% · {label}</p>
+          {best > 0 && (
+            <p className="mt-1 text-xs text-muted">
+              Personal best for {subject.replace(/-/g, " ")}: {best}%
+              {isNewBest ? " — new record!" : ""}
+            </p>
+          )}
           <div className="mt-4 h-2 overflow-hidden rounded-full bg-border">
             <div
               className="h-full rounded-full bg-accent transition-all"
@@ -212,6 +299,20 @@ export function PracticeSession({
             />
           </div>
         </div>
+
+        {badges.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {badges.map((b) => (
+              <span
+                key={b.id}
+                className="rounded-full border border-accent/30 bg-accent/5 px-3 py-1 text-xs font-medium text-foreground"
+                title={b.description}
+              >
+                {b.label}
+              </span>
+            ))}
+          </div>
+        )}
 
         {examMode && (
           <div className="space-y-3">
@@ -246,7 +347,7 @@ export function PracticeSession({
             setFinished(false);
             setRecorded(false);
           }}
-          className="w-full rounded-xl border border-border py-3 text-sm font-semibold"
+          className="w-full rounded-xl border border-border py-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
           Practice again
         </button>
@@ -268,7 +369,7 @@ export function PracticeSession({
               setResults([]);
               setFinished(false);
             }}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+            className={`rounded-full px-3 py-1 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
               mode === m.id
                 ? "bg-accent text-white"
                 : "border border-border text-muted"
@@ -280,13 +381,21 @@ export function PracticeSession({
         ))}
       </div>
 
-      <div className="flex items-center justify-between text-xs text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
         <span>{modeConfig.description}</span>
-        {secondsLeft !== null ? (
-          <span className={secondsLeft <= 5 ? "font-semibold text-rose-500" : ""}>
-            ⏱ {secondsLeft}s
-          </span>
-        ) : null}
+        <div className="flex items-center gap-3">
+          {modeConfig.showStreak && answerStreak > 0 && (
+            <span className="font-medium text-accent">🔥 {answerStreak} streak</span>
+          )}
+          {mode === "mission" && (
+            <span>Step {index + 1} of {activeQuestions.length}</span>
+          )}
+          {secondsLeft !== null ? (
+            <span className={secondsLeft <= 5 ? "font-semibold text-rose-500" : ""}>
+              ⏱ {secondsLeft}s
+            </span>
+          ) : null}
+        </div>
       </div>
 
       <div className="h-1.5 overflow-hidden rounded-full bg-border">
@@ -295,6 +404,10 @@ export function PracticeSession({
           style={{
             width: `${((index + (results.some((r) => r.questionId === current?.id) ? 1 : 0)) / activeQuestions.length) * 100}%`,
           }}
+          role="progressbar"
+          aria-valuenow={index + 1}
+          aria-valuemin={0}
+          aria-valuemax={activeQuestions.length}
         />
       </div>
 

@@ -80,14 +80,33 @@ describe("GigaLearn question engine", () => {
     ).toBe(67);
   });
 
-  it("provides KG fallback with visual counting", () => {
+  it("provides KG visual basket fallback", () => {
     const kg = getPracticeFallbackQuestions("kg", "mathematics");
-    expect(kg[0].visualCue).toContain("🍎");
-    expect(gradeAnswer(kg[0], "c").correct).toBe(true);
+    expect(kg[0].options?.[0]).toContain("🍎");
+    expect(gradeAnswer(kg[0], "a").correct).toBe(true);
   });
 
-  it("provides JHS science fallback with explanation-first framing", () => {
+  it("provides Primary contextual Ama example", () => {
+    const primary = getPracticeFallbackQuestions("primary", "mathematics");
+    expect(primary[0].stem).toContain("Ama");
+    expect(gradeAnswer(primary[0], "b").correct).toBe(true);
+  });
+
+  it("provides JHS reasoning with African context", () => {
     const jhs = getPracticeFallbackQuestions("jhs-2", "science");
-    expect(jhs[0].explanation.length).toBeGreaterThan(20);
+    expect(jhs[0].stem).toContain("Ghanaian");
+    expect(jhs[1]?.stem).toContain("cocoa");
+  });
+
+  it("provides SHS STEM fallback", () => {
+    const shs = getPracticeFallbackQuestions("shs-2", "physics");
+    expect(shs[0].learningObjective).toContain("Engineering");
+  });
+
+  it("provides coding and robotics fallbacks", () => {
+    const coding = getPracticeFallbackQuestions("jhs-2", "coding");
+    expect(coding[0].type).toBe("ordering");
+    const robotics = getPracticeFallbackQuestions("jhs-2", "robotics");
+    expect(robotics[0].topic).toBe("robotics");
   });
 });

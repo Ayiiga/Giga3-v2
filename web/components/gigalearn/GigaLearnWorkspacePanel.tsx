@@ -140,7 +140,7 @@ export const GigaLearnWorkspacePanel = memo(function GigaLearnWorkspacePanel({
         <section className="saas-card rounded-2xl border border-amber-200 bg-amber-50/80 p-4 dark:border-amber-900/40 dark:bg-amber-950/20">
           <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <Target className="h-4 w-4 text-amber-600" aria-hidden />
-            Focus areas — practice then reassess
+            Let&apos;s strengthen these skills
           </h3>
           <ul className="mt-3 space-y-2">
             {weaknesses.slice(0, 5).map((row) => (

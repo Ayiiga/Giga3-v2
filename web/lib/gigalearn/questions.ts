@@ -28,6 +28,10 @@ export type GigaLearnQuestion = {
   visualCue?: string;
   topic?: string;
   subtopic?: string;
+  /** Concept the learner should remember */
+  concept?: string;
+  /** Optional note on why a common wrong choice is tempting */
+  whyIncorrect?: string;
 };
 
 export const INTERACTIVE_PRACTICE_TOOL_IDS = new Set([
@@ -94,6 +98,12 @@ function coerceQuestion(raw: Record<string, unknown>, index: number): GigaLearnQ
     visualCue: raw.visualCue ? String(raw.visualCue).trim() : undefined,
     topic: raw.topic ? String(raw.topic).trim() : undefined,
     subtopic: raw.subtopic ? String(raw.subtopic).trim() : undefined,
+    concept: raw.concept ? String(raw.concept).trim() : undefined,
+    whyIncorrect: raw.whyIncorrect
+      ? String(raw.whyIncorrect).trim()
+      : raw.commonMistake
+        ? String(raw.commonMistake).trim()
+        : undefined,
   };
 }
 
@@ -177,6 +187,20 @@ export function parseQuestionsFromContent(content: string): GigaLearnQuestion[] 
   return parseQuestionsFromMarkdown(content);
 }
 
+export function resolveSelectedAnswerText(
+  question: GigaLearnQuestion,
+  userAnswer: string | string[]
+): string {
+  if (Array.isArray(userAnswer)) return userAnswer.join(" → ");
+  const letter = userAnswer.match(/^([a-d])$/i);
+  if (letter && question.options?.length) {
+    const idx = letter[1].toLowerCase().charCodeAt(0) - 97;
+    const opt = question.options[idx];
+    if (opt) return opt;
+  }
+  return userAnswer;
+}
+
 export function formatCorrectAnswer(question: GigaLearnQuestion): string {
   const correct = question.correctAnswer;
   if (Array.isArray(correct)) return correct.join(" → ");
@@ -256,34 +280,43 @@ export function getPracticeFallbackQuestions(
   if (band === "kg" || band.includes("nursery")) {
     return [
       {
-        id: "kg_count_apples",
+        id: "kg_basket_apples",
         type: "mcq",
-        stem: "How many apples?",
-        visualCue: "🍎 🍎 🍎",
-        options: ["1", "2", "3", "4"],
-        correctAnswer: "3",
-        explanation: "Count each apple. One, two, three — there are 3 apples.",
+        stem: "Which basket has 3 apples?",
+        options: ["🍎🍎🍎", "🍎🍎", "🍎🍎🍎🍎"],
+        correctAnswer: "🍎🍎🍎",
+        explanation: "Count the apples. One, two, three — the first basket has 3 apples.",
         points: 1,
         learningObjective: "Count objects up to 5",
+        topic: "counting",
+        whyIncorrect: "Count each apple one by one — don't guess.",
       },
     ];
   }
   if (band === "primary" || band.includes("primary")) {
     return [
       {
-        id: "primary_division",
+        id: "primary_ama_oranges",
         type: "mcq",
-        stem: "12 ÷ 3 = ?",
+        stem: "Ama has 12 oranges and shares them equally among 3 friends. How many does each friend get?",
         options: ["3", "4", "5", "6"],
         correctAnswer: "4",
         explanation:
-          "Division means sharing equally. 12 shared into 3 equal groups gives 4 in each group.",
+          "Division means sharing equally. 12 ÷ 3 = 4, so each friend gets 4 oranges.",
         points: 1,
-        learningObjective: "Basic division facts",
+        learningObjective: "Division as equal sharing",
+        topic: "division",
+        concept: "Share equally into equal groups",
+        whyIncorrect: "12 shared into 3 groups is not 3 — try dividing 12 by 3.",
       },
     ];
   }
-  if (subject === "ict" || subject.includes("coding") || subject.includes("computing")) {
+  if (
+    subject === "coding" ||
+    subject === "ict" ||
+    subject.includes("coding") ||
+    subject.includes("computing")
+  ) {
     return [
       {
         id: "coding_sequence",
@@ -295,6 +328,48 @@ export function getPracticeFallbackQuestions(
           "Algorithms are ordered steps. You boil water before pouring it, and add the bag before steeping.",
         points: 2,
         learningObjective: "Sequencing instructions",
+        topic: "algorithms",
+        concept: "Instructions must follow a logical order",
+      },
+    ];
+  }
+  if (subject === "robotics") {
+    return [
+      {
+        id: "robotics_next_step",
+        type: "mcq",
+        stem: "A school robot reaches a wall. What should happen next?",
+        options: [
+          "Keep moving forward",
+          "Stop and turn using sensor feedback",
+          "Remove the wheels",
+          "Turn off the program",
+        ],
+        correctAnswer: "Stop and turn using sensor feedback",
+        explanation:
+          "Robots use sensors as inputs. When a wall is detected, the program should change motor output — stop or turn.",
+        points: 2,
+        learningObjective: "Sensors and robot logic",
+        topic: "robotics",
+        concept: "Sense → decide → act",
+        whyIncorrect: "Moving forward into a wall will not solve the challenge.",
+      },
+    ];
+  }
+  if (subject === "stem") {
+    return [
+      {
+        id: "stem_bridge_shape",
+        type: "mcq",
+        stem: "Kofi is building a paper bridge for a STEM fair. Which shape is strongest for the truss?",
+        options: ["Circle only", "Triangle", "Wavy line", "Single straight stick"],
+        correctAnswer: "Triangle",
+        explanation:
+          "Triangles resist changing shape under load, so they spread weight better in simple engineering designs.",
+        points: 2,
+        learningObjective: "Engineering structures",
+        topic: "stem",
+        concept: "Strong shapes in building",
       },
     ];
   }
@@ -319,31 +394,11 @@ export function getPracticeFallbackQuestions(
       },
     ];
   }
-  if (subject === "science" || subject.includes("robotics")) {
-    return [
-      {
-        id: "robotics_sensor",
-        type: "mcq",
-        stem: "A line-following robot sees a dark line. What should it do next?",
-        options: [
-          "Stop all motors forever",
-          "Adjust wheel speeds to stay on the line",
-          "Turn randomly",
-          "Switch off sensors",
-        ],
-        correctAnswer: "Adjust wheel speeds to stay on the line",
-        explanation:
-          "Sensors give feedback. The robot compares sensor readings and adjusts motors — a basic control loop in robotics.",
-        points: 2,
-        learningObjective: "Sensors and movement",
-      },
-    ];
-  }
   return [
     {
       id: "jhs_science_water",
       type: "mcq",
-      stem: "Why is clean water important for communities?",
+      stem: "Why is clean water important for Ghanaian communities?",
       options: [
         "It makes roads smoother",
         "It helps prevent waterborne diseases",
@@ -355,6 +410,21 @@ export function getPracticeFallbackQuestions(
         "Clean water reduces germs that cause illnesses like cholera and typhoid, keeping learners and families healthy.",
       points: 2,
       learningObjective: "Health and environment",
+      topic: "integrated science",
+      concept: "Safe water protects community health",
+      whyIncorrect: "Clean water is about health, not road building.",
+    },
+    {
+      id: "jhs_math_cocoa",
+      type: "mcq",
+      stem: "A farmer harvests 48 cocoa pods and shares them equally among 6 baskets. How many pods go in each basket?",
+      options: ["6", "7", "8", "9"],
+      correctAnswer: "8",
+      explanation: "48 ÷ 6 = 8. Each basket gets 8 pods when shared equally.",
+      points: 2,
+      learningObjective: "Division in real contexts",
+      topic: "mathematics",
+      concept: "Equal sharing with division",
     },
   ];
 }

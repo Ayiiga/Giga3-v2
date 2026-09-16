@@ -6,7 +6,14 @@ import { PracticeSession } from "@/components/gigalearn/PracticeSession";
 import { Button } from "@/components/ui/Button";
 import { useGigaLearnGeneration } from "@/hooks/useGigaLearnGeneration";
 import { getSessionToken } from "@/lib/auth";
+import {
+  weakTopicPracticeHeadline,
+  weakTopicPracticeSubline,
+  type WeakTopicHint,
+} from "@/lib/gigalearn/practiceRecommendations";
 import { isInteractivePracticeTool } from "@/lib/gigalearn/questions";
+import { api } from "convex/_generated/api";
+import { useQuery } from "convex/react";
 import {
   EDUCATION_LEVELS,
   EXAM_BOARDS,
@@ -35,6 +42,21 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
   const [curriculum, setCurriculum] = useState("bece");
   const [subject, setSubject] = useState("mathematics");
   const [level, setLevel] = useState("jhs-2");
+  const [focusWeakRevision, setFocusWeakRevision] = useState(false);
+
+  const serverProgress = useQuery(
+    api.gigaLearnProgress.listProgress,
+    getSessionToken() ? { sessionToken: getSessionToken()!, limit: 5 } : "skip"
+  );
+  const weakTopicHints: WeakTopicHint[] = (serverProgress ?? [])
+    .filter((row) => row.weakness || row.needsReassess || (row.lastScore != null && row.lastScore < 70))
+    .map((row) => ({
+      topicKey: row.topicKey,
+      subject: row.subject,
+      label: row.weakness ?? row.topicKey.replace(/\//g, " · "),
+      lastScore: row.lastScore,
+    }));
+  const topWeakTopic = weakTopicHints[0];
 
   useEffect(() => {
     const profile = getGigaLearnProfile();
@@ -205,6 +227,24 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
       </div>
 
       <div className="space-y-4">
+        {isPracticeTool && topWeakTopic && (
+          <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
+            <p className="text-sm font-semibold text-foreground">
+              {weakTopicPracticeHeadline(topWeakTopic)}
+            </p>
+            <p className="mt-1 text-xs text-muted">{weakTopicPracticeSubline(topWeakTopic)}</p>
+            {phase === "success" && questions.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setFocusWeakRevision(true)}
+                className="mt-3 rounded-xl border border-accent/40 bg-white px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                Practice what you need most
+              </button>
+            )}
+          </div>
+        )}
+
         {isPracticeTool && phase === "success" && questions.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
@@ -219,6 +259,8 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
               toolId={activeToolId}
               curriculum={curriculum}
               sessionToken={getSessionToken()}
+              weakTopicHints={weakTopicHints}
+              focusWeakRevision={focusWeakRevision}
             />
           </div>
         )}

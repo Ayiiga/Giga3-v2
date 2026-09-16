@@ -3,12 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { AgeBand } from "@/lib/gigalearn/ageUi";
 import { ageUiConfig } from "@/lib/gigalearn/ageUi";
-import {
-  correctFeedback,
-  incorrectFeedback,
-} from "@/lib/gigalearn/feedback";
 import type { GigaLearnQuestion } from "@/lib/gigalearn/questions";
 import { formatCorrectAnswer, gradeAnswer } from "@/lib/gigalearn/questions";
+import { buildTeachingFeedback } from "@/lib/gigalearn/teachingFeedback";
 
 export type PracticeQuestionResult = {
   questionId: string;
@@ -71,14 +68,20 @@ export function PracticeQuestionCard({
     });
   }, [question, ordering, selected, onAnswered]);
 
-  const feedback = submitted
-    ? correct
-      ? correctFeedback(ageBand)
-      : incorrectFeedback(ageBand)
-    : null;
+  const answeredValue =
+    question.type === "ordering" ? ordering : selected;
+
+  const teaching =
+    submitted && !examMode
+      ? buildTeachingFeedback(question, ageBand, correct, answeredValue)
+      : null;
+
+  const visualOptions =
+    ageBand === "kg" &&
+    question.options?.every((opt) => /[\u{1F300}-\u{1FAFF}]/u.test(opt));
 
   const optionButtonClass = (option: string, optionKey: string) => {
-    const base = `w-full border text-left transition ${ui.optionClass}`;
+    const base = `w-full border text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${ui.optionClass}`;
     if (!submitted) {
       const picked = selected === optionKey;
       return `${base} ${
@@ -93,7 +96,7 @@ export function PracticeQuestionCard({
       normalize(optionKey) === normalize(String(question.correctAnswer));
     const wasPicked = selected === optionKey;
     if (isCorrectOption) return `${base} border-emerald-500 bg-emerald-500/10`;
-    if (wasPicked && !correct) return `${base} border-rose-500 bg-rose-500/10`;
+    if (wasPicked && !correct) return `${base} border-amber-500 bg-amber-500/10`;
     return `${base} border-border opacity-60`;
   };
 
@@ -132,16 +135,23 @@ export function PracticeQuestionCard({
         question.type === "true_false") &&
         question.options?.map((opt, i) => {
           const key = String.fromCharCode(97 + i);
+          const statusLabel =
+            submitted && selected === key
+              ? correct
+                ? " — correct"
+                : " — your answer"
+              : "";
           return (
             <button
               key={key}
               type="button"
               disabled={submitted}
               onClick={() => setSelected(key)}
-              className={`mb-2 ${optionButtonClass(opt, key)}`}
+              className={`mb-2 ${optionButtonClass(opt, key)} ${visualOptions ? "text-center text-3xl sm:text-4xl" : ""}`}
               aria-pressed={selected === key}
+              aria-label={`Option ${key}: ${opt}${statusLabel}`}
             >
-              <span className="mr-2 font-semibold uppercase">{key}.</span>
+              {!visualOptions && <span className="mr-2 font-semibold uppercase">{key}.</span>}
               {opt}
             </button>
           );
@@ -223,13 +233,13 @@ export function PracticeQuestionCard({
           type="button"
           disabled={!canSubmit}
           onClick={submit}
-          className={`mt-6 w-full rounded-xl bg-accent font-semibold text-white disabled:opacity-40 ${ui.buttonClass}`}
+          className={`mt-6 w-full rounded-xl bg-accent font-semibold text-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${ui.buttonClass}`}
         >
           Check answer
         </button>
       ) : (
         <div className="mt-6 space-y-4">
-          {!examMode && feedback && (
+          {!examMode && teaching && (
             <div
               className={`rounded-2xl border p-4 ${
                 correct
@@ -239,17 +249,21 @@ export function PracticeQuestionCard({
               role="status"
               aria-live="polite"
             >
-              <p className="font-semibold text-foreground">{feedback.title}</p>
-              {feedback.subtitle ? (
-                <p className="mt-1 text-sm text-muted">{feedback.subtitle}</p>
+              <p className="font-semibold text-foreground">{teaching.headline}</p>
+              {teaching.subtitle ? (
+                <p className="mt-1 text-sm text-muted">{teaching.subtitle}</p>
               ) : null}
-              {!correct && (
-                <p className="mt-2 text-sm font-medium text-foreground">
-                  The correct answer is {formatCorrectAnswer(question)}.
+              <p className="mt-2 text-sm font-medium text-foreground">
+                {correct ? "Why?" : "The correct answer is"} {teaching.correctAnswer}.
+              </p>
+              <p className="mt-3 text-sm text-foreground">{teaching.whyCorrect}</p>
+              {!correct && teaching.whyYourAnswerMightBeWrong ? (
+                <p className="mt-2 text-sm text-muted">{teaching.whyYourAnswerMightBeWrong}</p>
+              ) : null}
+              {teaching.conceptToRemember ? (
+                <p className="mt-2 text-xs font-medium text-foreground">
+                  {teaching.conceptToRemember}
                 </p>
-              )}
-              {question.explanation ? (
-                <p className="mt-3 text-sm text-foreground">{question.explanation}</p>
               ) : null}
             </div>
           )}
