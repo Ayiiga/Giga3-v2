@@ -1,14 +1,31 @@
 "use client";
 
 import {
+  CreateNavIcon,
+  HomeNavIcon,
+  LearnNavIcon,
+  SocialNavIcon,
+} from "@/components/navigation/PrimaryNavIcons";
+import {
   PRIMARY_NAV_TABS,
+  type PrimaryNavTabId,
   resolvePrimaryNavTab,
   shouldShowDesktopRail,
 } from "@/lib/navigation/primaryNav";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { memo } from "react";
+import { memo, type ComponentType } from "react";
+
+const PRIMARY_NAV_ICONS: Record<
+  PrimaryNavTabId,
+  ComponentType<{ active?: boolean; className?: string }>
+> = {
+  home: HomeNavIcon,
+  learn: LearnNavIcon,
+  create: CreateNavIcon,
+  social: SocialNavIcon,
+};
 
 type PrimaryNavBarProps = {
   variant: "mobile" | "desktop";
@@ -31,7 +48,7 @@ const PrimaryNavBar = memo(function PrimaryNavBar({
     >
       <div className={cn("primary-nav__inner", isMobile && "primary-nav__inner--mobile")}>
         {PRIMARY_NAV_TABS.map((tab) => {
-          const Icon = tab.icon;
+          const Icon = PRIMARY_NAV_ICONS[tab.id];
           const active = tab.id === activeTab;
           const href = tab.href;
 
@@ -44,7 +61,7 @@ const PrimaryNavBar = memo(function PrimaryNavBar({
               prefetch={tab.id === "home"}
             >
               <span className="primary-nav__icon" aria-hidden>
-                <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 2} />
+                <Icon active={active} />
               </span>
               <span className="primary-nav__label">{tab.label}</span>
             </Link>

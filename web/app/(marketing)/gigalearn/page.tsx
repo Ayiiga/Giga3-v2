@@ -33,12 +33,12 @@ export default function GigaLearnPage() {
           { name: "GigaLearn", path: "/gigalearn" },
         ]}
       />
-      <PublicProductPageShell {...GIGALEARN_PAGE_SHELL} />
-      <div className="marketing-stable section-padding pt-0 pb-8">
+      <div className="marketing-stable section-padding pt-4 pb-6 sm:pt-6">
         <Suspense fallback={<ClientAppHydrationNotice productName="GigaLearn" />}>
           <GigaLearnPageRoot />
         </Suspense>
       </div>
+      <PublicProductPageShell {...GIGALEARN_PAGE_SHELL} titleAs="h2" />
     </>
   );
 }

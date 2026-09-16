@@ -15,8 +15,8 @@ describe("PrimaryNav UI wiring", () => {
     const layout = readFileSync(resolve(__dirname, "../../web/app/layout.tsx"), "utf8");
 
     expect(nav).toContain('label: "Home"');
-    expect(nav).toContain('label: "Studio"');
-    expect(nav).toContain('label: "Edits"');
+    expect(nav).toContain('label: "Learn"');
+    expect(nav).toContain('label: "Create"');
     expect(nav).toContain('label: "Social"');
     expect(component).toContain("aria-current");
     expect(component).toContain("primary-nav__label");
@@ -43,7 +43,7 @@ describe("PrimaryNav UI wiring", () => {
     expect(css).toContain("var(--primary-nav-offset)");
   });
 
-  it("keeps PrimaryNav lightweight without product bundle imports", () => {
+  it("keeps PrimaryNav lightweight without heavy product bundle imports", () => {
     const nav = readFileSync(
       resolve(__dirname, "../../web/components/navigation/PrimaryNav.tsx"),
       "utf8"
@@ -52,9 +52,10 @@ describe("PrimaryNav UI wiring", () => {
       resolve(__dirname, "../../web/components/navigation/PrimaryNavHost.tsx"),
       "utf8"
     );
-    expect(nav).not.toMatch(/from "@\/components\/(gigaedit|gigasocial|media)/);
-    expect(host).not.toMatch(/from "@\/components\/(gigaedit|gigasocial|media)/);
+    expect(nav).not.toMatch(/from "@\/components\/(gigaedit|gigasocial|media)\//);
+    expect(host).not.toMatch(/from "@\/components\/(gigaedit|gigasocial|media)\//);
     expect(nav).toContain('aria-label="Giga3 primary navigation"');
     expect(nav).toContain("primary-nav__label");
+    expect(nav).toContain("PrimaryNavIcons");
   });
 });

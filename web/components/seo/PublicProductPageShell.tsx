@@ -19,6 +19,8 @@ export type PublicProductPageShellProps = {
   primaryLabel: string;
   secondaryHref?: string;
   secondaryLabel?: string;
+  /** Use h2 when the interactive app above already provides the page h1. */
+  titleAs?: "h1" | "h2";
 };
 
 /** Structured SEO shell for thin public product pages (static-export safe). */
@@ -34,13 +36,15 @@ export function PublicProductPageShell({
   primaryLabel,
   secondaryHref,
   secondaryLabel,
+  titleAs = "h1",
 }: PublicProductPageShellProps) {
+  const TitleTag = titleAs;
   return (
     <section className="marketing-stable bg-white py-12 sm:py-16">
       <Container>
         <div className="mx-auto max-w-3xl space-y-10">
           <header>
-            <h1 className="page-title">{title}</h1>
+            <TitleTag className="page-title">{title}</TitleTag>
             <p className="section-lead mt-5">{description}</p>
             <p className="mt-3 text-sm text-muted">Built for {audience}.</p>
             <div className="mt-8 flex flex-wrap gap-3">
@@ -78,8 +82,8 @@ export function PublicProductPageShell({
 
           <noscript>
             <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-              JavaScript is required for the interactive studio below. The product overview above
-              remains available without scripts. Sign in at{" "}
+              JavaScript is required for the interactive app on this page. This overview remains
+              available without scripts. Sign in at{" "}
               <a href="/chat/login" className="font-medium underline">
                 /chat/login
               </a>{" "}

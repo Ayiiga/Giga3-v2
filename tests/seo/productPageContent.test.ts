@@ -60,6 +60,18 @@ describe("productPageContent", () => {
     expect(gigalearn).toContain("PublicProductPageShell");
     expect(gigalearn).not.toMatch(/Loading…/);
   });
+
+  it("renders GigaLearn interactive app before SEO shell for app-first layout", () => {
+    const gigalearn = readFileSync(
+      resolve(__dirname, "../../web/app/(marketing)/gigalearn/page.tsx"),
+      "utf8"
+    );
+    const appIndex = gigalearn.indexOf("<GigaLearnPageRoot");
+    const seoIndex = gigalearn.lastIndexOf("<PublicProductPageShell");
+    expect(appIndex).toBeGreaterThan(-1);
+    expect(seoIndex).toBeGreaterThan(appIndex);
+    expect(gigalearn).toContain('titleAs="h2"');
+  });
 });
 
 describe("pricing consistency with subscription catalog", () => {

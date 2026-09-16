@@ -83,12 +83,6 @@ function GigaLearnContent() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-      <RecommendationEmptyState
-        surface="learn"
-        sessionToken={getSessionToken()}
-        title="Recommended for your learning path"
-        description="Start with a tutor persona, GigaLearn practice, or a quick chat prompt."
-      />
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link
@@ -216,6 +210,13 @@ function GigaLearnContent() {
           </>
         )}
       </section>
+
+      <RecommendationEmptyState
+        surface="learn"
+        sessionToken={getSessionToken()}
+        title="Recommended for your learning path"
+        description="Start with a tutor persona, GigaLearn practice, or a quick chat prompt."
+      />
 
       <div className="flex flex-wrap gap-3">
         <ButtonLink href={siteConfig.links.dashboard} variant="outline" className="min-h-11">

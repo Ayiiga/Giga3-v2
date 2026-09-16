@@ -1,18 +1,15 @@
 import { PRIMARY_NAV_PRODUCT_SCOPE } from "@/lib/navigation/editsDestinations";
 import { siteConfig } from "@/lib/site";
-import type { LucideIcon } from "lucide-react";
-import { Home, Play, Scissors, Sparkles } from "lucide-react";
 
 /** Re-export scope notes for docs and UI copy. */
 export { PRIMARY_NAV_PRODUCT_SCOPE };
 
-export type PrimaryNavTabId = "home" | "studio" | "edits" | "social";
+export type PrimaryNavTabId = "home" | "learn" | "create" | "social";
 
 export type PrimaryNavTab = {
   id: PrimaryNavTabId;
   label: string;
   href: string;
-  icon: LucideIcon;
   match: (pathname: string) => boolean;
 };
 
@@ -32,31 +29,30 @@ export const PRIMARY_NAV_TABS: PrimaryNavTab[] = [
     id: "home",
     label: "Home",
     href: siteConfig.links.dashboard,
-    icon: Home,
     match: (pathname) => {
       const path = normalizePath(pathname);
       return path === "/chat" || path.startsWith("/chat/");
     },
   },
   {
-    id: "studio",
-    label: "Studio",
-    href: siteConfig.links.media,
-    icon: Sparkles,
-    match: (pathname) => normalizePath(pathname).startsWith("/media"),
+    id: "learn",
+    label: "Learn",
+    href: siteConfig.links.gigalearn,
+    match: (pathname) => normalizePath(pathname).startsWith("/gigalearn"),
   },
   {
-    id: "edits",
-    label: "Edits",
-    href: `${siteConfig.links.gigaedit}/`,
-    icon: Scissors,
-    match: (pathname) => normalizePath(pathname).startsWith("/gigaedit"),
+    id: "create",
+    label: "Create",
+    href: siteConfig.links.media,
+    match: (pathname) => {
+      const path = normalizePath(pathname);
+      return path.startsWith("/media") || path.startsWith("/gigaedit");
+    },
   },
   {
     id: "social",
     label: "Social",
     href: siteConfig.links.gigasocial,
-    icon: Play,
     match: (pathname) => normalizePath(pathname).startsWith("/gigasocial"),
   },
 ];
