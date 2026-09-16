@@ -63,3 +63,26 @@ export function replaceOptionalImageUrl(
   if (!trimmed) return current;
   return current.map((url, i) => (i === index ? trimmed : url));
 }
+
+/**
+ * Roll back a failed upload: restore the previous URL on replace, or remove a failed add.
+ */
+export function rollbackFailedImageUpload(
+  current: string[],
+  options: {
+    failedPreviewUrl: string;
+    replaceIndex?: number;
+    previousUrl?: string;
+  }
+): string[] {
+  const { failedPreviewUrl, replaceIndex, previousUrl } = options;
+  if (replaceIndex !== undefined && replaceIndex >= 0 && replaceIndex < current.length) {
+    if (previousUrl) {
+      return current.map((url, i) => (i === replaceIndex ? previousUrl : url));
+    }
+    return removeOptionalImageUrl(current, replaceIndex);
+  }
+  const idx = current.indexOf(failedPreviewUrl);
+  if (idx >= 0) return removeOptionalImageUrl(current, idx);
+  return current.filter((url) => url !== failedPreviewUrl);
+}

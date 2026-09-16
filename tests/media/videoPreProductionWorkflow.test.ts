@@ -6,6 +6,7 @@ import {
   completePreProdRequest,
   newPreProdNonce,
 } from "../../web/lib/media/videoPreProduction/idempotency";
+import { invalidateApprovalsOnScriptChange } from "../../web/lib/media/videoPreProduction/approvals";
 import {
   addOptionalImageUrl,
   assignSceneImages,
@@ -14,6 +15,7 @@ import {
   removeOptionalImageUrl,
   replaceOptionalImageUrl,
   resolveSceneSourceImage,
+  rollbackFailedImageUpload,
 } from "../../web/lib/media/videoPreProduction/optionalImages";
 import {
   PREPROD_SCRIPT_FAILED,
@@ -117,6 +119,44 @@ describe("video pre-production workflow — optional images", () => {
       optionalImageUrl: "https://scene.test/img.jpg",
     };
     expect(resolveSceneSourceImage(scene, [])).toBe("https://scene.test/img.jpg");
+  });
+
+  it("restores previous URL when replace upload fails", () => {
+    const first = "https://cdn.example.com/first.jpg";
+    const previous = "https://cdn.example.com/original.jpg";
+    const blob = "blob:http://localhost/failed";
+    const rolled = rollbackFailedImageUpload([first, blob], {
+      failedPreviewUrl: blob,
+      replaceIndex: 1,
+      previousUrl: previous,
+    });
+    expect(rolled).toEqual([first, previous]);
+  });
+
+  it("removes failed add upload without affecting other images", () => {
+    const kept = "https://cdn.example.com/kept.jpg";
+    const blob = "blob:http://localhost/failed";
+    const rolled = rollbackFailedImageUpload([kept, blob], {
+      failedPreviewUrl: blob,
+    });
+    expect(rolled).toEqual([kept]);
+  });
+
+  it("clears stale scene references when images are removed", () => {
+    const scenes = assignSceneImages(
+      [{ id: "s1", sceneNumber: 1, narration: "Hi", visualPrompt: "City" }],
+      []
+    );
+    expect(scenes[0]?.optionalImageUrl).toBeUndefined();
+  });
+});
+
+describe("video pre-production workflow — approval invalidation", () => {
+  it("invalidates script and voiceover approvals on script edits", () => {
+    expect(invalidateApprovalsOnScriptChange()).toEqual({
+      scriptApproved: false,
+      voiceoverApproved: false,
+    });
   });
 });
 

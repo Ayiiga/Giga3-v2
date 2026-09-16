@@ -50,6 +50,7 @@ import {
   PREPROD_VOICEOVER_FAILED,
   toPreProdUserError,
 } from "@/lib/media/videoPreProduction/errors";
+import { invalidateApprovalsOnScriptChange } from "@/lib/media/videoPreProduction/approvals";
 import {
   addOptionalImageUrl,
   assignSceneImages,
@@ -58,6 +59,7 @@ import {
   removeOptionalImageUrl,
   replaceOptionalImageUrl,
   resolveSceneSourceImage,
+  rollbackFailedImageUpload,
 } from "@/lib/media/videoPreProduction/optionalImages";
 import { uploadPreProductionReferenceImage } from "@/lib/media/videoPreProduction/uploadReferenceImage";
 import {
@@ -212,7 +214,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
         originalScript: result.script,
         workingScript: result.script,
         improvedScript: "",
-        scriptApproved: false,
+        ...invalidateApprovalsOnScriptChange(),
         scenes: splitScriptIntoScenes(result.script),
         step: "script",
       });
@@ -248,7 +250,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
         originalScript: draft.originalScript || current,
         improvedScript: result.script,
         workingScript: result.script,
-        scriptApproved: false,
+        ...invalidateApprovalsOnScriptChange(),
         scenes: splitScriptIntoScenes(result.script),
       });
       setScriptView("improved");
@@ -269,6 +271,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
     );
     patchDraft({
       scriptApproved: true,
+      voiceoverApproved: false,
       scenes,
       step: "voiceover",
     });
@@ -285,6 +288,8 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
     async (file: File, replaceIndex?: number) => {
       setImageUploading(true);
       setImageUploadError(null);
+      const previousUrl =
+        replaceIndex !== undefined ? draft.optionalImageUrls[replaceIndex] : undefined;
       const preview = URL.createObjectURL(file);
       if (replaceIndex === undefined) {
         patchDraft({
@@ -301,6 +306,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
       }
       try {
         const httpsUrl = await uploadPreProductionReferenceImage(convex, file);
+        URL.revokeObjectURL(preview);
         setDraft((prev) => {
           const urls = prev.optionalImageUrls.map((url) =>
             url === preview ? httpsUrl : url
@@ -317,12 +323,15 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
       } catch (err) {
         URL.revokeObjectURL(preview);
         setDraft((prev) => {
+          const urls = rollbackFailedImageUpload(prev.optionalImageUrls, {
+            failedPreviewUrl: preview,
+            replaceIndex,
+            previousUrl,
+          });
           const next = {
             ...prev,
-            optionalImageUrls: removeOptionalImageUrl(
-              prev.optionalImageUrls,
-              replaceIndex ?? prev.optionalImageUrls.indexOf(preview)
-            ),
+            optionalImageUrls: urls,
+            scenes: assignSceneImages(prev.scenes, urls),
             updatedAt: Date.now(),
           };
           savePreProductionDraft(next);
@@ -684,7 +693,9 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
             <span className="text-sm font-medium text-muted">Video idea or rough script</span>
             <textarea
               value={draft.idea}
-              onChange={(e) => patchDraft({ idea: e.target.value, scriptApproved: false })}
+              onChange={(e) =>
+                patchDraft({ idea: e.target.value, ...invalidateApprovalsOnScriptChange() })
+              }
               rows={3}
               className="input-surface mt-2"
               placeholder="Promo for a Ghanaian wedding photography brand…"
@@ -779,7 +790,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
                     onClick={() => {
                       patchDraft({
                         workingScript: draft.originalScript,
-                        scriptApproved: false,
+                        ...invalidateApprovalsOnScriptChange(),
                         scenes: splitScriptIntoScenes(draft.originalScript),
                       });
                       setScriptView("working");
@@ -803,7 +814,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
                     onClick={() => {
                       patchDraft({
                         workingScript: draft.improvedScript,
-                        scriptApproved: false,
+                        ...invalidateApprovalsOnScriptChange(),
                         scenes: splitScriptIntoScenes(draft.improvedScript),
                       });
                       setScriptView("working");
@@ -818,7 +829,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
                   onChange={(e) =>
                     patchDraft({
                       workingScript: e.target.value,
-                      scriptApproved: false,
+                      ...invalidateApprovalsOnScriptChange(),
                       scenes: splitScriptIntoScenes(e.target.value),
                     })
                   }
