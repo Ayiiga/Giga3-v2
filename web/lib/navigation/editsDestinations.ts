@@ -9,8 +9,8 @@ import { siteConfig } from "@/lib/site";
  */
 export const PRIMARY_NAV_PRODUCT_SCOPE = {
   home: "AI chat, research, writing, and personas",
-  studio: "AI image/video generation and enhancement (Media Studio)",
-  edits: "GigaEdits — timeline, teleprompter, voice/video recording, export",
+  learn: "GigaLearn — lessons, practice, exam prep, and AI tutoring",
+  create: "Media Studio (AI image/video) and GigaEdits (timeline, teleprompter, recording)",
   social: "GigaSocial feed, stories, and publishing",
 } as const;
 

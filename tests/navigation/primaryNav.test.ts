@@ -9,6 +9,8 @@ describe("primaryNav route matching", () => {
   it("marks the four product destinations as primary nav routes", () => {
     expect(isPrimaryNavRoute("/chat")).toBe(true);
     expect(isPrimaryNavRoute("/chat/")).toBe(true);
+    expect(isPrimaryNavRoute("/gigalearn")).toBe(true);
+    expect(isPrimaryNavRoute("/gigalearn/")).toBe(true);
     expect(isPrimaryNavRoute("/media")).toBe(true);
     expect(isPrimaryNavRoute("/gigaedit")).toBe(true);
     expect(isPrimaryNavRoute("/gigasocial/")).toBe(true);
@@ -29,12 +31,14 @@ describe("primaryNav route matching", () => {
 
   it("resolves active tabs from pathname", () => {
     expect(resolvePrimaryNavTab("/chat")).toBe("home");
-    expect(resolvePrimaryNavTab("/media?tab=video")).toBe("studio");
-    expect(resolvePrimaryNavTab("/gigaedit/?tab=video")).toBe("edits");
+    expect(resolvePrimaryNavTab("/gigalearn/")).toBe("learn");
+    expect(resolvePrimaryNavTab("/media?tab=video")).toBe("create");
+    expect(resolvePrimaryNavTab("/gigaedit/?tab=video")).toBe("create");
     expect(resolvePrimaryNavTab("/gigasocial/?tab=feed")).toBe("social");
   });
 
-  it("shows desktop rail for studio/edits/social but not chat", () => {
+  it("shows desktop rail for learn/create/social but not chat", () => {
+    expect(shouldShowDesktopRail("/gigalearn")).toBe(true);
     expect(shouldShowDesktopRail("/media")).toBe(true);
     expect(shouldShowDesktopRail("/gigaedit")).toBe(true);
     expect(shouldShowDesktopRail("/gigasocial/")).toBe(true);
@@ -42,10 +46,11 @@ describe("primaryNav route matching", () => {
   });
 
   it("resolves nested product routes to the correct tab", () => {
-    expect(resolvePrimaryNavTab("/gigaedit/?tab=video")).toBe("edits");
+    expect(resolvePrimaryNavTab("/gigaedit/?tab=video")).toBe("create");
     expect(resolvePrimaryNavTab("/gigasocial/profile")).toBe("social");
     expect(resolvePrimaryNavTab("/gigasocial/post/abc")).toBe("social");
-    expect(resolvePrimaryNavTab("/media/?tab=video")).toBe("studio");
+    expect(resolvePrimaryNavTab("/media/?tab=video")).toBe("create");
+    expect(resolvePrimaryNavTab("/gigalearn/practice")).toBe("learn");
   });
 
   it("keeps navigation hidden on auth and payment routes", () => {

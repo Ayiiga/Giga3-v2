@@ -31,8 +31,9 @@ const VIEWPORTS = [
 
 const ROUTES = [
   { path: "/chat/", tab: "Home" },
-  { path: "/media/", tab: "Studio" },
-  { path: "/gigaedit/", tab: "Edits" },
+  { path: "/gigalearn/", tab: "GigaLearn" },
+  { path: "/media/", tab: "Create" },
+  { path: "/gigaedit/", tab: "Create" },
   { path: "/gigasocial/", tab: "Social" },
 ];
 
