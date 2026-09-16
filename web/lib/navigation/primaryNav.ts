@@ -36,7 +36,7 @@ export const PRIMARY_NAV_TABS: PrimaryNavTab[] = [
   },
   {
     id: "learn",
-    label: "GigaLearn",
+    label: "Learn",
     href: siteConfig.links.gigalearn,
     match: (pathname) => normalizePath(pathname).startsWith("/gigalearn"),
   },

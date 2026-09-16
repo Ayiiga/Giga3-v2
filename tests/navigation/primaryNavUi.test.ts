@@ -15,7 +15,7 @@ describe("PrimaryNav UI wiring", () => {
     const layout = readFileSync(resolve(__dirname, "../../web/app/layout.tsx"), "utf8");
 
     expect(nav).toContain('label: "Home"');
-    expect(nav).toContain('label: "GigaLearn"');
+    expect(nav).toContain('label: "Learn"');
     expect(nav).toContain('label: "Create"');
     expect(nav).toContain('label: "Social"');
     expect(component).toContain("aria-current");
