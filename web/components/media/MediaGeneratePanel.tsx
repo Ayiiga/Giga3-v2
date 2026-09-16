@@ -11,6 +11,7 @@ import { useGenerationStages } from "@/hooks/useGenerationStages";
 import { useMediaVideoJob } from "@/hooks/useMediaVideoJob";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { VideoGenerateForm, type VideoFormValues } from "@/components/media/VideoGenerateForm";
+import { VideoPreProductionFlow } from "@/components/media/videoPreProduction/VideoPreProductionFlow";
 import { VideoProjectStudio } from "@/components/media/VideoProjectStudio";
 import { getRecentImageUrls, subscribeRecentImageUrls } from "@/lib/media/jobsRefresh";
 import {
@@ -137,7 +138,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
     quality: "720p",
     audio: true,
   });
-  const [videoWorkflow, setVideoWorkflow] = useState<"quick" | "project">("quick");
+  const [videoWorkflow, setVideoWorkflow] = useState<"preprod" | "quick" | "project">("preprod");
   const [videoSubmitting, setVideoSubmitting] = useState(false);
   const [lastVideoRequest, setLastVideoRequest] = useState<VideoFormValues | null>(null);
 
@@ -278,6 +279,18 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
+                onClick={() => setVideoWorkflow("preprod")}
+                className={cn(
+                  "min-h-11 rounded-xl px-4 py-2 text-sm font-semibold",
+                  videoWorkflow === "preprod"
+                    ? "bg-violet-600 text-white"
+                    : "border border-border text-muted hover:text-foreground"
+                )}
+              >
+                Create video
+              </button>
+              <button
+                type="button"
                 onClick={() => setVideoWorkflow("quick")}
                 className={cn(
                   "min-h-11 rounded-xl px-4 py-2 text-sm font-semibold",
@@ -286,7 +299,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
                     : "border border-border text-muted hover:text-foreground"
                 )}
               >
-                Quick clip
+                Quick generate
               </button>
               <button
                 type="button"
@@ -298,10 +311,12 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
                     : "border border-border text-muted hover:text-foreground"
                 )}
               >
-                Video project (Scene Director)
+                Scene Director
               </button>
             </div>
-            {videoWorkflow === "project" ? (
+            {videoWorkflow === "preprod" ? (
+              <VideoPreProductionFlow usage={usage} />
+            ) : videoWorkflow === "project" ? (
               <VideoProjectStudio usage={usage} initialPrompt={videoForm.prompt || initialPrompt} />
             ) : (
               <VideoGenerateForm

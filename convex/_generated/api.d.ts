@@ -124,6 +124,7 @@ import type * as mediaUtils from "../mediaUtils.js";
 import type * as mediaVideoCredits from "../mediaVideoCredits.js";
 import type * as mediaVideoLimits from "../mediaVideoLimits.js";
 import type * as mediaVideoPrompt from "../mediaVideoPrompt.js";
+import type * as mediaVideoScript from "../mediaVideoScript.js";
 import type * as mediaVideoTextPipeline from "../mediaVideoTextPipeline.js";
 import type * as mediaVideoWorker from "../mediaVideoWorker.js";
 import type * as messages from "../messages.js";
@@ -342,6 +343,7 @@ declare const fullApi: ApiFromModules<{
   mediaVideoCredits: typeof mediaVideoCredits;
   mediaVideoLimits: typeof mediaVideoLimits;
   mediaVideoPrompt: typeof mediaVideoPrompt;
+  mediaVideoScript: typeof mediaVideoScript;
   mediaVideoTextPipeline: typeof mediaVideoTextPipeline;
   mediaVideoWorker: typeof mediaVideoWorker;
   messages: typeof messages;
