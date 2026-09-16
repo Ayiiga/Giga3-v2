@@ -1,7 +1,15 @@
 "use client";
 
 import { CameraStylePreview } from "@/components/gigaedit/CameraStylePreview";
-import { GigaSocialTeleprompter } from "@/components/gigasocial/studio/GigaSocialTeleprompter";
+import dynamic from "next/dynamic";
+
+const GigaSocialTeleprompter = dynamic(
+  () =>
+    import("@/components/gigasocial/studio/GigaSocialTeleprompter").then(
+      (mod) => mod.GigaSocialTeleprompter
+    ),
+  { ssr: false }
+);
 import {
   ULTRA_CLEAR_CAMERA_LOOK,
   applyCameraTrackEnhancements,

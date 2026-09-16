@@ -5,7 +5,7 @@
 
 import { mediaVideoCreditCost } from "./mediaVideoCredits";
 import { MEDIA_VIDEO_MAX_DURATION_SEC } from "./mediaVideoLimits";
-import { falModelMaxDurationSec, falModelSupportsAudio, resolveFalVideoModel } from "./falVideoModels";
+import { falModelSupportsAudio } from "./falVideoModels";
 import { CREDIT_COSTS } from "./creditsConfig";
 import {
   applyOperationalBuffer,
@@ -21,7 +21,8 @@ import {
   getVideoModelTierConfig,
   microUsdCostPerProviderGeneration,
   providerGenerationsRequired,
-  resolvePricingTierForVideo,
+  providerMaxDurationForTier,
+  resolveModelIdForTier,
   type VideoModelTierId,
 } from "./mediaVideoProviderPricing";
 
@@ -104,9 +105,9 @@ export function computeProviderCostMicroUsd(args: {
   generateAudio: boolean;
   hasImage: boolean;
 }): { totalMicroUsd: number; jobsPerScene: number; totalJobs: number; usesNativeAudio: boolean } {
-  const modelId = resolveFalVideoModel(args.hasImage);
+  const modelId = resolveModelIdForTier(args.tier, args.hasImage);
   const usesNativeAudio = falModelSupportsAudio(modelId);
-  const providerMax = falModelMaxDurationSec(modelId);
+  const providerMax = providerMaxDurationForTier(args.tier, args.hasImage);
   const jobsPerScene = providerGenerationsRequired(args.clipDurationSec, providerMax);
   const perJob = microUsdCostPerProviderGeneration({
     tier: args.tier,
@@ -124,13 +125,13 @@ export function computeProviderCostMicroUsd(args: {
 }
 
 export function computeVideoCreditQuote(input: VideoCreditQuoteInput): VideoCreditQuote {
-  const hasImage = Boolean(input.hasImage);
-  const tier = resolvePricingTierForVideo(hasImage, input.videoModelTier);
+  const tier = input.videoModelTier ?? "economy";
   const config = getVideoModelTierConfig(tier);
   const targetDurationSec = Math.max(MEDIA_VIDEO_MAX_DURATION_SEC, Math.round(input.targetDurationSec));
   const clipDurationSec = snapClipDuration(input.clipDurationSec);
   const sceneCount = input.sceneCount ?? sceneCountForTarget(targetDurationSec);
   const generateAudio = input.generateAudio !== false;
+  const hasImage = Boolean(input.hasImage);
   const resolution = input.resolution === "480p" || input.resolution === "1080p" ? input.resolution : "720p";
   const targetMarginBps = clampMarginBps(input.targetMarginBps);
 

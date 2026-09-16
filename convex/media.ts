@@ -9,7 +9,6 @@ import { buildImagePrompt, buildVideoPrompt } from "./mediaCatalog";
 import { defaultVideoNegativePrompt } from "./mediaVideoPrompt";
 import { clampMediaVideoDurationSec } from "./mediaVideoLimits";
 import { assertCreditsAvailable, chargeCreditsForMedia } from "./mediaCredits";
-import { resolvePricingTierForVideo } from "./mediaVideoProviderPricing";
 import { generateImageWithFallback, videoProviderAvailability } from "./mediaEngine";
 import { persistImageUrlIfNeeded } from "./mediaStorage";
 import { toUserMediaError } from "./mediaUtils";
@@ -96,10 +95,9 @@ export const generateVideo = action({
     const duration = clampMediaVideoDurationSec(args.duration);
     const resolution = normalizeResolution(args.resolution);
 
-    const pricingTier = resolvePricingTierForVideo(Boolean(imageUrl), args.videoModelTier);
     const cost = await assertCreditsAvailable(ctx, args.sessionToken, "video", {
       videoDurationSec: duration,
-      videoModelTier: pricingTier,
+      videoModelTier: args.videoModelTier,
       resolution,
       generateAudio: args.generateAudio,
       hasImage: Boolean(imageUrl),
@@ -143,6 +141,7 @@ export const generateVideo = action({
       resolution,
       generateAudio: args.generateAudio,
       aspectRatio: args.aspectRatio,
+      videoModelTier: args.videoModelTier,
     });
 
     return {

@@ -26,7 +26,11 @@ import {
   sceneCountForTargetDuration,
   TARGET_VIDEO_DURATION_OPTIONS,
 } from "@/lib/media/videoPreProduction/longVideo";
-import { estimateLegacyVideoCredits, formatQualityLabel } from "@/lib/media/videoPreProduction/videoCreditPricing";
+import {
+  estimateLegacyVideoCredits,
+  formatQualityLabel,
+  VIDEO_MODEL_TIER_OPTIONS,
+} from "@/lib/media/videoPreProduction/videoCreditPricing";
 import {
   countWords,
   estimateSpeechDurationSec,
@@ -42,33 +46,6 @@ import {
   stopVoiceoverPreview,
   type BrowserVoiceOption,
 } from "@/lib/media/videoPreProduction/browserVoiceover";
-import {
-  PREPROD_IMAGE_UPLOAD_FAILED,
-  PREPROD_REWRITE_FAILED,
-  PREPROD_SCRIPT_FAILED,
-  PREPROD_VIDEO_FAILED,
-  PREPROD_VOICEOVER_FAILED,
-  toPreProdUserError,
-} from "@/lib/media/videoPreProduction/errors";
-import { invalidateApprovalsOnScriptChange } from "@/lib/media/videoPreProduction/approvals";
-import {
-  addOptionalImageUrl,
-  assignSceneImages,
-  isHttpsImageUrl,
-  pickSourceImageUrl,
-  removeOptionalImageUrl,
-  replaceOptionalImageUrl,
-  resolveSceneSourceImage,
-  rollbackFailedImageUpload,
-} from "@/lib/media/videoPreProduction/optionalImages";
-import { uploadPreProductionReferenceImage } from "@/lib/media/videoPreProduction/uploadReferenceImage";
-import {
-  filterVoicesByLanguage,
-  languageLabel,
-  listVoiceLanguages,
-  VOICE_STYLE_PRESETS,
-} from "@/lib/media/videoPreProduction/voiceOptions";
-import { OptionalImagesPanel } from "@/components/media/videoPreProduction/OptionalImagesPanel";
 import {
   createEmptyDraft,
   type PreProductionScene,
@@ -96,6 +73,7 @@ import {
   Play,
   RefreshCw,
   Sparkles,
+  Upload,
   XCircle,
 } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -113,12 +91,10 @@ const WRITING_CREDIT_COST = 2;
 
 type VideoPreProductionFlowProps = {
   usage: UsageSnapshot | null;
-  recentImageUrls?: string[];
 };
 
 export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
   usage,
-  recentImageUrls = [],
 }: VideoPreProductionFlowProps) {
   const [draft, setDraft] = useState<VideoPreProductionDraft>(() => loadPreProductionDraft());
   const [voices, setVoices] = useState<BrowserVoiceOption[]>([]);
@@ -126,11 +102,6 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
   const [rewriteBusy, setRewriteBusy] = useState(false);
   const [voicePlaying, setVoicePlaying] = useState(false);
   const [scriptError, setScriptError] = useState<string | null>(null);
-  const [voiceoverError, setVoiceoverError] = useState<string | null>(null);
-  const [imageUploading, setImageUploading] = useState(false);
-  const [imageUploadError, setImageUploadError] = useState<string | null>(null);
-  const [scriptView, setScriptView] = useState<"working" | "original" | "improved">("working");
-  const [voiceLang, setVoiceLang] = useState("en");
   const [videoSubmitting, setVideoSubmitting] = useState(false);
   const scriptRequestRef = useRef<string | null>(null);
 
@@ -170,10 +141,11 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
   const clipDurationSec = clipDurationForGeneration(
     sceneCount === 1 ? draft.durationSec : 15
   );
-  const hasHttpsImage = Boolean(pickSourceImageUrl(draft.optionalImageUrls));
+  const hasHttpsImage = draft.optionalImageUrls.some((u) => /^https?:\/\//i.test(u));
   const creditQuote = useQuery(api.mediaVideoPricing.estimateVideoProductionCredits, {
     targetDurationSec: draft.targetDurationSec,
     clipDurationSec,
+    videoModelTier: draft.videoModelTier,
     resolution: draft.quality,
     generateAudio: true,
     hasImage: hasHttpsImage,
@@ -189,6 +161,10 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
   const canAffordScript = creditsAvailable >= WRITING_CREDIT_COST;
   const canAffordVideo = creditsAvailable >= videoCreditCost;
   const isLongVideo = sceneCount > 1;
+  const selectedModel =
+    VIDEO_MODEL_TIER_OPTIONS.find((t) => t.id === draft.videoModelTier) ??
+    VIDEO_MODEL_TIER_OPTIONS[0];
+
   const stepIndex = STEPS.findIndex((s) => s.id === draft.step);
 
   const handleGenerateScript = useCallback(async () => {
@@ -214,12 +190,12 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
         originalScript: result.script,
         workingScript: result.script,
         improvedScript: "",
-        ...invalidateApprovalsOnScriptChange(),
+        scriptApproved: false,
         scenes: splitScriptIntoScenes(result.script),
         step: "script",
       });
     } catch (err) {
-      setScriptError(toPreProdUserError(err, PREPROD_SCRIPT_FAILED));
+      setScriptError(err instanceof Error ? err.message : "Script generation failed.");
     } finally {
       completePreProdRequest("script", nonce);
       scriptRequestRef.current = null;
@@ -250,12 +226,11 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
         originalScript: draft.originalScript || current,
         improvedScript: result.script,
         workingScript: result.script,
-        ...invalidateApprovalsOnScriptChange(),
+        scriptApproved: false,
         scenes: splitScriptIntoScenes(result.script),
       });
-      setScriptView("improved");
     } catch (err) {
-      setScriptError(toPreProdUserError(err, PREPROD_REWRITE_FAILED));
+      setScriptError(err instanceof Error ? err.message : "Rewrite failed. Your script is safe.");
     } finally {
       completePreProdRequest("rewrite", nonce);
       setRewriteBusy(false);
@@ -265,18 +240,12 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
   const handleApproveScript = useCallback(() => {
     const text = draft.workingScript.trim();
     if (!text) return;
-    const scenes = assignSceneImages(
-      splitScriptIntoScenes(text),
-      draft.optionalImageUrls
-    );
     patchDraft({
       scriptApproved: true,
-      voiceoverApproved: false,
-      scenes,
+      scenes: splitScriptIntoScenes(text),
       step: "voiceover",
     });
-    setVoiceoverError(null);
-  }, [draft.optionalImageUrls, draft.workingScript, patchDraft]);
+  }, [draft.workingScript, patchDraft]);
 
   const handleApproveVoiceover = useCallback(() => {
     patchDraft({ voiceoverApproved: true, step: "visuals" });
@@ -284,88 +253,12 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
     setVoicePlaying(false);
   }, [patchDraft]);
 
-  const uploadReferenceFile = useCallback(
-    async (file: File, replaceIndex?: number) => {
-      setImageUploading(true);
-      setImageUploadError(null);
-      const previousUrl =
-        replaceIndex !== undefined ? draft.optionalImageUrls[replaceIndex] : undefined;
-      const preview = URL.createObjectURL(file);
-      if (replaceIndex === undefined) {
-        patchDraft({
-          optionalImageUrls: addOptionalImageUrl(draft.optionalImageUrls, preview),
-        });
-      } else {
-        patchDraft({
-          optionalImageUrls: replaceOptionalImageUrl(
-            draft.optionalImageUrls,
-            replaceIndex,
-            preview
-          ),
-        });
-      }
-      try {
-        const httpsUrl = await uploadPreProductionReferenceImage(convex, file);
-        URL.revokeObjectURL(preview);
-        setDraft((prev) => {
-          const urls = prev.optionalImageUrls.map((url) =>
-            url === preview ? httpsUrl : url
-          );
-          const next = {
-            ...prev,
-            optionalImageUrls: urls,
-            scenes: assignSceneImages(prev.scenes, urls),
-            updatedAt: Date.now(),
-          };
-          savePreProductionDraft(next);
-          return next;
-        });
-      } catch (err) {
-        URL.revokeObjectURL(preview);
-        setDraft((prev) => {
-          const urls = rollbackFailedImageUpload(prev.optionalImageUrls, {
-            failedPreviewUrl: preview,
-            replaceIndex,
-            previousUrl,
-          });
-          const next = {
-            ...prev,
-            optionalImageUrls: urls,
-            scenes: assignSceneImages(prev.scenes, urls),
-            updatedAt: Date.now(),
-          };
-          savePreProductionDraft(next);
-          return next;
-        });
-        setImageUploadError(toPreProdUserError(err, PREPROD_IMAGE_UPLOAD_FAILED));
-      } finally {
-        setImageUploading(false);
-      }
+  const handlePickImage = useCallback(
+    (file: File) => {
+      const url = URL.createObjectURL(file);
+      patchDraft({ optionalImageUrls: [...draft.optionalImageUrls, url].slice(0, 6) });
     },
-    [convex, draft.optionalImageUrls, patchDraft]
-  );
-
-  const handleAddGalleryImage = useCallback(
-    (url: string) => {
-      if (!isHttpsImageUrl(url)) return;
-      const nextUrls = addOptionalImageUrl(draft.optionalImageUrls, url);
-      patchDraft({
-        optionalImageUrls: nextUrls,
-        scenes: assignSceneImages(draft.scenes, nextUrls),
-      });
-    },
-    [draft.optionalImageUrls, draft.scenes, patchDraft]
-  );
-
-  const handleRemoveImage = useCallback(
-    (index: number) => {
-      const nextUrls = removeOptionalImageUrl(draft.optionalImageUrls, index);
-      patchDraft({
-        optionalImageUrls: nextUrls,
-        scenes: assignSceneImages(draft.scenes, nextUrls),
-      });
-    },
-    [draft.optionalImageUrls, draft.scenes, patchDraft]
+    [draft.optionalImageUrls, patchDraft]
   );
 
   const combineSceneClips = useCallback(
@@ -440,7 +333,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
         characterContext,
         voiceover: active.voiceover,
       });
-      const sourceImage = resolveSceneSourceImage(scene, active.optionalImageUrls);
+      const sourceImage = active.optionalImageUrls.find((u) => /^https?:\/\//i.test(u));
 
       const sceneJobs = (active.sceneJobs ?? createSceneJobsFromScenes(scenes)).map((job) =>
         job.id === scene.id
@@ -459,6 +352,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
           duration: clipDurationSec,
           resolution: active.quality,
           generateAudio: true,
+          videoModelTier: active.videoModelTier,
         }
       );
       if (result?.jobId) {
@@ -516,10 +410,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
     videoJob.clear();
     clearStatus();
 
-    const scenes = assignSceneImages(
-      planLongVideoScenes(active.workingScript, active.targetDurationSec),
-      active.optionalImageUrls
-    );
+    const scenes = planLongVideoScenes(active.workingScript, active.targetDurationSec);
     const sceneJobs = createSceneJobsFromScenes(scenes);
     patchDraft({
       scenes,
@@ -536,7 +427,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
           scenes,
           voiceover: active.voiceover,
         });
-        const sourceImage = resolveSceneSourceImage(scenes[0], active.optionalImageUrls);
+        const sourceImage = active.optionalImageUrls.find((u) => /^https?:\/\//i.test(u));
         const result = await createVideo(
           active.videoCategory as VideoCategoryId,
           prompt,
@@ -546,6 +437,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
             duration: active.durationSec,
             resolution: active.quality,
             generateAudio: true,
+            videoModelTier: active.videoModelTier,
           }
         );
         if (result?.jobId) {
@@ -657,10 +549,9 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
     (!isLongVideo && (videoJob.job?.status === "failed" || Boolean(videoError)));
   const previewUrl = draft.combinedVideoUrl ?? videoJob.job?.outputUrl;
 
-  const voiceLanguages = useMemo(() => listVoiceLanguages(voices), [voices]);
-  const filteredVoices = useMemo(
-    () => filterVoicesByLanguage(voices, voiceLang),
-    [voices, voiceLang]
+  const englishVoices = useMemo(
+    () => voices.filter((v) => v.lang.toLowerCase().startsWith("en")),
+    [voices]
   );
 
   return (
@@ -693,9 +584,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
             <span className="text-sm font-medium text-muted">Video idea or rough script</span>
             <textarea
               value={draft.idea}
-              onChange={(e) =>
-                patchDraft({ idea: e.target.value, ...invalidateApprovalsOnScriptChange() })
-              }
+              onChange={(e) => patchDraft({ idea: e.target.value, scriptApproved: false })}
               rows={3}
               className="input-surface mt-2"
               placeholder="Promo for a Ghanaian wedding photography brand…"
@@ -731,114 +620,29 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
               <h3 className="text-sm font-bold uppercase tracking-wide text-muted">
                 2. Review script
               </h3>
-              {(draft.originalScript || draft.improvedScript) && (
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    className={cn(
-                      "min-h-11 rounded-full border px-3 py-1.5 text-xs font-semibold",
-                      scriptView === "working"
-                        ? "border-violet-500/50 bg-violet-600/15"
-                        : "border-border text-muted"
-                    )}
-                    onClick={() => setScriptView("working")}
-                  >
-                    Working script
-                  </button>
-                  {draft.originalScript && (
-                    <button
-                      type="button"
-                      className={cn(
-                        "min-h-11 rounded-full border px-3 py-1.5 text-xs font-semibold",
-                        scriptView === "original"
-                          ? "border-violet-500/50 bg-violet-600/15"
-                          : "border-border text-muted"
-                      )}
-                      onClick={() => setScriptView("original")}
-                    >
-                      Original script
-                    </button>
-                  )}
-                  {draft.improvedScript && (
-                    <button
-                      type="button"
-                      className={cn(
-                        "min-h-11 rounded-full border px-3 py-1.5 text-xs font-semibold",
-                        scriptView === "improved"
-                          ? "border-violet-500/50 bg-violet-600/15"
-                          : "border-border text-muted"
-                      )}
-                      onClick={() => setScriptView("improved")}
-                    >
-                      Improved script
-                    </button>
-                  )}
-                </div>
-              )}
-              {scriptView === "original" && draft.originalScript ? (
-                <div className="space-y-2">
-                  <pre
-                    className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-xl bg-muted/30 p-3 text-sm"
-                    data-testid="preprod-original-script"
-                  >
+              {draft.originalScript && draft.improvedScript && (
+                <details className="text-sm text-muted">
+                  <summary className="cursor-pointer font-medium text-foreground">
+                    View original script (preserved)
+                  </summary>
+                  <pre className="mt-2 whitespace-pre-wrap rounded-xl bg-muted/30 p-3 text-xs">
                     {draft.originalScript}
                   </pre>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="min-h-11"
-                    onClick={() => {
-                      patchDraft({
-                        workingScript: draft.originalScript,
-                        ...invalidateApprovalsOnScriptChange(),
-                        scenes: splitScriptIntoScenes(draft.originalScript),
-                      });
-                      setScriptView("working");
-                    }}
-                  >
-                    Use original as working script
-                  </Button>
-                </div>
-              ) : scriptView === "improved" && draft.improvedScript ? (
-                <div className="space-y-2">
-                  <pre
-                    className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-xl bg-muted/30 p-3 text-sm"
-                    data-testid="preprod-improved-script"
-                  >
-                    {draft.improvedScript}
-                  </pre>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="min-h-11"
-                    onClick={() => {
-                      patchDraft({
-                        workingScript: draft.improvedScript,
-                        ...invalidateApprovalsOnScriptChange(),
-                        scenes: splitScriptIntoScenes(draft.improvedScript),
-                      });
-                      setScriptView("working");
-                    }}
-                  >
-                    Use improved as working script
-                  </Button>
-                </div>
-              ) : (
-                <textarea
-                  value={draft.workingScript}
-                  onChange={(e) =>
-                    patchDraft({
-                      workingScript: e.target.value,
-                      ...invalidateApprovalsOnScriptChange(),
-                      scenes: splitScriptIntoScenes(e.target.value),
-                    })
-                  }
-                  rows={10}
-                  className="input-surface font-mono text-sm"
-                  aria-label="Editable script"
-                  data-testid="preprod-working-script"
-                />
+                </details>
               )}
+              <textarea
+                value={draft.workingScript}
+                onChange={(e) =>
+                  patchDraft({
+                    workingScript: e.target.value,
+                    scriptApproved: false,
+                    scenes: splitScriptIntoScenes(e.target.value),
+                  })
+                }
+                rows={10}
+                className="input-surface font-mono text-sm"
+                aria-label="Editable script"
+              />
               <p className="text-sm text-muted">
                 {wordCount} words · ~{durationEst}s spoken
               </p>
@@ -891,84 +695,33 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
             </p>
           )}
           <label className="block text-sm font-medium text-muted">
-            Language
-            <select
-              className="input-surface mt-2 w-full"
-              value={voiceLang}
-              onChange={(e) => {
-                setVoiceLang(e.target.value);
-                patchDraft({ voiceoverApproved: false });
-              }}
-            >
-              {voiceLanguages.map((code) => (
-                <option key={code} value={code}>
-                  {languageLabel(code)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block text-sm font-medium text-muted">
-            Voice / accent
+            Voice
             <select
               className="input-surface mt-2 w-full"
               value={draft.voiceover.voiceUri}
               onChange={(e) => {
-                const voice = filteredVoices.find((v) => v.uri === e.target.value);
+                const voice = englishVoices.find((v) => v.uri === e.target.value);
                 patchDraft({
                   voiceover: {
                     ...draft.voiceover,
                     voiceUri: e.target.value,
                     voiceName: voice?.name ?? "Default",
-                    lang: voice?.lang ?? voiceLang,
+                    lang: voice?.lang ?? "en",
                   },
                   voiceoverApproved: false,
                 });
               }}
             >
-              <option value="">System default</option>
-              {filteredVoices.map((v) => (
+              <option value="">System default (English)</option>
+              {englishVoices.map((v) => (
                 <option key={v.uri} value={v.uri}>
                   {v.name} ({v.lang})
                 </option>
               ))}
             </select>
           </label>
-          <fieldset className="space-y-2">
-            <legend className="text-sm font-medium text-muted">Speaking style</legend>
-            <div className="flex flex-wrap gap-2">
-              {VOICE_STYLE_PRESETS.map((preset) => {
-                const active =
-                  draft.voiceover.rate === preset.rate &&
-                  draft.voiceover.pitch === preset.pitch;
-                return (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    className={cn(
-                      "min-h-11 rounded-full border px-3 py-1.5 text-xs font-semibold",
-                      active
-                        ? "border-violet-500/50 bg-violet-600/15"
-                        : "border-border text-muted"
-                    )}
-                    onClick={() =>
-                      patchDraft({
-                        voiceover: {
-                          ...draft.voiceover,
-                          rate: preset.rate,
-                          pitch: preset.pitch,
-                        },
-                        voiceoverApproved: false,
-                      })
-                    }
-                  >
-                    {preset.label}
-                  </button>
-                );
-              })}
-            </div>
-          </fieldset>
           <label className="block text-sm font-medium text-muted">
-            Speed ({draft.voiceover.rate.toFixed(2)}×)
+            Speed
             <input
               type="range"
               min={0.7}
@@ -1002,10 +755,9 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
                   rate: draft.voiceover.rate,
                   pitch: draft.voiceover.pitch,
                   onEnd: () => setVoicePlaying(false),
-                  onError: (msg) => setVoiceoverError(msg || PREPROD_VOICEOVER_FAILED),
+                  onError: (msg) => setScriptError(msg),
                 });
                 setVoicePlaying(ok);
-                if (ok) setVoiceoverError(null);
               }}
             >
               {voicePlaying ? (
@@ -1015,41 +767,11 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
               )}
               {voicePlaying ? "Pause preview" : "Play preview"}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="min-h-11"
-              onClick={() => {
-                stopVoiceoverPreview();
-                setVoicePlaying(false);
-                const ok = playVoiceoverPreview({
-                  text: draft.workingScript,
-                  voiceUri: draft.voiceover.voiceUri,
-                  lang: draft.voiceover.lang,
-                  rate: draft.voiceover.rate,
-                  pitch: draft.voiceover.pitch,
-                  onEnd: () => setVoicePlaying(false),
-                  onError: (msg) => setVoiceoverError(msg || PREPROD_VOICEOVER_FAILED),
-                });
-                setVoicePlaying(ok);
-              }}
-            >
-              <RefreshCw className="h-4 w-4" aria-hidden />
-              Regenerate preview
-            </Button>
             <Button type="button" className="min-h-11" onClick={handleApproveVoiceover}>
               <Mic className="h-4 w-4" aria-hidden />
               Approve voiceover
             </Button>
           </div>
-          {voiceoverError && (
-            <p
-              role="alert"
-              className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100"
-            >
-              {voiceoverError}
-            </p>
-          )}
           <Button
             type="button"
             variant="ghost"
@@ -1064,23 +786,55 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
       {draft.step === "visuals" && (
         <section className="space-y-4" aria-label="Visuals">
           <h2 className="text-lg font-bold text-foreground">4. Visuals (optional)</h2>
-          <OptionalImagesPanel
-            imageUrls={draft.optionalImageUrls}
-            recentImageUrls={recentImageUrls}
-            uploading={imageUploading}
-            onAddFromGallery={handleAddGalleryImage}
-            onUploadFile={(file) => void uploadReferenceFile(file)}
-            onRemove={handleRemoveImage}
-            onReplace={(index, file) => void uploadReferenceFile(file, index)}
-            onContinueWithoutImages={() => patchDraft({ step: "generate" })}
-          />
-          {imageUploadError && (
-            <p
-              role="alert"
-              className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100"
+          <p className="text-sm text-muted">
+            Add images from your gallery or continue without images — AI visuals are generated
+            from your script.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-semibold hover:bg-accent/5">
+              <Upload className="h-4 w-4" aria-hidden />
+              Add from gallery
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (file) handlePickImage(file);
+                }}
+              />
+            </label>
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11"
+              onClick={() => patchDraft({ step: "generate" })}
             >
-              {imageUploadError}
-            </p>
+              Continue without images
+            </Button>
+          </div>
+          {draft.optionalImageUrls.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {draft.optionalImageUrls.map((url, i) => (
+                <div key={url} className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" className="h-20 w-20 rounded-lg object-cover" />
+                  <button
+                    type="button"
+                    aria-label="Remove image"
+                    className="absolute -right-1 -top-1 rounded-full bg-red-600 p-1 text-white"
+                    onClick={() =>
+                      patchDraft({
+                        optionalImageUrls: draft.optionalImageUrls.filter((_, j) => j !== i),
+                      })
+                    }
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
           {draft.scenes.length > 0 && (
             <div className="space-y-2 rounded-2xl border border-border p-3">
@@ -1123,6 +877,22 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
               >
                 {VIDEO_CATEGORIES.map((c) => (
                   <option key={c.id} value={c.id}>{c.label}</option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm font-medium text-muted">
+              Model
+              <select
+                className="input-surface mt-2 w-full"
+                value={draft.videoModelTier}
+                onChange={(e) =>
+                  patchDraft({
+                    videoModelTier: e.target.value as VideoPreProductionDraft["videoModelTier"],
+                  })
+                }
+              >
+                {VIDEO_MODEL_TIER_OPTIONS.map((tier) => (
+                  <option key={tier.id} value={tier.id}>{tier.label}</option>
                 ))}
               </select>
             </label>
@@ -1183,18 +953,12 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
                 <dd>{formatTargetDurationLabel(draft.targetDurationSec)}</dd>
               </div>
               <div>
-                <dt className="text-muted">Provider</dt>
-                <dd>fal.ai (primary)</dd>
-              </div>
-              <div>
                 <dt className="text-muted">Model</dt>
-                <dd>{creditQuote?.modelLabel ?? "Configured via fal.ai"}</dd>
+                <dd>{selectedModel.label}</dd>
               </div>
               <div>
                 <dt className="text-muted">Quality</dt>
-                <dd className="capitalize">
-                  {creditQuote?.qualityLabel ?? formatQualityLabel(draft.videoModelTier)}
-                </dd>
+                <dd className="capitalize">{formatQualityLabel(draft.videoModelTier)}</dd>
               </div>
               <div>
                 <dt className="text-muted">Audio</dt>
@@ -1225,7 +989,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
                 </strong>
               </p>
             )}
-            {creditQuote?.usesLegacyEconomyPricing && (
+            {creditQuote?.usesLegacyEconomyPricing && draft.videoModelTier === "economy" && (
               <p className="text-xs text-muted">Economy pricing — standard Giga3 video rates apply.</p>
             )}
           </div>
@@ -1258,7 +1022,8 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
           </Button>
           {failed && (
             <p role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
-              {PREPROD_VIDEO_FAILED}
+              Video generation could not be completed. Your script and voiceover settings are
+              saved. {videoJob.job?.errorMessage || videoError}
               <Button
                 type="button"
                 variant="outline"
@@ -1336,7 +1101,13 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
             <div className="space-y-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
               <div className="flex items-start gap-2">
                 <XCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
-                <span>{PREPROD_VIDEO_FAILED}</span>
+                <span>
+                  {draft.combinedVideoError ||
+                    failedScenes[0]?.errorMessage ||
+                    videoJob.job?.errorMessage ||
+                    videoError ||
+                    "Generation failed."}
+                </span>
               </div>
               <Button
                 type="button"
