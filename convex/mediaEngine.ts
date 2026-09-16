@@ -71,8 +71,6 @@ export type VideoGenerateParams = {
   resolution?: string;
   generateAudio?: boolean;
   aspectRatio?: "16:9" | "9:16" | "4:3" | "1:1" | "3:4" | "21:9";
-  /** Optional fal model override (premium/standard tiers). */
-  falModelOverride?: string;
 };
 
 const FAL_IMAGE_FALLBACK_MODEL =
@@ -296,7 +294,7 @@ export async function generateVideoWithFallback(
     input.aspectRatio ?? videoCategoryAspectRatio(input.category ?? "anime_videos");
   const wantsAudio = input.generateAudio !== false;
   const requestedDuration = clampMediaVideoDurationSec(input.duration);
-  const falModel = input.falModelOverride?.trim() || resolveFalVideoModel(Boolean(imageUrl));
+  const falModel = resolveFalVideoModel(Boolean(imageUrl));
   const falSupportsAudio = falModelSupportsAudio(falModel);
   const falMaxDuration = falModelMaxDurationSec(falModel);
   const falDuration = clampVideoDurationForProvider(requestedDuration, falMaxDuration);
@@ -353,7 +351,6 @@ export async function generateVideoWithFallback(
               generateAudio,
             },
             {
-              modelId: falModel,
               maxWaitMs: videoMaxWaitMs(),
               onProgress: (p: FalVideoProgress) =>
                 hooks?.onProgress?.({

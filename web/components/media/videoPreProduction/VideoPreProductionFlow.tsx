@@ -26,11 +26,7 @@ import {
   sceneCountForTargetDuration,
   TARGET_VIDEO_DURATION_OPTIONS,
 } from "@/lib/media/videoPreProduction/longVideo";
-import {
-  estimateLegacyVideoCredits,
-  formatQualityLabel,
-  VIDEO_MODEL_TIER_OPTIONS,
-} from "@/lib/media/videoPreProduction/videoCreditPricing";
+import { estimateLegacyVideoCredits, formatQualityLabel } from "@/lib/media/videoPreProduction/videoCreditPricing";
 import {
   countWords,
   estimateSpeechDurationSec,
@@ -145,7 +141,6 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
   const creditQuote = useQuery(api.mediaVideoPricing.estimateVideoProductionCredits, {
     targetDurationSec: draft.targetDurationSec,
     clipDurationSec,
-    videoModelTier: draft.videoModelTier,
     resolution: draft.quality,
     generateAudio: true,
     hasImage: hasHttpsImage,
@@ -161,10 +156,6 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
   const canAffordScript = creditsAvailable >= WRITING_CREDIT_COST;
   const canAffordVideo = creditsAvailable >= videoCreditCost;
   const isLongVideo = sceneCount > 1;
-  const selectedModel =
-    VIDEO_MODEL_TIER_OPTIONS.find((t) => t.id === draft.videoModelTier) ??
-    VIDEO_MODEL_TIER_OPTIONS[0];
-
   const stepIndex = STEPS.findIndex((s) => s.id === draft.step);
 
   const handleGenerateScript = useCallback(async () => {
@@ -352,7 +343,6 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
           duration: clipDurationSec,
           resolution: active.quality,
           generateAudio: true,
-          videoModelTier: active.videoModelTier,
         }
       );
       if (result?.jobId) {
@@ -437,7 +427,6 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
             duration: active.durationSec,
             resolution: active.quality,
             generateAudio: true,
-            videoModelTier: active.videoModelTier,
           }
         );
         if (result?.jobId) {
@@ -881,22 +870,6 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
               </select>
             </label>
             <label className="text-sm font-medium text-muted">
-              Model
-              <select
-                className="input-surface mt-2 w-full"
-                value={draft.videoModelTier}
-                onChange={(e) =>
-                  patchDraft({
-                    videoModelTier: e.target.value as VideoPreProductionDraft["videoModelTier"],
-                  })
-                }
-              >
-                {VIDEO_MODEL_TIER_OPTIONS.map((tier) => (
-                  <option key={tier.id} value={tier.id}>{tier.label}</option>
-                ))}
-              </select>
-            </label>
-            <label className="text-sm font-medium text-muted">
               Total video length
               <select
                 className="input-surface mt-2 w-full"
@@ -953,12 +926,18 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
                 <dd>{formatTargetDurationLabel(draft.targetDurationSec)}</dd>
               </div>
               <div>
+                <dt className="text-muted">Provider</dt>
+                <dd>fal.ai (primary)</dd>
+              </div>
+              <div>
                 <dt className="text-muted">Model</dt>
-                <dd>{selectedModel.label}</dd>
+                <dd>{creditQuote?.modelLabel ?? "Configured via fal.ai"}</dd>
               </div>
               <div>
                 <dt className="text-muted">Quality</dt>
-                <dd className="capitalize">{formatQualityLabel(draft.videoModelTier)}</dd>
+                <dd className="capitalize">
+                  {creditQuote?.qualityLabel ?? formatQualityLabel(draft.videoModelTier)}
+                </dd>
               </div>
               <div>
                 <dt className="text-muted">Audio</dt>
@@ -989,7 +968,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
                 </strong>
               </p>
             )}
-            {creditQuote?.usesLegacyEconomyPricing && draft.videoModelTier === "economy" && (
+            {creditQuote?.usesLegacyEconomyPricing && (
               <p className="text-xs text-muted">Economy pricing — standard Giga3 video rates apply.</p>
             )}
           </div>

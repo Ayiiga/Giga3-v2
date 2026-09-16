@@ -6,6 +6,7 @@
 import {
   DEFAULT_FAL_IMAGE_VIDEO_MODEL,
   DEFAULT_FAL_TEXT_VIDEO_MODEL,
+  detectFalModelFamily,
   falModelMaxDurationSec,
   resolveFalVideoModel,
 } from "./falVideoModels";
@@ -32,29 +33,22 @@ export type VideoProviderPricingEntry = {
   description: string;
 };
 
-/** Premium/standard fal model IDs — set via Convex env (no hardcoded provider paths). */
-export function resolvePremiumTextModel(env: Record<string, string | undefined> = process.env): string {
-  return env.FAL_VEO_TEXT_VIDEO_MODEL?.trim() || resolveFalVideoModel(false, env);
+/** Map the configured fal.ai model family to a pricing tier (routing stays on fal env). */
+export function pricingTierFromFalModel(modelId: string): VideoModelTierId {
+  const family = detectFalModelFamily(modelId);
+  if (family === "veo") return "premium";
+  if (family === "kling") return "standard";
+  return "economy";
 }
 
-export function resolvePremiumImageModel(env: Record<string, string | undefined> = process.env): string {
-  return (
-    env.FAL_VEO_IMAGE_VIDEO_MODEL?.trim() ||
-    env.FAL_IMAGE_VIDEO_MODEL?.trim() ||
-    resolveFalVideoModel(true, env)
-  );
-}
-
-export function resolveStandardTextModel(env: Record<string, string | undefined> = process.env): string {
-  return env.FAL_KLING_TEXT_VIDEO_MODEL?.trim() || resolveFalVideoModel(false, env);
-}
-
-export function resolveStandardImageModel(env: Record<string, string | undefined> = process.env): string {
-  return (
-    env.FAL_KLING_IMAGE_VIDEO_MODEL?.trim() ||
-    env.FAL_IMAGE_VIDEO_MODEL?.trim() ||
-    resolveFalVideoModel(true, env)
-  );
+/** Pricing tier for a request — uses explicit tier when set, else the configured fal model. */
+export function resolvePricingTierForVideo(
+  hasImage: boolean,
+  videoModelTier?: VideoModelTierId,
+  env: Record<string, string | undefined> = process.env
+): VideoModelTierId {
+  if (videoModelTier) return videoModelTier;
+  return pricingTierFromFalModel(resolveFalVideoModel(hasImage, env));
 }
 
 export const VIDEO_PROVIDER_PRICING: Record<VideoModelTierId, VideoProviderPricingEntry> = {
@@ -107,36 +101,13 @@ export function listEnabledVideoModelTiers(): VideoProviderPricingEntry[] {
   return VIDEO_MODEL_TIER_IDS.map((id) => VIDEO_PROVIDER_PRICING[id]).filter((t) => t.enabled);
 }
 
-export function resolveModelIdForTier(
-  tier: VideoModelTierId,
-  hasImage: boolean,
-  env: Record<string, string | undefined> = process.env
-): string {
-  if (tier === "economy") {
-    return resolveFalVideoModel(hasImage, env);
-  }
-  if (tier === "standard") {
-    return hasImage ? resolveStandardImageModel(env) : resolveStandardTextModel(env);
-  }
-  return hasImage ? resolvePremiumImageModel(env) : resolvePremiumTextModel(env);
-}
-
-/** Pricing-only max duration when env model is not yet resolved (e.g. premium Veo ≈ 8s). */
-const TIER_PRICING_MAX_DURATION_SEC: Record<VideoModelTierId, number> = {
-  economy: 12,
-  standard: 10,
-  premium: 8,
-};
-
 export function providerMaxDurationForTier(
   tier: VideoModelTierId,
   hasImage: boolean,
   env: Record<string, string | undefined> = process.env
 ): number {
-  const modelId = resolveModelIdForTier(tier, hasImage, env);
-  const fromModel = falModelMaxDurationSec(modelId);
-  const tierDefault = TIER_PRICING_MAX_DURATION_SEC[tier];
-  return tier === "economy" ? fromModel : Math.min(fromModel, tierDefault);
+  const modelId = resolveFalVideoModel(hasImage, env);
+  return falModelMaxDurationSec(modelId);
 }
 
 export function resolutionMultiplierBps(
