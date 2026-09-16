@@ -109,9 +109,6 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
     };
   }, []);
 
-  const approvedScript = draft.scriptApproved
-    ? draft.workingScript.trim()
-    : "";
   const wordCount = countWords(draft.workingScript);
   const durationEst = estimateSpeechDurationSec(draft.workingScript);
   const videoCreditCost = mediaVideoCreditCost(draft.durationSec);
