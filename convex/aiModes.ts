@@ -43,7 +43,14 @@ export function isValidMode(mode: string): mode is AiModeId {
   return (AI_MODES as readonly string[]).includes(mode);
 }
 
+const GIGA3_BRAND_KNOWLEDGE =
+  "Giga3 brand: Logo = https://www.giga3ai.com/images/logo.svg and /images/logo.svg from web/public/images/logo.svg. When asked for logotype URL, return direct URL. PWA install via /manifest.json";
+
 export function getSystemPrompt(mode: string): string {
-  if (isValidMode(mode)) return AI_MODE_SYSTEM_PROMPTS[mode];
-  return AI_MODE_SYSTEM_PROMPTS.general;
+  const base = isValidMode(mode) ? AI_MODE_SYSTEM_PROMPTS[mode] : AI_MODE_SYSTEM_PROMPTS.general;
+  try {
+    return `${base}\n\n${GIGA3_BRAND_KNOWLEDGE}`;
+  } catch {
+    return base;
+  }
 }

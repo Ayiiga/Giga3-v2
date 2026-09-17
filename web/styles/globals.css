@@ -1212,3 +1212,72 @@ button:focus-visible {
 .marketing-stable .media-stable .animate-spin {
   animation: spin 1s linear infinite !important;
 }
+
+/* === PWA 3G screenshot fixes: bottom-nav overlap + media contrast === */
+.bottom-nav,
+.primary-nav--mobile {
+  height: 72px !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  z-index: 40 !important;
+}
+
+.main-scroll-container,
+.chat-container,
+.learn-container,
+.media-container,
+.chat-keyboard-shell,
+.marketing-scroll-main,
+.media-stable,
+.gigaedit-page {
+  padding-bottom: 96px !important;
+}
+
+.chat-input-bar,
+.chat-composer {
+  margin-bottom: 80px !important;
+  z-index: 30 !important;
+  position: relative !important;
+}
+
+@media (max-height: 500px) {
+  .bottom-nav,
+  .primary-nav--mobile {
+    transform: translateY(100%) !important;
+    transition: transform 0.2s !important;
+  }
+}
+
+.bottom-nav button,
+.bottom-nav a,
+.primary-nav--mobile .primary-nav__item {
+  min-height: 48px !important;
+  min-width: 48px !important;
+}
+
+.bottom-nav .active,
+.primary-nav__item--active {
+  border: 2px solid #7c3aed !important;
+}
+
+.bottom-nav .active svg,
+.primary-nav__item--active svg,
+.primary-nav__item--active .primary-nav__glyph {
+  color: #7c3aed !important;
+}
+
+.videos-button,
+.btn-media-inactive {
+  border: 1.5px solid #e5e7eb !important;
+  background: #f9fafb !important;
+}
+
+.back-to-chat,
+.media-stable a[href="/chat"],
+.media-stable a[href="/chat/"] {
+  border: 1.5px solid #7c3aed !important;
+  color: #7c3aed !important;
+}
+
+.feed-tab-inactive {
+  color: #e5e7eb !important;
+}
