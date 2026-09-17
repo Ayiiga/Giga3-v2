@@ -4,11 +4,12 @@ import { formatTimecodeMs, stepFrame } from "@/lib/gigaedit/frameTime";
 import {
   clipsForLane,
   formatRulerTime,
+  formatTimelineClipLabel,
   inferClipLane,
   syntheticCaptionsBar,
   syntheticLogoBar,
-  TIMELINE_LANES,
   TIMELINE_PX_PER_SEC,
+  visibleTimelineLanes,
   type SyntheticLaneBar,
 } from "@/lib/gigaedit/timelineLanes";
 import { canDropClipOnLane, snapTimelineSec } from "@/lib/gigaedit/timelineLayers";
@@ -132,6 +133,14 @@ export function MultiTrackTimeline({
 
   const logoBar = syntheticLogoBar(max, Boolean(brandWatermark?.trim()), brandWatermark?.trim() || "Logo");
   const captionsBar = syntheticCaptionsBar(max, Boolean(hasCaptions));
+  const lanes = useMemo(
+    () =>
+      visibleTimelineLanes(clips, {
+        hasCaptions: Boolean(hasCaptions),
+        hasLogo: Boolean(brandWatermark?.trim()),
+      }),
+    [brandWatermark, clips, hasCaptions]
+  );
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -262,7 +271,7 @@ export function MultiTrackTimeline({
       <div className="gigaedit-timeline-body">
         <div className="gigaedit-timeline-rail" aria-hidden>
           <div className="gigaedit-timeline-rail-spacer" />
-          {TIMELINE_LANES.map((lane) => {
+          {lanes.map((lane) => {
             const Icon = LANE_ICONS[lane.id];
             return (
               <div key={lane.id} className="gigaedit-timeline-rail-lane" title={lane.label}>
@@ -299,7 +308,7 @@ export function MultiTrackTimeline({
               />
             </div>
 
-            {TIMELINE_LANES.map((lane) => {
+            {lanes.map((lane) => {
               const laneClips = clipsForLane(visibleClips, lane.id);
               const synthetic: SyntheticLaneBar[] = [];
               if (lane.id === "logo" && logoBar) synthetic.push(logoBar);
@@ -506,7 +515,9 @@ function TimelineClipBlock({
           className="absolute inset-0 h-full w-full object-cover opacity-40"
         />
       ) : null}
-      <span className="relative z-[1] truncate">{clip.label}</span>
+      <span className="relative z-[1] truncate">
+        {formatTimelineClipLabel(clip)}
+      </span>
       {!clip.locked ? (
         <>
           <span

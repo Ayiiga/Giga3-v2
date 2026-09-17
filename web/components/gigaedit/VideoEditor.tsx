@@ -937,6 +937,68 @@ export function VideoEditor({
     setStatus("Clip deleted.");
   }
 
+  function duplicateSelectedClip() {
+    const clip = clips.find((c) => c.id === selectedClipId);
+    if (!clip) {
+      setStatus("Select a clip on the timeline first.");
+      return;
+    }
+    const duration = Math.max(0.25, clip.endSec - clip.startSec);
+    const dup = normalizeVideoClip({
+      ...clip,
+      id: `clip_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      startSec: clip.endSec + 0.05,
+      endSec: clip.endSec + 0.05 + duration,
+      locked: false,
+    });
+    commitClips((prev) => [...prev, dup]);
+    setSelectedClipId(dup.id);
+    setStatus("Clip duplicated.");
+  }
+
+  function splitSelectedClip() {
+    const clip = clips.find((c) => c.id === selectedClipId);
+    if (!clip || clip.locked) {
+      setStatus("Select a clip on the timeline first.");
+      return;
+    }
+    if (playhead <= clip.startSec + 0.05 || playhead >= clip.endSec - 0.05) {
+      setStatus("Move playhead inside the clip to split.");
+      return;
+    }
+    const left = { ...clip, endSec: playhead };
+    const right = normalizeVideoClip({
+      ...clip,
+      id: `clip_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      startSec: playhead,
+      sourceStartSec: (clip.sourceStartSec ?? 0) + (playhead - clip.startSec) * (clip.speed ?? 1),
+    });
+    commitClips((prev) => prev.filter((c) => c.id !== clip.id).concat([left, right]));
+    setSelectedClipId(right.id);
+    setStatus("Clip split at playhead.");
+  }
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== "Delete" && e.key !== "Backspace") return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      e.preventDefault();
+      deleteSelectedClip();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- stable delete handler
+  }, [selectedClipId, clips]);
+
   function openOverlayImport() {
     overlayInputRef.current?.click();
   }
@@ -1406,6 +1468,7 @@ export function VideoEditor({
               clips={clips}
               playheadSec={playhead}
               onUpdateClip={updateClipById}
+              onUpdateClips={(next) => commitClips(next)}
               onDuplicateOverlay={(dup) => {
                 commitClips((prev) => [...prev, dup]);
                 setSelectedClipId(dup.id);
@@ -1637,6 +1700,31 @@ export function VideoEditor({
             Snap
           </button>
         </div>
+        {selectedClipId ? (
+          <div className="gigaedit-clip-toolbar mb-2 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              className="gigaedit-chip gigaedit-chip--danger px-2 py-1 text-[10px]"
+              onClick={deleteSelectedClip}
+            >
+              Delete
+            </button>
+            <button
+              type="button"
+              className="gigaedit-chip px-2 py-1 text-[10px]"
+              onClick={splitSelectedClip}
+            >
+              Split
+            </button>
+            <button
+              type="button"
+              className="gigaedit-chip px-2 py-1 text-[10px]"
+              onClick={duplicateSelectedClip}
+            >
+              Duplicate
+            </button>
+          </div>
+        ) : null}
         <MultiTrackTimeline
           clips={clips}
           durationSec={timelineMax}

@@ -174,9 +174,7 @@ function GigaEditClientInner() {
       immersive={section === "video"}
       onBackHome={() => openSection("home")}
       footer={
-        section === "video" ? undefined : (
-          <GigaEditBottomNav activeSection={section} onOpenSection={(s) => openSection(s)} />
-        )
+        <GigaEditBottomNav activeSection={section} onOpenSection={(s) => openSection(s)} />
       }
     >
       {section === "home" && <GigaEditHome onOpen={openSection} />}
@@ -216,7 +214,12 @@ function GigaEditClientInner() {
           onUsePhoto={(opts) => openSection("photo", opts)}
         />
       )}
-      {section === "audio" && <AudioStudio focusRecord={focusRecord} />}
+      {section === "audio" && (
+        <AudioStudio
+          focusRecord={focusRecord}
+          onOpenTeleprompter={() => openSection("teleprompter", { record: true })}
+        />
+      )}
       {section === "social" && <SocialMediaCreator />}
       {section === "brand" && <BrandKitPanel />}
       {section === "projects" && (

@@ -4,7 +4,10 @@ import {
   createEmptyProject,
   deleteGigaEditProject,
   duplicateGigaEditProject,
+  estimateGigaEditStorageBytes,
+  estimateProjectBlobBytes,
   exportProjectJson,
+  formatStorageBytes,
   listGigaEditProjects,
   saveGigaEditProject,
   sectionForProjectKind,
@@ -13,24 +16,40 @@ import {
 import { enqueueGigaEditSync } from "@/lib/gigaedit/offline";
 import type { GigaEditOpenOptions, GigaEditSection } from "@/lib/gigaedit/types";
 import { Copy, Download, FolderOpen, Plus, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+const LOCAL_QUOTA_BYTES = 10 * 1024 * 1024 * 1024;
+const OLD_DRAFT_MS = 30 * 24 * 60 * 60 * 1000;
 
 type ProjectManagerProps = {
   onOpen?: (section: GigaEditSection, opts?: GigaEditOpenOptions) => void;
+};
+
+type PendingDelete = {
+  project: GigaEditProjectRecord;
+  bytes: number;
 };
 
 export function ProjectManager({ onOpen }: ProjectManagerProps) {
   const [projects, setProjects] = useState<GigaEditProjectRecord[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [storageBytes, setStorageBytes] = useState(0);
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
 
   const refresh = useCallback(async () => {
     setProjects(await listGigaEditProjects());
+    setStorageBytes(await estimateGigaEditStorageBytes());
   }, []);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  const staleDrafts = useMemo(() => {
+    const cutoff = Date.now() - OLD_DRAFT_MS;
+    return projects.filter((p) => p.status === "draft" && p.updatedAt < cutoff);
+  }, [projects]);
 
   async function createDraft() {
     setBusy(true);
@@ -46,6 +65,29 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
     }
   }
 
+  async function requestDelete(project: GigaEditProjectRecord) {
+    const bytes = await estimateProjectBlobBytes(project.id);
+    setPendingDelete({ project, bytes });
+  }
+
+  async function confirmDelete() {
+    if (!pendingDelete) return;
+    await deleteGigaEditProject(pendingDelete.project.id);
+    setPendingDelete(null);
+    setMessage(
+      `Deleted ${pendingDelete.project.title} — freed ${formatStorageBytes(pendingDelete.bytes)} locally.`
+    );
+    await refresh();
+  }
+
+  async function clearStaleDrafts() {
+    for (const draft of staleDrafts) {
+      await deleteGigaEditProject(draft.id);
+    }
+    setMessage(`Removed ${staleDrafts.length} draft(s) older than 30 days.`);
+    await refresh();
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
@@ -54,6 +96,9 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
           <p className="mt-1 text-xs text-[var(--ge-muted)]">
             Auto-save drafts in IndexedDB. Open, duplicate, export JSON, or delete — originals stay
             private.
+          </p>
+          <p className="mt-2 text-[11px] text-[var(--ge-gold)]">
+            {formatStorageBytes(storageBytes)} used / {formatStorageBytes(LOCAL_QUOTA_BYTES)} local
           </p>
         </div>
         <button
@@ -66,6 +111,21 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
           New
         </button>
       </div>
+
+      {staleDrafts.length > 0 ? (
+        <div className="gigaedit-glass flex flex-wrap items-center justify-between gap-2 p-3 text-xs">
+          <span className="text-[var(--ge-muted)]">
+            {staleDrafts.length} draft{staleDrafts.length === 1 ? "" : "s"} older than 30 days
+          </span>
+          <button
+            type="button"
+            className="rounded-lg border border-red-400/40 px-2 py-1 text-red-300"
+            onClick={() => void clearStaleDrafts()}
+          >
+            Clear old drafts
+          </button>
+        </div>
+      ) : null}
 
       {message ? <p className="text-xs text-[var(--ge-gold)]">{message}</p> : null}
 
@@ -133,12 +193,7 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
                 type="button"
                 className="rounded-lg border border-red-400/30 p-2 text-red-300"
                 aria-label={`Delete ${p.title}`}
-                onClick={() =>
-                  void deleteGigaEditProject(p.id).then(() => {
-                    setMessage("Project deleted from this device.");
-                    return refresh();
-                  })
-                }
+                onClick={() => void requestDelete(p)}
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
@@ -146,6 +201,33 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
           ))}
         </ul>
       )}
+
+      {pendingDelete ? (
+        <div className="gigaedit-delete-dialog fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="gigaedit-glass max-w-sm space-y-3 p-4">
+            <p className="text-sm font-semibold">Delete draft {pendingDelete.project.title}?</p>
+            <p className="text-xs text-[var(--ge-muted)]">
+              This frees {formatStorageBytes(pendingDelete.bytes)} locally.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                className="rounded-lg border border-[var(--ge-border)] px-3 py-1.5 text-xs"
+                onClick={() => setPendingDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-bold text-white"
+                onClick={() => void confirmDelete()}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

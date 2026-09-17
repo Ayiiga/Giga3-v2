@@ -1,10 +1,13 @@
 "use client";
 
+import { formatTimelineClipLabel } from "@/lib/gigaedit/timelineLanes";
 import {
   applyLayoutPreset,
   applyPositionPreset,
   applySmartResize,
+  clipVideoLayer,
   duplicateClipAsOverlay,
+  reorderVideoLayer,
 } from "@/lib/gigaedit/timelineLayers";
 import type {
   GigaEditTimelineClip,
@@ -19,6 +22,7 @@ type OverlayInspectorProps = {
   clips: GigaEditTimelineClip[];
   playheadSec: number;
   onUpdateClip: (clip: GigaEditTimelineClip) => void;
+  onUpdateClips: (clips: GigaEditTimelineClip[]) => void;
   onDuplicateOverlay: (clip: GigaEditTimelineClip) => void;
   onDeleteClip: (clipId: string) => void;
 };
@@ -46,11 +50,21 @@ const LAYOUTS: { id: OverlayLayoutPreset; label: string }[] = [
   { id: "floating", label: "Floating" },
 ];
 
+const BLEND_MODES: GlobalCompositeOperation[] = [
+  "source-over",
+  "multiply",
+  "screen",
+  "overlay",
+  "darken",
+  "lighten",
+];
+
 export function OverlayInspector({
   clip,
   clips,
   playheadSec,
   onUpdateClip,
+  onUpdateClips,
   onDuplicateOverlay,
   onDeleteClip,
 }: OverlayInspectorProps) {
@@ -71,10 +85,12 @@ export function OverlayInspector({
   return (
     <div className="gigaedit-glass space-y-3 p-3 text-xs">
       <div className="flex items-center justify-between gap-2">
-        <h4 className="font-semibold">{isOverlay ? "Overlay" : "Main clip"} · {clip.label}</h4>
+        <h4 className="font-semibold">
+          {isOverlay ? "Overlay" : "Main clip"} · {formatTimelineClipLabel(clip)}
+        </h4>
         <button
           type="button"
-          className="text-[10px] text-red-300"
+          className="text-[10px] text-red-400"
           onClick={() => onDeleteClip(clip.id)}
           disabled={clip.locked}
         >
@@ -82,11 +98,51 @@ export function OverlayInspector({
         </button>
       </div>
 
+      {isOverlay ? (
+        <div className="flex flex-wrap gap-1">
+          <button
+            type="button"
+            className="gigaedit-chip px-2 py-1 text-[10px]"
+            onClick={() =>
+              onUpdateClips(reorderVideoLayer(clips, clipVideoLayer(clip), "up"))
+            }
+          >
+            Bring front
+          </button>
+          <button
+            type="button"
+            className="gigaedit-chip px-2 py-1 text-[10px]"
+            onClick={() =>
+              onUpdateClips(reorderVideoLayer(clips, clipVideoLayer(clip), "down"))
+            }
+          >
+            Send back
+          </button>
+        </div>
+      ) : null}
+
+      {isOverlay ? (
+        <label className="block">
+          Blend mode
+          <select
+            className="gigaedit-input mt-1 w-full"
+            value={clip.blendMode ?? "source-over"}
+            onChange={(e) =>
+              patch({ blendMode: e.target.value as GlobalCompositeOperation })
+            }
+          >
+            {BLEND_MODES.map((mode) => (
+              <option key={mode} value={mode}>{mode}</option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+
       <label className="block">
-        Opacity {(clip.opacity ?? 1).toFixed(2)}
+        Opacity {Math.round((clip.opacity ?? 1) * 100)}%
         <input
           type="range"
-          min={0.1}
+          min={0}
           max={1}
           step={0.05}
           value={clip.opacity ?? 1}
