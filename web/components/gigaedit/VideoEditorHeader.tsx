@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Redo2, Search, Undo2, X } from "lucide-react";
+import { ChevronDown, Redo2, Undo2, X } from "lucide-react";
 import Link from "next/link";
 
 type VideoEditorHeaderProps = {
@@ -32,9 +32,6 @@ export function VideoEditorHeader({
           aria-label="Back to Creator Studio home"
         >
           <X className="h-5 w-5" />
-        </button>
-        <button type="button" className="gigaedit-editor-icon-btn hidden sm:inline-flex" aria-label="Search">
-          <Search className="h-4 w-4" />
         </button>
       </div>
 
