@@ -62,12 +62,13 @@ describe("upload grid runtime badges", () => {
 describe("global suggested prompts", () => {
   it("appends book/research/CV/code/news prompts to general mode", () => {
     const six = getSuggestedPrompts("general", 6).map((p) => p.label);
+    expect(six).toContain("Open GigaSocial");
     expect(six).toContain("Book outline");
-    expect(six).toContain("Research essay");
-    const nine = getSuggestedPrompts("general", 9).map((p) => p.label);
-    expect(nine).toContain("Write CV");
-    expect(nine).toContain("Code help");
-    expect(nine).toContain("Ghana news");
+    const extended = getSuggestedPrompts("general", 10).map((p) => p.label);
+    expect(extended).toContain("Research essay");
+    expect(extended).toContain("Write CV");
+    expect(extended).toContain("Code help");
+    expect(extended).toContain("Ghana news");
   });
 });
 
