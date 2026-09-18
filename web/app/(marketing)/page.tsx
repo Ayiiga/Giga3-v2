@@ -13,9 +13,9 @@ import {
 
 export const metadata = publicMetadata({
   path: "/",
-  title: "Giga3 AI — Africa's AI Super App | Multi-Provider AI Chat with Failover",
+  title: "Giga3 AI — Africa's AI Super App | Multi-Provider AI Chat",
   description:
-    "Giga3 AI is Africa's AI Super App. Chat, create, learn, and grow your business with multi-provider AI failover (OpenAI, Gemini), Paystack billing in GHS, and production-ready PWA. Built in Africa.",
+    "Africa's AI Super App: chat, create and learn with multi-provider AI failover, Paystack billing in GHS and offline-ready PWA. Free 25 credits to start.",
 });
 
 /** Offers mirror the visible homepage pricing teaser (Free + Pro); Enterprise is quote-based. */
