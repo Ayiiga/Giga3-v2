@@ -72,4 +72,39 @@ crons.weekly(
   { limit: 40, minDaysSinceLastEmail: 12 }
 );
 
+crons.interval(
+  "push unread chat replies",
+  { minutes: 15 },
+  internal.notifications.notifyUnreadChatReplies,
+  {}
+);
+
+crons.interval(
+  "push social activity digest",
+  { minutes: 15 },
+  internal.notifications.notifySocialActivity,
+  {}
+);
+
+crons.interval(
+  "push completed media jobs",
+  { minutes: 15 },
+  internal.notifications.notifyCompletedMediaJobs,
+  {}
+);
+
+crons.interval(
+  "repeat unseen push notifications",
+  { minutes: 15 },
+  internal.notifications.repeatUnseenNotifications,
+  {}
+);
+
+crons.daily(
+  "gigalearn morning reminder ghana",
+  { hourUTC: 7, minuteUTC: 0 },
+  internal.notifications.notifyGigaLearnDaily,
+  {}
+);
+
 export default crons;
