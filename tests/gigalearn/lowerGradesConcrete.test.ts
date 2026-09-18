@@ -75,4 +75,17 @@ describe("gigalearn lower grades concrete objects", () => {
       expect.arrayContaining(["KG1–KG2", "Primary 1–3"])
     );
   });
+
+  it("never shows the KG1 fallback preview outside Creche–P3 (SHS level-leak guard)", () => {
+    // lessonPreviewForLevel falls back to KG1 for levels without a dedicated
+    // preview — the LessonPreviewCard must stay hidden there (isLowerGrade).
+    for (const level of ["P4-P6", "JHS1-3", "SHS1-3", "University", "Adult"]) {
+      expect(LESSON_PREVIEWS.some((l) => l.level === level)).toBe(false);
+      expect(lessonPreviewForLevel(level).level).toBe("KG1");
+      expect(isLowerGrade(level)).toBe(false);
+    }
+    for (const level of ["Creche", "KG1", "KG2", "P1", "P2", "P3"]) {
+      expect(isLowerGrade(level)).toBe(true);
+    }
+  });
 });

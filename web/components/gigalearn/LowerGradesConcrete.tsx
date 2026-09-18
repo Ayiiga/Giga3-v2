@@ -84,7 +84,7 @@ export function LowerGradesConcrete() {
       )}
 
       <LearningModes level={selectedLevel} lower={lower} />
-      <LessonPreviewCard level={selectedLevel} />
+      <LessonPreviewCard level={selectedLevel} lower={lower} />
       <VoicesSection previewVoiceId={preview.voiceId} />
       <GesSection />
       <OfflineBanner />
@@ -121,10 +121,10 @@ function LevelSelector({
                 onClick={() => onChange(level.id)}
                 title={`${level.label} · ages ${level.ages}`}
                 className={cn(
-                  "min-h-12 min-w-12 shrink-0 rounded-full border px-3 py-2 text-xs font-semibold",
+                  "min-h-12 min-w-12 shrink-0 rounded-full border px-3 py-2 text-xs font-semibold transition-all",
                   active
-                    ? "border-[#EAB308] bg-[#EAB308] font-bold text-black"
-                    : "border-[#2A3441] bg-[#1A233A] text-gray-300"
+                    ? "scale-105 border-[#FCD116]/50 bg-gradient-to-br from-[#FCD116] to-[#CE1126] font-extrabold text-black shadow-[0_0_20px_rgba(252,209,22,0.5)]"
+                    : "border-[#2A3441] bg-[#1A233A] text-gray-300 hover:border-[#3A4A61] hover:text-white"
                 )}
               >
                 {level.emoji} {level.label}
@@ -392,7 +392,11 @@ function LearningModes({ level, lower }: { level: GigaLearnLevelId; lower: boole
   );
 }
 
-function LessonPreviewCard({ level }: { level: GigaLearnLevelId }) {
+function LessonPreviewCard({ level, lower }: { level: GigaLearnLevelId; lower: boolean }) {
+  // Upper levels (P4-P6, JHS, SHS, University, Adult) have no concrete preview:
+  // lessonPreviewForLevel falls back to the KG1 fruit card, which must never
+  // render outside Creche–P3 (SHS showing 🍎🍎🍎 was a level leak).
+  if (!lower) return null;
   const preview = lessonPreviewForLevel(level);
   const voice = getGigaLearnVoice(preview.voiceId);
 
