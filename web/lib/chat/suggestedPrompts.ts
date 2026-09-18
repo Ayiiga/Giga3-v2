@@ -100,6 +100,10 @@ const CATEGORY_PROMPTS: Record<ChatCategoryId, SuggestedPrompt[]> = {
   ],
   general: [
     {
+      label: "Open GigaSocial",
+      text: "Open GigaSocial",
+    },
+    {
       label: "Summarize",
       text: "Summarize the key points of climate change impacts in Africa.",
     },
@@ -209,20 +213,8 @@ export function getSuggestedPrompts(mode: AiModeId, limit = 6): SuggestedPrompt[
     if (merged.length >= limit) break;
     if (!merged.some((p) => p.label === prompt.label)) merged.push(prompt);
   }
-  for (const prompt of PRODUCT_APP_PROMPTS) {
-    if (merged.length >= limit) break;
-    if (!merged.some((p) => p.label === prompt.label)) merged.push(prompt);
-  }
   return merged.slice(0, limit);
 }
-
-/** Quick-open chips for other Giga3 apps — appended after global standards. */
-const PRODUCT_APP_PROMPTS: SuggestedPrompt[] = [
-  {
-    label: "Open GigaSocial",
-    text: "Open GigaSocial",
-  },
-];
 
 /** Global-standard prompts: books, research, CV, code, and news — always available. */
 const GLOBAL_STANDARD_PROMPTS: SuggestedPrompt[] = [
