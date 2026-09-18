@@ -19,7 +19,13 @@ async function ensureMicrophonePermission(): Promise<string | null> {
     return null;
   }
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        noiseSuppression: true,
+        echoCancellation: true,
+        autoGainControl: true,
+      } as MediaTrackConstraints,
+    });
     for (const track of stream.getTracks()) track.stop();
     return null;
   } catch (err) {

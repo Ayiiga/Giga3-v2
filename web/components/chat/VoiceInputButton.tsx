@@ -8,6 +8,7 @@ type VoiceInputButtonProps = {
   disabled?: boolean;
   onTranscript: (text: string) => void;
   onError?: (message: string) => void;
+  onListeningChange?: (listening: boolean) => void;
   className?: string;
 };
 
@@ -16,11 +17,13 @@ export function VoiceInputButton({
   disabled,
   onTranscript,
   onError,
+  onListeningChange,
   className,
 }: VoiceInputButtonProps) {
   const { supported, listening, toggle } = useVoiceDictation({
     onTranscript,
     onError,
+    onListeningChange,
   });
 
   if (!supported) return null;
@@ -31,17 +34,17 @@ export function VoiceInputButton({
       disabled={disabled}
       aria-label={listening ? "Stop voice input" : "Voice input"}
       aria-pressed={listening}
-      title={listening ? "Listening… tap to stop" : "Voice input"}
+      title={listening ? "Listening… tap to stop" : "Voice input (Twi/Hausa available)"}
       onClick={toggle}
       className={cn(
-        "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-foreground shadow-sm",
-        "hover:border-accent/30 hover:bg-accent/5",
-        listening && "border-accent/40 bg-accent/10 text-accent",
+        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F6] text-[#374151] shadow-sm",
+        "hover:bg-[#EAB308]/20",
+        listening && "bg-[#EAB308] text-black",
         disabled && "pointer-events-none opacity-50",
         className
       )}
     >
-      <Mic className="h-5 w-5" aria-hidden />
+      <Mic className="h-[18px] w-[18px]" aria-hidden />
     </button>
   );
 }

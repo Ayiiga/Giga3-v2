@@ -87,7 +87,7 @@ function MessageListInner({
   }, []);
 
   const category = useMemo(() => getCategoryForMode(mode), [mode]);
-  const suggestedPrompts = useMemo(() => getSuggestedPrompts(mode, 4), [mode]);
+  const suggestedPrompts = useMemo(() => getSuggestedPrompts(mode, 6), [mode]);
 
   return (
     <div className="chat-message-list relative min-h-0 min-w-0 max-w-full overflow-x-clip overflow-y-hidden bg-background">

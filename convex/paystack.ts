@@ -47,6 +47,16 @@ const PAYSTACK_CHANNELS = [
   "qr",
 ] as const;
 
+/** Allowlist-filter requested checkout channels; fall back to all channels. */
+function sanitizePaystackChannels(requested: string[] | undefined): string[] {
+  if (!requested || requested.length === 0) return [...PAYSTACK_CHANNELS];
+  const allowed = new Set<string>(PAYSTACK_CHANNELS);
+  const filtered = requested
+    .map((c) => c.trim().toLowerCase())
+    .filter((c) => allowed.has(c));
+  return filtered.length > 0 ? [...new Set(filtered)] : [...PAYSTACK_CHANNELS];
+}
+
 function paystackSecret(): string {
   const key = getPaystackSecret();
   if (!key) throw new Error("PAYSTACK_SECRET_KEY is not configured");
@@ -509,6 +519,8 @@ export const initializePayment = action({
   args: {
     sessionToken: v.string(),
     productId: v.string(),
+    /** Optional Paystack checkout channels (e.g. ["mobile_money"]). Defaults to all. */
+    channels: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     assertPaystackProductionReady();
@@ -547,7 +559,7 @@ export const initializePayment = action({
       amount: toPesewas(catalog.amountGhs),
       currency: "GHS",
       reference,
-      channels: [...PAYSTACK_CHANNELS],
+      channels: sanitizePaystackChannels(args.channels),
       callback_url: `${frontend}/payment/success/?reference=${encodeURIComponent(reference)}`,
       metadata: {
         userId,

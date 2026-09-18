@@ -29,6 +29,8 @@ export type VideoFormValues = {
   durationSec: MediaVideoDurationSec;
   quality: VideoQuality;
   audio: boolean;
+  /** Client-side intent: add an Abena Twi voiceover in GigaEdits after generation. */
+  africanVoice: boolean;
 };
 
 const ASPECTS: { id: VideoAspect; label: string; hint: string }[] = [
@@ -45,6 +47,8 @@ type VideoGenerateFormProps = {
   onGenerate: () => void;
   onRetry: () => void;
   onDismissResult: () => void;
+  /** Opens the text-on-video editor for a finished video. */
+  onAddText?: (videoUrl: string) => void;
   canGenerate: boolean;
   creditCost: number;
   creditsAvailable: number | null;
@@ -65,6 +69,7 @@ export function VideoGenerateForm({
   onGenerate,
   onRetry,
   onDismissResult,
+  onAddText,
   canGenerate,
   creditCost,
   creditsAvailable,
@@ -107,7 +112,7 @@ export function VideoGenerateForm({
           onChange={(e) => onChange({ prompt: e.target.value })}
           rows={4}
           disabled={processing}
-          placeholder="Cinematic office scene with people presenting a phone — avoid asking for readable text on screens…"
+          placeholder="Describe your video with African context — e.g. Accra market woman tying a headwrap knot, kente textures, 9:16 vertical…"
           className="input-surface mt-2 sm:text-lg"
         />
         {textRisk && !hasSourceImage && (
@@ -283,6 +288,33 @@ export function VideoGenerateForm({
           />
           Add AI audio when the provider supports it (clips render at up to 12–15s per provider)
         </label>
+        <label className="flex min-h-11 cursor-pointer items-center justify-between gap-2 rounded-xl border border-border px-3 py-2 text-sm">
+          <span className="font-medium text-foreground">
+            African voiceover · Abena Twi 🇬🇭
+            <span className="block text-xs font-normal text-muted">
+              Added in GigaEdits after generation — ON DEVICE · free
+            </span>
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={values.africanVoice}
+            aria-label="African voiceover with Abena Twi"
+            disabled={processing}
+            onClick={() => onChange({ africanVoice: !values.africanVoice })}
+            className={cn(
+              "relative h-7 w-12 shrink-0 rounded-full transition-colors",
+              values.africanVoice ? "bg-[#EAB308]" : "bg-gray-300"
+            )}
+          >
+            <span
+              className={cn(
+                "absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all",
+                values.africanVoice ? "left-[1.625rem]" : "left-0.5"
+              )}
+            />
+          </button>
+        </label>
       </div>
 
       <div className="min-h-[4.5rem] space-y-3" aria-live="polite">
@@ -316,6 +348,34 @@ export function VideoGenerateForm({
                 Make another
               </button>
             </div>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <a
+                href={job.outputUrl}
+                download
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#EAB308] px-3 py-2 text-sm font-bold text-black hover:bg-[#d4a017]"
+              >
+                Export
+              </a>
+              {onAddText ? (
+                <button
+                  type="button"
+                  onClick={() => job.outputUrl && onAddText(job.outputUrl)}
+                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-white px-3 py-2 text-sm font-bold text-foreground hover:border-[#EAB308]"
+                >
+                  Add Text
+                </button>
+              ) : null}
+              <a
+                href="/gigaedit/?tab=audio"
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-white px-3 py-2 text-center text-sm font-bold text-foreground hover:border-[#EAB308]"
+                title={values.africanVoice ? "Add Abena Twi voiceover in GigaEdits" : "Add a voiceover in GigaEdits"}
+              >
+                {values.africanVoice ? "Add Twi Voice" : "Add Voiceover"}
+              </a>
+            </div>
+            <p className="mt-2 text-xs text-muted">
+              Flow: Generate → Add Text → Add Voiceover → Export
+            </p>
           </div>
         )}
 
@@ -347,7 +407,7 @@ export function VideoGenerateForm({
             </>
           ) : (
             <>
-              <Video className="h-6 w-6" aria-hidden /> Generate video
+              <Video className="h-6 w-6" aria-hidden /> Generate Video ({creditCost} credits)
             </>
           )}
         </Button>

@@ -3,6 +3,7 @@
 import { GigaLearnHomeworkPanel } from "@/components/gigalearn/GigaLearnHomeworkPanel";
 import { GigaLearnToolPanel } from "@/components/gigalearn/GigaLearnToolPanel";
 import { GigaLearnWorkspacePanel } from "@/components/gigalearn/GigaLearnWorkspacePanel";
+import { LowerGradesConcrete } from "@/components/gigalearn/LowerGradesConcrete";
 import { RecommendationEmptyState } from "@/components/recommendations/RecommendationEmptyState";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
@@ -82,7 +83,7 @@ function GigaLearnContent() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8 pb-[72px]">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link
@@ -166,6 +167,7 @@ function GigaLearnContent() {
               title="Student dashboard"
               description="Personalized quizzes, study plans, topic explainers, and exam prep for BECE, WASSCE, and WAEC."
             />
+            <LowerGradesConcrete />
             <GigaLearnToolPanel tools={STUDENT_TOOLS} credits={usage?.credits ?? null} />
           </>
         )}

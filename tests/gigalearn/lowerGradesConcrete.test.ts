@@ -1,0 +1,78 @@
+import { describe, expect, it } from "vitest";
+import {
+  CONCRETE_CATEGORIES,
+  CONCRETE_QUIZZES,
+  FRUIT_POLL,
+  GES_STRANDS,
+  GIGALEARN_VOICES,
+  LESSON_PREVIEWS,
+  checkConcreteAnswer,
+  getGigaLearnVoice,
+  lessonPreviewForLevel,
+} from "../../web/lib/gigalearn/concreteObjects";
+import {
+  GIGALEARN_LEVELS,
+  LOWER_GRADE_LEVELS,
+  countRangeForLevel,
+  isLowerGrade,
+} from "../../web/lib/gigalearn/levels";
+
+describe("gigalearn lower grades concrete objects", () => {
+  it("covers Creche–P3 plus upper levels in the selector", () => {
+    const ids = GIGALEARN_LEVELS.map((l) => l.id);
+    for (const required of ["Creche", "KG1", "KG2", "P1", "P2", "P3", "P4-P6", "JHS1-3", "SHS1-3", "University", "Adult"]) {
+      expect(ids).toContain(required);
+    }
+    expect(LOWER_GRADE_LEVELS).toEqual(["Creche", "KG1", "KG2", "P1", "P2", "P3"]);
+  });
+
+  it("routes lower grades to concrete objects, upper grades to curriculum", () => {
+    for (const level of ["Creche", "KG1", "KG2", "P1", "P2", "P3"]) {
+      expect(isLowerGrade(level)).toBe(true);
+    }
+    for (const level of ["P4-P6", "JHS1-3", "SHS1-3", "University", "Adult"]) {
+      expect(isLowerGrade(level)).toBe(false);
+    }
+  });
+
+  it("keeps KG counting within 1–5 with concrete fruit catalog", () => {
+    expect(countRangeForLevel("KG1")).toEqual({ min: 1, max: 5 });
+    expect(countRangeForLevel("P2")).toEqual({ min: 1, max: 10 });
+    const fruits = CONCRETE_CATEGORIES.find((c) => c.id === "fruits")!;
+    expect(fruits.items.map((i) => i.id)).toEqual(
+      expect.arrayContaining(["apple", "banana", "orange", "mango", "pawpaw"])
+    );
+    expect(CONCRETE_CATEGORIES.map((c) => c.id)).toEqual(
+      expect.arrayContaining(["vegetables", "animals", "shapes", "colors", "body"])
+    );
+  });
+
+  it("grades concrete quizzes by exact count (bananas = 3)", () => {
+    const bananas = CONCRETE_QUIZZES.find((q) => q.id === "q-bananas-3")!;
+    expect(checkConcreteAnswer(bananas, 3)).toBe(true);
+    expect(checkConcreteAnswer(bananas, 2)).toBe(false);
+    for (const quiz of CONCRETE_QUIZZES) {
+      expect(quiz.options).toContain(quiz.answer);
+      expect(quiz.concreteRow.length).toBe(quiz.answer);
+    }
+    expect(FRUIT_POLL.answer).toBe("Banana 🍌");
+  });
+
+  it("previews concrete lessons per level (P2 addition, P3 subtraction)", () => {
+    expect(lessonPreviewForLevel("KG1").concreteAnswer).toBe("= 3 apples");
+    expect(lessonPreviewForLevel("P2").concreteAnswer).toBe("= 2 oranges");
+    expect(lessonPreviewForLevel("P3").concreteAnswer).toBe("= 3 mangoes");
+    expect(lessonPreviewForLevel("SHS1-3").level).toBe("KG1"); // safe fallback
+    expect(LESSON_PREVIEWS.every((l) => l.teleprompterNote.includes("TOP 25%"))).toBe(true);
+  });
+
+  it("ships Twi/Hausa/Ga/Ewe/Yoruba/Swahili voices + GES strands", () => {
+    expect(GIGALEARN_VOICES.map((v) => v.id)).toEqual(
+      expect.arrayContaining(["abena-twi", "musa-hausa", "naa-ga", "kofi-ewe", "ade-yoruba", "zawadi-swahili"])
+    );
+    expect(getGigaLearnVoice("abena-twi")?.flag).toBe("🇬🇭");
+    expect(GES_STRANDS.map((g) => g.level)).toEqual(
+      expect.arrayContaining(["KG1–KG2", "Primary 1–3"])
+    );
+  });
+});
