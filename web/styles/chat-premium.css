@@ -136,7 +136,7 @@
   .chat-composer-dock {
     position: relative;
     bottom: auto;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: 0;
   }
 
   .chat-keyboard-shell {

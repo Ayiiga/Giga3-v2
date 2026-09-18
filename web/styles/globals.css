@@ -892,20 +892,38 @@ button:focus-visible {
 }
 
 .chat-conversation-grid {
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   min-height: 0;
   height: 100%;
 }
 
 .chat-message-list {
+  display: flex;
+  flex: 1 1 auto;
+  flex-grow: 1;
+  flex-direction: column;
   min-height: 0;
-  height: 100%;
+  height: auto;
 }
 
 .chat-message-scroll-region {
-  height: 100%;
+  flex: 1 1 auto;
+  flex-grow: 1;
+  height: auto;
   min-height: 0;
+}
+
+.chat-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.chat-footer-chips {
+  margin: 0;
+  padding-bottom: 0;
 }
 
 .chat-message-stack {
@@ -1216,8 +1234,7 @@ button:focus-visible {
 /* === PWA 3G screenshot fixes: bottom-nav overlap + media contrast === */
 .bottom-nav,
 .primary-nav--mobile {
-  height: 72px !important;
-  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  margin-top: 0 !important;
   z-index: 40 !important;
 }
 
@@ -1225,16 +1242,18 @@ button:focus-visible {
 .chat-container,
 .learn-container,
 .media-container,
-.chat-keyboard-shell,
 .marketing-scroll-main,
 .media-stable,
 .gigaedit-page {
   padding-bottom: 96px !important;
 }
 
-.chat-input-bar,
-.chat-composer {
-  margin-bottom: 80px !important;
+/* Chat uses --primary-nav-offset on .chat-keyboard-shell (primary-nav.css). */
+html.primary-nav-route.primary-nav-bar-visible.chat-route .chat-keyboard-shell {
+  padding-bottom: var(--primary-nav-offset) !important;
+}
+
+.chat-input-bar {
   z-index: 30 !important;
   position: relative !important;
 }

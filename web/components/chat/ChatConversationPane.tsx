@@ -13,7 +13,7 @@ import type { GigaPersonaId } from "@/lib/personas/gigaPersonas";
 import type { UploadUsageSnapshot } from "@/lib/chat/uploadLimits";
 import type { AiModeId } from "@/lib/aiRouter";
 import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
-import { memo, type MutableRefObject } from "react";
+import { memo, useCallback, useState, type MutableRefObject } from "react";
 
 interface ChatConversationPaneProps {
   messages: UiMessage[];
@@ -132,6 +132,11 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   const showTyping = awaitingReply || isSending;
   const typingPhase = awaitingReply ? "replying" : "sending";
   const composerDisabled = isSending || awaitingReply || inputDisabled;
+  const [composerActive, setComposerActive] = useState(false);
+  const handleComposerActivityChange = useCallback((active: boolean) => {
+    setComposerActive(active);
+  }, []);
+  const showFooterChips = messages.length > 0 && !composerActive;
 
   return (
     <div className="chat-conversation-grid min-h-0 min-w-0 max-w-full overflow-x-clip overflow-y-hidden bg-background">
@@ -150,26 +155,27 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           onDeleteMessage={onDeleteMessage}
         />
       </MessageListErrorBoundary>
-      {messages.length > 0 ? (
-        <div className="shrink-0 border-t border-border/60 px-3 py-2 sm:px-4">
-          <RecommendationChips
-            surface="chat"
-            sessionToken={sessionToken}
-            currentPersonaId={personaId}
-            limit={3}
-            onApplyPrompt={onInsertTemplate}
-            onSelectPersona={onSelectPersona}
-          />
-        </div>
-      ) : null}
-      <div className="chat-composer-stack min-w-0 max-w-full shrink-0">
+      <div className="chat-composer-stack chat-footer min-w-0 max-w-full shrink-0 border-t border-border bg-background">
         <ChatCategorySwitcher
           mode={mode}
           onModeChange={onModeChange}
           disabled={composerDisabled}
           className="hidden md:block"
         />
-        <div className="chat-composer-dock min-w-0 max-w-full border-t border-border bg-background">
+        {showFooterChips ? (
+          <div className="chat-footer-chips min-w-0 max-w-full px-3 pt-2 sm:px-4">
+            <RecommendationChips
+              surface="chat"
+              sessionToken={sessionToken}
+              currentPersonaId={personaId}
+              limit={3}
+              onApplyPrompt={onInsertTemplate}
+              onSelectPersona={onSelectPersona}
+              className="space-y-1.5"
+            />
+          </div>
+        ) : null}
+        <div className="chat-composer-dock min-w-0 max-w-full bg-background">
         <ChatSyncBanner
           onRetrySync={
             onRetryOutboxSync
@@ -207,6 +213,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           conversationId={conversationId}
           online={online}
           onSelectDocumentTemplate={onSelectDocumentTemplate}
+          onComposerActivityChange={handleComposerActivityChange}
         />
       </div>
       </div>

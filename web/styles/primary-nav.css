@@ -148,7 +148,8 @@ html.primary-nav-route.primary-nav-bar-visible {
   right: 0;
   bottom: 0;
   z-index: 55;
-  padding: 0.35rem 0.5rem calc(0.35rem + env(safe-area-inset-bottom, 0px));
+  margin-top: 0;
+  padding: 0.35rem 0.5rem 0.35rem;
   pointer-events: none;
   background: linear-gradient(
     to top,
