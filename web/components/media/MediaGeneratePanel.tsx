@@ -11,6 +11,7 @@ import { useGenerationStages } from "@/hooks/useGenerationStages";
 import { useMediaVideoJob } from "@/hooks/useMediaVideoJob";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { VideoGenerateForm, type VideoFormValues } from "@/components/media/VideoGenerateForm";
+import { TextOnVideoEditor } from "@/components/media/TextOnVideoEditor";
 import { VideoPreProductionFlow } from "@/components/media/videoPreProduction/VideoPreProductionFlow";
 import { VideoProjectStudio } from "@/components/media/VideoProjectStudio";
 import { getRecentImageUrls, subscribeRecentImageUrls } from "@/lib/media/jobsRefresh";
@@ -133,14 +134,16 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
       ? initialCategory
       : "cinematic_trailers") as VideoCategoryId,
     sourceImageUrl: initialTab === "video" ? initialSourceImageUrl : "",
-    aspectRatio: "16:9",
+    aspectRatio: "9:16",
     durationSec: MEDIA_VIDEO_DEFAULT_DURATION_SEC,
     quality: "720p",
     audio: true,
+    africanVoice: false,
   });
   const [videoWorkflow, setVideoWorkflow] = useState<"preprod" | "quick" | "project">("preprod");
   const [videoSubmitting, setVideoSubmitting] = useState(false);
   const [lastVideoRequest, setLastVideoRequest] = useState<VideoFormValues | null>(null);
+  const [textEditorUrl, setTextEditorUrl] = useState<string | null>(null);
 
   const submitVideo = useCallback(
     async (form: VideoFormValues) => {
@@ -319,6 +322,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
             ) : videoWorkflow === "project" ? (
               <VideoProjectStudio usage={usage} initialPrompt={videoForm.prompt || initialPrompt} />
             ) : (
+              <>
               <VideoGenerateForm
                 values={videoForm}
                 onChange={(patch) => setVideoForm((prev) => ({ ...prev, ...patch }))}
@@ -328,6 +332,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
                   videoJob.clear();
                   clearStatus();
                 }}
+                onAddText={(url) => setTextEditorUrl(url)}
                 canGenerate={Boolean(canGen)}
                 creditCost={videoCreditCost}
                 creditsAvailable={usage ? usage.credits : null}
@@ -337,6 +342,13 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
                 error={error}
                 recentImageUrls={recentImageUrls}
               />
+              {textEditorUrl ? (
+                <TextOnVideoEditor
+                  videoUrl={textEditorUrl}
+                  onClose={() => setTextEditorUrl(null)}
+                />
+              ) : null}
+              </>
             )}
           </>
         ) : (
