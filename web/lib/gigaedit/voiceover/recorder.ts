@@ -32,6 +32,11 @@ function pickMimeType(): string {
   return "";
 }
 
+export type VoiceoverRecorderOptions = {
+  noiseSuppression?: boolean;
+  echoCancellation?: boolean;
+};
+
 export class VoiceoverRecorder {
   private stream: MediaStream | null = null;
   private recorder: MediaRecorder | null = null;
@@ -43,6 +48,14 @@ export class VoiceoverRecorder {
   private startedAt = 0;
   private ramChunks: Blob[] = [];
   private callbacks: VoiceoverRecorderCallbacks = {};
+  private readonly options: VoiceoverRecorderOptions;
+
+  constructor(options: VoiceoverRecorderOptions = {}) {
+    this.options = {
+      noiseSuppression: options.noiseSuppression ?? true,
+      echoCancellation: options.echoCancellation ?? true,
+    };
+  }
 
   setCallbacks(callbacks: VoiceoverRecorderCallbacks) {
     this.callbacks = callbacks;
@@ -70,8 +83,8 @@ export class VoiceoverRecorder {
 
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
+        echoCancellation: this.options.echoCancellation,
+        noiseSuppression: this.options.noiseSuppression,
         autoGainControl: true,
       },
     });

@@ -1,6 +1,8 @@
 "use client";
 
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
+import { MediaCreditsBar } from "@/components/media/MediaCreditsBar";
+import { MediaToolsGrid } from "@/components/media/MediaToolsGrid";
 import { MediaErrorBoundary } from "@/components/media/MediaErrorBoundary";
 import { MediaGeneratePanel } from "@/components/media/MediaGeneratePanel";
 import { MediaQuickTemplates } from "@/components/media/MediaQuickTemplates";
@@ -126,6 +128,10 @@ function MediaStudioContent() {
   return (
     <div className="mx-auto max-w-5xl space-y-10">
       <CreateSubNav pathname={pathname} variant="inline" />
+      <MediaCreditsBar
+        credits={usage ? usage.credits : null}
+        subscriptionActive={usage?.subscriptionActive}
+      />
       <MediaStudioHeader usage={usage} />
 
       <MediaGeneratePanel
@@ -137,6 +143,8 @@ function MediaStudioContent() {
         initialSourceImageUrl={initialSourceImageUrl}
         initialAction={formSeed.action}
       />
+
+      <MediaToolsGrid />
 
       <MediaQuickTemplates
         onApply={(template) => {

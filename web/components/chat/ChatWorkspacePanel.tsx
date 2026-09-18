@@ -2,6 +2,7 @@
 
 import { AutomationPanel } from "@/components/automation/AutomationPanel";
 import { DocumentTemplatePicker } from "@/components/chat/DocumentTemplatePicker";
+import { TemplatesDropdown } from "@/components/chat/TemplatesDropdown";
 import { ImageStudioQuickPanel } from "@/components/chat/ImageStudioQuickPanel";
 import { PersonaSelector } from "@/components/chat/PersonaSelector";
 import { ToolSelector } from "@/components/chat/ToolSelector";
@@ -272,6 +273,12 @@ function ChatWorkspacePanelComponent({
 
             {tab === "documents" && (
               <div id="files">
+              <TemplatesDropdown
+                disabled={disabled}
+                onInsert={onInsertChatText}
+                onSelectDocumentTemplate={onSelectDocumentTemplate}
+                onError={onError}
+              />
               <DocumentTemplatePicker
                 disabled={disabled}
                 compact={hasMessages}

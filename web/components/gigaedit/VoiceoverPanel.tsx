@@ -1,6 +1,13 @@
 "use client";
 
 import { MicPermissionSheet } from "@/components/gigaedit/MicPermissionSheet";
+import {
+  AFRICAN_VOICE_TABS,
+  getAfricanVoice,
+  previewAfricanVoiceOffline,
+  voicesForTab,
+  type AfricanVoiceTab,
+} from "@/lib/gigaedit/africanVoices";
 import { formatSafeMmSs } from "@/lib/gigaedit/voiceover/duration";
 import {
   createOpfsPlaybackUrl,
@@ -13,14 +20,16 @@ import {
   type MuxProgress,
 } from "@/lib/gigaedit/voiceover/mux";
 import { VoiceoverRecorder } from "@/lib/gigaedit/voiceover/recorder";
-import { Mic, Square } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Mic, Play, Square } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export type VoiceoverPanelProps = {
   hasVideo: boolean;
   videoFile: File | null;
   onVoiceoverAttached: (file: File, playbackUrl: string) => void;
   onStatus?: (message: string) => void;
+  /** When set, the teleprompter opens in the video editor with the script. */
+  onRequestTeleprompter?: (script: string) => void;
 };
 
 export function VoiceoverPanel({
@@ -28,6 +37,7 @@ export function VoiceoverPanel({
   videoFile,
   onVoiceoverAttached,
   onStatus,
+  onRequestTeleprompter,
 }: VoiceoverPanelProps) {
   const recorderRef = useRef<VoiceoverRecorder | null>(null);
   const playbackUrlRef = useRef<string | null>(null);
@@ -39,6 +49,15 @@ export function VoiceoverPanel({
   const [muxProgress, setMuxProgress] = useState<MuxProgress | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [playbackUrl, setPlaybackUrl] = useState<string | null>(null);
+  const [voiceTab, setVoiceTab] = useState<AfricanVoiceTab>("African");
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>("twi_female");
+  const [voiceSelectorOpen, setVoiceSelectorOpen] = useState(false);
+  const [noiseSuppression, setNoiseSuppression] = useState(true);
+  const [echoCancellation, setEchoCancellation] = useState(true);
+  const [voiceScript, setVoiceScript] = useState("");
+
+  const voices = useMemo(() => voicesForTab(voiceTab), [voiceTab]);
+  const selectedVoice = getAfricanVoice(selectedVoiceId);
 
   useEffect(() => {
     return () => {
@@ -53,7 +72,7 @@ export function VoiceoverPanel({
     }
     if (recording) return;
 
-    const recorder = new VoiceoverRecorder();
+    const recorder = new VoiceoverRecorder({ noiseSuppression, echoCancellation });
     recorder.setCallbacks({
       onWaveform: setWaveform,
       onDuration: setDurationSec,
@@ -65,7 +84,9 @@ export function VoiceoverPanel({
       await recorder.start();
       setRecording(true);
       setMicBlocked(false);
-      onStatus?.("Recording voiceover… speak clearly.");
+      onStatus?.(
+        `Recording voiceover${selectedVoice ? ` · ${selectedVoice.name}` : ""}… speak clearly.`
+      );
     } catch {
       setMicBlocked(true);
       onStatus?.("Microphone permission denied.");
@@ -131,11 +152,136 @@ export function VoiceoverPanel({
     onStatus?.("Voiceover discarded.");
   }
 
+  function handleAddAfricanVoiceover() {
+    const script = voiceScript.trim();
+    if (script) {
+      try {
+        localStorage.setItem("giga3_gigasocial_teleprompter_script", script);
+      } catch {
+        /* ignore */
+      }
+      onRequestTeleprompter?.(script);
+      onStatus?.(
+        `“${selectedVoice?.name ?? "African voice"}” ready — teleprompter opens with your script.`
+      );
+    } else {
+      setVoiceSelectorOpen((v) => !v);
+      onStatus?.("Pick an African voice, type a script, then tap Add African Voiceover.");
+    }
+    try {
+      window.dispatchEvent(
+        new CustomEvent("giga3:african-voiceover-selected", {
+          detail: { voiceId: selectedVoiceId, script },
+        })
+      );
+    } catch {
+      /* ignore */
+    }
+  }
+
   return (
     <div className="space-y-3">
       <p className="text-[11px] text-[var(--ge-muted)]">
         This export uses {VOICEOVER_EXPORT_CREDITS} credits when you mix voiceover into video.
       </p>
+
+      {/* ── African voice selector ─────────────────────────────────────── */}
+      <div className="gigaedit-glass space-y-2 p-3">
+        <div className="flex items-center justify-between gap-2">
+          <button
+            type="button"
+            className="text-xs font-semibold text-white"
+            onClick={() => setVoiceSelectorOpen((v) => !v)}
+            aria-expanded={voiceSelectorOpen}
+          >
+            {selectedVoice ? `${selectedVoice.flag} ${selectedVoice.name}` : "African voices"} ·{" "}
+            {voiceSelectorOpen ? "hide" : "choose"}
+          </button>
+          {selectedVoice?.africanAccent ? (
+            <span className="gigaedit-voice-accent-badge">African accent</span>
+          ) : null}
+        </div>
+
+        {voiceSelectorOpen ? (
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-1" role="tablist" aria-label="Voice groups">
+              {AFRICAN_VOICE_TABS.map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  role="tab"
+                  aria-selected={voiceTab === tab}
+                  className={`gigaedit-chip px-2 py-0.5 text-[10px] ${voiceTab === tab ? "gigaedit-chip--active" : ""}`}
+                  onClick={() => setVoiceTab(tab)}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+            <ul className="grid max-h-44 gap-1.5 overflow-y-auto pr-0.5">
+              {voices.map((voice) => (
+                <li
+                  key={voice.id}
+                  className={`gigaedit-voice-card gigaedit-voice-card--compact ${voice.id === selectedVoiceId ? "gigaedit-voice-card--selected" : ""}`}
+                >
+                  <button
+                    type="button"
+                    className="min-w-0 flex-1 truncate text-left text-[11px] font-medium text-white"
+                    onClick={() => setSelectedVoiceId(voice.id)}
+                  >
+                    {voice.flag} {voice.name} · {voice.language}
+                  </button>
+                  <button
+                    type="button"
+                    className="gigaedit-voice-sample-btn"
+                    aria-label={`Play sample of ${voice.name}`}
+                    onClick={() => previewAfricanVoiceOffline(voice)}
+                  >
+                    <Play className="h-3 w-3" aria-hidden />
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <label className="block text-[11px] text-[var(--ge-muted)]">
+              Script for teleprompter
+              <textarea
+                value={voiceScript}
+                onChange={(e) => setVoiceScript(e.target.value)}
+                rows={2}
+                className="mt-1 w-full rounded-lg border border-[var(--ge-border)] bg-[var(--ge-input)] px-2 py-1.5 text-xs text-white"
+                placeholder="Type the lines the voiceover will read…"
+              />
+            </label>
+          </div>
+        ) : null}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-[var(--ge-gold)]/50 px-3 py-1.5 text-[11px] font-bold text-[var(--ge-gold)]"
+            onClick={handleAddAfricanVoiceover}
+          >
+            <Mic className="h-3.5 w-3.5" aria-hidden />
+            Add African Voiceover
+          </button>
+          <label className="inline-flex items-center gap-1.5 text-[10px] text-white/70">
+            <input
+              type="checkbox"
+              checked={noiseSuppression}
+              onChange={(e) => setNoiseSuppression(e.target.checked)}
+            />
+            Noise suppression
+          </label>
+          <label className="inline-flex items-center gap-1.5 text-[10px] text-white/70">
+            <input
+              type="checkbox"
+              checked={echoCancellation}
+              onChange={(e) => setEchoCancellation(e.target.checked)}
+            />
+            Echo cancel
+          </label>
+        </div>
+      </div>
 
       <div className="gigaedit-voiceover-wave" aria-hidden>
         {(waveform.length ? waveform : [0.1, 0.15, 0.1, 0.2, 0.12, 0.08]).map((level, i) => (
@@ -158,6 +304,7 @@ export function VoiceoverPanel({
             className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--ge-gold)] px-4 py-2 text-xs font-bold text-[#0b1220] disabled:opacity-40"
             disabled={!hasVideo || muxing}
             onClick={() => void handleAddVoiceover()}
+            title="ON DEVICE = offline, free, no credits"
           >
             <Mic className="h-4 w-4" aria-hidden />
             🎙️ Add Voiceover
