@@ -4,8 +4,8 @@ export const branding = {
   shortName: "Giga3 AI",
   description:
     "Giga3 AI is Africa's AI Super App for social, AI tools, learning, creativity, marketplace and digital services.",
-  themeColor: "#5b21b6",
-  backgroundColor: "#5b21b6",
+  themeColor: "#7C3AED",
+  backgroundColor: "#0A0A0F",
   accentLight: "#f5f3ff",
   id: "/",
   startUrl: "/",
