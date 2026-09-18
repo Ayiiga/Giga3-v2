@@ -196,7 +196,14 @@ export const ChatInput = memo(function ChatInput({
   }, [typingReady]);
 
   useEffect(() => {
-    onComposerActivityChange?.(composerFocused || value.trim().length > 0);
+    const active = composerFocused || value.trim().length > 0;
+    onComposerActivityChange?.(active);
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle("chat-composer-active", active);
+    }
+    return () => {
+      document.documentElement.classList.remove("chat-composer-active");
+    };
   }, [composerFocused, value, onComposerActivityChange]);
 
   useEffect(() => {
@@ -317,7 +324,7 @@ export const ChatInput = memo(function ChatInput({
   return (
     <form
       onSubmit={handleSubmit}
-      className="chat-composer min-w-0 max-w-full px-2 py-1.5 sm:px-3 sm:py-2"
+      className="chat-composer min-w-0 max-w-full px-2 py-1 sm:px-3 sm:py-1.5"
     >
       <div className="chat-thread space-y-2">
         {outOfCredits && (

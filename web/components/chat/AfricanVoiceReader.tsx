@@ -17,12 +17,16 @@ export type AfricanReaderVoice = {
 };
 
 export const AFRICAN_READER_VOICES: AfricanReaderVoice[] = [
-  { id: "abena-twi", name: "Abena Twi", flag: "🇬🇭", lang: "ak-GH" },
-  { id: "musa-hausa", name: "Musa Hausa", flag: "🇳🇬", lang: "ha-NG" },
-  { id: "naa-ga", name: "Naa Ga", flag: "🇬🇭", lang: "en-GH" },
-  { id: "kofi-ewe", name: "Ewe", flag: "🇬🇭", lang: "ee-GH" },
-  { id: "ade-yoruba", name: "Yoruba", flag: "🇳🇬", lang: "yo-NG" },
-  { id: "zawadi-swahili", name: "Swahili", flag: "🇰🇪", lang: "sw-KE" },
+  { id: "abena-twi", name: "Abena · Twi (F)", flag: "🇬🇭", lang: "ak-GH" },
+  { id: "kwame-twi", name: "Kwame · Twi (M)", flag: "🇬🇭", lang: "ak-GH" },
+  { id: "aisha-hausa", name: "Aisha · Hausa (F)", flag: "🇳🇬", lang: "ha-NG" },
+  { id: "musa-hausa", name: "Musa · Hausa (M)", flag: "🇳🇬", lang: "ha-NG" },
+  { id: "naa-ga", name: "Naa · Ga (F)", flag: "🇬🇭", lang: "en-GH" },
+  { id: "kofi-ewe", name: "Kofi · Ewe (M)", flag: "🇬🇭", lang: "ee-GH" },
+  { id: "adaeze-yoruba", name: "Adaeze · Yoruba (F)", flag: "🇳🇬", lang: "yo-NG" },
+  { id: "tunde-yoruba", name: "Tunde · Yoruba (M)", flag: "🇳🇬", lang: "yo-NG" },
+  { id: "zawadi-swahili", name: "Zawadi · Swahili (F)", flag: "🇰🇪", lang: "sw-KE" },
+  { id: "jabari-swahili", name: "Jabari · Swahili (M)", flag: "🇰🇪", lang: "sw-KE" },
 ];
 
 /**

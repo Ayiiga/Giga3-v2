@@ -163,15 +163,14 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           className="hidden md:block"
         />
         {showFooterChips ? (
-          <div className="chat-footer-chips min-w-0 max-w-full px-3 pt-2 sm:px-4">
+          <div className="chat-footer-chips min-w-0 max-w-full px-3 pt-1 sm:px-4">
             <RecommendationChips
               surface="chat"
               sessionToken={sessionToken}
               currentPersonaId={personaId}
-              limit={3}
+              limit={2}
               onApplyPrompt={onInsertTemplate}
               onSelectPersona={onSelectPersona}
-              className="space-y-1.5"
             />
           </div>
         ) : null}

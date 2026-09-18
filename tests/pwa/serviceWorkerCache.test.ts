@@ -5,7 +5,9 @@ import { describe, expect, it } from "vitest";
 describe("service worker cache version", () => {
   it("uses chat apps cache name (v258)", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v259-chat-mobile-ui"');
+    expect(sw).toContain('CACHE_NAME = "giga3-shell-v258-chat-fix"');
+    expect(sw).toContain('"/icons/badge-72.png"');
+    expect(sw).toContain("requireInteraction: true");
     expect(sw).toContain('NEXT_STATIC_CACHE = "giga3-next-static-v221"');
     expect(sw).toContain('APP_SHELL_CACHE = "giga3-app-shell-v221"');
     expect(sw).toContain('pathname.startsWith("/wallet/")');
@@ -27,14 +29,15 @@ describe("service worker cache version", () => {
     expect(sw).toContain("giga3-social-outbox");
   });
 
-  it("does not treat chat/gigasocial/gigalearn as never-cache sensitive paths", () => {
+  it("never caches chat/workspace but keeps gigasocial shells offline-capable", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    const sensitiveFn =
-      sw.match(/function isSensitiveDocumentPath\(pathname\) \{([\s\S]*?)\n\}/)?.[1] ?? "";
-    expect(sensitiveFn).toContain("/payment/");
-    expect(sensitiveFn).not.toContain("/chat/");
-    expect(sensitiveFn).not.toContain("/gigasocial/");
-    expect(sensitiveFn).not.toContain("/gigalearn/");
+    const neverCacheFn =
+      sw.match(/function isNeverCacheDocumentPath\(pathname\) \{([\s\S]*?)\n\}/)?.[1] ?? "";
+    expect(neverCacheFn).toContain("/chat/");
+    expect(neverCacheFn).toContain("/workspace/");
+    expect(neverCacheFn).toContain("/payment/");
+    expect(sw).toContain("isNeverCacheDocumentPath");
+    expect(sw).toContain('pathname.startsWith("/gigasocial/")');
   });
 
   it("bumps launcher badge on push when no visible client", () => {

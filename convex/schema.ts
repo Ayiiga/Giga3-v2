@@ -887,6 +887,11 @@ export default defineSchema({
     userId: v.string(),
     tag: v.string(),
     sentAt: v.number(),
+    repeatSentAt: v.optional(v.number()),
+    title: v.optional(v.string()),
+    body: v.optional(v.string()),
+    url: v.optional(v.string()),
+    category: v.optional(v.string()),
   }).index("by_user_tag", ["userId", "tag"]),
 
   /** Failed push deliveries queued for retry when device is temporarily offline. */
@@ -1423,4 +1428,23 @@ export default defineSchema({
     requestCount: v.number(),
     updatedAt: v.number(),
   }).index("by_key_date", ["apiKeyId", "dateKey"]),
+
+  /** Admin dashboard email invites (magic link onboarding). */
+  adminInvites: defineTable({
+    email: v.string(),
+    role: v.union(v.literal("tester"), v.literal("creator"), v.literal("admin")),
+    invitedBy: v.string(),
+    invitedAt: v.number(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("accepted"),
+      v.literal("revoked")
+    ),
+    magicLinkToken: v.string(),
+    acceptedAt: v.optional(v.number()),
+    lastSentAt: v.optional(v.number()),
+  })
+    .index("by_email", ["email"])
+    .index("by_status_invited", ["status", "invitedAt"])
+    .index("by_token", ["magicLinkToken"]),
 });

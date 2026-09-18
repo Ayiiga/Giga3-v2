@@ -12,6 +12,7 @@ import { AdminSecurityHealthPanel } from "@/components/admin/AdminSecurityHealth
 import { AdminSocialEconomyPanel } from "@/components/admin/AdminSocialEconomyPanel";
 import { AdminUsersPanel } from "@/components/admin/AdminUsersPanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
+import { AdminInvitesPanel } from "@/components/admin/AdminInvitesPanel";
 import { AdminKeyGate } from "@/components/admin/AdminKeyGate";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { useAdminSession } from "@/hooks/useAdminSession";
@@ -117,6 +118,8 @@ function AdminInner() {
       )}
 
       <AdminPlatformOverview adminCreds={adminCreds} />
+
+      <AdminInvitesPanel />
 
       <AdminPhase4ControlsPanel
         adminCreds={adminCreds}

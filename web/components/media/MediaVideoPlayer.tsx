@@ -132,19 +132,19 @@ export function MediaVideoPlayer({
           className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors hover:bg-black/30"
           aria-label={label}
         >
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-zinc-900 shadow-lg ring-4 ring-white/25 sm:h-16 sm:w-16">
-            <Play className="ml-0.5 h-7 w-7 fill-current sm:h-8 sm:w-8" aria-hidden />
+          <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md">
+            <Play className="ml-0.5 h-6 w-6 fill-current" aria-hidden />
           </span>
         </button>
       )}
 
       {playing && !error && (
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/55 to-transparent px-3 pb-3 pt-10">
-          <div className="flex items-center gap-2">
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/55 to-transparent px-4 pb-4 pt-10">
+          <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={toggle}
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md hover:bg-black/55"
               aria-label={playing ? "Pause video" : "Play video"}
             >
               {playing ? (
@@ -160,7 +160,7 @@ export function MediaVideoPlayer({
               step={0.1}
               value={Math.min(currentTime, duration || 0)}
               onChange={(event) => seek(Number(event.target.value))}
-              className="h-1.5 min-w-0 flex-1 cursor-pointer accent-white"
+              className="h-1 min-w-0 flex-1 cursor-pointer accent-[#7C3AED]"
               aria-label="Seek"
             />
             <span className="shrink-0 text-[11px] tabular-nums text-white/90">

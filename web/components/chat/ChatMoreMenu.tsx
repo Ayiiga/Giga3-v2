@@ -1,25 +1,17 @@
 "use client";
 
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
-import { CreditBadge } from "@/components/billing/CreditBadge";
 import { clearAllClientAuth } from "@/lib/auth";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
-import {
-  WORKSPACE_NAV_EVENT,
-  type WorkspaceNavTarget,
-} from "@/lib/chat/workspaceNav";
-import { siteConfig } from "@/lib/site";
 import { signOutSupabase } from "@/lib/supabase/auth";
 import {
-  BookOpen,
-  Clapperboard,
-  GraduationCap,
+  HelpCircle,
   LogOut,
-  MessageSquarePlus,
+  Mail,
   MoreHorizontal,
-  Share2,
-  Sparkles,
-  UsersRound,
+  Settings,
+  Shield,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -27,30 +19,11 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 interface ChatMoreMenuProps {
   credits: number | null;
-  onOpenWorkspace?: () => void;
-  onShare?: () => void;
   className?: string;
 }
 
-type MenuLink = {
-  href: string;
-  label: string;
-  icon: typeof BookOpen;
-};
-
-/** Single source of truth with the drawer: the 5 primary workspace apps only. */
-const MORE_LINKS: MenuLink[] = [
-  { href: "/gigasocial/", label: "GigaSocial", icon: UsersRound },
-  { href: "/gigaedit/", label: "GigaEdits", icon: Clapperboard },
-  { href: "/gigalearn/", label: "GigaLearn", icon: GraduationCap },
-  { href: siteConfig.links.media, label: "Media Studio", icon: Sparkles },
-  { href: siteConfig.links.blog, label: "Giga3 Blog", icon: BookOpen },
-];
-
 export const ChatMoreMenu = memo(function ChatMoreMenu({
   credits,
-  onOpenWorkspace,
-  onShare,
   className,
 }: ChatMoreMenuProps) {
   const [open, setOpen] = useState(false);
@@ -101,79 +74,79 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
       {open ? (
         <div
           role="menu"
-          aria-label="More chat actions"
+          aria-label="Account and settings"
           className="absolute right-0 top-full z-50 mt-1 max-h-[min(70vh,28rem)] w-60 overflow-y-auto rounded-2xl border border-border bg-card p-1.5 shadow-lg"
         >
           {credits != null ? (
-            <div className="px-3 py-2">
-              <CreditBadge credits={credits} className="w-full justify-center" />
+            <div
+              className="mx-1 mb-1 rounded-xl px-3 py-2 text-center text-sm font-semibold text-white"
+              style={{ backgroundColor: "#7C3AED" }}
+              role="presentation"
+            >
+              {credits} credits
             </div>
           ) : null}
 
-          {onOpenWorkspace ? (
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                window.dispatchEvent(
-                  new CustomEvent(WORKSPACE_NAV_EVENT, {
-                    detail: { target: "modes" satisfies WorkspaceNavTarget },
-                  })
-                );
-                onOpenWorkspace();
-                close();
-              }}
-              className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
-            >
-              <MessageSquarePlus className="h-4 w-4 text-muted" aria-hidden />
-              Workspace tools
-            </button>
-          ) : null}
+          <Link
+            href="/profile"
+            role="menuitem"
+            onClick={close}
+            className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
+          >
+            <User className="h-4 w-4 text-muted" aria-hidden />
+            Profile
+          </Link>
 
-          {onShare ? (
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                onShare();
-                close();
-              }}
-              className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
-            >
-              <Share2 className="h-4 w-4 text-muted" aria-hidden />
-              Share conversation
-            </button>
-          ) : null}
+          <Link
+            href="/settings"
+            role="menuitem"
+            onClick={close}
+            className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
+          >
+            <Settings className="h-4 w-4 text-muted" aria-hidden />
+            Settings
+          </Link>
 
           <div className="my-1 border-t border-border" role="separator" />
 
-          {MORE_LINKS.map((item) => {
-            const Icon = item.icon;
-            const primary =
-              item.label === "GigaSocial" ||
-              item.label === "GigaEdits" ||
-              item.label === "GigaLearn" ||
-              item.label === "Media Studio";
-            return (
-              <Link
-                key={item.href + item.label}
-                href={item.href}
-                role="menuitem"
-                onClick={close}
-                className={
-                  primary
-                    ? "flex min-h-11 items-center gap-2 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-sm font-bold text-foreground hover:bg-accent/15"
-                    : "flex min-h-10 items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
-                }
-              >
-                <Icon
-                  className={primary ? "h-4 w-4 text-accent" : "h-4 w-4 text-muted"}
-                  aria-hidden
-                />
-                {item.label}
-              </Link>
-            );
-          })}
+          <a
+            href="mailto:support@giga3ai.com"
+            role="menuitem"
+            onClick={close}
+            className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
+          >
+            <Mail className="h-4 w-4 text-muted" aria-hidden />
+            support@giga3ai.com
+          </a>
+          <a
+            href="mailto:giga3ai@gmail.com"
+            role="menuitem"
+            onClick={close}
+            className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
+          >
+            <Mail className="h-4 w-4 text-muted" aria-hidden />
+            giga3ai@gmail.com
+          </a>
+
+          <Link
+            href="/help"
+            role="menuitem"
+            onClick={close}
+            className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
+          >
+            <HelpCircle className="h-4 w-4 text-muted" aria-hidden />
+            Help / FAQ
+          </Link>
+
+          <Link
+            href="/privacy"
+            role="menuitem"
+            onClick={close}
+            className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
+          >
+            <Shield className="h-4 w-4 text-muted" aria-hidden />
+            Privacy &amp; Terms
+          </Link>
 
           <div className="my-1 border-t border-border" role="separator" />
 
