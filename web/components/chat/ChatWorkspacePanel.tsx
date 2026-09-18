@@ -41,6 +41,7 @@ interface ChatWorkspacePanelProps {
   onSelectDocumentTemplate: (templateId: DocumentTemplateId) => void;
   onInsertChatText: (text: string) => void;
   onError: (message: string) => void;
+  className?: string;
 }
 
 type WorkspaceTab = "modes" | "documents" | "media" | "news" | "sports" | "alerts" | "automation";
@@ -56,6 +57,7 @@ function ChatWorkspacePanelComponent({
   onSelectDocumentTemplate,
   onInsertChatText,
   onError,
+  className,
 }: ChatWorkspacePanelProps) {
   const router = useRouter();
   const [sessionToken, setSessionToken] = useState<string | null>(null);
@@ -146,7 +148,7 @@ function ChatWorkspacePanelComponent({
   return (
     <div
       id="modes"
-      className="chat-workspace-panel shrink-0 border-b border-border bg-card"
+      className={cn("chat-workspace-panel shrink-0 border-b border-border bg-card", className)}
     >
       <button
         type="button"

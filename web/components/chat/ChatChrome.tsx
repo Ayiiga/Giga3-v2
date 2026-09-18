@@ -8,8 +8,8 @@ import { ModelSelector } from "@/components/chat/ModelSelector";
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
 import { PlatformChromeHost } from "@/components/platform/PlatformChromeHost";
 import { ChatGigaSocialStoryRingsSafe } from "@/components/chat/ChatGigaSocialStoryRingsSafe";
-import { ChatVoiceLanguageBar } from "@/components/chat/ChatVoiceLanguageBar";
 import type { UiMessage } from "@/components/chat/MessageList";
+import { Giga3Logo } from "@/components/brand/Giga3Logo";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { clearAllClientAuth } from "@/lib/auth";
@@ -117,28 +117,38 @@ export const ChatChrome = memo(function ChatChrome({
   const router = useRouter();
 
   return (
-    <header className="chat-header-stable chat-header-bar chat-header-bar--app border-b border-border bg-card">
-      <div className="chat-header-row flex min-h-12 items-center gap-2 px-3 py-1.5 sm:min-h-14 sm:gap-3 sm:px-4 sm:py-2">
+    <header className="chat-header-stable chat-header-bar chat-header-bar--app sticky top-0 z-20 border-b border-white/10 bg-card/90 backdrop-blur-xl">
+      <div className="chat-header-row flex h-11 max-h-11 items-center gap-2 px-3 py-0 sm:gap-3 sm:px-4 lg:h-auto lg:max-h-none lg:min-h-14 lg:py-2">
         <div className="chat-header-brand flex min-w-0 items-center gap-2">
           <button
             type="button"
-            className="chat-header-menu inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-accent/10 hover:text-foreground lg:hidden"
+            className="chat-header-menu inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-accent/10 hover:text-foreground lg:hidden"
             onClick={onOpenSidebar}
             aria-label="Open sidebar"
           >
             <Menu className="h-5 w-5" aria-hidden />
           </button>
 
-          <span className="chat-header-title-mobile lg:hidden" aria-hidden>
-            {branding.name}
-          </span>
+          <Link
+            href="/chat"
+            className="inline-flex min-w-0 items-center gap-2 lg:hidden"
+            aria-label={`${branding.name} home`}
+          >
+            <Giga3Logo size={32} aria-label="" />
+            <span className="chat-header-title-mobile truncate text-sm font-bold text-white">
+              {branding.shortName}
+            </span>
+          </Link>
 
           <Link
             href="/"
-            className="hidden min-w-0 truncate rounded-lg pr-1 text-sm font-semibold text-foreground hover:opacity-90 sm:text-base lg:inline"
+            className="hidden min-w-0 items-center gap-2 truncate rounded-lg pr-1 hover:opacity-90 lg:inline-flex"
             aria-label={`${branding.name} home`}
           >
-            {branding.shortName}
+            <Giga3Logo size={32} className="hidden sm:inline-flex" aria-label="" />
+            <span className="text-sm font-semibold text-foreground sm:text-base">
+              {branding.shortName}
+            </span>
           </Link>
 
           {conversationTitle ? (
@@ -151,16 +161,16 @@ export const ChatChrome = memo(function ChatChrome({
           ) : null}
         </div>
 
-        <div className="chat-header-actions relative ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <div className="chat-header-actions relative ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
           {credits != null ? (
             <CreditBadge
               credits={credits}
               showLabel={false}
-              className="hidden min-h-9 shrink-0 px-2.5 text-xs sm:flex sm:px-3"
+              className="min-h-7 shrink-0 border-violet-400/30 bg-[#7C3AED] px-2 py-0.5 text-[11px] font-semibold text-white hover:bg-[#6D28D9] sm:min-h-9 sm:px-3 sm:text-xs"
             />
           ) : null}
 
-          <ChatGigaSocialStoryRingsSafe className="shrink-0" compact />
+          <ChatGigaSocialStoryRingsSafe className="hidden shrink-0 lg:flex" compact />
 
           <div
             className="chat-header-toolbar hidden items-center gap-0.5 rounded-xl border border-border bg-muted/15 p-0.5 md:flex"
@@ -189,12 +199,7 @@ export const ChatChrome = memo(function ChatChrome({
             />
           </div>
 
-          <ChatMoreMenu
-            credits={credits}
-            onOpenWorkspace={() => undefined}
-            onShare={() => void chatActionsRef?.current?.shareChat()}
-            className="relative md:hidden"
-          />
+          <ChatMoreMenu credits={credits} className="relative lg:hidden" />
 
           <button
             type="button"
@@ -212,8 +217,6 @@ export const ChatChrome = memo(function ChatChrome({
           </button>
         </div>
       </div>
-
-      <ChatVoiceLanguageBar className="lg:hidden" />
 
       <div className="chat-header-combo hidden border-t border-border/70 px-3 py-2 sm:px-4 md:block">
         <div className="chat-header-combo-inner flex min-w-0 items-stretch overflow-hidden rounded-xl border border-border bg-card shadow-sm">

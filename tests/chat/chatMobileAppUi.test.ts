@@ -3,13 +3,13 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 describe("Chat mobile app UI shell", () => {
-  it("ships purple header, voice language pill, and mobile bubble styles", () => {
+  it("ships compact purple header, violet G logo, and mobile bubble styles", () => {
     const chrome = readFileSync(
       resolve(__dirname, "../../web/components/chat/ChatChrome.tsx"),
       "utf8"
     );
-    const voiceBar = readFileSync(
-      resolve(__dirname, "../../web/components/chat/ChatVoiceLanguageBar.tsx"),
+    const logo = readFileSync(
+      resolve(__dirname, "../../web/components/brand/Giga3Logo.tsx"),
       "utf8"
     );
     const css = readFileSync(
@@ -22,12 +22,13 @@ describe("Chat mobile app UI shell", () => {
     );
 
     expect(chrome).toContain("chat-header-bar--app");
-    expect(chrome).toContain("ChatVoiceLanguageBar");
+    expect(chrome).toContain("Giga3Logo");
     expect(chrome).toContain("chat-header-title-mobile");
-    expect(voiceBar).toContain("Voice Language:");
-    expect(voiceBar).toContain("AFRICAN_READER_VOICES");
-    expect(css).toContain(".chat-voice-language-pill");
+    expect(chrome).not.toContain("ChatVoiceLanguageBar");
+    expect(logo).toContain("#6D28D9");
+    expect(logo).toContain("#7C3AED");
     expect(css).toContain("#7c3aed");
+    expect(css).toContain("--chat-header-height");
     expect(input).toContain("Message Giga3...");
   });
 
@@ -42,5 +43,7 @@ describe("Chat mobile app UI shell", () => {
     );
     expect(pref).toContain("giga3_voice_language_id");
     expect(reader).toContain("subscribeVoiceLanguageId");
+    expect(reader).toContain("(M)");
+    expect(reader).toContain("(F)");
   });
 });

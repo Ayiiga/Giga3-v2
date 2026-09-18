@@ -7,7 +7,56 @@
 
 .chat-header-bar--app .chat-header-row {
   position: relative;
-  min-height: 3rem;
+  min-height: 2.75rem;
+  max-height: 2.75rem;
+}
+
+:root {
+  --chat-header-height: 2.75rem;
+  --chat-composer-height: 3.5rem;
+}
+
+@media (max-width: 1023px) {
+  html.chat-route .chat-message-scroll-region {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: calc(
+      100dvh - var(--chat-header-height) - var(--chat-composer-height) -
+        var(--primary-nav-offset, 0px) - env(safe-area-inset-bottom, 0px)
+    );
+    padding-bottom: 0.75rem;
+  }
+
+  html.chat-route.chat-composer-active .chat-message-scroll-region,
+  html.chat-route.chat-keyboard-open .chat-message-scroll-region {
+    max-height: calc(
+      100dvh - var(--chat-header-height) - var(--chat-composer-height) -
+        env(safe-area-inset-bottom, 0px)
+    );
+  }
+
+  .chat-suggested-chips {
+    min-height: 2.25rem;
+    max-height: 2.25rem;
+  }
+
+  .chat-suggested-chips__row {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .chat-suggested-chips__row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chat-composer-dock {
+    min-height: var(--chat-composer-height);
+  }
+
+  .chat-footer-chips {
+    padding-top: 0.25rem;
+    padding-bottom: 0;
+  }
 }
 
 .chat-header-bar--app .chat-header-menu {

@@ -698,6 +698,7 @@ function ChatShellInner({
             onSelectDocumentTemplate={handleSelectDocumentTemplate}
             onInsertChatText={handleInsertDocument}
             onError={handleTemplateError}
+            className={displayMessages.length > 0 ? "hidden md:block" : undefined}
           />
 
           {templateNotice && (
