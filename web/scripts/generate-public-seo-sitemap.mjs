@@ -46,6 +46,7 @@ const STATIC_SITEMAP_PATHS = [
   "/ai-for-business-ghana/",
   "/ai-for-creators-ghana/",
   "/african-ai-tools/",
+  "/ghana-ai/",
   "/chat/",
   "/gigalearn/",
   "/prompts/",
@@ -138,11 +139,20 @@ function xmlEscape(value) {
 }
 
 function writeUrlset(filename, urls) {
-  if (!urls.length) {
+  // Query-param URLs must never be submitted: their canonical points at the
+  // clean route, so listing them triggers "Alternative page with proper
+  // canonical tag" in Search Console. Drop them here as a final guard.
+  const clean = urls.filter((entry) => !entry.loc.includes("?"));
+  for (const dropped of urls) {
+    if (dropped.loc.includes("?")) {
+      console.log(`generate-public-seo-sitemap: dropped query-param url ${dropped.loc}`);
+    }
+  }
+  if (!clean.length) {
     console.log(`generate-public-seo-sitemap: skip empty ${filename}`);
     return false;
   }
-  const body = urls
+  const body = clean
     .map(
       (entry) =>
         `  <url><loc>${xmlEscape(entry.loc)}</loc><lastmod>${entry.lastmod}</lastmod><changefreq>${entry.changefreq}</changefreq><priority>${entry.priority}</priority></url>`
@@ -150,7 +160,7 @@ function writeUrlset(filename, urls) {
     .join("\n");
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
   writeFileSync(path.join(publicDir, filename), xml, "utf8");
-  console.log(`generate-public-seo-sitemap: wrote ${filename} (${urls.length} urls)`);
+  console.log(`generate-public-seo-sitemap: wrote ${filename} (${clean.length} urls)`);
   return true;
 }
 
