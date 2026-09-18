@@ -99,15 +99,11 @@ describe("Workspace shortcut order", () => {
     expect(sidebarOrder[2]).toBeLessThan(sidebarOrder[3]);
     expect(sidebar).toContain("CHAT_WORKSPACE_PRIMARY_APPS");
 
-    const moreOrder = orderOf(more, [
-      'label: "GigaSocial"',
-      'label: "GigaEdits"',
-      'label: "GigaLearn"',
-      'label: "Media Studio"',
-    ]);
-    expect(moreOrder[0]).toBeLessThan(moreOrder[1]);
-    expect(moreOrder[1]).toBeLessThan(moreOrder[2]);
-    expect(moreOrder[2]).toBeLessThan(moreOrder[3]);
+    expect(more).not.toContain('label: "GigaSocial"');
+    expect(more).not.toContain('label: "GigaEdits"');
+    expect(more).toContain('href="/profile"');
+    expect(more).toContain('href="/settings"');
+    expect(more).toContain("support@giga3ai.com");
 
     expect(workspace).toContain("CHAT_WORKSPACE_PRIMARY_APPS");
     expect(apps.indexOf("GigaSocial")).toBeLessThan(apps.indexOf("GigaEdits"));
