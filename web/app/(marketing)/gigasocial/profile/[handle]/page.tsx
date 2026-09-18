@@ -3,6 +3,7 @@ import { GigaSocialProfileJsonLd } from "@/components/seo/DynamicPublicJsonLd";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { fetchPublicProfileHandles, fetchPublicProfileSeoBundle } from "@/lib/seo/convexBuildFetch";
 import { gigaSocialProfilePath } from "@/lib/seo/publicPaths";
+import { clampSeoDescription, clampSeoTitle } from "@/lib/seo/seoText";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 import nextDynamic from "next/dynamic";
 import type { Metadata } from "next";
@@ -42,13 +43,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     });
   }
 
-  const description =
+  const description = clampSeoDescription(
     bundle.bio ??
-    `${bundle.displayName} shares public posts on GigaSocial through Giga3 AI.`;
+      `${bundle.displayName} shares public posts on GigaSocial through Giga3 AI.`,
+    `@${bundle.handle}`
+  );
 
   return publicMetadata({
     path: gigaSocialProfilePath(params.handle),
-    title: `${bundle.displayName} (@${bundle.handle})`,
+    title: clampSeoTitle(`${bundle.displayName} (@${bundle.handle})`, `@${bundle.handle}`),
     description,
   });
 }

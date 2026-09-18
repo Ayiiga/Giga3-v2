@@ -3,6 +3,7 @@ import { MarketplaceProductJsonLd } from "@/components/seo/DynamicPublicJsonLd";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { fetchMarketplaceListingIds, fetchMarketplaceSeoBundle } from "@/lib/seo/convexBuildFetch";
 import { marketplaceItemPath } from "@/lib/seo/publicPaths";
+import { clampSeoDescription, clampSeoTitle } from "@/lib/seo/seoText";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 import nextDynamic from "next/dynamic";
 import type { Metadata } from "next";
@@ -45,11 +46,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const creatorLabel = bundle.creator?.displayName
     ? ` by ${bundle.creator.displayName}`
     : "";
+  const ref = params.listingId.length > 8 ? params.listingId.slice(-8) : params.listingId;
 
   return publicMetadata({
     path: marketplaceItemPath(params.listingId),
-    title: `${bundle.listing.title}${creatorLabel}`,
-    description: bundle.description,
+    title: clampSeoTitle(`${bundle.listing.title}${creatorLabel}`, ref),
+    description: clampSeoDescription(bundle.description, ref),
   });
 }
 

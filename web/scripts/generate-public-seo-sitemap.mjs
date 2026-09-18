@@ -154,6 +154,20 @@ function writeUrlset(filename, urls) {
   return true;
 }
 
+/**
+ * Keep referencing a previously generated child sitemap when fresh Convex
+ * data is unavailable — dropping it from the index orphans up to hundreds
+ * of already-indexed post/profile/listing URLs from Google.
+ */
+function retainExistingChild(childSitemaps, filename, lastmod) {
+  const filePath = path.join(publicDir, filename);
+  if (!existsSync(filePath)) return;
+  const loc = `${siteOrigin}/${filename}`;
+  if (childSitemaps.some((entry) => entry.loc === loc)) return;
+  childSitemaps.push({ loc, lastmod });
+  console.log(`generate-public-seo-sitemap: retained existing ${filename} in index`);
+}
+
 function writeSitemapIndex(filename, sitemaps) {
   if (!sitemaps.length) return false;
   const body = sitemaps
@@ -309,7 +323,9 @@ async function main() {
   writeBlogRss();
 
   if (!convexUrl()) {
-    console.warn("generate-public-seo-sitemap: NEXT_PUBLIC_CONVEX_URL unset — skipping dynamic sitemaps");
+    console.warn("generate-public-seo-sitemap: NEXT_PUBLIC_CONVEX_URL unset — retaining existing dynamic sitemaps");
+    retainExistingChild(childSitemaps, "sitemap-marketplace.xml", lastmod);
+    retainExistingChild(childSitemaps, "sitemap-gigasocial.xml", lastmod);
   } else {
     try {
       const { listings, posts, profiles } = await loadSitemapEntries();
@@ -357,9 +373,11 @@ async function main() {
       }
     } catch (err) {
       console.warn(
-        "generate-public-seo-sitemap: Convex fetch failed — skipping dynamic sitemaps:",
+        "generate-public-seo-sitemap: Convex fetch failed — retaining existing dynamic sitemaps:",
         err instanceof Error ? err.message : err
       );
+      retainExistingChild(childSitemaps, "sitemap-marketplace.xml", lastmod);
+      retainExistingChild(childSitemaps, "sitemap-gigasocial.xml", lastmod);
     }
   }
 

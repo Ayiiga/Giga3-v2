@@ -4,7 +4,7 @@ import type { BlogPost } from "@/lib/blog/types";
 export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
   {
     slug: "best-ai-tools-in-ghana-2026",
-    title: "Best AI Tools in Ghana 2026: Free & Affordable AI Apps for Students, Creators and Businesses",
+    title: "Best AI Tools in Ghana 2026: Free & Affordable",
     description:
       "A practical guide to the best AI tools in Ghana for students, creators and businesses — free tiers, affordable apps, and how to choose responsibly in 2026.",
     excerpt:
@@ -60,7 +60,7 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
   },
   {
     slug: "wassce-2026-results-ghana",
-    title: "WASSCE 2026 Results: What Every Ghanaian Student and Parent Needs to Know",
+    title: "WASSCE 2026 Results: A Guide for Students, Parents",
     description:
       "Understand WASSCE 2026 provisional results in Ghana — how to check online, grading basics, next steps for tertiary entry, resits, and how AI can support learning.",
     excerpt:
@@ -82,7 +82,7 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     slug: "ghana-wage-system-ghc-60000-vs-ghc-21-77",
     title: "GH¢60,000 vs GH¢21.77: Is Ghana's Wage System Fair?",
     description:
-      "A balanced look at Ghana's wage debate — verified minimum wage figures, reported public-sector pay, transparency questions, and constructive discussion on fair compensation.",
+      "Ghana's wage debate — verified minimum wage figures, reported public-sector pay, transparency questions, and constructive talk on fair compensation.",
     excerpt:
       "Ghana's national conversation compares a verified daily minimum wage of GH¢21.77 with widely reported political pay figures. What is verified, what is debated, and what fair wages could mean.",
     category: "Ghana",
@@ -100,7 +100,7 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
   },
   {
     slug: "one-million-coders-ghana-tech-future",
-    title: "One Million Coders: Can Ghana Really Become Africa's Next Tech Powerhouse?",
+    title: "One Million Coders: Ghana's Tech Powerhouse Bid",
     description:
       "Explore Ghana's One Million Coders programme — verified enrolment figures, digital skills tracks, opportunities for youth employment, and realistic challenges ahead.",
     excerpt:
@@ -122,7 +122,7 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     slug: "ai-tools-for-ghanaian-students-2026",
     title: "10 AI Tools Every Ghanaian Student Should Know in 2026",
     description:
-      "A practical guide to AI tools for Ghanaian students — tutoring, research, writing, maths, language learning, notes, presentations, images, and revision with academic integrity.",
+      "AI tools for Ghanaian students — tutoring, research, writing, maths, languages, notes, presentations, images, and revision with academic integrity.",
     excerpt:
       "From AI tutoring and research helpers to maths support and study planners — ten tool categories every Ghanaian student should explore responsibly in 2026.",
     category: "AI Tools",
@@ -141,7 +141,7 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     slug: "ai-for-ghanaian-teachers",
     title: "How Ghanaian Teachers Can Use AI to Save Hours Every Week",
     description:
-      "Practical AI workflows for Ghanaian teachers — lesson plans, worksheets, quizzes, differentiated learning, marking help, and parent communication for basic schools and JHS.",
+      "AI workflows for Ghanaian teachers — lesson plans, worksheets, quizzes, differentiated learning, marking help, and parent communication for basic schools.",
     excerpt:
       "Teachers in Ghana can use AI to draft lesson plans, create worksheets, build quizzes, and reduce admin time — while always reviewing output for accuracy and curriculum fit.",
     category: "Education",
@@ -158,7 +158,7 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
   },
   {
     slug: "wassce-ai-study-guide",
-    title: "WASSCE + AI: Can Artificial Intelligence Help Ghanaian Students Study Better?",
+    title: "WASSCE + AI: Smarter Study for Ghanaian Students",
     description:
       "How Ghanaian students can use AI responsibly for WASSCE revision — practice questions, flashcards, maths help, and exam prep without cheating or overdependence.",
     excerpt:
@@ -177,7 +177,7 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
   },
   {
     slug: "ai-money-making-opportunities-ghana",
-    title: "The New Ghanaian Hustle: How Young People Are Using AI to Make Money Online",
+    title: "The New Ghanaian Hustle: Earning Online with AI",
     description:
       "Realistic AI-assisted income ideas for young Ghanaians — content creation, design, tutoring, freelancing — plus clear warnings about scams and get-rich-quick claims.",
     excerpt:
@@ -196,9 +196,9 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
   },
   {
     slug: "facebook-tiktok-whatsapp-fact-checking",
-    title: "Can You Trust Everything You See on Facebook, TikTok and WhatsApp?",
+    title: "Can You Trust Facebook, TikTok and WhatsApp?",
     description:
-      "A digital literacy guide for Ghanaian social media users — misinformation, deepfakes, fake screenshots, and a practical six-step verification checklist before you share.",
+      "A digital literacy guide for Ghana — misinformation, deepfakes, fake screenshots, and a six-step verification checklist before you share.",
     excerpt:
       "Misinformation spreads fast on Facebook, TikTok, and WhatsApp. Learn to verify sources, spot manipulated media, and share responsibly with a simple checklist.",
     category: "Digital Literacy",
@@ -215,7 +215,7 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
   },
   {
     slug: "african-youth-ai-future-jobs",
-    title: "Why African Youth Must Learn AI Before the Next Jobs Revolution",
+    title: "Why African Youth Must Learn AI Before Jobs Change",
     description:
       "AI literacy, digital skills, and human strengths for African youth — how work is changing, why fearmongering misses the point, and practical steps to prepare now.",
     excerpt:
@@ -234,9 +234,9 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
   },
   {
     slug: "ghana-ai-future-opportunities-challenges",
-    title: "Ghana's AI Future: Opportunities, Challenges and What Young People Need to Know",
+    title: "Ghana's AI Future: Opportunities and Challenges",
     description:
-      "A broad look at AI in Ghana — education, jobs, agriculture, healthcare, finance, creativity, digital inclusion, risks, and practical recommendations for students and businesses.",
+      "AI in Ghana — education, jobs, agriculture, healthcare, finance, creativity, digital inclusion, risks, and recommendations for students and businesses.",
     excerpt:
       "Ghana's AI journey spans schools, startups, government, and everyday tools. Here are the opportunities, the risks, and what students, teachers, and entrepreneurs should do next.",
     category: "AI in Ghana",
