@@ -1,6 +1,7 @@
 "use client";
 
 import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
+import { CreditsPaystackModal } from "@/components/billing/CreditsPaystackModal";
 import { ChatInputToolbar } from "@/components/chat/ChatInputToolbar";
 import { EmojiPicker } from "@/components/chat/EmojiPicker";
 import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
@@ -87,6 +88,7 @@ export const ChatInput = memo(function ChatInput({
   const [isMobileComposer, setIsMobileComposer] = useState(false);
   const [isNarrowScreen, setIsNarrowScreen] = useState(false);
   const [listening, setListening] = useState(false);
+  const [payOpen, setPayOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const composerRef = useRef<HTMLDivElement>(null);
 
@@ -312,13 +314,28 @@ export const ChatInput = memo(function ChatInput({
     >
       <div className="chat-thread space-y-2">
         {outOfCredits && (
-          <CreditPromptBanner
-            variant="empty"
-            credits={credits}
-            creditCost={CHAT_CREDIT_COST}
-            subscriptionActive={subscriptionActive}
-            compact
-          />
+          <>
+            <CreditPromptBanner
+              variant="empty"
+              credits={credits}
+              creditCost={CHAT_CREDIT_COST}
+              subscriptionActive={subscriptionActive}
+              compact
+            />
+            <button
+              type="button"
+              onClick={() => setPayOpen(true)}
+              className="min-h-11 w-full rounded-full bg-[#EAB308] px-4 py-2 text-sm font-bold text-black"
+            >
+              Buy credits · Pro 250cr GH₵150 🇬🇭
+            </button>
+            <CreditsPaystackModal
+              isOpen={payOpen}
+              onClose={() => setPayOpen(false)}
+              currentCredits={credits}
+              onSuccess={() => setPayOpen(false)}
+            />
+          </>
         )}
 
         {notice && (
