@@ -1,7 +1,7 @@
 /** GigaSocial perf + offline feed/reels — refresh PWAs. */
-const CACHE_NAME = "giga3-shell-v256-gigaedit-voiceover-opfs";
-const NEXT_STATIC_CACHE = "giga3-next-static-v220";
-const APP_SHELL_CACHE = "giga3-app-shell-v220";
+const CACHE_NAME = "giga3-shell-v257-audit-fixes";
+const NEXT_STATIC_CACHE = "giga3-next-static-v221";
+const APP_SHELL_CACHE = "giga3-app-shell-v221";
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";
