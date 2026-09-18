@@ -31,7 +31,10 @@ export function GigaEditBottomNav({
   onOpenSection,
 }: GigaEditBottomNavProps) {
   return (
-    <nav className="gigaedit-bottom-nav flex flex-col gap-1" aria-label="GigaEdit navigation">
+    <nav
+      className="gigaedit-bottom-nav gigaedit-bottom-nav--fixed"
+      aria-label="GigaEdit navigation"
+    >
       <div className="flex items-stretch gap-0.5">
         {STUDIO_TABS.map((item) => {
           const Icon = item.icon;
@@ -41,7 +44,8 @@ export function GigaEditBottomNav({
               key={item.id}
               type="button"
               aria-current={current ? "page" : undefined}
-              className="min-h-11"
+              className="gigaedit-bottom-nav__tab min-h-11"
+              data-active={current}
               onClick={() => onOpenSection?.(item.id)}
             >
               <Icon className="h-4 w-4" aria-hidden />

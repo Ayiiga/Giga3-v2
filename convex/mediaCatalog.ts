@@ -97,6 +97,11 @@ export const VIDEO_CATEGORIES = {
     label: "Social Media Shorts",
     promptSuffix: "vertical social short, dynamic motion, trendy",
   },
+  ghanaian_shorts: {
+    label: "Ghanaian Shorts",
+    promptSuffix:
+      "vertical short-form video with Ghanaian context — Accra street life, kente textures, trotro stations, Makola market energy, warm evening light",
+  },
 } as const;
 
 export type ImageCategoryId = keyof typeof IMAGE_CATEGORIES;
@@ -141,7 +146,7 @@ export const REPLICATE_VIDEO_GENERATE_AUDIO =
 export type SeedanceAspectRatio = "16:9" | "9:16" | "4:3" | "1:1" | "3:4" | "21:9";
 
 export function videoCategoryAspectRatio(category: string): SeedanceAspectRatio {
-  if (category === "social_shorts") return "9:16";
+  if (category === "social_shorts" || category === "ghanaian_shorts") return "9:16";
   return "16:9";
 }
 

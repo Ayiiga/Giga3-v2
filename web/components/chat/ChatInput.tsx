@@ -85,6 +85,8 @@ export const ChatInput = memo(function ChatInput({
   const [composerFocused, setComposerFocused] = useState(false);
   const [typingReady, setTypingReady] = useState(false);
   const [isMobileComposer, setIsMobileComposer] = useState(false);
+  const [isNarrowScreen, setIsNarrowScreen] = useState(false);
+  const [listening, setListening] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const composerRef = useRef<HTMLDivElement>(null);
 
@@ -169,6 +171,17 @@ export const ChatInput = memo(function ChatInput({
     mq.addEventListener("change", sync);
     return () => mq.removeEventListener("change", sync);
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 400px)");
+    const sync = () => setIsNarrowScreen(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  const effectivePlaceholder = isNarrowScreen ? "Message Giga3…" : placeholder;
 
   const typingMode = isMobileComposer && composerFocused && typingReady;
 
@@ -332,7 +345,7 @@ export const ChatInput = memo(function ChatInput({
         <div
           ref={composerRef}
           className={cn(
-            "chat-composer-surface relative flex items-end gap-1.5 rounded-[1.75rem] border bg-card p-1.5 shadow-sm sm:gap-2 sm:p-2",
+            "chat-composer-surface relative flex items-end gap-1.5 rounded-[24px] border border-[#E5E7EB] bg-white p-1.5 shadow-sm dark:border-border dark:bg-card sm:gap-2 sm:p-2",
             dragOver ? "border-accent/50 bg-accent/5" : "border-border",
             typingMode && "chat-composer-surface--typing"
           )}
@@ -373,6 +386,7 @@ export const ChatInput = memo(function ChatInput({
             disabled={inputDisabled}
             onTranscript={insertVoiceText}
             onError={(msg) => setNotice(msg)}
+            onListeningChange={setListening}
           />
 
           <div className="relative min-w-0 flex-1">
@@ -416,7 +430,7 @@ export const ChatInput = memo(function ChatInput({
               }}
               disabled={inputDisabled}
               rows={1}
-              placeholder={placeholder}
+              placeholder={effectivePlaceholder}
               className="chat-composer-textarea max-h-40 min-h-10 w-full resize-none overflow-y-auto border-0 bg-transparent px-2 py-2 text-base leading-[1.5] text-foreground outline-none placeholder:text-muted focus:ring-0 disabled:opacity-50"
               aria-label="Chat message"
             />
@@ -442,14 +456,41 @@ export const ChatInput = memo(function ChatInput({
             disabled={inputDisabled || !canSend}
             size="md"
             className={cn(
-              "h-10 shrink-0 rounded-full px-3 transition-all",
-              canSend ? "w-10 min-w-10" : "w-10 min-w-10 opacity-50"
+              "h-10 w-10 min-w-10 shrink-0 rounded-full bg-[#7C3AED] px-0 text-white transition-all hover:bg-[#6D28D9]",
+              !canSend && "opacity-50"
             )}
             aria-label="Send message"
           >
             <Send className="h-4 w-4" aria-hidden />
           </Button>
         </div>
+
+        {listening ? (
+          <div
+            className="chat-voice-listening flex min-h-12 items-center gap-2 rounded-2xl border border-[#EAB308]/50 bg-white px-3 py-2"
+            role="status"
+            aria-live="polite"
+          >
+            <span className="chat-voice-wave" aria-hidden>
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+            </span>
+            <span className="flex-1 text-[13px] font-medium text-black">
+              Listening… Twi/Hausa available
+            </span>
+            <button
+              type="button"
+              onClick={() => setListening(false)}
+              className="min-h-11 rounded-full border border-[#E5E7EB] px-3 py-1 text-[13px] font-medium text-gray-600"
+              aria-label="Hide listening indicator"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : null}
 
         <p className="hidden px-2 text-center text-[11px] leading-relaxed text-muted/70 md:block">
           Giga3 AI can make mistakes. Check important information.

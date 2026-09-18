@@ -201,10 +201,37 @@ const MODE_OVERRIDES: Partial<Record<AiModeId, SuggestedPrompt[]>> = {
   ],
 };
 
-export function getSuggestedPrompts(mode: AiModeId, limit = 4): SuggestedPrompt[] {
+export function getSuggestedPrompts(mode: AiModeId, limit = 6): SuggestedPrompt[] {
   const override = MODE_OVERRIDES[mode];
-  if (override) return override.slice(0, limit);
-
-  const category = getCategoryForMode(mode);
-  return (CATEGORY_PROMPTS[category.id] ?? CATEGORY_PROMPTS.general).slice(0, limit);
+  const specific = override ?? CATEGORY_PROMPTS[getCategoryForMode(mode).id] ?? CATEGORY_PROMPTS.general;
+  const merged = [...specific];
+  for (const prompt of GLOBAL_STANDARD_PROMPTS) {
+    if (merged.length >= limit) break;
+    if (!merged.some((p) => p.label === prompt.label)) merged.push(prompt);
+  }
+  return merged.slice(0, limit);
 }
+
+/** Global-standard prompts: books, research, CV, code, and news — always available. */
+const GLOBAL_STANDARD_PROMPTS: SuggestedPrompt[] = [
+  {
+    label: "Book outline",
+    text: "Generate a book outline — propose a title, audience, chapters, and draft Chapter 1.",
+  },
+  {
+    label: "Research essay",
+    text: "Write a research-style essay with findings, analysis, and citations where available.",
+  },
+  {
+    label: "Write CV",
+    text: "Draft a professional CV in Ghana format with profile, skills, experience, and education.",
+  },
+  {
+    label: "Code help",
+    text: "Help me with code using African context (mobile money, Ghanaian names, GHS).",
+  },
+  {
+    label: "Ghana news",
+    text: "Summarize the latest news in Ghana and Africa with key facts.",
+  },
+];

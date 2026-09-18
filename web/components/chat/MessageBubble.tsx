@@ -1,5 +1,6 @@
 "use client";
 
+import { AfricanVoiceReader } from "@/components/chat/AfricanVoiceReader";
 import { LiveWebSourceCards } from "@/components/chat/LiveWebSourceCards";
 import { ResearchResponseBadge } from "@/components/chat/ResearchResponseBadge";
 import { MessageBubbleActions } from "@/components/chat/MessageBubbleActions";
@@ -151,6 +152,9 @@ export const MessageBubble = memo(function MessageBubble({
                 ) : null}
                 {liveWebMetadata?.sources?.length ? (
                   <LiveWebSourceCards sources={liveWebMetadata.sources} />
+                ) : null}
+                {!streaming && displayContent ? (
+                  <AfricanVoiceReader content={assistantDisplay?.content ?? displayContent} />
                 ) : null}
               </>
             ))}

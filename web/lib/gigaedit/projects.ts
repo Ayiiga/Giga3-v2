@@ -291,3 +291,83 @@ export function exportProjectJson(project: GigaEditProjectRecord): string {
     2
   );
 }
+
+/**
+ * Best-effort local storage estimate for the "X MB used" indicator.
+ * Combines the browser quota estimate with the IndexedDB project count
+ * (exact per-blob sizes require a full cursor walk, so this stays cheap
+ * on 3G / low-battery devices).
+ */
+export type GigaEditStorageEstimate = {
+  bytesUsed: number;
+  bytesQuota: number;
+  projectCount: number;
+  label: string;
+};
+
+export function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 MB";
+  const mb = bytes / (1024 * 1024);
+  if (mb < 1) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  if (mb < 1024) return `${mb < 10 ? mb.toFixed(1) : Math.round(mb)} MB`;
+  const gb = mb / 1024;
+  return `${gb < 10 ? gb.toFixed(1) : Math.round(gb)} GB`;
+}
+
+export async function estimateGigaEditStorage(): Promise<GigaEditStorageEstimate> {
+  let bytesUsed = 0;
+  let bytesQuota = 10 * 1024 * 1024 * 1024;
+  try {
+    const estimate = await navigator.storage?.estimate?.();
+    if (typeof estimate?.usage === "number") bytesUsed = estimate.usage;
+    if (typeof estimate?.quota === "number" && estimate.quota > 0) bytesQuota = estimate.quota;
+  } catch {
+    /* ignore — fall back to project count only */
+  }
+  let projectCount = 0;
+  try {
+    projectCount = (await listGigaEditProjects()).length;
+  } catch {
+    /* ignore */
+  }
+  return {
+    bytesUsed,
+    bytesQuota,
+    projectCount,
+    label: `${formatBytes(bytesUsed)} used / ${formatBytes(bytesQuota)} local`,
+  };
+}
+
+/**
+ * Delete a project everywhere locally: IndexedDB meta + media blobs and any
+ * OPFS voiceover/session files, so storage is freed immediately (no reboot).
+ */
+export async function deleteProjectAndLocalFiles(id: string): Promise<void> {
+  await deleteGigaEditProject(id);
+  try {
+    const root = await navigator.storage?.getDirectory?.();
+    if (root) {
+      const base = await root.getDirectoryHandle("gigaedit-voiceover").catch(() => null);
+      if (base) {
+        await base.removeEntry(id, { recursive: true }).catch(() => undefined);
+      }
+    }
+  } catch {
+    /* ignore — IndexedDB delete already landed */
+  }
+  try {
+    const { clearThumbnailCache } = await import("@/lib/gigaedit/thumbnailCache");
+    clearThumbnailCache();
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Projects untouched for 30+ days — suggested for cleanup on low storage. */
+export function staleDraftSuggestions(
+  rows: GigaEditProjectRecord[],
+  now = Date.now()
+): GigaEditProjectRecord[] {
+  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+  return rows.filter((p) => p.status === "draft" && now - p.updatedAt > THIRTY_DAYS_MS);
+}

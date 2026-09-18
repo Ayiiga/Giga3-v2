@@ -44,12 +44,15 @@ export function isValidMode(mode: string): mode is AiModeId {
 }
 
 const GIGA3_BRAND_KNOWLEDGE =
-  "Giga3 brand: Logo = https://www.giga3ai.com/images/logo.svg and /images/logo.svg from web/public/images/logo.svg. When asked for logotype URL, return direct URL. PWA install via /manifest.json";
+  "Giga3 brand: Logo = https://www.giga3ai.com/images/logo.png and /images/logo.png from web/public/images/logo.png. When asked for logotype URL, return direct URL. PWA install via /manifest.json";
+
+const GIGA3_GLOBAL_CAPABILITIES =
+  "Giga3 AI is Africa's AI Super App — Built in Africa, Powered by AI, Designed for Everyone. Capabilities: generate books (outlines, chapters), research writing (papers with citations), essays, coding (with African context), CVs (Ghana format), read responses with African voices (Twi, Hausa, Ga, Ewe, Yoruba, Swahili, Zulu, Amharic), writing templates (Book, Research, Essay, CV, Code, Lesson Plan), interconnected workspace (Chat, Learn, Create, Social, Research, Books, Code, CV tabs), web search with citations, news and politics coverage, global standard quality, stable multi-provider failover.";
 
 export function getSystemPrompt(mode: string): string {
   const base = isValidMode(mode) ? AI_MODE_SYSTEM_PROMPTS[mode] : AI_MODE_SYSTEM_PROMPTS.general;
   try {
-    return `${base}\n\n${GIGA3_BRAND_KNOWLEDGE}`;
+    return `${base}\n\n${GIGA3_BRAND_KNOWLEDGE}\n\n${GIGA3_GLOBAL_CAPABILITIES}`;
   } catch {
     return base;
   }

@@ -20,6 +20,7 @@ import { OverlayInspector } from "@/components/gigaedit/OverlayInspector";
 import { OverlayPreviewStack } from "@/components/gigaedit/OverlayPreviewStack";
 import { PreviewTransport } from "@/components/gigaedit/PreviewTransport";
 import { PublishScreen } from "@/components/gigaedit/PublishScreen";
+import { TeleprompterOverlay } from "@/components/gigaedit/TeleprompterOverlay";
 import { VideoEditorHeader } from "@/components/gigaedit/VideoEditorHeader";
 import {
   ToolGrid,
@@ -169,6 +170,9 @@ export function VideoEditor({
   const [activeToolTab, setActiveToolTab] = useState<VideoEditorToolTab>("edit");
   const [toolPanelOpen, setToolPanelOpen] = useState(false);
   const [audioNoiseReduction, setAudioNoiseReduction] = useState(false);
+  const [teleprompterOn, setTeleprompterOn] = useState(false);
+  const [teleprompterOpacity, setTeleprompterOpacity] = useState(0.7);
+  const [teleprompterScript, setTeleprompterScript] = useState("");
   const originalFileRef = useRef<File | null>(null);
   const sourceFilesRef = useRef<Map<string, File>>(new Map());
   const importSessionActiveRef = useRef(false);
@@ -937,6 +941,54 @@ export function VideoEditor({
     setStatus("Clip deleted.");
   }
 
+  function duplicateSelectedClip() {
+    const active = clips.find((c) => c.id === selectedClipId);
+    if (!active) {
+      setStatus("Select a clip on the timeline first.");
+      return;
+    }
+    const copy = newClip({
+      ...active,
+      label: `${active.label} copy`,
+      startSec: active.endSec,
+      endSec: active.endSec + Math.max(0.5, active.endSec - active.startSec),
+    });
+    commitClips((prev) => [...prev, copy]);
+    setSelectedClipId(copy.id);
+    setStatus("Clip duplicated.");
+  }
+
+  // Keyboard: Delete/Backspace removes the selected clip or overlay.
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+        return;
+      }
+      if ((e.key === "Delete" || e.key === "Backspace") && selectedClipId) {
+        e.preventDefault();
+        deleteClipById(selectedClipId);
+        setStatus("Clip deleted.");
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- selectedClipId is read at key time
+  }, [selectedClipId]);
+
+  // African voiceover handoff: open the top teleprompter with the script.
+  useEffect(() => {
+    function onAfricanVoiceover(e: Event) {
+      const detail = (e as CustomEvent<{ script?: string }>).detail;
+      const script = detail?.script?.trim() || teleprompterScript || overlayText;
+      if (script.trim()) setTeleprompterScript(script.trim());
+      setTeleprompterOn(true);
+    }
+    window.addEventListener("giga3:african-voiceover-selected", onAfricanVoiceover);
+    return () => window.removeEventListener("giga3:african-voiceover-selected", onAfricanVoiceover);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- opens teleprompter on demand
+  }, [overlayText]);
+
   function openOverlayImport() {
     overlayInputRef.current?.click();
   }
@@ -1345,6 +1397,11 @@ export function VideoEditor({
                 void attachAudioFile(file);
               }}
               onStatus={setStatus}
+              onRequestTeleprompter={(script) => {
+                if (script.trim()) setTeleprompterScript(script.trim());
+                setTeleprompterOn(true);
+                setStatus("Teleprompter on — top 25% of the preview, subject stays visible.");
+              }}
             />
             <ToolGrid>
               <ToolTile label="Import audio" onClick={() => audioInputRef.current?.click()} />
@@ -1514,7 +1571,14 @@ export function VideoEditor({
       ) : null}
 
       <div className="gigaedit-preview-stage">
-        <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center px-2 py-2">
+        <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center bg-black px-2 py-2">
+          <TeleprompterOverlay
+            script={teleprompterScript || overlayText}
+            isVisible={teleprompterOn}
+            opacity={teleprompterOpacity}
+            onClose={() => setTeleprompterOn(false)}
+            onOpacityChange={setTeleprompterOpacity}
+          />
           <CameraStylePreview
             kind="video"
             variant="editor"
@@ -1629,13 +1693,58 @@ export function VideoEditor({
                 : ""}
             </span>
           </p>
-          <button
-            type="button"
-            className={`gigaedit-chip px-2 py-1 text-[10px] ${snapEnabled ? "gigaedit-chip--active" : ""}`}
-            onClick={() => setSnapEnabled((v) => !v)}
-          >
-            Snap
-          </button>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {selectedClip ? (
+              <>
+                <button
+                  type="button"
+                  className="gigaedit-clip-action gigaedit-clip-action--danger"
+                  onClick={deleteSelectedClip}
+                  aria-label={`Delete selected clip ${selectedClip.label}`}
+                  title="Delete selected clip (Del key)"
+                >
+                  🗑 Delete
+                </button>
+                <button
+                  type="button"
+                  className="gigaedit-clip-action"
+                  onClick={splitAtPlayhead}
+                  title="Split at playhead"
+                >
+                  ✂ Split
+                </button>
+                <button
+                  type="button"
+                  className="gigaedit-clip-action"
+                  onClick={duplicateSelectedClip}
+                  title="Duplicate selected clip"
+                >
+                  ⧉ Duplicate
+                </button>
+              </>
+            ) : null}
+            <button
+              type="button"
+              className={`gigaedit-chip px-2 py-1 text-[10px] ${teleprompterOn ? "gigaedit-chip--active" : ""}`}
+              onClick={() => {
+                if (!teleprompterOn && !teleprompterScript.trim() && overlayText.trim()) {
+                  setTeleprompterScript(overlayText.trim());
+                }
+                setTeleprompterOn((v) => !v);
+              }}
+              aria-pressed={teleprompterOn}
+              title="Teleprompter shows on the top 25% of the preview"
+            >
+              🎤 Teleprompter {teleprompterOn ? "ON" : ""}
+            </button>
+            <button
+              type="button"
+              className={`gigaedit-chip px-2 py-1 text-[10px] ${snapEnabled ? "gigaedit-chip--active" : ""}`}
+              onClick={() => setSnapEnabled((v) => !v)}
+            >
+              Snap
+            </button>
+          </div>
         </div>
         <MultiTrackTimeline
           clips={clips}
