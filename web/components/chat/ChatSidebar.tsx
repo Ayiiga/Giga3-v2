@@ -6,6 +6,13 @@ import {
   groupConversationsByDate,
 } from "@/lib/chat/groupConversationsByDate";
 import { listSavedPrompts, type SavedPrompt } from "@/lib/chat/savedPrompts";
+import {
+  WORKSPACE_FILTER_TABS,
+  itemMatchesWorkspaceTab,
+  templateShortcutsForTab,
+  workspaceRuntimeBadge,
+  type WorkspaceFilterTabId,
+} from "@/lib/chat/workspaceTabs";
 import { getModeDefinition, isValidMode } from "@/lib/aiRouter";
 import { dispatchWorkspaceNav, type WorkspaceNavTarget } from "@/lib/chat/workspaceNav";
 import { CHAT_WORKSPACE_PRIMARY_APPS } from "@/lib/chat/workspaceApps";
@@ -83,6 +90,7 @@ type SidebarView = "active" | "archived" | "favorites";
 
 type WorkspaceNavItem =
   | {
+      id?: string;
       href: string;
       label: string;
       icon: typeof Home;
@@ -92,6 +100,7 @@ type WorkspaceNavItem =
       hint?: string;
     }
   | {
+      id?: string;
       hash: WorkspaceNavTarget;
       label: string;
       icon: typeof Home;
@@ -104,6 +113,7 @@ type WorkspaceNavItem =
 /** Workspace apps: GigaSocial → GigaEdits → GigaLearn → Media Studio, then remaining tools. */
 const PRIMARY_NAV: WorkspaceNavItem[] = [
   ...CHAT_WORKSPACE_PRIMARY_APPS.map((app) => ({
+    id: app.id,
     href: app.href,
     label: app.label,
     icon: app.icon,
@@ -153,6 +163,7 @@ function ChatSidebarComponent({
   onSearchChange,
 }: ChatSidebarProps) {
   const [view, setView] = useState<SidebarView>("active");
+  const [workspaceTab, setWorkspaceTab] = useState<WorkspaceFilterTabId>("All");
   const savedPrompts = useMemo(() => listSavedPrompts(), []);
 
   const scoped = useMemo(() => {
@@ -272,10 +283,60 @@ function ChatSidebarComponent({
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <div className="chat-sidebar-scroll min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
-            <nav className="space-y-4 px-2 pb-2 pt-1" aria-label="Chat navigation">
+            <nav className="space-y-4 px-2 pb-[72px] pt-1" aria-label="Chat navigation">
               <SidebarSection title="Workspace">
-                {PRIMARY_NAV.map((item) => (
-                  <SidebarNavItem key={item.label} item={item} onNavigate={onCloseMobile} />
+                <div className="relative mb-2">
+                  <div
+                    role="tablist"
+                    aria-label="Workspace filters"
+                    className="flex gap-1.5 overflow-x-auto overscroll-x-contain pb-1"
+                  >
+                    {WORKSPACE_FILTER_TABS.map((tab) => {
+                      const active = workspaceTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          role="tab"
+                          aria-selected={active}
+                          onClick={() => setWorkspaceTab(tab.id)}
+                          className={cn(
+                            "min-h-9 shrink-0 rounded-full px-3 py-1 text-xs",
+                            active
+                              ? "bg-[#EAB308] font-bold text-black"
+                              : "bg-[#F3F4F6] font-medium text-gray-600 hover:bg-[#EAB308]/20"
+                          )}
+                        >
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div
+                    className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent"
+                    aria-hidden
+                  />
+                </div>
+                {PRIMARY_NAV.filter((item) =>
+                  itemMatchesWorkspaceTab(
+                    ("id" in item && item.id) || item.label,
+                    workspaceTab
+                  )
+                ).map((item) => (
+                  <SidebarNavItem key={("id" in item && item.id) || item.label} item={item} onNavigate={onCloseMobile} />
+                ))}
+                {templateShortcutsForTab(workspaceTab).map((shortcut) => (
+                  <TemplateShortcutRow
+                    key={shortcut.id}
+                    title={shortcut.title}
+                    description={shortcut.description}
+                    runtime={shortcut.runtime}
+                    onSelect={() => {
+                      onInsertPrompt?.(shortcut.prompt);
+                      dispatchWorkspaceNav("documents");
+                      onCloseMobile();
+                    }}
+                  />
                 ))}
               </SidebarSection>
 
@@ -449,6 +510,8 @@ function SidebarNavItem({
 }) {
   const Icon = item.icon;
   const isPrimary = Boolean(item.primary);
+  const itemKey = ("id" in item && item.id) || item.label;
+  const runtime = workspaceRuntimeBadge(itemKey);
 
   const content = isPrimary ? (
     <>
@@ -473,6 +536,19 @@ function SidebarNavItem({
       {item.badge ? (
         <span className="shrink-0 rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent-foreground">
           {item.badge}
+        </span>
+      ) : null}
+      {runtime ? (
+        <span
+          className={cn(
+            "shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+            runtime === "ON DEVICE"
+              ? "border border-[#EAB308] text-[#92600a]"
+              : "bg-[#EAB308] text-black"
+          )}
+          title={runtime === "ON DEVICE" ? "Works offline, free" : "Uses credits"}
+        >
+          {runtime}
         </span>
       ) : null}
     </>
@@ -505,6 +581,42 @@ function SidebarNavItem({
     <Link href={item.href} onClick={onNavigate} className={className}>
       {content}
     </Link>
+  );
+}
+
+function TemplateShortcutRow({
+  title,
+  description,
+  runtime,
+  onSelect,
+}: {
+  title: string;
+  description: string;
+  runtime: "ON DEVICE" | "AI STUDIO";
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      title={`${title} — ${description} (${runtime}). Inserts into chat and opens Templates.`}
+      className="flex min-h-12 w-full items-center gap-2.5 rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 text-left shadow-sm hover:border-[#EAB308]"
+    >
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[13px] font-bold text-black">{title}</span>
+        <span className="block truncate text-[11px] text-gray-500">{description}</span>
+      </span>
+      <span
+        className={cn(
+          "shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold",
+          runtime === "ON DEVICE"
+            ? "border border-[#EAB308] text-[#92600a]"
+            : "bg-[#EAB308] text-black"
+        )}
+      >
+        {runtime}
+      </span>
+    </button>
   );
 }
 

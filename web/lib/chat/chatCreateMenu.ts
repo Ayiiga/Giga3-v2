@@ -36,6 +36,8 @@ export type ChatCreateMenuItem = {
   label: string;
   emoji: string;
   description: string;
+  /** Runtime badge: on-device (offline, free) vs AI Studio (uses credits). */
+  runtime?: "ON DEVICE" | "AI STUDIO";
 };
 
 export type ChatCreateMenuSection = {
@@ -53,61 +55,63 @@ export const CHAT_CREATE_SECTIONS: ChatCreateMenuSection[] = [
         id: "media-unified",
         label: "Media",
         emoji: "📎",
-        description: "Photos, video, camera, audio, and files",
+        description: "Photos, video, camera, audio, files",
+        runtime: "ON DEVICE",
       },
-      { id: "media-camera", label: "Camera", emoji: "📷", description: "Capture a photo" },
-      { id: "media-photos", label: "Photos", emoji: "🖼", description: "One or more images" },
-      { id: "media-video", label: "Videos", emoji: "🎥", description: "Attach a video" },
-      { id: "media-audio", label: "Audio", emoji: "🎵", description: "Music or voice file" },
+      { id: "media-camera", label: "Camera", emoji: "📷", description: "Capture a photo", runtime: "ON DEVICE" },
+      { id: "media-photos", label: "Photos", emoji: "🖼", description: "One or more images", runtime: "ON DEVICE" },
+      { id: "media-video", label: "Videos", emoji: "🎥", description: "Attach a video", runtime: "ON DEVICE" },
+      { id: "media-audio", label: "Audio", emoji: "🎵", description: "Music or voice file", runtime: "ON DEVICE" },
     ],
   },
   {
     id: "documents",
     title: "Documents",
     items: [
-      { id: "doc-pdf", label: "PDF", emoji: "📄", description: "PDF outline or analysis brief" },
+      { id: "doc-pdf", label: "PDF", emoji: "📄", description: "PDF outline or analysis brief", runtime: "AI STUDIO" },
       {
         id: "doc-research",
         label: "Action Research",
         emoji: "🔬",
         description: "Research plan template",
+        runtime: "AI STUDIO",
       },
-      { id: "doc-essay", label: "Essay", emoji: "✍️", description: "Essay scaffold" },
-      { id: "doc-thesis", label: "Thesis", emoji: "🎓", description: "Graduate thesis structure" },
-      { id: "doc-cv-resume", label: "CV / Resume", emoji: "💼", description: "Professional CV template" },
-      { id: "doc-book", label: "Books", emoji: "📚", description: "Book outline" },
-      { id: "doc-lesson-notes", label: "Lesson Notes", emoji: "📓", description: "Class notes template" },
-      { id: "doc-coding", label: "Coding Project", emoji: "🧩", description: "Project README scaffold" },
+      { id: "doc-essay", label: "Essay", emoji: "✍️", description: "Essay scaffold", runtime: "AI STUDIO" },
+      { id: "doc-thesis", label: "Thesis", emoji: "🎓", description: "Graduate thesis structure", runtime: "AI STUDIO" },
+      { id: "doc-cv-resume", label: "CV / Resume", emoji: "💼", description: "Professional CV template", runtime: "AI STUDIO" },
+      { id: "doc-book", label: "Books", emoji: "📚", description: "Book outline", runtime: "AI STUDIO" },
+      { id: "doc-lesson-notes", label: "Lesson Notes", emoji: "📓", description: "Class notes template", runtime: "AI STUDIO" },
+      { id: "doc-coding", label: "Coding Project", emoji: "🧩", description: "Project README scaffold", runtime: "AI STUDIO" },
       {
         id: "doc-programming",
         label: "Programming File",
         emoji: "💻",
         description: "Source file draft",
       },
-      { id: "doc-markdown", label: "Markdown", emoji: "📋", description: "Markdown document" },
-      { id: "doc-notes", label: "Notes", emoji: "🗒", description: "Quick notes template" },
+      { id: "doc-markdown", label: "Markdown", emoji: "📋", description: "Markdown document", runtime: "AI STUDIO" },
+      { id: "doc-notes", label: "Notes", emoji: "🗒", description: "Quick notes template", runtime: "AI STUDIO" },
     ],
   },
   {
     id: "ai",
     title: "AI Creation",
     items: [
-      { id: "ai-chat", label: "AI Chat", emoji: "💬", description: "Stay in chat" },
-      { id: "ai-image", label: "AI Image", emoji: "🖼", description: "Open Media Studio" },
-      { id: "ai-video", label: "AI Video", emoji: "🎬", description: "Open Video AI" },
-      { id: "ai-document", label: "AI Document", emoji: "📑", description: "Writing mode" },
-      { id: "ai-coding", label: "AI Coding Assistant", emoji: "⚡", description: "Coding mode" },
+      { id: "ai-chat", label: "AI Chat", emoji: "💬", description: "Stay in chat", runtime: "AI STUDIO" },
+      { id: "ai-image", label: "AI Image", emoji: "🖼", description: "Open Media Studio", runtime: "AI STUDIO" },
+      { id: "ai-video", label: "AI Video", emoji: "🎬", description: "Open Video AI", runtime: "AI STUDIO" },
+      { id: "ai-document", label: "AI Document", emoji: "📑", description: "Writing mode", runtime: "AI STUDIO" },
+      { id: "ai-coding", label: "AI Coding Assistant", emoji: "⚡", description: "Coding mode", runtime: "AI STUDIO" },
     ],
   },
   {
     id: "education",
     title: "Education",
     items: [
-      { id: "edu-assignment", label: "Assignment", emoji: "📌", description: "Assignment brief" },
-      { id: "edu-homework", label: "Homework", emoji: "🏠", description: "Homework planner" },
-      { id: "edu-quiz", label: "Quiz", emoji: "❓", description: "Quiz template" },
-      { id: "edu-lesson-plan", label: "Lesson Plan", emoji: "📅", description: "Lesson objectives" },
-      { id: "edu-study-notes", label: "Study Notes", emoji: "📖", description: "Study notes scaffold" },
+      { id: "edu-assignment", label: "Assignment", emoji: "📌", description: "Assignment brief", runtime: "AI STUDIO" },
+      { id: "edu-homework", label: "Homework", emoji: "🏠", description: "Homework planner", runtime: "AI STUDIO" },
+      { id: "edu-quiz", label: "Quiz", emoji: "❓", description: "Quiz template", runtime: "AI STUDIO" },
+      { id: "edu-lesson-plan", label: "Lesson Plan", emoji: "📅", description: "Lesson objectives", runtime: "AI STUDIO" },
+      { id: "edu-study-notes", label: "Study Notes", emoji: "📖", description: "Study notes scaffold", runtime: "AI STUDIO" },
     ],
   },
 ];

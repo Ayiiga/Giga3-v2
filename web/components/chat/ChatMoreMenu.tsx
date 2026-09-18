@@ -11,24 +11,15 @@ import {
 import { siteConfig } from "@/lib/site";
 import { signOutSupabase } from "@/lib/supabase/auth";
 import {
-  Bell,
   BookOpen,
-  Briefcase,
   Clapperboard,
   GraduationCap,
-  HelpCircle,
-  Info,
+  LogOut,
   MessageSquarePlus,
   MoreHorizontal,
-  Settings,
   Share2,
   Sparkles,
-  Store,
-  Users,
   UsersRound,
-  Wallet,
-  Zap,
-  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -47,20 +38,13 @@ type MenuLink = {
   icon: typeof BookOpen;
 };
 
+/** Single source of truth with the drawer: the 5 primary workspace apps only. */
 const MORE_LINKS: MenuLink[] = [
   { href: "/gigasocial/", label: "GigaSocial", icon: UsersRound },
   { href: "/gigaedit/", label: "GigaEdits", icon: Clapperboard },
   { href: "/gigalearn/", label: "GigaLearn", icon: GraduationCap },
   { href: siteConfig.links.media, label: "Media Studio", icon: Sparkles },
-  { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
-  { href: "/marketplace/", label: "Marketplace", icon: Store },
-  { href: "/wallet/", label: "Wallet", icon: Wallet },
-  { href: "/enterprise/", label: "Enterprise", icon: Briefcase },
-  { href: "/automation/", label: "Automation", icon: Zap },
-  { href: "/install/", label: "Invite Friends", icon: Users },
-  { href: siteConfig.links.home, label: "Dashboard", icon: Settings },
-  { href: "/about/", label: "About", icon: Info },
-  { href: "/about/", label: "Help", icon: HelpCircle },
+  { href: siteConfig.links.blog, label: "Giga3 Blog", icon: BookOpen },
 ];
 
 export const ChatMoreMenu = memo(function ChatMoreMenu({
