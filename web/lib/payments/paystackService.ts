@@ -24,8 +24,9 @@ export async function initializePaystackPayment(
   runAction: (args: {
     sessionToken: string;
     productId: string;
+    channels?: string[];
   }) => Promise<InitializePaymentResult>,
-  args: { sessionToken: string; productId: string }
+  args: { sessionToken: string; productId: string; channels?: string[] }
 ): Promise<InitializePaymentResult> {
   return runAction(args);
 }
@@ -55,6 +56,8 @@ function toPesewas(ghs: number): number {
 export type OpenPaystackCheckoutOptions = {
   email: string;
   publicKey?: string | null;
+  /** Optional channel allowlist (e.g. ["mobile_money"]) for the inline popup. */
+  channels?: string[];
   onPopupReady?: () => void;
   onSuccess: (reference: string) => void | Promise<void>;
   onCancel: () => void;
@@ -150,6 +153,9 @@ export async function openPaystackCheckout(
         amount: toPesewas(init.amountGhs),
         currency: "GHS",
         reference: init.reference,
+        ...(options.channels && options.channels.length > 0
+          ? { channels: options.channels }
+          : null),
         ...callbacks,
       });
       return "popup";
