@@ -57,6 +57,8 @@ interface ChatInputProps {
   /** Network availability for Live Web toggle. */
   online?: boolean;
   onSelectDocumentTemplate?: (templateId: DocumentTemplateId) => void;
+  /** True when the composer is focused or has draft text — hides footer chips. */
+  onComposerActivityChange?: (active: boolean) => void;
 }
 
 export const ChatInput = memo(function ChatInput({
@@ -73,6 +75,7 @@ export const ChatInput = memo(function ChatInput({
   conversationId = null,
   online = true,
   onSelectDocumentTemplate,
+  onComposerActivityChange,
 }: ChatInputProps) {
   useRenderDiagnostic("ChatInput");
 
@@ -191,6 +194,10 @@ export const ChatInput = memo(function ChatInput({
     if (!typingReady) return;
     dispatchChatViewportSync({ reason: "typing-mode" });
   }, [typingReady]);
+
+  useEffect(() => {
+    onComposerActivityChange?.(composerFocused || value.trim().length > 0);
+  }, [composerFocused, value, onComposerActivityChange]);
 
   useEffect(() => {
     const hasVisual = attachments.some(
