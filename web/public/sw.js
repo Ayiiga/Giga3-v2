@@ -1,5 +1,5 @@
 /** GigaSocial perf + offline feed/reels — refresh PWAs. */
-const CACHE_NAME = "giga3-shell-v259-chat-mobile-ui";
+const CACHE_NAME = "giga3-shell-v258-chat-fix";
 const NEXT_STATIC_CACHE = "giga3-next-static-v221";
 const APP_SHELL_CACHE = "giga3-app-shell-v221";
 const BADGE_DB = "giga3-badge-v1";
@@ -17,6 +17,7 @@ const PRECACHE = [
   "/images/logo.png",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
+  "/icons/badge-72.png",
   "/icons/apple-touch-icon.png",
   "/icons/icon-maskable-512.png",
   "/pricing/",
@@ -30,13 +31,22 @@ const PRECACHE = [
  * Documents that must never be stored offline (billing / admin / seller tools).
  * Chat, GigaSocial, GigaLearn, and GigaEdit shells use network-first app-shell cache.
  */
-function isSensitiveDocumentPath(pathname) {
+function isNeverCacheDocumentPath(pathname) {
   return (
+    pathname === "/chat" ||
+    pathname.startsWith("/chat/") ||
+    pathname === "/workspace" ||
+    pathname.startsWith("/workspace/") ||
     pathname.startsWith("/payment/") ||
     pathname.startsWith("/credits/") ||
+    pathname.startsWith("/admin/")
+  );
+}
+
+function isSensitiveDocumentPath(pathname) {
+  return (
+    isNeverCacheDocumentPath(pathname) ||
     pathname.startsWith("/wallet/") ||
-    pathname.startsWith("/workspace/") ||
-    pathname.startsWith("/admin/") ||
     pathname.startsWith("/marketplace/sell/") ||
     pathname.startsWith("/marketplace/purchases/") ||
     pathname.startsWith("/creator-studio/") ||
@@ -270,19 +280,19 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (isDocument) {
+    const neverCache = isNeverCacheDocumentPath(url.pathname);
     const sensitive = isSensitiveDocumentPath(url.pathname);
-    const appShell = isOfflineAppShellPath(url.pathname);
+    const appShell = isOfflineAppShellPath(url.pathname) && !neverCache;
 
     event.respondWith(
       fetch(request)
         .then((response) => {
           // Marketing/public docs: long-lived shell cache.
-          if (response.ok && !sensitive && !appShell) {
+          if (response.ok && !sensitive && !appShell && !neverCache) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
-          // Chat / Social / Learn / Edit: network-first; cache only after a successful
-          // online visit so offline reopen works without serving forever-stale HTML.
+          // Social / Learn / Edit shells: network-first runtime cache only when allowed.
           if (response.ok && appShell) {
             const clone = response.clone();
             caches.open(APP_SHELL_CACHE).then((cache) => cache.put(request, clone));
@@ -290,7 +300,7 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() => {
-          if (sensitive) {
+          if (neverCache || sensitive) {
             return caches.match("/offline/");
           }
           if (appShell) {
@@ -331,20 +341,21 @@ self.addEventListener("sync", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  let payload = {
-    title: "Giga3 AI",
-    body: "New update available.",
-    url: "/chat/",
-    tag: "giga3-default",
-    badgeCount: undefined,
-    badgeIncrement: 1,
+  const d = (() => {
+    try {
+      return event.data?.json() ?? {};
+    } catch {
+      return {};
+    }
+  })();
+  const payload = {
+    title: d.title || "Giga3 AI",
+    body: d.body || "New message",
+    url: d.url || "/chat/",
+    tag: d.tag || "giga3",
+    badgeCount: d.badgeCount,
+    badgeIncrement: d.badgeIncrement ?? 1,
   };
-  try {
-    payload = { ...payload, ...(event.data ? event.data.json() : {}) };
-  } catch {
-    /* ignore malformed payloads */
-  }
-  const tag = payload.tag || `giga3-${Date.now()}`;
   event.waitUntil(
     (async () => {
       const visible = await anyClientVisible();
@@ -352,20 +363,18 @@ self.addEventListener("push", (event) => {
         if (typeof payload.badgeCount === "number") {
           await setAppBadgeCount(payload.badgeCount);
         } else {
-          await bumpAppBadge(payload.badgeIncrement ?? 1);
+          await bumpAppBadge(payload.badgeIncrement);
         }
       }
       await self.registration.showNotification(payload.title, {
         body: payload.body,
-        icon: "/icons/icon-192.png",
-        badge: "/icons/icon-192.png",
-        tag,
+        icon: "/icons/icon-512.png",
+        badge: "/icons/badge-72.png",
+        vibrate: [200, 100, 200],
+        data: { url: payload.url, tag: payload.tag },
+        requireInteraction: true,
+        tag: payload.tag,
         renotify: true,
-        data: {
-          url: payload.url || "/chat/",
-          tag,
-          badgeCount: payload.badgeCount,
-        },
       });
     })()
   );
@@ -381,14 +390,15 @@ self.addEventListener("notificationclick", (event) => {
         type: "window",
         includeUncontrolled: true,
       });
-      for (const client of clients) {
-        if ("focus" in client && "navigate" in client) {
-          await client.focus();
-          return client.navigate(target);
+      const existing = clients.find((client) =>
+        client.url.includes(self.location.origin)
+      );
+      if (existing && "focus" in existing) {
+        await existing.focus();
+        if ("navigate" in existing) {
+          return existing.navigate(target);
         }
-        if ("focus" in client) {
-          return client.focus();
-        }
+        return undefined;
       }
       return self.clients.openWindow(target);
     })()
