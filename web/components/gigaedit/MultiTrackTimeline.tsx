@@ -133,6 +133,20 @@ export function MultiTrackTimeline({
   const logoBar = syntheticLogoBar(max, Boolean(brandWatermark?.trim()), brandWatermark?.trim() || "Logo");
   const captionsBar = syntheticCaptionsBar(max, Boolean(hasCaptions));
 
+  const audioClipCount = useMemo(() => clips.filter((c) => c.track === "audio").length, [clips]);
+
+  /** Collapse empty overlay lanes so the timeline stays scannable on small screens. */
+  const visibleLaneDefs = useMemo(() => {
+    return TIMELINE_LANES.filter((lane) => {
+      if (lane.id === "main-video") return true;
+      if (lane.id === "logo" && logoBar) return true;
+      if (lane.id === "captions" && captionsBar) return true;
+      return clipsForLane(clips, lane.id).length > 0;
+    });
+  }, [clips, logoBar, captionsBar]);
+
+  const hiddenEmptyLaneCount = TIMELINE_LANES.length - visibleLaneDefs.length;
+
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -258,11 +272,17 @@ export function MultiTrackTimeline({
           {drag ? " · Drag to lane" : ""}
         </span>
       </div>
+      {audioClipCount > 0 ? (
+        <p className="text-[10px] text-[var(--ge-muted)]">
+          Track 2 · Audio: {audioClipCount} clip{audioClipCount === 1 ? "" : "s"} attached (mixes on
+          export)
+        </p>
+      ) : null}
 
       <div className="gigaedit-timeline-body">
         <div className="gigaedit-timeline-rail" aria-hidden>
           <div className="gigaedit-timeline-rail-spacer" />
-          {TIMELINE_LANES.map((lane) => {
+          {visibleLaneDefs.map((lane) => {
             const Icon = LANE_ICONS[lane.id];
             return (
               <div key={lane.id} className="gigaedit-timeline-rail-lane" title={lane.label}>
@@ -299,7 +319,7 @@ export function MultiTrackTimeline({
               />
             </div>
 
-            {TIMELINE_LANES.map((lane) => {
+            {visibleLaneDefs.map((lane) => {
               const laneClips = clipsForLane(visibleClips, lane.id);
               const synthetic: SyntheticLaneBar[] = [];
               if (lane.id === "logo" && logoBar) synthetic.push(logoBar);
@@ -353,6 +373,11 @@ export function MultiTrackTimeline({
         >
           Frame ▶
         </button>
+        {hiddenEmptyLaneCount > 0 ? (
+          <span className="gigaedit-chip text-[10px] opacity-70" title="Empty overlay tracks are hidden. Add a sticker, text, or overlay to show its track.">
+            + {hiddenEmptyLaneCount} empty track{hiddenEmptyLaneCount === 1 ? "" : "s"} hidden
+          </span>
+        ) : null}
       </div>
     </div>
   );
@@ -476,6 +501,12 @@ function TimelineClipBlock({
 }: TimelineClipBlockProps) {
   const left = (clip.startSec / max) * 100;
   const width = Math.max(4, ((clip.endSec - clip.startSec) / max) * 100);
+  const typePrefix =
+    clip.track === "video" && (clip.videoLayer ?? 0) > 0
+      ? `L${clip.videoLayer} · `
+      : clip.track === "video"
+        ? ""
+        : `${clip.track} · `;
 
   return (
     <button
@@ -488,7 +519,11 @@ function TimelineClipBlock({
         clip.locked && "opacity-60"
       )}
       style={{ left: `${left}%`, width: `${width}%` }}
-      title={clip.locked ? `${clip.label} (locked)` : `${clip.label} — drag to move or change lane`}
+      title={
+        clip.locked
+          ? `${typePrefix}${clip.label} (locked)`
+          : `${typePrefix}${clip.label} — drag to move or change lane`
+      }
       onClick={(e) => {
         e.stopPropagation();
         onSelect();
@@ -506,7 +541,10 @@ function TimelineClipBlock({
           className="absolute inset-0 h-full w-full object-cover opacity-40"
         />
       ) : null}
-      <span className="relative z-[1] truncate">{clip.label}</span>
+      <span className="relative z-[1] truncate">
+        {typePrefix}
+        {clip.label}
+      </span>
       {!clip.locked ? (
         <>
           <span
