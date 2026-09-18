@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  readVoiceLanguageId,
+  subscribeVoiceLanguageId,
+  writeVoiceLanguageId,
+} from "@/lib/chat/voiceLanguagePreference";
 import { cn } from "@/lib/utils";
 import { Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -27,7 +32,7 @@ export const AFRICAN_READER_VOICES: AfricanReaderVoice[] = [
 export function AfricanVoiceReader({ content }: { content: string }) {
   const [supported, setSupported] = useState(false);
   const [speaking, setSpeaking] = useState(false);
-  const [voiceId, setVoiceId] = useState(AFRICAN_READER_VOICES[0].id);
+  const [voiceId, setVoiceId] = useState(() => readVoiceLanguageId());
   const [rate, setRate] = useState(1);
   const utterRef = useRef<SpeechSynthesisUtterance | null>(null);
 
@@ -36,6 +41,8 @@ export function AfricanVoiceReader({ content }: { content: string }) {
       typeof window !== "undefined" && "speechSynthesis" in window
     );
   }, []);
+
+  useEffect(() => subscribeVoiceLanguageId(setVoiceId), []);
 
   useEffect(() => {
     return () => {
@@ -111,7 +118,7 @@ export function AfricanVoiceReader({ content }: { content: string }) {
 
   return (
     <div
-      className="mt-2 flex min-h-12 flex-wrap items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 py-1.5"
+      className="mt-2 hidden min-h-12 flex-wrap items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 py-1.5 md:flex"
       aria-label="Read with African voice"
     >
       <span className="text-[13px] font-medium text-gray-600" aria-hidden>
@@ -124,7 +131,10 @@ export function AfricanVoiceReader({ content }: { content: string }) {
             <button
               key={voice.id}
               type="button"
-              onClick={() => setVoiceId(voice.id)}
+              onClick={() => {
+                setVoiceId(voice.id);
+                writeVoiceLanguageId(voice.id);
+              }}
               aria-pressed={active}
               title={`${voice.name} ${voice.flag}`}
               className={cn(

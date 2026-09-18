@@ -1,0 +1,163 @@
+/* Mobile chat app shell — purple header, voice pill, bubble colors (mockup-aligned) */
+
+.chat-header-bar--app {
+  background: #7c3aed;
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+.chat-header-bar--app .chat-header-row {
+  position: relative;
+  min-height: 3rem;
+}
+
+.chat-header-bar--app .chat-header-menu {
+  color: #fff;
+}
+
+.chat-header-bar--app .chat-header-menu:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.chat-header-title-mobile {
+  position: absolute;
+  left: 3rem;
+  right: 3rem;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-voice-language-bar {
+  padding: 0.5rem 0.75rem 0.65rem;
+  background: #fff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.dark .chat-voice-language-bar {
+  background: var(--background);
+  border-bottom-color: var(--border);
+}
+
+.chat-voice-language-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  background: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #374151;
+  position: relative;
+}
+
+.dark .chat-voice-language-pill {
+  border-color: var(--border);
+  background: var(--card);
+  color: var(--foreground);
+}
+
+.chat-voice-language-pill__icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: #7c3aed;
+}
+
+.chat-voice-language-pill__prefix {
+  flex-shrink: 0;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.chat-voice-language-pill__value {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  font-weight: 600;
+  color: #111827;
+}
+
+.dark .chat-voice-language-pill__value {
+  color: var(--foreground);
+}
+
+.chat-voice-language-pill__select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.chat-voice-language-pill__chevron {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+@media (min-width: 1024px) {
+  .chat-header-bar--app {
+    background: var(--card);
+    border-bottom-color: var(--border);
+  }
+
+  .chat-voice-language-bar {
+    display: none;
+  }
+}
+
+.chat-assistant-sparkle {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .chat-assistant-sparkle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .chat-message-bubble-user .chat-message-bubble-inner--app {
+    background: #7c3aed;
+    color: #fff;
+  }
+
+  .chat-message-bubble-assistant-inner--app {
+    background: #f3f4f6;
+    color: #111827;
+    border-radius: 1.25rem;
+    padding: 0.65rem 1rem;
+  }
+
+  .dark .chat-message-bubble-assistant-inner--app {
+    background: #27272a;
+    color: #f4f4f5;
+  }
+
+  .chat-conversation-grid {
+    background: #fff;
+  }
+
+  .dark .chat-conversation-grid {
+    background: var(--background);
+  }
+}

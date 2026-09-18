@@ -62,7 +62,7 @@ interface ChatInputProps {
 export const ChatInput = memo(function ChatInput({
   onSend,
   disabled,
-  placeholder = "Message Giga3 AI…",
+  placeholder = "Message Giga3...",
   insertRef,
   uploadUsage,
   credits,

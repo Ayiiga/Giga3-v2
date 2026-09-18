@@ -8,6 +8,7 @@ import { ModelSelector } from "@/components/chat/ModelSelector";
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
 import { PlatformChromeHost } from "@/components/platform/PlatformChromeHost";
 import { ChatGigaSocialStoryRingsSafe } from "@/components/chat/ChatGigaSocialStoryRingsSafe";
+import { ChatVoiceLanguageBar } from "@/components/chat/ChatVoiceLanguageBar";
 import type { UiMessage } from "@/components/chat/MessageList";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
@@ -116,21 +117,25 @@ export const ChatChrome = memo(function ChatChrome({
   const router = useRouter();
 
   return (
-    <header className="chat-header-stable chat-header-bar border-b border-border bg-card">
+    <header className="chat-header-stable chat-header-bar chat-header-bar--app border-b border-border bg-card">
       <div className="chat-header-row flex min-h-12 items-center gap-2 px-3 py-1.5 sm:min-h-14 sm:gap-3 sm:px-4 sm:py-2">
         <div className="chat-header-brand flex min-w-0 items-center gap-2">
           <button
             type="button"
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-accent/10 hover:text-foreground lg:hidden"
+            className="chat-header-menu inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-accent/10 hover:text-foreground lg:hidden"
             onClick={onOpenSidebar}
             aria-label="Open sidebar"
           >
             <Menu className="h-5 w-5" aria-hidden />
           </button>
 
+          <span className="chat-header-title-mobile lg:hidden" aria-hidden>
+            {branding.name}
+          </span>
+
           <Link
             href="/"
-            className="min-w-0 truncate rounded-lg pr-1 text-sm font-semibold text-foreground hover:opacity-90 sm:text-base"
+            className="hidden min-w-0 truncate rounded-lg pr-1 text-sm font-semibold text-foreground hover:opacity-90 sm:text-base lg:inline"
             aria-label={`${branding.name} home`}
           >
             {branding.shortName}
@@ -207,6 +212,8 @@ export const ChatChrome = memo(function ChatChrome({
           </button>
         </div>
       </div>
+
+      <ChatVoiceLanguageBar className="lg:hidden" />
 
       <div className="chat-header-combo hidden border-t border-border/70 px-3 py-2 sm:px-4 md:block">
         <div className="chat-header-combo-inner flex min-w-0 items-stretch overflow-hidden rounded-xl border border-border bg-card shadow-sm">

@@ -206,7 +206,7 @@ export const MessageBubble = memo(function MessageBubble({
         <div className="chat-message-bubble chat-message-bubble-user">
           <div
             className={cn(
-              "chat-message-bubble-inner rounded-3xl bg-zinc-200/90 px-4 py-2.5 text-zinc-900 dark:bg-zinc-700/90 dark:text-zinc-50",
+              "chat-message-bubble-inner chat-message-bubble-inner--app rounded-3xl bg-zinc-200/90 px-4 py-2.5 text-zinc-900 dark:bg-zinc-700/90 dark:text-zinc-50",
               pending && "opacity-80"
             )}
           >
@@ -223,7 +223,10 @@ export const MessageBubble = memo(function MessageBubble({
       className="group chat-message-turn chat-message-turn-assistant"
       title={timeLabel || undefined}
     >
-      <div className="chat-message-bubble flex w-full min-w-0 max-w-full gap-0 sm:gap-3">
+      <div className="chat-message-bubble chat-message-bubble-assistant flex w-full min-w-0 max-w-full gap-2 sm:gap-3">
+        <span className="chat-assistant-sparkle" aria-hidden>
+          ✨
+        </span>
         <div
           className="mt-0.5 hidden h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 sm:flex"
           aria-hidden
@@ -231,7 +234,9 @@ export const MessageBubble = memo(function MessageBubble({
           <Bot className="h-3.5 w-3.5" />
         </div>
         <div className="min-w-0 w-full max-w-full flex-1">
-          <div className="chat-assistant-body chat-message-bubble-inner px-0 py-0.5 text-foreground sm:py-1">
+          <div
+            className="chat-assistant-body chat-message-bubble-inner chat-message-bubble-assistant-inner--app px-0 py-0.5 text-foreground sm:py-1"
+          >
             {body}
           </div>
           {bubbleActions}
