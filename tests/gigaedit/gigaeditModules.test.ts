@@ -75,10 +75,12 @@ describe("GigaEdit routing & SW", () => {
     expect(siteConfig.links.gigaedit).toBe("/gigaedit");
   });
 
-  it("precaches gigaedit shell and bumps cache version", () => {
+  it("uses giga3-v6 cache with lean precache (no heavy app shells)", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v258-chat-fix"');
-    expect(sw).toContain('"/gigaedit/"');
+    expect(sw).toContain('CACHE_VERSION = "giga3-v6"');
+    const precacheBlock = sw.match(/const PRECACHE = \[([\s\S]*?)\];/)?.[1] ?? "";
+    expect(precacheBlock).not.toContain('"/gigaedit/"');
+    expect(precacheBlock).toContain("OFFLINE_URL");
   });
 
   it("imports formatTimecodeMs in VideoEditor (prevents runtime ReferenceError)", () => {

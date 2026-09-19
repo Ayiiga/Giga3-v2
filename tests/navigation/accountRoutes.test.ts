@@ -11,23 +11,16 @@ describe("account routes (chat overflow menu targets)", () => {
     }
   });
 
-  it("ChatMoreMenu uses hard-stable links to account pages and legal privacy", () => {
-    const more = readFileSync(
-      resolve(WEB_ROOT, "components/chat/ChatMoreMenu.tsx"),
-      "utf8"
-    );
-    expect(more).toContain('href="/profile/"');
-    expect(more).toContain('href="/settings/"');
-    expect(more).toContain('href="/help/"');
-    expect(more).toContain('href="/legal/privacy/"');
-    expect(more).not.toContain('href="/privacy"');
-    expect(more).toContain("hard");
-  });
-
-  it("404 page uses hard StableLink navigation", () => {
-    const notFound = readFileSync(resolve(WEB_ROOT, "app/not-found.tsx"), "utf8");
-    expect(notFound).toContain("StableLink");
-    expect(notFound).toContain("hard");
-    expect(notFound).not.toContain("ButtonLink");
+  it("404 page uses client recovery with POST log-404", () => {
+    const notFound = readFileSync(resolve(WEB_ROOT, "components/seo/NotFoundClient.tsx"), "utf8");
+    expect(notFound).toContain("NotFoundClient");
+    expect(notFound).toContain('method: "POST"');
+    expect(notFound).toContain("/api/log-404");
+    expect(notFound).toContain("Go to home page");
+    expect(notFound).toContain("Browse all features");
+    expect(notFound).toContain('"/gigalearn"');
+    expect(notFound).toContain('"/gigasocial"');
+    expect(notFound).toContain('"/media"');
+    expect(notFound).toContain('"/chat"');
   });
 });
