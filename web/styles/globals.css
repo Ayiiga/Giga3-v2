@@ -926,6 +926,10 @@ button:focus-visible {
   padding-bottom: 0;
 }
 
+.chat-footer-chips + .chat-composer-dock .chat-composer {
+  padding-top: 0;
+}
+
 .chat-message-stack {
   width: 100%;
 }

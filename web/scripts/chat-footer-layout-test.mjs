@@ -8,7 +8,13 @@ import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
-const styles = ["globals.css", "primary-nav.css", "chat-premium.css", "chat-overflow.css"]
+const styles = [
+  "globals.css",
+  "primary-nav.css",
+  "chat-premium.css",
+  "chat-overflow.css",
+  "chat-mobile-app.css",
+]
   .map((name) => fs.readFileSync(path.join(root, `../styles/${name}`), "utf8"))
   .join("\n");
 
@@ -46,11 +52,12 @@ const FIXTURE_HTML = `<!DOCTYPE html>
         </div>
       </div>
       <div class="chat-composer-stack chat-footer shrink-0 border-t border-border bg-background">
-        <div id="footer-chips" class="chat-footer-chips px-3 pt-2">
-          <p style="margin:0 0 0.35rem;font-size:11px;font-weight:600;color:#64748b;">Suggested next steps</p>
-          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-            <button type="button" style="border:1px solid #e5e7eb;border-radius:999px;padding:0.35rem 0.75rem;font-size:12px;">Draft an email</button>
-            <button type="button" style="border:1px solid #e5e7eb;border-radius:999px;padding:0.35rem 0.75rem;font-size:12px;">Summarize notes</button>
+        <div id="footer-chips" class="chat-footer-chips px-3 pt-0.5">
+          <div class="chat-suggested-chips">
+            <div class="chat-suggested-chips__row">
+              <button type="button" style="border:1px solid #e5e7eb;border-radius:999px;padding:0.35rem 0.75rem;font-size:12px;">Draft an email</button>
+              <button type="button" style="border:1px solid #e5e7eb;border-radius:999px;padding:0.35rem 0.75rem;font-size:12px;">Summarize notes</button>
+            </div>
           </div>
         </div>
         <div class="chat-composer-dock">
@@ -100,11 +107,18 @@ async function main() {
     const composer = document.querySelector(".chat-composer");
     const nav = document.querySelector(".primary-nav--mobile");
     const scroll = document.querySelector(".chat-message-scroll-region");
+    const chipButton = document.querySelector(".chat-suggested-chips__row button");
+    const composerSurface = document.querySelector(".chat-composer-surface");
     const composerRect = composer.getBoundingClientRect();
     const navRect = nav.getBoundingClientRect();
+    const chipRect = chipButton?.getBoundingClientRect();
+    const surfaceRect = composerSurface?.getBoundingClientRect();
     const chipsVisible = getComputedStyle(document.getElementById("footer-chips")).display !== "none";
     return {
       gapPx: Math.round(navRect.top - composerRect.bottom),
+      chipsToComposerGapPx:
+        chipRect && surfaceRect ? Math.round(surfaceRect.top - chipRect.bottom) : null,
+      composerPaddingTop: getComputedStyle(composer).paddingTop,
       composerMarginBottom: getComputedStyle(composer).marginBottom,
       shellPaddingBottom: getComputedStyle(document.querySelector(".chat-keyboard-shell")).paddingBottom,
       scrollFlexGrow: getComputedStyle(scroll).flexGrow,
@@ -136,6 +150,14 @@ async function main() {
 
   if (beforeFocus.gapPx > 12) {
     throw new Error(`Composer/nav gap too large: ${beforeFocus.gapPx}px`);
+  }
+  if (beforeFocus.chipsToComposerGapPx == null || beforeFocus.chipsToComposerGapPx > 6) {
+    throw new Error(
+      `Chips/composer gap too large: ${beforeFocus.chipsToComposerGapPx ?? "unknown"}px`
+    );
+  }
+  if (beforeFocus.composerPaddingTop !== "0px") {
+    throw new Error(`Expected zero composer padding-top with chips: ${beforeFocus.composerPaddingTop}`);
   }
   if (beforeFocus.composerMarginBottom !== "0px") {
     throw new Error(`Unexpected composer margin-bottom: ${beforeFocus.composerMarginBottom}`);
