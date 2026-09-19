@@ -1,5 +1,6 @@
 "use client";
 
+import { recoverFromServiceWorkerStaleChunk } from "@/lib/pwa/chunkLoadRecovery";
 import { useEffect } from "react";
 
 export function ServiceWorkerRegister() {
@@ -8,6 +9,14 @@ export function ServiceWorkerRegister() {
     if (process.env.NODE_ENV !== "production") return;
 
     let interval: ReturnType<typeof setInterval> | undefined;
+
+    const onMessage = (event: MessageEvent) => {
+      if (event.data?.type === "GIGA3_CHUNK_STALE") {
+        recoverFromServiceWorkerStaleChunk();
+      }
+    };
+
+    navigator.serviceWorker.addEventListener("message", onMessage);
 
     navigator.serviceWorker
       .register("/sw.js", { scope: "/", updateViaCache: "none" })
@@ -22,6 +31,7 @@ export function ServiceWorkerRegister() {
       });
 
     return () => {
+      navigator.serviceWorker.removeEventListener("message", onMessage);
       if (interval) window.clearInterval(interval);
     };
   }, []);

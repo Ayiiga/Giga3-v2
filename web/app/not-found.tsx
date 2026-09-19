@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { NotFoundRecovery } from "@/components/seo/NotFoundRecovery";
 import { Container } from "@/components/ui/Container";
 import { StableLink } from "@/components/ui/StableLink";
 import { PRODUCT_CATALOG } from "@/lib/seo/productCatalog";
@@ -77,6 +78,7 @@ export default function NotFound() {
               </li>
             </ul>
           </nav>
+          <NotFoundRecovery />
         </div>
       </Container>
     </main>

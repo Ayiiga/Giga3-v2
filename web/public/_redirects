@@ -1,7 +1,13 @@
 # Cloudflare Pages — Next.js static export (trailingSlash: true)
+#
+# Connection stability (prevents ERR_CONNECTION_CLOSED on long-lived requests):
+#   Cloudflare Dashboard → Rules → Origin Rules → increase origin response timeout.
+#   If proxied via Nginx: proxy_read_timeout 120s; keepalive_timeout 65s;
+#
 /payment/success/*  /payment/success/index.html  200
 /payment/failed/*   /payment/failed/index.html   200
 /chat/*               /chat/index.html               200
+/offline.html         /offline.html                  200
 # Per-post/profile/item pages are pre-rendered at build — do not rewrite them to
 # noindex legacy shells (that blocked Google from indexing public content).
 
