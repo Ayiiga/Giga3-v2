@@ -18,10 +18,13 @@ export function BlogCard({
   post,
   viewCount,
   viewsLoading = false,
+  showViews = viewCount !== undefined || viewsLoading,
 }: {
   post: BlogPostWithPath;
   viewCount?: number;
   viewsLoading?: boolean;
+  /** When false, omit the views row (used on SSR blog listings). */
+  showViews?: boolean;
 }) {
   const categorySlug = categorySlugForName(post.category);
 
@@ -69,15 +72,17 @@ export function BlogCard({
             <dt className="sr-only">Author</dt>
             <dd>{post.author}</dd>
           </div>
-          <div>
-            <dt className="sr-only">Views</dt>
-            <dd className="inline-flex items-center gap-1">
-              <Eye className="h-3.5 w-3.5" aria-hidden />
-              {viewsLoading || viewCount === undefined
-                ? "…"
-                : formatBlogViewLabel(viewCount)}
-            </dd>
-          </div>
+          {showViews ? (
+            <div>
+              <dt className="sr-only">Views</dt>
+              <dd className="inline-flex items-center gap-1">
+                <Eye className="h-3.5 w-3.5" aria-hidden />
+                {viewsLoading || viewCount === undefined
+                  ? "…"
+                  : formatBlogViewLabel(viewCount)}
+              </dd>
+            </div>
+          ) : null}
         </dl>
         <p className="mt-4">
           <Link

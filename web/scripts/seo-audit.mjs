@@ -198,6 +198,28 @@ for (const p of indexable) {
   if (!sitemapRoutes.has(p.route)) warn(p.route, "indexable page not listed in sitemap (index or child sitemaps)");
 }
 
+// Blog index must expose crawlable article links (not a client-only loading shell).
+try {
+  const blogIndexPath = join(outDir, "blog", "index.html");
+  if (existsSync(blogIndexPath)) {
+    const blogHtml = readFileSync(blogIndexPath, "utf8");
+    if (/Loading…|Loading\.\.\./.test(blogHtml)) {
+      err("/blog/", "blog index HTML contains a loading shell instead of article links");
+    }
+    const articleLinks = [...blogHtml.matchAll(/href="(\/blog\/[^"?#]+\/)"/g)]
+      .map((m) => m[1])
+      .filter((href) => !href.startsWith("/blog/category/"));
+    if (articleLinks.length < 5) {
+      err(
+        "/blog/",
+        `blog index has ${articleLinks.length} article <a href> links in static HTML (expected ≥5)`
+      );
+    }
+  }
+} catch {
+  err("/blog/", "blog index.html missing from build output");
+}
+
 // robots.txt sanity.
 try {
   const robots = readFileSync(join(outDir, "robots.txt"), "utf8");

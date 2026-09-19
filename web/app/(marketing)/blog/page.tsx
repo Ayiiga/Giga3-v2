@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
-import { BlogGrid } from "@/components/blog/BlogGrid";
+import { BlogPostGrid } from "@/components/blog/BlogPostGrid";
 import { BlogBreadcrumbs } from "@/components/blog/BlogBreadcrumbs";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { BLOG_CATEGORIES, blogCategoryPath } from "@/lib/blog/categories";
@@ -94,7 +94,7 @@ export default function BlogIndexPage() {
               <h2 id="latest-articles-heading" className="sr-only">
                 Latest articles
               </h2>
-              <BlogGrid posts={posts} />
+              <BlogPostGrid posts={posts} />
             </section>
 
             <section aria-labelledby="guides-heading" className="mt-16 border-t border-border pt-12">
