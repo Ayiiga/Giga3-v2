@@ -20,6 +20,10 @@ describe("Chat mobile app UI shell", () => {
       resolve(__dirname, "../../web/components/chat/ChatInput.tsx"),
       "utf8"
     );
+    const shell = readFileSync(
+      resolve(__dirname, "../../web/components/chat/ChatKeyboardShell.tsx"),
+      "utf8"
+    );
 
     expect(chrome).toContain("chat-header-bar--app");
     expect(chrome).toContain("Giga3Logo");
@@ -29,6 +33,11 @@ describe("Chat mobile app UI shell", () => {
     expect(logo).toContain("#7C3AED");
     expect(css).toContain("#7c3aed");
     expect(css).toContain("--chat-header-height");
+    expect(shell).toContain("chat-app-shell");
+    expect(css).toContain("chat-app-shell");
+    expect(css).toContain("100dvh");
+    expect(css).toContain("width: 96%");
+    expect(css).toContain("max-width: 78%");
     expect(input).toContain("Message Giga3...");
   });
 

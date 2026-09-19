@@ -1,228 +1,68 @@
 /**
- * Giga3 AI PWA service worker — static export on Cloudflare Pages.
- * Bump CACHE_VERSION on every deploy that changes JS/CSS or routing.
+ * Giga3 AI PWA service worker — Cloudflare Pages static export.
+ * Bump CACHE_VERSION on every deploy that changes JS/CSS.
  */
-const CACHE_VERSION = "giga3-v259-pwa-hardening";
-/** Legacy name kept for tests + cache inspection tools (giga3-shell-vNNN). */
-const CACHE_NAME = "giga3-shell-v259-pwa-hardening";
-const NEXT_STATIC_CACHE = `${CACHE_VERSION}-next-static`;
-const APP_SHELL_CACHE = `${CACHE_VERSION}-app-shell`;
+const CACHE_VERSION = "giga3-v6";
 const OFFLINE_URL = "/offline.html";
-
 const NETWORK_TIMEOUT_MS = 15000;
-const NAV_RETRY_DELAY_MS = 800;
+
+const PRECACHE = ["/", OFFLINE_URL, "/manifest.json", "/manifest.webmanifest"];
 
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
 const BADGE_KEY = "count";
 
-/** Public marketing/shell routes only — never precache authenticated app surfaces. */
-const PRECACHE = [
-  "/",
-  OFFLINE_URL,
-  "/manifest.json",
-  "/manifest.webmanifest",
-  "/favicon.ico",
-  "/favicon.svg",
-  "/images/logo.png",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
-  "/icons/badge-72.png",
-  "/icons/apple-touch-icon.png",
-  "/icons/icon-maskable-512.png",
-  "/pricing/",
-  "/subscribe/",
-  "/chat/login/",
-  "/gigaedit/",
-  "/gigalearn/",
-];
-
-function isNeverCacheDocumentPath(pathname) {
-  return (
-    pathname === "/chat" ||
-    pathname.startsWith("/chat/") ||
-    pathname === "/workspace" ||
-    pathname.startsWith("/workspace/") ||
-    pathname.startsWith("/payment/") ||
-    pathname.startsWith("/credits/") ||
-    pathname.startsWith("/admin/")
-  );
-}
-
-function isSensitiveDocumentPath(pathname) {
-  return (
-    isNeverCacheDocumentPath(pathname) ||
-    pathname.startsWith("/wallet/") ||
-    pathname.startsWith("/marketplace/sell/") ||
-    pathname.startsWith("/marketplace/purchases/") ||
-    pathname.startsWith("/creator-studio/") ||
-    pathname.startsWith("/creator/")
-  );
-}
-
-function isOfflineAppShellPath(pathname) {
-  if (pathname.startsWith("/chat/login")) return false;
-  return (
-    pathname === "/chat" ||
-    pathname.startsWith("/chat/") ||
-    pathname === "/gigasocial" ||
-    pathname.startsWith("/gigasocial/") ||
-    pathname === "/gigalearn" ||
-    pathname.startsWith("/gigalearn/") ||
-    pathname === "/gigaedit" ||
-    pathname.startsWith("/gigaedit/")
-  );
-}
-
-function isNextStaticAsset(pathname) {
-  return pathname.startsWith("/_next/static/");
-}
-
-function isNextChunk(pathname) {
-  return pathname.startsWith("/_next/");
-}
-
-function isStaticAsset(pathname) {
-  return (
-    pathname.startsWith("/icons/") ||
-    pathname.startsWith("/splash/") ||
-    pathname.startsWith("/images/") ||
-    /\.(?:js|css|woff2?|png|svg|webp|ico|json|webmanifest)$/.test(pathname)
-  );
-}
-
-function isApiPath(pathname) {
-  return pathname.startsWith("/api/");
-}
-
-/** Fetch with AbortController timeout — avoids hanging until browser kills connection. */
 function fetchWithTimeout(request, timeoutMs) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   return fetch(request, { signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
-function jsonResponse(body, status) {
-  return new Response(JSON.stringify(body), {
-    status: status || 200,
+function jsonOffline() {
+  return new Response(JSON.stringify({ error: "offline" }), {
+    status: 503,
     headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 }
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 async function notifyClients(message) {
   const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-  for (const client of clients) {
-    client.postMessage(message);
-  }
+  for (const client of clients) client.postMessage(message);
 }
 
-/** Stale chunk from previous deploy — purge SW caches and ask clients to hard-reload once. */
 async function handleStaleChunk(request) {
-  try {
-    const keys = await caches.keys();
-    await Promise.all(keys.map((key) => caches.delete(key)));
-  } catch {
-    /* ignore */
-  }
+  const keys = await caches.keys();
+  await Promise.all(keys.filter((k) => k.startsWith("giga3")).map((k) => caches.delete(k)));
   await notifyClients({ type: "GIGA3_CHUNK_STALE", url: request.url });
 }
 
-async function networkFirstNavigation(request) {
-  const url = new URL(request.url);
-  const neverCache = isNeverCacheDocumentPath(url.pathname);
-  const sensitive = isSensitiveDocumentPath(url.pathname);
-  const appShell = isOfflineAppShellPath(url.pathname) && !neverCache;
-
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      const response = await fetchWithTimeout(request, NETWORK_TIMEOUT_MS);
-      if (response.ok) {
-        if (!sensitive && !neverCache && !appShell) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-        }
-        if (appShell) {
-          const clone = response.clone();
-          caches.open(APP_SHELL_CACHE).then((cache) => cache.put(request, clone));
-        }
-        return response;
-      }
-      if (response.status === 404) {
-        return response;
-      }
-    } catch {
-      if (attempt === 0) await sleep(NAV_RETRY_DELAY_MS);
-    }
-  }
-
-  if (appShell) {
-    const appCached = await caches.open(APP_SHELL_CACHE).then((cache) => cache.match(request));
-    if (appCached) return appCached;
-  }
-
-  const cached = await caches.match(request);
-  if (cached) return cached;
-
-  const offline = await caches.match(OFFLINE_URL);
-  if (offline) return offline;
-
-  return jsonResponse({ error: "offline", offline: true }, 503);
+function isStaticAsset(pathname) {
+  return (
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/icons/") ||
+    pathname.startsWith("/images/") ||
+    /\.(?:js|css|woff2?|png|svg|webp|ico)$/.test(pathname)
+  );
 }
 
-async function cacheFirstStatic(request) {
-  const cached = await caches.match(request);
-  const networkUpdate = fetch(request)
-    .then((response) => {
-      if (response.ok) {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-      }
-      return response;
-    })
-    .catch(() => null);
-
-  if (cached) {
-    void networkUpdate;
-    return cached;
-  }
-
-  const response = await networkUpdate;
-  return response || caches.match(OFFLINE_URL);
+function isDocument(request) {
+  return (
+    request.mode === "navigate" ||
+    request.headers.get("accept")?.includes("text/html")
+  );
 }
 
-async function networkFirstNextStatic(request) {
-  try {
-    const response = await fetchWithTimeout(request, NETWORK_TIMEOUT_MS);
-    if (response.ok) {
-      const clone = response.clone();
-      caches.open(NEXT_STATIC_CACHE).then((cache) => cache.put(request, clone));
-      return response;
-    }
-    if (response.status === 404 && request.url.includes(".js")) {
-      await handleStaleChunk(request);
-    }
-    return response;
-  } catch {
-    const cached = await caches.match(request);
-    if (cached) return cached;
-    if (request.url.includes(".js")) {
-      await handleStaleChunk(request);
-    }
-    throw new Error("chunk unavailable");
-  }
-}
-
-// --- Install / activate ---
+// --- Lifecycle ---
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE)).catch((err) => {
-      console.error("[sw] precache failed", err);
-    })
+    caches
+      .open(CACHE_VERSION)
+      .then((cache) => cache.addAll(PRECACHE))
+      .then(function () {
+        self.skipWaiting();
+      })
+      .catch((err) => console.error("[sw] precache failed", err))
   );
 });
 
@@ -230,16 +70,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) =>
-        Promise.all(
-          keys
-            .filter(
-              (k) =>
-                k !== CACHE_NAME && k !== NEXT_STATIC_CACHE && k !== APP_SHELL_CACHE
-            )
-            .map((k) => caches.delete(k))
-        )
-      )
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -254,13 +85,11 @@ self.addEventListener("message", (event) => {
     return;
   }
   if (event.data?.type === "GIGA3_SET_BADGE") {
-    const count = Number(event.data.count) || 0;
-    event.waitUntil(setAppBadgeCount(count));
+    event.waitUntil(setAppBadgeCount(Number(event.data.count) || 0));
     return;
   }
   if (event.data?.type === "GIGA3_BUMP_BADGE") {
-    const delta = Number(event.data.delta) || 1;
-    event.waitUntil(bumpAppBadge(delta));
+    event.waitUntil(bumpAppBadge(Number(event.data.delta) || 1));
   }
 });
 
@@ -273,41 +102,55 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  if (isApiPath(url.pathname)) {
+  // (a) API — network-only, never cache
+  if (url.pathname.startsWith("/api/")) {
+    event.respondWith(
+      fetchWithTimeout(request, NETWORK_TIMEOUT_MS).catch(() => jsonOffline())
+    );
+    return;
+  }
+
+  // (b) Navigation — network-first, then cache, then offline.html
+  if (isDocument(request)) {
     event.respondWith(
       fetchWithTimeout(request, NETWORK_TIMEOUT_MS)
-        .then((response) => response)
-        .catch(() => jsonResponse({ error: "offline" }, 503))
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_VERSION).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(async () => {
+          const cached = await caches.match(request);
+          if (cached) return cached;
+          const offline = await caches.match(OFFLINE_URL);
+          return offline || jsonOffline();
+        })
     );
     return;
   }
 
-  if (isNextStaticAsset(url.pathname)) {
-    event.respondWith(networkFirstNextStatic(request));
-    return;
-  }
-
-  if (isNextChunk(url.pathname)) {
+  // (c) Static — cache-first, then network, update cache
+  if (isStaticAsset(url.pathname)) {
     event.respondWith(
-      fetchWithTimeout(request, NETWORK_TIMEOUT_MS).catch(async () => {
-        await handleStaleChunk(request);
-        return jsonResponse({ error: "chunk_load_failed" }, 404);
+      caches.match(request).then(async (cached) => {
+        try {
+          const response = await fetchWithTimeout(request, NETWORK_TIMEOUT_MS);
+          if (response.status === 404 && url.pathname.endsWith(".js")) {
+            await handleStaleChunk(request);
+          }
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_VERSION).then((cache) => cache.put(request, clone));
+          }
+          return response.ok ? response : cached || response;
+        } catch {
+          if (url.pathname.endsWith(".js")) await handleStaleChunk(request);
+          return cached || jsonOffline();
+        }
       })
     );
-    return;
-  }
-
-  const isDocument =
-    request.mode === "navigate" ||
-    request.headers.get("accept")?.includes("text/html");
-
-  if (isDocument) {
-    event.respondWith(networkFirstNavigation(request));
-    return;
-  }
-
-  if (isStaticAsset(url.pathname)) {
-    event.respondWith(cacheFirstStatic(request));
     return;
   }
 
@@ -316,20 +159,15 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-// --- Badge helpers ---
+// --- Badge (push launcher) ---
 
 function openBadgeDb() {
   return new Promise((resolve) => {
-    if (!self.indexedDB) {
-      resolve(null);
-      return;
-    }
+    if (!self.indexedDB) return resolve(null);
     const req = self.indexedDB.open(BADGE_DB, 1);
     req.onupgradeneeded = () => {
       const db = req.result;
-      if (!db.objectStoreNames.contains(BADGE_STORE)) {
-        db.createObjectStore(BADGE_STORE);
-      }
+      if (!db.objectStoreNames.contains(BADGE_STORE)) db.createObjectStore(BADGE_STORE);
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => resolve(null);
@@ -340,16 +178,13 @@ function readBadgeCount() {
   return openBadgeDb().then(
     (db) =>
       new Promise((resolve) => {
-        if (!db) {
-          resolve(0);
-          return;
-        }
+        if (!db) return resolve(0);
         try {
           const tx = db.transaction(BADGE_STORE, "readonly");
           const req = tx.objectStore(BADGE_STORE).get(BADGE_KEY);
           req.onsuccess = () => {
-            const value = req.result;
-            resolve(typeof value === "number" && value > 0 ? value : 0);
+            const v = req.result;
+            resolve(typeof v === "number" && v > 0 ? v : 0);
           };
           req.onerror = () => resolve(0);
         } catch {
@@ -363,10 +198,7 @@ function writeBadgeCount(count) {
   return openBadgeDb().then(
     (db) =>
       new Promise((resolve) => {
-        if (!db) {
-          resolve();
-          return;
-        }
+        if (!db) return resolve();
         try {
           const tx = db.transaction(BADGE_STORE, "readwrite");
           tx.objectStore(BADGE_STORE).put(Math.max(0, Math.floor(count)), BADGE_KEY);
@@ -382,10 +214,8 @@ function writeBadgeCount(count) {
 async function applyRegistrationBadge(count) {
   const safe = Math.max(0, Math.min(99, Math.floor(count)));
   try {
-    if (safe <= 0) {
-      if (typeof self.registration.clearAppBadge === "function") {
-        await self.registration.clearAppBadge();
-      }
+    if (safe <= 0 && typeof self.registration.clearAppBadge === "function") {
+      await self.registration.clearAppBadge();
     } else if (typeof self.registration.setAppBadge === "function") {
       await self.registration.setAppBadge(safe);
     }
@@ -405,39 +235,28 @@ async function clearAppBadge() {
 }
 
 async function bumpAppBadge(delta) {
-  const next = (await readBadgeCount()) + Math.max(1, Number(delta) || 1);
-  await setAppBadgeCount(next);
-  return next;
+  await setAppBadgeCount((await readBadgeCount()) + Math.max(1, delta || 1));
 }
 
 async function anyClientVisible() {
-  const clients = await self.clients.matchAll({
-    type: "window",
-    includeUncontrolled: true,
-  });
-  return clients.some((client) => client.visibilityState === "visible");
+  const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+  return clients.some((c) => c.visibilityState === "visible");
 }
 
 // --- Background sync ---
 
 self.addEventListener("sync", (event) => {
-  if (event.tag !== "giga3-chat-outbox" && event.tag !== "giga3-social-outbox") {
-    return;
-  }
+  if (event.tag !== "giga3-chat-outbox" && event.tag !== "giga3-social-outbox") return;
   const messageType =
-    event.tag === "giga3-social-outbox"
-      ? "GIGA3_FLUSH_SOCIAL_OUTBOX"
-      : "GIGA3_FLUSH_OUTBOX";
+    event.tag === "giga3-social-outbox" ? "GIGA3_FLUSH_SOCIAL_OUTBOX" : "GIGA3_FLUSH_OUTBOX";
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
-      for (const client of clients) {
-        client.postMessage({ type: messageType });
-      }
+      for (const client of clients) client.postMessage({ type: messageType });
     })
   );
 });
 
-// --- Push notifications ---
+// --- Push ---
 
 self.addEventListener("push", (event) => {
   const d = (() => {
@@ -457,13 +276,9 @@ self.addEventListener("push", (event) => {
   };
   event.waitUntil(
     (async () => {
-      const visible = await anyClientVisible();
-      if (!visible) {
-        if (typeof payload.badgeCount === "number") {
-          await setAppBadgeCount(payload.badgeCount);
-        } else {
-          await bumpAppBadge(payload.badgeIncrement);
-        }
+      if (!(await anyClientVisible())) {
+        if (typeof payload.badgeCount === "number") await setAppBadgeCount(payload.badgeCount);
+        else await bumpAppBadge(payload.badgeIncrement);
       }
       await self.registration.showNotification(payload.title, {
         body: payload.body,
@@ -485,18 +300,11 @@ self.addEventListener("notificationclick", (event) => {
   event.waitUntil(
     (async () => {
       await clearAppBadge();
-      const clients = await self.clients.matchAll({
-        type: "window",
-        includeUncontrolled: true,
-      });
-      const existing = clients.find((client) =>
-        client.url.includes(self.location.origin)
-      );
+      const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      const existing = clients.find((c) => c.url.includes(self.location.origin));
       if (existing && "focus" in existing) {
         await existing.focus();
-        if ("navigate" in existing) {
-          return existing.navigate(target);
-        }
+        if ("navigate" in existing) return existing.navigate(target);
         return undefined;
       }
       return self.clients.openWindow(target);

@@ -3,57 +3,28 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("service worker cache version", () => {
-  it("uses v259 PWA hardening cache with offline.html fallback", () => {
+  it("uses giga3-v6 cache with offline.html fallback", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_VERSION = "giga3-v259-pwa-hardening"');
-    expect(sw).toContain('CACHE_NAME = "giga3-shell-v259-pwa-hardening"');
+    expect(sw).toContain('CACHE_VERSION = "giga3-v6"');
     expect(sw).toContain('OFFLINE_URL = "/offline.html"');
-    expect(sw).toContain('"/icons/badge-72.png"');
     expect(sw).toContain("requireInteraction: true");
     expect(sw).toContain("NETWORK_TIMEOUT_MS");
     expect(sw).toContain("fetchWithTimeout");
-    expect(sw).toContain("networkFirstNavigation");
     expect(sw).toContain("handleStaleChunk");
-    expect(sw).toContain('pathname.startsWith("/wallet/")');
-    expect(sw).toContain('pathname.startsWith("/admin/")');
-    expect(sw).toContain('pathname.startsWith("/marketplace/purchases/")');
-    expect(sw).toContain('pathname.startsWith("/workspace/")');
+    expect(sw).toContain('"/api/"');
   });
 
-  it("network-first navigation with cache + offline.html fallback", () => {
+  it("network-first navigation with offline.html fallback", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain("isOfflineAppShellPath");
-    expect(sw).toContain('pathname.startsWith("/chat/")');
-    expect(sw).toContain('pathname.startsWith("/gigasocial/")');
-    expect(sw).toContain('pathname.startsWith("/gigalearn/")');
-    expect(sw).toContain('pathname.startsWith("/gigaedit/")');
-    expect(sw).toContain("APP_SHELL_CACHE");
-    expect(sw).toContain("isNextStaticAsset");
-    expect(sw).toContain("giga3-social-outbox");
-    expect(sw).toContain("isApiPath");
-    expect(sw).toContain('"offline"');
-  });
-
-  it("never caches chat/workspace but keeps gigasocial shells offline-capable", () => {
-    const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    const neverCacheFn =
-      sw.match(/function isNeverCacheDocumentPath\(pathname\) \{([\s\S]*?)\n\}/)?.[1] ?? "";
-    expect(neverCacheFn).toContain("/chat/");
-    expect(neverCacheFn).toContain("/workspace/");
-    expect(neverCacheFn).toContain("/payment/");
-    expect(sw).toContain("isNeverCacheDocumentPath");
-    expect(sw).toContain('pathname.startsWith("/gigasocial/")');
+    expect(sw).toContain("isDocument");
+    expect(sw).toContain("GIGA3_CHUNK_STALE");
+    expect(sw).toContain("SKIP_WAITING");
   });
 
   it("bumps launcher badge on push when no visible client", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
     expect(sw).toContain("GIGA3_CLEAR_BADGE");
-    expect(sw).toContain("GIGA3_SET_BADGE");
-    expect(sw).toContain("GIGA3_BUMP_BADGE");
     expect(sw).toContain("setAppBadge");
-    expect(sw).toContain("clearAppBadge");
-    expect(sw).toContain("badgeIncrement");
-    expect(sw).toContain("anyClientVisible");
     expect(sw).toContain("renotify: true");
   });
 });
@@ -67,6 +38,6 @@ describe("offline.html", () => {
     expect(html).toContain("navigator.onLine");
     expect(html).toContain("Try again");
     expect(html).toContain("Go to home");
-    expect(html).toContain("Open cached version");
+    expect(html).toContain("Cached version available");
   });
 });

@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#5B21B6" />
-  <title>Connection issue — Giga3 AI</title>
+  <title>Giga3 AI — Connection</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -29,37 +29,22 @@
       box-shadow: 0 8px 32px rgba(91, 33, 182, 0.08);
     }
     .logo {
-      width: 56px;
-      height: 56px;
-      margin: 0 auto 16px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #6D28D9, #7C3AED);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: 700;
-      font-size: 28px;
+      width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 14px;
+      background: linear-gradient(135deg, #5B21B6, #7C3AED);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 28px;
     }
     h1 { font-size: 20px; margin: 0 0 8px; font-weight: 600; }
     .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      font-weight: 500;
-      padding: 6px 12px;
-      border-radius: 999px;
-      margin-bottom: 12px;
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 600; padding: 6px 12px;
+      border-radius: 999px; margin-bottom: 12px;
     }
-    .status.checking { background: #f3e8ff; color: #5B21B6; }
-    .status.online { background: #dcfce7; color: #166534; }
     .status.offline { background: #fee2e2; color: #991b1b; }
-    .status.degraded { background: #fef3c7; color: #92400e; }
-    .dot {
-      width: 8px; height: 8px; border-radius: 50%; background: currentColor;
-      animation: pulse 1.4s ease-in-out infinite;
-    }
+    .status.online { background: #dcfce7; color: #166534; }
+    .status.checking { background: #f3e8ff; color: #5B21B6; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+    .dot.pulse { animation: pulse 1.4s ease-in-out infinite; }
     @keyframes pulse { 0%,100%{opacity:.35} 50%{opacity:1} }
     p { font-size: 14px; line-height: 1.6; color: #64748b; margin: 0 0 20px; }
     .actions { display: flex; flex-direction: column; gap: 10px; }
@@ -70,144 +55,134 @@
       border: none; width: 100%;
     }
     .primary { background: #5B21B6; color: #fff; }
-    .primary:hover { background: #4c1d95; }
     .secondary { background: #fff; color: #1e1b4b; border: 1px solid #e2e8f0; }
-    .secondary:hover { border-color: #c4b5fd; }
-    .hint { font-size: 12px; color: #94a3b8; margin-top: 16px; line-height: 1.5; }
-    #cached-offer { display: none; margin-top: 12px; }
+    .hint { font-size: 12px; color: #94a3b8; margin-top: 14px; line-height: 1.5; }
+    #cached { display: none; margin-top: 10px; font-size: 13px; color: #5B21B6; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="logo" aria-hidden="true">G</div>
     <div id="status" class="status checking" role="status" aria-live="polite">
-      <span class="dot" aria-hidden="true"></span>
+      <span id="dot" class="dot pulse" aria-hidden="true"></span>
       <span id="status-text">Checking connection…</span>
     </div>
-    <h1>Having trouble reaching Giga3</h1>
-    <p id="message">
-      Your device may be offline, or our servers are temporarily unreachable.
-      We&apos;ll retry automatically when a connection is available.
-    </p>
+    <h1 id="title">Connecting to Giga3</h1>
+    <p id="message">We&apos;ll retry automatically when your connection is back.</p>
     <div class="actions">
       <button type="button" class="primary" id="retry">Try again</button>
       <a class="btn secondary" href="/">Go to home</a>
-      <button type="button" class="secondary" id="cached-btn" style="display:none">
-        Open cached version
-      </button>
     </div>
-    <p class="hint" id="cached-offer">
-      A previously visited page may still work offline after one online visit.
-    </p>
+    <p id="cached">Cached version available — open home or chat from your last visit.</p>
   </div>
   <script>
 (function () {
   var RETRY_MS = 3000;
-  var HEALTH_TIMEOUT_MS = 5000;
+  var HEALTH_MS = 5000;
   var statusEl = document.getElementById("status");
   var statusText = document.getElementById("status-text");
+  var titleEl = document.getElementById("title");
   var messageEl = document.getElementById("message");
-  var retryBtn = document.getElementById("retry");
-  var cachedBtn = document.getElementById("cached-btn");
-  var cachedOffer = document.getElementById("cached-offer");
+  var dotEl = document.getElementById("dot");
+  var cachedEl = document.getElementById("cached");
   var retryTimer = null;
   var checking = false;
 
-  function setStatus(kind, text) {
-    statusEl.className = "status " + kind;
-    statusText.textContent = text;
+  function setOffline() {
+    statusEl.className = "status offline";
+    dotEl.className = "dot";
+    statusText.textContent = "You're offline";
+    titleEl.textContent = "You're offline";
+    messageEl.textContent = "No network detected. We'll retry every 3 seconds when you're back online.";
+  }
+
+  function setOnline() {
+    statusEl.className = "status online";
+    dotEl.className = "dot";
+    statusText.textContent = "Back online";
+    titleEl.textContent = "Back online";
+    messageEl.textContent = "Connection restored. Reloading Giga3…";
+  }
+
+  function setChecking() {
+    statusEl.className = "status checking";
+    dotEl.className = "dot pulse";
+    statusText.textContent = "Checking connection…";
   }
 
   function withTimeout(promise, ms) {
     return new Promise(function (resolve, reject) {
-      var timer = setTimeout(function () { reject(new Error("timeout")); }, ms);
-      promise.then(function (v) { clearTimeout(timer); resolve(v); })
-        .catch(function (e) { clearTimeout(timer); reject(e); });
+      var t = setTimeout(function () { reject(new Error("timeout")); }, ms);
+      promise.then(function (v) { clearTimeout(t); resolve(v); })
+        .catch(function (e) { clearTimeout(t); reject(e); });
     });
   }
 
   function checkHealth() {
-    return withTimeout(
-      fetch("/api/health", { cache: "no-store", credentials: "same-origin" })
-        .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }),
-      HEALTH_TIMEOUT_MS
-    );
+    var ctrl = new AbortController();
+    var timer = setTimeout(function () { ctrl.abort(); }, HEALTH_MS);
+    return fetch("/api/health", { cache: "no-store", signal: ctrl.signal })
+      .then(function (r) {
+        clearTimeout(timer);
+        return r.ok ? r.json() : Promise.reject(r.status);
+      })
+      .catch(function (e) { clearTimeout(timer); throw e; });
   }
 
-  function hasCachedShell() {
-    if (!("caches" in window)) return Promise.resolve(false);
+  function clearGigaCaches() {
+    if (!("caches" in window)) return Promise.resolve();
     return caches.keys().then(function (keys) {
-      return keys.some(function (k) { return /giga3/i.test(k); });
+      return Promise.all(keys.filter(function (k) { return k.indexOf("giga3") === 0; })
+        .map(function (k) { return caches.delete(k); }));
     });
   }
 
-  function showCachedOffer(hasCache) {
-    if (!hasCache) return;
-    cachedBtn.style.display = "";
-    cachedOffer.style.display = "";
+  function showCachedIfAny() {
+    if (!("caches" in window)) return;
+    caches.match("/").then(function (hit) {
+      if (hit) cachedEl.style.display = "block";
+    });
   }
 
   function scheduleRetry() {
     if (retryTimer) clearTimeout(retryTimer);
-    retryTimer = setTimeout(function () {
-      if (navigator.onLine) runCheck(true);
-    }, RETRY_MS);
+    retryTimer = setTimeout(runCheck, RETRY_MS);
   }
 
-  function runCheck(silent) {
+  function runCheck() {
     if (checking) return;
     checking = true;
-    if (!silent) setStatus("checking", "Checking connection…");
-
-    var browserOnline = navigator.onLine;
-    if (!browserOnline) {
-      setStatus("offline", "Device appears offline");
-      messageEl.textContent = "No network detected. Connect to Wi‑Fi or mobile data and we will retry automatically.";
-      hasCachedShell().then(showCachedOffer);
+    setChecking();
+    if (!navigator.onLine) {
+      setOffline();
+      showCachedIfAny();
       checking = false;
       scheduleRetry();
       return;
     }
-
-    setStatus("checking", "Testing server reachability…");
     checkHealth()
       .then(function () {
-        setStatus("online", "Connection restored");
-        messageEl.textContent = "Giga3 is reachable again. Reloading…";
-        var target = sessionStorage.getItem("giga3_offline_return") || "/";
-        setTimeout(function () { window.location.replace(target); }, 400);
+        setOnline();
+        setTimeout(function () { location.reload(); }, 350);
       })
       .catch(function () {
-        setStatus("degraded", "Server unreachable");
-        messageEl.textContent =
-          "Your connection looks active but www.giga3ai.com did not respond in time. " +
-          "This is usually temporary — tap Try again or wait for an automatic retry.";
-        hasCachedShell().then(showCachedOffer);
+        setOffline();
+        messageEl.textContent = "Your device is online but Giga3 didn't respond yet. Retrying…";
+        showCachedIfAny();
         scheduleRetry();
       })
       .finally(function () { checking = false; });
   }
 
-  retryBtn.addEventListener("click", function () { runCheck(false); });
-
-  cachedBtn.addEventListener("click", function () {
-    var target = sessionStorage.getItem("giga3_offline_return") || "/chat/";
-    window.location.assign(target);
+  document.getElementById("retry").addEventListener("click", function () {
+    clearGigaCaches().finally(function () { location.reload(); });
   });
 
-  window.addEventListener("online", function () { runCheck(true); });
-  window.addEventListener("offline", function () {
-    setStatus("offline", "Device appears offline");
-    scheduleRetry();
-  });
+  window.addEventListener("online", runCheck);
+  window.addEventListener("offline", function () { setOffline(); scheduleRetry(); });
 
-  try {
-    if (!sessionStorage.getItem("giga3_offline_return")) {
-      sessionStorage.setItem("giga3_offline_return", document.referrer || "/");
-    }
-  } catch (_) {}
-
-  runCheck(true);
+  showCachedIfAny();
+  runCheck();
 })();
   </script>
 </body>

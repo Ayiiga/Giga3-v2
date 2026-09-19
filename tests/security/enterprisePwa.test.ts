@@ -9,7 +9,6 @@ describe("enterprise PWA security headers", () => {
 
   it("includes HSTS and isolation headers", () => {
     expect(headers).toContain("Strict-Transport-Security:");
-    // allow-popups keeps origin isolation while letting Paystack Inline popups work.
     expect(headers).toContain("Cross-Origin-Opener-Policy: same-origin-allow-popups");
     expect(headers).toContain("Cross-Origin-Resource-Policy: same-site");
     expect(headers).toContain("X-Permitted-Cross-Domain-Policies: none");
@@ -43,7 +42,7 @@ describe("enterprise service worker policy", () => {
   const sw = readFileSync(join(webPublic, "sw.js"), "utf8");
 
   it("uses current cache generation", () => {
-    expect(sw).toMatch(/giga3-shell-v\d+/);
+    expect(sw).toContain('CACHE_VERSION = "giga3-v6"');
   });
 
   it("does not precache authenticated chat shell", () => {
@@ -52,23 +51,18 @@ describe("enterprise service worker policy", () => {
     expect(precacheBlock).not.toContain('"/credits/"');
   });
 
-  it("skips offline caching for sensitive billing/admin document paths", () => {
-    expect(sw).toContain("isSensitiveDocumentPath");
-    expect(sw).toContain("/payment/");
-    expect(sw).toContain("/wallet/");
-    expect(sw).toContain("/marketplace/purchases/");
-    expect(sw).toContain("isOfflineAppShellPath");
+  it("never caches API routes", () => {
+    expect(sw).toContain('url.pathname.startsWith("/api/")');
+    expect(sw).toContain('"offline"');
   });
 
-  it("allows runtime offline shells for chat and gigasocial", () => {
-    expect(sw).toContain('pathname.startsWith("/chat/")');
-    expect(sw).toContain('pathname.startsWith("/gigasocial/")');
-    expect(sw).toContain("NEXT_STATIC_CACHE");
+  it("falls back to offline.html for failed navigation", () => {
+    expect(sw).toContain('OFFLINE_URL = "/offline.html"');
   });
 
-  it("waits for user consent before skipWaiting", () => {
+  it("supports SKIP_WAITING from client and stale chunk recovery", () => {
     expect(sw).toContain('event.data?.type === "SKIP_WAITING"');
-    expect(sw).not.toMatch(/skipWaiting\(\)\s*\)/);
+    expect(sw).toContain("GIGA3_CHUNK_STALE");
   });
 });
 

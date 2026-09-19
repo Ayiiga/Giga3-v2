@@ -21,7 +21,7 @@ describe("branding assets", () => {
 
   it("uses lean install precache for faster PWA startup", () => {
     const sw = readFileSync(join(process.cwd(), "web", "public", "sw.js"), "utf8");
-    expect(sw).toMatch(/giga3-shell-v\d+/);
+    expect(sw).toContain('CACHE_VERSION = "giga3-v6"');
     expect(sw).toContain('"/"');
     expect(sw).not.toContain('"/media/"');
     expect(sw).not.toContain('"/splash/iphone-12.png"');
