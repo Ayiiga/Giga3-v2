@@ -5,6 +5,10 @@
 # Per-post/profile/item pages are pre-rendered at build — do not rewrite them to
 # noindex legacy shells (that blocked Google from indexing public content).
 
+# Account shortcuts (chat overflow menu + bookmarks)
+/privacy            /legal/privacy/              301
+/privacy/           /legal/privacy/              301
+
 # Legacy static site paths → App Router
 /login.html         /chat/login/                 301
 /signup.html        /chat/login/                 301

@@ -1,8 +1,10 @@
 "use client";
 
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
+import { StableLink } from "@/components/ui/StableLink";
 import { clearAllClientAuth } from "@/lib/auth";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
+import { safeNavigate } from "@/lib/navigation/safeNavigate";
 import { signOutSupabase } from "@/lib/supabase/auth";
 import {
   HelpCircle,
@@ -13,8 +15,6 @@ import {
   Shield,
   User,
 } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 interface ChatMoreMenuProps {
@@ -28,7 +28,6 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
 }: ChatMoreMenuProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -49,14 +48,21 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
   }, [close, open]);
 
   function signOut() {
-    if (isSupabaseDataBackend()) {
-      void signOutSupabase();
-    } else {
+    close();
+    try {
+      if (isSupabaseDataBackend()) {
+        void signOutSupabase();
+      } else {
+        clearAllClientAuth();
+      }
+    } catch {
       clearAllClientAuth();
     }
-    router.push("/chat/login");
-    close();
+    safeNavigate("/chat/login/");
   }
+
+  const itemClass =
+    "flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10";
 
   return (
     <div ref={rootRef} className={className}>
@@ -78,34 +84,39 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
           className="absolute right-0 top-full z-50 mt-1 max-h-[min(70vh,28rem)] w-60 overflow-y-auto rounded-2xl border border-border bg-card p-1.5 shadow-lg"
         >
           {credits != null ? (
-            <div
-              className="mx-1 mb-1 rounded-xl px-3 py-2 text-center text-sm font-semibold text-white"
+            <StableLink
+              href="/credits/"
+              hard
+              role="menuitem"
+              onClick={close}
+              className="mx-1 mb-1 block rounded-xl px-3 py-2 text-center text-sm font-semibold text-white"
               style={{ backgroundColor: "#7C3AED" }}
-              role="presentation"
             >
               {credits} credits
-            </div>
+            </StableLink>
           ) : null}
 
-          <Link
-            href="/profile"
+          <StableLink
+            href="/profile/"
+            hard
             role="menuitem"
             onClick={close}
-            className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
+            className={itemClass}
           >
             <User className="h-4 w-4 text-muted" aria-hidden />
             Profile
-          </Link>
+          </StableLink>
 
-          <Link
-            href="/settings"
+          <StableLink
+            href="/settings/"
+            hard
             role="menuitem"
             onClick={close}
-            className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
+            className={itemClass}
           >
             <Settings className="h-4 w-4 text-muted" aria-hidden />
             Settings
-          </Link>
+          </StableLink>
 
           <div className="my-1 border-t border-border" role="separator" />
 
@@ -113,7 +124,7 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
             href="mailto:support@giga3ai.com"
             role="menuitem"
             onClick={close}
-            className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
+            className={itemClass}
           >
             <Mail className="h-4 w-4 text-muted" aria-hidden />
             support@giga3ai.com
@@ -122,31 +133,33 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
             href="mailto:giga3ai@gmail.com"
             role="menuitem"
             onClick={close}
-            className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
+            className={itemClass}
           >
             <Mail className="h-4 w-4 text-muted" aria-hidden />
             giga3ai@gmail.com
           </a>
 
-          <Link
-            href="/help"
+          <StableLink
+            href="/help/"
+            hard
             role="menuitem"
             onClick={close}
-            className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
+            className={itemClass}
           >
             <HelpCircle className="h-4 w-4 text-muted" aria-hidden />
             Help / FAQ
-          </Link>
+          </StableLink>
 
-          <Link
-            href="/privacy"
+          <StableLink
+            href="/legal/privacy/"
+            hard
             role="menuitem"
             onClick={close}
-            className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
+            className={itemClass}
           >
             <Shield className="h-4 w-4 text-muted" aria-hidden />
             Privacy &amp; Terms
-          </Link>
+          </StableLink>
 
           <div className="my-1 border-t border-border" role="separator" />
 
@@ -158,7 +171,7 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
           <button
             type="button"
             role="menuitem"
-            className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-muted hover:bg-accent/10"
+            className={`${itemClass} text-muted`}
             onClick={() => signOut()}
           >
             <LogOut className="h-4 w-4" aria-hidden />

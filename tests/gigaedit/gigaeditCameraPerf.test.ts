@@ -101,8 +101,9 @@ describe("Workspace shortcut order", () => {
 
     expect(more).not.toContain('label: "GigaSocial"');
     expect(more).not.toContain('label: "GigaEdits"');
-    expect(more).toContain('href="/profile"');
-    expect(more).toContain('href="/settings"');
+    expect(more).toContain('href="/profile/"');
+    expect(more).toContain('href="/settings/"');
+    expect(more).toContain('href="/legal/privacy/"');
     expect(more).toContain("support@giga3ai.com");
 
     expect(workspace).toContain("CHAT_WORKSPACE_PRIMARY_APPS");
