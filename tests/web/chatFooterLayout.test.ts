@@ -14,6 +14,10 @@ const globalsCss = readFileSync(
   resolve(__dirname, "../../web/styles/globals.css"),
   "utf8"
 );
+const mobileCss = readFileSync(
+  resolve(__dirname, "../../web/styles/chat-mobile-app.css"),
+  "utf8"
+);
 const primaryNavCss = readFileSync(
   resolve(__dirname, "../../web/styles/primary-nav.css"),
   "utf8"
@@ -46,6 +50,14 @@ describe("chat footer layout", () => {
     expect(globalsCss).toContain(
       "html.primary-nav-route.primary-nav-bar-visible.chat-route .chat-keyboard-shell"
     );
+  });
+
+  it("keeps suggestion chips flush above the composer input", () => {
+    expect(globalsCss).toContain(".chat-footer-chips + .chat-composer-dock .chat-composer");
+    expect(globalsCss).toMatch(/padding-top:\s*0/);
+    expect(mobileCss).toContain(".chat-footer-chips + .chat-composer-dock .chat-composer");
+    expect(mobileCss).toMatch(/\.chat-suggested-chips__row[\s\S]*padding:\s*0/);
+    expect(mobileCss).toMatch(/\.chat-suggested-chips[\s\S]*min-height:\s*0/);
   });
 
   it("keeps the mobile tab bar flush without extra safe-area padding", () => {

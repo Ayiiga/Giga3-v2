@@ -88,8 +88,13 @@
     max-width: 640px;
     margin-inline: auto;
     padding-inline: var(--chat-composer-inline-pad);
-    padding-top: 8px;
+    padding-top: 6px;
     padding-bottom: 0;
+  }
+
+  /* Chips sit flush above the composer — no double vertical padding */
+  html.chat-route .chat-footer-chips + .chat-composer-dock .chat-composer {
+    padding-top: 0;
   }
 
   html.chat-route .chat-composer-dock {
@@ -115,7 +120,7 @@
 
   /* Suggestions — horizontal scroll, no clip */
   html.chat-route .chat-suggested-chips {
-    min-height: 2.25rem;
+    min-height: 0;
     max-height: none;
     width: 100%;
   }
@@ -128,7 +133,7 @@
     white-space: nowrap;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    padding: 8px 0;
+    padding: 0;
     -webkit-overflow-scrolling: touch;
   }
 

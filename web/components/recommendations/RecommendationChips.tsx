@@ -39,7 +39,7 @@ export function RecommendationChips({
       <p className="sr-only">
         Suggested next steps{offline ? " (offline picks)" : ""}
       </p>
-      <div className="chat-suggested-chips__row flex gap-2 overflow-x-auto overscroll-x-contain whitespace-nowrap pb-0.5">
+      <div className="chat-suggested-chips__row flex gap-2 overflow-x-auto overscroll-x-contain whitespace-nowrap">
         {recommendations.map((item) => (
           <button
             key={`${item.action}:${item.title}`}
