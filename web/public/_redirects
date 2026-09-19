@@ -24,3 +24,6 @@
 
 # Canonical host: apex → www (Cloudflare Pages honours absolute-URL redirects when both domains are attached)
 https://giga3ai.com/*  https://www.giga3ai.com/:splat  301
+
+# SPA fallback — hard reload on unknown routes serves app shell (Next.js client router / 404 UI)
+/*  /index.html  200

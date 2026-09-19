@@ -41,3 +41,13 @@ describe("offline.html", () => {
     expect(html).toContain("Cached version available");
   });
 });
+
+describe("SPA routing fallbacks", () => {
+  it("ships Cloudflare catch-all and Vercel rewrite for hard-reload recovery", () => {
+    const redirects = readFileSync(resolve(__dirname, "../../web/public/_redirects"), "utf8");
+    const vercel = readFileSync(resolve(__dirname, "../../web/vercel.json"), "utf8");
+    expect(redirects).toContain("/*  /index.html  200");
+    expect(vercel).toContain('"rewrites"');
+    expect(vercel).toContain('"destination": "/"');
+  });
+});
