@@ -212,6 +212,32 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function loadBlogCategorySlugsWithPosts() {
+  const categoryNames = new Set();
+  const registryPath = path.resolve(__dirname, "../lib/blog/postRegistry.ts");
+  if (!existsSync(registryPath)) return [];
+  const src = readFileSync(registryPath, "utf8");
+  const blocks = src.split(/slug:\s*"/).slice(1);
+  for (const block of blocks) {
+    const category = block.match(/category:\s*"([^"]+)"/)?.[1];
+    if (category) categoryNames.add(category);
+  }
+  const slugByCategory = {
+    "AI in Ghana": "ai-in-ghana",
+    Education: "education",
+    "BECE & WASSCE": "bece-wassce",
+    "AI Tools": "ai-tools",
+    Creators: "creators",
+    Business: "business",
+    Technology: "technology",
+    "Digital Literacy": "digital-literacy",
+    Ghana: "ghana",
+  };
+  return [...categoryNames]
+    .map((name) => slugByCategory[name])
+    .filter(Boolean);
+}
+
 function loadBlogSitemapEntries() {
   const registryPath = path.resolve(__dirname, "../lib/blog/postRegistry.ts");
   if (!existsSync(registryPath)) return [];
@@ -263,17 +289,7 @@ function writeBlogSitemap() {
       changefreq: "monthly",
       priority: "0.8",
     })),
-    ...[
-      "ai-in-ghana",
-      "education",
-      "bece-wassce",
-      "ai-tools",
-      "creators",
-      "business",
-      "technology",
-      "digital-literacy",
-      "ghana",
-    ].map((slug) => ({
+    ...loadBlogCategorySlugsWithPosts().map((slug) => ({
       loc: `${siteOrigin}/blog/category/${slug}/`,
       lastmod: blogLastmod,
       changefreq: "monthly",

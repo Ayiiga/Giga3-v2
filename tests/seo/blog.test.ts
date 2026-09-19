@@ -113,6 +113,34 @@ describe("blog sitemap", () => {
   });
 });
 
+describe("blog crawlability (source)", () => {
+  it("uses server BlogPostGrid without Convex loading shell on listings", () => {
+    const indexPage = readFileSync(
+      resolve(WEB_ROOT, "app/(marketing)/blog/page.tsx"),
+      "utf8"
+    );
+    const categoryPage = readFileSync(
+      resolve(WEB_ROOT, "app/(marketing)/blog/category/[categorySlug]/page.tsx"),
+      "utf8"
+    );
+    const grid = readFileSync(resolve(WEB_ROOT, "components/blog/BlogPostGrid.tsx"), "utf8");
+
+    expect(indexPage).toContain("BlogPostGrid");
+    expect(categoryPage).toContain("BlogPostGrid");
+    expect(grid).not.toContain('"use client"');
+    expect(grid).not.toContain("ConvexAppShell");
+    expect(grid).toContain("<BlogCard");
+  });
+
+  it("noindexes empty blog category pages", () => {
+    const categoryPage = readFileSync(
+      resolve(WEB_ROOT, "app/(marketing)/blog/category/[categorySlug]/page.tsx"),
+      "utf8"
+    );
+    expect(categoryPage).toContain("index: posts.length > 0");
+  });
+});
+
 describe("blog accessibility (source)", () => {
   it("blog cards and article layout use alt text and semantic structure", () => {
     const card = readFileSync(resolve(WEB_ROOT, "components/blog/BlogCard.tsx"), "utf8");

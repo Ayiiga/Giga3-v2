@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/Container";
-import { BlogGrid } from "@/components/blog/BlogGrid";
+import { BlogPostGrid } from "@/components/blog/BlogPostGrid";
 import { BlogBreadcrumbs } from "@/components/blog/BlogBreadcrumbs";
 import { JsonLd } from "@/components/seo/JsonLd";
 import {
@@ -24,10 +24,12 @@ export function generateStaticParams() {
 export function generateMetadata({ params }: PageProps) {
   const name = categoryNameForSlug(params.categorySlug);
   if (!name) return {};
+  const posts = getBlogPostsByCategory(name);
   return publicMetadata({
     path: `/blog/category/${params.categorySlug}`,
     title: `${name} — Giga3 AI Blog`,
     description: `Articles about ${name.toLowerCase()} from the Giga3 AI blog — practical AI guides for Ghana and Africa.`,
+    index: posts.length > 0,
   });
 }
 
@@ -85,7 +87,7 @@ export default function BlogCategoryPage({ params }: PageProps) {
               </ul>
             </nav>
 
-            <BlogGrid posts={posts} />
+            <BlogPostGrid posts={posts} />
           </div>
         </Container>
       </div>
