@@ -60,6 +60,13 @@ describe("GigaLearn interactive practice wiring", () => {
     expect(read("web/hooks/useGigaLearnGeneration.ts")).toContain("getPracticeFallbackQuestions");
   });
 
+  it("resolves duplicate tool ids using section context during generation", () => {
+    expect(read("web/hooks/useGigaLearnGeneration.ts")).toContain(
+      "getGigaLearnTool(args.toolId, args.section)"
+    );
+    expect(read("web/lib/gigalearn/tools.ts")).toContain("section?: GigaLearnToolSection");
+  });
+
   it("requests structured JSON from studio for practice tools", () => {
     expect(read("convex/gigalearnStudio.ts")).toContain('"questions"');
     expect(read("convex/gigalearnStudio.ts")).toContain("practice-questions");

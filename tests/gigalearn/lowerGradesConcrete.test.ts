@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   CONCRETE_CATEGORIES,
@@ -64,6 +66,13 @@ describe("gigalearn lower grades concrete objects", () => {
     expect(lessonPreviewForLevel("P3").concreteAnswer).toBe("= 3 mangoes");
     expect(lessonPreviewForLevel("SHS1-3").level).toBe("KG1"); // safe fallback
     expect(LESSON_PREVIEWS.every((l) => l.teleprompterNote.includes("TOP 25%"))).toBe(true);
+  });
+
+  it("passes voice ids into browser speech preview helpers", () => {
+    const source = readFileSync(resolve(__dirname, "../../web/components/gigalearn/LowerGradesConcrete.tsx"), "utf8");
+    expect(source).toContain("previewGigaLearnVoice(text, voiceId)");
+    expect(source).toContain("preview.voiceId");
+    expect(source).toContain("voice.id");
   });
 
   it("ships Twi/Hausa/Ga/Ewe/Yoruba/Swahili voices + GES strands", () => {

@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { BLOG_CATEGORIES, categorySlugForName } from "../../web/lib/blog/categories";
 import { BLOG_POST_REGISTRY } from "../../web/lib/blog/postRegistry";
 import {
+  getBlogSitemapEntriesFromRegistry,
   getRegistryBlogPosts,
   getRegistryBlogPostBySlug,
   getRelatedRegistryBlogPosts,
@@ -104,6 +105,18 @@ describe("blog sitemap", () => {
     for (const post of getRegistryBlogPosts()) {
       expect(xml).toContain(`https://www.giga3ai.com${post.href}`);
     }
+  });
+
+  it("derives blog index lastmod from registry metadata", () => {
+    const posts = getRegistryBlogPosts();
+    const expected = posts.reduce((latest, post) => {
+      const date = post.updatedAt ?? post.publishedAt;
+      return date > latest ? date : latest;
+    }, posts[0]!.publishedAt);
+    const indexEntry = getBlogSitemapEntriesFromRegistry().find((entry) =>
+      entry.loc.endsWith("/blog/")
+    );
+    expect(indexEntry?.lastmod).toBe(expected);
   });
 
   it("ships an RSS feed for blog discovery", () => {

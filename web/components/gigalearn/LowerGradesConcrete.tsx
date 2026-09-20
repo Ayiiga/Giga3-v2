@@ -163,9 +163,9 @@ function LearningModes({ level, lower }: { level: GigaLearnLevelId; lower: boole
     setPicked(null);
   }
 
-  function playRhyme(id: string, text: string) {
+  function playRhyme(id: string, text: string, voiceId: string) {
     setRhymePlaying(id);
-    previewGigaLearnVoice(text);
+    previewGigaLearnVoice(text, voiceId);
     window.setTimeout(() => setRhymePlaying(null), 4000);
   }
 
@@ -318,7 +318,9 @@ function LearningModes({ level, lower }: { level: GigaLearnLevelId; lower: boole
               <button
                 type="button"
                 aria-label={`Play ${rhyme.title}`}
-                onClick={() => playRhyme(rhyme.id, `${rhyme.title}. ${rhyme.linesEn.join(" ")}`)}
+                onClick={() =>
+                  playRhyme(rhyme.id, `${rhyme.title}. ${rhyme.linesEn.join(" ")}`, rhyme.voiceId)
+                }
                 className="flex min-h-12 min-w-12 items-center justify-center rounded-full bg-[#EAB308] text-lg font-bold text-black"
               >
                 {rhymePlaying === rhyme.id ? "⏸" : "▶️"}
@@ -378,7 +380,7 @@ function LearningModes({ level, lower }: { level: GigaLearnLevelId; lower: boole
             type="button"
             onClick={() => {
               setQaOpen(true);
-              previewGigaLearnVoice(`What color is an orange? ${FRUIT_QA.answer}`);
+              previewGigaLearnVoice(`What color is an orange? ${FRUIT_QA.answer}`, "abena-twi");
             }}
             className="mt-2 min-h-11 rounded-xl bg-[#EAB308] px-3 py-1.5 text-xs font-bold text-black"
           >
@@ -412,7 +414,9 @@ function LessonPreviewCard({ level, lower }: { level: GigaLearnLevelId; lower: b
         <button
           type="button"
           aria-label={`Play ${voice?.name ?? "teacher"} voice`}
-          onClick={() => previewGigaLearnVoice(`${preview.textEn}. ${preview.concreteAnswer}`)}
+          onClick={() =>
+            previewGigaLearnVoice(`${preview.textEn}. ${preview.concreteAnswer}`, preview.voiceId)
+          }
           className="flex min-h-12 min-w-12 items-center justify-center rounded-full bg-[#EAB308] text-base font-bold text-black"
         >
           ▶️
@@ -484,7 +488,10 @@ function VoicesSection({ previewVoiceId }: { previewVoiceId: string }) {
               aria-label={`Play sample of ${voice.name}`}
               onClick={() => {
                 setTriedCache(voice.id);
-                previewGigaLearnVoice(`Hello! I am ${voice.name}. Let's learn together!`);
+                previewGigaLearnVoice(
+                  `Hello! I am ${voice.name}. Let's learn together!`,
+                  voice.id
+                );
               }}
               className="flex min-h-12 min-w-12 items-center justify-center rounded-full bg-[#EAB308] text-sm font-bold text-black"
             >
