@@ -161,13 +161,6 @@ export const heartbeat = mutation({
       });
     }
 
-    const onlineCutoff = now - ONLINE_WINDOW_MS;
-    const presence = await ctx.db.query("presenceSessions").collect();
-    const onlineCount = presence.filter((row) => row.lastSeenAt >= onlineCutoff).length;
-    await ctx.runMutation(internal.platformStatsRecorder.updatePeakConcurrentInternal, {
-      count: onlineCount,
-    });
-
     return { ok: true as const };
   },
 });
