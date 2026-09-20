@@ -1,5 +1,9 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { getGigaLearnTool } from "../../web/lib/gigalearn/tools";
+
+const read = (p: string) => readFileSync(resolve(__dirname, "../..", p), "utf8");
 
 describe("GigaLearn tool resolution", () => {
   it("returns role-specific metadata for duplicate tool ids", () => {
@@ -21,5 +25,14 @@ describe("GigaLearn tool resolution", () => {
 
   it("keeps legacy id-only lookup for callers without section context", () => {
     expect(getGigaLearnTool("quiz-generator")?.section).toBe("student");
+    expect(getGigaLearnTool("quiz-generator")?.label).toBe("Quiz generator");
+  });
+
+  it("workspace panel resolves prompt labels using the saved learner profile role", () => {
+    expect(read("web/components/gigalearn/GigaLearnWorkspacePanel.tsx")).toContain(
+      "getGigaLearnTool(p.toolId, profile.role)"
+    );
+    expect(getGigaLearnTool("quiz-generator", "teacher")?.label).toBe("Class quiz");
+    expect(getGigaLearnTool("quiz-generator", "student")?.label).toBe("Quiz generator");
   });
 });
