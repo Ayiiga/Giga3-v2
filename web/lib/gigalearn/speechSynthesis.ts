@@ -1,59 +1,59 @@
 import type { GigaLearnVoice } from "@/lib/gigalearn/concreteObjects";
+import type { PronunciationPart } from "@/lib/gigalearn/pronunciation";
+import {
+  matchBrowserVoice,
+  type MatchedBrowserVoice,
+  type VoiceLangConfig,
+} from "@/lib/speech/matchBrowserVoice";
 
-/** BCP-47 tags and broader fallbacks for browser voice matching. */
-export const GIGALEARN_VOICE_LANG: Record<
-  string,
-  { primary: string; fallbacks: string[] }
-> = {
-  "abena-twi": { primary: "tw-GH", fallbacks: ["tw", "ak", "en-GH", "en"] },
-  "musa-hausa": { primary: "ha-NG", fallbacks: ["ha", "en-NG", "en"] },
-  "naa-ga": { primary: "en-GH", fallbacks: ["en"] },
-  "kofi-ewe": { primary: "ee-GH", fallbacks: ["ee", "en-GH", "en"] },
-  "ade-yoruba": { primary: "yo-NG", fallbacks: ["yo", "en-NG", "en"] },
-  "zawadi-swahili": { primary: "sw-KE", fallbacks: ["sw", "en-KE", "en"] },
+/**
+ * BCP-47 tags for GigaLearn voices.
+ * African profiles do not list English as a "match" — English is only
+ * the stand-in when no native voice is installed, and it keeps its own lang tag.
+ */
+export const GIGALEARN_VOICE_LANG: Record<string, VoiceLangConfig> = {
+  english: { primary: "en-GB", fallbacks: ["en-US", "en-GH", "en"] },
+  "abena-twi": { primary: "ak-GH", fallbacks: ["ak", "tw-GH", "tw"] },
+  "musa-hausa": { primary: "ha-NG", fallbacks: ["ha", "ha-GH"] },
+  "naa-ga": { primary: "gaa-GH", fallbacks: ["gaa"] },
+  "kofi-ewe": { primary: "ee-GH", fallbacks: ["ee"] },
+  "ade-yoruba": { primary: "yo-NG", fallbacks: ["yo", "yo-GH"] },
+  "zawadi-swahili": { primary: "sw-KE", fallbacks: ["sw", "sw-TZ"] },
 };
 
-export type ResolvedSpeechVoice = {
-  lang: string;
-  voice: SpeechSynthesisVoice | null;
-  matchedLang: string | null;
-};
-
-function langPrefix(tag: string): string {
-  return tag.split("-")[0]?.toLowerCase() ?? tag.toLowerCase();
-}
-
-function voiceMatchesLang(voice: SpeechSynthesisVoice, tag: string): boolean {
-  const v = voice.lang?.toLowerCase() ?? "";
-  const t = tag.toLowerCase();
-  return v === t || v.startsWith(`${t}-`) || langPrefix(v) === langPrefix(t);
-}
+export type ResolvedSpeechVoice = MatchedBrowserVoice;
 
 /** Pure resolver — pick the best installed browser voice for a GigaLearn profile. */
 export function resolveBrowserVoiceForProfile(
   voices: SpeechSynthesisVoice[],
   voiceId?: string
 ): ResolvedSpeechVoice {
-  const config = voiceId ? GIGALEARN_VOICE_LANG[voiceId] : undefined;
-  const candidates = config
-    ? [config.primary, ...config.fallbacks]
-    : ["en-GH", "en"];
+  const config = GIGALEARN_VOICE_LANG[voiceId || "english"] ?? GIGALEARN_VOICE_LANG.english;
+  return matchBrowserVoice(voices, config);
+}
 
-  for (const tag of candidates) {
-    const exact = voices.find((v) => voiceMatchesLang(v, tag) && v.lang.toLowerCase() === tag.toLowerCase());
-    if (exact) return { lang: tag, voice: exact, matchedLang: tag };
+export function resolvePronunciationParts(
+  voices: SpeechSynthesisVoice[],
+  parts: PronunciationPart[]
+): Array<{ text: string; lang: string; voice: SpeechSynthesisVoice | null }> {
+  const spoken: Array<{ text: string; lang: string; voice: SpeechSynthesisVoice | null }> = [];
 
-    const prefix = voices.find((v) => voiceMatchesLang(v, tag));
-    if (prefix) return { lang: tag, voice: prefix, matchedLang: prefix.lang };
+  for (const part of parts) {
+    const config = GIGALEARN_VOICE_LANG[part.voiceId] ?? GIGALEARN_VOICE_LANG.english;
+    const match = matchBrowserVoice(voices, config);
+    if (part.requireNative && !match.native) {
+      const fallback = part.phoneticFallback?.trim();
+      if (!fallback) continue;
+      const english = matchBrowserVoice(voices, GIGALEARN_VOICE_LANG.english);
+      spoken.push({ text: fallback, lang: english.lang, voice: english.voice });
+      continue;
+    }
+    const text = part.text.trim();
+    if (!text) continue;
+    spoken.push({ text, lang: match.lang, voice: match.voice });
   }
 
-  const english =
-    voices.find((v) => v.lang?.toLowerCase().startsWith("en")) ?? voices[0] ?? null;
-  return {
-    lang: english?.lang ?? "en",
-    voice: english,
-    matchedLang: english?.lang ?? null,
-  };
+  return spoken;
 }
 
 let voicesChangedHandler: (() => void) | null = null;
@@ -102,25 +102,62 @@ export type SpeakWithGigaLearnVoiceArgs = {
   onEnd?: () => void;
 };
 
-/** Speak using browser TTS with language/voice selection from a GigaLearn profile. */
+function queueUtterances(
+  parts: Array<{ text: string; lang: string; voice: SpeechSynthesisVoice | null }>,
+  rate: number,
+  pitch: number,
+  onEnd?: () => void
+): void {
+  window.speechSynthesis.cancel();
+
+  const speakAt = (index: number) => {
+    const part = parts[index];
+    if (!part) {
+      onEnd?.();
+      return;
+    }
+    const utter = new SpeechSynthesisUtterance(part.text.slice(0, 2000));
+    utter.lang = part.voice?.lang || part.lang;
+    if (part.voice) utter.voice = part.voice;
+    utter.rate = rate;
+    utter.pitch = pitch;
+    let settled = false;
+    const advance = () => {
+      if (settled) return;
+      settled = true;
+      speakAt(index + 1);
+    };
+    utter.onend = advance;
+    utter.onerror = advance;
+    window.speechSynthesis.speak(utter);
+  };
+
+  // Chrome drops utterances spoken in the same turn as cancel().
+  window.setTimeout(() => speakAt(0), 40);
+}
+
+/** Speak one line with language/voice selection from a GigaLearn profile. */
 export async function speakWithGigaLearnVoice(args: SpeakWithGigaLearnVoiceArgs): Promise<boolean> {
+  return speakPronunciationSequence(
+    [{ text: args.text, voiceId: args.voiceId || "english" }],
+    { rate: args.rate, pitch: args.pitch, onEnd: args.onEnd }
+  );
+}
+
+/** Speak English first, then a native African voice or an English phonetic guide. */
+export async function speakPronunciationSequence(
+  parts: PronunciationPart[],
+  options?: { rate?: number; pitch?: number; onEnd?: () => void }
+): Promise<boolean> {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return false;
-  const trimmed = args.text?.trim();
-  if (!trimmed) return false;
+  const queued = parts.some((part) => part.text.trim() || part.phoneticFallback?.trim());
+  if (!queued) return false;
 
   try {
-    window.speechSynthesis.cancel();
     const voices = await loadBrowserVoices();
-    const resolved = resolveBrowserVoiceForProfile(voices, args.voiceId);
-
-    const utter = new SpeechSynthesisUtterance(trimmed);
-    utter.lang = resolved.lang;
-    if (resolved.voice) utter.voice = resolved.voice;
-    utter.rate = args.rate ?? 0.9;
-    utter.pitch = args.pitch ?? 1.1;
-    if (args.onEnd) utter.onend = args.onEnd;
-
-    window.speechSynthesis.speak(utter);
+    const resolved = resolvePronunciationParts(voices, parts);
+    if (resolved.length === 0) return false;
+    queueUtterances(resolved, options?.rate ?? 0.9, options?.pitch ?? 1.05, options?.onEnd);
     return true;
   } catch {
     return false;

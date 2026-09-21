@@ -188,7 +188,7 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
 
     await speakGigaVoice({ text: "Fallback path.", voiceId: "abena-twi", blockId: "fb" });
     expect(log.at(-1)?.voiceName).toBe("English US");
-    expect(log.at(-1)?.lang).toBe("en-GH");
+    expect(log.at(-1)?.lang).toBe("en-US");
   });
 
   it("waits for voiceschanged when getVoices() is initially empty", async () => {
