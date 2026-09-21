@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   GIGALEARN_VOICE_LANG,
   resolveBrowserVoiceForProfile,
+  speakPronunciationSequence,
 } from "../../web/lib/gigalearn/speechSynthesis";
 
 function mockVoice(name: string, lang: string): SpeechSynthesisVoice {
@@ -44,5 +45,46 @@ describe("GigaLearn speech synthesis voice resolution", () => {
     const voices = [mockVoice("English US", "en-US")];
     const resolved = resolveBrowserVoiceForProfile(voices, "ade-yoruba");
     expect(resolved.voice?.lang).toBe("en-US");
+  });
+});
+
+describe("GigaLearn speech playback does not crash", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("returns without throwing when the browser rejects speak()", async () => {
+    class MockUtterance {
+      text: string;
+      lang = "";
+      voice: SpeechSynthesisVoice | null = null;
+      rate = 1;
+      pitch = 1;
+      onend: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      constructor(text: string) {
+        this.text = text;
+      }
+    }
+    vi.stubGlobal("SpeechSynthesisUtterance", MockUtterance);
+    vi.stubGlobal("window", {
+      speechSynthesis: {
+        getVoices: () => [mockVoice("English US", "en-US")],
+        cancel: () => undefined,
+        speak: () => {
+          throw new Error("speech engine failed");
+        },
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      },
+      setTimeout: (fn: () => void) => {
+        fn();
+        return 0;
+      },
+    });
+
+    await expect(
+      speakPronunciationSequence([{ text: "Apple", voiceId: "english" }])
+    ).resolves.toBe(true);
   });
 });

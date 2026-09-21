@@ -22,7 +22,7 @@ test.describe("Release 410 — production smoke (unauthenticated)", () => {
       const match = text.match(/CACHE_VERSION\s*=\s*"([^"]+)"/);
       return match?.[1] ?? null;
     });
-    expect(swVersion).toBe("giga3-v7");
+    expect(swVersion).toBe("giga3-v8");
   });
 
   test("answer block CSS bundle is loaded on chat route", async ({ page }) => {
