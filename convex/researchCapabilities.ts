@@ -58,7 +58,11 @@ const NEWS_CAPABILITIES = new Set<ResearchCapabilityId>([
 ]);
 
 const TIME_SENSITIVE_RE =
-  /\b(today|tonight|yesterday|this week|this month|this year|latest|current|recent|breaking|just now|right now|as of now|news|headlines|now|202[4-9]|stock price|weather|score|election|who is (the )?president|announcement|regulation|law passed|match result|final score)\b/i;
+  /\b(today|tonight|yesterday|this week|this month|this year|latest|current|recent|breaking|just now|right now|as of now|news|headlines|now|202[4-9]|stock price|weather|score|election|who is (the )?president|regulation|law passed|match result|final score)\b/i;
+
+/** News lookup phrasing that includes "announcement" — not user-pasted notices. */
+const NEWS_ANNOUNCEMENT_LOOKUP_RE =
+  /\b(latest|recent|current|new|today'?s?|breaking)\b[\s\S]{0,24}\bannouncement\b/i;
 
 const GHANA_NEWS_RE =
   /\b(ghana(?:ian)?\s+(?:news|headlines|updates|politics|today)|news (?:in|from|about) ghana|accra|kumasi|tamale|tema|black stars|parliament of ghana|mahama|akufo-addo|graphic online|myjoyonline|ghanaweb|citinewsroom|citi fm|joy news|daily graphic)\b/i;
@@ -76,8 +80,20 @@ const LOCATION_INTENT_RE =
   /\b(where am i|what('s| is) my location|my (current )?location|where do i live|locate me)\b/i;
 
 import { GHANA_NEWS_SOURCE_HINTS } from "./newsEvidence/sourceRegistry";
+import {
+  classifyInformationRequest,
+  detectAnswerFromUserContextIntent,
+  type InformationRequestMode,
+} from "./newsEvidence/userContextRouting";
 
 export { GHANA_NEWS_SOURCE_HINTS };
+export type { InformationRequestMode };
+export {
+  classifyInformationRequest,
+  detectAnswerFromUserContextIntent,
+  hasSubstantiveUserProvidedContent,
+  USER_PROVIDED_CONTENT_GUIDANCE,
+} from "./newsEvidence/userContextRouting";
 
 export function isValidResearchCapability(
   value: string | undefined | null
@@ -93,7 +109,13 @@ export function isNewsCapability(id: ResearchCapabilityId): boolean {
 }
 
 export function shouldAutoEnableLiveWeb(query: string): boolean {
-  return TIME_SENSITIVE_RE.test(query.trim());
+  const q = query.trim();
+  if (!q) return false;
+  if (detectAnswerFromUserContextIntent(q)) return false;
+  if (/\bannouncement\b/i.test(q)) {
+    return NEWS_ANNOUNCEMENT_LOOKUP_RE.test(q);
+  }
+  return TIME_SENSITIVE_RE.test(q);
 }
 
 export function detectGhanaNewsIntent(query: string): boolean {
@@ -228,6 +250,10 @@ export function resolveResearchCapability(args: {
     return "breaking_news";
   }
 
+  if (classifyInformationRequest(q) === "answer_from_user_context") {
+    return "general";
+  }
+
   if (shouldAutoEnableLiveWeb(q)) {
     return "live_web";
   }
@@ -249,6 +275,20 @@ export function queryNeedsLiveWeb(args: {
   const q = args.query.trim();
   if (!q || args.hasImageAttachment) return false;
   if (isConversationalChatQuery(q)) return false;
+
+  const infoMode = classifyInformationRequest(q);
+  if (infoMode === "answer_from_user_context") return false;
+  if (infoMode === "verify_user_content") {
+    return (
+      detectVerifyImageIntent(q, true) ||
+      detectFactCheckIntent(q) ||
+      detectGhanaNewsIntent(q) ||
+      detectBreakingNewsIntent(q) ||
+      detectNewsRetrievalIntent(q) ||
+      shouldAutoEnableLiveWeb(q) ||
+      detectCurrentEventsIntent(q)
+    );
+  }
 
   if (detectVerifyImageIntent(q, true)) return true;
   if (detectFactCheckIntent(q)) return true;

@@ -9,6 +9,11 @@ import {
 import { clusterByHeadline, countIndependentClusters } from "./duplicateCluster";
 import { classifyNewsQuery } from "./queryClassification";
 import {
+  hasSubstantiveUserProvidedContent,
+  USER_CONTEXT_WITH_FAILED_RETRIEVAL_GUIDANCE,
+  USER_PROVIDED_CONTENT_GUIDANCE,
+} from "./userContextRouting";
+import {
   lookupSourceByDomain,
   normalizeDomain,
   publisherForDomain,
@@ -292,13 +297,34 @@ export function buildEvidenceContextBlock(context: NewsEvidenceContext): string 
     );
   }
 
+  const userSuppliedContent = hasSubstantiveUserProvidedContent(contract.query);
+  const retrievalEmpty = context.retrievalFailed || contract.evidenceCount === 0;
+
+  lines.push("", "Response rules:");
+
+  if (userSuppliedContent && retrievalEmpty) {
+    lines.push(
+      USER_PROVIDED_CONTENT_GUIDANCE,
+      USER_CONTEXT_WITH_FAILED_RETRIEVAL_GUIDANCE,
+      "- Prefer answering from the user's supplied message; do not emit a generic retrieval-failure refusal.",
+      "- Never label user-provided facts as Verified/Official without external evidence above."
+    );
+  } else if (userSuppliedContent) {
+    lines.push(
+      USER_PROVIDED_CONTENT_GUIDANCE,
+      "- External evidence above may supplement but must not override or falsify user-provided details.",
+      "- Never label user-provided facts as Verified/Official unless external evidence confirms them."
+    );
+  } else {
+    lines.push(
+      "- Generate the user answer ONLY from this evidence package and live web context.",
+      "- Never label a story Verified/Official unless status supports it.",
+      "- If status is INSUFFICIENT_EVIDENCE, say evidence is insufficient — do not invent headlines."
+    );
+  }
+
   lines.push(
-    "",
-    "Response rules:",
-    "- Generate the user answer ONLY from this evidence package and live web context.",
-    "- Never label a story Verified/Official unless status supports it.",
-    "- If status is INSUFFICIENT_EVIDENCE, say evidence is insufficient — do not invent headlines.",
-    "- Use markdown links to the source URLs above.",
+    "- Use markdown links to the source URLs above when citing external evidence.",
     "- For allegations in political/crime stories, use attributed wording (e.g. 'Police said…')."
   );
 
