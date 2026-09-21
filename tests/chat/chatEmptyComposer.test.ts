@@ -1,6 +1,9 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { createElement } from "../../web/node_modules/react";
+import { renderToStaticMarkup } from "../../web/node_modules/react-dom/server";
 import { describe, expect, it } from "vitest";
+import { MessageList } from "../../web/components/chat/MessageList";
 
 const messageList = readFileSync(
   resolve(__dirname, "../../web/components/chat/MessageList.tsx"),
@@ -28,12 +31,34 @@ describe("empty chat stays quiet and the composer clears the bottom nav", () => 
     expect(workspace).not.toContain("setTab(\"documents\")");
   });
 
-  it("lifts the chat shell just above the real tab bar", () => {
-    expect(navCss).toContain(
-      "html.chat-route.primary-nav-route.primary-nav-bar-visible"
-    );
-    expect(navCss).toContain(
+  it("lifts the chat shell just above the real tab bar on phones only", () => {
+    const phone = navCss.match(
+      /@media \(max-width: 1023px\) \{[\s\S]*?html\.chat-route\.primary-nav-route\.primary-nav-bar-visible \{[\s\S]*?\}/
+    )?.[0];
+    expect(phone).toContain(
       "--primary-nav-offset: calc(5.15rem + env(safe-area-inset-bottom, 0px))"
     );
+    const desktop = navCss.match(/@media \(min-width: 1024px\) \{[\s\S]*?\n\}/g) ?? [];
+    expect(desktop.join("\n")).not.toContain("5.15rem");
+  });
+
+  it("renders the empty chat without the template wall", () => {
+    const html = renderToStaticMarkup(
+      createElement(MessageList, {
+        messages: [],
+        mode: "general",
+        onInsertTemplate: () => undefined,
+      })
+    );
+    expect(html).toContain("Welcome to Giga3 AI");
+    expect(html).toContain("Open Workspace when you want a template");
+    expect(html).toContain("Open GigaSocial");
+    expect(html).toContain("Summarize");
+    expect(html).toContain("Compare");
+    expect(html).not.toContain("Document templates");
+    expect(html).not.toContain("Start writing");
+    expect(html).not.toContain("Book Template");
+    const buttons = html.match(/<button/g) ?? [];
+    expect(buttons.length).toBe(3);
   });
 });

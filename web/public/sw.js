@@ -2,7 +2,7 @@
  * Giga3 AI PWA service worker — Cloudflare Pages static export.
  * Bump CACHE_VERSION on every deploy that changes JS/CSS.
  */
-const CACHE_VERSION = "giga3-v9";
+const CACHE_VERSION = "giga3-v10";
 const OFFLINE_URL = "/offline.html";
 const NETWORK_TIMEOUT_MS = 15000;
 
