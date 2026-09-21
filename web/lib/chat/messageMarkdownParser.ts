@@ -265,3 +265,141 @@ export function safeParseMarkdownDocument(text: unknown): MarkdownBlock[] {
     return trimmed ? [{ type: "paragraph", text: trimmed }] : [];
   }
 }
+
+export type InlineNode =
+  | { type: "text"; text: string }
+  | { type: "strong"; children: InlineNode[] }
+  | { type: "em"; children: InlineNode[] }
+  | { type: "code"; text: string }
+  | { type: "link"; children: InlineNode[]; href: string | null };
+
+const SAFE_LINK_BASE = "https://www.giga3ai.com";
+
+/** Allow only http(s) and mailto. javascript: and data: never become hrefs. */
+export function safeMarkdownHref(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed || /[\u0000-\u001F]/.test(trimmed)) return null;
+  try {
+    const url = new URL(trimmed, SAFE_LINK_BASE);
+    const protocol = url.protocol.toLowerCase();
+    if (protocol === "http:" || protocol === "https:" || protocol === "mailto:") {
+      return trimmed;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function findSingleAsterisk(text: string, from: number): number {
+  for (let i = from; i < text.length; i += 1) {
+    if (text[i] !== "*") continue;
+    if (text[i + 1] === "*" || text[i - 1] === "*") continue;
+    return i;
+  }
+  return -1;
+}
+
+function matchLink(
+  text: string,
+  start: number
+): { label: string; href: string; end: number } | null {
+  if (text[start] !== "[") return null;
+  const labelEnd = text.indexOf("]", start + 1);
+  if (labelEnd <= start + 1 || text[labelEnd + 1] !== "(") return null;
+  let depth = 1;
+  let hrefEnd = labelEnd + 2;
+  for (; hrefEnd < text.length; hrefEnd += 1) {
+    const char = text[hrefEnd];
+    if (char === "(") depth += 1;
+    else if (char === ")") {
+      depth -= 1;
+      if (depth === 0) break;
+    }
+  }
+  if (depth !== 0) return null;
+  const label = text.slice(start + 1, labelEnd);
+  const href = text.slice(labelEnd + 2, hrefEnd).trim();
+  if (!label || !href) return null;
+  return { label, href, end: hrefEnd + 1 };
+}
+
+function parseInline(text: string, depth: number): InlineNode[] {
+  if (!text) return [];
+  if (depth > 6) return [{ type: "text", text }];
+
+  const nodes: InlineNode[] = [];
+  let buffer = "";
+  const flush = () => {
+    if (!buffer) return;
+    nodes.push({ type: "text", text: buffer });
+    buffer = "";
+  };
+
+  for (let i = 0; i < text.length; i += 1) {
+    if (text[i] === "`") {
+      const end = text.indexOf("`", i + 1);
+      if (end > i + 1) {
+        flush();
+        nodes.push({ type: "code", text: text.slice(i + 1, end) });
+        i = end;
+        continue;
+      }
+    }
+
+    if (text.startsWith("**", i)) {
+      const end = text.indexOf("**", i + 2);
+      if (end > i + 2) {
+        flush();
+        nodes.push({
+          type: "strong",
+          children: parseInline(text.slice(i + 2, end), depth + 1),
+        });
+        i = end + 1;
+        continue;
+      }
+    }
+
+    if (text[i] === "*" && text[i + 1] !== "*") {
+      const end = findSingleAsterisk(text, i + 1);
+      if (end > i + 1) {
+        flush();
+        nodes.push({
+          type: "em",
+          children: parseInline(text.slice(i + 1, end), depth + 1),
+        });
+        i = end;
+        continue;
+      }
+    }
+
+    if (text[i] === "[") {
+      const link = matchLink(text, i);
+      if (link) {
+        flush();
+        nodes.push({
+          type: "link",
+          children: parseInline(link.label, depth + 1),
+          href: safeMarkdownHref(link.href),
+        });
+        i = link.end - 1;
+        continue;
+      }
+    }
+
+    buffer += text[i];
+  }
+
+  flush();
+  return nodes;
+}
+
+/** Inline markdown. Unclosed markers stay as text so streaming replies cannot throw. */
+export function parseInlineMarkdown(text: string): InlineNode[] {
+  try {
+    const nodes = parseInline(typeof text === "string" ? text : "", 0);
+    return nodes.length > 0 ? nodes : [{ type: "text", text: text ?? "" }];
+  } catch {
+    return [{ type: "text", text: typeof text === "string" ? text : "" }];
+  }
+}

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { parseMarkdownDocument } from "../../web/lib/chat/messageMarkdownParser";
+import {
+  parseInlineMarkdown,
+  parseMarkdownDocument,
+  safeMarkdownHref,
+  safeParseMarkdownDocument,
+} from "../../web/lib/chat/messageMarkdownParser";
 
 describe("parseMarkdownDocument ordered lists", () => {
   it("keeps one ordered list across blank lines between items", () => {
@@ -124,5 +129,93 @@ describe("parseMarkdownDocument other blocks", () => {
     expect(blocks).toEqual([
       { type: "table", headers: ["A", "B"], rows: [["1", "2"]] },
     ]);
+  });
+
+  it("keeps fenced code as a code block, including markdown-looking text", () => {
+    const blocks = parseMarkdownDocument("```js\nconst label = '**not bold**';\n```");
+    expect(blocks).toEqual([
+      { type: "code", language: "js", code: "const label = '**not bold**';" },
+    ]);
+  });
+});
+
+describe("chat markdown inline rendering", () => {
+  it("renders bold, italic, and links without unsafe URL schemes", () => {
+    expect(parseInlineMarkdown("**Bold text**")).toEqual([
+      { type: "strong", children: [{ type: "text", text: "Bold text" }] },
+    ]);
+    expect(parseInlineMarkdown("*Italic text*")).toEqual([
+      { type: "em", children: [{ type: "text", text: "Italic text" }] },
+    ]);
+    expect(parseInlineMarkdown("See [docs](https://www.giga3ai.com/learn)")).toEqual([
+      { type: "text", text: "See " },
+      {
+        type: "link",
+        href: "https://www.giga3ai.com/learn",
+        children: [{ type: "text", text: "docs" }],
+      },
+    ]);
+    expect(safeMarkdownHref("javascript:alert(1)")).toBeNull();
+    expect(safeMarkdownHref("data:text/html,hi")).toBeNull();
+    expect(parseInlineMarkdown("[click](javascript:alert(1))")).toEqual([
+      {
+        type: "link",
+        href: null,
+        children: [{ type: "text", text: "click" }],
+      },
+    ]);
+    expect(parseInlineMarkdown("Plain sentence with no markers.")).toEqual([
+      { type: "text", text: "Plain sentence with no markers." },
+    ]);
+  });
+
+  it("renders combined heading, emphasis, and list markers as blocks plus inline", () => {
+    const blocks = parseMarkdownDocument(
+      [
+        "### Important",
+        "",
+        "**Key fact**",
+        "",
+        "*Additional context*",
+        "",
+        "- First",
+        "- Second",
+        "",
+        "1. Step one",
+        "2. Step two",
+      ].join("\n")
+    );
+    expect(blocks.map((block) => block.type)).toEqual([
+      "heading",
+      "paragraph",
+      "paragraph",
+      "ul",
+      "ol",
+    ]);
+    expect(blocks[0]).toMatchObject({ type: "heading", level: 3, text: "Important" });
+    expect(parseInlineMarkdown("**Key fact**")[0]).toMatchObject({ type: "strong" });
+    expect(parseInlineMarkdown("*Additional context*")[0]).toMatchObject({ type: "em" });
+    expect(blocks[3]).toMatchObject({
+      type: "ul",
+      items: [{ content: "First" }, { content: "Second" }],
+    });
+    expect(blocks[4]).toMatchObject({
+      type: "ol",
+      items: [{ content: "Step one" }, { content: "Step two" }],
+    });
+  });
+
+  it("keeps incomplete streaming markdown as text without throwing", () => {
+    expect(() => parseInlineMarkdown("Here is the **important")).not.toThrow();
+    expect(parseInlineMarkdown("Here is the **important")).toEqual([
+      { type: "text", text: "Here is the **important" },
+    ]);
+    expect(() => safeParseMarkdownDocument("- First item\n- Second")).not.toThrow();
+    const partial = safeParseMarkdownDocument("- First item\n- Second");
+    expect(partial).toEqual([
+      { type: "ul", items: [{ content: "First item" }, { content: "Second" }] },
+    ]);
+    expect(() => safeParseMarkdownDocument("### Key Information\n\n**open")).not.toThrow();
+    expect(safeParseMarkdownDocument(null)).toEqual([]);
   });
 });

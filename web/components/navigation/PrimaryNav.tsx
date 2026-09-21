@@ -13,6 +13,7 @@ import {
   resolvePrimaryNavTab,
   shouldShowDesktopRail,
 } from "@/lib/navigation/primaryNav";
+import { triggerHaptic } from "@/lib/gigasocial/haptics";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -65,9 +66,11 @@ const PrimaryNavBar = memo(function PrimaryNavBar({
               key={tab.id}
               href={href}
               data-nav={tab.id}
+              data-active={active ? "true" : "false"}
               className={cn("primary-nav__item", active && "primary-nav__item--active")}
               aria-current={active ? "page" : undefined}
               prefetch={tab.id === "home"}
+              onClick={() => triggerHaptic("light")}
             >
               <span className="primary-nav__icon" aria-hidden>
                 <Icon active={active} className="primary-nav__glyph" />
