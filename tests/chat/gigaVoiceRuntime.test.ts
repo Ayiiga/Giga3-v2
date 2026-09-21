@@ -212,6 +212,37 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
     expect(ok).toBe(true);
   });
 
+  it("speaks three English chunks in order and keeps each utterance until it ends", async () => {
+    const { log, synth } = installSpeechMock({ voices: [mockVoice("English US", "en-US")] });
+    const { speakGigaVoice } = await import("../../web/lib/chat/gigaVoice");
+    const onEnd = vi.fn();
+    const sentence = (label: string) =>
+      `${label} ${"news ".repeat(22)}today.`.replace(/\s+/g, " ").trim();
+    const text = [sentence("Alpha"), sentence("Beta"), sentence("Gamma")].join(" ");
+
+    await speakGigaVoice({ text, voiceId: "english-british", onEnd });
+    const spoken = () => log.filter((entry) => entry.type === "speak");
+    expect(spoken()).toHaveLength(1);
+
+    const first = synth.speak.mock.calls[0]?.[0] as SpeechSynthesisUtterance;
+    expect(first.text.length).toBeLessThanOrEqual(200);
+    expect(typeof first.onend).toBe("function");
+
+    synth._finishSpeaking(first);
+    expect(spoken()).toHaveLength(2);
+    const second = synth.speak.mock.calls[1]?.[0] as SpeechSynthesisUtterance;
+    expect(second).not.toBe(first);
+    expect(typeof first.onend).toBe("function");
+
+    synth._finishSpeaking(second);
+    expect(spoken()).toHaveLength(3);
+    const third = synth.speak.mock.calls[2]?.[0] as SpeechSynthesisUtterance;
+    expect(typeof second.onend).toBe("function");
+    synth._finishSpeaking(third);
+    expect(onEnd).toHaveBeenCalledTimes(1);
+    expect(spoken().map((entry) => entry.text).join(" ")).toContain("Gamma");
+  });
+
   it("speaks the next English chunk only after the previous one ends", async () => {
     const { log, synth } = installSpeechMock({ voices: [mockVoice("English US", "en-US")] });
     const { speakGigaVoice, isGigaVoiceSpeaking } = await import("../../web/lib/chat/gigaVoice");
