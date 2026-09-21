@@ -46,6 +46,7 @@ import { isLiveWebEnabled } from "./liveWeb/liveWebConfig";
 import {
   buildLiveWebMetadata,
   mergeLiveWebSources,
+  newsEvidenceWithGrounding,
   runWebResearch,
 } from "./liveWeb/webResearchOrchestrator";
 import { proposeWebAction } from "./liveWeb/webActionProvider";
@@ -635,6 +636,11 @@ export const processJob = internalAction({
 
       let liveWebSkippedReason: string | null = null;
 
+      if (needsLiveWeb) {
+        systemPrompt +=
+          "\n\nThis is a current-events question. Answer from retrieved public sources and include the source links. Do not tell the user to check other news sites, and do not answer from general knowledge when sources are available. If no sources were retrieved, say the evidence is insufficient — do not invent headlines.";
+      }
+
       if (
         needsLiveWeb &&
         isLiveWebEnabled() &&
@@ -897,6 +903,25 @@ export const processJob = internalAction({
       // Image generations already returned the finished asset URL — skip the
       // answer-quality/auto-visual augmentation (it would append a broken
       // Mermaid block wrapping the image URL and redundant visual specs).
+      if (needsLiveWeb && engineResult.requestKind !== "image_generation") {
+        const absorbed = newsEvidenceWithGrounding({
+          query: job.content,
+          capability: researchCapability,
+          existing: newsEvidenceContext,
+          researchSources: liveWebSources,
+          groundingSources: engineResult.groundingSources ?? [],
+        });
+        newsEvidenceContext = absorbed.evidence;
+        liveWebSources = absorbed.sources;
+        if ((engineResult.groundingSources?.length ?? 0) > 0) {
+          liveWebUsed = true;
+          liveWebBasis = responseBasisForCapability(
+            researchCapability === "general" ? "current_news" : researchCapability,
+            true
+          );
+        }
+      }
+
       let assistantContent: string;
       let qualityReport: ReturnType<typeof validateAnswerQuality>["report"] | null = null;
       if (engineResult.requestKind === "image_generation") {

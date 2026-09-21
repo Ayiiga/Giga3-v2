@@ -102,12 +102,16 @@ export type SpeakWithGigaLearnVoiceArgs = {
   onEnd?: () => void;
 };
 
+/** Keep every utterance alive until playback ends. Chrome collects unreferenced ones. */
+let retainedLearnUtterances: SpeechSynthesisUtterance[] = [];
+
 function queueUtterances(
   parts: Array<{ text: string; lang: string; voice: SpeechSynthesisVoice | null }>,
   rate: number,
   pitch: number,
   onEnd?: () => void
 ): void {
+  retainedLearnUtterances = [];
   try {
     window.speechSynthesis.cancel();
   } catch {
@@ -123,12 +127,16 @@ function queueUtterances(
     }
     let remaining = parts.length;
     if (remaining === 0) {
+      retainedLearnUtterances = [];
       onEnd?.();
       return;
     }
     const done = () => {
       remaining -= 1;
-      if (remaining <= 0) onEnd?.();
+      if (remaining <= 0) {
+        retainedLearnUtterances = [];
+        onEnd?.();
+      }
     };
     for (const part of parts) {
       let utter: SpeechSynthesisUtterance;
@@ -154,6 +162,7 @@ function queueUtterances(
         settled = true;
         done();
       };
+      retainedLearnUtterances.push(utter);
       utter.onend = advance;
       utter.onerror = (event) => {
         const code = (event as SpeechSynthesisErrorEvent | undefined)?.error;

@@ -17,6 +17,7 @@ import {
   responseBasisForCapability,
   shouldAutoEnableLiveWeb,
   shouldRunLiveWebResearch,
+  shouldUseConversationalWorker,
 } from "../../convex/researchCapabilities";
 import { MTN_HEROES_OF_CHANGE_FIXTURE } from "../newsEvidence/userContextRouting.test";
 
@@ -96,6 +97,27 @@ describe("research capability routing", () => {
         liveWebEnabled: true,
       })
     ).toBe("ghana_news");
+  });
+
+  it("routes 'What is happening in Ghana' to Ghana news, not small talk", () => {
+    const query = "What is happening in Ghana";
+    expect(isConversationalChatQuery(query)).toBe(false);
+    expect(detectGhanaNewsIntent(query)).toBe(true);
+    expect(detectCurrentEventsIntent(query)).toBe(true);
+    expect(detectNewsRetrievalIntent(query)).toBe(true);
+    const capability = resolveResearchCapability({
+      query,
+      liveWebEnabled: true,
+    });
+    expect(capability).toBe("ghana_news");
+    const needsLiveWeb = queryNeedsLiveWeb({ query, capability });
+    expect(needsLiveWeb).toBe(true);
+    expect(
+      shouldUseConversationalWorker({ needsLiveWeb, attachmentCount: 0 })
+    ).toBe(false);
+    expect(buildResearchSearchQuery(query, capability)).toContain("graphic.com.gh");
+    expect(buildResearchSearchQuery(query, capability)).not.toContain("ghana.gov.gh");
+    expect(researchSystemPromptAddon(capability)).toContain("Do not deflect");
   });
 
   it("auto-resolves breaking Ghana news", () => {

@@ -21,5 +21,10 @@ describe("quick conversational reply routing", () => {
         query: "What is happening in Ghana and Nepal",
       })
     ).toBe(false);
+    expect(
+      shouldUseQuickConversationalReply({
+        query: "What is happening in Ghana",
+      })
+    ).toBe(false);
   });
 });

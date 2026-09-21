@@ -246,6 +246,49 @@ function dedupeSources(sources: LiveWebSource[]): LiveWebSource[] {
   return [...map.values()].slice(0, 8);
 }
 
+/**
+ * When dedicated search returns nothing, Gemini grounding can still find sources.
+ * Fold those into the evidence package before answer validation so a real
+ * grounded reply is kept and a "check the news" hedge can be replaced.
+ */
+export function newsEvidenceWithGrounding(args: {
+  query: string;
+  capability?: ResearchCapabilityId;
+  existing: import("../newsEvidence/types").NewsEvidenceContext | null;
+  researchSources: LiveWebSource[];
+  groundingSources: Array<{ title: string; uri: string }>;
+}): {
+  evidence: import("../newsEvidence/types").NewsEvidenceContext | null;
+  sources: LiveWebSource[];
+} {
+  const merged = mergeLiveWebSources(args.researchSources, args.groundingSources);
+  const failed =
+    !args.existing ||
+    args.existing.retrievalFailed ||
+    args.existing.contract.evidenceCount === 0;
+  if (!failed || merged.length === 0) {
+    return {
+      evidence: args.existing,
+      sources: merged.length > 0 ? merged : args.researchSources,
+    };
+  }
+
+  const capability =
+    !args.capability || args.capability === "general" ? "current_news" : args.capability;
+  return {
+    evidence: buildNewsEvidencePackage({
+      query: args.query,
+      capability,
+      sources: merged,
+      pagesReadUrls: [],
+      warnings: [],
+      liveSearchUsed: true,
+      retrievalFailed: false,
+    }),
+    sources: merged,
+  };
+}
+
 export function mergeLiveWebSources(
   researchSources: LiveWebSource[],
   groundingSources: Array<{ title: string; uri: string }>
