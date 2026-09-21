@@ -113,7 +113,16 @@ export function shouldAutoEnableLiveWeb(query: string): boolean {
   if (!q) return false;
   if (detectAnswerFromUserContextIntent(q)) return false;
   if (/\bannouncement\b/i.test(q)) {
-    return NEWS_ANNOUNCEMENT_LOOKUP_RE.test(q);
+    if (NEWS_ANNOUNCEMENT_LOOKUP_RE.test(q)) return true;
+    // "Is this announcement still current?" — verification, not pasted-notice context.
+    if (
+      /\bis this\b[\s\S]{0,48}\b(current|genuine|real|legitimate|accurate|true|official|valid)\b/i.test(
+        q
+      )
+    ) {
+      return TIME_SENSITIVE_RE.test(q);
+    }
+    return false;
   }
   return TIME_SENSITIVE_RE.test(q);
 }

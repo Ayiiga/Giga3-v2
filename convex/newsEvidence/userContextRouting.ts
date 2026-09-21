@@ -18,7 +18,7 @@ const USER_CONTEXT_QUESTION_RE =
   /\b(what (?:date|deadline|amount|prize|category|categories)|when (?:do|does)|how much|who (?:wins|won|can)|where (?:can|do)|summarize|summarise|explain|break down|list the|tell me about)\b/i;
 
 const VERIFY_CURRENT_RE =
-  /\b(is this (?:still )?(?:current|genuine|real|legitimate|accurate|true|official|valid)|(?:still|currently) (?:valid|current|open|active)|has this (?:been|already)|fact[- ]?check|verify (?:this|whether)|can you confirm|is it true that|check if this)\b/i;
+  /\b(is this (?:[\w'-]+\s+){0,4}(?:still )?(?:current|genuine|real|legitimate|accurate|true|official|valid)|(?:still|currently) (?:valid|current|open|active)|has this (?:been|already)|fact[- ]?check|verify (?:this|whether)|can you confirm|is it true that|check if this)\b/i;
 
 const MONTH_OR_YEAR_RE =
   /\b(?:\d{1,2}\s+)?(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+20\d{2}\b|\b20\d{2}\b/i;

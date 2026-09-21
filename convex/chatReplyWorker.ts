@@ -772,7 +772,8 @@ export const processJob = internalAction({
       } else if (
         shouldResearch &&
         isNewsCapability(researchCapability) &&
-        !liveWebUsed
+        !liveWebUsed &&
+        infoRequestMode !== "answer_from_user_context"
       ) {
         systemPrompt += `\n\n${liveSearchUnavailableNewsFallback(researchCapability)}`;
         newsEvidenceContext = buildNewsEvidencePackage({
