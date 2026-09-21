@@ -135,7 +135,7 @@ export const ITEM_PRONUNCIATION: Record<string, Record<AfricanLanguageKey, Local
   cat: word(
     { text: "Ɔkra", phonetic: "aw-krah" },
     { text: "Kyanwa", phonetic: "kyahn-wah" },
-    { text: "Alonte", phonetic: "ah-lon-teh" },
+    { text: "Cat", phonetic: "cat" },
     { text: "Dadi", phonetic: "dah-dee" },
     { text: "Ológbò", phonetic: "oh-log-boh" },
     { text: "Paka", phonetic: "pah-kah" }

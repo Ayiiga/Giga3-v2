@@ -129,11 +129,21 @@ function queueUtterances(
     };
     utter.onend = advance;
     utter.onerror = advance;
-    window.speechSynthesis.speak(utter);
+    try {
+      window.speechSynthesis.speak(utter);
+    } catch {
+      advance();
+    }
   };
 
   // Chrome drops utterances spoken in the same turn as cancel().
-  window.setTimeout(() => speakAt(0), 40);
+  window.setTimeout(() => {
+    try {
+      speakAt(0);
+    } catch {
+      onEnd?.();
+    }
+  }, 40);
 }
 
 /** Speak one line with language/voice selection from a GigaLearn profile. */
