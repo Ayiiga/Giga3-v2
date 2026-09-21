@@ -35,7 +35,7 @@ type AfricanVoiceReaderProps = {
 
 /**
  * African voice reader below AI responses — offline on-device speech,
- * defaulting to Twi Female (Ghana, slow and clear for BECE/WASSCE).
+ * defaulting to English (British); African languages available as secondary options.
  */
 export function AfricanVoiceReader({ content, selectorOnly = false }: AfricanVoiceReaderProps) {
   const [supported, setSupported] = useState(false);

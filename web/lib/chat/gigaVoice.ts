@@ -17,6 +17,7 @@ export const GIGA_VOICE_LANG: Record<
   string,
   { primary: string; fallbacks: string[] }
 > = {
+  "english-british": { primary: "en-GB", fallbacks: ["en", "en-US"] },
   "abena-twi": { primary: "ak-GH", fallbacks: ["tw-GH", "tw", "ak", "en-GH", "en"] },
   "kwame-twi": { primary: "ak-GH", fallbacks: ["tw-GH", "tw", "ak", "en-GH", "en"] },
   "aisha-hausa": { primary: "ha-NG", fallbacks: ["ha", "en-NG", "en"] },
@@ -32,6 +33,7 @@ export const GIGA_VOICE_LANG: Record<
 };
 
 export const GIGA_CHAT_VOICES: GigaVoiceProfile[] = [
+  { id: "english-british", name: "English (British)", flag: "🇬🇧", lang: "en-GB" },
   { id: "abena-twi", name: "Abena · Twi (F)", flag: "🇬🇭", lang: "ak-GH" },
   { id: "kwame-twi", name: "Kwame · Twi (M)", flag: "🇬🇭", lang: "ak-GH" },
   { id: "aisha-hausa", name: "Aisha · Hausa (F)", flag: "🇳🇬", lang: "ha-NG" },
