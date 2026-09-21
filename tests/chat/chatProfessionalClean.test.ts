@@ -73,9 +73,9 @@ describe("global suggested prompts", () => {
 });
 
 describe("African reader voices", () => {
-  it("defaults to Abena Twi first with male and female African voices", () => {
-    expect(AFRICAN_READER_VOICES.length).toBeGreaterThanOrEqual(10);
-    expect(AFRICAN_READER_VOICES[0].id).toBe("abena-twi");
+  it("defaults to English (British) first with male and female African voices", () => {
+    expect(AFRICAN_READER_VOICES.length).toBeGreaterThanOrEqual(11);
+    expect(AFRICAN_READER_VOICES[0].id).toBe("english-british");
     expect(AFRICAN_READER_VOICES.some((v) => v.name.includes("(M)"))).toBe(true);
     expect(AFRICAN_READER_VOICES.some((v) => v.name.includes("(F)"))).toBe(true);
   });

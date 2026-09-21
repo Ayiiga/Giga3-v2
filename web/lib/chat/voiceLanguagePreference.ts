@@ -1,5 +1,5 @@
 const STORAGE_KEY = "giga3_voice_language_id";
-const DEFAULT_VOICE_ID = "abena-twi";
+const DEFAULT_VOICE_ID = "english-british";
 
 export const VOICE_LANGUAGE_EVENT = "giga3:voice-language";
 
