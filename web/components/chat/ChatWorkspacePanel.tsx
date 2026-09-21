@@ -61,8 +61,8 @@ function ChatWorkspacePanelComponent({
 }: ChatWorkspacePanelProps) {
   const router = useRouter();
   const [sessionToken, setSessionToken] = useState<string | null>(null);
-  const [open, setOpen] = useState(!hasMessages);
-  const [tab, setTab] = useState<WorkspaceTab>(hasMessages ? "modes" : "documents");
+  const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<WorkspaceTab>("modes");
   const [navigatedOpen, setNavigatedOpen] = useState(false);
   const [mediaNavigating, setMediaNavigating] = useState<string | null>(null);
 
@@ -80,16 +80,8 @@ function ChatWorkspacePanelComponent({
   useEffect(() => {
     if (hasMessages && !navigatedOpen) {
       setOpen(false);
-      return;
     }
-    if (!hasMessages) {
-      setOpen(true);
-      setNavigatedOpen(false);
-      if (mode !== "news") {
-        setTab("documents");
-      }
-    }
-  }, [hasMessages, mode, navigatedOpen]);
+  }, [hasMessages, navigatedOpen]);
 
   useEffect(() => {
     function onWorkspaceNav(event: Event) {
@@ -285,7 +277,7 @@ function ChatWorkspacePanelComponent({
                 disabled={disabled}
                 compact={hasMessages}
                 embedded
-                defaultOpen={!hasMessages}
+                defaultOpen={false}
                 onSelectTemplate={onSelectDocumentTemplate}
                 onError={onError}
               />

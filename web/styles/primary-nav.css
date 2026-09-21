@@ -322,8 +322,13 @@ html.primary-nav-route.primary-nav-bar-visible [data-marketing="true"] .marketin
   }
 }
 
-/* Chat mobile shell — keep composer above bottom nav */
+/* Chat mobile shell — keep composer a small gap above the tab bar.
+   Desktop chat hides this bar, so the taller offset must not apply there. */
 @media (max-width: 1023px) {
+  html.chat-route.primary-nav-route.primary-nav-bar-visible {
+    --primary-nav-offset: calc(5.15rem + env(safe-area-inset-bottom, 0px));
+  }
+
   html.primary-nav-route.primary-nav-bar-visible.chat-route .chat-keyboard-shell {
     padding-bottom: var(--primary-nav-offset);
   }
