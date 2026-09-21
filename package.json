@@ -10,13 +10,16 @@
     "supabase:verify": "node scripts/verify-supabase-project.mjs",
     "supabase:gigasocial-storage": "node scripts/apply-gigasocial-storage.mjs",
     "test": "vitest run",
-    "test:security": "vitest run"
+    "test:security": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:release-410": "playwright test tests/e2e/verified-release-410.spec.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@playwright/test": "^1.49.1",
     "vitest": "^3.2.6"
   },
   "dependencies": {
