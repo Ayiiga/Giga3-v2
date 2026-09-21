@@ -1,23 +1,18 @@
 "use client";
 
 import { MessageBubble } from "@/components/chat/MessageBubble";
-import { DOCUMENT_TEMPLATES } from "@/lib/chat/documentTemplates";
 import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
-import { WRITING_QUICK_START } from "@/lib/chat/writingWorkflow";
 import { getCategoryForMode } from "@/lib/chat/chatCategories";
 import { getSuggestedPrompts } from "@/lib/chat/suggestedPrompts";
-import { CHAT_WORKSPACE_PRIMARY_APPS } from "@/lib/chat/workspaceApps";
 import { GIGA3_CHAT_WELCOME } from "@/lib/assistantIdentity";
 import type { AiModeId } from "@/lib/aiRouter";
-import { formatCurrentDate, resolveTemplatePlaceholders } from "@/lib/datetime";
+import { formatCurrentDate } from "@/lib/datetime";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { useScrollToLatestMessage } from "@/hooks/useScrollToLatestMessage";
 import { ScrollToLatestButton } from "@/components/chat/ScrollToLatestButton";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { messageListScrollKey } from "@/lib/chat/stableMessages";
 import { groupMessagesByDate } from "@/lib/chat/groupMessagesByDate";
-import { cn } from "@/lib/utils";
-import { MessageSquarePlus, Sparkles } from "lucide-react";
 import { memo, useMemo, useRef } from "react";
 
 export interface UiMessage {
@@ -56,7 +51,6 @@ function MessageListInner({
   isAcceptingMessage = false,
   awaitingReply = false,
   onInsertTemplate,
-  onSelectDocumentTemplate,
   onRegenerate,
   onEditMessage,
   onDeleteMessage,
@@ -88,7 +82,7 @@ function MessageListInner({
   }, []);
 
   const category = useMemo(() => getCategoryForMode(mode), [mode]);
-  const suggestedPrompts = useMemo(() => getSuggestedPrompts(mode, 6), [mode]);
+  const suggestedPrompts = useMemo(() => getSuggestedPrompts(mode, 3), [mode]);
 
   return (
     <div className="chat-message-list relative min-h-0 min-w-0 max-w-full overflow-x-clip overflow-y-hidden bg-background">
@@ -101,126 +95,38 @@ function MessageListInner({
         )}
 
         {messages.length === 0 && !isLoading && (
-          <div className="chat-rail flex h-full min-h-[14rem] flex-col items-center justify-center px-2 text-center">
-            <div className="premium-card mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10 text-accent">
-              <MessageSquarePlus className="h-8 w-8" aria-hidden />
-            </div>
-            <h2 className="chat-welcome-title text-3xl font-bold tracking-tight text-foreground sm:text-4xl sm:leading-[1.12] lg:text-[2.75rem] lg:leading-[1.1]">
+          <div className="chat-rail flex w-full flex-col items-center px-2 pt-8 text-center">
+            <h2 className="chat-welcome-title text-2xl font-bold tracking-tight text-foreground sm:text-4xl">
               Welcome to Giga3 AI
             </h2>
-            <p className="mt-3 text-sm font-semibold tracking-wide text-accent sm:mt-4 sm:text-base">
+            <p className="mt-2 text-sm font-semibold tracking-wide text-accent">
               {category.emoji} {category.label} mode
             </p>
             {todayLabel && (
-              <p className="mt-2 text-sm leading-relaxed text-muted sm:mt-2.5" suppressHydrationWarning>
+              <p className="mt-1 text-sm text-muted" suppressHydrationWarning>
                 {todayLabel}
               </p>
             )}
-            <p className="mt-5 max-w-md text-base leading-[1.75] text-muted sm:mt-6 sm:text-[1.0625rem] sm:leading-[1.8]">
-              {GIGA3_CHAT_WELCOME} Pick a suggested prompt below, attach files for
-              analysis, or explore templates in the workspace.
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-muted sm:text-base">
+              {GIGA3_CHAT_WELCOME} Type a message below. Open Workspace when you want a template.
             </p>
 
-            {onSelectDocumentTemplate && (
-              <div className="mt-8 w-full">
-                <p className="mb-3 text-sm font-medium text-muted">Start writing</p>
-                <div className="flex w-full flex-wrap justify-center gap-2">
-                  {WRITING_QUICK_START.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => onSelectDocumentTemplate(item.id)}
-                      className="min-h-11 rounded-full border border-accent/25 bg-accent/5 px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:border-accent/40 hover:bg-accent/10"
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {onInsertTemplate && (
-              <div className="mt-6 flex w-full flex-wrap justify-center gap-2">
-                {CHAT_WORKSPACE_PRIMARY_APPS.map((app) => (
+              <div className="mt-4 flex w-full flex-wrap justify-center gap-2">
+                {(suggestedPrompts.length > 0 ? suggestedPrompts : QUICK_PROMPTS_FALLBACK.map((prompt) => ({
+                  label: prompt,
+                  text: prompt,
+                }))).map((prompt) => (
                   <button
-                    key={app.id}
+                    key={prompt.label}
                     type="button"
-                    onClick={() => onInsertTemplate(`Open ${app.label}`)}
-                    className="min-h-11 rounded-full border border-accent/30 bg-accent/5 px-4 py-2 text-sm font-medium text-foreground"
+                    onClick={() => onInsertTemplate(prompt.text)}
+                    className="min-h-11 rounded-full border border-border bg-white px-4 py-2 text-sm text-foreground shadow-sm hover:border-accent/30 hover:bg-accent/5"
                   >
-                    Open {app.label}
+                    {prompt.label}
                   </button>
                 ))}
               </div>
-            )}
-
-            {onInsertTemplate && (
-              <>
-                <div className="mt-8 flex w-full flex-wrap justify-center gap-2">
-                  {suggestedPrompts.map((prompt) => (
-                    <button
-                      key={prompt.label}
-                      type="button"
-                      onClick={() => onInsertTemplate(prompt.text)}
-                      className="min-h-11 rounded-full border border-border bg-white px-4 py-2 text-sm text-foreground shadow-sm hover:border-accent/30 hover:bg-accent/5"
-                    >
-                      {prompt.label}
-                    </button>
-                  ))}
-                </div>
-                {suggestedPrompts.length === 0 && (
-                  <div className="mt-8 flex w-full flex-wrap justify-center gap-2">
-                    {QUICK_PROMPTS_FALLBACK.map((prompt) => (
-                      <button
-                        key={prompt}
-                        type="button"
-                        onClick={() => onInsertTemplate(prompt)}
-                        className="min-h-11 rounded-full border border-border bg-white px-4 py-2 text-sm text-foreground shadow-sm hover:border-accent/30 hover:bg-accent/5"
-                      >
-                        {prompt}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                <div className="mt-8 w-full">
-                  <p className="mb-3 flex items-center justify-center gap-1.5 text-sm font-medium text-muted">
-                    <Sparkles className="h-4 w-4" aria-hidden />
-                    Document templates
-                  </p>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {DOCUMENT_TEMPLATES.slice(0, 6).map((template) => {
-                      const Icon = template.icon;
-                      return (
-                        <button
-                          key={template.id}
-                          type="button"
-                          onClick={() => {
-                            if (onSelectDocumentTemplate) {
-                              onSelectDocumentTemplate(template.id);
-                              return;
-                            }
-                            try {
-                              onInsertTemplate(
-                                resolveTemplatePlaceholders(template.body)
-                              );
-                            } catch {
-                              /* parent handles errors via insertRef */
-                            }
-                          }}
-                          className={cn(
-                            "flex min-h-11 items-center gap-2 rounded-xl border border-border bg-white px-3 py-2.5 text-left",
-                            "text-sm text-foreground shadow-sm hover:border-accent/25 hover:bg-accent/5"
-                          )}
-                        >
-                          <Icon className="h-4 w-4 shrink-0 text-accent" aria-hidden />
-                          <span className="line-clamp-2 leading-snug">{template.title}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </>
             )}
           </div>
         )}
