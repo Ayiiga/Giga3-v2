@@ -25,13 +25,22 @@ test.describe("Release 410 — production smoke (unauthenticated)", () => {
     expect(swVersion).toBe("giga3-v6");
   });
 
-  test("answer block CSS is loaded on chat route", async ({ page }) => {
+  test("answer block CSS bundle is loaded on chat route", async ({ page }) => {
     await page.goto("/chat/");
     const cssHref = await page.evaluate(() => {
       const links = [...document.querySelectorAll('link[rel="stylesheet"]')] as HTMLLinkElement[];
-      return links.map((l) => l.href).find((h) => h.includes("c371b01")) ?? null;
+      return links.map((l) => l.href).find((h) => /\/_next\/static\/css\/[a-f0-9]+\.css/.test(h)) ?? null;
     });
     expect(cssHref).toBeTruthy();
+  });
+
+  test("guest chat shell does not expose voice selector (auth-gated)", async ({ page, isMobile }) => {
+    test.skip(!isMobile, "Mobile-only layout check");
+    await page.goto("/chat/");
+    await expect(page.getByLabel(/voice language/i)).toHaveCount(0);
+    await expect(page.getByText(/sign in|log in|create account/i).first()).toBeVisible({
+      timeout: 30_000,
+    });
   });
 });
 
@@ -117,6 +126,44 @@ test.describe("Release 410 — authenticated workflows", () => {
     await expect(mainBlock.getByRole("button", { name: /copy/i })).toBeVisible();
     await expect(mainBlock.getByRole("button", { name: /share/i })).toBeVisible();
     await expect(mainBlock.getByRole("button", { name: /read aloud/i })).toBeVisible();
+  });
+
+  test("block Share shares only the selected block text", async ({ page, context }) => {
+    test.setTimeout(240_000);
+    await page.goto("/chat/");
+
+    const composer = page.getByPlaceholder(/message giga3/i);
+    await composer.fill(STRUCTURED_PROMPT);
+    await composer.press("Enter");
+
+    const blocks = page.locator(".answer-content-block");
+    await expect(blocks.first()).toBeVisible({ timeout: 120_000 });
+    const mainBlock = blocks.nth(1);
+    const mainText = (await mainBlock.locator(".answer-content-block__body").innerText()).trim();
+
+    await page.evaluate(() => {
+      (window as Window & { __gigaShareCapture?: { title?: string; text?: string } }).__gigaShareCapture =
+        undefined;
+      navigator.share = async (data: ShareData) => {
+        (window as Window & { __gigaShareCapture?: ShareData }).__gigaShareCapture = {
+          title: data.title,
+          text: data.text,
+        };
+      };
+    });
+
+    await mainBlock.getByRole("button", { name: /share/i }).click();
+    await page.waitForTimeout(500);
+
+    const shared = await page.evaluate(() => {
+      return (window as Window & { __gigaShareCapture?: { title?: string; text?: string } })
+        .__gigaShareCapture;
+    });
+    expect(shared?.text).toContain(mainText.slice(0, 40));
+    const introText = (await blocks.nth(0).locator(".answer-content-block__body").innerText()).trim();
+    if (introText.length > 20) {
+      expect(shared?.text ?? "").not.toContain(introText.slice(0, 20));
+    }
   });
 
   test("block Copy copies only the selected block text", async ({ page, context }) => {

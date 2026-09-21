@@ -68,10 +68,15 @@ export function detectAnswerFromUserContextIntent(query: string): boolean {
   if (hasSubstantiveUserProvidedContent(q)) {
     // A substantive paste with an extractive question is still user-context.
     if (USER_CONTEXT_QUESTION_RE.test(q)) return true;
-    // Long pasted notices without explicit news-retrieval phrasing.
-    if (!/\b(latest|today'?s?|current|breaking|headlines|what(?:'s| is) (?:in|on) the news)\b/i.test(q)) {
-      return true;
+    // Marketing copy often contains words like "today" — that is not a news lookup.
+    if (
+      /\b(what(?:'s| is) (?:the )?(?:latest|current)|(?:latest|current|breaking) (?:news|headlines)|news (?:today|headlines|update|briefing)|headlines (?:today|now))\b/i.test(
+        q
+      )
+    ) {
+      return false;
     }
+    return true;
   }
 
   return false;

@@ -25,7 +25,37 @@ import { validateAnswerQuality, prepareAnswerQualityContext } from "../../convex
 export const MTN_HEROES_OF_CHANGE_FIXTURE =
   "MTN Ghana Heroes of Change Season 8 is open for nominations until 19 October 2026. The overall winner receives GHS400,000 and each category winner receives GHS200,000. Categories include Education, Health, Economic Empowerment, Sustainability and Digital Innovation. Nominate via the MTN Ghana website or MTN Service Centres.";
 
+/** Production-reported user paste including marketing "today" and Ghana references. */
+export const MTN_FULL_PRODUCTION_ANNOUNCEMENT =
+  "Dear Valued Customer, Nominations for Heroes of Change Season 8 will close on 19 October 2026. Do you know someone doing extraordinary work in your community in Education, Health and Economic Empowerment? Nominate your hero now! The overall winner will receive GHS400,000, and each category winner will receive GHS200,000. Nominators of the 10 finalists will also be rewarded, including outstanding contributions in Sustainability and Digital Innovation. Hurry, nominate your hero today! Visit MTN Ghana's website - www.mtn.com.gh and nominate or drop off the nomination at any MTN Service Center.";
+
 describe("user context routing — MTN Heroes of Change regression", () => {
+  it("production MTN paste with 'today' and Ghana is user context, not news lookup", () => {
+    expect(classifyInformationRequest(MTN_FULL_PRODUCTION_ANNOUNCEMENT)).toBe(
+      "answer_from_user_context"
+    );
+    expect(queryNeedsLiveWeb({
+      query: MTN_FULL_PRODUCTION_ANNOUNCEMENT,
+      capability: "general",
+    })).toBe(false);
+    expect(
+      enforceNewsEvidenceIntegrity({
+        answer: insufficientEvidenceFallback(MTN_FULL_PRODUCTION_ANNOUNCEMENT),
+        query: MTN_FULL_PRODUCTION_ANNOUNCEMENT,
+        evidence: buildNewsEvidencePackage({
+          query: MTN_FULL_PRODUCTION_ANNOUNCEMENT,
+          capability: "live_web",
+          sources: [],
+          pagesReadUrls: [],
+          warnings: ["Search failed"],
+          liveSearchUsed: false,
+          retrievalFailed: true,
+        }),
+        isNewsQuery: true,
+      }).content
+    ).not.toContain("couldn't retrieve enough current evidence");
+  });
+
   it("Case 1: complete pasted announcement is treated as user context, not live news lookup", () => {
     expect(hasSubstantiveUserProvidedContent(MTN_HEROES_OF_CHANGE_FIXTURE)).toBe(true);
     expect(detectAnswerFromUserContextIntent(MTN_HEROES_OF_CHANGE_FIXTURE)).toBe(true);
