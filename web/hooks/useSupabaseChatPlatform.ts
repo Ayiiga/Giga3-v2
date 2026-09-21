@@ -52,8 +52,10 @@ import {
 import { syncSupabaseAuthToLocalEmail } from "@/lib/supabase/auth";
 import {
   CHAT_SEGMENT_NOTICE,
+  DAILY_FRESH_CHAT_NOTICE,
   continuedConversationTitle,
 } from "@/lib/chat/chatSegmentation";
+import { useDailyFreshChat } from "@/hooks/useDailyFreshChat";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type MessageRow = { _id: string; role: string; content: string; createdAt?: number };
@@ -405,6 +407,16 @@ export function useSupabaseChatPlatform() {
     setPendingUserText(null);
     setSegmentNotice(null);
   }, [email]);
+
+  const openTodayChat = useCallback(() => {
+    stopGigaVoice();
+    clearComposerDraft(null);
+    setError(null);
+    setActiveId(null);
+    setPendingUserText(null);
+    setSegmentNotice(DAILY_FRESH_CHAT_NOTICE);
+  }, []);
+  useDailyFreshChat(openTodayChat, isSending || awaitingReply);
 
   const selectConversation = useCallback((id: string) => {
     stopGigaVoice();

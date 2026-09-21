@@ -3,7 +3,8 @@
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
 import { getCategoryForMode } from "@/lib/chat/chatCategories";
-import { getSuggestedPrompts } from "@/lib/chat/suggestedPrompts";
+import { watchLocalDay } from "@/lib/chat/dailyChat";
+import { getDailySuggestedPrompts, getSuggestedPrompts } from "@/lib/chat/suggestedPrompts";
 import { GIGA3_CHAT_WELCOME } from "@/lib/assistantIdentity";
 import type { AiModeId } from "@/lib/aiRouter";
 import { formatCurrentDate } from "@/lib/datetime";
@@ -13,7 +14,7 @@ import { ScrollToLatestButton } from "@/components/chat/ScrollToLatestButton";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { messageListScrollKey } from "@/lib/chat/stableMessages";
 import { groupMessagesByDate } from "@/lib/chat/groupMessagesByDate";
-import { memo, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 export interface UiMessage {
   id: string;
@@ -82,7 +83,15 @@ function MessageListInner({
   }, []);
 
   const category = useMemo(() => getCategoryForMode(mode), [mode]);
-  const suggestedPrompts = useMemo(() => getSuggestedPrompts(mode, 3), [mode]);
+  const [dayKey, setDayKey] = useState<string | null>(null);
+  useEffect(() => watchLocalDay(setDayKey), []);
+  const suggestedPrompts = useMemo(
+    () =>
+      dayKey
+        ? getDailySuggestedPrompts(mode, 3, dayKey)
+        : getSuggestedPrompts(mode, 3),
+    [mode, dayKey]
+  );
 
   return (
     <div className="chat-message-list relative min-h-0 min-w-0 max-w-full overflow-x-clip overflow-y-hidden bg-background">
