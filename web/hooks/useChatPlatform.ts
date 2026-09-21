@@ -14,8 +14,9 @@ import {
 } from "@/lib/auth";
 import { recoverInvalidSession } from "@/lib/auth/sessionRestore";
 import { logChatClient } from "@/lib/chat/chatLog";
+import { clearComposerDraft } from "@/lib/chat/composerDraft";
+import { stopGigaVoice } from "@/lib/chat/gigaVoice";
 import {
-  readActiveConversationId,
   writeActiveConversationId,
 } from "@/lib/chat/workspacePersist";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
@@ -111,7 +112,7 @@ function sleep(ms: number): Promise<void> {
 
 export function useChatPlatform() {
   const [email, setEmail] = useState<string | null>(() => getUserEmail());
-  const [activeId, setActiveId] = useState<string | null>(() => readActiveConversationId());
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [mode, setMode] = useState<AiModeId>("general");
   const [personaId, setPersonaId] = useState<GigaPersonaId | null>(() =>
     readStoredPersonaId()
@@ -812,7 +813,7 @@ export function useChatPlatform() {
     }
     setActiveId((prev) => {
       if (prev && conversations.some((c) => c._id === prev)) return prev;
-      return conversations[0]._id;
+      return null;
     });
   }, [conversations]);
 
@@ -973,12 +974,19 @@ export function useChatPlatform() {
       setError("Session expired. Please sign in again.");
       return;
     }
+    stopGigaVoice();
+    clearComposerDraft(null);
     setError(null);
-    const id = await createConversation({ sessionToken: token, mode });
-    setActiveId(id);
-  }, [sessionToken, createConversation, mode]);
+    setActiveId(null);
+    setPollConversationId(null);
+    setPendingUserText(null);
+    setAwaitingReply(false);
+    setIsSending(false);
+    setSegmentNotice(null);
+  }, [sessionToken]);
 
   const selectConversation = useCallback((id: string) => {
+    stopGigaVoice();
     clearReplyFailureTimer();
     replyOutcomeRef.current = "pending";
     if (activeGenTaskIdRef.current) {
