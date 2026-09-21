@@ -205,15 +205,36 @@ const MODE_OVERRIDES: Partial<Record<AiModeId, SuggestedPrompt[]>> = {
   ],
 };
 
-export function getSuggestedPrompts(mode: AiModeId, limit = 6): SuggestedPrompt[] {
+export function suggestedPromptPool(mode: AiModeId): SuggestedPrompt[] {
   const override = MODE_OVERRIDES[mode];
   const specific = override ?? CATEGORY_PROMPTS[getCategoryForMode(mode).id] ?? CATEGORY_PROMPTS.general;
   const merged = [...specific];
   for (const prompt of GLOBAL_STANDARD_PROMPTS) {
-    if (merged.length >= limit) break;
     if (!merged.some((p) => p.label === prompt.label)) merged.push(prompt);
   }
-  return merged.slice(0, limit);
+  return merged;
+}
+
+export function getSuggestedPrompts(mode: AiModeId, limit = 6): SuggestedPrompt[] {
+  return suggestedPromptPool(mode).slice(0, limit);
+}
+
+function dayOrdinal(dayKey: string): number {
+  const [year, month, day] = dayKey.split("-").map((part) => Number(part));
+  if (!year || !month || !day) return 0;
+  return Math.floor(Date.UTC(year, month - 1, day) / 86_400_000);
+}
+
+/** Stable for one local day. The next day slides the window forward by one prompt. */
+export function getDailySuggestedPrompts(
+  mode: AiModeId,
+  limit: number,
+  dayKey: string
+): SuggestedPrompt[] {
+  const pool = suggestedPromptPool(mode);
+  if (pool.length <= limit) return pool.slice(0, limit);
+  const start = ((dayOrdinal(dayKey) % pool.length) + pool.length) % pool.length;
+  return Array.from({ length: limit }, (_, index) => pool[(start + index) % pool.length]);
 }
 
 /** Global-standard prompts: books, research, CV, code, and news — always available. */

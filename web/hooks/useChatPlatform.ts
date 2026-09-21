@@ -46,7 +46,8 @@ import {
   writeCachedConversations,
 } from "@/lib/chat/conversationCache";
 import { emitOutboxStatus } from "@/lib/chat/outboxEvents";
-import { CHAT_SEGMENT_NOTICE } from "@/lib/chat/chatSegmentation";
+import { CHAT_SEGMENT_NOTICE, DAILY_FRESH_CHAT_NOTICE } from "@/lib/chat/chatSegmentation";
+import { useDailyFreshChat } from "@/hooks/useDailyFreshChat";
 import { chatSystemForModel, gigaModelForMode, type GigaModelId } from "@/lib/chat/gigaModels";
 import {
   acceptTimeoutMs,
@@ -984,6 +985,17 @@ export function useChatPlatform() {
     setIsSending(false);
     setSegmentNotice(null);
   }, [sessionToken]);
+
+  const openTodayChat = useCallback(() => {
+    stopGigaVoice();
+    clearComposerDraft(null);
+    setError(null);
+    setActiveId(null);
+    setPollConversationId(null);
+    setPendingUserText(null);
+    setSegmentNotice(DAILY_FRESH_CHAT_NOTICE);
+  }, []);
+  useDailyFreshChat(openTodayChat, isSending || awaitingReply);
 
   const selectConversation = useCallback((id: string) => {
     stopGigaVoice();
