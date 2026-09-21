@@ -41,19 +41,37 @@ function isEnglishTag(tag: string): boolean {
   return t === "en" || t.startsWith("en-");
 }
 
-function findVoice(voices: SpeechSynthesisVoice[], tag: string): SpeechSynthesisVoice | undefined {
+function isLocalVoice(voice: SpeechSynthesisVoice): boolean {
+  return voice.localService !== false;
+}
+
+function voicesForTag(voices: SpeechSynthesisVoice[], tag: string): SpeechSynthesisVoice[] {
   const wanted = normalize(tag);
-  const exact = voices.find((voice) => normalize(voice.lang || "") === wanted);
-  if (exact) return exact;
-  return voices.find((voice) => voiceMatchesLang(voice.lang || "", tag));
+  const exact = voices.filter((voice) => normalize(voice.lang || "") === wanted);
+  const pool =
+    exact.length > 0
+      ? exact
+      : voices.filter((voice) => voiceMatchesLang(voice.lang || "", tag));
+  return pool;
+}
+
+function findVoice(
+  voices: SpeechSynthesisVoice[],
+  tag: string,
+  localOnly: boolean
+): SpeechSynthesisVoice | undefined {
+  const pool = voicesForTag(voices, tag);
+  if (localOnly) return pool.find(isLocalVoice);
+  return pool.find(isLocalVoice) ?? pool[0];
 }
 
 function findFirst(
   voices: SpeechSynthesisVoice[],
-  tags: string[]
+  tags: string[],
+  localOnly = false
 ): SpeechSynthesisVoice | undefined {
   for (const tag of tags) {
-    const found = findVoice(voices, tag);
+    const found = findVoice(voices, tag, localOnly);
     if (found) return found;
   }
   return undefined;
@@ -65,7 +83,10 @@ export function matchBrowserVoice(
 ): MatchedBrowserVoice {
   const requested = config ? [config.primary, ...config.fallbacks] : ["en-GB", "en-US", "en"];
   const requestedEnglish = !config || isEnglishTag(config.primary);
-  const nativeVoice = findFirst(voices, requested);
+  // On-device voices stay smooth on mobile data. A remote en-GB voice must not
+  // beat a local en-US voice, or English playback stutters and drops.
+  const nativeVoice =
+    findFirst(voices, requested, true) ?? findFirst(voices, requested, false);
 
   if (nativeVoice) {
     return {
@@ -77,7 +98,8 @@ export function matchBrowserVoice(
   }
 
   const english =
-    findFirst(voices, ENGLISH_PREFERENCE) ??
+    findFirst(voices, ENGLISH_PREFERENCE, true) ??
+    findFirst(voices, ENGLISH_PREFERENCE, false) ??
     voices.find((voice) => isEnglishTag(voice.lang || "")) ??
     null;
 
@@ -90,9 +112,9 @@ export function matchBrowserVoice(
     };
   }
 
-  const any = voices[0] ?? null;
+  const any = voices.find(isLocalVoice) ?? voices[0] ?? null;
   return {
-    lang: any?.lang || "en-GB",
+    lang: any?.lang || "en",
     voice: any,
     matchedLang: any?.lang ?? null,
     native: false,
