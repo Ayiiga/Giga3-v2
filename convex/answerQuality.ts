@@ -1219,7 +1219,12 @@ export function validateAnswerQuality(params: {
 
   let finalContent = `${transparencyPrefix}${normalizedAnswer}${verificationBlock}`.trim();
   if (params.context.mtnHeroesOfChangeMode) {
-    finalContent = applyMtnLowConfidencePrefix(finalContent, confidence);
+    finalContent = applyMtnLowConfidencePrefix(finalContent, {
+      confidenceScore: confidence,
+      flags,
+      answerHasUncertainty:
+        uncertaintyDisclosure || /^verification needed\b/i.test(finalContent.trim()),
+    });
   }
 
   return {
