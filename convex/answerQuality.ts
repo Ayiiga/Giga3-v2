@@ -12,6 +12,13 @@ import {
   hasSubstantiveUserProvidedContent,
   USER_PROVIDED_CONTENT_GUIDANCE,
 } from "./newsEvidence/userContextRouting";
+import {
+  applyMtnLowConfidencePrefix,
+  buildMtnHeroesSystemPromptAddon,
+  detectMtnExplicitVisualRequest,
+  detectMtnHeroesOfChangeIntent,
+  stripMtnDisallowedVisualContent,
+} from "./mtnHeroesOfChangeRules";
 
 type QueryClass =
   | "factual"
@@ -51,6 +58,7 @@ export type AnswerQualityContext = {
   requiresCitation: boolean;
   showConfidenceByDefault: boolean;
   showVerificationByDefault: boolean;
+  mtnHeroesOfChangeMode: boolean;
   hasAnyAttachment: boolean;
   hasImageAttachment: boolean;
   hasDocumentAttachment: boolean;
@@ -464,6 +472,12 @@ function shouldAttachAutoVisuals(
   answer: string,
   flags: string[]
 ): boolean {
+  if (
+    context.mtnHeroesOfChangeMode &&
+    !detectMtnExplicitVisualRequest(context.query)
+  ) {
+    return false;
+  }
   if (context.responseMode === "conversational") return false;
   if (hasExistingVisualBlock(answer)) return false;
   if (
@@ -683,6 +697,7 @@ function buildSystemPromptAddon(params: {
   hasDocumentAttachment: boolean;
   hasInlineImageData: boolean;
   rankedSources: RankedSource[];
+  mtnHeroesOfChangeMode: boolean;
 }): string {
   const researchWritingTask =
     params.mode === "research" ||
@@ -773,13 +788,17 @@ function buildSystemPromptAddon(params: {
     ? "- Biography mode (strict): extract names/dates/education/locations/events/achievements; clean grammar and duplicates; organize chronologically (Early Life, Education, Career/Life Journey, Achievements, Personal Details); output OCR Extracted Text, Cleaned Version, Structured Notes, and Final Biography."
     : "";
 
+  const mtnHeroesRule = params.mtnHeroesOfChangeMode
+    ? buildMtnHeroesSystemPromptAddon(params.query)
+    : "";
+
   const smartVisualRule =
-    params.responseMode !== "conversational"
+    params.responseMode !== "conversational" && !params.mtnHeroesOfChangeMode
       ? "- Smart visual detection: when a visual would improve understanding, include at least one Mermaid diagram and optionally structured blocks using ```giga-visual (JSON) and ```giga-chart (JSON)."
       : "";
 
   const visualCoverageRule =
-    params.responseMode !== "conversational"
+    params.responseMode !== "conversational" && !params.mtnHeroesOfChangeMode
       ? "- Support visual outputs for infographics, brochures, posters, flyers, diagrams, flowcharts, mind maps, timelines, process charts, org charts, study visuals, marketing assets, comparison tables, scientific/circuit/geometry illustrations, and mathematical graphs when relevant."
       : "";
 
@@ -810,6 +829,7 @@ function buildSystemPromptAddon(params: {
     documentResponseFormatRule,
     documentIntelligenceRule,
     biographyRule,
+    mtnHeroesRule,
     smartVisualRule,
     visualCoverageRule,
     sourceHint,
@@ -835,8 +855,11 @@ export function prepareAnswerQualityContext(params: {
   const isBiographyRequest = hasBiographyIntent(query);
   const confidenceRequested = askedForConfidence(query);
   const requiresCitation = responseMode === "high_stakes";
-  const showConfidenceByDefault = responseMode === "high_stakes";
-  const showVerificationByDefault = responseMode === "high_stakes";
+  const mtnHeroesOfChangeMode = detectMtnHeroesOfChangeIntent(query);
+  const showConfidenceByDefault =
+    responseMode === "high_stakes" && !mtnHeroesOfChangeMode;
+  const showVerificationByDefault =
+    responseMode === "high_stakes" && !mtnHeroesOfChangeMode;
   const hasAnyAttachment = attachments.length > 0;
   const hasImageAttachment = attachments.some(
     (attachment) => attachment.kind === "image"
@@ -862,6 +885,7 @@ export function prepareAnswerQualityContext(params: {
     requiresCitation,
     showConfidenceByDefault,
     showVerificationByDefault,
+    mtnHeroesOfChangeMode,
     hasAnyAttachment,
     hasImageAttachment,
     hasDocumentAttachment,
@@ -881,6 +905,7 @@ export function prepareAnswerQualityContext(params: {
       hasDocumentAttachment,
       hasInlineImageData,
       rankedSources,
+      mtnHeroesOfChangeMode,
     }),
     retrievalContextBlock: buildRetrievalContextBlock(
       queryClass,
@@ -1117,6 +1142,11 @@ export function validateAnswerQuality(params: {
     }
   }
 
+  if (params.context.mtnHeroesOfChangeMode) {
+    normalizedAnswer = stripMtnDisallowedVisualContent(normalizedAnswer);
+    flags.push("mtn_heroes_text_only");
+  }
+
   const infoRequestMode = classifyInformationRequest(params.context.query);
   const shouldEnforceNewsEvidence =
     params.newsEvidence &&
@@ -1138,13 +1168,15 @@ export function validateAnswerQuality(params: {
   }
 
   const confidenceVisibility =
-    params.context.showConfidenceByDefault ||
-    (params.context.responseMode === "educational" &&
-      params.context.confidenceRequested);
+    !params.context.mtnHeroesOfChangeMode &&
+    (params.context.showConfidenceByDefault ||
+      (params.context.responseMode === "educational" &&
+        params.context.confidenceRequested));
   const verificationVisibility =
-    params.context.showVerificationByDefault ||
-    (params.context.responseMode === "educational" &&
-      params.context.confidenceRequested);
+    !params.context.mtnHeroesOfChangeMode &&
+    (params.context.showVerificationByDefault ||
+      (params.context.responseMode === "educational" &&
+        params.context.confidenceRequested));
 
   if (params.context.responseMode === "conversational") {
     normalizedAnswer = removeSourceTags(stripVerificationSections(normalizedAnswer));
@@ -1185,8 +1217,18 @@ export function validateAnswerQuality(params: {
       ? `\n\n${buildVerificationBlock(report, params.context.rankedSources)}`
       : "";
 
+  let finalContent = `${transparencyPrefix}${normalizedAnswer}${verificationBlock}`.trim();
+  if (params.context.mtnHeroesOfChangeMode) {
+    finalContent = applyMtnLowConfidencePrefix(finalContent, {
+      confidenceScore: confidence,
+      flags,
+      answerHasUncertainty:
+        uncertaintyDisclosure || /^verification needed\b/i.test(finalContent.trim()),
+    });
+  }
+
   return {
-    content: `${transparencyPrefix}${normalizedAnswer}${verificationBlock}`.trim(),
+    content: finalContent,
     report,
   };
 }
