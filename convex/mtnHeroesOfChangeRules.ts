@@ -153,6 +153,8 @@ export function buildMtnHeroesSystemPromptAddon(query: string): string {
     `- ${nomination.attribution}`,
     "",
     "- Do not fabricate statistics, endorsements, judges, winners, finalist status, user counts, revenue, partnerships, or MTN statements.",
+    "- Format replies with Markdown for readability. Use **bold** for important verified facts (overall prize GH¢400,000, category prize GH¢200,000, and GH¢100,000 per remaining finalist). Use *italics* for the programme theme where appropriate. Use bullet lists for categories, nomination steps, verified contact channels, and concise requirements.",
+    "- Emphasize actions with **bold**, not custom highlight syntax. When dates conflict, keep the mandated sentence and you may bold the lead-in: **Important:** The available Season 8 information contains differing dates. Please verify the current deadline through MTN's official Heroes of Change channels.",
     "- If uncertain about any MTN detail, begin with: Verification needed — then direct the user to verify on the official programme page or official MTN contact channels above.",
     buildMtnDeadlineGuidance(),
   ];

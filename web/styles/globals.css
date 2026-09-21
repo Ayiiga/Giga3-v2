@@ -1019,7 +1019,7 @@ button:focus-visible {
 }
 
 .chat-markdown .chat-md-h3 {
-  @apply mb-2 mt-3 text-base font-semibold text-foreground sm:text-lg;
+  @apply mb-2 mt-3 text-base font-bold text-foreground sm:text-lg;
 }
 
 .gigasocial-post-hashtags {
@@ -1041,10 +1041,15 @@ button:focus-visible {
 
 .chat-markdown .chat-md-ul,
 .chat-markdown .chat-md-ol {
-  @apply mb-3 space-y-1.5 last:mb-0;
+  @apply mb-3 space-y-2 last:mb-0;
   padding-inline-start: 1.25rem;
   margin-inline-start: 0;
   max-width: 100%;
+}
+
+.chat-markdown .chat-md-ul > li,
+.chat-markdown .chat-md-ol > li {
+  padding-block: 0.12rem;
 }
 
 .chat-markdown .chat-md-ul {
@@ -1065,11 +1070,11 @@ button:focus-visible {
 }
 
 .chat-markdown .chat-md-strong {
-  @apply font-semibold text-foreground;
+  @apply font-bold text-foreground;
 }
 
 .chat-markdown .chat-md-em {
-  @apply italic text-muted;
+  @apply italic text-foreground;
 }
 
 .chat-markdown .chat-md-code {
@@ -1239,7 +1244,8 @@ button:focus-visible {
 .bottom-nav,
 .primary-nav--mobile {
   margin-top: 0 !important;
-  z-index: 40 !important;
+  /* Above marketing sticky headers (z-index 50) so tabs stay tappable. */
+  z-index: 60 !important;
 }
 
 .main-scroll-container,
@@ -1279,13 +1285,19 @@ html.primary-nav-route.primary-nav-bar-visible.chat-route .chat-keyboard-shell {
 
 .bottom-nav .active,
 .primary-nav__item--active {
-  border: 2px solid #7c3aed !important;
+  border: 0 !important;
+  background: #5b21b6 !important;
+  color: #fff !important;
+  box-shadow: 0 4px 20px rgba(91, 33, 182, 0.4) !important;
+  font-weight: 700 !important;
 }
 
 .bottom-nav .active svg,
 .primary-nav__item--active svg,
-.primary-nav__item--active .primary-nav__glyph {
-  color: #7c3aed !important;
+.primary-nav__item--active .primary-nav__glyph,
+.primary-nav__item--active .primary-nav__icon,
+.primary-nav__item--active .primary-nav__label {
+  color: #fff !important;
 }
 
 .videos-button,
