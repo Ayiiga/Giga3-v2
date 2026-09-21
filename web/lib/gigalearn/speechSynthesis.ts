@@ -157,7 +157,18 @@ function queueUtterances(
       utter.onend = advance;
       utter.onerror = (event) => {
         const code = (event as SpeechSynthesisErrorEvent | undefined)?.error;
-        if (code === "interrupted" || code === "canceled" || code === "cancelled") return;
+        if (code === "interrupted" || code === "canceled" || code === "cancelled") {
+          window.setTimeout(() => {
+            try {
+              if (settled) return;
+              const live = window.speechSynthesis;
+              if (!live?.speaking && !live?.pending) advance();
+            } catch {
+              /* ignore */
+            }
+          }, 200);
+          return;
+        }
         advance();
       };
       try {

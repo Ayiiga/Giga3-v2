@@ -256,8 +256,19 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
         utterance.onerror = (event) => {
           if (session !== playbackSession || attemptId !== attempt) return;
           const code = speechErrorCode(event);
-          if (isBenignSpeechError(code) || retriedWithoutVoice) return;
-          if (useVoice && resolved.voice && canRetryWithoutVoice(code)) {
+          if (isBenignSpeechError(code)) {
+            window.setTimeout(() => {
+              try {
+                if (settled || session !== playbackSession || attemptId !== attempt) return;
+                const live = window.speechSynthesis;
+                if (!live?.speaking && !live?.pending) finish();
+              } catch {
+                /* ignore */
+              }
+            }, 200);
+            return;
+          }
+          if (useVoice && !retriedWithoutVoice && resolved.voice && canRetryWithoutVoice(code)) {
             retriedWithoutVoice = true;
             try {
               synth.cancel();

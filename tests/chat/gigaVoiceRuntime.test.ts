@@ -243,6 +243,26 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
     expect(isGigaVoiceSpeaking()).toBe(false);
   });
 
+  it("retries without a voice after a network error, then still ends on a second failure", async () => {
+    const { synth } = installSpeechMock({ voices: [mockVoice("English US", "en-US")] });
+    const { speakGigaVoice } = await import("../../web/lib/chat/gigaVoice");
+    const onEnd = vi.fn();
+
+    await speakGigaVoice({ text: "Read this aloud.", voiceId: "english-british", onEnd });
+    const first = synth.speak.mock.calls[0]?.[0] as SpeechSynthesisUtterance;
+    expect(first.voice?.name).toBe("English US");
+    first.onerror?.({ error: "network" } as SpeechSynthesisErrorEvent);
+
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    const retry = synth.speak.mock.calls.at(-1)?.[0] as SpeechSynthesisUtterance;
+    expect(retry).not.toBe(first);
+    expect(retry.voice).toBeNull();
+    expect(onEnd).not.toHaveBeenCalled();
+
+    retry.onerror?.({ error: "synthesis-failed" } as SpeechSynthesisErrorEvent);
+    expect(onEnd).toHaveBeenCalledTimes(1);
+  });
+
   it("strips markdown before speaking", async () => {
     const { log } = installSpeechMock();
     const { speakGigaVoice } = await import("../../web/lib/chat/gigaVoice");
