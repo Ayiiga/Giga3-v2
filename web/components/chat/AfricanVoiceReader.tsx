@@ -100,7 +100,10 @@ export function AfricanVoiceReader({ content, selectorOnly = false }: AfricanVoi
 
   return (
     <div
-      className="mt-2 hidden min-h-12 flex-wrap items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 py-1.5 md:flex"
+      className={cn(
+        "mt-2 min-h-12 flex-wrap items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 py-1.5",
+        selectorOnly ? "flex" : "hidden md:flex"
+      )}
       aria-label="Read with African voice"
     >
       <span className="text-[13px] font-medium text-gray-600" aria-hidden>

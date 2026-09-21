@@ -79,6 +79,7 @@ describe("fresh chat surface", () => {
     );
     expect(bubble).toContain("selectorOnly");
     expect(reader).toContain("selectorOnly");
+    expect(reader).toMatch(/selectorOnly\s*\?\s*"flex"/);
   });
 
   it("stops speech when deleting a conversation", () => {

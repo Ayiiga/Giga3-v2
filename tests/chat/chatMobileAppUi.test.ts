@@ -20,20 +20,26 @@ describe("Chat mobile app UI shell", () => {
       resolve(__dirname, "../../web/components/chat/ChatInput.tsx"),
       "utf8"
     );
-    const shell = readFileSync(
+    const keyboardShell = readFileSync(
       resolve(__dirname, "../../web/components/chat/ChatKeyboardShell.tsx"),
+      "utf8"
+    );
+    const chatShell = readFileSync(
+      resolve(__dirname, "../../web/components/chat/ChatShell.tsx"),
       "utf8"
     );
 
     expect(chrome).toContain("chat-header-bar--app");
     expect(chrome).toContain("Giga3Logo");
     expect(chrome).toContain("chat-header-title-mobile");
-    expect(chrome).not.toContain("ChatVoiceLanguageBar");
+    expect(chatShell).toContain("ChatVoiceLanguageBar");
+    expect(chatShell).toContain("chat-voice-language-bar--mobile");
+    expect(css).toContain("chat-voice-language-pill");
     expect(logo).toContain("#6D28D9");
     expect(logo).toContain("#7C3AED");
     expect(css).toContain("#7c3aed");
     expect(css).toContain("--chat-header-height");
-    expect(shell).toContain("chat-app-shell");
+    expect(keyboardShell).toContain("chat-app-shell");
     expect(css).toContain("chat-app-shell");
     expect(css).toContain("100dvh");
     expect(css).toContain("width: 96%");

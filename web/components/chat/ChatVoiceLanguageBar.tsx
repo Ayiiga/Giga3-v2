@@ -3,6 +3,7 @@
 import { AFRICAN_READER_VOICES } from "@/components/chat/AfricanVoiceReader";
 import {
   readVoiceLanguageId,
+  subscribeVoiceLanguageId,
   writeVoiceLanguageId,
 } from "@/lib/chat/voiceLanguagePreference";
 import { cn } from "@/lib/utils";
@@ -20,9 +21,7 @@ export function ChatVoiceLanguageBar({ className }: ChatVoiceLanguageBarProps) {
     AFRICAN_READER_VOICES.find((voice) => voice.id === voiceId) ??
     AFRICAN_READER_VOICES[0];
 
-  useEffect(() => {
-    setVoiceId(readVoiceLanguageId());
-  }, []);
+  useEffect(() => subscribeVoiceLanguageId(setVoiceId), []);
 
   return (
     <div className={cn("chat-voice-language-bar", className)}>

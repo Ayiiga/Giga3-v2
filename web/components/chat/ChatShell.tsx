@@ -4,6 +4,7 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ChatSegmentNotice } from "@/components/chat/ChatSegmentNotice";
 import { ChatBanners } from "@/components/chat/ChatBanners";
 import { ChatChrome } from "@/components/chat/ChatChrome";
+import { ChatVoiceLanguageBar } from "@/components/chat/ChatVoiceLanguageBar";
 import type { ChatActionsMenuHandle } from "@/components/chat/ChatActionsMenu";
 import { ChatConversationPane } from "@/components/chat/ChatConversationPane";
 import { ChatOverflowProbe } from "@/components/chat/ChatOverflowProbe";
@@ -673,6 +674,8 @@ function ChatShellInner({
               handleCloseMobile();
             }}
           />
+
+          <ChatVoiceLanguageBar className="chat-voice-language-bar--mobile lg:hidden" />
 
           <ChatBanners
             email={email}
