@@ -6,6 +6,12 @@ import type {
 import { detectNewsRetrievalIntent, detectGhanaNewsIntent } from "./researchCapabilities";
 import type { NewsEvidenceContext } from "./newsEvidence/types";
 import { enforceNewsEvidenceIntegrity } from "./newsEvidence/postValidation";
+import {
+  classifyInformationRequest,
+  detectAnswerFromUserContextIntent,
+  hasSubstantiveUserProvidedContent,
+  USER_PROVIDED_CONTENT_GUIDANCE,
+} from "./newsEvidence/userContextRouting";
 
 type QueryClass =
   | "factual"
@@ -782,6 +788,10 @@ function buildSystemPromptAddon(params: {
       ? `- Use the ${params.rankedSources.length} ranked evidence source(s) before relying on unstated memory.`
       : "- No ranked source context is available beyond the user prompt; keep factual claims conservative.";
 
+  const userProvidedContentRule = detectAnswerFromUserContextIntent(params.query)
+    ? USER_PROVIDED_CONTENT_GUIDANCE
+    : "";
+
   return [
     "Accuracy, Authenticity, and Trustworthiness Engine:",
     "- Prioritize factual correctness, authenticity, and clarity.",
@@ -803,6 +813,7 @@ function buildSystemPromptAddon(params: {
     smartVisualRule,
     visualCoverageRule,
     sourceHint,
+    userProvidedContentRule,
   ]
     .filter(Boolean)
     .join("\n");
@@ -1106,7 +1117,16 @@ export function validateAnswerQuality(params: {
     }
   }
 
-  if (params.newsEvidence && (detectNewsRetrievalIntent(params.context.query) || isNewsRetrieval)) {
+  const infoRequestMode = classifyInformationRequest(params.context.query);
+  const shouldEnforceNewsEvidence =
+    params.newsEvidence &&
+    (detectNewsRetrievalIntent(params.context.query) ||
+      isNewsRetrieval ||
+      infoRequestMode === "verify_user_content" ||
+      (hasSubstantiveUserProvidedContent(params.context.query) &&
+        params.newsEvidence.retrievalFailed));
+
+  if (shouldEnforceNewsEvidence) {
     const enforced = enforceNewsEvidenceIntegrity({
       answer: normalizedAnswer,
       query: params.context.query,

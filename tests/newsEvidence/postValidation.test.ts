@@ -4,6 +4,7 @@ import {
   insufficientEvidenceFallback,
 } from "../../convex/newsEvidence/postValidation";
 import { buildNewsEvidencePackage } from "../../convex/newsEvidence/pipeline";
+import { MTN_HEROES_OF_CHANGE_FIXTURE } from "./userContextRouting.test";
 
 describe("news post-validation", () => {
   it("replaces zero-evidence headline answers", () => {
@@ -90,5 +91,28 @@ describe("news post-validation", () => {
 
   it("provides explicit insufficient-evidence fallback copy", () => {
     expect(insufficientEvidenceFallback("Latest Ghana news")).toMatch(/won't invent/i);
+  });
+
+  it("recovers user-provided MTN announcement when model emits generic retrieval failure", () => {
+    const evidence = buildNewsEvidencePackage({
+      query: MTN_HEROES_OF_CHANGE_FIXTURE,
+      capability: "live_web",
+      sources: [],
+      pagesReadUrls: [],
+      warnings: ["Search failed"],
+      liveSearchUsed: false,
+      retrievalFailed: true,
+    });
+
+    const result = enforceNewsEvidenceIntegrity({
+      answer: insufficientEvidenceFallback(MTN_HEROES_OF_CHANGE_FIXTURE),
+      query: MTN_HEROES_OF_CHANGE_FIXTURE,
+      evidence,
+      isNewsQuery: true,
+    });
+
+    expect(result.content).not.toContain("couldn't retrieve enough current evidence");
+    expect(result.content).toMatch(/19 October 2026/i);
+    expect(result.flags).toContain("news_user_context_recovery");
   });
 });

@@ -60,6 +60,10 @@ import {
   type ResearchCapabilityId,
 } from "./researchCapabilities";
 import {
+  classifyInformationRequest,
+  USER_PROVIDED_CONTENT_GUIDANCE,
+} from "./newsEvidence/userContextRouting";
+import {
   formatVerificationContextBlock,
   verifyChatClaim,
 } from "./factVerification";
@@ -598,8 +602,13 @@ export const processJob = internalAction({
         liveWebEnabled: Boolean(job.liveWeb),
         hasImageAttachment,
       }) as ResearchCapabilityId;
+      const infoRequestMode = classifyInformationRequest(job.content);
+      if (infoRequestMode === "answer_from_user_context") {
+        systemPrompt += `\n\n${USER_PROVIDED_CONTENT_GUIDANCE}`;
+      }
+
       const capabilityPrompt = researchSystemPromptAddon(researchCapability);
-      if (capabilityPrompt) {
+      if (capabilityPrompt && infoRequestMode !== "answer_from_user_context") {
         systemPrompt += `\n\n${capabilityPrompt}`;
       }
 
@@ -763,7 +772,8 @@ export const processJob = internalAction({
       } else if (
         shouldResearch &&
         isNewsCapability(researchCapability) &&
-        !liveWebUsed
+        !liveWebUsed &&
+        infoRequestMode !== "answer_from_user_context"
       ) {
         systemPrompt += `\n\n${liveSearchUnavailableNewsFallback(researchCapability)}`;
         newsEvidenceContext = buildNewsEvidencePackage({

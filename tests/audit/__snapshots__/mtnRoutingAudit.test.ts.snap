@@ -1,0 +1,14 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MTN routing audit snapshot > records classification on current branch 1`] = `
+{
+  "capability": "general",
+  "detectNewsRetrievalIntent": true,
+  "infoMode": "answer_from_user_context",
+  "queryNeedsLiveWeb": false,
+  "requiresRetrieval": true,
+  "shouldAutoEnableLiveWeb": false,
+  "substantiveUserContent": true,
+  "userContextIntent": true,
+}
+`;

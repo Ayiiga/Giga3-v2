@@ -4,6 +4,11 @@ import {
   legacyNewsLabelFromStatus,
 } from "./confidence";
 import type { NewsEvidenceContext, NewsResponseContract } from "./types";
+import {
+  buildUserContextRecoveryAnswer,
+  hasSubstantiveUserProvidedContent,
+  isGenericRetrievalFailureAnswer,
+} from "./userContextRouting";
 
 const VERIFIED_LABEL_RE = /\*\*(Verified|Official|Corroborated)\*\*/gi;
 const BREAKING_LABEL_RE = /\*\*Breaking\*\*/gi;
@@ -85,12 +90,39 @@ export function enforceNewsEvidenceIntegrity(args: {
 
   const { contract, retrievalFailed } = args.evidence;
 
+  const userSuppliedContent = hasSubstantiveUserProvidedContent(args.query);
+
   if (
     (retrievalFailed || contract.evidenceCount === 0) &&
-    contract.classification.requiresRetrieval
+    contract.classification.requiresRetrieval &&
+    !userSuppliedContent
   ) {
     flags.push("news_insufficient_evidence");
     return { content: insufficientEvidenceFallback(args.query), flags };
+  }
+
+  if (
+    userSuppliedContent &&
+    (retrievalFailed || contract.evidenceCount === 0) &&
+    (!content || isGenericRetrievalFailureAnswer(content))
+  ) {
+    flags.push("news_user_context_recovery");
+    return {
+      content: buildUserContextRecoveryAnswer(args.query),
+      flags,
+    };
+  }
+
+  if (
+    userSuppliedContent &&
+    retrievalFailed &&
+    content &&
+    !isGenericRetrievalFailureAnswer(content) &&
+    !/\b(message you (?:shared|provided|supplied|sent)|announcement you (?:shared|provided|pasted)|information you provided|user-provided)\b/i.test(
+      content
+    )
+  ) {
+    flags.push("news_user_context_answer");
   }
 
   const hadVerified = VERIFIED_LABEL_RE.test(content);
