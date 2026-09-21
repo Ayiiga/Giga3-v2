@@ -70,15 +70,20 @@ describe("gigalearn lower grades concrete objects", () => {
 
   it("passes voice ids into browser speech preview helpers", () => {
     const source = readFileSync(resolve(__dirname, "../../web/components/gigalearn/LowerGradesConcrete.tsx"), "utf8");
-    expect(source).toContain("previewGigaLearnVoice(text, voiceId)");
-    expect(source).toContain("preview.voiceId");
+    expect(source).toContain("speakPronunciationSequence");
+    expect(source).toContain("buildItemPronunciationPlan");
+    expect(source).toContain("🔊 Hear");
     expect(source).toContain("voice.id");
   });
 
-  it("ships Twi/Hausa/Ga/Ewe/Yoruba/Swahili voices + GES strands", () => {
+  it("ships English as the primary voice plus Twi/Hausa/Ga/Ewe/Yoruba/Swahili", () => {
+    expect(GIGALEARN_VOICES[0]?.id).toBe("english");
     expect(GIGALEARN_VOICES.map((v) => v.id)).toEqual(
-      expect.arrayContaining(["abena-twi", "musa-hausa", "naa-ga", "kofi-ewe", "ade-yoruba", "zawadi-swahili"])
+      expect.arrayContaining(["english", "abena-twi", "musa-hausa", "naa-ga", "kofi-ewe", "ade-yoruba", "zawadi-swahili"])
     );
+    expect(lessonPreviewForLevel("KG1").textTwi).toContain("aprɛ");
+    expect(lessonPreviewForLevel("KG1").textTwi.toLowerCase()).not.toContain("mango");
+    expect(lessonPreviewForLevel("KG1").voiceId).toBe("english");
     expect(getGigaLearnVoice("abena-twi")?.flag).toBe("🇬🇭");
     expect(GES_STRANDS.map((g) => g.level)).toEqual(
       expect.arrayContaining(["KG1–KG2", "Primary 1–3"])

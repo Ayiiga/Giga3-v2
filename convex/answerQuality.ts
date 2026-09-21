@@ -274,16 +274,28 @@ type AutoVisualKind =
   | "geometry_drawing"
   | "mathematical_graph";
 
-function hasVisualRequestIntent(query: string): boolean {
-  return /\b(infographic|brochure|poster|flyer|diagram|flowchart|mind map|mindmap|timeline|process chart|organizational chart|org chart|presentation|study notes|marketing|social media graphic|comparison table|scientific illustration|circuit diagram|geometry|graph|plot|chart|visuali[sz]ation|advertisement|ad design)\b/i.test(
-    query
+/** True only when the user asked for a visual aid, diagram, chart, or similar. */
+export function userRequestedVisualAid(query: string): boolean {
+  return (
+    /\b(visual\s+aids?|diagrams?|flow\s*charts?|mind\s*maps?|infographics?|posters?|flyers?|brochures?|mermaid|giga-visual|giga-chart|charts?|graphs?|plots?|illustrations?|timelines?|org(?:anizational)?\s+charts?|circuit\s+diagrams?)\b/i.test(
+      query
+    ) || /\b(draw|sketch|illustrate|visuali[sz]e)\b/i.test(query)
   );
 }
 
-function shouldAutoSuggestEducationalVisual(query: string): boolean {
-  return /\b(explain|how does|how do|process|cycle|steps|photosynthesis|water cycle|ecosystem|cellular respiration|force diagram|electrical circuit|geometry|algebra|calculus|biology|chemistry|physics)\b/i.test(
-    query
-  );
+function hasVisualRequestIntent(query: string): boolean {
+  return userRequestedVisualAid(query);
+}
+
+const FENCED_VISUAL_PATTERN =
+  /```(?:mermaid|giga-visual|giga-chart|chart)\b[\s\S]*?```/gi;
+
+/** Remove diagrams and visual-aid blocks the user did not ask for. */
+export function stripUnsolicitedVisualAids(answer: string): string {
+  let cleaned = answer.replace(FENCED_VISUAL_PATTERN, "");
+  cleaned = cleaned.replace(/\n*#{2,3}\s*Visual Aids\b[\s\S]*?(?=\n#{2,3}\s|$)/gi, "");
+  cleaned = cleaned.replace(/\n{3,}/g, "\n\n").trim();
+  return cleaned;
 }
 
 function hasExistingVisualBlock(answer: string): boolean {
@@ -487,11 +499,7 @@ function shouldAttachAutoVisuals(
   ) {
     return false;
   }
-  return (
-    hasVisualRequestIntent(context.query) ||
-    shouldAutoSuggestEducationalVisual(context.query) ||
-    context.isExamQuestion
-  );
+  return hasVisualRequestIntent(context.query);
 }
 
 function buildAutoVisualAugmentation(
@@ -732,11 +740,11 @@ function buildSystemPromptAddon(params: {
 
   const educationalRule =
     params.responseMode === "educational"
-      ? "- Educational mode: teach with concept explanation, step-by-step method, examples, and practical applications. Use tables or diagrams when they improve clarity."
+      ? "- Educational mode: teach with concept explanation, step-by-step method, examples, and practical applications. Use tables when they improve clarity. Add a diagram or other visual aid only when the user asks for one."
       : "";
 
   const examRule = params.isExamQuestion
-    ? "- Exam solver mode: provide answer, method, full explanation, marking-scheme style steps, and a final answer summary. Include diagrams (Mermaid) when needed for geometry, graphs, circuits, or process flows."
+    ? "- Exam solver mode: provide answer, method, full explanation, marking-scheme style steps, and a final answer summary. Include a diagram only when the user asks for a visual aid, diagram, chart, or graph."
     : "";
 
   const highStakesRule =
@@ -792,15 +800,28 @@ function buildSystemPromptAddon(params: {
     ? buildMtnHeroesSystemPromptAddon(params.query)
     : "";
 
-  const smartVisualRule =
-    params.responseMode !== "conversational" && !params.mtnHeroesOfChangeMode
-      ? "- Smart visual detection: when a visual would improve understanding, include at least one Mermaid diagram and optionally structured blocks using ```giga-visual (JSON) and ```giga-chart (JSON)."
-      : "";
+  const askedForVisual = userRequestedVisualAid(params.query);
+  const smartVisualRule = params.mtnHeroesOfChangeMode
+    ? ""
+    : askedForVisual
+      ? "- The user asked for a visual aid. Include one Mermaid diagram or a ```giga-visual / ```giga-chart block that matches the request."
+      : "- Do not add visual aids, diagrams, Mermaid blocks, giga-visual JSON, or giga-chart JSON unless the user explicitly asks for a visual aid, diagram, chart, or infographic.";
 
-  const visualCoverageRule =
-    params.responseMode !== "conversational" && !params.mtnHeroesOfChangeMode
-      ? "- Support visual outputs for infographics, brochures, posters, flyers, diagrams, flowcharts, mind maps, timelines, process charts, org charts, study visuals, marketing assets, comparison tables, scientific/circuit/geometry illustrations, and mathematical graphs when relevant."
-      : "";
+  const sectionRule =
+    params.responseMode === "conversational" ||
+    params.mtnHeroesOfChangeMode ||
+    params.isBiographyRequest ||
+    params.hasAnyAttachment ||
+    researchWritingTask
+      ? ""
+      : [
+          "Answer sections:",
+          "- Separate the opening statement and the closing statement from the body.",
+          "- Use these headings on their own lines, in order: ## Introduction, ## Main message, ## Conclusion.",
+          "- The introduction is only the opening. The conclusion is only the closing. The main message is the part users copy, share, or read.",
+          "- Do not repeat the introduction or the conclusion inside the main message.",
+          "- Skip these headings for one-line replies.",
+        ].join("\n");
 
   const sourceHint =
     params.rankedSources.length > 0
@@ -830,8 +851,8 @@ function buildSystemPromptAddon(params: {
     documentIntelligenceRule,
     biographyRule,
     mtnHeroesRule,
+    sectionRule,
     smartVisualRule,
-    visualCoverageRule,
     sourceHint,
     userProvidedContentRule,
   ]
@@ -1129,6 +1150,11 @@ export function validateAnswerQuality(params: {
     normalizedAnswer = fallbackHighStakesUnverified(params.context.query);
     confidence = Math.min(confidence, 0.2);
     flags.push("high_stakes_unverified");
+  }
+
+  if (!userRequestedVisualAid(params.context.query)) {
+    const stripped = stripUnsolicitedVisualAids(normalizedAnswer);
+    if (stripped) normalizedAnswer = stripped;
   }
 
   if (shouldAttachAutoVisuals(params.context, normalizedAnswer, flags)) {

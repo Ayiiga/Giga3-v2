@@ -25,6 +25,8 @@ describe("Giga3 shared voice layer", () => {
   it("maps voice ids to BCP-47 language tags with fallbacks", () => {
     expect(GIGA_VOICE_LANG["abena-twi"]?.primary).toBe("ak-GH");
     expect(GIGA_VOICE_LANG["musa-hausa"]?.primary).toBe("ha-NG");
+    expect(GIGA_VOICE_LANG["naa-ga"]?.primary).toBe("gaa-GH");
+    expect(GIGA_VOICE_LANG["kofi-ewe"]?.primary).toBe("ee-GH");
     expect(GIGA_VOICE_LANG["zawadi-swahili"]?.primary).toBe("sw-KE");
   });
 
@@ -50,5 +52,15 @@ describe("Giga3 shared voice layer", () => {
     const voices = [mockVoice("English US", "en-US")];
     const resolved = resolveBrowserVoiceForId(voices, "abena-twi");
     expect(resolved.voice?.lang).toBe("en-US");
+    expect(resolved.lang).toBe("en-US");
+    expect(resolved.native).toBe(false);
+  });
+
+  it("speaks British English with the installed voice tag when en-GB is missing", () => {
+    const voices = [mockVoice("English US", "en-US")];
+    const resolved = resolveBrowserVoiceForId(voices, "english-british");
+    expect(resolved.voice?.lang).toBe("en-US");
+    expect(resolved.lang).toBe("en-US");
+    expect(resolved.native).toBe(true);
   });
 });

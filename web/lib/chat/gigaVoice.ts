@@ -4,6 +4,10 @@
  */
 
 import { stripMarkdownForSpeech } from "@/lib/chat/speechText";
+import {
+  matchBrowserVoice,
+  type VoiceLangConfig,
+} from "@/lib/speech/matchBrowserVoice";
 
 export type GigaVoiceProfile = {
   id: string;
@@ -12,24 +16,26 @@ export type GigaVoiceProfile = {
   lang: string;
 };
 
-/** BCP-47 primary + broader fallbacks for installed browser voice matching. */
-export const GIGA_VOICE_LANG: Record<
-  string,
-  { primary: string; fallbacks: string[] }
-> = {
-  "english-british": { primary: "en-GB", fallbacks: ["en", "en-US"] },
-  "abena-twi": { primary: "ak-GH", fallbacks: ["tw-GH", "tw", "ak", "en-GH", "en"] },
-  "kwame-twi": { primary: "ak-GH", fallbacks: ["tw-GH", "tw", "ak", "en-GH", "en"] },
-  "aisha-hausa": { primary: "ha-NG", fallbacks: ["ha", "en-NG", "en"] },
-  "musa-hausa": { primary: "ha-NG", fallbacks: ["ha", "en-NG", "en"] },
-  "naa-ga": { primary: "en-GH", fallbacks: ["en"] },
-  "kofi-ewe": { primary: "ee-GH", fallbacks: ["ee", "en-GH", "en"] },
-  "adaeze-yoruba": { primary: "yo-NG", fallbacks: ["yo", "en-NG", "en"] },
-  "tunde-yoruba": { primary: "yo-NG", fallbacks: ["yo", "en-NG", "en"] },
-  "zawadi-swahili": { primary: "sw-KE", fallbacks: ["sw", "en-KE", "en"] },
-  "jabari-swahili": { primary: "sw-KE", fallbacks: ["sw", "en-KE", "en"] },
+/**
+ * BCP-47 tags. African profiles list only that language.
+ * English is the playback stand-in when no native voice is installed,
+ * and the utterance keeps the English voice's own lang tag.
+ */
+export const GIGA_VOICE_LANG: Record<string, VoiceLangConfig> = {
+  "english-british": { primary: "en-GB", fallbacks: ["en-US", "en-GH", "en"] },
+  english: { primary: "en-GB", fallbacks: ["en-US", "en-GH", "en"] },
+  "abena-twi": { primary: "ak-GH", fallbacks: ["ak", "tw-GH", "tw"] },
+  "kwame-twi": { primary: "ak-GH", fallbacks: ["ak", "tw-GH", "tw"] },
+  "aisha-hausa": { primary: "ha-NG", fallbacks: ["ha", "ha-GH"] },
+  "musa-hausa": { primary: "ha-NG", fallbacks: ["ha", "ha-GH"] },
+  "naa-ga": { primary: "gaa-GH", fallbacks: ["gaa"] },
+  "kofi-ewe": { primary: "ee-GH", fallbacks: ["ee"] },
+  "adaeze-yoruba": { primary: "yo-NG", fallbacks: ["yo", "yo-GH"] },
+  "tunde-yoruba": { primary: "yo-NG", fallbacks: ["yo", "yo-GH"] },
+  "zawadi-swahili": { primary: "sw-KE", fallbacks: ["sw", "sw-TZ"] },
+  "jabari-swahili": { primary: "sw-KE", fallbacks: ["sw", "sw-TZ"] },
   /** GigaLearn alias ids */
-  "ade-yoruba": { primary: "yo-NG", fallbacks: ["yo", "en-NG", "en"] },
+  "ade-yoruba": { primary: "yo-NG", fallbacks: ["yo", "yo-GH"] },
 };
 
 export const GIGA_CHAT_VOICES: GigaVoiceProfile[] = [
@@ -38,7 +44,7 @@ export const GIGA_CHAT_VOICES: GigaVoiceProfile[] = [
   { id: "kwame-twi", name: "Kwame · Twi (M)", flag: "🇬🇭", lang: "ak-GH" },
   { id: "aisha-hausa", name: "Aisha · Hausa (F)", flag: "🇳🇬", lang: "ha-NG" },
   { id: "musa-hausa", name: "Musa · Hausa (M)", flag: "🇳🇬", lang: "ha-NG" },
-  { id: "naa-ga", name: "Naa · Ga (F)", flag: "🇬🇭", lang: "en-GH" },
+  { id: "naa-ga", name: "Naa · Ga (F)", flag: "🇬🇭", lang: "gaa-GH" },
   { id: "kofi-ewe", name: "Kofi · Ewe (M)", flag: "🇬🇭", lang: "ee-GH" },
   { id: "adaeze-yoruba", name: "Adaeze · Yoruba (F)", flag: "🇳🇬", lang: "yo-NG" },
   { id: "tunde-yoruba", name: "Tunde · Yoruba (M)", flag: "🇳🇬", lang: "yo-NG" },
@@ -50,48 +56,19 @@ export type ResolvedGigaVoice = {
   lang: string;
   voice: SpeechSynthesisVoice | null;
   matchedLang: string | null;
+  /** True when the installed voice matches the requested language. */
+  native: boolean;
 };
-
-function langPrefix(tag: string): string {
-  return tag.split("-")[0]?.toLowerCase() ?? tag.toLowerCase();
-}
-
-function voiceMatchesLang(voice: SpeechSynthesisVoice, tag: string): boolean {
-  const v = voice.lang?.toLowerCase() ?? "";
-  const t = tag.toLowerCase();
-  return v === t || v.startsWith(`${t}-`) || langPrefix(v) === langPrefix(t);
-}
 
 /** Pick the best installed browser voice for a Giga3 voice profile id. */
 export function resolveBrowserVoiceForId(
   voices: SpeechSynthesisVoice[],
   voiceId?: string
 ): ResolvedGigaVoice {
-  const config = voiceId ? GIGA_VOICE_LANG[voiceId] : undefined;
-  const profile = GIGA_CHAT_VOICES.find((v) => v.id === voiceId);
-  const candidates = config
-    ? [config.primary, ...config.fallbacks]
-    : profile
-      ? [profile.lang, "en-GH", "en"]
-      : ["en-GH", "en"];
-
-  for (const tag of candidates) {
-    const exact = voices.find(
-      (v) => voiceMatchesLang(v, tag) && v.lang.toLowerCase() === tag.toLowerCase()
-    );
-    if (exact) return { lang: tag, voice: exact, matchedLang: tag };
-
-    const prefix = voices.find((v) => voiceMatchesLang(v, tag));
-    if (prefix) return { lang: tag, voice: prefix, matchedLang: prefix.lang };
-  }
-
-  const english =
-    voices.find((v) => v.lang?.toLowerCase().startsWith("en")) ?? voices[0] ?? null;
-  return {
-    lang: english?.lang ?? "en",
-    voice: english,
-    matchedLang: english?.lang ?? null,
-  };
+  const config =
+    (voiceId && GIGA_VOICE_LANG[voiceId]) ||
+    GIGA_VOICE_LANG["english-british"];
+  return matchBrowserVoice(voices, config);
 }
 
 let voicesChangedHandler: (() => void) | null = null;

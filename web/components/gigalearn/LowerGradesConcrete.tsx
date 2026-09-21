@@ -14,21 +14,25 @@ import {
   checkConcreteAnswer,
   getGigaLearnVoice,
   lessonPreviewForLevel,
-  previewGigaLearnVoice,
 } from "@/lib/gigalearn/concreteObjects";
+import {
+  buildItemPronunciationPlan,
+  buildVoiceSamplePlan,
+  lessonObjectForLevel,
+} from "@/lib/gigalearn/pronunciation";
+import { speakPronunciationSequence } from "@/lib/gigalearn/speechSynthesis";
 import { GIGALEARN_LEVELS, isLowerGrade, type GigaLearnLevelId } from "@/lib/gigalearn/levels";
 import { listOfflineLessons } from "@/lib/gigalearn/offlineLessons";
 import { cn } from "@/lib/utils";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 const CONCRETE_BADGE = "bg-[#3B82F6] text-white";
 const TOUCH_SEE_BADGE = "bg-[#10B981] text-white";
 
 export function LowerGradesConcrete() {
   const [selectedLevel, setSelectedLevel] = useState<GigaLearnLevelId>("KG1");
+  const [voiceId, setVoiceId] = useState("english");
   const lower = isLowerGrade(selectedLevel);
-  const preview = useMemo(() => lessonPreviewForLevel(selectedLevel), [selectedLevel]);
-  const previewVoice = getGigaLearnVoice(preview.voiceId);
 
   return (
     <div className="space-y-5">
@@ -61,14 +65,28 @@ export function LowerGradesConcrete() {
                       </span>
                       <p className="mt-2 text-sm font-bold text-white">{item.title}</p>
                       <p className="text-[11px] text-gray-400">{item.subtitle}</p>
-                      <span
-                        className={cn(
-                          "mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold",
-                          CONCRETE_BADGE
-                        )}
-                      >
-                        {cat.badge}
-                      </span>
+                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                        <span
+                          className={cn(
+                            "inline-block rounded-full px-2 py-0.5 text-[10px] font-bold",
+                            CONCRETE_BADGE
+                          )}
+                        >
+                          {cat.badge}
+                        </span>
+                        <button
+                          type="button"
+                          aria-label={`Pronounce ${item.title}. English first.`}
+                          onClick={() =>
+                            void speakPronunciationSequence(
+                              buildItemPronunciationPlan(item.id, item.title, voiceId)
+                            )
+                          }
+                          className="inline-flex min-h-11 items-center rounded-full bg-[#EAB308] px-2.5 text-[10px] font-bold text-black"
+                        >
+                          🔊 Hear
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -83,9 +101,9 @@ export function LowerGradesConcrete() {
         </p>
       )}
 
-      <LearningModes level={selectedLevel} lower={lower} />
-      <LessonPreviewCard level={selectedLevel} lower={lower} />
-      <VoicesSection previewVoiceId={preview.voiceId} />
+      <LearningModes level={selectedLevel} lower={lower} voiceId={voiceId} />
+      <LessonPreviewCard level={selectedLevel} lower={lower} voiceId={voiceId} />
+      <VoicesSection selectedVoiceId={voiceId} onSelect={setVoiceId} />
       <GesSection />
       <OfflineBanner />
     </div>
@@ -145,7 +163,15 @@ function LevelSelector({
   );
 }
 
-function LearningModes({ level, lower }: { level: GigaLearnLevelId; lower: boolean }) {
+function LearningModes({
+  level,
+  lower,
+  voiceId,
+}: {
+  level: GigaLearnLevelId;
+  lower: boolean;
+  voiceId: string;
+}) {
   const [quizIndex, setQuizIndex] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [gamePicked, setGamePicked] = useState<string | null>(null);
@@ -163,9 +189,14 @@ function LearningModes({ level, lower }: { level: GigaLearnLevelId; lower: boole
     setPicked(null);
   }
 
-  function playRhyme(id: string, text: string, voiceId: string) {
+  function playRhyme(id: string, english: string, local: string) {
     setRhymePlaying(id);
-    previewGigaLearnVoice(text, voiceId);
+    void speakPronunciationSequence([
+      { text: english, voiceId: "english" },
+      ...(voiceId !== "english"
+        ? [{ text: local, voiceId, requireNative: true as const }]
+        : []),
+    ]);
     window.setTimeout(() => setRhymePlaying(null), 4000);
   }
 
@@ -319,7 +350,11 @@ function LearningModes({ level, lower }: { level: GigaLearnLevelId; lower: boole
                 type="button"
                 aria-label={`Play ${rhyme.title}`}
                 onClick={() =>
-                  playRhyme(rhyme.id, `${rhyme.title}. ${rhyme.linesEn.join(" ")}`, rhyme.voiceId)
+                  playRhyme(
+                    rhyme.id,
+                    `${rhyme.title}. ${rhyme.linesEn.join(" ")}`,
+                    rhyme.linesTwi.join(" ")
+                  )
                 }
                 className="flex min-h-12 min-w-12 items-center justify-center rounded-full bg-[#EAB308] text-lg font-bold text-black"
               >
@@ -380,7 +415,13 @@ function LearningModes({ level, lower }: { level: GigaLearnLevelId; lower: boole
             type="button"
             onClick={() => {
               setQaOpen(true);
-              previewGigaLearnVoice(`What color is an orange? ${FRUIT_QA.answer}`, "abena-twi");
+              void speakPronunciationSequence(
+                buildItemPronunciationPlan("orange", "Orange", voiceId).map((part, index) =>
+                  index === 0
+                    ? { ...part, text: `What color is an orange? ${FRUIT_QA.answer}` }
+                    : part
+                )
+              );
             }}
             className="mt-2 min-h-11 rounded-xl bg-[#EAB308] px-3 py-1.5 text-xs font-bold text-black"
           >
@@ -394,13 +435,21 @@ function LearningModes({ level, lower }: { level: GigaLearnLevelId; lower: boole
   );
 }
 
-function LessonPreviewCard({ level, lower }: { level: GigaLearnLevelId; lower: boolean }) {
+function LessonPreviewCard({
+  level,
+  lower,
+  voiceId,
+}: {
+  level: GigaLearnLevelId;
+  lower: boolean;
+  voiceId: string;
+}) {
   // Upper levels (P4-P6, JHS, SHS, University, Adult) have no concrete preview:
   // lessonPreviewForLevel falls back to the KG1 fruit card, which must never
   // render outside Creche–P3 (SHS showing 🍎🍎🍎 was a level leak).
   if (!lower) return null;
   const preview = lessonPreviewForLevel(level);
-  const voice = getGigaLearnVoice(preview.voiceId);
+  const voice = getGigaLearnVoice(voiceId);
 
   return (
     <section aria-label="Lesson preview" className="rounded-2xl border border-[#EAB308] bg-[#1E293B] p-4">
@@ -409,14 +458,18 @@ function LessonPreviewCard({ level, lower }: { level: GigaLearnLevelId; lower: b
         {preview.concreteRow.join(" ")} <span className="text-xl font-bold text-white">{preview.concreteAnswer}</span>
       </p>
       <p className="mt-2 text-xs text-white">{preview.textEn}</p>
-      <p className="text-xs text-gray-400">{preview.textTwi}</p>
+      <p className="text-xs text-gray-400">Twi: {preview.textTwi}</p>
       <div className="mt-2 flex items-center gap-2">
         <button
           type="button"
-          aria-label={`Play ${voice?.name ?? "teacher"} voice`}
-          onClick={() =>
-            previewGigaLearnVoice(`${preview.textEn}. ${preview.concreteAnswer}`, preview.voiceId)
-          }
+          aria-label={`Play ${voice?.name ?? "English"} voice`}
+          onClick={() => {
+            const fruit = lessonObjectForLevel(preview.level);
+            void speakPronunciationSequence([
+              { text: `${preview.textEn}. ${preview.concreteAnswer}`, voiceId: "english" },
+              ...buildItemPronunciationPlan(fruit.id, fruit.title, voiceId).slice(1),
+            ]);
+          }}
           className="flex min-h-12 min-w-12 items-center justify-center rounded-full bg-[#EAB308] text-base font-bold text-black"
         >
           ▶️
@@ -457,48 +510,56 @@ function LessonPreviewCard({ level, lower }: { level: GigaLearnLevelId; lower: b
   );
 }
 
-function VoicesSection({ previewVoiceId }: { previewVoiceId: string }) {
-  const [triedCache, setTriedCache] = useState<string | null>(null);
-
+function VoicesSection({
+  selectedVoiceId,
+  onSelect,
+}: {
+  selectedVoiceId: string;
+  onSelect: (voiceId: string) => void;
+}) {
   return (
     <section aria-labelledby="gl-voices">
-      <h3 id="gl-voices" className="mb-2 text-sm font-bold text-white">
-        African voices
+      <h3 id="gl-voices" className="mb-1 text-sm font-bold text-white">
+        Pronunciation voices
       </h3>
+      <p className="mb-2 text-[11px] text-gray-400">
+        English is the primary language. Choose an African language to hear it after English.
+      </p>
       <ul className="space-y-2">
-        {GIGALEARN_VOICES.map((voice) => (
-          <li
-            key={voice.id}
-            className={cn(
-              "flex items-center gap-2 rounded-2xl bg-[#1A233A] p-3",
-              voice.id === previewVoiceId && "border border-[#EAB308]"
-            )}
-          >
-            <span className="text-xl" aria-hidden>
-              {voice.flag}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-bold text-white">{voice.name}</p>
-              <p className="truncate text-[11px] text-gray-400">
-                {voice.language} · {voice.style}
-              </p>
-            </div>
-            <button
-              type="button"
-              aria-label={`Play sample of ${voice.name}`}
-              onClick={() => {
-                setTriedCache(voice.id);
-                previewGigaLearnVoice(
-                  `Hello! I am ${voice.name}. Let's learn together!`,
-                  voice.id
-                );
-              }}
-              className="flex min-h-12 min-w-12 items-center justify-center rounded-full bg-[#EAB308] text-sm font-bold text-black"
+        {GIGALEARN_VOICES.map((voice) => {
+          const selected = voice.id === selectedVoiceId;
+          return (
+            <li
+              key={voice.id}
+              className={cn(
+                "flex items-center gap-2 rounded-2xl bg-[#1A233A] p-3",
+                selected && "border border-[#EAB308]"
+              )}
             >
-              {triedCache === voice.id ? "✓" : "▶️"}
-            </button>
-          </li>
-        ))}
+              <span className="text-xl" aria-hidden>
+                {voice.flag}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-bold text-white">{voice.name}</p>
+                <p className="truncate text-[11px] text-gray-400">
+                  {voice.language} · {voice.style}
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-pressed={selected}
+                aria-label={`Use ${voice.name} and play a sample`}
+                onClick={() => {
+                  onSelect(voice.id);
+                  void speakPronunciationSequence(buildVoiceSamplePlan(voice.id));
+                }}
+                className="flex min-h-12 min-w-12 items-center justify-center rounded-full bg-[#EAB308] text-sm font-bold text-black"
+              >
+                {selected ? "✓" : "▶️"}
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );
