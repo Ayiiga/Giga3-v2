@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildGhanaNewsSearchQuery,
   buildResearchSearchQuery,
+  classifyInformationRequest,
   detectFactCheckIntent,
   detectGhanaNewsIntent,
   detectCurrentEventsIntent,
@@ -17,6 +18,7 @@ import {
   shouldAutoEnableLiveWeb,
   shouldRunLiveWebResearch,
 } from "../../convex/researchCapabilities";
+import { MTN_HEROES_OF_CHANGE_FIXTURE } from "../newsEvidence/userContextRouting.test";
 
 describe("research capability routing", () => {
   it("auto-enables live web for time-sensitive queries", () => {
@@ -139,5 +141,28 @@ describe("research capability routing", () => {
   it("provides live-search-unavailable fallback for Ghana news", () => {
     expect(liveSearchUnavailableNewsFallback("ghana_news")).toContain("temporarily unavailable");
     expect(liveSearchUnavailableNewsFallback("ghana_news")).toContain("Unverified");
+  });
+
+  it("does not auto-enable live web for pasted MTN announcement user context", () => {
+    expect(classifyInformationRequest(MTN_HEROES_OF_CHANGE_FIXTURE)).toBe(
+      "answer_from_user_context"
+    );
+    expect(shouldAutoEnableLiveWeb(MTN_HEROES_OF_CHANGE_FIXTURE)).toBe(false);
+    expect(
+      queryNeedsLiveWeb({
+        query: MTN_HEROES_OF_CHANGE_FIXTURE,
+        capability: "general",
+      })
+    ).toBe(false);
+    expect(
+      resolveResearchCapability({
+        query: MTN_HEROES_OF_CHANGE_FIXTURE,
+        liveWebEnabled: true,
+      })
+    ).toBe("general");
+  });
+
+  it("still auto-enables live web for announcement news lookups", () => {
+    expect(shouldAutoEnableLiveWeb("Latest announcement from MTN Ghana today")).toBe(true);
   });
 });
