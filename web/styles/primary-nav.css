@@ -21,6 +21,12 @@ html.primary-nav-route.primary-nav-bar-visible {
   --primary-nav-offset: calc(var(--primary-nav-height) + env(safe-area-inset-bottom, 0px));
 }
 
+/* Chat bar is taller than --primary-nav-height (padding + icon + label).
+   Keep the composer a small gap above the tabs, not a large empty band. */
+html.chat-route.primary-nav-route.primary-nav-bar-visible {
+  --primary-nav-offset: calc(5.15rem + env(safe-area-inset-bottom, 0px));
+}
+
 @media (min-width: 1024px) {
   html.primary-nav-rail.primary-nav-bar-visible {
     --primary-nav-offset: 0px;

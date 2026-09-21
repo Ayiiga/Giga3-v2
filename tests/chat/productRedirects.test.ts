@@ -134,7 +134,7 @@ describe("chat product redirect wiring", () => {
     expect(read("web/components/chat/ChatGuestBrowseView.tsx")).toContain(
       "matchProductRedirectIntent"
     );
-    expect(read("web/components/chat/MessageList.tsx")).toContain(
+    expect(read("web/components/chat/ChatWorkspacePanel.tsx")).toContain(
       "CHAT_WORKSPACE_PRIMARY_APPS"
     );
   });
