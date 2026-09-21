@@ -3,7 +3,7 @@
  * Does not touch legacy accountProfiles* tables (none in this schema).
  */
 
-import { internalMutation } from "./_generated/server";
+import { internalMutation, internalQuery } from "./_generated/server";
 
 const PROTECTED_EMAIL = "ayiiga3@gmail.com";
 
@@ -60,6 +60,27 @@ export function isTestUserEmail(rawEmail: string): boolean {
   return true;
 }
 
+/** Ops preview — list user/credential emails still matching test patterns. */
+export const previewTestUsersRemaining = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const creds = await ctx.db.query("userCredentials").collect();
+    const users = await ctx.db.query("users").collect();
+    const testCredEmails = creds
+      .filter((row) => isTestUserEmail(row.email))
+      .map((row) => row.email);
+    const testUserEmails = users
+      .filter((row) => isTestUserEmail(row.email))
+      .map((row) => row.email);
+    return {
+      credentialTestEmails: testCredEmails.sort(),
+      userTestEmails: testUserEmails.sort(),
+      totalUsers: users.length,
+      totalCredentials: creds.length,
+    };
+  },
+});
+
 export const cleanTestUsers = internalMutation({
   args: {},
   handler: async (ctx) => {
@@ -72,6 +93,12 @@ export const cleanTestUsers = internalMutation({
     for (const row of allCredentials) {
       if (isTestUserEmail(row.email)) {
         testEmails.add(row.email.trim().toLowerCase());
+      }
+    }
+    // Also remove test rows in users that never received a credential record.
+    for (const user of allUsers) {
+      if (isTestUserEmail(user.email)) {
+        testEmails.add(user.email.trim().toLowerCase());
       }
     }
 
