@@ -212,20 +212,56 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
     expect(ok).toBe(true);
   });
 
-  it("splits a long English reply into more than one utterance", async () => {
-    const { log } = installSpeechMock({ voices: [mockVoice("English US", "en-US")] });
-    const { speakGigaVoice } = await import("../../web/lib/chat/gigaVoice");
+  it("speaks the next English chunk only after the previous one ends", async () => {
+    const { log, synth } = installSpeechMock({ voices: [mockVoice("English US", "en-US")] });
+    const { speakGigaVoice, isGigaVoiceSpeaking } = await import("../../web/lib/chat/gigaVoice");
     const text = Array.from(
       { length: 6 },
       (_, index) => `Sentence ${index + 1} explains the idea in plain English.`
     ).join(" ");
+    const onEnd = vi.fn();
 
-    await speakGigaVoice({ text, voiceId: "english-british" });
-    const spoken = log.filter((entry) => entry.type === "speak");
-    expect(spoken.length).toBeGreaterThan(1);
-    expect(spoken[0]?.lang).toBe("en-US");
-    expect(spoken[0]?.voiceName).toBe("English US");
-    expect(spoken.map((entry) => entry.text).join(" ")).toContain("Sentence 6");
+    await speakGigaVoice({ text, voiceId: "english-british", onEnd });
+    const spoken = () => log.filter((entry) => entry.type === "speak");
+    expect(spoken()).toHaveLength(1);
+    expect(spoken()[0]?.lang).toBe("en-US");
+    expect(spoken()[0]?.voiceName).toBe("English US");
+
+    const first = synth.speak.mock.calls[0]?.[0] as SpeechSynthesisUtterance;
+    synth._finishSpeaking(first);
+    expect(spoken().length).toBeGreaterThan(1);
+
+    let guard = 0;
+    while (!onEnd.mock.calls.length && guard < 8) {
+      const last = synth.speak.mock.calls.at(-1)?.[0] as SpeechSynthesisUtterance;
+      synth._finishSpeaking(last);
+      guard += 1;
+    }
+
+    expect(spoken().map((entry) => entry.text).join(" ")).toContain("Sentence 6");
+    expect(onEnd).toHaveBeenCalledTimes(1);
+    expect(isGigaVoiceSpeaking()).toBe(false);
+    expect(synth.speak.mock.calls[0]?.[0]).toBe(first);
+    expect(typeof first.onend).toBe("function");
+  });
+
+  it("resumes a paused English voice while playback is still active", async () => {
+    vi.useFakeTimers();
+    const { synth } = installSpeechMock({ voices: [mockVoice("English US", "en-US")] });
+    const resume = vi.fn();
+    Object.assign(synth, { resume, paused: true });
+    const { speakGigaVoice, stopGigaVoice } = await import("../../web/lib/chat/gigaVoice");
+
+    const pending = speakGigaVoice({
+      text: "Read this English sentence aloud.",
+      voiceId: "english",
+    });
+    await vi.advanceTimersByTimeAsync(80);
+    await pending;
+    const afterStart = resume.mock.calls.length;
+    await vi.advanceTimersByTimeAsync(2600);
+    expect(resume.mock.calls.length).toBeGreaterThan(afterStart);
+    stopGigaVoice();
   });
 
   it("does not end playback when the engine reports an interrupted error", async () => {

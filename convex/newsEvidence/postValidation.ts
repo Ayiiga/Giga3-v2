@@ -15,6 +15,16 @@ const BREAKING_LABEL_RE = /\*\*Breaking\*\*/gi;
 const CANT_VERIFY_RE =
   /\b(can'?t|cannot)\s+(confidently\s+)?verify\b/i;
 
+const NEWS_BRUSHOFF_RE =
+  /\b(?:recommend checking|check(?:ing)? trusted news|trusted news sources|real-time updates|based on general knowledge|don'?t have (?:access to )?(?:real-time|the latest|live)|cannot (?:browse|access) (?:the )?(?:internet|web|live)|knowledge cutoff|not able to (?:browse|access|provide) (?:real-time|live|current))\b/i;
+
+/** Model hedge that sends the user away instead of using retrieved reports. */
+export function isNewsBrushOffAnswer(answer: string): boolean {
+  const text = answer.trim();
+  if (!text || /https?:\/\//i.test(text)) return false;
+  return NEWS_BRUSHOFF_RE.test(text);
+}
+
 export function insufficientEvidenceFallback(query: string): string {
   return `I couldn't retrieve enough current evidence to give you reliable news on that request right now. I won't invent or label unverified stories as current news.
 
@@ -91,9 +101,15 @@ export function enforceNewsEvidenceIntegrity(args: {
   const { contract, retrievalFailed } = args.evidence;
 
   const userSuppliedContent = hasSubstantiveUserProvidedContent(args.query);
+  const noEvidence = retrievalFailed || contract.evidenceCount === 0;
+
+  if (isNewsBrushOffAnswer(content) && contract.evidenceCount > 0 && !userSuppliedContent) {
+    flags.push("news_brushoff_replaced");
+    return { content: renderNewsContractSummary(contract), flags };
+  }
 
   if (
-    (retrievalFailed || contract.evidenceCount === 0) &&
+    noEvidence &&
     contract.classification.requiresRetrieval &&
     !userSuppliedContent
   ) {

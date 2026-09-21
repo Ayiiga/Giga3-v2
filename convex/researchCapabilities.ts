@@ -65,7 +65,20 @@ const NEWS_ANNOUNCEMENT_LOOKUP_RE =
   /\b(latest|recent|current|new|today'?s?|breaking)\b[\s\S]{0,24}\bannouncement\b/i;
 
 const GHANA_NEWS_RE =
-  /\b(ghana(?:ian)?\s+(?:news|headlines|updates|politics|today)|news (?:in|from|about) ghana|accra|kumasi|tamale|tema|black stars|parliament of ghana|mahama|akufo-addo|graphic online|myjoyonline|ghanaweb|citinewsroom|citi fm|joy news|daily graphic)\b/i;
+  /\b(ghana(?:ian)?\s+(?:news|headlines|updates|politics|today)|news (?:in|from|about) ghana|(?:happening|going on|situation|updates?)\s+(?:in|across|around)\s+ghana|accra|kumasi|tamale|tema|black stars|parliament of ghana|mahama|akufo-addo|graphic online|myjoyonline|ghanaweb|citinewsroom|citi fm|joy news|daily graphic)\b/i;
+
+/** Search-query bias only. The full registry is too long for one site: OR query. */
+const GHANA_SEARCH_DOMAINS = [
+  "graphic.com.gh",
+  "myjoyonline.com",
+  "citinewsroom.com",
+  "ghanaweb.com",
+  "gna.org.gh",
+  "3news.com",
+] as const;
+
+const OTHER_COUNTRY_RE =
+  /\b(nepal|nigeria|kenya|uganda|tanzania|south africa|united states|united kingdom|uk|usa|india|china|france|germany)\b/i;
 
 const BREAKING_NEWS_RE =
   /\b(breaking news|just broke|developing story|news flash|urgent:?|live updates?)\b/i;
@@ -189,11 +202,49 @@ const CONVERSATIONAL_GREETING_RE =
 export function isConversationalChatQuery(query: string): boolean {
   const q = query.trim();
   if (!q || q.length > 96) return false;
+  // Short current-events questions ("What is happening in Ghana") have no
+  // question mark and used to be treated as small talk.
+  if (
+    detectCurrentEventsIntent(q) ||
+    detectNewsRetrievalIntent(q) ||
+    detectGhanaNewsIntent(q) ||
+    detectBreakingNewsIntent(q) ||
+    detectFactCheckIntent(q)
+  ) {
+    return false;
+  }
   if (CONVERSATIONAL_GREETING_RE.test(q)) return true;
   if (q.length <= 28 && !TIME_SENSITIVE_RE.test(q) && !/\?/.test(q)) {
     return /^[\p{L}\p{N}\s'.,!-]+$/u.test(q);
   }
   return false;
+}
+
+function mentionsGhanaPlace(query: string): boolean {
+  return /\b(ghana(?:ian)?|accra|kumasi|tamale|tema|black stars)\b/i.test(query);
+}
+
+/**
+ * Current-events and headline lookups get a news capability so live search,
+ * Ghana source bias, and evidence checks actually run.
+ */
+export function resolveNewsLookupCapability(query: string): ResearchCapabilityId | null {
+  const q = query.trim();
+  const lookup =
+    detectNewsRetrievalIntent(q) ||
+    detectCurrentEventsIntent(q) ||
+    detectGhanaNewsIntent(q) ||
+    detectBreakingNewsIntent(q);
+  if (!lookup) return null;
+
+  const ghana = mentionsGhanaPlace(q) || detectGhanaNewsIntent(q);
+  const otherCountry = OTHER_COUNTRY_RE.test(q);
+  if (ghana && !otherCountry) {
+    return detectBreakingNewsIntent(q) ? "breaking_news" : "ghana_news";
+  }
+  if (/\bafrica(?:n)?\b/i.test(q) && !ghana) return "africa_news";
+  if (detectBreakingNewsIntent(q)) return "breaking_news";
+  return "current_news";
 }
 
 /** Text-only chat without live web — use the lightweight conversational worker. */
@@ -251,17 +302,12 @@ export function resolveResearchCapability(args: {
     return "fact_check";
   }
 
-  if (detectGhanaNewsIntent(q)) {
-    return detectBreakingNewsIntent(q) ? "breaking_news" : "ghana_news";
-  }
-
-  if (detectBreakingNewsIntent(q) && TIME_SENSITIVE_RE.test(q)) {
-    return "breaking_news";
-  }
-
   if (classifyInformationRequest(q) === "answer_from_user_context") {
     return "general";
   }
+
+  const newsLookup = resolveNewsLookupCapability(q);
+  if (newsLookup) return newsLookup;
 
   if (shouldAutoEnableLiveWeb(q)) {
     return "live_web";
@@ -336,8 +382,8 @@ export function shouldRunLiveWebResearch(capability: ResearchCapabilityId): bool
 }
 
 export function buildGhanaNewsSearchQuery(query: string): string {
-  const siteBias = GHANA_NEWS_SOURCE_HINTS.map((d) => `site:${d}`).join(" OR ");
-  return `${query.trim()} Ghana news today (${siteBias})`.trim();
+  const siteBias = GHANA_SEARCH_DOMAINS.map((d) => `site:${d}`).join(" OR ");
+  return `${query.trim()} Ghana news (${siteBias})`.trim();
 }
 
 export function buildResearchSearchQuery(
@@ -387,6 +433,7 @@ export const NEWS_RESPONSE_FORMAT_GUIDANCE = [
   "- **Breaking** may only be used when the evidence package assigns breakingLabel=BREAKING.",
   "- Never invent current news, quotes, dates, or URLs. If you cannot verify a claim, say so.",
   "- If live search is unavailable and evidence count is zero, say evidence is insufficient — do not invent headlines.",
+  "- Do not deflect a current-events question by telling the user to check other news sites or by answering from general knowledge.",
 ].join("\n");
 
 export function researchSystemPromptAddon(capability: ResearchCapabilityId): string {

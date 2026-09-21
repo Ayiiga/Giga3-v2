@@ -150,6 +150,16 @@ describe("live web preferences", () => {
       liveWebMode: "research",
       researchCapability: "ghana_news",
     });
+    expect(
+      currentLiveWebSendOptions({
+        query: "What is happening in Ghana",
+        online: true,
+      })
+    ).toEqual({
+      liveWeb: true,
+      liveWebMode: "research",
+      researchCapability: "ghana_news",
+    });
   });
 
   it("falls back to general knowledge when offline", () => {

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   enforceNewsEvidenceIntegrity,
   insufficientEvidenceFallback,
+  isNewsBrushOffAnswer,
 } from "../../convex/newsEvidence/postValidation";
 import { buildNewsEvidencePackage } from "../../convex/newsEvidence/pipeline";
 import { MTN_HEROES_OF_CHANGE_FIXTURE } from "./userContextRouting.test";
@@ -29,6 +30,65 @@ describe("news post-validation", () => {
     expect(result.content).toContain("couldn't retrieve enough current evidence");
     expect(result.content).not.toContain("MyJoyOnline");
     expect(result.flags).toContain("news_insufficient_evidence");
+  });
+
+  it("replaces the Ghana check-the-news hedge when nothing was retrieved", () => {
+    const query = "What is happening in Ghana";
+    const evidence = buildNewsEvidencePackage({
+      query,
+      capability: "ghana_news",
+      sources: [],
+      pagesReadUrls: [],
+      warnings: ["Search failed"],
+      liveSearchUsed: false,
+      retrievalFailed: true,
+    });
+    const hedge =
+      "For the latest news and events happening in Ghana, I recommend checking trusted news sources or online platforms that provide real-time updates. If you have specific areas of interest or topics you're curious about, feel free to let me know, and I can provide information or context based on general knowledge.";
+
+    expect(isNewsBrushOffAnswer(hedge)).toBe(true);
+    const result = enforceNewsEvidenceIntegrity({
+      answer: hedge,
+      query,
+      evidence,
+      isNewsQuery: true,
+    });
+
+    expect(result.content).toContain("couldn't retrieve enough current evidence");
+    expect(result.content).not.toContain("recommend checking");
+    expect(result.flags).toContain("news_insufficient_evidence");
+  });
+
+  it("replaces a brush-off with the reports that were actually retrieved", () => {
+    const evidence = buildNewsEvidencePackage({
+      query: "What is happening in Ghana",
+      capability: "ghana_news",
+      sources: [
+        {
+          title: "Parliament opens new session in Accra",
+          uri: "https://www.graphic.com.gh/parliament-session",
+          domain: "graphic.com.gh",
+          excerpt: "The House began a new sitting.",
+          accessedAt: Date.now(),
+        },
+      ],
+      pagesReadUrls: ["https://www.graphic.com.gh/parliament-session"],
+      warnings: [],
+      liveSearchUsed: true,
+    });
+
+    const result = enforceNewsEvidenceIntegrity({
+      answer:
+        "For the latest news, I recommend checking trusted news sources. I can only answer from general knowledge.",
+      query: "What is happening in Ghana",
+      evidence,
+      isNewsQuery: true,
+    });
+
+    expect(result.flags).toContain("news_brushoff_replaced");
+    expect(result.content).toContain("Parliament opens new session in Accra");
+    expect(result.content).toContain("graphic.com.gh");
+    expect(result.content).not.toContain("recommend checking");
   });
 
   it("downgrades verified labels when only snippets exist", () => {

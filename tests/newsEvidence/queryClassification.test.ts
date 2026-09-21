@@ -12,6 +12,8 @@ describe("news query classification", () => {
     expect(classified.city).toBe("Accra");
     expect(classified.requestedTime).toBe("breaking");
     expect(classified.requiresRetrieval).toBe(true);
+    expect(classifyNewsQuery("What is happening in Ghana").requiresRetrieval).toBe(true);
+    expect(classifyNewsQuery("What is happening in Ghana").country).toBe("Ghana");
   });
 
   it("detects comparison and verification intents", () => {
