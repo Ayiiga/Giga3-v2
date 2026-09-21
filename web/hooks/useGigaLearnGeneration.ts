@@ -7,7 +7,7 @@ import {
   parseQuestionsFromContent,
   type GigaLearnQuestion,
 } from "@/lib/gigalearn/questions";
-import { getGigaLearnTool } from "@/lib/gigalearn/tools";
+import { getGigaLearnTool, type GigaLearnToolSection } from "@/lib/gigalearn/tools";
 import {
   canGenerateToday,
   recordLearningActivity,
@@ -28,6 +28,7 @@ export function useGigaLearnGeneration() {
   const [result, setResult] = useState<string | null>(null);
   const [questions, setQuestions] = useState<GigaLearnQuestion[]>([]);
   const [lastToolId, setLastToolId] = useState<string | null>(null);
+  const [lastSection, setLastSection] = useState<GigaLearnToolSection | undefined>();
   const [lastPrompt, setLastPrompt] = useState("");
   const [lastCurriculum, setLastCurriculum] = useState<string | undefined>();
   const [lastSubject, setLastSubject] = useState<string | undefined>();
@@ -44,13 +45,14 @@ export function useGigaLearnGeneration() {
   const run = useCallback(
     async (args: {
       toolId: string;
+      section?: GigaLearnToolSection;
       prompt: string;
       curriculum?: string;
       subject?: string;
       level?: string;
       context?: string;
     }) => {
-      const tool = getGigaLearnTool(args.toolId);
+      const tool = getGigaLearnTool(args.toolId, args.section);
       if (!tool) {
         setError("Unknown GigaLearn tool.");
         setPhase("error");
@@ -79,6 +81,7 @@ export function useGigaLearnGeneration() {
       setResult(null);
       setQuestions([]);
       setLastToolId(args.toolId);
+      setLastSection(args.section);
       setLastPrompt(args.prompt);
       setLastCurriculum(args.curriculum);
       setLastSubject(args.subject);
@@ -151,6 +154,7 @@ export function useGigaLearnGeneration() {
     if (!lastToolId || !lastPrompt) return null;
     return run({
       toolId: lastToolId,
+      section: lastSection,
       prompt: lastPrompt,
       curriculum: lastCurriculum,
       subject: lastSubject,
@@ -159,6 +163,7 @@ export function useGigaLearnGeneration() {
     });
   }, [
     lastToolId,
+    lastSection,
     lastPrompt,
     lastCurriculum,
     lastSubject,

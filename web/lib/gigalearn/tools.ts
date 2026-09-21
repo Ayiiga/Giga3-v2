@@ -187,7 +187,14 @@ export const ALL_GIGALEARN_TOOLS = [
   ...PARENT_TOOLS,
 ];
 
-export function getGigaLearnTool(id: string): GigaLearnToolDefinition | undefined {
+export function getGigaLearnTool(
+  id: string,
+  section?: GigaLearnToolSection
+): GigaLearnToolDefinition | undefined {
+  if (section) {
+    const scoped = ALL_GIGALEARN_TOOLS.find((t) => t.id === id && t.section === section);
+    if (scoped) return scoped;
+  }
   return ALL_GIGALEARN_TOOLS.find((t) => t.id === id);
 }
 

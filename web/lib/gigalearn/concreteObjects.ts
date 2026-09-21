@@ -6,6 +6,7 @@
  */
 
 import type { GigaLearnLevelId } from "@/lib/gigalearn/levels";
+import { speakWithGigaLearnVoice } from "@/lib/gigalearn/speechSynthesis";
 
 export type ConcreteCategoryId =
   | "fruits"
@@ -286,17 +287,8 @@ export function getGigaLearnVoice(id: string): GigaLearnVoice | undefined {
 }
 
 /** Offline speech preview (ON DEVICE, no credits, <2s) — best-effort on low-end phones. */
-export function previewGigaLearnVoice(text: string): void {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-  try {
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.rate = 0.9;
-    utter.pitch = 1.1;
-    window.speechSynthesis.speak(utter);
-  } catch {
-    /* ignore */
-  }
+export function previewGigaLearnVoice(text: string, voiceId?: string): void {
+  void speakWithGigaLearnVoice({ text, voiceId, rate: 0.9, pitch: 1.1 });
 }
 
 export const GES_STRANDS: { level: string; strands: string[] }[] = [
