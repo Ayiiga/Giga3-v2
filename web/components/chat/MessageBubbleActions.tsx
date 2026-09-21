@@ -17,6 +17,7 @@ import {
   readAloud,
   stopReadAloud,
 } from "@/lib/chat/readAloud";
+import { readVoiceLanguageId } from "@/lib/chat/voiceLanguagePreference";
 import { copyMarkdownToClipboard, shareText } from "@/lib/share/clientShare";
 import { useShareAction } from "@/hooks/useShareAction";
 import { cn } from "@/lib/utils";
@@ -141,7 +142,7 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
       setMenuOpen(false);
       return;
     }
-    const started = readAloud(copyText);
+    const started = readAloud(copyText, readVoiceLanguageId());
     if (started) setSpeaking(true);
     setMenuOpen(false);
   }, [copyText, speaking]);

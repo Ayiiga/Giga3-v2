@@ -50,9 +50,13 @@ describe("Chat mobile app UI shell", () => {
       resolve(__dirname, "../../web/components/chat/AfricanVoiceReader.tsx"),
       "utf8"
     );
+    const voices = readFileSync(
+      resolve(__dirname, "../../web/lib/chat/gigaVoice.ts"),
+      "utf8"
+    );
     expect(pref).toContain("giga3_voice_language_id");
     expect(reader).toContain("subscribeVoiceLanguageId");
-    expect(reader).toContain("(M)");
-    expect(reader).toContain("(F)");
+    expect(voices).toContain("(M)");
+    expect(voices).toContain("(F)");
   });
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import { AfricanVoiceReader } from "@/components/chat/AfricanVoiceReader";
+import { AnswerContentBlock } from "@/components/chat/AnswerContentBlock";
 import { LiveWebSourceCards } from "@/components/chat/LiveWebSourceCards";
 import { ResearchResponseBadge } from "@/components/chat/ResearchResponseBadge";
 import { MessageBubbleActions } from "@/components/chat/MessageBubbleActions";
@@ -10,7 +11,7 @@ import { ProductRedirectCards } from "@/components/chat/ProductRedirectCards";
 import { useStreamingReveal } from "@/hooks/useStreamingReveal";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { formatMessageTime } from "@/lib/chat/groupMessagesByDate";
-import { splitAssistantResponseDisplay } from "@/lib/chat/deriveResponseDisplay";
+import { parseAnswerBlocks } from "@/lib/chat/parseAnswerBlocks";
 import { extractProductRedirectsFromText } from "@/lib/chat/productRedirects";
 import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
 import {
@@ -83,9 +84,9 @@ export const MessageBubble = memo(function MessageBubble({
   );
 
   const displayContent = !isUser && streaming ? revealed : safeContent;
-  const assistantDisplay = useMemo(() => {
+  const answerBlocks = useMemo(() => {
     if (isUser || streaming) return null;
-    return splitAssistantResponseDisplay(displayContent);
+    return parseAnswerBlocks(displayContent);
   }, [isUser, displayContent, streaming]);
   const productRedirects = useMemo(
     () => (isUser ? [] : extractProductRedirectsFromText(content)),
@@ -149,10 +150,23 @@ export const MessageBubble = memo(function MessageBubble({
               </p>
             ) : (
               <>
-                {assistantDisplay?.title ? (
-                  <h2 className="chat-response-title">{assistantDisplay.title}</h2>
+                {answerBlocks?.title ? (
+                  <h2 className="chat-response-title">{answerBlocks.title}</h2>
                 ) : null}
-                <MessageMarkdown content={assistantDisplay?.content ?? displayContent} />
+                {answerBlocks?.isStructured ? (
+                  <div className="answer-blocks-stack">
+                    {answerBlocks.blocks.map((section, index) => (
+                      <AnswerContentBlock
+                        key={`${section.kind}-${index}`}
+                        messageId={id}
+                        section={section}
+                        index={index}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <MessageMarkdown content={answerBlocks?.plainContent ?? displayContent} />
+                )}
                 {basisLabel && basisLabel.basis !== "live_web" ? (
                   <ResearchResponseBadge metadata={basisLabel} />
                 ) : null}
@@ -163,7 +177,11 @@ export const MessageBubble = memo(function MessageBubble({
                   <ProductRedirectCards products={productRedirects} />
                 ) : null}
                 {!streaming && displayContent ? (
-                  <AfricanVoiceReader content={assistantDisplay?.content ?? displayContent} />
+                  answerBlocks?.isStructured ? (
+                    <AfricanVoiceReader content="" selectorOnly />
+                  ) : (
+                    <AfricanVoiceReader content={answerBlocks?.plainContent ?? displayContent} />
+                  )
                 ) : null}
               </>
             ))}

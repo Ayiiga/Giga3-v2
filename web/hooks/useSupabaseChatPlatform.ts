@@ -15,6 +15,8 @@ import {
   removeOutbox,
   type OutboxEntry,
 } from "@/lib/chat/offlineOutbox";
+import { clearComposerDraft } from "@/lib/chat/composerDraft";
+import { stopGigaVoice } from "@/lib/chat/gigaVoice";
 import { emitOutboxStatus } from "@/lib/chat/outboxEvents";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import { chatSystemForModel, gigaModelForMode, type GigaModelId } from "@/lib/chat/gigaModels";
@@ -352,7 +354,7 @@ export function useSupabaseChatPlatform() {
     }
     setActiveId((prev) => {
       if (prev && conversations.some((c) => c._id === prev)) return prev;
-      return conversations[0]._id;
+      return null;
     });
   }, [conversations]);
 
@@ -396,13 +398,16 @@ export function useSupabaseChatPlatform() {
 
   const startNewChat = useCallback(async () => {
     if (!email) return;
+    stopGigaVoice();
+    clearComposerDraft(null);
     setError(null);
-    const chat = await createSupabaseChat(email, mode);
-    setConversationsRaw((prev) => [chat, ...(prev ?? [])]);
-    setActiveId(chat._id);
-  }, [email, mode]);
+    setActiveId(null);
+    setPendingUserText(null);
+    setSegmentNotice(null);
+  }, [email]);
 
   const selectConversation = useCallback((id: string) => {
+    stopGigaVoice();
     setActiveId(id);
     setError(null);
     setPendingUserText(null);
@@ -411,6 +416,7 @@ export function useSupabaseChatPlatform() {
 
   const deleteConversation = useCallback(
     async (id: string) => {
+      stopGigaVoice();
       await removeSupabaseChat(id);
       setConversationsRaw((prev) => (prev ?? []).filter((c) => c._id !== id));
       if (activeId === id) {

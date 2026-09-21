@@ -1,13 +1,20 @@
 "use client";
 
 import {
+  GIGA_CHAT_VOICES,
+  isGigaVoiceSpeaking,
+  isGigaVoiceSupported,
+  stopGigaVoice,
+  toggleGigaVoiceBlock,
+} from "@/lib/chat/gigaVoice";
+import {
   readVoiceLanguageId,
   subscribeVoiceLanguageId,
   writeVoiceLanguageId,
 } from "@/lib/chat/voiceLanguagePreference";
 import { cn } from "@/lib/utils";
 import { Pause, Play } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 export type AfricanReaderVoice = {
   id: string;
@@ -16,92 +23,63 @@ export type AfricanReaderVoice = {
   lang: string;
 };
 
-export const AFRICAN_READER_VOICES: AfricanReaderVoice[] = [
-  { id: "abena-twi", name: "Abena · Twi (F)", flag: "🇬🇭", lang: "ak-GH" },
-  { id: "kwame-twi", name: "Kwame · Twi (M)", flag: "🇬🇭", lang: "ak-GH" },
-  { id: "aisha-hausa", name: "Aisha · Hausa (F)", flag: "🇳🇬", lang: "ha-NG" },
-  { id: "musa-hausa", name: "Musa · Hausa (M)", flag: "🇳🇬", lang: "ha-NG" },
-  { id: "naa-ga", name: "Naa · Ga (F)", flag: "🇬🇭", lang: "en-GH" },
-  { id: "kofi-ewe", name: "Kofi · Ewe (M)", flag: "🇬🇭", lang: "ee-GH" },
-  { id: "adaeze-yoruba", name: "Adaeze · Yoruba (F)", flag: "🇳🇬", lang: "yo-NG" },
-  { id: "tunde-yoruba", name: "Tunde · Yoruba (M)", flag: "🇳🇬", lang: "yo-NG" },
-  { id: "zawadi-swahili", name: "Zawadi · Swahili (F)", flag: "🇰🇪", lang: "sw-KE" },
-  { id: "jabari-swahili", name: "Jabari · Swahili (M)", flag: "🇰🇪", lang: "sw-KE" },
-];
+export const AFRICAN_READER_VOICES: AfricanReaderVoice[] = GIGA_CHAT_VOICES;
+
+const FULL_MESSAGE_BLOCK_ID = "african-voice-reader-full";
+
+type AfricanVoiceReaderProps = {
+  content: string;
+  /** Voice/rate controls only — no full-message play/download (structured answer blocks). */
+  selectorOnly?: boolean;
+};
 
 /**
  * African voice reader below AI responses — offline on-device speech,
  * defaulting to Twi Female (Ghana, slow and clear for BECE/WASSCE).
  */
-export function AfricanVoiceReader({ content }: { content: string }) {
+export function AfricanVoiceReader({ content, selectorOnly = false }: AfricanVoiceReaderProps) {
   const [supported, setSupported] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [voiceId, setVoiceId] = useState(() => readVoiceLanguageId());
   const [rate, setRate] = useState(1);
-  const utterRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
-    setSupported(
-      typeof window !== "undefined" && "speechSynthesis" in window
-    );
+    setSupported(isGigaVoiceSupported());
   }, []);
 
   useEffect(() => subscribeVoiceLanguageId(setVoiceId), []);
 
   useEffect(() => {
     return () => {
-      try {
-        window.speechSynthesis?.cancel();
-      } catch {
-        /* ignore */
-      }
+      stopGigaVoice();
     };
   }, []);
 
-  if (!supported || !content.trim()) return null;
+  useEffect(() => {
+    if (!speaking) return;
+    const id = window.setInterval(() => {
+      if (!isGigaVoiceSpeaking()) setSpeaking(false);
+    }, 300);
+    return () => window.clearInterval(id);
+  }, [speaking]);
 
-  const plainText = content
-    .replace(/```[\s\S]*?```/g, " code block omitted. ")
-    .replace(/[#*`>|_~]/g, "")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .slice(0, 2000);
+  if (!supported || (!selectorOnly && !content.trim())) return null;
 
-  function stop() {
-    try {
-      window.speechSynthesis.cancel();
-    } catch {
-      /* ignore */
-    }
-    utterRef.current = null;
-    setSpeaking(false);
-  }
-
-  function play() {
+  async function play() {
     if (speaking) {
-      stop();
+      stopGigaVoice();
+      setSpeaking(false);
       return;
     }
-    try {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(plainText);
-      const voice = AFRICAN_READER_VOICES.find((v) => v.id === voiceId);
-      utter.lang = voice?.lang ?? "en-GH";
-      utter.rate = rate;
-      const systemVoice =
-        window.speechSynthesis
-          .getVoices()
-          .find((v) => v.lang?.toLowerCase().startsWith(utter.lang.slice(0, 2).toLowerCase())) ??
-        window.speechSynthesis.getVoices().find((v) => v.lang?.startsWith("en")) ??
-        null;
-      if (systemVoice) utter.voice = systemVoice;
-      utter.onend = () => setSpeaking(false);
-      utter.onerror = () => setSpeaking(false);
-      utterRef.current = utter;
-      window.speechSynthesis.speak(utter);
-      setSpeaking(true);
-    } catch {
-      setSpeaking(false);
-    }
+    const started = await toggleGigaVoiceBlock({
+      blockId: FULL_MESSAGE_BLOCK_ID,
+      text: content,
+      voiceId,
+      rate,
+      onStart: () => setSpeaking(true),
+      onEnd: () => setSpeaking(false),
+    });
+    if (!started && !isGigaVoiceSpeaking()) setSpeaking(false);
   }
 
   function download() {
@@ -163,28 +141,32 @@ export function AfricanVoiceReader({ content }: { content: string }) {
         >
           {rate}x
         </button>
-        <button
-          type="button"
-          onClick={play}
-          aria-label={speaking ? "Stop reading response" : "Read response with African voice"}
-          aria-pressed={speaking}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#EAB308] text-black shadow-sm hover:bg-[#d4a017]"
-        >
-          {speaking ? (
-            <Pause className="h-4 w-4" aria-hidden />
-          ) : (
-            <Play className="ml-0.5 h-4 w-4" aria-hidden />
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={download}
-          className="min-h-9 rounded-full bg-[#F3F4F6] px-2.5 py-1 text-[12px] font-medium text-gray-600"
-          aria-label="Download response as text"
-          title="Download response"
-        >
-          ↓
-        </button>
+        {!selectorOnly ? (
+          <>
+            <button
+              type="button"
+              onClick={() => void play()}
+              aria-label={speaking ? "Stop reading response" : "Read response with African voice"}
+              aria-pressed={speaking}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#EAB308] text-black shadow-sm hover:bg-[#d4a017]"
+            >
+              {speaking ? (
+                <Pause className="h-4 w-4" aria-hidden />
+              ) : (
+                <Play className="ml-0.5 h-4 w-4" aria-hidden />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={download}
+              className="min-h-9 rounded-full bg-[#F3F4F6] px-2.5 py-1 text-[12px] font-medium text-gray-600"
+              aria-label="Download response as text"
+              title="Download response"
+            >
+              ↓
+            </button>
+          </>
+        ) : null}
       </div>
       <span className="w-full text-[10px] leading-tight text-gray-400">
         ON DEVICE · free offline · Studio TTS 1 credit / 500 chars
