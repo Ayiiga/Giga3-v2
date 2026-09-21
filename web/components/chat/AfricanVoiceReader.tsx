@@ -27,11 +27,17 @@ export const AFRICAN_READER_VOICES: AfricanReaderVoice[] = GIGA_CHAT_VOICES;
 
 const FULL_MESSAGE_BLOCK_ID = "african-voice-reader-full";
 
+type AfricanVoiceReaderProps = {
+  content: string;
+  /** Voice/rate controls only — no full-message play/download (structured answer blocks). */
+  selectorOnly?: boolean;
+};
+
 /**
  * African voice reader below AI responses — offline on-device speech,
  * defaulting to Twi Female (Ghana, slow and clear for BECE/WASSCE).
  */
-export function AfricanVoiceReader({ content }: { content: string }) {
+export function AfricanVoiceReader({ content, selectorOnly = false }: AfricanVoiceReaderProps) {
   const [supported, setSupported] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [voiceId, setVoiceId] = useState(() => readVoiceLanguageId());
@@ -57,7 +63,7 @@ export function AfricanVoiceReader({ content }: { content: string }) {
     return () => window.clearInterval(id);
   }, [speaking]);
 
-  if (!supported || !content.trim()) return null;
+  if (!supported || (!selectorOnly && !content.trim())) return null;
 
   async function play() {
     if (speaking) {
@@ -135,28 +141,32 @@ export function AfricanVoiceReader({ content }: { content: string }) {
         >
           {rate}x
         </button>
-        <button
-          type="button"
-          onClick={() => void play()}
-          aria-label={speaking ? "Stop reading response" : "Read response with African voice"}
-          aria-pressed={speaking}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#EAB308] text-black shadow-sm hover:bg-[#d4a017]"
-        >
-          {speaking ? (
-            <Pause className="h-4 w-4" aria-hidden />
-          ) : (
-            <Play className="ml-0.5 h-4 w-4" aria-hidden />
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={download}
-          className="min-h-9 rounded-full bg-[#F3F4F6] px-2.5 py-1 text-[12px] font-medium text-gray-600"
-          aria-label="Download response as text"
-          title="Download response"
-        >
-          ↓
-        </button>
+        {!selectorOnly ? (
+          <>
+            <button
+              type="button"
+              onClick={() => void play()}
+              aria-label={speaking ? "Stop reading response" : "Read response with African voice"}
+              aria-pressed={speaking}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#EAB308] text-black shadow-sm hover:bg-[#d4a017]"
+            >
+              {speaking ? (
+                <Pause className="h-4 w-4" aria-hidden />
+              ) : (
+                <Play className="ml-0.5 h-4 w-4" aria-hidden />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={download}
+              className="min-h-9 rounded-full bg-[#F3F4F6] px-2.5 py-1 text-[12px] font-medium text-gray-600"
+              aria-label="Download response as text"
+              title="Download response"
+            >
+              ↓
+            </button>
+          </>
+        ) : null}
       </div>
       <span className="w-full text-[10px] leading-tight text-gray-400">
         ON DEVICE · free offline · Studio TTS 1 credit / 500 chars

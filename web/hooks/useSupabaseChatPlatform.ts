@@ -416,6 +416,7 @@ export function useSupabaseChatPlatform() {
 
   const deleteConversation = useCallback(
     async (id: string) => {
+      stopGigaVoice();
       await removeSupabaseChat(id);
       setConversationsRaw((prev) => (prev ?? []).filter((c) => c._id !== id));
       if (activeId === id) {

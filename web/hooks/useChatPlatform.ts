@@ -1006,6 +1006,7 @@ export function useChatPlatform() {
     async (id: string) => {
       const token = sessionToken ?? getSessionToken();
       if (!token) return;
+      stopGigaVoice();
       await removeConversation({
         conversationId: id as Id<"conversations">,
         sessionToken: token,

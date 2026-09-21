@@ -176,8 +176,12 @@ export const MessageBubble = memo(function MessageBubble({
                 {productRedirects.length > 0 ? (
                   <ProductRedirectCards products={productRedirects} />
                 ) : null}
-                {!streaming && displayContent && !answerBlocks?.isStructured ? (
-                  <AfricanVoiceReader content={answerBlocks?.plainContent ?? displayContent} />
+                {!streaming && displayContent ? (
+                  answerBlocks?.isStructured ? (
+                    <AfricanVoiceReader content="" selectorOnly />
+                  ) : (
+                    <AfricanVoiceReader content={answerBlocks?.plainContent ?? displayContent} />
+                  )
                 ) : null}
               </>
             ))}

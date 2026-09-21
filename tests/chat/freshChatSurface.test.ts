@@ -39,13 +39,13 @@ describe("fresh chat surface", () => {
     );
   });
 
-  it("keeps AfricanVoiceReader for non-structured replies only", () => {
+  it("renders answer blocks for structured replies and AfricanVoiceReader for all completed replies", () => {
     const bubble = readFileSync(
       resolve(__dirname, "../../web/components/chat/MessageBubble.tsx"),
       "utf8"
     );
     expect(bubble).toContain("AnswerContentBlock");
-    expect(bubble).toContain("!answerBlocks?.isStructured");
+    expect(bubble).toContain("answerBlocks?.isStructured");
     expect(bubble).toContain("<AfricanVoiceReader");
   });
 
@@ -57,5 +57,35 @@ describe("fresh chat surface", () => {
     expect(actions).toContain("toggleGigaVoiceBlock");
     expect(actions).toContain("readVoiceLanguageId");
     expect(actions).not.toContain("readAloud(");
+  });
+
+  it("exposes copy and share per answer block", () => {
+    const actions = readFileSync(
+      resolve(__dirname, "../../web/components/chat/AnswerBlockActions.tsx"),
+      "utf8"
+    );
+    expect(actions).toContain("copyMarkdownToClipboard");
+    expect(actions).toContain("shareText");
+  });
+
+  it("keeps voice selector available for structured answer blocks", () => {
+    const bubble = readFileSync(
+      resolve(__dirname, "../../web/components/chat/MessageBubble.tsx"),
+      "utf8"
+    );
+    const reader = readFileSync(
+      resolve(__dirname, "../../web/components/chat/AfricanVoiceReader.tsx"),
+      "utf8"
+    );
+    expect(bubble).toContain("selectorOnly");
+    expect(reader).toContain("selectorOnly");
+  });
+
+  it("stops speech when deleting a conversation", () => {
+    const platform = readFileSync(
+      resolve(__dirname, "../../web/hooks/useChatPlatform.ts"),
+      "utf8"
+    );
+    expect(platform).toMatch(/const deleteConversation = useCallback\([\s\S]*?stopGigaVoice\(\)/);
   });
 });
