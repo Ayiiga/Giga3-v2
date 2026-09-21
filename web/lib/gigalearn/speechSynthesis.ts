@@ -90,7 +90,7 @@ export function loadBrowserVoices(): Promise<SpeechSynthesisVoice[]> {
 
     window.setTimeout(() => {
       finish(window.speechSynthesis.getVoices());
-    }, 250);
+    }, 700);
   });
 }
 
@@ -108,40 +108,74 @@ function queueUtterances(
   pitch: number,
   onEnd?: () => void
 ): void {
-  window.speechSynthesis.cancel();
-
-  const speakAt = (index: number) => {
-    const part = parts[index];
-    if (!part) {
-      onEnd?.();
-      return;
-    }
-    const utter = new SpeechSynthesisUtterance(part.text.slice(0, 2000));
-    utter.lang = part.voice?.lang || part.lang;
-    if (part.voice) utter.voice = part.voice;
-    utter.rate = rate;
-    utter.pitch = pitch;
-    let settled = false;
-    const advance = () => {
-      if (settled) return;
-      settled = true;
-      speakAt(index + 1);
-    };
-    utter.onend = advance;
-    utter.onerror = advance;
-    try {
-      window.speechSynthesis.speak(utter);
-    } catch {
-      advance();
-    }
-  };
+  try {
+    window.speechSynthesis.cancel();
+  } catch {
+    /* ignore */
+  }
 
   // Chrome drops utterances spoken in the same turn as cancel().
   window.setTimeout(() => {
     try {
-      speakAt(0);
+      window.speechSynthesis.resume();
     } catch {
+      /* ignore */
+    }
+    let remaining = parts.length;
+    if (remaining === 0) {
       onEnd?.();
+      return;
+    }
+    const done = () => {
+      remaining -= 1;
+      if (remaining <= 0) onEnd?.();
+    };
+    for (const part of parts) {
+      let utter: SpeechSynthesisUtterance;
+      try {
+        utter = new SpeechSynthesisUtterance(part.text.slice(0, 2000));
+      } catch {
+        done();
+        continue;
+      }
+      utter.lang = part.voice?.lang || part.lang || "en";
+      if (part.voice) {
+        try {
+          utter.voice = part.voice;
+        } catch {
+          utter.voice = null;
+        }
+      }
+      utter.rate = rate;
+      utter.pitch = pitch;
+      let settled = false;
+      const advance = () => {
+        if (settled) return;
+        settled = true;
+        done();
+      };
+      utter.onend = advance;
+      utter.onerror = (event) => {
+        const code = (event as SpeechSynthesisErrorEvent | undefined)?.error;
+        if (code === "interrupted" || code === "canceled" || code === "cancelled") {
+          window.setTimeout(() => {
+            try {
+              if (settled) return;
+              const live = window.speechSynthesis;
+              if (!live?.speaking && !live?.pending) advance();
+            } catch {
+              /* ignore */
+            }
+          }, 200);
+          return;
+        }
+        advance();
+      };
+      try {
+        window.speechSynthesis.speak(utter);
+      } catch {
+        advance();
+      }
     }
   }, 40);
 }

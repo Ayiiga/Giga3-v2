@@ -63,4 +63,22 @@ describe("Giga3 shared voice layer", () => {
     expect(resolved.lang).toBe("en-US");
     expect(resolved.native).toBe(true);
   });
+
+  it("prefers a local English voice over a remote British voice", () => {
+    const remote = mockVoice("Google UK English", "en-GB");
+    remote.localService = false;
+    const local = mockVoice("English US", "en-US");
+    const resolved = resolveBrowserVoiceForId([remote, local], "english-british");
+    expect(resolved.voice?.name).toBe("English US");
+    expect(resolved.lang).toBe("en-US");
+    expect(resolved.native).toBe(true);
+  });
+
+  it("keeps a remote British voice when no local English voice exists", () => {
+    const remote = mockVoice("Google UK English", "en-GB");
+    remote.localService = false;
+    const resolved = resolveBrowserVoiceForId([remote], "english-british");
+    expect(resolved.voice?.lang).toBe("en-GB");
+    expect(resolved.lang).toBe("en-GB");
+  });
 });
