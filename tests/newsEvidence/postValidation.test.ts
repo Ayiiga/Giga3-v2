@@ -4,6 +4,7 @@ import {
   insufficientEvidenceFallback,
   isNewsBrushOffAnswer,
 } from "../../convex/newsEvidence/postValidation";
+import { GHANA_NEWS_INSUFFICIENT_EVIDENCE } from "../../convex/newsEvidence/userContextRouting";
 import { buildNewsEvidencePackage } from "../../convex/newsEvidence/pipeline";
 import { MTN_HEROES_OF_CHANGE_FIXTURE } from "./userContextRouting.test";
 
@@ -27,8 +28,8 @@ describe("news post-validation", () => {
       isNewsQuery: true,
     });
 
-    expect(result.content).toContain("couldn't retrieve enough current evidence");
-    expect(result.content).not.toContain("MyJoyOnline");
+    expect(result.content).toBe(GHANA_NEWS_INSUFFICIENT_EVIDENCE);
+    expect(result.content).not.toContain("Parliament passes");
     expect(result.flags).toContain("news_insufficient_evidence");
   });
 
@@ -54,7 +55,7 @@ describe("news post-validation", () => {
       isNewsQuery: true,
     });
 
-    expect(result.content).toContain("couldn't retrieve enough current evidence");
+    expect(result.content).toBe(GHANA_NEWS_INSUFFICIENT_EVIDENCE);
     expect(result.content).not.toContain("recommend checking");
     expect(result.flags).toContain("news_insufficient_evidence");
   });

@@ -136,7 +136,7 @@ describe("PR #412 integration — full routing chain", () => {
       modelAnswer: "**Verified** — Fake headline.",
       retrievalFailed: true,
     });
-    expect(validated.content).toContain("couldn't retrieve enough current evidence");
+    expect(validated.content).toContain("Evidence is insufficient");
   });
 });
 

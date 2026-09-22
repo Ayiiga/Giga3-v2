@@ -149,7 +149,7 @@ describe("user context routing — MTN Heroes of Change regression", () => {
       isNewsQuery: true,
     });
 
-    expect(enforced.content).toContain("couldn't retrieve enough current evidence");
+    expect(enforced.content).toContain("Evidence is insufficient");
     expect(enforced.flags).toContain("news_insufficient_evidence");
   });
 

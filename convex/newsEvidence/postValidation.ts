@@ -6,8 +6,10 @@ import {
 import type { NewsEvidenceContext, NewsResponseContract } from "./types";
 import {
   buildUserContextRecoveryAnswer,
+  GHANA_NEWS_INSUFFICIENT_EVIDENCE,
   hasSubstantiveUserProvidedContent,
   isGenericRetrievalFailureAnswer,
+  resolveSafeChatRoute,
 } from "./userContextRouting";
 
 const VERIFIED_LABEL_RE = /\*\*(Verified|Official|Corroborated)\*\*/gi;
@@ -114,7 +116,13 @@ export function enforceNewsEvidenceIntegrity(args: {
     !userSuppliedContent
   ) {
     flags.push("news_insufficient_evidence");
-    return { content: insufficientEvidenceFallback(args.query), flags };
+    return {
+      content:
+        resolveSafeChatRoute(args.query) === "news_search"
+          ? GHANA_NEWS_INSUFFICIENT_EVIDENCE
+          : insufficientEvidenceFallback(args.query),
+      flags,
+    };
   }
 
   if (

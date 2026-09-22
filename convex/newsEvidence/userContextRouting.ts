@@ -2,6 +2,7 @@
  * Distinguishes answering from user-supplied text vs retrieving/verifying current news.
  */
 
+import { detectMtnHeroesOfChangeIntent } from "../mtnHeroesOfChangeRules";
 import { detectFactCheckIntent } from "../researchCapabilities";
 import { classifyNewsQuery } from "./queryClassification";
 
@@ -80,6 +81,68 @@ export function detectAnswerFromUserContextIntent(query: string): boolean {
   }
 
   return false;
+}
+
+export type SafeChatRoute = "news_search" | "small_talk" | "user_context" | "general";
+
+const SMALL_TALK_RE =
+  /^(hi|hello|hey|yo|hiya|thanks?|thank you|ok(?:ay)?|please|help)[\s!.,?]*$/i;
+
+/**
+ * Exact reply when a Ghana news search returns nothing.
+ * Names public outlets only — does not invent headlines or dates.
+ */
+export const GHANA_NEWS_INSUFFICIENT_EVIDENCE =
+  "I couldn't retrieve verified Ghana news reports right now. Evidence is insufficient. Please check trusted sources: Graphic Online, MyJoyOnline, GhanaWeb, mtn.com.gh/heroes-of-change";
+
+function isForcedGhanaNewsSearch(query: string): boolean {
+  const lower = query.trim().toLowerCase();
+  if (!lower) return false;
+  // PR #417: Giga3/Ayiiga + MTN nomination context stays user context.
+  if (detectMtnHeroesOfChangeIntent(query) || detectAnswerFromUserContextIntent(query)) {
+    return false;
+  }
+  if (lower.includes("what is happening in ghana")) return true;
+  return (
+    lower.length > 20 &&
+    lower.includes("ghana") &&
+    (lower.includes("happening") || lower.includes("news") || lower.includes("today"))
+  );
+}
+
+/** Ghana current-events questions are news search, not small talk. */
+export function resolveSafeChatRoute(query: string): SafeChatRoute {
+  const q = query.trim();
+  if (!q) return "general";
+  if (detectMtnHeroesOfChangeIntent(q) || detectAnswerFromUserContextIntent(q)) {
+    return "user_context";
+  }
+  if (isForcedGhanaNewsSearch(q)) return "news_search";
+  if (SMALL_TALK_RE.test(q)) return "small_talk";
+  return "general";
+}
+
+/**
+ * Empty Ghana news search uses the fixed insufficient-evidence sentence.
+ * Retrieved reports replace a generic "check trusted sources" hedge.
+ */
+export function applyGhanaNewsSearchAnswer(args: {
+  query: string;
+  resultCount: number;
+  answer: string;
+  reports?: string;
+}): string {
+  if (resolveSafeChatRoute(args.query) !== "news_search") return args.answer;
+  const reports = args.reports?.trim() ?? "";
+  if (args.resultCount <= 0 || !reports) return GHANA_NEWS_INSUFFICIENT_EVIDENCE;
+  if (
+    /\b(check trusted sources|recommend checking|based on general knowledge|trusted news sources)\b/i.test(
+      args.answer
+    )
+  ) {
+    return reports;
+  }
+  return args.answer;
 }
 
 export function classifyInformationRequest(query: string): InformationRequestMode {

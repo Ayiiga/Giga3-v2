@@ -188,7 +188,7 @@ function canRetryWithoutVoice(code: string): boolean {
 export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: string }): Promise<boolean> {
   if (!isGigaVoiceSupported()) return false;
   const plain = stripMarkdownForSpeech(args.text);
-  const chunks = chunkSpeechText(plain);
+  const chunks = chunkSpeechText(plain, 200);
   if (chunks.length === 0) return false;
 
   stopGigaVoice();
