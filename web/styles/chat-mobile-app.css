@@ -61,8 +61,18 @@
     overflow-x: hidden;
     width: 100%;
     padding-inline: var(--chat-inline-pad);
-    padding-block: 16px;
+    padding-block: 8px 12px;
     -webkit-overflow-scrolling: touch;
+  }
+
+  /* Full-height conversation — voice bar hidden once messages exist */
+  html.chat-route .chat-main-column--has-messages .chat-header-band {
+    flex-shrink: 0;
+  }
+
+  html.chat-route .chat-main-column--has-messages .chat-conversation-grid {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   html.chat-route .chat-thread,

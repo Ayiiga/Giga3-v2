@@ -107,17 +107,22 @@ describe("GigaLearn speech runtime (mocked SpeechSynthesis)", () => {
 
   it("cancels chat playback when GigaLearn pronunciation starts", async () => {
     const { log } = installSpeechMock();
-    const { speakGigaVoice } = await import("../../web/lib/chat/gigaVoice");
+    const { speakGigaVoice, isGigaVoiceSpeaking, getActiveSpeechBlockId } = await import(
+      "../../web/lib/chat/gigaVoice"
+    );
     const { speakPronunciationSequence } = await import("../../web/lib/gigalearn/speechSynthesis");
 
-    await speakGigaVoice({ text: "Chat paragraph.", voiceId: "english-british" });
+    await speakGigaVoice({ text: "Chat paragraph.", voiceId: "english-british", blockId: "chat-1" });
     await new Promise((resolve) => setTimeout(resolve, 80));
     expect(log.filter((entry) => entry.type === "speak")).toHaveLength(1);
+    expect(isGigaVoiceSpeaking()).toBe(true);
 
     log.length = 0;
     await speakPronunciationSequence([{ text: "Apple", voiceId: "english" }]);
     await new Promise((resolve) => setTimeout(resolve, 80));
     expect(log.map((entry) => entry.type)).toEqual(["cancel", "speak"]);
+    expect(isGigaVoiceSpeaking()).toBe(false);
+    expect(getActiveSpeechBlockId()).toBeNull();
   });
 
   it("cancels GigaLearn playback when chat read-aloud starts", async () => {

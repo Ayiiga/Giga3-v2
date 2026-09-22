@@ -330,6 +330,44 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
     expect(onEnd).toHaveBeenCalledTimes(1);
   });
 
+  it("clears chat playback state when GigaLearn cancels shared speech", async () => {
+    const { log } = installSpeechMock();
+    const { speakGigaVoice, isGigaVoiceSpeaking, getActiveSpeechBlockId } = await import(
+      "../../web/lib/chat/gigaVoice"
+    );
+    const { speakPronunciationSequence } = await import("../../web/lib/gigalearn/speechSynthesis");
+
+    await speakGigaVoice({ text: "Still speaking.", voiceId: "english-british", blockId: "chat-block" });
+    expect(isGigaVoiceSpeaking()).toBe(true);
+    expect(getActiveSpeechBlockId()).toBe("chat-block");
+
+    log.length = 0;
+    await speakPronunciationSequence([{ text: "Lesson word", voiceId: "english" }]);
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    expect(log.some((entry) => entry.type === "cancel")).toBe(true);
+    expect(isGigaVoiceSpeaking()).toBe(false);
+    expect(getActiveSpeechBlockId()).toBeNull();
+  });
+
+  it("retries the same chunk without voice when onstart never fires", async () => {
+    vi.useFakeTimers();
+    const { synth } = installSpeechMock({ voices: [mockVoice("English US", "en-US")] });
+    Object.assign(synth, {
+      speak: vi.fn((utterance: SpeechSynthesisUtterance) => {
+        /* simulate silent start — no onstart */
+      }),
+    });
+    const { speakGigaVoice } = await import("../../web/lib/chat/gigaVoice");
+
+    const pending = speakGigaVoice({ text: "Silent start chunk.", voiceId: "english-british" });
+    await vi.advanceTimersByTimeAsync(80);
+    await vi.advanceTimersByTimeAsync(2300);
+    await pending;
+    expect(synth.speak.mock.calls.length).toBeGreaterThanOrEqual(2);
+    const retry = synth.speak.mock.calls.at(-1)?.[0] as SpeechSynthesisUtterance;
+    expect(retry.voice).toBeNull();
+  });
+
   it("strips markdown before speaking", async () => {
     const { log } = installSpeechMock();
     const { speakGigaVoice } = await import("../../web/lib/chat/gigaVoice");

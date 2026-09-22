@@ -47,6 +47,7 @@ describe("fresh chat surface", () => {
     expect(bubble).toContain("AnswerContentBlock");
     expect(bubble).toContain("answerBlocks?.isStructured");
     expect(bubble).toContain("<AfricanVoiceReader");
+    expect(bubble).toContain("messageId={id}");
   });
 
   it("routes answer block read-aloud through the shared Giga voice layer", () => {

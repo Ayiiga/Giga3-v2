@@ -97,7 +97,7 @@ function MessageListInner({
     <div className="chat-message-list relative min-h-0 min-w-0 max-w-full overflow-x-clip overflow-y-hidden bg-background">
       <div
         ref={scrollRef}
-        className="message-list-scroll chat-message-scroll-region overscroll-y-contain py-3 sm:py-6"
+        className="message-list-scroll chat-message-scroll-region overscroll-y-contain py-2 sm:py-6"
       >
         {isLoading && messages.length === 0 && (
           <LoadingState label="Loading messages…" className="h-full min-h-[12rem]" />

@@ -16,6 +16,7 @@ import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { useChatShareShortcuts } from "@/hooks/useChatShareShortcuts";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { getSessionToken } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 import {
   readSidebarCollapsed,
   writeSidebarCollapsed,
@@ -642,7 +643,12 @@ function ChatShellInner({
         onSearchChange={setConversationSearch}
       />
 
-      <div className="chat-main-column relative z-0 grid min-h-0 min-w-0 flex-1 grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
+      <div
+        className={cn(
+          "chat-main-column relative z-0 grid min-h-0 min-w-0 flex-1 grid-rows-[auto_minmax(0,1fr)] overflow-hidden",
+          displayMessages.length > 0 && "chat-main-column--has-messages"
+        )}
+      >
         <div className="chat-header-band min-w-0 max-w-full shrink-0 overflow-x-clip">
           <ChatChrome
             email={email}
@@ -675,7 +681,9 @@ function ChatShellInner({
             }}
           />
 
-          <ChatVoiceLanguageBar className="chat-voice-language-bar--mobile lg:hidden" />
+          {displayMessages.length === 0 ? (
+            <ChatVoiceLanguageBar className="chat-voice-language-bar--mobile lg:hidden" />
+          ) : null}
 
           <ChatBanners
             email={email}

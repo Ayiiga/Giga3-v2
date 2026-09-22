@@ -25,10 +25,10 @@ export type AfricanReaderVoice = {
 
 export const AFRICAN_READER_VOICES: AfricanReaderVoice[] = GIGA_CHAT_VOICES;
 
-const FULL_MESSAGE_BLOCK_ID = "african-voice-reader-full";
-
 type AfricanVoiceReaderProps = {
   content: string;
+  /** Stable id for per-message read-aloud toggle (prevents cross-bubble conflicts). */
+  messageId?: string;
   /** Voice/rate controls only — no full-message play/download (structured answer blocks). */
   selectorOnly?: boolean;
 };
@@ -37,7 +37,12 @@ type AfricanVoiceReaderProps = {
  * African voice reader below AI responses — offline on-device speech,
  * defaulting to English (British); African languages available as secondary options.
  */
-export function AfricanVoiceReader({ content, selectorOnly = false }: AfricanVoiceReaderProps) {
+export function AfricanVoiceReader({
+  content,
+  messageId,
+  selectorOnly = false,
+}: AfricanVoiceReaderProps) {
+  const blockId = messageId ? `african-reader-${messageId}` : "african-voice-reader-global";
   const [supported, setSupported] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [voiceId, setVoiceId] = useState(() => readVoiceLanguageId());
@@ -72,7 +77,7 @@ export function AfricanVoiceReader({ content, selectorOnly = false }: AfricanVoi
       return;
     }
     const started = await toggleGigaVoiceBlock({
-      blockId: FULL_MESSAGE_BLOCK_ID,
+      blockId,
       text: content,
       voiceId,
       rate,
