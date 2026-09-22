@@ -178,9 +178,12 @@ export const MessageBubble = memo(function MessageBubble({
                 ) : null}
                 {!streaming && displayContent ? (
                   answerBlocks?.isStructured ? (
-                    <AfricanVoiceReader content="" selectorOnly />
+                    <AfricanVoiceReader content="" messageId={id} selectorOnly />
                   ) : (
-                    <AfricanVoiceReader content={answerBlocks?.plainContent ?? displayContent} />
+                    <AfricanVoiceReader
+                      content={answerBlocks?.plainContent ?? displayContent}
+                      messageId={id}
+                    />
                   )
                 ) : null}
               </>

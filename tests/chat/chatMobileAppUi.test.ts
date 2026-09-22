@@ -34,6 +34,9 @@ describe("Chat mobile app UI shell", () => {
     expect(chrome).toContain("chat-header-title-mobile");
     expect(chatShell).toContain("ChatVoiceLanguageBar");
     expect(chatShell).toContain("chat-voice-language-bar--mobile");
+    expect(chatShell).toContain("displayMessages.length === 0");
+    expect(chatShell).toContain("chat-main-column--has-messages");
+    expect(keyboardShell).toContain("warmUpBrowserVoices");
     expect(css).toContain("chat-voice-language-pill");
     expect(logo).toContain("#6D28D9");
     expect(logo).toContain("#7C3AED");
@@ -42,8 +45,9 @@ describe("Chat mobile app UI shell", () => {
     expect(keyboardShell).toContain("chat-app-shell");
     expect(css).toContain("chat-app-shell");
     expect(css).toContain("100dvh");
-    expect(css).toContain("width: 96%");
+    expect(css).toContain("width: 100%");
     expect(css).toContain("max-width: 78%");
+    expect(css).toContain("--chat-edge-pad");
     expect(input).toContain("Message Giga3...");
   });
 

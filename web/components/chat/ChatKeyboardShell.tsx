@@ -16,6 +16,7 @@ import {
   readVisualViewportRect,
   resolveComposerBottomInset,
 } from "@/lib/chat/keyboardViewport";
+import { warmUpBrowserVoices } from "@/lib/speech/loadBrowserVoices";
 import { useEffect, useRef } from "react";
 
 function isMobileChatComposerTarget(target: EventTarget | null): target is HTMLElement {
@@ -294,6 +295,13 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
     };
 
     scheduleSync(false);
+    warmUpBrowserVoices();
+
+    const onFirstInteraction = () => {
+      warmUpBrowserVoices();
+      document.removeEventListener("pointerdown", onFirstInteraction);
+    };
+    document.addEventListener("pointerdown", onFirstInteraction, { passive: true });
 
     if (vv) {
       vv.addEventListener("resize", onViewportChange);
@@ -317,6 +325,7 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
       document.removeEventListener("focusin", onComposerFocus);
       document.removeEventListener("focusout", onComposerBlur);
       document.removeEventListener(CHAT_VIEWPORT_SYNC_EVENT, onViewportSyncEvent);
+      document.removeEventListener("pointerdown", onFirstInteraction);
       html.classList.remove("chat-route", "chat-keyboard-open");
       clearChatKeyboardCssVars(html);
       unlockPageScroll();

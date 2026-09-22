@@ -1,14 +1,21 @@
 import type { GigaLearnVoice } from "@/lib/gigalearn/concreteObjects";
 import type { PronunciationPart } from "@/lib/gigalearn/pronunciation";
+import { logSpeechDiagnostic } from "@/lib/speech/browserSpeechDiagnostics";
 import { GIGA_VOICE_LANG } from "@/lib/speech/gigaVoiceProfiles";
 import {
   cancelBrowserSpeechSynthesis,
   currentSpeechGeneration,
   isActiveSpeechGeneration,
+  onSpeechCancel,
   SPEECH_CANCEL_GAP_MS,
+  SPEECH_ONSTART_WATCHDOG_MS,
   SPEECH_RESUME_WATCHDOG_MS,
 } from "@/lib/speech/browserSpeechSession";
-import { loadBrowserVoices } from "@/lib/speech/loadBrowserVoices";
+import {
+  getCachedBrowserVoices,
+  loadBrowserVoices,
+  resolveVoiceByUri,
+} from "@/lib/speech/loadBrowserVoices";
 import {
   isBenignSpeechError,
   speechErrorCode,
@@ -51,8 +58,8 @@ export function resolveBrowserVoiceForProfile(
 export function resolvePronunciationParts(
   voices: SpeechSynthesisVoice[],
   parts: PronunciationPart[]
-): Array<{ text: string; lang: string; voice: SpeechSynthesisVoice | null }> {
-  const spoken: Array<{ text: string; lang: string; voice: SpeechSynthesisVoice | null }> = [];
+): Array<{ text: string; lang: string; voice: SpeechSynthesisVoice | null; voiceUri: string | null }> {
+  const spoken: Array<{ text: string; lang: string; voice: SpeechSynthesisVoice | null; voiceUri: string | null }> = [];
 
   for (const part of parts) {
     const config = GIGALEARN_VOICE_LANG[part.voiceId] ?? GIGALEARN_VOICE_LANG.english;
@@ -61,12 +68,22 @@ export function resolvePronunciationParts(
       const fallback = part.phoneticFallback?.trim();
       if (!fallback) continue;
       const english = matchBrowserVoice(voices, GIGALEARN_VOICE_LANG.english);
-      spoken.push({ text: fallback, lang: english.lang, voice: english.voice });
+      spoken.push({
+        text: fallback,
+        lang: english.lang,
+        voice: english.voice,
+        voiceUri: english.voice?.voiceURI ?? null,
+      });
       continue;
     }
     const text = part.text.trim();
     if (!text) continue;
-    spoken.push({ text, lang: match.lang, voice: match.voice });
+    spoken.push({
+      text,
+      lang: match.lang,
+      voice: match.voice,
+      voiceUri: match.voice?.voiceURI ?? null,
+    });
   }
 
   return spoken;
@@ -75,6 +92,7 @@ export function resolvePronunciationParts(
 /** Keep every utterance alive until playback ends. Chrome collects unreferenced ones. */
 let retainedLearnUtterances: SpeechSynthesisUtterance[] = [];
 let learnPlaybackWatchdog: ReturnType<typeof setInterval> | null = null;
+let learnPlaybackActive = false;
 
 function clearLearnPlaybackWatchdog(): void {
   if (learnPlaybackWatchdog == null) return;
@@ -82,20 +100,43 @@ function clearLearnPlaybackWatchdog(): void {
   learnPlaybackWatchdog = null;
 }
 
-export function stopGigaLearnVoice(): void {
-  cancelBrowserSpeechSynthesis();
+function resetGigaLearnPlaybackState(): void {
+  learnPlaybackActive = false;
   retainedLearnUtterances = [];
   clearLearnPlaybackWatchdog();
 }
 
+if (typeof window !== "undefined") {
+  onSpeechCancel(resetGigaLearnPlaybackState);
+}
+
+export function isGigaLearnVoiceSpeaking(): boolean {
+  return learnPlaybackActive;
+}
+
+export function stopGigaLearnVoice(): void {
+  cancelBrowserSpeechSynthesis();
+  resetGigaLearnPlaybackState();
+}
+
+function resolveLivePartVoice(
+  part: { voice: SpeechSynthesisVoice | null; voiceUri: string | null; lang: string },
+  useVoice: boolean
+): SpeechSynthesisVoice | null {
+  if (!useVoice || !part.voiceUri) return null;
+  const live = resolveVoiceByUri(getCachedBrowserVoices(), part.voiceUri);
+  return live ?? part.voice;
+}
+
 function queueUtterances(
-  parts: Array<{ text: string; lang: string; voice: SpeechSynthesisVoice | null }>,
+  parts: Array<{ text: string; lang: string; voice: SpeechSynthesisVoice | null; voiceUri: string | null }>,
   rate: number,
   pitch: number,
   session: number,
   onEnd?: () => void
 ): void {
   retainedLearnUtterances = [];
+  learnPlaybackActive = true;
 
   window.setTimeout(() => {
     if (!isActiveSpeechGeneration(session)) return;
@@ -121,15 +162,15 @@ function queueUtterances(
     }, SPEECH_RESUME_WATCHDOG_MS);
 
     let index = 0;
+    let started = false;
 
     const finish = () => {
       if (!isActiveSpeechGeneration(session)) return;
-      retainedLearnUtterances = [];
-      clearLearnPlaybackWatchdog();
+      resetGigaLearnPlaybackState();
       onEnd?.();
     };
 
-    const speakNext = () => {
+    const speakNext = (noVoiceForPart = false) => {
       if (!isActiveSpeechGeneration(session)) return;
       if (index >= parts.length) {
         finish();
@@ -146,10 +187,11 @@ function queueUtterances(
         return;
       }
 
-      utter.lang = part.voice?.lang || part.lang || "en";
-      if (part.voice) {
+      const voice = resolveLivePartVoice(part, !noVoiceForPart);
+      utter.lang = voice?.lang || part.lang || "en";
+      if (voice) {
         try {
-          utter.voice = part.voice;
+          utter.voice = voice;
         } catch {
           utter.voice = null;
         }
@@ -158,17 +200,55 @@ function queueUtterances(
       utter.pitch = pitch;
 
       let settled = false;
+      let retriedWithoutVoice = false;
+      let onstartWatchdog: ReturnType<typeof setTimeout> | null = null;
+
+      const clearOnstartWatchdog = () => {
+        if (onstartWatchdog == null) return;
+        clearTimeout(onstartWatchdog);
+        onstartWatchdog = null;
+      };
+
+      const retryPartWithoutVoice = () => {
+        if (settled || !isActiveSpeechGeneration(session)) return;
+        settled = true;
+        clearOnstartWatchdog();
+        try {
+          synth.cancel();
+        } catch {
+          /* ignore */
+        }
+        window.setTimeout(() => {
+          if (!isActiveSpeechGeneration(session)) return;
+          speakNext(true);
+        }, SPEECH_CANCEL_GAP_MS);
+      };
+
       const advance = () => {
         if (settled || !isActiveSpeechGeneration(session)) return;
         settled = true;
+        clearOnstartWatchdog();
         index += 1;
         speakNext();
       };
 
-      utter.onend = advance;
+      utter.onstart = () => {
+        if (!isActiveSpeechGeneration(session)) return;
+        clearOnstartWatchdog();
+        if (!started) {
+          started = true;
+          logSpeechDiagnostic("speak_onstart", { session, module: "gigalearn", chunk: index });
+        }
+      };
+      utter.onend = () => {
+        logSpeechDiagnostic("speak_onend", { session, module: "gigalearn", chunk: index });
+        advance();
+      };
       utter.onerror = (event) => {
         if (settled || !isActiveSpeechGeneration(session)) return;
+        clearOnstartWatchdog();
         const code = speechErrorCode(event);
+        logSpeechDiagnostic("speak_onerror", { session, module: "gigalearn", chunk: index, code });
         if (isBenignSpeechError(code)) {
           window.setTimeout(() => {
             try {
@@ -182,13 +262,39 @@ function queueUtterances(
           }, 200);
           return;
         }
+        if (!noVoiceForPart && !retriedWithoutVoice && part.voiceUri) {
+          retriedWithoutVoice = true;
+          logSpeechDiagnostic("speak_retry", { session, module: "gigalearn", reason: "error", code });
+          retryPartWithoutVoice();
+          return;
+        }
         advance();
       };
 
       retainedLearnUtterances.push(utter);
+      logSpeechDiagnostic("speak_chunk", {
+        session,
+        module: "gigalearn",
+        chunk: index,
+        lang: utter.lang,
+        voiceName: voice?.name ?? null,
+      });
+
+      onstartWatchdog = window.setTimeout(() => {
+        if (started || settled || !isActiveSpeechGeneration(session)) return;
+        logSpeechDiagnostic("speak_retry", { session, module: "gigalearn", reason: "onstart_watchdog", chunk: index });
+        if (!noVoiceForPart && !retriedWithoutVoice && part.voiceUri) {
+          retriedWithoutVoice = true;
+          retryPartWithoutVoice();
+          return;
+        }
+        advance();
+      }, SPEECH_ONSTART_WATCHDOG_MS);
+
       try {
         synth.speak(utter);
       } catch {
+        clearOnstartWatchdog();
         advance();
       }
     };
@@ -224,6 +330,12 @@ export async function speakPronunciationSequence(
 
   stopGigaLearnVoice();
   const session = currentSpeechGeneration();
+
+  logSpeechDiagnostic("speak_start", {
+    session,
+    module: "gigalearn",
+    parts: parts.length,
+  });
 
   try {
     const voices = await loadBrowserVoices();

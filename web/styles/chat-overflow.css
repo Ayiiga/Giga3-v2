@@ -222,13 +222,21 @@
   max-width: 100%;
 }
 
+@media (max-width: 1023px) {
+  html.chat-route .chat-thread {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+  }
+}
+
 @media (max-width: 639px) {
   .chat-message-scroll-region {
     padding-inline: max(0.625rem, env(safe-area-inset-left, 0px))
       max(0.625rem, env(safe-area-inset-right, 0px));
   }
 
-  .chat-thread {
+  html:not(.chat-route) .chat-thread {
     width: 100%;
     max-width: 100%;
   }
