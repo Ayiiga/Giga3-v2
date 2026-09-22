@@ -160,11 +160,12 @@
     max-width: none;
   }
 
-  /* Message widths — 90% assistant, 78% user */
+  /* Message widths — assistant full rail width; user bubbles stay narrower */
   html.chat-route .chat-message-turn-assistant .chat-message-bubble,
   html.chat-route .chat-message-turn-assistant .chat-message-bubble-inner,
   html.chat-route .chat-message-turn-assistant .chat-assistant-body {
-    max-width: 90%;
+    width: 100%;
+    max-width: 100%;
   }
 
   html.chat-route .chat-message-bubble-user {
@@ -300,16 +301,8 @@
 }
 
 @media (max-width: 1023px) {
-  .chat-assistant-sparkle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.75rem;
-    height: 1.75rem;
-    flex-shrink: 0;
-    margin-top: 0.15rem;
-    font-size: 1rem;
-    line-height: 1;
+  html.chat-route .chat-assistant-sparkle {
+    display: none;
   }
 
   .chat-message-bubble-user .chat-message-bubble-inner--app {
