@@ -45,8 +45,9 @@ describe("Chat mobile app UI shell", () => {
     expect(keyboardShell).toContain("chat-app-shell");
     expect(css).toContain("chat-app-shell");
     expect(css).toContain("100dvh");
-    expect(css).toContain("width: 96%");
+    expect(css).toContain("width: 100%");
     expect(css).toContain("max-width: 78%");
+    expect(css).toContain("--chat-edge-pad");
     expect(input).toContain("Message Giga3...");
   });
 
