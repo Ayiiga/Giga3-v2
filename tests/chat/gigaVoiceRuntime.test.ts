@@ -296,7 +296,7 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
       text: "Read this English sentence aloud.",
       voiceId: "english",
     });
-    await vi.advanceTimersByTimeAsync(80);
+    await vi.advanceTimersByTimeAsync(130);
     await pending;
     const afterStart = resume.mock.calls.length;
     await vi.advanceTimersByTimeAsync(2600);
@@ -330,7 +330,7 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
     expect(first.voice?.name).toBe("English US");
     first.onerror?.({ error: "network" } as SpeechSynthesisErrorEvent);
 
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    await new Promise((resolve) => setTimeout(resolve, 150));
     const retry = synth.speak.mock.calls.at(-1)?.[0] as SpeechSynthesisUtterance;
     expect(retry).not.toBe(first);
     expect(retry.voice).toBeNull();
@@ -353,7 +353,7 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
 
     log.length = 0;
     await speakPronunciationSequence([{ text: "Lesson word", voiceId: "english" }]);
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    await new Promise((resolve) => setTimeout(resolve, 150));
     expect(log.some((entry) => entry.type === "cancel")).toBe(true);
     expect(isGigaVoiceSpeaking()).toBe(false);
     expect(getActiveSpeechBlockId()).toBeNull();
@@ -370,8 +370,7 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
     const { speakGigaVoice } = await import("../../web/lib/chat/gigaVoice");
 
     const pending = speakGigaVoice({ text: "Silent start chunk.", voiceId: "english-british" });
-    await vi.advanceTimersByTimeAsync(80);
-    await vi.advanceTimersByTimeAsync(2300);
+    await vi.advanceTimersByTimeAsync(5000);
     await pending;
     expect(synth.speak.mock.calls.length).toBeGreaterThanOrEqual(2);
     const retry = synth.speak.mock.calls.at(-1)?.[0] as SpeechSynthesisUtterance;

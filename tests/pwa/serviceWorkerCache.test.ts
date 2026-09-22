@@ -3,9 +3,9 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("service worker cache version", () => {
-  it("uses giga3-v13 cache with offline.html fallback", () => {
+  it("uses giga3-v14 cache with offline.html fallback", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_VERSION = "giga3-v13"');
+    expect(sw).toContain('CACHE_VERSION = "giga3-v14"');
     expect(sw).toContain('OFFLINE_URL = "/offline.html"');
     expect(sw).toContain("requireInteraction: true");
     expect(sw).toContain("NETWORK_TIMEOUT_MS");

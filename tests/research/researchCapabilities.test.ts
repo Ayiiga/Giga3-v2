@@ -154,6 +154,11 @@ describe("research capability routing", () => {
     ).toBe("africa_news");
   });
 
+  it("uses Ghana-biased search for africa_news when Ghana is mentioned", () => {
+    const q = "Summarize the latest news in Ghana and Africa with key facts.";
+    expect(buildResearchSearchQuery(q, "africa_news")).toContain("site:graphic.com.gh");
+  });
+
   it("maps capabilities to live web research and response basis", () => {
     expect(shouldRunLiveWebResearch("fact_check")).toBe(true);
     expect(shouldRunLiveWebResearch("ghana_news")).toBe(true);

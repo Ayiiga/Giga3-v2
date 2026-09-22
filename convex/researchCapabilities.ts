@@ -423,8 +423,10 @@ export function buildGhanaNewsSearchQuery(query: string): string {
   const cleaned = query.trim().replace(/\s+/g, " ");
   const mentionsAfrica = /\bafrica(?:n)?\b/i.test(cleaned);
   const scope = mentionsAfrica ? "Ghana Africa news headlines today" : "Ghana news headlines today";
-  const trusted = GHANA_SEARCH_DOMAINS.slice(0, 3).join(" ");
-  return `${cleaned} ${scope} ${trusted}`.trim();
+  const siteBias = GHANA_SEARCH_DOMAINS.slice(0, 3)
+    .map((d) => `site:${d}`)
+    .join(" OR ");
+  return `${cleaned} ${scope} (${siteBias})`.trim();
 }
 
 export function buildResearchSearchQuery(
@@ -432,7 +434,9 @@ export function buildResearchSearchQuery(
   capability: ResearchCapabilityId
 ): string {
   const trimmed = query.trim();
-  if (capability === "ghana_news") {
+  const ghanaScoped =
+    mentionsGhanaPlace(trimmed) || detectGhanaNewsIntent(trimmed);
+  if (capability === "ghana_news" || (capability === "africa_news" && ghanaScoped)) {
     return buildGhanaNewsSearchQuery(trimmed);
   }
 

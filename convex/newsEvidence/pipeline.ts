@@ -115,7 +115,9 @@ function buildStoryFromCluster(
   const searchSnippetOnly = cluster.every((s) => s.searchResultOnly);
 
   const status = evidenceStatusFromSignals({
-    independentArticleSources: countIndependentClusters(articleSources),
+    independentArticleSources: searchSnippetOnly
+      ? independentCount
+      : countIndependentClusters(articleSources),
     bestTier,
     hasContradictions,
     retrievalFailed,

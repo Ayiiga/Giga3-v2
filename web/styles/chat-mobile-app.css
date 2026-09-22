@@ -314,7 +314,7 @@
     background: #f3f4f6;
     color: #111827;
     border-radius: 1.25rem;
-    padding: 0.65rem 1rem;
+    padding: 0.65rem 0.75rem;
   }
 
   .dark .chat-message-bubble-assistant-inner--app {

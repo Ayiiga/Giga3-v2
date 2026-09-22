@@ -45,7 +45,7 @@ export function cancelBrowserSpeechSynthesis(): number {
 }
 
 /** Gap after cancel() before the next speak() — Chrome drops utterances queued too soon. */
-export const SPEECH_CANCEL_GAP_MS = 60;
+export const SPEECH_CANCEL_GAP_MS = 120;
 
 /** Gap between sequential chunks/parts — Android Chrome drops speak() fired synchronously from onend. */
 export const SPEECH_CHUNK_GAP_MS = 120;

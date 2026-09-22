@@ -249,7 +249,7 @@ export const MessageBubble = memo(function MessageBubble({
           ✨
         </span>
         <div
-          className="mt-0.5 hidden h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 sm:flex"
+          className="mt-0.5 hidden h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 lg:flex"
           aria-hidden
         >
           <Bot className="h-3.5 w-3.5" />
