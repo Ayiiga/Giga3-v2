@@ -23,7 +23,13 @@ export type MatchedBrowserVoice = {
 const ENGLISH_PREFERENCE = ["en-GB", "en-US", "en-GH", "en"];
 
 function normalize(tag: string): string {
-  return tag.trim().toLowerCase();
+  return tag.trim().toLowerCase().replace(/_/g, "-");
+}
+
+/** Android WebView sometimes reports `en_US`. SpeechSynthesis expects `en-US`. */
+export function speechLangTag(tag: string | null | undefined, fallback = "en"): string {
+  const normalized = (tag || "").trim().replace(/_/g, "-");
+  return normalized || fallback;
 }
 
 export function voiceMatchesLang(voiceLang: string, tag: string): boolean {
@@ -90,7 +96,7 @@ export function matchBrowserVoice(
 
   if (nativeVoice) {
     return {
-      lang: nativeVoice.lang || config?.primary || "en-GB",
+      lang: speechLangTag(nativeVoice.lang, config?.primary || "en-GB"),
       voice: nativeVoice,
       matchedLang: nativeVoice.lang || null,
       native: true,
@@ -105,7 +111,7 @@ export function matchBrowserVoice(
 
   if (english) {
     return {
-      lang: english.lang || "en-GB",
+      lang: speechLangTag(english.lang, "en-GB"),
       voice: english,
       matchedLang: english.lang || null,
       native: requestedEnglish,
@@ -114,7 +120,7 @@ export function matchBrowserVoice(
 
   const any = voices.find(isLocalVoice) ?? voices[0] ?? null;
   return {
-    lang: any?.lang || "en",
+    lang: speechLangTag(any?.lang, "en"),
     voice: any,
     matchedLang: any?.lang ?? null,
     native: false,
