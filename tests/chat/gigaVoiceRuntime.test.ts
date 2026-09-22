@@ -285,6 +285,90 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
     expect(typeof first.onend).toBe("function");
   });
 
+  it("does not call resume while English is already speaking", async () => {
+    vi.useFakeTimers();
+    const { synth } = installSpeechMock({ voices: [mockVoice("English US", "en-US")] });
+    const resume = vi.fn();
+    Object.assign(synth, { resume, paused: false });
+    const { speakGigaVoice, stopGigaVoice } = await import("../../web/lib/chat/gigaVoice");
+
+    const pending = speakGigaVoice({
+      text: "Read this English sentence aloud.",
+      voiceId: "english-british",
+    });
+    await vi.advanceTimersByTimeAsync(200);
+    await pending;
+    const afterStart = resume.mock.calls.length;
+    expect(afterStart).toBeGreaterThan(0);
+    await vi.advanceTimersByTimeAsync(2600);
+    expect(resume.mock.calls.length).toBe(afterStart);
+    stopGigaVoice();
+  });
+
+  it("speaks the next English chunk when Chrome leaves speaking true after onend", async () => {
+    const { log, synth } = installSpeechMock({ voices: [mockVoice("English US", "en-US")] });
+    let speaking = false;
+    Object.defineProperty(synth, "speaking", {
+      configurable: true,
+      get: () => speaking,
+    });
+    synth.speak = vi.fn((utterance: SpeechSynthesisUtterance) => {
+      log.push({
+        type: "speak",
+        text: utterance.text,
+        lang: utterance.lang,
+        voiceName: utterance.voice?.name,
+      });
+      speaking = true;
+      queueMicrotask(() => utterance.onstart?.(new Event("start") as SpeechSynthesisEvent));
+    });
+    synth.cancel = vi.fn(() => {
+      log.push({ type: "cancel" });
+      speaking = false;
+    });
+    const finishWithoutClearing = (utterance: SpeechSynthesisUtterance) => {
+      utterance.onend?.(new Event("end") as SpeechSynthesisEvent);
+    };
+    const { speakGigaVoice } = await import("../../web/lib/chat/gigaVoice");
+    const text = `${"Alpha sentence about the news today. ".repeat(4)}${"Beta sentence about the news today. ".repeat(4)}`;
+
+    await speakGigaVoice({ text, voiceId: "english-british" });
+    const spoken = () => log.filter((entry) => entry.type === "speak");
+    expect(spoken()).toHaveLength(1);
+    expect(spoken()[0]?.lang).toBe("en-US");
+
+    const first = synth.speak.mock.calls[0]?.[0] as SpeechSynthesisUtterance;
+    finishWithoutClearing(first);
+    await new Promise((resolve) => setTimeout(resolve, 900));
+    expect(spoken().length).toBeGreaterThan(1);
+    expect(spoken()[1]?.lang).toBe("en-US");
+  });
+
+  it("retries English when the engine is stuck speaking and onstart never fires", async () => {
+    vi.useFakeTimers();
+    const { synth } = installSpeechMock({ voices: [mockVoice("English US", "en-US")] });
+    let speaking = true;
+    Object.defineProperty(synth, "speaking", {
+      configurable: true,
+      get: () => speaking,
+    });
+    synth.cancel = vi.fn(() => {
+      /* Chrome bug: cancel() does not clear speaking */
+    });
+    synth.speak = vi.fn(() => {
+      /* silent: no onstart */
+    });
+    const { speakGigaVoice } = await import("../../web/lib/chat/gigaVoice");
+
+    const pending = speakGigaVoice({ text: "Hello from English.", voiceId: "english-british" });
+    await vi.advanceTimersByTimeAsync(8000);
+    await pending;
+    expect(synth.speak.mock.calls.length).toBeGreaterThanOrEqual(2);
+    const retry = synth.speak.mock.calls.at(-1)?.[0] as SpeechSynthesisUtterance;
+    expect(retry.voice).toBeNull();
+    expect(retry.lang).toBe("en-US");
+  });
+
   it("resumes a paused English voice while playback is still active", async () => {
     vi.useFakeTimers();
     const { synth } = installSpeechMock({ voices: [mockVoice("English US", "en-US")] });

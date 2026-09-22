@@ -12,10 +12,12 @@ import {
   isActiveSpeechGeneration,
   onSpeechCancel,
   isSpeechSynthActive,
+  resumePausedSpeech,
+  resumeSpeechEngine,
   scheduleSpeechAfterGap,
-  SPEECH_CANCEL_GAP_MS,
   SPEECH_ONSTART_WATCHDOG_MS,
   SPEECH_RESUME_WATCHDOG_MS,
+  waitUntilSpeechEngineIdle,
 } from "@/lib/speech/browserSpeechSession";
 import {
   getCachedBrowserVoices,
@@ -35,6 +37,7 @@ import {
 } from "@/lib/speech/speechErrorHandling";
 import {
   matchBrowserVoice,
+  speechLangTag,
   type VoiceLangConfig,
 } from "@/lib/speech/matchBrowserVoice";
 
@@ -161,32 +164,18 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
       native: resolved.native,
     });
 
-    await new Promise<void>((resolve) => {
-      window.setTimeout(resolve, SPEECH_CANCEL_GAP_MS);
-    });
+    await waitUntilSpeechEngineIdle(() => isActiveSpeechGeneration(session));
     if (!isActiveSpeechGeneration(session)) return false;
 
     const synth = window.speechSynthesis;
-    const resumeEngine = () => {
-      try {
-        synth.resume();
-      } catch {
-        /* ignore */
-      }
-    };
-    resumeEngine();
+    resumeSpeechEngine();
     clearPlaybackWatchdog();
     playbackWatchdog = setInterval(() => {
       if (!isActiveSpeechGeneration(session)) {
         clearPlaybackWatchdog();
         return;
       }
-      try {
-        const live = window.speechSynthesis;
-        if (live?.paused || live?.speaking) live.resume?.();
-      } catch {
-        /* ignore */
-      }
+      resumePausedSpeech();
     }, SPEECH_RESUME_WATCHDOG_MS);
 
     let started = false;
@@ -219,17 +208,17 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
       }
 
       const voice = resolveLiveVoice(resolved, !noVoiceForChunk);
-        utterance.lang = voice?.lang || resolved.lang || "en";
-        if (voice) {
-          try {
-            utterance.voice = voice;
-          } catch {
-            utterance.voice = null;
-          }
+      utterance.lang = speechLangTag(voice?.lang || resolved.lang, "en");
+      if (voice) {
+        try {
+          utterance.voice = voice;
+        } catch {
+          utterance.voice = null;
         }
+      }
 
-        utterance.rate = args.rate ?? 1;
-        utterance.pitch = args.pitch ?? 1;
+      utterance.rate = args.rate ?? 1;
+      utterance.pitch = args.pitch ?? 1;
 
       let chunkSettled = false;
       let retriedWithoutVoice = false;
@@ -246,11 +235,15 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
         chunkSettled = true;
         clearOnstartWatchdog();
         const nextIndex = index + 1;
-        scheduleSpeechAfterGap(() => {
-          if (settled || !isActiveSpeechGeneration(session)) return;
-          index = nextIndex;
-          speakNext();
-        });
+        scheduleSpeechAfterGap(
+          () => {
+            if (settled || !isActiveSpeechGeneration(session)) return;
+            index = nextIndex;
+            speakNext();
+          },
+          undefined,
+          () => isActiveSpeechGeneration(session)
+        );
       };
 
       const retryChunkWithoutVoice = () => {
@@ -262,11 +255,11 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
         } catch {
           /* ignore */
         }
-        window.setTimeout(() => {
+        void waitUntilSpeechEngineIdle(() => isActiveSpeechGeneration(session)).then(() => {
           if (!isActiveSpeechGeneration(session)) return;
-          resumeEngine();
+          resumeSpeechEngine();
           speakNext(true);
-        }, SPEECH_CANCEL_GAP_MS);
+        });
       };
 
       utterance.onstart = () => {
@@ -320,9 +313,13 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
         voiceName: voice?.name ?? null,
       });
 
+      const engineActiveBeforeSpeak = isSpeechSynthActive();
       onstartWatchdog = window.setTimeout(() => {
         if (started || chunkSettled || settled || !isActiveSpeechGeneration(session)) return;
-        if (isSpeechSynthActive()) {
+        // speaking flipped on because of this speak() — audio can be playing
+        // before onstart. A flag that was already stuck must not hide silence.
+        const engineAcceptedThisUtterance = isSpeechSynthActive() && !engineActiveBeforeSpeak;
+        if (engineAcceptedThisUtterance) {
           if (!started) {
             started = true;
             logSpeechDiagnostic("speak_onstart", {

@@ -74,6 +74,14 @@ describe("Giga3 shared voice layer", () => {
     expect(resolved.native).toBe(true);
   });
 
+  it("treats Android en_US tags as English and speaks them as en-US", () => {
+    const voices = [mockVoice("English US", "en_US")];
+    const resolved = resolveBrowserVoiceForId(voices, "english-british");
+    expect(resolved.voice?.name).toBe("English US");
+    expect(resolved.lang).toBe("en-US");
+    expect(resolved.native).toBe(true);
+  });
+
   it("keeps a remote British voice when no local English voice exists", () => {
     const remote = mockVoice("Google UK English", "en-GB");
     remote.localService = false;

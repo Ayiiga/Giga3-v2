@@ -8,10 +8,12 @@ import {
   isActiveSpeechGeneration,
   onSpeechCancel,
   isSpeechSynthActive,
+  resumePausedSpeech,
+  resumeSpeechEngine,
   scheduleSpeechAfterGap,
-  SPEECH_CANCEL_GAP_MS,
   SPEECH_ONSTART_WATCHDOG_MS,
   SPEECH_RESUME_WATCHDOG_MS,
+  waitUntilSpeechEngineIdle,
 } from "@/lib/speech/browserSpeechSession";
 import {
   getCachedBrowserVoices,
@@ -25,6 +27,7 @@ import {
 } from "@/lib/speech/speechErrorHandling";
 import {
   matchBrowserVoice,
+  speechLangTag,
   type MatchedBrowserVoice,
   type VoiceLangConfig,
 } from "@/lib/speech/matchBrowserVoice";
@@ -141,15 +144,11 @@ function queueUtterances(
   retainedLearnUtterances = [];
   learnPlaybackActive = true;
 
-  window.setTimeout(() => {
+  void waitUntilSpeechEngineIdle(() => isActiveSpeechGeneration(session)).then(() => {
     if (!isActiveSpeechGeneration(session)) return;
 
     const synth = window.speechSynthesis;
-    try {
-      synth.resume();
-    } catch {
-      /* ignore */
-    }
+    resumeSpeechEngine();
 
     clearLearnPlaybackWatchdog();
     learnPlaybackWatchdog = setInterval(() => {
@@ -157,11 +156,7 @@ function queueUtterances(
         clearLearnPlaybackWatchdog();
         return;
       }
-      try {
-        if (synth.paused || synth.speaking) synth.resume?.();
-      } catch {
-        /* ignore */
-      }
+      resumePausedSpeech();
     }, SPEECH_RESUME_WATCHDOG_MS);
 
     let index = 0;
@@ -191,7 +186,7 @@ function queueUtterances(
       }
 
       const voice = resolveLivePartVoice(part, !noVoiceForPart);
-      utter.lang = voice?.lang || part.lang || "en";
+      utter.lang = speechLangTag(voice?.lang || part.lang, "en");
       if (voice) {
         try {
           utter.voice = voice;
@@ -221,15 +216,11 @@ function queueUtterances(
         } catch {
           /* ignore */
         }
-        window.setTimeout(() => {
+        void waitUntilSpeechEngineIdle(() => isActiveSpeechGeneration(session)).then(() => {
           if (!isActiveSpeechGeneration(session)) return;
-          try {
-            synth.resume();
-          } catch {
-            /* ignore */
-          }
+          resumeSpeechEngine();
           speakNext(true);
-        }, SPEECH_CANCEL_GAP_MS);
+        });
       };
 
       const advance = () => {
@@ -237,11 +228,15 @@ function queueUtterances(
         settled = true;
         clearOnstartWatchdog();
         const nextIndex = index + 1;
-        scheduleSpeechAfterGap(() => {
-          if (!isActiveSpeechGeneration(session)) return;
-          index = nextIndex;
-          speakNext();
-        });
+        scheduleSpeechAfterGap(
+          () => {
+            if (!isActiveSpeechGeneration(session)) return;
+            index = nextIndex;
+            speakNext();
+          },
+          undefined,
+          () => isActiveSpeechGeneration(session)
+        );
       };
 
       utter.onstart = () => {
@@ -292,9 +287,11 @@ function queueUtterances(
         voiceName: voice?.name ?? null,
       });
 
+      const engineActiveBeforeSpeak = isSpeechSynthActive();
       onstartWatchdog = window.setTimeout(() => {
         if (started || settled || !isActiveSpeechGeneration(session)) return;
-        if (isSpeechSynthActive()) {
+        const engineAcceptedThisUtterance = isSpeechSynthActive() && !engineActiveBeforeSpeak;
+        if (engineAcceptedThisUtterance) {
           if (!started) {
             started = true;
             logSpeechDiagnostic("speak_onstart", {
@@ -324,7 +321,7 @@ function queueUtterances(
     };
 
     speakNext();
-  }, SPEECH_CANCEL_GAP_MS);
+  });
 }
 
 /** Speak one line with language/voice selection from a GigaLearn profile. */
