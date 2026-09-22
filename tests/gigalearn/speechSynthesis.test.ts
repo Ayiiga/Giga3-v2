@@ -71,16 +71,17 @@ describe("GigaLearn speech playback does not crash", () => {
       speechSynthesis: {
         getVoices: () => [mockVoice("English US", "en-US")],
         cancel: () => undefined,
+        resume: () => undefined,
         speak: () => {
           throw new Error("speech engine failed");
         },
         addEventListener: () => undefined,
         removeEventListener: () => undefined,
       },
-      setTimeout: (fn: () => void) => {
-        fn();
-        return 0;
-      },
+      setTimeout: (fn: () => void, ms?: number) => globalThis.setTimeout(fn, ms ?? 0),
+      clearTimeout: globalThis.clearTimeout,
+      setInterval: (fn: () => void, ms?: number) => globalThis.setInterval(fn, ms ?? 0),
+      clearInterval: globalThis.clearInterval,
     });
 
     await expect(

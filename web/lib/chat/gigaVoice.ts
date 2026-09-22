@@ -6,52 +6,30 @@
 import { stripMarkdownForSpeech } from "@/lib/chat/speechText";
 import { chunkSpeechText } from "@/lib/speech/chunkSpeechText";
 import {
+  cancelBrowserSpeechSynthesis,
+  currentSpeechGeneration,
+  isActiveSpeechGeneration,
+  SPEECH_CANCEL_GAP_MS,
+  SPEECH_RESUME_WATCHDOG_MS,
+} from "@/lib/speech/browserSpeechSession";
+import { loadBrowserVoices } from "@/lib/speech/loadBrowserVoices";
+import {
+  GIGA_CHAT_VOICES,
+  GIGA_VOICE_LANG,
+  type GigaVoiceProfile,
+} from "@/lib/speech/gigaVoiceProfiles";
+import {
+  canRetrySpeechWithoutVoice,
+  isBenignSpeechError,
+  speechErrorCode,
+} from "@/lib/speech/speechErrorHandling";
+import {
   matchBrowserVoice,
   type VoiceLangConfig,
 } from "@/lib/speech/matchBrowserVoice";
 
-export type GigaVoiceProfile = {
-  id: string;
-  name: string;
-  flag: string;
-  lang: string;
-};
-
-/**
- * BCP-47 tags. African profiles list only that language.
- * English is the playback stand-in when no native voice is installed,
- * and the utterance keeps the English voice's own lang tag.
- */
-export const GIGA_VOICE_LANG: Record<string, VoiceLangConfig> = {
-  "english-british": { primary: "en-GB", fallbacks: ["en-US", "en-GH", "en"] },
-  english: { primary: "en-GB", fallbacks: ["en-US", "en-GH", "en"] },
-  "abena-twi": { primary: "ak-GH", fallbacks: ["ak", "tw-GH", "tw"] },
-  "kwame-twi": { primary: "ak-GH", fallbacks: ["ak", "tw-GH", "tw"] },
-  "aisha-hausa": { primary: "ha-NG", fallbacks: ["ha", "ha-GH"] },
-  "musa-hausa": { primary: "ha-NG", fallbacks: ["ha", "ha-GH"] },
-  "naa-ga": { primary: "gaa-GH", fallbacks: ["gaa"] },
-  "kofi-ewe": { primary: "ee-GH", fallbacks: ["ee"] },
-  "adaeze-yoruba": { primary: "yo-NG", fallbacks: ["yo", "yo-GH"] },
-  "tunde-yoruba": { primary: "yo-NG", fallbacks: ["yo", "yo-GH"] },
-  "zawadi-swahili": { primary: "sw-KE", fallbacks: ["sw", "sw-TZ"] },
-  "jabari-swahili": { primary: "sw-KE", fallbacks: ["sw", "sw-TZ"] },
-  /** GigaLearn alias ids */
-  "ade-yoruba": { primary: "yo-NG", fallbacks: ["yo", "yo-GH"] },
-};
-
-export const GIGA_CHAT_VOICES: GigaVoiceProfile[] = [
-  { id: "english-british", name: "English (British)", flag: "🇬🇧", lang: "en-GB" },
-  { id: "abena-twi", name: "Abena · Twi (F)", flag: "🇬🇭", lang: "ak-GH" },
-  { id: "kwame-twi", name: "Kwame · Twi (M)", flag: "🇬🇭", lang: "ak-GH" },
-  { id: "aisha-hausa", name: "Aisha · Hausa (F)", flag: "🇳🇬", lang: "ha-NG" },
-  { id: "musa-hausa", name: "Musa · Hausa (M)", flag: "🇳🇬", lang: "ha-NG" },
-  { id: "naa-ga", name: "Naa · Ga (F)", flag: "🇬🇭", lang: "gaa-GH" },
-  { id: "kofi-ewe", name: "Kofi · Ewe (M)", flag: "🇬🇭", lang: "ee-GH" },
-  { id: "adaeze-yoruba", name: "Adaeze · Yoruba (F)", flag: "🇳🇬", lang: "yo-NG" },
-  { id: "tunde-yoruba", name: "Tunde · Yoruba (M)", flag: "🇳🇬", lang: "yo-NG" },
-  { id: "zawadi-swahili", name: "Zawadi · Swahili (F)", flag: "🇰🇪", lang: "sw-KE" },
-  { id: "jabari-swahili", name: "Jabari · Swahili (M)", flag: "🇰🇪", lang: "sw-KE" },
-];
+export type { GigaVoiceProfile };
+export { GIGA_CHAT_VOICES, GIGA_VOICE_LANG };
 
 export type ResolvedGigaVoice = {
   lang: string;
@@ -72,64 +50,14 @@ export function resolveBrowserVoiceForId(
   return matchBrowserVoice(voices, config);
 }
 
-let voicesChangedHandler: (() => void) | null = null;
-
-function detachVoicesChanged(): void {
-  if (typeof window === "undefined" || !voicesChangedHandler) return;
-  window.speechSynthesis.removeEventListener("voiceschanged", voicesChangedHandler);
-  voicesChangedHandler = null;
-}
-
-/** Load browser voices; waits for voiceschanged when the first read is empty. */
-export function loadBrowserVoices(): Promise<SpeechSynthesisVoice[]> {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-    return Promise.resolve([]);
-  }
-
-  const existing = window.speechSynthesis.getVoices();
-  if (existing.length > 0) return Promise.resolve(existing);
-
-  return new Promise((resolve) => {
-    let settled = false;
-
-    const finish = (voices: SpeechSynthesisVoice[]) => {
-      if (settled) return;
-      settled = true;
-      detachVoicesChanged();
-      resolve(voices);
-    };
-
-    voicesChangedHandler = () => {
-      finish(window.speechSynthesis.getVoices());
-    };
-    window.speechSynthesis.addEventListener("voiceschanged", voicesChangedHandler);
-
-    window.setTimeout(() => {
-      finish(window.speechSynthesis.getVoices());
-    }, 700);
-  });
-}
-
-export type SpeakGigaVoiceArgs = {
-  text: string;
-  voiceId?: string;
-  rate?: number;
-  pitch?: number;
-  onStart?: () => void;
-  onEnd?: () => void;
-  onError?: (event: SpeechSynthesisErrorEvent) => void;
-};
+export { loadBrowserVoices };
 
 let activeUtterance: SpeechSynthesisUtterance | null = null;
 let activeBlockId: string | null = null;
-let playbackSession = 0;
 let playbackActive = false;
 /** Chrome drops utterances that are not still referenced from JS. */
 let retainedUtterances: SpeechSynthesisUtterance[] = [];
 let playbackWatchdog: ReturnType<typeof setInterval> | null = null;
-
-const CANCEL_GAP_MS = 60;
-const RESUME_WATCHDOG_MS = 2500;
 
 function clearPlaybackWatchdog(): void {
   if (playbackWatchdog == null) return;
@@ -151,38 +79,23 @@ export function isGigaVoiceSupported(): boolean {
 }
 
 export function stopGigaVoice(): void {
-  playbackSession += 1;
+  cancelBrowserSpeechSynthesis();
   playbackActive = false;
   activeUtterance = null;
   activeBlockId = null;
   retainedUtterances = [];
   clearPlaybackWatchdog();
-  if (typeof window === "undefined" || !window.speechSynthesis) return;
-  try {
-    window.speechSynthesis.cancel();
-  } catch {
-    /* ignore */
-  }
 }
 
-function speechErrorCode(event: SpeechSynthesisErrorEvent): string {
-  const code = event?.error;
-  return typeof code === "string" ? code : "";
-}
-
-function isBenignSpeechError(code: string): boolean {
-  return code === "interrupted" || code === "canceled" || code === "cancelled";
-}
-
-function canRetryWithoutVoice(code: string): boolean {
-  return (
-    code === "synthesis-failed" ||
-    code === "network" ||
-    code === "language-unavailable" ||
-    code === "voice-unavailable" ||
-    code === "audio-busy"
-  );
-}
+export type SpeakGigaVoiceArgs = {
+  text: string;
+  voiceId?: string;
+  rate?: number;
+  pitch?: number;
+  onStart?: () => void;
+  onEnd?: () => void;
+  onError?: (event: SpeechSynthesisErrorEvent) => void;
+};
 
 /** Speak plain/markdown text with the selected Giga3 voice profile. */
 export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: string }): Promise<boolean> {
@@ -192,12 +105,12 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
   if (chunks.length === 0) return false;
 
   stopGigaVoice();
-  const session = playbackSession;
+  const session = currentSpeechGeneration();
   playbackActive = true;
   activeBlockId = args.blockId ?? null;
 
   const release = () => {
-    if (session !== playbackSession) return;
+    if (!isActiveSpeechGeneration(session)) return;
     playbackActive = false;
     activeUtterance = null;
     activeBlockId = null;
@@ -207,13 +120,13 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
 
   try {
     const voices = await loadBrowserVoices();
-    if (session !== playbackSession) return false;
+    if (!isActiveSpeechGeneration(session)) return false;
     const resolved = resolveBrowserVoiceForId(voices, args.voiceId);
 
     await new Promise<void>((resolve) => {
-      window.setTimeout(resolve, CANCEL_GAP_MS);
+      window.setTimeout(resolve, SPEECH_CANCEL_GAP_MS);
     });
-    if (session !== playbackSession) return false;
+    if (!isActiveSpeechGeneration(session)) return false;
 
     const synth = window.speechSynthesis;
     const resumeEngine = () => {
@@ -226,7 +139,7 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
     resumeEngine();
     clearPlaybackWatchdog();
     playbackWatchdog = setInterval(() => {
-      if (session !== playbackSession) {
+      if (!isActiveSpeechGeneration(session)) {
         clearPlaybackWatchdog();
         return;
       }
@@ -236,14 +149,14 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
       } catch {
         /* ignore */
       }
-    }, RESUME_WATCHDOG_MS);
+    }, SPEECH_RESUME_WATCHDOG_MS);
 
     let attempt = 0;
     let started = false;
     let settled = false;
     let retriedWithoutVoice = false;
     const finish = () => {
-      if (settled || session !== playbackSession) return;
+      if (settled || !isActiveSpeechGeneration(session)) return;
       settled = true;
       release();
       args.onEnd?.();
@@ -255,7 +168,7 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
       retainedUtterances = [];
 
       const speakNext = () => {
-        if (settled || session !== playbackSession || attemptId !== attempt) return;
+        if (settled || !isActiveSpeechGeneration(session) || attemptId !== attempt) return;
         if (index >= chunks.length) {
           finish();
           return;
@@ -285,25 +198,25 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
 
         let chunkSettled = false;
         const advance = () => {
-          if (chunkSettled || settled || session !== playbackSession || attemptId !== attempt) return;
+          if (chunkSettled || settled || !isActiveSpeechGeneration(session) || attemptId !== attempt) return;
           chunkSettled = true;
           index += 1;
           speakNext();
         };
 
         utterance.onstart = () => {
-          if (session !== playbackSession || attemptId !== attempt || started) return;
+          if (!isActiveSpeechGeneration(session) || attemptId !== attempt || started) return;
           started = true;
           args.onStart?.();
         };
         utterance.onend = () => advance();
         utterance.onerror = (event) => {
-          if (session !== playbackSession || attemptId !== attempt || chunkSettled) return;
+          if (!isActiveSpeechGeneration(session) || attemptId !== attempt || chunkSettled) return;
           const code = speechErrorCode(event);
           if (isBenignSpeechError(code)) {
             window.setTimeout(() => {
               try {
-                if (chunkSettled || settled || session !== playbackSession || attemptId !== attempt) return;
+                if (chunkSettled || settled || !isActiveSpeechGeneration(session) || attemptId !== attempt) return;
                 const live = window.speechSynthesis;
                 if (live?.speaking || live?.pending) return;
                 advance();
@@ -313,7 +226,7 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
             }, 200);
             return;
           }
-          if (useVoice && !retriedWithoutVoice && resolved.voice && canRetryWithoutVoice(code)) {
+          if (useVoice && !retriedWithoutVoice && resolved.voice && canRetrySpeechWithoutVoice(code)) {
             retriedWithoutVoice = true;
             chunkSettled = true;
             try {
@@ -322,10 +235,10 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
               /* ignore */
             }
             window.setTimeout(() => {
-              if (session !== playbackSession) return;
+              if (!isActiveSpeechGeneration(session)) return;
               resumeEngine();
               queue(false);
-            }, CANCEL_GAP_MS);
+            }, SPEECH_CANCEL_GAP_MS);
             return;
           }
           args.onError?.(event);
@@ -344,7 +257,7 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
     };
 
     queue(true);
-    return session === playbackSession;
+    return isActiveSpeechGeneration(session);
   } catch {
     release();
     return false;
