@@ -65,7 +65,11 @@ const NEWS_ANNOUNCEMENT_LOOKUP_RE =
   /\b(latest|recent|current|new|today'?s?|breaking)\b[\s\S]{0,24}\bannouncement\b/i;
 
 const GHANA_NEWS_RE =
-  /\b(ghana(?:ian)?\s+(?:news|headlines|updates|politics|today)|news (?:in|from|about) ghana|(?:happening|going on|situation|updates?)\s+(?:in|across|around)\s+ghana|accra|kumasi|tamale|tema|black stars|parliament of ghana|mahama|akufo-addo|graphic online|myjoyonline|ghanaweb|citinewsroom|citi fm|joy news|daily graphic)\b/i;
+  /\b(ghana(?:ian)?\s+(?:news|headlines|updates|politics)|news (?:in|from|about) ghana|(?:happening|going on|situation|updates?)\s+(?:in|across|around)\s+ghana|accra|kumasi|tamale|tema|black stars|parliament of ghana|mahama|akufo-addo|graphic online|myjoyonline|ghanaweb|citinewsroom|citi fm|joy news|daily graphic)\b/i;
+
+/** Time-sensitive signals other than the word "today" by itself. */
+const TIME_SENSITIVE_BESIDES_TODAY_RE =
+  /\b(tonight|yesterday|this week|this month|this year|latest|current|recent|breaking|just now|right now|as of now|news|headlines|now|202[4-9]|stock price|weather|score|election|who is (the )?president|regulation|law passed|match result|final score)\b/i;
 
 /** Search-query bias only. The full registry is too long for one site: OR query. */
 const GHANA_SEARCH_DOMAINS = [
@@ -125,6 +129,7 @@ export function shouldAutoEnableLiveWeb(query: string): boolean {
   const q = query.trim();
   if (!q) return false;
   if (detectAnswerFromUserContextIntent(q)) return false;
+  if (isBareGhanaTodayMention(q)) return false;
   if (/\bannouncement\b/i.test(q)) {
     if (NEWS_ANNOUNCEMENT_LOOKUP_RE.test(q)) return true;
     // "Is this announcement still current?" — verification, not pasted-notice context.
@@ -142,6 +147,31 @@ export function shouldAutoEnableLiveWeb(query: string): boolean {
 
 export function detectGhanaNewsIntent(query: string): boolean {
   return GHANA_NEWS_RE.test(query.trim());
+}
+
+/**
+ * A Ghana mention plus "today" with no news or current-events wording.
+ * "I visited Ghana today" must not open Ghana news search.
+ */
+function isBareGhanaTodayMention(query: string): boolean {
+  const q = query.trim();
+  if (!/\bghana(?:ian)?\b/i.test(q) || !/\btoday\b/i.test(q)) return false;
+  if (
+    detectCurrentEventsIntent(q) ||
+    detectGhanaNewsIntent(q) ||
+    detectBreakingNewsIntent(q)
+  ) {
+    return false;
+  }
+  if (TIME_SENSITIVE_BESIDES_TODAY_RE.test(q)) return false;
+  if (
+    /\b(figures|inflation|economy|happening|situation|updates?|headlines|latest|breaking|news)\b/i.test(
+      q
+    )
+  ) {
+    return false;
+  }
+  return true;
 }
 
 export function detectBreakingNewsIntent(query: string): boolean {
@@ -166,9 +196,13 @@ export function detectCurrentEventsIntent(query: string): boolean {
 /** Headline/news lookup — not fact-check verification (handled separately). */
 export function detectNewsRetrievalIntent(query: string): boolean {
   const q = query.trim();
+  if (isBareGhanaTodayMention(q)) return false;
   if (detectCurrentEventsIntent(q)) return true;
   if (detectGhanaNewsIntent(q) || detectBreakingNewsIntent(q)) return true;
-  if (/\bghana\b/i.test(q) && /\b(latest|today|current|breaking|figures|inflation|economy|news|headlines)\b/i.test(q)) {
+  if (
+    /\bghana\b/i.test(q) &&
+    /\b(latest|today|current|breaking|figures|inflation|economy|news|headlines)\b/i.test(q)
+  ) {
     return true;
   }
   return (
