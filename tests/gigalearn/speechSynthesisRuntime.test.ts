@@ -98,6 +98,7 @@ describe("GigaLearn speech runtime (mocked SpeechSynthesis)", () => {
 
     const first = synth.speak.mock.calls[0]?.[0] as SpeechSynthesisUtterance;
     synth._finishSpeaking(first);
+    await new Promise((resolve) => setTimeout(resolve, 200));
 
     expect(spoken()).toHaveLength(2);
     expect(spoken()[1]?.text).toBe("Kwadu");

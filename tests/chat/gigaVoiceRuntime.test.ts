@@ -6,6 +6,10 @@ function mockVoice(name: string, lang: string): SpeechSynthesisVoice {
   return { name, lang, voiceURI: `${name}-${lang}`, localService: true } as SpeechSynthesisVoice;
 }
 
+async function flushSpeechGap() {
+  await new Promise((resolve) => setTimeout(resolve, 200));
+}
+
 function installSpeechMock(options?: { voices?: SpeechSynthesisVoice[]; delayVoicesMs?: number }) {
   const log: TtsLogEntry[] = [];
   let speaking = false;
@@ -229,16 +233,19 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
     expect(typeof first.onend).toBe("function");
 
     synth._finishSpeaking(first);
+    await flushSpeechGap();
     expect(spoken()).toHaveLength(2);
     const second = synth.speak.mock.calls[1]?.[0] as SpeechSynthesisUtterance;
     expect(second).not.toBe(first);
     expect(typeof first.onend).toBe("function");
 
     synth._finishSpeaking(second);
+    await flushSpeechGap();
     expect(spoken()).toHaveLength(3);
     const third = synth.speak.mock.calls[2]?.[0] as SpeechSynthesisUtterance;
     expect(typeof second.onend).toBe("function");
     synth._finishSpeaking(third);
+    await flushSpeechGap();
     expect(onEnd).toHaveBeenCalledTimes(1);
     expect(spoken().map((entry) => entry.text).join(" ")).toContain("Gamma");
   });
@@ -260,12 +267,14 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
 
     const first = synth.speak.mock.calls[0]?.[0] as SpeechSynthesisUtterance;
     synth._finishSpeaking(first);
+    await flushSpeechGap();
     expect(spoken().length).toBeGreaterThan(1);
 
     let guard = 0;
     while (!onEnd.mock.calls.length && guard < 8) {
       const last = synth.speak.mock.calls.at(-1)?.[0] as SpeechSynthesisUtterance;
       synth._finishSpeaking(last);
+      await flushSpeechGap();
       guard += 1;
     }
 
@@ -306,6 +315,7 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
     expect(onEnd).not.toHaveBeenCalled();
     expect(isGigaVoiceSpeaking()).toBe(true);
     synth._finishSpeaking(utterance);
+    await flushSpeechGap();
     expect(onEnd).toHaveBeenCalledTimes(1);
     expect(isGigaVoiceSpeaking()).toBe(false);
   });

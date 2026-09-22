@@ -11,6 +11,8 @@ import {
   currentSpeechGeneration,
   isActiveSpeechGeneration,
   onSpeechCancel,
+  isSpeechSynthActive,
+  scheduleSpeechAfterGap,
   SPEECH_CANCEL_GAP_MS,
   SPEECH_ONSTART_WATCHDOG_MS,
   SPEECH_RESUME_WATCHDOG_MS,
@@ -19,6 +21,7 @@ import {
   getCachedBrowserVoices,
   loadBrowserVoices,
   resolveVoiceByUri,
+  warmUpBrowserVoices,
 } from "@/lib/speech/loadBrowserVoices";
 import {
   GIGA_CHAT_VOICES,
@@ -127,6 +130,7 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
   const chunks = chunkSpeechText(plain, 200);
   if (chunks.length === 0) return false;
 
+  warmUpBrowserVoices();
   stopGigaVoice();
   const session = currentSpeechGeneration();
   playbackActive = true;
@@ -241,8 +245,12 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
         if (chunkSettled || settled || !isActiveSpeechGeneration(session)) return;
         chunkSettled = true;
         clearOnstartWatchdog();
-        index += 1;
-        speakNext();
+        const nextIndex = index + 1;
+        scheduleSpeechAfterGap(() => {
+          if (settled || !isActiveSpeechGeneration(session)) return;
+          index = nextIndex;
+          speakNext();
+        });
       };
 
       const retryChunkWithoutVoice = () => {
@@ -314,6 +322,18 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
 
       onstartWatchdog = window.setTimeout(() => {
         if (started || chunkSettled || settled || !isActiveSpeechGeneration(session)) return;
+        if (isSpeechSynthActive()) {
+          if (!started) {
+            started = true;
+            logSpeechDiagnostic("speak_onstart", {
+              session,
+              chunk: index,
+              inferred: true,
+            });
+            args.onStart?.();
+          }
+          return;
+        }
         logSpeechDiagnostic("speak_retry", { session, reason: "onstart_watchdog", chunk: index });
         if (!noVoiceForChunk && !retriedWithoutVoice) {
           retriedWithoutVoice = true;

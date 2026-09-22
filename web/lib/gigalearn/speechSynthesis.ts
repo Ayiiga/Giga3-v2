@@ -7,6 +7,8 @@ import {
   currentSpeechGeneration,
   isActiveSpeechGeneration,
   onSpeechCancel,
+  isSpeechSynthActive,
+  scheduleSpeechAfterGap,
   SPEECH_CANCEL_GAP_MS,
   SPEECH_ONSTART_WATCHDOG_MS,
   SPEECH_RESUME_WATCHDOG_MS,
@@ -15,6 +17,7 @@ import {
   getCachedBrowserVoices,
   loadBrowserVoices,
   resolveVoiceByUri,
+  warmUpBrowserVoices,
 } from "@/lib/speech/loadBrowserVoices";
 import {
   isBenignSpeechError,
@@ -220,6 +223,11 @@ function queueUtterances(
         }
         window.setTimeout(() => {
           if (!isActiveSpeechGeneration(session)) return;
+          try {
+            synth.resume();
+          } catch {
+            /* ignore */
+          }
           speakNext(true);
         }, SPEECH_CANCEL_GAP_MS);
       };
@@ -228,8 +236,12 @@ function queueUtterances(
         if (settled || !isActiveSpeechGeneration(session)) return;
         settled = true;
         clearOnstartWatchdog();
-        index += 1;
-        speakNext();
+        const nextIndex = index + 1;
+        scheduleSpeechAfterGap(() => {
+          if (!isActiveSpeechGeneration(session)) return;
+          index = nextIndex;
+          speakNext();
+        });
       };
 
       utter.onstart = () => {
@@ -282,6 +294,18 @@ function queueUtterances(
 
       onstartWatchdog = window.setTimeout(() => {
         if (started || settled || !isActiveSpeechGeneration(session)) return;
+        if (isSpeechSynthActive()) {
+          if (!started) {
+            started = true;
+            logSpeechDiagnostic("speak_onstart", {
+              session,
+              module: "gigalearn",
+              chunk: index,
+              inferred: true,
+            });
+          }
+          return;
+        }
         logSpeechDiagnostic("speak_retry", { session, module: "gigalearn", reason: "onstart_watchdog", chunk: index });
         if (!noVoiceForPart && !retriedWithoutVoice && part.voiceUri) {
           retriedWithoutVoice = true;
@@ -328,6 +352,7 @@ export async function speakPronunciationSequence(
   const queued = parts.some((part) => part.text.trim() || part.phoneticFallback?.trim());
   if (!queued) return false;
 
+  warmUpBrowserVoices();
   stopGigaLearnVoice();
   const session = currentSpeechGeneration();
 
