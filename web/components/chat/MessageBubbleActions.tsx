@@ -19,6 +19,7 @@ import {
   toggleGigaVoiceBlock,
 } from "@/lib/chat/gigaVoice";
 import { readVoiceLanguageId } from "@/lib/chat/voiceLanguagePreference";
+import { warmUpBrowserVoices } from "@/lib/speech/loadBrowserVoices";
 import { copyMarkdownToClipboard, shareText } from "@/lib/share/clientShare";
 import { useShareAction } from "@/hooks/useShareAction";
 import { cn } from "@/lib/utils";
@@ -148,6 +149,7 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
       setMenuOpen(false);
       return;
     }
+    warmUpBrowserVoices();
     const blockId = speechBlockId ?? `message-actions-${Date.now()}`;
     const started = await toggleGigaVoiceBlock({
       blockId,

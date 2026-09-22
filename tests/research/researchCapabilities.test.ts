@@ -139,9 +139,24 @@ describe("research capability routing", () => {
   });
 
   it("builds Ghana-aware search queries", () => {
-    expect(buildResearchSearchQuery("updates", "ghana_news")).toContain("Ghana news");
+    expect(buildResearchSearchQuery("updates", "ghana_news")).toContain("Ghana");
     expect(buildGhanaNewsSearchQuery("updates")).toContain("graphic.com.gh");
+    expect(buildGhanaNewsSearchQuery("Ghana and Africa headlines")).toContain("Africa");
     expect(buildResearchSearchQuery("updates", "breaking_news")).toContain("breaking news");
+  });
+
+  it("routes combined Ghana and Africa news to africa_news capability", () => {
+    expect(
+      resolveResearchCapability({
+        query: "Summarize the latest news in Ghana and Africa with key facts.",
+        liveWebEnabled: true,
+      })
+    ).toBe("africa_news");
+  });
+
+  it("uses Ghana-biased search for africa_news when Ghana is mentioned", () => {
+    const q = "Summarize the latest news in Ghana and Africa with key facts.";
+    expect(buildResearchSearchQuery(q, "africa_news")).toContain("site:graphic.com.gh");
   });
 
   it("maps capabilities to live web research and response basis", () => {

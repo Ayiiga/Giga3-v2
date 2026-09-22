@@ -27,9 +27,9 @@ describe("Chat mobile full-width layout", () => {
     expect(css).toMatch(/html\.chat-route \.chat-footer-chips[\s\S]*width: 100%/);
   });
 
-  it("keeps readable bubble max-widths while shell spans the viewport", () => {
+  it("keeps readable user bubble width while assistant uses full rail", () => {
     expect(css).toContain("max-width: 78%");
-    expect(css).toContain("max-width: 90%");
+    expect(css).toMatch(/chat-message-turn-assistant[\s\S]*max-width: 100%/);
     expect(css).toContain("100dvh");
     expect(css).toContain("--chat-edge-pad");
   });

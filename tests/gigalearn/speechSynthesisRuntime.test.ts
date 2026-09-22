@@ -89,7 +89,7 @@ describe("GigaLearn speech runtime (mocked SpeechSynthesis)", () => {
       { text: "Banana", voiceId: "english" },
       { text: "Kwadu", voiceId: "abena-twi", requireNative: true },
     ]);
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    await new Promise((resolve) => setTimeout(resolve, 150));
 
     const spoken = () => log.filter((entry) => entry.type === "speak");
     expect(spoken()).toHaveLength(1);
@@ -98,6 +98,7 @@ describe("GigaLearn speech runtime (mocked SpeechSynthesis)", () => {
 
     const first = synth.speak.mock.calls[0]?.[0] as SpeechSynthesisUtterance;
     synth._finishSpeaking(first);
+    await new Promise((resolve) => setTimeout(resolve, 200));
 
     expect(spoken()).toHaveLength(2);
     expect(spoken()[1]?.text).toBe("Kwadu");
@@ -113,13 +114,13 @@ describe("GigaLearn speech runtime (mocked SpeechSynthesis)", () => {
     const { speakPronunciationSequence } = await import("../../web/lib/gigalearn/speechSynthesis");
 
     await speakGigaVoice({ text: "Chat paragraph.", voiceId: "english-british", blockId: "chat-1" });
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    await new Promise((resolve) => setTimeout(resolve, 150));
     expect(log.filter((entry) => entry.type === "speak")).toHaveLength(1);
     expect(isGigaVoiceSpeaking()).toBe(true);
 
     log.length = 0;
     await speakPronunciationSequence([{ text: "Apple", voiceId: "english" }]);
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    await new Promise((resolve) => setTimeout(resolve, 150));
     expect(log.map((entry) => entry.type)).toEqual(["cancel", "speak"]);
     expect(isGigaVoiceSpeaking()).toBe(false);
     expect(getActiveSpeechBlockId()).toBeNull();
@@ -134,12 +135,12 @@ describe("GigaLearn speech runtime (mocked SpeechSynthesis)", () => {
       { text: "Dog", voiceId: "english" },
       { text: "Kare", voiceId: "musa-hausa", requireNative: true },
     ]);
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    await new Promise((resolve) => setTimeout(resolve, 150));
     expect(log.filter((entry) => entry.type === "speak")).toHaveLength(1);
 
     log.length = 0;
     await speakGigaVoice({ text: "New chat read aloud.", voiceId: "english-british" });
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    await new Promise((resolve) => setTimeout(resolve, 150));
     expect(log.map((entry) => entry.type)).toEqual(["cancel", "speak"]);
     expect(synth.speak.mock.calls.at(-1)?.[0]?.text).toBe("New chat read aloud.");
   });

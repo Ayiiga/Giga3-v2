@@ -19,8 +19,10 @@ import {
   buildItemPronunciationPlan,
   buildVoiceSamplePlan,
   lessonObjectForLevel,
+  type PronunciationPart,
 } from "@/lib/gigalearn/pronunciation";
 import { speakPronunciationSequence } from "@/lib/gigalearn/speechSynthesis";
+import { warmUpBrowserVoices } from "@/lib/speech/loadBrowserVoices";
 import { GIGALEARN_LEVELS, isLowerGrade, type GigaLearnLevelId } from "@/lib/gigalearn/levels";
 import { listOfflineLessons } from "@/lib/gigalearn/offlineLessons";
 import { cn } from "@/lib/utils";
@@ -32,7 +34,22 @@ const TOUCH_SEE_BADGE = "bg-[#10B981] text-white";
 export function LowerGradesConcrete() {
   const [selectedLevel, setSelectedLevel] = useState<GigaLearnLevelId>("KG1");
   const [voiceId, setVoiceId] = useState("english");
+  const [hearingId, setHearingId] = useState<string | null>(null);
+  const [hearError, setHearError] = useState<string | null>(null);
   const lower = isLowerGrade(selectedLevel);
+
+  async function playHear(itemId: string, parts: PronunciationPart[]) {
+    setHearError(null);
+    setHearingId(itemId);
+    warmUpBrowserVoices();
+    const ok = await speakPronunciationSequence(parts, {
+      onEnd: () => setHearingId(null),
+    });
+    if (!ok) {
+      setHearingId(null);
+      setHearError("Speech not available on this device. Check volume and try again.");
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -48,6 +65,11 @@ export function LowerGradesConcrete() {
               Touch &amp; See
             </span>
           </div>
+          {hearError ? (
+            <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+              {hearError}
+            </p>
+          ) : null}
           <div className="space-y-4">
             {CONCRETE_CATEGORIES.map((cat) => (
               <div key={cat.id}>
@@ -77,14 +99,16 @@ export function LowerGradesConcrete() {
                         <button
                           type="button"
                           aria-label={`Pronounce ${item.title}. English first.`}
+                          disabled={hearingId === item.id}
                           onClick={() =>
-                            void speakPronunciationSequence(
+                            void playHear(
+                              item.id,
                               buildItemPronunciationPlan(item.id, item.title, voiceId)
                             )
                           }
-                          className="inline-flex min-h-11 items-center rounded-full bg-[#EAB308] px-2.5 text-[10px] font-bold text-black"
+                          className="inline-flex min-h-11 items-center rounded-full bg-[#EAB308] px-2.5 text-[10px] font-bold text-black disabled:opacity-60"
                         >
-                          🔊 Hear
+                          {hearingId === item.id ? "…" : "🔊 Hear"}
                         </button>
                       </div>
                     </div>

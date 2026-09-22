@@ -43,4 +43,5 @@ describe("news confidence scoring", () => {
       })
     ).toBe("INSUFFICIENT_EVIDENCE");
   });
+
 });

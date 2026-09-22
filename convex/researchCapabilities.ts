@@ -272,11 +272,15 @@ export function resolveNewsLookupCapability(query: string): ResearchCapabilityId
   if (!lookup) return null;
 
   const ghana = mentionsGhanaPlace(q) || detectGhanaNewsIntent(q);
+  const mentionsAfrica = /\bafrica(?:n)?\b/i.test(q);
   const otherCountry = OTHER_COUNTRY_RE.test(q);
+  if (ghana && mentionsAfrica && !otherCountry) {
+    return "africa_news";
+  }
   if (ghana && !otherCountry) {
     return detectBreakingNewsIntent(q) ? "breaking_news" : "ghana_news";
   }
-  if (/\bafrica(?:n)?\b/i.test(q) && !ghana) return "africa_news";
+  if (mentionsAfrica && !ghana) return "africa_news";
   if (detectBreakingNewsIntent(q)) return "breaking_news";
   return "current_news";
 }
@@ -416,8 +420,13 @@ export function shouldRunLiveWebResearch(capability: ResearchCapabilityId): bool
 }
 
 export function buildGhanaNewsSearchQuery(query: string): string {
-  const siteBias = GHANA_SEARCH_DOMAINS.map((d) => `site:${d}`).join(" OR ");
-  return `${query.trim()} Ghana news (${siteBias})`.trim();
+  const cleaned = query.trim().replace(/\s+/g, " ");
+  const mentionsAfrica = /\bafrica(?:n)?\b/i.test(cleaned);
+  const scope = mentionsAfrica ? "Ghana Africa news headlines today" : "Ghana news headlines today";
+  const siteBias = GHANA_SEARCH_DOMAINS.slice(0, 3)
+    .map((d) => `site:${d}`)
+    .join(" OR ");
+  return `${cleaned} ${scope} (${siteBias})`.trim();
 }
 
 export function buildResearchSearchQuery(
@@ -425,7 +434,9 @@ export function buildResearchSearchQuery(
   capability: ResearchCapabilityId
 ): string {
   const trimmed = query.trim();
-  if (capability === "ghana_news") {
+  const ghanaScoped =
+    mentionsGhanaPlace(trimmed) || detectGhanaNewsIntent(trimmed);
+  if (capability === "ghana_news" || (capability === "africa_news" && ghanaScoped)) {
     return buildGhanaNewsSearchQuery(trimmed);
   }
 
