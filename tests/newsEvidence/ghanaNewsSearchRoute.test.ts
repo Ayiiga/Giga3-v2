@@ -20,6 +20,14 @@ describe("Ghana news search route", () => {
     expect(resolveSafeChatRoute("Hello")).toBe("small_talk");
     expect(resolveSafeChatRoute(MTN_TODAY_PASTE)).toBe("user_context");
     expect(resolveSafeChatRoute(MTN_PASTE)).toBe("user_context");
+    expect(resolveSafeChatRoute("Ghana")).toBe("general");
+    expect(resolveSafeChatRoute("today")).toBe("general");
+    expect(resolveSafeChatRoute("What is happening today?")).toBe("general");
+    expect(
+      resolveSafeChatRoute("I visited Ghana today with my family and loved the food")
+    ).toBe("general");
+    expect(resolveSafeChatRoute("What's the latest Ghana news today?")).toBe("news_search");
+    expect(resolveSafeChatRoute("Latest Ghana headlines today")).toBe("news_search");
   });
 
   it("uses the insufficient-evidence sentence when search returns nothing", () => {
