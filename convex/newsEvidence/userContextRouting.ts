@@ -103,11 +103,10 @@ function isForcedGhanaNewsSearch(query: string): boolean {
     return false;
   }
   if (lower.includes("what is happening in ghana")) return true;
-  return (
-    lower.length > 20 &&
-    lower.includes("ghana") &&
-    (lower.includes("happening") || lower.includes("news") || lower.includes("today"))
-  );
+  // "today" alone must not turn a Ghana mention into a news search.
+  const mentionsGhana = /\bghana(?:ian)?\b/.test(lower);
+  const mentionsNews = /\b(happening|news|headlines|breaking)\b/.test(lower);
+  return lower.length > 20 && mentionsGhana && mentionsNews;
 }
 
 /** Ghana current-events questions are news search, not small talk. */

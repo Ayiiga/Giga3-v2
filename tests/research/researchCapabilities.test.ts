@@ -187,4 +187,27 @@ describe("research capability routing", () => {
   it("still auto-enables live web for announcement news lookups", () => {
     expect(shouldAutoEnableLiveWeb("Latest announcement from MTN Ghana today")).toBe(true);
   });
+
+  it("does not open Ghana news search for a personal Ghana-today sentence", () => {
+    const query = "I visited Ghana today with my family and loved the food";
+    expect(detectGhanaNewsIntent(query)).toBe(false);
+    expect(detectNewsRetrievalIntent(query)).toBe(false);
+    expect(shouldAutoEnableLiveWeb(query)).toBe(false);
+    expect(
+      resolveResearchCapability({ query, liveWebEnabled: true })
+    ).toBe("general");
+    expect(queryNeedsLiveWeb({ query, capability: "general" })).toBe(false);
+    expect(shouldUseConversationalWorker({
+      needsLiveWeb: queryNeedsLiveWeb({ query, capability: "general" }),
+      attachmentCount: 0,
+    })).toBe(true);
+    expect(detectGhanaNewsIntent("What is the latest Ghana news today?")).toBe(true);
+    expect(detectNewsRetrievalIntent("What is Ghana's inflation today?")).toBe(true);
+    expect(
+      resolveResearchCapability({
+        query: "What is Ghana's inflation today?",
+        liveWebEnabled: true,
+      })
+    ).toBe("ghana_news");
+  });
 });
