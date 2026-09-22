@@ -1,25 +1,41 @@
 import type { GigaLearnVoice } from "@/lib/gigalearn/concreteObjects";
 import type { PronunciationPart } from "@/lib/gigalearn/pronunciation";
+import { GIGA_VOICE_LANG } from "@/lib/speech/gigaVoiceProfiles";
+import {
+  cancelBrowserSpeechSynthesis,
+  currentSpeechGeneration,
+  isActiveSpeechGeneration,
+  SPEECH_CANCEL_GAP_MS,
+  SPEECH_RESUME_WATCHDOG_MS,
+} from "@/lib/speech/browserSpeechSession";
+import { loadBrowserVoices } from "@/lib/speech/loadBrowserVoices";
+import {
+  isBenignSpeechError,
+  speechErrorCode,
+} from "@/lib/speech/speechErrorHandling";
 import {
   matchBrowserVoice,
   type MatchedBrowserVoice,
   type VoiceLangConfig,
 } from "@/lib/speech/matchBrowserVoice";
 
-/**
- * BCP-47 tags for GigaLearn voices.
- * African profiles do not list English as a "match" — English is only
- * the stand-in when no native voice is installed, and it keeps its own lang tag.
- */
-export const GIGALEARN_VOICE_LANG: Record<string, VoiceLangConfig> = {
-  english: { primary: "en-GB", fallbacks: ["en-US", "en-GH", "en"] },
-  "abena-twi": { primary: "ak-GH", fallbacks: ["ak", "tw-GH", "tw"] },
-  "musa-hausa": { primary: "ha-NG", fallbacks: ["ha", "ha-GH"] },
-  "naa-ga": { primary: "gaa-GH", fallbacks: ["gaa"] },
-  "kofi-ewe": { primary: "ee-GH", fallbacks: ["ee"] },
-  "ade-yoruba": { primary: "yo-NG", fallbacks: ["yo", "yo-GH"] },
-  "zawadi-swahili": { primary: "sw-KE", fallbacks: ["sw", "sw-TZ"] },
-};
+const LEARN_VOICE_IDS = [
+  "english",
+  "abena-twi",
+  "musa-hausa",
+  "naa-ga",
+  "kofi-ewe",
+  "ade-yoruba",
+  "zawadi-swahili",
+] as const;
+
+/** GigaLearn voice ids reuse the shared chat BCP-47 map (no duplicate tags). */
+export const GIGALEARN_VOICE_LANG: Record<string, VoiceLangConfig> = Object.fromEntries(
+  LEARN_VOICE_IDS.map((id) => [
+    id,
+    GIGA_VOICE_LANG[id] ?? GIGA_VOICE_LANG["english-british"],
+  ])
+);
 
 export type ResolvedSpeechVoice = MatchedBrowserVoice;
 
@@ -56,96 +72,80 @@ export function resolvePronunciationParts(
   return spoken;
 }
 
-let voicesChangedHandler: (() => void) | null = null;
-
-function detachVoicesChanged(): void {
-  if (typeof window === "undefined" || !voicesChangedHandler) return;
-  window.speechSynthesis.removeEventListener("voiceschanged", voicesChangedHandler);
-  voicesChangedHandler = null;
-}
-
-/** Load browser voices; waits for voiceschanged when the first read is empty. */
-export function loadBrowserVoices(): Promise<SpeechSynthesisVoice[]> {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-    return Promise.resolve([]);
-  }
-
-  const existing = window.speechSynthesis.getVoices();
-  if (existing.length > 0) return Promise.resolve(existing);
-
-  return new Promise((resolve) => {
-    let settled = false;
-
-    const finish = (voices: SpeechSynthesisVoice[]) => {
-      if (settled) return;
-      settled = true;
-      detachVoicesChanged();
-      resolve(voices);
-    };
-
-    voicesChangedHandler = () => {
-      finish(window.speechSynthesis.getVoices());
-    };
-    window.speechSynthesis.addEventListener("voiceschanged", voicesChangedHandler);
-
-    window.setTimeout(() => {
-      finish(window.speechSynthesis.getVoices());
-    }, 700);
-  });
-}
-
-export type SpeakWithGigaLearnVoiceArgs = {
-  text: string;
-  voiceId?: string;
-  rate?: number;
-  pitch?: number;
-  onEnd?: () => void;
-};
-
 /** Keep every utterance alive until playback ends. Chrome collects unreferenced ones. */
 let retainedLearnUtterances: SpeechSynthesisUtterance[] = [];
+let learnPlaybackWatchdog: ReturnType<typeof setInterval> | null = null;
+
+function clearLearnPlaybackWatchdog(): void {
+  if (learnPlaybackWatchdog == null) return;
+  clearInterval(learnPlaybackWatchdog);
+  learnPlaybackWatchdog = null;
+}
+
+export function stopGigaLearnVoice(): void {
+  cancelBrowserSpeechSynthesis();
+  retainedLearnUtterances = [];
+  clearLearnPlaybackWatchdog();
+}
 
 function queueUtterances(
   parts: Array<{ text: string; lang: string; voice: SpeechSynthesisVoice | null }>,
   rate: number,
   pitch: number,
+  session: number,
   onEnd?: () => void
 ): void {
   retainedLearnUtterances = [];
-  try {
-    window.speechSynthesis.cancel();
-  } catch {
-    /* ignore */
-  }
 
-  // Chrome drops utterances spoken in the same turn as cancel().
   window.setTimeout(() => {
+    if (!isActiveSpeechGeneration(session)) return;
+
+    const synth = window.speechSynthesis;
     try {
-      window.speechSynthesis.resume();
+      synth.resume();
     } catch {
       /* ignore */
     }
-    let remaining = parts.length;
-    if (remaining === 0) {
-      retainedLearnUtterances = [];
-      onEnd?.();
-      return;
-    }
-    const done = () => {
-      remaining -= 1;
-      if (remaining <= 0) {
-        retainedLearnUtterances = [];
-        onEnd?.();
+
+    clearLearnPlaybackWatchdog();
+    learnPlaybackWatchdog = setInterval(() => {
+      if (!isActiveSpeechGeneration(session)) {
+        clearLearnPlaybackWatchdog();
+        return;
       }
+      try {
+        if (synth.paused || synth.speaking) synth.resume?.();
+      } catch {
+        /* ignore */
+      }
+    }, SPEECH_RESUME_WATCHDOG_MS);
+
+    let index = 0;
+
+    const finish = () => {
+      if (!isActiveSpeechGeneration(session)) return;
+      retainedLearnUtterances = [];
+      clearLearnPlaybackWatchdog();
+      onEnd?.();
     };
-    for (const part of parts) {
+
+    const speakNext = () => {
+      if (!isActiveSpeechGeneration(session)) return;
+      if (index >= parts.length) {
+        finish();
+        return;
+      }
+
+      const part = parts[index]!;
       let utter: SpeechSynthesisUtterance;
       try {
         utter = new SpeechSynthesisUtterance(part.text.slice(0, 2000));
       } catch {
-        done();
-        continue;
+        index += 1;
+        speakNext();
+        return;
       }
+
       utter.lang = part.voice?.lang || part.lang || "en";
       if (part.voice) {
         try {
@@ -156,22 +156,26 @@ function queueUtterances(
       }
       utter.rate = rate;
       utter.pitch = pitch;
+
       let settled = false;
       const advance = () => {
-        if (settled) return;
+        if (settled || !isActiveSpeechGeneration(session)) return;
         settled = true;
-        done();
+        index += 1;
+        speakNext();
       };
-      retainedLearnUtterances.push(utter);
+
       utter.onend = advance;
       utter.onerror = (event) => {
-        const code = (event as SpeechSynthesisErrorEvent | undefined)?.error;
-        if (code === "interrupted" || code === "canceled" || code === "cancelled") {
+        if (settled || !isActiveSpeechGeneration(session)) return;
+        const code = speechErrorCode(event);
+        if (isBenignSpeechError(code)) {
           window.setTimeout(() => {
             try {
-              if (settled) return;
+              if (settled || !isActiveSpeechGeneration(session)) return;
               const live = window.speechSynthesis;
-              if (!live?.speaking && !live?.pending) advance();
+              if (live?.speaking || live?.pending) return;
+              advance();
             } catch {
               /* ignore */
             }
@@ -180,13 +184,17 @@ function queueUtterances(
         }
         advance();
       };
+
+      retainedLearnUtterances.push(utter);
       try {
-        window.speechSynthesis.speak(utter);
+        synth.speak(utter);
       } catch {
         advance();
       }
-    }
-  }, 40);
+    };
+
+    speakNext();
+  }, SPEECH_CANCEL_GAP_MS);
 }
 
 /** Speak one line with language/voice selection from a GigaLearn profile. */
@@ -197,6 +205,14 @@ export async function speakWithGigaLearnVoice(args: SpeakWithGigaLearnVoiceArgs)
   );
 }
 
+export type SpeakWithGigaLearnVoiceArgs = {
+  text: string;
+  voiceId?: string;
+  rate?: number;
+  pitch?: number;
+  onEnd?: () => void;
+};
+
 /** Speak English first, then a native African voice or an English phonetic guide. */
 export async function speakPronunciationSequence(
   parts: PronunciationPart[],
@@ -206,11 +222,15 @@ export async function speakPronunciationSequence(
   const queued = parts.some((part) => part.text.trim() || part.phoneticFallback?.trim());
   if (!queued) return false;
 
+  stopGigaLearnVoice();
+  const session = currentSpeechGeneration();
+
   try {
     const voices = await loadBrowserVoices();
+    if (!isActiveSpeechGeneration(session)) return false;
     const resolved = resolvePronunciationParts(voices, parts);
     if (resolved.length === 0) return false;
-    queueUtterances(resolved, options?.rate ?? 0.9, options?.pitch ?? 1.05, options?.onEnd);
+    queueUtterances(resolved, options?.rate ?? 0.9, options?.pitch ?? 1.05, session, options?.onEnd);
     return true;
   } catch {
     return false;

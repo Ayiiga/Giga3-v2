@@ -57,7 +57,7 @@ describe("Chat mobile app UI shell", () => {
       "utf8"
     );
     const voices = readFileSync(
-      resolve(__dirname, "../../web/lib/chat/gigaVoice.ts"),
+      resolve(__dirname, "../../web/lib/speech/gigaVoiceProfiles.ts"),
       "utf8"
     );
     expect(pref).toContain("giga3_voice_language_id");
