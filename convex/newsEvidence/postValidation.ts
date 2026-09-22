@@ -87,6 +87,20 @@ export function downgradeUnsupportedNewsLabels(
   return updated;
 }
 
+function answerCitesRetrievedEvidence(answer: string, contract: NewsResponseContract): boolean {
+  const lower = answer.toLowerCase();
+  for (const story of contract.stories) {
+    const headline = story.headline.trim().toLowerCase();
+    if (headline.length >= 12 && lower.includes(headline.slice(0, 48))) return true;
+    for (const source of story.sources) {
+      if (source.url && answer.includes(source.url)) return true;
+      const domain = source.domain.trim().toLowerCase();
+      if (domain && lower.includes(domain)) return true;
+    }
+  }
+  return false;
+}
+
 export function enforceNewsEvidenceIntegrity(args: {
   answer: string;
   query: string;
@@ -123,6 +137,17 @@ export function enforceNewsEvidenceIntegrity(args: {
           : insufficientEvidenceFallback(args.query),
       flags,
     };
+  }
+
+  if (
+    contract.evidenceCount > 0 &&
+    contract.classification.requiresRetrieval &&
+    !userSuppliedContent &&
+    resolveSafeChatRoute(args.query) === "news_search" &&
+    !answerCitesRetrievedEvidence(content, contract)
+  ) {
+    flags.push("news_unsourced_replaced");
+    return { content: renderNewsContractSummary(contract), flags };
   }
 
   if (

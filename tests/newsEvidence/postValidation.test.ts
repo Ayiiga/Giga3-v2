@@ -92,6 +92,67 @@ describe("news post-validation", () => {
     expect(result.content).not.toContain("recommend checking");
   });
 
+  it("replaces an unsourced Ghana headline with the retrieved report", () => {
+    const evidence = buildNewsEvidencePackage({
+      query: "What is happening in Ghana",
+      capability: "ghana_news",
+      sources: [
+        {
+          title: "Cedi trading update",
+          uri: "https://www.graphic.com.gh/cedi",
+          domain: "graphic.com.gh",
+          excerpt: "The cedi was quoted in Accra.",
+          accessedAt: Date.now(),
+        },
+      ],
+      pagesReadUrls: ["https://www.graphic.com.gh/cedi"],
+      warnings: [],
+      liveSearchUsed: true,
+    });
+
+    const result = enforceNewsEvidenceIntegrity({
+      answer: "The president announced a brand-new harbour tax yesterday in Takoradi.",
+      query: "What is happening in Ghana",
+      evidence,
+      isNewsQuery: true,
+    });
+
+    expect(result.flags).toContain("news_unsourced_replaced");
+    expect(result.content).toContain("Cedi trading update");
+    expect(result.content).toContain("graphic.com.gh");
+    expect(result.content).not.toContain("harbour tax");
+  });
+
+  it("keeps a Ghana answer that cites the retrieved report", () => {
+    const evidence = buildNewsEvidencePackage({
+      query: "What is happening in Ghana",
+      capability: "ghana_news",
+      sources: [
+        {
+          title: "Cedi trading update",
+          uri: "https://www.graphic.com.gh/cedi",
+          domain: "graphic.com.gh",
+          excerpt: "The cedi was quoted in Accra.",
+          accessedAt: Date.now(),
+        },
+      ],
+      pagesReadUrls: ["https://www.graphic.com.gh/cedi"],
+      warnings: [],
+      liveSearchUsed: true,
+    });
+
+    const answer = "Cedi trading update from [Graphic Online](https://www.graphic.com.gh/cedi).";
+    const result = enforceNewsEvidenceIntegrity({
+      answer,
+      query: "What is happening in Ghana",
+      evidence,
+      isNewsQuery: true,
+    });
+
+    expect(result.flags).not.toContain("news_unsourced_replaced");
+    expect(result.content).toContain("Cedi trading update");
+  });
+
   it("downgrades verified labels when only snippets exist", () => {
     const evidence = buildNewsEvidencePackage({
       query: "Latest Accra news",
