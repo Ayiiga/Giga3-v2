@@ -82,6 +82,8 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `AUTH_FROM_EMAIL` | Recommended | Default `Giga3 AI <onboarding@resend.dev>` (testing only — can only deliver to the Resend account owner). After verifying `giga3ai.com`, set `Giga3 AI <noreply@giga3ai.com>`. |
    | `AUTH_EMAIL_FALLBACK_INBOX` | Recommended | Receives reset-link copies when Resend blocks the user inbox (default `ayiiga3@gmail.com`). |
    | `STRIPE_SECRET_KEY` | Legacy only | Old token checkout in `payments.ts` |
+   | `HF_TOKEN` | No (MMS not enabled) | Server-side Hugging Face token. Fine-grained read token. Not read by the static site. |
+   | `KHAYA_SUBSCRIPTION_KEY` | For African voice and translation | GhanaNLP / Khaya key. Sent only as `Ocp-Apim-Subscription-Key` from Convex. |
 
    ```bash
    npx convex env set OPENAI_API_KEY "sk-..."
@@ -91,6 +93,32 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    npx convex env set AUTH_FROM_EMAIL "Giga3 AI <noreply@giga3ai.com>"
    npx convex env set AUTH_EMAIL_FALLBACK_INBOX "ayiiga3@gmail.com"
    ```
+
+   **`HF_TOKEN` (African TTS) — Convex server secret only**
+
+   The Next.js app is a static export on Cloudflare Pages. Pages has no runtime that can keep a secret out of the browser, and any `NEXT_PUBLIC_*` value is inlined into the client bundle at build time.
+
+   Do **not** set `HF_TOKEN` or `NEXT_PUBLIC_HF_TOKEN` in:
+   - Cloudflare Pages → Settings → Environment variables
+   - GitHub Actions build env for the Pages workflow
+   - `web/.env.local` values that get prefixed with `NEXT_PUBLIC_`
+
+   Set `HF_TOKEN` on the Convex production deployment (the API process), using a fine-grained Hugging Face token with read access:
+
+   1. Convex Dashboard → production deployment → **Settings → Environment Variables** → add `HF_TOKEN`.
+   2. Or from a trusted machine, without writing the token into git: `npx convex env set HF_TOKEN` plus the value only in that local command.
+
+   `facebook/mms-tts-aka` and `facebook/mms-tts-ewe` are CC-BY-NC 4.0 and are not deployed by a Hugging Face Inference Provider. Setting `HF_TOKEN` does not turn on synthesis.
+
+   **Khaya / GhanaNLP (`KHAYA_SUBSCRIPTION_KEY`)**
+
+   African read-aloud, translation, and transcription use the Khaya APIs from Convex, not from the browser:
+
+   - TTS: `POST /tts/v2/synthesize` on `https://translation-api.ghananlp.org`
+   - Translation: `POST /v2/translate`
+   - ASR: `POST /asr/v3/transcribe`
+
+   The PWA calls Convex `POST /v1/audio/speech`, `POST /v1/translate`, and `POST /v1/audio/transcriptions`. English read-aloud stays on the device voice. Set `KHAYA_SUBSCRIPTION_KEY` on the Convex deployment the same way as other server secrets. Do not put it in Cloudflare Pages or in a `NEXT_PUBLIC_` variable. `HF_TOKEN` is not this key.
 
    **Email checklist (forgot password + engagement digests):**
    1. **Verify `giga3ai.com` in Resend** (required to email users other than the Resend account owner):

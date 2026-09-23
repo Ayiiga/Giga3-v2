@@ -7,4 +7,6 @@
 /public/fallback-*.js
 *.tsbuildinfo
 next-env.d.ts
-web/.env.local
+.env
+.env.*
+!.env.local.example

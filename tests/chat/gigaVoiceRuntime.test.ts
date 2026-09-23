@@ -128,7 +128,7 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
     await toggleGigaVoiceBlock({
       blockId: "intro-0",
       text: "Introduction paragraph.",
-      voiceId: "abena-twi",
+      voiceId: "musa-hausa",
     });
     expect(getActiveSpeechBlockId()).toBe("intro-0");
     expect(log.filter((e) => e.type === "speak")).toHaveLength(1);
@@ -137,7 +137,7 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
     await toggleGigaVoiceBlock({
       blockId: "main-1",
       text: "Main message paragraph.",
-      voiceId: "abena-twi",
+      voiceId: "musa-hausa",
     });
     expect(log.map((e) => e.type)).toEqual(["cancel", "speak"]);
     expect(getActiveSpeechBlockId()).toBe("main-1");
@@ -155,7 +155,7 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
     await toggleGigaVoiceBlock({
       blockId: "same-block",
       text: "Repeatable block.",
-      voiceId: "abena-twi",
+      voiceId: "musa-hausa",
     });
     expect(isGigaVoiceSpeaking()).toBe(true);
 
@@ -163,7 +163,7 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
     const stopped = await toggleGigaVoiceBlock({
       blockId: "same-block",
       text: "Repeatable block.",
-      voiceId: "abena-twi",
+      voiceId: "musa-hausa",
     });
     expect(stopped).toBe(false);
     expect(log.map((e) => e.type)).toEqual(["cancel"]);
@@ -190,9 +190,28 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
     const { log } = installSpeechMock({ voices: [mockVoice("English US", "en-US")] });
     const { speakGigaVoice } = await import("../../web/lib/chat/gigaVoice");
 
-    await speakGigaVoice({ text: "Fallback path.", voiceId: "abena-twi", blockId: "fb" });
+    await speakGigaVoice({ text: "Fallback path.", voiceId: "musa-hausa", blockId: "fb" });
     expect(log.at(-1)?.voiceName).toBe("English US");
     expect(log.at(-1)?.lang).toBe("en-US");
+  });
+
+  it("does not speak Twi on the device when Khaya playback fails", async () => {
+    const { synth } = installSpeechMock({ voices: [mockVoice("English US", "en-US")] });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new Error("offline");
+      })
+    );
+    const { speakGigaVoice, isGigaVoiceSpeaking } = await import("../../web/lib/chat/gigaVoice");
+    const onEnd = vi.fn();
+
+    const ok = await speakGigaVoice({ text: "Maakye, akwaaba.", voiceId: "abena-twi", onEnd });
+
+    expect(ok).toBe(false);
+    expect(synth.speak).not.toHaveBeenCalled();
+    expect(isGigaVoiceSpeaking()).toBe(false);
+    expect(onEnd).toHaveBeenCalledTimes(1);
   });
 
   it("waits for voiceschanged when getVoices() is initially empty", async () => {
@@ -212,7 +231,7 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
     installSpeechMock({ voices: [] });
     const { speakGigaVoice } = await import("../../web/lib/chat/gigaVoice");
 
-    const ok = await speakGigaVoice({ text: "No voices installed.", voiceId: "abena-twi" });
+    const ok = await speakGigaVoice({ text: "No voices installed.", voiceId: "musa-hausa" });
     expect(ok).toBe(true);
   });
 
@@ -467,7 +486,7 @@ describe("gigaVoice runtime (mocked SpeechSynthesis)", () => {
 
     await speakGigaVoice({
       text: "## Heading\n\n**Bold** text with `code`.",
-      voiceId: "abena-twi",
+      voiceId: "musa-hausa",
     });
     expect(log.at(-1)?.text).not.toContain("##");
     expect(log.at(-1)?.text).toContain("Bold");
