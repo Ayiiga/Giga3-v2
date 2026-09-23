@@ -31,30 +31,41 @@ const VisualContentBlock = dynamic(
 interface MessageMarkdownProps {
   content: string;
   className?: string;
+  /**
+   * Lowest heading rank to emit (1–3). Smart Answer bodies use 3 so inner
+   * headings stay under the section title.
+   */
+  headingFloor?: 1 | 2 | 3;
 }
 
 /** Lightweight markdown for assistant replies — no external deps, memoized blocks. */
 export const MessageMarkdown = memo(function MessageMarkdown({
   content,
   className,
+  headingFloor = 1,
 }: MessageMarkdownProps) {
   const blocks = useMemo(
-    () => renderMarkdownBlocks(safeParseMarkdownDocument(content)),
-    [content]
+    () => renderMarkdownBlocks(safeParseMarkdownDocument(content), headingFloor),
+    [content, headingFloor]
   );
   return <div className={cn("chat-markdown", className)}>{blocks}</div>;
 });
 
-function renderMarkdownBlocks(blocks: MarkdownBlock[]): ReactNode[] {
-  return blocks.map((block, index) => renderMarkdownBlock(block, index));
+function renderMarkdownBlocks(blocks: MarkdownBlock[], headingFloor: 1 | 2 | 3): ReactNode[] {
+  return blocks.map((block, index) => renderMarkdownBlock(block, index, headingFloor));
 }
 
-function renderMarkdownBlock(block: MarkdownBlock, key: number): ReactNode {
+function renderMarkdownBlock(
+  block: MarkdownBlock,
+  key: number,
+  headingFloor: 1 | 2 | 3
+): ReactNode {
   switch (block.type) {
     case "heading": {
-      const Tag = `h${block.level}` as "h1" | "h2" | "h3";
+      const level = Math.min(3, Math.max(block.level, headingFloor)) as 1 | 2 | 3;
+      const Tag = `h${level}` as "h1" | "h2" | "h3";
       return (
-        <Tag key={key} className={`chat-md-h${block.level}`}>
+        <Tag key={key} className={`chat-md-h${level}`}>
           {renderInline(block.text)}
         </Tag>
       );
@@ -82,13 +93,13 @@ function renderMarkdownBlock(block: MarkdownBlock, key: number): ReactNode {
     case "ul":
       return (
         <ul key={key} className="chat-md-ul">
-          {renderListItems(block.items)}
+          {renderListItems(block.items, headingFloor)}
         </ul>
       );
     case "ol":
       return (
         <ol key={key} className="chat-md-ol">
-          {renderListItems(block.items)}
+          {renderListItems(block.items, headingFloor)}
         </ol>
       );
     case "table":
@@ -119,12 +130,15 @@ function renderMarkdownBlock(block: MarkdownBlock, key: number): ReactNode {
   }
 }
 
-function renderListItems(items: MarkdownListItem[] | undefined): ReactNode[] {
+function renderListItems(
+  items: MarkdownListItem[] | undefined,
+  headingFloor: 1 | 2 | 3
+): ReactNode[] {
   return (items ?? []).map((item, index) => (
     <li key={index}>
       {renderInline(item.content)}
       {item.children?.length ? (
-        <div className="chat-md-nested">{renderMarkdownBlocks(item.children)}</div>
+        <div className="chat-md-nested">{renderMarkdownBlocks(item.children, headingFloor)}</div>
       ) : null}
     </li>
   ));

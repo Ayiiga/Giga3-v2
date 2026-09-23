@@ -7,11 +7,13 @@ import { ResearchResponseBadge } from "@/components/chat/ResearchResponseBadge";
 import { MessageBubbleActions } from "@/components/chat/MessageBubbleActions";
 import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
 import { MessageMarkdown } from "@/components/chat/MessageMarkdown";
+import { SmartAnswer } from "@/components/chat/SmartAnswer";
 import { ProductRedirectCards } from "@/components/chat/ProductRedirectCards";
 import { useStreamingReveal } from "@/hooks/useStreamingReveal";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { formatMessageTime } from "@/lib/chat/groupMessagesByDate";
 import { parseAnswerBlocks } from "@/lib/chat/parseAnswerBlocks";
+import { parseSmartAnswer, smartAnswerSpokenText } from "@/lib/chat/parseSmartAnswer";
 import { extractProductRedirectsFromText } from "@/lib/chat/productRedirects";
 import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
 import {
@@ -84,10 +86,15 @@ export const MessageBubble = memo(function MessageBubble({
   );
 
   const displayContent = !isUser && streaming ? revealed : safeContent;
+  const smartAnswer = useMemo(() => {
+    if (isUser || !displayContent) return null;
+    const parsed = parseSmartAnswer(displayContent);
+    return parsed.isSmart ? parsed : null;
+  }, [isUser, displayContent]);
   const answerBlocks = useMemo(() => {
-    if (isUser || streaming) return null;
+    if (isUser || streaming || smartAnswer) return null;
     return parseAnswerBlocks(displayContent);
-  }, [isUser, displayContent, streaming]);
+  }, [isUser, displayContent, streaming, smartAnswer]);
   const productRedirects = useMemo(
     () => (isUser ? [] : extractProductRedirectsFromText(content)),
     [isUser, content]
@@ -150,22 +157,28 @@ export const MessageBubble = memo(function MessageBubble({
               </p>
             ) : (
               <>
-                {answerBlocks?.title ? (
-                  <h2 className="chat-response-title">{answerBlocks.title}</h2>
-                ) : null}
-                {answerBlocks?.isStructured ? (
-                  <div className="answer-blocks-stack">
-                    {answerBlocks.blocks.map((section, index) => (
-                      <AnswerContentBlock
-                        key={`${section.kind}-${index}`}
-                        messageId={id}
-                        section={section}
-                        index={index}
-                      />
-                    ))}
-                  </div>
+                {smartAnswer ? (
+                  <SmartAnswer messageId={id} parsed={smartAnswer} />
                 ) : (
-                  <MessageMarkdown content={answerBlocks?.plainContent ?? displayContent} />
+                  <>
+                    {answerBlocks?.title ? (
+                      <h2 className="chat-response-title">{answerBlocks.title}</h2>
+                    ) : null}
+                    {answerBlocks?.isStructured ? (
+                      <div className="answer-blocks-stack">
+                        {answerBlocks.blocks.map((section, index) => (
+                          <AnswerContentBlock
+                            key={`${section.kind}-${index}`}
+                            messageId={id}
+                            section={section}
+                            index={index}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <MessageMarkdown content={answerBlocks?.plainContent ?? displayContent} />
+                    )}
+                  </>
                 )}
                 {basisLabel && basisLabel.basis !== "live_web" ? (
                   <ResearchResponseBadge metadata={basisLabel} />
@@ -177,7 +190,12 @@ export const MessageBubble = memo(function MessageBubble({
                   <ProductRedirectCards products={productRedirects} />
                 ) : null}
                 {!streaming && displayContent ? (
-                  answerBlocks?.isStructured ? (
+                  smartAnswer ? (
+                    <AfricanVoiceReader
+                      content={smartAnswerSpokenText(smartAnswer)}
+                      messageId={id}
+                    />
+                  ) : answerBlocks?.isStructured ? (
                     <AfricanVoiceReader content="" messageId={id} selectorOnly />
                   ) : (
                     <AfricanVoiceReader
