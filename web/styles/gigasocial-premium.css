@@ -78,6 +78,19 @@
   color: var(--gs-muted) !important;
 }
 
+/* Light-theme tokens (#171717 / #6b7280) sit on the navy shell and vanish.
+   Remap them everywhere in GigaSocial, not only inside post cards. */
+.gigasocial-premium .text-foreground,
+.gigasocial-premium h1,
+.gigasocial-premium h2,
+.gigasocial-premium h3 {
+  color: var(--gs-text) !important;
+}
+
+.gigasocial-premium .text-muted {
+  color: var(--gs-muted) !important;
+}
+
 .gigasocial-premium .gigasocial-feed-media,
 .gigasocial-premium .gigasocial-feed-media-frame {
   border-radius: var(--gs-radius-sm);
@@ -416,8 +429,23 @@
 .gigasocial-premium select,
 .gigasocial-premium textarea {
   background-color: var(--gs-input);
-  color: var(--gs-text);
+  color: var(--gs-text) !important;
   border-color: var(--gs-border);
+}
+
+.gigasocial-premium input::placeholder,
+.gigasocial-premium textarea::placeholder {
+  color: var(--gs-muted) !important;
+}
+
+/* Mobile marketing rules paint bg-accent/10 as a near-white chip.
+   Keep selected GigaSocial chips on the navy surface with light text. */
+@media (max-width: 1023px) {
+  .marketing-stable .gigasocial-premium [class*="bg-accent/5"],
+  .marketing-stable .gigasocial-premium [class*="bg-accent/10"] {
+    background-color: rgba(59, 130, 246, 0.22) !important;
+    color: var(--gs-text) !important;
+  }
 }
 
 .gigasocial-premium a.text-accent,
