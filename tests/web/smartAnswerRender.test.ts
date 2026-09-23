@@ -127,6 +127,36 @@ describe("Smart Answer rendering", () => {
     expect(html).not.toContain("smart-answer");
   });
 
+  it("keeps the first action paint stable when speech synthesis exists", () => {
+    const previousWindow = globalThis.window;
+    const shim = {
+      speechSynthesis: {},
+      localStorage: { getItem: () => null },
+    };
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      writable: true,
+      value: shim,
+    });
+    try {
+      const html = renderToStaticMarkup(
+        createElement(MessageBubble, {
+          id: "hydrate-1",
+          role: "assistant",
+          content: "The capital of Ghana is Accra.",
+        })
+      );
+      expect(html).toContain("Favorite");
+      expect(html).not.toContain("Read aloud");
+    } finally {
+      Object.defineProperty(globalThis, "window", {
+        configurable: true,
+        writable: true,
+        value: previousWindow,
+      });
+    }
+  });
+
   it("renders a Smart Answer inside the chat bubble", () => {
     const html = renderToStaticMarkup(
       createElement(MessageBubble, {
