@@ -299,3 +299,161 @@
     animation: none !important;
   }
 }
+
+/* Giga3 Smart Answers — typographic sections on the existing chat surface. */
+.smart-answer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.05rem;
+  width: 100%;
+  max-width: min(42rem, 100%);
+  min-width: 0;
+  color: var(--foreground);
+}
+
+.smart-answer__title {
+  margin: 0;
+}
+
+.smart-answer__preamble,
+.smart-answer__sections,
+.smart-answer__section,
+.smart-answer__body,
+.smart-answer__appendix,
+.smart-answer__heading,
+.smart-answer__label {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.smart-answer__sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.smart-answer__heading {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin: 0 0 0.55rem;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  color: #5b21b6;
+}
+
+.dark .smart-answer__heading {
+  color: #c4b5fd;
+}
+
+.smart-answer__mark {
+  flex: 0 0 auto;
+  font-size: 1rem;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.smart-answer__label {
+  text-decoration: underline;
+  text-decoration-color: rgba(91, 33, 182, 0.45);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.28em;
+  overflow-wrap: anywhere;
+}
+
+.dark .smart-answer__label {
+  text-decoration-color: rgba(196, 181, 253, 0.55);
+}
+
+.smart-answer__body,
+.smart-answer__preamble,
+.smart-answer__appendix {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.smart-answer__section--quick,
+.smart-answer__section--practice {
+  border-radius: 0.9rem;
+  padding: 0.85rem 0.9rem;
+}
+
+.smart-answer__section--quick {
+  background: #f3efff;
+}
+
+.dark .smart-answer__section--quick {
+  background: #16122a;
+}
+
+.smart-answer__section--practice {
+  background: #faf6ea;
+  box-shadow: inset 3px 0 0 #b8860b;
+}
+
+.dark .smart-answer__section--practice {
+  background: #17141f;
+  box-shadow: inset 3px 0 0 #eab308;
+}
+
+.smart-answer .chat-md-p {
+  margin-bottom: 0.65rem;
+}
+
+.smart-answer .chat-md-strong {
+  font-weight: 700;
+  color: #6a3d09;
+}
+
+.dark .smart-answer .chat-md-strong {
+  color: #f6d58a;
+}
+
+.smart-answer .chat-md-ul > li::marker,
+.smart-answer .chat-md-ol > li::marker {
+  color: #6d28d9;
+}
+
+.dark .smart-answer .chat-md-ul > li::marker,
+.dark .smart-answer .chat-md-ol > li::marker {
+  color: #c4b5fd;
+}
+
+@media (min-width: 640px) {
+  .smart-answer {
+    gap: 1.25rem;
+  }
+
+  .smart-answer__sections {
+    gap: 1.55rem;
+  }
+
+  .smart-answer__heading {
+    font-size: 1.05rem;
+  }
+
+  .smart-answer__section--quick,
+  .smart-answer__section--practice {
+    padding: 1rem 1.1rem;
+    border-radius: 1rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .smart-answer,
+  .smart-answer__sections {
+    gap: 1rem;
+  }
+
+  .smart-answer__heading {
+    font-size: 0.95rem;
+  }
+
+  .smart-answer__section--quick,
+  .smart-answer__section--practice {
+    padding: 0.8rem 0.85rem;
+    border-radius: 0.85rem;
+  }
+}

@@ -740,7 +740,7 @@ function buildSystemPromptAddon(params: {
 
   const educationalRule =
     params.responseMode === "educational"
-      ? "- Educational mode: teach with concept explanation, step-by-step method, examples, and practical applications. Use tables when they improve clarity. Add a diagram or other visual aid only when the user asks for one."
+      ? "- Educational mode: teach with a direct answer, a simple definition, deeper explanation, an example, and practice when they help. Match the learner's wording without assuming age or schooling. Use tables when they improve clarity. Add a diagram or other visual aid only when the user asks for one."
       : "";
 
   const examRule = params.isExamQuestion
@@ -814,13 +814,14 @@ function buildSystemPromptAddon(params: {
     params.hasAnyAttachment ||
     researchWritingTask
       ? ""
-      : [
-          "Answer sections:",
-          "- Separate the opening statement and the closing statement from the body.",
-          "- Use these headings on their own lines, in order: ## Introduction, ## Main message, ## Conclusion.",
-          "- The introduction is only the opening. The conclusion is only the closing. The main message is the part users copy, share, or read.",
-          "- Do not repeat the introduction or the conclusion inside the main message.",
-          "- Skip these headings for one-line replies.",
+        : [
+          "Giga3 Smart Answers:",
+          "- Prefer natural conversation. Use only the sections that help, and never leave a heading empty.",
+          "- Simple fact: ## ⚡ Quick Answer only (1–2 sentences).",
+          "- Definition: ## ⚡ Quick Answer and ## 📘 Simple Definition.",
+          "- Teaching or how-to: also use ## 🧠 More Complete Explanation, ## 🔑 Key Points, ## 🌍 Real-World Example, and ## 📝 Practice / Try It when they help. Add ## 🚀 Next Step for a useful follow-up.",
+          "- Bold keywords only. Keep paragraphs short. Use a Ghanaian, African, school, business, or everyday example when an example helps.",
+          "- Skip every Smart Answers heading for greetings and one-line chat.",
         ].join("\n");
 
   const sourceHint =

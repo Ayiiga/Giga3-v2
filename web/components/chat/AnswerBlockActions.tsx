@@ -32,8 +32,12 @@ export const AnswerBlockActions = memo(function AnswerBlockActions({
   const [speaking, setSpeaking] = useState(false);
   const [copied, setCopied] = useState(false);
   const [voiceId, setVoiceId] = useState(() => readVoiceLanguageId());
+  const [voiceSupported, setVoiceSupported] = useState(false);
 
   useEffect(() => subscribeVoiceLanguageId(setVoiceId), []);
+  useEffect(() => {
+    setVoiceSupported(isGigaVoiceSupported());
+  }, []);
 
   useEffect(() => {
     if (!speaking) return;
@@ -114,7 +118,7 @@ export const AnswerBlockActions = memo(function AnswerBlockActions({
           <Share2 className="h-3.5 w-3.5" aria-hidden />
           <span className="sr-only sm:not-sr-only">Share</span>
         </button>
-        {isGigaVoiceSupported() ? (
+        {voiceSupported ? (
           <button
             type="button"
             onClick={() => void runReadAloud()}

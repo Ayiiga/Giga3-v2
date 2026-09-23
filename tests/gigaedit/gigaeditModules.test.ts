@@ -75,9 +75,9 @@ describe("GigaEdit routing & SW", () => {
     expect(siteConfig.links.gigaedit).toBe("/gigaedit");
   });
 
-  it("uses giga3-v16 cache with lean precache (no heavy app shells)", () => {
+  it("uses giga3-v17 cache with lean precache (no heavy app shells)", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_VERSION = "giga3-v16"');
+    expect(sw).toContain('CACHE_VERSION = "giga3-v17"');
     const precacheBlock = sw.match(/const PRECACHE = \[([\s\S]*?)\];/)?.[1] ?? "";
     expect(precacheBlock).not.toContain('"/gigaedit/"');
     expect(precacheBlock).toContain("OFFLINE_URL");

@@ -53,11 +53,16 @@ describe("visual aids stay off unless the user asks", () => {
     expect(cleaned).toBe("");
   });
 
-  it("tells the model to separate introduction and conclusion and to skip unrequested visuals", () => {
+  it("tells the model to use adaptive Smart Answers and to skip unrequested visuals", () => {
     const prompt = composeSystemPrompt("Mode: test");
-    expect(prompt).toContain("## Introduction");
-    expect(prompt).toContain("## Main message");
-    expect(prompt).toContain("## Conclusion");
+    expect(prompt).toContain("## ⚡ Quick Answer");
+    expect(prompt).toContain("## 📘 Simple Definition");
+    expect(prompt).toContain("## 📝 Practice / Try It");
+    expect(prompt).toContain("## 🚀 Next Step");
+    expect(prompt).toContain("Simple factual questions: Quick Answer only");
+    expect(prompt).toContain("Never emit an empty section");
+    expect(prompt).not.toContain("## Introduction");
+    expect(prompt).not.toContain("## Main message");
     expect(prompt).toContain("Do not add visual aids unless the user explicitly asks");
     expect(prompt).not.toContain("Smart visual detection");
   });

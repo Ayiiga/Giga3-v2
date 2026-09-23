@@ -77,9 +77,13 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
   const [speaking, setSpeaking] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const [favorited, setFavorited] = useState(
-    messageId ? isMessageFavorite(messageId) : false
-  );
+  const [favorited, setFavorited] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(false);
+
+  useEffect(() => {
+    setVoiceSupported(isGigaVoiceSupported());
+    if (messageId) setFavorited(isMessageFavorite(messageId));
+  }, [messageId]);
 
   const copyText = useMemo(
     () => formatMessageForCopy(role, content),
@@ -207,7 +211,7 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
       label: speaking ? "Stop reading" : "Read aloud",
       icon: speaking ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />,
       onClick: runReadAloud,
-      hidden: !isGigaVoiceSupported(),
+      hidden: !voiceSupported,
     },
     {
       key: "favorite",

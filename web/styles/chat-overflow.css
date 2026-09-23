@@ -74,7 +74,12 @@
 .chat-message-bubble,
 .chat-message-bubble-inner,
 .chat-assistant-body,
-.chat-markdown {
+.chat-markdown,
+.smart-answer,
+.smart-answer__section,
+.smart-answer__body,
+.smart-answer__heading,
+.smart-answer__label {
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
