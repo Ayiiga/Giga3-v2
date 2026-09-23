@@ -84,6 +84,20 @@ const MALE_LOW_VOICES = new Set([
   "jabari-swahili",
 ]);
 
+/** Commercial speech is Twi and Ewe only. Other Khaya codes stay unsupported here. */
+const COMMERCIAL_KHAYA_TTS: Record<string, "twi" | "ewe"> = {
+  tw: "twi",
+  twi: "twi",
+  aka: "twi",
+  ee: "ewe",
+  ewe: "ewe",
+};
+
+export function resolveCommercialKhayaTtsLanguage(language: string): "twi" | "ewe" | null {
+  const code = language.trim().toLowerCase();
+  return COMMERCIAL_KHAYA_TTS[code] ?? null;
+}
+
 export function resolveKhayaTtsLanguage(language: string): string | null {
   const code = language.trim().toLowerCase();
   if (code === "en" || code === "eng" || code.startsWith("en-")) return null;
@@ -107,18 +121,10 @@ export function resolveKhayaSpeaker(voice: string | undefined): KhayaSpeakerId {
 
 export function khayaSpeechForProfile(voiceId: string | undefined): { language: string; speaker: KhayaSpeakerId } | null {
   const id = voiceId?.trim().toLowerCase() ?? "";
-  const profiles: Record<string, string> = {
+  const profiles: Record<string, "twi" | "ewe"> = {
     "abena-twi": "twi",
     "kwame-twi": "twi",
     "kofi-ewe": "ewe",
-    "naa-ga": "gaa",
-    "aisha-hausa": "hau",
-    "musa-hausa": "hau",
-    "adaeze-yoruba": "yor",
-    "tunde-yoruba": "yor",
-    "ade-yoruba": "yor",
-    "zawadi-swahili": "swa",
-    "jabari-swahili": "swa",
   };
   const language = profiles[id];
   if (!language) return null;

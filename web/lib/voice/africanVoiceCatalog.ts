@@ -1,10 +1,9 @@
 /**
- * African voice catalog.
- * Spoken output uses GhanaNLP / Khaya TTS (ISO 639-3). MMS checkpoints stay
- * off this path: they are CC-BY-NC 4.0 and have no hosted Inference Provider.
+ * Commercial African voice catalog.
+ * Production speech is Twi and Ewe through GhanaNLP / Khaya TTS.
+ * facebook/mms-tts-aka and facebook/mms-tts-ewe stay off this catalog.
  */
 
-import { KHAYA_TTS_LANGUAGES } from "../../../convex/khaya/languages";
 import { VOICE_BACKENDS, type VoiceBackendKind } from "@/lib/voice/africanVoiceTypes";
 
 export type AfricanVoiceRecord = {
@@ -19,14 +18,16 @@ export type AfricanVoiceRecord = {
   backends: readonly VoiceBackendKind[];
 };
 
+/** ISO codes enabled for commercial speech. Aliases resolve to these codes. */
+const COMMERCIAL_LANGUAGES: Record<string, string> = {
+  twi: "Asante Twi",
+  ewe: "Ewe",
+};
+
 const ALIASES: Record<string, string> = {
   tw: "twi",
   aka: "twi",
   ee: "ewe",
-  ha: "hau",
-  yo: "yor",
-  sw: "swa",
-  ki: "kik",
 };
 
 function khayaRecord(code: string, name: string): AfricanVoiceRecord {
@@ -45,7 +46,7 @@ function khayaRecord(code: string, name: string): AfricanVoiceRecord {
 
 export const AFRICAN_VOICE_CATALOG: Record<string, AfricanVoiceRecord> = {};
 
-for (const [code, name] of Object.entries(KHAYA_TTS_LANGUAGES)) {
+for (const [code, name] of Object.entries(COMMERCIAL_LANGUAGES)) {
   AFRICAN_VOICE_CATALOG[code] = khayaRecord(code, name);
 }
 for (const [alias, iso] of Object.entries(ALIASES)) {

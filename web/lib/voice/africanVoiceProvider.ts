@@ -54,6 +54,12 @@ export type AfricanVoiceRuntime = {
   endpoint?: string;
 };
 
+const RESEARCH_ONLY_MMS_MODELS = new Set(["facebook/mms-tts-aka", "facebook/mms-tts-ewe"]);
+
+function isResearchOnlyMms(modelId: string | null): boolean {
+  return modelId != null && RESEARCH_ONLY_MMS_MODELS.has(modelId);
+}
+
 function blocked(
   record: AfricanVoiceRecord,
   failure: BackendSynthesisResult & { ok: false },
@@ -82,6 +88,7 @@ export function selectVoiceBackend(
   record: AfricanVoiceRecord,
   runtime: AfricanVoiceRuntime = {}
 ): AfricanVoiceBackend | null {
+  if (isResearchOnlyMms(record.modelId)) return null;
   if (!record.commercialProductionEnabled || !record.modelId || !record.hostedInferenceAvailable) {
     return null;
   }
@@ -99,6 +106,16 @@ export async function synthesizeWithAfricanProvider(
   input: { input: string; voice: string },
   runtime: AfricanVoiceRuntime = {}
 ): Promise<ProviderSynthesisResult> {
+  if (isResearchOnlyMms(record.modelId)) {
+    const refused = blocked(record, { ok: false, code: "not_enabled", error: RESEARCH_ONLY_MESSAGE }, null);
+    return {
+      ...refused,
+      commercialProductionEnabled: false,
+      hostedInferenceAvailable: false,
+      availability: "development_research_only",
+    };
+  }
+
   if (record.hostedInferenceAvailable && record.commercialProductionEnabled && record.modelId) {
     if (!runtime.endpoint) {
       return blocked(
@@ -128,7 +145,7 @@ export async function synthesizeWithAfricanProvider(
     };
   }
 
-  if (record.khayaLanguage) {
+  if (record.khayaLanguage && record.commercialProductionEnabled) {
     const backend = createCommercialVoiceProvider({
       language: record.khayaLanguage,
       voice: input.voice,

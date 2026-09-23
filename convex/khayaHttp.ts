@@ -1,7 +1,7 @@
 import { httpAction } from "./_generated/server";
 import { transcribeWithKhaya } from "./khaya/asr";
 import { KhayaServiceError, sanitizeKhayaMessage } from "./khaya/subscription";
-import { parseGiga3SpeechRequest, synthesizeGiga3AfricanSpeech } from "./khaya/speech";
+import { handleGiga3SpeechRequest } from "./khaya/speech";
 import { translateWithKhaya } from "./khaya/translate";
 
 const CORS = {
@@ -36,18 +36,7 @@ export const khayaSpeech = httpAction(async (_ctx, request) => {
   } catch {
     body = null;
   }
-  const parsed = parseGiga3SpeechRequest(body);
-  if (!parsed.ok) {
-    const bytes = parsed.response.body.buffer.slice(
-      parsed.response.body.byteOffset,
-      parsed.response.body.byteOffset + parsed.response.body.byteLength
-    ) as ArrayBuffer;
-    return new Response(bytes, {
-      status: parsed.response.status,
-      headers: { ...CORS, ...parsed.response.headers },
-    });
-  }
-  const result = await synthesizeGiga3AfricanSpeech(parsed.request);
+  const result = await handleGiga3SpeechRequest(body);
   const bytes = result.body.buffer.slice(result.body.byteOffset, result.body.byteOffset + result.body.byteLength) as ArrayBuffer;
   return new Response(bytes, {
     status: result.status,

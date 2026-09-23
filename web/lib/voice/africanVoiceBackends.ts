@@ -7,7 +7,11 @@
 
 import { KhayaServiceError } from "../../../convex/khaya/subscription";
 import { synthesizeKhayaTts, type KhayaFetcher } from "../../../convex/khaya/tts";
-import { type SpeechFailureCode, type VoiceBackendKind } from "@/lib/voice/africanVoiceTypes";
+import {
+  RESEARCH_ONLY_MESSAGE,
+  type SpeechFailureCode,
+  type VoiceBackendKind,
+} from "@/lib/voice/africanVoiceTypes";
 import {
   HuggingFaceVoiceError,
   requestHuggingFaceHostedSpeech,
@@ -32,6 +36,9 @@ export function createHuggingFaceHostedProvider(options: {
   return {
     kind: "huggingface-hosted",
     async synthesize(input?: string) {
+      if (options.modelId === "facebook/mms-tts-aka" || options.modelId === "facebook/mms-tts-ewe") {
+        return { ok: false, code: "not_enabled", error: RESEARCH_ONLY_MESSAGE };
+      }
       try {
         const result = await requestHuggingFaceHostedSpeech({
           modelId: options.modelId,

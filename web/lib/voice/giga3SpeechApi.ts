@@ -12,6 +12,7 @@ import {
   ENGLISH_STAYS_ON_DEVICE_MESSAGE,
   GIGA3_AFRICAN_VOICE_MODEL,
   INVALID_SPEECH_REQUEST_MESSAGE,
+  RESEARCH_ONLY_MESSAGE,
   UNSUPPORTED_LANGUAGE_MESSAGE,
   VOICE_BACKENDS,
   sanitizePublicVoiceMessage,
@@ -115,6 +116,17 @@ export async function runGiga3Speech(
     return failure("unsupported_language", UNSUPPORTED_LANGUAGE_MESSAGE, { language: request.language });
   }
 
+  if (record.modelId === "facebook/mms-tts-aka" || record.modelId === "facebook/mms-tts-ewe") {
+    return failure("not_enabled", RESEARCH_ONLY_MESSAGE, {
+      language: record.code,
+      modelId: record.modelId,
+      license: record.license ?? "cc-by-nc-4.0",
+      hostedInferenceAvailable: false,
+      commercialProductionEnabled: false,
+      availability: "development_research_only",
+    });
+  }
+
   if (record.hostedInferenceAvailable && record.commercialProductionEnabled) {
     const hosted = await synthesizeWithAfricanProvider(
       record,
@@ -139,7 +151,7 @@ export async function runGiga3Speech(
     };
   }
 
-  if (record.khayaLanguage) {
+  if (record.khayaLanguage && record.commercialProductionEnabled) {
     return synthesizeGiga3AfricanSpeech(request, {
       fetchImpl: deps.khayaFetch,
       timeoutMs: deps.timeoutMs,

@@ -150,11 +150,9 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
       onStart: () => args.onStart?.(),
     });
     if (!isActiveSpeechGeneration(session)) return false;
-    if (played) {
-      resetGigaVoicePlaybackState();
-      args.onEnd?.();
-      return true;
-    }
+    resetGigaVoicePlaybackState();
+    args.onEnd?.();
+    return played;
   }
 
   logSpeechDiagnostic("speak_start", {

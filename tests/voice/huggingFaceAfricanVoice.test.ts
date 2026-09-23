@@ -213,7 +213,7 @@ describe("Giga3 African speech routing", () => {
     expect(decodeJson(viaHandler.body).language).toBe("ewe");
   });
 
-  it("rejects unknown languages and keeps Khaya languages ready", async () => {
+  it("rejects unknown languages and languages outside commercial Twi and Ewe", async () => {
     const unknown = await handleGiga3SpeechRequest(speechRequest("zz"));
     const unknownBody = decodeJson(unknown.body);
     expect(unknown.status).toBe(422);
@@ -221,9 +221,41 @@ describe("Giga3 African speech routing", () => {
     for (const language of ["ha", "yo", "gaa", "dag", "fat"]) {
       const response = await handleGiga3SpeechRequest(speechRequest(language));
       const body = decodeJson(response.body);
+      expect(response.status).toBe(422);
+      expect(body.code).toBe("unsupported_language");
+      expect(body.error).toBe("This language is not supported for Giga3 African voice.");
+    }
+  });
+
+  it("never selects CC-BY-NC MMS models for commercial Twi or Ewe", async () => {
+    const fetchImpl = vi.fn();
+    for (const modelId of ["facebook/mms-tts-aka", "facebook/mms-tts-ewe"] as const) {
+      const language = modelId.endsWith("aka") ? "tw" : "ee";
+      const response = await runGiga3Speech(speechRequest(language), {
+        fetchImpl: fetchImpl as unknown as HostedSpeechFetcher,
+        endpoint: "https://huggingface.co/facebook/" + modelId,
+        catalogLookup: () => ({
+          ...hostedRecord(language),
+          modelId,
+          license: "cc-by-nc-4.0",
+          commercialProductionEnabled: true,
+          hostedInferenceAvailable: true,
+          khayaLanguage: language === "tw" ? "twi" : "ewe",
+          availability: "khaya",
+        }),
+      });
+      const body = decodeJson(response.body);
       expect(response.status).toBe(503);
-      expect(body.modelId).toBe("ghananlp-tts-v2");
-      expect(body.error).toBe("Khaya language service is not configured.");
+      expect(body.code).toBe("not_enabled");
+      expect(body.error).toBe(RESEARCH_ONLY_MESSAGE);
+      expect(body.commercialProductionEnabled).toBe(false);
+      expect(body.modelId).toBe(modelId);
+    }
+    expect(fetchImpl).not.toHaveBeenCalled();
+    for (const record of Object.values(AFRICAN_VOICE_CATALOG)) {
+      expect(record.modelId).not.toBe("facebook/mms-tts-aka");
+      expect(record.modelId).not.toBe("facebook/mms-tts-ewe");
+      expect(record.hostedInferenceAvailable).toBe(false);
     }
   });
 

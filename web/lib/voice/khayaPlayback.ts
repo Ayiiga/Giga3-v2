@@ -43,7 +43,7 @@ function playWav(bytes: ArrayBuffer, token: number): Promise<boolean> {
   });
 }
 
-/** Returns true when Khaya audio played. False lets the caller use device speech. */
+/** Returns true when Khaya audio finished. False means playback did not succeed. */
 export async function playKhayaVoice(args: {
   text: string;
   voiceId?: string;

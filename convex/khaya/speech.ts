@@ -9,7 +9,7 @@ import {
   type SpeechFailureBody,
   type SpeechFailureCode,
 } from "../../web/lib/voice/africanVoiceTypes";
-import { resolveKhayaSpeaker, resolveKhayaTtsLanguage } from "./languages";
+import { resolveCommercialKhayaTtsLanguage, resolveKhayaSpeaker } from "./languages";
 import { KhayaServiceError, sanitizeKhayaMessage } from "./subscription";
 import { synthesizeKhayaTts, type KhayaFetcher } from "./tts";
 
@@ -96,7 +96,7 @@ export async function synthesizeGiga3AfricanSpeech(
   if (isEnglishSpeechLanguage(request.language)) {
     return failure("unsupported_language", ENGLISH_STAYS_ON_DEVICE_MESSAGE, { language: request.language });
   }
-  const language = resolveKhayaTtsLanguage(request.language);
+  const language = resolveCommercialKhayaTtsLanguage(request.language);
   if (!language) {
     return failure("unsupported_language", UNSUPPORTED_LANGUAGE_MESSAGE, { language: request.language });
   }
@@ -126,4 +126,14 @@ export async function synthesizeGiga3AfricanSpeech(
     }
     return failure("provider_failure", "Khaya language service failed.", { language, modelId: "ghananlp-tts-v2" });
   }
+}
+
+/** Production POST /v1/audio/speech handler. Twi and Ewe only; MMS is not called. */
+export async function handleGiga3SpeechRequest(
+  body: unknown,
+  deps: { fetchImpl?: KhayaFetcher; timeoutMs?: number } = {}
+): Promise<KhayaSpeechResponse> {
+  const parsed = parseGiga3SpeechRequest(body);
+  if (!parsed.ok) return parsed.response;
+  return synthesizeGiga3AfricanSpeech(parsed.request, deps);
 }

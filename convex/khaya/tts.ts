@@ -1,4 +1,4 @@
-import { resolveKhayaSpeaker, resolveKhayaTtsLanguage, type KhayaSpeakerId } from "./languages";
+import { resolveCommercialKhayaTtsLanguage, resolveKhayaSpeaker, type KhayaSpeakerId } from "./languages";
 import {
   KHAYA_FAILED_MESSAGE,
   KHAYA_INVALID_RESPONSE_MESSAGE,
@@ -44,12 +44,12 @@ export async function synthesizeKhayaTts(args: {
   fetchImpl?: KhayaFetcher;
   timeoutMs?: number;
 }): Promise<Uint8Array> {
-  if (!readKhayaSubscriptionKey()) {
-    throw new KhayaServiceError("not_configured", "Khaya language service is not configured.", 503);
-  }
-  const language = resolveKhayaTtsLanguage(args.language);
+  const language = resolveCommercialKhayaTtsLanguage(args.language);
   if (!language) {
     throw new KhayaServiceError("unsupported_language", "This language is not supported for Giga3 African voice.", 422);
+  }
+  if (!readKhayaSubscriptionKey()) {
+    throw new KhayaServiceError("not_configured", "Khaya language service is not configured.", 503);
   }
   const text = args.text.trim();
   if (!text || text.length > MAX_TTS_CHARS) {
