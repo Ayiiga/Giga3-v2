@@ -3,6 +3,8 @@
  * Answer blocks, AfricanVoiceReader, and MessageBubbleActions all delegate here.
  */
 
+import { cancelKhayaPlayback, playKhayaVoice } from "@/lib/voice/khayaPlayback";
+import { khayaSpeechForProfile } from "../../../convex/khaya/languages";
 import { stripMarkdownForSpeech } from "@/lib/chat/speechText";
 import { chunkSpeechText } from "@/lib/speech/chunkSpeechText";
 import { logSpeechDiagnostic } from "@/lib/speech/browserSpeechDiagnostics";
@@ -103,6 +105,7 @@ export function isGigaVoiceSupported(): boolean {
 }
 
 export function stopGigaVoice(): void {
+  cancelKhayaPlayback();
   cancelBrowserSpeechSynthesis();
   resetGigaVoicePlaybackState();
 }
@@ -138,6 +141,21 @@ export async function speakGigaVoice(args: SpeakGigaVoiceArgs & { blockId?: stri
   const session = currentSpeechGeneration();
   playbackActive = true;
   activeBlockId = args.blockId ?? null;
+
+  if (khayaSpeechForProfile(args.voiceId)) {
+    const played = await playKhayaVoice({
+      text: plain,
+      voiceId: args.voiceId,
+      isActive: () => isActiveSpeechGeneration(session),
+      onStart: () => args.onStart?.(),
+    });
+    if (!isActiveSpeechGeneration(session)) return false;
+    if (played) {
+      resetGigaVoicePlaybackState();
+      args.onEnd?.();
+      return true;
+    }
+  }
 
   logSpeechDiagnostic("speak_start", {
     session,

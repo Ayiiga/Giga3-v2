@@ -1,110 +1,60 @@
 /**
- * African TTS routing catalog.
- *
- * Verified 2026-09-23 against the Hugging Face Hub API:
- * - https://huggingface.co/api/models/facebook/mms-tts-aka?expand[]=inferenceProviderMapping
- * - https://huggingface.co/api/models/facebook/mms-tts-ewe?expand[]=inferenceProviderMapping
- * Both responses had an empty `inferenceProviderMapping`. The model cards
- * license each checkpoint as CC-BY-NC 4.0 and document local Transformers
- * inference only. Neither checkpoint is enabled for Giga3 commercial production.
- *
- * Ga, Dagbani, Hausa, Yoruba, and Fante are reserved codes only.
+ * African voice catalog.
+ * Spoken output uses GhanaNLP / Khaya TTS (ISO 639-3). MMS checkpoints stay
+ * off this path: they are CC-BY-NC 4.0 and have no hosted Inference Provider.
  */
 
+import { KHAYA_TTS_LANGUAGES } from "../../../convex/khaya/languages";
 import { VOICE_BACKENDS, type VoiceBackendKind } from "@/lib/voice/africanVoiceTypes";
 
-export type RoutedLanguageCode = "tw" | "ee";
-export type PlannedLanguageCode = "gaa" | "dag" | "ha" | "yo" | "fat";
-export type AfricanLanguageCode = RoutedLanguageCode | PlannedLanguageCode;
-
 export type AfricanVoiceRecord = {
-  code: AfricanLanguageCode;
+  code: string;
   name: string;
+  khayaLanguage: string | null;
   modelId: string | null;
-  license: "cc-by-nc-4.0" | null;
+  license: "cc-by-nc-4.0" | "khaya-eula" | null;
   hostedInferenceAvailable: boolean;
   commercialProductionEnabled: boolean;
-  availability: "development_research_only" | "unverified";
+  availability: "development_research_only" | "unverified" | "khaya";
   backends: readonly VoiceBackendKind[];
 };
 
-export const AFRICAN_VOICE_CATALOG: Record<AfricanLanguageCode, AfricanVoiceRecord> = {
-  tw: {
-    code: "tw",
-    name: "Akan/Twi",
-    modelId: "facebook/mms-tts-aka",
-    license: "cc-by-nc-4.0",
-    hostedInferenceAvailable: false,
-    commercialProductionEnabled: false,
-    availability: "development_research_only",
-    backends: VOICE_BACKENDS,
-  },
-  ee: {
-    code: "ee",
-    name: "Ewe",
-    modelId: "facebook/mms-tts-ewe",
-    license: "cc-by-nc-4.0",
-    hostedInferenceAvailable: false,
-    commercialProductionEnabled: false,
-    availability: "development_research_only",
-    backends: VOICE_BACKENDS,
-  },
-  gaa: {
-    code: "gaa",
-    name: "Ga",
-    modelId: null,
-    license: null,
-    hostedInferenceAvailable: false,
-    commercialProductionEnabled: false,
-    availability: "unverified",
-    backends: VOICE_BACKENDS,
-  },
-  dag: {
-    code: "dag",
-    name: "Dagbani",
-    modelId: null,
-    license: null,
-    hostedInferenceAvailable: false,
-    commercialProductionEnabled: false,
-    availability: "unverified",
-    backends: VOICE_BACKENDS,
-  },
-  ha: {
-    code: "ha",
-    name: "Hausa",
-    modelId: null,
-    license: null,
-    hostedInferenceAvailable: false,
-    commercialProductionEnabled: false,
-    availability: "unverified",
-    backends: VOICE_BACKENDS,
-  },
-  yo: {
-    code: "yo",
-    name: "Yoruba",
-    modelId: null,
-    license: null,
-    hostedInferenceAvailable: false,
-    commercialProductionEnabled: false,
-    availability: "unverified",
-    backends: VOICE_BACKENDS,
-  },
-  fat: {
-    code: "fat",
-    name: "Fante",
-    modelId: null,
-    license: null,
-    hostedInferenceAvailable: false,
-    commercialProductionEnabled: false,
-    availability: "unverified",
-    backends: VOICE_BACKENDS,
-  },
+const ALIASES: Record<string, string> = {
+  tw: "twi",
+  aka: "twi",
+  ee: "ewe",
+  ha: "hau",
+  yo: "yor",
+  sw: "swa",
+  ki: "kik",
 };
 
-const LANGUAGE_CODES = new Set<string>(Object.keys(AFRICAN_VOICE_CATALOG));
+function khayaRecord(code: string, name: string): AfricanVoiceRecord {
+  return {
+    code,
+    name,
+    khayaLanguage: code,
+    modelId: "ghananlp-tts-v2",
+    license: "khaya-eula",
+    hostedInferenceAvailable: false,
+    commercialProductionEnabled: true,
+    availability: "khaya",
+    backends: VOICE_BACKENDS,
+  };
+}
+
+export const AFRICAN_VOICE_CATALOG: Record<string, AfricanVoiceRecord> = {};
+
+for (const [code, name] of Object.entries(KHAYA_TTS_LANGUAGES)) {
+  AFRICAN_VOICE_CATALOG[code] = khayaRecord(code, name);
+}
+for (const [alias, iso] of Object.entries(ALIASES)) {
+  const canonical = AFRICAN_VOICE_CATALOG[iso];
+  if (!canonical) continue;
+  AFRICAN_VOICE_CATALOG[alias] = { ...canonical, code: alias, khayaLanguage: iso };
+}
 
 export function lookupAfricanVoice(language: string): AfricanVoiceRecord | null {
   const code = language.trim().toLowerCase();
-  if (!LANGUAGE_CODES.has(code)) return null;
-  return AFRICAN_VOICE_CATALOG[code as AfricanLanguageCode];
+  return AFRICAN_VOICE_CATALOG[code] ?? null;
 }

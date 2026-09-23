@@ -10,7 +10,6 @@ import {
   HF_PROVIDER_FAILED_MESSAGE,
   HF_TIMEOUT_MESSAGE,
   RESEARCH_ONLY_MESSAGE,
-  UNVERIFIED_LANGUAGE_MESSAGE,
   type Giga3SpeechRequest,
 } from "@/lib/voice/africanVoiceTypes";
 import { handleGiga3SpeechRequest, runGiga3Speech } from "@/lib/voice/giga3SpeechApi";
@@ -179,9 +178,10 @@ describe("Hugging Face token handling", () => {
 describe("Giga3 African speech routing", () => {
   afterEach(() => {
     delete process.env.HF_TOKEN;
+    delete process.env.KHAYA_SUBSCRIPTION_KEY;
   });
 
-  it("routes Akan/Twi to MMS aka and keeps it research-only", async () => {
+  it("routes Akan/Twi to Khaya and does not call Hugging Face", async () => {
     process.env.HF_TOKEN = fakeToken();
     const fetchImpl = vi.fn();
     const response = await runGiga3Speech(speechRequest("tw"), {
@@ -190,45 +190,40 @@ describe("Giga3 African speech routing", () => {
     });
     const body = decodeJson(response.body);
     expect(response.status).toBe(503);
-    expect(body.modelId).toBe("facebook/mms-tts-aka");
-    expect(body.license).toBe("cc-by-nc-4.0");
+    expect(body.modelId).toBe("ghananlp-tts-v2");
+    expect(body.language).toBe("twi");
+    expect(body.license).toBe("khaya-eula");
     expect(body.hostedInferenceAvailable).toBe(false);
-    expect(body.commercialProductionEnabled).toBe(false);
-    expect(body.availability).toBe("development_research_only");
-    expect(body.error).toBe(RESEARCH_ONLY_MESSAGE);
+    expect(body.availability).toBe("khaya");
+    expect(body.error).toBe("Khaya language service is not configured.");
     expect(JSON.stringify(body)).not.toContain(fakeToken());
     expect(fetchImpl).not.toHaveBeenCalled();
-    expect(AFRICAN_VOICE_CATALOG.tw.commercialProductionEnabled).toBe(false);
+    expect(AFRICAN_VOICE_CATALOG.tw.khayaLanguage).toBe("twi");
+    expect(AFRICAN_VOICE_CATALOG.tw.hostedInferenceAvailable).toBe(false);
   });
 
-  it("routes Ewe to MMS ewe and keeps it research-only", async () => {
-    const fetchImpl = vi.fn();
-    const response = await runGiga3Speech(speechRequest("ee", "Mido gbe na mi."), {
-      fetchImpl: fetchImpl as unknown as HostedSpeechFetcher,
-      endpoint: "https://voice.example.test/mms",
-    });
+  it("routes Ewe to Khaya ISO code ewe", async () => {
+    const response = await runGiga3Speech(speechRequest("ee", "Mido gbe na mi."));
     const body = decodeJson(response.body);
     expect(response.status).toBe(503);
-    expect(body.modelId).toBe("facebook/mms-tts-ewe");
-    expect(body.error).toBe(RESEARCH_ONLY_MESSAGE);
-    expect(body.hostedInferenceAvailable).toBe(false);
-    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(body.language).toBe("ewe");
+    expect(body.modelId).toBe("ghananlp-tts-v2");
+    expect(body.error).toBe("Khaya language service is not configured.");
     const viaHandler = await handleGiga3SpeechRequest(speechRequest("ee", "Mido gbe na mi."));
-    expect(decodeJson(viaHandler.body).modelId).toBe("facebook/mms-tts-ewe");
+    expect(decodeJson(viaHandler.body).language).toBe("ewe");
   });
 
-  it("rejects unverified and unknown languages", async () => {
-    for (const language of ["ha", "yo", "gaa", "dag", "fat", "zz"]) {
+  it("rejects unknown languages and keeps Khaya languages ready", async () => {
+    const unknown = await handleGiga3SpeechRequest(speechRequest("zz"));
+    const unknownBody = decodeJson(unknown.body);
+    expect(unknown.status).toBe(422);
+    expect(unknownBody.code).toBe("unsupported_language");
+    for (const language of ["ha", "yo", "gaa", "dag", "fat"]) {
       const response = await handleGiga3SpeechRequest(speechRequest(language));
       const body = decodeJson(response.body);
-      expect(response.status).toBe(422);
-      expect(body.code).toBe("unsupported_language");
-      expect(body.modelId).toBeUndefined();
-      if (language === "zz") {
-        expect(body.error).toBe("This language is not supported for Giga3 African voice.");
-      } else {
-        expect(body.error).toBe(UNVERIFIED_LANGUAGE_MESSAGE);
-      }
+      expect(response.status).toBe(503);
+      expect(body.modelId).toBe("ghananlp-tts-v2");
+      expect(body.error).toBe("Khaya language service is not configured.");
     }
   });
 

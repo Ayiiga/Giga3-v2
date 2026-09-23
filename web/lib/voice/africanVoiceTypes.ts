@@ -51,7 +51,7 @@ export type SpeechFailureBody = {
   license?: string;
   hostedInferenceAvailable?: boolean;
   commercialProductionEnabled?: boolean;
-  availability?: "development_research_only" | "unverified";
+  availability?: "development_research_only" | "unverified" | "khaya";
   backends: readonly VoiceBackendKind[];
 };
 

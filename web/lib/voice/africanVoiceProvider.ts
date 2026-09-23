@@ -5,6 +5,7 @@
  */
 
 import {
+  createCommercialVoiceProvider,
   createHuggingFaceHostedProvider,
   createSelfHostedMmsProvider,
   type AfricanVoiceBackend,
@@ -48,6 +49,7 @@ export type ProviderSynthesisResult =
 
 export type AfricanVoiceRuntime = {
   fetchImpl?: HostedSpeechFetcher;
+  khayaFetch?: import("../../../convex/khaya/tts").KhayaFetcher;
   timeoutMs?: number;
   endpoint?: string;
 };
@@ -97,19 +99,7 @@ export async function synthesizeWithAfricanProvider(
   input: { input: string; voice: string },
   runtime: AfricanVoiceRuntime = {}
 ): Promise<ProviderSynthesisResult> {
-  if (record.availability === "unverified" || !record.modelId) {
-    return blocked(
-      record,
-      { ok: false, code: "unsupported_language", error: UNVERIFIED_LANGUAGE_MESSAGE },
-      null
-    );
-  }
-
-  if (!record.commercialProductionEnabled) {
-    return blocked(record, { ok: false, code: "not_enabled", error: RESEARCH_ONLY_MESSAGE }, null);
-  }
-
-  if (record.hostedInferenceAvailable) {
+  if (record.hostedInferenceAvailable && record.commercialProductionEnabled && record.modelId) {
     if (!runtime.endpoint) {
       return blocked(
         record,
@@ -123,11 +113,11 @@ export async function synthesizeWithAfricanProvider(
       fetchImpl: runtime.fetchImpl,
       timeoutMs: runtime.timeoutMs,
     });
-    const result = await backend.synthesize(input.input);
-    if (!result.ok) return blocked(record, result, backend.kind);
+    const hosted = await backend.synthesize(input.input);
+    if (!hosted.ok) return blocked(record, hosted, backend.kind);
     return {
       ok: true,
-      audio: result.audio,
+      audio: hosted.audio,
       contentType: "audio/wav",
       backend: backend.kind,
       modelId: record.modelId,
@@ -136,6 +126,40 @@ export async function synthesizeWithAfricanProvider(
       commercialProductionEnabled: true,
       availability: record.availability,
     };
+  }
+
+  if (record.khayaLanguage) {
+    const backend = createCommercialVoiceProvider({
+      language: record.khayaLanguage,
+      voice: input.voice,
+      fetchImpl: runtime.khayaFetch,
+      timeoutMs: runtime.timeoutMs,
+    });
+    const commercial = await backend.synthesize(input.input);
+    if (!commercial.ok) return blocked(record, commercial, backend.kind);
+    return {
+      ok: true,
+      audio: commercial.audio,
+      contentType: "audio/wav",
+      backend: backend.kind,
+      modelId: "ghananlp-tts-v2",
+      license: "khaya-eula",
+      hostedInferenceAvailable: false,
+      commercialProductionEnabled: true,
+      availability: "khaya",
+    };
+  }
+
+  if (record.availability === "unverified" || !record.modelId) {
+    return blocked(
+      record,
+      { ok: false, code: "unsupported_language", error: UNVERIFIED_LANGUAGE_MESSAGE },
+      null
+    );
+  }
+
+  if (!record.commercialProductionEnabled) {
+    return blocked(record, { ok: false, code: "not_enabled", error: RESEARCH_ONLY_MESSAGE }, null);
   }
 
   const selfHosted = createSelfHostedMmsProvider();

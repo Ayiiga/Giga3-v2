@@ -22,11 +22,11 @@ function isBlockedVoiceHost(hostname: string): boolean {
   return host === "huggingface.co" || host.endsWith(BLOCKED_HOST_SUFFIX);
 }
 
-export function resolveGiga3SpeechUrl(baseUrl: string): string | null {
+export function resolveGiga3SpeechUrl(baseUrl: string, path: string = GIGA3_SPEECH_PATH): string | null {
   let url: URL;
   try {
     const base = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-    url = new URL(GIGA3_SPEECH_PATH, base);
+    url = new URL(path, base);
   } catch {
     return null;
   }

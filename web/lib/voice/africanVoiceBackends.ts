@@ -5,6 +5,8 @@
  * and neither is selected while a checkpoint is research-only.
  */
 
+import { KhayaServiceError } from "../../../convex/khaya/subscription";
+import { synthesizeKhayaTts, type KhayaFetcher } from "../../../convex/khaya/tts";
 import { type SpeechFailureCode, type VoiceBackendKind } from "@/lib/voice/africanVoiceTypes";
 import {
   HuggingFaceVoiceError,
@@ -63,15 +65,30 @@ export function createSelfHostedMmsProvider(): AfricanVoiceBackend {
   };
 }
 
-export function createCommercialVoiceProvider(): AfricanVoiceBackend {
+export function createCommercialVoiceProvider(options?: {
+  language?: string;
+  voice?: string;
+  fetchImpl?: KhayaFetcher;
+  timeoutMs?: number;
+}): AfricanVoiceBackend {
   return {
     kind: "commercial",
-    async synthesize() {
-      return {
-        ok: false,
-        code: "not_configured",
-        error: "A commercial African TTS provider is not configured.",
-      };
+    async synthesize(input?: string) {
+      try {
+        const audio = await synthesizeKhayaTts({
+          text: input ?? "",
+          language: options?.language ?? "twi",
+          speakerId: options?.voice,
+          fetchImpl: options?.fetchImpl,
+          timeoutMs: options?.timeoutMs,
+        });
+        return { ok: true, audio };
+      } catch (err) {
+        if (err instanceof KhayaServiceError) {
+          return { ok: false, code: err.code, error: err.message };
+        }
+        return { ok: false, code: "provider_failure", error: "Khaya language service failed." };
+      }
     },
   };
 }

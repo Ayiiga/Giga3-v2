@@ -5,6 +5,7 @@
  * The static PWA must not call Hugging Face itself.
  */
 
+import { synthesizeGiga3AfricanSpeech } from "../../../convex/khaya/speech";
 import { lookupAfricanVoice, type AfricanVoiceRecord } from "@/lib/voice/africanVoiceCatalog";
 import { synthesizeWithAfricanProvider, type AfricanVoiceRuntime } from "@/lib/voice/africanVoiceProvider";
 import {
@@ -104,7 +105,7 @@ export async function runGiga3Speech(
   request: Giga3SpeechRequest,
   deps: SpeechRuntimeDeps = {}
 ): Promise<SpeechHttpResponse> {
-  if (request.language === "en" || request.language.startsWith("en-")) {
+  if (request.language === "en" || request.language === "eng" || request.language.startsWith("en-")) {
     return failure("unsupported_language", ENGLISH_STAYS_ON_DEVICE_MESSAGE, { language: request.language });
   }
 
@@ -112,6 +113,37 @@ export async function runGiga3Speech(
   const record = lookup(request.language);
   if (!record) {
     return failure("unsupported_language", UNSUPPORTED_LANGUAGE_MESSAGE, { language: request.language });
+  }
+
+  if (record.hostedInferenceAvailable && record.commercialProductionEnabled) {
+    const hosted = await synthesizeWithAfricanProvider(
+      record,
+      { input: request.input, voice: request.voice },
+      deps
+    );
+    if (!hosted.ok) {
+      return failure(hosted.code, hosted.error, {
+        language: record.code,
+        modelId: hosted.modelId ?? undefined,
+        license: hosted.license ?? undefined,
+        hostedInferenceAvailable: hosted.hostedInferenceAvailable,
+        commercialProductionEnabled: hosted.commercialProductionEnabled,
+        availability: hosted.availability,
+        backends: hosted.backends,
+      });
+    }
+    return {
+      status: 200,
+      headers: { "content-type": "audio/wav" },
+      body: hosted.audio,
+    };
+  }
+
+  if (record.khayaLanguage) {
+    return synthesizeGiga3AfricanSpeech(request, {
+      fetchImpl: deps.khayaFetch,
+      timeoutMs: deps.timeoutMs,
+    });
   }
 
   const result = await synthesizeWithAfricanProvider(
