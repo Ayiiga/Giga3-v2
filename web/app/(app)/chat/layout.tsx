@@ -8,7 +8,7 @@ export const metadata: Metadata = publicMetadata({
   title: "Giga3 AI Chat — Learning, Research, and Creativity",
   description:
     "Giga3 AI Chat offers Fast, Smart, Vision, and Creator modes for homework help, research, coding, writing, and everyday productivity. Sign in to start a conversation.",
-  index: true,
+  index: false,
 });
 
 /**

@@ -10,10 +10,8 @@ export type PasswordResetResult = {
   ok: boolean;
   emailed: boolean;
   deliveryConfigured?: boolean;
+  /** Always true in current responses so the UI cannot reveal whether the email exists. */
   accountMatched?: boolean;
-  deliveryError?: string;
-  /** True when Resend blocked the user inbox but support received the link. */
-  supportNotified?: boolean;
 };
 
 async function authAction<T>(

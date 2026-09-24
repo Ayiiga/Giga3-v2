@@ -13,5 +13,6 @@ playwright/.cache/
 web/node_modules/
 web/.next/
 web/out/
+web/.indexnow-pending.json
 web/public/sw.js.map
 *.log

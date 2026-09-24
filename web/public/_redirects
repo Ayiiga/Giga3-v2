@@ -6,7 +6,6 @@
 #
 /payment/success/*  /payment/success/index.html  200
 /payment/failed/*   /payment/failed/index.html   200
-/chat/*               /chat/index.html               200
 /offline.html         /offline.html                  200
 # Per-post/profile/item pages are pre-rendered at build — do not rewrite them to
 # noindex legacy shells (that blocked Google from indexing public content).
@@ -22,8 +21,5 @@
 /pricing.html       /pricing/                    301
 /payment-success.html /payment/success/          301
 
-# Canonical host: apex → www (Cloudflare Pages honours absolute-URL redirects when both domains are attached)
-https://giga3ai.com/*  https://www.giga3ai.com/:splat  301
-
-# SPA fallback — hard reload on unknown routes serves app shell (Next.js client router / 404 UI)
-/*  /index.html  200
+# Unknown URLs must 404 via web/out/404.html. Do not rewrite them to /index.html.
+# Apex → www is handled in functions/_middleware.js. Pages _redirects cannot change hostname.

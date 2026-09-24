@@ -80,7 +80,8 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `FRONTEND_URL` | **Yes (prod)** | Paystack/Stripe redirects + password-reset links, e.g. `https://www.giga3ai.com` |
    | `RESEND_API_KEY` | **Yes for email** | Password reset + engagement emails via [Resend](https://resend.com). Without this, forgot-password cannot deliver mail. |
    | `AUTH_FROM_EMAIL` | Recommended | Default `Giga3 AI <onboarding@resend.dev>` (testing only — can only deliver to the Resend account owner). After verifying `giga3ai.com`, set `Giga3 AI <noreply@giga3ai.com>`. |
-   | `AUTH_EMAIL_FALLBACK_INBOX` | Recommended | Receives reset-link copies when Resend blocks the user inbox (default `ayiiga3@gmail.com`). |
+   | `AUTH_EMAIL_FALLBACK_INBOX` | Optional | Receives operational notices when a reset email fails to send. It must never receive another user's reset link. Default `ayiiga3@gmail.com`. |
+   | `GOOGLE_CLIENT_ID` | For Google sign-in | OAuth web client ID. Same value as `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. Not a client secret. |
    | `STRIPE_SECRET_KEY` | Legacy only | Old token checkout in `payments.ts` |
    | `HF_TOKEN` | No (MMS not enabled) | Server-side Hugging Face token. Fine-grained read token. Not read by the static site. |
    | `KHAYA_SUBSCRIPTION_KEY` | For African voice and translation | GhanaNLP / Khaya key. Sent only as `Ocp-Apim-Subscription-Key` from Convex. |
@@ -126,7 +127,7 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
       - Add the DNS records Resend shows (SPF/MX + DKIM CNAMEs) in **Cloudflare → giga3ai.com → DNS**
       - Click **Verify** in Resend (propagation can take a few minutes)
       - Set `AUTH_FROM_EMAIL` to `Giga3 AI <noreply@giga3ai.com>` on Convex
-   2. Until the domain is verified, `onboarding@resend.dev` can only deliver to the Resend owner inbox (`ayiiga3@gmail.com`). Forgot-password for other users emails a forwardable copy to `AUTH_EMAIL_FALLBACK_INBOX`.
+   2. Until the domain is verified, `onboarding@resend.dev` can only deliver to the Resend owner inbox. Forgot-password still addresses the reset link **only** to the user's registered email. It does not forward the link to `AUTH_EMAIL_FALLBACK_INBOX`. That inbox may get a delivery-failure notice with no reset URL. Verify the domain before expecting other users to receive mail.
    3. Set GitHub secret `RESEND_API_KEY` (CI syncs it on Convex deploy) **and** set the same key on the Convex production deployment. Prefer a **full-access** key if you will manage domains via API (`node scripts/setup-resend-domain.mjs`).
    4. Test Forgot password on `/chat/login/` for a non-owner address — you should receive a 1-hour reset link after domain verify.
    5. Engagement digests run **daily** (UTC 15:00) for inactive opted-in users (still occasional per person — about every 4+ days); unsubscribe via `/email/unsubscribe` on the Convex site.
@@ -150,6 +151,7 @@ Add these under **Settings → Secrets and variables → Actions → Repository 
 | `NEXT_PUBLIC_SUPABASE_URL` | Required for Supabase mode | `https://bgkkrezloideuwfwkloz.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Required for Supabase mode | Supabase anon public key for project `bgkkrezloideuwfwkloz` |
 | `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Recommended | Paystack Inline popup (`pk_live_…`); fallback: Convex `PAYSTACK_PUBLIC_KEY` via `paystack.getClientConfig` |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | For Google sign-in | Public OAuth web client ID. Must match Convex `GOOGLE_CLIENT_ID`. Do not store a Google client secret in GitHub or the client bundle. |
 | ~~`CF_PROJECT_NAME`~~ | **Not used** | Workflow deploys to hardcoded project **`giga3ai`** |
 
 **`CF_PROJECT_NAME` confirmation:** the Cloudflare Pages project name must be **`giga3ai`**. The GitHub workflow sets `projectName: giga3ai` explicitly so the secret is not required.
@@ -232,6 +234,7 @@ Set in GitHub Actions (or `web/.env.local` for local production builds):
 | `NEXT_PUBLIC_GIGA3_DATA_BACKEND` | `web/lib/dataBackend.ts` | `supabase` switches chat/media history reads and writes to Supabase |
 | `NEXT_PUBLIC_SUPABASE_URL` | `web/lib/supabase.ts` | Required when data backend is `supabase` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `web/lib/supabase.ts` | Required when data backend is `supabase` |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | `web/components/chat/GoogleSignInButton.tsx` | Public Google Identity Services client ID. Omit to hide the Google button. |
 
 **Convention:** This repo is Next.js only. Do **not** use `EXPO_PUBLIC_CONVEX_*` — those names are not read by the app.
 
@@ -279,7 +282,20 @@ curl -s https://perfect-lark-521.convex.site/health
 
 Wire uptime monitors to this URL. Implementation: `convex/health.ts` routed in `convex/http.ts`.
 
-Static sitemap is generated at build time (`web/app/sitemap.ts` → `https://www.giga3ai.com/sitemap.xml`). See `docs/STEP_9_GLOBAL_PLATFORM.md` for the full Step 9 release report.
+Static sitemaps are generated at build time by `web/scripts/generate-public-seo-sitemap.mjs`. The only sitemap to submit is `https://www.giga3ai.com/sitemap.xml`.
+
+## Search engines
+
+Canonical host is `https://www.giga3ai.com`. `functions/_middleware.js` redirects `https://giga3ai.com` to that host. HTTP on either host is upgraded by Cloudflare before the function runs, so `http://giga3ai.com/` can take two hops (HTTPS, then www). Pages `_redirects` cannot change the hostname.
+
+This repository cannot read Google Search Console or Bing Webmaster Tools. Do not treat a successful deploy as proof of indexing.
+
+Manual steps once those accounts are available:
+
+1. Add and verify the property `https://www.giga3ai.com` in [Google Search Console](https://search.google.com/search-console) and [Bing Webmaster Tools](https://www.bing.com/webmasters).
+2. Submit `https://www.giga3ai.com/sitemap.xml` in both. There is no `sitemap-index.xml`.
+3. Inspect `https://www.giga3ai.com/` and record the canonical Google or Bing selected, the indexing state, and any exclusion reason. Those results are not known from this repo.
+4. Optional IndexNow: set GitHub secret `INDEXNOW_KEY` (8–128 letters, digits, or hyphens). The Pages build writes `/{key}.txt` into the deploy, and the workflow POSTs only public URLs whose sitemap `lastmod` changed. Private routes are omitted. Unchanged URLs are not sent. If the secret is unset, the step logs a skip and the deploy still succeeds.
 
 ---
 

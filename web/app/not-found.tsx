@@ -5,7 +5,8 @@ import { Container } from "@/components/ui/Container";
 export const metadata: Metadata = {
   title: "Page not found",
   description: "The page you were looking for does not exist on Giga3 AI.",
-  robots: { index: false, follow: true },
+  robots: { index: false, follow: false },
+  alternates: { canonical: "/404.html" },
 };
 
 export default function NotFound() {

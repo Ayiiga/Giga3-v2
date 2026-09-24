@@ -30,6 +30,16 @@ import {
   openAiImageRequiresSubscription,
 } from "./featureFlags";
 import { shouldOfferOpenAiImageGeneration } from "./premiumImage";
+import {
+  decideGoogleAccountLink,
+  googleProfilePatch,
+  type GoogleLinkAccount,
+  type GoogleLinkRejectCode,
+} from "./googleAccountLink";
+
+type GoogleSignInResult =
+  | { ok: true; kind: "create" | "sign-in" | "link"; email: string }
+  | { ok: false; code: GoogleLinkRejectCode };
 
 /**
  * Upsert the user record for an email whose ownership has ALREADY been proven
@@ -66,7 +76,115 @@ async function ensureUserRecord(ctx: MutationCtx, rawEmail: string) {
   return await grantStarterCreditsIfNeeded(ctx, email, user);
 }
 
-/** Server-only upsert used by verified auth flows (password, reset link, Supabase). */
+function googleLinkAccount(user: {
+  email: string;
+  googleSub?: string;
+  accountStatus?: "active" | "suspended";
+}): GoogleLinkAccount {
+  return {
+    email: user.email,
+    googleSub: user.googleSub?.trim() || null,
+    suspended: user.accountStatus === "suspended",
+  };
+}
+
+/**
+ * Create, link, or select the Giga3 account for an already-verified Google
+ * identity. Does not mint a session. Callers must verify the ID token first.
+ */
+export const completeGoogleSignInInternal = internalMutation({
+  args: {
+    googleSub: v.string(),
+    email: v.string(),
+    emailVerified: v.boolean(),
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+  },
+  handler: async (ctx, args): Promise<GoogleSignInResult> => {
+    const email = args.email.trim().toLowerCase();
+    const googleSub = args.googleSub.trim();
+    const bySubDoc = googleSub
+      ? await ctx.db
+          .query("users")
+          .withIndex("by_googleSub", (q) => q.eq("googleSub", googleSub))
+          .first()
+      : null;
+    const byEmailDoc = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+
+    const decision = decideGoogleAccountLink({
+      googleSub,
+      email,
+      emailVerified: args.emailVerified,
+      bySub: bySubDoc ? googleLinkAccount(bySubDoc) : null,
+      byEmail: byEmailDoc ? googleLinkAccount(byEmailDoc) : null,
+    });
+
+    if (decision.kind === "reject") {
+      return { ok: false as const, code: decision.code satisfies GoogleLinkRejectCode };
+    }
+
+    const now = Date.now();
+    if (decision.kind === "create") {
+      const created = await ensureUserRecord(ctx, decision.email);
+      const profile = googleProfilePatch({
+        name: args.name,
+        picture: args.image,
+      });
+      await ctx.db.patch(created._id, {
+        googleSub,
+        emailVerificationTime: created.emailVerificationTime ?? now,
+        ...profile,
+      });
+      return { ok: true as const, kind: "create" as const, email: created.email };
+    }
+
+    const user =
+      decision.kind === "sign-in"
+        ? bySubDoc?.email === decision.email
+          ? bySubDoc
+          : await ctx.db
+              .query("users")
+              .withIndex("by_email", (q) => q.eq("email", decision.email))
+              .first()
+        : byEmailDoc;
+
+    if (!user) {
+      return { ok: false as const, code: "invalid_identity" as const };
+    }
+
+    const profile = googleProfilePatch({
+      name: args.name,
+      picture: args.image,
+      existingName: user.name,
+      existingImage: user.image,
+    });
+    const patch: {
+      googleSub?: string;
+      emailVerificationTime?: number;
+      name?: string;
+      image?: string;
+    } = { ...profile };
+    if (decision.kind === "link") {
+      patch.googleSub = googleSub;
+    }
+    if (args.emailVerified && user.email === email && !user.emailVerificationTime) {
+      patch.emailVerificationTime = now;
+    }
+    if (Object.keys(patch).length > 0) {
+      await ctx.db.patch(user._id, patch);
+    }
+    return {
+      ok: true as const,
+      kind: decision.kind,
+      email: user.email,
+    };
+  },
+});
+
+/** Server-only upsert used by verified auth flows (password, reset link, Supabase, Google). */
 export const ensureUserInternal = internalMutation({
   args: { email: v.string() },
   handler: async (ctx, args) => {

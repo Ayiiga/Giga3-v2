@@ -39,6 +39,8 @@ const HOME_OFFERS = [
 export default function HomePage() {
   return (
     <>
+      <JsonLd type="WebSite" />
+      <JsonLd type="Organization" />
       <JsonLd type="WebApplication" />
       <JsonLd offers={HOME_OFFERS} />
       <Hero />

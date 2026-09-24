@@ -109,12 +109,26 @@ describe("password recovery and account flows — source invariants", () => {
 
   it("reset completion uses constant-time compare, is single-use and revokes old sessions", () => {
     const complete = block("resetPasswordWithToken");
-    expect(complete).toContain("constantTimeEqualHex(tokenHash, creds.passwordResetTokenHash)");
-    expect(complete).not.toMatch(/tokenHash !== creds\.passwordResetTokenHash/);
+    const policy = read("convex/passwordResetPolicy.ts");
+    expect(complete).toContain("assessResetToken(");
+    expect(complete).toContain("creds?.passwordResetTokenHash");
+    expect(policy).toContain("constantTimeEqualHex(tokenHash, input.storedHash)");
+    expect(policy).not.toMatch(/tokenHash !==/);
     expect(complete).toContain("internal.users.revokeSessionsInternal");
     expect(read("convex/passwordAuth.ts")).toMatch(
       /updatePasswordHashInternal[\s\S]*passwordResetTokenHash: undefined/
     );
+  });
+
+  it("reset links are addressed only to the registered email", () => {
+    const reset = block("requestPasswordReset");
+    const mail = read("convex/passwordResetMail.ts");
+    expect(reset).toContain("buildPasswordResetMessage(email, resetUrl)");
+    expect(reset).not.toContain("sendResetEmailFallback");
+    expect(reset).not.toContain("getEmailFallbackInbox");
+    expect(reset).not.toMatch(/console\.(log|error|warn|info)\([^)]*resetUrl/);
+    expect(mail).toContain("assertPasswordResetRecipient");
+    expect(mail).not.toContain("please forward");
   });
 
   it("session revocation is enforced by requireSession when a ctx is supplied", () => {
