@@ -214,6 +214,63 @@ export const ITEM_PRONUNCIATION: Record<string, Record<AfricanLanguageKey, Local
   ),
 };
 
+/** Classroom loanwords for newer catalog items. Spoken in English when no native form is stored. */
+function loanword(name: string, phonetic: string): Record<AfricanLanguageKey, LocalWord> {
+  const local = { text: name, phonetic };
+  return word(local, local, local, local, local, local);
+}
+
+const LOANWORD_ITEMS: Record<string, [string, string]> = {
+  pineapple: ["Pineapple", "pine-ap-ul"],
+  watermelon: ["Watermelon", "waw-ter-mel-on"],
+  grapes: ["Grapes", "grayps"],
+  strawberry: ["Strawberry", "straw-beh-ree"],
+  coconut: ["Coconut", "koh-koh-nut"],
+  pear: ["Pear", "pair"],
+  lemon: ["Lemon", "lem-on"],
+  avocado: ["Avocado", "ah-voh-kah-doh"],
+  guava: ["Guava", "gwah-vah"],
+  plantain: ["Plantain", "plan-tin"],
+  onion: ["Onion", "un-yun"],
+  pepper: ["Pepper", "pep-er"],
+  cabbage: ["Cabbage", "kab-ij"],
+  okra: ["Okra", "oh-krah"],
+  "garden-egg": ["Garden egg", "gar-den eg"],
+  beans: ["Beans", "beenz"],
+  cucumber: ["Cucumber", "kyoo-kum-ber"],
+  corn: ["Corn", "korn"],
+  ginger: ["Ginger", "jin-jer"],
+  sheep: ["Sheep", "sheep"],
+  cow: ["Cow", "kow"],
+  pig: ["Pig", "pig"],
+  duck: ["Duck", "duk"],
+  rabbit: ["Rabbit", "rab-it"],
+  fish: ["Fish", "fish"],
+  bird: ["Bird", "berd"],
+  monkey: ["Monkey", "mung-kee"],
+  elephant: ["Elephant", "el-eh-fant"],
+  lion: ["Lion", "ly-on"],
+  turtle: ["Turtle", "tur-tul"],
+  snake: ["Snake", "snayk"],
+  frog: ["Frog", "frog"],
+  horse: ["Horse", "hors"],
+  donkey: ["Donkey", "dong-kee"],
+  parrot: ["Parrot", "pair-ut"],
+  mouth: ["Mouth", "mowth"],
+  ears: ["Ears", "eerz"],
+  head: ["Head", "hed"],
+  legs: ["Legs", "legz"],
+  feet: ["Feet", "feet"],
+  teeth: ["Teeth", "teeth"],
+  hair: ["Hair", "hair"],
+  fingers: ["Fingers", "fing-gerz"],
+  stomach: ["Stomach", "stum-uk"],
+};
+
+for (const [id, [name, phonetic]] of Object.entries(LOANWORD_ITEMS)) {
+  ITEM_PRONUNCIATION[id] = loanword(name, phonetic);
+}
+
 const VOICE_SAMPLES: Record<string, { english: string; native: string; phonetic: string }> = {
   english: {
     english: "Hello! I am your English teacher. Let's learn together!",

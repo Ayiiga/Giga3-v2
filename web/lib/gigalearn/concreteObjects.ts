@@ -7,6 +7,12 @@
 
 import type { GigaLearnLevelId } from "@/lib/gigalearn/levels";
 import { speakWithGigaLearnVoice } from "@/lib/gigalearn/speechSynthesis";
+import {
+  LEARN_ANIMALS,
+  LEARN_BODY,
+  LEARN_FRUITS,
+  LEARN_VEGETABLES,
+} from "../../../convex/learnContent";
 
 export type ConcreteCategoryId =
   | "fruits"
@@ -35,34 +41,19 @@ export const CONCRETE_CATEGORIES: ConcreteCategory[] = [
     id: "fruits",
     title: "Fruits",
     badge: "Concrete",
-    items: [
-      { id: "apple", emoji: "🍎", title: "Apple", subtitle: "Count 1–5 fruits" },
-      { id: "banana", emoji: "🍌", title: "Banana", subtitle: "Count 1–5 fruits" },
-      { id: "orange", emoji: "🍊", title: "Orange", subtitle: "Count 1–5 fruits" },
-      { id: "mango", emoji: "🥭", title: "Mango", subtitle: "Count 1–5 fruits" },
-      { id: "pawpaw", emoji: "🍈", title: "Pawpaw", subtitle: "Count 1–5 fruits" },
-    ],
+    items: LEARN_FRUITS,
   },
   {
     id: "vegetables",
     title: "Vegetables",
     badge: "Concrete",
-    items: [
-      { id: "carrot", emoji: "🥕", title: "Carrot", subtitle: "See & touch veggies" },
-      { id: "potato", emoji: "🥔", title: "Potato", subtitle: "See & touch veggies" },
-      { id: "tomato", emoji: "🍅", title: "Tomato", subtitle: "See & touch veggies" },
-    ],
+    items: LEARN_VEGETABLES,
   },
   {
     id: "animals",
     title: "Animals",
     badge: "Concrete",
-    items: [
-      { id: "dog", emoji: "🐶", title: "Dog", subtitle: "Animals around us" },
-      { id: "cat", emoji: "🐱", title: "Cat", subtitle: "Animals around us" },
-      { id: "chicken", emoji: "🐔", title: "Chicken", subtitle: "Animals around us" },
-      { id: "goat", emoji: "🐐", title: "Goat", subtitle: "Animals around us" },
-    ],
+    items: LEARN_ANIMALS,
   },
   {
     id: "shapes",
@@ -86,11 +77,7 @@ export const CONCRETE_CATEGORIES: ConcreteCategory[] = [
     id: "body",
     title: "My Body",
     badge: "Concrete",
-    items: [
-      { id: "hands", emoji: "🙌", title: "Hands", subtitle: "Touch & see body" },
-      { id: "eyes", emoji: "👀", title: "Eyes", subtitle: "Touch & see body" },
-      { id: "nose", emoji: "👃", title: "Nose", subtitle: "Touch & see body" },
-    ],
+    items: LEARN_BODY,
   },
 ];
 
