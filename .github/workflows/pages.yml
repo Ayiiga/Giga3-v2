@@ -259,3 +259,9 @@ jobs:
           done
           echo "::error::Cloudflare Pages deployment failed after ${max_attempts} attempts."
           exit 1
+
+      - name: Notify IndexNow of changed public URLs
+        working-directory: web
+        env:
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+        run: node scripts/indexnow-submit.mjs

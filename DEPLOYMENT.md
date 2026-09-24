@@ -282,7 +282,20 @@ curl -s https://perfect-lark-521.convex.site/health
 
 Wire uptime monitors to this URL. Implementation: `convex/health.ts` routed in `convex/http.ts`.
 
-Static sitemap is generated at build time (`web/app/sitemap.ts` → `https://www.giga3ai.com/sitemap.xml`). See `docs/STEP_9_GLOBAL_PLATFORM.md` for the full Step 9 release report.
+Static sitemaps are generated at build time by `web/scripts/generate-public-seo-sitemap.mjs`. The only sitemap to submit is `https://www.giga3ai.com/sitemap.xml`.
+
+## Search engines
+
+Canonical host is `https://www.giga3ai.com`. `functions/_middleware.js` redirects `https://giga3ai.com` to that host. HTTP on either host is upgraded by Cloudflare before the function runs, so `http://giga3ai.com/` can take two hops (HTTPS, then www). Pages `_redirects` cannot change the hostname.
+
+This repository cannot read Google Search Console or Bing Webmaster Tools. Do not treat a successful deploy as proof of indexing.
+
+Manual steps once those accounts are available:
+
+1. Add and verify the property `https://www.giga3ai.com` in [Google Search Console](https://search.google.com/search-console) and [Bing Webmaster Tools](https://www.bing.com/webmasters).
+2. Submit `https://www.giga3ai.com/sitemap.xml` in both. There is no `sitemap-index.xml`.
+3. Inspect `https://www.giga3ai.com/` and record the canonical Google or Bing selected, the indexing state, and any exclusion reason. Those results are not known from this repo.
+4. Optional IndexNow: set GitHub secret `INDEXNOW_KEY` (8–128 letters, digits, or hyphens). The Pages build writes `/{key}.txt` into the deploy, and the workflow POSTs only public URLs whose sitemap `lastmod` changed. Private routes are omitted. Unchanged URLs are not sent. If the secret is unset, the step logs a skip and the deploy still succeeds.
 
 ---
 

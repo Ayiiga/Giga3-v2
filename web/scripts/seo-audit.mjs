@@ -220,11 +220,29 @@ try {
   err("/blog/", "blog index.html missing from build output");
 }
 
+try {
+  const notFoundPath = join(outDir, "404.html");
+  if (!existsSync(notFoundPath)) err("/404.html", "static export is missing 404.html");
+  else {
+    const notFound = readFileSync(notFoundPath, "utf8");
+    if (!/noindex/i.test(notFound)) err("/404.html", "404 page is indexable");
+    if (/rel=["']canonical["'][^>]*href=["']https:\/\/www\.giga3ai\.com\/["']/i.test(notFound)) {
+      err("/404.html", "404 canonical points at the homepage");
+    }
+  }
+} catch {
+  err("/404.html", "404.html missing from build output");
+}
+
 // robots.txt sanity.
 try {
   const robots = readFileSync(join(outDir, "robots.txt"), "utf8");
-  if (!/Sitemap:\s*https:\/\/www\.giga3ai\.com\/sitemap\.xml/.test(robots)) {
-    err("/robots.txt", "robots.txt does not reference sitemap.xml");
+  const sitemapLines = robots.match(/^Sitemap:\s*\S+/gim) ?? [];
+  if (sitemapLines.length !== 1 || sitemapLines[0] !== "Sitemap: https://www.giga3ai.com/sitemap.xml") {
+    err("/robots.txt", "robots.txt must reference only https://www.giga3ai.com/sitemap.xml");
+  }
+  if (/sitemap-index\.xml/i.test(robots)) {
+    err("/robots.txt", "robots.txt still references sitemap-index.xml");
   }
   const disallows = [...robots.matchAll(/^Disallow:\s*(\S+)/gim)].map((m) => m[1]);
   for (const route of sitemapRoutes) {

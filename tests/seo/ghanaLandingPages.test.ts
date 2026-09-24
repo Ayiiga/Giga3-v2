@@ -54,7 +54,7 @@ describe("Ghana SEO landing pages", () => {
     for (const path of GHANA_LANDING_PATHS) {
       expect(sitemapScript).toContain(`"${path}/"`);
     }
-    expect(sitemapScript).toContain('"/chat/"');
+    expect(sitemapScript).not.toContain('"/chat/"');
     expect(sitemapScript).toContain("ensureRobotsSitemapIndex");
   });
 

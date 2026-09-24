@@ -3,9 +3,9 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("service worker cache version", () => {
-  it("uses giga3-v18 cache with offline.html fallback", () => {
+  it("uses giga3-v19 cache with offline.html fallback", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_VERSION = "giga3-v18"');
+    expect(sw).toContain('CACHE_VERSION = "giga3-v19"');
     expect(sw).toContain('OFFLINE_URL = "/offline.html"');
     expect(sw).toContain("requireInteraction: true");
     expect(sw).toContain("NETWORK_TIMEOUT_MS");
@@ -17,6 +17,11 @@ describe("service worker cache version", () => {
   it("network-first navigation with offline.html fallback", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
     expect(sw).toContain("isDocument");
+    expect(sw).toContain("isPrivateDocument");
+    expect(sw).toContain('"/wallet/"');
+    expect(sw).toContain('"/chat/"');
+    expect(sw).toContain("mayStoreDocument");
+    expect(sw).not.toContain("Googlebot");
     expect(sw).toContain("GIGA3_CHUNK_STALE");
     expect(sw).toContain("SKIP_WAITING");
   });
@@ -43,11 +48,10 @@ describe("offline.html", () => {
 });
 
 describe("SPA routing fallbacks", () => {
-  it("ships Cloudflare catch-all and Vercel rewrite for hard-reload recovery", () => {
+  it("does not rewrite unknown URLs to the homepage", () => {
     const redirects = readFileSync(resolve(__dirname, "../../web/public/_redirects"), "utf8");
     const vercel = readFileSync(resolve(__dirname, "../../web/vercel.json"), "utf8");
-    expect(redirects).toContain("/*  /index.html  200");
-    expect(vercel).toContain('"rewrites"');
-    expect(vercel).toContain('"destination": "/"');
+    expect(redirects).not.toContain("/*  /index.html  200");
+    expect(vercel).not.toContain('"destination": "/"');
   });
 });

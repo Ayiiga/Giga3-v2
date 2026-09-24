@@ -2,7 +2,7 @@
  * Giga3 AI PWA service worker — Cloudflare Pages static export.
  * Bump CACHE_VERSION on every deploy that changes JS/CSS.
  */
-const CACHE_VERSION = "giga3-v18";
+const CACHE_VERSION = "giga3-v19";
 const OFFLINE_URL = "/offline.html";
 const NETWORK_TIMEOUT_MS = 15000;
 
@@ -50,6 +50,32 @@ function isDocument(request) {
     request.mode === "navigate" ||
     request.headers.get("accept")?.includes("text/html")
   );
+}
+
+/** Account and app documents are never stored. Crawl hints are not a security boundary. */
+const PRIVATE_DOCUMENT_PREFIXES = [
+  "/api/",
+  "/admin/",
+  "/chat/",
+  "/wallet/",
+  "/credits/",
+  "/payment/",
+  "/workspace/",
+  "/settings/",
+  "/profile/",
+  "/subscribe/",
+  "/marketplace/sell/",
+  "/marketplace/purchases/",
+];
+
+function isPrivateDocument(pathname) {
+  const path = pathname.endsWith("/") ? pathname : `${pathname}/`;
+  return PRIVATE_DOCUMENT_PREFIXES.some((prefix) => path === prefix || path.startsWith(prefix));
+}
+
+function mayStoreDocument(response) {
+  const cacheControl = response.headers.get("cache-control") || "";
+  return response.ok && !/no-store|private/i.test(cacheControl);
 }
 
 // --- Lifecycle ---
@@ -110,12 +136,22 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // (b) Navigation — network-first, then cache, then offline.html
+  // (b) Documents — network-first. Private and no-store HTML is never cached.
+  // Cached public HTML is only a fallback when the network fails.
   if (isDocument(request)) {
+    if (isPrivateDocument(url.pathname)) {
+      event.respondWith(
+        fetchWithTimeout(request, NETWORK_TIMEOUT_MS).catch(async () => {
+          const offline = await caches.match(OFFLINE_URL);
+          return offline || jsonOffline();
+        })
+      );
+      return;
+    }
     event.respondWith(
       fetchWithTimeout(request, NETWORK_TIMEOUT_MS)
         .then((response) => {
-          if (response.ok) {
+          if (mayStoreDocument(response)) {
             const clone = response.clone();
             caches.open(CACHE_VERSION).then((cache) => cache.put(request, clone));
           }

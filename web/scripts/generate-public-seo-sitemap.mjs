@@ -9,13 +9,23 @@
  * sitemap-marketplace.xml — published listings (Convex at build)
  * blog/rss.xml          — RSS feed for blog discovery
  */
+import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  CANONICAL_ORIGIN,
+  canonicalLoc,
+  changedPublicUrls,
+  robotsTxt,
+  sitemapUrlLimit,
+} from "./seo-route-policy.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, "../public");
-const siteOrigin = "https://www.giga3ai.com";
+const webRoot = path.resolve(__dirname, "..");
+const repoRoot = path.resolve(__dirname, "../..");
+const siteOrigin = CANONICAL_ORIGIN;
 
 /** Keep in sync with indexable marketing routes (no /chat/, /wallet/, etc.). */
 const STATIC_SITEMAP_PATHS = [
@@ -47,7 +57,6 @@ const STATIC_SITEMAP_PATHS = [
   "/ai-for-creators-ghana/",
   "/african-ai-tools/",
   "/ghana-ai/",
-  "/chat/",
   "/gigalearn/",
   "/prompts/",
   "/trending/",
@@ -138,30 +147,38 @@ function xmlEscape(value) {
     .replace(/'/g, "&apos;");
 }
 
+function urlEntryXml(entry) {
+  const lastmod = entry.lastmod ? `<lastmod>${entry.lastmod}</lastmod>` : "";
+  return `  <url><loc>${xmlEscape(entry.loc)}</loc>${lastmod}<changefreq>${entry.changefreq}</changefreq><priority>${entry.priority}</priority></url>`;
+}
+
 function writeUrlset(filename, urls) {
-  // Query-param URLs must never be submitted: their canonical points at the
-  // clean route, so listing them triggers "Alternative page with proper
-  // canonical tag" in Search Console. Drop them here as a final guard.
-  const clean = urls.filter((entry) => !entry.loc.includes("?"));
-  for (const dropped of urls) {
-    if (dropped.loc.includes("?")) {
-      console.log(`generate-public-seo-sitemap: dropped query-param url ${dropped.loc}`);
+  // Query-param and private URLs must never be submitted. Canonical tags
+  // point at the clean public route.
+  const seen = new Set();
+  const clean = [];
+  for (const entry of urls) {
+    const loc = canonicalLoc(entry.loc);
+    if (!loc) {
+      console.log(`generate-public-seo-sitemap: dropped non-public url ${entry.loc}`);
+      continue;
     }
+    if (seen.has(loc)) continue;
+    seen.add(loc);
+    clean.push({ ...entry, loc });
+  }
+  if (clean.length > sitemapUrlLimit()) {
+    throw new Error(`${filename} exceeds the sitemap protocol limit of ${sitemapUrlLimit()} urls`);
   }
   if (!clean.length) {
     console.log(`generate-public-seo-sitemap: skip empty ${filename}`);
-    return false;
+    return null;
   }
-  const body = clean
-    .map(
-      (entry) =>
-        `  <url><loc>${xmlEscape(entry.loc)}</loc><lastmod>${entry.lastmod}</lastmod><changefreq>${entry.changefreq}</changefreq><priority>${entry.priority}</priority></url>`
-    )
-    .join("\n");
+  const body = clean.map((entry) => urlEntryXml(entry)).join("\n");
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
   writeFileSync(path.join(publicDir, filename), xml, "utf8");
   console.log(`generate-public-seo-sitemap: wrote ${filename} (${clean.length} urls)`);
-  return true;
+  return { count: clean.length, lastmod: maxLastmod(clean) };
 }
 
 /**
@@ -169,22 +186,24 @@ function writeUrlset(filename, urls) {
  * data is unavailable — dropping it from the index orphans up to hundreds
  * of already-indexed post/profile/listing URLs from Google.
  */
-function retainExistingChild(childSitemaps, filename, lastmod) {
+function retainExistingChild(childSitemaps, filename) {
   const filePath = path.join(publicDir, filename);
   if (!existsSync(filePath)) return;
   const loc = `${siteOrigin}/${filename}`;
   if (childSitemaps.some((entry) => entry.loc === loc)) return;
-  childSitemaps.push({ loc, lastmod });
+  const xml = readFileSync(filePath, "utf8");
+  const dates = [...xml.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((match) => match[1]);
+  childSitemaps.push({ loc, lastmod: dates.sort().at(-1) ?? null });
   console.log(`generate-public-seo-sitemap: retained existing ${filename} in index`);
 }
 
 function writeSitemapIndex(filename, sitemaps) {
   if (!sitemaps.length) return false;
   const body = sitemaps
-    .map(
-      (entry) =>
-        `  <sitemap><loc>${xmlEscape(entry.loc)}</loc><lastmod>${entry.lastmod}</lastmod></sitemap>`
-    )
+    .map((entry) => {
+      const lastmod = entry.lastmod ? `<lastmod>${entry.lastmod}</lastmod>` : "";
+      return `  <sitemap><loc>${xmlEscape(entry.loc)}</loc>${lastmod}</sitemap>`;
+    })
     .join("\n");
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</sitemapindex>\n`;
   writeFileSync(path.join(publicDir, filename), xml, "utf8");
@@ -193,23 +212,81 @@ function writeSitemapIndex(filename, sitemaps) {
 }
 
 function ensureRobotsSitemapIndex() {
-  const robotsPath = path.join(publicDir, "robots.txt");
-  const loc = `${siteOrigin}/sitemap.xml`;
-  const preferred = `User-agent: *
-Allow: /
-Disallow: /api/
-Disallow: /admin/
-Sitemap: ${loc}
-`;
-  writeFileSync(robotsPath, preferred, "utf8");
+  writeFileSync(path.join(publicDir, "robots.txt"), robotsTxt(), "utf8");
+}
+
+function maxLastmod(entries) {
+  let max = "";
+  for (const entry of entries) {
+    if (entry.lastmod && entry.lastmod > max) max = entry.lastmod;
+  }
+  return max || null;
+}
+
+let gitHistoryDeep = null;
+function historyIsDeep() {
+  if (gitHistoryDeep !== null) return gitHistoryDeep;
+  try {
+    const count = Number(
+      execFileSync("git", ["rev-list", "--count", "HEAD"], {
+        cwd: repoRoot,
+        encoding: "utf8",
+      }).trim()
+    );
+    gitHistoryDeep = count >= 30;
+  } catch {
+    gitHistoryDeep = false;
+  }
+  return gitHistoryDeep;
+}
+
+function gitLastmod(file) {
+  if (!historyIsDeep()) return null;
+  try {
+    const out = execFileSync("git", ["log", "-1", "--format=%cs", "--", file], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    }).trim();
+    return /^\d{4}-\d{2}-\d{2}$/.test(out) ? out : null;
+  } catch {
+    return null;
+  }
+}
+
+function pageSource(route) {
+  const rel = route === "/" ? "" : route.replace(/^\//, "").replace(/\/$/, "");
+  const candidates = [
+    path.join(webRoot, "app/(marketing)", rel, "page.tsx"),
+    path.join(webRoot, "app/(app)", rel, "page.tsx"),
+    path.join(webRoot, "app/(marketing)", rel, "layout.tsx"),
+  ];
+  return candidates.find((file) => existsSync(file)) ?? null;
+}
+
+function readExistingLastmods() {
+  const map = new Map();
+  for (const filename of ["sitemap-static.xml", "sitemap-blog.xml", "sitemap-marketplace.xml", "sitemap-gigasocial.xml"]) {
+    const filePath = path.join(publicDir, filename);
+    if (!existsSync(filePath)) continue;
+    const xml = readFileSync(filePath, "utf8");
+    for (const match of xml.matchAll(/<loc>([^<]+)<\/loc>(?:<lastmod>([^<]*)<\/lastmod>)?/g)) {
+      map.set(match[1], match[2] || "");
+    }
+  }
+  return map;
+}
+
+const previousLastmods = readExistingLastmods();
+
+function truthfulLastmod(route, loc) {
+  const source = pageSource(route);
+  const fromGit = source ? gitLastmod(source) : null;
+  if (fromGit) return fromGit;
+  return previousLastmods.get(loc) || null;
 }
 
 function isoDate(ms) {
   return new Date(ms).toISOString().slice(0, 10);
-}
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10);
 }
 
 function loadBlogCategorySlugsWithPosts() {
@@ -255,34 +332,30 @@ function loadBlogSitemapEntries() {
       slug,
       title,
       description,
-      lastmod: updatedAt ?? publishedAt ?? "2026-09-04",
+      lastmod: updatedAt ?? publishedAt ?? null,
     });
   }
   return entries;
 }
 
 function writeStaticSitemap() {
-  const lastmod = todayIso();
   const uniquePaths = [...new Set(STATIC_SITEMAP_PATHS)];
-  const urls = uniquePaths.map((route) => ({
-    loc: `${siteOrigin}${route}`,
-    lastmod,
-    changefreq: "weekly",
-    priority: route === "/" ? "1.0" : "0.8",
-  }));
-  return writeUrlset("sitemap-static.xml", urls) ? "sitemap-static.xml" : null;
+  const urls = uniquePaths.map((route) => {
+    const loc = `${siteOrigin}${route === "/" ? "/" : route}`;
+    return {
+      loc,
+      lastmod: truthfulLastmod(route, loc),
+      changefreq: "weekly",
+      priority: route === "/" ? "1.0" : "0.8",
+    };
+  });
+  return writeUrlset("sitemap-static.xml", urls);
 }
 
 function writeBlogSitemap() {
   const posts = loadBlogSitemapEntries();
-  const blogLastmod = posts.reduce((max, p) => (p.lastmod > max ? p.lastmod : max), todayIso());
+  const blogLastmod = maxLastmod(posts);
   const urls = [
-    {
-      loc: `${siteOrigin}/blog/`,
-      lastmod: blogLastmod,
-      changefreq: "weekly",
-      priority: "0.9",
-    },
     ...posts.map((post) => ({
       loc: `${siteOrigin}/blog/${post.slug}/`,
       lastmod: post.lastmod,
@@ -297,8 +370,7 @@ function writeBlogSitemap() {
     })),
   ];
 
-  if (!writeUrlset("sitemap-blog.xml", urls)) return null;
-  return "sitemap-blog.xml";
+  return writeUrlset("sitemap-blog.xml", urls);
 }
 
 function writeBlogRss() {
@@ -312,7 +384,7 @@ function writeBlogRss() {
       <title>${xmlEscape(post.title)}</title>
       <link>${xmlEscape(link)}</link>
       <guid isPermaLink="true">${xmlEscape(link)}</guid>
-      <pubDate>${new Date(`${post.lastmod}T12:00:00Z`).toUTCString()}</pubDate>
+      <pubDate>${post.lastmod ? new Date(`${post.lastmod}T12:00:00Z`).toUTCString() : ""}</pubDate>
       <description>${xmlEscape(post.description.slice(0, 500))}</description>
     </item>`;
     })
@@ -336,79 +408,92 @@ ${items}
   return "blog/rss.xml";
 }
 
+function pushChild(childSitemaps, filename, lastmod) {
+  if (!lastmod && lastmod !== null) return;
+  if (!existsSync(path.join(publicDir, filename))) return;
+  childSitemaps.push({ loc: `${siteOrigin}/${filename}`, lastmod });
+}
+
+function collectPageLocs() {
+  const map = new Map();
+  for (const filename of ["sitemap-static.xml", "sitemap-blog.xml", "sitemap-marketplace.xml", "sitemap-gigasocial.xml"]) {
+    const filePath = path.join(publicDir, filename);
+    if (!existsSync(filePath)) continue;
+    const xml = readFileSync(filePath, "utf8");
+    for (const match of xml.matchAll(/<loc>([^<]+)<\/loc>(?:<lastmod>([^<]*)<\/lastmod>)?/g)) {
+      map.set(match[1], match[2] || "");
+    }
+  }
+  return map;
+}
+
 async function main() {
+  const before = new Map(previousLastmods);
   const childSitemaps = [];
-  const lastmod = todayIso();
 
-  const staticFile = writeStaticSitemap();
-  if (staticFile) childSitemaps.push({ loc: `${siteOrigin}/${staticFile}`, lastmod });
+  const staticSitemap = writeStaticSitemap();
+  if (staticSitemap?.count) pushChild(childSitemaps, "sitemap-static.xml", staticSitemap.lastmod);
 
-  const blogFile = writeBlogSitemap();
-  if (blogFile) childSitemaps.push({ loc: `${siteOrigin}/${blogFile}`, lastmod });
+  const blogSitemap = writeBlogSitemap();
+  if (blogSitemap?.count) pushChild(childSitemaps, "sitemap-blog.xml", blogSitemap.lastmod);
 
   writeBlogRss();
 
   if (!convexUrl()) {
     console.warn("generate-public-seo-sitemap: NEXT_PUBLIC_CONVEX_URL unset — retaining existing dynamic sitemaps");
-    retainExistingChild(childSitemaps, "sitemap-marketplace.xml", lastmod);
-    retainExistingChild(childSitemaps, "sitemap-gigasocial.xml", lastmod);
+    retainExistingChild(childSitemaps, "sitemap-marketplace.xml");
+    retainExistingChild(childSitemaps, "sitemap-gigasocial.xml");
   } else {
     try {
       const { listings, posts, profiles } = await loadSitemapEntries();
+      const marketplaceSitemap = writeUrlset(
+        "sitemap-marketplace.xml",
+        listings.map((entry) => ({
+          loc: `${siteOrigin}/marketplace/item/${entry.listingId}/`,
+          lastmod: isoDate(entry.updatedAt),
+          changefreq: "weekly",
+          priority: "0.6",
+        }))
+      );
+      if (marketplaceSitemap?.count) pushChild(childSitemaps, "sitemap-marketplace.xml", marketplaceSitemap.lastmod);
+      else retainExistingChild(childSitemaps, "sitemap-marketplace.xml");
 
-      if (
-        writeUrlset(
-          "sitemap-marketplace.xml",
-          listings.map((entry) => ({
-            loc: `${siteOrigin}/marketplace/item/${entry.listingId}/`,
-            lastmod: isoDate(entry.updatedAt),
-            changefreq: "weekly",
-            priority: "0.6",
-          }))
-        )
-      ) {
-        childSitemaps.push({ loc: `${siteOrigin}/sitemap-marketplace.xml`, lastmod });
-      }
-
-      if (
-        writeUrlset(
-          "sitemap-gigasocial.xml",
-          [
-            {
-              loc: `${siteOrigin}/gigasocial/`,
-              lastmod,
-              changefreq: "daily",
-              priority: "0.8",
-            },
-            ...posts.map((entry) => ({
-              loc: `${siteOrigin}/gigasocial/post/${entry.postId}/`,
-              lastmod: isoDate(entry.updatedAt),
-              changefreq: "weekly",
-              priority: "0.6",
-            })),
-            ...profiles.map((entry) => ({
-              loc: `${siteOrigin}/gigasocial/profile/${encodeURIComponent(entry.handle)}/`,
-              lastmod: isoDate(entry.updatedAt),
-              changefreq: "weekly",
-              priority: "0.6",
-            })),
-          ]
-        )
-      ) {
-        childSitemaps.push({ loc: `${siteOrigin}/sitemap-gigasocial.xml`, lastmod });
-      }
+      const socialSitemap = writeUrlset("sitemap-gigasocial.xml", [
+        ...posts.map((entry) => ({
+          loc: `${siteOrigin}/gigasocial/post/${entry.postId}/`,
+          lastmod: isoDate(entry.updatedAt),
+          changefreq: "weekly",
+          priority: "0.6",
+        })),
+        ...profiles.map((entry) => ({
+          loc: `${siteOrigin}/gigasocial/profile/${encodeURIComponent(entry.handle)}/`,
+          lastmod: isoDate(entry.updatedAt),
+          changefreq: "weekly",
+          priority: "0.6",
+        })),
+      ]);
+      if (socialSitemap?.count) pushChild(childSitemaps, "sitemap-gigasocial.xml", socialSitemap.lastmod);
+      else retainExistingChild(childSitemaps, "sitemap-gigasocial.xml");
     } catch (err) {
       console.warn(
         "generate-public-seo-sitemap: Convex fetch failed — retaining existing dynamic sitemaps:",
         err instanceof Error ? err.message : err
       );
-      retainExistingChild(childSitemaps, "sitemap-marketplace.xml", lastmod);
-      retainExistingChild(childSitemaps, "sitemap-gigasocial.xml", lastmod);
+      retainExistingChild(childSitemaps, "sitemap-marketplace.xml");
+      retainExistingChild(childSitemaps, "sitemap-gigasocial.xml");
     }
   }
 
   writeSitemapIndex("sitemap.xml", childSitemaps);
   ensureRobotsSitemapIndex();
+
+  const changed = changedPublicUrls(before, collectPageLocs());
+  writeFileSync(
+    path.resolve(__dirname, "../.indexnow-pending.json"),
+    JSON.stringify({ urls: changed }, null, 2),
+    "utf8"
+  );
+  console.log(`generate-public-seo-sitemap: ${changed.length} public urls changed for IndexNow`);
 }
 
 main().catch((err) => {
