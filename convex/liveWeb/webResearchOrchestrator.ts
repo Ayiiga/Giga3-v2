@@ -50,6 +50,7 @@ function buildContextBlock(
 ): string {
   const lines: string[] = [
     "LIVE WEB RESEARCH CONTEXT (public sources only — cite these in your answer):",
+    "Only pages listed below were retrieved. If a page is missing, say it could not be retrieved. Do not claim it was visited.",
     `User query: ${query.slice(0, 500)}`,
   ];
 
@@ -178,9 +179,7 @@ export async function runWebResearch(args: {
       });
       readCount += 1;
     } catch (err) {
-      warnings.push(
-        `Could not read ${url}: ${err instanceof Error ? err.message : String(err)}`
-      );
+      warnings.push("Could not retrieve one webpage. It was not used as a source.");
     }
   }
 

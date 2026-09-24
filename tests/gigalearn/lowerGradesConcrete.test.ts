@@ -72,7 +72,7 @@ describe("gigalearn lower grades concrete objects", () => {
     const source = readFileSync(resolve(__dirname, "../../web/components/gigalearn/LowerGradesConcrete.tsx"), "utf8");
     expect(source).toContain("speakPronunciationSequence");
     expect(source).toContain("buildItemPronunciationPlan");
-    expect(source).toContain("🔊 Hear");
+    expect(source).toContain("GroupedTemplate");
     expect(source).toContain("voice.id");
   });
 

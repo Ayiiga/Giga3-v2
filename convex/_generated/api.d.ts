@@ -31,6 +31,7 @@ import type * as authPasswordActions from "../authPasswordActions.js";
 import type * as authRateLimit from "../authRateLimit.js";
 import type * as authResetLinks from "../authResetLinks.js";
 import type * as blogStats from "../blogStats.js";
+import type * as browse from "../browse.js";
 import type * as chat from "../chat.js";
 import type * as chatEngine from "../chatEngine.js";
 import type * as chatHedging from "../chatHedging.js";
@@ -259,6 +260,7 @@ declare const fullApi: ApiFromModules<{
   authRateLimit: typeof authRateLimit;
   authResetLinks: typeof authResetLinks;
   blogStats: typeof blogStats;
+  browse: typeof browse;
   chat: typeof chat;
   chatEngine: typeof chatEngine;
   chatHedging: typeof chatHedging;

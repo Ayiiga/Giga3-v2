@@ -23,12 +23,12 @@ import {
 } from "@/lib/gigalearn/pronunciation";
 import { speakPronunciationSequence } from "@/lib/gigalearn/speechSynthesis";
 import { warmUpBrowserVoices } from "@/lib/speech/loadBrowserVoices";
+import { GroupedTemplate } from "@/components/learn/GroupedTemplate";
 import { GIGALEARN_LEVELS, isLowerGrade, type GigaLearnLevelId } from "@/lib/gigalearn/levels";
 import { listOfflineLessons } from "@/lib/gigalearn/offlineLessons";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
-const CONCRETE_BADGE = "bg-[#3B82F6] text-white";
 const TOUCH_SEE_BADGE = "bg-[#10B981] text-white";
 
 export function LowerGradesConcrete() {
@@ -72,49 +72,16 @@ export function LowerGradesConcrete() {
           ) : null}
           <div className="space-y-4">
             {CONCRETE_CATEGORIES.map((cat) => (
-              <div key={cat.id}>
-                <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
-                  {cat.title}
-                </p>
-                <div className="grid grid-cols-2 gap-3">
-                  {cat.items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="rounded-[20px] border border-[#2A3441] bg-[#1A233A] p-4"
-                    >
-                      <span className="text-[32px] leading-none" aria-hidden>
-                        {item.emoji}
-                      </span>
-                      <p className="mt-2 text-sm font-bold text-white">{item.title}</p>
-                      <p className="text-[11px] text-gray-400">{item.subtitle}</p>
-                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                        <span
-                          className={cn(
-                            "inline-block rounded-full px-2 py-0.5 text-[10px] font-bold",
-                            CONCRETE_BADGE
-                          )}
-                        >
-                          {cat.badge}
-                        </span>
-                        <button
-                          type="button"
-                          aria-label={`Pronounce ${item.title}. English first.`}
-                          disabled={hearingId === item.id}
-                          onClick={() =>
-                            void playHear(
-                              item.id,
-                              buildItemPronunciationPlan(item.id, item.title, voiceId)
-                            )
-                          }
-                          className="inline-flex min-h-11 items-center rounded-full bg-[#EAB308] px-2.5 text-[10px] font-bold text-black disabled:opacity-60"
-                        >
-                          {hearingId === item.id ? "…" : "🔊 Hear"}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <GroupedTemplate
+                key={cat.id}
+                title={cat.title}
+                badge={cat.badge}
+                items={cat.items}
+                hearingId={hearingId}
+                onHear={(item) =>
+                  void playHear(item.id, buildItemPronunciationPlan(item.id, item.title, voiceId))
+                }
+              />
             ))}
           </div>
         </section>

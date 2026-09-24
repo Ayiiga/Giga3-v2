@@ -1,13 +1,16 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { setAddressResolverForTests } from "../../convex/liveWeb/safePublicFetch";
 import { createFetchPageReader } from "../../convex/liveWeb/webPageReader";
 
 describe("webPageReader", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn());
+    setAddressResolverForTests(async () => ["93.184.216.34"]);
     process.env.GIGA3_LIVE_WEB_ENABLED = "true";
   });
 
   afterEach(() => {
+    setAddressResolverForTests(null);
     vi.unstubAllGlobals();
   });
 

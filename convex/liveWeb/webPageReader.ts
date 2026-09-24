@@ -1,11 +1,10 @@
+import { BrowseError } from "./browsePolicy";
 import {
   liveWebFetchTimeoutMs,
   liveWebMaxPageBytes,
 } from "./liveWebConfig";
-import {
-  redactSensitivePatterns,
-  validatePublicHttpUrl,
-} from "./liveWebSecurity";
+import { redactSensitivePatterns, validatePublicHttpUrl } from "./liveWebSecurity";
+import { fetchPublicDocument } from "./safePublicFetch";
 import type { WebPageContent, WebPageReader } from "./types";
 
 const MAX_EXCERPT_CHARS = 480;
@@ -48,38 +47,6 @@ function buildExcerpt(text: string): string {
   return `${normalized.slice(0, MAX_EXCERPT_CHARS - 1).trim()}…`;
 }
 
-async function readResponseBodyLimited(
-  res: Response,
-  maxBytes: number
-): Promise<string> {
-  const reader = res.body?.getReader();
-  if (!reader) {
-    const text = await res.text();
-    return text.slice(0, maxBytes);
-  }
-
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  while (total < maxBytes) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    if (!value) continue;
-    const remaining = maxBytes - total;
-    const slice = value.byteLength > remaining ? value.slice(0, remaining) : value;
-    chunks.push(slice);
-    total += slice.byteLength;
-  }
-  reader.cancel().catch(() => undefined);
-
-  const merged = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) {
-    merged.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return new TextDecoder("utf-8", { fatal: false }).decode(merged);
-}
-
 export function createFetchPageReader(): WebPageReader {
   return {
     async read(rawUrl, options) {
@@ -91,30 +58,22 @@ export function createFetchPageReader(): WebPageReader {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), options.timeoutMs);
       try {
-        const res = await fetch(validated.url.toString(), {
-          method: "GET",
-          redirect: "follow",
-          headers: {
-            Accept: "text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.1",
-            "User-Agent": "Giga3LiveWeb/1.0 (+https://www.giga3ai.com)",
-          },
+        const res = await fetchPublicDocument(validated.url.toString(), {
+          timeoutMs: options.timeoutMs,
+          maxBytes: options.maxBytes,
           signal: controller.signal,
         });
 
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status} for ${validated.domain}`);
-        }
-
-        const contentType = res.headers.get("content-type") ?? "";
+        const contentType = res.contentType;
         if (
           !contentType.includes("text/html") &&
           !contentType.includes("text/plain") &&
           !contentType.includes("application/xhtml")
         ) {
-          throw new Error(`Unsupported content type: ${contentType.split(";")[0]}`);
+          throw new Error(`Unsupported content type: ${contentType.split(";")[0] || "unknown"}`);
         }
 
-        const html = await readResponseBodyLimited(res, options.maxBytes);
+        const html = res.body;
         const title = extractTitle(html) || validated.domain;
         const text = redactSensitivePatterns(
           htmlToText(html).slice(0, MAX_TEXT_CHARS)
@@ -132,9 +91,10 @@ export function createFetchPageReader(): WebPageReader {
           accessedAt: Date.now(),
         } satisfies WebPageContent;
       } catch (err) {
-        if (controller.signal.aborted) {
+        if (controller.signal.aborted || (err instanceof BrowseError && err.code === "timeout")) {
           throw new Error(`Page fetch timed out after ${options.timeoutMs}ms`);
         }
+        if (err instanceof BrowseError) throw new Error(err.message);
         throw err;
       } finally {
         clearTimeout(timer);
