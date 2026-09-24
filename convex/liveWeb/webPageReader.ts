@@ -1,3 +1,5 @@
+"use node";
+
 import { BrowseError } from "./browsePolicy";
 import {
   liveWebFetchTimeoutMs,
