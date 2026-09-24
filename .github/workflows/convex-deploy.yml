@@ -33,9 +33,9 @@ jobs:
 
       - name: Check Convex sources
         run: |
-          if rg '^\+' convex --glob '*.ts' -q; then
+          if grep -R -q -E '^\+' --include='*.ts' convex; then
             echo "::error::Invalid '+' diff markers in convex/*.ts — fix before deploy"
-            rg '^\+' convex --glob '*.ts'
+            grep -R -n -E '^\+' --include='*.ts' convex
             exit 1
           fi
 
