@@ -244,6 +244,8 @@ export default defineSchema({
     name: v.optional(v.string()),
     image: v.optional(v.string()),
     emailVerificationTime: v.optional(v.number()),
+    /** Google Identity Services `sub` — stable account id, not an email. */
+    googleSub: v.optional(v.string()),
     /** Independent Video AI wallet — never mixed with chat `credits`. */
     videoCredits: v.optional(v.number()),
     videoSubscriptionPlan: v.optional(v.string()),
@@ -274,6 +276,7 @@ export default defineSchema({
     renewalReminderSentAt: v.optional(v.number()),
   })
     .index("by_email", ["email"])
+    .index("by_googleSub", ["googleSub"])
     .index("by_referralCode", ["referralCode"])
     .index("by_last_engagement_email", ["lastEngagementEmailAt"])
     .index("by_subscription_expiry", ["subscriptionExpiresAt"]),

@@ -101,6 +101,7 @@ jobs:
           PAYSTACK_PUBLIC_KEY: ${{ secrets.PAYSTACK_PUBLIC_KEY }}
           FRONTEND_URL: ${{ vars.FRONTEND_URL || 'https://www.giga3ai.com' }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          GOOGLE_CLIENT_ID: ${{ vars.NEXT_PUBLIC_GOOGLE_CLIENT_ID || secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID || secrets.GOOGLE_CLIENT_ID }}
           PLATFORM_ADMIN_EMAILS: ${{ secrets.PLATFORM_ADMIN_EMAILS }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -161,10 +162,17 @@ jobs:
           if [ -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
             npx convex env set SUPABASE_SERVICE_ROLE_KEY "${SUPABASE_SERVICE_ROLE_KEY}"
           fi
-          # Prefer verified Resend onboarding sender until giga3ai.com is verified in Resend.
+          # Prefer a verified giga3ai.com sender. The onboarding sender cannot deliver
+          # to arbitrary recipients; reset links are still addressed only to the user.
           FROM_EMAIL="${AUTH_FROM_EMAIL:-Giga3 AI <onboarding@resend.dev>}"
           npx convex env set AUTH_FROM_EMAIL "${FROM_EMAIL}"
           npx convex env set AUTH_EMAIL_FALLBACK_INBOX "${AUTH_EMAIL_FALLBACK_INBOX:-ayiiga3@gmail.com}"
+          if [ -n "${GOOGLE_CLIENT_ID:-}" ]; then
+            npx convex env set GOOGLE_CLIENT_ID "${GOOGLE_CLIENT_ID}"
+            echo "GOOGLE_CLIENT_ID synced for Sign in with Google."
+          else
+            echo "::warning::GOOGLE_CLIENT_ID is not set — Google sign-in stays disabled until the public OAuth client id is configured."
+          fi
           npx convex env set PLATFORM_ADMIN_EMAILS "${PLATFORM_ADMIN_EMAILS:-ayiiga3@gmail.com}"
           echo "Chat latency env applied (CHAT_*). Optional secrets synced if present."
           echo "AUTH_FROM_EMAIL / AUTH_EMAIL_FALLBACK_INBOX set for transactional mail."

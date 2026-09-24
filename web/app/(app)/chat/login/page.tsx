@@ -19,7 +19,7 @@ const ChatLoginPageClient = dynamic(
 
 export const metadata: Metadata = {
   title: "Sign in",
-  description: "Sign in to Giga3 AI with your email",
+  description: "Sign in to Giga3 AI with Google or with your email and password",
   robots: { index: false, follow: false },
 };
 

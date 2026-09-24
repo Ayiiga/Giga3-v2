@@ -6,7 +6,9 @@ import {
   passwordRequirementsHint,
   resetPasswordWithToken,
 } from "@/lib/authPassword";
+import { publicAuthErrorMessage } from "@/lib/auth/publicAuthError";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { PasswordField } from "@/components/chat/PasswordField";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useState } from "react";
@@ -42,7 +44,7 @@ function ResetPasswordInner() {
       await resetPasswordWithToken(email.trim().toLowerCase(), token, password);
       router.replace("/chat");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not reset password.");
+      setError(publicAuthErrorMessage(err, "Could not reset password.", [token, password]));
     } finally {
       setSubmitting(false);
     }
@@ -58,7 +60,7 @@ function ResetPasswordInner() {
             <p className="mt-2 text-sm text-muted">{passwordRequirementsHint()}</p>
           </div>
         </div>
-        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
+        <form method="post" onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
           <div>
             <label htmlFor="email" className="mb-2 block text-sm font-medium">
               Email
@@ -72,35 +74,22 @@ function ResetPasswordInner() {
               className="input-surface"
             />
           </div>
-          <div>
-            <label htmlFor="password" className="mb-2 block text-sm font-medium">
-              New password
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              minLength={8}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-surface"
-              placeholder="Letter + number, 8+ characters"
-            />
-          </div>
-          <div>
-            <label htmlFor="confirm" className="mb-2 block text-sm font-medium">
-              Confirm password
-            </label>
-            <input
-              id="confirm"
-              type="password"
-              required
-              minLength={8}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="input-surface"
-            />
-          </div>
+          <PasswordField
+            id="password"
+            label="New password"
+            value={password}
+            onChange={setPassword}
+            autoComplete="new-password"
+            placeholder="Letter + number, 8+ characters"
+          />
+          <PasswordField
+            id="confirm"
+            label="Confirm password"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            autoComplete="new-password"
+            toggleName="confirm password"
+          />
           {error && <p className="text-sm font-medium text-red-700">{error}</p>}
           <Button type="submit" className="w-full" disabled={submitting}>
             {submitting ? "Saving…" : "Update password"}

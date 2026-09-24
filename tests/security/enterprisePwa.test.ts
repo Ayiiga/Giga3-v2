@@ -42,7 +42,7 @@ describe("enterprise service worker policy", () => {
   const sw = readFileSync(join(webPublic, "sw.js"), "utf8");
 
   it("uses current cache generation", () => {
-    expect(sw).toContain('CACHE_VERSION = "giga3-v17"');
+    expect(sw).toContain('CACHE_VERSION = "giga3-v18"');
   });
 
   it("does not precache authenticated chat shell", () => {
