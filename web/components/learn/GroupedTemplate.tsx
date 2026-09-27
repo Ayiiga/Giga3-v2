@@ -62,10 +62,10 @@ export function GroupedTemplate({
                     event.currentTarget
                   )
                 }
-                className="absolute inset-0 rounded-[20px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="absolute inset-0 z-10 rounded-[20px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               />
             ) : null}
-            <div className="relative z-10">
+            <div className="relative z-0">
               <span className="text-[32px] leading-none" aria-hidden>
                 {item.emoji}
               </span>

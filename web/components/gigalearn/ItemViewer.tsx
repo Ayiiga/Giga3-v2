@@ -49,6 +49,7 @@ export function ItemViewer({
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+  const entryUrlRef = useRef<string | null>(null);
   const historyEntryActiveRef = useRef(false);
   const ignoreNextPopRef = useRef(false);
   const pinchStartDistanceRef = useRef<number | null>(null);
@@ -89,6 +90,11 @@ export function ItemViewer({
     panStartRef.current = null;
     pinchStartDistanceRef.current = null;
     navBlockedRef.current = false;
+  }, []);
+
+  const toggleZoom = useCallback(() => {
+    setScale((current) => (current > MIN_ZOOM ? MIN_ZOOM : DOUBLE_TAP_ZOOM));
+    setTranslate({ x: 0, y: 0 });
   }, []);
 
   const goPrev = useCallback(() => {
@@ -147,6 +153,7 @@ export function ItemViewer({
       ...(window.history.state ?? {}),
       __gigalearnItemViewer: true,
     };
+    entryUrlRef.current = window.location.href;
     window.history.pushState(state, "");
     historyEntryActiveRef.current = true;
 
@@ -162,6 +169,11 @@ export function ItemViewer({
     window.addEventListener("popstate", onPopState);
     return () => {
       window.removeEventListener("popstate", onPopState);
+      if (historyEntryActiveRef.current && entryUrlRef.current === window.location.href) {
+        ignoreNextPopRef.current = true;
+        historyEntryActiveRef.current = false;
+        window.history.back();
+      }
       historyEntryActiveRef.current = false;
     };
   }, [onClose, open]);
@@ -314,8 +326,7 @@ export function ItemViewer({
         Math.abs(lastTap.x - changedTouch.clientX) < 24 &&
         Math.abs(lastTap.y - changedTouch.clientY) < 24
       ) {
-        setScale((current) => (current > MIN_ZOOM ? MIN_ZOOM : DOUBLE_TAP_ZOOM));
-        setTranslate({ x: 0, y: 0 });
+        toggleZoom();
         lastTapRef.current = null;
         return;
       }
@@ -371,10 +382,7 @@ export function ItemViewer({
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
-          onDoubleClick={() => {
-            setScale((current) => (current > MIN_ZOOM ? MIN_ZOOM : DOUBLE_TAP_ZOOM));
-            setTranslate({ x: 0, y: 0 });
-          }}
+          onDoubleClick={toggleZoom}
         >
           <div
             className="select-none leading-none"
@@ -399,7 +407,7 @@ export function ItemViewer({
           <p className="text-xs text-gray-400">Pinch to zoom · Double tap to toggle zoom · Swipe to browse</p>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
           <button
             type="button"
             onClick={() => onHear(item)}
@@ -427,6 +435,15 @@ export function ItemViewer({
             className="min-h-11 rounded-full bg-[#3B82F6] px-3 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-40"
           >
             Next
+          </button>
+          <button
+            type="button"
+            onClick={toggleZoom}
+            aria-pressed={scale > MIN_ZOOM}
+            aria-label="Toggle zoom"
+            className="min-h-11 rounded-full border border-[#2A3441] bg-[#111A2D] px-3 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            Toggle zoom
           </button>
           <button
             type="button"
