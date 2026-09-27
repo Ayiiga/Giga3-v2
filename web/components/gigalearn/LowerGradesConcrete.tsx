@@ -96,9 +96,11 @@ export function LowerGradesConcrete() {
                 onItemClick={
                   cat.id === "fruits" || cat.id === "vegetables"
                     ? (item, triggerElement) => {
+                        const categoryIndex = cat.items.findIndex((candidate) => candidate.id === item.id);
+                        if (categoryIndex < 0) return;
                         viewerTriggerRef.current = triggerElement;
                         setViewerCategoryId(cat.id);
-                        setViewerIndex(cat.items.findIndex((candidate) => candidate.id === item.id));
+                        setViewerIndex(categoryIndex);
                         setViewerOpen(true);
                       }
                     : undefined

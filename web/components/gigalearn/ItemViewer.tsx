@@ -69,9 +69,13 @@ export function ItemViewer({
 
   const viewerTokenRef = useRef<string | null>(null);
   const historyPopIgnoreRef = useRef(false);
+  const historyHandledByPopRef = useRef(false);
   const hadOpenRef = useRef(false);
+  const wasOpenRef = useRef(false);
 
   const viewportRef = useRef<HTMLDivElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const touchModeRef = useRef<TouchMode>("idle");
   const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
   const panStartRef = useRef({ x: 0, y: 0 });
@@ -126,17 +130,6 @@ export function ItemViewer({
   }, [items.length, resetTransform]);
 
   const closeFromViewer = useCallback(() => {
-    if (
-      typeof window !== "undefined" &&
-      viewerTokenRef.current &&
-      window.history.state?.__gigaLearnItemViewerToken === viewerTokenRef.current
-    ) {
-      historyPopIgnoreRef.current = true;
-      window.history.back();
-      window.setTimeout(() => {
-        historyPopIgnoreRef.current = false;
-      }, 0);
-    }
     onClose();
   }, [onClose]);
 
@@ -159,6 +152,7 @@ export function ItemViewer({
 
     const token = `gigalearn-item-viewer-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     viewerTokenRef.current = token;
+    historyHandledByPopRef.current = false;
     window.history.pushState(
       {
         ...(window.history.state ?? {}),
@@ -171,6 +165,7 @@ export function ItemViewer({
       if (historyPopIgnoreRef.current) return;
       const stateToken = window.history.state?.__gigaLearnItemViewerToken;
       if (stateToken !== viewerTokenRef.current) {
+        historyHandledByPopRef.current = true;
         onClose();
       }
     };
@@ -184,9 +179,34 @@ export function ItemViewer({
   }, [onClose, open]);
 
   useEffect(() => {
+    if (
+      wasOpenRef.current &&
+      !open &&
+      viewerTokenRef.current &&
+      !historyHandledByPopRef.current &&
+      window.history.state?.__gigaLearnItemViewerToken === viewerTokenRef.current
+    ) {
+      historyPopIgnoreRef.current = true;
+      window.history.back();
+      window.setTimeout(() => {
+        historyPopIgnoreRef.current = false;
+      }, 0);
+    }
+    wasOpenRef.current = open;
+  }, [open]);
+
+  useEffect(() => {
     if (!open) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("button, input, select, textarea, a[href], [role='button']")) {
+        if (event.key === "Tab") {
+          // continue to focus trap handling
+        } else {
+          return;
+        }
+      }
       if (event.key === "Escape") {
         event.preventDefault();
         closeFromViewer();
@@ -200,6 +220,29 @@ export function ItemViewer({
       if (event.key === "ArrowRight") {
         event.preventDefault();
         goNext();
+        return;
+      }
+      if (event.key === "Tab") {
+        const root = dialogRef.current;
+        if (!root) return;
+        const selectors =
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex=\"-1\"])';
+        const focusable = Array.from(root.querySelectorAll<HTMLElement>(selectors)).filter(
+          (element) => !element.hasAttribute("disabled") && element.getAttribute("aria-hidden") !== "true"
+        );
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const activeElement = document.activeElement as HTMLElement | null;
+
+        if (!event.shiftKey && activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        } else if (event.shiftKey && activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        }
       }
     };
 
@@ -215,6 +258,11 @@ export function ItemViewer({
     }
     hadOpenRef.current = open;
   }, [open, triggerElement]);
+
+  useEffect(() => {
+    if (!open) return;
+    window.setTimeout(() => closeButtonRef.current?.focus(), 0);
+  }, [open]);
 
   const contentTransform = useMemo(
     () => `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`,
@@ -408,6 +456,7 @@ export function ItemViewer({
 
   return createPortal(
     <div
+      ref={dialogRef}
       className="fixed inset-0 z-[90] bg-black/95 text-white"
       role="dialog"
       aria-modal="true"
@@ -428,6 +477,7 @@ export function ItemViewer({
               <RotateCcw className="h-4 w-4" aria-hidden />
             </button>
             <button
+              ref={closeButtonRef}
               type="button"
               onClick={closeFromViewer}
               aria-label="Close item viewer"
@@ -448,7 +498,7 @@ export function ItemViewer({
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
-          style={{ touchAction: scale > MIN_ZOOM ? "none" : "pan-y" }}
+          style={{ touchAction: scale > MIN_ZOOM ? "none" : "auto" }}
         >
           <div
             className="select-none text-center will-change-transform"
