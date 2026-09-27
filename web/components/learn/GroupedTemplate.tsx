@@ -13,6 +13,7 @@ type GroupedTemplateProps = {
   pageSize?: number;
   hearingId: string | null;
   onHear: (item: LearnItem) => void;
+  onItemClick?: (item: LearnItem, absoluteIndex: number, trigger: HTMLElement | null) => void;
 };
 
 /** Paginated concrete-object group. Speech is supplied by the existing GigaLearn hear handler. */
@@ -23,6 +24,7 @@ export function GroupedTemplate({
   pageSize = 6,
   hearingId,
   onHear,
+  onItemClick,
 }: GroupedTemplateProps) {
   const [page, setPage] = useState(1);
   const view = pageOf(items, page, pageSize);
@@ -42,10 +44,42 @@ export function GroupedTemplate({
         </p>
       </div>
       <ul className="grid grid-cols-2 gap-3">
-        {view.items.map((item) => (
+        {view.items.map((item, localIndex) => (
           <li
             key={item.id}
-            className="min-w-0 rounded-[20px] border border-[#2A3441] bg-[#1A233A] p-4"
+            role={onItemClick ? "button" : undefined}
+            tabIndex={onItemClick ? 0 : undefined}
+            aria-label={onItemClick ? `Open ${item.title} full screen` : undefined}
+            onClick={
+              onItemClick
+                ? (event) =>
+                    onItemClick(
+                      item,
+                      (view.page - 1) * pageSize + localIndex,
+                      event.currentTarget
+                    )
+                : undefined
+            }
+            onKeyDown={
+              onItemClick
+                ? (event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onItemClick(
+                        item,
+                        (view.page - 1) * pageSize + localIndex,
+                        event.currentTarget
+                      );
+                    }
+                  }
+                : undefined
+            }
+            className={cn(
+              "min-w-0 rounded-[20px] border border-[#2A3441] bg-[#1A233A] p-4",
+              onItemClick
+                ? "cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                : ""
+            )}
           >
             <span className="text-[32px] leading-none" aria-hidden>
               {item.emoji}
@@ -70,7 +104,10 @@ export function GroupedTemplate({
                 }
                 aria-pressed={hearingId === item.id}
                 disabled={hearingId === item.id}
-                onClick={() => onHear(item)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onHear(item);
+                }}
                 className="inline-flex min-h-11 items-center rounded-full bg-[#EAB308] px-3 text-[11px] font-bold text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-60"
               >
                 {hearingId === item.id ? "…" : "🔊 Hear"}

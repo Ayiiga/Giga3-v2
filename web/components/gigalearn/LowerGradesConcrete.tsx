@@ -14,6 +14,7 @@ import {
   checkConcreteAnswer,
   getGigaLearnVoice,
   lessonPreviewForLevel,
+  type ConcreteCategoryId,
 } from "@/lib/gigalearn/concreteObjects";
 import {
   buildItemPronunciationPlan,
@@ -24,6 +25,7 @@ import {
 import { speakPronunciationSequence } from "@/lib/gigalearn/speechSynthesis";
 import { warmUpBrowserVoices } from "@/lib/speech/loadBrowserVoices";
 import { GroupedTemplate } from "@/components/learn/GroupedTemplate";
+import { ItemViewer } from "@/components/gigalearn/ItemViewer";
 import { GIGALEARN_LEVELS, isLowerGrade, type GigaLearnLevelId } from "@/lib/gigalearn/levels";
 import { listOfflineLessons } from "@/lib/gigalearn/offlineLessons";
 import { cn } from "@/lib/utils";
@@ -36,7 +38,21 @@ export function LowerGradesConcrete() {
   const [voiceId, setVoiceId] = useState("english");
   const [hearingId, setHearingId] = useState<string | null>(null);
   const [hearError, setHearError] = useState<string | null>(null);
+  const [viewer, setViewer] = useState<{
+    categoryId: Extract<ConcreteCategoryId, "fruits" | "vegetables">;
+    index: number;
+    trigger: HTMLElement | null;
+  } | null>(null);
   const lower = isLowerGrade(selectedLevel);
+  const viewerCategory = viewer
+    ? CONCRETE_CATEGORIES.find((category) => category.id === viewer.categoryId) ?? null
+    : null;
+
+  useEffect(() => {
+    if (!lower && viewer) {
+      setViewer(null);
+    }
+  }, [lower, viewer]);
 
   async function playHear(itemId: string, parts: PronunciationPart[]) {
     setHearError(null);
@@ -81,6 +97,16 @@ export function LowerGradesConcrete() {
                 onHear={(item) =>
                   void playHear(item.id, buildItemPronunciationPlan(item.id, item.title, voiceId))
                 }
+                onItemClick={
+                  cat.id === "fruits" || cat.id === "vegetables"
+                    ? (_item, absoluteIndex, trigger) =>
+                        setViewer({
+                          categoryId: cat.id,
+                          index: absoluteIndex,
+                          trigger,
+                        })
+                    : undefined
+                }
               />
             ))}
           </div>
@@ -97,6 +123,23 @@ export function LowerGradesConcrete() {
       <VoicesSection selectedVoiceId={voiceId} onSelect={setVoiceId} />
       <GesSection />
       <OfflineBanner />
+      {viewer && viewerCategory ? (
+        <ItemViewer
+          open={true}
+          categoryTitle={viewerCategory.title}
+          items={viewerCategory.items}
+          index={viewer.index}
+          hearingId={hearingId}
+          triggerElement={viewer.trigger}
+          onClose={() => setViewer(null)}
+          onIndexChange={(nextIndex) =>
+            setViewer((current) => (current ? { ...current, index: nextIndex } : current))
+          }
+          onHear={(item) =>
+            void playHear(item.id, buildItemPronunciationPlan(item.id, item.title, voiceId))
+          }
+        />
+      ) : null}
     </div>
   );
 }
