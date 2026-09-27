@@ -47,46 +47,32 @@ export function GroupedTemplate({
         {view.items.map((item, localIndex) => (
           <li
             key={item.id}
-            role={onItemClick ? "button" : undefined}
-            tabIndex={onItemClick ? 0 : undefined}
-            aria-label={onItemClick ? `Open ${item.title} full screen` : undefined}
-            onClick={
-              onItemClick
-                ? (event) =>
-                    onItemClick(
-                      item,
-                      (view.page - 1) * pageSize + localIndex,
-                      event.currentTarget
-                    )
-                : undefined
-            }
-            onKeyDown={
-              onItemClick
-                ? (event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      onItemClick(
-                        item,
-                        (view.page - 1) * pageSize + localIndex,
-                        event.currentTarget
-                      );
-                    }
-                  }
-                : undefined
-            }
             className={cn(
-              "min-w-0 rounded-[20px] border border-[#2A3441] bg-[#1A233A] p-4",
-              onItemClick
-                ? "cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                : ""
+              "relative min-w-0 rounded-[20px] border border-[#2A3441] bg-[#1A233A] p-4"
             )}
           >
-            <span className="text-[32px] leading-none" aria-hidden>
-              {item.emoji}
-            </span>
-            <p className="mt-2 break-words text-sm font-bold text-white">{item.title}</p>
-            <p className="break-words text-[11px] text-gray-400">{item.subtitle}</p>
-            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            {onItemClick ? (
+              <button
+                type="button"
+                aria-label={`Open ${item.title} full screen`}
+                onClick={(event) =>
+                  onItemClick(
+                    item,
+                    (view.page - 1) * pageSize + localIndex,
+                    event.currentTarget
+                  )
+                }
+                className="absolute inset-0 rounded-[20px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              />
+            ) : null}
+            <div className="relative z-10">
+              <span className="text-[32px] leading-none" aria-hidden>
+                {item.emoji}
+              </span>
+              <p className="mt-2 break-words text-sm font-bold text-white">{item.title}</p>
+              <p className="break-words text-[11px] text-gray-400">{item.subtitle}</p>
+            </div>
+            <div className="relative z-20 mt-1.5 flex flex-wrap items-center gap-1.5">
               <span
                 className={cn(
                   "inline-block rounded-full px-2 py-0.5 text-[10px] font-bold",
@@ -104,10 +90,7 @@ export function GroupedTemplate({
                 }
                 aria-pressed={hearingId === item.id}
                 disabled={hearingId === item.id}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onHear(item);
-                }}
+                onClick={() => onHear(item)}
                 className="inline-flex min-h-11 items-center rounded-full bg-[#EAB308] px-3 text-[11px] font-bold text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-60"
               >
                 {hearingId === item.id ? "…" : "🔊 Hear"}

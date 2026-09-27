@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { LearnItem } from "../../../convex/learnContent";
 
@@ -43,6 +43,8 @@ export function ItemViewer({
   const [scale, setScale] = useState(MIN_ZOOM);
   const [translate, setTranslate] = useState<Point>({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
+  const titleId = useId();
+  const subtitleId = useId();
 
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -160,11 +162,7 @@ export function ItemViewer({
     window.addEventListener("popstate", onPopState);
     return () => {
       window.removeEventListener("popstate", onPopState);
-      if (historyEntryActiveRef.current) {
-        ignoreNextPopRef.current = true;
-        historyEntryActiveRef.current = false;
-        window.history.back();
-      }
+      historyEntryActiveRef.current = false;
     };
   }, [onClose, open]);
 
@@ -336,8 +334,8 @@ export function ItemViewer({
       className="fixed inset-0 z-[90] overflow-hidden bg-[#050914] text-white"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="gigalearn-item-viewer-title"
-      aria-describedby="gigalearn-item-viewer-subtitle"
+      aria-labelledby={titleId}
+      aria-describedby={subtitleId}
     >
       <div
         className="flex h-full w-full flex-col overflow-hidden"
@@ -392,10 +390,10 @@ export function ItemViewer({
         </div>
 
         <div className="mt-3 space-y-2">
-          <h2 id="gigalearn-item-viewer-title" className="text-xl font-bold">
+          <h2 id={titleId} className="text-xl font-bold">
             {item.title}
           </h2>
-          <p id="gigalearn-item-viewer-subtitle" className="text-sm text-gray-300">
+          <p id={subtitleId} className="text-sm text-gray-300">
             {item.subtitle}
           </p>
           <p className="text-xs text-gray-400">Pinch to zoom · Double tap to toggle zoom · Swipe to browse</p>
