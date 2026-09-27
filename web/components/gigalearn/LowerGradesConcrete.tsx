@@ -101,7 +101,7 @@ export function LowerGradesConcrete() {
                   cat.id === "fruits" || cat.id === "vegetables"
                     ? (_item, absoluteIndex, trigger) =>
                         setViewer({
-                          categoryId: cat.id,
+                          categoryId: cat.id as Extract<ConcreteCategoryId, "fruits" | "vegetables">,
                           index: absoluteIndex,
                           trigger,
                         })
