@@ -13,6 +13,7 @@ type GroupedTemplateProps = {
   pageSize?: number;
   hearingId: string | null;
   onHear: (item: LearnItem) => void;
+  onItemClick?: (item: LearnItem, triggerElement: HTMLElement) => void;
 };
 
 /** Paginated concrete-object group. Speech is supplied by the existing GigaLearn hear handler. */
@@ -23,6 +24,7 @@ export function GroupedTemplate({
   pageSize = 6,
   hearingId,
   onHear,
+  onItemClick,
 }: GroupedTemplateProps) {
   const [page, setPage] = useState(1);
   const view = pageOf(items, page, pageSize);
@@ -45,36 +47,59 @@ export function GroupedTemplate({
         {view.items.map((item) => (
           <li
             key={item.id}
-            className="min-w-0 rounded-[20px] border border-[#2A3441] bg-[#1A233A] p-4"
+            className="relative min-w-0 rounded-[20px] border border-[#2A3441] bg-[#1A233A] p-4"
           >
-            <span className="text-[32px] leading-none" aria-hidden>
-              {item.emoji}
-            </span>
-            <p className="mt-2 break-words text-sm font-bold text-white">{item.title}</p>
-            <p className="break-words text-[11px] text-gray-400">{item.subtitle}</p>
-            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-              <span
-                className={cn(
-                  "inline-block rounded-full px-2 py-0.5 text-[10px] font-bold",
-                  CONCRETE_BADGE
-                )}
-              >
-                {badge}
-              </span>
-              <button
-                type="button"
-                aria-label={
-                  hearingId === item.id
-                    ? `Playing ${item.title}`
-                    : `Pronounce ${item.title}. English first.`
-                }
-                aria-pressed={hearingId === item.id}
-                disabled={hearingId === item.id}
-                onClick={() => onHear(item)}
-                className="inline-flex min-h-11 items-center rounded-full bg-[#EAB308] px-3 text-[11px] font-bold text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-60"
-              >
-                {hearingId === item.id ? "…" : "🔊 Hear"}
-              </button>
+            <div className="relative z-10">
+              {onItemClick ? (
+                <button
+                  type="button"
+                  aria-label={`Open ${item.title}`}
+                  onClick={(event) => {
+                    const cardElement = event.currentTarget.closest("li");
+                    if (!cardElement) return;
+                    onItemClick(item, cardElement);
+                  }}
+                  className="w-full rounded-xl text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                >
+                  <span className="text-[32px] leading-none" aria-hidden>
+                    {item.emoji}
+                  </span>
+                  <p className="mt-2 break-words text-sm font-bold text-white">{item.title}</p>
+                  <p className="break-words text-[11px] text-gray-400">{item.subtitle}</p>
+                </button>
+              ) : (
+                <>
+                  <span className="text-[32px] leading-none" aria-hidden>
+                    {item.emoji}
+                  </span>
+                  <p className="mt-2 break-words text-sm font-bold text-white">{item.title}</p>
+                  <p className="break-words text-[11px] text-gray-400">{item.subtitle}</p>
+                </>
+              )}
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                <span
+                  className={cn(
+                    "inline-block rounded-full px-2 py-0.5 text-[10px] font-bold",
+                    CONCRETE_BADGE
+                  )}
+                >
+                  {badge}
+                </span>
+                <button
+                  type="button"
+                  aria-label={
+                    hearingId === item.id
+                      ? `Playing ${item.title}`
+                      : `Pronounce ${item.title}. English first.`
+                  }
+                  aria-pressed={hearingId === item.id}
+                  disabled={hearingId === item.id}
+                  onClick={() => onHear(item)}
+                  className="inline-flex min-h-11 items-center rounded-full bg-[#EAB308] px-3 text-[11px] font-bold text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-60"
+                >
+                  {hearingId === item.id ? "…" : "🔊 Hear"}
+                </button>
+              </div>
             </div>
           </li>
         ))}

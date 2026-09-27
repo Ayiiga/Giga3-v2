@@ -3,6 +3,7 @@
 import {
   ANANSE_POEM,
   CONCRETE_CATEGORIES,
+  type ConcreteCategoryId,
   CONCRETE_QUIZZES,
   FRUIT_GAME,
   FRUIT_POLL,
@@ -24,10 +25,11 @@ import {
 import { speakPronunciationSequence } from "@/lib/gigalearn/speechSynthesis";
 import { warmUpBrowserVoices } from "@/lib/speech/loadBrowserVoices";
 import { GroupedTemplate } from "@/components/learn/GroupedTemplate";
+import { ItemViewer } from "@/components/gigalearn/ItemViewer";
 import { GIGALEARN_LEVELS, isLowerGrade, type GigaLearnLevelId } from "@/lib/gigalearn/levels";
 import { listOfflineLessons } from "@/lib/gigalearn/offlineLessons";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const TOUCH_SEE_BADGE = "bg-[#10B981] text-white";
 
@@ -36,7 +38,17 @@ export function LowerGradesConcrete() {
   const [voiceId, setVoiceId] = useState("english");
   const [hearingId, setHearingId] = useState<string | null>(null);
   const [hearError, setHearError] = useState<string | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
+  const [viewerCategoryId, setViewerCategoryId] = useState<ConcreteCategoryId | null>(null);
+  const viewerTriggerRef = useRef<HTMLElement | null>(null);
   const lower = isLowerGrade(selectedLevel);
+  const viewerCategory = useMemo(
+    () =>
+      viewerCategoryId ? CONCRETE_CATEGORIES.find((category) => category.id === viewerCategoryId) ?? null : null,
+    [viewerCategoryId]
+  );
+  const viewerItems = viewerCategory?.items ?? [];
 
   async function playHear(itemId: string, parts: PronunciationPart[]) {
     setHearError(null);
@@ -81,9 +93,31 @@ export function LowerGradesConcrete() {
                 onHear={(item) =>
                   void playHear(item.id, buildItemPronunciationPlan(item.id, item.title, voiceId))
                 }
+                onItemClick={
+                  cat.id === "fruits" || cat.id === "vegetables"
+                    ? (item, triggerElement) => {
+                        const categoryIndex = cat.items.findIndex((candidate) => candidate.id === item.id);
+                        if (categoryIndex < 0) return;
+                        viewerTriggerRef.current = triggerElement;
+                        setViewerCategoryId(cat.id);
+                        setViewerIndex(categoryIndex);
+                        setViewerOpen(true);
+                      }
+                    : undefined
+                }
               />
             ))}
           </div>
+          <ItemViewer
+            open={viewerOpen && !!viewerCategory && viewerItems.length > 0}
+            items={viewerItems}
+            initialIndex={viewerIndex}
+            categoryTitle={viewerCategory?.title ?? "Items"}
+            hearingId={hearingId}
+            triggerElement={viewerTriggerRef.current}
+            onClose={() => setViewerOpen(false)}
+            onHear={(item) => void playHear(item.id, buildItemPronunciationPlan(item.id, item.title, voiceId))}
+          />
         </section>
       ) : (
         <p className="rounded-2xl border border-[#2A3441] bg-[#1A233A] p-4 text-xs text-gray-300">
