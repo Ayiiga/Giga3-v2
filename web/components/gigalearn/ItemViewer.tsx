@@ -51,6 +51,7 @@ export function ItemViewer({
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const entryUrlRef = useRef<string | null>(null);
   const historyEntryActiveRef = useRef(false);
+  const historyTokenRef = useRef<string | null>(null);
   const ignoreNextPopRef = useRef(false);
   const pinchStartDistanceRef = useRef<number | null>(null);
   const pinchStartScaleRef = useRef(MIN_ZOOM);
@@ -149,17 +150,29 @@ export function ItemViewer({
 
   useEffect(() => {
     if (!open) return;
+    const token = `gigalearn-viewer-${Date.now()}-${Math.random()}`;
+    historyTokenRef.current = token;
     const state = {
       ...(window.history.state ?? {}),
       __gigalearnItemViewer: true,
+      __gigalearnItemViewerToken: token,
     };
     entryUrlRef.current = window.location.href;
     window.history.pushState(state, "");
     historyEntryActiveRef.current = true;
 
-    function onPopState() {
+    function onPopState(event: PopStateEvent) {
       if (ignoreNextPopRef.current) {
         ignoreNextPopRef.current = false;
+        return;
+      }
+      const nextState = event.state as
+        | { __gigalearnItemViewer?: boolean; __gigalearnItemViewerToken?: string }
+        | null;
+      if (
+        nextState?.__gigalearnItemViewer &&
+        nextState.__gigalearnItemViewerToken === historyTokenRef.current
+      ) {
         return;
       }
       historyEntryActiveRef.current = false;
@@ -174,6 +187,7 @@ export function ItemViewer({
         historyEntryActiveRef.current = false;
         window.history.back();
       }
+      historyTokenRef.current = null;
       historyEntryActiveRef.current = false;
     };
   }, [onClose, open]);
@@ -378,7 +392,7 @@ export function ItemViewer({
             "relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-[#2A3441] bg-[#111A2D]",
             isPanning ? "cursor-grabbing" : "cursor-grab"
           )}
-          style={{ touchAction: "none" }}
+          style={{ touchAction: scale > MIN_ZOOM ? "none" : "manipulation" }}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}

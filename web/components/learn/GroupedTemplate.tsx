@@ -54,7 +54,6 @@ export function GroupedTemplate({
             {onItemClick ? (
               <button
                 type="button"
-                aria-label={`Open ${item.title} full screen`}
                 onClick={(event) =>
                   onItemClick(
                     item,
@@ -62,17 +61,24 @@ export function GroupedTemplate({
                     event.currentTarget
                   )
                 }
-                className="absolute inset-0 z-10 rounded-[20px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              />
-            ) : null}
-            <div className="relative z-0">
-              <span className="text-[32px] leading-none" aria-hidden>
-                {item.emoji}
-              </span>
-              <p className="mt-2 break-words text-sm font-bold text-white">{item.title}</p>
-              <p className="break-words text-[11px] text-gray-400">{item.subtitle}</p>
-            </div>
-            <div className="relative z-20 mt-1.5 flex flex-wrap items-center gap-1.5">
+                className="w-full rounded-[16px] text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <span className="text-[32px] leading-none" aria-hidden>
+                  {item.emoji}
+                </span>
+                <p className="mt-2 break-words text-sm font-bold text-white">{item.title}</p>
+                <p className="break-words text-[11px] text-gray-400">{item.subtitle}</p>
+              </button>
+            ) : (
+              <div>
+                <span className="text-[32px] leading-none" aria-hidden>
+                  {item.emoji}
+                </span>
+                <p className="mt-2 break-words text-sm font-bold text-white">{item.title}</p>
+                <p className="break-words text-[11px] text-gray-400">{item.subtitle}</p>
+              </div>
+            )}
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
               <span
                 className={cn(
                   "inline-block rounded-full px-2 py-0.5 text-[10px] font-bold",
