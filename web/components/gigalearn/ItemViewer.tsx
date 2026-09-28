@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
   type TouchEvent as ReactTouchEvent,
+  type TouchList as ReactTouchList,
 } from "react";
 import { createPortal } from "react-dom";
 
@@ -41,14 +42,14 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
-function touchDistance(touches: TouchList) {
+function touchDistance(touches: ReactTouchList) {
   if (touches.length < 2) return 0;
   const dx = touches[0].clientX - touches[1].clientX;
   const dy = touches[0].clientY - touches[1].clientY;
   return Math.hypot(dx, dy);
 }
 
-function touchCenter(touches: TouchList) {
+function touchCenter(touches: ReactTouchList) {
   if (touches.length < 2) return { x: 0, y: 0 };
   return {
     x: (touches[0].clientX + touches[1].clientX) / 2,
