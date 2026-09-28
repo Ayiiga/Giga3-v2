@@ -6,6 +6,35 @@ export type LearningArtifactKind =
   | "worksheet"
   | "other";
 
+/** Stable curriculum IDs for analytics (survive display renames). */
+export interface CurriculumIdSet {
+  countryId?: string;
+  curriculumId?: string;
+  levelId?: string;
+  gradeId?: string;
+  subjectId?: string;
+  strand?: string;
+  subStrand?: string;
+  topic?: string;
+  contentStandard?: string;
+  indicator?: string;
+}
+
+export type ResourceType =
+  | "lesson"
+  | "notes"
+  | "quiz"
+  | "assignment"
+  | "worksheet"
+  | "assessment"
+  | "presentation"
+  | "video"
+  | "flashcard"
+  | "practical"
+  | "revision"
+  | "study-plan"
+  | "other";
+
 export interface LearningArtifact {
   id: string;
   kind: LearningArtifactKind;
@@ -16,6 +45,11 @@ export interface LearningArtifact {
   curriculum?: string;
   subject?: string;
   level?: string;
+  /** Phase 2 stable curriculum IDs (preferred for filtering/analytics). */
+  curriculumIds?: CurriculumIdSet;
+  /** Phase 2 resource category for the library. */
+  resourceType?: ResourceType;
+  topic?: string;
   favorite: boolean;
   createdAt: number;
 }
@@ -36,6 +70,13 @@ export interface LearningAchievement {
   earnedAt: number;
 }
 
+export interface TopicStudyEntry {
+  subjectId: string;
+  gradeId: string;
+  topic: string;
+  at: number;
+}
+
 export interface LearningProgressSnapshot {
   totalGenerations: number;
   quizzesCompleted: number;
@@ -43,6 +84,10 @@ export interface LearningProgressSnapshot {
   lessonsCreated: number;
   practiceSessionsCompleted: number;
   subjectsStudied: Record<string, number>;
+  /** Counts keyed by stable subject id. */
+  subjectsById: Record<string, number>;
+  /** Recent topics keyed by stable ids (cap 100). */
+  topicsStudied: TopicStudyEntry[];
   streakDays: number;
   lastActiveDate: string | null;
   achievements: LearningAchievement[];
@@ -82,6 +127,22 @@ function todayKey(): string {
 function artifactKindForTool(toolId: string): LearningArtifactKind {
   if (toolId.includes("quiz")) return "quiz";
   if (toolId.includes("assignment")) return "assignment";
+  if (toolId.includes("lesson")) return "notes";
+  if (toolId.includes("study-plan")) return "study-plan";
+  if (toolId.includes("worksheet")) return "worksheet";
+  return "other";
+}
+
+function resourceTypeForTool(toolId: string): ResourceType {
+  if (toolId.includes("presentation")) return "presentation";
+  if (toolId.includes("video")) return "video";
+  if (toolId.includes("flashcard")) return "flashcard";
+  if (toolId.includes("practical")) return "practical";
+  if (toolId.includes("assessment")) return "assessment";
+  if (toolId.includes("revision")) return "revision";
+  if (toolId.includes("quiz") || toolId.includes("bece") || toolId.includes("exam")) return "quiz";
+  if (toolId.includes("assignment")) return "assignment";
+  if (toolId.includes("lesson-generator")) return "lesson";
   if (toolId.includes("lesson")) return "notes";
   if (toolId.includes("study-plan")) return "study-plan";
   if (toolId.includes("worksheet")) return "worksheet";
@@ -146,6 +207,8 @@ function defaultProgress(): LearningProgressSnapshot {
     lessonsCreated: 0,
     practiceSessionsCompleted: 0,
     subjectsStudied: {},
+    subjectsById: {},
+    topicsStudied: [],
     streakDays: 0,
     lastActiveDate: null,
     achievements: [],
@@ -205,6 +268,7 @@ export function saveArtifact(
   const artifact: LearningArtifact = {
     ...entry,
     kind: entry.kind ?? artifactKindForTool(entry.toolId),
+    resourceType: entry.resourceType ?? resourceTypeForTool(entry.toolId),
     id: `l_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     favorite: entry.favorite ?? false,
     createdAt: Date.now(),
@@ -282,6 +346,9 @@ export function recordLearningActivity(args: {
   toolId: string;
   subject?: string;
   creditsUsed?: number;
+  subjectId?: string;
+  gradeId?: string;
+  topic?: string;
 }): LearningProgressSnapshot {
   let progress = getProgressSnapshot();
   progress = updateStreak(progress);
@@ -294,6 +361,23 @@ export function recordLearningActivity(args: {
   if (args.subject) {
     subjectsStudied[args.subject] = (subjectsStudied[args.subject] ?? 0) + 1;
   }
+  const subjectsById = { ...(progress.subjectsById ?? {}) };
+  if (args.subjectId) {
+    subjectsById[args.subjectId] = (subjectsById[args.subjectId] ?? 0) + 1;
+  }
+
+  let topicsStudied = [...(progress.topicsStudied ?? [])];
+  if (args.subjectId && (args.topic || args.gradeId)) {
+    topicsStudied = [
+      {
+        subjectId: args.subjectId,
+        gradeId: args.gradeId ?? "",
+        topic: (args.topic ?? "").slice(0, 120),
+        at: Date.now(),
+      },
+      ...topicsStudied,
+    ].slice(0, 100);
+  }
 
   const next: LearningProgressSnapshot = {
     ...progress,
@@ -305,6 +389,8 @@ export function recordLearningActivity(args: {
     lessonsCreated:
       progress.lessonsCreated + (args.toolId.includes("lesson") ? 1 : 0),
     subjectsStudied,
+    subjectsById,
+    topicsStudied,
     dailyCounts,
     lastGenerationAt: Date.now(),
     dailyLimit: DAILY_LIMIT,
@@ -319,6 +405,9 @@ export function recordLearningActivity(args: {
 export function recordPracticeCompletion(args: {
   subject?: string;
   score: number;
+  subjectId?: string;
+  gradeId?: string;
+  topic?: string;
 }): LearningProgressSnapshot {
   let progress = getProgressSnapshot();
   progress = updateStreak(progress);
@@ -327,15 +416,58 @@ export function recordPracticeCompletion(args: {
   if (args.subject) {
     subjectsStudied[args.subject] = (subjectsStudied[args.subject] ?? 0) + 1;
   }
+  const subjectsById = { ...(progress.subjectsById ?? {}) };
+  if (args.subjectId) {
+    subjectsById[args.subjectId] = (subjectsById[args.subjectId] ?? 0) + 1;
+  }
 
   const next: LearningProgressSnapshot = {
     ...progress,
     practiceSessionsCompleted: progress.practiceSessionsCompleted + 1,
     quizzesCompleted: progress.quizzesCompleted + 1,
     subjectsStudied,
+    subjectsById,
   };
 
   next.achievements = syncAchievements(next);
   writeJson(PROGRESS_KEY, next);
   return next;
+}
+
+export interface TeacherAnalytics {
+  resourcesCreated: number;
+  quizzesCreated: number;
+  assignmentsCreated: number;
+  lessonsCreated: number;
+  mostUsedSubjects: Array<{ subjectId: string; count: number }>;
+  mostUsedTopics: Array<{ topic: string; subjectId: string; count: number }>;
+}
+
+/**
+ * Teacher dashboard aggregates — computed from the teacher's own
+ * on-device resources and progress only (never other users' data).
+ */
+export function getTeacherAnalytics(): TeacherAnalytics {
+  const artifacts = listArtifacts();
+  const progress = getProgressSnapshot();
+  const byId = progress.subjectsById ?? {};
+  const mostUsedSubjects = Object.entries(byId)
+    .map(([subjectId, count]) => ({ subjectId, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+  const topicCounts = new Map<string, { topic: string; subjectId: string; count: number }>();
+  for (const entry of progress.topicsStudied ?? []) {
+    const key = `${entry.subjectId}::${entry.topic || entry.gradeId}`;
+    const existing = topicCounts.get(key);
+    if (existing) existing.count += 1;
+    else topicCounts.set(key, { topic: entry.topic || entry.gradeId, subjectId: entry.subjectId, count: 1 });
+  }
+  return {
+    resourcesCreated: artifacts.length,
+    quizzesCreated: artifacts.filter((a) => (a.resourceType ?? "") === "quiz" || a.kind === "quiz").length,
+    assignmentsCreated: artifacts.filter((a) => a.toolId.includes("assignment")).length,
+    lessonsCreated: progress.lessonsCreated,
+    mostUsedSubjects,
+    mostUsedTopics: [...topicCounts.values()].sort((a, b) => b.count - a.count).slice(0, 8),
+  };
 }

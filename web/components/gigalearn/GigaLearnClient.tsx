@@ -4,6 +4,9 @@ import { GigaLearnHomeworkPanel } from "@/components/gigalearn/GigaLearnHomework
 import { GigaLearnToolPanel } from "@/components/gigalearn/GigaLearnToolPanel";
 import { GigaLearnWorkspacePanel } from "@/components/gigalearn/GigaLearnWorkspacePanel";
 import { LowerGradesConcrete } from "@/components/gigalearn/LowerGradesConcrete";
+import { ResourceLibrary } from "@/components/gigalearn/ResourceLibrary";
+import { StudentMode } from "@/components/gigalearn/StudentMode";
+import { TeacherStudio } from "@/components/gigalearn/TeacherStudio";
 import { RecommendationEmptyState } from "@/components/recommendations/RecommendationEmptyState";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
@@ -235,6 +238,36 @@ function GigaLearnContent() {
               description="Track achievements, subjects studied, and saved learning materials."
             />
             <GigaLearnWorkspacePanel sessionToken={getSessionToken()} />
+          </>
+        )}
+
+        {section === "studio" && (
+          <>
+            <SectionIntro
+              title="Teacher Studio"
+              description="Plan lessons, generate quizzes and assignments, then repurpose anything into presentations or video — your curriculum context carries through."
+            />
+            <TeacherStudio credits={usage?.credits ?? null} />
+          </>
+        )}
+
+        {section === "learn" && (
+          <>
+            <SectionIntro
+              title="Learn Mode"
+              description="Pick your topic, then explain, simplify, practise, quiz yourself or revise — adapted to your grade."
+            />
+            <StudentMode credits={usage?.credits ?? null} />
+          </>
+        )}
+
+        {section === "library" && (
+          <>
+            <SectionIntro
+              title="Resource library"
+              description="Every lesson, quiz and worksheet you generate lives here — search by grade, subject or topic."
+            />
+            <ResourceLibrary />
           </>
         )}
       </section>

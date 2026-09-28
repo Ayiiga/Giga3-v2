@@ -88,7 +88,7 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
   const activeTool = tools.find((t) => t.id === activeToolId) ?? tools[0];
   const insufficientCredits = credits != null && credits < (activeTool?.creditCost ?? 2);
   const isPracticeTool = isInteractivePracticeTool(activeToolId);
-  const practiceTopic = prompt.trim().slice(0, 80) || selection.topic || getSubject(selection.subjectId)?.label;
+  const practiceTopic = prompt.trim().slice(0, 80) || selection.topic || getSubject(selection.subjectId)?.label || selection.subjectId;
 
   const requestPlaceholder = useMemo(() => {
     if (selection.subjectId) return subjectPlaceholder(selection.subjectId);

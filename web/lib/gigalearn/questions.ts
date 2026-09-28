@@ -39,6 +39,8 @@ export const INTERACTIVE_PRACTICE_TOOL_IDS = new Set([
   "practice-questions",
   "exam-prep",
   "revision-guide",
+  "assessment-generator",
+  "bece-mock",
 ]);
 
 export function isInteractivePracticeTool(toolId: string): boolean {

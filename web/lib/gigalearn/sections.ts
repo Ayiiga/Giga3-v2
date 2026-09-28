@@ -1,8 +1,10 @@
 import {
   BookOpen,
+  Briefcase,
   Camera,
   GraduationCap,
   LayoutGrid,
+  Library,
   Music,
   Sparkles,
   Users,
@@ -16,7 +18,10 @@ export type GigaLearnSection =
   | "homework"
   | "create"
   | "rhymes"
-  | "workspace";
+  | "workspace"
+  | "studio"
+  | "learn"
+  | "library";
 
 export interface GigaLearnSectionDefinition {
   id: GigaLearnSection;
@@ -67,5 +72,23 @@ export const GIGALEARN_SECTIONS: GigaLearnSectionDefinition[] = [
     label: "Progress",
     description: "Learning history, achievements, and saved materials",
     icon: LayoutGrid,
+  },
+  {
+    id: "studio",
+    label: "Teacher Studio",
+    description: "Lesson, quiz, assignment and presentation generation with repurposing",
+    icon: Briefcase,
+  },
+  {
+    id: "learn",
+    label: "Learn Mode",
+    description: "Explain, simplify, examples, practice, quiz and revision for your topic",
+    icon: Sparkles,
+  },
+  {
+    id: "library",
+    label: "Library",
+    description: "Searchable resource library with analytics",
+    icon: Library,
   },
 ];
