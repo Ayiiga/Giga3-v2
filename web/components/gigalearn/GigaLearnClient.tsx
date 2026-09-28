@@ -22,20 +22,35 @@ import {
 } from "@/lib/gigalearn/tools";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import { getSessionToken } from "@/lib/auth";
+import { buildCreationLink } from "@/lib/gigalearn/creation/links";
 import { getGigaLearnProfile, saveGigaLearnProfile } from "@/lib/gigalearn/profile";
 import type { LearnerRole } from "@/lib/gigalearn/curricula";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { warmUpBrowserVoices } from "@/lib/speech/loadBrowserVoices";
 import { ArrowLeft, GraduationCap } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+
+const panelFallback = <p className="text-sm text-muted">Loading…</p>;
+
+const CreationStudio = dynamic(
+  () => import("@/components/gigalearn/creation/CreationStudio").then((mod) => mod.CreationStudio),
+  { ssr: false, loading: () => panelFallback }
+);
+
+const GigaRhymesPanel = dynamic(
+  () => import("@/components/gigalearn/rhymes/GigaRhymesPanel").then((mod) => mod.GigaRhymesPanel),
+  { ssr: false, loading: () => panelFallback }
+);
 
 function GigaLearnContent() {
   useRenderDiagnostic("GigaLearnContent");
 
   const params = useSearchParams();
+  const router = useRouter();
   const { email, usage, mounted } = useMediaBilling();
   const initialTab = (params.get("tab") as GigaLearnSection) || "student";
   const [section, setSection] = useState<GigaLearnSection>(
@@ -187,6 +202,29 @@ function GigaLearnContent() {
               description="Upload a photo of homework — Giga3 analyzes it with vision AI in Education chat mode."
             />
             <GigaLearnHomeworkPanel />
+          </>
+        )}
+
+        {section === "create" && (
+          <>
+            <SectionIntro
+              title="Create with Giga3"
+              description="Lesson plans, research, books, CVs, quizzes and rhymes — built step by step from your details."
+            />
+            <CreationStudio
+              credits={usage?.credits ?? null}
+              onOpenRhymes={() => selectSection("rhymes")}
+            />
+          </>
+        )}
+
+        {section === "rhymes" && (
+          <>
+            <SectionIntro
+              title="GigaRhymes"
+              description="Original African-centred rhymes for early learners — hear, repeat, clap along and practise."
+            />
+            <GigaRhymesPanel onCreateRhyme={() => router.push(buildCreationLink("rhyme"))} />
           </>
         )}
 

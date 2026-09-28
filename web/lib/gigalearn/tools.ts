@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import type { GigaLearnSection } from "@/lib/gigalearn/sections";
 
-export type GigaLearnToolSection = Exclude<GigaLearnSection, "homework" | "workspace">;
+export type GigaLearnToolSection = Exclude<GigaLearnSection, "homework" | "create" | "rhymes" | "workspace">;
 
 export interface GigaLearnToolDefinition {
   id: string;

@@ -3,6 +3,8 @@ import {
   Camera,
   GraduationCap,
   LayoutGrid,
+  Music,
+  Sparkles,
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -12,6 +14,8 @@ export type GigaLearnSection =
   | "teacher"
   | "parent"
   | "homework"
+  | "create"
+  | "rhymes"
   | "workspace";
 
 export interface GigaLearnSectionDefinition {
@@ -45,6 +49,18 @@ export const GIGALEARN_SECTIONS: GigaLearnSectionDefinition[] = [
     label: "Homework",
     description: "Photo homework solving with AI vision in chat",
     icon: Camera,
+  },
+  {
+    id: "create",
+    label: "Create",
+    description: "Guided lesson plans, research, books, CVs, quizzes and rhymes",
+    icon: Sparkles,
+  },
+  {
+    id: "rhymes",
+    label: "GigaRhymes",
+    description: "Original African-centred learning rhymes to hear, repeat and clap along",
+    icon: Music,
   },
   {
     id: "workspace",
