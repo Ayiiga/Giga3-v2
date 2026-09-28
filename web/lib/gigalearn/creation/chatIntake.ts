@@ -55,6 +55,14 @@ const TEMPLATE_NOUNS: Array<{ id: CreationTemplateId; pattern: RegExp }> = [
   { id: "lesson", pattern: /\b(lesson(\s+(plan|note|notes))?|scheme\s+of\s+(learning|work))\b/i },
 ];
 
+/** Requests for images, video or software go to the normal chat / media flows. */
+const MEDIA_OR_APP =
+  /\b(image|picture|photo|video|logo|poster|flyer|cover|thumbnail|drawing|illustration|animation|website|app|slides?|presentation)\b/i;
+
+/** A different document type named first ("a summary of this book") is not a template request. */
+const OTHER_DOCUMENT =
+  /\b(summary|review|report|essay|letter|story|poem|song|email|speech|article|blog|caption|outline|abstract|cover\s+letter|analysis)\b/i;
+
 const SUBJECT_KEYWORDS: Array<[RegExp, string]> = [
   [/\bscience\b/i, "Science"],
   [/\bmath(s|ematics)?\b/i, "Mathematics"],
@@ -122,6 +130,7 @@ export function detectCreationIntent(raw: string): { templateId: CreationTemplat
   const text = raw.trim().replace(/\s+/g, " ");
   if (!text || text.length > MAX_INTENT_LENGTH) return null;
   if (!CREATION_VERB.test(text)) return null;
+  if (MEDIA_OR_APP.test(text)) return null;
 
   let best: { id: CreationTemplateId; index: number } | null = null;
   for (const noun of TEMPLATE_NOUNS) {
@@ -129,6 +138,8 @@ export function detectCreationIntent(raw: string): { templateId: CreationTemplat
     if (match && (best === null || match.index < best.index)) best = { id: noun.id, index: match.index };
   }
   if (!best) return null;
+  const otherDocument = OTHER_DOCUMENT.exec(text);
+  if (otherDocument && otherDocument.index < best.index) return null;
 
   const inputs: CreationInputs = {};
   const templateId = best.id;

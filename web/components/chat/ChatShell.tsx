@@ -55,6 +55,12 @@ import {
   buildProductRedirectAnswer,
   matchProductRedirectIntent,
 } from "@/lib/chat/productRedirects";
+import {
+  continueChatCreation,
+  startChatCreation,
+  type ChatCreationState,
+} from "@/lib/gigalearn/creation/chatIntake";
+import { markCreationAutostart } from "@/lib/gigalearn/creation/links";
 import { captureCoordinates } from "@/lib/geolocation";
 import { getConvexUrl } from "@/lib/convex";
 import { convexHttpCall } from "@/lib/network/convexCall";
@@ -255,8 +261,11 @@ function ChatShellInner({
     [changeMode]
   );
 
+  const creationIntakeRef = useRef<ChatCreationState | null>(null);
+
   useEffect(() => {
     setLocalTurns([]);
+    creationIntakeRef.current = null;
   }, [activeId]);
 
   const appendLocalTurn = useCallback((userText: string, assistantText: string) => {
@@ -291,6 +300,25 @@ function ChatShellInner({
       void (async () => {
         const trimmed = msg.trim();
         if (!trimmed && !attachments?.length) return;
+
+        // Guided GigaLearn creation: questions + Generation Preview stay local; nothing is
+        // generated until the user confirms in the builder.
+        if (trimmed && !attachments?.length) {
+          const pending = creationIntakeRef.current;
+          const turn = pending ? continueChatCreation(pending, trimmed) : startChatCreation(trimmed);
+          if (turn) {
+            creationIntakeRef.current = turn.state;
+            appendLocalTurn(trimmed, turn.reply);
+            if (turn.navigateTo) {
+              const template = pending?.templateId;
+              if (turn.autostart && template) markCreationAutostart(template);
+              router.push(turn.navigateTo);
+            }
+            return;
+          }
+        } else if (attachments?.length) {
+          creationIntakeRef.current = null;
+        }
 
         // Open GigaSocial / GigaEdits / GigaLearn / Media Studio (and other apps) locally.
         if (trimmed && !attachments?.length) {
