@@ -17,7 +17,7 @@ export function BlogArticleJsonLd({ post, path }: BlogArticleJsonLdProps) {
 
   const article = {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": ["Article", "BlogPosting"],
     headline: post.title,
     description: post.description,
     image: [image],

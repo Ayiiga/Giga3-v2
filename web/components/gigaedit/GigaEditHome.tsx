@@ -99,9 +99,19 @@ function ToolkitCard({
         <span className="gigaedit-tool-card__label">{label}</span>
         <span className="gigaedit-tool-card__desc gigaedit-tool-card__desc--compact">{description}</span>
         {isMedia ? (
-          <span className="gigaedit-tool-card__badge">AI Studio</span>
+          <span
+            className="gigaedit-tool-card__badge"
+            title="AI STUDIO = uses credits (see GH₵ cost in Media Studio). Tap for details."
+          >
+            AI Studio
+          </span>
         ) : (
-          <span className="gigaedit-tool-card__badge gigaedit-tool-card__badge--local">On device</span>
+          <span
+            className="gigaedit-tool-card__badge gigaedit-tool-card__badge--local"
+            title="ON DEVICE = offline, free, no credits. Tap for details."
+          >
+            On device
+          </span>
         )}
       </button>
       {isTeleprompter ? (

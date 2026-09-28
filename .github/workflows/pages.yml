@@ -93,7 +93,6 @@ jobs:
         working-directory: .
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           NEXT_PUBLIC_CONVEX_URL: ${{ env.RESOLVED_CONVEX_URL }}
           NEXT_PUBLIC_GIGA3_DATA_BACKEND: ${{ env.RESOLVED_GIGA3_DATA_BACKEND }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
@@ -101,7 +100,7 @@ jobs:
         run: |
           set -euo pipefail
           missing=0
-          for name in CF_API_TOKEN CF_ACCOUNT_ID NEXT_PUBLIC_CONVEX_URL; do
+          for name in CF_API_TOKEN NEXT_PUBLIC_CONVEX_URL; do
             if [ -z "${!name}" ]; then
               echo "::error::Missing GitHub secret: $name"
               missing=1
@@ -119,6 +118,29 @@ jobs:
             exit 1
           fi
           echo "Required secrets present."
+
+      - name: Resolve Cloudflare account ID
+        working-directory: .
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID_SECRET: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          RESOLVED_CF_ACCOUNT_ID=""
+          if WHOAMI_JSON="$(npx wrangler@4 whoami --json 2>/dev/null)"; then
+            RESOLVED_CF_ACCOUNT_ID="$(printf '%s' "$WHOAMI_JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{const payload=JSON.parse(s);const configured=(process.env.CF_ACCOUNT_ID_SECRET||"").trim();const accounts=Array.isArray(payload?.accounts)?payload.accounts:[];if(accounts.length>1){if(!configured){console.error("Multiple Cloudflare accounts detected for token. Set CF_ACCOUNT_ID to disambiguate.");process.exit(1)}const match=accounts.find(a=>a&&a.id===configured);if(!match){console.error("CF_ACCOUNT_ID does not match any account available to the token.");process.exit(1)}process.stdout.write(match.id);return;}if(accounts.length===1&&accounts[0]?.id){process.stdout.write(accounts[0].id);return;}const fallback=(payload?.account?.id||payload?.id||"").trim();if(fallback){process.stdout.write(fallback);return;}process.exit(1);})')"
+          fi
+          if [ -z "$RESOLVED_CF_ACCOUNT_ID" ]; then
+            RESOLVED_CF_ACCOUNT_ID="${CF_ACCOUNT_ID_SECRET:-}"
+          elif [ -n "${CF_ACCOUNT_ID_SECRET:-}" ] && [ "$CF_ACCOUNT_ID_SECRET" != "$RESOLVED_CF_ACCOUNT_ID" ]; then
+            echo "::warning::CF_ACCOUNT_ID does not match the authenticated token account. Using token account ID ${RESOLVED_CF_ACCOUNT_ID}."
+          fi
+          if [ -z "$RESOLVED_CF_ACCOUNT_ID" ]; then
+            echo "::error::Unable to resolve CLOUDFLARE_ACCOUNT_ID from token or CF_ACCOUNT_ID secret."
+            exit 1
+          fi
+          echo "Resolved Cloudflare account ID from authenticated token context."
+          echo "RESOLVED_CF_ACCOUNT_ID=${RESOLVED_CF_ACCOUNT_ID}" >> "$GITHUB_ENV"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -151,6 +173,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY }}
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ vars.NEXT_PUBLIC_GOOGLE_CLIENT_ID || secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
           NEXT_TELEMETRY_DISABLED: "1"
         run: |
           set -eo pipefail
@@ -234,7 +257,7 @@ jobs:
         working-directory: web
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ env.RESOLVED_CF_ACCOUNT_ID }}
           DEPLOY_BRANCH: ${{ github.ref_name }}
         run: |
           set -euo pipefail
@@ -258,3 +281,9 @@ jobs:
           done
           echo "::error::Cloudflare Pages deployment failed after ${max_attempts} attempts."
           exit 1
+
+      - name: Notify IndexNow of changed public URLs
+        working-directory: web
+        env:
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+        run: node scripts/indexnow-submit.mjs

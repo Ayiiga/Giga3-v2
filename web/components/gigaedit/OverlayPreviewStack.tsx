@@ -3,7 +3,7 @@
 import { overlaysAtTimelineSec } from "@/lib/gigaedit/timelineLayers";
 import type { GigaEditTimelineClip } from "@/lib/gigaedit/types";
 import { createManagedObjectUrl, revokeManagedObjectUrl } from "@/lib/gigaedit/mediaPipeline";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, type CSSProperties } from "react";
 
 type OverlayPreviewStackProps = {
   clips: GigaEditTimelineClip[];
@@ -78,10 +78,12 @@ function OverlayPreviewItem({
         width: `${scale}%`,
         transform: `translate(-50%, -50%) rotate(${clip.rotateDeg ?? 0}deg)`,
         opacity: clip.opacity ?? 1,
+        mixBlendMode: (clip.blendMode as CSSProperties["mixBlendMode"]) ?? undefined,
         borderRadius: clip.maskShape === "circle" ? "9999px" : clip.roundedRadius ?? 0,
         overflow: "hidden",
         boxShadow: clip.shadowBlur ? `0 0 ${clip.shadowBlur}px rgba(0,0,0,0.45)` : undefined,
         outline: selected ? "2px solid #fbbf24" : undefined,
+        zIndex: 20 + (clip.videoLayer ?? 0),
       }}
       onPointerDown={(e) => {
         e.stopPropagation();

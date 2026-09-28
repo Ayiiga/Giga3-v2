@@ -23,6 +23,7 @@ export const VIDEO_CATEGORIES = [
   { id: "dramatic_scenes", label: "Dramatic Scenes", description: "High-drama clips" },
   { id: "cinematic_trailers", label: "Cinematic Trailers", description: "Trailer-style cuts" },
   { id: "social_shorts", label: "Social Media Shorts", description: "Vertical short-form" },
+  { id: "ghanaian_shorts", label: "Ghanaian Shorts", description: "9:16 · Accra, kente, market energy" },
 ] as const;
 
 export type ImageCategoryId = (typeof IMAGE_CATEGORIES)[number]["id"];

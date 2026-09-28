@@ -1,6 +1,7 @@
 "use client";
 
 import { isChunkLoadError, recoverFromStaleChunks } from "@/lib/pwa/chunkLoadRecovery";
+import { safePwaRecovery } from "@/lib/pwa/pwaRecovery";
 
 /**
  * Root error boundary — catches failures outside route-level boundaries
@@ -81,13 +82,22 @@ export default function GlobalError({
             }}
           >
             {chunkError && !offline ? (
-              <button
-                type="button"
-                style={{ ...btnStyle, background: "#2563eb", borderColor: "#2563eb" }}
-                onClick={() => void recoverFromStaleChunks()}
-              >
-                Refresh app
-              </button>
+              <>
+                <button
+                  type="button"
+                  style={{ ...btnStyle, background: "#5B21B6", borderColor: "#5B21B6" }}
+                  onClick={() => void recoverFromStaleChunks()}
+                >
+                  Refresh app
+                </button>
+                <button
+                  type="button"
+                  style={btnStyle}
+                  onClick={() => void safePwaRecovery("/")}
+                >
+                  Clear cache &amp; reload
+                </button>
+              </>
             ) : (
               <button
                 type="button"

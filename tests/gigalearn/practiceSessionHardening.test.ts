@@ -19,6 +19,19 @@ describe("GigaLearn practice session hardening", () => {
     );
   });
 
+  it("resets weak-revision focus when switching tools", () => {
+    expect(read("web/components/gigalearn/GigaLearnToolPanel.tsx")).toContain(
+      "setFocusWeakRevision(false)"
+    );
+  });
+
+  it("persists profile with explicit selected values", () => {
+    const source = read("web/components/gigalearn/GigaLearnToolPanel.tsx");
+    expect(source).toContain("persistProfile({ examBoard: value })");
+    expect(source).toContain("persistProfile({ subject: value })");
+    expect(source).toContain("persistProfile({ level: value })");
+  });
+
   it("does not call generation from practice completion path", () => {
     expect(read("web/hooks/useGigaLearnGeneration.ts")).toContain("generateContent");
     expect(read("web/components/gigalearn/PracticeSession.tsx")).not.toContain("generateContent");

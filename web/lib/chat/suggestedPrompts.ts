@@ -100,6 +100,10 @@ const CATEGORY_PROMPTS: Record<ChatCategoryId, SuggestedPrompt[]> = {
   ],
   general: [
     {
+      label: "Open GigaSocial",
+      text: "Open GigaSocial",
+    },
+    {
       label: "Summarize",
       text: "Summarize the key points of climate change impacts in Africa.",
     },
@@ -201,10 +205,58 @@ const MODE_OVERRIDES: Partial<Record<AiModeId, SuggestedPrompt[]>> = {
   ],
 };
 
-export function getSuggestedPrompts(mode: AiModeId, limit = 4): SuggestedPrompt[] {
+export function suggestedPromptPool(mode: AiModeId): SuggestedPrompt[] {
   const override = MODE_OVERRIDES[mode];
-  if (override) return override.slice(0, limit);
-
-  const category = getCategoryForMode(mode);
-  return (CATEGORY_PROMPTS[category.id] ?? CATEGORY_PROMPTS.general).slice(0, limit);
+  const specific = override ?? CATEGORY_PROMPTS[getCategoryForMode(mode).id] ?? CATEGORY_PROMPTS.general;
+  const merged = [...specific];
+  for (const prompt of GLOBAL_STANDARD_PROMPTS) {
+    if (!merged.some((p) => p.label === prompt.label)) merged.push(prompt);
+  }
+  return merged;
 }
+
+export function getSuggestedPrompts(mode: AiModeId, limit = 6): SuggestedPrompt[] {
+  return suggestedPromptPool(mode).slice(0, limit);
+}
+
+function dayOrdinal(dayKey: string): number {
+  const [year, month, day] = dayKey.split("-").map((part) => Number(part));
+  if (!year || !month || !day) return 0;
+  return Math.floor(Date.UTC(year, month - 1, day) / 86_400_000);
+}
+
+/** Stable for one local day. The next day slides the window forward by one prompt. */
+export function getDailySuggestedPrompts(
+  mode: AiModeId,
+  limit: number,
+  dayKey: string
+): SuggestedPrompt[] {
+  const pool = suggestedPromptPool(mode);
+  if (pool.length <= limit) return pool.slice(0, limit);
+  const start = ((dayOrdinal(dayKey) % pool.length) + pool.length) % pool.length;
+  return Array.from({ length: limit }, (_, index) => pool[(start + index) % pool.length]);
+}
+
+/** Global-standard prompts: books, research, CV, code, and news — always available. */
+const GLOBAL_STANDARD_PROMPTS: SuggestedPrompt[] = [
+  {
+    label: "Book outline",
+    text: "Generate a book outline — propose a title, audience, chapters, and draft Chapter 1.",
+  },
+  {
+    label: "Research essay",
+    text: "Write a research-style essay with findings, analysis, and citations where available.",
+  },
+  {
+    label: "Write CV",
+    text: "Draft a professional CV in Ghana format with profile, skills, experience, and education.",
+  },
+  {
+    label: "Code help",
+    text: "Help me with code using African context (mobile money, Ghanaian names, GHS).",
+  },
+  {
+    label: "Ghana news",
+    text: "Summarize the latest news in Ghana and Africa with key facts.",
+  },
+];

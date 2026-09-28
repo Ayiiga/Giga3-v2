@@ -3,6 +3,7 @@
 import { GigaLearnHomeworkPanel } from "@/components/gigalearn/GigaLearnHomeworkPanel";
 import { GigaLearnToolPanel } from "@/components/gigalearn/GigaLearnToolPanel";
 import { GigaLearnWorkspacePanel } from "@/components/gigalearn/GigaLearnWorkspacePanel";
+import { LowerGradesConcrete } from "@/components/gigalearn/LowerGradesConcrete";
 import { RecommendationEmptyState } from "@/components/recommendations/RecommendationEmptyState";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
@@ -21,46 +22,67 @@ import {
 } from "@/lib/gigalearn/tools";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import { getSessionToken } from "@/lib/auth";
+import { buildCreationLink } from "@/lib/gigalearn/creation/links";
 import { getGigaLearnProfile, saveGigaLearnProfile } from "@/lib/gigalearn/profile";
 import type { LearnerRole } from "@/lib/gigalearn/curricula";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
+import { warmUpBrowserVoices } from "@/lib/speech/loadBrowserVoices";
 import { ArrowLeft, GraduationCap } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+
+const panelFallback = <p className="text-sm text-muted">Loading…</p>;
+
+const CreationStudio = dynamic(
+  () => import("@/components/gigalearn/creation/CreationStudio").then((mod) => mod.CreationStudio),
+  { ssr: false, loading: () => panelFallback }
+);
+
+const GigaRhymesPanel = dynamic(
+  () => import("@/components/gigalearn/rhymes/GigaRhymesPanel").then((mod) => mod.GigaRhymesPanel),
+  { ssr: false, loading: () => panelFallback }
+);
 
 function GigaLearnContent() {
   useRenderDiagnostic("GigaLearnContent");
 
   const params = useSearchParams();
+  const router = useRouter();
   const { email, usage, mounted } = useMediaBilling();
   const initialTab = (params.get("tab") as GigaLearnSection) || "student";
   const [section, setSection] = useState<GigaLearnSection>(
     GIGALEARN_SECTIONS.some((s) => s.id === initialTab) ? initialTab : "student"
   );
-  const [role, setRole] = useState<LearnerRole>("student");
   useEffect(() => {
     const tab = params.get("tab") as GigaLearnSection;
     if (tab && GIGALEARN_SECTIONS.some((s) => s.id === tab)) {
       setSection(tab);
+      return;
+    }
+    const profile = getGigaLearnProfile();
+    if (profile.role === "teacher" || profile.role === "parent") {
+      setSection(profile.role);
     }
   }, [params]);
 
   useEffect(() => {
-    const profile = getGigaLearnProfile();
-    setRole(profile.role);
-    if (profile.role !== "parent" && section === "parent") {
-      /* keep explicit tab selection */
-    }
-  }, [section]);
+    warmUpBrowserVoices();
+    const onFirstInteraction = () => {
+      warmUpBrowserVoices();
+      document.removeEventListener("pointerdown", onFirstInteraction);
+    };
+    document.addEventListener("pointerdown", onFirstInteraction, { passive: true });
+    return () => document.removeEventListener("pointerdown", onFirstInteraction);
+  }, []);
 
-  function selectRole(next: LearnerRole) {
-    setRole(next);
-    saveGigaLearnProfile({ role: next });
-    if (next === "student") setSection("student");
-    if (next === "teacher") setSection("teacher");
-    if (next === "parent") setSection("parent");
+  function selectSection(next: GigaLearnSection) {
+    setSection(next);
+    if (next === "student" || next === "teacher" || next === "parent") {
+      saveGigaLearnProfile({ role: next as LearnerRole });
+    }
   }
 
   if (!mounted) {
@@ -82,7 +104,7 @@ function GigaLearnContent() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8 pb-[72px]">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link
@@ -115,24 +137,6 @@ function GigaLearnContent() {
         </div>
       </header>
 
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Learner role">
-        {(["student", "teacher", "parent"] as const).map((r) => (
-          <button
-            key={r}
-            type="button"
-            onClick={() => selectRole(r)}
-            className={cn(
-              "min-h-9 rounded-full border px-4 py-1.5 text-xs font-medium capitalize",
-              role === r
-                ? "border-accent/40 bg-accent/10 text-foreground"
-                : "border-border text-muted hover:border-accent/25"
-            )}
-          >
-            {r}
-          </button>
-        ))}
-      </div>
-
       <nav
         className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1"
         aria-label="GigaLearn sections"
@@ -144,7 +148,7 @@ function GigaLearnContent() {
             <button
               key={item.id}
               type="button"
-              onClick={() => setSection(item.id)}
+              onClick={() => selectSection(item.id)}
               className={cn(
                 "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium",
                 active
@@ -166,6 +170,7 @@ function GigaLearnContent() {
               title="Student dashboard"
               description="Personalized quizzes, study plans, topic explainers, and exam prep for BECE, WASSCE, and WAEC."
             />
+            <LowerGradesConcrete />
             <GigaLearnToolPanel tools={STUDENT_TOOLS} credits={usage?.credits ?? null} />
           </>
         )}
@@ -197,6 +202,29 @@ function GigaLearnContent() {
               description="Upload a photo of homework — Giga3 analyzes it with vision AI in Education chat mode."
             />
             <GigaLearnHomeworkPanel />
+          </>
+        )}
+
+        {section === "create" && (
+          <>
+            <SectionIntro
+              title="Create with Giga3"
+              description="Lesson plans, research, books, CVs, quizzes and rhymes — built step by step from your details."
+            />
+            <CreationStudio
+              credits={usage?.credits ?? null}
+              onOpenRhymes={() => selectSection("rhymes")}
+            />
+          </>
+        )}
+
+        {section === "rhymes" && (
+          <>
+            <SectionIntro
+              title="GigaRhymes"
+              description="Original African-centred rhymes for early learners — hear, repeat, clap along and practise."
+            />
+            <GigaRhymesPanel onCreateRhyme={() => router.push(buildCreationLink("rhyme"))} />
           </>
         )}
 

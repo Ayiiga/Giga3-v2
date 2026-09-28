@@ -3,12 +3,15 @@
 import { CodeBlock } from "@/components/chat/CodeBlock";
 import { cn } from "@/lib/utils";
 import {
+  parseInlineMarkdown,
   safeParseMarkdownDocument,
+  type InlineNode,
   type MarkdownBlock,
   type MarkdownListItem,
 } from "@/lib/chat/messageMarkdownParser";
+import { isInternalGiga3Href } from "@/lib/chat/productRedirects";
 import dynamic from "next/dynamic";
-import { memo, useMemo, type ReactNode } from "react";
+import { Fragment, memo, useMemo, type ReactNode } from "react";
 
 const MermaidDiagram = dynamic(
   () => import("@/components/chat/MermaidDiagram").then((m) => m.MermaidDiagram),
@@ -28,30 +31,41 @@ const VisualContentBlock = dynamic(
 interface MessageMarkdownProps {
   content: string;
   className?: string;
+  /**
+   * Lowest heading rank to emit (1–3). Smart Answer bodies use 3 so inner
+   * headings stay under the section title.
+   */
+  headingFloor?: 1 | 2 | 3;
 }
 
 /** Lightweight markdown for assistant replies — no external deps, memoized blocks. */
 export const MessageMarkdown = memo(function MessageMarkdown({
   content,
   className,
+  headingFloor = 1,
 }: MessageMarkdownProps) {
   const blocks = useMemo(
-    () => renderMarkdownBlocks(safeParseMarkdownDocument(content)),
-    [content]
+    () => renderMarkdownBlocks(safeParseMarkdownDocument(content), headingFloor),
+    [content, headingFloor]
   );
   return <div className={cn("chat-markdown", className)}>{blocks}</div>;
 });
 
-function renderMarkdownBlocks(blocks: MarkdownBlock[]): ReactNode[] {
-  return blocks.map((block, index) => renderMarkdownBlock(block, index));
+function renderMarkdownBlocks(blocks: MarkdownBlock[], headingFloor: 1 | 2 | 3): ReactNode[] {
+  return blocks.map((block, index) => renderMarkdownBlock(block, index, headingFloor));
 }
 
-function renderMarkdownBlock(block: MarkdownBlock, key: number): ReactNode {
+function renderMarkdownBlock(
+  block: MarkdownBlock,
+  key: number,
+  headingFloor: 1 | 2 | 3
+): ReactNode {
   switch (block.type) {
     case "heading": {
-      const Tag = `h${block.level}` as "h1" | "h2" | "h3";
+      const level = Math.min(3, Math.max(block.level, headingFloor)) as 1 | 2 | 3;
+      const Tag = `h${level}` as "h1" | "h2" | "h3";
       return (
-        <Tag key={key} className={`chat-md-h${block.level}`}>
+        <Tag key={key} className={`chat-md-h${level}`}>
           {renderInline(block.text)}
         </Tag>
       );
@@ -79,13 +93,13 @@ function renderMarkdownBlock(block: MarkdownBlock, key: number): ReactNode {
     case "ul":
       return (
         <ul key={key} className="chat-md-ul">
-          {renderListItems(block.items)}
+          {renderListItems(block.items, headingFloor)}
         </ul>
       );
     case "ol":
       return (
         <ol key={key} className="chat-md-ol">
-          {renderListItems(block.items)}
+          {renderListItems(block.items, headingFloor)}
         </ol>
       );
     case "table":
@@ -116,90 +130,68 @@ function renderMarkdownBlock(block: MarkdownBlock, key: number): ReactNode {
   }
 }
 
-function renderListItems(items: MarkdownListItem[] | undefined): ReactNode[] {
+function renderListItems(
+  items: MarkdownListItem[] | undefined,
+  headingFloor: 1 | 2 | 3
+): ReactNode[] {
   return (items ?? []).map((item, index) => (
     <li key={index}>
       {renderInline(item.content)}
       {item.children?.length ? (
-        <div className="chat-md-nested">{renderMarkdownBlocks(item.children)}</div>
+        <div className="chat-md-nested">{renderMarkdownBlocks(item.children, headingFloor)}</div>
       ) : null}
     </li>
   ));
 }
 
 function renderInline(text: string): ReactNode[] {
-  const parts: ReactNode[] = [];
-  const pattern =
-    /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-  let key = 0;
-
-  while ((match = pattern.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
-    }
-    const token = match[0];
-    if (token.startsWith("**")) {
-      parts.push(
-        <strong key={`b-${key++}`} className="chat-md-strong">
-          {token.slice(2, -2)}
-        </strong>
-      );
-    } else if (token.startsWith("*")) {
-      parts.push(
-        <em key={`i-${key++}`} className="chat-md-em">
-          {token.slice(1, -1)}
-        </em>
-      );
-    } else if (token.startsWith("`")) {
-      parts.push(
-        <code key={`c-${key++}`} className="chat-md-code">
-          {token.slice(1, -1)}
-        </code>
-      );
-    } else if (token.startsWith("[")) {
-      const linkMatch = token.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
-      if (linkMatch) {
-        const href = safeHref(linkMatch[2]);
-        if (!href) {
-          parts.push(linkMatch[1]);
-          lastIndex = pattern.lastIndex;
-          continue;
-        }
-        parts.push(
-          <a
-            key={`a-${key++}`}
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="chat-md-link"
-          >
-            {linkMatch[1]}
-          </a>
-        );
-      } else {
-        parts.push(token);
-      }
-    }
-    lastIndex = pattern.lastIndex;
-  }
-
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
-  }
-
-  return parts.length > 0 ? parts : [text];
+  return renderInlineNodes(parseInlineMarkdown(text));
 }
 
-function safeHref(raw: string): string | null {
-  try {
-    const url = new URL(raw, "https://www.giga3ai.com");
-    if (url.protocol === "http:" || url.protocol === "https:" || url.protocol === "mailto:") {
-      return raw;
+function renderInlineNodes(nodes: InlineNode[]): ReactNode[] {
+  return nodes.map((node, index) => renderInlineNode(node, index));
+}
+
+function renderInlineNode(node: InlineNode, key: number): ReactNode {
+  switch (node.type) {
+    case "text":
+      return <Fragment key={`t-${key}`}>{node.text}</Fragment>;
+    case "strong":
+      return (
+        <strong key={`b-${key}`} className="chat-md-strong">
+          {renderInlineNodes(node.children)}
+        </strong>
+      );
+    case "em":
+      return (
+        <em key={`i-${key}`} className="chat-md-em">
+          {renderInlineNodes(node.children)}
+        </em>
+      );
+    case "code":
+      return (
+        <code key={`c-${key}`} className="chat-md-code">
+          {node.text}
+        </code>
+      );
+    case "link": {
+      if (!node.href) {
+        return <Fragment key={`l-${key}`}>{renderInlineNodes(node.children)}</Fragment>;
+      }
+      const internal = isInternalGiga3Href(node.href);
+      return (
+        <a
+          key={`a-${key}`}
+          href={node.href}
+          target={internal ? undefined : "_blank"}
+          rel={internal ? undefined : "noopener noreferrer"}
+          className="chat-md-link"
+        >
+          {renderInlineNodes(node.children)}
+        </a>
+      );
     }
-  } catch {
-    return null;
+    default:
+      return null;
   }
-  return null;
 }

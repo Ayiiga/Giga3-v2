@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { getUserEmail, isValidEmail } from "@/lib/auth";
+import { publicAuthErrorMessage } from "@/lib/auth/publicAuthError";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import {
   passwordRequirementsHint,
@@ -9,7 +10,10 @@ import {
   signInWithPassword,
   signUpWithPassword,
 } from "@/lib/authPassword";
+import { signInWithGoogle } from "@/lib/authGoogle";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { GoogleSignInButton, googleClientId } from "@/components/chat/GoogleSignInButton";
+import { PasswordField } from "@/components/chat/PasswordField";
 import { VisionTagline } from "@/components/vision/VisionTagline";
 import { siteConfig } from "@/lib/site";
 import Link from "next/link";
@@ -30,6 +34,7 @@ function ChatLoginFormInner() {
   const [info, setInfo] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [restoringSession] = useState(() => hasPersistedAuth());
+  const googleEnabled = Boolean(googleClientId());
 
   useEffect(() => {
     if (!hasPersistedAuth() && !getUserEmail()) return;
@@ -43,6 +48,24 @@ function ChatLoginFormInner() {
         <p className="text-sm text-muted">Restoring your session…</p>
       </div>
     );
+  }
+
+  function goNext() {
+    router.push(nextPath.startsWith("/") ? nextPath : "/chat");
+  }
+
+  async function handleGoogle(idToken: string) {
+    setError(null);
+    setInfo(null);
+    setSubmitting(true);
+    try {
+      await signInWithGoogle(idToken);
+      goNext();
+    } catch (err) {
+      setError(publicAuthErrorMessage(err, "Google sign-in failed."));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -60,34 +83,13 @@ function ChatLoginFormInner() {
       if (mode === "forgot") {
         const resetBase = `${window.location.origin}/chat/login/reset`;
         const result = await requestPasswordReset(normalized, resetBase);
-        if (result.emailed) {
-          setInfo(
-            "Password reset link sent. Check your inbox and spam folder — the link expires in 1 hour."
-          );
-        } else if (result.deliveryConfigured === false && result.accountMatched) {
+        if (result.deliveryConfigured === false) {
           setError(
-            "We could not send email right now (delivery is not configured). Please try again later or contact support."
-          );
-        } else if (result.supportNotified && result.accountMatched) {
-          // Domain not verified yet — link went to AUTH_EMAIL_FALLBACK_INBOX.
-          setInfo(
-            "Your reset link was issued. If it is not in this inbox within a minute, check spam or contact support at ayiiga3@gmail.com (they can forward the link)."
-          );
-        } else if (
-          (result.deliveryError === "sandbox_recipient" ||
-            result.deliveryError === "domain_unverified") &&
-          result.accountMatched
-        ) {
-          setError(
-            "Password reset email needs the Giga3 sending domain verified in Resend. Contact support at ayiiga3@gmail.com."
-          );
-        } else if (result.deliveryError && result.accountMatched) {
-          setError(
-            "We could not deliver the reset email. Check the address and try again in a few minutes. Also check spam."
+            "We could not send email right now. Please try again later or contact support."
           );
         } else {
           setInfo(
-            "If an account exists for this email, a reset link has been sent. Check inbox and spam."
+            "If an account exists for this email, a reset link has been sent. Check inbox and spam. The link expires in 1 hour."
           );
         }
         return;
@@ -103,9 +105,9 @@ function ChatLoginFormInner() {
         await signInWithPassword(normalized, password);
       }
 
-      router.push(nextPath.startsWith("/") ? nextPath : "/chat");
+      goNext();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not complete sign in.");
+      setError(publicAuthErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
@@ -123,7 +125,9 @@ function ChatLoginFormInner() {
               Welcome to Giga3 AI
             </h1>
             <p className="mt-2 text-sm text-muted">
-              Sign in or create an account with email and password
+              {googleEnabled
+                ? "Continue with Google, or use your email and password"
+                : "Sign in or create an account with email and password"}
             </p>
             <VisionTagline className="mt-3" variant="subtle" />
           </div>
@@ -156,7 +160,22 @@ function ChatLoginFormInner() {
           ))}
         </div>
 
-        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
+        {googleEnabled && mode !== "forgot" && (
+          <div className="mb-5">
+            <GoogleSignInButton
+              mode={mode}
+              disabled={submitting}
+              onCredential={(idToken) => void handleGoogle(idToken)}
+              onError={(message) => setError(message)}
+            />
+            <div className="relative my-5 text-center">
+              <div className="absolute inset-x-0 top-1/2 border-t border-border" />
+              <span className="relative bg-card px-2 text-xs text-muted">or</span>
+            </div>
+          </div>
+        )}
+
+        <form method="post" onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
           <div>
             <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
               Email
@@ -176,55 +195,35 @@ function ChatLoginFormInner() {
           {mode === "forgot" && (
             <p className="text-sm text-muted">
               Enter the email on your account. We will send a secure one-hour reset
-              link if that account exists.
+              link to that address if the account exists.
             </p>
           )}
 
           {mode !== "forgot" && (
-            <div>
-              <label
-                htmlFor="password"
-                className="mb-2 block text-sm font-medium text-foreground"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                minLength={8}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input-surface"
-                placeholder="e.g. creat3more"
-              />
-              {mode === "signup" && (
-                <p className="mt-2 text-xs text-muted">{passwordRequirementsHint()}</p>
-              )}
-            </div>
+            <PasswordField
+              id="password"
+              label="Password"
+              value={password}
+              onChange={setPassword}
+              autoComplete={mode === "signup" ? "new-password" : "current-password"}
+              placeholder="e.g. creat3more"
+            />
           )}
 
           {mode === "signup" && (
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="mb-2 block text-sm font-medium text-foreground"
-              >
-                Confirm password
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                required
-                autoComplete="new-password"
-                minLength={8}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="input-surface"
-                placeholder="Repeat password"
-              />
-            </div>
+            <p className="-mt-3 text-xs text-muted">{passwordRequirementsHint()}</p>
+          )}
+
+          {mode === "signup" && (
+            <PasswordField
+              id="confirmPassword"
+              label="Confirm password"
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              autoComplete="new-password"
+              placeholder="Repeat password"
+              toggleName="confirm password"
+            />
           )}
 
           {error && <p className="text-sm font-medium text-red-700">{error}</p>}

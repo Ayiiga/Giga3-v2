@@ -9,7 +9,8 @@ import {
   resolutionLabelForAspect,
 } from "@/lib/gigaedit/creatorStudio";
 import {
-  deleteGigaEditProject,
+  deduplicateGigaEditProjects,
+  deleteProjectAndLocalFiles,
   duplicateGigaEditProject,
   estimateProjectBlobBytes,
   formatStorageBytes,
@@ -21,8 +22,8 @@ import {
 import { getCachedThumbnail, primeThumbnailCache } from "@/lib/gigaedit/thumbnailCache";
 import type { GigaEditOpenOptions, GigaEditSection } from "@/lib/gigaedit/types";
 import { cn } from "@/lib/utils";
-import { Copy, Pencil, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Copy, Pencil, Share2, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type RecentProjectsGridProps = {
   limit?: number;
@@ -32,7 +33,7 @@ type RecentProjectsGridProps = {
 };
 
 type PendingDelete = {
-  project: GigaEditProjectRecord;
+  projects: GigaEditProjectRecord[];
   bytes: number;
 };
 
@@ -47,55 +48,75 @@ export function RecentProjectsGrid({
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
-  const [renamingId, setRenamingId] = useState<string | null>(null);
-  const [renameDraft, setRenameDraft] = useState("");
+  const [notice, setNotice] = useState<string | null>(null);
 
-  const refresh = useCallback(async () => {
+  async function refresh() {
     const rows = await listGigaEditProjects();
-    primeThumbnailCache(rows);
-    setProjects(rows.slice(0, limit));
-    setLoading(false);
-  }, [limit]);
+    const unique = deduplicateGigaEditProjects(rows);
+    primeThumbnailCache(unique);
+    setProjects(unique.slice(0, limit));
+  }
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    let cancelled = false;
+    void refresh().then(() => {
+      if (!cancelled) setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh once per limit
+  }, [limit]);
 
-  async function confirmDelete(project: GigaEditProjectRecord) {
-    const bytes = await estimateProjectBlobBytes(project.id);
-    setPendingDelete({ project, bytes });
-  }
-
-  async function executeDelete() {
-    if (!pendingDelete) return;
-    await deleteGigaEditProject(pendingDelete.project.id);
-    setPendingDelete(null);
+  function toggleSelect(id: string) {
     setSelected((prev) => {
       const next = new Set(prev);
-      next.delete(pendingDelete.project.id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
-    await refresh();
   }
 
-  async function deleteSelected() {
-    const ids = [...selected];
-    for (const id of ids) {
-      await deleteGigaEditProject(id);
+  async function requestDelete(items: GigaEditProjectRecord[]) {
+    if (!items.length) return;
+    const sizes = await Promise.all(items.map((project) => estimateProjectBlobBytes(project.id)));
+    setPendingDelete({
+      projects: items,
+      bytes: sizes.reduce((sum, value) => sum + value, 0),
+    });
+  }
+
+  async function confirmDelete() {
+    if (!pendingDelete?.projects.length) return;
+    for (const project of pendingDelete.projects) {
+      await deleteProjectAndLocalFiles(project.id);
     }
+    setNotice(
+      pendingDelete.projects.length === 1
+        ? `Draft deleted — freed ${formatStorageBytes(pendingDelete.bytes)} locally.`
+        : `${pendingDelete.projects.length} drafts deleted — freed ${formatStorageBytes(pendingDelete.bytes)} locally.`
+    );
+    setPendingDelete(null);
     setSelected(new Set());
     setSelectMode(false);
     await refresh();
   }
 
-  async function saveRename(project: GigaEditProjectRecord) {
-    const title = renameDraft.trim();
-    if (!title) return;
-    await saveGigaEditProject({ ...project, title });
-    setRenamingId(null);
-    setRenameDraft("");
+  async function handleDuplicate(id: string) {
+    await duplicateGigaEditProject(id);
+    setNotice("Project duplicated.");
     await refresh();
   }
+
+  async function handleRename(project: GigaEditProjectRecord) {
+    const next = window.prompt("Rename draft", project.title);
+    if (!next || !next.trim() || next.trim() === project.title) return;
+    await saveGigaEditProject({ ...project, title: next.trim() });
+    setNotice("Draft renamed.");
+    await refresh();
+  }
+
+  const selectedCount = selected.size;
 
   if (loading) {
     return (
@@ -114,17 +135,21 @@ export function RecentProjectsGrid({
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-center justify-end gap-2">
+    <div>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <p className="text-[11px] text-[var(--ge-muted)]">
+          {projects.length} draft{projects.length === 1 ? "" : "s"} · auto-saved locally
+        </p>
         <button
           type="button"
-          className="text-[10px] font-medium text-[var(--ge-gold)]"
+          className="text-[11px] font-medium text-[var(--ge-gold)]"
           onClick={() => {
-            setSelectMode((v) => !v);
+            setSelectMode((value) => !value);
             setSelected(new Set());
           }}
+          aria-pressed={selectMode}
         >
-          {selectMode ? "Cancel select" : "Select"}
+          {selectMode ? "Cancel" : "Select"}
         </button>
       </div>
 
@@ -136,76 +161,69 @@ export function RecentProjectsGrid({
             onOpen={onOpen}
             compact={compact}
             selectMode={selectMode}
-            selected={selected.has(project.id)}
-            onToggleSelect={() =>
-              setSelected((prev) => {
-                const next = new Set(prev);
-                if (next.has(project.id)) next.delete(project.id);
-                else next.add(project.id);
-                return next;
-              })
-            }
-            onDelete={() => void confirmDelete(project)}
-            onDuplicate={() => void duplicateGigaEditProject(project.id).then(refresh)}
-            onRename={() => {
-              setRenamingId(project.id);
-              setRenameDraft(project.title);
-            }}
-            renaming={renamingId === project.id}
-            renameDraft={renameDraft}
-            onRenameDraftChange={setRenameDraft}
-            onSaveRename={() => void saveRename(project)}
-            onCancelRename={() => setRenamingId(null)}
+            checked={selected.has(project.id)}
+            onToggleSelect={() => toggleSelect(project.id)}
+            onDelete={() => void requestDelete([project])}
+            onDuplicate={() => void handleDuplicate(project.id)}
+            onRename={() => void handleRename(project)}
           />
         ))}
-      </div>
-
-      {selectMode && selected.size > 0 ? (
-        <div className="gigaedit-recent-bulk-bar flex items-center justify-between gap-2 rounded-xl border border-red-400/30 bg-red-950/30 px-3 py-2">
-          <span className="text-xs text-white/80">{selected.size} selected</span>
+        {onViewAll && projects.length >= limit ? (
           <button
             type="button"
-            className="inline-flex items-center gap-1 rounded-lg bg-red-500 px-3 py-1.5 text-xs font-bold text-white"
-            onClick={() => void deleteSelected()}
+            className="mt-2 text-xs font-medium text-[var(--ge-gold)]"
+            onClick={onViewAll}
+          >
+            View all projects
+          </button>
+        ) : null}
+      </div>
+
+      {selectMode && selectedCount > 0 ? (
+        <div className="gigaedit-select-bar" role="toolbar" aria-label="Bulk project actions">
+          <span className="text-xs font-semibold text-white">{selectedCount} selected</span>
+          <button
+            type="button"
+            className="gigaedit-select-bar__delete"
+            onClick={() => void requestDelete(projects.filter((project) => selected.has(project.id)))}
           >
             <Trash2 className="h-3.5 w-3.5" aria-hidden />
-            Delete selected
+            Delete selected ({selectedCount})
           </button>
         </div>
       ) : null}
 
-      {onViewAll && projects.length >= limit ? (
-        <button
-          type="button"
-          className="mt-2 text-xs font-medium text-[var(--ge-gold)]"
-          onClick={onViewAll}
-        >
-          View all projects
-        </button>
-      ) : null}
+      {notice ? <p className="mt-2 text-xs text-[var(--ge-gold)]">{notice}</p> : null}
 
-      {pendingDelete ? (
-        <div className="gigaedit-delete-dialog fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="gigaedit-glass max-w-sm space-y-3 p-4">
-            <p className="text-sm font-semibold">
-              Delete draft {pendingDelete.project.title}?
+      {pendingDelete?.projects.length ? (
+        <div
+          className="gigaedit-confirm-backdrop"
+          role="alertdialog"
+          aria-modal="true"
+          aria-label="Confirm delete"
+        >
+          <div className="gigaedit-confirm-card">
+            <h3 className="text-sm font-bold text-white">
+              Delete
+              {pendingDelete.projects.length === 1
+                ? ` draft “${pendingDelete.projects[0].title}”?`
+                : ` ${pendingDelete.projects.length} drafts?`}
+            </h3>
+            <p className="mt-1 text-xs text-[var(--ge-muted)]">
+              This frees {formatStorageBytes(pendingDelete.bytes)} locally (IndexedDB + device files). Original files stay untouched.
             </p>
-            <p className="text-xs text-[var(--ge-muted)]">
-              This frees {formatStorageBytes(pendingDelete.bytes)} locally. Original file preserved
-              until you confirm delete.
-            </p>
-            <div className="flex justify-end gap-2">
+            <div className="mt-3 flex gap-2">
               <button
                 type="button"
-                className="rounded-lg border border-[var(--ge-border)] px-3 py-1.5 text-xs"
+                className="gigaedit-cta gigaedit-cta--ghost flex-1 text-xs"
                 onClick={() => setPendingDelete(null)}
               >
                 Cancel
               </button>
               <button
                 type="button"
-                className="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-bold text-white"
-                onClick={() => void executeDelete()}
+                className="gigaedit-confirm-delete flex-1"
+                onClick={() => void confirmDelete()}
               >
                 Delete
               </button>
@@ -222,136 +240,164 @@ function RecentProjectCard({
   onOpen,
   compact,
   selectMode,
-  selected,
+  checked,
   onToggleSelect,
   onDelete,
   onDuplicate,
   onRename,
-  renaming,
-  renameDraft,
-  onRenameDraftChange,
-  onSaveRename,
-  onCancelRename,
 }: {
   project: GigaEditProjectRecord;
   onOpen: RecentProjectsGridProps["onOpen"];
   compact?: boolean;
   selectMode: boolean;
-  selected: boolean;
+  checked: boolean;
   onToggleSelect: () => void;
   onDelete: () => void;
   onDuplicate: () => void;
   onRename: () => void;
-  renaming: boolean;
-  renameDraft: string;
-  onRenameDraftChange: (v: string) => void;
-  onSaveRename: () => void;
-  onCancelRename: () => void;
 }) {
   const durationSec = computeProjectDurationSec(project);
   const resolution = resolutionLabelForAspect(project.aspectRatio);
   const thumbSrc = getCachedThumbnail(project.id) ?? project.thumbnailDataUrl ?? undefined;
-  const [revealed, setRevealed] = useState(false);
-  const longPressTimerRef = useRef<number | null>(null);
+  const longPressTimer = useRef<number | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const openProject = () =>
+    onOpen(sectionForProjectKind(project.kind) as GigaEditSection, {
+      projectId: project.id,
+      aspect: project.aspectRatio,
+    });
+
+  const menuItems = useMemo(
+    () => [
+      { id: "open", label: "Open", action: openProject },
+      { id: "rename", label: "Rename", action: onRename },
+      { id: "duplicate", label: "Duplicate", action: onDuplicate },
+      { id: "share", label: "Share to GigaSocial", action: openProject },
+      { id: "delete", label: "Delete", action: onDelete, danger: true },
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- actions keyed by project
+    [project.id]
+  );
+
+  function beginLongPress() {
+    if (selectMode) return;
+    longPressTimer.current = window.setTimeout(() => setMenuOpen(true), 450);
+  }
+
+  function cancelLongPress() {
+    if (longPressTimer.current) {
+      window.clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }
 
   return (
     <div
-      className={cn(
-        "gigaedit-recent-card-wrap relative overflow-hidden rounded-xl",
-        revealed && "gigaedit-recent-card-wrap--revealed"
-      )}
-      onTouchStart={() => {
-        longPressTimerRef.current = window.setTimeout(() => setRevealed(true), 450);
-      }}
-      onTouchEnd={() => {
-        if (longPressTimerRef.current) window.clearTimeout(longPressTimerRef.current);
+      className="gigaedit-recent-card-wrap relative overflow-hidden rounded-xl"
+      onContextMenu={(e) => {
+        e.preventDefault();
+        setMenuOpen(true);
       }}
     >
-      <div
-        className="gigaedit-recent-card-actions"
-        aria-hidden={!revealed}
+      {selectMode ? (
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={onToggleSelect}
+          aria-label={`Select ${project.title}`}
+          className="mt-1 h-4 w-4 shrink-0 accent-[#EAB308]"
+        />
+      ) : null}
+      <button
+        type="button"
+        className={cn("flex min-w-0 flex-1 items-stretch gap-3 text-left", compact && "gigaedit-recent-card--compact")}
+        onClick={() => (selectMode ? onToggleSelect() : openProject())}
+        onTouchStart={beginLongPress}
+        onTouchEnd={cancelLongPress}
+        onTouchMove={cancelLongPress}
+        onMouseDown={beginLongPress}
+        onMouseUp={cancelLongPress}
+        onMouseLeave={cancelLongPress}
+        aria-label={selectMode ? `Select ${project.title}` : `Open ${project.title}`}
       >
-        <button type="button" className="gigaedit-recent-action gigaedit-recent-action--delete" onClick={onDelete}>
-          <Trash2 className="h-4 w-4" />
-          Delete
-        </button>
-        <button type="button" className="gigaedit-recent-action" onClick={onDuplicate}>
-          <Copy className="h-4 w-4" />
-          Duplicate
-        </button>
-        <button type="button" className="gigaedit-recent-action" onClick={onRename}>
-          <Pencil className="h-4 w-4" />
-          Rename
-        </button>
-      </div>
+        <div className="gigaedit-recent-card__thumb" aria-hidden>
+          {thumbSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={thumbSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
+          ) : (
+            <span className="text-2xl">{projectKindEmoji(project.kind)}</span>
+          )}
+        </div>
+        <div className="gigaedit-recent-card__body min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold">{project.title}</p>
+          <p className="mt-0.5 text-[11px] text-[var(--ge-muted)]">
+            {formatProjectDuration(durationSec)} · {resolution} · {formatRelativeEditedAt(project.updatedAt)}
+          </p>
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            <span className="gigaedit-recent-card__badge">{projectStatusLabel(project.status)}</span>
+            <span className="text-[10px] uppercase tracking-wide text-[var(--ge-muted)]">
+              {project.kind}
+            </span>
+            {project.aiAssisted ? (
+              <span className="text-[10px] text-[var(--ge-gold)]">AI-assisted</span>
+            ) : null}
+          </div>
+        </div>
+      </button>
 
-      <div
-        className={cn(
-          "gigaedit-recent-card w-full text-left transition-transform",
-          compact && "gigaedit-recent-card--compact",
-          revealed && "-translate-x-36"
-        )}
-      >
-        {selectMode ? (
-          <input
-            type="checkbox"
-            className="mr-2 shrink-0"
-            checked={selected}
-            onChange={onToggleSelect}
-            aria-label={`Select ${project.title}`}
-          />
-        ) : null}
-        <button
-          type="button"
-          className="flex min-w-0 flex-1 items-stretch gap-3 text-left"
-          onClick={() =>
-            onOpen(sectionForProjectKind(project.kind) as GigaEditSection, {
-              projectId: project.id,
-              aspect: project.aspectRatio,
-            })
-          }
-        >
-          <div className="gigaedit-recent-card__thumb" aria-hidden>
-            {thumbSrc ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={thumbSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
-            ) : (
-              <span className="text-2xl">{projectKindEmoji(project.kind)}</span>
-            )}
-          </div>
-          <div className="gigaedit-recent-card__body min-w-0 flex-1">
-            {renaming ? (
-              <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                <input
-                  value={renameDraft}
-                  onChange={(e) => onRenameDraftChange(e.target.value)}
-                  className="gigaedit-input w-full text-sm"
-                />
-                <button type="button" className="text-[10px] text-[var(--ge-gold)]" onClick={onSaveRename}>
-                  Save
-                </button>
-                <button type="button" className="text-[10px] text-[var(--ge-muted)]" onClick={onCancelRename}>
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              <p className="truncate text-sm font-semibold">{project.title}</p>
-            )}
-            <p className="mt-0.5 text-[11px] text-[var(--ge-muted)]">
-              {formatProjectDuration(durationSec)} · {resolution} · {formatRelativeEditedAt(project.updatedAt)}
-            </p>
-            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-              <span className="gigaedit-recent-card__badge">{projectStatusLabel(project.status)}</span>
-              <span className="text-[10px] uppercase tracking-wide text-[var(--ge-muted)]">
-                {project.kind}
-              </span>
-              {project.aiAssisted ? (
-                <span className="text-[10px] text-[var(--ge-gold)]">AI-assisted</span>
-              ) : null}
-            </div>
-          </div>
-        </button>
-      </div>
+      {!selectMode ? (
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            className="rounded-lg border border-[var(--ge-border)] p-2 text-[var(--ge-muted)]"
+            aria-label={`Duplicate ${project.title}`}
+            title="Duplicate"
+            onClick={onDuplicate}
+          >
+            <Copy className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            className="rounded-lg border border-red-400/30 p-2 text-red-300"
+            aria-label={`Delete ${project.title}`}
+            title="Delete (frees local space)"
+            onClick={onDelete}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      ) : null}
+
+      {menuOpen ? (
+        <div className="gigaedit-card-menu" role="menu" aria-label={`Actions for ${project.title}`}>
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              role="menuitem"
+              className={cn("gigaedit-card-menu__item", item.danger && "gigaedit-card-menu__item--danger")}
+              onClick={() => {
+                setMenuOpen(false);
+                item.action();
+              }}
+            >
+              {item.id === "rename" ? <Pencil className="h-3.5 w-3.5" aria-hidden /> : null}
+              {item.id === "duplicate" ? <Copy className="h-3.5 w-3.5" aria-hidden /> : null}
+              {item.id === "share" ? <Share2 className="h-3.5 w-3.5" aria-hidden /> : null}
+              {item.id === "delete" ? <Trash2 className="h-3.5 w-3.5" aria-hidden /> : null}
+              {item.label}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="gigaedit-card-menu__item"
+            onClick={() => setMenuOpen(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

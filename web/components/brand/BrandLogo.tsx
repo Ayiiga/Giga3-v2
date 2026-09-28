@@ -1,5 +1,4 @@
-import Image from "next/image";
-import { brandingAssetUrl } from "@/lib/brandingAssets";
+import { Giga3Logo } from "@/components/brand/Giga3Logo";
 import { branding } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
@@ -11,16 +10,13 @@ type BrandLogoProps = {
   alt?: string;
 };
 
-/** Giga3 AI mark — generated via `npm run generate:branding`. */
-export function BrandLogo({ size = 36, className, priority, alt }: BrandLogoProps) {
+/** Giga3 AI mark — violet gradient G (PWA icons via `npm run generate:branding`). */
+export function BrandLogo({ size = 36, className, alt }: BrandLogoProps) {
   return (
-    <Image
-      src={brandingAssetUrl("/images/logo.png")}
-      alt={alt ?? branding.name}
-      width={size}
-      height={size}
-      priority={priority}
-      className={cn("rounded-xl object-cover", className)}
+    <Giga3Logo
+      size={size}
+      className={cn(className)}
+      aria-label={alt === "" ? "" : alt ?? branding.name}
     />
   );
 }

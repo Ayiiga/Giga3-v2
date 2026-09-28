@@ -4,11 +4,28 @@ import {
   legacyNewsLabelFromStatus,
 } from "./confidence";
 import type { NewsEvidenceContext, NewsResponseContract } from "./types";
+import {
+  buildUserContextRecoveryAnswer,
+  GHANA_NEWS_INSUFFICIENT_EVIDENCE,
+  hasSubstantiveUserProvidedContent,
+  isGenericRetrievalFailureAnswer,
+  resolveSafeChatRoute,
+} from "./userContextRouting";
 
 const VERIFIED_LABEL_RE = /\*\*(Verified|Official|Corroborated)\*\*/gi;
 const BREAKING_LABEL_RE = /\*\*Breaking\*\*/gi;
 const CANT_VERIFY_RE =
   /\b(can'?t|cannot)\s+(confidently\s+)?verify\b/i;
+
+const NEWS_BRUSHOFF_RE =
+  /\b(?:recommend checking|check(?:ing)? trusted news|trusted news sources|real-time updates|based on general knowledge|don'?t have (?:access to )?(?:real-time|the latest|live)|cannot (?:browse|access) (?:the )?(?:internet|web|live)|knowledge cutoff|not able to (?:browse|access|provide) (?:real-time|live|current))\b/i;
+
+/** Model hedge that sends the user away instead of using retrieved reports. */
+export function isNewsBrushOffAnswer(answer: string): boolean {
+  const text = answer.trim();
+  if (!text || /https?:\/\//i.test(text)) return false;
+  return NEWS_BRUSHOFF_RE.test(text);
+}
 
 export function insufficientEvidenceFallback(query: string): string {
   return `I couldn't retrieve enough current evidence to give you reliable news on that request right now. I won't invent or label unverified stories as current news.
@@ -70,6 +87,20 @@ export function downgradeUnsupportedNewsLabels(
   return updated;
 }
 
+function answerCitesRetrievedEvidence(answer: string, contract: NewsResponseContract): boolean {
+  const lower = answer.toLowerCase();
+  for (const story of contract.stories) {
+    const headline = story.headline.trim().toLowerCase();
+    if (headline.length >= 12 && lower.includes(headline.slice(0, 48))) return true;
+    for (const source of story.sources) {
+      if (source.url && answer.includes(source.url)) return true;
+      const domain = source.domain.trim().toLowerCase();
+      if (domain && lower.includes(domain)) return true;
+    }
+  }
+  return false;
+}
+
 export function enforceNewsEvidenceIntegrity(args: {
   answer: string;
   query: string;
@@ -85,12 +116,62 @@ export function enforceNewsEvidenceIntegrity(args: {
 
   const { contract, retrievalFailed } = args.evidence;
 
+  const userSuppliedContent = hasSubstantiveUserProvidedContent(args.query);
+  const noEvidence = retrievalFailed || contract.evidenceCount === 0;
+
+  if (isNewsBrushOffAnswer(content) && contract.evidenceCount > 0 && !userSuppliedContent) {
+    flags.push("news_brushoff_replaced");
+    return { content: renderNewsContractSummary(contract), flags };
+  }
+
   if (
-    (retrievalFailed || contract.evidenceCount === 0) &&
-    contract.classification.requiresRetrieval
+    noEvidence &&
+    contract.classification.requiresRetrieval &&
+    !userSuppliedContent
   ) {
     flags.push("news_insufficient_evidence");
-    return { content: insufficientEvidenceFallback(args.query), flags };
+    return {
+      content:
+        resolveSafeChatRoute(args.query) === "news_search"
+          ? GHANA_NEWS_INSUFFICIENT_EVIDENCE
+          : insufficientEvidenceFallback(args.query),
+      flags,
+    };
+  }
+
+  if (
+    contract.evidenceCount > 0 &&
+    contract.classification.requiresRetrieval &&
+    !userSuppliedContent &&
+    resolveSafeChatRoute(args.query) === "news_search" &&
+    !answerCitesRetrievedEvidence(content, contract)
+  ) {
+    flags.push("news_unsourced_replaced");
+    return { content: renderNewsContractSummary(contract), flags };
+  }
+
+  if (
+    userSuppliedContent &&
+    (retrievalFailed || contract.evidenceCount === 0) &&
+    (!content || isGenericRetrievalFailureAnswer(content))
+  ) {
+    flags.push("news_user_context_recovery");
+    return {
+      content: buildUserContextRecoveryAnswer(args.query),
+      flags,
+    };
+  }
+
+  if (
+    userSuppliedContent &&
+    retrievalFailed &&
+    content &&
+    !isGenericRetrievalFailureAnswer(content) &&
+    !/\b(message you (?:shared|provided|supplied|sent)|announcement you (?:shared|provided|pasted)|information you provided|user-provided)\b/i.test(
+      content
+    )
+  ) {
+    flags.push("news_user_context_answer");
   }
 
   const hadVerified = VERIFIED_LABEL_RE.test(content);

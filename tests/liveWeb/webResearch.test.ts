@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { createSerperSearchProvider } from "../../convex/liveWeb/providers/serperSearchProvider";
 import { resolveWebSearchProvider } from "../../convex/liveWeb/providers/registry";
-import { runWebResearch } from "../../convex/liveWeb/webResearchOrchestrator";
+import { newsEvidenceWithGrounding, runWebResearch } from "../../convex/liveWeb/webResearchOrchestrator";
 
 describe("Serper search provider", () => {
   beforeEach(() => {
@@ -121,5 +121,24 @@ describe("runWebResearch", () => {
 
     expect(stages).toContain("searching");
     expect(stages).toContain("preparing_answer");
+  });
+});
+
+describe("newsEvidenceWithGrounding", () => {
+  it("keeps Gemini grounding sources when dedicated search returned nothing", () => {
+    const result = newsEvidenceWithGrounding({
+      query: "What is happening in Ghana",
+      capability: "ghana_news",
+      existing: null,
+      researchSources: [],
+      groundingSources: [
+        { title: "Cedi update", uri: "https://www.myjoyonline.com/cedi" },
+      ],
+    });
+
+    expect(result.evidence?.retrievalFailed).toBe(false);
+    expect(result.evidence?.contract.evidenceCount).toBeGreaterThan(0);
+    expect(result.sources[0]?.uri).toContain("myjoyonline.com");
+    expect(result.evidence?.contract.stories[0]?.headline).toBe("Cedi update");
   });
 });

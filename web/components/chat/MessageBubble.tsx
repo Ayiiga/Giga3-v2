@@ -1,14 +1,20 @@
 "use client";
 
+import { AfricanVoiceReader } from "@/components/chat/AfricanVoiceReader";
+import { AnswerContentBlock } from "@/components/chat/AnswerContentBlock";
 import { LiveWebSourceCards } from "@/components/chat/LiveWebSourceCards";
 import { ResearchResponseBadge } from "@/components/chat/ResearchResponseBadge";
 import { MessageBubbleActions } from "@/components/chat/MessageBubbleActions";
 import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
 import { MessageMarkdown } from "@/components/chat/MessageMarkdown";
+import { SmartAnswer } from "@/components/chat/SmartAnswer";
+import { ProductRedirectCards } from "@/components/chat/ProductRedirectCards";
 import { useStreamingReveal } from "@/hooks/useStreamingReveal";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { formatMessageTime } from "@/lib/chat/groupMessagesByDate";
-import { splitAssistantResponseDisplay } from "@/lib/chat/deriveResponseDisplay";
+import { parseAnswerBlocks } from "@/lib/chat/parseAnswerBlocks";
+import { parseSmartAnswer, smartAnswerSpokenText } from "@/lib/chat/parseSmartAnswer";
+import { extractProductRedirectsFromText } from "@/lib/chat/productRedirects";
 import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
 import {
   parseLiveWebMetadata,
@@ -80,10 +86,19 @@ export const MessageBubble = memo(function MessageBubble({
   );
 
   const displayContent = !isUser && streaming ? revealed : safeContent;
-  const assistantDisplay = useMemo(() => {
-    if (isUser || streaming) return null;
-    return splitAssistantResponseDisplay(displayContent);
-  }, [isUser, displayContent, streaming]);
+  const smartAnswer = useMemo(() => {
+    if (isUser || !displayContent) return null;
+    const parsed = parseSmartAnswer(displayContent);
+    return parsed.isSmart ? parsed : null;
+  }, [isUser, displayContent]);
+  const answerBlocks = useMemo(() => {
+    if (isUser || streaming || smartAnswer) return null;
+    return parseAnswerBlocks(displayContent);
+  }, [isUser, displayContent, streaming, smartAnswer]);
+  const productRedirects = useMemo(
+    () => (isUser ? [] : extractProductRedirectsFromText(content)),
+    [isUser, content]
+  );
   const liveWebMetadata = useMemo(
     () => parseLiveWebMetadata(metadataJson),
     [metadataJson]
@@ -142,15 +157,52 @@ export const MessageBubble = memo(function MessageBubble({
               </p>
             ) : (
               <>
-                {assistantDisplay?.title ? (
-                  <h2 className="chat-response-title">{assistantDisplay.title}</h2>
-                ) : null}
-                <MessageMarkdown content={assistantDisplay?.content ?? displayContent} />
+                {smartAnswer ? (
+                  <SmartAnswer messageId={id} parsed={smartAnswer} />
+                ) : (
+                  <>
+                    {answerBlocks?.title ? (
+                      <h2 className="chat-response-title">{answerBlocks.title}</h2>
+                    ) : null}
+                    {answerBlocks?.isStructured ? (
+                      <div className="answer-blocks-stack">
+                        {answerBlocks.blocks.map((section, index) => (
+                          <AnswerContentBlock
+                            key={`${section.kind}-${index}`}
+                            messageId={id}
+                            section={section}
+                            index={index}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <MessageMarkdown content={answerBlocks?.plainContent ?? displayContent} />
+                    )}
+                  </>
+                )}
                 {basisLabel && basisLabel.basis !== "live_web" ? (
                   <ResearchResponseBadge metadata={basisLabel} />
                 ) : null}
                 {liveWebMetadata?.sources?.length ? (
                   <LiveWebSourceCards sources={liveWebMetadata.sources} />
+                ) : null}
+                {productRedirects.length > 0 ? (
+                  <ProductRedirectCards products={productRedirects} />
+                ) : null}
+                {!streaming && displayContent ? (
+                  smartAnswer ? (
+                    <AfricanVoiceReader
+                      content={smartAnswerSpokenText(smartAnswer)}
+                      messageId={id}
+                    />
+                  ) : answerBlocks?.isStructured ? (
+                    <AfricanVoiceReader content="" messageId={id} selectorOnly />
+                  ) : (
+                    <AfricanVoiceReader
+                      content={answerBlocks?.plainContent ?? displayContent}
+                      messageId={id}
+                    />
+                  )
                 ) : null}
               </>
             ))}
@@ -193,7 +245,7 @@ export const MessageBubble = memo(function MessageBubble({
         <div className="chat-message-bubble chat-message-bubble-user">
           <div
             className={cn(
-              "chat-message-bubble-inner rounded-3xl bg-zinc-200/90 px-4 py-2.5 text-zinc-900 dark:bg-zinc-700/90 dark:text-zinc-50",
+              "chat-message-bubble-inner chat-message-bubble-inner--app rounded-3xl bg-zinc-200/90 px-4 py-2.5 text-zinc-900 dark:bg-zinc-700/90 dark:text-zinc-50",
               pending && "opacity-80"
             )}
           >
@@ -210,15 +262,20 @@ export const MessageBubble = memo(function MessageBubble({
       className="group chat-message-turn chat-message-turn-assistant"
       title={timeLabel || undefined}
     >
-      <div className="chat-message-bubble flex w-full min-w-0 max-w-full gap-0 sm:gap-3">
+      <div className="chat-message-bubble chat-message-bubble-assistant flex w-full min-w-0 max-w-full gap-2 sm:gap-3">
+        <span className="chat-assistant-sparkle" aria-hidden>
+          ✨
+        </span>
         <div
-          className="mt-0.5 hidden h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 sm:flex"
+          className="mt-0.5 hidden h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 lg:flex"
           aria-hidden
         >
           <Bot className="h-3.5 w-3.5" />
         </div>
         <div className="min-w-0 w-full max-w-full flex-1">
-          <div className="chat-assistant-body chat-message-bubble-inner px-0 py-0.5 text-foreground sm:py-1">
+          <div
+            className="chat-assistant-body chat-message-bubble-inner chat-message-bubble-assistant-inner--app px-0 py-0.5 text-foreground sm:py-1"
+          >
             {body}
           </div>
           {bubbleActions}

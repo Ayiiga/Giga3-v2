@@ -8,8 +8,8 @@ import {
 } from "../../convex/chatSegmentation";
 
 describe("chatSegmentation", () => {
-  it("defaults to 20 exchanges within the 15–30 range", () => {
-    expect(getSegmentExchangeLimit()).toBe(20);
+  it("defaults to 30 generations within the 15–30 range", () => {
+    expect(getSegmentExchangeLimit()).toBe(30);
   });
 
   it("counts completed user-assistant pairs only", () => {

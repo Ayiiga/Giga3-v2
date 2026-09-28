@@ -58,10 +58,31 @@ const NEWS_CAPABILITIES = new Set<ResearchCapabilityId>([
 ]);
 
 const TIME_SENSITIVE_RE =
-  /\b(today|tonight|yesterday|this week|this month|this year|latest|current|recent|breaking|just now|right now|as of now|news|headlines|now|202[4-9]|stock price|weather|score|election|who is (the )?president|announcement|regulation|law passed|match result|final score)\b/i;
+  /\b(today|tonight|yesterday|this week|this month|this year|latest|current|recent|breaking|just now|right now|as of now|news|headlines|now|202[4-9]|stock price|weather|score|election|who is (the )?president|regulation|law passed|match result|final score)\b/i;
+
+/** News lookup phrasing that includes "announcement" — not user-pasted notices. */
+const NEWS_ANNOUNCEMENT_LOOKUP_RE =
+  /\b(latest|recent|current|new|today'?s?|breaking)\b[\s\S]{0,24}\bannouncement\b/i;
 
 const GHANA_NEWS_RE =
-  /\b(ghana(?:ian)?\s+(?:news|headlines|updates|politics|today)|news (?:in|from|about) ghana|accra|kumasi|tamale|tema|black stars|parliament of ghana|mahama|akufo-addo|graphic online|myjoyonline|ghanaweb|citinewsroom|citi fm|joy news|daily graphic)\b/i;
+  /\b(ghana(?:ian)?\s+(?:news|headlines|updates|politics)|news (?:in|from|about) ghana|(?:happening|going on|situation|updates?)\s+(?:in|across|around)\s+ghana|accra|kumasi|tamale|tema|black stars|parliament of ghana|mahama|akufo-addo|graphic online|myjoyonline|ghanaweb|citinewsroom|citi fm|joy news|daily graphic)\b/i;
+
+/** Time-sensitive signals other than the word "today" by itself. */
+const TIME_SENSITIVE_BESIDES_TODAY_RE =
+  /\b(tonight|yesterday|this week|this month|this year|latest|current|recent|breaking|just now|right now|as of now|news|headlines|now|202[4-9]|stock price|weather|score|election|who is (the )?president|regulation|law passed|match result|final score)\b/i;
+
+/** Search-query bias only. The full registry is too long for one site: OR query. */
+const GHANA_SEARCH_DOMAINS = [
+  "graphic.com.gh",
+  "myjoyonline.com",
+  "citinewsroom.com",
+  "ghanaweb.com",
+  "gna.org.gh",
+  "3news.com",
+] as const;
+
+const OTHER_COUNTRY_RE =
+  /\b(nepal|nigeria|kenya|uganda|tanzania|south africa|united states|united kingdom|uk|usa|india|china|france|germany)\b/i;
 
 const BREAKING_NEWS_RE =
   /\b(breaking news|just broke|developing story|news flash|urgent:?|live updates?)\b/i;
@@ -76,8 +97,20 @@ const LOCATION_INTENT_RE =
   /\b(where am i|what('s| is) my location|my (current )?location|where do i live|locate me)\b/i;
 
 import { GHANA_NEWS_SOURCE_HINTS } from "./newsEvidence/sourceRegistry";
+import {
+  classifyInformationRequest,
+  detectAnswerFromUserContextIntent,
+  type InformationRequestMode,
+} from "./newsEvidence/userContextRouting";
 
 export { GHANA_NEWS_SOURCE_HINTS };
+export type { InformationRequestMode };
+export {
+  classifyInformationRequest,
+  detectAnswerFromUserContextIntent,
+  hasSubstantiveUserProvidedContent,
+  USER_PROVIDED_CONTENT_GUIDANCE,
+} from "./newsEvidence/userContextRouting";
 
 export function isValidResearchCapability(
   value: string | undefined | null
@@ -93,11 +126,52 @@ export function isNewsCapability(id: ResearchCapabilityId): boolean {
 }
 
 export function shouldAutoEnableLiveWeb(query: string): boolean {
-  return TIME_SENSITIVE_RE.test(query.trim());
+  const q = query.trim();
+  if (!q) return false;
+  if (detectAnswerFromUserContextIntent(q)) return false;
+  if (isBareGhanaTodayMention(q)) return false;
+  if (/\bannouncement\b/i.test(q)) {
+    if (NEWS_ANNOUNCEMENT_LOOKUP_RE.test(q)) return true;
+    // "Is this announcement still current?" — verification, not pasted-notice context.
+    if (
+      /\bis this\b[\s\S]{0,48}\b(current|genuine|real|legitimate|accurate|true|official|valid)\b/i.test(
+        q
+      )
+    ) {
+      return TIME_SENSITIVE_RE.test(q);
+    }
+    return false;
+  }
+  return TIME_SENSITIVE_RE.test(q);
 }
 
 export function detectGhanaNewsIntent(query: string): boolean {
   return GHANA_NEWS_RE.test(query.trim());
+}
+
+/**
+ * A Ghana mention plus "today" with no news or current-events wording.
+ * "I visited Ghana today" must not open Ghana news search.
+ */
+function isBareGhanaTodayMention(query: string): boolean {
+  const q = query.trim();
+  if (!/\bghana(?:ian)?\b/i.test(q) || !/\btoday\b/i.test(q)) return false;
+  if (
+    detectCurrentEventsIntent(q) ||
+    detectGhanaNewsIntent(q) ||
+    detectBreakingNewsIntent(q)
+  ) {
+    return false;
+  }
+  if (TIME_SENSITIVE_BESIDES_TODAY_RE.test(q)) return false;
+  if (
+    /\b(figures|inflation|economy|happening|situation|updates?|headlines|latest|breaking|news)\b/i.test(
+      q
+    )
+  ) {
+    return false;
+  }
+  return true;
 }
 
 export function detectBreakingNewsIntent(query: string): boolean {
@@ -122,9 +196,13 @@ export function detectCurrentEventsIntent(query: string): boolean {
 /** Headline/news lookup — not fact-check verification (handled separately). */
 export function detectNewsRetrievalIntent(query: string): boolean {
   const q = query.trim();
+  if (isBareGhanaTodayMention(q)) return false;
   if (detectCurrentEventsIntent(q)) return true;
   if (detectGhanaNewsIntent(q) || detectBreakingNewsIntent(q)) return true;
-  if (/\bghana\b/i.test(q) && /\b(latest|today|current|breaking|figures|inflation|economy|news|headlines)\b/i.test(q)) {
+  if (
+    /\bghana\b/i.test(q) &&
+    /\b(latest|today|current|breaking|figures|inflation|economy|news|headlines)\b/i.test(q)
+  ) {
     return true;
   }
   return (
@@ -158,11 +236,53 @@ const CONVERSATIONAL_GREETING_RE =
 export function isConversationalChatQuery(query: string): boolean {
   const q = query.trim();
   if (!q || q.length > 96) return false;
+  // Short current-events questions ("What is happening in Ghana") have no
+  // question mark and used to be treated as small talk.
+  if (
+    detectCurrentEventsIntent(q) ||
+    detectNewsRetrievalIntent(q) ||
+    detectGhanaNewsIntent(q) ||
+    detectBreakingNewsIntent(q) ||
+    detectFactCheckIntent(q)
+  ) {
+    return false;
+  }
   if (CONVERSATIONAL_GREETING_RE.test(q)) return true;
   if (q.length <= 28 && !TIME_SENSITIVE_RE.test(q) && !/\?/.test(q)) {
     return /^[\p{L}\p{N}\s'.,!-]+$/u.test(q);
   }
   return false;
+}
+
+function mentionsGhanaPlace(query: string): boolean {
+  return /\b(ghana(?:ian)?|accra|kumasi|tamale|tema|black stars)\b/i.test(query);
+}
+
+/**
+ * Current-events and headline lookups get a news capability so live search,
+ * Ghana source bias, and evidence checks actually run.
+ */
+export function resolveNewsLookupCapability(query: string): ResearchCapabilityId | null {
+  const q = query.trim();
+  const lookup =
+    detectNewsRetrievalIntent(q) ||
+    detectCurrentEventsIntent(q) ||
+    detectGhanaNewsIntent(q) ||
+    detectBreakingNewsIntent(q);
+  if (!lookup) return null;
+
+  const ghana = mentionsGhanaPlace(q) || detectGhanaNewsIntent(q);
+  const mentionsAfrica = /\bafrica(?:n)?\b/i.test(q);
+  const otherCountry = OTHER_COUNTRY_RE.test(q);
+  if (ghana && mentionsAfrica && !otherCountry) {
+    return "africa_news";
+  }
+  if (ghana && !otherCountry) {
+    return detectBreakingNewsIntent(q) ? "breaking_news" : "ghana_news";
+  }
+  if (mentionsAfrica && !ghana) return "africa_news";
+  if (detectBreakingNewsIntent(q)) return "breaking_news";
+  return "current_news";
 }
 
 /** Text-only chat without live web — use the lightweight conversational worker. */
@@ -220,13 +340,12 @@ export function resolveResearchCapability(args: {
     return "fact_check";
   }
 
-  if (detectGhanaNewsIntent(q)) {
-    return detectBreakingNewsIntent(q) ? "breaking_news" : "ghana_news";
+  if (classifyInformationRequest(q) === "answer_from_user_context") {
+    return "general";
   }
 
-  if (detectBreakingNewsIntent(q) && TIME_SENSITIVE_RE.test(q)) {
-    return "breaking_news";
-  }
+  const newsLookup = resolveNewsLookupCapability(q);
+  if (newsLookup) return newsLookup;
 
   if (shouldAutoEnableLiveWeb(q)) {
     return "live_web";
@@ -249,6 +368,20 @@ export function queryNeedsLiveWeb(args: {
   const q = args.query.trim();
   if (!q || args.hasImageAttachment) return false;
   if (isConversationalChatQuery(q)) return false;
+
+  const infoMode = classifyInformationRequest(q);
+  if (infoMode === "answer_from_user_context") return false;
+  if (infoMode === "verify_user_content") {
+    return (
+      detectVerifyImageIntent(q, true) ||
+      detectFactCheckIntent(q) ||
+      detectGhanaNewsIntent(q) ||
+      detectBreakingNewsIntent(q) ||
+      detectNewsRetrievalIntent(q) ||
+      shouldAutoEnableLiveWeb(q) ||
+      detectCurrentEventsIntent(q)
+    );
+  }
 
   if (detectVerifyImageIntent(q, true)) return true;
   if (detectFactCheckIntent(q)) return true;
@@ -287,8 +420,13 @@ export function shouldRunLiveWebResearch(capability: ResearchCapabilityId): bool
 }
 
 export function buildGhanaNewsSearchQuery(query: string): string {
-  const siteBias = GHANA_NEWS_SOURCE_HINTS.map((d) => `site:${d}`).join(" OR ");
-  return `${query.trim()} Ghana news today (${siteBias})`.trim();
+  const cleaned = query.trim().replace(/\s+/g, " ");
+  const mentionsAfrica = /\bafrica(?:n)?\b/i.test(cleaned);
+  const scope = mentionsAfrica ? "Ghana Africa news headlines today" : "Ghana news headlines today";
+  const siteBias = GHANA_SEARCH_DOMAINS.slice(0, 3)
+    .map((d) => `site:${d}`)
+    .join(" OR ");
+  return `${cleaned} ${scope} (${siteBias})`.trim();
 }
 
 export function buildResearchSearchQuery(
@@ -296,7 +434,9 @@ export function buildResearchSearchQuery(
   capability: ResearchCapabilityId
 ): string {
   const trimmed = query.trim();
-  if (capability === "ghana_news") {
+  const ghanaScoped =
+    mentionsGhanaPlace(trimmed) || detectGhanaNewsIntent(trimmed);
+  if (capability === "ghana_news" || (capability === "africa_news" && ghanaScoped)) {
     return buildGhanaNewsSearchQuery(trimmed);
   }
 
@@ -338,6 +478,7 @@ export const NEWS_RESPONSE_FORMAT_GUIDANCE = [
   "- **Breaking** may only be used when the evidence package assigns breakingLabel=BREAKING.",
   "- Never invent current news, quotes, dates, or URLs. If you cannot verify a claim, say so.",
   "- If live search is unavailable and evidence count is zero, say evidence is insufficient — do not invent headlines.",
+  "- Do not deflect a current-events question by telling the user to check other news sites or by answering from general knowledge.",
 ].join("\n");
 
 export function researchSystemPromptAddon(capability: ResearchCapabilityId): string {

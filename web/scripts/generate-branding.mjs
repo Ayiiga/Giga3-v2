@@ -18,17 +18,18 @@ const frontendIconsDir = join(__dirname, "..", "..", "frontend", "assets", "icon
 const frontendImagesDir = join(__dirname, "..", "..", "frontend", "assets", "images");
 
 /** Bump when icons/splash change — keeps browsers and PWAs off stale assets. */
-const BRAND_ASSET_VERSION = "20260830";
+const BRAND_ASSET_VERSION = "20260918-v258";
 
 const BRAND = {
   name: "Giga3 AI",
   shortName: "Giga3 AI",
   description:
     "Giga3 AI is Africa's AI Super App for social, AI tools, learning, creativity, marketplace and digital services.",
-  themeColor: "#5b21b6",
-  backgroundColor: "#5b21b6",
-  /** Solid violet — single background color for app icons. */
-  violet: [91, 33, 182],
+  themeColor: "#7C3AED",
+  backgroundColor: "#0A0A0F",
+  /** Violet gradient endpoints for app icons (#6D28D9 → #7C3AED). */
+  violet: [109, 40, 217],
+  violetLight: [124, 58, 237],
   white: [255, 255, 255],
   splashTop: [250, 250, 252],
   splashBottom: [245, 243, 255],
@@ -96,10 +97,11 @@ function isOnBoldG(nx, ny) {
   return onArc || onBar || onStem;
 }
 
-function setSolidViolet(pixels, i) {
-  pixels[i] = BRAND.violet[0];
-  pixels[i + 1] = BRAND.violet[1];
-  pixels[i + 2] = BRAND.violet[2];
+function setGradientViolet(pixels, i, t) {
+  const bg = lerpColor(BRAND.violet, BRAND.violetLight, Math.min(1, Math.max(0, t)));
+  pixels[i] = bg[0];
+  pixels[i + 1] = bg[1];
+  pixels[i + 2] = bg[2];
   pixels[i + 3] = 255;
 }
 
@@ -132,7 +134,7 @@ function renderIcon(size, { maskable = false, splash = false } = {}) {
         const ny = (y - cy) / markScale;
         const r = Math.hypot(nx, ny);
         if (r <= 0.58) {
-          setSolidViolet(pixels, i);
+          setGradientViolet(pixels, i, (x + y) / (2 * size));
         }
         if (isOnBoldG(nx, ny)) {
           setWhite(pixels, i);
@@ -140,7 +142,7 @@ function renderIcon(size, { maskable = false, splash = false } = {}) {
         continue;
       }
 
-      setSolidViolet(pixels, i);
+      setGradientViolet(pixels, i, (x + y) / (2 * size));
 
       const nx = (x - cx) / markScale;
       const ny = (y - cy) / markScale;
@@ -480,6 +482,8 @@ for (const size of ICON_SIZES) {
     await writeFile(join(iconsDir, "icon-180.png"), png);
   }
 }
+
+await writeFile(join(iconsDir, "badge-72.png"), encodePng(72, renderIcon(72)));
 
 for (const maskSize of [192, 512]) {
   const pixels = renderIcon(maskSize, { maskable: true });

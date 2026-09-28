@@ -1,177 +1,198 @@
 "use client";
 
 import { loadTeleprompterScript } from "@/lib/gigasocial/teleprompterScripts";
-import { shouldUseSolidPanels } from "@/lib/gigaedit/lowEndUi";
 import { cn } from "@/lib/utils";
-import { Eye, EyeOff, Minus, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 export type TeleprompterOverlayProps = {
+  /** Script text scrolled across the top of the preview. */
   script?: string;
   isVisible?: boolean;
-  /** 0–1 overlay opacity (default 0.7). */
+  /** 0.5–1.0, defaults to 0.7 (70% so the subject stays visible below). */
   opacity?: number;
-  /** Base scroll speed in words per minute. */
+  /** Words per minute for scroll speed. */
   speedWpm?: number;
   recording?: boolean;
   onClose?: () => void;
+  onOpacityChange?: (opacity: number) => void;
+  onSpeedChange?: (wpm: number) => void;
   className?: string;
 };
 
 const MIN_OPACITY = 0.5;
 const MAX_OPACITY = 1;
-const MIN_SPEED = 0.5;
-const MAX_SPEED = 2;
 
+/**
+ * Top-25% teleprompter overlay for the video editor preview.
+ * Layering contract: video z-10 · overlays/stickers z-20 · teleprompter z-30.
+ */
 export function TeleprompterOverlay({
   script,
   isVisible = true,
-  opacity: opacityProp = 0.7,
-  speedWpm = 120,
-  recording = false,
+  opacity = 0.7,
+  speedWpm = 140,
+  recording = true,
   onClose,
+  onOpacityChange,
+  onSpeedChange,
   className,
 }: TeleprompterOverlayProps) {
-  const [visible, setVisible] = useState(isVisible);
-  const [opacityPct, setOpacityPct] = useState(Math.round(opacityProp * 100));
-  const [speedMult, setSpeedMult] = useState(1);
-  const [fontSize, setFontSize] = useState(15);
-  const solidPanels = useMemo(() => shouldUseSolidPanels(), []);
+  const [overlayVisible, setOverlayVisible] = useState(isVisible);
+  const [eyeOn, setEyeOn] = useState(true);
+  const [fontScale, setFontScale] = useState(1);
+  const [speedMultiplier, setSpeedMultiplier] = useState(1);
+  const [scriptText, setScriptText] = useState(() => script?.trim() || loadTeleprompterScript());
 
-  const text = script ?? loadTeleprompterScript();
-  const scrollDurationSec = Math.max(
-    12,
-    Math.min(48, (text.split(/\s+/).filter(Boolean).length / speedWpm) * 60 / speedMult)
+  const clampedOpacity = Math.min(MAX_OPACITY, Math.max(MIN_OPACITY, opacity));
+  const effectiveScript = useMemo(() => {
+    const next = script?.trim();
+    return next || scriptText.trim() || "Add a script — tap Script to edit while recording.";
+  }, [script, scriptText]);
+
+  const words = useMemo(
+    () => effectiveScript.split(/\s+/).filter(Boolean).length,
+    [effectiveScript]
   );
+  const durationSec = useMemo(() => {
+    const wpm = Math.max(40, speedWpm * speedMultiplier);
+    if (words === 0) return 20;
+    return Math.min(120, Math.max(8, (words / wpm) * 60));
+  }, [words, speedMultiplier, speedWpm]);
 
   useEffect(() => {
-    setVisible(isVisible);
+    setOverlayVisible(isVisible);
   }, [isVisible]);
 
-  if (!visible) {
-    return (
-      <button
-        type="button"
-        className="teleprompter-overlay__eye-toggle pointer-events-auto absolute right-3 top-3 z-30 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white"
-        aria-label="Show teleprompter"
-        onClick={() => setVisible(true)}
-      >
-        <Eye className="h-4 w-4" aria-hidden />
-      </button>
-    );
-  }
+  useEffect(() => {
+    const next = script?.trim();
+    if (next) setScriptText(next);
+  }, [script]);
 
-  const opacity = opacityPct / 100;
+  useEffect(() => {
+    if (overlayVisible) setEyeOn(true);
+  }, [overlayVisible]);
+
+  useEffect(() => {
+    function syncFromStorage() {
+      setScriptText(loadTeleprompterScript());
+      setOverlayVisible(true);
+      setEyeOn(true);
+    }
+    window.addEventListener("giga3:teleprompter-open-settings", syncFromStorage);
+    window.addEventListener("giga3:teleprompter-show-overlay", syncFromStorage);
+    return () => {
+      window.removeEventListener("giga3:teleprompter-open-settings", syncFromStorage);
+      window.removeEventListener("giga3:teleprompter-show-overlay", syncFromStorage);
+    };
+  }, []);
+
+  if (!overlayVisible) return null;
 
   return (
     <div
-      className={cn("teleprompter-overlay pointer-events-none absolute inset-0 z-30", className)}
-      aria-live="polite"
+      className={cn("gigaedit-teleprompter-overlay", className)}
+      role="region"
+      aria-label="Teleprompter script overlay (top of frame)"
+      style={{ backgroundColor: `rgba(0,0,0,${clampedOpacity.toFixed(2)})` }}
       data-recording={recording ? "true" : "false"}
     >
-      <div
-        className={cn(
-          "teleprompter-overlay__band pointer-events-auto absolute left-2 right-2 top-2 flex flex-col overflow-hidden rounded-xl p-3",
-          solidPanels ? "teleprompter-overlay__band--solid" : "backdrop-blur-[8px]"
-        )}
-        style={{
-          height: "25%",
-          backgroundColor: `rgba(0, 0, 0, ${opacity})`,
-        }}
-      >
-        <div className="flex items-start justify-between gap-2">
-          <span
-            className="rounded-full px-2 py-0.5 text-[10px] font-bold text-[#0b1220]"
-            style={{ backgroundColor: "#eab308" }}
+      <div className="gigaedit-teleprompter-overlay__scroll" aria-hidden={!eyeOn}>
+        {eyeOn ? (
+          <p
+            key={`${durationSec}-${fontScale}-${effectiveScript}`}
+            className="gigaedit-teleprompter-overlay__text whitespace-pre-wrap"
+            style={{
+              fontSize: `${0.8 * fontScale}rem`,
+              animationDuration: `${durationSec}s`,
+              animationPlayState: recording ? "running" : "paused",
+            }}
           >
-            TOP · {opacityPct}% · Subject visible below
-          </span>
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white"
-              aria-label="Hide teleprompter"
-              onClick={() => {
-                setVisible(false);
-                onClose?.();
-              }}
-            >
-              <EyeOff className="h-4 w-4" aria-hidden />
-            </button>
-            {onClose ? (
-              <button
-                type="button"
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white"
-                aria-label="Close teleprompter"
-                onClick={onClose}
-              >
-                <X className="h-4 w-4" aria-hidden />
-              </button>
-            ) : null}
-          </div>
-        </div>
+            {effectiveScript}
+          </p>
+        ) : (
+          <p className="gigaedit-teleprompter-overlay__paused">Script hidden — tap 👁️ to resume</p>
+        )}
+      </div>
 
-        <div
-          className="teleprompter-overlay__scroll relative mt-2 min-h-0 flex-1 overflow-hidden text-sm font-semibold leading-snug text-white"
-          style={{
-            fontSize: `${fontSize}px`,
-            animationDuration: `${scrollDurationSec}s`,
-            animationPlayState: recording ? "running" : "paused",
-          }}
-        >
-          <p className="teleprompter-overlay__script whitespace-pre-wrap">{text}</p>
+      <div className="gigaedit-teleprompter-overlay__controls">
+        <span className="gigaedit-teleprompter-overlay__badge">
+          TOP · {Math.round(clampedOpacity * 100)}% · Subject visible below
+        </span>
+        <div className="gigaedit-teleprompter-overlay__buttons">
+          <button
+            type="button"
+            className="gigaedit-teleprompter-overlay__circle-btn"
+            aria-label={eyeOn ? "Hide script" : "Show script"}
+            aria-pressed={eyeOn}
+            onClick={() => setEyeOn((value) => !value)}
+          >
+            👁️
+          </button>
+          {onClose ? (
+            <button
+              type="button"
+              className="gigaedit-teleprompter-overlay__circle-btn"
+              aria-label="Close teleprompter"
+              onClick={onClose}
+            >
+              ✕
+            </button>
+          ) : null}
         </div>
+      </div>
 
-        <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-white/85">
-          <label className="flex min-w-[5.5rem] flex-1 items-center gap-1">
-            <span className="shrink-0">Opacity</span>
-            <input
-              type="range"
-              min={50}
-              max={100}
-              value={opacityPct}
-              onChange={(e) => setOpacityPct(Number(e.target.value))}
-              className="gigasocial-teleprompter-mini-slider w-full"
-            />
-          </label>
-          <label className="flex min-w-[5.5rem] flex-1 items-center gap-1">
-            <span className="shrink-0">Speed</span>
-            <input
-              type="range"
-              min={MIN_SPEED * 10}
-              max={MAX_SPEED * 10}
-              step={5}
-              value={speedMult * 10}
-              onChange={(e) => setSpeedMult(Number(e.target.value) / 10)}
-              className="gigasocial-teleprompter-mini-slider w-full"
-            />
-            <span>{speedMult.toFixed(1)}x</span>
-          </label>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-black/40"
-              aria-label="Smaller text"
-              onClick={() => setFontSize((s) => Math.max(11, s - 1))}
-            >
-              <Minus className="h-3 w-3" aria-hidden />
-            </button>
-            <button
-              type="button"
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-black/40"
-              aria-label="Larger text"
-              onClick={() => setFontSize((s) => Math.min(22, s + 1))}
-            >
-              <Plus className="h-3 w-3" aria-hidden />
-            </button>
-          </div>
+      <div className="gigaedit-teleprompter-overlay__sliders">
+        <label>
+          Opacity {Math.round(clampedOpacity * 100)}%
+          <input
+            type="range"
+            min={MIN_OPACITY}
+            max={MAX_OPACITY}
+            step={0.05}
+            value={clampedOpacity}
+            onChange={(e) => onOpacityChange?.(Number(e.target.value))}
+            aria-label="Teleprompter opacity"
+          />
+        </label>
+        <label>
+          Speed {speedMultiplier.toFixed(1)}x
+          <input
+            type="range"
+            min={0.5}
+            max={2}
+            step={0.1}
+            value={speedMultiplier}
+            onChange={(e) => {
+              const next = Number(e.target.value);
+              setSpeedMultiplier(next);
+              onSpeedChange?.(Math.round(speedWpm * next));
+            }}
+            aria-label="Teleprompter scroll speed"
+          />
+        </label>
+        <div className="gigaedit-teleprompter-overlay__font">
+          <span>Aa</span>
+          <button
+            type="button"
+            aria-label="Decrease script font size"
+            onClick={() => setFontScale((value) => Math.max(0.75, Number((value - 0.1).toFixed(2))))}
+          >
+            −
+          </button>
+          <button
+            type="button"
+            aria-label="Increase script font size"
+            onClick={() => setFontScale((value) => Math.min(1.6, Number((value + 0.1).toFixed(2))))}
+          >
+            +
+          </button>
         </div>
       </div>
 
       <div
-        className="teleprompter-overlay__safe-line pointer-events-none absolute inset-x-2 border-b-2 border-[#22c55e]/50"
-        style={{ top: "calc(25% + 0.5rem)" }}
+        className="gigaedit-teleprompter-overlay__safe-line"
         aria-hidden
+        title="Subject-safe boundary — keep faces below this line"
       />
     </div>
   );

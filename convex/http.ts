@@ -13,6 +13,14 @@ import { unsubscribeEngagementEmail } from "./engagementEmailHttp";
 import { healthCheck } from "./health";
 import { paystackWebhook } from "./paystack";
 import { developerApiHealth, developerApiMe } from "./developerApi";
+import {
+  khayaSpeech,
+  khayaSpeechOptions,
+  khayaTranscribe,
+  khayaTranscribeOptions,
+  khayaTranslate,
+  khayaTranslateOptions,
+} from "./khayaHttp";
 
 const http = httpRouter();
 
@@ -92,6 +100,42 @@ http.route({
   path: "/api/v1/me",
   method: "GET",
   handler: developerApiMe,
+});
+
+http.route({
+  path: "/v1/audio/speech",
+  method: "POST",
+  handler: khayaSpeech,
+});
+
+http.route({
+  path: "/v1/audio/speech",
+  method: "OPTIONS",
+  handler: khayaSpeechOptions,
+});
+
+http.route({
+  path: "/v1/translate",
+  method: "POST",
+  handler: khayaTranslate,
+});
+
+http.route({
+  path: "/v1/translate",
+  method: "OPTIONS",
+  handler: khayaTranslateOptions,
+});
+
+http.route({
+  path: "/v1/audio/transcriptions",
+  method: "POST",
+  handler: khayaTranscribe,
+});
+
+http.route({
+  path: "/v1/audio/transcriptions",
+  method: "OPTIONS",
+  handler: khayaTranscribeOptions,
 });
 
 export default http;

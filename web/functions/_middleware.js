@@ -1,4 +1,6 @@
-/** Cloudflare Pages middleware — rich OG previews for shared GigaSocial posts. */
+/** Cloudflare Pages middleware — canonical host, then GigaSocial OG previews. */
+
+import { apexToWwwRedirect } from "./canonicalHost.js";
 
 const CRAWLER_UA =
   /facebookexternalhit|Facebot|WhatsApp|whatsapp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|Googlebot|bingbot|Applebot|Pinterest|Embedly|ia_archiver|Snapchat|SkypeUriPreview|Viber|Line\/|KakaoTalk|redditbot|Quora|MetaInspector|bot|crawl|spider|preview|fetch|link/i;
@@ -36,6 +38,9 @@ function parseOgImagePostId(pathname) {
 }
 
 export async function onRequest(context) {
+  const redirectTo = apexToWwwRedirect(context.request.url);
+  if (redirectTo) return Response.redirect(redirectTo, 301);
+
   const url = new URL(context.request.url);
   const convexSite = (context.env?.CONVEX_SITE_URL || DEFAULT_CONVEX_SITE).replace(/\/$/, "");
 

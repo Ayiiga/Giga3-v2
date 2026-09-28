@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildGhanaNewsSearchQuery,
   buildResearchSearchQuery,
+  classifyInformationRequest,
   detectFactCheckIntent,
   detectGhanaNewsIntent,
   detectCurrentEventsIntent,
@@ -16,7 +17,9 @@ import {
   responseBasisForCapability,
   shouldAutoEnableLiveWeb,
   shouldRunLiveWebResearch,
+  shouldUseConversationalWorker,
 } from "../../convex/researchCapabilities";
+import { MTN_HEROES_OF_CHANGE_FIXTURE } from "../newsEvidence/userContextRouting.test";
 
 describe("research capability routing", () => {
   it("auto-enables live web for time-sensitive queries", () => {
@@ -96,6 +99,27 @@ describe("research capability routing", () => {
     ).toBe("ghana_news");
   });
 
+  it("routes 'What is happening in Ghana' to Ghana news, not small talk", () => {
+    const query = "What is happening in Ghana";
+    expect(isConversationalChatQuery(query)).toBe(false);
+    expect(detectGhanaNewsIntent(query)).toBe(true);
+    expect(detectCurrentEventsIntent(query)).toBe(true);
+    expect(detectNewsRetrievalIntent(query)).toBe(true);
+    const capability = resolveResearchCapability({
+      query,
+      liveWebEnabled: true,
+    });
+    expect(capability).toBe("ghana_news");
+    const needsLiveWeb = queryNeedsLiveWeb({ query, capability });
+    expect(needsLiveWeb).toBe(true);
+    expect(
+      shouldUseConversationalWorker({ needsLiveWeb, attachmentCount: 0 })
+    ).toBe(false);
+    expect(buildResearchSearchQuery(query, capability)).toContain("graphic.com.gh");
+    expect(buildResearchSearchQuery(query, capability)).not.toContain("ghana.gov.gh");
+    expect(researchSystemPromptAddon(capability)).toContain("Do not deflect");
+  });
+
   it("auto-resolves breaking Ghana news", () => {
     expect(
       resolveResearchCapability({
@@ -115,9 +139,24 @@ describe("research capability routing", () => {
   });
 
   it("builds Ghana-aware search queries", () => {
-    expect(buildResearchSearchQuery("updates", "ghana_news")).toContain("Ghana news");
+    expect(buildResearchSearchQuery("updates", "ghana_news")).toContain("Ghana");
     expect(buildGhanaNewsSearchQuery("updates")).toContain("graphic.com.gh");
+    expect(buildGhanaNewsSearchQuery("Ghana and Africa headlines")).toContain("Africa");
     expect(buildResearchSearchQuery("updates", "breaking_news")).toContain("breaking news");
+  });
+
+  it("routes combined Ghana and Africa news to africa_news capability", () => {
+    expect(
+      resolveResearchCapability({
+        query: "Summarize the latest news in Ghana and Africa with key facts.",
+        liveWebEnabled: true,
+      })
+    ).toBe("africa_news");
+  });
+
+  it("uses Ghana-biased search for africa_news when Ghana is mentioned", () => {
+    const q = "Summarize the latest news in Ghana and Africa with key facts.";
+    expect(buildResearchSearchQuery(q, "africa_news")).toContain("site:graphic.com.gh");
   });
 
   it("maps capabilities to live web research and response basis", () => {
@@ -139,5 +178,51 @@ describe("research capability routing", () => {
   it("provides live-search-unavailable fallback for Ghana news", () => {
     expect(liveSearchUnavailableNewsFallback("ghana_news")).toContain("temporarily unavailable");
     expect(liveSearchUnavailableNewsFallback("ghana_news")).toContain("Unverified");
+  });
+
+  it("does not auto-enable live web for pasted MTN announcement user context", () => {
+    expect(classifyInformationRequest(MTN_HEROES_OF_CHANGE_FIXTURE)).toBe(
+      "answer_from_user_context"
+    );
+    expect(shouldAutoEnableLiveWeb(MTN_HEROES_OF_CHANGE_FIXTURE)).toBe(false);
+    expect(
+      queryNeedsLiveWeb({
+        query: MTN_HEROES_OF_CHANGE_FIXTURE,
+        capability: "general",
+      })
+    ).toBe(false);
+    expect(
+      resolveResearchCapability({
+        query: MTN_HEROES_OF_CHANGE_FIXTURE,
+        liveWebEnabled: true,
+      })
+    ).toBe("general");
+  });
+
+  it("still auto-enables live web for announcement news lookups", () => {
+    expect(shouldAutoEnableLiveWeb("Latest announcement from MTN Ghana today")).toBe(true);
+  });
+
+  it("does not open Ghana news search for a personal Ghana-today sentence", () => {
+    const query = "I visited Ghana today with my family and loved the food";
+    expect(detectGhanaNewsIntent(query)).toBe(false);
+    expect(detectNewsRetrievalIntent(query)).toBe(false);
+    expect(shouldAutoEnableLiveWeb(query)).toBe(false);
+    expect(
+      resolveResearchCapability({ query, liveWebEnabled: true })
+    ).toBe("general");
+    expect(queryNeedsLiveWeb({ query, capability: "general" })).toBe(false);
+    expect(shouldUseConversationalWorker({
+      needsLiveWeb: queryNeedsLiveWeb({ query, capability: "general" }),
+      attachmentCount: 0,
+    })).toBe(true);
+    expect(detectGhanaNewsIntent("What is the latest Ghana news today?")).toBe(true);
+    expect(detectNewsRetrievalIntent("What is Ghana's inflation today?")).toBe(true);
+    expect(
+      resolveResearchCapability({
+        query: "What is Ghana's inflation today?",
+        liveWebEnabled: true,
+      })
+    ).toBe("ghana_news");
   });
 });

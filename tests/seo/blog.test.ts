@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { BLOG_CATEGORIES, categorySlugForName } from "../../web/lib/blog/categories";
 import { BLOG_POST_REGISTRY } from "../../web/lib/blog/postRegistry";
 import {
+  getBlogSitemapEntriesFromRegistry,
   getRegistryBlogPosts,
   getRegistryBlogPostBySlug,
   getRelatedRegistryBlogPosts,
@@ -106,10 +107,50 @@ describe("blog sitemap", () => {
     }
   });
 
+  it("derives blog index lastmod from registry metadata", () => {
+    const posts = getRegistryBlogPosts();
+    const expected = posts.reduce((latest, post) => {
+      const date = post.updatedAt ?? post.publishedAt;
+      return date > latest ? date : latest;
+    }, posts[0]!.publishedAt);
+    const indexEntry = getBlogSitemapEntriesFromRegistry().find((entry) =>
+      entry.loc.endsWith("/blog/")
+    );
+    expect(indexEntry?.lastmod).toBe(expected);
+  });
+
   it("ships an RSS feed for blog discovery", () => {
     const rss = readFileSync(resolve(WEB_ROOT, "public/blog/rss.xml"), "utf8");
     expect(rss).toContain("<rss");
     expect(rss).toContain("wassce-2026-results-ghana");
+  });
+});
+
+describe("blog crawlability (source)", () => {
+  it("uses server BlogPostGrid without Convex loading shell on listings", () => {
+    const indexPage = readFileSync(
+      resolve(WEB_ROOT, "app/(marketing)/blog/page.tsx"),
+      "utf8"
+    );
+    const categoryPage = readFileSync(
+      resolve(WEB_ROOT, "app/(marketing)/blog/category/[categorySlug]/page.tsx"),
+      "utf8"
+    );
+    const grid = readFileSync(resolve(WEB_ROOT, "components/blog/BlogPostGrid.tsx"), "utf8");
+
+    expect(indexPage).toContain("BlogPostGrid");
+    expect(categoryPage).toContain("BlogPostGrid");
+    expect(grid).not.toContain('"use client"');
+    expect(grid).not.toContain("ConvexAppShell");
+    expect(grid).toContain("<BlogCard");
+  });
+
+  it("noindexes empty blog category pages", () => {
+    const categoryPage = readFileSync(
+      resolve(WEB_ROOT, "app/(marketing)/blog/category/[categorySlug]/page.tsx"),
+      "utf8"
+    );
+    expect(categoryPage).toContain("index: posts.length > 0");
   });
 });
 

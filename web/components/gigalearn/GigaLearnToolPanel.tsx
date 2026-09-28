@@ -70,11 +70,13 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
   const isPracticeTool = isInteractivePracticeTool(activeToolId);
   const practiceTopic = prompt.trim().slice(0, 80) || subject;
 
-  function persistProfile() {
+  function persistProfile(
+    overrides: Partial<{ examBoard: string; level: string; subject: string }> = {}
+  ) {
     saveGigaLearnProfile({
-      examBoard: curriculum as import("@/lib/gigalearn/curricula").ExamBoardId,
-      level,
-      subjects: [subject],
+      examBoard: (overrides.examBoard ?? curriculum) as import("@/lib/gigalearn/curricula").ExamBoardId,
+      level: overrides.level ?? level,
+      subjects: [overrides.subject ?? subject],
     });
   }
 
@@ -91,6 +93,7 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
                 type="button"
                 onClick={() => {
                   setActiveToolId(tool.id);
+                  setFocusWeakRevision(false);
                   clear();
                 }}
                 className={cn(
@@ -116,8 +119,9 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
             <select
               value={curriculum}
               onChange={(e) => {
-                setCurriculum(e.target.value);
-                persistProfile();
+                const value = e.target.value;
+                setCurriculum(value);
+                persistProfile({ examBoard: value });
               }}
               className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"
             >
@@ -133,8 +137,9 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
             <select
               value={subject}
               onChange={(e) => {
-                setSubject(e.target.value);
-                persistProfile();
+                const value = e.target.value;
+                setSubject(value);
+                persistProfile({ subject: value });
               }}
               className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"
             >
@@ -150,8 +155,9 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
             <select
               value={level}
               onChange={(e) => {
-                setLevel(e.target.value);
-                persistProfile();
+                const value = e.target.value;
+                setLevel(value);
+                persistProfile({ level: value });
               }}
               className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"
             >
@@ -198,6 +204,7 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
             onClick={() =>
               void run({
                 toolId: activeToolId,
+                section: activeTool?.section,
                 prompt,
                 curriculum,
                 subject,

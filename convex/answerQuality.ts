@@ -6,6 +6,19 @@ import type {
 import { detectNewsRetrievalIntent, detectGhanaNewsIntent } from "./researchCapabilities";
 import type { NewsEvidenceContext } from "./newsEvidence/types";
 import { enforceNewsEvidenceIntegrity } from "./newsEvidence/postValidation";
+import {
+  classifyInformationRequest,
+  detectAnswerFromUserContextIntent,
+  hasSubstantiveUserProvidedContent,
+  USER_PROVIDED_CONTENT_GUIDANCE,
+} from "./newsEvidence/userContextRouting";
+import {
+  applyMtnLowConfidencePrefix,
+  buildMtnHeroesSystemPromptAddon,
+  detectMtnExplicitVisualRequest,
+  detectMtnHeroesOfChangeIntent,
+  stripMtnDisallowedVisualContent,
+} from "./mtnHeroesOfChangeRules";
 
 type QueryClass =
   | "factual"
@@ -45,6 +58,7 @@ export type AnswerQualityContext = {
   requiresCitation: boolean;
   showConfidenceByDefault: boolean;
   showVerificationByDefault: boolean;
+  mtnHeroesOfChangeMode: boolean;
   hasAnyAttachment: boolean;
   hasImageAttachment: boolean;
   hasDocumentAttachment: boolean;
@@ -260,16 +274,28 @@ type AutoVisualKind =
   | "geometry_drawing"
   | "mathematical_graph";
 
-function hasVisualRequestIntent(query: string): boolean {
-  return /\b(infographic|brochure|poster|flyer|diagram|flowchart|mind map|mindmap|timeline|process chart|organizational chart|org chart|presentation|study notes|marketing|social media graphic|comparison table|scientific illustration|circuit diagram|geometry|graph|plot|chart|visuali[sz]ation|advertisement|ad design)\b/i.test(
-    query
+/** True only when the user asked for a visual aid, diagram, chart, or similar. */
+export function userRequestedVisualAid(query: string): boolean {
+  return (
+    /\b(visual\s+aids?|diagrams?|flow\s*charts?|mind\s*maps?|infographics?|posters?|flyers?|brochures?|mermaid|giga-visual|giga-chart|charts?|graphs?|plots?|illustrations?|timelines?|org(?:anizational)?\s+charts?|circuit\s+diagrams?)\b/i.test(
+      query
+    ) || /\b(draw|sketch|illustrate|visuali[sz]e)\b/i.test(query)
   );
 }
 
-function shouldAutoSuggestEducationalVisual(query: string): boolean {
-  return /\b(explain|how does|how do|process|cycle|steps|photosynthesis|water cycle|ecosystem|cellular respiration|force diagram|electrical circuit|geometry|algebra|calculus|biology|chemistry|physics)\b/i.test(
-    query
-  );
+function hasVisualRequestIntent(query: string): boolean {
+  return userRequestedVisualAid(query);
+}
+
+const FENCED_VISUAL_PATTERN =
+  /```(?:mermaid|giga-visual|giga-chart|chart)\b[\s\S]*?```/gi;
+
+/** Remove diagrams and visual-aid blocks the user did not ask for. */
+export function stripUnsolicitedVisualAids(answer: string): string {
+  let cleaned = answer.replace(FENCED_VISUAL_PATTERN, "");
+  cleaned = cleaned.replace(/\n*#{2,3}\s*Visual Aids\b[\s\S]*?(?=\n#{2,3}\s|$)/gi, "");
+  cleaned = cleaned.replace(/\n{3,}/g, "\n\n").trim();
+  return cleaned;
 }
 
 function hasExistingVisualBlock(answer: string): boolean {
@@ -458,6 +484,12 @@ function shouldAttachAutoVisuals(
   answer: string,
   flags: string[]
 ): boolean {
+  if (
+    context.mtnHeroesOfChangeMode &&
+    !detectMtnExplicitVisualRequest(context.query)
+  ) {
+    return false;
+  }
   if (context.responseMode === "conversational") return false;
   if (hasExistingVisualBlock(answer)) return false;
   if (
@@ -467,11 +499,7 @@ function shouldAttachAutoVisuals(
   ) {
     return false;
   }
-  return (
-    hasVisualRequestIntent(context.query) ||
-    shouldAutoSuggestEducationalVisual(context.query) ||
-    context.isExamQuestion
-  );
+  return hasVisualRequestIntent(context.query);
 }
 
 function buildAutoVisualAugmentation(
@@ -677,6 +705,7 @@ function buildSystemPromptAddon(params: {
   hasDocumentAttachment: boolean;
   hasInlineImageData: boolean;
   rankedSources: RankedSource[];
+  mtnHeroesOfChangeMode: boolean;
 }): string {
   const researchWritingTask =
     params.mode === "research" ||
@@ -711,11 +740,11 @@ function buildSystemPromptAddon(params: {
 
   const educationalRule =
     params.responseMode === "educational"
-      ? "- Educational mode: teach with concept explanation, step-by-step method, examples, and practical applications. Use tables or diagrams when they improve clarity."
+      ? "- Educational mode: teach with a direct answer, a simple definition, deeper explanation, an example, and practice when they help. Match the learner's wording without assuming age or schooling. Use tables when they improve clarity. Add a diagram or other visual aid only when the user asks for one."
       : "";
 
   const examRule = params.isExamQuestion
-    ? "- Exam solver mode: provide answer, method, full explanation, marking-scheme style steps, and a final answer summary. Include diagrams (Mermaid) when needed for geometry, graphs, circuits, or process flows."
+    ? "- Exam solver mode: provide answer, method, full explanation, marking-scheme style steps, and a final answer summary. Include a diagram only when the user asks for a visual aid, diagram, chart, or graph."
     : "";
 
   const highStakesRule =
@@ -767,20 +796,42 @@ function buildSystemPromptAddon(params: {
     ? "- Biography mode (strict): extract names/dates/education/locations/events/achievements; clean grammar and duplicates; organize chronologically (Early Life, Education, Career/Life Journey, Achievements, Personal Details); output OCR Extracted Text, Cleaned Version, Structured Notes, and Final Biography."
     : "";
 
-  const smartVisualRule =
-    params.responseMode !== "conversational"
-      ? "- Smart visual detection: when a visual would improve understanding, include at least one Mermaid diagram and optionally structured blocks using ```giga-visual (JSON) and ```giga-chart (JSON)."
-      : "";
+  const mtnHeroesRule = params.mtnHeroesOfChangeMode
+    ? buildMtnHeroesSystemPromptAddon(params.query)
+    : "";
 
-  const visualCoverageRule =
-    params.responseMode !== "conversational"
-      ? "- Support visual outputs for infographics, brochures, posters, flyers, diagrams, flowcharts, mind maps, timelines, process charts, org charts, study visuals, marketing assets, comparison tables, scientific/circuit/geometry illustrations, and mathematical graphs when relevant."
-      : "";
+  const askedForVisual = userRequestedVisualAid(params.query);
+  const smartVisualRule = params.mtnHeroesOfChangeMode
+    ? ""
+    : askedForVisual
+      ? "- The user asked for a visual aid. Include one Mermaid diagram or a ```giga-visual / ```giga-chart block that matches the request."
+      : "- Do not add visual aids, diagrams, Mermaid blocks, giga-visual JSON, or giga-chart JSON unless the user explicitly asks for a visual aid, diagram, chart, or infographic.";
+
+  const sectionRule =
+    params.responseMode === "conversational" ||
+    params.mtnHeroesOfChangeMode ||
+    params.isBiographyRequest ||
+    params.hasAnyAttachment ||
+    researchWritingTask
+      ? ""
+        : [
+          "Giga3 Smart Answers:",
+          "- Prefer natural conversation. Use only the sections that help, and never leave a heading empty.",
+          "- Simple fact: ## ⚡ Quick Answer only (1–2 sentences).",
+          "- Definition: ## ⚡ Quick Answer and ## 📘 Simple Definition.",
+          "- Teaching or how-to: also use ## 🧠 More Complete Explanation, ## 🔑 Key Points, ## 🌍 Real-World Example, and ## 📝 Practice / Try It when they help. Add ## 🚀 Next Step for a useful follow-up.",
+          "- Bold keywords only. Keep paragraphs short. Use a Ghanaian, African, school, business, or everyday example when an example helps.",
+          "- Skip every Smart Answers heading for greetings and one-line chat.",
+        ].join("\n");
 
   const sourceHint =
     params.rankedSources.length > 0
       ? `- Use the ${params.rankedSources.length} ranked evidence source(s) before relying on unstated memory.`
       : "- No ranked source context is available beyond the user prompt; keep factual claims conservative.";
+
+  const userProvidedContentRule = detectAnswerFromUserContextIntent(params.query)
+    ? USER_PROVIDED_CONTENT_GUIDANCE
+    : "";
 
   return [
     "Accuracy, Authenticity, and Trustworthiness Engine:",
@@ -800,9 +851,11 @@ function buildSystemPromptAddon(params: {
     documentResponseFormatRule,
     documentIntelligenceRule,
     biographyRule,
+    mtnHeroesRule,
+    sectionRule,
     smartVisualRule,
-    visualCoverageRule,
     sourceHint,
+    userProvidedContentRule,
   ]
     .filter(Boolean)
     .join("\n");
@@ -824,8 +877,11 @@ export function prepareAnswerQualityContext(params: {
   const isBiographyRequest = hasBiographyIntent(query);
   const confidenceRequested = askedForConfidence(query);
   const requiresCitation = responseMode === "high_stakes";
-  const showConfidenceByDefault = responseMode === "high_stakes";
-  const showVerificationByDefault = responseMode === "high_stakes";
+  const mtnHeroesOfChangeMode = detectMtnHeroesOfChangeIntent(query);
+  const showConfidenceByDefault =
+    responseMode === "high_stakes" && !mtnHeroesOfChangeMode;
+  const showVerificationByDefault =
+    responseMode === "high_stakes" && !mtnHeroesOfChangeMode;
   const hasAnyAttachment = attachments.length > 0;
   const hasImageAttachment = attachments.some(
     (attachment) => attachment.kind === "image"
@@ -851,6 +907,7 @@ export function prepareAnswerQualityContext(params: {
     requiresCitation,
     showConfidenceByDefault,
     showVerificationByDefault,
+    mtnHeroesOfChangeMode,
     hasAnyAttachment,
     hasImageAttachment,
     hasDocumentAttachment,
@@ -870,6 +927,7 @@ export function prepareAnswerQualityContext(params: {
       hasDocumentAttachment,
       hasInlineImageData,
       rankedSources,
+      mtnHeroesOfChangeMode,
     }),
     retrievalContextBlock: buildRetrievalContextBlock(
       queryClass,
@@ -1095,6 +1153,11 @@ export function validateAnswerQuality(params: {
     flags.push("high_stakes_unverified");
   }
 
+  if (!userRequestedVisualAid(params.context.query)) {
+    const stripped = stripUnsolicitedVisualAids(normalizedAnswer);
+    if (stripped) normalizedAnswer = stripped;
+  }
+
   if (shouldAttachAutoVisuals(params.context, normalizedAnswer, flags)) {
     const visualAugmentation = buildAutoVisualAugmentation(
       params.context,
@@ -1106,7 +1169,21 @@ export function validateAnswerQuality(params: {
     }
   }
 
-  if (params.newsEvidence && (detectNewsRetrievalIntent(params.context.query) || isNewsRetrieval)) {
+  if (params.context.mtnHeroesOfChangeMode) {
+    normalizedAnswer = stripMtnDisallowedVisualContent(normalizedAnswer);
+    flags.push("mtn_heroes_text_only");
+  }
+
+  const infoRequestMode = classifyInformationRequest(params.context.query);
+  const shouldEnforceNewsEvidence =
+    params.newsEvidence &&
+    (detectNewsRetrievalIntent(params.context.query) ||
+      isNewsRetrieval ||
+      infoRequestMode === "verify_user_content" ||
+      (hasSubstantiveUserProvidedContent(params.context.query) &&
+        params.newsEvidence.retrievalFailed));
+
+  if (shouldEnforceNewsEvidence) {
     const enforced = enforceNewsEvidenceIntegrity({
       answer: normalizedAnswer,
       query: params.context.query,
@@ -1118,13 +1195,15 @@ export function validateAnswerQuality(params: {
   }
 
   const confidenceVisibility =
-    params.context.showConfidenceByDefault ||
-    (params.context.responseMode === "educational" &&
-      params.context.confidenceRequested);
+    !params.context.mtnHeroesOfChangeMode &&
+    (params.context.showConfidenceByDefault ||
+      (params.context.responseMode === "educational" &&
+        params.context.confidenceRequested));
   const verificationVisibility =
-    params.context.showVerificationByDefault ||
-    (params.context.responseMode === "educational" &&
-      params.context.confidenceRequested);
+    !params.context.mtnHeroesOfChangeMode &&
+    (params.context.showVerificationByDefault ||
+      (params.context.responseMode === "educational" &&
+        params.context.confidenceRequested));
 
   if (params.context.responseMode === "conversational") {
     normalizedAnswer = removeSourceTags(stripVerificationSections(normalizedAnswer));
@@ -1165,8 +1244,18 @@ export function validateAnswerQuality(params: {
       ? `\n\n${buildVerificationBlock(report, params.context.rankedSources)}`
       : "";
 
+  let finalContent = `${transparencyPrefix}${normalizedAnswer}${verificationBlock}`.trim();
+  if (params.context.mtnHeroesOfChangeMode) {
+    finalContent = applyMtnLowConfidencePrefix(finalContent, {
+      confidenceScore: confidence,
+      flags,
+      answerHasUncertainty:
+        uncertaintyDisclosure || /^verification needed\b/i.test(finalContent.trim()),
+    });
+  }
+
   return {
-    content: `${transparencyPrefix}${normalizedAnswer}${verificationBlock}`.trim(),
+    content: finalContent,
     report,
   };
 }

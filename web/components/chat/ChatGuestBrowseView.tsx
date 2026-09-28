@@ -1,19 +1,55 @@
 "use client";
 
 import { GigaSocialAuthPrompt } from "@/components/gigasocial/ux/GigaSocialAuthPrompt";
+import { ProductRedirectCards } from "@/components/chat/ProductRedirectCards";
 import { ButtonLink } from "@/components/ui/Button";
 import { useEffectiveOnline } from "@/hooks/useEffectiveOnline";
-import { siteConfig } from "@/lib/site";
+import {
+  buildProductRedirectAnswer,
+  matchProductRedirectIntent,
+} from "@/lib/chat/productRedirects";
+import { CHAT_WORKSPACE_PRIMARY_APPS } from "@/lib/chat/workspaceApps";
 import { MessageSquare, WifiOff } from "lucide-react";
-import { memo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { memo, useState, type FormEvent } from "react";
 
 /**
  * Frontend-only guest shell for AI Chat: interface is visible, send requires sign-in.
- * Does not alter auth/session hooks or backend messaging.
+ * Product-open requests (GigaSocial, GigaEdits, GigaLearn, Media Studio, …) still redirect.
  */
 export const ChatGuestBrowseView = memo(function ChatGuestBrowseView() {
   const { effectiveOnline } = useEffectiveOnline();
+  const router = useRouter();
   const [authOpen, setAuthOpen] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [suggest, setSuggest] = useState<{
+    user: string;
+    answer: string;
+    products: ReturnType<typeof matchProductRedirectIntent>;
+  } | null>(null);
+
+  function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    const trimmed = draft.trim();
+    if (!trimmed) return;
+
+    const match = matchProductRedirectIntent(trimmed);
+    if (match) {
+      setDraft("");
+      if (match.kind === "navigate") {
+        router.push(match.product.href);
+        return;
+      }
+      setSuggest({
+        user: trimmed,
+        answer: buildProductRedirectAnswer(match),
+        products: match,
+      });
+      return;
+    }
+
+    setAuthOpen(true);
+  }
 
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-background">
@@ -42,24 +78,59 @@ export const ChatGuestBrowseView = memo(function ChatGuestBrowseView() {
         </ButtonLink>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-6 py-10 text-center">
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 overflow-y-auto px-6 py-10 text-center">
         <p className="max-w-md text-sm text-muted">
-          Browse the chat interface as a guest. Sending messages, using AI models, wallet, and
-          marketplace actions require an account.
+          Ask to open GigaSocial, GigaEdits, GigaLearn, Media Studio, or another Giga3 app.
+          Sending AI prompts requires an account.
         </p>
-        <ButtonLink href={siteConfig.links.gigasocial} variant="outline" className="min-h-11">
-          Browse GigaSocial
-        </ButtonLink>
+        <div className="flex w-full max-w-md flex-wrap justify-center gap-2">
+          {CHAT_WORKSPACE_PRIMARY_APPS.map((app) => (
+            <ButtonLink
+              key={app.id}
+              href={app.href}
+              variant="outline"
+              className="min-h-11"
+            >
+              Open {app.label}
+            </ButtonLink>
+          ))}
+        </div>
+
+        {suggest ? (
+          <div className="mt-2 w-full max-w-md text-left">
+            <p className="mb-2 text-sm text-muted">You: {suggest.user}</p>
+            <p className="text-sm text-foreground">
+              {suggest.products
+                ? `Open ${suggest.products.product.label} — ${suggest.products.product.hint}`
+                : suggest.answer}
+            </p>
+            {suggest.products ? (
+              <ProductRedirectCards products={[suggest.products.product]} />
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       <div className="border-t border-border bg-background p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <form onSubmit={handleSubmit}>
+          <label className="sr-only" htmlFor="guest-chat-open-app">
+            Ask to open a Giga3 app, or sign in to chat
+          </label>
+          <input
+            id="guest-chat-open-app"
+            type="text"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            placeholder="Try “Open GigaSocial” or sign in to chat…"
+            className="flex w-full min-h-12 items-center rounded-2xl border border-border bg-muted/20 px-4 text-sm text-foreground outline-none focus:ring-2 focus:ring-accent/30"
+          />
+        </form>
         <button
           type="button"
-          className="flex w-full min-h-12 items-center rounded-2xl border border-border bg-muted/20 px-4 text-left text-sm text-muted"
+          className="mt-2 w-full min-h-11 text-sm font-medium text-accent"
           onClick={() => setAuthOpen(true)}
-          aria-label="Sign in to send a message"
         >
-          Sign in to chat with Giga3…
+          Sign in to chat with Giga3
         </button>
       </div>
 

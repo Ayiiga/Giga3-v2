@@ -1,4 +1,5 @@
 import { buildGigaSocialOgDescription, buildGigaSocialOgTitle } from "@/lib/gigasocial/ogMeta";
+import { clampSeoDescription, clampSeoTitle } from "@/lib/seo/seoText";
 import { splitPostDisplay } from "@/lib/gigasocial/postDisplay";
 
 const BUILD_LISTING_LIMIT = 200;
@@ -84,12 +85,11 @@ function postRef(postId: string): string {
 /** Convex SEO bundles can share generic fallbacks until backend deploy; keep static HTML unique. */
 function ensureUniquePostSeo(postId: string, bundle: PublicPostBundle): PublicPostBundle {
   const ref = postRef(postId);
-  const title = bundle.title.includes(ref) ? bundle.title : `${bundle.title} · ${ref}`;
-  const statsOnly = /^\d[\d.KM]* views · \d[\d.KM]* likes$/.test(bundle.description.trim());
-  const description =
-    statsOnly && !bundle.description.includes(ref)
-      ? `${bundle.description} · ${ref}`
-      : bundle.description;
+  const title = clampSeoTitle(
+    bundle.title.includes(ref) ? bundle.title : `${bundle.title} · ${ref}`,
+    ref
+  );
+  const description = clampSeoDescription(bundle.description, ref);
   return { ...bundle, title, description };
 }
 

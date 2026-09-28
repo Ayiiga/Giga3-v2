@@ -8,6 +8,7 @@ import {
   inferClipLane,
   syntheticCaptionsBar,
   syntheticLogoBar,
+  TIMELINE_LANES,
   TIMELINE_PX_PER_SEC,
   visibleTimelineLanes,
   type SyntheticLaneBar,
@@ -116,17 +117,14 @@ export function MultiTrackTimeline({
   }, [max, playheadSec, scrollLeftPx, trackMinWidthPx, viewportWidthPx]);
 
   const visibleClips = useMemo(
-    () =>
-      clips.filter(
-        (clip) => clip.endSec >= visibleWindowSec.start && clip.startSec <= visibleWindowSec.end
-      ),
+    () => clips.filter((clip) => clip.endSec >= visibleWindowSec.start && clip.startSec <= visibleWindowSec.end),
     [clips, visibleWindowSec.end, visibleWindowSec.start]
   );
 
   const ticks = useMemo(() => {
     const step = max <= 20 ? 5 : max <= 60 ? 10 : 15;
     const result: number[] = [0];
-    for (let t = step; t < max; t += step) result.push(t);
+    for (let tick = step; tick < max; tick += step) result.push(tick);
     if (result[result.length - 1] < max - 0.01) result.push(max);
     return result;
   }, [max]);
@@ -141,6 +139,8 @@ export function MultiTrackTimeline({
       }),
     [brandWatermark, clips, hasCaptions]
   );
+  const hiddenEmptyLaneCount = TIMELINE_LANES.length - lanes.length;
+  const audioClipCount = useMemo(() => clips.filter((clip) => clip.track === "audio").length, [clips]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -186,7 +186,7 @@ export function MultiTrackTimeline({
 
     const onUp = (e: PointerEvent) => {
       if (e.pointerId !== drag.pointerId) return;
-      const clip = clips.find((c) => c.id === drag.clipId);
+      const clip = clips.find((row) => row.id === drag.clipId);
       if (!clip) {
         setDrag(null);
         setHoverLane(null);
@@ -194,8 +194,7 @@ export function MultiTrackTimeline({
       }
 
       const dropLane = laneFromPoint(e.clientX, e.clientY);
-      const targetLane =
-        dropLane && canDropClipOnLane(clip, dropLane) ? dropLane : drag.sourceLane;
+      const targetLane = dropLane && canDropClipOnLane(clip, dropLane) ? dropLane : drag.sourceLane;
       const laneChanged = targetLane !== inferClipLane(clip);
 
       if (drag.moved || laneChanged) {
@@ -203,11 +202,10 @@ export function MultiTrackTimeline({
         const duration = Math.max(0.25, drag.origEnd - drag.origStart);
         const rawStart = Math.max(0, drag.origStart + deltaSec);
         const nextStart = snapTimelineSec(rawStart, clips, playheadSec, snapEnabled, drag.clipId);
-        const nextEnd = nextStart + duration;
         onMoveClipRef.current(
           drag.clipId,
           nextStart,
-          nextEnd,
+          nextStart + duration,
           laneChanged ? targetLane : undefined
         );
       }
@@ -267,6 +265,11 @@ export function MultiTrackTimeline({
           {drag ? " · Drag to lane" : ""}
         </span>
       </div>
+      {audioClipCount > 0 ? (
+        <p className="text-[10px] text-[var(--ge-muted)]">
+          Track 2 · Audio: {audioClipCount} clip{audioClipCount === 1 ? "" : "s"} attached (mixes on export)
+        </p>
+      ) : null}
 
       <div className="gigaedit-timeline-body">
         <div className="gigaedit-timeline-rail" aria-hidden>
@@ -317,7 +320,7 @@ export function MultiTrackTimeline({
                 Boolean(drag) &&
                 hoverLane === lane.id &&
                 (() => {
-                  const clip = clips.find((c) => c.id === drag?.clipId);
+                  const clip = clips.find((row) => row.id === drag?.clipId);
                   return clip ? canDropClipOnLane(clip, lane.id) : false;
                 })();
 
@@ -362,6 +365,14 @@ export function MultiTrackTimeline({
         >
           Frame ▶
         </button>
+        {hiddenEmptyLaneCount > 0 ? (
+          <span
+            className="gigaedit-chip text-[10px] opacity-70"
+            title="Empty overlay tracks are hidden. Add a sticker, text, or overlay to show its track."
+          >
+            + {hiddenEmptyLaneCount} empty track{hiddenEmptyLaneCount === 1 ? "" : "s"} hidden
+          </span>
+        ) : null}
       </div>
     </div>
   );
@@ -411,7 +422,10 @@ function TimelineRow({
   return (
     <div
       data-lane-id={laneId}
-      className={cn("gigaedit-timeline-track relative", dropActive && "gigaedit-timeline-track--drop-target")}
+      className={cn(
+        "gigaedit-timeline-track relative",
+        dropActive && "gigaedit-timeline-track--drop-target"
+      )}
       onClick={(e) => {
         if (e.target !== e.currentTarget) return;
         const rect = e.currentTarget.getBoundingClientRect();
@@ -419,44 +433,49 @@ function TimelineRow({
         onPlayheadChange(snapTimelineSec(sec, allClips, playheadSec, snapEnabled));
       }}
     >
+      <div
+        className="gigaedit-timeline-playhead gigaedit-timeline-playhead--track"
+        style={{ left: `${(playheadSec / max) * 100}%` }}
+        aria-hidden
+      />
+      {synthetic.map((bar) => (
         <div
-          className="gigaedit-timeline-playhead gigaedit-timeline-playhead--track"
-          style={{ left: `${(playheadSec / max) * 100}%` }}
-          aria-hidden
+          key={bar.id}
+          className={cn(
+            "gigaedit-timeline-clip gigaedit-timeline-clip--synthetic",
+            `gigaedit-timeline-clip--${tone}`
+          )}
+          style={{
+            left: `${(bar.startSec / max) * 100}%`,
+            width: `${Math.max(4, ((bar.endSec - bar.startSec) / max) * 100)}%`,
+          }}
+          title={bar.label}
+        >
+          <span className="relative z-[1] truncate">{bar.label}</span>
+        </div>
+      ))}
+      {clips.map((clip, index) => (
+        <TimelineClipBlock
+          key={clip.id}
+          clip={clip}
+          indexInLane={index}
+          laneId={laneId}
+          max={max}
+          tone={tone}
+          selected={clip.id === selectedClipId}
+          dragging={clip.id === draggingClipId}
+          onSelect={() => onSelectClip(clip.id)}
+          onBeginDrag={onBeginDrag}
+          onTrimClip={onTrimClip}
         />
-        {synthetic.map((bar) => (
-          <div
-            key={bar.id}
-            className={cn("gigaedit-timeline-clip gigaedit-timeline-clip--synthetic", `gigaedit-timeline-clip--${tone}`)}
-            style={{
-              left: `${(bar.startSec / max) * 100}%`,
-              width: `${Math.max(4, ((bar.endSec - bar.startSec) / max) * 100)}%`,
-            }}
-            title={bar.label}
-          >
-            <span className="relative z-[1] truncate">{bar.label}</span>
-          </div>
-        ))}
-        {clips.map((clip) => (
-          <TimelineClipBlock
-            key={clip.id}
-            clip={clip}
-            laneId={laneId}
-            max={max}
-            tone={tone}
-            selected={clip.id === selectedClipId}
-            dragging={clip.id === draggingClipId}
-            onSelect={() => onSelectClip(clip.id)}
-            onBeginDrag={onBeginDrag}
-            onTrimClip={onTrimClip}
-          />
-        ))}
+      ))}
     </div>
   );
 }
 
 type TimelineClipBlockProps = {
   clip: GigaEditTimelineClip;
+  indexInLane: number;
   laneId: GigaEditTimelineLane;
   max: number;
   tone: string;
@@ -474,6 +493,7 @@ type TimelineClipBlockProps = {
 
 function TimelineClipBlock({
   clip,
+  indexInLane,
   laneId,
   max,
   tone,
@@ -485,6 +505,12 @@ function TimelineClipBlock({
 }: TimelineClipBlockProps) {
   const left = (clip.startSec / max) * 100;
   const width = Math.max(4, ((clip.endSec - clip.startSec) / max) * 100);
+  const typePrefix =
+    clip.track === "video" && (clip.videoLayer ?? 0) > 0
+      ? `L${clip.videoLayer} · `
+      : clip.track === "video"
+        ? ""
+        : `${clip.track} · `;
 
   return (
     <button
@@ -497,7 +523,11 @@ function TimelineClipBlock({
         clip.locked && "opacity-60"
       )}
       style={{ left: `${left}%`, width: `${width}%` }}
-      title={clip.locked ? `${clip.label} (locked)` : `${clip.label} — drag to move or change lane`}
+      title={
+        clip.locked
+          ? `${typePrefix}${clip.label} (locked)`
+          : `${typePrefix}${formatTimelineClipLabel(clip, indexInLane)} — drag to move or change lane`
+      }
       onClick={(e) => {
         e.stopPropagation();
         onSelect();
@@ -516,13 +546,14 @@ function TimelineClipBlock({
         />
       ) : null}
       <span className="relative z-[1] truncate">
-        {formatTimelineClipLabel(clip)}
+        {typePrefix}
+        {formatTimelineClipLabel(clip, indexInLane)}
       </span>
       {!clip.locked ? (
         <>
           <span
             data-trim-handle="start"
-            className="absolute left-0 top-0 bottom-0 w-1.5 cursor-ew-resize bg-white/30"
+            className="absolute bottom-0 left-0 top-0 w-1.5 cursor-ew-resize bg-white/30"
             onPointerDown={(e) => {
               e.stopPropagation();
               const track = e.currentTarget.parentElement?.parentElement;
@@ -534,14 +565,16 @@ function TimelineClipBlock({
                 onTrimClip(clip.id, "start", origStart + delta);
               };
               window.addEventListener("pointermove", onMove);
-              window.addEventListener("pointerup", () => window.removeEventListener("pointermove", onMove), {
-                once: true,
-              });
+              window.addEventListener(
+                "pointerup",
+                () => window.removeEventListener("pointermove", onMove),
+                { once: true }
+              );
             }}
           />
           <span
             data-trim-handle="end"
-            className="absolute right-0 top-0 bottom-0 w-1.5 cursor-ew-resize bg-white/30"
+            className="absolute bottom-0 right-0 top-0 w-1.5 cursor-ew-resize bg-white/30"
             onPointerDown={(e) => {
               e.stopPropagation();
               const track = e.currentTarget.parentElement?.parentElement;
@@ -553,9 +586,11 @@ function TimelineClipBlock({
                 onTrimClip(clip.id, "end", origEnd + delta);
               };
               window.addEventListener("pointermove", onMove);
-              window.addEventListener("pointerup", () => window.removeEventListener("pointermove", onMove), {
-                once: true,
-              });
+              window.addEventListener(
+                "pointerup",
+                () => window.removeEventListener("pointermove", onMove),
+                { once: true }
+              );
             }}
           />
         </>

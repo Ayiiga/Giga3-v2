@@ -12,11 +12,14 @@ import { isMessageFavorite, toggleMessageFavorite } from "@/lib/chat/messageFavo
 import { openMessagePrintView } from "@/lib/chat/exportChat";
 import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
 import {
-  isReadAloudActive,
-  isReadAloudSupported,
-  readAloud,
-  stopReadAloud,
-} from "@/lib/chat/readAloud";
+  getActiveSpeechBlockId,
+  isGigaVoiceSpeaking,
+  isGigaVoiceSupported,
+  stopGigaVoice,
+  toggleGigaVoiceBlock,
+} from "@/lib/chat/gigaVoice";
+import { readVoiceLanguageId } from "@/lib/chat/voiceLanguagePreference";
+import { warmUpBrowserVoices } from "@/lib/speech/loadBrowserVoices";
 import { copyMarkdownToClipboard, shareText } from "@/lib/share/clientShare";
 import { useShareAction } from "@/hooks/useShareAction";
 import { cn } from "@/lib/utils";
@@ -74,22 +77,30 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
   const [speaking, setSpeaking] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const [favorited, setFavorited] = useState(
-    messageId ? isMessageFavorite(messageId) : false
-  );
+  const [favorited, setFavorited] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(false);
+
+  useEffect(() => {
+    setVoiceSupported(isGigaVoiceSupported());
+    if (messageId) setFavorited(isMessageFavorite(messageId));
+  }, [messageId]);
 
   const copyText = useMemo(
     () => formatMessageForCopy(role, content),
     [role, content]
   );
 
+  const speechBlockId = messageId ? `message-${messageId}` : null;
+
   useEffect(() => {
-    if (!speaking) return;
+    if (!speaking || !speechBlockId) return;
     const id = window.setInterval(() => {
-      if (!isReadAloudActive()) setSpeaking(false);
+      const active =
+        isGigaVoiceSpeaking() && getActiveSpeechBlockId() === speechBlockId;
+      if (!active) setSpeaking(false);
     }, 400);
     return () => window.clearInterval(id);
-  }, [speaking]);
+  }, [speaking, speechBlockId]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -134,17 +145,26 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
     setMenuOpen(false);
   }, [messageId]);
 
-  const runReadAloud = useCallback(() => {
+  const runReadAloud = useCallback(async () => {
+    if (!isGigaVoiceSupported() || !copyText.trim()) return;
     if (speaking) {
-      stopReadAloud();
+      stopGigaVoice();
       setSpeaking(false);
       setMenuOpen(false);
       return;
     }
-    const started = readAloud(copyText);
-    if (started) setSpeaking(true);
+    warmUpBrowserVoices();
+    const blockId = speechBlockId ?? `message-actions-${Date.now()}`;
+    const started = await toggleGigaVoiceBlock({
+      blockId,
+      text: copyText,
+      voiceId: readVoiceLanguageId(),
+      onStart: () => setSpeaking(true),
+      onEnd: () => setSpeaking(false),
+    });
+    if (!started && !isGigaVoiceSpeaking()) setSpeaking(false);
     setMenuOpen(false);
-  }, [copyText, speaking]);
+  }, [copyText, speaking, speechBlockId]);
 
   const canDownloadPdf = useMemo(() => {
     if (role !== "assistant") return false;
@@ -191,7 +211,7 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
       label: speaking ? "Stop reading" : "Read aloud",
       icon: speaking ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />,
       onClick: runReadAloud,
-      hidden: !isReadAloudSupported(),
+      hidden: !voiceSupported,
     },
     {
       key: "favorite",

@@ -2,4 +2,14 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /admin/
+Disallow: /chat/
+Disallow: /wallet/
+Disallow: /credits/
+Disallow: /payment/
+Disallow: /workspace/
+Disallow: /settings/
+Disallow: /profile/
+Disallow: /subscribe/
+Disallow: /marketplace/sell/
+Disallow: /marketplace/purchases/
 Sitemap: https://www.giga3ai.com/sitemap.xml

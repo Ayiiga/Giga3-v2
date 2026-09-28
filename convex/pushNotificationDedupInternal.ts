@@ -6,6 +6,10 @@ export const checkAndRecordDedup = internalMutation({
     userId: v.string(),
     tag: v.string(),
     windowMs: v.number(),
+    title: v.optional(v.string()),
+    body: v.optional(v.string()),
+    url: v.optional(v.string()),
+    category: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -21,12 +25,22 @@ export const checkAndRecordDedup = internalMutation({
     }
 
     if (existing) {
-      await ctx.db.patch(existing._id, { sentAt: now });
+      await ctx.db.patch(existing._id, {
+        sentAt: now,
+        title: args.title ?? existing.title,
+        body: args.body ?? existing.body,
+        url: args.url ?? existing.url,
+        category: args.category ?? existing.category,
+      });
     } else {
       await ctx.db.insert("pushNotificationDedup", {
         userId: args.userId,
         tag: args.tag,
         sentAt: now,
+        title: args.title,
+        body: args.body,
+        url: args.url,
+        category: args.category,
       });
     }
 

@@ -16,6 +16,7 @@ import {
   readVisualViewportRect,
   resolveComposerBottomInset,
 } from "@/lib/chat/keyboardViewport";
+import { warmUpBrowserVoices } from "@/lib/speech/loadBrowserVoices";
 import { useEffect, useRef } from "react";
 
 function isMobileChatComposerTarget(target: EventTarget | null): target is HTMLElement {
@@ -294,6 +295,13 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
     };
 
     scheduleSync(false);
+    warmUpBrowserVoices();
+
+    const onFirstInteraction = () => {
+      warmUpBrowserVoices();
+      document.removeEventListener("pointerdown", onFirstInteraction);
+    };
+    document.addEventListener("pointerdown", onFirstInteraction, { passive: true });
 
     if (vv) {
       vv.addEventListener("resize", onViewportChange);
@@ -317,6 +325,7 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
       document.removeEventListener("focusin", onComposerFocus);
       document.removeEventListener("focusout", onComposerBlur);
       document.removeEventListener(CHAT_VIEWPORT_SYNC_EVENT, onViewportSyncEvent);
+      document.removeEventListener("pointerdown", onFirstInteraction);
       html.classList.remove("chat-route", "chat-keyboard-open");
       clearChatKeyboardCssVars(html);
       unlockPageScroll();
@@ -330,7 +339,7 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
   return (
     <div
       ref={shellRef}
-      className="chat-stable chat-keyboard-shell flex h-full w-full max-w-full flex-col overflow-x-clip overflow-y-hidden bg-background text-foreground max-lg:fixed max-lg:inset-0 max-lg:z-[1] lg:static lg:z-auto"
+      className="chat-stable chat-keyboard-shell chat-app-shell flex h-full w-full max-w-full flex-col overflow-x-clip overflow-y-hidden bg-background text-foreground max-lg:fixed max-lg:inset-0 max-lg:z-[1] max-lg:h-[100dvh] max-lg:max-h-[100dvh] lg:static lg:z-auto"
     >
       <ChatBundlePrefetch />
       <div className="flex min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-hidden">

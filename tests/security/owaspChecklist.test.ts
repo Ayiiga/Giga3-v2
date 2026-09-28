@@ -73,6 +73,11 @@ describe("API Security Top 10 — no session minting from a bare email", () => {
       "passwordResetTokenHash"
     );
     expect(exportBlock(users, "refreshSession")).toContain("requireSession(");
+    const google = read("convex/googleAuthActions.ts");
+    const handler = google.slice(google.indexOf("handler: async"));
+    expect(handler.indexOf("verifyGoogleIdToken")).toBeGreaterThan(-1);
+    expect(handler.indexOf("verifyGoogleIdToken")).toBeLessThan(handler.indexOf("createSessionToken"));
+    expect(google).not.toContain("access_token");
   });
 
   it("ops-only mutations are internal, not client-callable", () => {

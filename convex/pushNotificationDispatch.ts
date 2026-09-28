@@ -115,7 +115,15 @@ export const dispatchPushNotification = internalAction({
 
     const isDuplicate = await ctx.runMutation(
       internal.pushNotificationDedupInternal.checkAndRecordDedup,
-      { userId: args.recipientId, tag, windowMs: DEDUP_WINDOW_MS }
+      {
+        userId: args.recipientId,
+        tag,
+        windowMs: DEDUP_WINDOW_MS,
+        title: args.title,
+        body: args.body,
+        url: args.url,
+        category: args.category,
+      }
     );
     if (isDuplicate) return { sent: 0, queued: 0, deduplicated: true };
 

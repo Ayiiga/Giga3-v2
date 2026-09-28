@@ -4,7 +4,8 @@ export const SEGMENT_RECAP_PREFIX = "__giga3_segment_recap__\n";
 
 const MIN_EXCHANGES = 15;
 const MAX_EXCHANGES = 30;
-const DEFAULT_EXCHANGES = 20;
+/** One generation is one completed user + assistant exchange. */
+const DEFAULT_EXCHANGES = 30;
 const RECAP_TAIL_MESSAGES = 8;
 const RECAP_CHAR_LIMIT = 400;
 

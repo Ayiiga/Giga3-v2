@@ -25,7 +25,7 @@ const TOPIC_PATTERNS: Array<{ topic: string; re: RegExp }> = [
 ];
 
 const NEWS_QUERY_RE =
-  /\b(news|headlines|what happened|what are people reporting|what's happening|updates?)\b/i;
+  /\b(news|headlines|what happened|what(?:'s|\s+is)\s+(?:happening|going on)|what are people reporting|updates?|situation\s+in)\b/i;
 
 export function classifyNewsQuery(query: string): NewsQueryClassification {
   const q = query.trim();

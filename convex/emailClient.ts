@@ -42,7 +42,10 @@ export function getAuthFromEmail(): string {
   );
 }
 
-/** Inbox that receives reset-link copies when Resend cannot deliver to the user. */
+/**
+ * Inbox for operational delivery-failure notices.
+ * Never use this address as the recipient of a password-reset link.
+ */
 export function getEmailFallbackInbox(): string | null {
   const configured = process.env.AUTH_EMAIL_FALLBACK_INBOX?.trim().toLowerCase();
   if (configured && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(configured)) {

@@ -1,6 +1,9 @@
 export const CHAT_SEGMENT_NOTICE =
   "Starting a new chat to keep conversations fast and organized.";
 
+export const DAILY_FRESH_CHAT_NOTICE =
+  "New chat for today. Earlier chats stay in your history.";
+
 export function continuedConversationTitle(title: string): string {
   const base = title.trim() || "New chat";
   const suffix = " (continued)";

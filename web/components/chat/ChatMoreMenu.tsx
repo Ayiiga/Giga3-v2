@@ -1,77 +1,33 @@
 "use client";
 
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
-import { CreditBadge } from "@/components/billing/CreditBadge";
+import { StableLink } from "@/components/ui/StableLink";
 import { clearAllClientAuth } from "@/lib/auth";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
-import {
-  WORKSPACE_NAV_EVENT,
-  type WorkspaceNavTarget,
-} from "@/lib/chat/workspaceNav";
-import { siteConfig } from "@/lib/site";
+import { safeNavigate } from "@/lib/navigation/safeNavigate";
 import { signOutSupabase } from "@/lib/supabase/auth";
 import {
-  Bell,
-  BookOpen,
-  Briefcase,
-  Clapperboard,
-  GraduationCap,
   HelpCircle,
-  Info,
-  MessageSquarePlus,
+  LogOut,
+  Mail,
   MoreHorizontal,
   Settings,
-  Share2,
-  Sparkles,
-  Store,
-  Users,
-  UsersRound,
-  Wallet,
-  Zap,
-  LogOut,
+  Shield,
+  User,
 } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 interface ChatMoreMenuProps {
   credits: number | null;
-  onOpenWorkspace?: () => void;
-  onShare?: () => void;
   className?: string;
 }
 
-type MenuLink = {
-  href: string;
-  label: string;
-  icon: typeof BookOpen;
-};
-
-const MORE_LINKS: MenuLink[] = [
-  { href: "/gigasocial/", label: "GigaSocial", icon: UsersRound },
-  { href: "/gigaedit/", label: "GigaEdits", icon: Clapperboard },
-  { href: "/gigalearn/", label: "GigaLearn", icon: GraduationCap },
-  { href: siteConfig.links.media, label: "Media Studio", icon: Sparkles },
-  { href: "/creator-studio/", label: "Creator Studio", icon: Sparkles },
-  { href: "/marketplace/", label: "Marketplace", icon: Store },
-  { href: "/wallet/", label: "Wallet", icon: Wallet },
-  { href: "/enterprise/", label: "Enterprise", icon: Briefcase },
-  { href: "/automation/", label: "Automation", icon: Zap },
-  { href: "/install/", label: "Invite Friends", icon: Users },
-  { href: siteConfig.links.home, label: "Dashboard", icon: Settings },
-  { href: "/about/", label: "About", icon: Info },
-  { href: "/about/", label: "Help", icon: HelpCircle },
-];
-
 export const ChatMoreMenu = memo(function ChatMoreMenu({
   credits,
-  onOpenWorkspace,
-  onShare,
   className,
 }: ChatMoreMenuProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -92,14 +48,21 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
   }, [close, open]);
 
   function signOut() {
-    if (isSupabaseDataBackend()) {
-      void signOutSupabase();
-    } else {
+    close();
+    try {
+      if (isSupabaseDataBackend()) {
+        void signOutSupabase();
+      } else {
+        clearAllClientAuth();
+      }
+    } catch {
       clearAllClientAuth();
     }
-    router.push("/chat/login");
-    close();
+    safeNavigate("/chat/login/");
   }
+
+  const itemClass =
+    "flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10";
 
   return (
     <div ref={rootRef} className={className}>
@@ -117,79 +80,86 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
       {open ? (
         <div
           role="menu"
-          aria-label="More chat actions"
+          aria-label="Account and settings"
           className="absolute right-0 top-full z-50 mt-1 max-h-[min(70vh,28rem)] w-60 overflow-y-auto rounded-2xl border border-border bg-card p-1.5 shadow-lg"
         >
           {credits != null ? (
-            <div className="px-3 py-2">
-              <CreditBadge credits={credits} className="w-full justify-center" />
-            </div>
+            <StableLink
+              href="/credits/"
+              hard
+              role="menuitem"
+              onClick={close}
+              className="mx-1 mb-1 block rounded-xl px-3 py-2 text-center text-sm font-semibold text-white"
+              style={{ backgroundColor: "#7C3AED" }}
+            >
+              {credits} credits
+            </StableLink>
           ) : null}
 
-          {onOpenWorkspace ? (
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                window.dispatchEvent(
-                  new CustomEvent(WORKSPACE_NAV_EVENT, {
-                    detail: { target: "modes" satisfies WorkspaceNavTarget },
-                  })
-                );
-                onOpenWorkspace();
-                close();
-              }}
-              className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
-            >
-              <MessageSquarePlus className="h-4 w-4 text-muted" aria-hidden />
-              Workspace tools
-            </button>
-          ) : null}
+          <StableLink
+            href="/profile/"
+            hard
+            role="menuitem"
+            onClick={close}
+            className={itemClass}
+          >
+            <User className="h-4 w-4 text-muted" aria-hidden />
+            Profile
+          </StableLink>
 
-          {onShare ? (
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                onShare();
-                close();
-              }}
-              className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
-            >
-              <Share2 className="h-4 w-4 text-muted" aria-hidden />
-              Share conversation
-            </button>
-          ) : null}
+          <StableLink
+            href="/settings/"
+            hard
+            role="menuitem"
+            onClick={close}
+            className={itemClass}
+          >
+            <Settings className="h-4 w-4 text-muted" aria-hidden />
+            Settings
+          </StableLink>
 
           <div className="my-1 border-t border-border" role="separator" />
 
-          {MORE_LINKS.map((item) => {
-            const Icon = item.icon;
-            const primary =
-              item.label === "GigaSocial" ||
-              item.label === "GigaEdits" ||
-              item.label === "GigaLearn" ||
-              item.label === "Media Studio";
-            return (
-              <Link
-                key={item.href + item.label}
-                href={item.href}
-                role="menuitem"
-                onClick={close}
-                className={
-                  primary
-                    ? "flex min-h-11 items-center gap-2 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-sm font-bold text-foreground hover:bg-accent/15"
-                    : "flex min-h-10 items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10"
-                }
-              >
-                <Icon
-                  className={primary ? "h-4 w-4 text-accent" : "h-4 w-4 text-muted"}
-                  aria-hidden
-                />
-                {item.label}
-              </Link>
-            );
-          })}
+          <a
+            href="mailto:support@giga3ai.com"
+            role="menuitem"
+            onClick={close}
+            className={itemClass}
+          >
+            <Mail className="h-4 w-4 text-muted" aria-hidden />
+            support@giga3ai.com
+          </a>
+          <a
+            href="mailto:giga3ai@gmail.com"
+            role="menuitem"
+            onClick={close}
+            className={itemClass}
+          >
+            <Mail className="h-4 w-4 text-muted" aria-hidden />
+            giga3ai@gmail.com
+          </a>
+
+          <StableLink
+            href="/help/"
+            hard
+            role="menuitem"
+            onClick={close}
+            className={itemClass}
+          >
+            <HelpCircle className="h-4 w-4 text-muted" aria-hidden />
+            Help / FAQ
+          </StableLink>
+
+          <StableLink
+            href="/legal/privacy/"
+            hard
+            role="menuitem"
+            onClick={close}
+            className={itemClass}
+          >
+            <Shield className="h-4 w-4 text-muted" aria-hidden />
+            Privacy &amp; Terms
+          </StableLink>
 
           <div className="my-1 border-t border-border" role="separator" />
 
@@ -201,7 +171,7 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
           <button
             type="button"
             role="menuitem"
-            className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-muted hover:bg-accent/10"
+            className={`${itemClass} text-muted`}
             onClick={() => signOut()}
           >
             <LogOut className="h-4 w-4" aria-hidden />

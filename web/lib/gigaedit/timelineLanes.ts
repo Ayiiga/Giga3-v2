@@ -12,13 +12,13 @@ export type TimelineLaneDef = {
 
 /** Fixed lane order — matches Creator Studio timeline spec. */
 export const TIMELINE_LANES: TimelineLaneDef[] = [
-  { id: "main-video", label: "Main Video", shortLabel: "Main", tone: "main" },
-  { id: "b-roll", label: "B-Roll", shortLabel: "B-roll", tone: "broll" },
-  { id: "cutout-person", label: "Cutout Person", shortLabel: "Cutout", tone: "cutout" },
-  { id: "screen-recording", label: "Screen Recording", shortLabel: "Screen", tone: "screen" },
-  { id: "logo", label: "Logo", shortLabel: "Logo", tone: "logo" },
-  { id: "text", label: "Text", shortLabel: "Text", tone: "text" },
-  { id: "captions", label: "Captions", shortLabel: "Caps", tone: "captions" },
+  { id: "main-video", label: "Track 0 · Video (Main)", shortLabel: "Main", tone: "main" },
+  { id: "b-roll", label: "Track 1 · Overlays (B-roll)", shortLabel: "Overlay", tone: "broll" },
+  { id: "cutout-person", label: "Track 1 · Overlays (Cutout)", shortLabel: "Cutout", tone: "cutout" },
+  { id: "screen-recording", label: "Track 1 · Overlays (Screen)", shortLabel: "Screen", tone: "screen" },
+  { id: "logo", label: "Track 1 · Overlays (Logo)", shortLabel: "Logo", tone: "logo" },
+  { id: "text", label: "Track 1 · Overlays (Text/Sticker)", shortLabel: "Text", tone: "text" },
+  { id: "captions", label: "Track 2 · Captions", shortLabel: "Caps", tone: "captions" },
 ];
 
 /** Minimum horizontal pixels per second of timeline (enables sideways scroll). */

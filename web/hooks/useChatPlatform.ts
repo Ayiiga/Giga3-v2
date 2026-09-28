@@ -14,8 +14,9 @@ import {
 } from "@/lib/auth";
 import { recoverInvalidSession } from "@/lib/auth/sessionRestore";
 import { logChatClient } from "@/lib/chat/chatLog";
+import { clearComposerDraft } from "@/lib/chat/composerDraft";
+import { stopGigaVoice } from "@/lib/chat/gigaVoice";
 import {
-  readActiveConversationId,
   writeActiveConversationId,
 } from "@/lib/chat/workspacePersist";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
@@ -45,7 +46,8 @@ import {
   writeCachedConversations,
 } from "@/lib/chat/conversationCache";
 import { emitOutboxStatus } from "@/lib/chat/outboxEvents";
-import { CHAT_SEGMENT_NOTICE } from "@/lib/chat/chatSegmentation";
+import { CHAT_SEGMENT_NOTICE, DAILY_FRESH_CHAT_NOTICE } from "@/lib/chat/chatSegmentation";
+import { useDailyFreshChat } from "@/hooks/useDailyFreshChat";
 import { chatSystemForModel, gigaModelForMode, type GigaModelId } from "@/lib/chat/gigaModels";
 import {
   acceptTimeoutMs,
@@ -111,7 +113,7 @@ function sleep(ms: number): Promise<void> {
 
 export function useChatPlatform() {
   const [email, setEmail] = useState<string | null>(() => getUserEmail());
-  const [activeId, setActiveId] = useState<string | null>(() => readActiveConversationId());
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [mode, setMode] = useState<AiModeId>("general");
   const [personaId, setPersonaId] = useState<GigaPersonaId | null>(() =>
     readStoredPersonaId()
@@ -812,7 +814,7 @@ export function useChatPlatform() {
     }
     setActiveId((prev) => {
       if (prev && conversations.some((c) => c._id === prev)) return prev;
-      return conversations[0]._id;
+      return null;
     });
   }, [conversations]);
 
@@ -973,12 +975,30 @@ export function useChatPlatform() {
       setError("Session expired. Please sign in again.");
       return;
     }
+    stopGigaVoice();
+    clearComposerDraft(null);
     setError(null);
-    const id = await createConversation({ sessionToken: token, mode });
-    setActiveId(id);
-  }, [sessionToken, createConversation, mode]);
+    setActiveId(null);
+    setPollConversationId(null);
+    setPendingUserText(null);
+    setAwaitingReply(false);
+    setIsSending(false);
+    setSegmentNotice(null);
+  }, [sessionToken]);
+
+  const openTodayChat = useCallback(() => {
+    stopGigaVoice();
+    clearComposerDraft(null);
+    setError(null);
+    setActiveId(null);
+    setPollConversationId(null);
+    setPendingUserText(null);
+    setSegmentNotice(DAILY_FRESH_CHAT_NOTICE);
+  }, []);
+  useDailyFreshChat(openTodayChat, isSending || awaitingReply);
 
   const selectConversation = useCallback((id: string) => {
+    stopGigaVoice();
     clearReplyFailureTimer();
     replyOutcomeRef.current = "pending";
     if (activeGenTaskIdRef.current) {
@@ -998,6 +1018,7 @@ export function useChatPlatform() {
     async (id: string) => {
       const token = sessionToken ?? getSessionToken();
       if (!token) return;
+      stopGigaVoice();
       await removeConversation({
         conversationId: id as Id<"conversations">,
         sessionToken: token,

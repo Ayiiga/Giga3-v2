@@ -14,6 +14,7 @@ function readHtmlFlags() {
   return {
     immersive: html.classList.contains("gigaedit-video-mode"),
     keyboardOpen: html.classList.contains("chat-keyboard-open"),
+    composerActive: html.classList.contains("chat-composer-active"),
   };
 }
 
@@ -25,9 +26,15 @@ export function PrimaryNavHost() {
   const onProductRoute = isPrimaryNavRoute(pathname);
   const showRail = shouldShowDesktopRail(pathname);
   const showCreateSub = isCreateSubRoute(pathname);
-  const [flags, setFlags] = useState({ immersive: false, keyboardOpen: false });
+  const [flags, setFlags] = useState({
+    immersive: false,
+    keyboardOpen: false,
+    composerActive: false,
+  });
   const navBarVisible =
     onProductRoute && !flags.immersive && !flags.keyboardOpen;
+  const navCompact =
+    navBarVisible && flags.composerActive && !flags.keyboardOpen;
 
   useEffect(() => {
     if (!onProductRoute) return;
@@ -47,15 +54,17 @@ export function PrimaryNavHost() {
     html.classList.toggle("primary-nav-rail", onProductRoute && showRail);
     html.classList.toggle("primary-nav-bar-visible", navBarVisible);
     html.classList.toggle("primary-nav-create-sub", navBarVisible && showCreateSub);
+    html.classList.toggle("primary-nav-compact", navCompact);
     return () => {
       html.classList.remove(
         "primary-nav-route",
         "primary-nav-rail",
         "primary-nav-bar-visible",
-        "primary-nav-create-sub"
+        "primary-nav-create-sub",
+        "primary-nav-compact"
       );
     };
-  }, [onProductRoute, showRail, navBarVisible, showCreateSub]);
+  }, [onProductRoute, showRail, navBarVisible, showCreateSub, navCompact]);
 
   if (!onProductRoute) return null;
 

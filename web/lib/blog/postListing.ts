@@ -41,9 +41,18 @@ export function getRelatedRegistryBlogPosts(
     .map((row) => row.post);
 }
 
+function blogIndexLastMod(): string {
+  const posts = getRegistryBlogPosts();
+  if (posts.length === 0) return "2026-09-04";
+  return posts.reduce((latest, post) => {
+    const date = post.updatedAt ?? post.publishedAt;
+    return date > latest ? date : latest;
+  }, posts[0]!.publishedAt);
+}
+
 export function getBlogSitemapEntriesFromRegistry(): { loc: string; lastmod: string }[] {
   const origin = "https://www.giga3ai.com";
-  const blogIndex = { loc: `${origin}/blog/`, lastmod: "2026-09-04" };
+  const blogIndex = { loc: `${origin}/blog/`, lastmod: blogIndexLastMod() };
   const articles = getRegistryBlogPosts().map((post) => ({
     loc: `${origin}${post.href}`,
     lastmod: post.updatedAt ?? post.publishedAt,

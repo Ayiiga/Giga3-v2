@@ -15,6 +15,8 @@
 .chat-main-column,
 .chat-header-band,
 .chat-composer-stack,
+.chat-footer,
+.chat-footer-chips,
 .chat-composer-dock,
 .chat-composer,
 .chat-thread,
@@ -72,7 +74,12 @@
 .chat-message-bubble,
 .chat-message-bubble-inner,
 .chat-assistant-body,
-.chat-markdown {
+.chat-markdown,
+.smart-answer,
+.smart-answer__section,
+.smart-answer__body,
+.smart-answer__heading,
+.smart-answer__label {
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
@@ -220,13 +227,21 @@
   max-width: 100%;
 }
 
+@media (max-width: 1023px) {
+  html.chat-route .chat-thread {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+  }
+}
+
 @media (max-width: 639px) {
   .chat-message-scroll-region {
     padding-inline: max(0.625rem, env(safe-area-inset-left, 0px))
       max(0.625rem, env(safe-area-inset-right, 0px));
   }
 
-  .chat-thread {
+  html:not(.chat-route) .chat-thread {
     width: 100%;
     max-width: 100%;
   }
@@ -291,5 +306,38 @@
   .chat-composer-surface {
     gap: 0.375rem;
     padding: 0.375rem;
+  }
+}
+
+/* Voice listening waveform — pure CSS animation, no main-thread work. */
+.chat-voice-listening .chat-voice-wave {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.chat-voice-listening .chat-voice-wave > span {
+  width: 3px;
+  border-radius: 2px;
+  background: #eab308;
+  animation: chat-voice-wave 0.9s ease-in-out infinite;
+}
+
+.chat-voice-listening .chat-voice-wave > span:nth-child(1) { height: 40%; animation-delay: 0s; }
+.chat-voice-listening .chat-voice-wave > span:nth-child(2) { height: 70%; animation-delay: 0.15s; }
+.chat-voice-listening .chat-voice-wave > span:nth-child(3) { height: 100%; animation-delay: 0.3s; }
+.chat-voice-listening .chat-voice-wave > span:nth-child(4) { height: 60%; animation-delay: 0.45s; }
+.chat-voice-listening .chat-voice-wave > span:nth-child(5) { height: 35%; animation-delay: 0.6s; }
+
+@keyframes chat-voice-wave {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-voice-listening .chat-voice-wave > span {
+    animation: none;
   }
 }

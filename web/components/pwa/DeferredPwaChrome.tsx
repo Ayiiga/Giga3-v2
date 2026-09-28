@@ -14,6 +14,15 @@ const InstallPrompt = dynamic(
   { ssr: false }
 );
 
+const PushPrompt = dynamic(
+  withChunkRetryLoader(() =>
+    import("@/components/pwa/PushPrompt").then((module) => ({
+      default: module.PushPrompt,
+    }))
+  ),
+  { ssr: false }
+);
+
 /** Defers non-critical PWA UI until after first paint / idle time. */
 export function DeferredPwaChrome() {
   const [ready, setReady] = useState(false);
@@ -34,6 +43,7 @@ export function DeferredPwaChrome() {
     <>
       <SwUpdatePrompt />
       <InstallPrompt />
+      <PushPrompt />
     </>
   );
 }

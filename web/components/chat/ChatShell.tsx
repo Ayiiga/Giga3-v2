@@ -4,6 +4,7 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ChatSegmentNotice } from "@/components/chat/ChatSegmentNotice";
 import { ChatBanners } from "@/components/chat/ChatBanners";
 import { ChatChrome } from "@/components/chat/ChatChrome";
+import { ChatVoiceLanguageBar } from "@/components/chat/ChatVoiceLanguageBar";
 import type { ChatActionsMenuHandle } from "@/components/chat/ChatActionsMenu";
 import { ChatConversationPane } from "@/components/chat/ChatConversationPane";
 import { ChatOverflowProbe } from "@/components/chat/ChatOverflowProbe";
@@ -15,6 +16,7 @@ import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { useChatShareShortcuts } from "@/hooks/useChatShareShortcuts";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { getSessionToken } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 import {
   readSidebarCollapsed,
   writeSidebarCollapsed,
@@ -49,6 +51,12 @@ import {
   needsLocationEnrichment,
   resolveLocalDeviceAnswer,
 } from "@/lib/chat/deviceContextIntents";
+import {
+  buildProductRedirectAnswer,
+  matchProductRedirectIntent,
+} from "@/lib/chat/productRedirects";
+import type { ChatCreationState } from "@/lib/gigalearn/creation/chatIntake";
+import { mightBeCreationRequest } from "@/lib/gigalearn/creation/chatIntent";
 import { captureCoordinates } from "@/lib/geolocation";
 import { getConvexUrl } from "@/lib/convex";
 import { convexHttpCall } from "@/lib/network/convexCall";
@@ -62,6 +70,7 @@ import {
   templateInsertNotice,
   writingModeForTemplate,
 } from "@/lib/chat/writingWorkflow";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function ChatShell() {
@@ -115,6 +124,7 @@ function ChatShellInner({
   ) => Promise<{ shareToken: string | null; sharePublic: boolean }>;
 }) {
   useRenderDiagnostic("ChatShellInner");
+  const router = useRouter();
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => readSidebarCollapsed());
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -247,8 +257,11 @@ function ChatShellInner({
     [changeMode]
   );
 
+  const creationIntakeRef = useRef<ChatCreationState | null>(null);
+
   useEffect(() => {
     setLocalTurns([]);
+    creationIntakeRef.current = null;
   }, [activeId]);
 
   const appendLocalTurn = useCallback((userText: string, assistantText: string) => {
@@ -283,6 +296,46 @@ function ChatShellInner({
       void (async () => {
         const trimmed = msg.trim();
         if (!trimmed && !attachments?.length) return;
+
+        // Guided GigaLearn creation: questions + Generation Preview stay local; nothing is
+        // generated until the user confirms in the builder.
+        if (trimmed && !attachments?.length && (creationIntakeRef.current || mightBeCreationRequest(trimmed))) {
+          const pending = creationIntakeRef.current;
+          const modules = await Promise.all([
+            import("@/lib/gigalearn/creation/chatIntake"),
+            import("@/lib/gigalearn/creation/links"),
+          ]).catch(() => null);
+          const turn = modules
+            ? pending
+              ? modules[0].continueChatCreation(pending, trimmed)
+              : modules[0].startChatCreation(trimmed)
+            : null;
+          if (!modules) creationIntakeRef.current = null;
+          const markCreationAutostart = modules?.[1].markCreationAutostart;
+          if (turn) {
+            creationIntakeRef.current = turn.state;
+            appendLocalTurn(trimmed, turn.reply);
+            if (turn.navigateTo) {
+              if (turn.autostart && pending) markCreationAutostart?.(pending.templateId);
+              router.push(turn.navigateTo);
+            }
+            return;
+          }
+        } else if (attachments?.length) {
+          creationIntakeRef.current = null;
+        }
+
+        // Open GigaSocial / GigaEdits / GigaLearn / Media Studio (and other apps) locally.
+        if (trimmed && !attachments?.length) {
+          const product = matchProductRedirectIntent(trimmed);
+          if (product) {
+            appendLocalTurn(trimmed, buildProductRedirectAnswer(product));
+            if (product.kind === "navigate") {
+              router.push(product.product.href);
+            }
+            return;
+          }
+        }
 
         // Device/calendar/clock/connectivity answers use browser APIs — work offline too.
         if (trimmed && !attachments?.length) {
@@ -362,7 +415,7 @@ function ChatShellInner({
         void sendMessage(wire || msg, attachments, modelTier);
       })();
     },
-    [appendLocalTurn, effectiveOnline, modelTier, sendMessage]
+    [appendLocalTurn, effectiveOnline, modelTier, router, sendMessage]
   );
 
   const handleSuggestVisionTier = useCallback(() => {
@@ -623,7 +676,12 @@ function ChatShellInner({
         onSearchChange={setConversationSearch}
       />
 
-      <div className="chat-main-column relative z-0 grid min-h-0 min-w-0 flex-1 grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
+      <div
+        className={cn(
+          "chat-main-column relative z-0 grid min-h-0 min-w-0 flex-1 grid-rows-[auto_minmax(0,1fr)] overflow-hidden",
+          displayMessages.length > 0 && "chat-main-column--has-messages"
+        )}
+      >
         <div className="chat-header-band min-w-0 max-w-full shrink-0 overflow-x-clip">
           <ChatChrome
             email={email}
@@ -656,6 +714,10 @@ function ChatShellInner({
             }}
           />
 
+          {displayMessages.length === 0 ? (
+            <ChatVoiceLanguageBar className="chat-voice-language-bar--mobile lg:hidden" />
+          ) : null}
+
           <ChatBanners
             email={email}
             mounted={mounted}
@@ -680,6 +742,7 @@ function ChatShellInner({
             onSelectDocumentTemplate={handleSelectDocumentTemplate}
             onInsertChatText={handleInsertDocument}
             onError={handleTemplateError}
+            className={displayMessages.length > 0 ? "hidden md:block" : undefined}
           />
 
           {templateNotice && (

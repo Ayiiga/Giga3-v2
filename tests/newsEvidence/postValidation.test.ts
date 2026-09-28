@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   enforceNewsEvidenceIntegrity,
   insufficientEvidenceFallback,
+  isNewsBrushOffAnswer,
 } from "../../convex/newsEvidence/postValidation";
+import { GHANA_NEWS_INSUFFICIENT_EVIDENCE } from "../../convex/newsEvidence/userContextRouting";
 import { buildNewsEvidencePackage } from "../../convex/newsEvidence/pipeline";
+import { MTN_HEROES_OF_CHANGE_FIXTURE } from "./userContextRouting.test";
 
 describe("news post-validation", () => {
   it("replaces zero-evidence headline answers", () => {
@@ -25,9 +28,129 @@ describe("news post-validation", () => {
       isNewsQuery: true,
     });
 
-    expect(result.content).toContain("couldn't retrieve enough current evidence");
-    expect(result.content).not.toContain("MyJoyOnline");
+    expect(result.content).toBe(GHANA_NEWS_INSUFFICIENT_EVIDENCE);
+    expect(result.content).not.toContain("Parliament passes");
     expect(result.flags).toContain("news_insufficient_evidence");
+  });
+
+  it("replaces the Ghana check-the-news hedge when nothing was retrieved", () => {
+    const query = "What is happening in Ghana";
+    const evidence = buildNewsEvidencePackage({
+      query,
+      capability: "ghana_news",
+      sources: [],
+      pagesReadUrls: [],
+      warnings: ["Search failed"],
+      liveSearchUsed: false,
+      retrievalFailed: true,
+    });
+    const hedge =
+      "For the latest news and events happening in Ghana, I recommend checking trusted news sources or online platforms that provide real-time updates. If you have specific areas of interest or topics you're curious about, feel free to let me know, and I can provide information or context based on general knowledge.";
+
+    expect(isNewsBrushOffAnswer(hedge)).toBe(true);
+    const result = enforceNewsEvidenceIntegrity({
+      answer: hedge,
+      query,
+      evidence,
+      isNewsQuery: true,
+    });
+
+    expect(result.content).toBe(GHANA_NEWS_INSUFFICIENT_EVIDENCE);
+    expect(result.content).not.toContain("recommend checking");
+    expect(result.flags).toContain("news_insufficient_evidence");
+  });
+
+  it("replaces a brush-off with the reports that were actually retrieved", () => {
+    const evidence = buildNewsEvidencePackage({
+      query: "What is happening in Ghana",
+      capability: "ghana_news",
+      sources: [
+        {
+          title: "Parliament opens new session in Accra",
+          uri: "https://www.graphic.com.gh/parliament-session",
+          domain: "graphic.com.gh",
+          excerpt: "The House began a new sitting.",
+          accessedAt: Date.now(),
+        },
+      ],
+      pagesReadUrls: ["https://www.graphic.com.gh/parliament-session"],
+      warnings: [],
+      liveSearchUsed: true,
+    });
+
+    const result = enforceNewsEvidenceIntegrity({
+      answer:
+        "For the latest news, I recommend checking trusted news sources. I can only answer from general knowledge.",
+      query: "What is happening in Ghana",
+      evidence,
+      isNewsQuery: true,
+    });
+
+    expect(result.flags).toContain("news_brushoff_replaced");
+    expect(result.content).toContain("Parliament opens new session in Accra");
+    expect(result.content).toContain("graphic.com.gh");
+    expect(result.content).not.toContain("recommend checking");
+  });
+
+  it("replaces an unsourced Ghana headline with the retrieved report", () => {
+    const evidence = buildNewsEvidencePackage({
+      query: "What is happening in Ghana",
+      capability: "ghana_news",
+      sources: [
+        {
+          title: "Cedi trading update",
+          uri: "https://www.graphic.com.gh/cedi",
+          domain: "graphic.com.gh",
+          excerpt: "The cedi was quoted in Accra.",
+          accessedAt: Date.now(),
+        },
+      ],
+      pagesReadUrls: ["https://www.graphic.com.gh/cedi"],
+      warnings: [],
+      liveSearchUsed: true,
+    });
+
+    const result = enforceNewsEvidenceIntegrity({
+      answer: "The president announced a brand-new harbour tax yesterday in Takoradi.",
+      query: "What is happening in Ghana",
+      evidence,
+      isNewsQuery: true,
+    });
+
+    expect(result.flags).toContain("news_unsourced_replaced");
+    expect(result.content).toContain("Cedi trading update");
+    expect(result.content).toContain("graphic.com.gh");
+    expect(result.content).not.toContain("harbour tax");
+  });
+
+  it("keeps a Ghana answer that cites the retrieved report", () => {
+    const evidence = buildNewsEvidencePackage({
+      query: "What is happening in Ghana",
+      capability: "ghana_news",
+      sources: [
+        {
+          title: "Cedi trading update",
+          uri: "https://www.graphic.com.gh/cedi",
+          domain: "graphic.com.gh",
+          excerpt: "The cedi was quoted in Accra.",
+          accessedAt: Date.now(),
+        },
+      ],
+      pagesReadUrls: ["https://www.graphic.com.gh/cedi"],
+      warnings: [],
+      liveSearchUsed: true,
+    });
+
+    const answer = "Cedi trading update from [Graphic Online](https://www.graphic.com.gh/cedi).";
+    const result = enforceNewsEvidenceIntegrity({
+      answer,
+      query: "What is happening in Ghana",
+      evidence,
+      isNewsQuery: true,
+    });
+
+    expect(result.flags).not.toContain("news_unsourced_replaced");
+    expect(result.content).toContain("Cedi trading update");
   });
 
   it("downgrades verified labels when only snippets exist", () => {
@@ -90,5 +213,28 @@ describe("news post-validation", () => {
 
   it("provides explicit insufficient-evidence fallback copy", () => {
     expect(insufficientEvidenceFallback("Latest Ghana news")).toMatch(/won't invent/i);
+  });
+
+  it("recovers user-provided MTN announcement when model emits generic retrieval failure", () => {
+    const evidence = buildNewsEvidencePackage({
+      query: MTN_HEROES_OF_CHANGE_FIXTURE,
+      capability: "live_web",
+      sources: [],
+      pagesReadUrls: [],
+      warnings: ["Search failed"],
+      liveSearchUsed: false,
+      retrievalFailed: true,
+    });
+
+    const result = enforceNewsEvidenceIntegrity({
+      answer: insufficientEvidenceFallback(MTN_HEROES_OF_CHANGE_FIXTURE),
+      query: MTN_HEROES_OF_CHANGE_FIXTURE,
+      evidence,
+      isNewsQuery: true,
+    });
+
+    expect(result.content).not.toContain("couldn't retrieve enough current evidence");
+    expect(result.content).toMatch(/19 October 2026/i);
+    expect(result.flags).toContain("news_user_context_recovery");
   });
 });

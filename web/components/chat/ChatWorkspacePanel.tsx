@@ -2,6 +2,7 @@
 
 import { AutomationPanel } from "@/components/automation/AutomationPanel";
 import { DocumentTemplatePicker } from "@/components/chat/DocumentTemplatePicker";
+import { TemplatesDropdown } from "@/components/chat/TemplatesDropdown";
 import { ImageStudioQuickPanel } from "@/components/chat/ImageStudioQuickPanel";
 import { PersonaSelector } from "@/components/chat/PersonaSelector";
 import { ToolSelector } from "@/components/chat/ToolSelector";
@@ -40,6 +41,7 @@ interface ChatWorkspacePanelProps {
   onSelectDocumentTemplate: (templateId: DocumentTemplateId) => void;
   onInsertChatText: (text: string) => void;
   onError: (message: string) => void;
+  className?: string;
 }
 
 type WorkspaceTab = "modes" | "documents" | "media" | "news" | "sports" | "alerts" | "automation";
@@ -55,11 +57,12 @@ function ChatWorkspacePanelComponent({
   onSelectDocumentTemplate,
   onInsertChatText,
   onError,
+  className,
 }: ChatWorkspacePanelProps) {
   const router = useRouter();
   const [sessionToken, setSessionToken] = useState<string | null>(null);
-  const [open, setOpen] = useState(!hasMessages);
-  const [tab, setTab] = useState<WorkspaceTab>(hasMessages ? "modes" : "documents");
+  const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<WorkspaceTab>("modes");
   const [navigatedOpen, setNavigatedOpen] = useState(false);
   const [mediaNavigating, setMediaNavigating] = useState<string | null>(null);
 
@@ -77,16 +80,8 @@ function ChatWorkspacePanelComponent({
   useEffect(() => {
     if (hasMessages && !navigatedOpen) {
       setOpen(false);
-      return;
     }
-    if (!hasMessages) {
-      setOpen(true);
-      setNavigatedOpen(false);
-      if (mode !== "news") {
-        setTab("documents");
-      }
-    }
-  }, [hasMessages, mode, navigatedOpen]);
+  }, [hasMessages, navigatedOpen]);
 
   useEffect(() => {
     function onWorkspaceNav(event: Event) {
@@ -145,7 +140,7 @@ function ChatWorkspacePanelComponent({
   return (
     <div
       id="modes"
-      className="chat-workspace-panel shrink-0 border-b border-border bg-card"
+      className={cn("chat-workspace-panel shrink-0 border-b border-border bg-card", className)}
     >
       <button
         type="button"
@@ -272,11 +267,17 @@ function ChatWorkspacePanelComponent({
 
             {tab === "documents" && (
               <div id="files">
+              <TemplatesDropdown
+                disabled={disabled}
+                onInsert={onInsertChatText}
+                onSelectDocumentTemplate={onSelectDocumentTemplate}
+                onError={onError}
+              />
               <DocumentTemplatePicker
                 disabled={disabled}
                 compact={hasMessages}
                 embedded
-                defaultOpen={!hasMessages}
+                defaultOpen={false}
                 onSelectTemplate={onSelectDocumentTemplate}
                 onError={onError}
               />

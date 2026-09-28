@@ -291,7 +291,7 @@ export const GigaLearnWorkspacePanel = memo(function GigaLearnWorkspacePanel({
                 className="rounded-xl border border-border bg-white px-3 py-2 text-xs text-muted"
               >
                 <span className="font-medium text-foreground">
-                  {getGigaLearnTool(p.toolId)?.label ?? p.toolId}
+                  {getGigaLearnTool(p.toolId, profile.role)?.label ?? p.toolId}
                 </span>
                 <p className="mt-1 line-clamp-2">{p.prompt}</p>
               </li>

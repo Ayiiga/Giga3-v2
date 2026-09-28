@@ -42,7 +42,7 @@ export function EditorShell({ section, onBackHome, children, footer, immersive =
   }
 
   return (
-    <div className="gigaedit-shell gigaedit-stable mx-auto max-w-5xl rounded-2xl px-3 py-4 sm:px-5 sm:py-6">
+    <div className="gigaedit-shell gigaedit-stable mx-auto max-w-5xl rounded-2xl px-3 py-4 pb-[88px] sm:px-5 sm:py-6">
       <CreateSubNav pathname={pathname} variant="inline" className="mb-4" />
       <div className="mb-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">

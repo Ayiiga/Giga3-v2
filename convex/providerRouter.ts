@@ -14,6 +14,7 @@ import {
   isConversationalChatQuery,
   shouldAutoEnableLiveWeb,
 } from "./researchCapabilities";
+import { detectAnswerFromUserContextIntent } from "./newsEvidence/userContextRouting";
 
 /** User-facing AI access tier — drives default LLM provider. */
 export type AiProviderTier = "free" | "premium";
@@ -217,6 +218,7 @@ export function shouldEnableWebSearch(
 ): boolean {
   if (hasImageAttachment) return false;
   if (isConversationalChatQuery(query)) return false;
+  if (detectAnswerFromUserContextIntent(query)) return false;
   if (detectFactCheckIntent(query)) return true;
   if (SPORTS_SCORES_RE.test(query)) return true;
   if (detectGhanaNewsIntent(query) || detectBreakingNewsIntent(query)) return true;
