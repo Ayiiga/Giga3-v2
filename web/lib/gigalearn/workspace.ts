@@ -421,6 +421,26 @@ export function recordPracticeCompletion(args: {
     subjectsById[args.subjectId] = (subjectsById[args.subjectId] ?? 0) + 1;
   }
 
+  // Phase 3: mirror into the adaptive signal log (additive — existing
+  // behavior above is unchanged).
+  void import("@/lib/gigalearn/signals")
+    .then(({ logSignal }) =>
+      logSignal({
+        type: "practice",
+        subjectId: args.subjectId ?? "",
+        levelId: args.gradeId ?? "",
+        gradeId: args.gradeId ?? "",
+        strand: "",
+        subStrand: "",
+        topic: args.topic ?? "",
+        indicator: "",
+        score: Math.max(0, Math.min(100, Math.round(args.score))),
+        correct: args.score >= 70,
+        detail: args.subject ?? "",
+      })
+    )
+    .catch(() => undefined);
+
   const next: LearningProgressSnapshot = {
     ...progress,
     practiceSessionsCompleted: progress.practiceSessionsCompleted + 1,

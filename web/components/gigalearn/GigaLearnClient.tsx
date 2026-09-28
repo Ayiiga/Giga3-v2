@@ -3,9 +3,13 @@
 import { GigaLearnHomeworkPanel } from "@/components/gigalearn/GigaLearnHomeworkPanel";
 import { GigaLearnToolPanel } from "@/components/gigalearn/GigaLearnToolPanel";
 import { GigaLearnWorkspacePanel } from "@/components/gigalearn/GigaLearnWorkspacePanel";
+import { AdaptiveTutor } from "@/components/gigalearn/AdaptiveTutor";
 import { LowerGradesConcrete } from "@/components/gigalearn/LowerGradesConcrete";
 import { ResourceLibrary } from "@/components/gigalearn/ResourceLibrary";
+import { RevisionCenter } from "@/components/gigalearn/RevisionCenter";
+import { StudentDashboard } from "@/components/gigalearn/StudentDashboard";
 import { StudentMode } from "@/components/gigalearn/StudentMode";
+import { TeacherInsights } from "@/components/gigalearn/TeacherInsights";
 import { TeacherStudio } from "@/components/gigalearn/TeacherStudio";
 import { RecommendationEmptyState } from "@/components/recommendations/RecommendationEmptyState";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
@@ -27,6 +31,7 @@ import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import { getSessionToken } from "@/lib/auth";
 import { buildCreationLink } from "@/lib/gigalearn/creation/links";
 import { getGigaLearnProfile, saveGigaLearnProfile } from "@/lib/gigalearn/profile";
+import { saveStudioContext, type StudioContext } from "@/lib/gigalearn/studioContext";
 import type { LearnerRole } from "@/lib/gigalearn/curricula";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -86,6 +91,13 @@ function GigaLearnContent() {
     if (next === "student" || next === "teacher" || next === "parent") {
       saveGigaLearnProfile({ role: next as LearnerRole });
     }
+  }
+
+  /** Cross-tab adaptive flow: persist curriculum context, then switch tab.
+   * Conditionally-rendered sections remount and pick up the fresh context. */
+  function studyTopic(patch: Partial<StudioContext>, tab: GigaLearnSection) {
+    if (Object.keys(patch).length > 0) saveStudioContext(patch);
+    selectSection(tab);
   }
 
   if (!mounted) {
@@ -268,6 +280,49 @@ function GigaLearnContent() {
               description="Every lesson, quiz and worksheet you generate lives here — search by grade, subject or topic."
             />
             <ResourceLibrary />
+          </>
+        )}
+
+        {section === "tutor" && (
+          <>
+            <SectionIntro
+              title="Adaptive AI tutor"
+              description="Explain, simplify, hint, check and challenge — with optional Socratic guiding questions. Your curriculum context carries through."
+            />
+            <AdaptiveTutor credits={usage?.credits ?? null} />
+          </>
+        )}
+
+        {section === "my-learning" && (
+          <>
+            <SectionIntro
+              title="My Learning"
+              description="Your adaptive path: recommended next activity, topics needing review, and progress by subject."
+            />
+            <StudentDashboard
+              onNavigate={(tab) => selectSection(tab)}
+              onStudyTopic={(patch, tab) => studyTopic(patch, tab)}
+            />
+          </>
+        )}
+
+        {section === "revision" && (
+          <>
+            <SectionIntro
+              title="Revision center"
+              description="Review now, practice again, and spaced flashcard review — gentle suggestions, never floods."
+            />
+            <RevisionCenter onStudyTopic={(patch, tab) => studyTopic(patch, tab)} />
+          </>
+        )}
+
+        {section === "insights" && (
+          <>
+            <SectionIntro
+              title="Teacher insights"
+              description="Frequently missed topics, usage and trends from activity on this device — your judgment leads."
+            />
+            <TeacherInsights onIntervene={(patch, tab) => studyTopic(patch, tab)} />
           </>
         )}
       </section>
