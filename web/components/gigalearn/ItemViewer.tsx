@@ -19,11 +19,16 @@ const SWIPE_THRESHOLD = 48;
 const DOUBLE_TAP_MS = 280;
 const TAP_MOVE_PX = 14;
 
+const WHEEL_ZOOM_STEP = 0.0025;
+const KEY_ZOOM_STEP = 0.5;
+
 type ItemViewerProps = {
   open: boolean;
   items: LearnItem[];
   initialIndex: number;
   categoryTitle: string;
+  /** Classification label shown on grid cards, e.g. "Concrete". */
+  categoryBadge?: string;
   hearingId: string | null;
   triggerElement: HTMLElement | null;
   onClose: () => void;
@@ -56,11 +61,15 @@ export function ItemViewer({
   items,
   initialIndex,
   categoryTitle,
+  categoryBadge,
   hearingId,
   triggerElement,
   onClose,
   onHear,
 }: ItemViewerProps) {
+  // Parents pass inline callbacks; history/keyboard effects must not re-run on every render.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
   const [mounted, setMounted] = useState(false);
   const [index, setIndex] = useState(0);
   const [scale, setScale] = useState(MIN_ZOOM);
@@ -83,6 +92,7 @@ export function ItemViewer({
   const pinchStartScaleRef = useRef(MIN_ZOOM);
   const pinchStartCenterRef = useRef({ x: 0, y: 0 });
   const lastTapRef = useRef({ time: 0, x: 0, y: 0 });
+  const lastTouchAtRef = useRef(0);
 
   const pointerIdRef = useRef<number | null>(null);
   const pointerStartRef = useRef({ x: 0, y: 0 });
@@ -130,8 +140,22 @@ export function ItemViewer({
   }, [items.length, resetTransform]);
 
   const closeFromViewer = useCallback(() => {
-    onClose();
-  }, [onClose]);
+    onCloseRef.current();
+  }, []);
+
+  const zoomTo = useCallback(
+    (nextScaleRaw: number) => {
+      const nextScale = clamp(nextScaleRaw, MIN_ZOOM, MAX_ZOOM);
+      if (nextScale <= MIN_ZOOM) {
+        resetTransform();
+        return;
+      }
+      setScale(nextScale);
+      setTranslateX((x) => clampTranslation(x, 0, nextScale).x);
+      setTranslateY((y) => clampTranslation(0, y, nextScale).y);
+    },
+    [clampTranslation, resetTransform]
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -166,7 +190,7 @@ export function ItemViewer({
       const stateToken = window.history.state?.__gigaLearnItemViewerToken;
       if (stateToken !== viewerTokenRef.current) {
         historyHandledByPopRef.current = true;
-        onClose();
+        onCloseRef.current();
       }
     };
 
@@ -176,7 +200,7 @@ export function ItemViewer({
       window.removeEventListener("popstate", onPopState);
       document.body.style.overflow = previousOverflow;
     };
-  }, [onClose, open]);
+  }, [open]);
 
   useEffect(() => {
     if (
@@ -199,17 +223,26 @@ export function ItemViewer({
     if (!open) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (target?.closest("button, input, select, textarea, a[href], [role='button']")) {
-        if (event.key === "Tab") {
-          // continue to focus trap handling
-        } else {
-          return;
-        }
-      }
       if (event.key === "Escape") {
         event.preventDefault();
         closeFromViewer();
+        return;
+      }
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, select, textarea, [contenteditable='true']")) return;
+      if (event.key === "+" || event.key === "=") {
+        event.preventDefault();
+        zoomTo(scale + KEY_ZOOM_STEP);
+        return;
+      }
+      if (event.key === "-" || event.key === "_") {
+        event.preventDefault();
+        zoomTo(scale - KEY_ZOOM_STEP);
+        return;
+      }
+      if (event.key === "0") {
+        event.preventDefault();
+        resetTransform();
         return;
       }
       if (event.key === "ArrowLeft") {
@@ -248,7 +281,7 @@ export function ItemViewer({
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [closeFromViewer, goNext, goPrev, open]);
+  }, [closeFromViewer, goNext, goPrev, open, resetTransform, scale, zoomTo]);
 
   useEffect(() => {
     if (hadOpenRef.current && !open && triggerElement) {
@@ -263,6 +296,21 @@ export function ItemViewer({
     if (!open) return;
     window.setTimeout(() => closeButtonRef.current?.focus(), 0);
   }, [open]);
+
+  const scaleRef = useRef(scale);
+  scaleRef.current = scale;
+
+  useEffect(() => {
+    if (!open || !mounted) return;
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      zoomTo(scaleRef.current * (1 - event.deltaY * WHEEL_ZOOM_STEP));
+    };
+    viewport.addEventListener("wheel", onWheel, { passive: false });
+    return () => viewport.removeEventListener("wheel", onWheel);
+  }, [mounted, open, zoomTo]);
 
   const contentTransform = useMemo(
     () => `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`,
@@ -298,6 +346,7 @@ export function ItemViewer({
 
   const handleTouchStart = useCallback(
     (event: ReactTouchEvent<HTMLDivElement>) => {
+      lastTouchAtRef.current = Date.now();
       const target = event.target as HTMLElement;
       if (target.closest("button")) return;
 
@@ -463,16 +512,19 @@ export function ItemViewer({
       aria-label={`${categoryTitle} viewer`}
     >
       <div className="mx-auto flex h-full w-full max-w-5xl flex-col px-3 pb-[max(1rem,env(safe-area-inset-bottom,0px))] pt-[max(0.75rem,env(safe-area-inset-top,0px))] sm:px-4">
+        <p className="sr-only" aria-live="polite" aria-atomic="true">
+          {`${activeItem.title}, ${index + 1} of ${items.length}${scale > MIN_ZOOM ? ", zoomed in" : ""}`}
+        </p>
         <div className="mb-2 flex items-center justify-between gap-2">
-          <p className="text-xs text-gray-200" aria-live="polite">
-            {categoryTitle} · {index + 1} of {items.length}
+          <p className="text-sm font-semibold text-gray-100" aria-hidden>
+            {categoryTitle} · <span data-testid="item-viewer-position">{index + 1} / {items.length}</span>
           </p>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={resetTransform}
               aria-label="Reset zoom"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/10"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-white/10"
             >
               <RotateCcw className="h-4 w-4" aria-hidden />
             </button>
@@ -481,7 +533,7 @@ export function ItemViewer({
               type="button"
               onClick={closeFromViewer}
               aria-label="Close item viewer"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/10"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-white/10"
             >
               <X className="h-5 w-5" aria-hidden />
             </button>
@@ -498,10 +550,17 @@ export function ItemViewer({
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
-          style={{ touchAction: scale > MIN_ZOOM ? "none" : "auto" }}
+          onDoubleClick={(event) => {
+            if (Date.now() - lastTouchAtRef.current < 800) return;
+            if ((event.target as HTMLElement).closest("button")) return;
+            handleDoubleTap(event.clientX, event.clientY);
+          }}
+          data-testid="item-viewer-viewport"
+          style={{ touchAction: "none" }}
         >
           <div
             className="select-none text-center will-change-transform"
+            data-testid="item-viewer-content"
             style={{ transform: contentTransform, transformOrigin: "center center" }}
           >
             <div className="text-[140px] leading-none sm:text-[180px]" aria-hidden>
@@ -509,6 +568,11 @@ export function ItemViewer({
             </div>
             <p className="mt-4 text-2xl font-extrabold sm:text-3xl">{activeItem.title}</p>
             <p className="mt-1 text-sm text-gray-300">{activeItem.subtitle}</p>
+            {categoryBadge ? (
+              <span className="mt-2 inline-block rounded-full bg-[#3B82F6] px-2 py-0.5 text-[10px] font-bold text-white">
+                {categoryBadge}
+              </span>
+            ) : null}
           </div>
         </div>
 
