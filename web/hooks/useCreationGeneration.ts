@@ -35,6 +35,10 @@ export function useCreationGeneration() {
         setError("Daily GigaLearn generation limit reached. Try again tomorrow.");
         return null;
       }
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        setError("You're offline. Your details are kept — reconnect and tap Generate again.");
+        return null;
+      }
       const sessionToken = getSessionToken();
       if (!sessionToken) {
         setError("Session expired. Please sign in again.");
