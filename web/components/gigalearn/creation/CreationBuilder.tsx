@@ -215,12 +215,14 @@ export function CreationBuilder({
       const readiness = stageReadiness(template, stage, inputs, { demonstrationData, sections });
       if (!readiness.ready) return;
       setNotice(null);
+      const previousSections = sections.slice(0, index);
       const section = await generateStage({
         template,
         inputs,
         stage,
-        previousSections: sections.slice(0, index),
-        demonstrationData,
+        previousSections,
+        // Once any section used demonstration data, everything built on it stays labelled.
+        demonstrationData: demonstrationData || previousSections.some((entry) => entry?.demonstrationData),
         sourceReferences,
       });
       if (!section) return;
@@ -472,7 +474,9 @@ export function CreationBuilder({
   return (
     <div>
       {header(
-        stages.length > 1 ? `Stage ${activeIndex + 1} of ${stages.length}: ${stage.label}` : `Your ${template.documentNoun}`,
+        stages.length > 1
+          ? `Stage ${activeIndex + 1} of ${stages.length}: ${capitalize(stage.label)}`
+          : `Your ${template.documentNoun}`,
         stage.sections.join(" · ")
       )}
 
@@ -708,6 +712,10 @@ export function CreationBuilder({
       ) : null}
     </div>
   );
+}
+
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 function ProvenanceDetails({ draft, footer }: { draft: CreationDraft; footer: string }) {

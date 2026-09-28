@@ -6,13 +6,13 @@ import {
   type ReferenceStart,
 } from "@/components/gigalearn/creation/ReferenceStructurePanel";
 import { deleteCreationDraft, listCreationDrafts } from "@/lib/gigalearn/creation/drafts";
-import { formatValue, missingRequired } from "@/lib/gigalearn/creation/intake";
+import { formatValue, missingRequired, withDefaults } from "@/lib/gigalearn/creation/intake";
 import { consumeCreationAutostart, parseCreationLink } from "@/lib/gigalearn/creation/links";
 import { CREATION_TEMPLATES, getCreationTemplate, stagesFor } from "@/lib/gigalearn/creation/templates";
 import type { CreationDraft, CreationTemplateId } from "@/lib/gigalearn/creation/types";
 import { FileSearch, Trash2 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type ActiveBuilder = {
   key: number;
@@ -42,23 +42,28 @@ export function CreationStudio({ credits, onOpenRhymes }: CreationStudioProps) {
     setDrafts(listCreationDrafts());
   }, [view.kind]);
 
+  const query = params.toString();
+  const routerRef = useRef(router);
+  routerRef.current = router;
+
   useEffect(() => {
-    const link = parseCreationLink(new URLSearchParams(params.toString()));
+    const link = parseCreationLink(new URLSearchParams(query));
     if (!link) return;
     const template = getCreationTemplate(link.templateId)!;
-    const complete = missingRequired(template, link.inputs).length === 0;
+    const confirmed = withDefaults(template, link.inputs);
+    const complete = missingRequired(template, confirmed).length === 0;
     const step: BuilderStep = link.step === "edit" ? "edit" : link.step === "confirm" && complete ? "confirm" : "intake";
     setView({
       kind: "builder",
       key: Date.now(),
       templateId: link.templateId,
-      initialInputs: link.inputs,
+      initialInputs: step === "intake" ? link.inputs : confirmed,
       initialStep: step,
       autostart: step === "confirm" && consumeCreationAutostart(link.templateId),
     });
     // Drop the prefilled fields from the address bar so a refresh doesn't restart the flow.
-    router.replace(`${pathname}?tab=create`, { scroll: false });
-  }, [params, pathname, router]);
+    routerRef.current.replace(`${pathname}?tab=create`, { scroll: false });
+  }, [query, pathname]);
 
   const openTemplate = (templateId: CreationTemplateId) => {
     setView({ kind: "builder", key: Date.now(), templateId });
