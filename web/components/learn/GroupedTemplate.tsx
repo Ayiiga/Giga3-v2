@@ -54,11 +54,7 @@ export function GroupedTemplate({
                 <button
                   type="button"
                   aria-label={`Open ${item.title}`}
-                  onClick={(event) => {
-                    const cardElement = event.currentTarget.closest("li");
-                    if (!cardElement) return;
-                    onItemClick(item, cardElement);
-                  }}
+                  onClick={(event) => onItemClick(item, event.currentTarget)}
                   className="w-full rounded-xl text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 >
                   <span className="text-[32px] leading-none" aria-hidden>

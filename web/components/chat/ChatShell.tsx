@@ -55,6 +55,8 @@ import {
   buildProductRedirectAnswer,
   matchProductRedirectIntent,
 } from "@/lib/chat/productRedirects";
+import type { ChatCreationState } from "@/lib/gigalearn/creation/chatIntake";
+import { mightBeCreationRequest } from "@/lib/gigalearn/creation/chatIntent";
 import { captureCoordinates } from "@/lib/geolocation";
 import { getConvexUrl } from "@/lib/convex";
 import { convexHttpCall } from "@/lib/network/convexCall";
@@ -255,8 +257,11 @@ function ChatShellInner({
     [changeMode]
   );
 
+  const creationIntakeRef = useRef<ChatCreationState | null>(null);
+
   useEffect(() => {
     setLocalTurns([]);
+    creationIntakeRef.current = null;
   }, [activeId]);
 
   const appendLocalTurn = useCallback((userText: string, assistantText: string) => {
@@ -291,6 +296,34 @@ function ChatShellInner({
       void (async () => {
         const trimmed = msg.trim();
         if (!trimmed && !attachments?.length) return;
+
+        // Guided GigaLearn creation: questions + Generation Preview stay local; nothing is
+        // generated until the user confirms in the builder.
+        if (trimmed && !attachments?.length && (creationIntakeRef.current || mightBeCreationRequest(trimmed))) {
+          const pending = creationIntakeRef.current;
+          const modules = await Promise.all([
+            import("@/lib/gigalearn/creation/chatIntake"),
+            import("@/lib/gigalearn/creation/links"),
+          ]).catch(() => null);
+          const turn = modules
+            ? pending
+              ? modules[0].continueChatCreation(pending, trimmed)
+              : modules[0].startChatCreation(trimmed)
+            : null;
+          if (!modules) creationIntakeRef.current = null;
+          const markCreationAutostart = modules?.[1].markCreationAutostart;
+          if (turn) {
+            creationIntakeRef.current = turn.state;
+            appendLocalTurn(trimmed, turn.reply);
+            if (turn.navigateTo) {
+              if (turn.autostart && pending) markCreationAutostart?.(pending.templateId);
+              router.push(turn.navigateTo);
+            }
+            return;
+          }
+        } else if (attachments?.length) {
+          creationIntakeRef.current = null;
+        }
 
         // Open GigaSocial / GigaEdits / GigaLearn / Media Studio (and other apps) locally.
         if (trimmed && !attachments?.length) {

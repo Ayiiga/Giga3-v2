@@ -113,6 +113,7 @@ export function LowerGradesConcrete() {
             items={viewerItems}
             initialIndex={viewerIndex}
             categoryTitle={viewerCategory?.title ?? "Items"}
+            categoryBadge={viewerCategory?.badge}
             hearingId={hearingId}
             triggerElement={viewerTriggerRef.current}
             onClose={() => setViewerOpen(false)}
