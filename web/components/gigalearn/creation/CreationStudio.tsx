@@ -5,6 +5,7 @@ import {
   ReferenceStructurePanel,
   type ReferenceStart,
 } from "@/components/gigalearn/creation/ReferenceStructurePanel";
+import { useBackToClose } from "@/hooks/useBackToClose";
 import { deleteCreationDraft, listCreationDrafts } from "@/lib/gigalearn/creation/drafts";
 import { formatValue, missingRequired, withDefaults } from "@/lib/gigalearn/creation/intake";
 import { consumeCreationAutostart, parseCreationLink } from "@/lib/gigalearn/creation/links";
@@ -37,6 +38,7 @@ export function CreationStudio({ credits, onOpenRhymes }: CreationStudioProps) {
   const pathname = usePathname();
   const [view, setView] = useState<View>({ kind: "library" });
   const [drafts, setDrafts] = useState<CreationDraft[]>([]);
+  useBackToClose(view.kind !== "library", () => setView({ kind: "library" }));
 
   useEffect(() => {
     setDrafts(listCreationDrafts());

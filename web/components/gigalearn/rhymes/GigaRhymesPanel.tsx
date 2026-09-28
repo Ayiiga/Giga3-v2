@@ -1,6 +1,7 @@
 "use client";
 
 import { RhymePlayer } from "@/components/gigalearn/rhymes/RhymePlayer";
+import { useBackToClose } from "@/hooks/useBackToClose";
 import { GIGA_RHYMES, RHYME_CATEGORIES, getRhyme, nextRhyme } from "@/lib/gigalearn/rhymes/library";
 import { markRhymePractised, readPractisedRhymes } from "@/lib/gigalearn/rhymes/progress";
 import { ORIGINAL_RHYME_LABEL, type RhymeCategoryId } from "@/lib/gigalearn/rhymes/types";
@@ -17,6 +18,7 @@ export function GigaRhymesPanel({ onCreateRhyme }: GigaRhymesPanelProps) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [practised, setPractised] = useState<string[]>([]);
   const lastOpenerRef = useRef<string | null>(null);
+  useBackToClose(openId != null, () => setOpenId(null));
 
   useEffect(() => {
     setPractised(readPractisedRhymes());
