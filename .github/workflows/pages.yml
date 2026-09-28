@@ -128,7 +128,7 @@ jobs:
           set -euo pipefail
           RESOLVED_CF_ACCOUNT_ID=""
           if WHOAMI_JSON="$(npx wrangler@4 whoami --json 2>/dev/null)"; then
-            RESOLVED_CF_ACCOUNT_ID="$(printf '%s' "$WHOAMI_JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{const payload=JSON.parse(s);const id=payload?.accounts?.[0]?.id||payload?.account?.id||payload?.id||"";if(!id){process.exit(1)}process.stdout.write(id)})')"
+            RESOLVED_CF_ACCOUNT_ID="$(printf '%s' "$WHOAMI_JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{const payload=JSON.parse(s);const configured=(process.env.CF_ACCOUNT_ID_SECRET||"").trim();const accounts=Array.isArray(payload?.accounts)?payload.accounts:[];if(accounts.length>1){if(!configured){console.error("Multiple Cloudflare accounts detected for token. Set CF_ACCOUNT_ID to disambiguate.");process.exit(1)}const match=accounts.find(a=>a&&a.id===configured);if(!match){console.error("CF_ACCOUNT_ID does not match any account available to the token.");process.exit(1)}process.stdout.write(match.id);return;}if(accounts.length===1&&accounts[0]?.id){process.stdout.write(accounts[0].id);return;}const fallback=(payload?.account?.id||payload?.id||"").trim();if(fallback){process.stdout.write(fallback);return;}process.exit(1);})')"
           fi
           if [ -z "$RESOLVED_CF_ACCOUNT_ID" ]; then
             RESOLVED_CF_ACCOUNT_ID="${CF_ACCOUNT_ID_SECRET:-}"
