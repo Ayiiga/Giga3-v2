@@ -422,6 +422,8 @@ export function ItemViewer({
         touchModeRef.current = "idle";
         return;
       }
+      // The finger left behind after a pinch has no fresh start point; it must not swipe or tap.
+      if (touchModeRef.current === "idle") return;
 
       const touch = event.changedTouches[0];
       const dx = touch.clientX - touchStartRef.current.x;

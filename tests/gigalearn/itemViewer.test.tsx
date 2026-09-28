@@ -187,6 +187,19 @@ describe("GigaLearn full-screen item viewer", () => {
     expect(position()).toBe(`1 / ${LEARN_FRUITS.length}`);
   });
 
+  it("a quick pinch back to fit, lifting one finger at a time, does not swipe to another item", () => {
+    mount();
+    click(byLabel("Open Apple"));
+    touch("touchstart", [{ x: 200, y: 200 }]);
+    touch("touchstart", [{ x: 200, y: 200 }, { x: 80, y: 200 }]);
+    touch("touchmove", [{ x: 150, y: 200 }, { x: 130, y: 200 }]);
+    // First finger lifts (pinch ends), the remaining finger lifts 100px left of its start.
+    touch("touchend", [{ x: 130, y: 200 }]);
+    touch("touchend", [{ x: 100, y: 200 }]);
+    expect(position()).toBe(`1 / ${LEARN_FRUITS.length}`);
+    expect(transform()).toContain("scale(1)");
+  });
+
   it("Hear in the viewer uses the existing GigaLearn pronunciation pathway", () => {
     mount();
     click(byLabel("Open Apple"));
