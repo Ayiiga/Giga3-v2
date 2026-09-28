@@ -1,15 +1,22 @@
 "use client";
 
 import { Button, ButtonLink } from "@/components/ui/Button";
-import {
-  EDUCATION_LEVELS,
-  EXAM_BOARDS,
-  SUBJECTS,
-} from "@/lib/gigalearn/curricula";
+import { CurriculumSelector } from "@/components/gigalearn/CurriculumSelector";
 import {
   buildHomeworkChatPrompt,
   storeGigaLearnChatHandoff,
 } from "@/lib/gigalearn/chatHandoff";
+import {
+  DEFAULT_CURRICULUM_SELECTION,
+  getCountry,
+  getCurriculum,
+  getLevel,
+  getSubject,
+  resolveLegacyLevelId,
+  resolveSubjectId,
+  type CurriculumSelection,
+} from "@/lib/gigalearn/curriculumEngine";
+import type { ExamBoardId } from "@/lib/gigalearn/curricula";
 import { resolveGigaLearnPersona } from "@/lib/gigalearn/personaMap";
 import { getGigaLearnProfile, saveGigaLearnProfile } from "@/lib/gigalearn/profile";
 import { prepareChatAttachment } from "@/lib/chat/multimodalAttachments";
@@ -20,24 +27,31 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
+function examBoardForSelection(selection: CurriculumSelection): ExamBoardId {
+  const level = getLevel(resolveLegacyLevelId(selection.levelId));
+  if (level?.band === "shs") return "wassce";
+  if (level?.band === "jhs") return "bece";
+  return "primary";
+}
+
 export const GigaLearnHomeworkPanel = memo(function GigaLearnHomeworkPanel() {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
-  const [curriculum, setCurriculum] = useState("bece");
-  const [subject, setSubject] = useState("mathematics");
-  const [level, setLevel] = useState("jhs-2");
+  const [selection, setSelection] = useState<CurriculumSelection>(DEFAULT_CURRICULUM_SELECTION);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
     const profile = getGigaLearnProfile();
-    setCurriculum(profile.examBoard);
-    setLevel(profile.level);
-    if (profile.subjects[0]) setSubject(profile.subjects[0]);
+    setSelection({
+      ...DEFAULT_CURRICULUM_SELECTION,
+      levelId: resolveLegacyLevelId(profile.level) || DEFAULT_CURRICULUM_SELECTION.levelId,
+      subjectId: resolveSubjectId(profile.subjects[0]) || DEFAULT_CURRICULUM_SELECTION.subjectId,
+    });
   }, []);
 
   const handleFile = useCallback((file: File | null) => {
@@ -71,28 +85,36 @@ export const GigaLearnHomeworkPanel = memo(function GigaLearnHomeworkPanel() {
     setBusy(true);
     setError(null);
     try {
+      const level = getLevel(resolveLegacyLevelId(selection.levelId));
+      const curriculumLabel = getCurriculum(selection.curriculumId)?.label ?? selection.curriculumId;
+      const subjectLabel = getSubject(selection.subjectId)?.label ?? selection.subjectId;
       const attachment = await prepareChatAttachment(selectedFile);
       const prompt = buildHomeworkChatPrompt({
-        curriculum,
-        subject,
-        level,
+        country: getCountry(selection.countryId)?.name,
+        curriculum: curriculumLabel,
+        subject: subjectLabel,
+        level: level?.label,
+        grade: level?.gradeLabel,
+        strand: selection.strand || undefined,
+        subStrand: selection.subStrand || undefined,
+        topic: selection.topic || undefined,
         notes,
       });
       storeGigaLearnChatHandoff({
         prompt,
         attachment,
-        curriculum,
-        subject,
-        level,
+        curriculum: curriculumLabel,
+        subject: selection.subjectId,
+        level: selection.levelId,
         personaId: resolveGigaLearnPersona({
           toolId: "homework-explain",
-          curriculum,
+          curriculum: curriculumLabel,
         }),
       });
       saveGigaLearnProfile({
-        examBoard: curriculum as import("@/lib/gigalearn/curricula").ExamBoardId,
-        level,
-        subjects: [subject],
+        examBoard: examBoardForSelection(selection),
+        level: selection.levelId,
+        subjects: selection.subjectId ? [selection.subjectId] : [],
       });
       router.push(siteConfig.links.dashboard);
     } catch (e) {
@@ -100,7 +122,7 @@ export const GigaLearnHomeworkPanel = memo(function GigaLearnHomeworkPanel() {
     } finally {
       setBusy(false);
     }
-  }, [selectedFile, curriculum, subject, level, notes, router]);
+  }, [selectedFile, selection, notes, router]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
@@ -110,50 +132,11 @@ export const GigaLearnHomeworkPanel = memo(function GigaLearnHomeworkPanel() {
           vision enabled to analyze the image and solve step by step.
         </p>
 
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-muted">Curriculum</label>
-            <select
-              value={curriculum}
-              onChange={(e) => setCurriculum(e.target.value)}
-              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"
-            >
-              {EXAM_BOARDS.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-muted">Subject</label>
-            <select
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"
-            >
-              {SUBJECTS.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.emoji} {s.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-muted">Level</label>
-            <select
-              value={level}
-              onChange={(e) => setLevel(e.target.value)}
-              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"
-            >
-              {EDUCATION_LEVELS.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <CurriculumSelector
+          value={selection}
+          onChange={(next) => setSelection(next)}
+          idPrefix="gl-homework"
+        />
 
         <input
           ref={fileRef}
@@ -244,8 +227,8 @@ export const GigaLearnHomeworkPanel = memo(function GigaLearnHomeworkPanel() {
       <div className="saas-card rounded-2xl border border-border p-5">
         <h3 className="text-sm font-semibold text-foreground">How it works</h3>
         <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-muted">
+          <li>Choose your country, curriculum, level and subject for accurate answers.</li>
           <li>Upload a clear photo of the homework question or worksheet.</li>
-          <li>Choose your curriculum, subject, and level for accurate answers.</li>
           <li>Tap Solve in chat — Giga3 opens Education mode with vision AI.</li>
           <li>Review the step-by-step solution and ask follow-up questions.</li>
         </ol>

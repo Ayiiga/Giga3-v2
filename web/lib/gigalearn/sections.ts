@@ -1,9 +1,15 @@
 import {
+  BarChart3,
   BookOpen,
+  Briefcase,
   Camera,
   GraduationCap,
   LayoutGrid,
+  Library,
+  MessageCircle,
   Music,
+  Compass,
+  RotateCcw,
   Sparkles,
   Users,
 } from "lucide-react";
@@ -16,7 +22,14 @@ export type GigaLearnSection =
   | "homework"
   | "create"
   | "rhymes"
-  | "workspace";
+  | "workspace"
+  | "studio"
+  | "learn"
+  | "library"
+  | "tutor"
+  | "my-learning"
+  | "revision"
+  | "insights";
 
 export interface GigaLearnSectionDefinition {
   id: GigaLearnSection;
@@ -67,5 +80,47 @@ export const GIGALEARN_SECTIONS: GigaLearnSectionDefinition[] = [
     label: "Progress",
     description: "Learning history, achievements, and saved materials",
     icon: LayoutGrid,
+  },
+  {
+    id: "studio",
+    label: "Teacher Studio",
+    description: "Lesson, quiz, assignment and presentation generation with repurposing",
+    icon: Briefcase,
+  },
+  {
+    id: "learn",
+    label: "Learn Mode",
+    description: "Explain, simplify, examples, practice, quiz and revision for your topic",
+    icon: Sparkles,
+  },
+  {
+    id: "library",
+    label: "Library",
+    description: "Searchable resource library with analytics",
+    icon: Library,
+  },
+  {
+    id: "tutor",
+    label: "AI Tutor",
+    description: "Adaptive tutor with Socratic mode, grounded in your curriculum",
+    icon: MessageCircle,
+  },
+  {
+    id: "my-learning",
+    label: "My Learning",
+    description: "Your adaptive path, progress by subject and next activity",
+    icon: Compass,
+  },
+  {
+    id: "revision",
+    label: "Revision",
+    description: "Review now, practice again and spaced flashcard review",
+    icon: RotateCcw,
+  },
+  {
+    id: "insights",
+    label: "Insights",
+    description: "Teacher insights from your own classroom activity",
+    icon: BarChart3,
   },
 ];

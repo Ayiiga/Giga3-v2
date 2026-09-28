@@ -2,6 +2,7 @@
 
 import { CreditPromptLinks } from "@/components/billing/CreditPromptLinks";
 import { CreatorResultPanel } from "@/components/creator-studio/CreatorResultPanel";
+import { CurriculumSelector } from "@/components/gigalearn/CurriculumSelector";
 import { PracticeSession } from "@/components/gigalearn/PracticeSession";
 import { Button } from "@/components/ui/Button";
 import { useGigaLearnGeneration } from "@/hooks/useGigaLearnGeneration";
@@ -15,19 +16,36 @@ import { isInteractivePracticeTool } from "@/lib/gigalearn/questions";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import {
-  EDUCATION_LEVELS,
-  EXAM_BOARDS,
-  SUBJECTS,
-} from "@/lib/gigalearn/curricula";
+  DEFAULT_CURRICULUM_SELECTION,
+  EXTRA_CONTEXT_FIELDS,
+  formatExtraContext,
+  getCountry,
+  getCurriculum,
+  getLevel,
+  getSubject,
+  resolveLegacyLevelId,
+  resolveSubjectId,
+  subjectPlaceholder,
+  type CurriculumSelection,
+} from "@/lib/gigalearn/curriculumEngine";
+import type { ExamBoardId } from "@/lib/gigalearn/curricula";
 import { getGigaLearnProfile, saveGigaLearnProfile } from "@/lib/gigalearn/profile";
 import type { GigaLearnToolDefinition } from "@/lib/gigalearn/tools";
 import { cn } from "@/lib/utils";
 import { Loader2, Sparkles } from "lucide-react";
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 
 interface GigaLearnToolPanelProps {
   tools: GigaLearnToolDefinition[];
   credits: number | null;
+}
+
+function examBoardForSelection(selection: CurriculumSelection): ExamBoardId {
+  const level = getLevel(resolveLegacyLevelId(selection.levelId));
+  if (level?.band === "shs") return "wassce";
+  if (level?.band === "jhs") return "bece";
+  if (level?.band === "primary" || level?.band === "early-years") return "primary";
+  return "bece";
 }
 
 export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
@@ -38,10 +56,10 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
     useGigaLearnGeneration();
   const [activeToolId, setActiveToolId] = useState(tools[0]?.id ?? "");
   const [prompt, setPrompt] = useState("");
-  const [context, setContext] = useState("");
-  const [curriculum, setCurriculum] = useState("bece");
-  const [subject, setSubject] = useState("mathematics");
-  const [level, setLevel] = useState("jhs-2");
+  const [learningObjective, setLearningObjective] = useState("");
+  const [generalNotes, setGeneralNotes] = useState("");
+  const [extra, setExtra] = useState<Record<string, string>>({});
+  const [selection, setSelection] = useState<CurriculumSelection>(DEFAULT_CURRICULUM_SELECTION);
   const [focusWeakRevision, setFocusWeakRevision] = useState(false);
 
   const serverProgress = useQuery(
@@ -60,24 +78,47 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
 
   useEffect(() => {
     const profile = getGigaLearnProfile();
-    setCurriculum(profile.examBoard);
-    setLevel(profile.level);
-    if (profile.subjects[0]) setSubject(profile.subjects[0]);
+    setSelection({
+      ...DEFAULT_CURRICULUM_SELECTION,
+      levelId: resolveLegacyLevelId(profile.level) || DEFAULT_CURRICULUM_SELECTION.levelId,
+      subjectId: resolveSubjectId(profile.subjects[0]) || DEFAULT_CURRICULUM_SELECTION.subjectId,
+    });
   }, []);
 
   const activeTool = tools.find((t) => t.id === activeToolId) ?? tools[0];
   const insufficientCredits = credits != null && credits < (activeTool?.creditCost ?? 2);
   const isPracticeTool = isInteractivePracticeTool(activeToolId);
-  const practiceTopic = prompt.trim().slice(0, 80) || subject;
+  const practiceTopic = prompt.trim().slice(0, 80) || selection.topic || getSubject(selection.subjectId)?.label || selection.subjectId;
 
-  function persistProfile(
-    overrides: Partial<{ examBoard: string; level: string; subject: string }> = {}
-  ) {
+  const requestPlaceholder = useMemo(() => {
+    if (selection.subjectId) return subjectPlaceholder(selection.subjectId);
+    return activeTool?.placeholder;
+  }, [selection.subjectId, activeTool]);
+
+  function persistProfile(next: CurriculumSelection) {
     saveGigaLearnProfile({
-      examBoard: (overrides.examBoard ?? curriculum) as import("@/lib/gigalearn/curricula").ExamBoardId,
-      level: overrides.level ?? level,
-      subjects: [overrides.subject ?? subject],
+      examBoard: examBoardForSelection(next),
+      level: next.levelId,
+      subjects: next.subjectId ? [next.subjectId] : [],
     });
+  }
+
+  function combinedContext(): string {
+    const structured = formatExtraContext(extra);
+    const parts = [structured, generalNotes.trim()].filter(Boolean);
+    return parts.join("\n");
+  }
+
+  function curriculumLabel(): string {
+    return getCurriculum(selection.curriculumId)?.label ?? selection.curriculumId;
+  }
+
+  function levelLabel(): string {
+    return getLevel(resolveLegacyLevelId(selection.levelId))?.label ?? selection.levelId;
+  }
+
+  function subjectLabel(): string {
+    return getSubject(selection.subjectId)?.label ?? selection.subjectId;
   }
 
   return (
@@ -113,61 +154,25 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
           })}
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-muted">Curriculum</label>
-            <select
-              value={curriculum}
-              onChange={(e) => {
-                const value = e.target.value;
-                setCurriculum(value);
-                persistProfile({ examBoard: value });
-              }}
-              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"
-            >
-              {EXAM_BOARDS.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-muted">Subject</label>
-            <select
-              value={subject}
-              onChange={(e) => {
-                const value = e.target.value;
-                setSubject(value);
-                persistProfile({ subject: value });
-              }}
-              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"
-            >
-              {SUBJECTS.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.emoji} {s.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-muted">Level</label>
-            <select
-              value={level}
-              onChange={(e) => {
-                const value = e.target.value;
-                setLevel(value);
-                persistProfile({ level: value });
-              }}
-              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"
-            >
-              {EDUCATION_LEVELS.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.label}
-                </option>
-              ))}
-            </select>
-          </div>
+        <CurriculumSelector
+          value={selection}
+          onChange={(next) => {
+            setSelection(next);
+            persistProfile(next);
+          }}
+        />
+
+        <div>
+          <label htmlFor="gigalearn-objective" className="mb-2 block text-sm font-medium text-muted">
+            Learning objective (optional)
+          </label>
+          <input
+            id="gigalearn-objective"
+            value={learningObjective}
+            onChange={(e) => setLearningObjective(e.target.value)}
+            placeholder="e.g. Learners can identify states of matter with local examples"
+            className="w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-foreground outline-none ring-accent/20 focus:ring-2"
+          />
         </div>
 
         <div>
@@ -179,23 +184,44 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             rows={5}
-            placeholder={activeTool?.placeholder}
+            placeholder={requestPlaceholder}
             className="w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-foreground outline-none ring-accent/20 focus:ring-2"
           />
         </div>
 
-        <div>
-          <label htmlFor="gigalearn-context" className="mb-2 block text-sm font-medium text-muted">
+        <details className="rounded-2xl border border-border bg-white">
+          <summary className="min-h-11 cursor-pointer px-3 py-2.5 text-sm font-medium text-foreground">
             Extra context (optional)
-          </label>
-          <input
-            id="gigalearn-context"
-            value={context}
-            onChange={(e) => setContext(e.target.value)}
-            placeholder="Class size, language preference, specific syllabus topic…"
-            className="w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm"
-          />
-        </div>
+          </summary>
+          <div className="grid gap-3 border-t border-border p-3 sm:grid-cols-2">
+            {EXTRA_CONTEXT_FIELDS.map((field) => (
+              <div key={field.id}>
+                <label htmlFor={`gigalearn-extra-${field.id}`} className="mb-1.5 block text-xs font-medium text-muted">
+                  {field.label}
+                </label>
+                <input
+                  id={`gigalearn-extra-${field.id}`}
+                  value={extra[field.id] ?? ""}
+                  onChange={(e) => setExtra((prev) => ({ ...prev, [field.id]: e.target.value }))}
+                  placeholder={field.placeholder}
+                  className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"
+                />
+              </div>
+            ))}
+            <div className="sm:col-span-2">
+              <label htmlFor="gigalearn-context" className="mb-1.5 block text-xs font-medium text-muted">
+                Anything else
+              </label>
+              <input
+                id="gigalearn-context"
+                value={generalNotes}
+                onChange={(e) => setGeneralNotes(e.target.value)}
+                placeholder="Class size, language preference, specific syllabus topic…"
+                className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
+        </details>
 
         <div className="flex flex-wrap items-center gap-3">
           <Button
@@ -206,10 +232,16 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
                 toolId: activeToolId,
                 section: activeTool?.section,
                 prompt,
-                curriculum,
-                subject,
-                level,
-                context,
+                curriculum: curriculumLabel(),
+                subject: subjectLabel(),
+                level: levelLabel(),
+                context: combinedContext() || undefined,
+                country: getCountry(selection.countryId)?.name,
+                grade: getLevel(resolveLegacyLevelId(selection.levelId))?.gradeLabel,
+                strand: selection.strand || undefined,
+                subStrand: selection.subStrand || undefined,
+                topic: selection.topic || undefined,
+                learningObjective: learningObjective.trim() || undefined,
               })
             }
             className="min-h-11"
@@ -260,11 +292,11 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
             </div>
             <PracticeSession
               questions={questions}
-              level={level}
-              subject={subject}
+              level={levelLabel()}
+              subject={subjectLabel()}
               topic={practiceTopic}
               toolId={activeToolId}
-              curriculum={curriculum}
+              curriculum={curriculumLabel()}
               sessionToken={getSessionToken()}
               weakTopicHints={weakTopicHints}
               focusWeakRevision={focusWeakRevision}
