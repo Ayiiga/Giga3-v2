@@ -234,6 +234,176 @@ describe("CreationBuilder confirmation workflow", () => {
   });
 });
 
+describe("CreationBuilder mobile hardening", () => {
+  const researchInputs: CreationInputs = {
+    topic: "Reading habits",
+    problem: "Declining reading time",
+    studyArea: "Ho",
+    population: "JHS 2 learners",
+    academicLevel: "Diploma",
+    design: "Descriptive survey",
+  };
+
+  function deferGeneration() {
+    const pending: Array<() => void> = [];
+    generateStageMock.mockImplementation(
+      ({ stage }) =>
+        new Promise((resolve) => {
+          pending.push(() =>
+            resolve({ stageId: stage.id, label: stage.label, content: `## ${stage.label}\nBody`, generatedAt: Date.now() })
+          );
+        })
+    );
+    return async () => {
+      await act(async () => {
+        pending.splice(0).forEach((finish) => finish());
+      });
+    };
+  }
+
+  it("two taps landing before a re-render send one generation request", async () => {
+    const finish = deferGeneration();
+    render(
+      createElement(CreationBuilder, {
+        template: research,
+        initialInputs: researchInputs,
+        initialStep: "confirm",
+        credits: 100,
+        onExit: () => undefined,
+      })
+    );
+    const confirm = button(/Confirm & Generate/);
+    await act(async () => {
+      confirm.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      confirm.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(generateStageMock).toHaveBeenCalledTimes(1);
+    await finish();
+
+    const next = button("Continue");
+    await act(async () => {
+      next.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      next.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(generateStageMock).toHaveBeenCalledTimes(2);
+    await finish();
+    expect(host.textContent).toContain("Stage 2 of 8");
+
+    // After a request settles, the next tap is accepted again.
+    await click(button("Regenerate"));
+    expect(generateStageMock).toHaveBeenCalledTimes(3);
+    await finish();
+  });
+
+  it("Continue brings the next stage heading back on screen", async () => {
+    const scrolled: string[] = [];
+    const scrollSpy = vi
+      .spyOn(HTMLElement.prototype, "scrollIntoView")
+      .mockImplementation(function (this: HTMLElement) {
+        scrolled.push(this.textContent ?? "");
+      });
+    const rectSpy = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (
+      this: HTMLElement
+    ) {
+      const top = this.tagName === "H3" ? -900 : 0;
+      return { top, bottom: top + 30, left: 0, right: 0, width: 0, height: 30, x: 0, y: top, toJSON: () => ({}) } as DOMRect;
+    });
+    try {
+      render(
+        createElement(CreationBuilder, {
+          template: research,
+          initialInputs: researchInputs,
+          initialStep: "confirm",
+          credits: 100,
+          onExit: () => undefined,
+        })
+      );
+      await click(button(/Confirm & Generate/));
+      expect(scrolled).toEqual([]);
+      await click(button("Continue"));
+      expect(scrolled).toEqual(["Stage 2 of 8: Research objectives and questions"]);
+      expect(document.activeElement?.textContent).toBe("Stage 2 of 8: Research objectives and questions");
+    } finally {
+      scrollSpy.mockRestore();
+      rectSpy.mockRestore();
+    }
+  });
+
+  it("Start Over deletes this build's saved draft and keeps unrelated drafts", async () => {
+    const other = {
+      id: "draft-unrelated",
+      templateId: "book" as const,
+      inputs: { title: "Rivers" },
+      sections: [],
+      sourceReferences: [],
+      demonstrationData: false,
+      provenance: { originalGiga3Content: true as const, createdAt: 1, sourceReferences: [], templateId: "book" as const, stagesGenerated: [] },
+      createdAt: 1,
+      updatedAt: 1,
+    };
+    localStorage.setItem("giga3_creation_drafts", JSON.stringify([other]));
+    render(
+      createElement(CreationBuilder, {
+        template: research,
+        initialInputs: researchInputs,
+        initialStep: "confirm",
+        credits: 100,
+        onExit: () => undefined,
+      })
+    );
+    await click(button(/Confirm & Generate/));
+    await click(button("Save Draft"));
+    const saved = () => JSON.parse(localStorage.getItem("giga3_creation_drafts") ?? "[]").map((d: { id: string }) => d.id);
+    expect(saved()).toHaveLength(2);
+
+    await click(button("Start Over"));
+    expect(saved()).toHaveLength(2);
+    await click(button("Tap again to start over"));
+    expect(saved()).toEqual(["draft-unrelated"]);
+    expect(host.textContent).toContain("Question 1 of");
+
+    // Nothing generated after the reset, so leaving does not re-create the deleted draft.
+    act(() => root?.unmount());
+    root = null;
+    expect(saved()).toEqual(["draft-unrelated"]);
+  });
+
+  it("leaving the builder (Android Back, tab switch) keeps generated stages as a device draft", async () => {
+    render(
+      createElement(CreationBuilder, {
+        template: research,
+        initialInputs: researchInputs,
+        initialStep: "confirm",
+        credits: 100,
+        onExit: () => undefined,
+      })
+    );
+    expect(localStorage.getItem("giga3_creation_drafts")).toBeNull();
+    await click(button(/Confirm & Generate/));
+    act(() => root?.unmount());
+    root = null;
+    const drafts = JSON.parse(localStorage.getItem("giga3_creation_drafts") ?? "[]");
+    expect(drafts).toHaveLength(1);
+    expect(drafts[0].templateId).toBe("research");
+    expect(drafts[0].sections).toHaveLength(1);
+  });
+
+  it("leaving before anything is generated does not create a draft", () => {
+    render(
+      createElement(CreationBuilder, {
+        template: lesson,
+        initialInputs: LESSON_INPUTS,
+        initialStep: "confirm",
+        credits: 50,
+        onExit: () => undefined,
+      })
+    );
+    act(() => root?.unmount());
+    root = null;
+    expect(localStorage.getItem("giga3_creation_drafts")).toBeNull();
+  });
+});
+
 describe("CreationStudio", () => {
   it("shows the template library and reference card", () => {
     render(createElement(CreationStudio, { credits: 10 }));

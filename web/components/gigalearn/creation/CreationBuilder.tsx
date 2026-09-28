@@ -6,7 +6,7 @@ import { CreatorResultPanel } from "@/components/creator-studio/CreatorResultPan
 import { FieldInput } from "@/components/gigalearn/creation/FieldInput";
 import { RhymePlayer } from "@/components/gigalearn/rhymes/RhymePlayer";
 import { useCreationGeneration } from "@/hooks/useCreationGeneration";
-import { newDraftId, saveCreationDraft } from "@/lib/gigalearn/creation/drafts";
+import { deleteCreationDraft, newDraftId, saveCreationDraft } from "@/lib/gigalearn/creation/drafts";
 import {
   formatValue,
   hasValue,
@@ -94,6 +94,8 @@ export function CreationBuilder({
   const savedArtifactRef = useRef(false);
   const headingRef = useRef<HTMLHeadingElement | null>(null);
   const autostartedRef = useRef(false);
+  const generatingRef = useRef(false);
+  const shownStageRef = useRef(activeIndex);
 
   const extraRefs = initialDraft?.sourceReferences.filter((ref) => ref.kind === "importedReference") ?? extraSourceReferences;
   const sourceReferences = useMemo(
@@ -108,6 +110,17 @@ export function CreationBuilder({
   useEffect(() => {
     headingRef.current?.focus();
   }, [step]);
+
+  // Continue is tapped at the bottom of a long stage; bring the new stage's heading back on screen.
+  useEffect(() => {
+    if (shownStageRef.current === activeIndex) return;
+    shownStageRef.current = activeIndex;
+    const heading = headingRef.current;
+    if (!heading) return;
+    const { top, bottom } = heading.getBoundingClientRect();
+    if (top < 0 || bottom > window.innerHeight) heading.scrollIntoView({ block: "start" });
+    heading.focus({ preventScroll: true });
+  }, [activeIndex]);
 
   const nextUnvisited = useCallback(
     (values: CreationInputs, seen: string[]) =>
@@ -167,6 +180,7 @@ export function CreationBuilder({
       return;
     }
     setConfirmReset(false);
+    deleteCreationDraft(draftIdRef.current);
     setInputs({});
     setSections([]);
     setVisited([]);
@@ -202,6 +216,17 @@ export function CreationBuilder({
     [demonstrationData, inputs, sections, sourceReferences, template]
   );
 
+  // Leaving with Android Back or another tab must not discard stages that already cost credits.
+  const buildDraftOnLeaveRef = useRef<(() => CreationDraft) | null>(null);
+  buildDraftOnLeaveRef.current = sections.some(Boolean) ? () => buildDraft() : null;
+  useEffect(
+    () => () => {
+      const build = buildDraftOnLeaveRef.current;
+      if (build) saveCreationDraft(build());
+    },
+    []
+  );
+
   const saveDraft = (thenExit = false) => {
     const ok = saveCreationDraft(buildDraft());
     setNotice(ok ? "Draft saved on this device." : "Could not save the draft on this device.");
@@ -214,17 +239,25 @@ export function CreationBuilder({
       if (!stage) return;
       const readiness = stageReadiness(template, stage, inputs, { demonstrationData, sections });
       if (!readiness.ready) return;
+      // Two taps can land before React re-renders the hidden controls; one tap = one request.
+      if (generatingRef.current) return;
+      generatingRef.current = true;
       setNotice(null);
       const previousSections = sections.slice(0, index);
-      const section = await generateStage({
-        template,
-        inputs,
-        stage,
-        previousSections,
-        // Once any section used demonstration data, everything built on it stays labelled.
-        demonstrationData: demonstrationData || previousSections.some((entry) => entry?.demonstrationData),
-        sourceReferences,
-      });
+      let section: GeneratedSection | null;
+      try {
+        section = await generateStage({
+          template,
+          inputs,
+          stage,
+          previousSections,
+          // Once any section used demonstration data, everything built on it stays labelled.
+          demonstrationData: demonstrationData || previousSections.some((entry) => entry?.demonstrationData),
+          sourceReferences,
+        });
+      } finally {
+        generatingRef.current = false;
+      }
       if (!section) return;
       setSections((current) => {
         const next = [...current];
@@ -284,7 +317,7 @@ export function CreationBuilder({
       <p className="text-xs font-semibold uppercase tracking-wide text-accent">
         {template.emoji} {template.label}
       </p>
-      <h3 ref={headingRef} tabIndex={-1} className="mt-1 text-lg font-semibold text-foreground outline-none">
+      <h3 ref={headingRef} tabIndex={-1} className="mt-1 scroll-mt-20 text-lg font-semibold text-foreground outline-none">
         {title}
       </h3>
       {subtitle ? <p className="mt-1 text-sm text-muted">{subtitle}</p> : null}
