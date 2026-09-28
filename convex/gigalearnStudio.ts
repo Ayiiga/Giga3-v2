@@ -123,9 +123,9 @@ Use types: mcq, true_false, fill_blank, short_answer, ordering, matching, poll. 
   const instructions: Record<string, string> = {
     "lesson-generator": LESSON_GENERATOR_CONTRACT,
     "quiz-generator":
-      `Generate a curriculum-aware assessment with numbered questions across the requested types (multiple choice, True/False, short answer, structured questions, matching, fill in the blank, scenario-based, practical). For every question provide marks, then an answer key with explanations and a marking guide. Use Ghanaian/African examples naturally. ${AI_PRACTICE_LABEL_INSTRUCTION}${practiceJsonFooter}`,
+      `Generate a curriculum-aware assessment with numbered questions across the requested types (Multiple choice, True/False, Short answer, Structured questions, Matching, Fill in the blank, Scenario-based questions, Practical questions). For every question provide marks, then an answer key with explanations and a marking guide. Use Ghanaian/African examples naturally. ${AI_PRACTICE_LABEL_INSTRUCTION}${practiceJsonFooter}`,
     "assignment-generator":
-      "Create a clear assignment with instructions, questions, marks per question, submission guidance, and a teacher marking guide.",
+      "Create a clear assignment with instructions, questions, marks per question, Submission guidance, and a teacher marking guide.",
     "lesson-notes":
       "Write comprehensive lesson notes with learning objectives, key concepts, examples (use African context where helpful), and a short summary.",
     "study-plan":

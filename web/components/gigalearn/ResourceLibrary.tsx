@@ -28,7 +28,6 @@ import { copyMarkdownToClipboard, shareText } from "@/lib/share/clientShare";
 import { cn } from "@/lib/utils";
 import { ChevronDown, Copy, Printer, Search, Share2, Star, Trash2 } from "lucide-react";
 import { memo, useMemo, useState } from "react";
-
 const RESOURCE_TYPE_LABELS: Array<{ id: ResourceType | "all"; label: string }> = [
   { id: "all", label: "All types" },
   { id: "lesson", label: "Lessons" },
@@ -82,11 +81,12 @@ export const ResourceLibrary = memo(function ResourceLibrary() {
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const generation = useGigaLearnGeneration();
-  const analytics = useMemo(() => getTeacherAnalytics(), [artifacts]);
+  const [analytics, setAnalytics] = useState(() => getTeacherAnalytics());
   const parsedSearch = useMemo(() => parseResourceSearch(search.trim()), [search]);
 
   function refresh() {
     setArtifacts(listArtifacts());
+    setAnalytics(getTeacherAnalytics());
   }
 
   const visible = useMemo(() => {
