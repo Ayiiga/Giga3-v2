@@ -6,6 +6,7 @@ import {
   summaryRows,
   withDefaults,
 } from "@/lib/gigalearn/creation/intake";
+import { CREATION_VERB } from "@/lib/gigalearn/creation/chatIntent";
 import { buildCreationLink } from "@/lib/gigalearn/creation/links";
 import {
   RHYME_CATEGORY_LABELS,
@@ -42,9 +43,6 @@ export type ChatCreationTurn = {
 };
 
 const MAX_INTENT_LENGTH = 220;
-
-const CREATION_VERB =
-  /^(?:please\s+)?(?:(?:can|could|would|will)\s+you\s+(?:please\s+)?|help\s+me\s+(?:to\s+)?|i\s+(?:want|need|would\s+like)\s+(?:you\s+)?to\s+|i\s+want\s+|i\s+need\s+|let'?s\s+)?(?:create|make|write|build|prepare|draft|generate|develop|design|compose)\b/i;
 
 const TEMPLATE_NOUNS: Array<{ id: CreationTemplateId; pattern: RegExp }> = [
   { id: "cv", pattern: /\b(cv|resume|résumé|curriculum vitae)\b/i },

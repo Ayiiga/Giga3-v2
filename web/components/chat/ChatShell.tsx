@@ -55,12 +55,8 @@ import {
   buildProductRedirectAnswer,
   matchProductRedirectIntent,
 } from "@/lib/chat/productRedirects";
-import {
-  continueChatCreation,
-  startChatCreation,
-  type ChatCreationState,
-} from "@/lib/gigalearn/creation/chatIntake";
-import { markCreationAutostart } from "@/lib/gigalearn/creation/links";
+import type { ChatCreationState } from "@/lib/gigalearn/creation/chatIntake";
+import { mightBeCreationRequest } from "@/lib/gigalearn/creation/chatIntent";
 import { captureCoordinates } from "@/lib/geolocation";
 import { getConvexUrl } from "@/lib/convex";
 import { convexHttpCall } from "@/lib/network/convexCall";
@@ -303,15 +299,24 @@ function ChatShellInner({
 
         // Guided GigaLearn creation: questions + Generation Preview stay local; nothing is
         // generated until the user confirms in the builder.
-        if (trimmed && !attachments?.length) {
+        if (trimmed && !attachments?.length && (creationIntakeRef.current || mightBeCreationRequest(trimmed))) {
           const pending = creationIntakeRef.current;
-          const turn = pending ? continueChatCreation(pending, trimmed) : startChatCreation(trimmed);
+          const modules = await Promise.all([
+            import("@/lib/gigalearn/creation/chatIntake"),
+            import("@/lib/gigalearn/creation/links"),
+          ]).catch(() => null);
+          const turn = modules
+            ? pending
+              ? modules[0].continueChatCreation(pending, trimmed)
+              : modules[0].startChatCreation(trimmed)
+            : null;
+          if (!modules) creationIntakeRef.current = null;
+          const markCreationAutostart = modules?.[1].markCreationAutostart;
           if (turn) {
             creationIntakeRef.current = turn.state;
             appendLocalTurn(trimmed, turn.reply);
             if (turn.navigateTo) {
-              const template = pending?.templateId;
-              if (turn.autostart && template) markCreationAutostart(template);
+              if (turn.autostart && pending) markCreationAutostart?.(pending.templateId);
               router.push(turn.navigateTo);
             }
             return;
