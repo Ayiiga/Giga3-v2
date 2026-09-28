@@ -34,6 +34,12 @@ export function useGigaLearnGeneration() {
   const [lastSubject, setLastSubject] = useState<string | undefined>();
   const [lastLevel, setLastLevel] = useState<string | undefined>();
   const [lastContext, setLastContext] = useState<string | undefined>();
+  const [lastCountry, setLastCountry] = useState<string | undefined>();
+  const [lastGrade, setLastGrade] = useState<string | undefined>();
+  const [lastStrand, setLastStrand] = useState<string | undefined>();
+  const [lastSubStrand, setLastSubStrand] = useState<string | undefined>();
+  const [lastTopic, setLastTopic] = useState<string | undefined>();
+  const [lastLearningObjective, setLastLearningObjective] = useState<string | undefined>();
 
   const clear = useCallback(() => {
     setError(null);
@@ -51,6 +57,12 @@ export function useGigaLearnGeneration() {
       subject?: string;
       level?: string;
       context?: string;
+      country?: string;
+      grade?: string;
+      strand?: string;
+      subStrand?: string;
+      topic?: string;
+      learningObjective?: string;
     }) => {
       const tool = getGigaLearnTool(args.toolId, args.section);
       if (!tool) {
@@ -87,6 +99,12 @@ export function useGigaLearnGeneration() {
       setLastSubject(args.subject);
       setLastLevel(args.level);
       setLastContext(args.context);
+      setLastCountry(args.country);
+      setLastGrade(args.grade);
+      setLastStrand(args.strand);
+      setLastSubStrand(args.subStrand);
+      setLastTopic(args.topic);
+      setLastLearningObjective(args.learningObjective);
 
       try {
         const response = await generateContent({
@@ -97,6 +115,12 @@ export function useGigaLearnGeneration() {
           subject: args.subject,
           level: args.level,
           context: args.context,
+          country: args.country,
+          grade: args.grade,
+          strand: args.strand,
+          subStrand: args.subStrand,
+          topic: args.topic,
+          learningObjective: args.learningObjective,
         });
 
         const content = response.content?.trim();
@@ -160,6 +184,12 @@ export function useGigaLearnGeneration() {
       subject: lastSubject,
       level: lastLevel,
       context: lastContext,
+      country: lastCountry,
+      grade: lastGrade,
+      strand: lastStrand,
+      subStrand: lastSubStrand,
+      topic: lastTopic,
+      learningObjective: lastLearningObjective,
     });
   }, [
     lastToolId,
@@ -169,6 +199,12 @@ export function useGigaLearnGeneration() {
     lastSubject,
     lastLevel,
     lastContext,
+    lastCountry,
+    lastGrade,
+    lastStrand,
+    lastSubStrand,
+    lastTopic,
+    lastLearningObjective,
     run,
   ]);
 
