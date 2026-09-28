@@ -27,9 +27,10 @@ describe("GigaLearn practice session hardening", () => {
 
   it("persists profile with explicit selected values", () => {
     const source = read("web/components/gigalearn/GigaLearnToolPanel.tsx");
-    expect(source).toContain("persistProfile({ examBoard: value })");
-    expect(source).toContain("persistProfile({ subject: value })");
-    expect(source).toContain("persistProfile({ level: value })");
+    expect(source).toContain("persistProfile(next)");
+    expect(source).toContain("level: next.levelId");
+    expect(source).toContain("subjects:");
+    expect(source).toContain("saveGigaLearnProfile");
   });
 
   it("does not call generation from practice completion path", () => {

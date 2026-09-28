@@ -308,6 +308,7 @@ export function getPracticeFallbackQuestions(
   subject: string
 ): GigaLearnQuestion[] {
   const band = level.toLowerCase();
+  const canonicalSubject = subject.trim().toLowerCase();
   if (band === "kg" || band.includes("nursery")) {
     return [
       {
@@ -343,10 +344,10 @@ export function getPracticeFallbackQuestions(
     ];
   }
   if (
-    subject === "coding" ||
-    subject === "ict" ||
-    subject.includes("coding") ||
-    subject.includes("computing")
+    canonicalSubject === "coding" ||
+    canonicalSubject === "ict" ||
+    canonicalSubject.includes("coding") ||
+    canonicalSubject.includes("computing")
   ) {
     return [
       {
@@ -364,7 +365,7 @@ export function getPracticeFallbackQuestions(
       },
     ];
   }
-  if (subject === "robotics") {
+  if (canonicalSubject === "robotics") {
     return [
       {
         id: "robotics_next_step",
@@ -387,7 +388,7 @@ export function getPracticeFallbackQuestions(
       },
     ];
   }
-  if (subject === "stem") {
+  if (canonicalSubject === "stem") {
     return [
       {
         id: "stem_bridge_shape",

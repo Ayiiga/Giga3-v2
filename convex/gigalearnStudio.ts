@@ -45,15 +45,31 @@ function buildToolPrompt(
   curriculum?: string,
   subject?: string,
   level?: string,
-  context?: string
+  context?: string,
+  extra?: {
+    country?: string;
+    grade?: string;
+    strand?: string;
+    subStrand?: string;
+    topic?: string;
+    learningObjective?: string;
+  }
 ): string {
+  const countryLine = extra?.country ? `Country: ${extra.country}.` : "";
   const curriculumLine = curriculum
-    ? `Curriculum / exam board: ${curriculum.replace(/-/g, " ").toUpperCase()}.`
+    ? `Curriculum: ${curriculum}.`
     : "";
-  const subjectLine = subject ? `Subject: ${subject.replace(/-/g, " ")}.` : "";
-  const levelLine = level ? `Education level: ${level.replace(/-/g, " ")}.` : "";
+  const levelLine = level ? `Level: ${level}.` : "";
+  const gradeLine = extra?.grade ? `Grade: ${extra.grade}.` : "";
+  const subjectLine = subject ? `Subject: ${subject}.` : "";
+  const strandLine = extra?.strand ? `Strand: ${extra.strand}.` : "";
+  const subStrandLine = extra?.subStrand ? `Sub-strand: ${extra.subStrand}.` : "";
+  const topicLine = extra?.topic ? `Topic: ${extra.topic}.` : "";
+  const objectiveLine = extra?.learningObjective
+    ? `Learning objective: ${extra.learningObjective}.`
+    : "";
   const contextLine = context?.trim()
-    ? `Additional context:\n${context.trim()}`
+    ? `Extra context:\n${context.trim()}`
     : "";
 
   const practiceJsonFooter = `
@@ -117,12 +133,19 @@ Use types: mcq, true_false, fill_blank, short_answer, ordering, matching, poll. 
   return [
     `GigaLearn task: ${toolId.replace(/-/g, " ")}.`,
     instruction,
+    countryLine,
     curriculumLine,
-    subjectLine,
     levelLine,
-    contextLine,
-    "User request:",
+    gradeLine,
+    subjectLine,
+    strandLine,
+    subStrandLine,
+    topicLine,
+    objectiveLine,
+    "Teacher request:",
     prompt.trim(),
+    contextLine,
+    "Use the curriculum selection above (country, curriculum, level, grade, subject, strand, sub-strand, topic, learning objective) to produce curriculum-aware lesson plans, lesson notes, class activities, class quizzes, assignments, worksheets, assessment items, revision materials and teaching resources. Align strands, examples and difficulty to the stated level. Never present invented strands or standards as official NaCCA content.",
     "Format the response in clear markdown. Use headings, lists, and worked examples. Be accurate and age-appropriate.",
   ]
     .filter(Boolean)
@@ -139,6 +162,12 @@ export const generateContent = action({
     level: v.optional(v.string()),
     context: v.optional(v.string()),
     practiceScore: v.optional(v.number()),
+    country: v.optional(v.string()),
+    grade: v.optional(v.string()),
+    strand: v.optional(v.string()),
+    subStrand: v.optional(v.string()),
+    topic: v.optional(v.string()),
+    learningObjective: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const verifiedEmail = await requireSessionWithMonitoring(
@@ -176,7 +205,15 @@ export const generateContent = action({
       args.curriculum,
       args.subject,
       args.level,
-      args.context
+      args.context,
+      {
+        country: args.country,
+        grade: args.grade,
+        strand: args.strand,
+        subStrand: args.subStrand,
+        topic: args.topic,
+        learningObjective: args.learningObjective,
+      }
     );
 
     const qualityContext = prepareAnswerQualityContext({
@@ -229,6 +266,11 @@ export const generateContent = action({
           curriculum: args.curriculum ?? null,
           subject: args.subject ?? null,
           level: args.level ?? null,
+          country: args.country ?? null,
+          grade: args.grade ?? null,
+          strand: args.strand ?? null,
+          subStrand: args.subStrand ?? null,
+          topic: args.topic ?? null,
         }),
       });
     }

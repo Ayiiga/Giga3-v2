@@ -40,15 +40,25 @@ export function buildHomeworkChatPrompt(args: {
   subject?: string;
   level?: string;
   notes?: string;
+  country?: string;
+  grade?: string;
+  strand?: string;
+  subStrand?: string;
+  topic?: string;
 }): string {
   const lines = [
     "Please analyze this homework image and help me solve it step by step.",
     "Show your reasoning, any formulas used, and give the final answer clearly.",
     "Explain in student-friendly language suitable for my level.",
   ];
-  if (args.curriculum) lines.push(`Curriculum: ${args.curriculum.replace(/-/g, " ")}.`);
-  if (args.subject) lines.push(`Subject: ${args.subject.replace(/-/g, " ")}.`);
-  if (args.level) lines.push(`Level: ${args.level.replace(/-/g, " ")}.`);
+  if (args.country) lines.push(`Country: ${args.country}.`);
+  if (args.curriculum) lines.push(`Curriculum: ${args.curriculum}.`);
+  if (args.level) lines.push(`Level: ${args.level}.`);
+  if (args.grade) lines.push(`Grade: ${args.grade}.`);
+  if (args.subject) lines.push(`Subject: ${args.subject}.`);
+  if (args.strand) lines.push(`Strand: ${args.strand}.`);
+  if (args.subStrand) lines.push(`Sub-strand: ${args.subStrand}.`);
+  if (args.topic) lines.push(`Topic: ${args.topic}.`);
   if (args.notes?.trim()) lines.push(`Additional notes: ${args.notes.trim()}`);
   return lines.join("\n");
 }
