@@ -15,11 +15,15 @@ import {
 import { BillingErrorBanner } from "@/components/billing/BillingErrorBanner";
 import { CheckoutOverlay } from "@/components/billing/CheckoutOverlay";
 import { PaystackModeBadge } from "@/components/billing/PaystackModeBadge";
+import { PayMethodPicker } from "@/components/billing/PayMethodPicker";
 import { useBilling } from "@/hooks/useBilling";
+import type { PayMethod } from "@/lib/billing/paystackPacks";
 import { paystackButtonLabel } from "@/lib/payments/checkoutLabels";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 function PricingPageClientInner() {
+  const [payMethod, setPayMethod] = useState<PayMethod>("momo");
   const {
     usage,
     paying,
@@ -71,7 +75,7 @@ function PricingPageClientInner() {
                 `${product.credits} credits / month`,
                 ...PLAN_FEATURE_HIGHLIGHTS,
               ]}
-              onSelect={(id) => void checkout(id)}
+              onSelect={(id) => void checkout(id, payMethod)}
               loading={paying}
               loadingLabel={paystackButtonLabel(checkoutPhase, "Subscribe with Paystack")}
               disabled={!email || paying}
@@ -104,10 +108,14 @@ function PricingPageClientInner() {
       </section>
 
       <section>
-        <h2 className="text-center text-2xl font-semibold">Credit top-ups</h2>
+        <h2 className="text-center text-2xl font-semibold">One-time credit packs</h2>
         <p className="mx-auto mt-2 max-w-lg text-center text-sm text-muted">
-          One-time packs added to your balance (any plan).
+          Affordable top-ups added to your balance — not subscriptions. Pay with MTN MoMo via
+          Paystack.
         </p>
+        <div className="mx-auto mt-6 max-w-xl">
+          <PayMethodPicker value={payMethod} onChange={setPayMethod} disabled={paying} />
+        </div>
         <div className="discover-card-grid discover-card-grid--3 mt-10">
           {CREDIT_PACKS.map((pack) => (
             <article
@@ -125,7 +133,7 @@ function PricingPageClientInner() {
                 variant="primary"
                 size="lg"
                 disabled={!email || paying}
-                onClick={() => void checkout(pack.id)}
+                onClick={() => void checkout(pack.id, payMethod)}
                 className="mt-8 w-full"
               >
                 {paystackButtonLabel(checkoutPhase, "Buy credits")}

@@ -74,6 +74,9 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `REPLICATE_VIDEO_MAX_WAIT_MS` | No | Poll timeout; default 12 min for Seedance |
    | `PAYSTACK_SECRET_KEY` | For billing | Paystack server API |
    | `PAYSTACK_PREMIUM_GHS` | No | Default `49` |
+   | `PAYSTACK_CREDITS_5_GHS` | No | Default `5` (Starter one-time pack) |
+   | `PAYSTACK_CREDITS_10_GHS` | No | Default `10` (Mini one-time pack) |
+   | `PAYSTACK_CREDITS_20_GHS` | No | Default `20` (Creator one-time pack) |
    | `PAYSTACK_CREDITS_60_GHS` | No | Default `60` (grants same number of credits) |
    | `PAYSTACK_CREDITS_150_GHS` | No | Default `150` |
    | `PAYSTACK_CREDITS_500_GHS` | No | Default `500` |
