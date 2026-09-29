@@ -16,6 +16,10 @@ import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { useChatShareShortcuts } from "@/hooks/useChatShareShortcuts";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { getSessionToken } from "@/lib/auth";
+import {
+  languageInstructionSuffix,
+  readResponseLanguage,
+} from "@/lib/i18n/languagePreferences";
 import { cn } from "@/lib/utils";
 import {
   readSidebarCollapsed,
@@ -179,6 +183,8 @@ function ChatShellInner({
     interestProfileJson,
     uploadUsage,
     retryOutboxSync,
+    outboxCount,
+    isSyncingOutbox,
     retryFailedReply,
     liveWebProgress,
     sessionToken,
@@ -392,16 +398,6 @@ function ChatShellInner({
           }
         }
 
-        if (!effectiveOnline) {
-          appendLocalTurn(
-            trimmed || "(attachment)",
-            isNewsOrWeatherIntent(trimmed)
-              ? "Live news and weather need an internet connection. You’re offline right now — I can still answer date, time, timezone, and basic device questions from this device."
-              : "You’re offline. I can still answer date, time, timezone, and basic device questions locally. Reconnect to send this to Giga3 AI."
-          );
-          return;
-        }
-
         let wire = trimmed;
         if (trimmed && !attachments?.length && needsLocationEnrichment(trimmed)) {
           try {
@@ -412,7 +408,12 @@ function ChatShellInner({
           }
         }
 
-        void sendMessage(wire || msg, attachments, modelTier);
+        const langSuffix = languageInstructionSuffix(readResponseLanguage());
+        const outbound =
+          wire && langSuffix && !wire.includes(langSuffix.trim())
+            ? `${wire}${langSuffix}`
+            : wire || msg;
+        void sendMessage(outbound || msg, attachments, modelTier);
       })();
     },
     [appendLocalTurn, effectiveOnline, modelTier, router, sendMessage]
@@ -781,6 +782,8 @@ function ChatShellInner({
           isAcceptingMessage={isAcceptingMessage}
           isSlowNetwork={isSlowNetwork}
           onRetryOutboxSync={retryOutboxSync}
+          outboxCount={outboxCount}
+          isSyncingOutbox={isSyncingOutbox}
           insertRef={insertRef}
           onSend={handleSend}
           onInsertTemplate={handleInsertTemplate}

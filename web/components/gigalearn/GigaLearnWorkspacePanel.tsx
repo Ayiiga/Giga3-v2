@@ -14,6 +14,8 @@ import { getGigaLearnProfile } from "@/lib/gigalearn/profile";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
+import { OfflineLessonsPanel } from "@/components/gigalearn/OfflineLessonsPanel";
+import { saveOfflineLesson } from "@/lib/gigalearn/offlineLessons";
 import { Award, Copy, Star, Target, Trash2 } from "lucide-react";
 import { memo, useCallback, useEffect, useState } from "react";
 
@@ -280,6 +282,25 @@ export const GigaLearnWorkspacePanel = memo(function GigaLearnWorkspacePanel({
           ))}
         </ul>
       )}
+
+      <OfflineLessonsPanel
+        onSaveCurrent={
+          artifacts[0]
+            ? async () => {
+                const artifact = artifacts[0];
+                await saveOfflineLesson({
+                  id: artifact.id,
+                  title: artifact.title,
+                  content: artifact.content,
+                  toolId: artifact.toolId,
+                  curriculum: artifact.curriculum,
+                  subject: artifact.subject,
+                });
+              }
+            : undefined
+        }
+        currentTitle={artifacts[0]?.title}
+      />
 
       {prompts.length > 0 && (
         <section>

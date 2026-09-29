@@ -43,6 +43,8 @@ interface ChatConversationPaneProps {
   onSuggestVisionTier?: () => void;
   initialAttachments?: PreparedChatAttachment[];
   onRetryOutboxSync?: () => void;
+  outboxCount?: number;
+  isSyncingOutbox?: boolean;
   onRetryFailedReply?: () => void;
   /** UI lock only (e.g. offline) — does not change send/outbox hooks. */
   inputDisabled?: boolean;
@@ -90,6 +92,8 @@ function panePropsEqual(
     prev.initialAttachments === next.initialAttachments &&
     prev.insertRef === next.insertRef &&
     prev.onRetryOutboxSync === next.onRetryOutboxSync &&
+    prev.outboxCount === next.outboxCount &&
+    prev.isSyncingOutbox === next.isSyncingOutbox &&
     prev.onRetryFailedReply === next.onRetryFailedReply &&
     prev.conversationId === next.conversationId &&
     prev.online === next.online &&
@@ -130,6 +134,8 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onSuggestVisionTier,
   initialAttachments,
   onRetryOutboxSync,
+  outboxCount = 0,
+  isSyncingOutbox = false,
   onRetryFailedReply,
   inputDisabled = false,
   conversationId = null,
@@ -202,6 +208,9 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         ) : null}
         <div className="chat-composer-dock min-w-0 max-w-full bg-background">
         <ChatSyncBanner
+          online={online}
+          outboxCount={outboxCount}
+          isSyncingOutbox={isSyncingOutbox}
           onRetrySync={
             onRetryOutboxSync
               ? () => {

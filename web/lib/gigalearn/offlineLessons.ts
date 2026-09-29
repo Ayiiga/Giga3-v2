@@ -81,6 +81,22 @@ export async function getOfflineLesson(id: string): Promise<OfflineLessonPack | 
   });
 }
 
+export async function removeOfflineLesson(id: string): Promise<void> {
+  const db = await openDb();
+  if (!db) return;
+  await new Promise<void>((resolve) => {
+    const tx = db.transaction(STORE, "readwrite");
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve();
+    tx.objectStore(STORE).delete(id);
+  });
+}
+
+export function formatOfflineStorageHint(count: number): string {
+  if (count === 0) return "No lessons saved offline";
+  return `${count} lesson${count === 1 ? "" : "s"} saved on this device`;
+}
+
 async function pruneOfflineLessons(db: IDBDatabase): Promise<void> {
   const rows = await new Promise<OfflineLessonPack[]>((resolve) => {
     const tx = db.transaction(STORE, "readonly");
