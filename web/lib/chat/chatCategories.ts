@@ -3,7 +3,7 @@ import type { AiModeId } from "@/lib/aiRouter";
 /** User-facing chat categories — map to existing Convex AI modes (no schema changes). */
 export type ChatCategoryId =
   | "education"
-  | "business"
+  | "research"
   | "writing"
   | "coding"
   | "creativity"
@@ -20,18 +20,25 @@ export interface ChatCategoryDefinition {
 
 export const CHAT_CATEGORIES: ChatCategoryDefinition[] = [
   {
+    id: "general",
+    label: "General",
+    emoji: "🌍",
+    description: "Everyday questions and assistance",
+    mode: "general",
+  },
+  {
     id: "education",
-    label: "Education",
-    emoji: "📚",
-    description: "Learning, homework, and exam prep",
+    label: "Learn",
+    emoji: "🎓",
+    description: "Lessons, homework, and exam prep",
     mode: "gigalearn",
   },
   {
-    id: "business",
-    label: "Business",
-    emoji: "💼",
-    description: "Plans, proposals, and professional tasks",
-    mode: "resume",
+    id: "research",
+    label: "Research",
+    emoji: "🔎",
+    description: "Web-backed answers with sources",
+    mode: "research",
   },
   {
     id: "writing",
@@ -42,24 +49,17 @@ export const CHAT_CATEGORIES: ChatCategoryDefinition[] = [
   },
   {
     id: "coding",
-    label: "Coding",
+    label: "Code",
     emoji: "💻",
-    description: "Code, debug, and architecture",
+    description: "Write, debug, and explain code",
     mode: "coding",
   },
   {
     id: "creativity",
-    label: "Creativity",
+    label: "Create",
     emoji: "🎨",
-    description: "Ideas, content, and creative projects",
+    description: "Images, posts, and creative projects",
     mode: "social",
-  },
-  {
-    id: "general",
-    label: "General",
-    emoji: "🌍",
-    description: "Everyday questions and assistance",
-    mode: "general",
   },
 ];
 
@@ -70,17 +70,17 @@ export function getCategoryForMode(mode: AiModeId): ChatCategoryDefinition {
       if (mode === "homework" || mode === "waec") {
         return c.id === "education";
       }
-      if (mode === "university") return c.id === "writing";
-      if (mode === "research" || mode === "book") return c.id === "writing";
-      if (mode === "news") return c.id === "general";
+      if (mode === "research" || mode === "news") return c.id === "research";
+      if (mode === "university" || mode === "book") return c.id === "writing";
+      if (mode === "resume") return c.id === "writing";
       return false;
     }) ??
-    CHAT_CATEGORIES[CHAT_CATEGORIES.length - 1]
+    CHAT_CATEGORIES[0]
   );
 }
 
 export function getCategoryById(id: ChatCategoryId): ChatCategoryDefinition {
-  return CHAT_CATEGORIES.find((c) => c.id === id) ?? CHAT_CATEGORIES[5];
+  return CHAT_CATEGORIES.find((c) => c.id === id) ?? CHAT_CATEGORIES[0];
 }
 
 export function modeForCategory(id: ChatCategoryId): AiModeId {

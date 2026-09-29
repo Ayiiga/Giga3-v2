@@ -489,6 +489,25 @@ function ChatShellInner({
     [changeMode]
   );
 
+  const handleSelectConversation = useCallback(
+    (id: string) => {
+      selectConversation(id as Parameters<typeof selectConversation>[0]);
+      handleCloseMobile();
+    },
+    [selectConversation, handleCloseMobile]
+  );
+
+  /** Compact "Continue" history for the empty home state (own chats only). */
+  const recentConversations = useMemo(
+    () =>
+      [...conversations]
+        .sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0))
+        .filter((c) => c._id !== activeId)
+        .slice(0, 3)
+        .map((c) => ({ id: c._id as string, title: c.title, mode: c.mode })),
+    [conversations, activeId]
+  );
+
   const handlePersonaChange = useCallback(
     (next: Parameters<typeof changePersona>[0]) => {
       void changePersona(next);
@@ -789,6 +808,8 @@ function ChatShellInner({
           sessionToken={sessionToken}
           personaId={personaId}
           onSelectPersona={(id) => void changePersona(id)}
+          recentConversations={recentConversations}
+          onSelectConversation={handleSelectConversation}
         />
       </div>
     </div>
