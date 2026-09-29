@@ -2,12 +2,10 @@
 
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
-import { getCategoryForMode } from "@/lib/chat/chatCategories";
 import { watchLocalDay } from "@/lib/chat/dailyChat";
+import { HOME_QUICK_ACTIONS, type HomeQuickActionId } from "@/lib/chat/homeQuickActions";
 import { getDailySuggestedPrompts, getSuggestedPrompts } from "@/lib/chat/suggestedPrompts";
-import { GIGA3_CHAT_WELCOME } from "@/lib/assistantIdentity";
 import type { AiModeId } from "@/lib/aiRouter";
-import { formatCurrentDate } from "@/lib/datetime";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { useScrollToLatestMessage } from "@/hooks/useScrollToLatestMessage";
 import { ScrollToLatestButton } from "@/components/chat/ScrollToLatestButton";
@@ -36,6 +34,17 @@ interface MessageListProps {
   onRegenerate?: (messageId: string) => void;
   onEditMessage?: (messageId: string, content: string) => void;
   onDeleteMessage?: (messageId: string) => void;
+  /** Home quick actions (Learn / Research / Create / Code) — mode switch only. */
+  onQuickAction?: (action: HomeQuickActionId) => void;
+  /** Compact "Continue" history — only the user's own authorized conversations. */
+  recentConversations?: RecentConversationItem[];
+  onSelectConversation?: (id: string) => void;
+}
+
+export interface RecentConversationItem {
+  id: string;
+  title: string;
+  mode: string;
 }
 
 const QUICK_PROMPTS_FALLBACK = [
@@ -55,6 +64,9 @@ function MessageListInner({
   onRegenerate,
   onEditMessage,
   onDeleteMessage,
+  onQuickAction,
+  recentConversations,
+  onSelectConversation,
 }: MessageListProps) {
   useRenderDiagnostic("MessageList");
 
@@ -74,15 +86,6 @@ function MessageListInner({
     enabled: messages.length > 0,
   });
 
-  const todayLabel = useMemo(() => {
-    try {
-      return formatCurrentDate();
-    } catch {
-      return "";
-    }
-  }, []);
-
-  const category = useMemo(() => getCategoryForMode(mode), [mode]);
   const [dayKey, setDayKey] = useState<string | null>(null);
   useEffect(() => watchLocalDay(setDayKey), []);
   const suggestedPrompts = useMemo(
@@ -104,38 +107,85 @@ function MessageListInner({
         )}
 
         {messages.length === 0 && !isLoading && (
-          <div className="chat-rail flex w-full flex-col items-center px-2 pt-8 text-center">
+          <div className="chat-rail flex w-full flex-col items-center px-4 pt-8 text-center sm:pt-12">
             <h2 className="chat-welcome-title text-2xl font-bold tracking-tight text-foreground sm:text-4xl">
-              Welcome to Giga3 AI
+              Welcome to Giga3 👋
             </h2>
-            <p className="mt-2 text-sm font-semibold tracking-wide text-accent">
-              {category.emoji} {category.label} mode
-            </p>
-            {todayLabel && (
-              <p className="mt-1 text-sm text-muted" suppressHydrationWarning>
-                {todayLabel}
-              </p>
-            )}
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-muted sm:text-base">
-              {GIGA3_CHAT_WELCOME} Type a message below. Open Workspace when you want a template.
+            <p className="mt-2 text-sm text-muted sm:text-base">
+              What would you like to do?
             </p>
 
+            <div
+              className="mt-5 grid w-full max-w-md grid-cols-2 gap-2"
+              role="group"
+              aria-label="Quick actions"
+            >
+              {HOME_QUICK_ACTIONS.map((action) => (
+                <button
+                  key={action.id}
+                  type="button"
+                  onClick={() => onQuickAction?.(action.id)}
+                  title={action.description}
+                  aria-label={`${action.label}: ${action.description}`}
+                  className="flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-border bg-white px-4 py-2.5 text-sm font-medium text-foreground shadow-sm hover:border-accent/30 hover:bg-accent/5"
+                >
+                  <span aria-hidden>{action.emoji}</span>
+                  {action.label}
+                </button>
+              ))}
+            </div>
+
+            {onSelectConversation && recentConversations && recentConversations.length > 0 && (
+              <section
+                className="mt-6 w-full max-w-md text-left"
+                aria-label="Continue where you left off"
+              >
+                <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted">
+                  Continue
+                </h3>
+                <ul className="mt-2 space-y-1.5">
+                  {recentConversations.slice(0, 3).map((c) => (
+                    <li key={c.id}>
+                      <button
+                        type="button"
+                        onClick={() => onSelectConversation(c.id)}
+                        className="flex min-h-11 w-full items-center gap-2 rounded-xl border border-border bg-white px-3 py-2 text-left text-sm text-foreground shadow-sm hover:border-accent/30"
+                      >
+                        <span aria-hidden>💬</span>
+                        <span className="min-w-0 flex-1 truncate">
+                          {c.title || "Untitled chat"}
+                        </span>
+                        <span className="shrink-0 text-xs font-medium text-accent">
+                          Continue →
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             {onInsertTemplate && (
-              <div className="mt-4 flex w-full flex-wrap justify-center gap-2">
-                {(suggestedPrompts.length > 0 ? suggestedPrompts : QUICK_PROMPTS_FALLBACK.map((prompt) => ({
-                  label: prompt,
-                  text: prompt,
-                }))).map((prompt) => (
-                  <button
-                    key={prompt.label}
-                    type="button"
-                    onClick={() => onInsertTemplate(prompt.text)}
-                    className="min-h-11 rounded-full border border-border bg-white px-4 py-2 text-sm text-foreground shadow-sm hover:border-accent/30 hover:bg-accent/5"
-                  >
-                    {prompt.label}
-                  </button>
-                ))}
-              </div>
+              <>
+                <p className="mt-6 text-xs font-medium uppercase tracking-wide text-muted">
+                  Try an example
+                </p>
+                <div className="mt-2 flex w-full max-w-md flex-wrap justify-center gap-2">
+                  {(suggestedPrompts.length > 0 ? suggestedPrompts : QUICK_PROMPTS_FALLBACK.map((prompt) => ({
+                    label: prompt,
+                    text: prompt,
+                  }))).map((prompt) => (
+                    <button
+                      key={prompt.label}
+                      type="button"
+                      onClick={() => onInsertTemplate(prompt.text)}
+                      className="min-h-11 rounded-full border border-border bg-white px-4 py-2 text-sm text-foreground shadow-sm hover:border-accent/30 hover:bg-accent/5"
+                    >
+                      {prompt.label}
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         )}
@@ -192,6 +242,9 @@ function propsEqual(prev: MessageListProps, next: MessageListProps): boolean {
     prev.onRegenerate === next.onRegenerate &&
     prev.onEditMessage === next.onEditMessage &&
     prev.onDeleteMessage === next.onDeleteMessage &&
+    prev.onQuickAction === next.onQuickAction &&
+    prev.recentConversations === next.recentConversations &&
+    prev.onSelectConversation === next.onSelectConversation &&
     prev.messages === next.messages
   );
 }

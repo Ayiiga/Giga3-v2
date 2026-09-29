@@ -19,6 +19,8 @@ import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
 import {
   parseLiveWebMetadata,
 } from "@/lib/chat/liveWebTypes";
+import { storeGigaLearnChatHandoff } from "@/lib/gigalearn/chatHandoff";
+import { saveTeleprompterScript } from "@/lib/gigasocial/teleprompterScripts";
 import { cn } from "@/lib/utils";
 import { Bot } from "lucide-react";
 import { memo, useMemo, useState } from "react";
@@ -184,7 +186,12 @@ export const MessageBubble = memo(function MessageBubble({
                   <ResearchResponseBadge metadata={basisLabel} />
                 ) : null}
                 {liveWebMetadata?.sources?.length ? (
-                  <LiveWebSourceCards sources={liveWebMetadata.sources} />
+                  <>
+                    <LiveWebSourceCards sources={liveWebMetadata.sources} />
+                    {!streaming && displayContent ? (
+                      <ResearchEcosystemHandoffs summary={displayContent} />
+                    ) : null}
+                  </>
                 ) : null}
                 {productRedirects.length > 0 ? (
                   <ProductRedirectCards products={productRedirects} />
@@ -284,3 +291,39 @@ export const MessageBubble = memo(function MessageBubble({
     </article>
   );
 }, bubblePropsEqual);
+
+function ResearchEcosystemHandoffs({ summary }: { summary: string }) {
+  const excerpt = summary.trim().slice(0, 6000);
+  if (!excerpt) return null;
+
+  function saveToGigaLearn() {
+    storeGigaLearnChatHandoff({
+      prompt: `Turn this research into a GigaLearn lesson outline with key points and a short quiz:\n\n${excerpt}`,
+    });
+    window.open("/gigalearn/", "_blank", "noopener");
+  }
+
+  function openInGigaEdits() {
+    saveTeleprompterScript(excerpt);
+    window.open("/gigaedit/", "_blank", "noopener");
+  }
+
+  return (
+    <div className="mt-2 flex flex-wrap gap-2">
+      <button
+        type="button"
+        onClick={saveToGigaLearn}
+        className="min-h-9 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground hover:border-accent/30"
+      >
+        Save to GigaLearn
+      </button>
+      <button
+        type="button"
+        onClick={openInGigaEdits}
+        className="min-h-9 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground hover:border-accent/30"
+      >
+        Open in GigaEdits
+      </button>
+    </div>
+  );
+}

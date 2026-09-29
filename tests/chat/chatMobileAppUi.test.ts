@@ -48,7 +48,7 @@ describe("Chat mobile app UI shell", () => {
     expect(css).toContain("width: 100%");
     expect(css).toContain("max-width: 78%");
     expect(css).toContain("--chat-edge-pad");
-    expect(input).toContain("Message Giga3...");
+    expect(input).toContain("Ask Giga3 anything…");
   });
 
   it("persists voice language preference for African reader", () => {

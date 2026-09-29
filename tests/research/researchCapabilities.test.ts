@@ -11,6 +11,7 @@ import {
   detectVerifyImageIntent,
   isConversationalChatQuery,
   liveSearchUnavailableNewsFallback,
+  queryContainsPublicUrl,
   queryNeedsLiveWeb,
   resolveResearchCapability,
   researchSystemPromptAddon,
@@ -224,5 +225,11 @@ describe("research capability routing", () => {
         liveWebEnabled: true,
       })
     ).toBe("ghana_news");
+  });
+
+  it("enables live web when the user pastes a public URL", () => {
+    const query = "Summarize https://example.com/article";
+    expect(queryContainsPublicUrl(query)).toBe(true);
+    expect(queryNeedsLiveWeb({ query, capability: "general" })).toBe(true);
   });
 });
