@@ -1,5 +1,6 @@
 import { GenerationToastHost } from "@/components/generation/GenerationToastHost";
 import { AccessibilityBootstrap } from "@/components/a11y/AccessibilityBootstrap";
+import { GigaLiteBootstrap } from "@/components/network/GigaLiteBootstrap";
 import { ConvexRuntimeBootstrap } from "@/components/providers/ConvexRuntimeBootstrap";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ConnectivityStatusHost } from "@/components/engagement/ConnectivityStatusHost";
@@ -135,6 +136,7 @@ export default function RootLayout({
             </div>
           </ThemeProvider>
           <AccessibilityBootstrap />
+          <GigaLiteBootstrap />
           <ServiceWorkerRegister />
           <AppBadgeSync />
           <ConnectivityStatusHost />
