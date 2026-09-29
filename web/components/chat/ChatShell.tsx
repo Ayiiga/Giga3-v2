@@ -184,7 +184,10 @@ function ChatShellInner({
     uploadUsage,
     retryOutboxSync,
     outboxCount,
+    outboxEntries,
     isSyncingOutbox,
+    flushingOutboxId,
+    cancelOutboxMessage,
     retryFailedReply,
     liveWebProgress,
     sessionToken,
@@ -783,7 +786,10 @@ function ChatShellInner({
           isSlowNetwork={isSlowNetwork}
           onRetryOutboxSync={retryOutboxSync}
           outboxCount={outboxCount}
+          outboxEntries={outboxEntries}
           isSyncingOutbox={isSyncingOutbox}
+          flushingOutboxId={flushingOutboxId}
+          onCancelOutbox={(id) => void cancelOutboxMessage(id)}
           insertRef={insertRef}
           onSend={handleSend}
           onInsertTemplate={handleInsertTemplate}

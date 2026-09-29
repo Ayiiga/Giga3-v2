@@ -33,6 +33,7 @@ export interface MessageBubbleProps {
   metadataJson?: string;
   pending?: boolean;
   showSending?: boolean;
+  deliveryQueued?: boolean;
   streaming?: boolean;
   onRegenerate?: (messageId: string) => void;
   onEdit?: (messageId: string, content: string) => void;
@@ -51,6 +52,7 @@ function bubblePropsEqual(
     prev.metadataJson === next.metadataJson &&
     prev.pending === next.pending &&
     prev.showSending === next.showSending &&
+    prev.deliveryQueued === next.deliveryQueued &&
     prev.streaming === next.streaming &&
     prev.onRegenerate === next.onRegenerate &&
     prev.onEdit === next.onEdit &&
@@ -66,6 +68,7 @@ export const MessageBubble = memo(function MessageBubble({
   metadataJson,
   pending,
   showSending,
+  deliveryQueued,
   streaming,
   onRegenerate,
   onEdit,
@@ -220,6 +223,11 @@ export const MessageBubble = memo(function MessageBubble({
             <MessageMediaBlock key={url} url={url} kind="video" />
           ))}
         </>
+      )}
+      {deliveryQueued && !showSending && (
+        <p className="mt-2 text-xs text-muted" aria-live="polite">
+          Queued — waiting for connection
+        </p>
       )}
       {showSending && (
         <p className="mt-2 text-sm text-accent/70" aria-live="polite">

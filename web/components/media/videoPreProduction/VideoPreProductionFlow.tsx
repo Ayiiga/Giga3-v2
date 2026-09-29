@@ -55,6 +55,10 @@ import {
 import { VIDEO_CATEGORIES, type VideoCategoryId } from "@/lib/media/catalog";
 import { mediaVideoCreditCost } from "@/lib/media/videoCredits";
 import {
+  buildCreatorPipelineTeleprompterUrl,
+  publishCreatorVideoToGigaSocial,
+} from "@/lib/creator/creatorPipeline";
+import {
   MEDIA_VIDEO_DURATION_OPTIONS,
   type MediaVideoDurationSec,
 } from "@/lib/media/videoLimits";
@@ -99,6 +103,8 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
   const [draft, setDraft] = useState<VideoPreProductionDraft>(() => loadPreProductionDraft());
   const [voices, setVoices] = useState<BrowserVoiceOption[]>([]);
   const [scriptBusy, setScriptBusy] = useState(false);
+  const [publishBusy, setPublishBusy] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
   const [rewriteBusy, setRewriteBusy] = useState(false);
   const [voicePlaying, setVoicePlaying] = useState(false);
   const [scriptError, setScriptError] = useState<string | null>(null);
@@ -688,6 +694,22 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
             Preview narration style in your browser. Final synced narration is generated with your
             video using the approved script.
           </p>
+          {draft.workingScript.trim() ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11"
+              onClick={() => {
+                window.open(
+                  buildCreatorPipelineTeleprompterUrl(draft.workingScript),
+                  "_blank",
+                  "noopener"
+                );
+              }}
+            >
+              Record with teleprompter in GigaEdit
+            </Button>
+          ) : null}
           {!isBrowserVoiceoverSupported() && (
             <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm">
               Voice preview is not available in this browser. You can still approve and generate
@@ -1113,13 +1135,38 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
                   type="button"
                   variant="outline"
                   className="min-h-11"
+                  disabled={publishBusy || !previewUrl}
                   onClick={() => {
-                    window.open("/gigasocial/?compose=text", "_blank", "noopener");
+                    if (!previewUrl) return;
+                    setPublishError(null);
+                    setPublishBusy(true);
+                    void publishCreatorVideoToGigaSocial({
+                      videoUrl: previewUrl,
+                      caption: draft.idea.trim() || draft.workingScript.slice(0, 280),
+                      durationSec: draft.targetDurationSec,
+                    })
+                      .then((result) => {
+                        if (result.error) setPublishError(result.error);
+                        else if (result.queued) {
+                          setPublishError("Offline — video queued for GigaSocial when you reconnect.");
+                        }
+                      })
+                      .catch((err) => {
+                        setPublishError(
+                          err instanceof Error ? err.message : "Could not open GigaSocial publish."
+                        );
+                      })
+                      .finally(() => setPublishBusy(false));
                   }}
                 >
-                  Publish on GigaSocial
+                  {publishBusy ? "Opening GigaSocial…" : "Publish on GigaSocial"}
                 </Button>
               </div>
+              {publishError ? (
+                <p role="alert" className="text-sm text-amber-800 dark:text-amber-100">
+                  {publishError}
+                </p>
+              ) : null}
             </>
           )}
           {failed && !processing && (

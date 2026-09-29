@@ -14,7 +14,9 @@ import { getGigaLearnProfile } from "@/lib/gigalearn/profile";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
+import { GigaLearnOfflineSyncBanner } from "@/components/gigalearn/GigaLearnOfflineSyncBanner";
 import { OfflineLessonsPanel } from "@/components/gigalearn/OfflineLessonsPanel";
+import { useGigaLearnOfflineProgressSync } from "@/hooks/useGigaLearnOfflineProgressSync";
 import { saveOfflineLesson } from "@/lib/gigalearn/offlineLessons";
 import { Award, Copy, Star, Target, Trash2 } from "lucide-react";
 import { memo, useCallback, useEffect, useState } from "react";
@@ -39,6 +41,7 @@ export const GigaLearnWorkspacePanel = memo(function GigaLearnWorkspacePanel({
     sessionToken ? { sessionToken, limit: 8 } : "skip"
   );
   const recordPractice = useMutation(api.gigaLearnProgress.recordPractice);
+  const offlineProgress = useGigaLearnOfflineProgressSync(sessionToken);
   const weaknesses = (serverProgress ?? []).filter((row) => row.weakness || row.needsReassess);
 
   const refresh = useCallback(() => {
@@ -72,6 +75,12 @@ export const GigaLearnWorkspacePanel = memo(function GigaLearnWorkspacePanel({
       <p className="text-xs text-muted">
         Saved lessons stay on this device for offline study. New generation needs a connection.
       </p>
+      <GigaLearnOfflineSyncBanner
+        pendingCount={offlineProgress.pendingCount}
+        syncState={offlineProgress.syncState}
+        lastError={offlineProgress.lastError}
+        onRetry={() => void offlineProgress.retrySync()}
+      />
       {continueLearning ? (
         <section
           className="saas-card rounded-2xl border border-accent/25 bg-accent/5 p-4"
