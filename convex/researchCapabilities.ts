@@ -2,6 +2,12 @@
  * Research capability routing — shared detection and query shaping for
  * Live Web, current news, fact-check, and deep research modes.
  */
+import { extractUrlsFromText } from "./liveWeb/liveWebSecurity";
+
+/** True when the user pasted at least one valid public http(s) URL. */
+export function queryContainsPublicUrl(query: string): boolean {
+  return extractUrlsFromText(query.trim()).length > 0;
+}
 
 export const RESEARCH_CAPABILITY_IDS = [
   "general",
@@ -367,6 +373,8 @@ export function queryNeedsLiveWeb(args: {
 }): boolean {
   const q = args.query.trim();
   if (!q || args.hasImageAttachment) return false;
+  // Pasted public URLs always attempt a safe webpage read (robots/paywall handled server-side).
+  if (queryContainsPublicUrl(q)) return true;
   if (isConversationalChatQuery(q)) return false;
 
   const infoMode = classifyInformationRequest(q);
