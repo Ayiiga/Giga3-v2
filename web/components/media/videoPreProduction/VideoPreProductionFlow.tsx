@@ -1095,6 +1095,31 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
                 {isLongVideo ? "Combined video ready" : "Video ready"}
               </div>
               <MessageMediaBlock url={previewUrl} kind="video" />
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="primary"
+                  className="min-h-11"
+                  onClick={() => {
+                    const params = new URLSearchParams();
+                    params.set("tab", "video");
+                    params.set("clip0", previewUrl);
+                    window.open(`/gigaedit/?${params.toString()}`, "_blank", "noopener");
+                  }}
+                >
+                  Open in GigaEdit
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="min-h-11"
+                  onClick={() => {
+                    window.open("/gigasocial/?compose=text", "_blank", "noopener");
+                  }}
+                >
+                  Publish on GigaSocial
+                </Button>
+              </div>
             </>
           )}
           {failed && !processing && (

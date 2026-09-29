@@ -521,7 +521,7 @@ export const ChatInput = memo(function ChatInput({
               <span />
             </span>
             <span className="flex-1 text-[13px] font-medium text-black">
-              Listening… Twi/Hausa available
+              Listening… Twi & Ewe available
             </span>
             <button
               type="button"
