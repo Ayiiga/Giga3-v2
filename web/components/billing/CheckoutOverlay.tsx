@@ -7,6 +7,7 @@ import { Loader2, ShieldCheck } from "lucide-react";
 export type CheckoutPhase =
   | "preparing"
   | "opening"
+  | "redirecting"
   | "popup"
   | "verifying"
   | null;
@@ -19,17 +20,32 @@ interface CheckoutOverlayProps {
 
 const PHASE_COPY: Record<Exclude<CheckoutPhase, null>, string> = {
   preparing: "Preparing secure checkout…",
-  opening: "Opening Paystack…",
+  opening: "Loading Paystack… wait a sec",
+  redirecting: "Opening Paystack secure checkout…",
   popup: "Complete payment in the Paystack window",
   verifying: "Confirming your payment…",
 };
 
+const PHASE_HINT: Partial<Record<Exclude<CheckoutPhase, null>, string>> = {
+  preparing: "Connecting to Paystack. Do not close this page.",
+  opening: "Secured by Paystack · MTN MoMo, card, and bank supported.",
+  redirecting: "You will be redirected to Paystack in a moment.",
+  popup: "Finish or cancel in the Paystack window. This page will update when you are done.",
+  verifying: "This usually takes a few seconds.",
+};
+
+/** Full-screen checkout shield — stays visible until Paystack is ready or redirect starts. */
 export function CheckoutOverlay({ phase, label, amountGhs }: CheckoutOverlayProps) {
   if (!phase) return null;
 
+  const blocking = phase === "preparing" || phase === "opening" || phase === "redirecting";
+
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+      className={cn(
+        "fixed inset-0 z-[200] flex items-center justify-center p-4",
+        blocking ? "bg-white" : "bg-black/50 backdrop-blur-sm"
+      )}
       role="dialog"
       aria-modal="true"
       aria-labelledby="checkout-overlay-title"
@@ -62,13 +78,8 @@ export function CheckoutOverlay({ phase, label, amountGhs }: CheckoutOverlayProp
             )}
           </p>
         )}
-        {phase === "popup" && (
-          <p className="mt-3 text-xs leading-relaxed text-muted">
-            Secured by Paystack. You can close this message once you finish or cancel in the popup.
-          </p>
-        )}
-        {phase === "verifying" && (
-          <p className="mt-3 text-xs text-muted">This usually takes a few seconds.</p>
+        {PHASE_HINT[phase] && (
+          <p className="mt-3 text-xs leading-relaxed text-muted">{PHASE_HINT[phase]}</p>
         )}
       </div>
     </div>

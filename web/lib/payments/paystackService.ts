@@ -82,10 +82,23 @@ export type OpenPaystackCheckoutOptions = {
   /** Optional channel allowlist (e.g. ["mobile_money"]) for the inline popup. */
   channels?: string[];
   onPopupReady?: () => void;
+  /** Fired before full-page redirect (mobile/PWA) so UI can show a loading shield. */
+  onRedirectStarting?: () => void;
   onSuccess: (reference: string) => void | Promise<void>;
   onCancel: () => void;
   onError: (message: string) => void;
 };
+
+/** Mobile/PWA: inline Paystack iframes often flash "content blocked" — redirect instead. */
+export function shouldPreferPaystackRedirect(): boolean {
+  if (typeof window === "undefined") return false;
+  const coarse = window.matchMedia("(pointer: coarse)").matches;
+  const narrow = window.matchMedia("(max-width: 768px)").matches;
+  const standalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  return coarse || narrow || standalone;
+}
 
 const POPUP_LOAD_TIMEOUT_MS = 12_000;
 
@@ -112,12 +125,17 @@ export async function openPaystackCheckout(
   };
 
   const fallbackRedirect = (reason?: string) => {
-    release();
     if (reason) {
       console.warn("[paystack] redirect fallback:", reason);
     }
+    options.onRedirectStarting?.();
     redirectToPaystack(authUrl);
   };
+
+  if (shouldPreferPaystackRedirect()) {
+    fallbackRedirect("mobile redirect");
+    return "redirect";
+  }
 
   try {
     const popup = await getPaystackPop();
@@ -184,15 +202,15 @@ export async function openPaystackCheckout(
       return "popup";
     }
 
-    finish();
+    options.onRedirectStarting?.();
     redirectToPaystack(authUrl);
     return "redirect";
   } catch (e) {
-    release();
     if (authUrl) {
       fallbackRedirect(e instanceof Error ? e.message : "popup failed");
       return "redirect";
     }
+    release();
     throw e;
   }
 }

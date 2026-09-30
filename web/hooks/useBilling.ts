@@ -125,7 +125,8 @@ export function useBilling() {
           email,
           publicKey,
           channels,
-          onPopupReady: () => setCheckoutPhase(null),
+          onRedirectStarting: () => setCheckoutPhase("redirecting"),
+          onPopupReady: () => setCheckoutPhase("popup"),
           onSuccess: async (reference) => {
             setCheckoutPhase("verifying");
             try {
@@ -155,7 +156,7 @@ export function useBilling() {
         });
 
         if (mode === "redirect") {
-          setCheckoutPhase("opening");
+          setCheckoutPhase("redirecting");
           return;
         }
       } catch (e) {

@@ -85,8 +85,10 @@ export const CreditsPaystackModal = memo(function CreditsPaystackModal({
         email,
         publicKey: getPaystackPublicKeyFromBuild(),
         channels,
+        onRedirectStarting: () =>
+          setState({ kind: "paying", label: "Opening Paystack… wait a sec" }),
         onPopupReady: () =>
-          setState({ kind: "paying", label: "Paystack open — complete payment…" }),
+          setState({ kind: "paying", label: "Complete payment in Paystack…" }),
         onSuccess: async (reference) => {
           setState({ kind: "paying", label: "Verifying payment…" });
           try {
