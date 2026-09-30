@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   friendlyPaystackError,
+  isTransientPaystackConnectionError,
   unwrapConvexErrorMessage,
 } from "../../web/lib/payments/paystackErrors";
 
@@ -55,6 +56,19 @@ describe("friendlyPaystackError", () => {
     expect(
       friendlyPaystackError(new Error("Uncaught Error: A valid email is required for checkout"))
     ).toBe("Add a valid email to your account before checking out.");
+  });
+
+  it("maps Convex connection drops to a retry-friendly message", () => {
+    expect(
+      friendlyPaystackError(new Error("Connection lost while action was in flight"))
+    ).toBe("Connection dropped while starting Paystack. Check your signal and tap Pay again.");
+  });
+
+  it("detects transient connection errors for retry logic", () => {
+    expect(isTransientPaystackConnectionError("Connection lost while action was in flight")).toBe(
+      true
+    );
+    expect(isTransientPaystackConnectionError("Payment cancelled")).toBe(false);
   });
 
   it("keeps short raw messages and falls back only for very long ones", () => {

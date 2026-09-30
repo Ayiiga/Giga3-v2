@@ -1,4 +1,9 @@
 import type { InitializePaymentResult } from "./types";
+import { isTransientPaystackConnectionError } from "./paystackErrors";
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 let paystackModulePromise: Promise<typeof import("@paystack/inline-js")> | null =
   null;
@@ -26,9 +31,27 @@ export async function initializePaystackPayment(
     productId: string;
     channels?: string[];
   }) => Promise<InitializePaymentResult>,
-  args: { sessionToken: string; productId: string; channels?: string[] }
+  args: { sessionToken: string; productId: string; channels?: string[] },
+  options?: { maxAttempts?: number }
 ): Promise<InitializePaymentResult> {
-  return runAction(args);
+  const maxAttempts = Math.max(1, options?.maxAttempts ?? 3);
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await runAction(args);
+    } catch (error) {
+      lastError = error;
+      const message = error instanceof Error ? error.message : String(error);
+      if (attempt < maxAttempts && isTransientPaystackConnectionError(message)) {
+        await sleep(350 * attempt);
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw lastError;
 }
 
 export async function verifyPaystackPayment(
