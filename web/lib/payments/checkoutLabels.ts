@@ -9,6 +9,8 @@ export function paystackButtonLabel(
       return "Starting checkout…";
     case "opening":
       return "Opening Paystack…";
+    case "redirecting":
+      return "Opening Paystack…";
     case "popup":
       return "Complete in Paystack window";
     case "verifying":
