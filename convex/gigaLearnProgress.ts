@@ -2,6 +2,7 @@ import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
+import { isOfflineAssessmentStale } from "../web/lib/gigalearn/offlineProgressMerge";
 
 const WEAKNESS_SCORE_THRESHOLD = 70;
 
@@ -53,6 +54,8 @@ export const recordAssessment = mutation({
     weakness: v.optional(v.string()),
     score: v.number(),
     toolId: v.optional(v.string()),
+    /** Offline queue event timestamp — skips update when server progress is newer. */
+    clientCreatedAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);
@@ -64,6 +67,13 @@ export const recordAssessment = mutation({
       .query("gigaLearnProgress")
       .withIndex("by_user_topic", (q) => q.eq("userId", email).eq("topicKey", topicKey))
       .first();
+
+    if (
+      existing &&
+      isOfflineAssessmentStale(existing, args.clientCreatedAt)
+    ) {
+      return existing._id;
+    }
 
     const weakness =
       score < WEAKNESS_SCORE_THRESHOLD

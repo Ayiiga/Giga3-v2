@@ -5,28 +5,38 @@ import {
   type OfflineAssessmentEvent,
 } from "@/lib/gigalearn/offlineProgressQueue";
 
-const MAX_SYNC_ATTEMPTS = 5;
+export const MAX_OFFLINE_PROGRESS_SYNC_ATTEMPTS = 5;
 
 export type AssessmentSyncHandler = (event: OfflineAssessmentEvent) => Promise<void>;
+
+export type FlushOfflineProgressResult = {
+  synced: number;
+  failed: number;
+  remaining: number;
+  deadLettered: number;
+};
 
 /** Flush queued assessment events oldest-first; skips duplicates within one flush. */
 export async function flushOfflineProgressQueue(
   syncHandler: AssessmentSyncHandler
-): Promise<{ synced: number; failed: number; remaining: number }> {
+): Promise<FlushOfflineProgressResult> {
   if (typeof navigator !== "undefined" && !navigator.onLine) {
     const remaining = await listOfflineProgressEvents();
-    return { synced: 0, failed: 0, remaining: remaining.length };
+    return { synced: 0, failed: 0, remaining: remaining.length, deadLettered: 0 };
   }
 
   const rows = await listOfflineProgressEvents();
   const applied = new Set<string>();
   let synced = 0;
   let failed = 0;
+  let deadLettered = 0;
 
   for (const row of rows) {
     if (applied.has(row.clientEventId)) continue;
-    if (row.attempts >= MAX_SYNC_ATTEMPTS) {
+    if (row.attempts >= MAX_OFFLINE_PROGRESS_SYNC_ATTEMPTS) {
+      await removeOfflineProgressEvent(row.clientEventId);
       failed += 1;
+      deadLettered += 1;
       continue;
     }
     applied.add(row.clientEventId);
@@ -42,5 +52,5 @@ export async function flushOfflineProgressQueue(
   }
 
   const remaining = await listOfflineProgressEvents();
-  return { synced, failed, remaining: remaining.length };
+  return { synced, failed, remaining: remaining.length, deadLettered };
 }

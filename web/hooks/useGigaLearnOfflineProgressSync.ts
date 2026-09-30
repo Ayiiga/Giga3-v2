@@ -47,10 +47,18 @@ export function useGigaLearnOfflineProgressSync(sessionToken: string | null) {
           score: event.score,
           toolId: event.toolId,
           weakness: event.weakness,
+          clientCreatedAt: event.createdAt,
         });
       });
       await refreshPending();
-      if (result.remaining > 0) {
+      if (result.deadLettered > 0) {
+        setSyncState("failed");
+        setLastError(
+          result.deadLettered === 1
+            ? "One progress event could not sync after multiple attempts."
+            : `${result.deadLettered} progress events could not sync after multiple attempts.`
+        );
+      } else if (result.remaining > 0) {
         setSyncState("failed");
         setLastError("Some progress events could not sync yet.");
       } else if (result.synced > 0) {

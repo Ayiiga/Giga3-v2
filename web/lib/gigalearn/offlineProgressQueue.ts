@@ -90,13 +90,26 @@ export async function bumpOfflineProgressAttempt(
   clientEventId: string,
   lastError: string
 ): Promise<void> {
-  const rows = await listOfflineProgressEvents();
-  const row = rows.find((r) => r.clientEventId === clientEventId);
-  if (!row) return;
-  await queueOfflineAssessmentEvent({
-    ...row,
-    attempts: row.attempts + 1,
-    lastError,
+  const db = await openOfflineGigaLearnDb();
+  if (!db) return;
+
+  await new Promise<void>((resolve) => {
+    const tx = db.transaction(OFFLINE_PROGRESS_STORE, "readwrite");
+    const store = tx.objectStore(OFFLINE_PROGRESS_STORE);
+    const getReq = store.get(clientEventId);
+
+    getReq.onsuccess = () => {
+      const row = getReq.result as OfflineAssessmentEvent | undefined;
+      if (!row || row.syncedAt) return;
+      store.put({
+        ...row,
+        attempts: row.attempts + 1,
+        lastError,
+      });
+    };
+
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve();
   });
 }
 
