@@ -1,7 +1,7 @@
 import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
 import { siteConfig } from "@/lib/site";
 
-export type ChatCreateCategoryId = "media" | "documents" | "ai" | "education";
+export type ChatCreateCategoryId = "media" | "documents" | "ai" | "education" | "web";
 
 export type ChatCreateActionId =
   | "media-unified"
@@ -9,6 +9,7 @@ export type ChatCreateActionId =
   | "media-photos"
   | "media-video"
   | "media-audio"
+  | "web-link"
   | "doc-pdf"
   | "doc-research"
   | "doc-essay"
@@ -62,6 +63,13 @@ export const CHAT_CREATE_SECTIONS: ChatCreateMenuSection[] = [
       { id: "media-photos", label: "Photos", emoji: "🖼", description: "One or more images", runtime: "ON DEVICE" },
       { id: "media-video", label: "Videos", emoji: "🎥", description: "Attach a video", runtime: "ON DEVICE" },
       { id: "media-audio", label: "Audio", emoji: "🎵", description: "Music or voice file", runtime: "ON DEVICE" },
+    ],
+  },
+  {
+    id: "web",
+    title: "Web",
+    items: [
+      { id: "web-link", label: "Read a link", emoji: "🔗", description: "Summarize a public page", runtime: "AI STUDIO" },
     ],
   },
   {
@@ -125,6 +133,8 @@ const DOCUMENT_TEMPLATE_MAP: Partial<Record<ChatCreateActionId, DocumentTemplate
 };
 
 const INLINE_TEMPLATES: Partial<Record<ChatCreateActionId, string>> = {
+  "web-link":
+    "Please read this public link and summarize the key points: ",
   "doc-pdf":
     "Help me draft or analyze a PDF document.\n\nTopic:\n\nKey sections:\n1.\n2.\n3.\n",
   "doc-lesson-notes": "📓 Lesson notes\n\nTopic:\n\nKey points:\n\nQuestions:\n",

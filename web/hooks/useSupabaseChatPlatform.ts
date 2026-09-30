@@ -303,7 +303,9 @@ export function useSupabaseChatPlatform() {
   const [messagesRaw, setMessagesRaw] = useState<MessageRow[] | undefined>();
   const [segmentNotice, setSegmentNotice] = useState<string | null>(null);
   const [outboxCount, setOutboxCount] = useState(0);
+  const [outboxEntries, setOutboxEntries] = useState<OutboxEntry[]>([]);
   const [isSyncingOutbox, setIsSyncingOutbox] = useState(false);
+  const [flushingOutboxId, setFlushingOutboxId] = useState<string | null>(null);
   const loadingConversationsRef = useRef(false);
   const loadingMessagesRef = useRef(false);
   const syncingOutboxRef = useRef(false);
@@ -442,9 +444,24 @@ export function useSupabaseChatPlatform() {
   const refreshOutboxCount = useCallback(async () => {
     const rows = await listOutbox();
     setOutboxCount(rows.length);
+    setOutboxEntries(rows);
     emitOutboxStatus({ count: rows.length, syncing: syncingOutboxRef.current });
     return rows.length;
   }, []);
+
+  const cancelOutboxMessage = useCallback(
+    async (id: string) => {
+      const rows = await listOutbox();
+      const row = rows.find((entry) => entry.id === id);
+      if (!row) return;
+      await removeOutbox(id);
+      if (pendingUserText === row.content) {
+        setPendingUserText(null);
+      }
+      await refreshOutboxCount();
+    },
+    [pendingUserText, refreshOutboxCount]
+  );
 
   const deliverSupabaseMessage = useCallback(
     async (
@@ -558,6 +575,7 @@ export function useSupabaseChatPlatform() {
       const rows = await listOutbox();
       emitOutboxStatus({ count: rows.length, syncing: true });
       for (const row of rows) {
+        setFlushingOutboxId(row.id);
         try {
           await deliverSupabaseMessage(
             row.content,
@@ -567,23 +585,38 @@ export function useSupabaseChatPlatform() {
             row.clientRequestId
           );
           await removeOutbox(row.id);
+          if (pendingUserText === row.content) {
+            setPendingUserText(null);
+          }
         } catch (e) {
           const msg = e instanceof Error ? e.message : "Sync failed";
           await bumpOutboxAttempt(row.id, msg);
           if (row.attempts + 1 >= maxSendRetries(isSlowNetwork)) {
             await removeOutbox(row.id);
+            if (pendingUserText === row.content) {
+              setPendingUserText(null);
+            }
             setError(toUserFacingError(e, msg));
           }
+        } finally {
+          setFlushingOutboxId((current) => (current === row.id ? null : current));
         }
       }
       await refreshOutboxCount();
     } finally {
       syncingOutboxRef.current = false;
       setIsSyncingOutbox(false);
+      setFlushingOutboxId(null);
       const remaining = await listOutbox();
       emitOutboxStatus({ count: remaining.length, syncing: false });
     }
-  }, [deliverSupabaseMessage, effectiveOnline, isSlowNetwork, refreshOutboxCount]);
+  }, [
+    deliverSupabaseMessage,
+    effectiveOnline,
+    isSlowNetwork,
+    pendingUserText,
+    refreshOutboxCount,
+  ]);
 
   useEffect(() => {
     void refreshOutboxCount();
@@ -883,7 +916,10 @@ export function useSupabaseChatPlatform() {
     isAcceptingMessage: isSending,
     isSlowNetwork,
     outboxCount,
+    outboxEntries,
     isSyncingOutbox,
+    flushingOutboxId,
+    cancelOutboxMessage,
     retryOutboxSync: flushOutbox,
     error,
     startNewChat,

@@ -14,6 +14,9 @@ import type { UploadUsageSnapshot } from "@/lib/chat/uploadLimits";
 import type { AiModeId } from "@/lib/aiRouter";
 import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
 import { memo, useCallback, useState, type MutableRefObject } from "react";
+import { modeForQuickAction, type HomeQuickActionId } from "@/lib/chat/homeQuickActions";
+import type { RecentConversationItem } from "@/components/chat/MessageList";
+import type { OutboxEntry } from "@/lib/chat/offlineOutbox";
 
 interface ChatConversationPaneProps {
   messages: UiMessage[];
@@ -41,6 +44,11 @@ interface ChatConversationPaneProps {
   onSuggestVisionTier?: () => void;
   initialAttachments?: PreparedChatAttachment[];
   onRetryOutboxSync?: () => void;
+  outboxCount?: number;
+  outboxEntries?: OutboxEntry[];
+  isSyncingOutbox?: boolean;
+  flushingOutboxId?: string | null;
+  onCancelOutbox?: (id: string) => void;
   onRetryFailedReply?: () => void;
   /** UI lock only (e.g. offline) — does not change send/outbox hooks. */
   inputDisabled?: boolean;
@@ -50,6 +58,11 @@ interface ChatConversationPaneProps {
   sessionToken?: string | null;
   personaId?: GigaPersonaId | null;
   onSelectPersona?: (personaId: GigaPersonaId) => void;
+  /** Home quick actions — defaults to switching mode via onModeChange. */
+  onQuickAction?: (action: HomeQuickActionId) => void;
+  /** Compact "Continue" history for the empty state. */
+  recentConversations?: RecentConversationItem[];
+  onSelectConversation?: (id: string) => void;
 }
 
 function panePropsEqual(
@@ -83,13 +96,21 @@ function panePropsEqual(
     prev.initialAttachments === next.initialAttachments &&
     prev.insertRef === next.insertRef &&
     prev.onRetryOutboxSync === next.onRetryOutboxSync &&
+    prev.outboxCount === next.outboxCount &&
+    prev.outboxEntries === next.outboxEntries &&
+    prev.isSyncingOutbox === next.isSyncingOutbox &&
+    prev.flushingOutboxId === next.flushingOutboxId &&
+    prev.onCancelOutbox === next.onCancelOutbox &&
     prev.onRetryFailedReply === next.onRetryFailedReply &&
     prev.conversationId === next.conversationId &&
     prev.online === next.online &&
     prev.liveWebProgress === next.liveWebProgress &&
     prev.sessionToken === next.sessionToken &&
     prev.personaId === next.personaId &&
-    prev.onSelectPersona === next.onSelectPersona
+    prev.onSelectPersona === next.onSelectPersona &&
+    prev.onQuickAction === next.onQuickAction &&
+    prev.recentConversations === next.recentConversations &&
+    prev.onSelectConversation === next.onSelectConversation
   );
 }
 
@@ -120,6 +141,11 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onSuggestVisionTier,
   initialAttachments,
   onRetryOutboxSync,
+  outboxCount = 0,
+  outboxEntries = [],
+  isSyncingOutbox = false,
+  flushingOutboxId = null,
+  onCancelOutbox,
   onRetryFailedReply,
   inputDisabled = false,
   conversationId = null,
@@ -128,6 +154,9 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   sessionToken = null,
   personaId = null,
   onSelectPersona,
+  onQuickAction,
+  recentConversations,
+  onSelectConversation,
 }: ChatConversationPaneProps) {
   const showTyping = awaitingReply || isSending;
   const typingPhase = awaitingReply ? "replying" : "sending";
@@ -137,6 +166,16 @@ export const ChatConversationPane = memo(function ChatConversationPane({
     setComposerActive(active);
   }, []);
   const showFooterChips = messages.length > 0 && !composerActive;
+  const handleQuickAction = useCallback(
+    (action: HomeQuickActionId) => {
+      if (onQuickAction) {
+        onQuickAction(action);
+        return;
+      }
+      onModeChange(modeForQuickAction(action));
+    },
+    [onQuickAction, onModeChange]
+  );
 
   return (
     <div className="chat-conversation-grid min-h-0 min-w-0 max-w-full overflow-x-clip overflow-y-hidden bg-background">
@@ -153,6 +192,11 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           onRegenerate={onRegenerate}
           onEditMessage={onEditMessage}
           onDeleteMessage={onDeleteMessage}
+          onQuickAction={handleQuickAction}
+          recentConversations={recentConversations}
+          onSelectConversation={onSelectConversation}
+          outboxEntries={outboxEntries}
+          flushingOutboxId={flushingOutboxId}
         />
       </MessageListErrorBoundary>
       <div className="chat-composer-stack chat-footer min-w-0 max-w-full shrink-0 border-t border-border bg-background">
@@ -176,6 +220,11 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         ) : null}
         <div className="chat-composer-dock min-w-0 max-w-full bg-background">
         <ChatSyncBanner
+          online={online}
+          outboxCount={outboxCount}
+          outboxEntries={outboxEntries}
+          isSyncingOutbox={isSyncingOutbox}
+          onCancelOutbox={onCancelOutbox ? (id) => void onCancelOutbox(id) : undefined}
           onRetrySync={
             onRetryOutboxSync
               ? () => {

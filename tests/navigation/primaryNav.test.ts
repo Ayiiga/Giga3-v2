@@ -6,7 +6,7 @@ import {
 } from "../../web/lib/navigation/primaryNav";
 
 describe("primaryNav route matching", () => {
-  it("marks the four product destinations as primary nav routes", () => {
+  it("marks the five product destinations as primary nav routes", () => {
     expect(isPrimaryNavRoute("/chat")).toBe(true);
     expect(isPrimaryNavRoute("/chat/")).toBe(true);
     expect(isPrimaryNavRoute("/gigalearn")).toBe(true);
@@ -15,6 +15,8 @@ describe("primaryNav route matching", () => {
     expect(isPrimaryNavRoute("/gigaedit")).toBe(true);
     expect(isPrimaryNavRoute("/gigasocial/")).toBe(true);
     expect(isPrimaryNavRoute("/gigasocial/profile")).toBe(true);
+    expect(isPrimaryNavRoute("/marketplace")).toBe(true);
+    expect(isPrimaryNavRoute("/marketplace/item/abc")).toBe(true);
   });
 
   it("hides nav on login, share, and payment routes", () => {
@@ -35,6 +37,7 @@ describe("primaryNav route matching", () => {
     expect(resolvePrimaryNavTab("/media?tab=video")).toBe("create");
     expect(resolvePrimaryNavTab("/gigaedit/?tab=video")).toBe("create");
     expect(resolvePrimaryNavTab("/gigasocial/?tab=feed")).toBe("social");
+    expect(resolvePrimaryNavTab("/marketplace")).toBe("market");
   });
 
   it("shows desktop rail for learn/create/social but not chat", () => {

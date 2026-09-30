@@ -26,22 +26,22 @@ const CATEGORY_PROMPTS: Record<ChatCategoryId, SuggestedPrompt[]> = {
       text: "Create a 40-minute lesson plan on the water cycle for JHS students.",
     },
   ],
-  business: [
+  research: [
     {
-      label: "Business plan",
-      text: "Draft a one-page business plan outline for a mobile money agent in Accra.",
+      label: "JHS 2 Career Tech",
+      text: "Explain JHS 2 Career Technology — key topics, skills, and a short practice question.",
     },
     {
-      label: "Professional email",
-      text: "Help me write a professional email requesting a meeting with a client.",
+      label: "AI news in Ghana",
+      text: "Research the latest AI news in Ghana with sources where available.",
     },
     {
-      label: "Proposal",
-      text: "Outline a proposal for a small catering business targeting office lunches.",
+      label: "Compare sources",
+      text: "Compare two publicly accessible sources on mobile money adoption in Ghana.",
     },
     {
-      label: "Interview prep",
-      text: "Give me 5 common interview questions for a junior accountant role.",
+      label: "Summarize article",
+      text: "Summarize this topic with citations: renewable energy policy in West Africa.",
     },
   ],
   writing: [

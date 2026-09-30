@@ -128,7 +128,9 @@ export function useChatPlatform() {
   const [sessionToken, setSessionTokenState] = useState<string | null>(() => getSessionToken());
   const sessionRecoveryRef = useRef(false);
   const [outboxCount, setOutboxCount] = useState(0);
+  const [outboxEntries, setOutboxEntries] = useState<OutboxEntry[]>([]);
   const [isSyncingOutbox, setIsSyncingOutbox] = useState(false);
+  const [flushingOutboxId, setFlushingOutboxId] = useState<string | null>(null);
   const [segmentNotice, setSegmentNotice] = useState<string | null>(null);
   const createUserAttempted = useRef(false);
   const creditsCacheRef = useRef<number | null>(null);
@@ -513,9 +515,24 @@ export function useChatPlatform() {
   const refreshOutboxCount = useCallback(async () => {
     const rows = await listOutbox();
     setOutboxCount(rows.length);
+    setOutboxEntries(rows);
     emitOutboxStatus({ count: rows.length, syncing: syncingOutboxRef.current });
     return rows.length;
   }, []);
+
+  const cancelOutboxMessage = useCallback(
+    async (id: string) => {
+      const rows = await listOutbox();
+      const row = rows.find((entry) => entry.id === id);
+      if (!row) return;
+      await removeOutbox(id);
+      if (pendingUserText === row.content) {
+        setPendingUserText(null);
+      }
+      await refreshOutboxCount();
+    },
+    [pendingUserText, refreshOutboxCount]
+  );
 
   const dispatchAccept = useCallback(
     async (
@@ -749,6 +766,7 @@ export function useChatPlatform() {
           logChatClient("outbox_flush", { ok: false, reason: "no_session" });
           break;
         }
+        setFlushingOutboxId(row.id);
         try {
           let conversationId = row.conversationId;
           if (!conversationId) {
@@ -767,6 +785,9 @@ export function useChatPlatform() {
             isSlowNetwork
           );
           await removeOutbox(row.id);
+          if (pendingUserText === row.content) {
+            setPendingUserText(null);
+          }
         } catch (e) {
           const msg = e instanceof Error ? e.message : "Sync failed";
           await bumpOutboxAttempt(row.id, msg);
@@ -775,18 +796,31 @@ export function useChatPlatform() {
             : MAX_SEND_RETRIES;
           if (row.attempts + 1 >= maxOutboxAttempts) {
             await removeOutbox(row.id);
+            if (pendingUserText === row.content) {
+              setPendingUserText(null);
+            }
             setError(toUserFacingError(e, msg));
           }
+        } finally {
+          setFlushingOutboxId((current) => (current === row.id ? null : current));
         }
       }
       await refreshOutboxCount();
     } finally {
       syncingOutboxRef.current = false;
       setIsSyncingOutbox(false);
+      setFlushingOutboxId(null);
       const remaining = await listOutbox();
       emitOutboxStatus({ count: remaining.length, syncing: false });
     }
-  }, [createConversation, dispatchAccept, refreshOutboxCount, isSlowNetwork, effectiveOnline]);
+  }, [
+    createConversation,
+    dispatchAccept,
+    pendingUserText,
+    refreshOutboxCount,
+    isSlowNetwork,
+    effectiveOnline,
+  ]);
 
   useEffect(() => {
     if (!email || createUserAttempted.current) return;
@@ -1426,7 +1460,10 @@ export function useChatPlatform() {
     isAcceptingMessage: false,
     isSlowNetwork,
     outboxCount,
+    outboxEntries,
     isSyncingOutbox,
+    flushingOutboxId,
+    cancelOutboxMessage,
     retryOutboxSync: flushOutbox,
     retryFailedReply,
     error,

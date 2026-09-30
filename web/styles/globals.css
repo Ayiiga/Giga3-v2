@@ -1316,3 +1316,26 @@ html.primary-nav-route.primary-nav-bar-visible.chat-route .chat-keyboard-shell {
 .feed-tab-inactive {
   color: #e5e7eb !important;
 }
+
+/* Giga Lite / data saver — reduce motion and blur app-wide */
+html.giga-lite-saver *,
+html.giga-lite-saver *::before,
+html.giga-lite-saver *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:not(.giga-lite-extreme) *,
+  html:not(.giga-lite-extreme) *::before,
+  html:not(.giga-lite-extreme) *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+html.giga-lite-saver .chat-composer-surface,
+html.giga-lite-extreme .chat-composer-surface {
+  backdrop-filter: none !important;
+}

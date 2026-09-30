@@ -1,4 +1,9 @@
 import type { InitializePaymentResult } from "./types";
+import { isTransientPaystackConnectionError } from "./paystackErrors";
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 let paystackModulePromise: Promise<typeof import("@paystack/inline-js")> | null =
   null;
@@ -26,9 +31,27 @@ export async function initializePaystackPayment(
     productId: string;
     channels?: string[];
   }) => Promise<InitializePaymentResult>,
-  args: { sessionToken: string; productId: string; channels?: string[] }
+  args: { sessionToken: string; productId: string; channels?: string[] },
+  options?: { maxAttempts?: number }
 ): Promise<InitializePaymentResult> {
-  return runAction(args);
+  const maxAttempts = Math.max(1, options?.maxAttempts ?? 3);
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await runAction(args);
+    } catch (error) {
+      lastError = error;
+      const message = error instanceof Error ? error.message : String(error);
+      if (attempt < maxAttempts && isTransientPaystackConnectionError(message)) {
+        await sleep(350 * attempt);
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw lastError;
 }
 
 export async function verifyPaystackPayment(
@@ -59,10 +82,23 @@ export type OpenPaystackCheckoutOptions = {
   /** Optional channel allowlist (e.g. ["mobile_money"]) for the inline popup. */
   channels?: string[];
   onPopupReady?: () => void;
+  /** Fired before full-page redirect (mobile/PWA) so UI can show a loading shield. */
+  onRedirectStarting?: () => void;
   onSuccess: (reference: string) => void | Promise<void>;
   onCancel: () => void;
   onError: (message: string) => void;
 };
+
+/** Mobile/PWA: inline Paystack iframes often flash "content blocked" — redirect instead. */
+export function shouldPreferPaystackRedirect(): boolean {
+  if (typeof window === "undefined") return false;
+  const coarse = window.matchMedia("(pointer: coarse)").matches;
+  const narrow = window.matchMedia("(max-width: 768px)").matches;
+  const standalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  return coarse || narrow || standalone;
+}
 
 const POPUP_LOAD_TIMEOUT_MS = 12_000;
 
@@ -89,12 +125,17 @@ export async function openPaystackCheckout(
   };
 
   const fallbackRedirect = (reason?: string) => {
-    release();
     if (reason) {
       console.warn("[paystack] redirect fallback:", reason);
     }
+    options.onRedirectStarting?.();
     redirectToPaystack(authUrl);
   };
+
+  if (shouldPreferPaystackRedirect()) {
+    fallbackRedirect("mobile redirect");
+    return "redirect";
+  }
 
   try {
     const popup = await getPaystackPop();
@@ -161,15 +202,15 @@ export async function openPaystackCheckout(
       return "popup";
     }
 
-    finish();
+    options.onRedirectStarting?.();
     redirectToPaystack(authUrl);
     return "redirect";
   } catch (e) {
-    release();
     if (authUrl) {
       fallbackRedirect(e instanceof Error ? e.message : "popup failed");
       return "redirect";
     }
+    release();
     throw e;
   }
 }

@@ -4,8 +4,10 @@
  */
 
 const DB_NAME = "giga3-gigalearn-offline";
-const STORE = "lessons";
-const DB_VERSION = 1;
+export const OFFLINE_LESSONS_STORE = "lessons";
+export const OFFLINE_PROGRESS_STORE = "progress_queue";
+const STORE = OFFLINE_LESSONS_STORE;
+const DB_VERSION = 2;
 const MAX_LESSONS = 40;
 
 export type OfflineLessonPack = {
@@ -18,7 +20,8 @@ export type OfflineLessonPack = {
   savedAt: number;
 };
 
-function openDb(): Promise<IDBDatabase | null> {
+/** Shared IndexedDB for offline lessons + progress sync queue. */
+export function openOfflineGigaLearnDb(): Promise<IDBDatabase | null> {
   return new Promise((resolve) => {
     if (typeof indexedDB === "undefined") {
       resolve(null);
@@ -30,10 +33,17 @@ function openDb(): Promise<IDBDatabase | null> {
       if (!db.objectStoreNames.contains(STORE)) {
         db.createObjectStore(STORE, { keyPath: "id" });
       }
+      if (!db.objectStoreNames.contains(OFFLINE_PROGRESS_STORE)) {
+        db.createObjectStore(OFFLINE_PROGRESS_STORE, { keyPath: "clientEventId" });
+      }
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => resolve(null);
   });
+}
+
+function openDb(): Promise<IDBDatabase | null> {
+  return openOfflineGigaLearnDb();
 }
 
 export async function saveOfflineLesson(
@@ -79,6 +89,22 @@ export async function getOfflineLesson(id: string): Promise<OfflineLessonPack | 
     req.onsuccess = () => resolve((req.result as OfflineLessonPack) ?? null);
     req.onerror = () => resolve(null);
   });
+}
+
+export async function removeOfflineLesson(id: string): Promise<void> {
+  const db = await openDb();
+  if (!db) return;
+  await new Promise<void>((resolve) => {
+    const tx = db.transaction(STORE, "readwrite");
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve();
+    tx.objectStore(STORE).delete(id);
+  });
+}
+
+export function formatOfflineStorageHint(count: number): string {
+  if (count === 0) return "No lessons saved offline";
+  return `${count} lesson${count === 1 ? "" : "s"} saved on this device`;
 }
 
 async function pruneOfflineLessons(db: IDBDatabase): Promise<void> {

@@ -9,6 +9,8 @@ import {
   getLevel,
   getSubject,
 } from "@/lib/gigalearn/curriculumEngine";
+import { aiStudioImageUrl, shortVideoScript, socialGraphicUrl } from "@/lib/gigalearn/ecosystem";
+import { saveTeleprompterScript } from "@/lib/gigasocial/teleprompterScripts";
 import { buildRepurposePrompt, repurposeTargetsFor } from "@/lib/gigalearn/repurpose";
 import { parseResourceSearch, scoreResource } from "@/lib/gigalearn/resourceSearch";
 import {
@@ -455,6 +457,7 @@ export const ResourceLibrary = memo(function ResourceLibrary() {
                         onSelect={(targetId) => handleRepurpose(a, targetId)}
                       />
                     </div>
+                    <EcosystemMoves artifact={a} />
                   </div>
                 )}
               </li>
@@ -465,6 +468,43 @@ export const ResourceLibrary = memo(function ResourceLibrary() {
     </div>
   );
 });
+
+function EcosystemMoves({ artifact }: { artifact: LearningArtifact }) {
+  function openImage() {
+    const topic = artifact.curriculumIds?.topic ?? artifact.topic ?? artifact.title;
+    const subject = artifact.curriculumIds?.subjectId
+      ? (getSubject(artifact.curriculumIds.subjectId)?.label ?? "")
+      : (artifact.subject ?? "");
+    const grade = artifact.curriculumIds?.levelId
+      ? (getLevel(artifact.curriculumIds.levelId)?.label ?? "")
+      : (artifact.level ?? "");
+    window.open(aiStudioImageUrl(topic, subject, grade), "_blank", "noopener");
+  }
+  function openGraphic() {
+    window.open(socialGraphicUrl(artifact.title), "_blank", "noopener");
+  }
+  function openVideo(short: boolean) {
+    const topic = artifact.curriculumIds?.topic ?? artifact.topic ?? artifact.title;
+    saveTeleprompterScript(short ? shortVideoScript(artifact.content, topic) : artifact.content.slice(0, 6000));
+    window.open("/gigaedit", "_blank", "noopener");
+  }
+  return (
+    <div className="flex flex-wrap gap-2" aria-label="Send to Giga3 ecosystem">
+      <Button type="button" size="sm" variant="ghost" className="min-h-9" onClick={openImage}>
+        AI Studio image
+      </Button>
+      <Button type="button" size="sm" variant="ghost" className="min-h-9" onClick={() => openVideo(false)}>
+        GigaEdits video
+      </Button>
+      <Button type="button" size="sm" variant="ghost" className="min-h-9" onClick={openGraphic}>
+        Social graphic
+      </Button>
+      <Button type="button" size="sm" variant="ghost" className="min-h-9" onClick={() => openVideo(true)}>
+        Short video script
+      </Button>
+    </div>
+  );
+}
 
 function RepurposeMenu({
   toolId,

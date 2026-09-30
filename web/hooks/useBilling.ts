@@ -9,6 +9,10 @@ import {
   type PaystackClientMode,
 } from "@/lib/payments/paystackConfig";
 import {
+  channelsForPayMethod,
+  type PayMethod,
+} from "@/lib/billing/paystackPacks";
+import {
   openPaystackCheckout,
   initializePaystackPayment,
   preloadPaystackInline,
@@ -87,7 +91,7 @@ export function useBilling() {
   }, []);
 
   const checkout = useCallback(
-    async (productId: string) => {
+    async (productId: string, payMethod: PayMethod = "momo") => {
       if (!email || !sessionToken) throw new Error("Sign in required");
       if (checkoutLock.current) return;
 
@@ -104,9 +108,11 @@ export function useBilling() {
       setCheckoutPhase("preparing");
 
       try {
+        const channels = channelsForPayMethod(payMethod);
         const result = await initializePaystackPayment(initPayment, {
           sessionToken,
           productId,
+          channels,
         });
 
         setCheckoutPreview({
@@ -118,7 +124,9 @@ export function useBilling() {
         const mode = await openPaystackCheckout(result, {
           email,
           publicKey,
-          onPopupReady: () => setCheckoutPhase(null),
+          channels,
+          onRedirectStarting: () => setCheckoutPhase("redirecting"),
+          onPopupReady: () => setCheckoutPhase("popup"),
           onSuccess: async (reference) => {
             setCheckoutPhase("verifying");
             try {
@@ -148,7 +156,7 @@ export function useBilling() {
         });
 
         if (mode === "redirect") {
-          setCheckoutPhase("opening");
+          setCheckoutPhase("redirecting");
           return;
         }
       } catch (e) {

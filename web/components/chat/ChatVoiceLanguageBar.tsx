@@ -27,7 +27,7 @@ export function ChatVoiceLanguageBar({ className }: ChatVoiceLanguageBarProps) {
     <div className={cn("chat-voice-language-bar", className)}>
       <label className="chat-voice-language-pill">
         <Volume2 className="chat-voice-language-pill__icon" aria-hidden />
-        <span className="chat-voice-language-pill__prefix">Voice Language:</span>
+        <span className="chat-voice-language-pill__prefix">Voice:</span>
         <span className="chat-voice-language-pill__value" aria-hidden>
           {active.name} {active.flag}
         </span>

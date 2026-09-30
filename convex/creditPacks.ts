@@ -3,7 +3,14 @@
  * Override amounts via PAYSTACK_CREDITS_*_GHS env vars on Convex.
  */
 
-export const CREDIT_PACK_IDS = ["credits_60", "credits_150", "credits_500"] as const;
+export const CREDIT_PACK_IDS = [
+  "credits_5",
+  "credits_10",
+  "credits_20",
+  "credits_60",
+  "credits_150",
+  "credits_500",
+] as const;
 export type CreditPackId = (typeof CREDIT_PACK_IDS)[number];
 
 type CreditPackDef = {
@@ -16,6 +23,30 @@ type CreditPackDef = {
 };
 
 const PACKS: CreditPackDef[] = [
+  {
+    id: "credits_5",
+    label: "Starter Pack",
+    credits: 5,
+    defaultAmountGhs: 5,
+    description: "One-time · GH₵5 starter credits — not a subscription.",
+    envKey: "PAYSTACK_CREDITS_5_GHS",
+  },
+  {
+    id: "credits_10",
+    label: "Mini Pack",
+    credits: 10,
+    defaultAmountGhs: 10,
+    description: "One-time · GH₵10 mini top-up — not a subscription.",
+    envKey: "PAYSTACK_CREDITS_10_GHS",
+  },
+  {
+    id: "credits_20",
+    label: "Creator Pack",
+    credits: 20,
+    defaultAmountGhs: 20,
+    description: "One-time · GH₵20 creator top-up — not a subscription.",
+    envKey: "PAYSTACK_CREDITS_20_GHS",
+  },
   {
     id: "credits_60",
     label: "60 Credits",

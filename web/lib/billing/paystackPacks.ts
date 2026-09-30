@@ -1,6 +1,15 @@
 /** Credits purchase modal catalog — maps to real backend products only. */
 
-export type ModalPackId = "free" | "basic" | "pro" | "premium" | "topup60" | "topup150";
+export type ModalPackId =
+  | "free"
+  | "basic"
+  | "pro"
+  | "premium"
+  | "topup5"
+  | "topup10"
+  | "topup20"
+  | "topup60"
+  | "topup150";
 
 export type ModalPack = {
   id: ModalPackId;
@@ -56,6 +65,34 @@ export const PAYSTACK_MODAL_PACKS: ModalPack[] = [
     recurring: true,
   },
   {
+    id: "topup5",
+    credits: 5,
+    priceGhs: 5,
+    name: "Starter · GH₵5",
+    subtitle: "One-time credit pack · not a subscription",
+    productId: "credits_5",
+    recurring: false,
+  },
+  {
+    id: "topup10",
+    credits: 10,
+    priceGhs: 10,
+    name: "Mini · GH₵10",
+    subtitle: "One-time credit pack · not a subscription",
+    productId: "credits_10",
+    recurring: false,
+  },
+  {
+    id: "topup20",
+    credits: 20,
+    priceGhs: 20,
+    name: "Creator · GH₵20",
+    subtitle: "One-time credit pack · not a subscription",
+    badge: "Affordable",
+    productId: "credits_20",
+    recurring: false,
+  },
+  {
     id: "topup60",
     credits: 60,
     priceGhs: 60,
@@ -84,7 +121,12 @@ export function getModalPack(id: ModalPackId): ModalPack {
 export type PayMethod = "momo" | "card" | "bank";
 
 export const PAY_METHODS: { id: PayMethod; label: string; detail: string; channels: string[] }[] = [
-  { id: "momo", label: "Mobile Money", detail: "MTN · Vodafone · AirtelTigo", channels: ["mobile_money"] },
+  {
+    id: "momo",
+    label: "MTN MoMo",
+    detail: "Pay with MTN MoMo via Paystack · Telecel & AirtelTigo where supported",
+    channels: ["mobile_money"],
+  },
   { id: "card", label: "Card", detail: "Visa · Mastercard", channels: ["card"] },
   { id: "bank", label: "Bank Transfer", detail: "Bank · USSD", channels: ["bank_transfer", "bank", "ussd"] },
 ];

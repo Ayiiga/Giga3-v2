@@ -3,6 +3,7 @@
 import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
 import { CreditsPaystackModal } from "@/components/billing/CreditsPaystackModal";
 import { ChatInputToolbar } from "@/components/chat/ChatInputToolbar";
+import { ChatLinkDetectedBar } from "@/components/chat/ChatLinkDetectedBar";
 import { EmojiPicker } from "@/components/chat/EmojiPicker";
 import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
@@ -64,7 +65,7 @@ interface ChatInputProps {
 export const ChatInput = memo(function ChatInput({
   onSend,
   disabled,
-  placeholder = "Message Giga3...",
+  placeholder = "Ask Giga3 anything…",
   insertRef,
   uploadUsage,
   credits,
@@ -186,7 +187,7 @@ export const ChatInput = memo(function ChatInput({
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  const effectivePlaceholder = isNarrowScreen ? "Message Giga3…" : placeholder;
+  const effectivePlaceholder = isNarrowScreen ? "Ask Giga3 anything…" : placeholder;
 
   const typingMode = isMobileComposer && composerFocused && typingReady;
 
@@ -352,6 +353,16 @@ export const ChatInput = memo(function ChatInput({
           </>
         )}
 
+        <ChatLinkDetectedBar
+          draft={value}
+          disabled={inputDisabled}
+          onApplyPrompt={(text) => {
+            setValue(text);
+            setNotice("Link action ready — review and send when ready.");
+            requestAnimationFrame(() => textareaRef.current?.focus());
+          }}
+        />
+
         {notice && (
           <NoticeBanner message={notice} onDismiss={() => setNotice(null)} />
         )}
@@ -510,7 +521,7 @@ export const ChatInput = memo(function ChatInput({
               <span />
             </span>
             <span className="flex-1 text-[13px] font-medium text-black">
-              Listening… Twi/Hausa available
+              Listening… Twi & Ewe available
             </span>
             <button
               type="button"

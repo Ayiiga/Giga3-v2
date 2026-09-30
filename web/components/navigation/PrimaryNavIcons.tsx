@@ -177,3 +177,26 @@ export function SocialNavIcon({ active, className }: IconProps) {
     </IconSvg>
   );
 }
+
+/** Market — shopping bag */
+export function MarketNavIcon({ active, className }: IconProps) {
+  const stroke = active ? 2.15 : STROKE;
+  return (
+    <IconSvg className={className}>
+      <path
+        d="M6 8.5h12l-1.1 9.25a1.5 1.5 0 0 1-1.49 1.32H8.59a1.5 1.5 0 0 1-1.49-1.32L6 8.5Z"
+        fill="currentColor"
+        fillOpacity={active ? 0.14 : 0.08}
+        stroke="currentColor"
+        strokeWidth={stroke}
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 8.5V6.75a3 3 0 0 1 6 0V8.5"
+        stroke="currentColor"
+        strokeWidth={stroke}
+        strokeLinecap="round"
+      />
+    </IconSvg>
+  );
+}
