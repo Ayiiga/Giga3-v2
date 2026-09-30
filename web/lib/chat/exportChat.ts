@@ -4,6 +4,13 @@ import {
   formatConversationMarkdown,
   roleLabel,
 } from "@/lib/chat/chatContentFormat";
+import {
+  buildCleanDocumentDocxHtml,
+  buildCleanDocumentExportModel,
+  buildCleanDocumentPrintHtml,
+  documentExportFilename,
+  markdownToCleanDocumentHtml,
+} from "@/lib/chat/cleanDocumentExport";
 import { GIGA3_ATTRIBUTION_LINE } from "@/lib/share/giga3Attribution";
 
 export {
@@ -116,7 +123,7 @@ function inlineMarkdownToHtml(escaped: string): string {
     );
 }
 
-/** Lightweight markdown → printable HTML for document exports (headings, lists, tables, code). */
+/** @deprecated Prefer markdownToCleanDocumentHtml from cleanDocumentExport */
 export function markdownToPrintableHtml(markdown: string): string {
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const out: string[] = [];
@@ -192,25 +199,14 @@ export function markdownToPrintableHtml(markdown: string): string {
   return out.join("\n");
 }
 
-/** Open a formatted, printable document view of a single message (Save as PDF). */
+/** Open a clean printable document view of a single assistant reply (Save as PDF). */
 export function openMessagePrintView(
   content: string,
   meta?: { title?: string }
 ): void {
-  const clean = content.trim();
-  if (!clean) throw new Error("No content to export");
-  const title = meta?.title?.trim() || "Giga3 AI — Document";
-  const bodyHtml = markdownToPrintableHtml(clean);
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(
-    title
-  )}</title></head><body style="font-family:Georgia,'Times New Roman',serif;color:#18181b;max-width:720px;margin:0 auto;padding:40px 32px;font-size:15px">
-<div style="border-bottom:2px solid #5b21b6;padding-bottom:10px;margin-bottom:20px">
-  <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#5b21b6;font-family:system-ui,sans-serif">Giga3 AI</div>
-  <div style="font-size:20px;font-weight:700;margin-top:4px">${escapeHtml(title)}</div>
-</div>
-${bodyHtml}
-<script>window.onload=function(){setTimeout(function(){window.print();},400);}</script>
-</body></html>`;
+  const model = buildCleanDocumentExportModel(content, meta?.title);
+  if (!model.markdown.trim()) throw new Error("No content to export");
+  const html = buildCleanDocumentPrintHtml(model);
   // Note: no "noopener" — that makes window.open() return null so we cannot
   // write the document into the new tab (it would stay blank).
   const w = window.open("", "_blank");
@@ -223,3 +219,21 @@ ${bodyHtml}
   w.document.write(html);
   w.document.close();
 }
+
+/** Download a single assistant reply as Word (.doc) with no app branding. */
+export function downloadCleanDocumentDocx(content: string): void {
+  const model = buildCleanDocumentExportModel(content);
+  if (!model.markdown.trim()) return;
+  const html = buildCleanDocumentDocxHtml(model);
+  const blob = new Blob(["\ufeff", html], {
+    type: "application/msword;charset=utf-8",
+  });
+  triggerDownloadBlob(blob, documentExportFilename(model.title, "doc"));
+}
+
+export {
+  buildCleanDocumentExportModel,
+  documentExportFilename,
+  extractCleanDocumentContent,
+  markdownToCleanDocumentHtml,
+} from "@/lib/chat/cleanDocumentExport";

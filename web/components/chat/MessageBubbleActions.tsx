@@ -9,8 +9,11 @@ import {
   messageHasCopyableContent,
 } from "@/lib/chat/chatContentFormat";
 import { isMessageFavorite, toggleMessageFavorite } from "@/lib/chat/messageFavorites";
-import { openMessagePrintView } from "@/lib/chat/exportChat";
-import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
+import {
+  buildCleanDocumentExportModel,
+  downloadCleanDocumentDocx,
+  openMessagePrintView,
+} from "@/lib/chat/exportChat";
 import {
   getActiveSpeechBlockId,
   isGigaVoiceSpeaking,
@@ -166,19 +169,23 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
     setMenuOpen(false);
   }, [copyText, speaking, speechBlockId]);
 
-  const canDownloadPdf = useMemo(() => {
+  const canDownloadDocument = useMemo(() => {
     if (role !== "assistant") return false;
-    const { text } = parseMessageMedia(content);
-    return text.trim().length >= DOCUMENT_MIN_CHARS;
+    const { markdown } = buildCleanDocumentExportModel(content);
+    return markdown.trim().length >= DOCUMENT_MIN_CHARS;
   }, [role, content]);
 
   const runDownloadPdf = useCallback(() => {
     try {
-      const { text } = parseMessageMedia(content);
-      openMessagePrintView(text || content);
+      openMessagePrintView(content);
     } catch {
       /* pop-up blocked */
     }
+    setMenuOpen(false);
+  }, [content]);
+
+  const runDownloadDocx = useCallback(() => {
+    downloadCleanDocumentDocx(content);
     setMenuOpen(false);
   }, [content]);
 
@@ -239,7 +246,14 @@ export const MessageBubbleActions = memo(function MessageBubbleActions({
       label: "Download PDF",
       icon: <FileDown className="h-3.5 w-3.5" />,
       onClick: runDownloadPdf,
-      hidden: !canDownloadPdf,
+      hidden: !canDownloadDocument,
+    },
+    {
+      key: "docx",
+      label: "Download DOCX",
+      icon: <FileDown className="h-3.5 w-3.5" />,
+      onClick: runDownloadDocx,
+      hidden: !canDownloadDocument,
     },
     {
       key: "regenerate",
