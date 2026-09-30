@@ -7,6 +7,7 @@ import { MediaErrorBoundary } from "@/components/media/MediaErrorBoundary";
 import { MediaGeneratePanel } from "@/components/media/MediaGeneratePanel";
 import { MediaQuickTemplates } from "@/components/media/MediaQuickTemplates";
 import { CreateSubNav } from "@/components/navigation/CreateSubNav";
+import { CreatorPipelineEntry } from "@/components/creator/CreatorPipelineEntry";
 import { MediaStudioHeader } from "@/components/media/MediaStudioHeader";
 import { RecentGenerationsSection } from "@/components/media/RecentGenerationsSection";
 import { SurfaceRecommendations } from "@/components/recommendations/SurfaceRecommendations";
@@ -133,6 +134,8 @@ function MediaStudioContent() {
         subscriptionActive={usage?.subscriptionActive}
       />
       <MediaStudioHeader usage={usage} />
+
+      {formSeed.tab === "video" ? <CreatorPipelineEntry /> : null}
 
       <MediaGeneratePanel
         key={formRevision}

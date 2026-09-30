@@ -2,6 +2,7 @@
 
 import { TrendCard } from "@/components/trends/TrendCard";
 import { TREND_CATEGORIES, getTrendCategory } from "@/lib/trends/categories";
+import { TREND_REGIONS, getTrendRegion, type TrendRegionId } from "@/lib/trends/regions";
 import { TrendDashboardPanel } from "@/components/trends/TrendDashboardPanel";
 import { DISCOVER_ITEMS } from "@/lib/trends/discoverCatalog";
 import { recordTrendActivity } from "@/lib/trends/personalizedRecommendations";
@@ -11,22 +12,70 @@ import { useMemo } from "react";
 export function TrendingPageClient() {
   const params = useSearchParams();
   const categoryId = params.get("category") ?? "";
+  const regionId = (params.get("region") ?? "africa") as TrendRegionId;
   const activeCategory = categoryId ? getTrendCategory(categoryId) : undefined;
+  const activeRegion = getTrendRegion(regionId) ?? getTrendRegion("africa");
 
   const spotlight = useMemo(() => {
-    if (!activeCategory) return DISCOVER_ITEMS.slice(0, 6);
-    return DISCOVER_ITEMS.filter((item) => item.category === activeCategory.id).slice(0, 6);
-  }, [activeCategory]);
+    let items = DISCOVER_ITEMS;
+    if (activeCategory) {
+      items = items.filter((item) => item.category === activeCategory.id);
+    }
+    if (regionId === "ghana") {
+      items = items.filter(
+        (item) =>
+          /ghana|bece|wassce|accra|africa/i.test(`${item.title} ${item.description}`)
+      );
+    } else if (regionId !== "global") {
+      items = items.filter(
+        (item) =>
+          /africa|ghana|nigeria|kenya|west/i.test(`${item.title} ${item.description}`) ||
+          item.category === "education"
+      );
+    }
+    return items.slice(0, 6);
+  }, [activeCategory, regionId]);
 
   return (
     <div className="space-y-12">
       <header className="mx-auto max-w-3xl text-center">
         <p className="section-heading">Trend Intelligence</p>
-        <h2 className="page-title mt-3">Live filters &amp; activity</h2>
+        <h2 className="page-title mt-3">Popular topics &amp; curated picks</h2>
         <p className="section-lead mx-auto mt-4">
-          Category filters and on-device activity tracking — no fabricated live metrics.
+          Geographic and category filters over curated editorial links — not live engagement
+          rankings.
         </p>
       </header>
+
+      <section aria-labelledby="trend-regions-heading">
+        <h2 id="trend-regions-heading" className="mb-4 text-lg font-semibold">
+          Region
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {TREND_REGIONS.map((region) => {
+            const active = activeRegion?.id === region.id;
+            const href = categoryId
+              ? `/trending?region=${region.id}&category=${categoryId}`
+              : `/trending?region=${region.id}`;
+            return (
+              <a
+                key={region.id}
+                href={href}
+                className={`min-h-11 rounded-full border px-4 py-2 text-sm ${
+                  active
+                    ? "border-accent bg-accent/10 font-semibold text-foreground"
+                    : "border-border bg-white text-foreground hover:border-accent/30"
+                }`}
+              >
+                {region.label}
+              </a>
+            );
+          })}
+        </div>
+        {activeRegion ? (
+          <p className="mt-2 text-xs text-muted">{activeRegion.description}</p>
+        ) : null}
+      </section>
 
       <section aria-labelledby="trend-categories-heading">
         <h2 id="trend-categories-heading" className="mb-4 text-lg font-semibold">

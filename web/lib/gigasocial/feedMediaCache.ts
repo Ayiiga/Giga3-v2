@@ -28,7 +28,12 @@ export async function getCachedFeedPostIds(): Promise<Set<string>> {
 }
 
 /** Warm cache for nearby posts (thumbnails + media) without blocking the UI. */
-export function prefetchFeedMedia(posts: SocialPost[], limit = FEED_PREFETCH_COUNT): void {
+export function prefetchFeedMedia(
+  posts: SocialPost[],
+  limit = FEED_PREFETCH_COUNT,
+  opts?: { allowPrefetch?: boolean }
+): void {
+  if (opts?.allowPrefetch === false) return;
   if (typeof window === "undefined" || !navigator.onLine) return;
   const targets = posts.slice(0, limit).filter((post) => {
     const kind = getPostMediaKind(post);

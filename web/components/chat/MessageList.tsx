@@ -12,6 +12,8 @@ import { ScrollToLatestButton } from "@/components/chat/ScrollToLatestButton";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { messageListScrollKey } from "@/lib/chat/stableMessages";
 import { groupMessagesByDate } from "@/lib/chat/groupMessagesByDate";
+import type { OutboxEntry } from "@/lib/chat/offlineOutbox";
+import { resolvePendingDeliveryState } from "@/lib/chat/outboxUi";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 export interface UiMessage {
@@ -39,6 +41,8 @@ interface MessageListProps {
   /** Compact "Continue" history — only the user's own authorized conversations. */
   recentConversations?: RecentConversationItem[];
   onSelectConversation?: (id: string) => void;
+  outboxEntries?: OutboxEntry[];
+  flushingOutboxId?: string | null;
 }
 
 export interface RecentConversationItem {
@@ -67,11 +71,21 @@ function MessageListInner({
   onQuickAction,
   recentConversations,
   onSelectConversation,
+  outboxEntries = [],
+  flushingOutboxId = null,
 }: MessageListProps) {
   useRenderDiagnostic("MessageList");
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollKey = useMemo(() => messageListScrollKey(messages), [messages]);
+  const pendingContent = useMemo(
+    () => messages.find((m) => m.id === "pending-user")?.content,
+    [messages]
+  );
+  const pendingDelivery = useMemo(
+    () => resolvePendingDeliveryState(pendingContent, outboxEntries, flushingOutboxId),
+    [pendingContent, outboxEntries, flushingOutboxId]
+  );
   const messageGroups = useMemo(() => groupMessagesByDate(messages), [messages]);
   const lastAssistantId = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i -= 1) {
@@ -208,7 +222,8 @@ function MessageListInner({
                     metadataJson={m.metadataJson}
                     createdAt={m.createdAt}
                     pending={m.id === "pending-user"}
-                    showSending={false}
+                    showSending={m.id === "pending-user" && pendingDelivery === "sending"}
+                    deliveryQueued={m.id === "pending-user" && pendingDelivery === "queued"}
                     streaming={
                       awaitingReply &&
                       m.role === "assistant" &&
@@ -245,7 +260,9 @@ function propsEqual(prev: MessageListProps, next: MessageListProps): boolean {
     prev.onQuickAction === next.onQuickAction &&
     prev.recentConversations === next.recentConversations &&
     prev.onSelectConversation === next.onSelectConversation &&
-    prev.messages === next.messages
+    prev.messages === next.messages &&
+    prev.outboxEntries === next.outboxEntries &&
+    prev.flushingOutboxId === next.flushingOutboxId
   );
 }
 

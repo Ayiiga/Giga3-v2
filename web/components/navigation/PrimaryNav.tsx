@@ -5,6 +5,7 @@ import {
   CreateNavIcon,
   HomeNavIcon,
   LearnNavIcon,
+  MarketNavIcon,
   SocialNavIcon,
 } from "@/components/navigation/PrimaryNavIcons";
 import {
@@ -27,6 +28,7 @@ const PRIMARY_NAV_ICONS: Record<
   learn: LearnNavIcon,
   create: CreateNavIcon,
   social: SocialNavIcon,
+  market: MarketNavIcon,
 };
 
 type PrimaryNavBarProps = {

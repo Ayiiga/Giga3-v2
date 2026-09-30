@@ -4,7 +4,7 @@ import { siteConfig } from "@/lib/site";
 /** Re-export scope notes for docs and UI copy. */
 export { PRIMARY_NAV_PRODUCT_SCOPE };
 
-export type PrimaryNavTabId = "home" | "learn" | "create" | "social";
+export type PrimaryNavTabId = "home" | "learn" | "create" | "social" | "market";
 
 export type PrimaryNavTab = {
   id: PrimaryNavTabId;
@@ -54,6 +54,12 @@ export const PRIMARY_NAV_TABS: PrimaryNavTab[] = [
     label: "Social",
     href: siteConfig.links.gigasocial,
     match: (pathname) => normalizePath(pathname).startsWith("/gigasocial"),
+  },
+  {
+    id: "market",
+    label: "Market",
+    href: siteConfig.links.marketplace,
+    match: (pathname) => normalizePath(pathname).startsWith("/marketplace"),
   },
 ];
 

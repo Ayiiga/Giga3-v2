@@ -20,7 +20,10 @@ describe("credits paystack modal packs", () => {
 
   it("maps every purchasable pack to a real backend product", () => {
     const purchasable = PAYSTACK_MODAL_PACKS.filter((p) => p.productId);
-    expect(purchasable.length).toBeGreaterThanOrEqual(5);
+    expect(purchasable.length).toBeGreaterThanOrEqual(8);
+    expect(getModalPack("topup5").productId).toBe("credits_5");
+    expect(getModalPack("topup10").productId).toBe("credits_10");
+    expect(getModalPack("topup20").productId).toBe("credits_20");
     expect(getModalPack("basic").productId).toBe("sub_basic_monthly");
     expect(getModalPack("premium").productId).toBe("sub_premium_monthly");
     expect(getModalPack("topup60").productId).toBe("credits_60");

@@ -13,8 +13,10 @@ import { CREDIT_COSTS } from "@/lib/credits/constants";
 import { CREDIT_PACKS, formatGhs } from "@/lib/payments/plans";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { PayMethodPicker } from "@/components/billing/PayMethodPicker";
+import type { PayMethod } from "@/lib/billing/paystackPacks";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 function CreditsPageClientInner() {
   const router = useRouter();
@@ -30,6 +32,17 @@ function CreditsPageClientInner() {
     inlineEnabled,
     dismissError,
   } = useBilling();
+
+  const [payMethod, setPayMethod] = useState<PayMethod>("momo");
+
+  const microPacks = useMemo(
+    () => CREDIT_PACKS.filter((pack) => pack.amountGhs <= 20),
+    []
+  );
+  const standardPacks = useMemo(
+    () => CREDIT_PACKS.filter((pack) => pack.amountGhs > 20),
+    []
+  );
 
   useEffect(() => {
     if (!email) router.replace("/chat/login?next=/credits");
@@ -65,31 +78,66 @@ function CreditsPageClientInner() {
       {error && (
         <BillingErrorBanner message={error} onDismiss={dismissError} />
       )}
-      <div className="grid gap-8 md:grid-cols-3">
-        {CREDIT_PACKS.map((pack) => (
-          <article
-            key={pack.id}
-            className={cn(
-              "glass flex flex-col rounded-2xl p-8",
-              pack.highlighted && "border-violet-500/40"
-            )}
-          >
-            <h3 className="font-semibold">{pack.label}</h3>
-            <p className="mt-2 text-2xl font-bold">{formatGhs(pack.amountGhs)}</p>
-            <p className="mt-2 flex-1 text-sm text-muted">{pack.description}</p>
-            <Button
-              type="button"
-              variant="primary"
-              size="lg"
-              disabled={paying}
-              onClick={() => void checkout(pack.id)}
-              className="mt-8 w-full"
+      <PayMethodPicker value={payMethod} onChange={setPayMethod} disabled={paying} />
+
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold">One-time credit packs</h2>
+        <p className="text-sm text-muted">Affordable top-ups — not subscriptions.</p>
+        <div className="grid gap-6 sm:grid-cols-3">
+          {microPacks.map((pack) => (
+            <article
+              key={pack.id}
+              className={cn(
+                "glass flex flex-col rounded-2xl p-6",
+                pack.highlighted && "border-violet-500/40"
+              )}
             >
-              {paystackButtonLabel(checkoutPhase, "Pay with Paystack")}
-            </Button>
-          </article>
-        ))}
-      </div>
+              <h3 className="font-semibold">{pack.label}</h3>
+              <p className="mt-2 text-2xl font-bold">{formatGhs(pack.amountGhs)}</p>
+              <p className="mt-2 flex-1 text-sm text-muted">{pack.description}</p>
+              <Button
+                type="button"
+                variant="primary"
+                size="lg"
+                disabled={paying}
+                onClick={() => void checkout(pack.id, payMethod)}
+                className="mt-6 w-full"
+              >
+                {paystackButtonLabel(checkoutPhase, "Pay with Paystack")}
+              </Button>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold">Larger top-ups</h2>
+        <div className="grid gap-8 md:grid-cols-3">
+          {standardPacks.map((pack) => (
+            <article
+              key={pack.id}
+              className={cn(
+                "glass flex flex-col rounded-2xl p-8",
+                pack.highlighted && "border-violet-500/40"
+              )}
+            >
+              <h3 className="font-semibold">{pack.label}</h3>
+              <p className="mt-2 text-2xl font-bold">{formatGhs(pack.amountGhs)}</p>
+              <p className="mt-2 flex-1 text-sm text-muted">{pack.description}</p>
+              <Button
+                type="button"
+                variant="primary"
+                size="lg"
+                disabled={paying}
+                onClick={() => void checkout(pack.id, payMethod)}
+                className="mt-8 w-full"
+              >
+                {paystackButtonLabel(checkoutPhase, "Pay with Paystack")}
+              </Button>
+            </article>
+          ))}
+        </div>
+      </section>
       {usage && !usage.canGenerateVideo && (
         <p className="rounded-xl border border-amber-500/30 bg-amber-950/30 p-4 text-sm text-amber-100">
           Need more credits for video?{" "}

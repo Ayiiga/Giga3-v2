@@ -44,6 +44,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SocialEmptyState } from "@/components/gigasocial/ux/SocialEmptyState";
 import { useConnectionQuality } from "@/hooks/useConnectionQuality";
+import { shouldAllowBackgroundPrefetch } from "@/lib/network/gigaLite";
 import { useGigaSocialFeedAutoplay } from "@/hooks/useGigaSocialFeedAutoplay";
 import { useEffectiveOnline } from "@/hooks/useEffectiveOnline";
 import { useGigaSocialOutbox } from "@/hooks/useGigaSocialOutbox";
@@ -125,7 +126,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const router = useRouter();
   const features = useGigaSocialFeatures();
   const { effectiveOnline } = useEffectiveOnline();
-  const { isSlowNetwork } = useConnectionQuality();
+  const { isSlowNetwork, saveData } = useConnectionQuality();
   const socialOutbox = useGigaSocialOutbox(sessionToken, features.enableSocialOutbox);
   const [offlineSnapshot, setOfflineSnapshot] = useState<SocialPost[] | null>(() =>
     typeof window !== "undefined" ? loadFeedSnapshot() : null
@@ -295,10 +296,12 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     const livePosts = [...(cursor ? extraPosts : []), ...(feed?.posts ?? [])] as SocialPost[];
     if (livePosts.length > 0) {
       saveFeedSnapshot(livePosts);
-      prefetchFeedMedia(livePosts);
+      prefetchFeedMedia(livePosts, undefined, {
+        allowPrefetch: shouldAllowBackgroundPrefetch({ saveData, isSlowNetwork }),
+      });
       void pruneFeedMediaCache(livePosts.map((post) => post._id));
     }
-  }, [cursor, debouncedSearch, effectiveOnline, extraPosts, feed?.posts, savedFeed]);
+  }, [cursor, debouncedSearch, effectiveOnline, extraPosts, feed?.posts, savedFeed, isSlowNetwork, saveData]);
 
   const { autoPlay, paused, pause, toggle, hydrated } = useGigaSocialFeedAutoplay();
 

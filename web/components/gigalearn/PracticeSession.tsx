@@ -33,7 +33,12 @@ import {
   loadPracticeSession,
   savePracticeSession,
 } from "@/lib/gigalearn/practiceSessionStorage";
+import {
+  newOfflineProgressEventId,
+  queueOfflineAssessmentEvent,
+} from "@/lib/gigalearn/offlineProgressQueue";
 import { recordPracticeCompletion } from "@/lib/gigalearn/workspace";
+import { useEffectiveOnline } from "@/hooks/useEffectiveOnline";
 import {
   PracticeQuestionCard,
   type PracticeQuestionResult,
@@ -90,6 +95,7 @@ export function PracticeSession({
   const ageBand = ageBandFromLevel(level);
   const ui = ageUiConfig(ageBand);
   const recordAssessment = useMutation(api.gigaLearnProgress.recordAssessment);
+  const { effectiveOnline } = useEffectiveOnline();
 
   const [mode, setMode] = useState<PracticeModeId>(
     focusWeakRevision ? "revision" : initialMode
@@ -252,16 +258,36 @@ export function PracticeSession({
     updateBestAnswerStreak(answerStreak);
     recordPracticeCompletion({ subject, score });
 
-    void recordAssessment({
+    const assessmentPayload = {
       sessionToken,
       subject,
       curriculum,
       topicKey: topic,
       score,
       toolId,
-    }).catch(() => {
-      setRecorded(false);
-    });
+    };
+
+    if (!effectiveOnline) {
+      void queueOfflineAssessmentEvent({
+        clientEventId: newOfflineProgressEventId(),
+        topicKey: topic,
+        subject,
+        curriculum,
+        score,
+        toolId,
+      });
+    } else {
+      void recordAssessment(assessmentPayload).catch(() => {
+        void queueOfflineAssessmentEvent({
+          clientEventId: newOfflineProgressEventId(),
+          topicKey: topic,
+          subject,
+          curriculum,
+          score,
+          toolId,
+        });
+      });
+    }
     clearPracticeSession();
     onComplete?.(score);
   }, [
@@ -277,6 +303,7 @@ export function PracticeSession({
     onComplete,
     results,
     answerStreak,
+    effectiveOnline,
   ]);
 
   if (!questions.length) {

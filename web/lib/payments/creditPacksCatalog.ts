@@ -1,6 +1,33 @@
 /** Mirror of convex/creditPacks.ts — 1 GHS = 1 credit for top-ups */
 
 export const CREDIT_PACK_CATALOG = {
+  credits_5: {
+    id: "credits_5" as const,
+    label: "Starter Pack",
+    amountGhs: 5,
+    credits: 5,
+    description: "One-time · GH₵5 — try chat and light media.",
+    highlighted: false,
+    microPack: true,
+  },
+  credits_10: {
+    id: "credits_10" as const,
+    label: "Mini Pack",
+    amountGhs: 10,
+    credits: 10,
+    description: "One-time · GH₵10 — a few more messages and images.",
+    highlighted: false,
+    microPack: true,
+  },
+  credits_20: {
+    id: "credits_20" as const,
+    label: "Creator Pack",
+    amountGhs: 20,
+    credits: 20,
+    description: "One-time · GH₵20 — short videos and creative work.",
+    highlighted: true,
+    microPack: true,
+  },
   credits_60: {
     id: "credits_60" as const,
     label: "60 Credits",

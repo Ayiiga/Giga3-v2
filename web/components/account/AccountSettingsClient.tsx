@@ -1,5 +1,7 @@
 "use client";
 
+import { GigaLiteSettings } from "@/components/settings/GigaLiteSettings";
+import { LanguagePreferencesSettings } from "@/components/settings/LanguagePreferencesSettings";
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ButtonLink } from "@/components/ui/Button";
@@ -45,6 +47,9 @@ function AccountSettingsClientInner() {
         <h1 className="page-title">Settings</h1>
         <p className="mt-2 text-sm text-muted">Account preferences for {email}</p>
       </header>
+
+      <GigaLiteSettings />
+      <LanguagePreferencesSettings />
 
       <section className="rounded-2xl border border-border bg-card p-4">
         <div className="flex items-center justify-between gap-3">
