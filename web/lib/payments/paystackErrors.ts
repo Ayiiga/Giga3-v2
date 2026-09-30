@@ -16,6 +16,20 @@ export function unwrapConvexErrorMessage(raw: string): string {
   return stripped || raw;
 }
 
+/** True for Convex/network drops while starting checkout (common on mobile MoMo). */
+export function isTransientPaystackConnectionError(message: string): boolean {
+  const lower = message.toLowerCase();
+  return (
+    lower.includes("connection lost") ||
+    lower.includes("in flight") ||
+    lower.includes("network") ||
+    lower.includes("fetch failed") ||
+    lower.includes("failed to fetch") ||
+    lower.includes("timed out") ||
+    lower.includes("econnreset")
+  );
+}
+
 /** Maps Paystack / network errors to short, user-friendly copy. */
 export function friendlyPaystackError(error: unknown): string {
   const raw =
@@ -26,6 +40,9 @@ export function friendlyPaystackError(error: unknown): string {
   const message = unwrapConvexErrorMessage(raw);
   const lower = message.toLowerCase();
 
+  if (isTransientPaystackConnectionError(message)) {
+    return "Connection dropped while starting Paystack. Check your signal and tap Pay again.";
+  }
   if (lower.includes("sign in")) return message;
   if (lower.includes("paystack_secret") || lower.includes("not configured")) {
     return "Payments are temporarily unavailable. Please try again later.";
