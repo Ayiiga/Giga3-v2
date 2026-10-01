@@ -3,10 +3,9 @@ import { publicMetadata } from "@/lib/seo/publicMetadata";
 
 const base = publicMetadata({
   path: "/ghana-ai",
-  title:
-    "Ghana AI Super App - Giga3AI | #1 AI Platform for Ghana Students, Teachers & Business",
+  title: "Ghana AI Super App — Giga3AI for Students, Teachers & Business",
   description:
-    "Ghana's #1 AI Super App for BECE, WASSCE & beyond. Giga3AI helps Ghana students, teachers & businesses with AI chat, GigaLearn, video creation & more. Built for Ghana curriculum.",
+    "Ghana's AI Super App for BECE, WASSCE & beyond. Giga3AI helps students, teachers & businesses with AI chat, GigaLearn, video & more. Built for Ghana curriculum.",
 });
 
 export const metadata: Metadata = {
