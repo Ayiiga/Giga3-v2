@@ -1,15 +1,7 @@
 "use client";
 
 import { CameraStylePreview } from "@/components/gigaedit/CameraStylePreview";
-import dynamic from "next/dynamic";
-
-const GigaSocialTeleprompter = dynamic(
-  () =>
-    import("@/components/gigasocial/studio/GigaSocialTeleprompter").then(
-      (mod) => mod.GigaSocialTeleprompter
-    ),
-  { ssr: false }
-);
+import { TeleprompterOverlay } from "@/components/gigaedit/TeleprompterOverlay";
 import {
   ULTRA_CLEAR_CAMERA_LOOK,
   applyCameraTrackEnhancements,
@@ -256,13 +248,12 @@ export function TeleprompterStudio({
                 className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/65 to-transparent"
                 aria-hidden
               />
-              <GigaSocialTeleprompter
+              <TeleprompterOverlay
                 key={prompterKey}
-                active
+                script={loadTeleprompterScript()}
+                isVisible
                 recording={recording}
-                presentation="studio"
-                defaultSettingsOpen={false}
-                className="pointer-events-none absolute inset-0"
+                onClose={openScriptEditor}
               />
             </>
           }

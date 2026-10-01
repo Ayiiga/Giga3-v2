@@ -5,7 +5,10 @@ import {
   deleteProjectAndLocalFiles,
   duplicateGigaEditProject,
   estimateGigaEditStorage,
+  estimateGigaEditStorageBytes,
+  estimateProjectBlobBytes,
   exportProjectJson,
+  formatStorageBytes,
   listGigaEditProjects,
   saveGigaEditProject,
   sectionForProjectKind,
@@ -16,24 +19,34 @@ import { clearThumbnailCache } from "@/lib/gigaedit/thumbnailCache";
 import { enqueueGigaEditSync } from "@/lib/gigaedit/offline";
 import type { GigaEditOpenOptions, GigaEditSection } from "@/lib/gigaedit/types";
 import { Copy, Download, FolderOpen, Plus, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+const LOCAL_QUOTA_BYTES = 10 * 1024 * 1024 * 1024;
 
 type ProjectManagerProps = {
   onOpen?: (section: GigaEditSection, opts?: GigaEditOpenOptions) => void;
+};
+
+type PendingDelete = {
+  projects: GigaEditProjectRecord[];
+  bytes: number;
 };
 
 export function ProjectManager({ onOpen }: ProjectManagerProps) {
   const [projects, setProjects] = useState<GigaEditProjectRecord[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [storageBytes, setStorageBytes] = useState(0);
   const [storageLabel, setStorageLabel] = useState<string>("Checking local storage…");
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [pendingDelete, setPendingDelete] = useState<GigaEditProjectRecord[] | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
   const [showStale, setShowStale] = useState(false);
 
   const refresh = useCallback(async () => {
-    setProjects(await listGigaEditProjects());
+    const rows = await listGigaEditProjects();
+    setProjects(rows);
+    setStorageBytes(await estimateGigaEditStorageBytes());
     try {
       const estimate = await estimateGigaEditStorage();
       setStorageLabel(estimate.label);
@@ -46,8 +59,22 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
     void refresh();
   }, [refresh]);
 
-  const stale = staleDraftSuggestions(projects);
-  const selectedList = projects.filter((p) => selected.has(p.id));
+  const stale = useMemo(() => staleDraftSuggestions(projects), [projects]);
+  const selectedList = useMemo(
+    () => projects.filter((project) => selected.has(project.id)),
+    [projects, selected]
+  );
+
+  async function estimateDeleteBytes(items: GigaEditProjectRecord[]): Promise<number> {
+    const values = await Promise.all(items.map((project) => estimateProjectBlobBytes(project.id)));
+    return values.reduce((sum, value) => sum + value, 0);
+  }
+
+  async function requestDelete(items: GigaEditProjectRecord[]) {
+    if (!items.length) return;
+    const bytes = await estimateDeleteBytes(items);
+    setPendingDelete({ projects: items, bytes });
+  }
 
   async function createDraft() {
     setBusy(true);
@@ -64,14 +91,14 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
   }
 
   async function confirmDelete() {
-    if (!pendingDelete?.length) return;
-    for (const p of pendingDelete) {
-      await deleteProjectAndLocalFiles(p.id);
+    if (!pendingDelete?.projects.length) return;
+    for (const project of pendingDelete.projects) {
+      await deleteProjectAndLocalFiles(project.id);
     }
     setMessage(
-      pendingDelete.length === 1
-        ? `Draft “${pendingDelete[0].title}” deleted — space freed on this device.`
-        : `${pendingDelete.length} drafts deleted — space freed on this device.`
+      pendingDelete.projects.length === 1
+        ? `Deleted ${pendingDelete.projects[0].title} — freed ${formatStorageBytes(pendingDelete.bytes)} locally.`
+        : `${pendingDelete.projects.length} drafts deleted — freed ${formatStorageBytes(pendingDelete.bytes)} locally.`
     );
     setPendingDelete(null);
     setSelected(new Set());
@@ -86,8 +113,8 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
         const keys = await caches.keys();
         await Promise.all(
           keys
-            .filter((k) => k.includes("gigaedit") || k.includes("thumbnail"))
-            .map((k) => caches.delete(k))
+            .filter((key) => key.includes("gigaedit") || key.includes("thumbnail"))
+            .map((key) => caches.delete(key))
         );
       }
     } catch {
@@ -103,11 +130,13 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
         <div>
           <h2 className="text-lg font-semibold">My projects</h2>
           <p className="mt-1 text-xs text-[var(--ge-muted)]">
-            Auto-save drafts in IndexedDB. Open, duplicate, export JSON, or delete — originals stay
-            private. Draft auto-saved locally. Original file preserved.
+            Auto-save drafts in IndexedDB. Open, duplicate, export JSON, or delete — originals stay private.
           </p>
           <p className="mt-1.5 text-[11px] font-medium text-[var(--ge-gold)]" aria-live="polite">
             💾 {storageLabel}
+          </p>
+          <p className="mt-2 text-[11px] text-[var(--ge-gold)]">
+            {formatStorageBytes(storageBytes)} used / {formatStorageBytes(LOCAL_QUOTA_BYTES)} local
           </p>
         </div>
         <button
@@ -126,7 +155,7 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
           type="button"
           className="rounded-xl border border-[var(--ge-border)] px-3 py-1.5 text-[11px] text-[var(--ge-muted)]"
           onClick={() => {
-            setSelectMode((v) => !v);
+            setSelectMode((value) => !value);
             setSelected(new Set());
           }}
           aria-pressed={selectMode}
@@ -144,7 +173,7 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
           <button
             type="button"
             className="rounded-xl border border-yellow-400/40 px-3 py-1.5 text-[11px] text-yellow-200"
-            onClick={() => setShowStale((v) => !v)}
+            onClick={() => setShowStale((value) => !value)}
             aria-expanded={showStale}
           >
             {stale.length} draft{stale.length === 1 ? "" : "s"} older than 30 days — review
@@ -158,15 +187,15 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
             Auto-suggest: these drafts haven&apos;t been touched in 30+ days.
           </p>
           <ul className="space-y-1.5">
-            {stale.map((p) => (
-              <li key={p.id} className="flex items-center justify-between gap-2 text-xs">
+            {stale.map((project) => (
+              <li key={project.id} className="flex items-center justify-between gap-2 text-xs">
                 <span className="truncate text-white/80">
-                  {p.title} · {new Date(p.updatedAt).toLocaleDateString()}
+                  {project.title} · {new Date(project.updatedAt).toLocaleDateString()}
                 </span>
                 <button
                   type="button"
                   className="rounded-lg border border-red-400/30 px-2 py-1 text-[11px] text-red-300"
-                  onClick={() => setPendingDelete([p])}
+                  onClick={() => void requestDelete([project])}
                 >
                   Delete
                 </button>
@@ -182,7 +211,7 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
           <button
             type="button"
             className="gigaedit-select-bar__delete"
-            onClick={() => setPendingDelete(selectedList)}
+            onClick={() => void requestDelete(selectedList)}
           >
             <Trash2 className="h-3.5 w-3.5" aria-hidden />
             Delete selected ({selectedList.length})
@@ -198,10 +227,10 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
         </div>
       ) : (
         <ul className="space-y-2">
-          {projects.map((p) => {
-            const checked = selected.has(p.id);
+          {projects.map((project) => {
+            const checked = selected.has(project.id);
             return (
-              <li key={p.id} className="gigaedit-glass flex flex-wrap items-center gap-2 p-3">
+              <li key={project.id} className="gigaedit-glass flex flex-wrap items-center gap-2 p-3">
                 {selectMode ? (
                   <input
                     type="checkbox"
@@ -209,29 +238,29 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
                     onChange={() =>
                       setSelected((prev) => {
                         const next = new Set(prev);
-                        if (next.has(p.id)) next.delete(p.id);
-                        else next.add(p.id);
+                        if (next.has(project.id)) next.delete(project.id);
+                        else next.add(project.id);
                         return next;
                       })
                     }
-                    aria-label={`Select ${p.title}`}
+                    aria-label={`Select ${project.title}`}
                     className="h-4 w-4 accent-[#EAB308]"
                   />
                 ) : null}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{p.title}</p>
+                  <p className="truncate text-sm font-semibold">{project.title}</p>
                   <p className="text-[11px] text-[var(--ge-muted)]">
-                    {p.kind} · {p.aspectRatio} · {new Date(p.updatedAt).toLocaleString()}
-                    {p.aiAssisted ? " · AI-assisted" : ""}
+                    {project.kind} · {project.aspectRatio} · {new Date(project.updatedAt).toLocaleString()}
+                    {project.aiAssisted ? " · AI-assisted" : ""}
                   </p>
                 </div>
                 <button
                   type="button"
                   className="rounded-lg border border-[var(--ge-border)] px-2 py-2 text-[11px] text-[var(--ge-gold)]"
                   onClick={() =>
-                    onOpen?.(sectionForProjectKind(p.kind) as GigaEditSection, {
-                      projectId: p.id,
-                      aspect: p.aspectRatio,
+                    onOpen?.(sectionForProjectKind(project.kind) as GigaEditSection, {
+                      projectId: project.id,
+                      aspect: project.aspectRatio,
                     })
                   }
                 >
@@ -243,10 +272,10 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
                 <button
                   type="button"
                   className="rounded-lg border border-[var(--ge-border)] p-2 text-[var(--ge-muted)]"
-                  aria-label={`Duplicate ${p.title}`}
+                  aria-label={`Duplicate ${project.title}`}
                   title="Duplicate"
                   onClick={() =>
-                    void duplicateGigaEditProject(p.id).then(() => {
+                    void duplicateGigaEditProject(project.id).then(() => {
                       setMessage("Project duplicated.");
                       return refresh();
                     })
@@ -257,14 +286,14 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
                 <button
                   type="button"
                   className="rounded-lg border border-[var(--ge-border)] p-2 text-[var(--ge-muted)]"
-                  aria-label={`Export ${p.title}`}
+                  aria-label={`Export ${project.title}`}
                   title="Export JSON"
                   onClick={() => {
-                    const blob = new Blob([exportProjectJson(p)], { type: "application/json" });
+                    const blob = new Blob([exportProjectJson(project)], { type: "application/json" });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
                     a.href = url;
-                    a.download = `${p.title.replace(/\s+/g, "-").toLowerCase() || "gigaedit"}.json`;
+                    a.download = `${project.title.replace(/\s+/g, "-").toLowerCase() || "gigaedit"}.json`;
                     a.click();
                     URL.revokeObjectURL(url);
                     setMessage("Project JSON exported (media blobs stay local).");
@@ -275,9 +304,9 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
                 <button
                   type="button"
                   className="rounded-lg border border-red-400/30 p-2 text-red-300"
-                  aria-label={`Delete ${p.title}`}
+                  aria-label={`Delete ${project.title}`}
                   title="Delete (frees local space)"
-                  onClick={() => setPendingDelete([p])}
+                  onClick={() => void requestDelete([project])}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
@@ -287,7 +316,7 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
         </ul>
       )}
 
-      {pendingDelete?.length ? (
+      {pendingDelete?.projects.length ? (
         <div
           className="gigaedit-confirm-backdrop"
           role="alertdialog"
@@ -296,11 +325,13 @@ export function ProjectManager({ onOpen }: ProjectManagerProps) {
         >
           <div className="gigaedit-confirm-card">
             <h3 className="text-sm font-bold text-white">
-              Delete {pendingDelete.length === 1 ? `draft “${pendingDelete[0].title}”?` : `${pendingDelete.length} drafts?`}
+              Delete
+              {pendingDelete.projects.length === 1
+                ? ` draft “${pendingDelete.projects[0].title}”?`
+                : ` ${pendingDelete.projects.length} drafts?`}
             </h3>
             <p className="mt-1 text-xs text-[var(--ge-muted)]">
-              This frees local space immediately (IndexedDB + device files). Original files stay
-              untouched.
+              This frees {formatStorageBytes(pendingDelete.bytes)} locally (IndexedDB + device files). Original files stay untouched.
             </p>
             <div className="mt-3 flex gap-2">
               <button

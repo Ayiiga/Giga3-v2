@@ -141,13 +141,82 @@ export async function duplicateGigaEditProject(id: string): Promise<GigaEditProj
   return copy;
 }
 
+async function purgeProjectOpfsArtifacts(projectId: string): Promise<void> {
+  if (typeof navigator === "undefined" || !navigator.storage?.getDirectory) return;
+  try {
+    const root = await navigator.storage.getDirectory();
+    const voiceDir = await root.getDirectoryHandle("gigaedit-voiceover", { create: false }).catch(() => null);
+    if (!voiceDir) return;
+    const prefix = projectId.slice(0, 12);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for await (const [name] of (voiceDir as any).entries()) {
+      if (typeof name === "string" && name.includes(prefix)) {
+        await voiceDir.removeEntry(name, { recursive: true }).catch(() => undefined);
+      }
+    }
+  } catch {
+    /* OPFS optional */
+  }
+}
+
+export async function estimateProjectBlobBytes(id: string): Promise<number> {
+  const db = await openDb();
+  if (!db) return 0;
+  let total = 0;
+  try {
+    const tx = db.transaction(BLOB_STORE, "readonly");
+    const store = tx.objectStore(BLOB_STORE);
+    const keys = [id, `${id}::audio`];
+    for (const key of keys) {
+      const row = (await idbReq(store.get(key))) as { blob?: Blob } | undefined;
+      if (row?.blob) total += row.blob.size;
+    }
+  } catch {
+    return 0;
+  }
+  return total;
+}
+
+export async function estimateGigaEditStorageBytes(): Promise<number> {
+  const db = await openDb();
+  if (!db) return 0;
+  let total = 0;
+  try {
+    const tx = db.transaction(BLOB_STORE, "readonly");
+    const rows = await idbReq(tx.objectStore(BLOB_STORE).getAll());
+    for (const row of rows as { blob?: Blob }[]) {
+      if (row?.blob) total += row.blob.size;
+    }
+  } catch {
+    return 0;
+  }
+  return total;
+}
+
+export function formatStorageBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}
+
 export async function deleteGigaEditProject(id: string): Promise<void> {
   if (id === GIGAEDIT_BRAND_KIT_STORE_ID) return;
   const db = await openDb();
   if (!db) return;
+  const project = await getGigaEditProject(id);
   const tx = db.transaction([META_STORE, BLOB_STORE], "readwrite");
   await idbReq(tx.objectStore(META_STORE).delete(id));
   await idbReq(tx.objectStore(BLOB_STORE).delete(id));
+  if (project) {
+    for (const clip of project.clips) {
+      if (clip.sourceKey) {
+        await idbReq(tx.objectStore(BLOB_STORE).delete(clipBlobId(id, clip.sourceKey)));
+      }
+    }
+    await idbReq(tx.objectStore(BLOB_STORE).delete(`${id}::audio`));
+  }
+  await purgeProjectOpfsArtifacts(id);
 }
 
 export async function putProjectOriginalBlob(id: string, blob: Blob): Promise<void> {

@@ -1,11 +1,13 @@
 "use client";
 
+import { formatTimelineClipLabel } from "@/lib/gigaedit/timelineLanes";
 import {
   applyLayoutPreset,
   applyPositionPreset,
   applySmartResize,
   duplicateClipAsOverlay,
   nextOverlayLayer,
+  reorderVideoLayer,
 } from "@/lib/gigaedit/timelineLayers";
 import type {
   GigaEditTimelineClip,
@@ -20,6 +22,7 @@ type OverlayInspectorProps = {
   clips: GigaEditTimelineClip[];
   playheadSec: number;
   onUpdateClip: (clip: GigaEditTimelineClip) => void;
+  onUpdateClips: (clips: GigaEditTimelineClip[]) => void;
   onDuplicateOverlay: (clip: GigaEditTimelineClip) => void;
   onDeleteClip: (clipId: string) => void;
 };
@@ -69,14 +72,14 @@ export function OverlayInspector({
   clips,
   playheadSec,
   onUpdateClip,
+  onUpdateClips,
   onDuplicateOverlay,
   onDeleteClip,
 }: OverlayInspectorProps) {
   if (!clip || clip.track === "audio") {
     return (
       <p className="text-xs text-[var(--ge-muted)]">
-        Select a video, text, sticker, or logo clip on the timeline to edit position, opacity, and
-        layering.
+        Select a video, text, sticker, or logo clip on the timeline to edit position, opacity, and layering.
       </p>
     );
   }
@@ -88,9 +91,8 @@ export function OverlayInspector({
     (clip.videoLayer ?? 0) > 0 ||
     clip.clipRole === "overlay";
   const isVideoOverlay = clip.track === "video" && isOverlay;
-  const maxLayer = Math.max(0, ...clips.map((c) => c.videoLayer ?? 0));
+  const maxLayer = Math.max(0, ...clips.map((row) => row.videoLayer ?? 0));
   const kindLabel = overlayKindLabel(clip);
-  // Capture the narrowed non-null clip for closures (TS can't narrow props in callbacks).
   const activeClip: GigaEditTimelineClip = clip;
 
   function patch(partial: Partial<GigaEditTimelineClip>) {
@@ -98,10 +100,21 @@ export function OverlayInspector({
   }
 
   function bringFront() {
-    patch({ videoLayer: maxLayer + 1, clipRole: activeClip.track === "video" ? "overlay" : activeClip.clipRole });
+    if (activeClip.track === "video" && (activeClip.videoLayer ?? 0) > 0) {
+      onUpdateClips(reorderVideoLayer(clips, activeClip.videoLayer ?? 0, "down"));
+      return;
+    }
+    patch({
+      videoLayer: maxLayer + 1,
+      clipRole: activeClip.track === "video" ? "overlay" : activeClip.clipRole,
+    });
   }
 
   function sendBack() {
+    if (activeClip.track === "video" && (activeClip.videoLayer ?? 0) > 0) {
+      onUpdateClips(reorderVideoLayer(clips, activeClip.videoLayer ?? 0, "up"));
+      return;
+    }
     patch({ videoLayer: Math.max(0, (activeClip.videoLayer ?? 1) - 1) });
   }
 
@@ -109,7 +122,7 @@ export function OverlayInspector({
     <div className="gigaedit-glass space-y-3 p-3 text-xs">
       <div className="flex items-center justify-between gap-2">
         <h4 className="font-semibold">
-          {kindLabel} · {clip.label}
+          {kindLabel} · {formatTimelineClipLabel(clip)}
           <span className="ml-1.5 font-normal text-[var(--ge-muted)]">
             {clip.track === "video" ? `layer ${clip.videoLayer ?? 0}` : clip.track}
             {typeof clip.opacity === "number" ? ` · ${Math.round(clip.opacity * 100)}%` : ""}
@@ -131,7 +144,9 @@ export function OverlayInspector({
           {clip.track === "text" ? "Text" : "Sticker"}
           <input
             value={clip.text ?? ""}
-            onChange={(e) => patch({ text: e.target.value, label: e.target.value.slice(0, 18) || clip.label })}
+            onChange={(e) =>
+              patch({ text: e.target.value, label: e.target.value.slice(0, 18) || clip.label })
+            }
             className="gigaedit-input mt-1 w-full"
           />
         </label>
@@ -211,32 +226,36 @@ export function OverlayInspector({
         />
       </label>
 
-      <div>
-        <p className="mb-1 text-[var(--ge-muted)]">Layer order</p>
-        <div className="flex flex-wrap gap-1">
-          <button type="button" className="gigaedit-chip px-2 py-1 text-[10px]" onClick={bringFront}>
-            Bring to front
-          </button>
-          <button type="button" className="gigaedit-chip px-2 py-1 text-[10px]" onClick={sendBack}>
-            Send back
-          </button>
-        </div>
-      </div>
+      {isOverlay ? (
+        <>
+          <div>
+            <p className="mb-1 text-[var(--ge-muted)]">Layer order</p>
+            <div className="flex flex-wrap gap-1">
+              <button type="button" className="gigaedit-chip px-2 py-1 text-[10px]" onClick={bringFront}>
+                Bring to front
+              </button>
+              <button type="button" className="gigaedit-chip px-2 py-1 text-[10px]" onClick={sendBack}>
+                Send back
+              </button>
+            </div>
+          </div>
 
-      <label className="block">
-        Blend mode
-        <select
-          className="gigaedit-input mt-1 w-full"
-          value={clip.blendMode ?? "source-over"}
-          onChange={(e) => patch({ blendMode: e.target.value as GlobalCompositeOperation })}
-        >
-          {BLEND_MODES.map((mode) => (
-            <option key={mode.id} value={mode.id}>
-              {mode.label}
-            </option>
-          ))}
-        </select>
-      </label>
+          <label className="block">
+            Blend mode
+            <select
+              className="gigaedit-input mt-1 w-full"
+              value={clip.blendMode ?? "source-over"}
+              onChange={(e) => patch({ blendMode: e.target.value as GlobalCompositeOperation })}
+            >
+              {BLEND_MODES.map((mode) => (
+                <option key={mode.id} value={mode.id}>
+                  {mode.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </>
+      ) : null}
 
       <div>
         <p className="mb-1 text-[var(--ge-muted)]">Position</p>
@@ -325,7 +344,12 @@ export function OverlayInspector({
             <input
               type="color"
               value={clip.chromaKeyColor ?? "#00ff00"}
-              onChange={(e) => patch({ chromaKeyColor: e.target.value, chromaKeyTolerance: clip.chromaKeyTolerance ?? 0.35 })}
+              onChange={(e) =>
+                patch({
+                  chromaKeyColor: e.target.value,
+                  chromaKeyTolerance: clip.chromaKeyTolerance ?? 0.35,
+                })
+              }
               className="mt-1 h-8 w-full"
             />
           </label>

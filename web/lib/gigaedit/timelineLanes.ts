@@ -28,6 +28,40 @@ export function laneLabel(lane: GigaEditTimelineLane): string {
   return TIMELINE_LANES.find((row) => row.id === lane)?.label ?? lane;
 }
 
+/** Friendly clip label — never show raw numeric project ids on the timeline. */
+export function formatTimelineClipLabel(clip: GigaEditTimelineClip, indexInLane = 0): string {
+  const raw = clip.label?.trim() ?? "";
+  const looksLikeId = /^\d{8,}$/.test(raw) || /^ge_\d+/.test(raw);
+  if (!looksLikeId && raw) return raw.slice(0, 22);
+
+  const lane = inferClipLane(clip);
+  if (lane === "main-video") return indexInLane === 0 ? "Main video" : `Main ${indexInLane + 1}`;
+  if (lane === "text" || clip.track === "text" || clip.track === "sticker") {
+    return clip.text?.slice(0, 18) || `Text ${indexInLane + 1}`;
+  }
+  if (lane === "logo") return "Logo";
+  if (lane === "captions") return "Captions";
+  if (lane === "b-roll") return `Overlay ${indexInLane + 1}`;
+  if (lane === "cutout-person") return `Cutout ${indexInLane + 1}`;
+  if (lane === "screen-recording") return `Screen ${indexInLane + 1}`;
+  return `Clip ${indexInLane + 1}`;
+}
+
+/** Hide empty overlay lanes; always keep main video row. */
+export function visibleTimelineLanes(
+  clips: GigaEditTimelineClip[],
+  opts?: { hasCaptions?: boolean; hasLogo?: boolean }
+): TimelineLaneDef[] {
+  const alwaysShow = new Set<GigaEditTimelineLane>(["main-video"]);
+  if (opts?.hasLogo) alwaysShow.add("logo");
+  if (opts?.hasCaptions) alwaysShow.add("captions");
+
+  return TIMELINE_LANES.filter((lane) => {
+    if (alwaysShow.has(lane.id)) return true;
+    return clipsForLane(clips, lane.id).length > 0;
+  });
+}
+
 export function inferClipLane(clip: GigaEditTimelineClip): GigaEditTimelineLane {
   if (clip.timelineLane) return clip.timelineLane;
   if (clip.track === "text" || clip.track === "sticker") return "text";
