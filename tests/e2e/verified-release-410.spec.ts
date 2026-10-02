@@ -6,6 +6,7 @@ import {
   readTtsLog,
   signInViaUi,
 } from "./helpers/auth";
+import { readLiveCacheVersion, readRepoCacheVersion, shouldCompareRepoCacheVersion } from "./helpers/serviceWorker";
 
 const STRUCTURED_PROMPT =
   "Reply using exactly these markdown section headings on their own lines: ## Introduction, ## Main message, ## Conclusion. Keep each section to one short sentence about Ghana.";
@@ -15,14 +16,14 @@ test.describe("Release 410 — production smoke (unauthenticated)", () => {
     const response = await page.goto("/chat/");
     expect(response?.status()).toBe(200);
 
-    const swVersion = await page.evaluate(async () => {
-      if (!("serviceWorker" in navigator)) return null;
-      const res = await fetch("/sw.js", { cache: "no-store" });
-      const text = await res.text();
-      const match = text.match(/CACHE_VERSION\s*=\s*"([^"]+)"/);
-      return match?.[1] ?? null;
-    });
-    expect(swVersion).toBe("giga3-v23");
+    const swVersion = await readLiveCacheVersion(page);
+    expect(swVersion).toBeTruthy();
+    expect(swVersion).toMatch(/^giga3-v\d+$/);
+
+    if (shouldCompareRepoCacheVersion()) {
+      const expected = readRepoCacheVersion();
+      expect(swVersion).toBe(expected);
+    }
   });
 
   test("answer block CSS bundle is loaded on chat route", async ({ page }) => {
@@ -47,7 +48,7 @@ test.describe("Release 410 — production smoke (unauthenticated)", () => {
 test.describe("Release 410 — authenticated workflows", () => {
   test.beforeEach(async ({ page }) => {
     const creds = e2eCredentials();
-    test.skip(!creds, "Set GIGA3_E2E_EMAIL and GIGA3_E2E_PASSWORD for authenticated E2E");
+    test.skip(!creds, "Authenticated E2E skipped: GIGA3_E2E_EMAIL/GIGA3_E2E_PASSWORD not configured.");
     await installTtsProbe(page);
     await signInViaUi(page, creds!.email, creds!.password);
   });
