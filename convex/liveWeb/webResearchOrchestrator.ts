@@ -18,7 +18,7 @@ import {
   liveWebSearchTimeoutMs,
 } from "./liveWebConfig";
 import { extractUrlsFromText, redactSensitivePatterns } from "./liveWebSecurity";
-import { resolveWebSearchProvider } from "./providers/registry";
+import { resolveWebSearchProviders } from "./providers/registry";
 import { defaultFetchOptions, defaultPageReader } from "./webPageReader";
 import type {
   LiveWebProgressStage,
@@ -120,7 +120,7 @@ export async function runWebResearch(args: {
     };
   }
 
-  const searchProvider = resolveWebSearchProvider();
+  const searchProviders = resolveWebSearchProviders();
   const explicitUrls = extractUrlsFromText(args.query);
   const sources: LiveWebSource[] = [];
   const pages: Array<{ title: string; domain: string; uri: string; text: string }> = [];
@@ -133,23 +133,32 @@ export async function runWebResearch(args: {
   );
 
   let searchResults: LiveWebSource[] = [];
-  if (searchProvider) {
-    try {
-      const rows = await searchProvider.search(searchQuery, {
-        maxResults: liveWebMaxSearchResults(),
-        timeoutMs: liveWebSearchTimeoutMs(),
-      });
-      searchResults = rows.map(sourceFromSearch);
-      sources.push(...searchResults);
-    } catch (err) {
-      warnings.push(
-        `Search provider failed: ${err instanceof Error ? err.message : String(err)}`
-      );
-    }
-  } else {
+  let activeSearchProviderId: string | null = null;
+
+  if (searchProviders.length === 0) {
     warnings.push(
-      "No dedicated search API configured (SERPER_API_KEY or BRAVE_SEARCH_API_KEY). Gemini Google Search grounding will be used during answer generation."
+      "No dedicated search API configured (TAVILY_API_KEY, SERPER_API_KEY, or BRAVE_SEARCH_API_KEY). Gemini Google Search grounding will be used during answer generation."
     );
+  } else {
+    for (const provider of searchProviders) {
+      try {
+        const rows = await provider.search(searchQuery, {
+          maxResults: liveWebMaxSearchResults(),
+          timeoutMs: liveWebSearchTimeoutMs(),
+        });
+        if (rows.length > 0) {
+          searchResults = rows.map(sourceFromSearch);
+          sources.push(...searchResults);
+          activeSearchProviderId = provider.id;
+          break;
+        }
+        warnings.push(`Search provider ${provider.id} returned no results.`);
+      } catch (err) {
+        warnings.push(
+          `Search provider ${provider.id} failed: ${err instanceof Error ? err.message : String(err)}`
+        );
+      }
+    }
   }
 
   const urlsToRead = new Set<string>(explicitUrls);
@@ -204,7 +213,7 @@ export async function runWebResearch(args: {
       sources: uniqueSources,
       pagesReadUrls,
       warnings,
-      liveSearchUsed: Boolean(searchProvider && searchResults.length),
+      liveSearchUsed: Boolean(activeSearchProviderId && searchResults.length),
       retrievalFailed: uniqueSources.length === 0,
     });
     evidenceContextBlock = buildEvidenceContextBlock(newsEvidence);
@@ -221,7 +230,7 @@ export async function runWebResearch(args: {
   const contextBlock =
     uniqueSources.length || pages.length
       ? buildContextBlock(args.query, pages, searchResults, args.researchCapability)
-      : searchProvider
+      : searchProviders.length
         ? ""
         : "";
 
@@ -230,8 +239,8 @@ export async function runWebResearch(args: {
   return {
     contextBlock: combinedContext,
     sources: uniqueSources,
-    usedLiveSearch: Boolean(searchProvider && searchResults.length),
-    providerId: searchProvider?.id ?? (searchResults.length ? "gemini_grounding" : null),
+    usedLiveSearch: Boolean(activeSearchProviderId && searchResults.length),
+    providerId: activeSearchProviderId ?? (searchResults.length ? "gemini_grounding" : null),
     warnings,
     pagesReadUrls,
     evidenceContextBlock,
