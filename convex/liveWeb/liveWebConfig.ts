@@ -37,3 +37,8 @@ export function braveSearchApiKey(): string | undefined {
   const key = process.env.BRAVE_SEARCH_API_KEY?.trim();
   return key || undefined;
 }
+
+export function tavilyApiKey(): string | undefined {
+  const key = process.env.TAVILY_API_KEY?.trim();
+  return key || undefined;
+}
