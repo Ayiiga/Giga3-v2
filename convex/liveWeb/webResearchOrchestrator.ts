@@ -60,9 +60,9 @@ function buildContextBlock(
     lines.push(
       "",
       "Ghana news assistant rules:",
-      "- Cross-check important claims across multiple credible Ghana outlets.",
-      "- Show publication dates and markdown source links for each story.",
-      "- Label items Verified / Developing / Unverified / Disputed.",
+      "- Cross-check important claims across multiple credible Ghana outlets when possible.",
+      "- Prefer official Ghana sources for government, election, and security stories.",
+      "- Show publication dates in prose when available; link sources by publisher name.",
       "- Never invent current Ghana news."
     );
   }
@@ -97,6 +97,7 @@ function buildContextBlock(
     "- If information may be outdated, say so and note when it was accessed.",
     "- Do not invent URLs or sources.",
     "- Clearly distinguish live web facts from general knowledge.",
+    "- User-visible answer must be clean: no Confidence/Why/tier/provider diagnostics.",
     NEWS_RESPONSE_FORMAT_GUIDANCE
   );
 
