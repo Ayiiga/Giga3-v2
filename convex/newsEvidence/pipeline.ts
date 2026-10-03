@@ -19,6 +19,7 @@ import {
   publisherForDomain,
   tierForDomain,
 } from "./sourceRegistry";
+import { sortSourcesForRecency } from "./userPresentation";
 import type {
   NewsEvidenceContext,
   NewsResponseContract,
@@ -198,9 +199,10 @@ export function buildNewsEvidencePackage(args: {
   const classification = classifyNewsQuery(args.query);
   const pagesReadUrls = new Set(args.pagesReadUrls);
 
-  const validated = args.sources.map((source) =>
+  let validated = args.sources.map((source) =>
     validateLiveWebSource({ source, pagesReadUrls, now })
   );
+  validated = sortSourcesForRecency(validated, classification);
 
   const articleRetrievedCount = validated.filter((s) => s.articleRetrieved).length;
   const retrievalFailed =
@@ -327,7 +329,12 @@ export function buildEvidenceContextBlock(context: NewsEvidenceContext): string 
 
   lines.push(
     "- Use markdown links to the source URLs above when citing external evidence.",
-    "- For allegations in political/crime stories, use attributed wording (e.g. 'Police said…')."
+    "- For allegations in political/crime stories, use attributed wording (e.g. 'Police said…').",
+    "- USER-FACING OUTPUT ONLY: write a concise, professional answer for ordinary readers.",
+    "- Do NOT expose internal fields (Confidence, Why, tier, articleRetrieved, providerId, usedLiveSearch, [S1]/[P1] IDs).",
+    "- Do NOT prefix answers with **Reported** / **Verified** labels unless the user explicitly asked for verification.",
+    "- Prefer a short **Sources** section with publisher names as markdown links — not raw search metadata.",
+    "- If only snippets were retrieved, add one brief evidence note at the end (not repeated per source)."
   );
 
   return lines.join("\n");

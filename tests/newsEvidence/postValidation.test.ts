@@ -90,6 +90,8 @@ describe("news post-validation", () => {
     expect(result.content).toContain("Parliament opens new session in Accra");
     expect(result.content).toContain("graphic.com.gh");
     expect(result.content).not.toContain("recommend checking");
+    expect(result.content).not.toMatch(/Confidence:/i);
+    expect(result.content).not.toMatch(/Why:/i);
   });
 
   it("replaces an unsourced Ghana headline with the retrieved report", () => {

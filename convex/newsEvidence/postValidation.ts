@@ -11,6 +11,10 @@ import {
   isGenericRetrievalFailureAnswer,
   resolveSafeChatRoute,
 } from "./userContextRouting";
+import {
+  renderCleanNewsContractSummary,
+  sanitizeLiveWebUserAnswer,
+} from "./userPresentation";
 
 const VERIFIED_LABEL_RE = /\*\*(Verified|Official|Corroborated)\*\*/gi;
 const BREAKING_LABEL_RE = /\*\*Breaking\*\*/gi;
@@ -193,6 +197,8 @@ export function enforceNewsEvidenceIntegrity(args: {
     flags.push("breaking_label_downgraded");
   }
 
+  content = sanitizeLiveWebUserAnswer(content);
+
   return { content, flags };
 }
 
@@ -235,5 +241,5 @@ export function renderNewsContractSummary(contract: NewsResponseContract): strin
   if (!contract.stories.length) {
     return insufficientEvidenceFallback(contract.query);
   }
-  return contract.stories.map(renderNewsStoryCard).join("\n\n");
+  return sanitizeLiveWebUserAnswer(renderCleanNewsContractSummary(contract));
 }

@@ -478,15 +478,17 @@ export function buildResearchSearchQuery(
 }
 
 export const NEWS_RESPONSE_FORMAT_GUIDANCE = [
-  "News assistant response format (mandatory when answering current-events questions):",
-  "- Be concise and user-friendly — lead with the headline answer, then 2–4 bullet points max.",
-  "- Use evidence states from the NEWS EVIDENCE PACKAGE only: Official, Verified/Corroborated, Reported, Developing, Unverified, Conflicting, Insufficient evidence.",
-  "- Never upgrade a story to Verified unless the evidence package status supports it.",
-  "- For each key story: include publication date (or 'date unknown'), outlet name, and a markdown link to the source.",
-  "- **Breaking** may only be used when the evidence package assigns breakingLabel=BREAKING.",
-  "- Never invent current news, quotes, dates, or URLs. If you cannot verify a claim, say so.",
-  "- If live search is unavailable and evidence count is zero, say evidence is insufficient — do not invent headlines.",
-  "- Do not deflect a current-events question by telling the user to check other news sites or by answering from general knowledge.",
+  "Live-web answer format (user-facing — keep internal evidence in the package, not in the reply):",
+  "- Be concise, professional, and easy for ordinary readers to understand.",
+  "- Lead with a direct answer, then optional **Quick facts** bullets when helpful.",
+  "- End with **Sources** — 2–5 publisher names as markdown links (e.g. [Reuters](url)). No raw search metadata.",
+  "- Include publication dates in prose when available and the question is time-sensitive (today/latest/breaking).",
+  "- Do NOT show Confidence scores, Why lines, tier numbers, providerId, or retrieval diagnostics.",
+  "- Do NOT prefix with **Reported** / **Verified** labels unless the user asked for verification.",
+  "- Never invent facts, quotes, dates, or URLs. Distinguish source-reported claims from verified facts.",
+  "- If evidence is weak or snippet-only, say so once briefly — do not repeat after every source.",
+  "- If evidence is insufficient, say so clearly and briefly — do not pad with general knowledge.",
+  "- Do not deflect by telling the user to check other news sites.",
 ].join("\n");
 
 export function researchSystemPromptAddon(capability: ResearchCapabilityId): string {
@@ -537,7 +539,9 @@ export function researchSystemPromptAddon(capability: ResearchCapabilityId): str
       if (capability === "live_web") {
         return [
           "Mode: Live web research.",
-          "Prefer authoritative primary sources, compare multiple sources, cite links with dates, and note retrieval time.",
+          "Prefer official primary sources when appropriate, then reputable reporting (Reuters, BBC, AP, etc.).",
+          "Use reference sources (Britannica, Wikipedia) for background only — not as proof of breaking news.",
+          "Write a clean, concise answer; cite a small set of high-quality sources with markdown links.",
           "Never pretend model knowledge is live information.",
           NEWS_RESPONSE_FORMAT_GUIDANCE,
         ].join("\n");
