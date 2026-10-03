@@ -1,0 +1,82 @@
+{
+  "packageId": "com.giga3ai.app",
+  "host": "www.giga3ai.com",
+  "name": "Giga3 AI",
+  "launcherName": "Giga3",
+  "display": "standalone",
+  "themeColor": "#7C3AED",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#0A0A0F",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://www.giga3ai.com/icons/icon-512.png",
+  "maskableIconUrl": "https://www.giga3ai.com/icons/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  },
+  "appVersionName": "1",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Chat",
+      "shortName": "Chat",
+      "url": "https://www.giga3ai.com/chat/",
+      "chosenIconUrl": "https://www.giga3ai.com/icons/icon-192.png"
+    },
+    {
+      "name": "Video AI",
+      "shortName": "Video",
+      "url": "https://www.giga3ai.com/video/",
+      "chosenIconUrl": "https://www.giga3ai.com/icons/icon-192.png"
+    },
+    {
+      "name": "Marketplace",
+      "shortName": "Shop",
+      "url": "https://www.giga3ai.com/marketplace/",
+      "chosenIconUrl": "https://www.giga3ai.com/icons/icon-192.png"
+    },
+    {
+      "name": "GigaLearn",
+      "shortName": "Learn",
+      "url": "https://www.giga3ai.com/gigalearn/",
+      "chosenIconUrl": "https://www.giga3ai.com/icons/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli (giga3 generate-project.mjs)",
+  "webManifestUrl": "https://www.giga3ai.com/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": true
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://www.giga3ai.com/",
+  "minSdkVersion": 21,
+  "orientation": "portrait-primary",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [
+    "standalone",
+    "window-controls-overlay"
+  ],
+  "appVersion": "1"
+}
