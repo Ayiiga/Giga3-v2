@@ -28,3 +28,5 @@ android/*.keystore
 android/*.jks
 android/*.apk
 android/*.aab
+android/signing.properties
+android/upload-keystore.jks

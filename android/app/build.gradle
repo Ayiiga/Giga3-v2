@@ -213,3 +213,6 @@ dependencies {
         implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.6.2'
     
 }
+
+// Release signing — local credentials only (docs/google-play/signing.md)
+apply from: 'release-signing.gradle'

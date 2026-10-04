@@ -1,0 +1,15 @@
+# Copy to signing.properties (gitignored) — never commit the real file or keystore.
+#
+# storeFile path is relative to the android/ directory unless absolute.
+# Example after creating an upload keystore locally:
+#
+#   keytool -genkeypair -v \
+#     -keystore upload-keystore.jks \
+#     -alias android \
+#     -keyalg RSA -keysize 2048 -validity 10000 \
+#     -storetype PKCS12
+#
+storeFile=upload-keystore.jks
+storePassword=REPLACE_WITH_KEYSTORE_PASSWORD
+keyAlias=android
+keyPassword=REPLACE_WITH_KEY_PASSWORD

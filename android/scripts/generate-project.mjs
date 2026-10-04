@@ -3,7 +3,7 @@
  * Non-interactive Bubblewrap project generator for Giga3 TWA.
  * Reads the committed web manifest; does not create signing keys.
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -60,6 +60,16 @@ const checksum = await import("node:crypto").then((crypto) =>
   crypto.createHash("sha1").update(readFileSync(manifestPath)).digest("hex")
 );
 writeFileSync(join(androidRoot, "manifest-checksum.txt"), checksum);
+
+const buildGradlePath = join(androidRoot, "app/build.gradle");
+const buildGradle = readFileSync(buildGradlePath, "utf8");
+const signingHook = "apply from: 'release-signing.gradle'";
+if (!buildGradle.includes(signingHook)) {
+  appendFileSync(
+    buildGradlePath,
+    `\n// Release signing — local credentials only (docs/google-play/signing.md)\n${signingHook}\n`
+  );
+}
 
 console.log("Generated TWA project at", androidRoot);
 console.log("Package ID:", twa.packageId);
