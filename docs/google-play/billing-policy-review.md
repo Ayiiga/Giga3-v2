@@ -10,6 +10,16 @@ Giga3 sells **digital subscriptions** and **digital credit packs** (consumable i
 
 Paystack was **not modified** for the Android TWA work.
 
+### Phase 4 read-only verification (release prep)
+
+| Check | Result |
+|-------|--------|
+| Android `launchUrl` / host | `https://www.giga3ai.com/` (`android/app/build.gradle`, `twa-manifest.json`) |
+| Paystack references under `android/` | **None** — TWA has no payment SDK |
+| Google Play Billing in TWA manifest | **Disabled** (`playBilling.enabled: false`) |
+| `web/**` or `convex/**` modified for Android | **No** |
+| Paystack checkout path | Unchanged website flow via loaded PWA |
+
 ---
 
 ## Digital goods and services sold

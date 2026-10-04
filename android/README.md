@@ -37,11 +37,20 @@ Output: `app/build/outputs/apk/debug/app-debug.apk`
 
 ## Release build
 
-Requires approved signing configuration. See `docs/google-play/signing.md`. **Do not commit keystores.**
+Requires owner-approved signing configuration. **Do not commit keystores or `signing.properties`.**
+
+1. Copy `signing.properties.example` → `signing.properties` (gitignored) and fill in values, **or** set `GIGA3_ANDROID_KEYSTORE_*` environment variables.
+2. Build:
 
 ```bash
 ./gradlew bundleRelease
 ```
+
+Output: `app/build/outputs/bundle/release/app-release.aab`
+
+Without signing credentials, Gradle produces an **unsigned** AAB (not Play-uploadable).
+
+See `docs/google-play/signing.md` and `docs/google-play/android-release-process.md`.
 
 ## Permissions (AndroidManifest)
 
@@ -53,11 +62,13 @@ Camera, microphone, and location are requested at **runtime by the website** via
 
 ## Documentation
 
-- `docs/google-play/billing-policy-review.md`
-- `docs/google-play/digital-asset-links.md`
-- `docs/google-play/google-sign-in-android.md`
-- `docs/google-play/signing.md`
-- `docs/google-play/release-checklist.md`
+- `docs/google-play/android-release-process.md` — end-to-end Play release
+- `docs/google-play/internal-testing-checklist.md` — device test matrix
+- `docs/google-play/signing.md` — keystore and Gradle signing
+- `docs/google-play/digital-asset-links.md` — TWA verification
+- `docs/google-play/billing-policy-review.md` — Paystack preservation / Play policy
+- `docs/google-play/release-checklist.md` — store listing and policy forms
+- `docs/google-play/google-sign-in-android.md` — OAuth for Android
 
 ## Play Store
 
