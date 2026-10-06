@@ -876,6 +876,43 @@ button:focus-visible {
   isolation: isolate;
 }
 
+/* GigaLearn: reduce mobile layout shift during AI replies and level chips */
+.gigalearn-stable {
+  isolation: isolate;
+  overflow-x: clip;
+}
+
+.gigalearn-stable,
+.gigalearn-stable .gigalearn-context-bar {
+  scroll-behavior: auto;
+}
+
+.gigalearn-stable .animate-pulse {
+  animation: none !important;
+}
+
+@media (max-width: 1023px) {
+  .gigalearn-stable,
+  .gigalearn-stable * {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    transform: none !important;
+  }
+
+  .gigalearn-stable .gigalearn-context-bar {
+    position: relative;
+    top: auto;
+  }
+
+  .gigalearn-stable .saas-card {
+    contain: none;
+  }
+
+  .gigalearn-stable .animate-pulse {
+    opacity: 0.7;
+  }
+}
+
 @media (max-width: 1023px) {
   html.chat-route,
   html.chat-route body {

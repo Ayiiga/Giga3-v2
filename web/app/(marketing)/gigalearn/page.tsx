@@ -34,7 +34,7 @@ export default function GigaLearnPage() {
         ]}
       />
       <h1 className="sr-only">GigaLearn — AI Tutor and Exam Prep</h1>
-      <div className="marketing-stable section-padding pt-4 pb-6 sm:pt-6">
+      <div className="marketing-stable gigalearn-stable section-padding pt-4 pb-6 sm:pt-6">
         <Suspense fallback={<ClientAppHydrationNotice productName="GigaLearn" />}>
           <GigaLearnPageRoot />
         </Suspense>

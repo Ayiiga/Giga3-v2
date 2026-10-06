@@ -3,6 +3,7 @@
 import { CreditPromptLinks } from "@/components/billing/CreditPromptLinks";
 import { CreatorResultPanel } from "@/components/creator-studio/CreatorResultPanel";
 import { CurriculumSelector } from "@/components/gigalearn/CurriculumSelector";
+import { MethodologyPicker } from "@/components/gigalearn/MethodologyPicker";
 import { FlashcardStudy } from "@/components/gigalearn/FlashcardStudy";
 import { PracticeSession } from "@/components/gigalearn/PracticeSession";
 import { Button } from "@/components/ui/Button";
@@ -115,6 +116,8 @@ export const TeacherStudio = memo(function TeacherStudio({ credits }: TeacherStu
       learningObjective: objective.trim() || undefined,
       contentStandard: ctx.contentStandard.trim() || undefined,
       indicator: ctx.indicator.trim() || undefined,
+      methodologyIds: ctx.methodologyIds?.length ? [...ctx.methodologyIds] : undefined,
+      levelId: ids.levelId || undefined,
       curriculumIds: {
         countryId: ids.countryId,
         curriculumId: ids.curriculumId,
@@ -256,6 +259,14 @@ export const TeacherStudio = memo(function TeacherStudio({ credits }: TeacherStu
               value={ctx}
               onChange={(next) => updateCtx(next)}
               idPrefix="gl-studio"
+            />
+            <MethodologyPicker
+              levelBand={getLevel(resolveLegacyLevelId(ctx.levelId))?.band}
+              subjectId={ctx.subjectId}
+              topic={ctx.topic}
+              selectedIds={ctx.methodologyIds ?? []}
+              onChange={(methodologyIds) => updateCtx({ methodologyIds })}
+              idPrefix="gl-studio-method"
             />
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <div>

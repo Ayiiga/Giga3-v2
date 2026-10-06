@@ -23,10 +23,13 @@ import {
   type CurriculumSelection,
 } from "@/lib/gigalearn/curriculumEngine";
 import { getGigaLearnProfile } from "@/lib/gigalearn/profile";
+import type { TeachingMethodologyId } from "@/lib/gigalearn/methodologies";
 
 export interface StudioContext extends CurriculumSelection {
   contentStandard: string;
   indicator: string;
+  /** Selected Early Years teaching methods (optional — auto-pick when empty). */
+  methodologyIds: TeachingMethodologyId[];
   updatedAt: number;
 }
 
@@ -36,17 +39,29 @@ const DEFAULT_STUDIO_CONTEXT: StudioContext = {
   ...DEFAULT_CURRICULUM_SELECTION,
   contentStandard: "",
   indicator: "",
+  methodologyIds: [],
   updatedAt: 0,
 };
 
 function sanitize(raw: Partial<StudioContext>): StudioContext {
-  const next: StudioContext = { ...DEFAULT_STUDIO_CONTEXT, ...raw, updatedAt: Date.now() };
+  const next: StudioContext = {
+    ...DEFAULT_STUDIO_CONTEXT,
+    ...raw,
+    methodologyIds: Array.isArray(raw.methodologyIds) ? raw.methodologyIds : [],
+    updatedAt: Date.now(),
+  };
   // Reuse Phase 1 smart validation: drop anything incompatible.
   const curricula = getCurriculaForCountry(next.countryId);
   if (!curricula.some((c) => c.id === next.curriculumId)) {
     const fallback = curricula[0]?.id ?? DEFAULT_STUDIO_CONTEXT.curriculumId;
     const reset = applyCurriculumChange({ ...next, curriculumId: fallback }, fallback);
-    return { ...reset.selection, contentStandard: next.contentStandard, indicator: next.indicator, updatedAt: Date.now() };
+    return {
+      ...reset.selection,
+      contentStandard: next.contentStandard,
+      indicator: next.indicator,
+      methodologyIds: next.methodologyIds,
+      updatedAt: Date.now(),
+    };
   }
   const levels = getLevelsForCurriculum(next.curriculumId).map((l) => l.id);
   const canonicalLevel = resolveLegacyLevelId(next.levelId);
@@ -56,7 +71,13 @@ function sanitize(raw: Partial<StudioContext>): StudioContext {
   if (next.levelId) next.levelId = canonicalLevel;
   if (next.subjectId && next.levelId && !checkCombination(next.levelId, next.subjectId).valid) {
     const reset = applyLevelChange(next, next.levelId);
-    return { ...reset.selection, contentStandard: next.contentStandard, indicator: next.indicator, updatedAt: Date.now() };
+    return {
+      ...reset.selection,
+      contentStandard: next.contentStandard,
+      indicator: next.indicator,
+      methodologyIds: next.methodologyIds,
+      updatedAt: Date.now(),
+    };
   }
   return next;
 }

@@ -8,6 +8,9 @@ import {
   type StudioContext,
 } from "@/lib/gigalearn/studioContext";
 import { cn } from "@/lib/utils";
+import { MethodologyPicker } from "@/components/gigalearn/MethodologyPicker";
+import { getLevel, resolveLegacyLevelId } from "@/lib/gigalearn/curriculumEngine";
+import type { TeachingMethodologyId } from "@/lib/gigalearn/methodologies";
 import { ChevronDown } from "lucide-react";
 import { memo, useState } from "react";
 
@@ -33,7 +36,7 @@ export const StudioContextBar = memo(function StudioContextBar({
 
   return (
     <div
-      className="sticky top-0 z-10 rounded-2xl border border-accent/25 bg-white/95 px-3 py-2.5 shadow-sm"
+      className="gigalearn-context-bar rounded-2xl border border-accent/25 bg-white px-3 py-2.5 shadow-sm"
       aria-live="polite"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -53,11 +56,22 @@ export const StudioContextBar = memo(function StudioContextBar({
         </Button>
       </div>
       {open && (
-        <div className="mt-3 border-t border-border pt-3">
+        <div className="mt-3 space-y-4 border-t border-border pt-3">
           <CurriculumSelector
             value={ctx}
             onChange={(next) => onChange(saveStudioContext(next))}
             idPrefix={idPrefix}
+          />
+          <MethodologyPicker
+            levelBand={getLevel(resolveLegacyLevelId(ctx.levelId))?.band}
+            subjectId={ctx.subjectId}
+            topic={ctx.topic}
+            selectedIds={ctx.methodologyIds ?? []}
+            onChange={(methodologyIds) =>
+              onChange(saveStudioContext({ ...ctx, methodologyIds: methodologyIds as TeachingMethodologyId[] }))
+            }
+            idPrefix={`${idPrefix}-method`}
+            compact
           />
         </div>
       )}

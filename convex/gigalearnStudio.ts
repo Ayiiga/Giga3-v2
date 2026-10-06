@@ -21,6 +21,12 @@ import {
   personaSystemPromptAddon,
   resolvePersonaForGigaLearnTool,
 } from "./gigaPersonas";
+import {
+  buildMethodologyPromptBlock,
+  getMethodology,
+  selectMethodologiesForContext,
+} from "../web/lib/gigalearn/methodologies";
+import { getLevel, resolveLegacyLevelId } from "../web/lib/gigalearn/curriculumEngine";
 
 const TOOL_MODE_MAP: Record<string, AiModeId> = {
   "quiz-generator": "gigalearn",
@@ -76,6 +82,7 @@ function buildToolPrompt(
     learningObjective?: string;
     contentStandard?: string;
     indicator?: string;
+    methodologyBlock?: string;
   }
 ): string {
   const countryLine = extra?.country ? `Country: ${extra.country}.` : "";
@@ -178,6 +185,7 @@ Use types: mcq, true_false, fill_blank, short_answer, ordering, matching, poll. 
   return [
     `GigaLearn task: ${toolId.replace(/-/g, " ")}.`,
     instruction,
+    extra?.methodologyBlock ?? "",
     countryLine,
     curriculumLine,
     levelLine,
@@ -218,6 +226,8 @@ export const generateContent = action({
     learningObjective: v.optional(v.string()),
     contentStandard: v.optional(v.string()),
     indicator: v.optional(v.string()),
+    methodologyIds: v.optional(v.array(v.string())),
+    levelId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const verifiedEmail = await requireSessionWithMonitoring(
@@ -249,6 +259,25 @@ export const generateContent = action({
       curriculum: args.curriculum,
     });
     const personaAddon = personaSystemPromptAddon(personaId);
+    const levelDef = args.levelId ? getLevel(resolveLegacyLevelId(args.levelId)) : undefined;
+    const levelBand = levelDef?.band;
+    const explicitMethods =
+      args.methodologyIds
+        ?.map((id: string) => getMethodology(id))
+        .filter((m): m is NonNullable<ReturnType<typeof getMethodology>> => Boolean(m)) ?? [];
+    const methods =
+      explicitMethods.length > 0
+        ? explicitMethods
+        : selectMethodologiesForContext({
+            levelBand,
+            subjectId: args.subject,
+            topic: args.topic,
+            max: 6,
+          });
+    const methodologyBlock = buildMethodologyPromptBlock(methods, {
+      levelBand,
+      gradeLabel: args.grade ?? levelDef?.gradeLabel,
+    });
     const userMessage = buildToolPrompt(
       args.toolId,
       trimmed,
@@ -265,6 +294,7 @@ export const generateContent = action({
         learningObjective: args.learningObjective,
         contentStandard: args.contentStandard,
         indicator: args.indicator,
+        methodologyBlock,
       }
     );
 

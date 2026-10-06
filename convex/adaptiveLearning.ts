@@ -28,6 +28,12 @@ import {
 } from "./answerQuality";
 import { requireSessionWithMonitoring } from "./auth";
 import { CREDIT_COSTS } from "./creditsConfig";
+import {
+  buildMethodologyPromptBlock,
+  getMethodology,
+  selectMethodologiesForContext,
+} from "../web/lib/gigalearn/methodologies";
+import { getLevel, resolveLegacyLevelId } from "../web/lib/gigalearn/curriculumEngine";
 
 export const TUTOR_MODES = [
   "explain",
@@ -73,6 +79,7 @@ const curriculumContextValidator = v.object({
   curriculumId: v.optional(v.string()),
   levelId: v.optional(v.string()),
   subjectId: v.optional(v.string()),
+  methodologyIds: v.optional(v.array(v.string())),
 });
 
 type CurriculumContext = {
@@ -91,6 +98,7 @@ type CurriculumContext = {
   curriculumId?: string;
   levelId?: string;
   subjectId?: string;
+  methodologyIds?: string[];
 };
 
 function contextLines(ctx: CurriculumContext): string[] {
@@ -203,11 +211,33 @@ export const tutorTurn = action({
       query: studentInput || args.mode,
     });
 
+    const levelDef = args.context.levelId
+      ? getLevel(resolveLegacyLevelId(args.context.levelId))
+      : undefined;
+    const explicitMethods =
+      args.context.methodologyIds
+        ?.map((id) => getMethodology(id))
+        .filter((m): m is NonNullable<typeof m> => Boolean(m)) ?? [];
+    const methods =
+      explicitMethods.length > 0
+        ? explicitMethods
+        : selectMethodologiesForContext({
+            levelBand: levelDef?.band,
+            subjectId: args.context.subjectId,
+            topic: args.context.topic,
+            max: 4,
+          });
+    const methodologyBlock = buildMethodologyPromptBlock(methods, {
+      levelBand: levelDef?.band,
+      gradeLabel: args.context.grade ?? levelDef?.gradeLabel,
+    });
+
     const systemPrompt = [
       ...TUTOR_BASE_RULES,
       `Tutor mode: ${args.mode}. ${TUTOR_MODE_PROMPTS[args.mode as TutorMode]}`,
       "Curriculum context (stable IDs are authoritative; display names are for presentation):",
       ...contextLines(args.context),
+      methodologyBlock,
       args.performanceSummary?.trim()
         ? `Learner performance (their own authorized history — adapt difficulty, do not shame):\n${args.performanceSummary.trim().slice(0, 1200)}`
         : "",

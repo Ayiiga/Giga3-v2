@@ -39,6 +39,7 @@ interface TutorContext {
   curriculumId?: string;
   levelId?: string;
   subjectId?: string;
+  methodologyIds?: string[];
 }
 
 /** Conversational adaptive tutor turns (1 credit each, same auth/credits). */

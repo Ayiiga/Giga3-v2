@@ -227,16 +227,17 @@ describe("Phase 3 tutor prompts keep curriculum context + safety", () => {
     expect(src).toContain("Socratic mode");
     expect(src).toContain("performanceSummaryForTutor");
   });
-  it("new tabs are additive and reuse existing design", () => {
+  it("six primary areas organize legacy features via hubs", () => {
     const ids = GIGALEARN_SECTIONS.map((s) => s.id);
-    for (const id of ["studio", "learn", "library", "tutor", "my-learning", "revision", "insights"]) {
+    for (const id of ["student", "teacher", "create", "parent", "insight", "tutor"]) {
       expect(ids).toContain(id);
     }
     const client = read("web/components/gigalearn/GigaLearnClient.tsx");
-    expect(client).toContain("AdaptiveTutor");
-    expect(client).toContain("StudentDashboard");
-    expect(client).toContain("RevisionCenter");
-    expect(client).toContain("TeacherInsights");
+    expect(client).toContain("StudentHub");
+    expect(client).toContain("TutorHub");
+    expect(client).toContain("InsightHub");
+    expect(read("web/lib/gigalearn/sectionRouting.ts")).toContain("homework");
+    expect(read("web/lib/gigalearn/sectionRouting.ts")).toContain("studio");
   });
 });
 

@@ -1,79 +1,55 @@
 "use client";
 
-import { GigaLearnHomeworkPanel } from "@/components/gigalearn/GigaLearnHomeworkPanel";
-import { GigaLearnToolPanel } from "@/components/gigalearn/GigaLearnToolPanel";
-import { GigaLearnWorkspacePanel } from "@/components/gigalearn/GigaLearnWorkspacePanel";
-import { AdaptiveTutor } from "@/components/gigalearn/AdaptiveTutor";
-import { LowerGradesConcrete } from "@/components/gigalearn/LowerGradesConcrete";
-import { ResourceLibrary } from "@/components/gigalearn/ResourceLibrary";
-import { RevisionCenter } from "@/components/gigalearn/RevisionCenter";
-import { StudentDashboard } from "@/components/gigalearn/StudentDashboard";
-import { StudentMode } from "@/components/gigalearn/StudentMode";
-import { TeacherInsights } from "@/components/gigalearn/TeacherInsights";
-import { TeacherStudio } from "@/components/gigalearn/TeacherStudio";
+import { CreateHub } from "@/components/gigalearn/hubs/CreateHub";
+import { InsightHub } from "@/components/gigalearn/hubs/InsightHub";
+import { ParentHub } from "@/components/gigalearn/hubs/ParentHub";
+import { StudentHub } from "@/components/gigalearn/hubs/StudentHub";
+import { TeacherHub } from "@/components/gigalearn/hubs/TeacherHub";
+import { TutorHub } from "@/components/gigalearn/hubs/TutorHub";
 import { RecommendationEmptyState } from "@/components/recommendations/RecommendationEmptyState";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { ProductSignInPrompt } from "@/components/seo/ProductSignInPrompt";
-import { Button, ButtonLink } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/Button";
 import { useMediaBilling } from "@/hooks/useMediaBilling";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import {
-  GIGALEARN_SECTIONS,
-  type GigaLearnSection,
+  GIGALEARN_PRIMARY_AREAS,
+  type GigaLearnPrimaryArea,
 } from "@/lib/gigalearn/sections";
 import {
-  PARENT_TOOLS,
-  STUDENT_TOOLS,
-  TEACHER_TOOLS,
-} from "@/lib/gigalearn/tools";
+  createSubViewFromTab,
+  insightSubViewFromTab,
+  resolvePrimaryArea,
+  studentSubViewFromTab,
+  teacherSubViewFromTab,
+  type StudentSubView,
+} from "@/lib/gigalearn/sectionRouting";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import { getSessionToken } from "@/lib/auth";
-import { buildCreationLink } from "@/lib/gigalearn/creation/links";
-import { getGigaLearnProfile, saveGigaLearnProfile } from "@/lib/gigalearn/profile";
+import { saveGigaLearnProfile } from "@/lib/gigalearn/profile";
 import { saveStudioContext, type StudioContext } from "@/lib/gigalearn/studioContext";
 import type { LearnerRole } from "@/lib/gigalearn/curricula";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { warmUpBrowserVoices } from "@/lib/speech/loadBrowserVoices";
 import { ArrowLeft, GraduationCap } from "lucide-react";
-import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-
-const panelFallback = <p className="text-sm text-muted">Loading…</p>;
-
-const CreationStudio = dynamic(
-  () => import("@/components/gigalearn/creation/CreationStudio").then((mod) => mod.CreationStudio),
-  { ssr: false, loading: () => panelFallback }
-);
-
-const GigaRhymesPanel = dynamic(
-  () => import("@/components/gigalearn/rhymes/GigaRhymesPanel").then((mod) => mod.GigaRhymesPanel),
-  { ssr: false, loading: () => panelFallback }
-);
 
 function GigaLearnContent() {
   useRenderDiagnostic("GigaLearnContent");
 
   const params = useSearchParams();
-  const router = useRouter();
+  const tabParam = params.get("tab");
   const { email, usage, mounted } = useMediaBilling();
-  const initialTab = (params.get("tab") as GigaLearnSection) || "student";
-  const [section, setSection] = useState<GigaLearnSection>(
-    GIGALEARN_SECTIONS.some((s) => s.id === initialTab) ? initialTab : "student"
-  );
+
+  const [area, setArea] = useState<GigaLearnPrimaryArea>(() => resolvePrimaryArea(tabParam));
+  const [studentSubOverride, setStudentSubOverride] = useState<StudentSubView | undefined>();
+
   useEffect(() => {
-    const tab = params.get("tab") as GigaLearnSection;
-    if (tab && GIGALEARN_SECTIONS.some((s) => s.id === tab)) {
-      setSection(tab);
-      return;
-    }
-    const profile = getGigaLearnProfile();
-    if (profile.role === "teacher" || profile.role === "parent") {
-      setSection(profile.role);
-    }
+    setArea(resolvePrimaryArea(params.get("tab")));
   }, [params]);
 
   useEffect(() => {
@@ -86,18 +62,40 @@ function GigaLearnContent() {
     return () => document.removeEventListener("pointerdown", onFirstInteraction);
   }, []);
 
-  function selectSection(next: GigaLearnSection) {
-    setSection(next);
+  function selectArea(next: GigaLearnPrimaryArea) {
+    setArea(next);
+    if (next !== "student") setStudentSubOverride(undefined);
     if (next === "student" || next === "teacher" || next === "parent") {
       saveGigaLearnProfile({ role: next as LearnerRole });
     }
   }
 
-  /** Cross-tab adaptive flow: persist curriculum context, then switch tab.
-   * Conditionally-rendered sections remount and pick up the fresh context. */
-  function studyTopic(patch: Partial<StudioContext>, tab: GigaLearnSection) {
+  function studyTopic(
+    patch: Partial<StudioContext>,
+    target: "learn" | "tutor" | "studio" | "revision" | "library"
+  ) {
     if (Object.keys(patch).length > 0) saveStudioContext(patch);
-    selectSection(tab);
+    switch (target) {
+      case "tutor":
+        selectArea("tutor");
+        break;
+      case "studio":
+        selectArea("teacher");
+        break;
+      case "revision":
+        selectArea("student");
+        setStudentSubOverride("revision");
+        break;
+      case "library":
+        selectArea("student");
+        setStudentSubOverride("library");
+        break;
+      case "learn":
+      default:
+        selectArea("student");
+        setStudentSubOverride("learn");
+        break;
+    }
   }
 
   if (!mounted) {
@@ -118,8 +116,13 @@ function GigaLearnContent() {
     return <ClientAppHydrationNotice productName="GigaLearn" signInHref="/chat/login?next=/gigalearn" />;
   }
 
+  const studentSub = studentSubViewFromTab(tabParam);
+  const teacherSub = teacherSubViewFromTab(tabParam);
+  const createSub = createSubViewFromTab(tabParam);
+  const insightSub = insightSubViewFromTab(tabParam);
+
   return (
-    <div className="mx-auto max-w-6xl space-y-8 pb-[72px]">
+    <div className="gigalearn-stable mx-auto max-w-6xl space-y-6 pb-[calc(var(--primary-nav-offset,0px)+1rem)]">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link
@@ -138,14 +141,14 @@ function GigaLearnContent() {
                 GigaLearn
               </h2>
               <p className="text-sm text-muted">
-                AI tutor for students, teachers, and parents — BECE, WASSCE, WAEC, and beyond.
+                Student · Teacher · Create · Parent · Insight · AI Tutor
               </p>
             </div>
           </div>
         </div>
-        <div className="saas-card rounded-2xl border border-border px-4 py-3 text-right">
+        <div className="rounded-2xl border border-border bg-white px-3 py-2 text-right text-sm">
           <p className="text-xs text-muted">Credits</p>
-          <p className="text-xl font-semibold text-foreground">{usage?.credits ?? "—"}</p>
+          <p className="font-semibold text-foreground">{usage?.credits ?? "—"}</p>
           <Link href={siteConfig.links.credits} className="text-xs text-accent hover:underline">
             Get more
           </Link>
@@ -153,178 +156,51 @@ function GigaLearnContent() {
       </header>
 
       <nav
-        className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1"
-        aria-label="GigaLearn sections"
+        className="grid grid-cols-3 gap-2 sm:grid-cols-6"
+        aria-label="GigaLearn areas"
       >
-        {GIGALEARN_SECTIONS.map((item) => {
+        {GIGALEARN_PRIMARY_AREAS.map((item) => {
           const Icon = item.icon;
-          const active = section === item.id;
+          const active = area === item.id;
           return (
             <button
               key={item.id}
               type="button"
-              onClick={() => selectSection(item.id)}
+              onClick={() => selectArea(item.id)}
               className={cn(
-                "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium",
+                "flex min-h-11 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-center text-xs font-medium sm:text-sm",
                 active
                   ? "border-accent/40 bg-accent/10 text-foreground ring-1 ring-accent/20"
                   : "border-border bg-white text-muted hover:border-accent/25"
               )}
             >
-              <Icon className="h-4 w-4" aria-hidden />
-              {item.label}
+              <Icon className="h-4 w-4 shrink-0" aria-hidden />
+              <span>{item.label}</span>
             </button>
           );
         })}
       </nav>
 
       <section className="saas-card rounded-2xl border border-border p-4 sm:p-6">
-        {section === "student" && (
-          <>
-            <SectionIntro
-              title="Student dashboard"
-              description="Personalized quizzes, study plans, topic explainers, and exam prep for BECE, WASSCE, and WAEC."
-            />
-            <LowerGradesConcrete />
-            <GigaLearnToolPanel tools={STUDENT_TOOLS} credits={usage?.credits ?? null} />
-          </>
+        {area === "student" && (
+          <StudentHub
+            credits={usage?.credits ?? null}
+            initialSubView={studentSubOverride ?? studentSub}
+            onStudyTopic={studyTopic}
+            onOpenTutor={() => selectArea("tutor")}
+          />
         )}
-
-        {section === "teacher" && (
-          <>
-            <SectionIntro
-              title="Teacher dashboard"
-              description="Lesson notes, worksheets, assignments, and class activities aligned to your curriculum."
-            />
-            <GigaLearnToolPanel tools={TEACHER_TOOLS} credits={usage?.credits ?? null} />
-          </>
+        {area === "teacher" && (
+          <TeacherHub credits={usage?.credits ?? null} initialSubView={teacherSub} />
         )}
-
-        {section === "parent" && (
-          <>
-            <SectionIntro
-              title="Parent dashboard"
-              description="Understand what your child is learning and how to support them at home."
-            />
-            <GigaLearnToolPanel tools={PARENT_TOOLS} credits={usage?.credits ?? null} />
-          </>
+        {area === "create" && (
+          <CreateHub credits={usage?.credits ?? null} initialSubView={createSub} />
         )}
-
-        {section === "homework" && (
-          <>
-            <SectionIntro
-              title="Homework solver"
-              description="Upload a photo of homework — Giga3 analyzes it with vision AI in Education chat mode."
-            />
-            <GigaLearnHomeworkPanel />
-          </>
+        {area === "parent" && <ParentHub credits={usage?.credits ?? null} />}
+        {area === "insight" && (
+          <InsightHub initialSubView={insightSub} onStudyTopic={studyTopic} />
         )}
-
-        {section === "create" && (
-          <>
-            <SectionIntro
-              title="Create with Giga3"
-              description="Lesson plans, research, books, CVs, quizzes and rhymes — built step by step from your details."
-            />
-            <CreationStudio
-              credits={usage?.credits ?? null}
-              onOpenRhymes={() => selectSection("rhymes")}
-            />
-          </>
-        )}
-
-        {section === "rhymes" && (
-          <>
-            <SectionIntro
-              title="GigaRhymes"
-              description="Original African-centred rhymes for early learners — hear, repeat, clap along and practise."
-            />
-            <GigaRhymesPanel onCreateRhyme={() => router.push(buildCreationLink("rhyme"))} />
-          </>
-        )}
-
-        {section === "workspace" && (
-          <>
-            <SectionIntro
-              title="Learning progress"
-              description="Track achievements, subjects studied, and saved learning materials."
-            />
-            <GigaLearnWorkspacePanel sessionToken={getSessionToken()} />
-          </>
-        )}
-
-        {section === "studio" && (
-          <>
-            <SectionIntro
-              title="Teacher Studio"
-              description="Plan lessons, generate quizzes and assignments, then repurpose anything into presentations or video — your curriculum context carries through."
-            />
-            <TeacherStudio credits={usage?.credits ?? null} />
-          </>
-        )}
-
-        {section === "learn" && (
-          <>
-            <SectionIntro
-              title="Learn Mode"
-              description="Pick your topic, then explain, simplify, practise, quiz yourself or revise — adapted to your grade."
-            />
-            <StudentMode credits={usage?.credits ?? null} />
-          </>
-        )}
-
-        {section === "library" && (
-          <>
-            <SectionIntro
-              title="Resource library"
-              description="Every lesson, quiz and worksheet you generate lives here — search by grade, subject or topic."
-            />
-            <ResourceLibrary />
-          </>
-        )}
-
-        {section === "tutor" && (
-          <>
-            <SectionIntro
-              title="Adaptive AI tutor"
-              description="Explain, simplify, hint, check and challenge — with optional Socratic guiding questions. Your curriculum context carries through."
-            />
-            <AdaptiveTutor credits={usage?.credits ?? null} />
-          </>
-        )}
-
-        {section === "my-learning" && (
-          <>
-            <SectionIntro
-              title="My Learning"
-              description="Your adaptive path: recommended next activity, topics needing review, and progress by subject."
-            />
-            <StudentDashboard
-              onNavigate={(tab) => selectSection(tab)}
-              onStudyTopic={(patch, tab) => studyTopic(patch, tab)}
-            />
-          </>
-        )}
-
-        {section === "revision" && (
-          <>
-            <SectionIntro
-              title="Revision center"
-              description="Review now, practice again, and spaced flashcard review — gentle suggestions, never floods."
-            />
-            <RevisionCenter onStudyTopic={(patch, tab) => studyTopic(patch, tab)} />
-          </>
-        )}
-
-        {section === "insights" && (
-          <>
-            <SectionIntro
-              title="Teacher insights"
-              description="Frequently missed topics, usage and trends from activity on this device — your judgment leads."
-            />
-            <TeacherInsights onIntervene={(patch, tab) => studyTopic(patch, tab)} />
-          </>
-        )}
+        {area === "tutor" && <TutorHub credits={usage?.credits ?? null} />}
       </section>
 
       <RecommendationEmptyState
@@ -338,19 +214,7 @@ function GigaLearnContent() {
         <ButtonLink href={siteConfig.links.dashboard} variant="outline" className="min-h-11">
           Open AI tutor chat
         </ButtonLink>
-        <ButtonLink href={siteConfig.links.creatorStudio} variant="outline" className="min-h-11">
-          Creator Studio
-        </ButtonLink>
       </div>
-    </div>
-  );
-}
-
-function SectionIntro({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="mb-6">
-      <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-      <p className="mt-1 text-sm text-muted">{description}</p>
     </div>
   );
 }

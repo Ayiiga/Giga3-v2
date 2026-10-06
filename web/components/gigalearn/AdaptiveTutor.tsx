@@ -25,6 +25,16 @@ import { cn } from "@/lib/utils";
 import { BookOpen, FlaskConical, GraduationCap, HelpCircle, Lightbulb, ListChecks, MessageCircle, Sparkles, Target, Telescope } from "lucide-react";
 import { memo, useRef, useState } from "react";
 
+/** Only auto-scroll when the user is already near the bottom — avoids mobile jump fights. */
+function scrollTutorEndIfNear(anchor: HTMLElement | null) {
+  if (!anchor || typeof window === "undefined") return;
+  const rect = anchor.getBoundingClientRect();
+  const nearBottom = rect.top <= window.innerHeight + 96;
+  if (nearBottom) {
+    anchor.scrollIntoView({ block: "end", behavior: "auto" });
+  }
+}
+
 interface AdaptiveTutorProps {
   credits: number | null;
 }
@@ -69,6 +79,7 @@ export const AdaptiveTutor = memo(function AdaptiveTutor({ credits }: AdaptiveTu
     curriculumId: ids.curriculumId || undefined,
     levelId: ids.levelId || undefined,
     subjectId: ids.subjectId || undefined,
+    methodologyIds: ctx.methodologyIds?.length ? [...ctx.methodologyIds] : undefined,
   };
 
   const sessionToken = getSessionToken();
@@ -94,7 +105,7 @@ export const AdaptiveTutor = memo(function AdaptiveTutor({ credits }: AdaptiveTu
       correct: null,
       detail: mode,
     });
-    requestAnimationFrame(() => bottomRef.current?.scrollIntoView({ block: "end", behavior: "smooth" }));
+    requestAnimationFrame(() => scrollTutorEndIfNear(bottomRef.current));
   }
 
   function sendAction(action: TutorAction) {
