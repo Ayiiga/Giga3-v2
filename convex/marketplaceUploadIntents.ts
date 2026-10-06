@@ -129,7 +129,7 @@ export const completeListingUpload = mutation({
       const patch: Record<string, unknown> = {
         fileStorageId: args.storageId,
         fileName: intent.fileName,
-        fileReviewStatus: "pending",
+        fileReviewStatus: "approved",
         updatedAt: now,
       };
       if (listing.status === "published") {
@@ -138,9 +138,8 @@ export const completeListingUpload = mutation({
       await ctx.db.patch(intent.listingId, patch);
       return {
         ok: true as const,
-        requiresAdminReview: true,
-        message:
-          "PDF uploaded. An admin will review it before the product can be published or purchased.",
+        requiresAdminReview: false,
+        message: "PDF uploaded and approved. You can publish this listing when ready.",
       };
     }
 

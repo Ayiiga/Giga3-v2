@@ -193,7 +193,7 @@ function MarketplaceSellInner() {
 
       if (!asDraft) {
         await updateListing({ sessionToken, listingId, status: "published" });
-        setMessage("Published — buyers can pay once your PDF is admin-approved.");
+        setMessage("Published — buyers can purchase and download your PDF.");
       } else if (!productFile) {
         setMessage("Draft saved. Upload a PDF under Your listings when ready.");
       }
@@ -378,7 +378,8 @@ function MarketplaceSellInner() {
         <section className="rounded-2xl border bg-card p-6">
           <h2 className="text-lg font-semibold">Identity verification</h2>
           <p className="mt-2 text-sm text-muted">
-            Marketplace registration requires a national ID and your current GPS coordinates.
+            Marketplace registration requires your national ID, an ID photo, and current GPS
+            coordinates within Ghana. Verification runs automatically when you submit.
           </p>
           <p className="mt-2 text-sm font-medium capitalize text-foreground">
             Status: {verificationStatus.replace(/_/g, " ")}
@@ -390,7 +391,9 @@ function MarketplaceSellInner() {
             <p className="mt-1 text-sm text-muted">ID on file: {profile.nationalIdMasked}</p>
           )}
 
-          {(verificationStatus === "none" || verificationStatus === "rejected") && (
+          {(verificationStatus === "none" ||
+            verificationStatus === "rejected" ||
+            verificationStatus === "pending") && (
             <div className="mt-4 grid gap-4">
               <input
                 value={nationalIdNumber}
@@ -435,21 +438,22 @@ function MarketplaceSellInner() {
                 onClick={handleSubmitVerification}
                 disabled={submittingVerification}
               >
-                {submittingVerification ? "Submitting…" : "Submit verification"}
+                {submittingVerification ? "Verifying…" : "Verify automatically"}
               </Button>
             </div>
           )}
 
           {verificationStatus === "pending" && (
-            <p className="mt-4 text-sm text-muted">
-              Verification is under review. You can save drafts now; publishing unlocks after
-              approval.
+            <p className="mt-4 text-sm text-amber-700">
+              Verification did not complete automatically. Resubmit your ID and GPS location
+              above, or contact support if you are already verified elsewhere.
             </p>
           )}
 
           {verificationStatus === "approved" && (
             <p className="mt-4 text-sm text-emerald-700">
-              Verified creator — you can publish listings on the marketplace.
+              Verified creator — you can create listings. PDF products are checked automatically
+              when uploaded; publish once your file is attached.
             </p>
           )}
         </section>
@@ -466,7 +470,7 @@ function MarketplaceSellInner() {
           ) : null}
           {verificationStatus === "pending" ? (
             <p className="mt-2 text-sm text-amber-700">
-              Save drafts while pending. Publishing requires admin approval.
+              Complete automatic verification above before creating listings.
             </p>
           ) : null}
           <div className="mt-4 grid gap-4">

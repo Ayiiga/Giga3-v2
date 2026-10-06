@@ -168,7 +168,7 @@ export const createListing = mutation({
       );
     }
     if (args.publish) {
-      throw new Error("Save as draft first. Attach a PDF and wait for admin approval before publishing.");
+      throw new Error("Save as draft first. Attach a PDF before publishing.");
     }
 
     const title = args.title.trim().slice(0, 120);
@@ -242,7 +242,7 @@ export const updateListing = mutation({
         throw new Error("Attach a product file before publishing.");
       }
       if (!isListingFileApproved(listing)) {
-        throw new Error("Wait for admin approval of your PDF before publishing.");
+        throw new Error("Attach and upload your PDF before publishing.");
       }
     }
 
@@ -286,7 +286,7 @@ export const getUploadStatus = query({
   handler: async () => ({
     enabled: true,
     pdfOnly: true,
-    requiresAdminReview: true,
+    requiresAdminReview: false,
     maxMegabytes: 25,
     legacyEnvFlag: marketplaceUploadsEnabled(),
   }),

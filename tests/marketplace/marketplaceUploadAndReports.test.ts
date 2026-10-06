@@ -19,7 +19,7 @@ describe("marketplace listing helpers", () => {
     expect(listingFileReviewLabel(listing)).toBe("approved");
   });
 
-  it("requires admin approval for seller PDFs", () => {
+  it("treats pending seller PDFs as not yet approved for publish", () => {
     const listing = {
       tags: ["ebook"],
       fileStorageId: "storage123" as any,
@@ -39,7 +39,7 @@ describe("marketplace PDF upload intents", () => {
     expect(source).toContain("prepareListingUpload");
     expect(source).toContain("completeListingUpload");
     expect(source).toContain("application/pdf");
-    expect(source).toContain("fileReviewStatus: \"pending\"");
+    expect(source).toContain("fileReviewStatus: \"approved\"");
   });
 
   it("routes legacy attach/generate through intent-only errors", () => {
