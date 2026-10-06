@@ -45,6 +45,7 @@ export function useGigaLearnGeneration() {
   const [lastLearningObjective, setLastLearningObjective] = useState<string | undefined>();
   const [lastContentStandard, setLastContentStandard] = useState<string | undefined>();
   const [lastIndicator, setLastIndicator] = useState<string | undefined>();
+  const [lastMethodologyIds, setLastMethodologyIds] = useState<string[] | undefined>();
   const [lastCurriculumIds, setLastCurriculumIds] = useState<CurriculumIdSet | undefined>();
   const [lastResourceType, setLastResourceType] = useState<ResourceType | undefined>();
 
@@ -72,6 +73,8 @@ export function useGigaLearnGeneration() {
       learningObjective?: string;
       contentStandard?: string;
       indicator?: string;
+      methodologyIds?: string[];
+      levelId?: string;
       /** Stable curriculum IDs for library filtering + analytics. */
       curriculumIds?: CurriculumIdSet;
       resourceType?: ResourceType;
@@ -128,6 +131,7 @@ export function useGigaLearnGeneration() {
       setLastLearningObjective(args.learningObjective);
       setLastContentStandard(args.contentStandard);
       setLastIndicator(args.indicator);
+      setLastMethodologyIds(args.methodologyIds);
       setLastCurriculumIds(args.curriculumIds);
       setLastResourceType(args.resourceType);
 
@@ -148,6 +152,8 @@ export function useGigaLearnGeneration() {
           learningObjective: args.learningObjective,
           contentStandard: args.contentStandard,
           indicator: args.indicator,
+          methodologyIds: args.methodologyIds,
+          levelId: args.levelId ?? args.curriculumIds?.levelId,
         });
 
         const content = response.content?.trim();
@@ -225,6 +231,7 @@ export function useGigaLearnGeneration() {
       learningObjective: lastLearningObjective,
       contentStandard: lastContentStandard,
       indicator: lastIndicator,
+      methodologyIds: lastMethodologyIds,
       curriculumIds: lastCurriculumIds,
       resourceType: lastResourceType,
     });
@@ -244,6 +251,7 @@ export function useGigaLearnGeneration() {
     lastLearningObjective,
     lastContentStandard,
     lastIndicator,
+    lastMethodologyIds,
     lastCurriculumIds,
     lastResourceType,
     run,

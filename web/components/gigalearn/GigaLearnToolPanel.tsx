@@ -30,6 +30,7 @@ import {
 } from "@/lib/gigalearn/curriculumEngine";
 import type { ExamBoardId } from "@/lib/gigalearn/curricula";
 import { getGigaLearnProfile, saveGigaLearnProfile } from "@/lib/gigalearn/profile";
+import { getStudioContext } from "@/lib/gigalearn/studioContext";
 import type { GigaLearnToolDefinition } from "@/lib/gigalearn/tools";
 import { cn } from "@/lib/utils";
 import { Loader2, Sparkles } from "lucide-react";
@@ -242,6 +243,10 @@ export const GigaLearnToolPanel = memo(function GigaLearnToolPanel({
                 subStrand: selection.subStrand || undefined,
                 topic: selection.topic || undefined,
                 learningObjective: learningObjective.trim() || undefined,
+                levelId: selection.levelId || undefined,
+                methodologyIds: getStudioContext().methodologyIds?.length
+                  ? [...getStudioContext().methodologyIds]
+                  : undefined,
               })
             }
             className="min-h-11"
