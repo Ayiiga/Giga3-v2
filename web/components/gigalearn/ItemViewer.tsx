@@ -1,6 +1,7 @@
 "use client";
 
 import type { LearnItem } from "../../../convex/learnContent";
+import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, RotateCcw, X } from "lucide-react";
 import {
   useCallback,
@@ -72,6 +73,7 @@ export function ItemViewer({
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
   const [mounted, setMounted] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [index, setIndex] = useState(0);
   const [scale, setScale] = useState(MIN_ZOOM);
   const [translateX, setTranslateX] = useState(0);
@@ -163,6 +165,14 @@ export function ItemViewer({
   }, []);
 
   useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const update = () => setIsMobileViewport(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
     if (!open || items.length === 0) return;
     const boundedIndex = clamp(initialIndex, 0, items.length - 1);
     setIndex(boundedIndex);
@@ -173,7 +183,9 @@ export function ItemViewer({
     if (!open) return;
 
     const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    if (!window.matchMedia("(max-width: 1023px)").matches) {
+      document.body.style.overflow = "hidden";
+    }
 
     const token = `gigalearn-item-viewer-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     viewerTokenRef.current = token;
@@ -314,12 +326,16 @@ export function ItemViewer({
   }, [mounted, open, zoomTo]);
 
   const contentTransform = useMemo(
-    () => `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`,
-    [scale, translateX, translateY]
+    () =>
+      isMobileViewport
+        ? undefined
+        : `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`,
+    [isMobileViewport, scale, translateX, translateY]
   );
 
   const handleDoubleTap = useCallback(
     (clientX: number, clientY: number) => {
+      if (isMobileViewport) return;
       if (scale > MIN_ZOOM) {
         resetTransform();
         return;
@@ -342,7 +358,7 @@ export function ItemViewer({
       setTranslateX(next.x);
       setTranslateY(next.y);
     },
-    [clampTranslation, resetTransform, scale]
+    [clampTranslation, isMobileViewport, resetTransform, scale]
   );
 
   const handleTouchStart = useCallback(
@@ -350,6 +366,17 @@ export function ItemViewer({
       lastTouchAtRef.current = Date.now();
       const target = event.target as HTMLElement;
       if (target.closest("button")) return;
+
+      if (isMobileViewport) {
+        touchModeRef.current = "swipe";
+        const touch = event.touches[0];
+        touchStartRef.current = {
+          x: touch.clientX,
+          y: touch.clientY,
+          time: Date.now(),
+        };
+        return;
+      }
 
       if (event.touches.length === 2) {
         touchModeRef.current = "pinch";
@@ -369,11 +396,13 @@ export function ItemViewer({
       panStartRef.current = { x: translateX, y: translateY };
       touchModeRef.current = scale > MIN_ZOOM ? "pan" : "swipe";
     },
-    [scale, translateX, translateY]
+    [isMobileViewport, scale, translateX, translateY]
   );
 
   const handleTouchMove = useCallback(
     (event: ReactTouchEvent<HTMLDivElement>) => {
+      if (isMobileViewport) return;
+
       if (touchModeRef.current === "pinch" && event.touches.length === 2) {
         event.preventDefault();
         const currentDistance = touchDistance(event.touches);
@@ -412,7 +441,7 @@ export function ItemViewer({
         setTranslateY(next.y);
       }
     },
-    [clampTranslation, scale]
+    [clampTranslation, isMobileViewport, scale]
   );
 
   const handleTouchEnd = useCallback(
@@ -509,7 +538,7 @@ export function ItemViewer({
   return createPortal(
     <div
       ref={dialogRef}
-      className="fixed inset-0 z-[90] bg-black/95 text-white"
+      className="gigalearn-item-viewer-portal fixed inset-0 z-[90] bg-black/95 text-white"
       role="dialog"
       aria-modal="true"
       aria-label={`${categoryTitle} viewer`}
@@ -562,9 +591,13 @@ export function ItemViewer({
           style={{ touchAction: "none" }}
         >
           <div
-            className="select-none text-center will-change-transform"
+            className={cn("select-none text-center", !isMobileViewport && "will-change-transform")}
             data-testid="item-viewer-content"
-            style={{ transform: contentTransform, transformOrigin: "center center" }}
+            style={
+              contentTransform
+                ? { transform: contentTransform, transformOrigin: "center center" }
+                : undefined
+            }
           >
             <div className="text-[140px] leading-none sm:text-[180px]" aria-hidden>
               {activeItem.emoji}

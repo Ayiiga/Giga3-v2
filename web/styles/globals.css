@@ -880,6 +880,20 @@ button:focus-visible {
 .gigalearn-stable {
   isolation: isolate;
   overflow-x: clip;
+  overflow-anchor: none;
+}
+
+.gigalearn-early-years {
+  overflow-anchor: none;
+}
+
+.gigalearn-grade-scroll {
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gigalearn-grade-scroll > button {
+  scroll-snap-align: start;
 }
 
 .gigalearn-stable,
@@ -899,13 +913,20 @@ button:focus-visible {
     transform: none !important;
   }
 
-  .gigalearn-stable .gigalearn-context-bar {
+  .gigalearn-stable .gigalearn-context-bar,
+  .gigalearn-stable .gigalearn-sticky-context {
     position: relative;
     top: auto;
   }
 
   .gigalearn-stable .saas-card {
     contain: none;
+  }
+
+  /* ItemViewer portal is outside .gigalearn-stable — lock transforms on mobile */
+  .gigalearn-item-viewer-portal [data-testid="item-viewer-content"] {
+    transform: none !important;
+    will-change: auto !important;
   }
 
   .gigalearn-stable .animate-pulse {

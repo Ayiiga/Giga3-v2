@@ -234,7 +234,7 @@ export const TeacherStudio = memo(function TeacherStudio({ credits }: TeacherStu
     <div className="space-y-4">
       {/* Persistent curriculum breadcrumb — visible while generating. */}
       <div
-        className="sticky top-0 z-10 rounded-2xl border border-accent/25 bg-white/95 px-3 py-2.5 shadow-sm"
+        className="gigalearn-sticky-context sticky top-0 z-10 rounded-2xl border border-accent/25 bg-white px-3 py-2.5 shadow-sm"
         aria-live="polite"
       >
         <div className="flex flex-wrap items-center justify-between gap-2">

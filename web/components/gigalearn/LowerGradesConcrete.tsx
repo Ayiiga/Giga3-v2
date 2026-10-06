@@ -24,17 +24,33 @@ import {
 } from "@/lib/gigalearn/pronunciation";
 import { speakPronunciationSequence } from "@/lib/gigalearn/speechSynthesis";
 import { warmUpBrowserVoices } from "@/lib/speech/loadBrowserVoices";
+import { EarlyYearsActivityPanel } from "@/components/gigalearn/EarlyYearsActivityPanel";
 import { GroupedTemplate } from "@/components/learn/GroupedTemplate";
 import { ItemViewer } from "@/components/gigalearn/ItemViewer";
-import { GIGALEARN_LEVELS, isLowerGrade, type GigaLearnLevelId } from "@/lib/gigalearn/levels";
+import {
+  curriculumLevelIdToGigaLearnLevel,
+  GIGALEARN_LEVELS,
+  gigaLearnLevelToCurriculumLevelId,
+  isLowerGrade,
+  type GigaLearnLevelId,
+} from "@/lib/gigalearn/levels";
+import type { StudioContext } from "@/lib/gigalearn/studioContext";
 import { listOfflineLessons } from "@/lib/gigalearn/offlineLessons";
 import { cn } from "@/lib/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const TOUCH_SEE_BADGE = "bg-[#10B981] text-white";
 
-export function LowerGradesConcrete() {
-  const [selectedLevel, setSelectedLevel] = useState<GigaLearnLevelId>("KG1");
+interface LowerGradesConcreteProps {
+  credits?: number | null;
+  ctx?: StudioContext;
+  onCtxChange?: (patch: Partial<StudioContext>) => void;
+}
+
+export function LowerGradesConcrete({ credits = null, ctx, onCtxChange }: LowerGradesConcreteProps) {
+  const [selectedLevel, setSelectedLevel] = useState<GigaLearnLevelId>(() =>
+    ctx?.levelId ? curriculumLevelIdToGigaLearnLevel(ctx.levelId) : "KG1"
+  );
   const [voiceId, setVoiceId] = useState("english");
   const [hearingId, setHearingId] = useState<string | null>(null);
   const [hearError, setHearError] = useState<string | null>(null);
@@ -50,6 +66,15 @@ export function LowerGradesConcrete() {
   );
   const viewerItems = viewerCategory?.items ?? [];
 
+  function handleLevelChange(level: GigaLearnLevelId) {
+    setSelectedLevel(level);
+    onCtxChange?.({
+      countryId: "ghana",
+      curriculumId: "gh-ccp",
+      levelId: gigaLearnLevelToCurriculumLevelId(level),
+    });
+  }
+
   async function playHear(itemId: string, parts: PronunciationPart[]) {
     setHearError(null);
     setHearingId(itemId);
@@ -64,8 +89,8 @@ export function LowerGradesConcrete() {
   }
 
   return (
-    <div className="space-y-5">
-      <LevelSelector selectedLevel={selectedLevel} onChange={setSelectedLevel} />
+    <div className="gigalearn-early-years space-y-5">
+      <LevelSelector selectedLevel={selectedLevel} onChange={handleLevelChange} />
 
       {lower ? (
         <section aria-labelledby="gl-real-things">
@@ -127,6 +152,15 @@ export function LowerGradesConcrete() {
         </p>
       )}
 
+      {lower && ctx && onCtxChange ? (
+        <EarlyYearsActivityPanel
+          level={selectedLevel}
+          ctx={ctx}
+          credits={credits}
+          onCtxChange={onCtxChange}
+        />
+      ) : null}
+
       <LearningModes level={selectedLevel} lower={lower} voiceId={voiceId} />
       <LessonPreviewCard level={selectedLevel} lower={lower} voiceId={voiceId} />
       <VoicesSection selectedVoiceId={voiceId} onSelect={setVoiceId} />
@@ -150,7 +184,7 @@ function LevelSelector({
       </h3>
       <div className="relative">
         <div
-          className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1"
+          className="gigalearn-grade-scroll flex gap-2 overflow-x-auto overscroll-x-contain pb-1"
           role="tablist"
           aria-label="Learning levels"
         >
@@ -661,7 +695,7 @@ function OfflineBanner() {
   return (
     <div className="rounded-2xl border border-[#10B981]/50 bg-[#1A233A] p-3">
       <p className="text-xs font-bold text-[#10B981]">📴 {OFFLINE_BANNER.text}</p>
-      <div className="mt-1.5 flex items-center justify-between gap-2">
+      <div className="mt-1.5 flex min-h-[2.75rem] items-center justify-between gap-2">
         <p className="text-[11px] text-gray-300">Storage {storageLabel}</p>
         <button
           type="button"

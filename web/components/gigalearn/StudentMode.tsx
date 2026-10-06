@@ -15,6 +15,7 @@ import {
   resolveLegacyLevelId,
 } from "@/lib/gigalearn/curriculumEngine";
 import { isInteractivePracticeTool } from "@/lib/gigalearn/questions";
+import { selectMethodologiesForContext } from "@/lib/gigalearn/methodologies";
 import {
   getStudioContext,
   saveStudioContext,
@@ -119,6 +120,15 @@ export const StudentMode = memo(function StudentMode({ credits }: StudentModePro
   }
 
   function payload(prompt: string) {
+    const methodologyIds =
+      ctx.methodologyIds?.length > 0
+        ? ctx.methodologyIds
+        : selectMethodologiesForContext({
+            levelBand: level?.band,
+            subjectId: ctx.subjectId,
+            topic,
+            max: 6,
+          }).map((m) => m.id);
     return {
       toolId: activeToolId,
       prompt,
@@ -130,6 +140,8 @@ export const StudentMode = memo(function StudentMode({ credits }: StudentModePro
       strand: ctx.strand.trim() || undefined,
       subStrand: ctx.subStrand.trim() || undefined,
       topic: topic || undefined,
+      levelId: ids.levelId,
+      methodologyIds,
       curriculumIds: {
         countryId: ids.countryId,
         curriculumId: ids.curriculumId,
@@ -175,7 +187,7 @@ export const StudentMode = memo(function StudentMode({ credits }: StudentModePro
 
   return (
     <div className="space-y-4">
-      <div className="sticky top-0 z-10 rounded-2xl border border-accent/25 bg-white/95 px-3 py-2.5 shadow-sm" aria-live="polite">
+      <div className="gigalearn-sticky-context sticky top-0 z-10 rounded-2xl border border-accent/25 bg-white px-3 py-2.5 shadow-sm" aria-live="polite">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs font-medium text-foreground">
             {summary.length ? summary.join(" · ") : "Select your country, curriculum, grade, subject and topic."}
