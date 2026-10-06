@@ -48,6 +48,8 @@ export function studentSubViewFromTab(tab: string | null | undefined): StudentSu
       return "library";
     case "homework":
       return "homework";
+    case "early-years":
+      return "early-years";
     case "my-learning":
       return "home";
     default:

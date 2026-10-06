@@ -284,6 +284,35 @@ export const GES_STRANDS: { level: string; strands: string[] }[] = [
   { level: "Primary 1–3", strands: ["English rhymes & songs", "Maths with fruits & objects", "Science with real things"] },
 ];
 
+export type EarlyYearsSubjectId = "mathematics" | "english" | "science";
+
+export const EARLY_YEARS_SUBJECTS: Array<{ id: EarlyYearsSubjectId; label: string; emoji: string }> = [
+  { id: "mathematics", label: "Mathematics", emoji: "🔢" },
+  { id: "english", label: "English", emoji: "📖" },
+  { id: "science", label: "Science", emoji: "🔬" },
+];
+
+export const EARLY_YEARS_TOPICS: Record<EarlyYearsSubjectId, Array<{ id: string; label: string }>> = {
+  mathematics: [
+    { id: "count-1-5", label: "Counting 1–5" },
+    { id: "count-1-10", label: "Counting 1–10" },
+    { id: "shapes", label: "Shapes (circle, square)" },
+    { id: "more-less", label: "More and less" },
+  ],
+  english: [
+    { id: "letter-b", label: "Letter B" },
+    { id: "letter-a", label: "Letter A" },
+    { id: "rhymes", label: "Rhymes and songs" },
+    { id: "my-name", label: "My name" },
+  ],
+  science: [
+    { id: "fruits", label: "Fruits around us" },
+    { id: "animals", label: "Animals on the farm" },
+    { id: "colors", label: "Colours we see" },
+    { id: "weather", label: "Sun and rain" },
+  ],
+};
+
 export const OFFLINE_BANNER = {
   text: "Offline · Concrete objects cached · African voices ready",
   storageUsed: "1.2GB",

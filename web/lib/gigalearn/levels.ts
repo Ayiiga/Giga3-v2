@@ -58,3 +58,46 @@ export function countRangeForLevel(level: string): { min: number; max: number } 
   if (level === "P1" || level === "P2" || level === "P3") return { min: 1, max: 10 };
   return { min: 1, max: 100 };
 }
+
+/** Map concrete level chips (Creche, KG1, P1…) to canonical curriculum level ids. */
+export function gigaLearnLevelToCurriculumLevelId(level: GigaLearnLevelId): string {
+  const map: Record<GigaLearnLevelId, string> = {
+    Creche: "kg-1",
+    KG1: "kg-1",
+    KG2: "kg-2",
+    P1: "basic-1",
+    P2: "basic-2",
+    P3: "basic-3",
+    "P4-P6": "basic-5",
+    "JHS1-3": "basic-8",
+    "SHS1-3": "basic-11",
+    University: "basic-12",
+    Adult: "basic-12",
+  };
+  return map[level] ?? "kg-1";
+}
+
+/** Best-effort inverse for syncing StudioContext → concrete level chip. */
+export function curriculumLevelIdToGigaLearnLevel(levelId: string): GigaLearnLevelId {
+  const normalized = levelId.trim().toLowerCase();
+  switch (normalized) {
+    case "kg-1":
+    case "creche":
+    case "kg1":
+      return "KG1";
+    case "kg-2":
+    case "kg2":
+      return "KG2";
+    case "basic-1":
+    case "p1":
+      return "P1";
+    case "basic-2":
+    case "p2":
+      return "P2";
+    case "basic-3":
+    case "p3":
+      return "P3";
+    default:
+      return "KG1";
+  }
+}

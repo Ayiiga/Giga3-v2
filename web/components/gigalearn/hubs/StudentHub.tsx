@@ -10,7 +10,6 @@ import { StudentMode } from "@/components/gigalearn/StudentMode";
 import { StudioContextBar } from "@/components/gigalearn/StudioContextBar";
 import type { StudentSubView } from "@/lib/gigalearn/sectionRouting";
 import { STUDENT_TOOLS } from "@/lib/gigalearn/tools";
-import { getLevel, resolveLegacyLevelId } from "@/lib/gigalearn/curriculumEngine";
 import { getStudioContext, saveStudioContext, type StudioContext } from "@/lib/gigalearn/studioContext";
 import { cn } from "@/lib/utils";
 import { memo, useState } from "react";
@@ -42,8 +41,10 @@ export const StudentHub = memo(function StudentHub({
 }: StudentHubProps) {
   const [subView, setSubView] = useState<StudentSubView>(initialSubView);
   const [ctx, setCtx] = useState<StudioContext>(() => getStudioContext());
-  const levelBand = getLevel(resolveLegacyLevelId(ctx.levelId))?.band;
-  const showEarlyYears = levelBand === "early-years" || levelBand === "primary";
+
+  function updateCtx(patch: Partial<StudioContext>) {
+    setCtx(saveStudioContext(patch));
+  }
 
   return (
     <div className="space-y-5">
@@ -60,7 +61,7 @@ export const StudentHub = memo(function StudentHub({
         className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1"
         aria-label="Student sections"
       >
-        {SUB_VIEWS.filter((v) => v.id !== "early-years" || showEarlyYears).map((item) => (
+        {SUB_VIEWS.map((item) => (
           <button
             key={item.id}
             type="button"
@@ -98,7 +99,9 @@ export const StudentHub = memo(function StudentHub({
       )}
       {subView === "library" && <ResourceLibrary />}
       {subView === "homework" && <GigaLearnHomeworkPanel />}
-      {subView === "early-years" && showEarlyYears && <LowerGradesConcrete />}
+      {subView === "early-years" && (
+        <LowerGradesConcrete credits={credits} ctx={ctx} onCtxChange={updateCtx} />
+      )}
     </div>
   );
 });
