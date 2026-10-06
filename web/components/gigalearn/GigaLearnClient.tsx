@@ -23,6 +23,7 @@ import {
   resolvePrimaryArea,
   studentSubViewFromTab,
   teacherSubViewFromTab,
+  type StudentSubView,
 } from "@/lib/gigalearn/sectionRouting";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import { getSessionToken } from "@/lib/auth";
@@ -45,6 +46,7 @@ function GigaLearnContent() {
   const { email, usage, mounted } = useMediaBilling();
 
   const [area, setArea] = useState<GigaLearnPrimaryArea>(() => resolvePrimaryArea(tabParam));
+  const [studentSubOverride, setStudentSubOverride] = useState<StudentSubView | undefined>();
 
   useEffect(() => {
     setArea(resolvePrimaryArea(params.get("tab")));
@@ -62,14 +64,38 @@ function GigaLearnContent() {
 
   function selectArea(next: GigaLearnPrimaryArea) {
     setArea(next);
+    if (next !== "student") setStudentSubOverride(undefined);
     if (next === "student" || next === "teacher" || next === "parent") {
       saveGigaLearnProfile({ role: next as LearnerRole });
     }
   }
 
-  function studyTopic(patch: Partial<StudioContext>, target: "learn" | "tutor") {
+  function studyTopic(
+    patch: Partial<StudioContext>,
+    target: "learn" | "tutor" | "studio" | "revision" | "library"
+  ) {
     if (Object.keys(patch).length > 0) saveStudioContext(patch);
-    selectArea(target === "tutor" ? "tutor" : "student");
+    switch (target) {
+      case "tutor":
+        selectArea("tutor");
+        break;
+      case "studio":
+        selectArea("teacher");
+        break;
+      case "revision":
+        selectArea("student");
+        setStudentSubOverride("revision");
+        break;
+      case "library":
+        selectArea("student");
+        setStudentSubOverride("library");
+        break;
+      case "learn":
+      default:
+        selectArea("student");
+        setStudentSubOverride("learn");
+        break;
+    }
   }
 
   if (!mounted) {
@@ -159,7 +185,7 @@ function GigaLearnContent() {
         {area === "student" && (
           <StudentHub
             credits={usage?.credits ?? null}
-            initialSubView={studentSub}
+            initialSubView={studentSubOverride ?? studentSub}
             onStudyTopic={studyTopic}
             onOpenTutor={() => selectArea("tutor")}
           />

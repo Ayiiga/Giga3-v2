@@ -27,7 +27,10 @@ const SUB_VIEWS: Array<{ id: StudentSubView; label: string }> = [
 interface StudentHubProps {
   credits: number | null;
   initialSubView?: StudentSubView;
-  onStudyTopic: (patch: Partial<StudioContext>, tab: "learn" | "tutor") => void;
+  onStudyTopic: (
+    patch: Partial<StudioContext>,
+    tab: "learn" | "tutor" | "studio" | "revision" | "library"
+  ) => void;
   onOpenTutor: () => void;
 }
 

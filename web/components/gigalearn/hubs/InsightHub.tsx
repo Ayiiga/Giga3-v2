@@ -10,7 +10,10 @@ import { memo, useState } from "react";
 
 interface InsightHubProps {
   initialSubView?: InsightSubView;
-  onStudyTopic: (patch: Partial<StudioContext>, tab: "learn" | "tutor") => void;
+  onStudyTopic: (
+    patch: Partial<StudioContext>,
+    tab: "learn" | "tutor" | "studio" | "revision" | "library"
+  ) => void;
 }
 
 export const InsightHub = memo(function InsightHub({

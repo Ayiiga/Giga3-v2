@@ -263,8 +263,8 @@ export const generateContent = action({
     const levelBand = levelDef?.band;
     const explicitMethods =
       args.methodologyIds
-        ?.map((id) => getMethodology(id))
-        .filter((m): m is NonNullable<typeof m> => Boolean(m)) ?? [];
+        ?.map((id: string) => getMethodology(id))
+        .filter((m): m is NonNullable<ReturnType<typeof getMethodology>> => Boolean(m)) ?? [];
     const methods =
       explicitMethods.length > 0
         ? explicitMethods
