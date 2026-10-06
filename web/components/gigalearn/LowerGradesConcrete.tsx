@@ -165,9 +165,9 @@ function LevelSelector({
                 onClick={() => onChange(level.id)}
                 title={`${level.label} · ages ${level.ages}`}
                 className={cn(
-                  "min-h-12 min-w-12 shrink-0 rounded-full border px-3 py-2 text-xs font-semibold transition-all",
+                  "min-h-12 min-w-12 shrink-0 rounded-full border px-3 py-2 text-xs font-semibold",
                   active
-                    ? "scale-105 border-[#FCD116]/50 bg-gradient-to-br from-[#FCD116] to-[#CE1126] font-extrabold text-black shadow-[0_0_20px_rgba(252,209,22,0.5)]"
+                    ? "border-[#FCD116]/50 bg-gradient-to-br from-[#FCD116] to-[#CE1126] font-extrabold text-black"
                     : "border-[#2A3441] bg-[#1A233A] text-gray-300 hover:border-[#3A4A61] hover:text-white"
                 )}
               >
