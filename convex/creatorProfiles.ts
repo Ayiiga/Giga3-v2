@@ -1,6 +1,10 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
+import {
+  evaluateCreatorVerification,
+  normalizeNationalId,
+} from "./creatorVerificationPolicy";
 import { sessionArgs } from "./validators";
 import { toPublicCreatorProfile } from "./marketplaceViews";
 
@@ -11,19 +15,6 @@ function normalizeHandle(handle: string): string {
     .replace(/[^a-z0-9_-]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 32);
-}
-
-function normalizeNationalId(raw: string): string {
-  return raw.trim().toUpperCase().replace(/\s+/g, "");
-}
-
-function isValidNationalId(id: string): boolean {
-  if (id.length < 5 || id.length > 24) return false;
-  return /^[A-Z0-9-]+$/.test(id);
-}
-
-function isValidCoordinate(lat: number, lng: number): boolean {
-  return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
 }
 
 export function verificationStatusOf(
@@ -146,9 +137,6 @@ export const generateVerificationUploadUrl = mutation({
     if (!profile) throw new Error("Create a creator profile first.");
 
     const status = verificationStatusOf(profile);
-    if (status === "pending") {
-      throw new Error("Verification is already under review.");
-    }
     if (status === "approved") {
       throw new Error("You are already verified.");
     }
@@ -176,23 +164,43 @@ export const submitCreatorVerification = mutation({
     if (!profile) throw new Error("Create a creator profile first.");
 
     const status = verificationStatusOf(profile);
-    if (status === "pending") {
-      throw new Error("Verification is already under review.");
-    }
     if (status === "approved") {
       return { verificationStatus: "approved" as const, verified: true };
     }
 
-    const nationalIdNumber = normalizeNationalId(args.nationalIdNumber);
-    if (!isValidNationalId(nationalIdNumber)) {
-      throw new Error("Enter a valid national ID number (5–24 letters or digits).");
-    }
-    if (!isValidCoordinate(args.latitude, args.longitude)) {
-      throw new Error("Invalid GPS coordinates.");
-    }
-
     const fileName = args.idDocumentFileName.trim().slice(0, 200);
     if (!fileName) throw new Error("ID document filename is required.");
+
+    const idDocumentMeta = await ctx.storage.getMetadata(args.idDocumentStorageId);
+    if (!idDocumentMeta) {
+      throw new Error("ID document upload was not found. Please upload again.");
+    }
+
+    const nationalIdNumber = normalizeNationalId(args.nationalIdNumber);
+    const autoCheck = evaluateCreatorVerification({
+      nationalIdNumber,
+      latitude: args.latitude,
+      longitude: args.longitude,
+      locationAccuracyMeters: args.locationAccuracyMeters,
+      hasIdDocument: true,
+    });
+    if (!autoCheck.ok) {
+      throw new Error(autoCheck.reason);
+    }
+
+    const duplicateId = await ctx.db
+      .query("creatorProfiles")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("nationalIdNumber"), nationalIdNumber),
+          q.neq(q.field("userId"), email),
+          q.eq(q.field("verificationStatus"), "approved")
+        )
+      )
+      .first();
+    if (duplicateId) {
+      throw new Error("This national ID is already linked to another verified creator account.");
+    }
 
     const now = Date.now();
     await ctx.db.patch(profile._id, {
@@ -203,17 +211,19 @@ export const submitCreatorVerification = mutation({
       longitude: args.longitude,
       locationAccuracyMeters: args.locationAccuracyMeters,
       locationCapturedAt: now,
-      verificationStatus: "pending",
+      verificationStatus: "approved",
+      verified: true,
       verificationSubmittedAt: now,
+      verificationReviewedAt: now,
       verificationRejectionReason: undefined,
       updatedAt: now,
     });
 
     return {
-      verificationStatus: "pending" as const,
-      verified: false,
+      verificationStatus: "approved" as const,
+      verified: true,
       message:
-        "Verification submitted. Our team will review your national ID and location.",
+        "Verification complete. Your national ID and GPS location were checked automatically — you can publish on the marketplace.",
     };
   },
 });
@@ -236,7 +246,8 @@ export const requestVerification = mutation({
       return {
         verified: false,
         verificationStatus: "pending" as const,
-        message: "Your verification is under review. We will notify you when approved.",
+        message:
+          "Verification is incomplete. Resubmit your national ID, document photo, and GPS location for automatic approval.",
       };
     }
     if (status === "rejected") {
