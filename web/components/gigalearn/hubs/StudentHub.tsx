@@ -35,7 +35,7 @@ interface StudentHubProps {
 
 export const StudentHub = memo(function StudentHub({
   credits,
-  initialSubView = "home",
+  initialSubView = "early-years",
   onStudyTopic,
   onOpenTutor,
 }: StudentHubProps) {
