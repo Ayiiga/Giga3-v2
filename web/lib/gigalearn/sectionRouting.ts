@@ -53,7 +53,7 @@ export function studentSubViewFromTab(tab: string | null | undefined): StudentSu
     case "my-learning":
       return "home";
     default:
-      return "home";
+      return "early-years";
   }
 }
 

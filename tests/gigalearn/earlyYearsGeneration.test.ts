@@ -51,6 +51,13 @@ describe("early years generation wiring", () => {
     expect(studentSubViewFromTab("early-years")).toBe("early-years");
   });
 
+  it("defaults student sub-view to early-years until user picks another tab", () => {
+    expect(studentSubViewFromTab(null)).toBe("early-years");
+    expect(studentSubViewFromTab(undefined)).toBe("early-years");
+    expect(studentSubViewFromTab("student")).toBe("early-years");
+    expect(studentSubViewFromTab("my-learning")).toBe("home");
+  });
+
   it("LowerGradesConcrete wires generation panel and context sync", () => {
     const source = readFileSync(
       resolve(__dirname, "../../web/components/gigalearn/LowerGradesConcrete.tsx"),
