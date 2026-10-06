@@ -93,6 +93,7 @@ jobs:
         env:
           CONVEX_DEPLOY_KEY: ${{ env.DEPLOY_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           FAL_KEY: ${{ secrets.FAL_KEY }}
           FAL_TEXT_VIDEO_MODEL: ${{ vars.FAL_TEXT_VIDEO_MODEL }}
           FAL_IMAGE_VIDEO_MODEL: ${{ vars.FAL_IMAGE_VIDEO_MODEL }}
@@ -124,6 +125,10 @@ jobs:
           npx convex env set CHAT_ENABLE_FAL "false"
           if [ -n "${GEMINI_API_KEY:-}" ]; then
             npx convex env set GEMINI_API_KEY "${GEMINI_API_KEY}"
+          fi
+          if [ -n "${TAVILY_API_KEY:-}" ]; then
+            npx convex env set TAVILY_API_KEY "${TAVILY_API_KEY}"
+            echo "TAVILY_API_KEY synced for live web search."
           fi
           # fal video models (Seedance Lite: text- AND image-to-video with duration/aspect/resolution).
           # Set regardless of whether FAL_KEY is managed here — the deployment may hold its own key.

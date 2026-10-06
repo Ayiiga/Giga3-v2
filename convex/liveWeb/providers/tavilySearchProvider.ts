@@ -28,16 +28,23 @@ export function createTavilySearchProvider(apiKey: string): WebSearchProvider {
           throw new Error(`Tavily HTTP ${res.status}: ${errText.slice(0, 200)}`);
         }
         const data = (await res.json()) as {
-          results?: Array<{ title?: string; url?: string; content?: string }>;
+          results?: Array<{
+            title?: string;
+            url?: string;
+            content?: string;
+            published_date?: string;
+          }>;
         };
         const results: WebSearchResult[] = [];
         for (const row of data.results ?? []) {
           if (!row.url) continue;
+          const publishedAt = row.published_date?.trim();
           results.push({
             title: row.title?.trim() || row.url,
             uri: row.url,
             snippet: row.content?.trim(),
             domain: domainFromUrl(row.url),
+            ...(publishedAt ? { publishedAt } : {}),
           });
           if (results.length >= options.maxResults) break;
         }
