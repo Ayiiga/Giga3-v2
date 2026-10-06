@@ -39,6 +39,16 @@ describe("research & writing response modes", () => {
     expect(ctx.requiresCitation).toBe(true);
   });
 
+  it("does not treat medical statistics as a medical advice high-stakes query", () => {
+    const ctx = prepareAnswerQualityContext({
+      mode: "general",
+      query:
+        "MPhil applied statistics medical statistics vs data science — which is more marketable?",
+    });
+    expect(ctx.responseMode).toBe("educational");
+    expect(ctx.showVerificationByDefault).toBe(false);
+  });
+
   it("uses high-stakes mode for news fact-check requests", () => {
     const ctx = prepareAnswerQualityContext({
       mode: "general",

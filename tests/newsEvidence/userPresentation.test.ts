@@ -4,6 +4,7 @@ import { enforceNewsEvidenceIntegrity } from "../../convex/newsEvidence/postVali
 import {
   contractHasSnippetOnlyEvidence,
   renderCleanNewsContractSummary,
+  sanitizeLiveWebSourceExcerpt,
   sanitizeLiveWebUserAnswer,
   selectPresentationSources,
   snippetOnlyEvidenceNote,
@@ -171,5 +172,21 @@ describe("userPresentation", () => {
     expect(result.content).not.toMatch(/Why:/i);
     expect(evidence.contract.stories[0]?.confidenceLabel).toBeTruthy();
     expect(evidence.liveSearchUsed).toBe(true);
+  });
+
+  it("hides raw JSON weather API blobs from source excerpts", () => {
+    const raw = `{'location': {'name': 'Bolga Soe', 'region': 'Upper East'}, 'current': {'temp_c': 32}}`;
+    expect(sanitizeLiveWebSourceExcerpt(raw)).toBe("Result for Bolga Soe.");
+  });
+
+  it("strips internal verification metadata from assistant answers", () => {
+    const cleaned = sanitizeLiveWebUserAnswer(
+      "Both programmes are marketable.\n\n### Verification\n- Confidence: medium (0.48)\n- Citation count: 0\n- Evidence used: [S1] User request\n- Validation flags: missing_citations"
+    );
+
+    expect(cleaned).toContain("Both programmes are marketable");
+    expect(cleaned).not.toMatch(/Verification/i);
+    expect(cleaned).not.toMatch(/Confidence:/i);
+    expect(cleaned).not.toMatch(/Evidence used:/i);
   });
 });
