@@ -16,11 +16,11 @@ import { memo, useState } from "react";
 
 const SUB_VIEWS: Array<{ id: StudentSubView; label: string }> = [
   { id: "early-years", label: "Early years" },
-  { id: "home", label: "My path" },
   { id: "learn", label: "Learn" },
   { id: "revision", label: "Revision" },
   { id: "library", label: "Library" },
   { id: "homework", label: "Homework" },
+  { id: "home", label: "My path" },
 ];
 
 interface StudentHubProps {

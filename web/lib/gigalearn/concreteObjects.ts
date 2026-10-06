@@ -5,7 +5,7 @@
  * songs, Q&A and African voiceovers. All offline-first, Tailwind only.
  */
 
-import type { GigaLearnLevelId } from "@/lib/gigalearn/levels";
+import { countRangeForLevel, type GigaLearnLevelId } from "@/lib/gigalearn/levels";
 import { speakWithGigaLearnVoice } from "@/lib/gigalearn/speechSynthesis";
 import {
   LEARN_ANIMALS,
@@ -105,8 +105,8 @@ export const LESSON_PREVIEWS: LessonPreview[] = [
     textTwi: "Kan aprɛ no: 1, 2, 3",
     voiceId: "english",
     teleprompterNote: "TELEPROMPTER TOP 25% — teacher script on top, kids see fruits on bottom 75%",
-    quizLabel: "Quiz · Count fruits (5 Qs)",
-    quizCount: 5,
+    quizLabel: "Quiz · Count fruits (1–20)",
+    quizCount: 20,
   },
   {
     level: "KG2",
@@ -117,8 +117,8 @@ export const LESSON_PREVIEWS: LessonPreview[] = [
     textTwi: "Kan kwaadu no: 1, 2, 3, 4",
     voiceId: "english",
     teleprompterNote: "TELEPROMPTER TOP 25% — teacher script on top, kids see fruits on bottom 75%",
-    quizLabel: "Quiz · Count fruits (5 Qs)",
-    quizCount: 5,
+    quizLabel: "Quiz · Count fruits (1–20)",
+    quizCount: 20,
   },
   {
     level: "P1",
@@ -129,8 +129,8 @@ export const LESSON_PREVIEWS: LessonPreview[] = [
     textTwi: "Kan ankaa no: 1, 2",
     voiceId: "english",
     teleprompterNote: "TELEPROMPTER TOP 25% — teacher script on top, kids see fruits on bottom 75%",
-    quizLabel: "Quiz · Count fruits (5 Qs)",
-    quizCount: 5,
+    quizLabel: "Quiz · Count fruits (1–20)",
+    quizCount: 20,
   },
   {
     level: "P2",
@@ -141,8 +141,8 @@ export const LESSON_PREVIEWS: LessonPreview[] = [
     textTwi: "Ankaa 1 ka ankaa 1 yɛ ankaa 2",
     voiceId: "english",
     teleprompterNote: "TELEPROMPTER TOP 25% — teacher script on top, kids see fruits on bottom 75%",
-    quizLabel: "Quiz · Add fruits (5 Qs)",
-    quizCount: 5,
+    quizLabel: "Quiz · Add fruits (1–20)",
+    quizCount: 20,
   },
   {
     level: "P3",
@@ -153,8 +153,8 @@ export const LESSON_PREVIEWS: LessonPreview[] = [
     textTwi: "Mango 5 gye mango 2 yɛ mango 3",
     voiceId: "english",
     teleprompterNote: "TELEPROMPTER TOP 25% — teacher script on top, kids see fruits on bottom 75%",
-    quizLabel: "Quiz · Take fruits (5 Qs)",
-    quizCount: 5,
+    quizLabel: "Quiz · Take fruits (1–20)",
+    quizCount: 20,
   },
 ];
 
@@ -180,6 +180,48 @@ export const CONCRETE_QUIZZES: ConcreteQuiz[] = [
   { id: "q-mangoes-5", question: "How many mangoes?", concreteRow: ["🥭", "🥭", "🥭", "🥭", "🥭"], options: [4, 5, 3], answer: 5 },
   { id: "q-pawpaw-1", question: "How many pawpaws?", concreteRow: ["🍈"], options: [1, 2, 3], answer: 1 },
 ];
+
+const COUNTING_FRUITS = [
+  { emoji: "🍎", singular: "apple", plural: "apples" },
+  { emoji: "🍌", singular: "banana", plural: "bananas" },
+  { emoji: "🍊", singular: "orange", plural: "oranges" },
+  { emoji: "🥭", singular: "mango", plural: "mangoes" },
+  { emoji: "🍈", singular: "pawpaw", plural: "pawpaws" },
+  { emoji: "🍍", singular: "pineapple", plural: "pineapples" },
+] as const;
+
+/** Three answer choices around the correct count, clamped to the level range. */
+export function quizOptionsForAnswer(answer: number, min: number, max: number): number[] {
+  const options = new Set<number>([answer]);
+  let offset = 1;
+  while (options.size < 3 && offset <= max - min + 2) {
+    const lower = answer - offset;
+    const upper = answer + offset;
+    if (lower >= min && lower !== answer) options.add(lower);
+    if (options.size >= 3) break;
+    if (upper <= max && upper !== answer) options.add(upper);
+    offset += 1;
+  }
+  return [...options].sort((a, b) => a - b);
+}
+
+/** Level-aware counting quizzes from 1 up to 20 (deterministic for offline use). */
+export function buildCountingQuizzesForLevel(level: GigaLearnLevelId | string, poolSize = 16): ConcreteQuiz[] {
+  const { min, max } = countRangeForLevel(level);
+  const span = max - min + 1;
+  return Array.from({ length: poolSize }, (_, index) => {
+    const fruit = COUNTING_FRUITS[index % COUNTING_FRUITS.length]!;
+    const answer = min + ((index * 5 + 2) % span);
+    const label = answer === 1 ? fruit.singular : fruit.plural;
+    return {
+      id: `q-${fruit.plural}-${answer}-${index}`,
+      question: `How many ${label}?`,
+      concreteRow: Array.from({ length: answer }, () => fruit.emoji),
+      options: quizOptionsForAnswer(answer, min, max),
+      answer,
+    };
+  });
+}
 
 export function checkConcreteAnswer(quiz: ConcreteQuiz, picked: number): boolean {
   return picked === quiz.answer;
@@ -296,6 +338,7 @@ export const EARLY_YEARS_TOPICS: Record<EarlyYearsSubjectId, Array<{ id: string;
   mathematics: [
     { id: "count-1-5", label: "Counting 1–5" },
     { id: "count-1-10", label: "Counting 1–10" },
+    { id: "count-1-20", label: "Counting 1–20" },
     { id: "shapes", label: "Shapes (circle, square)" },
     { id: "more-less", label: "More and less" },
   ],

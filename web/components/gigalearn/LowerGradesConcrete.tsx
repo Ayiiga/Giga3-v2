@@ -4,7 +4,7 @@ import {
   ANANSE_POEM,
   CONCRETE_CATEGORIES,
   type ConcreteCategoryId,
-  CONCRETE_QUIZZES,
+  buildCountingQuizzesForLevel,
   FRUIT_GAME,
   FRUIT_POLL,
   FRUIT_QA,
@@ -118,18 +118,14 @@ export function LowerGradesConcrete({ credits = null, ctx, onCtxChange }: LowerG
                 onHear={(item) =>
                   void playHear(item.id, buildItemPronunciationPlan(item.id, item.title, voiceId))
                 }
-                onItemClick={
-                  cat.id === "fruits" || cat.id === "vegetables"
-                    ? (item, triggerElement) => {
-                        const categoryIndex = cat.items.findIndex((candidate) => candidate.id === item.id);
-                        if (categoryIndex < 0) return;
-                        viewerTriggerRef.current = triggerElement;
-                        setViewerCategoryId(cat.id);
-                        setViewerIndex(categoryIndex);
-                        setViewerOpen(true);
-                      }
-                    : undefined
-                }
+                onItemClick={(item, triggerElement) => {
+                  const categoryIndex = cat.items.findIndex((candidate) => candidate.id === item.id);
+                  if (categoryIndex < 0) return;
+                  viewerTriggerRef.current = triggerElement;
+                  setViewerCategoryId(cat.id);
+                  setViewerIndex(categoryIndex);
+                  setViewerOpen(true);
+                }}
               />
             ))}
           </div>
@@ -239,13 +235,19 @@ function LearningModes({
   const [rhymePlaying, setRhymePlaying] = useState<string | null>(null);
   const [qaOpen, setQaOpen] = useState(false);
 
-  const quiz = CONCRETE_QUIZZES[quizIndex % CONCRETE_QUIZZES.length];
+  const quizzes = useMemo(() => buildCountingQuizzesForLevel(level), [level]);
+  const quiz = quizzes[quizIndex % quizzes.length]!;
   const quizCorrect = picked !== null && checkConcreteAnswer(quiz, picked);
+
+  useEffect(() => {
+    setQuizIndex(0);
+    setPicked(null);
+  }, [level]);
   const gameTarget = FRUIT_GAME.fruits[quizIndex % FRUIT_GAME.fruits.length];
   const gameWon = gamePicked !== null && gamePicked === gameTarget;
 
   function nextQuiz() {
-    setQuizIndex((i) => (i + 1) % CONCRETE_QUIZZES.length);
+    setQuizIndex((i) => (i + 1) % quizzes.length);
     setPicked(null);
   }
 
@@ -279,16 +281,20 @@ function LearningModes({
 
       {/* Practices */}
       <div className="rounded-2xl border border-[#EAB308] bg-[#1A233A] p-4">
-        <p className="text-xs font-bold text-white">Practice · Touch 3 apples and count</p>
-        <p className="mt-1 text-2xl" aria-hidden>
-          🍎🍎🍎
-        </p>
+        <p className="text-xs font-bold text-white">Practice · Touch the apples and count</p>
+        <div className="mt-2 flex flex-wrap gap-1.5" aria-hidden>
+          {Array.from({ length: 3 }, (_, index) => (
+            <span key={`practice-apple-${index}`} className="concrete-object-blend text-2xl">
+              🍎
+            </span>
+          ))}
+        </div>
         <span className="mt-2 inline-block rounded-full border border-[#EAB308] px-2.5 py-1 text-[10px] font-bold text-[#EAB308]">
           ON DEVICE
         </span>
       </div>
 
-      {/* Quizzes — concrete images, 1–5 range for KG, offline */}
+      {/* Quizzes — concrete objects, 1–20 range, offline */}
       <div className="rounded-2xl border border-[#2A3441] bg-[#1A233A] p-4">
         <div className="flex items-center justify-between">
           <p className="text-xs font-bold text-white">{quiz.question}</p>
@@ -296,9 +302,13 @@ function LearningModes({
             ON DEVICE
           </span>
         </div>
-        <p className="mt-1 text-3xl" aria-hidden>
-          {quiz.concreteRow.join("")}
-        </p>
+        <div className="mt-2 flex flex-wrap gap-1.5" aria-hidden>
+          {quiz.concreteRow.map((emoji, index) => (
+            <span key={`${quiz.id}-${index}`} className="concrete-object-blend text-xl sm:text-2xl">
+              {emoji}
+            </span>
+          ))}
+        </div>
         <div className="mt-2 flex gap-2">
           {quiz.options.map((opt) => (
             <button
@@ -350,7 +360,7 @@ function LearningModes({
                 aria-label={`Pick ${fruit}`}
                 onClick={() => setGamePicked(fruit)}
                 className={cn(
-                  "min-h-12 min-w-12 rounded-xl border p-2 text-2xl",
+                  "concrete-object-blend min-h-12 min-w-12 rounded-xl border p-2 text-2xl",
                   gamePicked === fruit
                     ? fruit === gameTarget
                       ? "border-[#10B981] bg-[#10B981]/20"

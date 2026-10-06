@@ -57,7 +57,7 @@ export function GroupedTemplate({
                   onClick={(event) => onItemClick(item, event.currentTarget)}
                   className="w-full rounded-xl text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 >
-                  <span className="text-[32px] leading-none" aria-hidden>
+                  <span className="concrete-object-blend text-[32px] leading-none" aria-hidden>
                     {item.emoji}
                   </span>
                   <p className="mt-2 break-words text-sm font-bold text-white">{item.title}</p>
@@ -65,7 +65,7 @@ export function GroupedTemplate({
                 </button>
               ) : (
                 <>
-                  <span className="text-[32px] leading-none" aria-hidden>
+                  <span className="concrete-object-blend text-[32px] leading-none" aria-hidden>
                     {item.emoji}
                   </span>
                   <p className="mt-2 break-words text-sm font-bold text-white">{item.title}</p>

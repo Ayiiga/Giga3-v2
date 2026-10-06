@@ -10,7 +10,7 @@ import {
   isLowerGrade,
 } from "../../web/lib/gigalearn/levels";
 import { selectMethodologiesForContext } from "../../web/lib/gigalearn/methodologies";
-import { studentSubViewFromTab } from "../../web/lib/gigalearn/sectionRouting";
+import { resolveStudentSubView, studentSubViewFromTab } from "../../web/lib/gigalearn/sectionRouting";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -56,6 +56,13 @@ describe("early years generation wiring", () => {
     expect(studentSubViewFromTab(undefined)).toBe("early-years");
     expect(studentSubViewFromTab("student")).toBe("early-years");
     expect(studentSubViewFromTab("my-learning")).toBe("home");
+  });
+
+  it("resolves sub-view from learner context when no explicit tab", () => {
+    expect(resolveStudentSubView(null, "kg-2")).toBe("early-years");
+    expect(resolveStudentSubView(undefined, "basic-1")).toBe("early-years");
+    expect(resolveStudentSubView(null, "basic-8")).toBe("home");
+    expect(resolveStudentSubView("learn", "kg-2")).toBe("learn");
   });
 
   it("LowerGradesConcrete wires generation panel and context sync", () => {

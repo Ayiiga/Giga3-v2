@@ -1,6 +1,7 @@
 /**
  * GigaLearn six-area navigation with legacy ?tab= backward compatibility.
  */
+import { isLowerGradeCurriculumLevel } from "@/lib/gigalearn/levels";
 import type { GigaLearnPrimaryArea } from "@/lib/gigalearn/sections";
 
 /** Legacy tab ids from bookmarks and deep links — mapped to primary areas. */
@@ -55,6 +56,16 @@ export function studentSubViewFromTab(tab: string | null | undefined): StudentSu
     default:
       return "early-years";
   }
+}
+
+/** Default Student sub-view when no ?tab= — Early years for Creche–P3, My path for upper grades. */
+export function resolveStudentSubView(
+  tab: string | null | undefined,
+  levelId?: string | null
+): StudentSubView {
+  if (tab) return studentSubViewFromTab(tab);
+  if (isLowerGradeCurriculumLevel(levelId)) return "early-years";
+  return "home";
 }
 
 export function teacherSubViewFromTab(tab: string | null | undefined): TeacherSubView {

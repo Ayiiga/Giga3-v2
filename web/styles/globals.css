@@ -905,6 +905,34 @@ button:focus-visible {
   animation: none !important;
 }
 
+/* Blended concrete objects — fruits, veggies, animals (Early Years) */
+.concrete-object-blend {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0.25rem;
+  border-radius: 1rem;
+  background: radial-gradient(
+    circle at 30% 25%,
+    rgba(255, 255, 255, 0.4),
+    rgba(59, 130, 246, 0.22) 42%,
+    rgba(234, 179, 8, 0.18) 100%
+  );
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.35),
+    inset 0 2px 6px rgba(255, 255, 255, 0.18);
+  filter: saturate(1.12) contrast(1.04);
+}
+
+.concrete-object-blend-xl {
+  min-width: 8rem;
+  min-height: 8rem;
+  border-radius: 2rem;
+  padding: 0.75rem;
+}
+
 @media (max-width: 1023px) {
   .gigalearn-stable,
   .gigalearn-stable * {
@@ -923,10 +951,9 @@ button:focus-visible {
     contain: none;
   }
 
-  /* ItemViewer portal is outside .gigalearn-stable — lock transforms on mobile */
-  .gigalearn-item-viewer-portal [data-testid="item-viewer-content"] {
+  /* ItemViewer portal: lock transforms only at 1×; allow pinch/double-tap zoom inside viewer */
+  .gigalearn-item-viewer-portal:not(.gigalearn-item-viewer-zoomed) [data-testid="item-viewer-content"] {
     transform: none !important;
-    will-change: auto !important;
   }
 
   .gigalearn-stable .animate-pulse {

@@ -52,11 +52,27 @@ export function getLevel(id: string): GigaLearnLevel | undefined {
   return GIGALEARN_LEVELS.find((l) => l.id === id);
 }
 
-/** Count range for concrete counting — KG stays within 1–5. */
+/** Count range for concrete counting — lower grades up to 20. */
 export function countRangeForLevel(level: string): { min: number; max: number } {
-  if (level === "Creche" || level === "KG1" || level === "KG2") return { min: 1, max: 5 };
-  if (level === "P1" || level === "P2" || level === "P3") return { min: 1, max: 10 };
+  if (level === "Creche" || level === "KG1" || level === "KG2") return { min: 1, max: 20 };
+  if (level === "P1" || level === "P2" || level === "P3") return { min: 1, max: 20 };
   return { min: 1, max: 100 };
+}
+
+const EARLY_YEARS_CURRICULUM_LEVELS = new Set(["kg-1", "kg-2", "creche"]);
+
+/** True when learner context is Creche / KG (Early Years band). */
+export function isEarlyYearsCurriculumLevel(levelId: string | undefined | null): boolean {
+  if (!levelId) return false;
+  return EARLY_YEARS_CURRICULUM_LEVELS.has(levelId.trim().toLowerCase());
+}
+
+/** True when learner context uses concrete-object mode (Creche–P3). */
+export function isLowerGradeCurriculumLevel(levelId: string | undefined | null): boolean {
+  if (!levelId) return false;
+  const normalized = levelId.trim().toLowerCase();
+  if (EARLY_YEARS_CURRICULUM_LEVELS.has(normalized)) return true;
+  return /^basic-[1-3]$/.test(normalized);
 }
 
 /** Map concrete level chips (Creche, KG1, P1…) to canonical curriculum level ids. */
