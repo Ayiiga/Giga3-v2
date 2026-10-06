@@ -1,126 +1,83 @@
 import {
   BarChart3,
   BookOpen,
-  Briefcase,
-  Camera,
   GraduationCap,
-  LayoutGrid,
-  Library,
   MessageCircle,
-  Music,
-  Compass,
-  RotateCcw,
   Sparkles,
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-export type GigaLearnSection =
+/** Six primary GigaLearn experiences — top-level navigation only. */
+export type GigaLearnPrimaryArea =
   | "student"
   | "teacher"
-  | "parent"
-  | "homework"
   | "create"
+  | "parent"
+  | "insight"
+  | "tutor";
+
+/** @deprecated Legacy tab ids — use resolvePrimaryArea() instead. Kept for type compatibility. */
+export type GigaLearnSection =
+  | GigaLearnPrimaryArea
+  | "homework"
   | "rhymes"
   | "workspace"
   | "studio"
   | "learn"
   | "library"
-  | "tutor"
   | "my-learning"
   | "revision"
   | "insights";
 
-export interface GigaLearnSectionDefinition {
-  id: GigaLearnSection;
+export interface GigaLearnAreaDefinition {
+  id: GigaLearnPrimaryArea;
   label: string;
   description: string;
   icon: LucideIcon;
 }
 
-export const GIGALEARN_SECTIONS: GigaLearnSectionDefinition[] = [
+export const GIGALEARN_PRIMARY_AREAS: GigaLearnAreaDefinition[] = [
   {
     id: "student",
     label: "Student",
-    description: "Quizzes, study plans, topic explainers, and exam prep",
+    description: "Learn, practise, revise and prepare for exams",
     icon: GraduationCap,
   },
   {
     id: "teacher",
     label: "Teacher",
-    description: "Lesson notes, worksheets, class activities, and assignments",
+    description: "Plan lessons, resources, assessments and classroom activities",
     icon: BookOpen,
-  },
-  {
-    id: "parent",
-    label: "Parent",
-    description: "Learning summaries, tips, and how to support at home",
-    icon: Users,
-  },
-  {
-    id: "homework",
-    label: "Homework",
-    description: "Photo homework solving with AI vision in chat",
-    icon: Camera,
   },
   {
     id: "create",
     label: "Create",
-    description: "Guided lesson plans, research, books, CVs, quizzes and rhymes",
+    description: "Generate lessons, quizzes, worksheets, rhymes and more",
     icon: Sparkles,
   },
   {
-    id: "rhymes",
-    label: "GigaRhymes",
-    description: "Original African-centred learning rhymes to hear, repeat and clap along",
-    icon: Music,
+    id: "parent",
+    label: "Parent",
+    description: "Support your child's learning at home",
+    icon: Users,
   },
   {
-    id: "workspace",
-    label: "Progress",
-    description: "Learning history, achievements, and saved materials",
-    icon: LayoutGrid,
-  },
-  {
-    id: "studio",
-    label: "Teacher Studio",
-    description: "Lesson, quiz, assignment and presentation generation with repurposing",
-    icon: Briefcase,
-  },
-  {
-    id: "learn",
-    label: "Learn Mode",
-    description: "Explain, simplify, examples, practice, quiz and revision for your topic",
-    icon: Sparkles,
-  },
-  {
-    id: "library",
-    label: "Library",
-    description: "Searchable resource library with analytics",
-    icon: Library,
+    id: "insight",
+    label: "Insight",
+    description: "Progress, mastery and areas needing support",
+    icon: BarChart3,
   },
   {
     id: "tutor",
     label: "AI Tutor",
-    description: "Adaptive tutor with Socratic mode, grounded in your curriculum",
+    description: "Ask, explain, practise and get step-by-step help",
     icon: MessageCircle,
   },
-  {
-    id: "my-learning",
-    label: "My Learning",
-    description: "Your adaptive path, progress by subject and next activity",
-    icon: Compass,
-  },
-  {
-    id: "revision",
-    label: "Revision",
-    description: "Review now, practice again and spaced flashcard review",
-    icon: RotateCcw,
-  },
-  {
-    id: "insights",
-    label: "Insights",
-    description: "Teacher insights from your own classroom activity",
-    icon: BarChart3,
-  },
 ];
+
+/** @deprecated Use GIGALEARN_PRIMARY_AREAS — legacy export for tests and imports. */
+export const GIGALEARN_SECTIONS = GIGALEARN_PRIMARY_AREAS.map((a) => ({
+  ...a,
+  id: a.id as GigaLearnSection,
+}));

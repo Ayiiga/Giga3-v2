@@ -355,11 +355,15 @@ describe("Phase 2 ID-based progress and teacher analytics", () => {
 });
 
 describe("Phase 2 UI wiring", () => {
-  it("adds studio, learn and library sections without removing Phase 1 tabs", () => {
+  it("six primary areas subsume studio, learn and library via routing", () => {
     const ids = GIGALEARN_SECTIONS.map((s) => s.id);
-    for (const expected of ["student", "teacher", "parent", "homework", "create", "rhymes", "workspace", "studio", "learn", "library"]) {
+    for (const expected of ["student", "teacher", "create", "parent", "insight", "tutor"]) {
       expect(ids).toContain(expected);
     }
+    const routing = read("web/lib/gigalearn/sectionRouting.ts");
+    expect(routing).toContain("studio");
+    expect(routing).toContain("library");
+    expect(routing).toContain("rhymes");
   });
 
   it("Teacher Studio keeps context visible with the full action set", () => {
@@ -400,11 +404,13 @@ describe("Phase 2 UI wiring", () => {
     expect(src).toContain("Repurpose");
   });
 
-  it("GigaLearn shell renders the new Phase 2 sections", () => {
+  it("GigaLearn shell renders the new Phase 2 sections via hubs", () => {
     const src = read("web/components/gigalearn/GigaLearnClient.tsx");
-    expect(src).toContain("TeacherStudio");
-    expect(src).toContain("StudentMode");
-    expect(src).toContain("ResourceLibrary");
+    expect(src).toContain("TeacherHub");
+    expect(src).toContain("StudentHub");
+    expect(read("web/components/gigalearn/hubs/StudentHub.tsx")).toContain("StudentMode");
+    expect(read("web/components/gigalearn/hubs/TeacherHub.tsx")).toContain("TeacherStudio");
+    expect(read("web/components/gigalearn/hubs/StudentHub.tsx")).toContain("ResourceLibrary");
   });
 });
 
