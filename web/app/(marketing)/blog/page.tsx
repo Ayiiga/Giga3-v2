@@ -16,6 +16,14 @@ export default function BlogIndexPage() {
   return (
     <>
       <JsonLd
+        webPage={{
+          path: "/blog",
+          name: "Giga3 AI Blog — AI, Education & Technology in Ghana",
+          description:
+            "Guides on artificial intelligence, education, BECE and WASSCE preparation, creator tools, business automation and digital opportunities in Ghana and across Africa.",
+        }}
+      />
+      <JsonLd
         breadcrumbs={[
           { name: "Giga3 AI", path: "/" },
           { name: "Blog", path: "/blog" },

@@ -26,7 +26,14 @@ const TECH_STACK = [
 export default function AboutPage() {
   return (
     <>
-    <JsonLd type="Organization" />
+    <JsonLd
+      webPage={{
+        path: "/about",
+        name: "About Giga3 AI",
+        description:
+          "Giga3 AI is an AI platform built in Ghana for learning, research, coding and creativity — designed for students, creators and businesses worldwide.",
+      }}
+    />
     <JsonLd
       breadcrumbs={[
         { name: "Giga3 AI", path: "/" },

@@ -88,7 +88,7 @@ const PERSONAS: {
       "Publish to the GigaSocial community from one account",
       "Sell digital products on Marketplace with Paystack checkout",
     ],
-    cta: { href: "/gigasocial", label: "Join GigaSocial" },
+    cta: { href: "/ai-for-creators-ghana", label: "AI for creators" },
   },
 ];
 
@@ -111,8 +111,8 @@ const TOOLS = [
     icon: Video,
     title: "Video & Media Studio",
     text: "Generate video and images, add text overlays, then polish in GigaEdit.",
-    href: "/ai-for-ghana",
-    linkLabel: "Explore AI tools",
+    href: "/media",
+    linkLabel: "Open Media Studio",
   },
   {
     icon: Users,
@@ -137,36 +137,42 @@ const TOOLS = [
   },
 ];
 
+const PAID_PLAN_SUMMARY = (["basic", "pro", "premium"] as const)
+  .map(
+    (id) =>
+      `${SUBSCRIPTION_PLANS[id].label} at GHS ${SUBSCRIPTION_PLANS[id].priceGhs} per month with ${SUBSCRIPTION_PLANS[id].credits} credits`
+  )
+  .join(", ");
+
 const FAQ: FaqItem[] = [
   {
     question: "What is the Ghana AI Super App?",
     answer:
-      "The Ghana AI Super App is Giga3AI — one platform combining AI chat, GigaLearn tutoring, video and image creation, GigaEdit, GigaSocial community and Marketplace, built in Ghana with GHS billing through Paystack.",
+      "The Ghana AI Super App is Giga3 AI — one platform combining AI chat, GigaLearn tutoring, video and image creation, GigaEdit, GigaSocial community and Marketplace, built in Ghana with GHS billing through Paystack.",
   },
   {
-    question: "How does Giga3AI help BECE and WASSCE students?",
+    question: "How does Giga3 AI help BECE and WASSCE students?",
     answer:
-      "GigaLearn on Giga3AI gives JHS and SHS students AI tutoring, practice questions, study plans and clear explanations for BECE and WASSCE revision. It is a study aid that supports classroom learning — always verify answers with teachers and syllabus materials.",
+      "GigaLearn on Giga3 AI gives JHS and SHS students AI tutoring, practice questions, study plans and clear explanations for BECE and WASSCE revision. It is a study aid that supports classroom learning — always verify answers with teachers and syllabus materials.",
   },
   {
-    question: "Which Ghanaian languages does Giga3AI support?",
+    question: "Which Ghanaian languages does Giga3 AI support?",
     answer:
-      "Giga3AI supports Twi, Ga, Ewe, Hausa, Ghanaian Pidgin and English across chat and African voice readers, so students, teachers and businesses can ask questions in the language they think in.",
+      "Giga3 AI supports Twi, Ga, Ewe, Hausa, Ghanaian Pidgin and English across chat and African voice readers, so students, teachers and businesses can ask questions in the language they think in.",
   },
   {
-    question: "How much does Giga3AI cost in Ghana?",
-    answer:
-      "Giga3AI has a Free plan at GHS 0 with 25 starter credits. Paid plans bill in Ghana cedis through Paystack: Basic at GHS 60 per month with 100 credits, Pro at GHS 150 per month with 250 credits, and Premium at GHS 350 per month with 500 credits. Mobile Money, cards and bank transfer are supported.",
+    question: "How much does Giga3 AI cost in Ghana?",
+    answer: `Giga3 AI has a Free plan at GHS 0 with ${FREE_STARTER_CREDITS} starter credits. Paid plans bill in Ghana cedis through Paystack: ${PAID_PLAN_SUMMARY}. Mobile Money, cards and bank transfer are supported.`,
   },
   {
-    question: "Can teachers use Giga3AI for lesson plans?",
+    question: "Can teachers use Giga3 AI for lesson plans?",
     answer:
-      "Yes. Teachers use Giga3AI chat to draft lesson outlines, learning objectives, quizzes and classroom materials, then review everything before class. GigaLearn adds structured tutoring support for students. Giga3AI is an independent platform and is not affiliated with GES or WAEC.",
+      "Yes. Teachers use Giga3 AI chat to draft lesson outlines, learning objectives, quizzes and classroom materials, then review everything before class. GigaLearn adds structured tutoring support for students. Giga3 AI is an independent platform and is not affiliated with GES or WAEC.",
   },
   {
-    question: "Is Giga3AI an official GES or WAEC product?",
+    question: "Is Giga3 AI an official GES or WAEC product?",
     answer:
-      "No. Giga3AI is an independent platform built in Ghana. It supports teaching, learning and business workflows, but it is not affiliated with GES, WAEC or any government examination body unless a verified partnership is announced.",
+      "No. Giga3 AI is an independent platform built in Ghana. It supports teaching, learning and business workflows, but it is not affiliated with GES, WAEC or any government examination body unless a verified partnership is announced.",
   },
 ];
 
@@ -187,8 +193,17 @@ export default function GhanaAiPage() {
   return (
     <>
       <JsonLd
+        webPage={{
+          path: PATH,
+          name: "Ghana AI Super App — Giga3 AI",
+          description:
+            "Ghana's AI Super App for BECE, WASSCE and beyond — chat, GigaLearn, creators and business tools built in Ghana.",
+        }}
+      />
+      <JsonLd
         breadcrumbs={[
           { name: "Giga3 AI", path: "/" },
+          { name: "AI for Ghana", path: "/ai-for-ghana" },
           { name: "Ghana AI Super App", path: PATH },
         ]}
       />
@@ -209,12 +224,19 @@ export default function GhanaAiPage() {
             Built in Ghana · Powered by AI
           </p>
           <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-extrabold leading-tight sm:text-5xl">
-            Ghana AI Super App — <span style={{ color: GHANA_GOLD }}>Giga3AI</span>
+            Ghana AI Super App — <span style={{ color: GHANA_GOLD }}>Giga3 AI</span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-slate-300">
-            Ghana&apos;s #1 AI platform for BECE, WASSCE &amp; beyond. Chat, learn, create
-            video and grow business — with Twi, Ga, Ewe and Pidgin support, and billing in
-            Ghana cedis.
+            AI chat, GigaLearn, BECE and WASSCE support, video and image creation, and
+            business tools — built in Ghana with Twi, Ga, Ewe and Pidgin-friendly workflows
+            and billing in Ghana cedis.
+          </p>
+          <p className="mx-auto mt-4 max-w-xl text-sm text-slate-400">
+            For a full overview of AI for Ghana, see{" "}
+            <Link href="/ai-for-ghana/" className="font-semibold text-white underline underline-offset-2">
+              AI for Ghana
+            </Link>
+            .
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
@@ -294,7 +316,7 @@ export default function GhanaAiPage() {
             One super app, built for every Ghanaian
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-center text-base text-slate-600">
-            Pick who you are — Giga3AI adapts to students, teachers, businesses and
+            Pick who you are — Giga3 AI adapts to students, teachers, businesses and
             creators.
           </p>
           <div
@@ -363,7 +385,7 @@ export default function GhanaAiPage() {
             Everything Ghana needs, in one app
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-center text-base text-slate-600">
-            Stop juggling five subscriptions. Giga3AI links chat, learning, creation,
+            Stop juggling five subscriptions. Giga3 AI links chat, learning, creation,
             community and commerce under one account.
           </p>
           <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -561,8 +583,8 @@ export default function GhanaAiPage() {
             <MessageCircle className="mx-auto h-10 w-10" style={{ color: GHANA_GOLD }} aria-hidden />
             <h3 className="mt-3 text-xl font-extrabold">Medase — ready to start?</h3>
             <p className="mx-auto mt-2 max-w-md text-[15px] text-slate-300">
-              Join thousands of Ghanaians using Giga3AI for school, work and creativity.
-              Free to try, in your language.
+              Start free with {FREE_STARTER_CREDITS} credits for school, work and creativity.
+              Built in Ghana, designed for everyday use.
             </p>
             <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
               <Link

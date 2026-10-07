@@ -61,6 +61,13 @@ export default function PricingPage() {
   return (
     <>
       <JsonLd
+        webPage={{
+          path: "/pricing",
+          name: "Giga3 AI Pricing — Plans in GHS via Paystack",
+          description: `Giga3 AI plans: Free with ${FREE_STARTER_CREDITS} credits, then paid monthly plans billed in Ghana cedis through Paystack.`,
+        }}
+      />
+      <JsonLd
         breadcrumbs={[
           { name: "Giga3 AI", path: "/" },
           { name: "Pricing", path: "/pricing" },

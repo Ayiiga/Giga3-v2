@@ -33,6 +33,7 @@ const STATIC_SITEMAP_PATHS = [
   "/pricing/",
   "/features/",
   "/about/",
+  "/press/",
   "/contact/",
   "/blog/",
   "/gigasocial/",

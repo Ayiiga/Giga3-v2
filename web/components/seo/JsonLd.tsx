@@ -1,5 +1,6 @@
 import { branding } from "@/lib/branding";
 import { brandingAssetUrl } from "@/lib/brandingAssets";
+import { SEO_WEBSITE_ID, seoPageId } from "@/lib/seo/schemaIds";
 import { siteConfig } from "@/lib/site";
 
 export type FaqItem = { question: string; answer: string };
@@ -14,18 +15,82 @@ export type OfferItem = {
   path: string;
 };
 
+export type WebPageSchemaInput = {
+  path: string;
+  name: string;
+  description?: string;
+};
+
+export type EducationalApplicationSchemaInput = {
+  name: string;
+  description: string;
+  path: string;
+};
+
 type JsonLdProps = {
+  /** @deprecated Prefer SiteStructuredData on the homepage only. Kept for legacy call sites. */
   type?: "WebSite" | "Organization" | "SoftwareApplication" | "WebApplication";
   breadcrumbs?: { name: string; path: string }[];
   /** FAQPage — answers must match the visible FAQ text on the page. */
   faq?: FaqItem[];
   /** SoftwareApplication + Offer list — prices must match what the page shows. */
   offers?: OfferItem[];
+  /** WebPage referencing the site-wide WebSite entity by @id. */
+  webPage?: WebPageSchemaInput;
+  /** Product-specific educational app schema (e.g. GigaLearn). */
+  educationalApplication?: EducationalApplicationSchemaInput;
 };
 
 /** Structured data for public marketing pages — no authenticated or private URLs. */
-export function JsonLd({ type = "WebSite", breadcrumbs, faq, offers }: JsonLdProps) {
+export function JsonLd({
+  type = "WebSite",
+  breadcrumbs,
+  faq,
+  offers,
+  webPage,
+  educationalApplication,
+}: JsonLdProps) {
   const logo = brandingAssetUrl("/images/logo.png");
+
+  if (educationalApplication) {
+    const pageUrl = seoPageId(educationalApplication.path);
+    const payload = {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: educationalApplication.name,
+      applicationCategory: "EducationalApplication",
+      operatingSystem: "Web",
+      url: pageUrl,
+      description: educationalApplication.description,
+      image: logo,
+      isPartOf: { "@id": SEO_WEBSITE_ID },
+    };
+    return (
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(payload) }}
+      />
+    );
+  }
+
+  if (webPage) {
+    const pageUrl = seoPageId(webPage.path);
+    const payload = {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": pageUrl,
+      url: pageUrl,
+      name: webPage.name,
+      ...(webPage.description ? { description: webPage.description } : {}),
+      isPartOf: { "@id": SEO_WEBSITE_ID },
+    };
+    return (
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(payload) }}
+      />
+    );
+  }
 
   if (offers && offers.length > 0) {
     const payload = {
@@ -134,17 +199,17 @@ export function JsonLd({ type = "WebSite", breadcrumbs, faq, offers }: JsonLdPro
               image: logo,
             }
           : {
-          "@context": "https://schema.org",
-          "@type": "WebSite",
-          name: branding.name,
-          url: siteConfig.url,
-          description: branding.description,
-          publisher: {
-            "@type": "Organization",
-            name: branding.name,
-            logo,
-          },
-        };
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: branding.name,
+              url: siteConfig.url,
+              description: branding.description,
+              publisher: {
+                "@type": "Organization",
+                name: branding.name,
+                logo,
+              },
+            };
 
   return (
     <script

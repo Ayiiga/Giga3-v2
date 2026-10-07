@@ -83,9 +83,9 @@ export const GHANA_LANDING_PAGES = {
     ],
     breadcrumbLabel: "AI for teachers in Ghana",
     relatedReading: [
-      { href: "/ai-for-schools-ghana", label: "AI for schools in Ghana" },
-      { href: "/ai-for-bece-wassce-ghana", label: "AI for BECE & WASSCE preparation" },
       { href: "/gigalearn", label: "GigaLearn — AI tutor" },
+      { href: "/ai-for-bece-wassce-ghana", label: "AI for BECE & WASSCE preparation" },
+      { href: "/ai-for-schools-ghana", label: "AI for schools in Ghana" },
     ],
     primaryCta: { href: "/gigalearn", label: "Open GigaLearn" },
     secondaryCta: { href: "/chat/login", label: "Sign in to chat" },
@@ -196,7 +196,9 @@ export const GHANA_LANDING_PAGES = {
     ],
     breadcrumbLabel: "AI for BECE & WASSCE",
     relatedReading: [
-      { href: "/gigalearn", label: "GigaLearn product page" },
+      { href: "/gigalearn", label: "GigaLearn — AI tutor" },
+      { href: "/ai-for-teachers-ghana", label: "AI for teachers in Ghana" },
+      { href: "/ai-for-schools-ghana", label: "AI for schools in Ghana" },
       { href: "/ai-tools-for-students-ghana", label: "AI tools for students in Ghana" },
       { href: "/blog/category/bece-wassce", label: "BECE & WASSCE blog articles" },
     ],

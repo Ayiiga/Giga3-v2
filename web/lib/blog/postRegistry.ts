@@ -47,9 +47,9 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     slug: "top-ai-apps-in-ghana-2026",
     title: "Top AI Apps in Ghana: Free and Affordable AI Tools for 2026",
     description:
-      "Explore the top AI apps in Ghana for chat, writing, studying, images and productivity — with free vs paid options for students, creators and small businesses.",
+      "A category-by-category map of AI apps Ghanaians use for chat, writing, study, images, video and productivity — with free vs paid notes for mobile-first workflows.",
     excerpt:
-      "From AI chat and writing assistants to image tools and productivity apps — what works well on Ghanaian networks and how to start without overspending.",
+      "Explore AI app categories — chat, study, images, video and productivity — with practical notes for Ghanaian phones, data bundles and Paystack-friendly billing.",
     category: "AI in Ghana",
     tags: ["ai apps ghana", "productivity", "chat ai", "image ai", "creators"],
     author: "Giga3 AI Editorial Team",
@@ -122,9 +122,9 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     slug: "ai-tools-for-ghanaian-students-2026",
     title: "10 AI Tools Every Ghanaian Student Should Know in 2026",
     description:
-      "AI tools for Ghanaian students — tutoring, research, writing, maths, languages, notes, presentations, images, and revision with academic integrity.",
+      "Ten AI tool categories for Ghanaian students — tutoring, research, writing, maths, languages, notes, presentations, images and revision — with academic integrity guidance.",
     excerpt:
-      "From AI tutoring and research helpers to maths support and study planners — ten tool categories every Ghanaian student should explore responsibly in 2026.",
+      "A student-focused checklist of AI study categories for JHS, SHS and university learners in Ghana — how to use each responsibly in 2026.",
     category: "AI Tools",
     tags: ["ai tools students", "study ai", "ghana students", "academic integrity", "gigalearn"],
     author: "Giga3 AI Editorial Team",

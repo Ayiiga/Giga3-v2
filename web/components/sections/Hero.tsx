@@ -17,7 +17,7 @@ export function Hero() {
           </div>
 
           <h1 className="hero-title">
-            Giga3 AI — Social, AI, Learning, Creativity &amp; Business in One App
+            Africa&apos;s AI Super App — Built in Ghana
           </h1>
 
           <p className="section-lead mx-auto mt-6 max-w-2xl">

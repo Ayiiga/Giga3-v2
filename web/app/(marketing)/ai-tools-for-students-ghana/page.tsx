@@ -25,8 +25,8 @@ const PREMIUM = SUBSCRIPTION_PLANS.premium;
 
 export const metadata = publicMetadata({
   path: PATH,
-  title: "Best AI Tools for University Students in Ghana 2026 | Giga3 AI",
-  description: `Discover the best AI tools for university students in Ghana in 2026. Compare Giga3 AI, ChatGPT, Gemini, Copilot and Perplexity, including GHS ${BASIC.priceGhs} ${BASIC.label} pricing.`,
+  title: "Best AI Tools for Students in Ghana 2026 | Giga3 AI",
+  description: `Student-focused AI tool comparison for Ghana in 2026 — study, research, coding and exam prep with Giga3 AI, ChatGPT, Gemini and more. GHS ${BASIC.priceGhs} ${BASIC.label} and up via Paystack.`,
 });
 
 const PRICING_ROWS = [
@@ -99,6 +99,14 @@ const FAQ: FaqItem[] = [
 export default function AiToolsForStudentsGhanaPage() {
   return (
     <>
+      <JsonLd
+        webPage={{
+          path: PATH,
+          name: "Best AI Tools for Students in Ghana 2026 | Giga3 AI",
+          description:
+            "Compare Giga3 AI, ChatGPT, Gemini, Copilot and Perplexity for study, research and coding — with GHS pricing and a responsible-use guide.",
+        }}
+      />
       <JsonLd
         breadcrumbs={[
           { name: "Giga3 AI", path: "/" },

@@ -3,9 +3,9 @@ import { publicMetadata } from "@/lib/seo/publicMetadata";
 
 const base = publicMetadata({
   path: "/ghana-ai",
-  title: "Ghana AI Super App — Giga3AI for Students, Teachers & Business",
+  title: "Ghana AI Super App — Giga3 AI for Students, Teachers & Business",
   description:
-    "Ghana's AI Super App for BECE, WASSCE & beyond. Giga3AI helps students, teachers & businesses with AI chat, GigaLearn, video & more. Built for Ghana curriculum.",
+    "Ghana's AI Super App for BECE, WASSCE and beyond. Giga3 AI helps students, teachers and businesses with AI chat, GigaLearn, video and more. Built for Ghana curriculum.",
 });
 
 export const metadata: Metadata = {
@@ -15,15 +15,15 @@ export const metadata: Metadata = {
     "Ghana AI",
     "AI tools for Ghana students",
     "AI for BECE WASSCE",
-    "Giga3AI",
+    "Giga3 AI",
     "AI for Ghana teachers",
     "AI for business Ghana",
   ],
   openGraph: {
     ...base.openGraph,
-    title: "Ghana AI Super App - Giga3AI | Built for Ghana",
+    title: "Ghana AI Super App — Giga3 AI | Built for Ghana",
     description:
-      "Built for Ghana. #1 AI platform for BECE/WASSCE, teachers, creators & business. Twi, Ga, Ewe, Pidgin support.",
+      "Built for Ghana. AI chat, GigaLearn, BECE and WASSCE support, creators and business tools — with Twi, Ga, Ewe and Pidgin-friendly workflows.",
   },
 };
 

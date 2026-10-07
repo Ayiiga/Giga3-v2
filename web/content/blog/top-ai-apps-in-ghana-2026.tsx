@@ -40,10 +40,11 @@ function ArticleContent() {
   return (
     <>
       <Prose>
-        If you searched for <strong>top AI apps in Ghana</strong>, you probably want a shortlist that
-        works on real phones, respects your budget, and covers more than one task. Ghanaian users
-        mix international giants with regional platforms that accept mobile money and local cards —
-        and in 2026, installable PWAs matter as much as native store apps.
+        If you searched for <strong>top AI apps in Ghana</strong>, you probably want a category map —
+        chat, study, images, video and productivity — that works on real phones and respects your
+        budget. For a single comparison pillar, start with our{" "}
+        <ArticleLink href="/blog/best-ai-tools-in-ghana-2026/">Best AI Tools in Ghana</ArticleLink>{" "}
+        guide; this article focuses on app categories and mobile-first workflows in 2026.
       </Prose>
       <Prose>
         Below is a practical map of categories — chat, writing, study, images, productivity, creator
@@ -168,9 +169,9 @@ function ArticleContent() {
 
       <RelatedReading
         links={[
-          { href: "/blog/best-ai-tools-in-ghana-2026/", label: "Best AI tools in Ghana" },
-          { href: "/ai-tools-for-students-ghana/", label: "AI tools for students" },
-          { href: "/ai-studio/", label: "Giga3 AI Studio" },
+          { href: "/blog/best-ai-tools-in-ghana-2026/", label: "Best AI tools in Ghana (pillar guide)" },
+          { href: "/ai-tools-for-students-ghana/", label: "Best AI tools for students in Ghana" },
+          { href: "/ai-for-ghana/", label: "AI for Ghana overview" },
           { href: "/discover/", label: "Discover features" },
         ]}
       />

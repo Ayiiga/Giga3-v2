@@ -52,6 +52,14 @@ export default function AiForGhanaPage() {
   return (
     <>
       <JsonLd
+        webPage={{
+          path: PATH,
+          name: "AI for Students, Creators and Businesses in Ghana — Giga3 AI",
+          description:
+            "Giga3 AI is an AI platform from Ghana for learning, research, coding and creativity. Start free with starter credits; paid plans billed in GHS via Paystack.",
+        }}
+      />
+      <JsonLd
         breadcrumbs={[
           { name: "Giga3 AI", path: "/" },
           { name: "AI for Ghana", path: PATH },
@@ -215,6 +223,7 @@ export default function AiForGhanaPage() {
                   label: "Best AI Tools for University Students in Ghana 2026",
                 },
                 { href: "/ai-for-teachers-ghana", label: "AI for teachers in Ghana" },
+                { href: "/ai-for-schools-ghana", label: "AI for schools in Ghana" },
                 { href: "/ai-for-bece-wassce-ghana", label: "AI for BECE & WASSCE preparation" },
                 { href: "/ai-for-business-ghana", label: "AI tools for Ghanaian businesses" },
                 { href: "/ai-for-creators-ghana", label: "AI for creators in Ghana" },

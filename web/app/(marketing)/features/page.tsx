@@ -46,6 +46,14 @@ export default function FeaturesPage() {
   return (
     <>
       <JsonLd
+        webPage={{
+          path: PATH,
+          name: "Giga3 AI Features — Every Product in One AI Ecosystem",
+          description:
+            "All Giga3 AI products in one place: AI chat and research, GigaLearn, Media Studio, Video AI, GigaEdit, GigaSocial, Marketplace, Enterprise and developer API.",
+        }}
+      />
+      <JsonLd
         breadcrumbs={[
           { name: "Giga3 AI", path: "/" },
           { name: "Features", path: PATH },
