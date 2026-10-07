@@ -1,3 +1,10 @@
+import type { LiveWebSource } from "../liveWeb/types";
+import {
+  detectFactCheckIntent,
+  detectNewsRetrievalIntent,
+  isNewsCapability,
+  type ResearchCapabilityId,
+} from "../researchCapabilities";
 import type { NewsQueryClassification } from "./types";
 import type { NewsResponseContract, NewsStory, ValidatedSource } from "./types";
 
@@ -160,6 +167,82 @@ const INTERNAL_LINE_PATTERNS: RegExp[] = [
   /^🔴 BREAKING\s*\/\s*🟡/i,
   /^[🔵🟢🟡🟠⚪]\s*(Official|Verified|Corroborated|Reported|Unverified|Conflicting|Insufficient)/i,
 ];
+
+/** True when the user explicitly asked for links, citations, or a source list. */
+export function userRequestedSources(query: string): boolean {
+  const q = query.trim();
+  if (!q) return false;
+  return /\b(sources?|citations?|references?|bibliography|where did you get|show (me )?(the )?(links?|urls?)|cite (your )?sources?|with links?|include links?|give me links?|list (the )?sources?|provide sources?)\b/i.test(
+    q
+  );
+}
+
+/** Full source cards — only for news, fact-check, or explicit user request. */
+export function shouldShowFullSourceList(
+  query: string,
+  capability?: ResearchCapabilityId
+): boolean {
+  if (userRequestedSources(query)) return true;
+  if (detectFactCheckIntent(query)) return true;
+  if (detectNewsRetrievalIntent(query)) return true;
+  if (capability === "fact_check" || capability === "verify_image") return true;
+  if (capability && isNewsCapability(capability)) return true;
+  return false;
+}
+
+const SOURCE_SUMMARY_TITLE = "Web research summary";
+
+/** One compact attribution card when the user did not ask for a source list. */
+export function buildSourceSummaryCard(
+  sources: LiveWebSource[]
+): LiveWebSource | null {
+  if (!sources.length) return null;
+  const domains = [
+    ...new Set(sources.map((s) => s.domain.replace(/^www\./i, ""))),
+  ].slice(0, 3);
+  const count = sources.length;
+  const domainList = domains.join(", ");
+  const suffix =
+    count > domains.length
+      ? ` (+${count - domains.length} more)`
+      : count > 1
+        ? ` (${count} sites)`
+        : "";
+  return {
+    title: SOURCE_SUMMARY_TITLE,
+    uri: sources[0]!.uri,
+    domain: sources[0]!.domain,
+    excerpt: `Based on ${domainList}${suffix}. Ask for sources if you want full links.`,
+    accessedAt: sources[0]!.accessedAt ?? Date.now(),
+  };
+}
+
+export function isSourceSummaryCard(source: LiveWebSource): boolean {
+  return source.title === SOURCE_SUMMARY_TITLE;
+}
+
+/** Limit source cards shown under chat — full list only when appropriate. */
+export function prepareSourcesForUserPresentation(
+  sources: LiveWebSource[],
+  query: string,
+  capability?: ResearchCapabilityId
+): LiveWebSource[] {
+  const deduped = sources.filter(
+    (source, index, all) => all.findIndex((row) => row.uri === source.uri) === index
+  );
+  if (!deduped.length) return [];
+  if (shouldShowFullSourceList(query, capability)) {
+    return deduped.slice(0, 5);
+  }
+  // User did not ask — omit source cards (research still informs the answer).
+  return [];
+}
+
+export function stripSourcesSectionFromAnswer(answer: string): string {
+  return answer
+    .replace(/\n+(\*\*Sources\*\*|#{1,3}\s*Sources)\s*[\s\S]*$/i, "")
+    .trim();
+}
 
 /** Hide raw API/JSON blobs from source cards shown under chat replies. */
 export function sanitizeLiveWebSourceExcerpt(

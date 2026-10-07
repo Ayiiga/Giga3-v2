@@ -64,6 +64,7 @@ import {
   classifyInformationRequest,
   USER_PROVIDED_CONTENT_GUIDANCE,
 } from "./newsEvidence/userContextRouting";
+import { prepareSourcesForUserPresentation } from "./newsEvidence/userPresentation";
 import {
   formatGiga3BlogContextBlock,
   matchGiga3BlogPosts,
@@ -955,20 +956,29 @@ export const processJob = internalAction({
         since: job.createdAt,
         metadataJson:
           needsLiveWeb && isLiveWebEnabled()
-            ? buildLiveWebMetadata({
-                sources: mergeLiveWebSources(
+            ? (() => {
+                const allSources = mergeLiveWebSources(
                   liveWebSources,
                   engineResult.groundingSources ?? []
-                ),
-                usedLiveWeb:
-                  liveWebUsed ||
-                  Boolean(engineResult.usedWebSearch) ||
-                  (engineResult.groundingSources?.length ?? 0) > 0,
-                providerId: liveWebProviderId,
-                basis: liveWebBasis,
-                researchCapability,
-                verification: verificationMetadata,
-              })
+                );
+                const displaySources = prepareSourcesForUserPresentation(
+                  allSources,
+                  job.content,
+                  researchCapability
+                );
+                return buildLiveWebMetadata({
+                  sources: displaySources,
+                  usedLiveWeb:
+                    liveWebUsed ||
+                    Boolean(engineResult.usedWebSearch) ||
+                    (engineResult.groundingSources?.length ?? 0) > 0,
+                  providerId: liveWebProviderId,
+                  basis: liveWebBasis,
+                  researchCapability,
+                  verification: verificationMetadata,
+                  sourcesChecked: allSources.length || undefined,
+                });
+              })()
             : undefined,
       });
       logChatReply("worker_reply_persisted", {

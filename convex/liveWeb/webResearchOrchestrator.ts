@@ -329,6 +329,7 @@ export function buildLiveWebMetadata(args: {
   basis?: LiveWebResponseBasis;
   researchCapability?: string;
   checkedAt?: number;
+  sourcesChecked?: number;
   verification?: import("./types").LiveWebVerificationMetadata;
   location?: import("./types").LiveWebLocationMetadata;
 }): string {
@@ -341,7 +342,7 @@ export function buildLiveWebMetadata(args: {
     providerId: args.providerId ?? undefined,
     researchCapability: args.researchCapability,
     checkedAt: args.checkedAt ?? (args.usedLiveWeb ? Date.now() : undefined),
-    sourcesChecked: args.sources.length || undefined,
+    sourcesChecked: args.sourcesChecked ?? (args.sources.length || undefined),
     verification: args.verification,
     location: args.location,
   };
