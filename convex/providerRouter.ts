@@ -13,6 +13,7 @@ import {
   detectNewsRetrievalIntent,
   isConversationalChatQuery,
   shouldAutoEnableLiveWeb,
+  shouldEnableCareerOrEducationResearch,
 } from "./researchCapabilities";
 import { detectAnswerFromUserContextIntent } from "./newsEvidence/userContextRouting";
 
@@ -224,6 +225,7 @@ export function shouldEnableWebSearch(
   if (detectGhanaNewsIntent(query) || detectBreakingNewsIntent(query)) return true;
   if (detectNewsRetrievalIntent(query)) return true;
   if (shouldAutoEnableLiveWeb(query)) return true;
+  if (shouldEnableCareerOrEducationResearch(query)) return true;
   // News/research workspace modes shape the assistant tone — live web only when
   // the user's message asks for current information (not on "Hi" / "Hello").
   return false;

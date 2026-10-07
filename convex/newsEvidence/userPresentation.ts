@@ -161,6 +161,23 @@ const INTERNAL_LINE_PATTERNS: RegExp[] = [
   /^[🔵🟢🟡🟠⚪]\s*(Official|Verified|Corroborated|Reported|Unverified|Conflicting|Insufficient)/i,
 ];
 
+/** Hide raw API/JSON blobs from source cards shown under chat replies. */
+export function sanitizeLiveWebSourceExcerpt(
+  excerpt: string | undefined
+): string | undefined {
+  if (!excerpt) return excerpt;
+  const trimmed = excerpt.trim();
+  if (!trimmed) return undefined;
+  if (/^[\[{]/.test(trimmed)) {
+    const nameMatch = trimmed.match(/['"]name['"]\s*:\s*['"]([^'"]+)['"]/i);
+    if (nameMatch) {
+      return `Result for ${nameMatch[1]}.`;
+    }
+    return undefined;
+  }
+  return trimmed.replace(/\s+/g, " ").slice(0, 280);
+}
+
 /** Remove internal retrieval labels from user-visible assistant text. */
 export function sanitizeLiveWebUserAnswer(answer: string): string {
   let text = answer.trim();

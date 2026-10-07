@@ -17,6 +17,7 @@ import {
   liveWebMaxSearchResults,
   liveWebSearchTimeoutMs,
 } from "./liveWebConfig";
+import { sanitizeLiveWebSourceExcerpt } from "../newsEvidence/userPresentation";
 import { extractUrlsFromText, redactSensitivePatterns } from "./liveWebSecurity";
 import { resolveWebSearchProviders } from "./providers/registry";
 import { defaultFetchOptions, defaultPageReader } from "./webPageReader";
@@ -39,7 +40,7 @@ function sourceFromSearch(row: {
     title: row.title,
     uri: row.uri,
     domain: row.domain,
-    excerpt: row.snippet,
+    excerpt: sanitizeLiveWebSourceExcerpt(row.snippet),
     accessedAt: Date.now(),
   };
 }
@@ -186,7 +187,7 @@ export async function runWebResearch(args: {
         title: page.title,
         uri: page.uri,
         domain: page.domain,
-        excerpt: page.excerpt,
+        excerpt: sanitizeLiveWebSourceExcerpt(page.excerpt),
         accessedAt: page.accessedAt,
       });
       readCount += 1;

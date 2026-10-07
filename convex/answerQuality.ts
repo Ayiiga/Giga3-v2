@@ -19,6 +19,7 @@ import {
   detectMtnHeroesOfChangeIntent,
   stripMtnDisallowedVisualContent,
 } from "./mtnHeroesOfChangeRules";
+import { sanitizeLiveWebUserAnswer } from "./newsEvidence/userPresentation";
 
 type QueryClass =
   | "factual"
@@ -201,9 +202,24 @@ function hasConversationalIntent(query: string): boolean {
   );
 }
 
-function hasHighStakesIntent(query: string): boolean {
-  return /\b(medical|medicine|diagnosis|symptom|treatment|drug|dosage|legal|law|contract|lawsuit|financial|finance|investment|stock|inflation|interest rate|tax|government policy|election|latest figures|safety[- ]critical|life[- ]threatening)\b/i.test(
+function isAcademicOrCareerProgramQuery(query: string): boolean {
+  return /\b(mphil|m\.phil|phd|bsc|msc|mba|degree|programme|program|major|speciali[sz]e|career|job market|marketable|all[- ]weather|which one|which is better|pros and cons|opportunities in|data science|statistics|university|tertiary|postgraduate)\b/i.test(
     query
+  );
+}
+
+function hasHighStakesIntent(query: string): boolean {
+  const q = query.trim();
+  if (isAcademicOrCareerProgramQuery(q)) {
+    if (!/\b(diagnosis|symptom|treatment|dosage|prescribe|side effect|my pain|i feel sick|should i take)\b/i.test(q)) {
+      return false;
+    }
+  }
+  if (/\bmedical (statistics|science|research|school|education|informatics|field)\b/i.test(q)) {
+    return false;
+  }
+  return /\b(medical advice|diagnosis|symptom|treatment|drug|dosage|legal advice|lawsuit|financial advice|investment advice|safety[- ]critical|life[- ]threatening)\b/i.test(
+    q
   );
 }
 
@@ -580,6 +596,12 @@ function inferResponseMode(mode: AiModeId, query: string): ResponseMode {
   if (hasFactCheckIntent(query)) {
     return "high_stakes";
   }
+  if (hasOpinionIntent(query) && !hasFactCheckIntent(query)) {
+    return "conversational";
+  }
+  if (isAcademicOrCareerProgramQuery(query)) {
+    return "educational";
+  }
   if (mode === "news" || detectNewsRetrievalIntent(query)) {
     return "educational";
   }
@@ -740,7 +762,7 @@ function buildSystemPromptAddon(params: {
 
   const educationalRule =
     params.responseMode === "educational"
-      ? "- Educational mode: teach with a direct answer, a simple definition, deeper explanation, an example, and practice when they help. Match the learner's wording without assuming age or schooling. Use tables when they improve clarity. Add a diagram or other visual aid only when the user asks for one."
+      ? "- Educational mode: give a direct, professional answer first. Use clear sections only when they help. Never show Verification, Confidence scores, Citation count, Evidence used, or Validation flags unless the user explicitly asked for fact-checking."
       : "";
 
   const examRule = params.isExamQuestion
@@ -878,10 +900,8 @@ export function prepareAnswerQualityContext(params: {
   const confidenceRequested = askedForConfidence(query);
   const requiresCitation = responseMode === "high_stakes";
   const mtnHeroesOfChangeMode = detectMtnHeroesOfChangeIntent(query);
-  const showConfidenceByDefault =
-    responseMode === "high_stakes" && !mtnHeroesOfChangeMode;
-  const showVerificationByDefault =
-    responseMode === "high_stakes" && !mtnHeroesOfChangeMode;
+  const showConfidenceByDefault = false;
+  const showVerificationByDefault = false;
   const hasAnyAttachment = attachments.length > 0;
   const hasImageAttachment = attachments.some(
     (attachment) => attachment.kind === "image"
@@ -1194,21 +1214,19 @@ export function validateAnswerQuality(params: {
     for (const flag of enforced.flags) flags.push(flag);
   }
 
+  const userRequestedFactCheck = hasFactCheckIntent(params.context.query);
   const confidenceVisibility =
     !params.context.mtnHeroesOfChangeMode &&
-    (params.context.showConfidenceByDefault ||
-      (params.context.responseMode === "educational" &&
-        params.context.confidenceRequested));
+    (userRequestedFactCheck || params.context.confidenceRequested);
   const verificationVisibility =
-    !params.context.mtnHeroesOfChangeMode &&
-    (params.context.showVerificationByDefault ||
-      (params.context.responseMode === "educational" &&
-        params.context.confidenceRequested));
+    !params.context.mtnHeroesOfChangeMode && userRequestedFactCheck;
 
-  if (params.context.responseMode === "conversational") {
-    normalizedAnswer = removeSourceTags(stripVerificationSections(normalizedAnswer));
-  } else if (!verificationVisibility) {
+  if (verificationVisibility) {
     normalizedAnswer = stripVerificationSections(normalizedAnswer);
+  } else {
+    normalizedAnswer = sanitizeLiveWebUserAnswer(
+      removeSourceTags(stripVerificationSections(normalizedAnswer))
+    );
   }
 
   const lowConfidence = confidenceLabel(confidence) === "low";
@@ -1238,9 +1256,9 @@ export function validateAnswerQuality(params: {
     ? "Verification note: confidence is low because available evidence is limited. I am avoiding unsupported claims.\n\n"
     : "";
 
-  const hasVerificationSection = /(^|\n)### Verification\b/.test(normalizedAnswer);
+  const hasVerificationSection = /(^|\n)#{1,3}\s*Verification\b/i.test(normalizedAnswer);
   const verificationBlock =
-    report.verificationVisible && !hasVerificationSection
+    verificationVisibility && !hasVerificationSection
       ? `\n\n${buildVerificationBlock(report, params.context.rankedSources)}`
       : "";
 

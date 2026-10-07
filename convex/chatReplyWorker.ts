@@ -65,6 +65,10 @@ import {
   USER_PROVIDED_CONTENT_GUIDANCE,
 } from "./newsEvidence/userContextRouting";
 import {
+  formatGiga3BlogContextBlock,
+  matchGiga3BlogPosts,
+} from "./giga3BlogCatalog";
+import {
   formatVerificationContextBlock,
   verifyChatClaim,
 } from "./factVerification";
@@ -560,12 +564,16 @@ export const processJob = internalAction({
         })),
       });
 
+      const matchedBlogPosts = matchGiga3BlogPosts(job.content);
+      const blogContextBlock = formatGiga3BlogContextBlock(matchedBlogPosts);
+
       const systemPromptBase =
         getSystemPrompt(mode) +
         chatSystemStyleAddon(job.chatSystem) +
         buildInterestSystemAddon(parseInterestProfile(refreshedUser?.interestProfile)) +
         "\n\n" +
-        qualityContext.systemPromptAddon;
+        qualityContext.systemPromptAddon +
+        (blogContextBlock ? `\n\n${blogContextBlock}` : "");
 
       let systemPrompt =
         systemPromptBase +

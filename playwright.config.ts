@@ -10,7 +10,14 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   workers: 1,
-  reporter: [["list"]],
+  reporter: process.env.CI
+    ? [
+        ["list"],
+        ["json", { outputFile: "playwright-report/results.json" }],
+        ["html", { open: "never", outputFolder: "playwright-report/html" }],
+      ]
+    : [["list"]],
+  outputDir: "test-results",
   use: {
     baseURL,
     trace: "retain-on-failure",

@@ -1,0 +1,86 @@
+name: Production E2E Verification
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Production URL to verify
+        required: false
+        default: https://www.giga3ai.com
+        type: string
+  schedule:
+    # Daily at 06:00 UTC
+    - cron: "0 6 * * *"
+
+concurrency:
+  group: production-e2e
+  cancel-in-progress: false
+
+jobs:
+  production-e2e:
+    name: Verify production (${{ inputs.base_url || 'https://www.giga3ai.com' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GIGA3_E2E_BASE_URL: ${{ inputs.base_url || 'https://www.giga3ai.com' }}
+      GIGA3_E2E_COMPARE_REPO_SW: "true"
+      GIGA3_E2E_EMAIL: ${{ secrets.GIGA3_E2E_EMAIL }}
+      GIGA3_E2E_PASSWORD: ${{ secrets.GIGA3_E2E_PASSWORD }}
+      GIGA3_PAYSTACK_SANDBOX_ENABLED: ${{ secrets.GIGA3_PAYSTACK_SANDBOX_ENABLED }}
+      GIGA3_PAYSTACK_SANDBOX_PUBLIC_KEY: ${{ secrets.GIGA3_PAYSTACK_SANDBOX_PUBLIC_KEY }}
+      GIGA3_GOOGLE_SITE_VERIFICATION: ${{ secrets.GIGA3_GOOGLE_SITE_VERIFICATION }}
+      GIGA3_BING_SITE_VERIFICATION: ${{ secrets.GIGA3_BING_SITE_VERIFICATION }}
+    steps:
+      - name: Checkout repository (baseline reference only — does not deploy)
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install root dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --legacy-peer-deps
+          else
+            npm install --legacy-peer-deps
+          fi
+
+      - name: Install web dependencies (shared imports)
+        working-directory: web
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --legacy-peer-deps
+          else
+            npm install --legacy-peer-deps
+          fi
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Run production Playwright suite
+        run: npm run test:e2e:production
+        continue-on-error: true
+        id: playwright
+
+      - name: Generate verification summary
+        if: always()
+        run: node scripts/production-e2e-summary.mjs playwright-report/results.json
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+
+      - name: Upload Playwright report on failure
+        if: failure() || steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: warn
+
+      - name: Fail job when tests failed
+        if: steps.playwright.outcome == 'failure'
+        run: exit 1

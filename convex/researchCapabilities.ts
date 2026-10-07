@@ -131,6 +131,17 @@ export function isNewsCapability(id: ResearchCapabilityId): boolean {
   return NEWS_CAPABILITIES.has(id);
 }
 
+const CAREER_EDUCATION_RE =
+  /\b(mphil|m\.phil|phd|bsc|msc|mba|degree|programme|program|major|speciali[sz]e|career|job market|marketable|all[- ]weather|which one|which is better|pros and cons|opportunities in|data science|statistics|university|tertiary|postgraduate)\b/i;
+
+/** Career guidance and academic program comparisons — use live web, not high-stakes verification UI. */
+export function shouldEnableCareerOrEducationResearch(query: string): boolean {
+  const q = query.trim();
+  if (!q || isConversationalChatQuery(q)) return false;
+  if (detectAnswerFromUserContextIntent(q)) return false;
+  return CAREER_EDUCATION_RE.test(q);
+}
+
 export function shouldAutoEnableLiveWeb(query: string): boolean {
   const q = query.trim();
   if (!q) return false;
@@ -353,6 +364,10 @@ export function resolveResearchCapability(args: {
   const newsLookup = resolveNewsLookupCapability(q);
   if (newsLookup) return newsLookup;
 
+  if (shouldEnableCareerOrEducationResearch(q)) {
+    return "live_web";
+  }
+
   if (shouldAutoEnableLiveWeb(q)) {
     return "live_web";
   }
@@ -397,6 +412,7 @@ export function queryNeedsLiveWeb(args: {
   if (detectGhanaNewsIntent(q) || detectBreakingNewsIntent(q)) return true;
   if (detectNewsRetrievalIntent(q)) return true;
   if (shouldAutoEnableLiveWeb(q)) return true;
+  if (shouldEnableCareerOrEducationResearch(q)) return true;
 
   if (shouldRunLiveWebResearch(args.capability)) {
     if (isNewsCapability(args.capability)) {
