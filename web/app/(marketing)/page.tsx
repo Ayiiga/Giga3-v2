@@ -1,7 +1,7 @@
 import { Contact } from "@/components/sections/Contact";
 import { Features } from "@/components/sections/Features";
 import { Hero } from "@/components/sections/Hero";
-import { JsonLd } from "@/components/seo/JsonLd";
+import { SiteStructuredData } from "@/components/seo/SiteStructuredData";
 import { MultiChat } from "@/components/sections/MultiChat";
 import { Pricing } from "@/components/sections/Pricing";
 import { TrendIntelligenceSection } from "@/components/sections/TrendIntelligenceSection";
@@ -11,11 +11,13 @@ import {
   SUBSCRIPTION_PLANS,
 } from "@/lib/payments/subscriptionCatalog";
 
+const HOME_DESCRIPTION =
+  "Giga3 AI is Africa's AI super app for chat, research, learning, coding, image and video creation, editing and productivity. Built in Ghana for Africa and the world.";
+
 export const metadata = publicMetadata({
   path: "/",
-  title: "Giga3 AI — Africa's AI Super App | Multi-Provider AI Chat",
-  description:
-    "Africa's AI Super App: chat, create and learn with multi-provider AI failover, Paystack billing in GHS and offline-ready PWA. Free 25 credits to start.",
+  title: "Giga3 AI — Africa's AI Super App for Ghana | Chat, Learn & Create",
+  description: HOME_DESCRIPTION,
 });
 
 /** Offers mirror the visible homepage pricing teaser (Free + Pro); Enterprise is quote-based. */
@@ -39,10 +41,7 @@ const HOME_OFFERS = [
 export default function HomePage() {
   return (
     <>
-      <JsonLd type="WebSite" />
-      <JsonLd type="Organization" />
-      <JsonLd type="WebApplication" />
-      <JsonLd offers={HOME_OFFERS} />
+      <SiteStructuredData offers={HOME_OFFERS} homeDescription={HOME_DESCRIPTION} />
       <Hero />
       <TrendIntelligenceSection />
       <Features />

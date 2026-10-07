@@ -10,7 +10,7 @@ export type PublicArticle = {
 export const PUBLIC_ARTICLES: readonly PublicArticle[] = [
   {
     href: "/ai-tools-for-students-ghana",
-    title: "Best AI Tools for University Students in Ghana 2026",
+    title: "Best AI Tools for Students in Ghana 2026",
     description:
       "Compare Giga3 AI, ChatGPT, Gemini, Copilot and Perplexity for study, research and coding — with GHS pricing and a responsible-use guide.",
     audience: "Students",

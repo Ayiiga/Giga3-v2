@@ -108,12 +108,32 @@ const warn = (route, msg) => warnings.push({ route, msg });
 
 const indexable = pages.filter((p) => !p.noindex && p.route !== "/404/" && p.route !== "/404");
 
+/** Exact marketing routes that must stay indexable — no prefix matching ("/" matches everything). */
+const IMPORTANT_PUBLIC_ROUTES = new Set([
+  "/",
+  "/ai-for-ghana/",
+  "/ghana-ai/",
+  "/ai-tools-for-students-ghana/",
+  "/ai-for-teachers-ghana/",
+  "/ai-for-schools-ghana/",
+  "/ai-for-bece-wassce-ghana/",
+  "/gigalearn/",
+  "/features/",
+  "/pricing/",
+  "/about/",
+  "/press/",
+  "/blog/",
+]);
+
 for (const p of pages) {
   const isNotFound = p.route === "/404" || p.route === "/404/";
   if (!p.lang) err(p.route, "missing <html lang>");
   if (!p.title) err(p.route, "missing <title>");
   for (const block of p.jsonLd) {
     if (!block.ok) err(p.route, `invalid JSON-LD: ${block.error}`);
+  }
+  if (IMPORTANT_PUBLIC_ROUTES.has(p.route) && p.noindex && !isNotFound) {
+    err(p.route, "important public page is noindex");
   }
   if (p.noindex || isNotFound) continue;
 
@@ -132,6 +152,16 @@ for (const p of pages) {
   else if (p.h1s > 1) err(p.route, `${p.h1s} <h1> elements`);
   if (!p.ogTitle || !p.ogDescription) warn(p.route, "missing og:title/og:description");
   if (!p.ogImage) warn(p.route, "missing og:image");
+  const isUserGeneratedSocial = /^\/gigasocial\/(post|profile)\//.test(p.route);
+  if (!isUserGeneratedSocial && /Giga3AI/i.test(p.title)) {
+    err(p.route, "title uses non-standard branding (Giga3AI — use Giga3 AI)");
+  }
+  if (!isUserGeneratedSocial && p.description && /Giga3AI/i.test(p.description)) {
+    err(p.route, "meta description uses non-standard branding (Giga3AI — use Giga3 AI)");
+  }
+  if (p.canonical && !p.canonical.endsWith("/")) {
+    err(p.route, `canonical missing trailing slash: ${p.canonical}`);
+  }
 }
 
 function dupes(list, key, label) {
@@ -148,6 +178,10 @@ function dupes(list, key, label) {
 dupes(indexable, "title", "<title>");
 dupes(indexable, "description", "meta description");
 dupes(indexable, "canonical", "canonical");
+
+for (const p of indexable) {
+  if (p.jsonLd.length === 0) warn(p.route, "no JSON-LD blocks found");
+}
 
 // Sitemap consistency — supports sitemap index + child urlsets.
 function collectSitemapLocs(outDir) {

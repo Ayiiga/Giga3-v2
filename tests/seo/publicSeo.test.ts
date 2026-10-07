@@ -172,9 +172,45 @@ describe("productLinks", () => {
 
   it("footer links cover indexable ecosystem pages", () => {
     const hrefs = FOOTER_PRODUCT_LINKS.map((l) => l.href);
-    for (const path of ["/video", "/trending", "/prompts", "/developers", "/enterprise"]) {
+    for (const path of [
+      "/video",
+      "/trending",
+      "/prompts",
+      "/developers",
+      "/enterprise",
+      "/ai-for-schools-ghana",
+    ]) {
       expect(hrefs).toContain(path);
     }
+  });
+});
+
+describe("site structured data", () => {
+  it("defines stable organization and website @id URLs", () => {
+    const ids = readFileSync(resolve(__dirname, "../../web/lib/seo/schemaIds.ts"), "utf8");
+    expect(ids).toContain("/#organization");
+    expect(ids).toContain("/#website");
+    expect(ids).toContain("SEO_ORGANIZATION_ID");
+    expect(ids).toContain("SEO_WEBSITE_ID");
+  });
+
+  it("emits homepage graph from SiteStructuredData only", () => {
+    const home = readFileSync(resolve(__dirname, "../../web/app/(marketing)/page.tsx"), "utf8");
+    const layout = readFileSync(resolve(__dirname, "../../web/app/(marketing)/layout.tsx"), "utf8");
+    expect(home).toContain("SiteStructuredData");
+    expect(home).not.toContain('<JsonLd type="Organization"');
+    expect(layout).not.toContain("JsonLd");
+  });
+});
+
+describe("ghana-ai branding", () => {
+  it("does not use Giga3AI or unsupported #1 claims in public metadata", () => {
+    const layout = readFileSync(
+      resolve(__dirname, "../../web/app/(marketing)/ghana-ai/layout.tsx"),
+      "utf8"
+    );
+    expect(layout).not.toMatch(/Giga3AI/);
+    expect(layout).not.toMatch(/#1 AI/);
   });
 });
 

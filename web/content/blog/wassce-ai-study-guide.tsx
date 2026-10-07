@@ -70,7 +70,9 @@ function ArticleContent() {
       <ArticleH2 id="revision-plans">Revision plans and flashcards</ArticleH2>
       <Prose>
         Build weekly schedules around mock results. Generate flashcards, then rewrite them in your
-        own words. <ArticleLink href="/gigalearn/">GigaLearn</ArticleLink> supports structured
+        own words. <ArticleLink href="/gigalearn/">GigaLearn</ArticleLink> and our{" "}
+        <ArticleLink href="/ai-for-bece-wassce-ghana/">AI tools for WASSCE revision</ArticleLink>{" "}
+        support structured
         explanations when you need more than one-off chat replies.
       </Prose>
 
@@ -106,10 +108,11 @@ function ArticleContent() {
 
       <RelatedReading
         links={[
+          { href: "/ai-for-bece-wassce-ghana/", label: "AI for BECE & WASSCE preparation" },
+          { href: "/gigalearn/", label: "GigaLearn" },
           { href: "/blog/wassce-2026-results-ghana/", label: "WASSCE 2026 results guide" },
           { href: "/blog/ai-for-bece-wassce-preparation-ghana/", label: "AI for BECE & WASSCE prep" },
-          { href: "/blog/ai-tools-for-ghanaian-students-2026/", label: "10 AI tools for students" },
-          { href: "/gigalearn/", label: "GigaLearn" },
+          { href: "/ai-tools-for-students-ghana/", label: "AI tools for students in Ghana" },
         ]}
       />
     </>

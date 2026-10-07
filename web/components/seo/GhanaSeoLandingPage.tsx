@@ -15,6 +15,13 @@ export function GhanaSeoLandingPage({ config }: { config: GhanaLandingConfig }) 
   return (
     <>
       <JsonLd
+        webPage={{
+          path: config.path,
+          name: config.metaTitle,
+          description: config.metaDescription,
+        }}
+      />
+      <JsonLd
         breadcrumbs={[
           { name: "Giga3 AI", path: "/" },
           { name: "AI for Ghana", path: "/ai-for-ghana" },

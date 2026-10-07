@@ -101,7 +101,7 @@ export const PRODUCT_CATALOG: readonly ProductEntry[] = [
     name: "GigaEdit",
     tagline: "Video and photo editor",
     description:
-      "GigaEdits is the on-device editor for trimming, joining, captions, teleprompter, voice and video recording, voiceover, and export. Import clips, record takes, and post to GigaSocial when ready.",
+      "GigaEdit is the on-device editor for trimming, joining, captions, teleprompter, voice and video recording, voiceover, and export. Import clips, record takes, and post to GigaSocial when ready.",
     group: "create",
   },
   {

@@ -82,11 +82,11 @@ export const MEDIA_PAGE_SHELL: PublicProductPageShellProps = {
 };
 
 export const GIGALEARN_PAGE_SHELL: PublicProductPageShellProps = {
-  title: "GigaLearn — AI tutor and exam prep on Giga3",
+  title: "GigaLearn — AI tutor and exam prep on Giga3 AI",
   description: catalogEntry("/gigalearn").description,
   audience: "students, teachers, and parents in Ghana and across Africa",
   whatItDoes:
-    "GigaLearn provides structured study support: homework help, practice questions, study plans, and exam prep for JHS and SHS. Personas and progress tracking require a signed-in Giga3 account.",
+    "GigaLearn is Giga3 AI's learning assistant for homework help, practice questions, study plans, and BECE and WASSCE revision support for JHS and SHS. Personas and progress tracking require a signed-in Giga3 account.",
   whoFor: [
     "JHS and SHS students preparing for BECE and WASSCE",
     "Teachers building classroom activities and quizzes",
@@ -96,11 +96,12 @@ export const GIGALEARN_PAGE_SHELL: PublicProductPageShellProps = {
     "Study modes with Ghana-focused curriculum context",
     "Practice questions and progress saved to your account",
     "Persona hand-off from chat when you choose a tutor style",
+    "Responsible AI learning — verify answers with teachers and syllabus materials",
   ],
   giga3Connection:
-    "GigaLearn uses the same credits and entitlements as Giga3 chat. Organisation workspaces can route students through /workspace when your school is onboarded.",
-  primaryHref: "/gigalearn",
-  primaryLabel: "Open GigaLearn",
+    "GigaLearn uses the same credits and entitlements as Giga3 chat. For exam-focused workflows, see AI for BECE and WASSCE preparation at /ai-for-bece-wassce-ghana/. Organisation workspaces can route students through /workspace when your school is onboarded.",
+  primaryHref: "/ai-for-bece-wassce-ghana",
+  primaryLabel: "BECE & WASSCE prep guide",
   secondaryHref: "/chat/login",
   secondaryLabel: "Sign in",
 };

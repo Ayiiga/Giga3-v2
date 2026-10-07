@@ -153,7 +153,9 @@ function ArticleContent() {
 
       <ArticleH2 id="gigalearn">Using GigaLearn for structured study</ArticleH2>
       <Prose>
-        <ArticleLink href="/gigalearn/">GigaLearn</ArticleLink> is Giga3&apos;s learning-focused
+        <ArticleLink href="/gigalearn/">GigaLearn</ArticleLink> supports{" "}
+        <ArticleLink href="/ai-for-bece-wassce-ghana/">AI-powered BECE and WASSCE preparation</ArticleLink>.
+        GigaLearn is Giga3&apos;s learning-focused
         experience for step-by-step explanations. Where general chat might jump to an answer,
         learning modes encourage breaking problems into stages — useful when you are rebuilding
         confidence in maths or science before mocks.
@@ -182,10 +184,11 @@ function ArticleContent() {
 
       <RelatedReading
         links={[
+          { href: "/ai-for-bece-wassce-ghana/", label: "AI for BECE & WASSCE preparation" },
           { href: "/gigalearn/", label: "GigaLearn — AI tutor" },
+          { href: "/ai-for-teachers-ghana/", label: "AI for teachers in Ghana" },
           { href: "/blog/best-ai-tools-in-ghana-2026/", label: "Best AI tools in Ghana" },
           { href: "/ai-for-ghana/", label: "AI for Ghana overview" },
-          { href: "/blog/top-ai-apps-in-ghana-2026/", label: "Top AI apps in Ghana" },
         ]}
       />
     </>

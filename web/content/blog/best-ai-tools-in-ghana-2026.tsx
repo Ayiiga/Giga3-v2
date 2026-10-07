@@ -190,7 +190,8 @@ function ArticleContent() {
 
       <RelatedReading
         links={[
-          { href: "/blog/top-ai-apps-in-ghana-2026/", label: "Top AI Apps in Ghana 2026" },
+          { href: "/ai-tools-for-students-ghana/", label: "Best AI tools for students in Ghana" },
+          { href: "/blog/top-ai-apps-in-ghana-2026/", label: "Top AI app categories in Ghana" },
           { href: "/blog/ai-for-bece-wassce-preparation-ghana/", label: "AI for BECE & WASSCE prep" },
           { href: "/ai-for-ghana/", label: "AI for Ghana — product overview" },
           { href: "/ai-studio/", label: "Giga3 AI Studio" },
