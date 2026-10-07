@@ -244,6 +244,29 @@ export function stripSourcesSectionFromAnswer(answer: string): string {
     .trim();
 }
 
+/** Repair cramped scholarship/program lists into readable markdown with spacing. */
+export function normalizeStructuredCatalogAnswer(answer: string): string {
+  let text = answer.trim();
+  if (!text) return text;
+
+  text = text.replace(/\n*Made with Giga3 AI[\s\S]*$/i, "").trim();
+  text = text.replace(/\n*###\s*Giga3 AI[\s\S]*$/i, "").trim();
+
+  text = text.replace(/(?<!\n)(\d+\.\s+\*\*)/g, "\n\n$1");
+
+  text = text.replace(
+    /(\*\*[^*\n]+\*\*)\s+-\s+\*\*(Funding|Eligibility|Deadline|Deadlines|Study mode|Study Mode|Application|Application link|Application Link|Requirements|Duration|Location|Benefits|Coverage):\*\*/gi,
+    "$1\n   - **$2:**"
+  );
+
+  text = text.replace(
+    /\s+-\s+(\*\*(?:Funding|Eligibility|Deadline|Deadlines|Study mode|Study Mode|Application|Application link|Application Link|Requirements|Duration|Location|Benefits|Coverage):\*\*)/gi,
+    "\n   - $1"
+  );
+
+  return text.replace(/\n{3,}/g, "\n\n").trim();
+}
+
 /** Hide raw API/JSON blobs from source cards shown under chat replies. */
 export function sanitizeLiveWebSourceExcerpt(
   excerpt: string | undefined

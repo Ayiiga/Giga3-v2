@@ -20,6 +20,7 @@ import {
   stripMtnDisallowedVisualContent,
 } from "./mtnHeroesOfChangeRules";
 import {
+  normalizeStructuredCatalogAnswer,
   sanitizeLiveWebUserAnswer,
   shouldShowFullSourceList,
   stripSourcesSectionFromAnswer,
@@ -208,6 +209,12 @@ function hasConversationalIntent(query: string): boolean {
 
 function isAcademicOrCareerProgramQuery(query: string): boolean {
   return /\b(mphil|m\.phil|phd|bsc|msc|mba|degree|programme|program|major|speciali[sz]e|career|job market|marketable|all[- ]weather|which one|which is better|pros and cons|opportunities in|data science|statistics|university|tertiary|postgraduate)\b/i.test(
+    query
+  );
+}
+
+function hasStructuredCatalogIntent(query: string): boolean {
+  return /\b(scholarship|scholarships|fully funded|funding opportunity|fellowship|fellowships|bursary|bursaries|grant|grants|top \d+|best \d+|list of|list the|opportunities for|programs for|programmes for|available for)\b/i.test(
     query
   );
 }
@@ -764,6 +771,18 @@ function buildSystemPromptAddon(params: {
       ? "- Conversational mode: reply naturally and warmly. Do not include transparency notices, confidence scores, citation panels, verification warnings, or evidence sections."
       : "";
 
+  const catalogFormattingRule = hasStructuredCatalogIntent(params.query)
+    ? [
+        "Structured catalog format (scholarships, grants, programs, opportunities):",
+        "- Start with a short intro paragraph (2–3 sentences).",
+        "- Use a numbered list — one blank line between items.",
+        "- Each item: **Program name** on its own line, then nested bullets with **Funding:**, **Eligibility:**, **Deadline:**, **Study mode:**, **Application:** (only include fields you know).",
+        "- Use *italics* for deadlines or notes; use markdown links for application URLs.",
+        "- End with one closing paragraph — no share footer or 'Made with Giga3 AI' line.",
+        "- Never run multiple programs into one paragraph.",
+      ].join("\n")
+    : "";
+
   const educationalRule =
     params.responseMode === "educational"
       ? "- Educational mode: give a direct, professional answer first. Use clear sections only when they help. Never show Verification, Confidence scores, Citation count, Evidence used, or Validation flags unless the user explicitly asked for fact-checking. Do not add a **Sources** section or link list unless the user asked for sources, citations, or references — weave facts into the answer naturally."
@@ -864,6 +883,7 @@ function buildSystemPromptAddon(params: {
     "- Prioritize factual correctness, authenticity, and clarity.",
     conversationalRule,
     researchWritingRule,
+    catalogFormattingRule,
     educationalRule,
     learnerInstruction(params.learnerLevel),
     examRule,
@@ -1005,7 +1025,7 @@ function stripVerificationSections(answer: string): string {
 }
 
 function removeSourceTags(answer: string): string {
-  return answer.replace(/\s*\[S\d+\]/g, "").replace(/\s{2,}/g, " ").trim();
+  return answer.replace(/\s*\[S\d+\]/g, "").trim();
 }
 
 function buildVerificationBlock(
@@ -1235,6 +1255,13 @@ export function validateAnswerQuality(params: {
 
   if (!shouldShowFullSourceList(params.context.query)) {
     normalizedAnswer = stripSourcesSectionFromAnswer(normalizedAnswer);
+  }
+
+  if (
+    hasStructuredCatalogIntent(params.context.query) ||
+    /\d+\.\s+\*\*[^*]+\*\*/.test(normalizedAnswer)
+  ) {
+    normalizedAnswer = normalizeStructuredCatalogAnswer(normalizedAnswer);
   }
 
   const lowConfidence = confidenceLabel(confidence) === "low";
