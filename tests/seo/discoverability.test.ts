@@ -104,11 +104,17 @@ describe("404 and homepage structured data", () => {
     expect(src).toContain('canonical: "/404.html"');
   });
 
-  it("emits WebSite, Organization, and SoftwareApplication markup on the homepage", () => {
-    const src = readFileSync(resolve(root, "web/app/(marketing)/page.tsx"), "utf8");
-    expect(src).toContain('type="WebSite"');
-    expect(src).toContain('type="Organization"');
-    expect(src).toContain("offers={HOME_OFFERS}");
+  it("emits WebSite, Organization, and WebApplication markup on the homepage", () => {
+    const home = readFileSync(resolve(root, "web/app/(marketing)/page.tsx"), "utf8");
+    expect(home).toContain("SiteStructuredData");
+    expect(home).toContain("offers={HOME_OFFERS}");
+    const schema = readFileSync(
+      resolve(root, "web/components/seo/SiteStructuredData.tsx"),
+      "utf8"
+    );
+    expect(schema).toContain('"@type": "WebSite"');
+    expect(schema).toContain("buildOrganizationSchemaNode");
+    expect(schema).toContain('"@type": "WebApplication"');
     const jsonLd = readFileSync(resolve(root, "web/components/seo/JsonLd.tsx"), "utf8");
     expect(jsonLd).not.toContain("aggregateRating");
     expect(jsonLd).not.toContain("reviewCount");
