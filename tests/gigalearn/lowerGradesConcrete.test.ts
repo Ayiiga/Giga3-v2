@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  buildCountingQuizzesForLevel,
   CONCRETE_CATEGORIES,
   CONCRETE_QUIZZES,
   FRUIT_POLL,
@@ -11,6 +12,7 @@ import {
   checkConcreteAnswer,
   getGigaLearnVoice,
   lessonPreviewForLevel,
+  quizOptionsForAnswer,
 } from "../../web/lib/gigalearn/concreteObjects";
 import {
   GIGALEARN_LEVELS,
@@ -37,9 +39,9 @@ describe("gigalearn lower grades concrete objects", () => {
     }
   });
 
-  it("keeps KG counting within 1–5 with concrete fruit catalog", () => {
-    expect(countRangeForLevel("KG1")).toEqual({ min: 1, max: 5 });
-    expect(countRangeForLevel("P2")).toEqual({ min: 1, max: 10 });
+  it("keeps lower-grade counting within 1–20 with concrete fruit catalog", () => {
+    expect(countRangeForLevel("KG1")).toEqual({ min: 1, max: 20 });
+    expect(countRangeForLevel("P2")).toEqual({ min: 1, max: 20 });
     const fruits = CONCRETE_CATEGORIES.find((c) => c.id === "fruits")!;
     expect(fruits.items.map((i) => i.id)).toEqual(
       expect.arrayContaining(["apple", "banana", "orange", "mango", "pawpaw"])
@@ -58,6 +60,20 @@ describe("gigalearn lower grades concrete objects", () => {
       expect(quiz.concreteRow.length).toBe(quiz.answer);
     }
     expect(FRUIT_POLL.answer).toBe("Banana 🍌");
+  });
+
+  it("builds level-aware counting quizzes up to 20", () => {
+    const kgQuizzes = buildCountingQuizzesForLevel("KG2");
+    expect(kgQuizzes.length).toBeGreaterThan(5);
+    for (const quiz of kgQuizzes) {
+      expect(quiz.answer).toBeGreaterThanOrEqual(1);
+      expect(quiz.answer).toBeLessThanOrEqual(20);
+      expect(quiz.concreteRow.length).toBe(quiz.answer);
+      expect(quiz.options).toContain(quiz.answer);
+    }
+    const highCount = kgQuizzes.find((q) => q.answer >= 15);
+    expect(highCount).toBeTruthy();
+    expect(quizOptionsForAnswer(10, 1, 20)).toEqual([9, 10, 11]);
   });
 
   it("previews concrete lessons per level (P2 addition, P3 subtraction)", () => {

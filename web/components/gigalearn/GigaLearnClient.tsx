@@ -21,14 +21,14 @@ import {
   createSubViewFromTab,
   insightSubViewFromTab,
   resolvePrimaryArea,
-  studentSubViewFromTab,
+  resolveStudentSubView,
   teacherSubViewFromTab,
   type StudentSubView,
 } from "@/lib/gigalearn/sectionRouting";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import { getSessionToken } from "@/lib/auth";
 import { saveGigaLearnProfile } from "@/lib/gigalearn/profile";
-import { saveStudioContext, type StudioContext } from "@/lib/gigalearn/studioContext";
+import { getStudioContext, saveStudioContext, type StudioContext } from "@/lib/gigalearn/studioContext";
 import type { LearnerRole } from "@/lib/gigalearn/curricula";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -116,7 +116,7 @@ function GigaLearnContent() {
     return <ClientAppHydrationNotice productName="GigaLearn" signInHref="/chat/login?next=/gigalearn" />;
   }
 
-  const studentSub = studentSubViewFromTab(tabParam);
+  const studentSub = resolveStudentSubView(tabParam, getStudioContext().levelId);
   const teacherSub = teacherSubViewFromTab(tabParam);
   const createSub = createSubViewFromTab(tabParam);
   const insightSub = insightSubViewFromTab(tabParam);
