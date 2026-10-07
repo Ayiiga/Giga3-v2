@@ -3,12 +3,17 @@ import { buildNewsEvidencePackage } from "../../convex/newsEvidence/pipeline";
 import { enforceNewsEvidenceIntegrity } from "../../convex/newsEvidence/postValidation";
 import {
   contractHasSnippetOnlyEvidence,
+  buildSourceSummaryCard,
+  prepareSourcesForUserPresentation,
   renderCleanNewsContractSummary,
   sanitizeLiveWebSourceExcerpt,
   sanitizeLiveWebUserAnswer,
   selectPresentationSources,
+  shouldShowFullSourceList,
   snippetOnlyEvidenceNote,
   sortSourcesForRecency,
+  stripSourcesSectionFromAnswer,
+  userRequestedSources,
 } from "../../convex/newsEvidence/userPresentation";
 import { classifyNewsQuery } from "../../convex/newsEvidence/queryClassification";
 import type { ValidatedSource } from "../../convex/newsEvidence/types";
@@ -188,5 +193,83 @@ describe("userPresentation", () => {
     expect(cleaned).not.toMatch(/Verification/i);
     expect(cleaned).not.toMatch(/Confidence:/i);
     expect(cleaned).not.toMatch(/Evidence used:/i);
+  });
+
+  it("detects when the user explicitly asked for sources", () => {
+    expect(userRequestedSources("List your sources for this answer")).toBe(true);
+    expect(userRequestedSources("Which AI degree should I choose?")).toBe(false);
+  });
+
+  it("hides source cards for general research unless the user asked", () => {
+    const sources = prepareSourcesForUserPresentation(
+      [
+        {
+          title: "Guide to AI degrees",
+          uri: "https://coursera.org/a",
+          domain: "coursera.org",
+          accessedAt: Date.now(),
+        },
+        {
+          title: "AI engineering degree",
+          uri: "https://wgu.edu/b",
+          domain: "wgu.edu",
+          accessedAt: Date.now(),
+        },
+      ],
+      "Which AI degree should I choose?"
+    );
+
+    expect(sources).toHaveLength(0);
+  });
+
+  it("can build a single summary card when a compact attribution is needed", () => {
+    const summary = buildSourceSummaryCard([
+      {
+        title: "Guide",
+        uri: "https://coursera.org/a",
+        domain: "coursera.org",
+        accessedAt: Date.now(),
+      },
+      {
+        title: "Degree",
+        uri: "https://wgu.edu/b",
+        domain: "wgu.edu",
+        accessedAt: Date.now(),
+      },
+    ]);
+    expect(summary?.title).toBe("Web research summary");
+    expect(summary?.excerpt).toMatch(/coursera\.org/i);
+  });
+
+  it("keeps full source lists for news and explicit source requests", () => {
+    expect(
+      shouldShowFullSourceList("Latest Ghana news today", "ghana_news")
+    ).toBe(true);
+    expect(
+      prepareSourcesForUserPresentation(
+        [
+          {
+            title: "A",
+            uri: "https://a.test",
+            domain: "a.test",
+            accessedAt: 1,
+          },
+          {
+            title: "B",
+            uri: "https://b.test",
+            domain: "b.test",
+            accessedAt: 1,
+          },
+        ],
+        "Give me your sources on this topic"
+      )
+    ).toHaveLength(2);
+  });
+
+  it("strips markdown Sources sections from answers when not requested", () => {
+    const cleaned = stripSourcesSectionFromAnswer(
+      "Here is the answer.\n\n**Sources**\n- [Coursera](https://coursera.org)\n- [WGU](https://wgu.edu)"
+    );
+    expect(cleaned).toBe("Here is the answer.");
   });
 });

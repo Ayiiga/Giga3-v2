@@ -557,9 +557,10 @@ export function researchSystemPromptAddon(capability: ResearchCapabilityId): str
           "Mode: Live web research.",
           "Prefer official primary sources when appropriate, then reputable reporting (Reuters, BBC, AP, etc.).",
           "Use reference sources (Britannica, Wikipedia) for background only — not as proof of breaking news.",
-          "Write a clean, concise answer; cite a small set of high-quality sources with markdown links.",
+          "Write a clean, concise answer in plain language. Do not add a **Sources** section or URL list unless the user asked for sources, citations, or references.",
           "Never pretend model knowledge is live information.",
-          NEWS_RESPONSE_FORMAT_GUIDANCE,
+          "- Be concise and professional. Lead with a direct answer.",
+          "- Do NOT show Confidence scores, Why lines, tier numbers, or retrieval diagnostics.",
         ].join("\n");
       }
       return "";

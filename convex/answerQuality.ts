@@ -19,7 +19,11 @@ import {
   detectMtnHeroesOfChangeIntent,
   stripMtnDisallowedVisualContent,
 } from "./mtnHeroesOfChangeRules";
-import { sanitizeLiveWebUserAnswer } from "./newsEvidence/userPresentation";
+import {
+  sanitizeLiveWebUserAnswer,
+  shouldShowFullSourceList,
+  stripSourcesSectionFromAnswer,
+} from "./newsEvidence/userPresentation";
 
 type QueryClass =
   | "factual"
@@ -762,7 +766,7 @@ function buildSystemPromptAddon(params: {
 
   const educationalRule =
     params.responseMode === "educational"
-      ? "- Educational mode: give a direct, professional answer first. Use clear sections only when they help. Never show Verification, Confidence scores, Citation count, Evidence used, or Validation flags unless the user explicitly asked for fact-checking."
+      ? "- Educational mode: give a direct, professional answer first. Use clear sections only when they help. Never show Verification, Confidence scores, Citation count, Evidence used, or Validation flags unless the user explicitly asked for fact-checking. Do not add a **Sources** section or link list unless the user asked for sources, citations, or references — weave facts into the answer naturally."
       : "";
 
   const examRule = params.isExamQuestion
@@ -1227,6 +1231,10 @@ export function validateAnswerQuality(params: {
     normalizedAnswer = sanitizeLiveWebUserAnswer(
       removeSourceTags(stripVerificationSections(normalizedAnswer))
     );
+  }
+
+  if (!shouldShowFullSourceList(params.context.query)) {
+    normalizedAnswer = stripSourcesSectionFromAnswer(normalizedAnswer);
   }
 
   const lowConfidence = confidenceLabel(confidence) === "low";
