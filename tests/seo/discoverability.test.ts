@@ -102,10 +102,10 @@ describe("canonical host redirect", () => {
     expect(src.indexOf("apexToWwwRedirect")).toBeLessThan(src.indexOf("isGigaSocialPostPath"));
   });
 
-  it("guards offline.html trailing-slash and bare /offline redirects in _redirects", () => {
-    const redirects = readFileSync(resolve(root, "web/public/_redirects"), "utf8");
-    expect(redirects).toContain("/offline.html/        /offline.html                  301");
-    expect(redirects).toContain("/offline              /offline/                      301");
+  it("serves offline.html from middleware before trailingSlash handling", () => {
+    const middleware = readFileSync(resolve(root, "web/functions/_middleware.js"), "utf8");
+    expect(middleware).toContain("isOfflineHtmlPath");
+    expect(middleware).toContain("ASSETS.fetch");
   });
 });
 

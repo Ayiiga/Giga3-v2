@@ -6,10 +6,7 @@
 #
 /payment/success/*  /payment/success/index.html  200
 /payment/failed/*   /payment/failed/index.html   200
-# PWA offline fallback (sw.js) — keep .html path; trailingSlash must not 404 the slash variant.
-/offline.html         /offline.html                  200!
-/offline.html/        /offline.html                  301
-/offline              /offline/                      301
+# offline.html is served by functions/_middleware.js (ASSETS) — avoids trailingSlash 308 to /offline/.
 /404.html/            /404.html                      301
 /index.html/          /                              301
 # Per-post/profile/item pages are pre-rendered at build — do not rewrite them to
