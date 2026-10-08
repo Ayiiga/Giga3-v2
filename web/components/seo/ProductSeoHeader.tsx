@@ -29,6 +29,9 @@ export function ProductSeoHeader({
   className = "",
 }: ProductSeoHeaderProps) {
   const collapseIntro = collapsible ?? compact;
+  const bodyClass = compact
+    ? "text-sm leading-5 text-muted sm:text-base sm:leading-6"
+    : "section-lead";
 
   return (
     <header className={`border-b border-border bg-white ${className}`.trim()}>
@@ -43,15 +46,14 @@ export function ProductSeoHeader({
                 className="cursor-pointer list-none rounded-md outline-none marker:content-none focus-visible:ring-2 focus-visible:ring-accent/40 [&::-webkit-details-marker]:hidden"
                 aria-label="About this product"
               >
-                <p
-                  className={
-                    compact
-                      ? "line-clamp-2 text-sm leading-5 text-muted group-open:hidden sm:leading-6"
-                      : "line-clamp-2 section-lead mt-0 group-open:hidden"
-                  }
-                >
+                <p className={`${bodyClass} line-clamp-2 group-open:line-clamp-none`}>
                   {description}
                 </p>
+                {detail ? (
+                  <p className="mt-2 hidden text-sm leading-6 text-muted group-open:block">
+                    {detail}
+                  </p>
+                ) : null}
                 <span className="mt-1 inline-flex min-h-9 items-center text-sm font-medium text-accent group-open:hidden">
                   Tap to read more
                 </span>
@@ -59,30 +61,10 @@ export function ProductSeoHeader({
                   Show less
                 </span>
               </summary>
-              <div className="mt-1 space-y-2">
-                <p
-                  className={
-                    compact
-                      ? "text-sm leading-6 text-muted sm:text-base"
-                      : "section-lead"
-                  }
-                >
-                  {description}
-                </p>
-                {detail ? (
-                  <p className="text-sm leading-6 text-muted">{detail}</p>
-                ) : null}
-              </div>
             </details>
           ) : (
             <>
-              <p
-                className={
-                  compact
-                    ? "mt-2 text-sm leading-6 text-muted sm:text-base"
-                    : "section-lead mt-4"
-                }
-              >
+              <p className={compact ? `mt-2 ${bodyClass}` : "section-lead mt-4"}>
                 {description}
               </p>
               {detail ? (
