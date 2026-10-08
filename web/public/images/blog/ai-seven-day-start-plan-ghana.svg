@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Seven day plan to start an AI service in Ghana">
+  <defs>
+    <linearGradient id="plan-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f5f3ff"/>
+      <stop offset="100%" stop-color="#ede9fe"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#plan-bg)"/>
+  <g font-family="system-ui,sans-serif" font-weight="700" fill="#5b21b6">
+    <rect x="80" y="180" width="130" height="130" rx="12" fill="#fff" stroke="#7c3aed" stroke-width="2"/>
+    <text x="145" y="255" text-anchor="middle" font-size="36">1</text>
+    <rect x="230" y="180" width="130" height="130" rx="12" fill="#fff" stroke="#7c3aed" stroke-width="2"/>
+    <text x="295" y="255" text-anchor="middle" font-size="36">2</text>
+    <rect x="380" y="180" width="130" height="130" rx="12" fill="#fff" stroke="#7c3aed" stroke-width="2"/>
+    <text x="445" y="255" text-anchor="middle" font-size="36">3</text>
+    <rect x="530" y="180" width="130" height="130" rx="12" fill="#fff" stroke="#7c3aed" stroke-width="2"/>
+    <text x="595" y="255" text-anchor="middle" font-size="36">4</text>
+    <rect x="680" y="180" width="130" height="130" rx="12" fill="#fff" stroke="#7c3aed" stroke-width="2"/>
+    <text x="745" y="255" text-anchor="middle" font-size="36">5</text>
+    <rect x="830" y="180" width="130" height="130" rx="12" fill="#fff" stroke="#7c3aed" stroke-width="2"/>
+    <text x="895" y="255" text-anchor="middle" font-size="36">6</text>
+    <rect x="980" y="180" width="130" height="130" rx="12" fill="#fff" stroke="#7c3aed" stroke-width="2"/>
+    <text x="1045" y="255" text-anchor="middle" font-size="36">7</text>
+  </g>
+  <text x="600" y="400" text-anchor="middle" font-family="system-ui,sans-serif" font-size="32" font-weight="700" fill="#4c1d95">Your 7-Day Starting Plan</text>
+  <text x="600" y="450" text-anchor="middle" font-family="system-ui,sans-serif" font-size="18" fill="#6b7280">Skill ’ samples ’ offer ’ outreach ’ improve</text>
+</svg>

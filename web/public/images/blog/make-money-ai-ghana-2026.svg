@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Making money with AI in Ghana">
+  <defs>
+    <linearGradient id="money-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef9c3"/>
+      <stop offset="50%" stop-color="#fde68a"/>
+      <stop offset="100%" stop-color="#fcd34d"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#money-bg)"/>
+  <circle cx="600" cy="260" r="120" fill="#fff" stroke="#ca8a04" stroke-width="4"/>
+  <text x="600" y="250" text-anchor="middle" font-family="system-ui,sans-serif" font-size="48" font-weight="700" fill="#854d0e">AI</text>
+  <text x="600" y="300" text-anchor="middle" font-family="system-ui,sans-serif" font-size="22" font-weight="600" fill="#a16207">+ Ghana</text>
+  <rect x="200" y="420" width="800" height="120" rx="16" fill="#fff" stroke="#ca8a04" stroke-width="3"/>
+  <text x="600" y="470" text-anchor="middle" font-family="system-ui,sans-serif" font-size="28" font-weight="700" fill="#713f12">7 Realistic Ways to Get Started</text>
+  <text x="600" y="510" text-anchor="middle" font-family="system-ui,sans-serif" font-size="18" fill="#78716c">Skills · clients · quality · trust</text>
+</svg>

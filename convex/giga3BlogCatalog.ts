@@ -62,6 +62,22 @@ export const GIGA3_BLOG_CATALOG: Giga3BlogEntry[] = [
     keywords: ["digital literacy", "misinformation", "verify", "fact check"],
     url: `${BLOG_BASE}/digital-literacy-ghana-2026/`,
   },
+  {
+    slug: "chatgpt-vs-gemini-vs-claude-ghana-2026",
+    title: "ChatGPT vs Gemini vs Claude: Which AI Is Best for Ghanaian Students and Creators in 2026?",
+    excerpt:
+      "Compare ChatGPT, Gemini and Claude for study, writing, research and content — with Ghana access and cost notes.",
+    keywords: ["chatgpt", "gemini", "claude", "comparison", "students", "ghana", "creators"],
+    url: `${BLOG_BASE}/chatgpt-vs-gemini-vs-claude-ghana-2026/`,
+  },
+  {
+    slug: "make-money-with-ai-ghana-2026",
+    title: "How to Make Money With AI in Ghana in 2026: 7 Realistic Ways to Get Started",
+    excerpt:
+      "Seven legitimate AI-assisted service ideas for Ghana — example pricing, 7-day plan, and scams to avoid.",
+    keywords: ["make money", "ai", "ghana", "freelance", "side hustle", "business"],
+    url: `${BLOG_BASE}/make-money-with-ai-ghana-2026/`,
+  },
 ];
 
 function tokenize(query: string): string[] {

@@ -2,6 +2,8 @@
 export type BlogPost = {
   slug: string;
   title: string;
+  /** Optional shorter string for the HTML `<title>` / Open Graph title (visible H1 uses `title`). */
+  seoTitle?: string;
   description: string;
   excerpt: string;
   category: string;

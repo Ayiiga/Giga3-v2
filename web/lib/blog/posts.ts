@@ -19,6 +19,8 @@ import { AiMoneyMakingOpportunitiesGhanaBody } from "@/content/blog/ai-money-mak
 import { FacebookTiktokWhatsappFactCheckingBody } from "@/content/blog/facebook-tiktok-whatsapp-fact-checking";
 import { AfricanYouthAiFutureJobsBody } from "@/content/blog/african-youth-ai-future-jobs";
 import { GhanaAiFutureOpportunitiesChallengesBody } from "@/content/blog/ghana-ai-future-opportunities-challenges";
+import { ChatgptVsGeminiVsClaudeGhana2026Body } from "@/content/blog/chatgpt-vs-gemini-vs-claude-ghana-2026";
+import { MakeMoneyWithAiGhana2026Body } from "@/content/blog/make-money-with-ai-ghana-2026";
 import type { ComponentType } from "react";
 
 export type BlogArticleBodyProps = {
@@ -46,6 +48,8 @@ const BODY_BY_SLUG: Record<string, { Body: ComponentType<BlogArticleBodyProps>; 
     "facebook-tiktok-whatsapp-fact-checking": FacebookTiktokWhatsappFactCheckingBody,
     "african-youth-ai-future-jobs": AfricanYouthAiFutureJobsBody,
     "ghana-ai-future-opportunities-challenges": GhanaAiFutureOpportunitiesChallengesBody,
+    "chatgpt-vs-gemini-vs-claude-ghana-2026": ChatgptVsGeminiVsClaudeGhana2026Body,
+    "make-money-with-ai-ghana-2026": MakeMoneyWithAiGhana2026Body,
   };
 
 function withPath(post: BlogPost, readingTime: string): BlogPostWithPath {

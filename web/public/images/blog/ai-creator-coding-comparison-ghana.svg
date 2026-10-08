@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="AI for creators and coding in Ghana">
+  <defs>
+    <linearGradient id="creator-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ecfdf5"/>
+      <stop offset="100%" stop-color="#e0e7ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#creator-bg)"/>
+  <rect x="120" y="150" width="480" height="260" rx="18" fill="#fff" stroke="#059669" stroke-width="3"/>
+  <rect x="620" y="150" width="480" height="260" rx="18" fill="#fff" stroke="#2563eb" stroke-width="3"/>
+  <text x="360" y="270" text-anchor="middle" font-family="system-ui,sans-serif" font-size="26" font-weight="700" fill="#047857">Content creation</text>
+  <text x="360" y="320" text-anchor="middle" font-family="system-ui,sans-serif" font-size="18" fill="#6b7280">Scripts · captions · ideas</text>
+  <text x="860" y="270" text-anchor="middle" font-family="system-ui,sans-serif" font-size="26" font-weight="700" fill="#1d4ed8">Coding &amp; automation</text>
+  <text x="860" y="320" text-anchor="middle" font-family="system-ui,sans-serif" font-size="18" fill="#6b7280">Debug · snippets · workflows</text>
+  <text x="600" y="500" text-anchor="middle" font-family="system-ui,sans-serif" font-size="24" font-weight="600" fill="#374151">Different strengths for different workflows</text>
+</svg>

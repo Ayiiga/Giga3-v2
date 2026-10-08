@@ -251,4 +251,64 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
       "ai opportunities ghana",
     ],
   },
+  {
+    slug: "chatgpt-vs-gemini-vs-claude-ghana-2026",
+    title: "ChatGPT vs Gemini vs Claude: Which AI Is Best for Ghanaian Students and Creators in 2026?",
+    seoTitle: "ChatGPT vs Gemini vs Claude for Ghana (2026)",
+    description:
+      "Compare ChatGPT, Gemini and Claude for Ghanaian students and creators — study, writing, research, coding, content, costs, and when to combine tools.",
+    excerpt:
+      "No single AI wins every task. Compare ChatGPT, Gemini and Claude for studying, writing, research and content creation — with Ghana-specific notes on access, cost and academic integrity.",
+    category: "AI Tools",
+    tags: [
+      "chatgpt vs gemini",
+      "chatgpt vs claude",
+      "ai comparison",
+      "ghana students",
+      "creators",
+      "ai tools 2026",
+    ],
+    author: "Giga3 AI Editorial Team",
+    publishedAt: "2026-10-08",
+    featuredImage: "/images/blog/chatgpt-gemini-claude-comparison-ghana.svg",
+    featuredImageAlt:
+      "Illustration comparing ChatGPT, Google Gemini and Claude for Ghanaian students and creators",
+    keywords: [
+      "chatgpt vs gemini vs claude",
+      "best ai for students in ghana",
+      "ai comparison 2026",
+      "best ai for content creators",
+      "chatgpt gemini claude comparison",
+    ],
+  },
+  {
+    slug: "make-money-with-ai-ghana-2026",
+    title: "How to Make Money With AI in Ghana in 2026: 7 Realistic Ways to Get Started",
+    seoTitle: "Make Money With AI in Ghana: 7 Realistic Ways (2026)",
+    description:
+      "Seven legitimate AI income ideas for Ghana — services, example pricing ranges, a 7-day plan, client tips, and scams to avoid. No guaranteed income.",
+    excerpt:
+      "Seven realistic ways Ghanaians use AI to offer content, social media, video, design, tutoring and automation services — plus a 7-day plan, honest pricing notes, and habits that build trust.",
+    category: "Creators",
+    tags: [
+      "make money with ai ghana",
+      "ai side hustle",
+      "ai business ideas ghana",
+      "freelancing",
+      "ai services",
+      "entrepreneurship",
+    ],
+    author: "Giga3 AI Editorial Team",
+    publishedAt: "2026-10-08",
+    featuredImage: "/images/blog/make-money-ai-ghana-2026.svg",
+    featuredImageAlt:
+      "Illustration representing realistic AI income opportunities for Ghanaian entrepreneurs and creators",
+    keywords: [
+      "make money with ai in ghana",
+      "ai jobs ghana",
+      "ai business ideas ghana",
+      "ai side hustles ghana",
+      "ai freelance services ghana",
+    ],
+  },
 ];
