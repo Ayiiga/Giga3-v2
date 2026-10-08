@@ -37,11 +37,28 @@ function parseOgImagePostId(pathname) {
   return "";
 }
 
+function isOfflineHtmlPath(pathname) {
+  return pathname === "/offline.html" || pathname === "/offline.html/";
+}
+
 export async function onRequest(context) {
   const redirectTo = apexToWwwRedirect(context.request.url);
   if (redirectTo) return Response.redirect(redirectTo, 301);
 
   const url = new URL(context.request.url);
+
+  // PWA sw.js precaches /offline.html — serve the static asset directly so trailingSlash
+  // does not 308 to /offline/ (marketing page) or 404 on /offline.html/.
+  if (isOfflineHtmlPath(url.pathname)) {
+    if (url.pathname === "/offline.html/") {
+      return Response.redirect(`${url.origin}/offline.html`, 301);
+    }
+    if (context.env?.ASSETS) {
+      const assetRequest = new Request(new URL("/offline.html", url.origin), context.request);
+      return context.env.ASSETS.fetch(assetRequest);
+    }
+  }
+
   const convexSite = (context.env?.CONVEX_SITE_URL || DEFAULT_CONVEX_SITE).replace(/\/$/, "");
 
   const ogImagePostId = parseOgImagePostId(url.pathname);
