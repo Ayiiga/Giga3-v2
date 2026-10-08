@@ -72,6 +72,20 @@ describe("productPageContent", () => {
     expect(seoIndex).toBeGreaterThan(appIndex);
     expect(gigalearn).toContain('titleAs="h2"');
   });
+
+  it("collapses compact ProductSeoHeader copy behind tap-to-read-more", () => {
+    const header = readFileSync(
+      resolve(__dirname, "../../web/components/seo/ProductSeoHeader.tsx"),
+      "utf8"
+    );
+    expect(header).toContain("<details");
+    expect(header).toContain("Tap to read more");
+    expect(header).toContain("Show less");
+    expect(header).toContain("line-clamp-2");
+    expect(header).toContain("collapsible ?? compact");
+    // Full description stays in the document for SEO when collapsed.
+    expect(header).toMatch(/<details[\s\S]*\{description\}/);
+  });
 });
 
 describe("pricing consistency with subscription catalog", () => {
