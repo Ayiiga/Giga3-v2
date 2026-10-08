@@ -307,8 +307,10 @@ jobs:
           DEPLOY_VERSION: ${{ github.sha }}
           DEPLOY_SOURCE_URI: https://github.com/Ayiiga/Giga3-v2
           CF_PAGES_OUTCOME: ${{ steps.cf_pages_deploy.outcome }}
+          # cancelled()/success()/failure() are only valid in `if:` — use job.status here.
+          JOB_STATUS: ${{ job.status }}
         run: |
-          if [ "${{ cancelled() }}" = "true" ]; then
+          if [ "${JOB_STATUS}" = "cancelled" ]; then
             ./scripts/report-rollouts-deployment.sh finish aborted
           elif [ "${CF_PAGES_OUTCOME}" = "success" ]; then
             ./scripts/report-rollouts-deployment.sh finish succeeded
