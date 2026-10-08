@@ -72,6 +72,18 @@ jobs:
           fi
           echo "DEPLOY_KEY=${DEPLOY_KEY}" >> "$GITHUB_ENV"
 
+      - name: Report deploy start to Cursor Rollouts
+        continue-on-error: true
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          CHANGE_MONITOR_ENV: production
+          CHANGE_MONITOR_SERVICE: convex
+          DEPLOY_VERSION: ${{ github.sha }}
+          DEPLOY_SOURCE_URI: https://github.com/Ayiiga/Giga3-v2
+        run: |
+          ./scripts/report-rollouts-deployment.sh bootstrap
+          ./scripts/report-rollouts-deployment.sh start
+
       - name: Deploy to Convex
         id: convex_deploy
         env:
@@ -86,6 +98,27 @@ jobs:
             tail -80 convex-deploy.log >> "$GITHUB_STEP_SUMMARY" || true
             echo '```' >> "$GITHUB_STEP_SUMMARY"
             exit 1
+          fi
+
+      - name: Report deploy finish to Cursor Rollouts
+        if: always()
+        continue-on-error: true
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          CHANGE_MONITOR_ENV: production
+          CHANGE_MONITOR_SERVICE: convex
+          DEPLOY_VERSION: ${{ github.sha }}
+          DEPLOY_SOURCE_URI: https://github.com/Ayiiga/Giga3-v2
+          CONVEX_DEPLOY_OUTCOME: ${{ steps.convex_deploy.outcome }}
+        run: |
+          if [ "${{ cancelled() }}" = "true" ]; then
+            ./scripts/report-rollouts-deployment.sh finish aborted
+          elif [ "${CONVEX_DEPLOY_OUTCOME}" = "success" ]; then
+            ./scripts/report-rollouts-deployment.sh finish succeeded
+          elif [ -z "${CONVEX_DEPLOY_OUTCOME}" ] || [ "${CONVEX_DEPLOY_OUTCOME}" = "skipped" ]; then
+            echo "Convex deploy step did not run; skipping Rollouts finish"
+          else
+            ./scripts/report-rollouts-deployment.sh finish failed
           fi
 
       - name: Apply chat latency env defaults
