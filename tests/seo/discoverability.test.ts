@@ -84,6 +84,12 @@ describe("canonical host redirect", () => {
     expect(apexToWwwRedirect("https://giga3ai.com/pricing/")).toBe(
       "https://www.giga3ai.com/pricing/"
     );
+    expect(apexToWwwRedirect("https://giga3ai.com/ghana-ai")).toBe(
+      "https://www.giga3ai.com/ghana-ai/"
+    );
+    expect(apexToWwwRedirect("https://giga3ai.com/offline.html")).toBe(
+      "https://www.giga3ai.com/offline.html"
+    );
     expect(apexToWwwRedirect("http://giga3ai.com/blog/post/?x=1")).toBe(
       "https://www.giga3ai.com/blog/post/?x=1"
     );
@@ -94,6 +100,24 @@ describe("canonical host redirect", () => {
     const src = readFileSync(resolve(root, "web/functions/_middleware.js"), "utf8");
     expect(src).toContain("apexToWwwRedirect");
     expect(src.indexOf("apexToWwwRedirect")).toBeLessThan(src.indexOf("isGigaSocialPostPath"));
+  });
+
+  it("guards offline.html trailing-slash and bare /offline redirects in _redirects", () => {
+    const redirects = readFileSync(resolve(root, "web/public/_redirects"), "utf8");
+    expect(redirects).toContain("/offline.html/        /offline.html                  301");
+    expect(redirects).toContain("/offline              /offline/                      301");
+  });
+});
+
+describe("noindex app shells avoid homepage canonical leak", () => {
+  it("sets self canonical on /home/ and /insights/", () => {
+    const home = readFileSync(resolve(root, "web/app/(marketing)/home/layout.tsx"), "utf8");
+    const insights = readFileSync(
+      resolve(root, "web/app/(marketing)/insights/layout.tsx"),
+      "utf8"
+    );
+    expect(home).toContain('canonical: "/home/"');
+    expect(insights).toContain('canonical: "/insights/"');
   });
 });
 

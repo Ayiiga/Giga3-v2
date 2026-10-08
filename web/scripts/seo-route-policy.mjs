@@ -91,11 +91,19 @@ export function changedPublicUrls(before, after) {
   return [...new Set(changed)];
 }
 
+/** Match the static export trailingSlash convention on apex → www hops. */
+function normalizeTrailingSlash(pathname) {
+  if (pathname === "/") return "/";
+  if (/\.[a-z0-9]+$/i.test(pathname)) return pathname;
+  return pathname.endsWith("/") ? pathname : `${pathname}/`;
+}
+
 /** Redirect apex host to the canonical www origin. Returns null when already canonical. */
 export function apexToWwwRedirect(requestUrl) {
   const url = new URL(requestUrl);
   if (url.hostname !== APEX_HOST) return null;
   url.hostname = CANONICAL_HOST;
   url.protocol = "https:";
+  url.pathname = normalizeTrailingSlash(url.pathname);
   return url.toString();
 }
