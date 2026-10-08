@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: "Profile",
   description: "Your Giga3 AI account profile, credits, and wallet shortcuts.",
   robots: { index: false, follow: false },
+  alternates: { canonical: "/profile/" },
 };
 
 export default function ProfilePage() {

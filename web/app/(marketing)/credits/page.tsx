@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: "Buy Credits",
   description: "Purchase Giga3 AI media credits in Ghana Cedis",
   robots: { index: false, follow: false },
+  alternates: { canonical: "/credits/" },
 };
 
 export default function CreditsPage() {
