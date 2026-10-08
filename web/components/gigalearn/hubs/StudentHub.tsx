@@ -1,5 +1,6 @@
 "use client";
 
+import { DiscoverHub } from "@/components/gigalearn/discover/DiscoverHub";
 import { GigaLearnHomeworkPanel } from "@/components/gigalearn/GigaLearnHomeworkPanel";
 import { GigaLearnToolPanel } from "@/components/gigalearn/GigaLearnToolPanel";
 import { LowerGradesConcrete } from "@/components/gigalearn/LowerGradesConcrete";
@@ -11,11 +12,13 @@ import { StudioContextBar } from "@/components/gigalearn/StudioContextBar";
 import type { StudentSubView } from "@/lib/gigalearn/sectionRouting";
 import { STUDENT_TOOLS } from "@/lib/gigalearn/tools";
 import { getStudioContext, saveStudioContext, type StudioContext } from "@/lib/gigalearn/studioContext";
+import type { GigaLearnLevelId } from "@/lib/gigalearn/levels";
 import { cn } from "@/lib/utils";
 import { memo, useState } from "react";
 
 const SUB_VIEWS: Array<{ id: StudentSubView; label: string }> = [
   { id: "early-years", label: "Early years" },
+  { id: "discover", label: "Discover" },
   { id: "learn", label: "Learn" },
   { id: "revision", label: "Revision" },
   { id: "library", label: "Library" },
@@ -99,6 +102,24 @@ export const StudentHub = memo(function StudentHub({
       )}
       {subView === "library" && <ResourceLibrary />}
       {subView === "homework" && <GigaLearnHomeworkPanel />}
+      {subView === "discover" && (
+        <DiscoverHub
+          preferredLevel={
+            // Studio context stores curriculum ids (kg-2); Discover filters use Creche/KG chips.
+            (() => {
+              const map: Record<string, GigaLearnLevelId> = {
+                creche: "Creche",
+                "kg-1": "KG1",
+                "kg-2": "KG2",
+                "basic-1": "P1",
+                "basic-2": "P2",
+                "basic-3": "P3",
+              };
+              return map[ctx.levelId] ?? "KG2";
+            })()
+          }
+        />
+      )}
       {subView === "early-years" && (
         <LowerGradesConcrete credits={credits} ctx={ctx} onCtxChange={updateCtx} />
       )}
