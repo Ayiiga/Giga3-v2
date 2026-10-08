@@ -253,7 +253,21 @@ jobs:
           fi
           echo "Found functions/_middleware.js for GigaSocial link previews"
 
+      - name: Report deploy start to Cursor Rollouts
+        continue-on-error: true
+        working-directory: .
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          CHANGE_MONITOR_ENV: production
+          CHANGE_MONITOR_SERVICE: web
+          DEPLOY_VERSION: ${{ github.sha }}
+          DEPLOY_SOURCE_URI: https://github.com/Ayiiga/Giga3-v2
+        run: |
+          ./scripts/report-rollouts-deployment.sh bootstrap
+          ./scripts/report-rollouts-deployment.sh start
+
       - name: Deploy to Cloudflare Pages
+        id: cf_pages_deploy
         working-directory: web
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
@@ -281,6 +295,28 @@ jobs:
           done
           echo "::error::Cloudflare Pages deployment failed after ${max_attempts} attempts."
           exit 1
+
+      - name: Report deploy finish to Cursor Rollouts
+        if: always()
+        continue-on-error: true
+        working-directory: .
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          CHANGE_MONITOR_ENV: production
+          CHANGE_MONITOR_SERVICE: web
+          DEPLOY_VERSION: ${{ github.sha }}
+          DEPLOY_SOURCE_URI: https://github.com/Ayiiga/Giga3-v2
+          CF_PAGES_OUTCOME: ${{ steps.cf_pages_deploy.outcome }}
+        run: |
+          if [ "${{ cancelled() }}" = "true" ]; then
+            ./scripts/report-rollouts-deployment.sh finish aborted
+          elif [ "${CF_PAGES_OUTCOME}" = "success" ]; then
+            ./scripts/report-rollouts-deployment.sh finish succeeded
+          elif [ -z "${CF_PAGES_OUTCOME}" ] || [ "${CF_PAGES_OUTCOME}" = "skipped" ]; then
+            echo "Cloudflare Pages deploy step did not run; skipping Rollouts finish"
+          else
+            ./scripts/report-rollouts-deployment.sh finish failed
+          fi
 
       - name: Notify IndexNow of changed public URLs
         working-directory: web
