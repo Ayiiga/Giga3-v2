@@ -46,6 +46,7 @@ export const FOOTER_PRODUCT_LINKS = [
   { href: "/install", label: "Install app" },
   { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
+  { href: "/press", label: "Press" },
   { href: "/contact", label: "Contact" },
 ] as const;
 

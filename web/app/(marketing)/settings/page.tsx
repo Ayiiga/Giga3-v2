@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: "Settings",
   description: "Theme, account, and sign-out settings for Giga3 AI.",
   robots: { index: false, follow: false },
+  alternates: { canonical: "/settings/" },
 };
 
 export default function SettingsPage() {

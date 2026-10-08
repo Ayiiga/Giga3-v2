@@ -110,14 +110,26 @@ describe("canonical host redirect", () => {
 });
 
 describe("noindex app shells avoid homepage canonical leak", () => {
-  it("sets self canonical on /home/ and /insights/", () => {
-    const home = readFileSync(resolve(root, "web/app/(marketing)/home/layout.tsx"), "utf8");
-    const insights = readFileSync(
-      resolve(root, "web/app/(marketing)/insights/layout.tsx"),
-      "utf8"
-    );
-    expect(home).toContain('canonical: "/home/"');
-    expect(insights).toContain('canonical: "/insights/"');
+  it("sets self canonical on dashboard and account shells", () => {
+    const checks: [string, string][] = [
+      ["web/app/(marketing)/home/layout.tsx", 'canonical: "/home/"'],
+      ["web/app/(marketing)/insights/layout.tsx", 'canonical: "/insights/"'],
+      ["web/app/(marketing)/profile/page.tsx", 'canonical: "/profile/"'],
+      ["web/app/(marketing)/settings/page.tsx", 'canonical: "/settings/"'],
+      ["web/app/(marketing)/wallet/page.tsx", 'canonical: "/wallet/"'],
+      ["web/app/(marketing)/workspace/page.tsx", 'canonical: "/workspace/"'],
+      ["web/app/(marketing)/credits/page.tsx", 'canonical: "/credits/"'],
+      ["web/app/(marketing)/subscribe/page.tsx", 'canonical: "/subscribe/"'],
+      ["web/app/(marketing)/admin/page.tsx", 'canonical: "/admin/"'],
+    ];
+    for (const [file, needle] of checks) {
+      expect(readFileSync(resolve(root, file), "utf8")).toContain(needle);
+    }
+  });
+
+  it("links the indexable press page from the footer product map", () => {
+    const links = readFileSync(resolve(root, "web/lib/seo/productLinks.ts"), "utf8");
+    expect(links).toContain('href: "/press"');
   });
 });
 
