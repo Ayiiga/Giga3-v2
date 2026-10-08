@@ -110,8 +110,10 @@ jobs:
           DEPLOY_VERSION: ${{ github.sha }}
           DEPLOY_SOURCE_URI: https://github.com/Ayiiga/Giga3-v2
           CONVEX_DEPLOY_OUTCOME: ${{ steps.convex_deploy.outcome }}
+          # cancelled()/success()/failure() are only valid in `if:` — use job.status here.
+          JOB_STATUS: ${{ job.status }}
         run: |
-          if [ "${{ cancelled() }}" = "true" ]; then
+          if [ "${JOB_STATUS}" = "cancelled" ]; then
             ./scripts/report-rollouts-deployment.sh finish aborted
           elif [ "${CONVEX_DEPLOY_OUTCOME}" = "success" ]; then
             ./scripts/report-rollouts-deployment.sh finish succeeded
