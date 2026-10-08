@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="AI tools for study and writing in Ghana">
+  <defs>
+    <linearGradient id="study-bg" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="100%" stop-color="#ddd6fe"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#study-bg)"/>
+  <rect x="140" y="140" width="420" height="280" rx="18" fill="#fff" stroke="#8b5cf6" stroke-width="3"/>
+  <rect x="640" y="140" width="420" height="280" rx="18" fill="#fff" stroke="#6366f1" stroke-width="3"/>
+  <text x="350" y="260" text-anchor="middle" font-family="system-ui,sans-serif" font-size="26" font-weight="700" fill="#5b21b6">Study &amp; revision</text>
+  <text x="350" y="310" text-anchor="middle" font-family="system-ui,sans-serif" font-size="18" fill="#6b7280">Explanations · practice · plans</text>
+  <text x="850" y="260" text-anchor="middle" font-family="system-ui,sans-serif" font-size="26" font-weight="700" fill="#4338ca">Writing &amp; research</text>
+  <text x="850" y="310" text-anchor="middle" font-family="system-ui,sans-serif" font-size="18" fill="#6b7280">Drafts · summaries · outlines</text>
+  <text x="600" y="520" text-anchor="middle" font-family="system-ui,sans-serif" font-size="24" font-weight="600" fill="#374151">Pick the right assistant for each task</text>
+</svg>

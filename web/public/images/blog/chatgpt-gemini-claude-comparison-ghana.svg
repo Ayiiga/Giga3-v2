@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Comparing ChatGPT, Gemini and Claude for Ghanaian users">
+  <defs>
+    <linearGradient id="cmp-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e0f2fe"/>
+      <stop offset="50%" stop-color="#ede9fe"/>
+      <stop offset="100%" stop-color="#fce7f3"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#cmp-bg)"/>
+  <rect x="80" y="120" width="300" height="220" rx="20" fill="#fff" stroke="#10a37f" stroke-width="4"/>
+  <rect x="450" y="100" width="300" height="240" rx="20" fill="#fff" stroke="#4285f4" stroke-width="4"/>
+  <rect x="820" y="120" width="300" height="220" rx="20" fill="#fff" stroke="#d97757" stroke-width="4"/>
+  <text x="230" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="28" font-weight="700" fill="#065f46">ChatGPT</text>
+  <text x="600" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="28" font-weight="700" fill="#1d4ed8">Gemini</text>
+  <text x="970" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="28" font-weight="700" fill="#9a3412">Claude</text>
+  <text x="600" y="420" text-anchor="middle" font-family="system-ui,sans-serif" font-size="34" font-weight="700" fill="#312e81">Which AI fits Ghanaian students &amp; creators?</text>
+  <text x="600" y="470" text-anchor="middle" font-family="system-ui,sans-serif" font-size="20" fill="#4b5563">2026 comparison guide</text>
+</svg>

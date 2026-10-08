@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="AI freelance services in Ghana">
+  <defs>
+    <linearGradient id="freelance-bg" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#dbeafe"/>
+      <stop offset="100%" stop-color="#d1fae5"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#freelance-bg)"/>
+  <rect x="100" y="130" width="320" height="180" rx="14" fill="#fff" stroke="#3b82f6" stroke-width="3"/>
+  <rect x="440" y="130" width="320" height="180" rx="14" fill="#fff" stroke="#10b981" stroke-width="3"/>
+  <rect x="780" y="130" width="320" height="180" rx="14" fill="#fff" stroke="#8b5cf6" stroke-width="3"/>
+  <text x="260" y="230" text-anchor="middle" font-family="system-ui,sans-serif" font-size="20" font-weight="600" fill="#1e40af">Content</text>
+  <text x="600" y="230" text-anchor="middle" font-family="system-ui,sans-serif" font-size="20" font-weight="600" fill="#047857">Design</text>
+  <text x="940" y="230" text-anchor="middle" font-family="system-ui,sans-serif" font-size="20" font-weight="600" fill="#6d28d9">Tutoring</text>
+  <text x="600" y="420" text-anchor="middle" font-family="system-ui,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Build services clients will pay for</text>
+  <text x="600" y="465" text-anchor="middle" font-family="system-ui,sans-serif" font-size="18" fill="#6b7280">AI assists  your judgment delivers</text>
+</svg>

@@ -14,8 +14,8 @@ import { blogArticleMetadata, blogIndexMetadata } from "../../web/lib/blog/metad
 const WEB_ROOT = resolve(__dirname, "../../web");
 
 describe("blog post registry", () => {
-  it("has thirteen articles with valid categories", () => {
-    expect(BLOG_POST_REGISTRY).toHaveLength(13);
+  it("has fifteen articles with valid categories", () => {
+    expect(BLOG_POST_REGISTRY).toHaveLength(15);
     const slugs = BLOG_POST_REGISTRY.map((p) => p.slug);
     expect(slugs).toContain("best-ai-tools-in-ghana-2026");
     expect(slugs).toContain("ai-for-bece-wassce-preparation-ghana");
@@ -30,6 +30,8 @@ describe("blog post registry", () => {
     expect(slugs).toContain("facebook-tiktok-whatsapp-fact-checking");
     expect(slugs).toContain("african-youth-ai-future-jobs");
     expect(slugs).toContain("ghana-ai-future-opportunities-challenges");
+    expect(slugs).toContain("chatgpt-vs-gemini-vs-claude-ghana-2026");
+    expect(slugs).toContain("make-money-with-ai-ghana-2026");
     for (const post of BLOG_POST_REGISTRY) {
       expect(categorySlugForName(post.category)).toBeTruthy();
       expect(post.featuredImageAlt.length).toBeGreaterThan(10);
@@ -38,7 +40,7 @@ describe("blog post registry", () => {
 
   it("exposes posts with hrefs and reading time", () => {
     const posts = getRegistryBlogPosts();
-    expect(posts).toHaveLength(13);
+    expect(posts).toHaveLength(15);
     for (const post of posts) {
       expect(post.href).toBe(`/blog/${post.slug}/`);
       expect(post.readingTime).toMatch(/min read/);

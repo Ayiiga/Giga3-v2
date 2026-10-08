@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { FaqItem } from "@/components/seo/JsonLd";
 
@@ -57,6 +58,46 @@ export type ArticleTableProps = {
   headers: readonly string[];
   rows: readonly (readonly string[])[];
 };
+
+export function ArticleFigure({
+  src,
+  alt,
+  caption,
+  priority = false,
+}: {
+  src: string;
+  alt: string;
+  caption?: string;
+  priority?: boolean;
+}) {
+  return (
+    <figure className="my-8 overflow-hidden rounded-2xl border border-border bg-slate-50">
+      <div className="relative aspect-[16/10] w-full">
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          loading={priority ? undefined : "lazy"}
+          priority={priority}
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 672px"
+        />
+      </div>
+      {caption ? (
+        <figcaption className="px-4 py-3 text-sm text-muted">{caption}</figcaption>
+      ) : null}
+    </figure>
+  );
+}
+
+/** Highlight box for quick answers and editorial callouts. */
+export function ArticleCallout({ children }: { children: React.ReactNode }) {
+  return (
+    <aside className="saas-card rounded-2xl border border-accent/20 bg-accent/5 p-5 text-base leading-relaxed text-muted">
+      {children}
+    </aside>
+  );
+}
 
 export function ArticleTable({ caption, headers, rows }: ArticleTableProps) {
   return (

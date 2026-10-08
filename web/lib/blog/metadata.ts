@@ -12,8 +12,9 @@ export function blogArticleMetadata(post: BlogPost): Metadata {
   const path = blogPath(post.slug);
   const canonicalPath = `${path}/`;
   const canonical = new URL(canonicalPath, siteConfig.url).toString();
-  const socialTitle = post.title.includes("Giga3") ? post.title : `${post.title} | Giga3 AI`;
-  const documentTitle = post.title.includes("Giga3") ? { absolute: post.title } : post.title;
+  const headline = post.seoTitle ?? post.title;
+  const socialTitle = headline.includes("Giga3") ? headline : `${headline} | Giga3 AI`;
+  const documentTitle = headline.includes("Giga3") ? { absolute: headline } : headline;
   const image = post.featuredImage.startsWith("http")
     ? post.featuredImage
     : brandingAssetUrl(post.featuredImage);
