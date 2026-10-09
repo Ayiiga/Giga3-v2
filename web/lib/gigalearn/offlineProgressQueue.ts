@@ -34,20 +34,41 @@ export function newOfflineProgressEventId(): string {
   return `gl-progress-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export async function listOfflineProgressEvents(): Promise<OfflineAssessmentEvent[]> {
+async function withProgressDb<T>(
+  mode: IDBTransactionMode,
+  run: (store: IDBObjectStore) => Promise<T> | T
+): Promise<T | null> {
   const db = await openOfflineGigaLearnDb();
-  if (!db) return [];
-  return new Promise((resolve) => {
-    const tx = db.transaction(OFFLINE_PROGRESS_STORE, "readonly");
-    const req = tx.objectStore(OFFLINE_PROGRESS_STORE).getAll();
-    req.onsuccess = () => {
-      const rows = (req.result as OfflineAssessmentEvent[]).sort(
-        (a, b) => a.createdAt - b.createdAt
-      );
-      resolve(rows.filter((row) => !row.syncedAt));
-    };
-    req.onerror = () => resolve([]);
+  if (!db) return null;
+  try {
+    const tx = db.transaction(OFFLINE_PROGRESS_STORE, mode);
+    const store = tx.objectStore(OFFLINE_PROGRESS_STORE);
+    const result = await run(store);
+    await new Promise<void>((resolve) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+      tx.onabort = () => resolve();
+    });
+    return result;
+  } finally {
+    db.close();
+  }
+}
+
+export async function listOfflineProgressEvents(): Promise<OfflineAssessmentEvent[]> {
+  const rows = await withProgressDb("readonly", (store) => {
+    return new Promise<OfflineAssessmentEvent[]>((resolve) => {
+      const req = store.getAll();
+      req.onsuccess = () => {
+        const all = ((req.result as OfflineAssessmentEvent[]) ?? []).sort(
+          (a, b) => a.createdAt - b.createdAt
+        );
+        resolve(all.filter((row) => !row.syncedAt));
+      };
+      req.onerror = () => resolve([]);
+    });
   });
+  return rows ?? [];
 }
 
 export async function queueOfflineAssessmentEvent(
@@ -56,8 +77,6 @@ export async function queueOfflineAssessmentEvent(
     createdAt?: number;
   }
 ): Promise<void> {
-  const db = await openOfflineGigaLearnDb();
-  if (!db) return;
   const pending = await listOfflineProgressEvents();
   if (pending.some((row) => row.clientEventId === event.clientEventId)) {
     return;
@@ -67,22 +86,14 @@ export async function queueOfflineAssessmentEvent(
     attempts: event.attempts ?? 0,
     createdAt: event.createdAt ?? Date.now(),
   };
-  await new Promise<void>((resolve) => {
-    const tx = db.transaction(OFFLINE_PROGRESS_STORE, "readwrite");
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => resolve();
-    tx.objectStore(OFFLINE_PROGRESS_STORE).put(row);
+  await withProgressDb("readwrite", (store) => {
+    store.put(row);
   });
 }
 
 export async function removeOfflineProgressEvent(clientEventId: string): Promise<void> {
-  const db = await openOfflineGigaLearnDb();
-  if (!db) return;
-  await new Promise<void>((resolve) => {
-    const tx = db.transaction(OFFLINE_PROGRESS_STORE, "readwrite");
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => resolve();
-    tx.objectStore(OFFLINE_PROGRESS_STORE).delete(clientEventId);
+  await withProgressDb("readwrite", (store) => {
+    store.delete(clientEventId);
   });
 }
 
@@ -90,26 +101,24 @@ export async function bumpOfflineProgressAttempt(
   clientEventId: string,
   lastError: string
 ): Promise<void> {
-  const db = await openOfflineGigaLearnDb();
-  if (!db) return;
-
-  await new Promise<void>((resolve) => {
-    const tx = db.transaction(OFFLINE_PROGRESS_STORE, "readwrite");
-    const store = tx.objectStore(OFFLINE_PROGRESS_STORE);
-    const getReq = store.get(clientEventId);
-
-    getReq.onsuccess = () => {
-      const row = getReq.result as OfflineAssessmentEvent | undefined;
-      if (!row || row.syncedAt) return;
-      store.put({
-        ...row,
-        attempts: row.attempts + 1,
-        lastError,
-      });
-    };
-
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => resolve();
+  await withProgressDb("readwrite", (store) => {
+    return new Promise<void>((resolve) => {
+      const getReq = store.get(clientEventId);
+      getReq.onsuccess = () => {
+        const row = getReq.result as OfflineAssessmentEvent | undefined;
+        if (!row || row.syncedAt) {
+          resolve();
+          return;
+        }
+        store.put({
+          ...row,
+          attempts: row.attempts + 1,
+          lastError,
+        });
+        resolve();
+      };
+      getReq.onerror = () => resolve();
+    });
   });
 }
 

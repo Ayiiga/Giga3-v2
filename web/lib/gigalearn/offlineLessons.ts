@@ -6,8 +6,10 @@
 const DB_NAME = "giga3-gigalearn-offline";
 export const OFFLINE_LESSONS_STORE = "lessons";
 export const OFFLINE_PROGRESS_STORE = "progress_queue";
+/** Explicit multimedia Discover downloads (JSON snapshots + optional blobs). */
+export const OFFLINE_MEDIA_STORE = "media_packs";
 const STORE = OFFLINE_LESSONS_STORE;
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const MAX_LESSONS = 40;
 
 export type OfflineLessonPack = {
@@ -35,6 +37,9 @@ export function openOfflineGigaLearnDb(): Promise<IDBDatabase | null> {
       }
       if (!db.objectStoreNames.contains(OFFLINE_PROGRESS_STORE)) {
         db.createObjectStore(OFFLINE_PROGRESS_STORE, { keyPath: "clientEventId" });
+      }
+      if (!db.objectStoreNames.contains(OFFLINE_MEDIA_STORE)) {
+        db.createObjectStore(OFFLINE_MEDIA_STORE, { keyPath: "id" });
       }
     };
     req.onsuccess = () => resolve(req.result);

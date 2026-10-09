@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="Talking drum">
+  <rect width="240" height="240" rx="28" fill="#1a233f"/>
+  <ellipse cx="120" cy="70" rx="58" ry="22" fill="#D7B899"/>
+  <path d="M62 70 L78 170 Q120 195 162 170 L178 70" fill="#8D6E63"/>
+  <ellipse cx="120" cy="170" rx="42" ry="16" fill="#6D4C41"/>
+  <path d="M78 90 L162 90 M82 115 L158 115 M88 140 L152 140" stroke="#5D4037" stroke-width="3"/>
+  <path d="M70 75 C95 100 145 100 170 75" stroke="#FFD54F" stroke-width="4" fill="none"/>
+</svg>

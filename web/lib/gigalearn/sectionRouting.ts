@@ -17,7 +17,14 @@ export const LEGACY_TAB_ALIASES: Record<string, GigaLearnPrimaryArea> = {
   studio: "teacher",
 };
 
-export type StudentSubView = "home" | "learn" | "revision" | "library" | "homework" | "early-years";
+export type StudentSubView =
+  | "home"
+  | "learn"
+  | "revision"
+  | "library"
+  | "homework"
+  | "early-years"
+  | "discover";
 export type TeacherSubView = "studio" | "tools";
 export type CreateSubView = "studio" | "rhymes";
 export type InsightSubView = "progress" | "teacher";
@@ -51,6 +58,8 @@ export function studentSubViewFromTab(tab: string | null | undefined): StudentSu
       return "homework";
     case "early-years":
       return "early-years";
+    case "discover":
+      return "discover";
     case "my-learning":
       return "home";
     default:
