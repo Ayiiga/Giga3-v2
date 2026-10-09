@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" role="img" aria-label="Yaw and the Mango Tree">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" role="img" aria-label="Five mangoes">
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#80CBC4"/>
-      <stop offset="100%" stop-color="#FFF59D"/>
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="100%" stop-color="#A5D6A7"/>
     </linearGradient>
   </defs>
   <rect width="480" height="480" rx="36" fill="url(#sky)"/>
   <circle cx="400" cy="70" r="36" fill="#FFE082" opacity="0.95"/>
   <ellipse cx="230" cy="230" rx="90" ry="110" fill="#FFB300"/><ellipse cx="200" cy="200" rx="28" ry="36" fill="#FFD54F" opacity="0.55"/><path d="M230 110 C220 150 250 160 270 170" stroke="#2E7D32" stroke-width="14" fill="none" stroke-linecap="round"/><ellipse cx="290" cy="150" rx="40" ry="18" fill="#66BB6A" transform="rotate(25 290 150)"/>
   <rect x="24" y="400" width="432" height="56" rx="16" fill="#FFFFFF" opacity="0.92"/>
-  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1a233f">Yaw and the Mango Tree</text>
+  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1a233f">Five mangoes</text>
 </svg>

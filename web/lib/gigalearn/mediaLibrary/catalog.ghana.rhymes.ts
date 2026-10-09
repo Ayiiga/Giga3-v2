@@ -16,16 +16,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 5,
       "label": "KG1–KG2 (ages 4–5)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 49428,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-1",
     "title": "Sunrise Clap",
-    "description": "An original nursery rhyme for KG1–P2: Sun up high, clap clap clap. Feet go tip, tip tip tap!",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nSun up high, clap clap clap.\nFeet go tip, tip tip tap!\nWake up smiles for a brand new day.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -42,18 +42,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "☀️",
-      "alt": "Sunrise Clap"
+      "alt": "Sunrise Clap illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Sun up high, clap clap clap. Feet go tip, tip tip tap!",
+        "text": "Sun up high, clap clap clap. Feet go tip, tip tip tap! Wake up smiles for a brand new day.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Sun up high, clap clap clap. Feet go tip, tip tip tap!",
+        "text": "Sun up high, clap clap clap. Feet go tip, tip tip tap! Wake up smiles for a brand new day.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -63,14 +63,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-1.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1154,
+        "estimatedBytes": 1166,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-1-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 31536,
+        "estimatedBytes": 48262,
         "required": true
       }
     ]
@@ -87,16 +87,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 5,
       "label": "KG1–KG2 (ages 4–5)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 47399,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-2",
     "title": "Market Morning",
-    "description": "An original nursery rhyme for KG1–P2: To the market we all go, tomatoes red and onions in a row.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nTo the market we all go,\nTomatoes red and onions in a row.\nCount the colours as we shop.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -113,18 +113,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🍅",
-      "alt": "Market Morning"
+      "alt": "Market Morning illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "To the market we all go, tomatoes red and onions in a row.",
+        "text": "To the market we all go, Tomatoes red and onions in a row. Count the colours as we shop.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "To the market we all go, tomatoes red and onions in a row.",
+        "text": "To the market we all go, Tomatoes red and onions in a row. Count the colours as we shop.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -134,14 +134,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-2.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 930,
+        "estimatedBytes": 1232,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-2-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 31249,
+        "estimatedBytes": 46167,
         "required": true
       }
     ]
@@ -158,16 +158,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 5,
       "label": "KG1–KG2 (ages 4–5)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 46814,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-3",
     "title": "Rain on Roof",
-    "description": "An original nursery rhyme for KG1–P2: Pitter patter on the roof, little drops that tell the truth.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nPitter patter on the roof,\nLittle drops that tell the truth.\nRain helps farms and flowers grow.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -184,18 +184,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🌧️",
-      "alt": "Rain on Roof"
+      "alt": "Rain on Roof illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Pitter patter on the roof, little drops that tell the truth.",
+        "text": "Pitter patter on the roof, Little drops that tell the truth. Rain helps farms and flowers grow.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Pitter patter on the roof, little drops that tell the truth.",
+        "text": "Pitter patter on the roof, Little drops that tell the truth. Rain helps farms and flowers grow.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -205,14 +205,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-3.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1154,
+        "estimatedBytes": 1332,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-3-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 27085,
+        "estimatedBytes": 45482,
         "required": true
       }
     ]
@@ -229,16 +229,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 5,
       "label": "KG1–KG2 (ages 4–5)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 52375,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-4",
     "title": "Kind Hands",
-    "description": "An original nursery rhyme for KG1–P2: Kind hands help, kind hands share. Kind hands show that we care.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nKind hands help, kind hands share.\nKind hands show that we care.\nGentle hands make friendship fair.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -255,18 +255,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🤝",
-      "alt": "Kind Hands"
+      "alt": "Kind Hands illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Kind hands help, kind hands share. Kind hands show that we care.",
+        "text": "Kind hands help, kind hands share. Kind hands show that we care. Gentle hands make friendship fair.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Kind hands help, kind hands share. Kind hands show that we care.",
+        "text": "Kind hands help, kind hands share. Kind hands show that we care. Gentle hands make friendship fair.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -276,14 +276,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-4.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 922,
+        "estimatedBytes": 1118,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-4-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 34214,
+        "estimatedBytes": 51257,
         "required": true
       }
     ]
@@ -300,16 +300,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 5,
       "label": "KG1–KG2 (ages 4–5)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 54783,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-5",
     "title": "Five Little Goats",
-    "description": "An original nursery rhyme for KG1–P2: Five little goats on a dusty hill, one jumps down and four stand still.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nFive little goats on a dusty hill,\nOne jumps down and four stand still.\nCount the goats — we can, we will!",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -326,18 +326,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🐐",
-      "alt": "Five Little Goats"
+      "alt": "Five Little Goats illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Five little goats on a dusty hill, one jumps down and four stand still.",
+        "text": "Five little goats on a dusty hill, One jumps down and four stand still. Count the goats — we can, we will!",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Five little goats on a dusty hill, one jumps down and four stand still.",
+        "text": "Five little goats on a dusty hill, One jumps down and four stand still. Count the goats — we can, we will!",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -347,14 +347,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-5.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1164,
+        "estimatedBytes": 1212,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-5-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 35932,
+        "estimatedBytes": 53571,
         "required": true
       }
     ]
@@ -371,16 +371,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 5,
       "label": "KG1–KG2 (ages 4–5)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 40974,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-6",
     "title": "Accra Bus",
-    "description": "An original nursery rhyme for KG1–P2: Yellow bus, yellow bus, take us safely home to us.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nYellow bus, yellow bus,\nTake us safely home to us.\nWave to friends along the way.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -397,18 +397,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🚌",
-      "alt": "Accra Bus"
+      "alt": "Accra Bus illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Yellow bus, yellow bus, take us safely home to us.",
+        "text": "Yellow bus, yellow bus, Take us safely home to us. Wave to friends along the way.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Yellow bus, yellow bus, take us safely home to us.",
+        "text": "Yellow bus, yellow bus, Take us safely home to us. Wave to friends along the way.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -418,14 +418,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-6.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 920,
+        "estimatedBytes": 1174,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-6-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 26091,
+        "estimatedBytes": 39800,
         "required": true
       }
     ]
@@ -442,16 +442,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 5,
       "label": "KG1–KG2 (ages 4–5)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 50614,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-7",
-    "title": "Plantain Song Poem",
-    "description": "An original nursery rhyme for KG1–P2: Soft plantain, golden brown, sweetest snack in our town.",
+    "title": "Plantain Poem",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nSoft plantain, golden brown,\nSweetest snack in our town.\nShare a piece, then sit right down.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -468,18 +468,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🍌",
-      "alt": "Plantain Song Poem"
+      "alt": "Plantain Poem illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Soft plantain, golden brown, sweetest snack in our town.",
+        "text": "Soft plantain, golden brown, Sweetest snack in our town. Share a piece, then sit right down.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Soft plantain, golden brown, sweetest snack in our town.",
+        "text": "Soft plantain, golden brown, Sweetest snack in our town. Share a piece, then sit right down.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -489,14 +489,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-7.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1166,
+        "estimatedBytes": 983,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-7-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 31979,
+        "estimatedBytes": 49631,
         "required": true
       }
     ]
@@ -513,16 +513,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 5,
       "label": "KG1–KG2 (ages 4–5)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 50412,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-8",
     "title": "Clean Teeth",
-    "description": "An original nursery rhyme for KG1–P2: Brush up, brush down, smile bright like the sun in town.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nBrush up, brush down, smile so bright,\nClean white teeth from morning light.\nBrush again before goodnight.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -539,18 +539,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "😁",
-      "alt": "Clean Teeth"
+      "alt": "Clean Teeth illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Brush up, brush down, smile bright like the sun in town.",
+        "text": "Brush up, brush down, smile so bright, Clean white teeth from morning light. Brush again before goodnight.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Brush up, brush down, smile bright like the sun in town.",
+        "text": "Brush up, brush down, smile so bright, Clean white teeth from morning light. Brush again before goodnight.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -560,14 +560,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-8.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 924,
+        "estimatedBytes": 1078,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-8-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 28125,
+        "estimatedBytes": 49334,
         "required": true
       }
     ]
@@ -584,16 +584,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 5,
       "label": "KG1–KG2 (ages 4–5)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 52590,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-9",
     "title": "Sharing Water",
-    "description": "An original nursery rhyme for KG1–P2: One cup of water, cool and clear — we share with friends who are near.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nOne cup of water, cool and clear —\nWe share with friends who are near.\nSip and smile, then say thank you.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -610,18 +610,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "💧",
-      "alt": "Sharing Water"
+      "alt": "Sharing Water illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "One cup of water, cool and clear — we share with friends who are near.",
+        "text": "One cup of water, cool and clear — We share with friends who are near. Sip and smile, then say thank you.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "One cup of water, cool and clear — we share with friends who are near.",
+        "text": "One cup of water, cool and clear — We share with friends who are near. Sip and smile, then say thank you.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -631,14 +631,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-9.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1156,
+        "estimatedBytes": 925,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-9-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 33762,
+        "estimatedBytes": 51665,
         "required": true
       }
     ]
@@ -655,16 +655,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 5,
       "label": "KG1–KG2 (ages 4–5)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 51661,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-10",
     "title": "Night Cricket",
-    "description": "An original nursery rhyme for KG1–P2: Cricket sings when lights go low, soft goodnight so dreams can grow.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nCricket sings when lights go low,\nSoft goodnight so dreams can grow.\nStars keep watch until we know.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -681,18 +681,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🌙",
-      "alt": "Night Cricket"
+      "alt": "Night Cricket illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Cricket sings when lights go low, soft goodnight so dreams can grow.",
+        "text": "Cricket sings when lights go low, Soft goodnight so dreams can grow. Stars keep watch until we know.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Cricket sings when lights go low, soft goodnight so dreams can grow.",
+        "text": "Cricket sings when lights go low, Soft goodnight so dreams can grow. Stars keep watch until we know.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -702,14 +702,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-10.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 928,
+        "estimatedBytes": 1131,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-10-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 34735,
+        "estimatedBytes": 50530,
         "required": true
       }
     ]
@@ -726,16 +726,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 47314,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-11",
     "title": "School Bag",
-    "description": "An original nursery rhyme for KG1–P2: Zip the bag, pack the book, walk to school with a happy look.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nZip the bag, pack the book,\nWalk to school with a happy look.\nLearn and play — that is our hook!",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -752,18 +752,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🎒",
-      "alt": "School Bag"
+      "alt": "School Bag illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Zip the bag, pack the book, walk to school with a happy look.",
+        "text": "Zip the bag, pack the book, Walk to school with a happy look. Learn and play — that is our hook!",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Zip the bag, pack the book, walk to school with a happy look.",
+        "text": "Zip the bag, pack the book, Walk to school with a happy look. Learn and play — that is our hook!",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -773,14 +773,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-11.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1150,
+        "estimatedBytes": 972,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-11-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 29768,
+        "estimatedBytes": 46342,
         "required": true
       }
     ]
@@ -797,16 +797,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 45179,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-12",
     "title": "Red Kente Ribbon",
-    "description": "An original nursery rhyme for KG1–P2: Red ribbon, gold and green — brightest colours ever seen.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nRed ribbon, gold and green —\nBrightest colours ever seen.\nKente patterns, proud and keen.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -823,18 +823,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🎀",
-      "alt": "Red Kente Ribbon"
+      "alt": "Red Kente Ribbon illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Red ribbon, gold and green — brightest colours ever seen.",
+        "text": "Red ribbon, gold and green — Brightest colours ever seen. Kente patterns, proud and keen.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Red ribbon, gold and green — brightest colours ever seen.",
+        "text": "Red ribbon, gold and green — Brightest colours ever seen. Kente patterns, proud and keen.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -844,14 +844,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-12.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 934,
+        "estimatedBytes": 1045,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-12-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 28151,
+        "estimatedBytes": 44134,
         "required": true
       }
     ]
@@ -868,16 +868,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 53569,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-13",
     "title": "Counting Clouds",
-    "description": "An original nursery rhyme for KG1–P2: One white cloud, two float by, three soft clouds in a Ghana sky.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nOne white cloud, two float by,\nThree soft clouds in a Ghana sky.\nFour, then five — wave goodbye!",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -894,18 +894,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "☁️",
-      "alt": "Counting Clouds"
+      "alt": "Counting Clouds illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "One white cloud, two float by, three soft clouds in a Ghana sky.",
+        "text": "One white cloud, two float by, Three soft clouds in a Ghana sky. Four, then five — wave goodbye!",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "One white cloud, two float by, three soft clouds in a Ghana sky.",
+        "text": "One white cloud, two float by, Three soft clouds in a Ghana sky. Four, then five — wave goodbye!",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -915,14 +915,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-13.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1160,
+        "estimatedBytes": 1013,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-13-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 34840,
+        "estimatedBytes": 52556,
         "required": true
       }
     ]
@@ -939,16 +939,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 51761,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-14",
     "title": "Honest Heart",
-    "description": "An original nursery rhyme for KG1–P2: Tell the truth, be brave and kind — honesty grows a stronger mind.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nTell the truth, be brave and kind —\nHonesty grows a stronger mind.\nA truthful heart is gold to find.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -965,18 +965,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "💛",
-      "alt": "Honest Heart"
+      "alt": "Honest Heart illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Tell the truth, be brave and kind — honesty grows a stronger mind.",
+        "text": "Tell the truth, be brave and kind — Honesty grows a stronger mind. A truthful heart is gold to find.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Tell the truth, be brave and kind — honesty grows a stronger mind.",
+        "text": "Tell the truth, be brave and kind — Honesty grows a stronger mind. A truthful heart is gold to find.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -986,14 +986,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-14.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 926,
+        "estimatedBytes": 847,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-14-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 32675,
+        "estimatedBytes": 50914,
         "required": true
       }
     ]
@@ -1010,16 +1010,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 47403,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-15",
     "title": "Little Drum Beat",
-    "description": "An original nursery rhyme for KG1–P2: Beat the drum, soft then strong, feel the rhythm all day long.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nBeat the drum, soft then strong,\nFeel the rhythm all day long.\nHands keep time to our drum song.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -1036,18 +1036,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🥁",
-      "alt": "Little Drum Beat"
+      "alt": "Little Drum Beat illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Beat the drum, soft then strong, feel the rhythm all day long.",
+        "text": "Beat the drum, soft then strong, Feel the rhythm all day long. Hands keep time to our drum song.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Beat the drum, soft then strong, feel the rhythm all day long.",
+        "text": "Beat the drum, soft then strong, Feel the rhythm all day long. Hands keep time to our drum song.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -1057,14 +1057,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-15.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1162,
+        "estimatedBytes": 1200,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-15-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 29653,
+        "estimatedBytes": 46203,
         "required": true
       }
     ]
@@ -1081,16 +1081,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 48816,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-16",
     "title": "Garden Beans",
-    "description": "An original nursery rhyme for KG1–P2: Plant the beans, water slow, watch the tiny green leaves grow.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nPlant the beans, water slow,\nWatch the tiny green leaves grow.\nSun and rain help gardens show.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -1107,18 +1107,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🌱",
-      "alt": "Garden Beans"
+      "alt": "Garden Beans illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Plant the beans, water slow, watch the tiny green leaves grow.",
+        "text": "Plant the beans, water slow, Watch the tiny green leaves grow. Sun and rain help gardens show.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Plant the beans, water slow, watch the tiny green leaves grow.",
+        "text": "Plant the beans, water slow, Watch the tiny green leaves grow. Sun and rain help gardens show.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -1128,14 +1128,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-16.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 926,
+        "estimatedBytes": 1251,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-16-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 31092,
+        "estimatedBytes": 47565,
         "required": true
       }
     ]
@@ -1152,16 +1152,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 46277,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-17",
     "title": "Friend Beside Me",
-    "description": "An original nursery rhyme for KG1–P2: Hand in hand we walk the lane, friendship makes the sunny rain.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nHand in hand we walk the lane,\nFriendship makes the sunny rain.\nShare a smile again, again.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -1178,18 +1178,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "👫",
-      "alt": "Friend Beside Me"
+      "alt": "Friend Beside Me illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Hand in hand we walk the lane, friendship makes the sunny rain.",
+        "text": "Hand in hand we walk the lane, Friendship makes the sunny rain. Share a smile again, again.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Hand in hand we walk the lane, friendship makes the sunny rain.",
+        "text": "Hand in hand we walk the lane, Friendship makes the sunny rain. Share a smile again, again.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -1199,14 +1199,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-17.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1162,
+        "estimatedBytes": 1059,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-17-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 30568,
+        "estimatedBytes": 45218,
         "required": true
       }
     ]
@@ -1223,16 +1223,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 49784,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-18",
     "title": "Mama's Soup",
-    "description": "An original nursery rhyme for KG1–P2: Stir the soup, smell the spice, dinner time feels warm and nice.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nStir the soup, smell the spice,\nDinner time feels warm and nice.\nThank you, Mama — that is right.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -1249,18 +1249,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🍲",
-      "alt": "Mama's Soup"
+      "alt": "Mama's Soup illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Stir the soup, smell the spice, dinner time feels warm and nice.",
+        "text": "Stir the soup, smell the spice, Dinner time feels warm and nice. Thank you, Mama — that is right.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Stir the soup, smell the spice, dinner time feels warm and nice.",
+        "text": "Stir the soup, smell the spice, Dinner time feels warm and nice. Thank you, Mama — that is right.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -1270,14 +1270,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-18.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 924,
+        "estimatedBytes": 1045,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-18-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 32813,
+        "estimatedBytes": 48739,
         "required": true
       }
     ]
@@ -1294,16 +1294,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 47989,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-19",
     "title": "Quiet Listening",
-    "description": "An original nursery rhyme for KG1–P2: Ears are open, mouths are still — listening well is a special skill.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nEars are open, mouths are still —\nListening well is a special skill.\nQuiet hearts can learn at will.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -1320,18 +1320,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "👂",
-      "alt": "Quiet Listening"
+      "alt": "Quiet Listening illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Ears are open, mouths are still — listening well is a special skill.",
+        "text": "Ears are open, mouths are still — Listening well is a special skill. Quiet hearts can learn at will.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Ears are open, mouths are still — listening well is a special skill.",
+        "text": "Ears are open, mouths are still — Listening well is a special skill. Quiet hearts can learn at will.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -1341,14 +1341,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-19.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1160,
+        "estimatedBytes": 894,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-19-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 31479,
+        "estimatedBytes": 47095,
         "required": true
       }
     ]
@@ -1365,16 +1365,16 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 47446,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "rhyme-p2-20",
     "title": "Stars Over Accra",
-    "description": "An original nursery rhyme for KG1–P2: Stars above Accra shine, counting sparkles, one to nine.",
+    "description": "An original nursery rhyme for KG1–P2. Spoken lyric narration (not melodic music).\n\nStars above Accra shine,\nCounting sparkles, one to nine.\nSleep well under skies so fine.",
     "contentType": "rhyme_song",
     "discoverCategory": "rhymes-poems",
     "levels": [
@@ -1391,18 +1391,18 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "⭐",
-      "alt": "Stars Over Accra"
+      "alt": "Stars Over Accra illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Stars above Accra shine, counting sparkles, one to nine.",
+        "text": "Stars above Accra shine, Counting sparkles, one to nine. Sleep well under skies so fine.",
         "voiceId": "english",
         "language": "en"
       },
       {
         "kind": "tts",
-        "text": "Stars above Accra shine, counting sparkles, one to nine.",
+        "text": "Stars above Accra shine, Counting sparkles, one to nine. Sleep well under skies so fine.",
         "voiceId": "abena-twi",
         "language": "tw"
       }
@@ -1412,14 +1412,14 @@ export const GHANA_PHASE2_RHYMES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-20.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 934,
+        "estimatedBytes": 1058,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/rhyme-p2-20-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 29918,
+        "estimatedBytes": 46388,
         "required": true
       }
     ]

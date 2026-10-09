@@ -8,7 +8,7 @@
   </defs>
   <rect width="480" height="480" rx="36" fill="url(#sky)"/>
   <circle cx="400" cy="70" r="36" fill="#FFE082" opacity="0.95"/>
-  <rect x="130" y="140" width="220" height="200" rx="12" fill="#FFECB3"/><rect x="130" y="140" width="40" height="200" fill="#FFA000"/><text x="260" y="250" text-anchor="middle" font-size="48" fill="#E65100">ABC</text>
+  <rect x="80" y="200" width="320" height="120" rx="20" fill="#F9A825"/><rect x="110" y="220" width="70" height="50" rx="8" fill="#81D4FA"/><rect x="200" y="220" width="70" height="50" rx="8" fill="#81D4FA"/><rect x="290" y="220" width="70" height="50" rx="8" fill="#81D4FA"/><circle cx="140" cy="330" r="28" fill="#212121"/><circle cx="340" cy="330" r="28" fill="#212121"/><circle cx="140" cy="330" r="12" fill="#BDBDBD"/><circle cx="340" cy="330" r="12" fill="#BDBDBD"/>
   <rect x="24" y="400" width="432" height="56" rx="16" fill="#FFFFFF" opacity="0.92"/>
-  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="28" font-weight="700" fill="#1a233f">Accra Bus</text>
+  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1a233f">Accra Bus</text>
 </svg>

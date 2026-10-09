@@ -16,7 +16,7 @@ export const GHANA_PHASE2_CULTURE: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 1020,
     "offlineEligible": true,
     "rights": {
       "source": "Original Giga3 educational content for Ghana early years (Phase 2)",
@@ -42,7 +42,7 @@ export const GHANA_PHASE2_CULTURE: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🏺",
-      "alt": "Potter"
+      "alt": "Potter at work"
     },
     "narrations": [
       {
@@ -57,7 +57,7 @@ export const GHANA_PHASE2_CULTURE: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/culture-p2-potter.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 900,
+        "estimatedBytes": 1020,
         "required": true
       }
     ]

@@ -16,7 +16,7 @@ export const GHANA_PHASE2_GAMES: LearningMediaItem[] = [
       "maxAge": 5,
       "label": "KG1–KG2 (ages 4–5)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 1049,
     "offlineEligible": true,
     "rights": {
       "source": "Original Giga3 educational content for Ghana early years (Phase 2)",
@@ -56,6 +56,15 @@ export const GHANA_PHASE2_GAMES: LearningMediaItem[] = [
         "text": "Count the mangoes: one, two, three, four, five.",
         "voiceId": "abena-twi",
         "language": "tw"
+      }
+    ],
+    "remoteMedia": [
+      {
+        "kind": "remote",
+        "url": "/gigalearn/media/ghana/phase2/game-p2-count-5.svg",
+        "mimeType": "image/svg+xml",
+        "estimatedBytes": 1049,
+        "required": true
       }
     ],
     "game": {

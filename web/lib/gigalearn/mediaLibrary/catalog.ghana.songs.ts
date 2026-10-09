@@ -16,16 +16,16 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 36714,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "song-p2-1",
     "title": "Clap and Count",
-    "description": "An original children's song for early years: Clap one, clap two, clap three with me — counting is fun, you will see!",
+    "description": "Spoken lyric chant for early years (TTS word rhythm to clap or say along — not a melodic music recording): Clap one, clap two, clap three with me — counting is fun, you will see!",
     "contentType": "rhyme_song",
     "discoverCategory": "songs",
     "levels": [
@@ -35,14 +35,14 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "P2"
     ],
     "subject": "Creative Arts",
-    "topic": "Songs",
+    "topic": "Spoken lyric chants",
     "languages": [
       "en"
     ],
     "illustration": {
       "kind": "emoji",
-      "emoji": "🎶",
-      "alt": "Clap and Count"
+      "emoji": "👏",
+      "alt": "Clap and Count chant illustration"
     },
     "narrations": [
       {
@@ -57,7 +57,7 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-1.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1158,
+        "estimatedBytes": 1339,
         "required": true
       },
       {
@@ -70,15 +70,15 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
     ],
     "game": {
       "id": "song-p2-1-q",
-      "prompt": "What should we do while singing together?",
+      "prompt": "What should we do with a spoken chant?",
       "options": [
-        "Listen and join in",
+        "Listen and say the words together",
         "Shout over friends",
         "Hide the words"
       ],
-      "answer": "Listen and join in",
-      "feedbackCorrect": "Yes — listen and join in kindly.",
-      "feedbackWrong": "Try again — songs are better when we listen."
+      "answer": "Listen and say the words together",
+      "feedbackCorrect": "Yes — listen and say the words kindly.",
+      "feedbackWrong": "Try again — chants work best when we listen."
     }
   },
   {
@@ -93,16 +93,16 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 29352,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "song-p2-2",
     "title": "Hello Friend",
-    "description": "An original children's song for early years: Hello friend, how do you do? I am glad to learn with you.",
+    "description": "Spoken lyric chant for early years (TTS word rhythm to clap or say along — not a melodic music recording): Hello friend, how do you do? I am glad to learn with you.",
     "contentType": "rhyme_song",
     "discoverCategory": "songs",
     "levels": [
@@ -112,14 +112,14 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "P2"
     ],
     "subject": "Creative Arts",
-    "topic": "Songs",
+    "topic": "Spoken lyric chants",
     "languages": [
       "en"
     ],
     "illustration": {
       "kind": "emoji",
-      "emoji": "🎶",
-      "alt": "Hello Friend"
+      "emoji": "👏",
+      "alt": "Hello Friend chant illustration"
     },
     "narrations": [
       {
@@ -134,7 +134,7 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-2.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1154,
+        "estimatedBytes": 1051,
         "required": true
       },
       {
@@ -147,15 +147,15 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
     ],
     "game": {
       "id": "song-p2-2-q",
-      "prompt": "What should we do while singing together?",
+      "prompt": "What should we do with a spoken chant?",
       "options": [
-        "Listen and join in",
+        "Listen and say the words together",
         "Shout over friends",
         "Hide the words"
       ],
-      "answer": "Listen and join in",
-      "feedbackCorrect": "Yes — listen and join in kindly.",
-      "feedbackWrong": "Try again — songs are better when we listen."
+      "answer": "Listen and say the words together",
+      "feedbackCorrect": "Yes — listen and say the words kindly.",
+      "feedbackWrong": "Try again — chants work best when we listen."
     }
   },
   {
@@ -170,16 +170,16 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 32153,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "song-p2-3",
     "title": "Wash Your Hands",
-    "description": "An original children's song for early years: Wash your hands, wash your hands, soap and water, clean again.",
+    "description": "Spoken lyric chant for early years (TTS word rhythm to clap or say along — not a melodic music recording): Wash your hands, wash your hands, soap and water, clean again.",
     "contentType": "rhyme_song",
     "discoverCategory": "songs",
     "levels": [
@@ -189,14 +189,14 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "P2"
     ],
     "subject": "Creative Arts",
-    "topic": "Songs",
+    "topic": "Spoken lyric chants",
     "languages": [
       "en"
     ],
     "illustration": {
       "kind": "emoji",
-      "emoji": "🎶",
-      "alt": "Wash Your Hands"
+      "emoji": "👏",
+      "alt": "Wash Your Hands chant illustration"
     },
     "narrations": [
       {
@@ -211,7 +211,7 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-3.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1160,
+        "estimatedBytes": 992,
         "required": true
       },
       {
@@ -224,15 +224,15 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
     ],
     "game": {
       "id": "song-p2-3-q",
-      "prompt": "What should we do while singing together?",
+      "prompt": "What should we do with a spoken chant?",
       "options": [
-        "Listen and join in",
+        "Listen and say the words together",
         "Shout over friends",
         "Hide the words"
       ],
-      "answer": "Listen and join in",
-      "feedbackCorrect": "Yes — listen and join in kindly.",
-      "feedbackWrong": "Try again — songs are better when we listen."
+      "answer": "Listen and say the words together",
+      "feedbackCorrect": "Yes — listen and say the words kindly.",
+      "feedbackWrong": "Try again — chants work best when we listen."
     }
   },
   {
@@ -247,16 +247,16 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 31564,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "song-p2-4",
     "title": "Colours Everywhere",
-    "description": "An original children's song for early years: Red and yellow, green and blue — colours shine for me and you.",
+    "description": "Spoken lyric chant for early years (TTS word rhythm to clap or say along — not a melodic music recording): Red and yellow, green and blue — colours shine for me and you.",
     "contentType": "rhyme_song",
     "discoverCategory": "songs",
     "levels": [
@@ -266,14 +266,14 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "P2"
     ],
     "subject": "Creative Arts",
-    "topic": "Songs",
+    "topic": "Spoken lyric chants",
     "languages": [
       "en"
     ],
     "illustration": {
       "kind": "emoji",
-      "emoji": "🎶",
-      "alt": "Colours Everywhere"
+      "emoji": "👏",
+      "alt": "Colours Everywhere chant illustration"
     },
     "narrations": [
       {
@@ -288,7 +288,7 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-4.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1166,
+        "estimatedBytes": 1049,
         "required": true
       },
       {
@@ -301,15 +301,15 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
     ],
     "game": {
       "id": "song-p2-4-q",
-      "prompt": "What should we do while singing together?",
+      "prompt": "What should we do with a spoken chant?",
       "options": [
-        "Listen and join in",
+        "Listen and say the words together",
         "Shout over friends",
         "Hide the words"
       ],
-      "answer": "Listen and join in",
-      "feedbackCorrect": "Yes — listen and join in kindly.",
-      "feedbackWrong": "Try again — songs are better when we listen."
+      "answer": "Listen and say the words together",
+      "feedbackCorrect": "Yes — listen and say the words kindly.",
+      "feedbackWrong": "Try again — chants work best when we listen."
     }
   },
   {
@@ -324,16 +324,16 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 31224,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "song-p2-5",
     "title": "Walk to School",
-    "description": "An original children's song for early years: Left and right, step by step, walking to school with pep.",
+    "description": "Spoken lyric chant for early years (TTS word rhythm to clap or say along — not a melodic music recording): Left and right, step by step, walking to school with pep.",
     "contentType": "rhyme_song",
     "discoverCategory": "songs",
     "levels": [
@@ -343,14 +343,14 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "P2"
     ],
     "subject": "Creative Arts",
-    "topic": "Songs",
+    "topic": "Spoken lyric chants",
     "languages": [
       "en"
     ],
     "illustration": {
       "kind": "emoji",
-      "emoji": "🎶",
-      "alt": "Walk to School"
+      "emoji": "👏",
+      "alt": "Walk to School chant illustration"
     },
     "narrations": [
       {
@@ -365,7 +365,7 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-5.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1158,
+        "estimatedBytes": 980,
         "required": true
       },
       {
@@ -378,15 +378,15 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
     ],
     "game": {
       "id": "song-p2-5-q",
-      "prompt": "What should we do while singing together?",
+      "prompt": "What should we do with a spoken chant?",
       "options": [
-        "Listen and join in",
+        "Listen and say the words together",
         "Shout over friends",
         "Hide the words"
       ],
-      "answer": "Listen and join in",
-      "feedbackCorrect": "Yes — listen and join in kindly.",
-      "feedbackWrong": "Try again — songs are better when we listen."
+      "answer": "Listen and say the words together",
+      "feedbackCorrect": "Yes — listen and say the words kindly.",
+      "feedbackWrong": "Try again — chants work best when we listen."
     }
   },
   {
@@ -401,16 +401,16 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 34004,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "song-p2-6",
-    "title": "Thank You Song",
-    "description": "An original children's song for early years: Thank you Mama, thank you teacher — gratitude makes kindness richer.",
+    "title": "Thank You Chant",
+    "description": "Spoken lyric chant for early years (TTS word rhythm to clap or say along — not a melodic music recording): Thank you Mama, thank you teacher — gratitude makes kindness richer.",
     "contentType": "rhyme_song",
     "discoverCategory": "songs",
     "levels": [
@@ -420,14 +420,14 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "P2"
     ],
     "subject": "Creative Arts",
-    "topic": "Songs",
+    "topic": "Spoken lyric chants",
     "languages": [
       "en"
     ],
     "illustration": {
       "kind": "emoji",
-      "emoji": "🎶",
-      "alt": "Thank You Song"
+      "emoji": "👏",
+      "alt": "Thank You Chant chant illustration"
     },
     "narrations": [
       {
@@ -442,7 +442,7 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-6.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1158,
+        "estimatedBytes": 853,
         "required": true
       },
       {
@@ -455,15 +455,15 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
     ],
     "game": {
       "id": "song-p2-6-q",
-      "prompt": "What should we do while singing together?",
+      "prompt": "What should we do with a spoken chant?",
       "options": [
-        "Listen and join in",
+        "Listen and say the words together",
         "Shout over friends",
         "Hide the words"
       ],
-      "answer": "Listen and join in",
-      "feedbackCorrect": "Yes — listen and join in kindly.",
-      "feedbackWrong": "Try again — songs are better when we listen."
+      "answer": "Listen and say the words together",
+      "feedbackCorrect": "Yes — listen and say the words kindly.",
+      "feedbackWrong": "Try again — chants work best when we listen."
     }
   },
   {
@@ -478,16 +478,16 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 27773,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "song-p2-7",
     "title": "River Fish",
-    "description": "An original children's song for early years: Little fish in the river bright, swim along from morning light.",
+    "description": "Spoken lyric chant for early years (TTS word rhythm to clap or say along — not a melodic music recording): Little fish in the river bright, swim along from morning light.",
     "contentType": "rhyme_song",
     "discoverCategory": "songs",
     "levels": [
@@ -497,14 +497,14 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "P2"
     ],
     "subject": "Creative Arts",
-    "topic": "Songs",
+    "topic": "Spoken lyric chants",
     "languages": [
       "en"
     ],
     "illustration": {
       "kind": "emoji",
-      "emoji": "🎶",
-      "alt": "River Fish"
+      "emoji": "👏",
+      "alt": "River Fish chant illustration"
     },
     "narrations": [
       {
@@ -519,7 +519,7 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-7.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1150,
+        "estimatedBytes": 956,
         "required": true
       },
       {
@@ -532,15 +532,15 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
     ],
     "game": {
       "id": "song-p2-7-q",
-      "prompt": "What should we do while singing together?",
+      "prompt": "What should we do with a spoken chant?",
       "options": [
-        "Listen and join in",
+        "Listen and say the words together",
         "Shout over friends",
         "Hide the words"
       ],
-      "answer": "Listen and join in",
-      "feedbackCorrect": "Yes — listen and join in kindly.",
-      "feedbackWrong": "Try again — songs are better when we listen."
+      "answer": "Listen and say the words together",
+      "feedbackCorrect": "Yes — listen and say the words kindly.",
+      "feedbackWrong": "Try again — chants work best when we listen."
     }
   },
   {
@@ -555,16 +555,16 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 29768,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "song-p2-8",
     "title": "Farmers Dig",
-    "description": "An original children's song for early years: Dig dig dig, plant plant plant — farmers feed our land.",
+    "description": "Spoken lyric chant for early years (TTS word rhythm to clap or say along — not a melodic music recording): Dig dig dig, plant plant plant — farmers feed our land.",
     "contentType": "rhyme_song",
     "discoverCategory": "songs",
     "levels": [
@@ -574,14 +574,14 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "P2"
     ],
     "subject": "Creative Arts",
-    "topic": "Songs",
+    "topic": "Spoken lyric chants",
     "languages": [
       "en"
     ],
     "illustration": {
       "kind": "emoji",
-      "emoji": "🎶",
-      "alt": "Farmers Dig"
+      "emoji": "👏",
+      "alt": "Farmers Dig chant illustration"
     },
     "narrations": [
       {
@@ -596,7 +596,7 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-8.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1152,
+        "estimatedBytes": 1094,
         "required": true
       },
       {
@@ -609,15 +609,15 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
     ],
     "game": {
       "id": "song-p2-8-q",
-      "prompt": "What should we do while singing together?",
+      "prompt": "What should we do with a spoken chant?",
       "options": [
-        "Listen and join in",
+        "Listen and say the words together",
         "Shout over friends",
         "Hide the words"
       ],
-      "answer": "Listen and join in",
-      "feedbackCorrect": "Yes — listen and join in kindly.",
-      "feedbackWrong": "Try again — songs are better when we listen."
+      "answer": "Listen and say the words together",
+      "feedbackCorrect": "Yes — listen and say the words kindly.",
+      "feedbackWrong": "Try again — chants work best when we listen."
     }
   },
   {
@@ -632,16 +632,16 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 37182,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "song-p2-9",
     "title": "Good Morning Ghana",
-    "description": "An original children's song for early years: Good morning Ghana, skies so blue, we learn and play the whole day through.",
+    "description": "Spoken lyric chant for early years (TTS word rhythm to clap or say along — not a melodic music recording): Good morning Ghana, skies so blue, we learn and play the whole day through.",
     "contentType": "rhyme_song",
     "discoverCategory": "songs",
     "levels": [
@@ -651,14 +651,14 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "P2"
     ],
     "subject": "Creative Arts",
-    "topic": "Songs",
+    "topic": "Spoken lyric chants",
     "languages": [
       "en"
     ],
     "illustration": {
       "kind": "emoji",
-      "emoji": "🎶",
-      "alt": "Good Morning Ghana"
+      "emoji": "👏",
+      "alt": "Good Morning Ghana chant illustration"
     },
     "narrations": [
       {
@@ -673,7 +673,7 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-9.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1166,
+        "estimatedBytes": 1178,
         "required": true
       },
       {
@@ -686,15 +686,15 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
     ],
     "game": {
       "id": "song-p2-9-q",
-      "prompt": "What should we do while singing together?",
+      "prompt": "What should we do with a spoken chant?",
       "options": [
-        "Listen and join in",
+        "Listen and say the words together",
         "Shout over friends",
         "Hide the words"
       ],
-      "answer": "Listen and join in",
-      "feedbackCorrect": "Yes — listen and join in kindly.",
-      "feedbackWrong": "Try again — songs are better when we listen."
+      "answer": "Listen and say the words together",
+      "feedbackCorrect": "Yes — listen and say the words kindly.",
+      "feedbackWrong": "Try again — chants work best when we listen."
     }
   },
   {
@@ -709,16 +709,16 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 30246,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "song-p2-10",
     "title": "Share the Ball",
-    "description": "An original children's song for early years: Pass the ball, do not grab — sharing makes a happy lab.",
+    "description": "Spoken lyric chant for early years (TTS word rhythm to clap or say along — not a melodic music recording): Pass the ball, do not grab — sharing makes a happy class.",
     "contentType": "rhyme_song",
     "discoverCategory": "songs",
     "levels": [
@@ -728,19 +728,19 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "P2"
     ],
     "subject": "Creative Arts",
-    "topic": "Songs",
+    "topic": "Spoken lyric chants",
     "languages": [
       "en"
     ],
     "illustration": {
       "kind": "emoji",
-      "emoji": "🎶",
-      "alt": "Share the Ball"
+      "emoji": "👏",
+      "alt": "Share the Ball chant illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Pass the ball, do not grab — sharing makes a happy lab.",
+        "text": "Pass the ball, do not grab — sharing makes a happy class.",
         "voiceId": "english",
         "language": "en"
       }
@@ -750,28 +750,28 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-10.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1158,
+        "estimatedBytes": 1314,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-10-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 27863,
+        "estimatedBytes": 28932,
         "required": true
       }
     ],
     "game": {
       "id": "song-p2-10-q",
-      "prompt": "What should we do while singing together?",
+      "prompt": "What should we do with a spoken chant?",
       "options": [
-        "Listen and join in",
+        "Listen and say the words together",
         "Shout over friends",
         "Hide the words"
       ],
-      "answer": "Listen and join in",
-      "feedbackCorrect": "Yes — listen and join in kindly.",
-      "feedbackWrong": "Try again — songs are better when we listen."
+      "answer": "Listen and say the words together",
+      "feedbackCorrect": "Yes — listen and say the words kindly.",
+      "feedbackWrong": "Try again — chants work best when we listen."
     }
   },
   {
@@ -786,16 +786,16 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 28618,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "song-p2-11",
     "title": "Alphabet Bounce",
-    "description": "An original children's song for early years: A B C, bounce with me — letters dance so playfully.",
+    "description": "Spoken lyric chant for early years (TTS word rhythm to clap or say along — not a melodic music recording): A B C, bounce with me — letters dance so playfully.",
     "contentType": "rhyme_song",
     "discoverCategory": "songs",
     "levels": [
@@ -805,14 +805,14 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "P2"
     ],
     "subject": "Creative Arts",
-    "topic": "Songs",
+    "topic": "Spoken lyric chants",
     "languages": [
       "en"
     ],
     "illustration": {
       "kind": "emoji",
-      "emoji": "🎶",
-      "alt": "Alphabet Bounce"
+      "emoji": "👏",
+      "alt": "Alphabet Bounce chant illustration"
     },
     "narrations": [
       {
@@ -827,7 +827,7 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-11.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1160,
+        "estimatedBytes": 1017,
         "required": true
       },
       {
@@ -840,15 +840,15 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
     ],
     "game": {
       "id": "song-p2-11-q",
-      "prompt": "What should we do while singing together?",
+      "prompt": "What should we do with a spoken chant?",
       "options": [
-        "Listen and join in",
+        "Listen and say the words together",
         "Shout over friends",
         "Hide the words"
       ],
-      "answer": "Listen and join in",
-      "feedbackCorrect": "Yes — listen and join in kindly.",
-      "feedbackWrong": "Try again — songs are better when we listen."
+      "answer": "Listen and say the words together",
+      "feedbackCorrect": "Yes — listen and say the words kindly.",
+      "feedbackWrong": "Try again — chants work best when we listen."
     }
   },
   {
@@ -863,16 +863,16 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 36899,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "song-p2-12",
     "title": "Quiet Time",
-    "description": "An original children's song for early years: Soft as cotton, calm and slow — quiet time helps good minds grow.",
+    "description": "Spoken lyric chant for early years (TTS word rhythm to clap or say along — not a melodic music recording): Soft as cotton, calm and slow — quiet time helps good minds grow.",
     "contentType": "rhyme_song",
     "discoverCategory": "songs",
     "levels": [
@@ -882,14 +882,14 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "P2"
     ],
     "subject": "Creative Arts",
-    "topic": "Songs",
+    "topic": "Spoken lyric chants",
     "languages": [
       "en"
     ],
     "illustration": {
       "kind": "emoji",
-      "emoji": "🎶",
-      "alt": "Quiet Time"
+      "emoji": "👏",
+      "alt": "Quiet Time chant illustration"
     },
     "narrations": [
       {
@@ -904,7 +904,7 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-12.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1150,
+        "estimatedBytes": 1012,
         "required": true
       },
       {
@@ -917,15 +917,15 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
     ],
     "game": {
       "id": "song-p2-12-q",
-      "prompt": "What should we do while singing together?",
+      "prompt": "What should we do with a spoken chant?",
       "options": [
-        "Listen and join in",
+        "Listen and say the words together",
         "Shout over friends",
         "Hide the words"
       ],
-      "answer": "Listen and join in",
-      "feedbackCorrect": "Yes — listen and join in kindly.",
-      "feedbackWrong": "Try again — songs are better when we listen."
+      "answer": "Listen and say the words together",
+      "feedbackCorrect": "Yes — listen and say the words kindly.",
+      "feedbackWrong": "Try again — chants work best when we listen."
     }
   },
   {
@@ -940,16 +940,16 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 33881,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "song-p2-13",
     "title": "Market Call",
-    "description": "An original children's song for early years: Come buy oranges, come buy yam — market songs are Ghana's jam.",
+    "description": "Spoken lyric chant for early years (TTS word rhythm to clap or say along — not a melodic music recording): Come buy oranges, come buy yam — market calls are Ghana's jam.",
     "contentType": "rhyme_song",
     "discoverCategory": "songs",
     "levels": [
@@ -959,19 +959,19 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "P2"
     ],
     "subject": "Creative Arts",
-    "topic": "Songs",
+    "topic": "Spoken lyric chants",
     "languages": [
       "en"
     ],
     "illustration": {
       "kind": "emoji",
-      "emoji": "🎶",
-      "alt": "Market Call"
+      "emoji": "👏",
+      "alt": "Market Call chant illustration"
     },
     "narrations": [
       {
         "kind": "tts",
-        "text": "Come buy oranges, come buy yam — market songs are Ghana's jam.",
+        "text": "Come buy oranges, come buy yam — market calls are Ghana's jam.",
         "voiceId": "english",
         "language": "en"
       }
@@ -981,28 +981,28 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-13.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1152,
+        "estimatedBytes": 1226,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-13-en.mp3",
         "mimeType": "audio/mpeg",
-        "estimatedBytes": 31615,
+        "estimatedBytes": 32655,
         "required": true
       }
     ],
     "game": {
       "id": "song-p2-13-q",
-      "prompt": "What should we do while singing together?",
+      "prompt": "What should we do with a spoken chant?",
       "options": [
-        "Listen and join in",
+        "Listen and say the words together",
         "Shout over friends",
         "Hide the words"
       ],
-      "answer": "Listen and join in",
-      "feedbackCorrect": "Yes — listen and join in kindly.",
-      "feedbackWrong": "Try again — songs are better when we listen."
+      "answer": "Listen and say the words together",
+      "feedbackCorrect": "Yes — listen and say the words kindly.",
+      "feedbackWrong": "Try again — chants work best when we listen."
     }
   },
   {
@@ -1017,16 +1017,16 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 33024,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "song-p2-14",
     "title": "Brave Little Ant",
-    "description": "An original children's song for early years: Ant so small but works so hard — courage lives in every yard.",
+    "description": "Spoken lyric chant for early years (TTS word rhythm to clap or say along — not a melodic music recording): Ant so small but works so hard — courage lives in every yard.",
     "contentType": "rhyme_song",
     "discoverCategory": "songs",
     "levels": [
@@ -1036,14 +1036,14 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "P2"
     ],
     "subject": "Creative Arts",
-    "topic": "Songs",
+    "topic": "Spoken lyric chants",
     "languages": [
       "en"
     ],
     "illustration": {
       "kind": "emoji",
-      "emoji": "🎶",
-      "alt": "Brave Little Ant"
+      "emoji": "👏",
+      "alt": "Brave Little Ant chant illustration"
     },
     "narrations": [
       {
@@ -1058,7 +1058,7 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-14.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1162,
+        "estimatedBytes": 1259,
         "required": true
       },
       {
@@ -1071,15 +1071,15 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
     ],
     "game": {
       "id": "song-p2-14-q",
-      "prompt": "What should we do while singing together?",
+      "prompt": "What should we do with a spoken chant?",
       "options": [
-        "Listen and join in",
+        "Listen and say the words together",
         "Shout over friends",
         "Hide the words"
       ],
-      "answer": "Listen and join in",
-      "feedbackCorrect": "Yes — listen and join in kindly.",
-      "feedbackWrong": "Try again — songs are better when we listen."
+      "answer": "Listen and say the words together",
+      "feedbackCorrect": "Yes — listen and say the words kindly.",
+      "feedbackWrong": "Try again — chants work best when we listen."
     }
   },
   {
@@ -1094,16 +1094,16 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 30510,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "song-p2-15",
-    "title": "Evening Prayer Poem Song",
-    "description": "An original children's song for early years: Day is done, stars appear — thank you for the friends so dear.",
+    "title": "Evening Thanks",
+    "description": "Spoken lyric chant for early years (TTS word rhythm to clap or say along — not a melodic music recording): Day is done, stars appear — thank you for the friends so dear.",
     "contentType": "rhyme_song",
     "discoverCategory": "songs",
     "levels": [
@@ -1113,14 +1113,14 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
       "P2"
     ],
     "subject": "Creative Arts",
-    "topic": "Songs",
+    "topic": "Spoken lyric chants",
     "languages": [
       "en"
     ],
     "illustration": {
       "kind": "emoji",
-      "emoji": "🎶",
-      "alt": "Evening Prayer Poem Song"
+      "emoji": "👏",
+      "alt": "Evening Thanks chant illustration"
     },
     "narrations": [
       {
@@ -1135,7 +1135,7 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/song-p2-15.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1178,
+        "estimatedBytes": 1054,
         "required": true
       },
       {
@@ -1148,15 +1148,15 @@ export const GHANA_PHASE2_SONGS: LearningMediaItem[] = [
     ],
     "game": {
       "id": "song-p2-15-q",
-      "prompt": "What should we do while singing together?",
+      "prompt": "What should we do with a spoken chant?",
       "options": [
-        "Listen and join in",
+        "Listen and say the words together",
         "Shout over friends",
         "Hide the words"
       ],
-      "answer": "Listen and join in",
-      "feedbackCorrect": "Yes — listen and join in kindly.",
-      "feedbackWrong": "Try again — songs are better when we listen."
+      "answer": "Listen and say the words together",
+      "feedbackCorrect": "Yes — listen and say the words kindly.",
+      "feedbackWrong": "Try again — chants work best when we listen."
     }
   }
 ] as LearningMediaItem[];

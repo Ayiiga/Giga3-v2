@@ -8,7 +8,7 @@
   </defs>
   <rect width="480" height="480" rx="36" fill="url(#sky)"/>
   <circle cx="400" cy="70" r="36" fill="#FFE082" opacity="0.95"/>
-  <ellipse cx="230" cy="230" rx="90" ry="110" fill="#FFB300"/><ellipse cx="200" cy="200" rx="28" ry="36" fill="#FFD54F" opacity="0.55"/><path d="M230 110 C220 150 250 160 270 170" stroke="#2E7D32" stroke-width="14" fill="none" stroke-linecap="round"/><ellipse cx="290" cy="150" rx="40" ry="18" fill="#66BB6A" transform="rotate(25 290 150)"/>
+  <rect x="140" y="160" width="200" height="30" rx="6" fill="#8D6E63"/><rect x="150" y="190" width="30" height="140" fill="#6D4C41"/><rect x="300" y="190" width="30" height="140" fill="#6D4C41"/><rect x="150" y="250" width="180" height="24" fill="#A1887F"/><rect x="160" y="120" width="24" height="50" fill="#6D4C41"/><rect x="300" y="120" width="24" height="50" fill="#6D4C41"/>
   <rect x="24" y="400" width="432" height="56" rx="16" fill="#FFFFFF" opacity="0.92"/>
-  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="28" font-weight="700" fill="#1a233f">Chair</text>
+  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1a233f">Chair</text>
 </svg>

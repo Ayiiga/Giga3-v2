@@ -8,7 +8,7 @@
   </defs>
   <rect width="480" height="480" rx="36" fill="url(#sky)"/>
   <circle cx="400" cy="70" r="36" fill="#FFE082" opacity="0.95"/>
-  <text x="240" y="260" text-anchor="middle" font-family="Nunito,sans-serif" font-size="160" font-weight="800" fill="#FFFFFF">F</text>
+  <text x="240" y="250" text-anchor="middle" font-family="Nunito,sans-serif" font-size="160" font-weight="800" fill="#FFFFFF">5</text><g fill="#FFB300"><circle cx="100" cy="340" r="16"/><circle cx="160" cy="340" r="16"/><circle cx="220" cy="340" r="16"/><circle cx="280" cy="340" r="16"/><circle cx="340" cy="340" r="16"/></g>
   <rect x="24" y="400" width="432" height="56" rx="16" fill="#FFFFFF" opacity="0.92"/>
-  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="28" font-weight="700" fill="#1a233f">Five</text>
+  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1a233f">Five</text>
 </svg>

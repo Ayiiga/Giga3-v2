@@ -235,7 +235,19 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
       <p className="sr-only">{item.illustration.alt}</p>
 
       <div className="mt-4 space-y-2">
-        <p className="text-sm font-semibold text-foreground">Hear the name</p>
+        <p className="text-sm font-semibold text-foreground">
+          {item.discoverCategory === "songs" || item.discoverCategory === "rhymes-poems"
+            ? "Hear the words"
+            : item.discoverCategory === "african-stories" ||
+                item.discoverCategory === "videos-animation"
+              ? "Hear the story"
+              : "Hear the name"}
+        </p>
+        {item.discoverCategory === "songs" ? (
+          <p className="text-xs leading-5 text-muted">
+            Spoken lyric chant (TTS narration) — not a melodic music recording.
+          </p>
+        ) : null}
         <div className="flex flex-wrap gap-2">
           {item.narrations.map((n, index) => (
             <Button

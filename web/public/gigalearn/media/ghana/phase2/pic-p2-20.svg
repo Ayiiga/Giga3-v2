@@ -8,7 +8,7 @@
   </defs>
   <rect width="480" height="480" rx="36" fill="url(#sky)"/>
   <circle cx="400" cy="70" r="36" fill="#FFE082" opacity="0.95"/>
-  <ellipse cx="240" cy="230" rx="110" ry="55" fill="#29B6F6"/><polygon points="340,230 400,180 400,280" fill="#0288D1"/><circle cx="180" cy="215" r="10" fill="#212121"/>
+  <rect x="220" y="260" width="40" height="100" fill="#6D4C41"/><circle cx="240" cy="200" r="90" fill="#43A047"/><circle cx="190" cy="180" r="50" fill="#66BB6A"/><circle cx="290" cy="190" r="55" fill="#2E7D32"/><circle cx="210" cy="230" r="16" fill="#E53935"/><circle cx="270" cy="220" r="14" fill="#FFB300"/>
   <rect x="24" y="400" width="432" height="56" rx="16" fill="#FFFFFF" opacity="0.92"/>
-  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="28" font-weight="700" fill="#1a233f">Tree</text>
+  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1a233f">Tree</text>
 </svg>

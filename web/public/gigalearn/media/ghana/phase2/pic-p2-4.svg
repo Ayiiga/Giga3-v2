@@ -8,7 +8,7 @@
   </defs>
   <rect width="480" height="480" rx="36" fill="url(#sky)"/>
   <circle cx="400" cy="70" r="36" fill="#FFE082" opacity="0.95"/>
-  <ellipse cx="240" cy="250" rx="110" ry="70" fill="#A1887F"/><circle cx="170" cy="200" r="40" fill="#8D6E63"/><circle cx="155" cy="190" r="6" fill="#212121"/><circle cx="175" cy="190" r="6" fill="#212121"/><ellipse cx="140" cy="210" rx="14" ry="8" fill="#EF9A9A"/>
+  <ellipse cx="250" cy="260" rx="90" ry="60" fill="#FFCC80"/><circle cx="170" cy="220" r="36" fill="#FFE0B2"/><polygon points="140,220 110,210 140,235" fill="#EF6C00"/><circle cx="160" cy="212" r="5" fill="#212121"/><polygon points="165,185 175,155 190,185" fill="#E53935"/><ellipse cx="300" cy="250" rx="40" ry="20" fill="#FFAB91"/><rect x="220" y="310" width="14" height="40" fill="#F9A825"/><rect x="250" y="310" width="14" height="40" fill="#F9A825"/>
   <rect x="24" y="400" width="432" height="56" rx="16" fill="#FFFFFF" opacity="0.92"/>
-  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="28" font-weight="700" fill="#1a233f">Hen</text>
+  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1a233f">Hen</text>
 </svg>

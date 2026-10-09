@@ -8,7 +8,7 @@
   </defs>
   <rect width="480" height="480" rx="36" fill="url(#sky)"/>
   <circle cx="400" cy="70" r="36" fill="#FFE082" opacity="0.95"/>
-  <ellipse cx="230" cy="230" rx="90" ry="110" fill="#FFB300"/><ellipse cx="200" cy="200" rx="28" ry="36" fill="#FFD54F" opacity="0.55"/><path d="M230 110 C220 150 250 160 270 170" stroke="#2E7D32" stroke-width="14" fill="none" stroke-linecap="round"/><ellipse cx="290" cy="150" rx="40" ry="18" fill="#66BB6A" transform="rotate(25 290 150)"/>
+  <ellipse cx="240" cy="260" rx="70" ry="90" fill="#8D5524"/><rect x="170" y="140" width="28" height="90" rx="12" fill="#8D5524"/><rect x="210" y="120" width="28" height="100" rx="12" fill="#8D5524"/><rect x="250" y="120" width="28" height="100" rx="12" fill="#8D5524"/><rect x="290" y="140" width="28" height="90" rx="12" fill="#8D5524"/><rect x="150" y="220" width="40" height="70" rx="16" fill="#8D5524" transform="rotate(-25 150 220)"/>
   <rect x="24" y="400" width="432" height="56" rx="16" fill="#FFFFFF" opacity="0.92"/>
-  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="28" font-weight="700" fill="#1a233f">Hand</text>
+  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1a233f">Hand</text>
 </svg>

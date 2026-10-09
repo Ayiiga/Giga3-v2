@@ -16,10 +16,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 5840,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -43,7 +43,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🍊",
-      "alt": "Orange"
+      "alt": "Orange picture"
     },
     "narrations": [
       {
@@ -64,7 +64,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-1.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1037,
+        "estimatedBytes": 954,
         "required": true
       },
       {
@@ -100,10 +100,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 8364,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -127,7 +127,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🥥",
-      "alt": "Coconut"
+      "alt": "Coconut picture"
     },
     "narrations": [
       {
@@ -148,7 +148,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-2.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1039,
+        "estimatedBytes": 1053,
         "required": true
       },
       {
@@ -184,10 +184,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 5553,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -211,7 +211,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🐐",
-      "alt": "Goat"
+      "alt": "Goat picture"
     },
     "narrations": [
       {
@@ -232,7 +232,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-3.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 957,
+        "estimatedBytes": 1186,
         "required": true
       },
       {
@@ -268,10 +268,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 5353,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -295,7 +295,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🐔",
-      "alt": "Hen"
+      "alt": "Hen picture"
     },
     "narrations": [
       {
@@ -316,7 +316,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-4.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 955,
+        "estimatedBytes": 1145,
         "required": true
       },
       {
@@ -352,10 +352,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 4707,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -379,7 +379,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🟥",
-      "alt": "Red"
+      "alt": "Red picture"
     },
     "narrations": [
       {
@@ -400,7 +400,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-5.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1031,
+        "estimatedBytes": 812,
         "required": true
       },
       {
@@ -436,10 +436,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 5101,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -463,7 +463,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🟦",
-      "alt": "Blue"
+      "alt": "Blue picture"
     },
     "narrations": [
       {
@@ -484,7 +484,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-6.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1033,
+        "estimatedBytes": 814,
         "required": true
       },
       {
@@ -520,10 +520,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 5239,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -547,7 +547,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "3️⃣",
-      "alt": "Three"
+      "alt": "Three picture"
     },
     "narrations": [
       {
@@ -568,7 +568,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-7.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 828,
+        "estimatedBytes": 975,
         "required": true
       },
       {
@@ -604,10 +604,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 6112,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -631,7 +631,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "5️⃣",
-      "alt": "Five"
+      "alt": "Five picture"
     },
     "narrations": [
       {
@@ -652,7 +652,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-8.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 826,
+        "estimatedBytes": 1018,
         "required": true
       },
       {
@@ -688,10 +688,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 6849,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -715,7 +715,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🅰️",
-      "alt": "Letter A"
+      "alt": "Letter A picture"
     },
     "narrations": [
       {
@@ -736,7 +736,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-9.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 834,
+        "estimatedBytes": 1003,
         "required": true
       },
       {
@@ -772,10 +772,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 7019,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -799,7 +799,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🅱️",
-      "alt": "Letter B"
+      "alt": "Letter B picture"
     },
     "narrations": [
       {
@@ -856,10 +856,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 6760,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -883,7 +883,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "⭕",
-      "alt": "Circle"
+      "alt": "Circle picture"
     },
     "narrations": [
       {
@@ -904,7 +904,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-11.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1037,
+        "estimatedBytes": 832,
         "required": true
       },
       {
@@ -940,10 +940,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 6821,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -967,7 +967,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "⬛",
-      "alt": "Square"
+      "alt": "Square picture"
     },
     "narrations": [
       {
@@ -988,7 +988,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-12.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1037,
+        "estimatedBytes": 866,
         "required": true
       },
       {
@@ -1024,10 +1024,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 5392,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -1051,7 +1051,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "✋",
-      "alt": "Hand"
+      "alt": "Hand picture"
     },
     "narrations": [
       {
@@ -1072,7 +1072,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-13.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1033,
+        "estimatedBytes": 1132,
         "required": true
       },
       {
@@ -1108,10 +1108,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 4494,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -1135,7 +1135,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "👁️",
-      "alt": "Eye"
+      "alt": "Eye picture"
     },
     "narrations": [
       {
@@ -1156,7 +1156,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-14.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1031,
+        "estimatedBytes": 885,
         "required": true
       },
       {
@@ -1192,10 +1192,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 4509,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -1219,7 +1219,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "☕",
-      "alt": "Cup"
+      "alt": "Cup picture"
     },
     "narrations": [
       {
@@ -1240,7 +1240,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-15.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1031,
+        "estimatedBytes": 924,
         "required": true
       },
       {
@@ -1276,10 +1276,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 5490,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -1303,7 +1303,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🪑",
-      "alt": "Chair"
+      "alt": "Chair picture"
     },
     "narrations": [
       {
@@ -1324,7 +1324,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-16.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1035,
+        "estimatedBytes": 1073,
         "required": true
       },
       {
@@ -1360,10 +1360,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 6177,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -1387,7 +1387,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "👩‍🏫",
-      "alt": "Teacher"
+      "alt": "Teacher picture"
     },
     "narrations": [
       {
@@ -1408,7 +1408,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-17.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1039,
+        "estimatedBytes": 951,
         "required": true
       },
       {
@@ -1444,10 +1444,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 6205,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -1471,7 +1471,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "👩‍🌾",
-      "alt": "Farmer"
+      "alt": "Farmer picture"
     },
     "narrations": [
       {
@@ -1492,7 +1492,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-18.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1037,
+        "estimatedBytes": 1008,
         "required": true
       },
       {
@@ -1528,10 +1528,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 5612,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -1555,7 +1555,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🏞️",
-      "alt": "River"
+      "alt": "River picture"
     },
     "narrations": [
       {
@@ -1576,7 +1576,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-19.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 863,
+        "estimatedBytes": 989,
         "required": true
       },
       {
@@ -1612,10 +1612,10 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 4898,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
@@ -1639,7 +1639,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🌳",
-      "alt": "Tree"
+      "alt": "Tree picture"
     },
     "narrations": [
       {
@@ -1660,7 +1660,7 @@ export const GHANA_PHASE2_PICTURES: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/pic-p2-20.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 861,
+        "estimatedBytes": 1001,
         "required": true
       },
       {

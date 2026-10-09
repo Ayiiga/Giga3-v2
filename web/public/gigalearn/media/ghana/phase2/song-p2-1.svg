@@ -8,7 +8,7 @@
   </defs>
   <rect width="480" height="480" rx="36" fill="url(#sky)"/>
   <circle cx="400" cy="70" r="36" fill="#FFE082" opacity="0.95"/>
-  <circle cx="240" cy="170" r="48" fill="#8D5524"/><circle cx="225" cy="165" r="5" fill="#212121"/><circle cx="255" cy="165" r="5" fill="#212121"/><path d="M225 188 Q240 200 255 188" stroke="#5D4037" stroke-width="4" fill="none"/><path d="M180 230 Q240 210 300 230 L310 340 Q240 360 170 340 Z" fill="#42A5F5"/><rect x="210" y="340" width="22" height="50" rx="8" fill="#5D4037"/><rect x="248" y="340" width="22" height="50" rx="8" fill="#5D4037"/>
+  <circle cx="240" cy="150" r="44" fill="#8D5524"/><circle cx="225" cy="145" r="5" fill="#212121"/><circle cx="255" cy="145" r="5" fill="#212121"/><path d="M225 168 Q240 180 255 168" stroke="#5D4037" stroke-width="4" fill="none"/><path d="M185 210 Q240 190 295 210 L305 300 Q240 325 175 300 Z" fill="#AB47BC"/><ellipse cx="130" cy="230" rx="28" ry="18" fill="#8D5524" transform="rotate(-25 130 230)"/><ellipse cx="350" cy="230" rx="28" ry="18" fill="#8D5524" transform="rotate(25 350 230)"/><rect x="210" y="300" width="22" height="50" rx="8" fill="#5D4037"/><rect x="248" y="300" width="22" height="50" rx="8" fill="#5D4037"/>
   <rect x="24" y="400" width="432" height="56" rx="16" fill="#FFFFFF" opacity="0.92"/>
-  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="28" font-weight="700" fill="#1a233f">Clap and Count</text>
+  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1a233f">Clap and Count</text>
 </svg>

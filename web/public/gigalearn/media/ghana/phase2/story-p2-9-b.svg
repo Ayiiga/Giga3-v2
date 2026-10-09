@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" role="img" aria-label="Next">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" role="img" aria-label="What happens next">
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#90CAF9"/>
@@ -8,7 +8,7 @@
   </defs>
   <rect width="480" height="480" rx="36" fill="url(#sky)"/>
   <circle cx="400" cy="70" r="36" fill="#FFE082" opacity="0.95"/>
-  <rect x="120" y="200" width="240" height="160" fill="#FFCC80"/><polygon points="100,200 240,100 380,200" fill="#E53935"/><rect x="210" y="260" width="60" height="100" fill="#5D4037"/><rect x="150" y="240" width="40" height="40" fill="#81D4FA"/><rect x="290" y="240" width="40" height="40" fill="#81D4FA"/>
+  <rect x="60" y="200" width="100" height="120" fill="#FFCC80"/><polygon points="50,200 110,150 170,200" fill="#E53935"/><rect x="190" y="210" width="100" height="110" fill="#FFE082"/><polygon points="180,210 240,160 300,210" fill="#43A047"/><rect x="320" y="200" width="100" height="120" fill="#FFAB91"/><polygon points="310,200 370,150 430,200" fill="#1E88E5"/><circle cx="110" cy="280" r="16" fill="#FB8C00"/><circle cx="240" cy="290" r="18" fill="#FDD835"/><ellipse cx="370" cy="285" rx="22" ry="14" fill="#8D6E63"/>
   <rect x="24" y="400" width="432" height="56" rx="16" fill="#FFFFFF" opacity="0.92"/>
-  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="28" font-weight="700" fill="#1a233f">Next</text>
+  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1a233f">What happens next</text>
 </svg>

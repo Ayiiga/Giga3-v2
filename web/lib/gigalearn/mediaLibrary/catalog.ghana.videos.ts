@@ -16,16 +16,16 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 98656,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "video-p2-1",
     "title": "Count with Bananas",
-    "description": "Count bananas from one to five with a bright classroom helper. Illustrated animation for KG1–P2.",
+    "description": "Count bananas from one to five with a bright classroom helper. Illustrated storyboard animation for KG1–P2 (original SVG frames + spoken narration).",
     "contentType": "video_story",
     "discoverCategory": "videos-animation",
     "levels": [
@@ -42,7 +42,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🎬",
-      "alt": "Count with Bananas"
+      "alt": "Count with Bananas animation"
     },
     "narrations": [
       {
@@ -57,21 +57,21 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-1-f1.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1065,
+        "estimatedBytes": 836,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-1-f2.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1065,
+        "estimatedBytes": 984,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-1-f3.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1065,
+        "estimatedBytes": 1160,
         "required": true
       },
       {
@@ -85,7 +85,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-1.mp4",
         "mimeType": "video/mp4",
-        "estimatedBytes": 65910,
+        "estimatedBytes": 66067,
         "required": false
       }
     ]
@@ -102,16 +102,16 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 84541,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "video-p2-2",
     "title": "Letter A Adventure",
-    "description": "Meet letter A with apple pictures and a clear chant. Illustrated animation for KG1–P2.",
+    "description": "Meet letter A with apple pictures and a clear chant. Illustrated storyboard animation for KG1–P2 (original SVG frames + spoken narration).",
     "contentType": "video_story",
     "discoverCategory": "videos-animation",
     "levels": [
@@ -128,7 +128,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🎬",
-      "alt": "Letter A Adventure"
+      "alt": "Letter A Adventure animation"
     },
     "narrations": [
       {
@@ -143,21 +143,21 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-2-f1.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 858,
+        "estimatedBytes": 1003,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-2-f2.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 858,
+        "estimatedBytes": 1025,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-2-f3.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 858,
+        "estimatedBytes": 1119,
         "required": true
       },
       {
@@ -171,7 +171,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-2.mp4",
         "mimeType": "video/mp4",
-        "estimatedBytes": 50089,
+        "estimatedBytes": 58266,
         "required": false
       }
     ]
@@ -188,16 +188,16 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 70746,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "video-p2-3",
     "title": "Colour Hunt Red",
-    "description": "Find red objects around a Ghanaian home. Illustrated animation for KG1–P2.",
+    "description": "Find red objects around a Ghanaian home. Illustrated storyboard animation for KG1–P2 (original SVG frames + spoken narration).",
     "contentType": "video_story",
     "discoverCategory": "videos-animation",
     "levels": [
@@ -214,7 +214,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🎬",
-      "alt": "Colour Hunt Red"
+      "alt": "Colour Hunt Red animation"
     },
     "narrations": [
       {
@@ -229,21 +229,21 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-3-f1.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1025,
+        "estimatedBytes": 999,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-3-f2.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1025,
+        "estimatedBytes": 999,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-3-f3.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1025,
+        "estimatedBytes": 826,
         "required": true
       },
       {
@@ -257,7 +257,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-3.mp4",
         "mimeType": "video/mp4",
-        "estimatedBytes": 42648,
+        "estimatedBytes": 46798,
         "required": false
       }
     ]
@@ -274,16 +274,16 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 78705,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "video-p2-4",
-    "title": "Shape Circle Song Clip",
-    "description": "Circles everywhere — plates, moons and drums. Illustrated animation for KG1–P2.",
+    "title": "Shape Circle Clip",
+    "description": "Circles everywhere — plates, moons and drums. Illustrated storyboard animation for KG1–P2 (original SVG frames + spoken narration).",
     "contentType": "video_story",
     "discoverCategory": "videos-animation",
     "levels": [
@@ -300,7 +300,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🎬",
-      "alt": "Shape Circle Song Clip"
+      "alt": "Shape Circle Clip animation"
     },
     "narrations": [
       {
@@ -315,21 +315,21 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-4-f1.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1014,
+        "estimatedBytes": 913,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-4-f2.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1014,
+        "estimatedBytes": 821,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-4-f3.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1014,
+        "estimatedBytes": 837,
         "required": true
       },
       {
@@ -343,7 +343,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-4.mp4",
         "mimeType": "video/mp4",
-        "estimatedBytes": 53718,
+        "estimatedBytes": 53217,
         "required": false
       }
     ]
@@ -360,16 +360,16 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 86868,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "video-p2-5",
     "title": "Body Parts Wave",
-    "description": "Wave your hands, stamp your feet, name each part. Illustrated animation for KG1–P2.",
+    "description": "Wave your hands, stamp your feet, name each part. Illustrated storyboard animation for KG1–P2 (original SVG frames + spoken narration).",
     "contentType": "video_story",
     "discoverCategory": "videos-animation",
     "levels": [
@@ -386,7 +386,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🎬",
-      "alt": "Body Parts Wave"
+      "alt": "Body Parts Wave animation"
     },
     "narrations": [
       {
@@ -401,21 +401,21 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-5-f1.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1164,
+        "estimatedBytes": 953,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-5-f2.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1164,
+        "estimatedBytes": 971,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-5-f3.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1164,
+        "estimatedBytes": 946,
         "required": true
       },
       {
@@ -429,7 +429,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-5.mp4",
         "mimeType": "video/mp4",
-        "estimatedBytes": 55191,
+        "estimatedBytes": 58474,
         "required": false
       }
     ]
@@ -446,16 +446,16 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 81556,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "video-p2-6",
     "title": "Market Colours",
-    "description": "Walk a bright market and name colours you see. Illustrated animation for KG1–P2.",
+    "description": "Walk a bright market and name colours you see. Illustrated storyboard animation for KG1–P2 (original SVG frames + spoken narration).",
     "contentType": "video_story",
     "discoverCategory": "videos-animation",
     "levels": [
@@ -472,7 +472,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🎬",
-      "alt": "Market Colours"
+      "alt": "Market Colours animation"
     },
     "narrations": [
       {
@@ -487,21 +487,21 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-6-f1.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1109,
+        "estimatedBytes": 1230,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-6-f2.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1109,
+        "estimatedBytes": 966,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-6-f3.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1109,
+        "estimatedBytes": 1041,
         "required": true
       },
       {
@@ -515,7 +515,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-6.mp4",
         "mimeType": "video/mp4",
-        "estimatedBytes": 48947,
+        "estimatedBytes": 55949,
         "required": false
       }
     ]
@@ -532,16 +532,16 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 76721,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "video-p2-7",
     "title": "Animal Friends Goat",
-    "description": "Meet a friendly goat and learn its sound. Illustrated animation for KG1–P2.",
+    "description": "Meet a friendly goat and learn its sound. Illustrated storyboard animation for KG1–P2 (original SVG frames + spoken narration).",
     "contentType": "video_story",
     "discoverCategory": "videos-animation",
     "levels": [
@@ -558,7 +558,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🎬",
-      "alt": "Animal Friends Goat"
+      "alt": "Animal Friends Goat animation"
     },
     "narrations": [
       {
@@ -573,21 +573,21 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-7-f1.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 991,
+        "estimatedBytes": 1198,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-7-f2.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 991,
+        "estimatedBytes": 1094,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-7-f3.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 991,
+        "estimatedBytes": 1306,
         "required": true
       },
       {
@@ -601,7 +601,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-7.mp4",
         "mimeType": "video/mp4",
-        "estimatedBytes": 45319,
+        "estimatedBytes": 52440,
         "required": false
       }
     ]
@@ -618,16 +618,16 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 96280,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "video-p2-8",
     "title": "Wash Hands Animation",
-    "description": "Soap, water, rinse — a short hygiene storyboard. Illustrated animation for KG1–P2.",
+    "description": "Soap, water, rinse — a short hygiene storyboard. Illustrated storyboard animation for KG1–P2 (original SVG frames + spoken narration).",
     "contentType": "video_story",
     "discoverCategory": "videos-animation",
     "levels": [
@@ -644,7 +644,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🎬",
-      "alt": "Wash Hands Animation"
+      "alt": "Wash Hands Animation animation"
     },
     "narrations": [
       {
@@ -659,21 +659,21 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-8-f1.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1174,
+        "estimatedBytes": 970,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-8-f2.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1174,
+        "estimatedBytes": 1118,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-8-f3.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1174,
+        "estimatedBytes": 1096,
         "required": true
       },
       {
@@ -687,7 +687,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-8.mp4",
         "mimeType": "video/mp4",
-        "estimatedBytes": 60604,
+        "estimatedBytes": 65101,
         "required": false
       }
     ]
@@ -704,16 +704,16 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 68272,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "video-p2-9",
     "title": "Kente Pattern Peek",
-    "description": "Watch colour bands appear like woven cloth. Illustrated animation for KG1–P2.",
+    "description": "Watch colour bands appear like woven cloth. Illustrated storyboard animation for KG1–P2 (original SVG frames + spoken narration).",
     "contentType": "video_story",
     "discoverCategory": "videos-animation",
     "levels": [
@@ -730,7 +730,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🎬",
-      "alt": "Kente Pattern Peek"
+      "alt": "Kente Pattern Peek animation"
     },
     "narrations": [
       {
@@ -745,21 +745,21 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-9-f1.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1117,
+        "estimatedBytes": 842,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-9-f2.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1117,
+        "estimatedBytes": 915,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-9-f3.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 1117,
+        "estimatedBytes": 1021,
         "required": true
       },
       {
@@ -773,7 +773,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-9.mp4",
         "mimeType": "video/mp4",
-        "estimatedBytes": 44832,
+        "estimatedBytes": 44895,
         "required": false
       }
     ]
@@ -790,16 +790,16 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
       "maxAge": 8,
       "label": "KG2–P2 (ages 5–8)"
     },
-    "estimatedOfflineBytes": 3200,
+    "estimatedOfflineBytes": 86004,
     "offlineEligible": true,
     "rights": {
-      "source": "English audio generated with espeak-ng en+m3 (warmer male). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Not educator-reviewed native speech.",
+      "source": "English audio generated with espeak-ng en+m3 (warmer male spoken narration). Local-language labels use browser TTS female profiles (Abena/Naa) unchanged. Spoken TTS — not a melodic music recording; not educator-reviewed native speech.",
       "rights": "original",
       "reviewed": false
     },
     "id": "video-p2-10",
     "title": "River Care Storyboard",
-    "description": "Keep rivers clean so fish and families thrive. Illustrated animation for KG1–P2.",
+    "description": "Keep rivers clean so fish and families thrive. Illustrated storyboard animation for KG1–P2 (original SVG frames + spoken narration).",
     "contentType": "video_story",
     "discoverCategory": "videos-animation",
     "levels": [
@@ -816,7 +816,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
     "illustration": {
       "kind": "emoji",
       "emoji": "🎬",
-      "alt": "River Care Storyboard"
+      "alt": "River Care Storyboard animation"
     },
     "narrations": [
       {
@@ -831,21 +831,21 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-10-f1.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 899,
+        "estimatedBytes": 1016,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-10-f2.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 899,
+        "estimatedBytes": 1120,
         "required": true
       },
       {
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-10-f3.svg",
         "mimeType": "image/svg+xml",
-        "estimatedBytes": 899,
+        "estimatedBytes": 992,
         "required": true
       },
       {
@@ -859,7 +859,7 @@ export const GHANA_PHASE2_VIDEOS: LearningMediaItem[] = [
         "kind": "remote",
         "url": "/gigalearn/media/ghana/phase2/video-p2-10.mp4",
         "mimeType": "video/mp4",
-        "estimatedBytes": 54940,
+        "estimatedBytes": 58688,
         "required": false
       }
     ]

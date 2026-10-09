@@ -172,8 +172,8 @@ export const DISCOVER_CATEGORIES: Array<{
   {
     id: "songs",
     label: "Songs",
-    emoji: "🎵",
-    description: "Children's songs with audio",
+    emoji: "👏",
+    description: "Spoken lyric chants to clap or say along (not melodic music)",
   },
   {
     id: "pictures-objects",
