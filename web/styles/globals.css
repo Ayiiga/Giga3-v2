@@ -1338,9 +1338,13 @@ button:focus-visible {
 .learn-container,
 .media-container,
 .marketing-scroll-main,
-.media-stable,
 .gigaedit-page {
   padding-bottom: 96px !important;
+}
+
+/* Media Studio: clear fixed primary nav + Create sub-nav using the shared offset. */
+.media-stable {
+  padding-bottom: calc(var(--primary-nav-offset, 96px) + 1rem) !important;
 }
 
 /* Chat uses --primary-nav-offset on .chat-keyboard-shell (primary-nav.css). */
