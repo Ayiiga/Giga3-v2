@@ -78,6 +78,18 @@ describe("Discover country-aware architecture", () => {
     const ghanaProfile = MEDIA_LIBRARY_CATALOG.find((i) => i.id === "country-ghana-profile")!;
     expect(ghanaProfile.rights.reviewed).toBe(true);
     expect(ghanaProfile.description).toMatch(/not bundled|licensed|officially published/i);
+
+    // Packs that ship espeak-ng audio must not claim educator review.
+    for (const id of [
+      "pic-mango-kg2",
+      "rhyme-mango-sweet",
+      "story-ananse-listen",
+    ] as const) {
+      const item = MEDIA_LIBRARY_CATALOG.find((row) => row.id === id)!;
+      expect(item.rights.reviewed).toBe(false);
+      expect(item.rights.source).toMatch(/espeak-ng/i);
+      expect(item.rights.source).toMatch(/not educator-reviewed/i);
+    }
   });
 
   it("filters by country, curriculum level and language without inventing other countries", () => {

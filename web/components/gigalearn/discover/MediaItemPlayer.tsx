@@ -187,16 +187,20 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
       </div>
 
       {videoSrc ? (
-        <video
-          className="mt-4 w-full rounded-2xl border border-[#2A3441] bg-[#1a233f]"
-          controls
-          playsInline
-          preload="metadata"
-          poster={imageSrc}
-          src={videoSrc}
-        >
-          <track kind="captions" />
-        </video>
+        <div className="mt-4">
+          <video
+            className="w-full rounded-2xl border border-[#2A3441] bg-[#1a233f]"
+            controls
+            playsInline
+            preload="metadata"
+            poster={imageSrc}
+            src={videoSrc}
+            aria-label={`${item.title} video`}
+          />
+          <p className="mt-2 text-xs leading-5 text-muted">
+            Transcript: {item.narrations.map((n) => n.text).join(" ")}
+          </p>
+        </div>
       ) : imageSrc ? (
         // eslint-disable-next-line @next/next/no-img-element -- static export offline data URLs
         <img
@@ -311,6 +315,9 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
         </div>
         <p className="mt-2 text-[11px] leading-4 text-muted">
           Source: {item.rights.source}. Rights: {item.rights.rights}.
+          {item.rights.reviewed
+            ? " Educator-reviewed."
+            : " Not educator-reviewed native speech."}
         </p>
       </div>
     </section>

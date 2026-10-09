@@ -17,25 +17,33 @@ const ORIGINAL_ART = {
   reviewedAt: "2026-10-09",
 } as const;
 
+/** espeak-ng output — not educator-reviewed native speech. */
 const GENERATED_SPEECH = {
   source:
-    "Generated educational speech (espeak-ng) packaged for offline KG2 packs; replace with educator-reviewed native-speaker recordings before certification claims",
+    "Generated educational speech (espeak-ng) for offline packaging — not educator-reviewed native-speaker recordings; replace before certification claims",
+  rights: "original",
+  reviewed: false,
+} as const;
+
+/** Packs that ship generated speech must not inherit reviewed:true from art alone. */
+const ART_PLUS_GENERATED_SPEECH = {
+  source: `${ORIGINAL_ART.source}; ${GENERATED_SPEECH.source}`,
   rights: "original",
   reviewed: false,
 } as const;
 
 const ORIGINAL_RHYME = {
-  source: "Original Giga3 educational rhyme for early years",
+  source:
+    "Original Giga3 educational rhyme text; spoken audio is generated (espeak-ng), not educator-reviewed native speech",
   rights: "original",
-  reviewed: true,
-  reviewedAt: "2026-10-09",
+  reviewed: false,
 } as const;
 
 const ORIGINAL_VIDEO = {
-  source: "Original Giga3 educational storyboard video assembled from GigaLearn SVG art + narration",
+  source:
+    "Original Giga3 educational storyboard video from GigaLearn SVG art; narration track is generated (espeak-ng), not educator-reviewed native speech",
   rights: "original",
-  reviewed: true,
-  reviewedAt: "2026-10-09",
+  reviewed: false,
 } as const;
 
 const GHANA_FACT = {
@@ -112,7 +120,7 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     },
     estimatedOfflineBytes: 2_400,
     offlineEligible: true,
-    rights: { ...ORIGINAL_ART, source: `${ORIGINAL_ART.source}; ${GENERATED_SPEECH.source}` },
+    rights: ART_PLUS_GENERATED_SPEECH,
   },
   {
     id: "pic-pawpaw-kg2",
@@ -148,7 +156,7 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     },
     estimatedOfflineBytes: 2_400,
     offlineEligible: true,
-    rights: { ...ORIGINAL_ART, source: `${ORIGINAL_ART.source}; ${GENERATED_SPEECH.source}` },
+    rights: ART_PLUS_GENERATED_SPEECH,
   },
   {
     id: "pic-drum-kg2",
@@ -191,7 +199,7 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     },
     estimatedOfflineBytes: 2_200,
     offlineEligible: true,
-    rights: { ...ORIGINAL_ART, source: `${ORIGINAL_ART.source}; ${GENERATED_SPEECH.source}` },
+    rights: ART_PLUS_GENERATED_SPEECH,
   },
   {
     id: "game-count-bananas-kg2",
@@ -236,7 +244,7 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     },
     estimatedOfflineBytes: 2_000,
     offlineEligible: true,
-    rights: { ...ORIGINAL_ART, source: `${ORIGINAL_ART.source}; ${GENERATED_SPEECH.source}` },
+    rights: ART_PLUS_GENERATED_SPEECH,
   },
   {
     id: "rhyme-mango-sweet",
