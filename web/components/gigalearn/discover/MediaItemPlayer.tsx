@@ -105,7 +105,7 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
         }
       }
       if (!played) {
-        await speakWithGigaLearnVoice(text, voiceId);
+        await speakWithGigaLearnVoice({ text, voiceId });
       }
       await recordMediaProgress({
         itemId: item.id,
