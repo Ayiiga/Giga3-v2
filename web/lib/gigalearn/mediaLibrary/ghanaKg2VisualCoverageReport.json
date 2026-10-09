@@ -1,6 +1,6 @@
 {
   "collectionId": "ghana-kg2-hq-v2",
-  "generatedAt": "2026-10-09T13:47:52.992Z",
+  "generatedAt": "2026-10-09T14:15:19.266Z",
   "totals": {
     "kg2CatalogItems": 96,
     "withSuitableHqVisuals": 48,
@@ -11,8 +11,8 @@
   },
   "byGroup": {
     "fruitsFoods": {
-      "total": 12,
-      "withHq": 10,
+      "total": 11,
+      "withHq": 9,
       "placeholders": [
         {
           "id": "story-p2-7",
@@ -27,8 +27,24 @@
       ]
     },
     "communityOccupations": {
-      "total": 27,
-      "withHq": 12,
+      "total": 13,
+      "withHq": 11,
+      "placeholders": [
+        {
+          "id": "country-ghana-profile",
+          "title": "Ghana",
+          "category": "culture-occupations"
+        },
+        {
+          "id": "song-p2-13",
+          "title": "Market Call",
+          "category": "songs"
+        }
+      ]
+    },
+    "cultureCrafts": {
+      "total": 35,
+      "withHq": 5,
       "placeholders": [
         {
           "id": "rhyme-p2-1",
@@ -38,6 +54,11 @@
         {
           "id": "rhyme-p2-3",
           "title": "Rain on Roof",
+          "category": "rhymes-poems"
+        },
+        {
+          "id": "rhyme-p2-4",
+          "title": "Kind Hands",
           "category": "rhymes-poems"
         },
         {
@@ -63,6 +84,11 @@
         {
           "id": "rhyme-p2-12",
           "title": "Red Kente Ribbon",
+          "category": "rhymes-poems"
+        },
+        {
+          "id": "rhyme-p2-14",
+          "title": "Honest Heart",
           "category": "rhymes-poems"
         },
         {
@@ -96,24 +122,18 @@
           "category": "rhymes-poems"
         },
         {
-          "id": "song-p2-8",
-          "title": "Farmers Dig",
+          "id": "song-p2-1",
+          "title": "Clap and Count",
           "category": "songs"
         },
         {
-          "id": "song-p2-13",
-          "title": "Market Call",
-          "category": "songs"
-        }
-      ]
-    },
-    "cultureCrafts": {
-      "total": 16,
-      "withHq": 3,
-      "placeholders": [
-        {
           "id": "song-p2-2",
           "title": "Hello Friend",
+          "category": "songs"
+        },
+        {
+          "id": "song-p2-3",
+          "title": "Wash Your Hands",
           "category": "songs"
         },
         {
@@ -124,6 +144,11 @@
         {
           "id": "song-p2-6",
           "title": "Thank You Chant",
+          "category": "songs"
+        },
+        {
+          "id": "song-p2-8",
+          "title": "Farmers Dig",
           "category": "songs"
         },
         {
@@ -170,38 +195,12 @@
           "id": "story-p2-8",
           "title": "Efua's Rainy Walk",
           "category": "african-stories"
-        },
-        {
-          "id": "video-p2-10",
-          "title": "River Care Storyboard",
-          "category": "videos-animation"
-        }
-      ]
-    },
-    "numbersMath": {
-      "total": 3,
-      "withHq": 0,
-      "placeholders": [
-        {
-          "id": "country-ghana-profile",
-          "title": "Ghana",
-          "category": "culture-occupations"
-        },
-        {
-          "id": "rhyme-p2-13",
-          "title": "Counting Clouds",
-          "category": "rhymes-poems"
-        },
-        {
-          "id": "song-p2-1",
-          "title": "Clap and Count",
-          "category": "songs"
         }
       ]
     },
     "animals": {
-      "total": 11,
-      "withHq": 8,
+      "total": 10,
+      "withHq": 7,
       "placeholders": [
         {
           "id": "song-p2-7",
@@ -273,32 +272,45 @@
       ]
     },
     "bodySenses": {
-      "total": 7,
+      "total": 3,
       "withHq": 2,
       "placeholders": [
-        {
-          "id": "rhyme-p2-4",
-          "title": "Kind Hands",
-          "category": "rhymes-poems"
-        },
-        {
-          "id": "rhyme-p2-14",
-          "title": "Honest Heart",
-          "category": "rhymes-poems"
-        },
-        {
-          "id": "song-p2-3",
-          "title": "Wash Your Hands",
-          "category": "songs"
-        },
         {
           "id": "video-p2-5",
           "title": "Body Parts Wave",
           "category": "videos-animation"
-        },
+        }
+      ]
+    },
+    "numbersMath": {
+      "total": 2,
+      "withHq": 1,
+      "placeholders": [
+        {
+          "id": "rhyme-p2-13",
+          "title": "Counting Clouds",
+          "category": "rhymes-poems"
+        }
+      ]
+    },
+    "other": {
+      "total": 1,
+      "withHq": 0,
+      "placeholders": [
         {
           "id": "video-p2-8",
           "title": "Wash Hands Animation",
+          "category": "videos-animation"
+        }
+      ]
+    },
+    "environments": {
+      "total": 1,
+      "withHq": 0,
+      "placeholders": [
+        {
+          "id": "video-p2-10",
+          "title": "River Care Storyboard",
           "category": "videos-animation"
         }
       ]

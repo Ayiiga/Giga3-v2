@@ -22,32 +22,55 @@ function loadArray(file) {
 
 function classify(item) {
   const t = `${item.subject} ${item.topic} ${item.title} ${item.discoverCategory}`.toLowerCase();
-  if (/fruit|food|mango|pawpaw|banana|plantain|jollof|cocoa|palm|orange|pineapple|apple|coconut|rice|banku|fufu/.test(t))
-    return "fruitsFoods";
-  if (/animal|goat|chicken|cow|dog|cat|sheep|bird|fish|lion|zebra|hen/.test(t)) return "animals";
-  if (/body|sense|eye|ear|nose|hand|mouth|touch|smell|taste/.test(t)) return "bodySenses";
-  if (/colour|color|shape|size|pattern|circle|square|triangle/.test(t)) return "coloursShapes";
-  if (/alphabet|letter|phonic|a-z|abc/.test(t)) return "alphabetPhonics";
+  // Word-boundary aware: avoid matching "count" inside "countries".
   if (
-    /number|count|numeracy|math|add|subtract|money|cedi/.test(t) ||
+    /\b(fruit|fruits|food|foods|mango|pawpaw|banana|bananas|plantain|jollof|cocoa|palm|orange|pineapple|apple|coconut|rice|banku|fufu)\b/.test(
+      t
+    )
+  )
+    return "fruitsFoods";
+  if (
+    /\b(animal|animals|goat|chicken|cow|dog|cat|sheep|bird|fish|lion|zebra|hen)\b/.test(t)
+  )
+    return "animals";
+  if (/\b(body|sense|senses|eye|ear|nose|hand|mouth|touch|smell|taste)\b/.test(t))
+    return "bodySenses";
+  if (
+    /\b(colour|color|colours|colors|shape|shapes|size|pattern|circle|square|triangle)\b/.test(t)
+  )
+    return "coloursShapes";
+  if (/\b(alphabet|letter|letters|phonic|phonics|a-z|abc)\b/.test(t)) return "alphabetPhonics";
+  if (
+    /\b(number|numbers|counting|numeracy|math|maths|addition|subtraction|money|cedi|pesewa)\b/.test(
+      t
+    ) ||
     item.discoverCategory === "games" ||
     item.discoverCategory === "numbers-letters"
   )
     return "numbersMath";
   if (
-    /teacher|nurse|farmer|mechanic|market|cook|police|fire|occupat|helper|weaver|fisher|carpenter|blacksmith|seamstress|potter/.test(
+    /\b(teacher|nurse|farmer|mechanic|market|cook|police|firefighter|occupation|occupations|helper|helpers|weaver|fisher|carpenter|blacksmith|seamstress|potter)\b/.test(
       t
     )
   )
     return "communityOccupations";
   if (
-    /kente|drum|culture|craft|stool|pottery|basket|flag|ghana|story|ananse|rhyme|song|poem/.test(t) ||
-    ["african-stories", "culture-occupations", "rhymes-poems", "songs"].includes(item.discoverCategory)
+    /\b(kente|drum|culture|craft|crafts|stool|pottery|basket|flag|story|stories|ananse|rhyme|rhymes|song|songs|poem)\b/.test(
+      t
+    ) ||
+    ["african-stories", "culture-occupations", "rhymes-poems", "songs"].includes(
+      item.discoverCategory
+    )
   )
     return "cultureCrafts";
-  if (/environment|plant|transport|bus|car|boat|tree|farm|village|river/.test(t)) return "environments";
   if (
-    /school|household|table|chair|book|pencil|pen|bag|house|key|jug|cup|object/.test(t) ||
+    /\b(environment|plant|plants|transport|bus|car|boat|tree|farm|village|river|ghana)\b/.test(t)
+  )
+    return "environments";
+  if (
+    /\b(school|household|table|chair|book|pencil|pen|bag|house|key|jug|cup|object|objects)\b/.test(
+      t
+    ) ||
     item.discoverCategory === "pictures-objects"
   )
     return "schoolHousehold";
@@ -225,6 +248,8 @@ Generated: ${report.generatedAt}
 | HQ WebP files on disk | ${report.totals.hqWebpFilesOnDisk} |
 | Manifest assets awaiting educator review | ${report.totals.awaitingEducatorReview} |
 
+Unique HQ WebP files are counted once in \`hqWebpFilesOnDisk\`. Catalog items that reuse a shared poster (e.g. mango fruit + mango rhyme) each count in \`withSuitableHqVisuals\` but do not inflate the unique asset total.
+
 ## By learning group
 
 | Group | Total | With HQ | Placeholders |
@@ -242,6 +267,26 @@ ${Object.entries(byGroup)
 - HQ assets are original fal.ai generations (\`fal-ai/flux/schnell\`). **Not educator-reviewed.**
 - Generated speech (espeak-ng / browser TTS) remains distinct from educator-reviewed native recordings.
 - Story posters use storybook illustration style; object cards stay photographic.
+
+## Educator review checklist
+
+All fal-generated assets ship with \`licensing.reviewed: false\`. Before certification claims, review:
+
+- [ ] Counting accuracy (exactly 3 oranges, 4 bananas, 5 mangoes)
+- [ ] Ghana flag colours and black star accuracy
+- [ ] Cultural accuracy for kente, talking drum, potter, market seller, weaver
+- [ ] Child-safe body-part photos (hand, eye)
+- [ ] Occupation depictions respectful and non-stereotyped
+- [ ] Ananse storybook style consistent and age-appropriate
+- [ ] No readable brand logos or accidental text inside images
+- [ ] No mixing of photographic and storybook styles within one collection card
+
+## Regeneration
+
+\`\`\`bash
+FAL_API_KEY=… node scripts/gigalearn-generate-kg2-hq.mjs   # skips existing unless FAL_FORCE=1
+node scripts/gigalearn-kg2-hq-coverage.mjs
+\`\`\`
 `;
 
 writeFileSync(OUT_MD, md);

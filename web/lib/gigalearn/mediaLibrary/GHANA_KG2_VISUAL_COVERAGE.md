@@ -1,6 +1,6 @@
 # Ghana KG2 visual coverage report
 
-Generated: 2026-10-09T13:47:52.992Z
+Generated: 2026-10-09T14:15:19.266Z
 
 ## Totals
 
@@ -12,19 +12,23 @@ Generated: 2026-10-09T13:47:52.992Z
 | HQ WebP files on disk | 41 |
 | Manifest assets awaiting educator review | 41 |
 
+Unique HQ WebP files are counted once in `hqWebpFilesOnDisk`. Catalog items that reuse a shared poster (e.g. mango fruit + mango rhyme) each count in `withSuitableHqVisuals` but do not inflate the unique asset total.
+
 ## By learning group
 
 | Group | Total | With HQ | Placeholders |
 |-------|------:|--------:|-------------:|
-| communityOccupations | 27 | 12 | 15 |
-| cultureCrafts | 16 | 3 | 13 |
-| fruitsFoods | 12 | 10 | 2 |
-| animals | 11 | 8 | 3 |
+| cultureCrafts | 35 | 5 | 30 |
+| communityOccupations | 13 | 11 | 2 |
+| fruitsFoods | 11 | 9 | 2 |
+| animals | 10 | 7 | 3 |
 | coloursShapes | 9 | 4 | 5 |
-| bodySenses | 7 | 2 | 5 |
 | alphabetPhonics | 6 | 4 | 2 |
 | schoolHousehold | 5 | 5 | 0 |
-| numbersMath | 3 | 0 | 3 |
+| bodySenses | 3 | 2 | 1 |
+| numbersMath | 2 | 1 | 1 |
+| other | 1 | 0 | 1 |
+| environments | 1 | 0 | 1 |
 
 ## Notes
 
@@ -34,7 +38,7 @@ Generated: 2026-10-09T13:47:52.992Z
 
 ## Educator review checklist
 
-All fal-generated assets ship with `licensing.reviewed: false`. Before any certification claims, review:
+All fal-generated assets ship with `licensing.reviewed: false`. Before certification claims, review:
 
 - [ ] Counting accuracy (exactly 3 oranges, 4 bananas, 5 mangoes)
 - [ ] Ghana flag colours and black star accuracy
@@ -44,14 +48,6 @@ All fal-generated assets ship with `licensing.reviewed: false`. Before any certi
 - [ ] Ananse storybook style consistent and age-appropriate
 - [ ] No readable brand logos or accidental text inside images
 - [ ] No mixing of photographic and storybook styles within one collection card
-
-## Remaining placeholder backlog (priority)
-
-Still emoji/SVG-first after this expansion (see `ghanaKg2VisualCoverageReport.json`):
-
-- Most Phase 2 songs and many rhymes/stories without dedicated posters
-- Additional body senses, colours/shapes, alphabet letters C–Z
-- Broader maths (add/subtract/money/time) and more occupations
 
 ## Regeneration
 
