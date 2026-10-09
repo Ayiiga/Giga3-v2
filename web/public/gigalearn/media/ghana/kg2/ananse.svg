@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="Ananse under a tree">
+  <rect width="240" height="240" rx="28" fill="#1a233f"/>
+  <ellipse cx="120" cy="70" rx="70" ry="36" fill="#2E7D32"/>
+  <rect x="112" y="70" width="16" height="90" rx="6" fill="#5D4037"/>
+  <ellipse cx="120" cy="175" rx="70" ry="18" fill="#3E4A3A"/>
+  <circle cx="120" cy="150" r="14" fill="#212121"/>
+  <path d="M106 150 L88 138 M134 150 L152 138 M106 158 L90 170 M134 158 L150 170" stroke="#212121" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="115" cy="147" r="2" fill="#FFF59D"/>
+  <circle cx="125" cy="147" r="2" fill="#FFF59D"/>
+</svg>

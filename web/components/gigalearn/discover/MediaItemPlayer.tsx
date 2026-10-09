@@ -5,6 +5,7 @@ import { formatBytes } from "@/lib/gigalearn/mediaLibrary/filters";
 import {
   downloadMediaPack,
   getOfflineMediaPack,
+  isOfflinePackComplete,
   removeOfflineMediaPack,
 } from "@/lib/gigalearn/mediaLibrary/offlineMedia";
 import {
@@ -15,12 +16,21 @@ import type { LearningMediaItem, OfflineMediaPack } from "@/lib/gigalearn/mediaL
 import { LANGUAGE_LABELS } from "@/lib/gigalearn/mediaLibrary/types";
 import { speakWithGigaLearnVoice } from "@/lib/gigalearn/speechSynthesis";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 interface MediaItemPlayerProps {
   item: LearningMediaItem;
   onClose: () => void;
   onOfflineChange?: () => void;
+}
+
+function resolveAssetUrl(
+  pack: OfflineMediaPack | null,
+  url: string | undefined
+): string | undefined {
+  if (!url) return undefined;
+  const blob = pack?.blobs?.[url]?.dataUrl;
+  return blob || url;
 }
 
 export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPlayerProps) {
@@ -31,6 +41,20 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
   const [gameDone, setGameDone] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [speaking, setSpeaking] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const imageAsset = useMemo(
+    () => item.remoteMedia?.find((asset) => asset.mimeType.startsWith("image/")),
+    [item.remoteMedia]
+  );
+  const videoAsset = useMemo(
+    () => item.remoteMedia?.find((asset) => asset.mimeType.startsWith("video/")),
+    [item.remoteMedia]
+  );
+  const audioAssets = useMemo(
+    () => item.remoteMedia?.filter((asset) => asset.mimeType.startsWith("audio/")) ?? [],
+    [item.remoteMedia]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -50,13 +74,39 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
     })();
     return () => {
       cancelled = true;
+      audioRef.current?.pause();
     };
   }, [item.id, item.subject, item.curriculumLevelId, item.countryId]);
 
-  async function hear(text: string, voiceId: string) {
+  async function playRecorded(url: string) {
+    const src = resolveAssetUrl(pack, url);
+    if (!src) return false;
+    audioRef.current?.pause();
+    const audio = new Audio(src);
+    audioRef.current = audio;
+    await audio.play();
+    await new Promise<void>((resolve) => {
+      audio.onended = () => resolve();
+      audio.onerror = () => resolve();
+    });
+    return true;
+  }
+
+  async function hear(text: string, voiceId: string, narrationIndex: number) {
     setSpeaking(true);
     try {
-      await speakWithGigaLearnVoice(text, voiceId);
+      const recorded = audioAssets[narrationIndex] ?? audioAssets[0];
+      let played = false;
+      if (recorded) {
+        try {
+          played = await playRecorded(recorded.url);
+        } catch {
+          played = false;
+        }
+      }
+      if (!played) {
+        await speakWithGigaLearnVoice(text, voiceId);
+      }
       await recordMediaProgress({
         itemId: item.id,
         kind: "heard",
@@ -78,6 +128,8 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
       onOfflineChange?.();
     } catch (err) {
       setDownloadError(err instanceof Error ? err.message : "Download failed");
+      const current = await getOfflineMediaPack(item.id);
+      if (current) setPack(current);
     } finally {
       setDownloading(false);
     }
@@ -104,11 +156,13 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
         curriculum: item.curriculumLevelId,
         countryId: item.countryId,
       });
-      void hear(item.game.feedbackCorrect, "english");
+      void hear(item.game.feedbackCorrect, "english", 0);
     }
   }
 
-  const offlineReady = pack?.status === "ready";
+  const offlineReady = pack ? isOfflinePackComplete(pack) : false;
+  const imageSrc = resolveAssetUrl(pack, imageAsset?.url);
+  const videoSrc = resolveAssetUrl(pack, videoAsset?.url);
 
   return (
     <section
@@ -132,12 +186,32 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
         </button>
       </div>
 
-      <div
-        className="concrete-object-blend mt-4 flex min-h-[10rem] items-center justify-center rounded-2xl border border-[#2A3441] bg-[#1a233f] text-7xl"
-        aria-hidden
-      >
-        {item.illustration.emoji}
-      </div>
+      {videoSrc ? (
+        <video
+          className="mt-4 w-full rounded-2xl border border-[#2A3441] bg-[#1a233f]"
+          controls
+          playsInline
+          preload="metadata"
+          poster={imageSrc}
+          src={videoSrc}
+        >
+          <track kind="captions" />
+        </video>
+      ) : imageSrc ? (
+        // eslint-disable-next-line @next/next/no-img-element -- static export offline data URLs
+        <img
+          src={imageSrc}
+          alt={item.illustration.alt}
+          className="mt-4 mx-auto max-h-64 w-auto rounded-2xl border border-[#2A3441] bg-[#1a233f]"
+        />
+      ) : (
+        <div
+          className="concrete-object-blend mt-4 flex min-h-[10rem] items-center justify-center rounded-2xl border border-[#2A3441] bg-[#1a233f] text-7xl"
+          aria-hidden
+        >
+          {item.illustration.emoji}
+        </div>
+      )}
       <p className="sr-only">{item.illustration.alt}</p>
 
       <div className="mt-4 space-y-2">
@@ -151,7 +225,7 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
               variant={index === 0 ? "primary" : "secondary"}
               className="min-h-11"
               disabled={speaking}
-              onClick={() => void hear(n.text, n.voiceId)}
+              onClick={() => void hear(n.text, n.voiceId, index)}
             >
               ▶ {LANGUAGE_LABELS[n.language]}
             </Button>
@@ -204,9 +278,9 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
             Downloading… {Math.round((pack.progress || 0) * 100)}%
           </p>
         ) : null}
-        {downloadError ? (
+        {downloadError || (pack?.status === "error" && pack.errorMessage) ? (
           <p className="mt-2 text-xs text-rose-700" role="alert">
-            {downloadError}
+            {downloadError || pack?.errorMessage}
           </p>
         ) : null}
         {pack?.errorMessage && pack.status === "ready" ? (

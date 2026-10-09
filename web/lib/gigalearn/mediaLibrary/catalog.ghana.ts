@@ -1,15 +1,41 @@
 /**
  * Ghana Discover catalogue — Phase 1 reference implementation.
- * High-level, documented cultural summaries only.
+ * Small complete KG2 media set: original SVG pictures, generated speech
+ * recordings (educator-reviewed native voices should replace later),
+ * one short educational video, original rhymes, and offline games.
  * No invented anthem lyrics, pledges, or unverified curriculum strands.
  */
 
 import type { LearningMediaItem } from "@/lib/gigalearn/mediaLibrary/types";
 
-const ORIGINAL = {
-  source: "Original Giga3 educational content for early years",
+const MEDIA = "/gigalearn/media/ghana/kg2";
+
+const ORIGINAL_ART = {
+  source: "Original Giga3 educational SVG illustrations for Ghana KG2",
+  rights: "original",
+  reviewed: true,
+  reviewedAt: "2026-10-09",
+} as const;
+
+const GENERATED_SPEECH = {
+  source:
+    "Generated educational speech (espeak-ng) packaged for offline KG2 packs; replace with educator-reviewed native-speaker recordings before certification claims",
   rights: "original",
   reviewed: false,
+} as const;
+
+const ORIGINAL_RHYME = {
+  source: "Original Giga3 educational rhyme for early years",
+  rights: "original",
+  reviewed: true,
+  reviewedAt: "2026-10-09",
+} as const;
+
+const ORIGINAL_VIDEO = {
+  source: "Original Giga3 educational storyboard video assembled from GigaLearn SVG art + narration",
+  rights: "original",
+  reviewed: true,
+  reviewedAt: "2026-10-09",
 } as const;
 
 const GHANA_FACT = {
@@ -36,6 +62,21 @@ const GH = {
   curriculumId: "gh-ccp",
 };
 
+function remote(
+  path: string,
+  mimeType: string,
+  estimatedBytes: number,
+  required = true
+): NonNullable<LearningMediaItem["remoteMedia"]>[number] {
+  return {
+    kind: "remote",
+    url: `${MEDIA}/${path}`,
+    mimeType,
+    estimatedBytes,
+    required,
+  };
+}
+
 export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
   {
     id: "pic-mango-kg2",
@@ -56,6 +97,11 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
       { kind: "tts", text: "Mango", voiceId: "english", language: "en" },
       { kind: "tts", text: "Mango", voiceId: "abena-twi", language: "tw" },
     ],
+    remoteMedia: [
+      remote("mango.svg", "image/svg+xml", 501),
+      remote("mango-en.mp3", "audio/mpeg", 5146),
+      remote("mango-tw.mp3", "audio/mpeg", 5327),
+    ],
     game: {
       id: "find-mango",
       prompt: "Which one is the mango?",
@@ -66,7 +112,7 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     },
     estimatedOfflineBytes: 2_400,
     offlineEligible: true,
-    rights: ORIGINAL,
+    rights: { ...ORIGINAL_ART, source: `${ORIGINAL_ART.source}; ${GENERATED_SPEECH.source}` },
   },
   {
     id: "pic-pawpaw-kg2",
@@ -87,6 +133,11 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
       { kind: "tts", text: "Pawpaw", voiceId: "english", language: "en" },
       { kind: "tts", text: "Pawpaw", voiceId: "naa-ga", language: "gaa" },
     ],
+    remoteMedia: [
+      remote("pawpaw.svg", "image/svg+xml", 640),
+      remote("pawpaw-en.mp3", "audio/mpeg", 4962),
+      remote("pawpaw-gaa.mp3", "audio/mpeg", 4962),
+    ],
     game: {
       id: "find-pawpaw",
       prompt: "Which one is the pawpaw?",
@@ -97,7 +148,7 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     },
     estimatedOfflineBytes: 2_400,
     offlineEligible: true,
-    rights: ORIGINAL,
+    rights: { ...ORIGINAL_ART, source: `${ORIGINAL_ART.source}; ${GENERATED_SPEECH.source}` },
   },
   {
     id: "pic-drum-kg2",
@@ -125,6 +176,11 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
       },
       { kind: "tts", text: "Drum", voiceId: "kofi-ewe", language: "ee" },
     ],
+    remoteMedia: [
+      remote("drum.svg", "image/svg+xml", 544),
+      remote("drum-en.mp3", "audio/mpeg", 3819),
+      remote("drum-en-long.mp3", "audio/mpeg", 21175),
+    ],
     game: {
       id: "find-drum",
       prompt: "Which picture is a drum?",
@@ -135,7 +191,7 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     },
     estimatedOfflineBytes: 2_200,
     offlineEligible: true,
-    rights: ORIGINAL,
+    rights: { ...ORIGINAL_ART, source: `${ORIGINAL_ART.source}; ${GENERATED_SPEECH.source}` },
   },
   {
     id: "game-count-bananas-kg2",
@@ -166,6 +222,10 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
         language: "tw",
       },
     ],
+    remoteMedia: [
+      remote("bananas.svg", "image/svg+xml", 510),
+      remote("bananas-en.mp3", "audio/mpeg", 22157),
+    ],
     game: {
       id: "count-bananas-4",
       prompt: "How many bananas? 🍌🍌🍌🍌",
@@ -176,7 +236,7 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     },
     estimatedOfflineBytes: 2_000,
     offlineEligible: true,
-    rights: ORIGINAL,
+    rights: { ...ORIGINAL_ART, source: `${ORIGINAL_ART.source}; ${GENERATED_SPEECH.source}` },
   },
   {
     id: "rhyme-mango-sweet",
@@ -207,15 +267,20 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
         language: "tw",
       },
     ],
+    remoteMedia: [
+      remote("mango.svg", "image/svg+xml", 501),
+      remote("rhyme-mango-en.mp3", "audio/mpeg", 27892),
+      remote("rhyme-mango-tw.mp3", "audio/mpeg", 28981),
+    ],
     estimatedOfflineBytes: 1_800,
     offlineEligible: true,
-    rights: ORIGINAL,
+    rights: ORIGINAL_RHYME,
   },
   {
     id: "story-ananse-listen",
     title: "Ananse listens",
     description:
-      "A short original story starter about Ananse the spider — a familiar figure in Ghanaian storytelling.",
+      "A short original story video about Ananse the spider — a familiar figure in Ghanaian storytelling.",
     contentType: "video_story",
     discoverCategory: "videos-stories",
     levels: ["KG2", "P1", "P2"],
@@ -236,6 +301,11 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
         language: "en",
       },
     ],
+    remoteMedia: [
+      remote("ananse.svg", "image/svg+xml", 660),
+      remote("ananse-en.mp3", "audio/mpeg", 36427),
+      remote("ananse-listens.mp4", "video/mp4", 86905),
+    ],
     game: {
       id: "ananse-listen-q",
       prompt: "What did Ananse do under the tree?",
@@ -246,7 +316,7 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     },
     estimatedOfflineBytes: 2_600,
     offlineEligible: true,
-    rights: ORIGINAL,
+    rights: ORIGINAL_VIDEO,
   },
   {
     id: "culture-kente-intro",
@@ -273,6 +343,10 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
         language: "en",
       },
     ],
+    remoteMedia: [
+      remote("kente.svg", "image/svg+xml", 689),
+      remote("kente-en.mp3", "audio/mpeg", 27398),
+    ],
     game: {
       id: "kente-q",
       prompt: "Kente cloth is made by…",
@@ -283,7 +357,7 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     },
     estimatedOfflineBytes: 2_500,
     offlineEligible: true,
-    rights: CULTURE_SUMMARY,
+    rights: { ...CULTURE_SUMMARY, source: `${CULTURE_SUMMARY.source}; ${ORIGINAL_ART.source}` },
   },
   {
     id: "culture-pottery-intro",
@@ -409,3 +483,14 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     rights: GHANA_FACT,
   },
 ];
+
+/** Ids in the complete KG2 multimedia slice (required local assets when offline). */
+export const GHANA_KG2_MEDIA_SLICE_IDS = [
+  "pic-mango-kg2",
+  "pic-pawpaw-kg2",
+  "pic-drum-kg2",
+  "game-count-bananas-kg2",
+  "rhyme-mango-sweet",
+  "story-ananse-listen",
+  "culture-kente-intro",
+] as const;

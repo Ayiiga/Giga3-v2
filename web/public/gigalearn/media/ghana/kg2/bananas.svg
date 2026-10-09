@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="Four bananas">
+  <rect width="240" height="240" rx="28" fill="#1a233f"/>
+  <path d="M70 70 Q40 120 70 180 Q95 150 90 100 Z" fill="#F4D03F"/>
+  <path d="M100 65 Q75 120 100 185 Q120 150 118 95 Z" fill="#F7DC6F"/>
+  <path d="M130 68 Q110 125 132 188 Q150 155 148 98 Z" fill="#F4D03F"/>
+  <path d="M160 72 Q145 128 162 186 Q178 155 176 100 Z" fill="#F7DC6F"/>
+  <ellipse cx="120" cy="58" rx="18" ry="10" fill="#6D4C41"/>
+</svg>

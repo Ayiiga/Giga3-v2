@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="Kente pattern">
+  <rect width="240" height="240" rx="28" fill="#1a233f"/>
+  <g>
+    <rect x="40" y="50" width="160" height="140" rx="8" fill="#1B5E20"/>
+    <rect x="40" y="50" width="160" height="28" fill="#F9A825"/>
+    <rect x="40" y="106" width="160" height="28" fill="#C62828"/>
+    <rect x="40" y="162" width="160" height="28" fill="#1565C0"/>
+    <rect x="70" y="50" width="20" height="140" fill="#FFFFFF" opacity="0.85"/>
+    <rect x="120" y="50" width="20" height="140" fill="#F9A825" opacity="0.9"/>
+    <rect x="170" y="50" width="12" height="140" fill="#FFFFFF" opacity="0.7"/>
+  </g>
+</svg>
