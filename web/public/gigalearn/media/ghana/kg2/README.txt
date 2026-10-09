@@ -1,8 +1,12 @@
-GigaLearn Ghana KG2 media — original Giga3 educational artwork and generated speech.
-Pictures: original SVG illustrations created for GigaLearn (rights: original).
-Pronunciations: generated with espeak-ng for offline packaging. These are NOT
-educator-reviewed native-speaker recordings and must not be described as such.
-Videos: original storyboard slideshows assembled with ffmpeg from the SVG set +
-generated narration (espeak-ng). Captions/transcripts for the video are not yet
-bundled as WebVTT.
-Do not claim official NaCCA endorsement. Nigeria packs are intentionally empty.
+GigaLearn Ghana KG2 media
+=========================
+
+hq/ — High-quality fal.ai originals (WebP). See hq/README.txt.
+      Used as posterImage + required offline assets for the KG2 slice
+      (mango, pawpaw, drum, bananas, mango rhyme, Ananse story, kente).
+
+*.svg — Legacy lightweight SVG placeholders (optional offline only).
+*.mp3 — Generated speech (espeak-ng). NOT educator-reviewed native speech.
+*.mp4 — Storyboard slideshow from SVG + narration (Ananse); poster is hq WebP.
+
+Do not claim official NaCCA endorsement. Nigeria packs stay empty until reviewed.

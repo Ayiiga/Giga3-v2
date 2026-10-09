@@ -50,11 +50,13 @@ function publicFile(url: string): Response {
   const buf = readFileSync(file);
   const mime = file.endsWith(".svg")
     ? "image/svg+xml"
-    : file.endsWith(".mp3")
-      ? "audio/mpeg"
-      : file.endsWith(".mp4")
-        ? "video/mp4"
-        : "application/octet-stream";
+    : file.endsWith(".webp")
+      ? "image/webp"
+      : file.endsWith(".mp3")
+        ? "audio/mpeg"
+        : file.endsWith(".mp4")
+          ? "video/mp4"
+          : "application/octet-stream";
   return new Response(buf, { status: 200, headers: { "Content-Type": mime } });
 }
 
@@ -77,7 +79,12 @@ describe("Discover offline media downloads", () => {
     expect(first.item.title).toBe("Mango");
     expect(first.item.game?.answer).toContain("Mango");
     expect(progressEvents.at(-1)).toBe(1);
-    expect(Object.keys(first.blobs ?? {}).length).toBe(requiredRemoteAssets(item).length);
+    const required = requiredRemoteAssets(item);
+    for (const asset of required) {
+      expect(first.blobs?.[asset.url]?.byteLength).toBeGreaterThan(0);
+    }
+    // Optional remotes (e.g. legacy SVG) may also be cached when fetch succeeds.
+    expect(Object.keys(first.blobs ?? {}).length).toBeGreaterThanOrEqual(required.length);
 
     const listed = await listOfflineMediaPacks();
     expect(listed.some((row) => row.itemId === item.id && row.status === "ready")).toBe(true);

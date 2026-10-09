@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { LearningImageCard } from "@/components/gigalearn/media/LearningImageCard";
 import { formatBytes } from "@/lib/gigalearn/mediaLibrary/filters";
 import {
   downloadMediaPack,
@@ -44,10 +45,13 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
   const [frameIndex, setFrameIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const imageAssets = useMemo(
-    () => item.remoteMedia?.filter((asset) => asset.mimeType.startsWith("image/")) ?? [],
-    [item.remoteMedia]
-  );
+  /** Prefer raster posters over legacy SVG placeholders when both exist. */
+  const imageAssets = useMemo(() => {
+    const images =
+      item.remoteMedia?.filter((asset) => asset.mimeType.startsWith("image/")) ?? [];
+    const raster = images.filter((asset) => asset.mimeType !== "image/svg+xml");
+    return raster.length > 0 ? raster : images;
+  }, [item.remoteMedia]);
   const imageAsset = imageAssets[0];
   const videoAsset = useMemo(
     () => item.remoteMedia?.find((asset) => asset.mimeType.startsWith("video/")),
@@ -177,7 +181,9 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
 
   const offlineReady = pack ? isOfflinePackComplete(pack) : false;
   const activeImage = imageAssets[frameIndex] ?? imageAsset;
-  const imageSrc = resolveAssetUrl(pack, activeImage?.url);
+  const posterSrc = resolveAssetUrl(pack, item.posterImage?.url);
+  const imageSrc = posterSrc ?? resolveAssetUrl(pack, activeImage?.url);
+  const imageAlt = item.posterImage?.alt ?? item.illustration.alt;
   const videoSrc = resolveAssetUrl(pack, videoAsset?.url);
 
   return (
@@ -217,22 +223,18 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
             Transcript: {item.narrations.map((n) => n.text).join(" ")}
           </p>
         </div>
-      ) : imageSrc ? (
-        // eslint-disable-next-line @next/next/no-img-element -- static export offline data URLs
-        <img
-          src={imageSrc}
-          alt={item.illustration.alt}
-          className="mt-4 mx-auto max-h-64 w-auto rounded-2xl border border-[#2A3441] bg-[#1a233f]"
-        />
       ) : (
-        <div
-          className="concrete-object-blend mt-4 flex min-h-[10rem] items-center justify-center rounded-2xl border border-[#2A3441] bg-[#1a233f] text-7xl"
-          aria-hidden
-        >
-          {item.illustration.emoji}
-        </div>
+        <LearningImageCard
+          src={imageSrc}
+          alt={imageAlt}
+          fallbackEmoji={item.illustration.emoji}
+          aspectRatio={item.posterImage?.aspectRatio ?? "1:1"}
+          className="mt-4 mx-auto w-full max-w-sm border border-[#2A3441]"
+          sizes="(max-width: 640px) 90vw, 24rem"
+          priority
+        />
       )}
-      <p className="sr-only">{item.illustration.alt}</p>
+      <p className="sr-only">{imageAlt}</p>
 
       <div className="mt-4 space-y-2">
         <p className="text-sm font-semibold text-foreground">
