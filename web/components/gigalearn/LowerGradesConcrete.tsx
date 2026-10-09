@@ -95,7 +95,7 @@ export function LowerGradesConcrete({ credits = null, ctx, onCtxChange }: LowerG
       {lower ? (
         <section aria-labelledby="gl-real-things">
           <div className="mb-2 flex items-center gap-2">
-            <h3 id="gl-real-things" className="text-base font-bold text-white">
+            <h3 id="gl-real-things" className="text-base font-bold text-foreground">
               Learn with Real Things
             </h3>
             <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", TOUCH_SEE_BADGE)}>
@@ -103,7 +103,7 @@ export function LowerGradesConcrete({ credits = null, ctx, onCtxChange }: LowerG
             </span>
           </div>
           {hearError ? (
-            <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+            <p className="rounded-xl border border-amber-500/40 bg-amber-50 px-3 py-2 text-xs text-amber-900">
               {hearError}
             </p>
           ) : null}
@@ -175,7 +175,7 @@ function LevelSelector({
 }) {
   return (
     <section aria-labelledby="gl-level">
-      <h3 id="gl-level" className="mb-2 text-sm font-bold text-white">
+      <h3 id="gl-level" className="mb-2 text-sm font-bold text-foreground">
         Select level
       </h3>
       <div className="relative">
@@ -207,11 +207,11 @@ function LevelSelector({
           })}
         </div>
         <div
-          className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-black/60 to-transparent"
+          className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[var(--background,#faf8ff)] to-transparent"
           aria-hidden
         />
       </div>
-      <p className="mt-1 text-[11px] text-gray-400">
+      <p className="mt-1 text-[11px] text-muted">
         Showing: {selectedLevel}
         {isLowerGrade(selectedLevel) ? " · concrete objects, fruits & real items" : " · curriculum mode"}
       </p>
@@ -279,14 +279,33 @@ function LearningModes({
         </span>
       </div>
 
-      {/* Practices */}
+      {/* Practice lead-in → counting quiz below */}
       <div className="rounded-2xl border border-[#EAB308] bg-[#1A233A] p-4">
-        <p className="text-xs font-bold text-white">Practice · Touch the apples and count</p>
-        <div className="mt-2 flex flex-wrap gap-1.5" aria-hidden>
+        <p className="text-xs font-bold text-white">Practice · Touch &amp; count</p>
+        <p className="mt-1 text-[11px] text-gray-300">
+          Tap the apples, then choose the correct number in the quiz.
+        </p>
+        <div className="mt-2 flex flex-wrap gap-1.5">
           {Array.from({ length: 3 }, (_, index) => (
-            <span key={`practice-apple-${index}`} className="concrete-object-blend text-2xl">
+            <button
+              key={`practice-apple-${index}`}
+              type="button"
+              className="concrete-object-blend min-h-11 min-w-11 rounded-xl border border-[#EAB308]/40 p-1 text-2xl"
+              aria-label={`Apple ${index + 1} of 3 — open counting quiz`}
+              onClick={() => {
+                setPicked(null);
+                document.getElementById("gl-counting-quiz")?.scrollIntoView({
+                  behavior:
+                    typeof window !== "undefined" &&
+                    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+                      ? "auto"
+                      : "smooth",
+                  block: "nearest",
+                });
+              }}
+            >
               🍎
-            </span>
+            </button>
           ))}
         </div>
         <span className="mt-2 inline-block rounded-full border border-[#EAB308] px-2.5 py-1 text-[10px] font-bold text-[#EAB308]">
@@ -295,7 +314,7 @@ function LearningModes({
       </div>
 
       {/* Quizzes — concrete objects, 1–20 range, offline */}
-      <div className="rounded-2xl border border-[#2A3441] bg-[#1A233A] p-4">
+      <div id="gl-counting-quiz" className="scroll-mt-24 rounded-2xl border border-[#2A3441] bg-[#1A233A] p-4">
         <div className="flex items-center justify-between">
           <p className="text-xs font-bold text-white">{quiz.question}</p>
           <span className="rounded-full border border-[#EAB308] px-2 py-0.5 text-[10px] font-bold text-[#EAB308]">
@@ -309,76 +328,97 @@ function LearningModes({
             </span>
           ))}
         </div>
-        <div className="mt-2 flex gap-2">
-          {quiz.options.map((opt) => (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => setPicked(opt)}
-              className={cn(
-                "min-h-12 min-w-12 rounded-xl border px-3 py-2 text-sm font-bold",
-                picked === opt
-                  ? opt === quiz.answer
-                    ? "border-[#10B981] bg-[#10B981] text-white"
-                    : "border-red-400 bg-red-400 text-white"
-                  : "border-[#2A3441] bg-[#0D1323] text-white"
-              )}
-            >
-              {opt}
-            </button>
-          ))}
+        <div className="mt-2 flex gap-2" role="group" aria-label="Counting answers">
+          {quiz.options.map((opt) => {
+            const isAnswer = opt === quiz.answer;
+            const selected = picked === opt;
+            return (
+              <button
+                key={opt}
+                type="button"
+                disabled={quizCorrect && !isAnswer}
+                aria-pressed={selected}
+                onClick={() => setPicked(opt)}
+                className={cn(
+                  "min-h-12 min-w-12 rounded-xl border px-3 py-2 text-sm font-bold",
+                  selected && isAnswer && "border-[#10B981] bg-[#10B981] text-white",
+                  selected && !isAnswer && "border-red-400 bg-red-400 text-white",
+                  !selected && quizCorrect && isAnswer && "border-[#10B981] bg-[#10B981]/30 text-white",
+                  !selected && !quizCorrect && "border-[#2A3441] bg-[#0D1323] text-white"
+                )}
+              >
+                {opt}
+              </button>
+            );
+          })}
         </div>
         {picked !== null ? (
-          <div className="mt-2 flex items-center justify-between">
-            <p className={cn("text-xs font-bold", quizCorrect ? "text-[#10B981]" : "text-red-300")}>
-              {quizCorrect ? `Correct! ${quiz.answer} — well done! 🎉` : "Try again — count slowly: 1, 2, 3…"}
-            </p>
-            <button
-              type="button"
-              onClick={nextQuiz}
-              className="min-h-11 rounded-xl bg-[#EAB308] px-3 py-1.5 text-xs font-bold text-black"
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <p
+              className={cn("text-xs font-bold", quizCorrect ? "text-[#10B981]" : "text-red-300")}
+              role="status"
+              aria-live="polite"
             >
-              Next
-            </button>
+              {quizCorrect
+                ? `Correct! ${quiz.answer} — well done!`
+                : `Not ${picked}. Count again, then try another number.`}
+            </p>
+            {quizCorrect ? (
+              <button
+                type="button"
+                onClick={nextQuiz}
+                className="min-h-11 shrink-0 rounded-xl bg-[#EAB308] px-3 py-1.5 text-xs font-bold text-black"
+              >
+                Next
+              </button>
+            ) : null}
           </div>
         ) : null}
       </div>
 
-      {/* Games — fruit matching with LIVE dot */}
+      {/* Games — fruit matching (practice, not live stream) */}
       <div className="rounded-2xl border border-[#2A3441] bg-[#1A233A] p-4">
         <p className="flex items-center gap-1.5 text-xs font-bold text-white">
-          <span className="inline-block h-2 w-2 rounded-full bg-red-500" aria-hidden />
-          LIVE · Game · {FRUIT_GAME.prompt}
+          <span className="inline-block h-2 w-2 rounded-full bg-emerald-400" aria-hidden />
+          Practice · Game · {FRUIT_GAME.prompt}
         </p>
         <p className="mt-1 text-[11px] text-gray-400">Tap: {gameTarget}</p>
         <div className="mt-2 flex items-center gap-3">
           <div className="flex gap-2">
-            {FRUIT_GAME.fruits.map((fruit) => (
-              <button
-                key={fruit}
-                type="button"
-                aria-label={`Pick ${fruit}`}
-                onClick={() => setGamePicked(fruit)}
-                className={cn(
-                  "concrete-object-blend min-h-12 min-w-12 rounded-xl border p-2 text-2xl",
-                  gamePicked === fruit
-                    ? fruit === gameTarget
-                      ? "border-[#10B981] bg-[#10B981]/20"
-                      : "border-red-400 bg-red-400/20"
-                    : "border-[#2A3441] bg-[#0D1323]"
-                )}
-              >
-                {fruit}
-              </button>
-            ))}
+            {FRUIT_GAME.fruits.map((fruit) => {
+              const isTarget = fruit === gameTarget;
+              const selected = gamePicked === fruit;
+              return (
+                <button
+                  key={fruit}
+                  type="button"
+                  aria-label={`Pick ${fruit}`}
+                  disabled={gameWon && !isTarget}
+                  onClick={() => setGamePicked(fruit)}
+                  className={cn(
+                    "concrete-object-blend min-h-12 min-w-12 rounded-xl border p-2 text-2xl",
+                    selected && isTarget && "border-[#10B981] bg-[#10B981]/20",
+                    selected && !isTarget && "border-red-400 bg-red-400/20",
+                    !selected && gameWon && isTarget && "border-[#10B981] bg-[#10B981]/20",
+                    !selected && !gameWon && "border-[#2A3441] bg-[#0D1323]"
+                  )}
+                >
+                  {fruit}
+                </button>
+              );
+            })}
           </div>
           <span className="text-3xl" aria-label="Basket">
             {FRUIT_GAME.basket}
           </span>
         </div>
         {gamePicked !== null ? (
-          <p className={cn("mt-2 text-xs font-bold", gameWon ? "text-[#10B981]" : "text-red-300")}>
-            {gameWon ? "Fruit matched — into the basket! 🧺" : "Not that one — try again!"}
+          <p
+            className={cn("mt-2 text-xs font-bold", gameWon ? "text-[#10B981]" : "text-red-300")}
+            role="status"
+            aria-live="polite"
+          >
+            {gameWon ? "Fruit matched — into the basket!" : "Not that one — try again!"}
           </p>
         ) : null}
         <div className="mt-3 border-t border-[#2A3441] pt-3">

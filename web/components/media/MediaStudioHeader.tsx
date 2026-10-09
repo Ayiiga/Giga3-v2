@@ -25,14 +25,23 @@ export const MediaStudioHeader = memo(function MediaStudioHeader({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          {usage && <CreditBadge credits={usage.credits} />}
+          {/* Credits shown in MediaCreditsBar on mobile — avoid duplicate chrome. */}
+          {usage && (
+            <div className="hidden sm:block">
+              <CreditBadge credits={usage.credits} />
+            </div>
+          )}
           <ButtonLink href="/chat" variant="outline" size="md">
             Back to chat
           </ButtonLink>
         </div>
       </div>
 
-      {usage && <UsageTracker usage={usage} />}
+      {usage && (
+        <div className="hidden sm:block">
+          <UsageTracker usage={usage} />
+        </div>
+      )}
     </>
   );
 });

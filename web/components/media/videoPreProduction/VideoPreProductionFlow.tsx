@@ -680,7 +680,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
           )}
 
           {scriptError && (
-            <p role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+            <p role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-900">
               {scriptError}
             </p>
           )}
@@ -1043,7 +1043,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
             Generate video
           </Button>
           {failed && (
-            <p role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+            <p role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-900">
               Video generation could not be completed. Your script and voiceover settings are
               saved. {videoJob.job?.errorMessage || videoError}
               <Button
@@ -1170,7 +1170,7 @@ export const VideoPreProductionFlow = memo(function VideoPreProductionFlow({
             </>
           )}
           {failed && !processing && (
-            <div className="space-y-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+            <div className="space-y-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-900">
               <div className="flex items-start gap-2">
                 <XCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
                 <span>
