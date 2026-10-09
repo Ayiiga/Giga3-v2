@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { isFreeImageDailyQuotaEnabled } from "../../convex/featureFlags";
 import {
   FREE_IMAGE_DAILY_LIMIT,
   FREE_IMAGE_QUOTA_TIMEZONE,
@@ -20,6 +21,10 @@ describe("free image Accra daily quota helpers", () => {
   it("defaults to 1 successful image per Africa/Accra day", () => {
     expect(FREE_IMAGE_DAILY_LIMIT).toBe(1);
     expect(FREE_IMAGE_QUOTA_TIMEZONE).toBe("Africa/Accra");
+  });
+
+  it("does not enforce the Accra quota until the server flag is opted in", () => {
+    expect(isFreeImageDailyQuotaEnabled()).toBe(false);
   });
 
   it("formats Accra calendar date keys as YYYY-MM-DD", () => {

@@ -37,7 +37,7 @@ import { persistImageUrlIfNeeded } from "./mediaStorage";
 import type { FalImageSize } from "./falClient";
 import type { NewsEvidenceContext } from "./newsEvidence/types";
 import { buildNewsEvidencePackage } from "./newsEvidence/pipeline";
-import { isLiveNewsEnabled } from "./featureFlags";
+import { isFreeImageDailyQuotaEnabled, isLiveNewsEnabled } from "./featureFlags";
 import {
   IMAGE_UPGRADE_MARKDOWN,
   imageDailyLimitMarkdown,
@@ -342,9 +342,14 @@ async function runHybridAiEngine(
     }
 
     // Free tier only: reserve one Accra-day slot before calling providers; release on failure.
+    // Gated by GIGA3_FREE_IMAGE_DAILY_QUOTA_ENABLED (default off) until staging validates.
     // Subscribers and credit purchasers keep existing entitlements (image credits / OpenAI).
     let usedFreeImageQuota = false;
-    if (args.routing.tier === "free" && imageDecision.action === "free_pipeline") {
+    if (
+      isFreeImageDailyQuotaEnabled() &&
+      args.routing.tier === "free" &&
+      imageDecision.action === "free_pipeline"
+    ) {
       const reserved = await ctx.runMutation(internal.freeImageQuota.tryReserveInternal, {
         userId: args.email,
       });
@@ -1192,12 +1197,20 @@ export const processJob = internalAction({
             (engineResult as { usedFreeImageQuota?: boolean }).usedFreeImageQuota
           );
           if (engineResult.requestKind === "image_generation") {
-            // Free Accra-day allowance already reserved — do not also charge credits.
-            // Paid / credit users pay the image credit cost (OpenAI or failover).
-            if (!usedFreeImageQuota && engineResult.providerId !== "policy") {
+            // Preserve main billing: OpenAI images → image credits; free_pipeline
+            // failover → chat-mode credits. Accra free-quota successes charge nothing.
+            if (usedFreeImageQuota || engineResult.providerId === "policy") {
+              // no credit deduct
+            } else if (engineResult.providerId === "openai_image") {
               await ctx.runMutation(internal.credits.deductCreditsInternal, {
                 userId: email,
                 action: "image",
+                reference: job.conversationId,
+              });
+            } else {
+              await ctx.runMutation(internal.credits.deductForChatModeInternal, {
+                userId: email,
+                mode,
                 reference: job.conversationId,
               });
             }

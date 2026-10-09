@@ -25,6 +25,7 @@ import { getFreeOpenAiSnapshotDb } from "./freeOpenAiQuota";
 import { getFreeImageSnapshotDb } from "./freeImageQuota";
 import { isSubscriptionActive } from "./creditsConfig";
 import {
+  isFreeImageDailyQuotaEnabled,
   isFreeImageGenerationEnabled,
   isLiveNewsEnabled,
   isPushAlertsEnabled,
@@ -379,20 +380,26 @@ export const getChatCredits = query({
         user.subscriptionExpiresAt
       ),
       freeImageGenerationEnabled: isFreeImageGenerationEnabled(),
+      freeImageDailyQuotaEnabled: isFreeImageDailyQuotaEnabled(),
       features: {
         liveNews: isLiveNewsEnabled(),
         pushAlerts: isPushAlertsEnabled(),
         openAiImageRequiresSubscription: openAiImageRequiresSubscription(),
+        freeImageDailyQuotaEnabled: isFreeImageDailyQuotaEnabled(),
       },
       freeOpenAiRemaining: isPremium ? freeOpenAi.limit : freeOpenAi.remaining,
       freeOpenAiLimit: freeOpenAi.limit,
       freeOpenAiResetsAt: freeOpenAi.resetsAt,
       hasOpenAiAccess: isPremium || freeOpenAi.remaining > 0,
-      // Free Accra-day AI image allowance (not used for CV/letter scaffolds).
-      freeImageRemaining: isPremium ? freeImage.limit : freeImage.remaining,
-      freeImageLimit: freeImage.limit,
-      freeImageResetsAt: freeImage.resetsAt,
-      freeImageTimeZone: freeImage.timeZone,
+      // Accra free-image allowance — only meaningful when daily quota flag is on.
+      freeImageRemaining: isFreeImageDailyQuotaEnabled()
+        ? isPremium
+          ? freeImage.limit
+          : freeImage.remaining
+        : null,
+      freeImageLimit: isFreeImageDailyQuotaEnabled() ? freeImage.limit : null,
+      freeImageResetsAt: isFreeImageDailyQuotaEnabled() ? freeImage.resetsAt : null,
+      freeImageTimeZone: isFreeImageDailyQuotaEnabled() ? freeImage.timeZone : null,
     };
   },
 });

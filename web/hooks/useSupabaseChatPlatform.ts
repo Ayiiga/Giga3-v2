@@ -949,6 +949,7 @@ export function useSupabaseChatPlatform() {
     freeImageResetsAt: null,
     freeImageTimeZone: null,
     freeImageGenerationEnabled: true,
+    freeImageDailyQuotaEnabled: false,
     interestProfileJson,
     uploadUsage: null,
     liveWebProgress: null,

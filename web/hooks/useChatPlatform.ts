@@ -425,6 +425,15 @@ export function useChatPlatform() {
     chatCreditsRow === undefined || chatCreditsRow === null
       ? true
       : Boolean(chatCreditsRow.freeImageGenerationEnabled);
+  const freeImageDailyQuotaEnabled =
+    chatCreditsRow === undefined || chatCreditsRow === null
+      ? false
+      : Boolean(
+          (chatCreditsRow as { freeImageDailyQuotaEnabled?: boolean })
+            .freeImageDailyQuotaEnabled ??
+            (chatCreditsRow as { features?: { freeImageDailyQuotaEnabled?: boolean } })
+              .features?.freeImageDailyQuotaEnabled
+        );
 
   if (chatCreditsRow !== undefined) {
     creditsCacheRef.current = credits;
@@ -1517,6 +1526,7 @@ export function useChatPlatform() {
     freeImageResetsAt,
     freeImageTimeZone,
     freeImageGenerationEnabled,
+    freeImageDailyQuotaEnabled,
     interestProfileJson,
     uploadUsage: uploadUsage ?? null,
     liveWebProgress: liveWebProgress ?? null,
