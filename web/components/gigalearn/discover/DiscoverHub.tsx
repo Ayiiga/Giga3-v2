@@ -1,6 +1,7 @@
 "use client";
 
 import { MediaItemPlayer } from "@/components/gigalearn/discover/MediaItemPlayer";
+import { LearningImageCard } from "@/components/gigalearn/media/LearningImageCard";
 import { loadCatalogForCountry } from "@/lib/gigalearn/mediaLibrary/catalog";
 import {
   getMediaCountry,
@@ -390,12 +391,14 @@ export function DiscoverHub({
                     className="flex min-h-[5.5rem] w-full items-center gap-3 rounded-2xl border border-border bg-white px-3 py-3 text-left"
                     data-testid={`discover-item-${item.id}`}
                   >
-                    <span
-                      className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#1a233f] text-3xl"
-                      aria-hidden
-                    >
-                      {item.illustration.emoji}
-                    </span>
+                    <LearningImageCard
+                      src={item.posterImage?.url}
+                      alt={item.posterImage?.alt ?? item.illustration.alt}
+                      fallbackEmoji={item.illustration.emoji}
+                      aspectRatio={item.posterImage?.aspectRatio ?? "1:1"}
+                      className="h-14 w-14 shrink-0"
+                      sizes="56px"
+                    />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold text-foreground">
                         {item.title}

@@ -1,0 +1,188 @@
+{
+  "collectionId": "ghana-kg2-hq-v1",
+  "title": "Ghana KG2 high-quality visuals (v1)",
+  "country": "Ghana",
+  "level": "KG2 (ages 4–5)",
+  "styleGuide": "Object cards: soft natural daylight, clean classroom-friendly backgrounds, West African produce and crafts photographed realistically. Story: warm storybook illustration with consistent Ananse character, Ghanaian village shade tree — not photorealistic.",
+  "createdAt": "2026-10-09",
+  "assets": [
+    {
+      "id": "hq-mango",
+      "filename": "mango.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/mango.webp",
+      "learningObjective": "Recognise a ripe mango and say its name (English/Twi).",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en+tw",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A ripe orange-yellow mango on a woven mat in soft daylight",
+      "catalogItemIds": [
+        "pic-mango-kg2",
+        "rhyme-mango-sweet"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one ripe Ghanaian mango, orange-yellow skin with a soft blush, resting on a simple woven raffia mat, soft natural daylight, shallow depth of field, clean uncluttered background suitable for kindergarten flashcards, no text, no watermark, no hands",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Not a stock photo. Educator visual review pending before certification claims.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T12:45:32.068Z"
+      },
+      "status": "generated",
+      "byteLength": 62824,
+      "contentHash": "9bcc81752200943b"
+    },
+    {
+      "id": "hq-pawpaw",
+      "filename": "pawpaw.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/pawpaw.webp",
+      "learningObjective": "Recognise a whole green-yellow pawpaw (papaya).",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en+gaa",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A whole green and yellow pawpaw fruit on a wooden stool outdoors",
+      "catalogItemIds": [
+        "pic-pawpaw-kg2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one whole Ghanaian pawpaw (papaya), green skin turning yellow, oval fruit sitting on a simple wooden stool outdoors in Ghana, soft morning light, clean background for KG flashcards, no text, no watermark, no cut fruit, no people",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T12:45:48.121Z"
+      },
+      "status": "generated",
+      "byteLength": 52132,
+      "contentHash": "e911fd0d28a86286"
+    },
+    {
+      "id": "hq-bananas-four",
+      "filename": "bananas-four.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/bananas-four.webp",
+      "learningObjective": "Count exactly four bananas (numeracy 1–10).",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en+tw",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "Exactly four yellow bananas arranged clearly for counting",
+      "catalogItemIds": [
+        "game-count-bananas-kg2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of exactly four ripe yellow bananas arranged in a clear row on a light wooden table, easy for young children to count, soft daylight, uncluttered background, no text, no price stickers, no hands",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, five bananas, bunch of many bananas, crowded",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated counting visual. Must show exactly four bananas — verify before ship.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T12:46:05.321Z"
+      },
+      "status": "generated",
+      "byteLength": 24548,
+      "contentHash": "f335c6e2209dec3e"
+    },
+    {
+      "id": "hq-talking-drum",
+      "filename": "talking-drum.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/talking-drum.webp",
+      "learningObjective": "Identify a traditional Ghanaian talking drum.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A wooden hourglass talking drum with leather cords in soft light",
+      "catalogItemIds": [
+        "pic-drum-kg2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of a traditional Ghanaian hourglass talking drum (donno), carved wood body, leather drumheads, tension cords, resting upright on a simple cloth, soft studio-like daylight, culturally accurate West African instrument, no text, no people, no modern electronic drums",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, snare drum, drum kit, djembe only, plastic toy",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated cultural instrument photo. Cultural accuracy review recommended.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T12:46:23.181Z"
+      },
+      "status": "generated",
+      "byteLength": 95304,
+      "contentHash": "75d0a7609db5a0ef"
+    },
+    {
+      "id": "hq-kente",
+      "filename": "kente.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/kente.webp",
+      "learningObjective": "Recognise colourful kente cloth patterns from Ghana.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "Bright woven kente cloth with geometric yellow, green, blue and red strips",
+      "catalogItemIds": [
+        "culture-kente-intro"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational close-up of authentic Ghanaian kente cloth, bright geometric strips of gold yellow, green, blue and red, woven texture clearly visible, folded neatly on a wooden surface, soft daylight, no text, no logos, no people",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, scottish tartan, random plaid, batik only",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated textile close-up. Cultural accuracy review recommended.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T12:46:42.325Z"
+      },
+      "status": "generated",
+      "byteLength": 200004,
+      "contentHash": "a98fc316528364ae"
+    },
+    {
+      "id": "hq-ananse-listens",
+      "filename": "ananse-listens.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/ananse-listens.webp",
+      "learningObjective": "Follow a short Ananse listening story (storybook art).",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "storybook_illustration",
+      "altText": "Storybook illustration of Ananse the spider sitting under a shade tree, listening carefully",
+      "catalogItemIds": [
+        "story-ananse-listen"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Warm children's storybook illustration, Ghanaian village scene, friendly Ananse the spider character with a round kind face sitting under a large shade tree, listening carefully, soft watercolor-ink style, consistent character design for African children's books, bright but gentle colours, no text, no letters, no photorealism, culturally respectful West African setting",
+      "negativePrompt": "photorealistic photo, 3d render, text, watermark, logo, scary, violence, distorted anatomy, wrong cultural clothing, european fairy-tale style",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI storybook illustration (not photographic). Keep style separate from object photos.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T12:47:01.429Z"
+      },
+      "status": "generated",
+      "byteLength": 211572,
+      "contentHash": "7bc3708a7762d785"
+    }
+  ],
+  "generatedAt": "2026-10-09T12:47:01.429Z",
+  "provider": "fal",
+  "model": "fal-ai/flux/schnell"
+}

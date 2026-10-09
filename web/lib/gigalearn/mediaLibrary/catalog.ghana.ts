@@ -13,11 +13,28 @@ import { GHANA_PHASE2_VIDEOS } from "@/lib/gigalearn/mediaLibrary/catalog.ghana.
 import type { LearningMediaItem } from "@/lib/gigalearn/mediaLibrary/types";
 
 const MEDIA = "/gigalearn/media/ghana/kg2";
+const HQ = `${MEDIA}/hq`;
 
 const ORIGINAL_ART = {
   source: "Original Giga3 educational SVG illustrations for Ghana KG2",
   rights: "original",
   reviewed: true,
+  reviewedAt: "2026-10-09",
+} as const;
+
+const HQ_PHOTO_ART = {
+  source:
+    "Original Giga3 AI-generated photographic educational assets (fal.ai) for Ghana KG2 — educator visual review pending",
+  rights: "original",
+  reviewed: false,
+  reviewedAt: "2026-10-09",
+} as const;
+
+const HQ_STORY_ART = {
+  source:
+    "Original Giga3 AI-generated storybook illustration (fal.ai) for Ghana KG2 Ananse story — educator visual review pending",
+  rights: "original",
+  reviewed: false,
   reviewedAt: "2026-10-09",
 } as const;
 
@@ -76,14 +93,29 @@ function remote(
   path: string,
   mimeType: string,
   estimatedBytes: number,
-  required = true
+  required = true,
+  base: string = MEDIA
 ): NonNullable<LearningMediaItem["remoteMedia"]>[number] {
   return {
     kind: "remote",
-    url: `${MEDIA}/${path}`,
+    url: `${base}/${path}`,
     mimeType,
     estimatedBytes,
     required,
+  };
+}
+
+function hqPoster(
+  filename: string,
+  alt: string,
+  estimatedBytes: number
+): NonNullable<LearningMediaItem["posterImage"]> {
+  return {
+    url: `${HQ}/${filename}`,
+    alt,
+    mimeType: "image/webp",
+    estimatedBytes,
+    aspectRatio: "1:1",
   };
 }
 
@@ -104,12 +136,18 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
     curriculumNote: "Ghana Early Years — concrete objects and oral language",
     ageSuitability: KG2_AGE,
     illustration: { kind: "emoji", emoji: "🥭", alt: "Mango fruit" },
+    posterImage: hqPoster(
+      "mango.webp",
+      "A ripe orange-yellow mango on a woven mat in soft daylight",
+      62_824
+    ),
     narrations: [
       { kind: "tts", text: "Mango", voiceId: "english", language: "en" },
       { kind: "tts", text: "Mango", voiceId: "abena-twi", language: "tw" },
     ],
     remoteMedia: [
-      remote("mango.svg", "image/svg+xml", 501),
+      remote("mango.webp", "image/webp", 62_824, true, HQ),
+      remote("mango.svg", "image/svg+xml", 501, false),
       remote("mango-en.mp3", "audio/mpeg", 5146),
       remote("mango-tw.mp3", "audio/mpeg", 5327),
     ],
@@ -121,9 +159,13 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       feedbackCorrect: "Yes! That is a mango. Well done!",
       feedbackWrong: "Try again. Look for the orange mango.",
     },
-    estimatedOfflineBytes: 10_974,
+    estimatedOfflineBytes: 73_798,
     offlineEligible: true,
-    rights: ART_PLUS_GENERATED_SPEECH,
+    rights: {
+      ...ART_PLUS_GENERATED_SPEECH,
+      source: `${HQ_PHOTO_ART.source}; ${GENERATED_SPEECH.source}`,
+      reviewed: false,
+    },
   },
   {
     id: "pic-pawpaw-kg2",
@@ -140,12 +182,18 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
     curriculumNote: "Ghana Early Years — concrete objects and oral language",
     ageSuitability: KG2_AGE,
     illustration: { kind: "emoji", emoji: "🍈", alt: "Pawpaw fruit" },
+    posterImage: hqPoster(
+      "pawpaw.webp",
+      "A whole green and yellow pawpaw fruit on a wooden stool outdoors",
+      52_132
+    ),
     narrations: [
       { kind: "tts", text: "Pawpaw", voiceId: "english", language: "en" },
       { kind: "tts", text: "Pawpaw", voiceId: "naa-ga", language: "gaa" },
     ],
     remoteMedia: [
-      remote("pawpaw.svg", "image/svg+xml", 640),
+      remote("pawpaw.webp", "image/webp", 52_132, true, HQ),
+      remote("pawpaw.svg", "image/svg+xml", 640, false),
       remote("pawpaw-en.mp3", "audio/mpeg", 4962),
       remote("pawpaw-gaa.mp3", "audio/mpeg", 4962),
     ],
@@ -157,9 +205,13 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       feedbackCorrect: "Yes! That is a pawpaw.",
       feedbackWrong: "Look again for the round green pawpaw.",
     },
-    estimatedOfflineBytes: 10_564,
+    estimatedOfflineBytes: 62_696,
     offlineEligible: true,
-    rights: ART_PLUS_GENERATED_SPEECH,
+    rights: {
+      ...ART_PLUS_GENERATED_SPEECH,
+      source: `${HQ_PHOTO_ART.source}; ${GENERATED_SPEECH.source}`,
+      reviewed: false,
+    },
   },
   {
     id: "pic-drum-kg2",
@@ -177,6 +229,11 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
     culturalTheme: "drumming",
     ageSuitability: KG2_AGE,
     illustration: { kind: "emoji", emoji: "🥁", alt: "Drum" },
+    posterImage: hqPoster(
+      "talking-drum.webp",
+      "A wooden hourglass talking drum with leather cords in soft light",
+      95_304
+    ),
     narrations: [
       { kind: "tts", text: "Drum", voiceId: "english", language: "en" },
       {
@@ -188,7 +245,8 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       { kind: "tts", text: "Drum", voiceId: "kofi-ewe", language: "ee" },
     ],
     remoteMedia: [
-      remote("drum.svg", "image/svg+xml", 544),
+      remote("talking-drum.webp", "image/webp", 95_304, true, HQ),
+      remote("drum.svg", "image/svg+xml", 544, false),
       remote("drum-en.mp3", "audio/mpeg", 3819),
       remote("drum-en-long.mp3", "audio/mpeg", 21175),
     ],
@@ -200,9 +258,13 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       feedbackCorrect: "Great listening eyes! That is a drum.",
       feedbackWrong: "Not yet. Find the round drum.",
     },
-    estimatedOfflineBytes: 25_538,
+    estimatedOfflineBytes: 120_842,
     offlineEligible: true,
-    rights: ART_PLUS_GENERATED_SPEECH,
+    rights: {
+      ...ART_PLUS_GENERATED_SPEECH,
+      source: `${HQ_PHOTO_ART.source}; ${GENERATED_SPEECH.source}`,
+      reviewed: false,
+    },
   },
   {
     id: "game-count-bananas-kg2",
@@ -219,6 +281,11 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
     curriculumNote: "Ghana Early Years numeracy — concrete counting",
     ageSuitability: KG2_AGE,
     illustration: { kind: "emoji", emoji: "🍌", alt: "Bananas" },
+    posterImage: hqPoster(
+      "bananas-four.webp",
+      "Exactly four yellow bananas arranged clearly for counting",
+      24_548
+    ),
     narrations: [
       {
         kind: "tts",
@@ -234,7 +301,8 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       },
     ],
     remoteMedia: [
-      remote("bananas.svg", "image/svg+xml", 510),
+      remote("bananas-four.webp", "image/webp", 24_548, true, HQ),
+      remote("bananas.svg", "image/svg+xml", 510, false),
       remote("bananas-en.mp3", "audio/mpeg", 22157),
     ],
     game: {
@@ -245,9 +313,13 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       feedbackCorrect: "Yes! Four bananas.",
       feedbackWrong: "Count again slowly: one, two, three, four.",
     },
-    estimatedOfflineBytes: 22_667,
+    estimatedOfflineBytes: 47_215,
     offlineEligible: true,
-    rights: ART_PLUS_GENERATED_SPEECH,
+    rights: {
+      ...ART_PLUS_GENERATED_SPEECH,
+      source: `${HQ_PHOTO_ART.source}; ${GENERATED_SPEECH.source}`,
+      reviewed: false,
+    },
   },
   {
     id: "rhyme-mango-sweet",
@@ -264,6 +336,11 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
     curriculumNote: "Ghana Early Years — oral language and rhyme",
     ageSuitability: EARLY_AGE,
     illustration: { kind: "emoji", emoji: "🥭", alt: "Mango rhyme" },
+    posterImage: hqPoster(
+      "mango.webp",
+      "A ripe orange-yellow mango on a woven mat in soft daylight",
+      62_824
+    ),
     narrations: [
       {
         kind: "tts",
@@ -279,13 +356,17 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       },
     ],
     remoteMedia: [
-      remote("mango.svg", "image/svg+xml", 501),
+      remote("mango.webp", "image/webp", 62_824, true, HQ),
+      remote("mango.svg", "image/svg+xml", 501, false),
       remote("rhyme-mango-en.mp3", "audio/mpeg", 27892),
       remote("rhyme-mango-tw.mp3", "audio/mpeg", 28981),
     ],
-    estimatedOfflineBytes: 57_374,
+    estimatedOfflineBytes: 120_198,
     offlineEligible: true,
-    rights: ORIGINAL_RHYME,
+    rights: {
+      ...ORIGINAL_RHYME,
+      source: `${ORIGINAL_RHYME.source}; ${HQ_PHOTO_ART.source}`,
+    },
   },
   {
     id: "story-ananse-listen",
@@ -304,6 +385,11 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
     culturalTheme: "storytelling",
     ageSuitability: KG2_AGE,
     illustration: { kind: "emoji", emoji: "🕷️", alt: "Ananse the spider" },
+    posterImage: hqPoster(
+      "ananse-listens.webp",
+      "Storybook illustration of Ananse the spider sitting under a shade tree, listening carefully",
+      211_572
+    ),
     narrations: [
       {
         kind: "tts",
@@ -313,7 +399,8 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       },
     ],
     remoteMedia: [
-      remote("ananse.svg", "image/svg+xml", 660),
+      remote("ananse-listens.webp", "image/webp", 211_572, true, HQ),
+      remote("ananse.svg", "image/svg+xml", 660, false),
       remote("ananse-en.mp3", "audio/mpeg", 36427),
       remote("ananse-listens.mp4", "video/mp4", 86905),
     ],
@@ -325,9 +412,13 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       feedbackCorrect: "Yes! Ananse listened carefully.",
       feedbackWrong: "Listen again to the story.",
     },
-    estimatedOfflineBytes: 123_992,
+    estimatedOfflineBytes: 335_564,
     offlineEligible: true,
-    rights: ORIGINAL_VIDEO,
+    rights: {
+      ...ORIGINAL_VIDEO,
+      source: `${ORIGINAL_VIDEO.source}; ${HQ_STORY_ART.source}`,
+      reviewed: false,
+    },
   },
   {
     id: "culture-kente-intro",
@@ -346,6 +437,11 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
     culturalTheme: "kente weaving",
     ageSuitability: KG2_AGE,
     illustration: { kind: "emoji", emoji: "🧵", alt: "Cloth and thread" },
+    posterImage: hqPoster(
+      "kente.webp",
+      "Bright woven kente cloth with geometric yellow, green, blue and red strips",
+      200_004
+    ),
     narrations: [
       {
         kind: "tts",
@@ -355,7 +451,8 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       },
     ],
     remoteMedia: [
-      remote("kente.svg", "image/svg+xml", 689),
+      remote("kente.webp", "image/webp", 200_004, true, HQ),
+      remote("kente.svg", "image/svg+xml", 689, false),
       remote("kente-en.mp3", "audio/mpeg", 27398),
     ],
     game: {
@@ -366,9 +463,13 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       feedbackCorrect: "Yes — weavers make kente on a loom.",
       feedbackWrong: "Think about cloth and weaving.",
     },
-    estimatedOfflineBytes: 28_087,
+    estimatedOfflineBytes: 228_091,
     offlineEligible: true,
-    rights: { ...CULTURE_SUMMARY, source: `${CULTURE_SUMMARY.source}; ${ORIGINAL_ART.source}` },
+    rights: {
+      ...CULTURE_SUMMARY,
+      source: `${CULTURE_SUMMARY.source}; ${HQ_PHOTO_ART.source}`,
+      reviewed: false,
+    },
   },
   {
     id: "country-ghana-profile",
