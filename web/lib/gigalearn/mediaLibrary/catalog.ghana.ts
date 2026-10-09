@@ -5,6 +5,7 @@
 
 import { GHANA_PHASE2_CULTURE } from "@/lib/gigalearn/mediaLibrary/catalog.ghana.culture";
 import { GHANA_PHASE2_GAMES } from "@/lib/gigalearn/mediaLibrary/catalog.ghana.games";
+import { GHANA_KG2_VISUAL_EXPANSION } from "@/lib/gigalearn/mediaLibrary/catalog.ghana.kg2Expansion";
 import { GHANA_PHASE2_PICTURES } from "@/lib/gigalearn/mediaLibrary/catalog.ghana.pictures";
 import { GHANA_PHASE2_RHYMES } from "@/lib/gigalearn/mediaLibrary/catalog.ghana.rhymes";
 import { GHANA_PHASE2_SONGS } from "@/lib/gigalearn/mediaLibrary/catalog.ghana.songs";
@@ -139,14 +140,14 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
     posterImage: hqPoster(
       "mango.webp",
       "A ripe orange-yellow mango on a woven mat in soft daylight",
-      62_824
+      69952
     ),
     narrations: [
       { kind: "tts", text: "Mango", voiceId: "english", language: "en" },
       { kind: "tts", text: "Mango", voiceId: "abena-twi", language: "tw" },
     ],
     remoteMedia: [
-      remote("mango.webp", "image/webp", 62_824, true, HQ),
+      remote("mango.webp", "image/webp", 69952, true, HQ),
       remote("mango.svg", "image/svg+xml", 501, false),
       remote("mango-en.mp3", "audio/mpeg", 5146),
       remote("mango-tw.mp3", "audio/mpeg", 5327),
@@ -159,7 +160,7 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       feedbackCorrect: "Yes! That is a mango. Well done!",
       feedbackWrong: "Try again. Look for the orange mango.",
     },
-    estimatedOfflineBytes: 73_798,
+    estimatedOfflineBytes: 80_926,
     offlineEligible: true,
     rights: {
       ...ART_PLUS_GENERATED_SPEECH,
@@ -185,14 +186,14 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
     posterImage: hqPoster(
       "pawpaw.webp",
       "A whole green and yellow pawpaw fruit on a wooden stool outdoors",
-      52_132
+      55396
     ),
     narrations: [
       { kind: "tts", text: "Pawpaw", voiceId: "english", language: "en" },
       { kind: "tts", text: "Pawpaw", voiceId: "naa-ga", language: "gaa" },
     ],
     remoteMedia: [
-      remote("pawpaw.webp", "image/webp", 52_132, true, HQ),
+      remote("pawpaw.webp", "image/webp", 55396, true, HQ),
       remote("pawpaw.svg", "image/svg+xml", 640, false),
       remote("pawpaw-en.mp3", "audio/mpeg", 4962),
       remote("pawpaw-gaa.mp3", "audio/mpeg", 4962),
@@ -205,7 +206,7 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       feedbackCorrect: "Yes! That is a pawpaw.",
       feedbackWrong: "Look again for the round green pawpaw.",
     },
-    estimatedOfflineBytes: 62_696,
+    estimatedOfflineBytes: 65_960,
     offlineEligible: true,
     rights: {
       ...ART_PLUS_GENERATED_SPEECH,
@@ -232,7 +233,7 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
     posterImage: hqPoster(
       "talking-drum.webp",
       "A wooden hourglass talking drum with leather cords in soft light",
-      95_304
+      117610
     ),
     narrations: [
       { kind: "tts", text: "Drum", voiceId: "english", language: "en" },
@@ -245,7 +246,7 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       { kind: "tts", text: "Drum", voiceId: "kofi-ewe", language: "ee" },
     ],
     remoteMedia: [
-      remote("talking-drum.webp", "image/webp", 95_304, true, HQ),
+      remote("talking-drum.webp", "image/webp", 117610, true, HQ),
       remote("drum.svg", "image/svg+xml", 544, false),
       remote("drum-en.mp3", "audio/mpeg", 3819),
       remote("drum-en-long.mp3", "audio/mpeg", 21175),
@@ -258,7 +259,7 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       feedbackCorrect: "Great listening eyes! That is a drum.",
       feedbackWrong: "Not yet. Find the round drum.",
     },
-    estimatedOfflineBytes: 120_842,
+    estimatedOfflineBytes: 143_148,
     offlineEligible: true,
     rights: {
       ...ART_PLUS_GENERATED_SPEECH,
@@ -284,7 +285,7 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
     posterImage: hqPoster(
       "bananas-four.webp",
       "Exactly four yellow bananas arranged clearly for counting",
-      24_548
+      32432
     ),
     narrations: [
       {
@@ -301,7 +302,7 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       },
     ],
     remoteMedia: [
-      remote("bananas-four.webp", "image/webp", 24_548, true, HQ),
+      remote("bananas-four.webp", "image/webp", 32432, true, HQ),
       remote("bananas.svg", "image/svg+xml", 510, false),
       remote("bananas-en.mp3", "audio/mpeg", 22157),
     ],
@@ -313,7 +314,7 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       feedbackCorrect: "Yes! Four bananas.",
       feedbackWrong: "Count again slowly: one, two, three, four.",
     },
-    estimatedOfflineBytes: 47_215,
+    estimatedOfflineBytes: 55_099,
     offlineEligible: true,
     rights: {
       ...ART_PLUS_GENERATED_SPEECH,
@@ -339,7 +340,7 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
     posterImage: hqPoster(
       "mango.webp",
       "A ripe orange-yellow mango on a woven mat in soft daylight",
-      62_824
+      69952
     ),
     narrations: [
       {
@@ -356,12 +357,12 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       },
     ],
     remoteMedia: [
-      remote("mango.webp", "image/webp", 62_824, true, HQ),
+      remote("mango.webp", "image/webp", 69952, true, HQ),
       remote("mango.svg", "image/svg+xml", 501, false),
       remote("rhyme-mango-en.mp3", "audio/mpeg", 27892),
       remote("rhyme-mango-tw.mp3", "audio/mpeg", 28981),
     ],
-    estimatedOfflineBytes: 120_198,
+    estimatedOfflineBytes: 127_326,
     offlineEligible: true,
     rights: {
       ...ORIGINAL_RHYME,
@@ -388,7 +389,7 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
     posterImage: hqPoster(
       "ananse-listens.webp",
       "Storybook illustration of Ananse the spider sitting under a shade tree, listening carefully",
-      211_572
+      259716
     ),
     narrations: [
       {
@@ -399,7 +400,7 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       },
     ],
     remoteMedia: [
-      remote("ananse-listens.webp", "image/webp", 211_572, true, HQ),
+      remote("ananse-listens.webp", "image/webp", 259716, true, HQ),
       remote("ananse.svg", "image/svg+xml", 660, false),
       remote("ananse-en.mp3", "audio/mpeg", 36427),
       remote("ananse-listens.mp4", "video/mp4", 86905),
@@ -412,7 +413,7 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       feedbackCorrect: "Yes! Ananse listened carefully.",
       feedbackWrong: "Listen again to the story.",
     },
-    estimatedOfflineBytes: 335_564,
+    estimatedOfflineBytes: 383_708,
     offlineEligible: true,
     rights: {
       ...ORIGINAL_VIDEO,
@@ -440,7 +441,7 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
     posterImage: hqPoster(
       "kente.webp",
       "Bright woven kente cloth with geometric yellow, green, blue and red strips",
-      200_004
+      214202
     ),
     narrations: [
       {
@@ -451,7 +452,7 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       },
     ],
     remoteMedia: [
-      remote("kente.webp", "image/webp", 200_004, true, HQ),
+      remote("kente.webp", "image/webp", 214202, true, HQ),
       remote("kente.svg", "image/svg+xml", 689, false),
       remote("kente-en.mp3", "audio/mpeg", 27398),
     ],
@@ -463,7 +464,7 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       feedbackCorrect: "Yes — weavers make kente on a loom.",
       feedbackWrong: "Think about cloth and weaving.",
     },
-    estimatedOfflineBytes: 228_091,
+    estimatedOfflineBytes: 242_289,
     offlineEligible: true,
     rights: {
       ...CULTURE_SUMMARY,
@@ -487,6 +488,14 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
     curriculumNote: "Ghana Early Years — Our World / countries",
     ageSuitability: KG2_AGE,
     illustration: { kind: "emoji", emoji: "🇬🇭", alt: "Flag of Ghana" },
+    posterImage: hqPoster(
+      "ghana-flag.webp",
+      "The flag of Ghana waving outdoors with red gold green and black star",
+      76912
+    ),
+    remoteMedia: [
+      remote("ghana-flag.webp", "image/webp", 76912, true, HQ),
+    ],
     narrations: [
       {
         kind: "tts",
@@ -503,14 +512,19 @@ export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
       feedbackCorrect: "Yes — Accra is the capital of Ghana.",
       feedbackWrong: "The capital of Ghana is Accra.",
     },
-    estimatedOfflineBytes: 2_300,
+    estimatedOfflineBytes: 79_212,
     offlineEligible: true,
-    rights: GHANA_FACT,
+    rights: {
+      ...GHANA_FACT,
+      source: `${GHANA_FACT.source}. Flag poster: ${HQ_PHOTO_ART.source}`,
+      // Geographic facts remain educator-acceptable public facts; flag art still awaits visual review in the asset manifest.
+    },
   },
 ];
 
 export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
   ...GHANA_PHASE1_SEED,
+  ...GHANA_KG2_VISUAL_EXPANSION,
   ...GHANA_PHASE2_RHYMES,
   ...GHANA_PHASE2_SONGS,
   ...GHANA_PHASE2_STORIES,
@@ -520,7 +534,7 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
   ...GHANA_PHASE2_GAMES,
 ];
 
-/** Ids in the complete KG2 multimedia slice (required local assets when offline). */
+/** Ids in the HQ-backed KG2 multimedia slice (required local assets when offline). */
 export const GHANA_KG2_MEDIA_SLICE_IDS = [
   "pic-mango-kg2",
   "pic-pawpaw-kg2",
@@ -529,6 +543,41 @@ export const GHANA_KG2_MEDIA_SLICE_IDS = [
   "rhyme-mango-sweet",
   "story-ananse-listen",
   "culture-kente-intro",
+  "country-ghana-profile",
+  "pic-pineapple-kg2",
+  "pic-plantain-kg2",
+  "pic-dog-kg2",
+  "pic-cat-kg2",
+  "pic-pencil-kg2",
+  "pic-table-kg2",
+  "pic-school-bag-kg2",
+  "pic-market-seller-kg2",
+  "pic-nurse-kg2",
+  "pic-ghana-flag-kg2",
+  "pic-basket-kg2",
+  // Phase 2 picture cards with HQ posters
+  "pic-p2-1",
+  "pic-p2-2",
+  "pic-p2-3",
+  "pic-p2-4",
+  "pic-p2-5",
+  "pic-p2-6",
+  "pic-p2-7",
+  "pic-p2-8",
+  "pic-p2-9",
+  "pic-p2-10",
+  "pic-p2-11",
+  "pic-p2-12",
+  "pic-p2-13",
+  "pic-p2-14",
+  "pic-p2-15",
+  "pic-p2-16",
+  "pic-p2-17",
+  "pic-p2-18",
+  "pic-p2-19",
+  "pic-p2-20",
+  "culture-p2-potter",
+  "game-p2-count-5",
 ] as const;
 
 export function countGhanaCatalogByKind(catalog: LearningMediaItem[] = GHANA_MEDIA_CATALOG) {

@@ -129,13 +129,25 @@ function toWebp(inputBuf, outPath) {
   }
 }
 
+function loadPriorGenerated() {
+  if (!existsSync(GENERATED_JSON)) return new Map();
+  try {
+    const prior = JSON.parse(readFileSync(GENERATED_JSON, "utf8"));
+    return new Map((prior.assets || []).map((a) => [a.id, a]));
+  } catch {
+    return new Map();
+  }
+}
+
 async function main() {
   mkdirSync(OUT_DIR, { recursive: true });
   const plan = loadPlan();
+  const prior = loadPriorGenerated();
+  const force = process.env.FAL_FORCE === "1";
   const assets = [];
 
   console.log(`Provider: fal model=${model}`);
-  console.log(`Generating ${plan.assets.length} assets into ${OUT_DIR}`);
+  console.log(`Plan size: ${plan.assets.length} (FAL_FORCE=${force ? "1" : "0"})`);
 
   for (const asset of plan.assets) {
     const outName = asset.filename.endsWith(".webp") ? asset.filename : `${asset.filename}.webp`;
@@ -144,6 +156,36 @@ async function main() {
       ? asset.publicPath
       : asset.publicPath.replace(/\.[a-z]+$/i, ".webp");
     process.stdout.write(`• ${asset.id} … `);
+
+    const existingPrior = prior.get(asset.id);
+    if (
+      !force &&
+      existsSync(outPath) &&
+      existingPrior?.status === "generated" &&
+      existingPrior.contentHash
+    ) {
+      const buf = readFileSync(outPath);
+      const hash = createHash("sha256").update(buf).digest("hex").slice(0, 16);
+      assets.push({
+        ...asset,
+        ...existingPrior,
+        filename: outName,
+        publicPath,
+        status: "generated",
+        byteLength: buf.byteLength,
+        contentHash: hash,
+        licensing: {
+          ...asset.licensing,
+          ...existingPrior.licensing,
+          provider: "fal",
+          model: existingPrior.licensing?.model || model,
+          reviewed: false,
+        },
+      });
+      console.log(`skip existing ${buf.byteLength}B`);
+      continue;
+    }
+
     try {
       const submitted = await falSubmit(asset.generationPrompt, asset.negativePrompt);
       const result = await falWait(submitted.status_url, submitted.response_url);

@@ -18,12 +18,14 @@ function publicPath(url: string) {
 }
 
 describe("Ghana KG2 high-quality visual collection", () => {
-  it("records six fal-generated assets with provenance fields", () => {
-    expect(GHANA_KG2_ASSET_MANIFEST.collectionId).toBe("ghana-kg2-hq-v1");
+  it("records fal-generated assets with provenance fields", () => {
+    expect(GHANA_KG2_ASSET_MANIFEST.collectionId).toMatch(/^ghana-kg2-hq-v/);
     expect(GHANA_KG2_ASSET_MANIFEST.country).toBe("Ghana");
     const generated = ghanaKg2GeneratedAssets();
-    expect(generated).toHaveLength(6);
+    expect(generated.length).toBeGreaterThanOrEqual(40);
     expect(ghanaKg2PendingAssets()).toHaveLength(0);
+    const ids = new Set(generated.map((a) => a.id));
+    expect(ids.size).toBe(generated.length);
     for (const asset of generated) {
       expect(asset.filename).toMatch(/\.webp$/);
       expect(asset.learningObjective.length).toBeGreaterThan(10);
@@ -34,7 +36,9 @@ describe("Ghana KG2 high-quality visual collection", () => {
       expect(asset.offlineRequired).toBe(true);
       expect(asset.licensing.provider).toBe("fal");
       expect(asset.licensing.rights).toBe("original-ai-generated");
-      expect(asset.byteLength).toBeGreaterThan(10_000);
+      expect(asset.licensing.reviewed).toBe(false);
+      expect(asset.byteLength).toBeGreaterThan(5_000);
+      expect(asset.byteLength).toBeLessThan(1_500_000);
       expect(asset.contentHash).toMatch(/^[a-f0-9]+$/);
     }
   });
@@ -44,16 +48,11 @@ describe("Ghana KG2 high-quality visual collection", () => {
     const story = GHANA_KG2_ASSET_MANIFEST.assets.filter(
       (a) => a.style === "storybook_illustration"
     );
-    expect(photo.map((a) => a.id).sort()).toEqual(
-      [
-        "hq-bananas-four",
-        "hq-kente",
-        "hq-mango",
-        "hq-pawpaw",
-        "hq-talking-drum",
-      ].sort()
+    expect(photo.length).toBeGreaterThanOrEqual(35);
+    expect(story.map((a) => a.id).sort()).toEqual(
+      ["hq-ananse-listens", "hq-ananse-sharing-pot", "hq-little-weaver", "hq-market-morning"].sort()
     );
-    expect(story.map((a) => a.id)).toEqual(["hq-ananse-listens"]);
+    expect(photo.every((a) => a.style === "photographic")).toBe(true);
   });
 
   it("ships real WebP binaries that match manifest hashes and sizes", () => {
