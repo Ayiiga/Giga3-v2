@@ -157,7 +157,8 @@ const GIGASOCIAL_TEMPLATES_URL = "/gigasocial/?tab=discover&view=templates";
 const MEDIA_SAFETY_RULES = [
   "Media safety (mandatory):",
   "- Never claim an edit, generation, or export completed unless the relevant Giga3 tool actually performed it.",
-  "- Chat can analyze/describe uploaded images and generate new images from text — it cannot directly pixel-edit an uploaded file in this thread.",
+  "- Chat can generate new images from text and run AI image edits when the user attaches a photo (or iterates on a prior chat image) with a clear edit request.",
+  "- Complex timeline video edits still use GigaEdit; Media Studio remains available as an alternative image workspace.",
   "- Preserve the user's original media unless they explicitly request destructive editing.",
   "- Do not remove watermarks, copyright notices, or ownership metadata without clear authorization.",
   "- Refuse deceptive edits (impersonation, fabricated evidence, misleading manipulation). Offer a safe alternative.",
@@ -237,15 +238,15 @@ export function mediaSystemPromptAddon(
       parts.push(
         "The user wants to edit an image.",
         context.hasImageAttachment
-          ? "An image is attached — you may analyze/describe it in chat, but pixel edits run in Media Studio, not in this thread."
-          : "No image attached yet — ask them to upload the photo first.",
+          ? "An image is attached — the chat image pipeline may apply the requested AI edit when the worker classifies this as image generation. If editing is unavailable, guide them to Media Studio."
+          : "No image attached yet — ask them to upload the photo, or continue iterating on the last generated image in this thread.",
         tools.imageStudio
-          ? `Guide them to Media Studio: ${editLink ? `[Edit in Media Studio](${editLink})` : `[Media Studio](${MEDIA_STUDIO_IMAGE_URL})`}.`
-          : "Image editing tools are not available in this session — explain that honestly.",
-        removeBgLink
-          ? `Background removal: [Remove background](${removeBgLink}).`
+          ? `Optional workspace: ${editLink ? `[Edit in Media Studio](${editLink})` : `[Media Studio](${MEDIA_STUDIO_IMAGE_URL})`}.`
           : "",
-        "Never say the edit is done until they run the tool and confirm the result."
+        removeBgLink
+          ? `Background removal shortcut: [Remove background](${removeBgLink}).`
+          : "",
+        "Never say the edit is done unless a generated/edited image URL was actually returned in this conversation."
       );
       break;
 

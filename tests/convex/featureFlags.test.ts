@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  isFreeImageDailyQuotaEnabled,
   isFreeImageGenerationEnabled,
   isLiveNewsEnabled,
   isPushAlertsEnabled,
@@ -21,5 +22,9 @@ describe("featureFlags defaults", () => {
 
   it("requires subscription for OpenAI images by default", () => {
     expect(openAiImageRequiresSubscription()).toBe(true);
+  });
+
+  it("keeps Accra free-image daily quota off until explicitly enabled", () => {
+    expect(isFreeImageDailyQuotaEnabled()).toBe(false);
   });
 });

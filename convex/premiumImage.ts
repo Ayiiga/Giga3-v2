@@ -15,6 +15,34 @@ export const IMAGE_UPGRADE_MARKDOWN = [
   "[View subscription plans](/subscribe/)",
 ].join("\n");
 
+/** Shown when a free user has already used today's successful AI image allowance. */
+export function imageDailyLimitMarkdown(args: {
+  limit: number;
+  resetsAt: number;
+  timeZone?: string;
+}): string {
+  const tz = args.timeZone || "Africa/Accra";
+  const resetLabel = new Intl.DateTimeFormat("en-GH", {
+    timeZone: tz,
+    weekday: "short",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  }).format(new Date(args.resetsAt));
+  const n = Math.max(1, args.limit);
+  return [
+    "**Daily free image limit reached**",
+    "",
+    `Free accounts include **${n} successful AI image${n === 1 ? "" : "s"} per day** (resets ${resetLabel}, ${tz}).`,
+    "",
+    "Failed generations do not use your allowance. CV and letter templates stay free and do not use this image limit.",
+    "",
+    "Ordinary text chat is unchanged. Subscribe for higher-quality OpenAI images and more capacity.",
+    "",
+    "[View subscription plans](/subscribe/)",
+  ].join("\n");
+}
+
 export type ImageGenerationDecision =
   | { action: "upgrade" }
   | { action: "openai" }
