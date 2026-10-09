@@ -13,8 +13,8 @@ import {
   writeVoiceLanguageId,
 } from "@/lib/chat/voiceLanguagePreference";
 import { cn } from "@/lib/utils";
-import { Pause, Play } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronDown, Pause, Play } from "lucide-react";
+import { useEffect, useId, useState } from "react";
 
 export type AfricanReaderVoice = {
   id: string;
@@ -34,8 +34,7 @@ type AfricanVoiceReaderProps = {
 };
 
 /**
- * African voice reader below AI responses — offline on-device speech,
- * defaulting to English (British); African languages available as secondary options.
+ * Compact African voice reader — one “Change voice” control; expand to pick a voice.
  */
 export function AfricanVoiceReader({
   content,
@@ -43,10 +42,16 @@ export function AfricanVoiceReader({
   selectorOnly = false,
 }: AfricanVoiceReaderProps) {
   const blockId = messageId ? `african-reader-${messageId}` : "african-voice-reader-global";
+  const listId = useId();
   const [supported, setSupported] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [voiceId, setVoiceId] = useState(() => readVoiceLanguageId());
   const [rate, setRate] = useState(1);
+  const [open, setOpen] = useState(false);
+
+  const active =
+    AFRICAN_READER_VOICES.find((voice) => voice.id === voiceId) ??
+    AFRICAN_READER_VOICES[0];
 
   useEffect(() => {
     setSupported(isGigaVoiceSupported());
@@ -105,45 +110,34 @@ export function AfricanVoiceReader({
 
   return (
     <div
-      className={cn(
-        "mt-2 min-h-12 flex-wrap items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 py-1.5",
-        selectorOnly ? "flex" : "hidden md:flex"
-      )}
+      className="mt-2 flex min-h-11 flex-col gap-1.5 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 py-2"
       aria-label="Read with African voice"
     >
-      <span className="text-[13px] font-medium text-gray-600" aria-hidden>
-        🔊
-      </span>
-      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5" role="group" aria-label="African voices">
-        {AFRICAN_READER_VOICES.map((voice) => {
-          const active = voice.id === voiceId;
-          return (
-            <button
-              key={voice.id}
-              type="button"
-              onClick={() => {
-                setVoiceId(voice.id);
-                writeVoiceLanguageId(voice.id);
-              }}
-              aria-pressed={active}
-              title={`${voice.name} ${voice.flag}`}
-              className={cn(
-                "min-h-9 rounded-full px-2.5 py-1 text-[12px] font-medium",
-                active
-                  ? "bg-[#EAB308] font-bold text-black"
-                  : "bg-[#F3F4F6] text-gray-600 hover:bg-[#EAB308]/20"
-              )}
-            >
-              {voice.name} {voice.flag}
-            </button>
-          );
-        })}
-      </div>
-      <div className="flex shrink-0 items-center gap-1.5">
+      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          aria-expanded={open}
+          aria-controls={listId}
+          className={cn(
+            "inline-flex min-h-9 min-w-0 flex-1 items-center gap-1.5 rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-1.5 text-left text-[13px] font-medium text-black",
+            "hover:border-[#EAB308]/50 hover:bg-amber-50/60",
+            open && "border-[#EAB308]/60 bg-amber-50/70"
+          )}
+        >
+          <span aria-hidden>🔊</span>
+          <span className="min-w-0 flex-1 truncate">
+            Change voice · {active.name} {active.flag}
+          </span>
+          <ChevronDown
+            className={cn("h-4 w-4 shrink-0 text-gray-500 transition-transform", open && "rotate-180")}
+            aria-hidden
+          />
+        </button>
         <button
           type="button"
           onClick={() => setRate((r) => (r >= 1.5 ? 0.75 : Number((r + 0.25).toFixed(2))))}
-          className="min-h-9 rounded-full bg-[#F3F4F6] px-2.5 py-1 text-[12px] font-medium text-gray-600"
+          className="min-h-9 shrink-0 rounded-full bg-[#F3F4F6] px-2.5 py-1 text-[12px] font-medium text-gray-600"
           aria-label={`Speech speed ${rate}x, tap to change`}
           title="Speech speed"
         >
@@ -156,7 +150,7 @@ export function AfricanVoiceReader({
               onClick={() => void play()}
               aria-label={speaking ? "Stop reading response" : "Read response with African voice"}
               aria-pressed={speaking}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#EAB308] text-black shadow-sm hover:bg-[#d4a017]"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EAB308] text-black shadow-sm hover:bg-[#d4a017]"
             >
               {speaking ? (
                 <Pause className="h-4 w-4" aria-hidden />
@@ -167,7 +161,7 @@ export function AfricanVoiceReader({
             <button
               type="button"
               onClick={download}
-              className="min-h-9 rounded-full bg-[#F3F4F6] px-2.5 py-1 text-[12px] font-medium text-gray-600"
+              className="min-h-9 shrink-0 rounded-full bg-[#F3F4F6] px-2.5 py-1 text-[12px] font-medium text-gray-600"
               aria-label="Download response as text"
               title="Download response"
             >
@@ -176,7 +170,42 @@ export function AfricanVoiceReader({
           </>
         ) : null}
       </div>
-      <span className="w-full text-[10px] leading-tight text-gray-400">
+
+      {open ? (
+        <div
+          id={listId}
+          className="flex min-w-0 flex-wrap items-center gap-1.5 border-t border-[#F3F4F6] pt-2"
+          role="group"
+          aria-label="African voices"
+        >
+          {AFRICAN_READER_VOICES.map((voice) => {
+            const selected = voice.id === voiceId;
+            return (
+              <button
+                key={voice.id}
+                type="button"
+                onClick={() => {
+                  setVoiceId(voice.id);
+                  writeVoiceLanguageId(voice.id);
+                  setOpen(false);
+                }}
+                aria-pressed={selected}
+                title={`${voice.name} ${voice.flag}`}
+                className={cn(
+                  "min-h-9 rounded-full px-2.5 py-1 text-[12px] font-medium",
+                  selected
+                    ? "bg-[#EAB308] font-bold text-black"
+                    : "bg-[#F3F4F6] text-gray-600 hover:bg-[#EAB308]/20"
+                )}
+              >
+                {voice.name} {voice.flag}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+
+      <span className="text-[10px] leading-tight text-gray-400">
         ON DEVICE · free offline · Studio TTS 1 credit / 500 chars
       </span>
     </div>

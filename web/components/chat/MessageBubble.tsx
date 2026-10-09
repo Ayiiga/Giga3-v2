@@ -302,6 +302,7 @@ export const MessageBubble = memo(function MessageBubble({
 
 function ResearchEcosystemHandoffs({ summary }: { summary: string }) {
   const excerpt = summary.trim().slice(0, 6000);
+  const [open, setOpen] = useState(false);
   if (!excerpt) return null;
 
   function saveToGigaLearn() {
@@ -309,29 +310,46 @@ function ResearchEcosystemHandoffs({ summary }: { summary: string }) {
       prompt: `Turn this research into a GigaLearn lesson outline with key points and a short quiz:\n\n${excerpt}`,
     });
     window.open("/gigalearn/", "_blank", "noopener");
+    setOpen(false);
   }
 
   function openInGigaEdits() {
     saveTeleprompterScript(excerpt);
     window.open("/gigaedit/", "_blank", "noopener");
+    setOpen(false);
   }
 
   return (
-    <div className="mt-2 flex flex-wrap gap-2">
+    <div className="mt-2">
       <button
         type="button"
-        onClick={saveToGigaLearn}
-        className="min-h-9 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground hover:border-accent/30"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground hover:border-accent/30"
       >
-        Save to GigaLearn
+        More tools
+        <span className="text-muted" aria-hidden>
+          {open ? "▴" : "▾"}
+        </span>
       </button>
-      <button
-        type="button"
-        onClick={openInGigaEdits}
-        className="min-h-9 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground hover:border-accent/30"
-      >
-        Open in GigaEdits
-      </button>
+      {open ? (
+        <div className="mt-1.5 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={saveToGigaLearn}
+            className="min-h-9 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground hover:border-accent/30"
+          >
+            Save to GigaLearn
+          </button>
+          <button
+            type="button"
+            onClick={openInGigaEdits}
+            className="min-h-9 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground hover:border-accent/30"
+          >
+            Open in GigaEdits
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
