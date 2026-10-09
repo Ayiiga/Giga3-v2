@@ -6,7 +6,9 @@ import { exportDocumentDocx } from "@/lib/documents/exportDocx";
 export type DocumentExportFormat = "pdf" | "docx";
 
 function triggerDownload(bytes: Uint8Array, filename: string, mime: string): void {
-  const blob = new Blob([bytes], { type: mime });
+  // Copy into a fresh ArrayBuffer-backed view for DOM Blob typing (TS 5.x).
+  const part = new Uint8Array(bytes);
+  const blob = new Blob([part], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -52,7 +54,7 @@ export async function shareDocumentFile(
     format === "pdf"
       ? "application/pdf"
       : "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-  const file = new File([bytes], filename, { type: mime });
+  const file = new File([new Uint8Array(bytes)], filename, { type: mime });
   if (typeof navigator !== "undefined" && navigator.canShare?.({ files: [file] })) {
     await navigator.share({ files: [file], title: doc.title });
     return "shared";

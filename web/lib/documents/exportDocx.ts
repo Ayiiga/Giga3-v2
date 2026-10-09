@@ -237,7 +237,10 @@ export async function exportDocumentDocx(doc: GigaDocument): Promise<Uint8Array>
   });
 
   const buffer = await Packer.toBuffer(document);
-  return buffer instanceof Uint8Array
-    ? buffer
-    : new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+  if (buffer instanceof Uint8Array) {
+    return new Uint8Array(buffer);
+  }
+  // Node Buffer / ArrayBufferView fallback across docx runtime targets.
+  const view = buffer as ArrayBufferView;
+  return new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
 }
