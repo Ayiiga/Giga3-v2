@@ -95,4 +95,17 @@ describe("GigaEdit controls audit — mobile layout guards", () => {
     expect(css).toContain("html.gigaedit-video-mode .gigaedit-shell--editor");
     expect(css).toContain("position: fixed");
   });
+
+  it("keeps bottom nav visible in video editor and adds audio tab", () => {
+    const client = read("web/components/gigaedit/GigaEditClient.tsx");
+    expect(client).not.toContain('section === "video" ? undefined :');
+    const nav = read("web/components/gigaedit/GigaEditBottomNav.tsx");
+    expect(nav).toContain('id: "audio"');
+  });
+
+  it("uses high-contrast yellow export button", () => {
+    const css = read("web/styles/gigaedit.css");
+    expect(css).toContain(".gigaedit-editor-export-btn");
+    expect(css).toContain("#eab308");
+  });
 });

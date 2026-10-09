@@ -12,7 +12,8 @@ import {
   deduplicateGigaEditProjects,
   deleteProjectAndLocalFiles,
   duplicateGigaEditProject,
-  formatBytes,
+  estimateProjectBlobBytes,
+  formatStorageBytes,
   listGigaEditProjects,
   saveGigaEditProject,
   sectionForProjectKind,
@@ -31,6 +32,11 @@ type RecentProjectsGridProps = {
   compact?: boolean;
 };
 
+type PendingDelete = {
+  projects: GigaEditProjectRecord[];
+  bytes: number;
+};
+
 export function RecentProjectsGrid({
   limit = 6,
   onOpen,
@@ -41,13 +47,11 @@ export function RecentProjectsGrid({
   const [loading, setLoading] = useState(true);
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [pendingDelete, setPendingDelete] = useState<GigaEditProjectRecord[] | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   async function refresh() {
     const rows = await listGigaEditProjects();
-    // Defensive dedup by id (latest updatedAt wins) — guards against
-    // duplicate rows like 1001144701 appearing 3x.
     const unique = deduplicateGigaEditProjects(rows);
     primeThumbnailCache(unique);
     setProjects(unique.slice(0, limit));
@@ -73,18 +77,28 @@ export function RecentProjectsGrid({
     });
   }
 
+  async function requestDelete(items: GigaEditProjectRecord[]) {
+    if (!items.length) return;
+    const sizes = await Promise.all(items.map((project) => estimateProjectBlobBytes(project.id)));
+    setPendingDelete({
+      projects: items,
+      bytes: sizes.reduce((sum, value) => sum + value, 0),
+    });
+  }
+
   async function confirmDelete() {
-    if (!pendingDelete?.length) return;
-    const ids = pendingDelete.map((p) => p.id);
-    for (const id of ids) {
-      await deleteProjectAndLocalFiles(id);
+    if (!pendingDelete?.projects.length) return;
+    for (const project of pendingDelete.projects) {
+      await deleteProjectAndLocalFiles(project.id);
     }
+    setNotice(
+      pendingDelete.projects.length === 1
+        ? `Draft deleted — freed ${formatStorageBytes(pendingDelete.bytes)} locally.`
+        : `${pendingDelete.projects.length} drafts deleted — freed ${formatStorageBytes(pendingDelete.bytes)} locally.`
+    );
     setPendingDelete(null);
     setSelected(new Set());
     setSelectMode(false);
-    setNotice(
-      ids.length === 1 ? "Draft deleted — local storage freed." : `${ids.length} drafts deleted — local storage freed.`
-    );
     await refresh();
   }
 
@@ -130,7 +144,7 @@ export function RecentProjectsGrid({
           type="button"
           className="text-[11px] font-medium text-[var(--ge-gold)]"
           onClick={() => {
-            setSelectMode((v) => !v);
+            setSelectMode((value) => !value);
             setSelected(new Set());
           }}
           aria-pressed={selectMode}
@@ -149,7 +163,7 @@ export function RecentProjectsGrid({
             selectMode={selectMode}
             checked={selected.has(project.id)}
             onToggleSelect={() => toggleSelect(project.id)}
-            onDelete={() => setPendingDelete([project])}
+            onDelete={() => void requestDelete([project])}
             onDuplicate={() => void handleDuplicate(project.id)}
             onRename={() => void handleRename(project)}
           />
@@ -167,15 +181,11 @@ export function RecentProjectsGrid({
 
       {selectMode && selectedCount > 0 ? (
         <div className="gigaedit-select-bar" role="toolbar" aria-label="Bulk project actions">
-          <span className="text-xs font-semibold text-white">
-            {selectedCount} selected
-          </span>
+          <span className="text-xs font-semibold text-white">{selectedCount} selected</span>
           <button
             type="button"
             className="gigaedit-select-bar__delete"
-            onClick={() =>
-              setPendingDelete(projects.filter((p) => selected.has(p.id)))
-            }
+            onClick={() => void requestDelete(projects.filter((project) => selected.has(project.id)))}
           >
             <Trash2 className="h-3.5 w-3.5" aria-hidden />
             Delete selected ({selectedCount})
@@ -185,7 +195,7 @@ export function RecentProjectsGrid({
 
       {notice ? <p className="mt-2 text-xs text-[var(--ge-gold)]">{notice}</p> : null}
 
-      {pendingDelete?.length ? (
+      {pendingDelete?.projects.length ? (
         <div
           className="gigaedit-confirm-backdrop"
           role="alertdialog"
@@ -194,11 +204,13 @@ export function RecentProjectsGrid({
         >
           <div className="gigaedit-confirm-card">
             <h3 className="text-sm font-bold text-white">
-              Delete {pendingDelete.length === 1 ? `draft “${pendingDelete[0].title}”?` : `${pendingDelete.length} drafts?`}
+              Delete
+              {pendingDelete.projects.length === 1
+                ? ` draft “${pendingDelete.projects[0].title}”?`
+                : ` ${pendingDelete.projects.length} drafts?`}
             </h3>
             <p className="mt-1 text-xs text-[var(--ge-muted)]">
-              This frees local space immediately (IndexedDB + device files). Original files stay
-              untouched. Estimated saving: {formatBytes(pendingDelete.length * 25 * 1024 * 1024)}.
+              This frees {formatStorageBytes(pendingDelete.bytes)} locally (IndexedDB + device files). Original files stay untouched.
             </p>
             <div className="mt-3 flex gap-2">
               <button
@@ -282,10 +294,7 @@ function RecentProjectCard({
 
   return (
     <div
-      className={cn(
-        "gigaedit-recent-card w-full text-left",
-        compact && "gigaedit-recent-card--compact"
-      )}
+      className="gigaedit-recent-card-wrap relative overflow-hidden rounded-xl"
       onContextMenu={(e) => {
         e.preventDefault();
         setMenuOpen(true);
@@ -302,7 +311,7 @@ function RecentProjectCard({
       ) : null}
       <button
         type="button"
-        className="flex min-w-0 flex-1 items-stretch gap-3 text-left"
+        className={cn("flex min-w-0 flex-1 items-stretch gap-3 text-left", compact && "gigaedit-recent-card--compact")}
         onClick={() => (selectMode ? onToggleSelect() : openProject())}
         onTouchStart={beginLongPress}
         onTouchEnd={cancelLongPress}

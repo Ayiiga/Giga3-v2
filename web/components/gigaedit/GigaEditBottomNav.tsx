@@ -7,6 +7,7 @@ import {
   Home,
   Image as ImageIcon,
   Mic,
+  Volume2,
 } from "lucide-react";
 
 type GigaEditBottomNavProps = {
@@ -23,6 +24,7 @@ const STUDIO_TABS: {
   { id: "video", label: "Video", icon: Clapperboard },
   { id: "photo", label: "Photo", icon: ImageIcon },
   { id: "teleprompter", label: "Teleprompt", icon: Mic },
+  { id: "audio", label: "Audio", icon: Volume2 },
   { id: "projects", label: "Projects", icon: FolderOpen },
 ];
 

@@ -9,21 +9,32 @@ import {
   type AfricanVoiceTab,
 } from "@/lib/gigaedit/africanVoices";
 import { createEmptyProject, putProjectOriginalBlob, saveGigaEditProject } from "@/lib/gigaedit/projects";
-import { Mic, Play, Square } from "lucide-react";
+import { loadTeleprompterScript } from "@/lib/gigasocial/teleprompterScripts";
+import {
+  isBrowserVoiceoverSupported,
+  playVoiceoverPreview,
+  stopVoiceoverPreview,
+} from "@/lib/media/videoPreProduction/browserVoiceover";
+import { Mic, Play, Square, Volume2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 export type AudioStudioProps = {
   focusRecord?: boolean;
-  /** Fired when the user picks "Add African Voiceover" — parent opens the voice selector + teleprompter. */
+  onOpenTeleprompter?: () => void;
   onAddAfricanVoiceover?: (voice: AfricanVoice) => void;
 };
 
-export function AudioStudio({ focusRecord = false, onAddAfricanVoiceover }: AudioStudioProps) {
+export function AudioStudio({
+  focusRecord = false,
+  onOpenTeleprompter,
+  onAddAfricanVoiceover,
+}: AudioStudioProps) {
   const [recording, setRecording] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [voiceTab, setVoiceTab] = useState<AfricanVoiceTab>("African");
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>("twi_female");
+  const [previewingId, setPreviewingId] = useState<string | null>(null);
   const [noiseSuppression, setNoiseSuppression] = useState(true);
   const [echoCancellation, setEchoCancellation] = useState(true);
   const [voiceScript, setVoiceScript] = useState("");
@@ -36,8 +47,9 @@ export function AudioStudio({ focusRecord = false, onAddAfricanVoiceover }: Audi
 
   useEffect(() => {
     return () => {
-      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current?.getTracks().forEach((track) => track.stop());
       if (audioUrl) URL.revokeObjectURL(audioUrl);
+      stopVoiceoverPreview();
     };
   }, [audioUrl]);
 
@@ -46,34 +58,64 @@ export function AudioStudio({ focusRecord = false, onAddAfricanVoiceover }: Audi
     setStatus("Tap Record to capture voiceover — saved as a local audio project.");
   }, [focusRecord]);
 
+  function previewVoice(voice: AfricanVoice) {
+    if (previewingId === voice.id) {
+      stopVoiceoverPreview();
+      setPreviewingId(null);
+      return;
+    }
+    stopVoiceoverPreview();
+    setPreviewingId(voice.id);
+    const ok = playVoiceoverPreview({
+      text: voice.previewText,
+      lang: voice.lang,
+      rate: voice.rate ?? 1,
+      pitch: voice.pitch ?? 1,
+      onEnd: () => setPreviewingId(null),
+      onError: (message) => {
+        setPreviewingId(null);
+        setStatus(message);
+      },
+    });
+    if (!ok) {
+      setPreviewingId(null);
+      previewAfricanVoiceOffline(voice);
+    }
+  }
+
   async function start() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           noiseSuppression,
           echoCancellation,
-          autoGainControl: true,
+          autoGainControl: noiseSuppression,
         } as MediaTrackConstraints,
       });
       streamRef.current = stream;
       chunksRef.current = [];
       const recorder = new MediaRecorder(stream);
       recorderRef.current = recorder;
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
       };
       recorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
         if (audioUrl) URL.revokeObjectURL(audioUrl);
         setAudioUrl(URL.createObjectURL(blob));
         void (async () => {
-          const project = createEmptyProject({ kind: "audio", title: "Audio take" });
+          const script = voiceScript.trim() || loadTeleprompterScriptFallback();
+          const project = createEmptyProject({
+            kind: "audio",
+            title: selectedVoice ? `${selectedVoice.name} voiceover` : "Audio take",
+          });
           project.hasOriginal = true;
+          project.scriptText = script;
           await saveGigaEditProject(project);
           await putProjectOriginalBlob(project.id, blob);
-          setStatus("Audio saved locally. Open Video editor → Use Audio Studio take to attach it.");
+          setStatus("Audio saved locally. Open Video editor to attach it.");
         })();
-        stream.getTracks().forEach((t) => t.stop());
+        stream.getTracks().forEach((track) => track.stop());
       };
       recorder.start();
       setRecording(true);
@@ -90,16 +132,29 @@ export function AudioStudio({ focusRecord = false, onAddAfricanVoiceover }: Audi
     setRecording(false);
   }
 
-  function handleAddAfricanVoiceover(voice: AfricanVoice) {
-    setSelectedVoiceId(voice.id);
+  function handleAddAfricanVoiceover() {
+    if (!selectedVoice) {
+      setStatus("Pick an African voice first.");
+      return;
+    }
     const script = voiceScript.trim() || loadTeleprompterScriptFallback();
-    setVoiceScript(script);
-    setStatus(`“${voice.name}” selected — teleprompter opens with your script.`);
-    onAddAfricanVoiceover?.(voice);
+    if (script) {
+      try {
+        localStorage.setItem("giga3_gigasocial_teleprompter_script", script);
+      } catch {
+        /* ignore */
+      }
+    }
+    setStatus(`“${selectedVoice.name}” selected — teleprompter opens with your script.`);
+    onAddAfricanVoiceover?.(selectedVoice);
+    onOpenTeleprompter?.();
     try {
       window.dispatchEvent(
-        new CustomEvent("giga3:african-voiceover-selected", { detail: { voiceId: voice.id, script } })
+        new CustomEvent("giga3:african-voiceover-selected", {
+          detail: { voiceId: selectedVoice.id, script },
+        })
       );
+      window.dispatchEvent(new CustomEvent("giga3:teleprompter-show-overlay"));
     } catch {
       /* ignore */
     }
@@ -110,12 +165,10 @@ export function AudioStudio({ focusRecord = false, onAddAfricanVoiceover }: Audi
       <div>
         <h2 className="text-lg font-semibold">Audio studio</h2>
         <p className="mt-1 text-xs text-[var(--ge-muted)]">
-          Record voiceovers offline, keep originals, then attach them on the video timeline for
-          export mix.
+          African accents built in — Twi, Hausa, Yoruba, Swahili, and more. Record on device, then attach on the video timeline.
         </p>
       </div>
 
-      {/* ── African voices (top) ─────────────────────────────────────────── */}
       <section aria-labelledby="gigaedit-african-voices" className="gigaedit-glass space-y-3 p-4">
         <div className="flex items-center justify-between gap-2">
           <h3 id="gigaedit-african-voices" className="text-sm font-semibold">
@@ -170,9 +223,14 @@ export function AudioStudio({ focusRecord = false, onAddAfricanVoiceover }: Audi
                   type="button"
                   className="gigaedit-voice-sample-btn"
                   aria-label={`Play sample of ${voice.name}`}
-                  onClick={() => previewAfricanVoiceOffline(voice)}
+                  disabled={!isBrowserVoiceoverSupported() && previewingId !== voice.id}
+                  onClick={() => previewVoice(voice)}
                 >
-                  <Play className="h-3.5 w-3.5" aria-hidden />
+                  {previewingId === voice.id ? (
+                    <Square className="h-3.5 w-3.5" aria-hidden />
+                  ) : (
+                    <Play className="h-3.5 w-3.5" aria-hidden />
+                  )}
                 </button>
               </li>
             );
@@ -194,9 +252,9 @@ export function AudioStudio({ focusRecord = false, onAddAfricanVoiceover }: Audi
           <button
             type="button"
             className="inline-flex items-center gap-2 rounded-xl bg-[var(--ge-gold)] px-4 py-2 text-xs font-bold text-[#0b1220]"
-            onClick={() => selectedVoice && handleAddAfricanVoiceover(selectedVoice)}
+            onClick={handleAddAfricanVoiceover}
           >
-            <Mic className="h-4 w-4" aria-hidden />
+            <Volume2 className="h-4 w-4" aria-hidden />
             Add African Voiceover{selectedVoice ? ` · ${selectedVoice.name}` : ""}
           </button>
         </div>
@@ -221,7 +279,6 @@ export function AudioStudio({ focusRecord = false, onAddAfricanVoiceover }: Audi
         </div>
       </section>
 
-      {/* ── On-device recording ──────────────────────────────────────────── */}
       <div className="gigaedit-glass flex flex-wrap items-center gap-3 p-4">
         {!recording ? (
           <button
@@ -251,6 +308,7 @@ export function AudioStudio({ focusRecord = false, onAddAfricanVoiceover }: Audi
         </a>
         {audioUrl ? <audio controls src={audioUrl} className="w-full max-w-md" /> : null}
       </div>
+
       {status ? <p className="text-xs text-[var(--ge-gold)]">{status}</p> : null}
     </div>
   );
@@ -258,7 +316,7 @@ export function AudioStudio({ focusRecord = false, onAddAfricanVoiceover }: Audi
 
 function loadTeleprompterScriptFallback(): string {
   try {
-    return localStorage.getItem("giga3_gigasocial_teleprompter_script") ?? "";
+    return loadTeleprompterScript() || localStorage.getItem("giga3_gigasocial_teleprompter_script") || "";
   } catch {
     return "";
   }
