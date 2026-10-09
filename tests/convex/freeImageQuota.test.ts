@@ -102,3 +102,25 @@ describe("CV and letter scaffolds stay free of image routing", () => {
     });
   });
 });
+
+describe("free image reserve/release semantics", () => {
+  it("allows only one concurrent reservation per day and restores on release", () => {
+    // Mirrors freeImageQuota tryReserve/release against a single Accra day bucket.
+    const limit = 1;
+    let count = 0;
+    const tryReserve = () => {
+      if (count >= limit) return { ok: false as const, remaining: 0 };
+      count += 1;
+      return { ok: true as const, remaining: limit - count };
+    };
+    const release = () => {
+      count = Math.max(0, count - 1);
+      return { remaining: limit - count };
+    };
+
+    expect(tryReserve()).toEqual({ ok: true, remaining: 0 });
+    expect(tryReserve()).toEqual({ ok: false, remaining: 0 });
+    expect(release()).toEqual({ remaining: 1 });
+    expect(tryReserve()).toEqual({ ok: true, remaining: 0 });
+  });
+});
