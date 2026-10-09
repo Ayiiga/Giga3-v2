@@ -28,7 +28,7 @@ import {
 } from "@/lib/gigalearn/mediaLibrary/types";
 import { LOWER_GRADE_LEVELS, type GigaLearnLevelId } from "@/lib/gigalearn/levels";
 import { cn } from "@/lib/utils";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type DiscoverHubProps = {
   /** Prefer studio context level chip when available. */
@@ -36,6 +36,11 @@ type DiscoverHubProps = {
   /** Prefer studio context country id (ghana, nigeria, …). */
   preferredCountryId?: string | null;
 };
+
+function categoryLabel(id: MediaDiscoverCategory | "all"): string {
+  if (id === "all") return "All lessons";
+  return DISCOVER_CATEGORIES.find((entry) => entry.id === id)?.label ?? id;
+}
 
 export function DiscoverHub({
   preferredLevel,
@@ -63,6 +68,7 @@ export function DiscoverHub({
   const [activeItem, setActiveItem] = useState<LearningMediaItem | null>(null);
   const [offlinePacks, setOfflinePacks] = useState<OfflineMediaPack[]>([]);
   const [storageLabel, setStorageLabel] = useState("No offline media yet");
+  const resultsRef = useRef<HTMLDivElement | null>(null);
 
   const countryProfile = getMediaCountry(countryId);
   const languageOptions = countryProfile?.languages ?? (["en"] as MediaLanguageCode[]);
@@ -128,6 +134,17 @@ export function DiscoverHub({
 
   const list = category === "offline" ? offlineItems : filtered;
 
+  function selectCategory(next: MediaDiscoverCategory | "all") {
+    setCategory(next);
+    // Clear secondary filters so a category tap cannot look like a no-op
+    // because an earlier subject/topic filter emptied the list.
+    setSubject("all");
+    setTopic("all");
+    requestAnimationFrame(() => {
+      resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
   if (activeItem) {
     return (
       <MediaItemPlayer
@@ -176,17 +193,43 @@ export function DiscoverHub({
         </select>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+      <div
+        className="grid grid-cols-2 gap-2 sm:grid-cols-3"
+        role="group"
+        aria-label="Discover categories"
+      >
+        <button
+          type="button"
+          aria-pressed={category === "all"}
+          data-testid="discover-category-all"
+          onClick={() => selectCategory("all")}
+          className={cn(
+            "min-h-[4.5rem] rounded-2xl border px-3 py-3 text-left",
+            category === "all"
+              ? "border-accent bg-accent/15 ring-2 ring-accent/35"
+              : "border-border bg-white"
+          )}
+        >
+          <span className="text-2xl" aria-hidden>
+            📚
+          </span>
+          <span className="mt-1 block text-sm font-semibold text-foreground">All lessons</span>
+          <span className="mt-0.5 block text-[11px] leading-4 text-muted">
+            Show every pack for this country
+          </span>
+        </button>
         {DISCOVER_CATEGORIES.map((entry) => (
           <button
             key={entry.id}
             type="button"
-            onClick={() => setCategory(entry.id)}
+            aria-pressed={category === entry.id}
+            data-testid={`discover-category-${entry.id}`}
+            onClick={() => selectCategory(entry.id)}
             className={cn(
-              "min-h-[5.5rem] rounded-2xl border px-3 py-3 text-left",
+              "min-h-[4.5rem] rounded-2xl border px-3 py-3 text-left",
               category === entry.id
-                ? "border-accent/50 bg-accent/10"
-                : "border-border bg-white hover:border-accent/30"
+                ? "border-accent bg-accent/15 ring-2 ring-accent/35"
+                : "border-border bg-white"
             )}
           >
             <span className="text-2xl" aria-hidden>
@@ -200,117 +243,179 @@ export function DiscoverHub({
         ))}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <label className="sr-only" htmlFor="discover-level">
-          Grade
-        </label>
-        <select
-          id="discover-level"
-          className="min-h-11 rounded-xl border border-border bg-white px-3 text-sm"
-          value={level}
-          onChange={(e) => setLevel(e.target.value as GigaLearnLevelId | "all")}
-        >
-          <option value="all">All grades</option>
-          {LOWER_GRADE_LEVELS.map((id) => (
-            <option key={id} value={id}>
-              {id}
-            </option>
-          ))}
-        </select>
-        <select
-          className="min-h-11 rounded-xl border border-border bg-white px-3 text-sm"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          aria-label="Subject"
-        >
-          <option value="all">All subjects</option>
-          {subjects.map((value) => (
-            <option key={value} value={value}>
-              {value}
-            </option>
-          ))}
-        </select>
-        <select
-          className="min-h-11 rounded-xl border border-border bg-white px-3 text-sm"
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-          aria-label="Topic"
-        >
-          <option value="all">All topics</option>
-          {topics.map((value) => (
-            <option key={value} value={value}>
-              {value}
-            </option>
-          ))}
-        </select>
-        <select
-          className="min-h-11 rounded-xl border border-border bg-white px-3 text-sm"
-          value={language}
-          onChange={(e) => setLanguage(e.target.value as MediaLanguageCode | "all")}
-          aria-label="Language"
-        >
-          <option value="all">All languages</option>
-          {languageOptions.map((code) => (
-            <option key={code} value={code}>
-              {LANGUAGE_LABELS[code]}
-            </option>
-          ))}
-        </select>
-      </div>
+      <div
+        ref={resultsRef}
+        id="discover-results"
+        tabIndex={-1}
+        className="scroll-mt-24 space-y-3 rounded-2xl border border-border bg-card/40 p-3 sm:p-4"
+        aria-live="polite"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm font-semibold text-foreground" data-testid="discover-results-heading">
+            {categoryLabel(category)}
+            {!catalogLoading ? (
+              <span className="ml-2 font-medium text-muted">
+                ({list.length} {list.length === 1 ? "lesson" : "lessons"})
+              </span>
+            ) : null}
+          </p>
+          {category !== "all" ? (
+            <button
+              type="button"
+              className="min-h-10 rounded-full border border-border bg-white px-3 text-xs font-medium text-muted"
+              onClick={() => selectCategory("all")}
+            >
+              Clear category
+            </button>
+          ) : null}
+        </div>
 
-      {catalogLoading ? (
-        <div className="rounded-2xl border border-border bg-card px-4 py-8 text-center text-sm text-muted">
-          Loading {countryProfile?.name ?? "country"} lessons…
-        </div>
-      ) : list.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-card px-4 py-8 text-center">
-          <p className="text-sm font-medium text-foreground">
-            {category === "offline" ? "No downloads yet" : "No lessons match these filters"}
-          </p>
-          <p className="mt-1 text-xs text-muted">
-            {category === "offline"
-              ? "Open a lesson and tap Save for offline."
-              : "Try another grade, subject, language or country."}
-          </p>
-        </div>
-      ) : (
-        <ul className="grid gap-2 sm:grid-cols-2">
-          {list.map((item) => {
-            const saved = offlinePacks.some(
-              (pack) => pack.itemId === item.id && isOfflinePackComplete(pack)
-            );
-            return (
-              <li key={item.id}>
+        <details className="rounded-xl border border-border bg-white px-3 py-2">
+          <summary className="cursor-pointer list-none text-sm font-medium text-foreground marker:content-none [&::-webkit-details-marker]:hidden">
+            Filters (grade, subject, language)
+          </summary>
+          <div className="mt-2 flex flex-wrap gap-2 pb-1">
+            <label className="sr-only" htmlFor="discover-level">
+              Grade
+            </label>
+            <select
+              id="discover-level"
+              className="min-h-11 rounded-xl border border-border bg-white px-3 text-sm"
+              value={level}
+              onChange={(e) => setLevel(e.target.value as GigaLearnLevelId | "all")}
+            >
+              <option value="all">All grades</option>
+              {LOWER_GRADE_LEVELS.map((id) => (
+                <option key={id} value={id}>
+                  {id}
+                </option>
+              ))}
+            </select>
+            <select
+              className="min-h-11 rounded-xl border border-border bg-white px-3 text-sm"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              aria-label="Subject"
+            >
+              <option value="all">All subjects</option>
+              {subjects.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+            <select
+              className="min-h-11 rounded-xl border border-border bg-white px-3 text-sm"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              aria-label="Topic"
+            >
+              <option value="all">All topics</option>
+              {topics.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+            <select
+              className="min-h-11 rounded-xl border border-border bg-white px-3 text-sm"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as MediaLanguageCode | "all")}
+              aria-label="Language"
+            >
+              <option value="all">All languages</option>
+              {languageOptions.map((code) => (
+                <option key={code} value={code}>
+                  {LANGUAGE_LABELS[code]}
+                </option>
+              ))}
+            </select>
+          </div>
+        </details>
+
+        {catalogLoading ? (
+          <div className="rounded-2xl border border-border bg-white px-4 py-8 text-center text-sm text-muted">
+            Loading {countryProfile?.name ?? "country"} lessons…
+          </div>
+        ) : list.length === 0 ? (
+          <div
+            className="rounded-2xl border border-dashed border-border bg-white px-4 py-8 text-center"
+            data-testid="discover-empty-state"
+          >
+            <p className="text-sm font-medium text-foreground">
+              {category === "offline"
+                ? "No offline lessons saved yet"
+                : `No ${categoryLabel(category)} lessons match these filters`}
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              {category === "offline"
+                ? "Open any lesson and tap Save for offline. Saved packs appear here."
+                : "Try All grades, clear filters, or pick another category. We only ship verified Ghana packs for now."}
+            </p>
+            <div className="mt-3 flex flex-wrap justify-center gap-2">
+              {category !== "all" ? (
                 <button
                   type="button"
-                  onClick={() => setActiveItem(item)}
-                  className="flex min-h-[5.5rem] w-full items-center gap-3 rounded-2xl border border-border bg-white px-3 py-3 text-left hover:border-accent/35"
+                  className="min-h-11 rounded-full border border-border px-4 text-sm font-medium"
+                  onClick={() => selectCategory("all")}
                 >
-                  <span
-                    className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#1a233f] text-3xl"
-                    aria-hidden
-                  >
-                    {item.illustration.emoji}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-foreground">
-                      {item.title}
-                    </span>
-                    <span className="mt-0.5 line-clamp-2 block text-xs text-muted">
-                      {item.description}
-                    </span>
-                    <span className="mt-1 block text-[11px] font-medium text-accent">
-                      {item.countryCode} · {item.levels.join(" · ")}
-                      {item.ageSuitability ? ` · ${item.ageSuitability.label}` : ""}
-                      {saved ? " · Offline" : ""}
-                    </span>
-                  </span>
+                  Show all lessons
                 </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+              ) : null}
+              <button
+                type="button"
+                className="min-h-11 rounded-full border border-border px-4 text-sm font-medium"
+                onClick={() => {
+                  setLevel("all");
+                  setSubject("all");
+                  setTopic("all");
+                  setLanguage("all");
+                }}
+              >
+                Reset filters
+              </button>
+            </div>
+          </div>
+        ) : (
+          <ul className="grid gap-2 sm:grid-cols-2" data-testid="discover-results-list">
+            {list.map((item) => {
+              const saved = offlinePacks.some(
+                (pack) => pack.itemId === item.id && isOfflinePackComplete(pack)
+              );
+              return (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => setActiveItem(item)}
+                    className="flex min-h-[5.5rem] w-full items-center gap-3 rounded-2xl border border-border bg-white px-3 py-3 text-left"
+                    data-testid={`discover-item-${item.id}`}
+                  >
+                    <span
+                      className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#1a233f] text-3xl"
+                      aria-hidden
+                    >
+                      {item.illustration.emoji}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-foreground">
+                        {item.title}
+                      </span>
+                      <span className="mt-0.5 line-clamp-2 block text-xs text-muted">
+                        {item.description}
+                      </span>
+                      <span className="mt-1 block text-[11px] font-medium text-accent">
+                        {item.countryCode} · {item.levels.join(" · ")}
+                        {item.ageSuitability ? ` · ${item.ageSuitability.label}` : ""}
+                        {saved ? " · Offline" : ""}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
