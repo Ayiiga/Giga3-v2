@@ -80,7 +80,9 @@ describe("fresh chat surface", () => {
     );
     expect(bubble).toContain("selectorOnly");
     expect(reader).toContain("selectorOnly");
-    expect(reader).toMatch(/selectorOnly\s*\?\s*"flex"/);
+    // Compact control — expand to pick a voice (no always-visible pill strip).
+    expect(reader).toContain("Change voice");
+    expect(reader).toContain("aria-expanded={open}");
   });
 
   it("stops speech when deleting a conversation", () => {
