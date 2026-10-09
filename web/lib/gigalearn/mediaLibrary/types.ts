@@ -60,6 +60,11 @@ export type MediaAssetRef =
       mimeType: string;
       /** Estimated bytes for download UI; never auto-cached wholesale. */
       estimatedBytes: number;
+      /**
+       * When true, offline pack cannot become `ready` without this asset locally.
+       * Optional remotes may be skipped (network/quota) without blocking the pack.
+       */
+      required?: boolean;
       /** Optional integrity hint for future blob caching. */
       contentHash?: string;
     };

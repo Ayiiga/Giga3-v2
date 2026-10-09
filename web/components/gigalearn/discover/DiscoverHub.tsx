@@ -5,6 +5,7 @@ import { loadCatalogForCountry } from "@/lib/gigalearn/mediaLibrary/catalog";
 import {
   getMediaCountry,
   listAvailableMediaCountries,
+  MEDIA_COUNTRY_PROFILES,
 } from "@/lib/gigalearn/mediaLibrary/countryRegistry";
 import {
   filterMediaLibrary,
@@ -14,6 +15,7 @@ import {
 } from "@/lib/gigalearn/mediaLibrary/filters";
 import {
   getOfflineMediaStorageSummary,
+  isOfflinePackComplete,
   listOfflineMediaPacks,
 } from "@/lib/gigalearn/mediaLibrary/offlineMedia";
 import {
@@ -114,7 +116,7 @@ export function DiscoverHub({
 
   const offlineItems = useMemo(() => {
     return offlinePacks
-      .filter((pack) => pack.status === "ready")
+      .filter((pack) => isOfflinePackComplete(pack))
       .map((pack) => pack.item)
       .filter((item) => {
         if (item.countryId && item.countryId !== countryId) return false;
@@ -159,11 +161,16 @@ export function DiscoverHub({
           id="discover-country"
           className="min-h-11 rounded-xl border border-border bg-white px-3 text-sm font-medium"
           value={countryId}
-          onChange={(e) => setCountryId(e.target.value)}
+          onChange={(e) => {
+            const next = e.target.value;
+            if (!getMediaCountry(next)?.available) return;
+            setCountryId(next);
+          }}
         >
-          {availableCountries.map((country) => (
-            <option key={country.id} value={country.id}>
+          {MEDIA_COUNTRY_PROFILES.map((country) => (
+            <option key={country.id} value={country.id} disabled={!country.available}>
               {country.flag} {country.name}
+              {country.available ? "" : " (coming soon)"}
             </option>
           ))}
         </select>
@@ -270,7 +277,7 @@ export function DiscoverHub({
         <ul className="grid gap-2 sm:grid-cols-2">
           {list.map((item) => {
             const saved = offlinePacks.some(
-              (pack) => pack.itemId === item.id && pack.status === "ready"
+              (pack) => pack.itemId === item.id && isOfflinePackComplete(pack)
             );
             return (
               <li key={item.id}>

@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   assertCatalogCountryMetadata,
@@ -5,13 +7,18 @@ import {
   loadCatalogForCountry,
   MEDIA_LIBRARY_CATALOG,
 } from "../../web/lib/gigalearn/mediaLibrary/catalog";
-import { GHANA_MEDIA_CATALOG } from "../../web/lib/gigalearn/mediaLibrary/catalog.ghana";
+import {
+  GHANA_KG2_MEDIA_SLICE_IDS,
+  GHANA_MEDIA_CATALOG,
+} from "../../web/lib/gigalearn/mediaLibrary/catalog.ghana";
 import {
   getMediaCountry,
   listAvailableMediaCountries,
+  MEDIA_COUNTRY_PROFILES,
   visibleRegionScopesForCountry,
 } from "../../web/lib/gigalearn/mediaLibrary/countryRegistry";
 import { filterMediaLibrary } from "../../web/lib/gigalearn/mediaLibrary/filters";
+import { requiredRemoteAssets } from "../../web/lib/gigalearn/mediaLibrary/offlineMedia";
 import { CURRICULUM_COUNTRIES } from "../../web/lib/gigalearn/curriculumEngine";
 
 describe("Discover country-aware architecture", () => {
@@ -98,5 +105,38 @@ describe("Discover country-aware architecture", () => {
       "africa",
       "global",
     ]);
+  });
+
+  it("keeps unavailable countries from exposing learning packs on switch", async () => {
+    expect(listAvailableMediaCountries().map((c) => c.id)).toEqual(["ghana"]);
+    const unavailable = MEDIA_COUNTRY_PROFILES.filter((c) => !c.available);
+    expect(unavailable.map((c) => c.id)).toContain("nigeria");
+    for (const country of unavailable) {
+      expect(await loadCatalogForCountry(country.id)).toEqual([]);
+      expect(getCatalogForCountrySync(country.id)).toEqual([]);
+    }
+  });
+
+  it("ships a complete Ghana KG2 multimedia slice with on-disk assets", () => {
+    for (const id of GHANA_KG2_MEDIA_SLICE_IDS) {
+      const item = MEDIA_LIBRARY_CATALOG.find((row) => row.id === id)!;
+      expect(item.levels).toContain("KG2");
+      expect(item.offlineEligible).toBe(true);
+      const required = requiredRemoteAssets(item);
+      expect(required.length).toBeGreaterThan(0);
+      for (const asset of required) {
+        const file = resolve(__dirname, "../../web/public", asset.url.replace(/^\//, ""));
+        expect(existsSync(file), asset.url).toBe(true);
+        expect(readFileSync(file).byteLength).toBeGreaterThan(0);
+      }
+    }
+    expect(GHANA_KG2_MEDIA_SLICE_IDS).toEqual(
+      expect.arrayContaining([
+        "pic-mango-kg2",
+        "rhyme-mango-sweet",
+        "story-ananse-listen",
+        "game-count-bananas-kg2",
+      ])
+    );
   });
 });

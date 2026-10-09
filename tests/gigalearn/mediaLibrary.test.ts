@@ -66,7 +66,9 @@ describe("GigaLearn multimedia Discover catalog", () => {
 
   it("estimates offline pack size without auto-caching the whole catalogue", () => {
     const item = getMediaItemById("pic-mango-kg2")!;
-    expect(estimateMediaPackBytes(item)).toBe(item.estimatedOfflineBytes);
+    const remoteBytes = (item.remoteMedia ?? []).reduce((sum, a) => sum + a.estimatedBytes, 0);
+    expect(estimateMediaPackBytes(item)).toBe(item.estimatedOfflineBytes + remoteBytes);
+    expect(estimateMediaPackBytes(item)).toBeGreaterThan(item.estimatedOfflineBytes);
     expect(formatBytes(2048)).toContain("KB");
   });
 
