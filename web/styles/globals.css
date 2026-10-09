@@ -887,6 +887,50 @@ button:focus-visible {
   overflow-anchor: none;
 }
 
+/* Compact document / GigaLearn mobile density — keeps touch targets, reduces empty card air. */
+.document-compact {
+  --doc-gap: 0.75rem;
+}
+
+.document-compact.space-y-5 > :not([hidden]) ~ :not([hidden]),
+.document-compact .space-y-5 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: var(--doc-gap);
+}
+
+.document-compact .saas-card {
+  padding: 0.875rem !important;
+}
+
+@media (min-width: 640px) {
+  .document-compact .saas-card {
+    padding: 1.25rem !important;
+  }
+}
+
+.document-studio .ProseMirror {
+  min-height: 14rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.document-studio .ProseMirror p {
+  margin: 0.4rem 0;
+}
+
+.document-studio .ProseMirror h1,
+.document-studio .ProseMirror h2,
+.document-studio .ProseMirror h3 {
+  margin: 0.7rem 0 0.35rem;
+  font-weight: 700;
+  color: #1a1330;
+}
+
+.document-studio .ProseMirror ul,
+.document-studio .ProseMirror ol {
+  margin: 0.4rem 0 0.4rem 1.25rem;
+}
+
 .gigalearn-grade-scroll {
   scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;

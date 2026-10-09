@@ -86,7 +86,13 @@ export const CHAT_CREATE_SECTIONS: ChatCreateMenuSection[] = [
       },
       { id: "doc-essay", label: "Essay", emoji: "✍️", description: "Essay scaffold", runtime: "AI STUDIO" },
       { id: "doc-thesis", label: "Thesis", emoji: "🎓", description: "Graduate thesis structure", runtime: "AI STUDIO" },
-      { id: "doc-cv-resume", label: "CV / Resume", emoji: "💼", description: "Professional CV template", runtime: "AI STUDIO" },
+      {
+        id: "doc-cv-resume",
+        label: "CV / Resume",
+        emoji: "💼",
+        description: "CV in chat — edit & export PDF/Word",
+        runtime: "AI STUDIO",
+      },
       { id: "doc-book", label: "Books", emoji: "📚", description: "Book outline", runtime: "AI STUDIO" },
       { id: "doc-lesson-notes", label: "Lesson Notes", emoji: "📓", description: "Class notes template", runtime: "AI STUDIO" },
       { id: "doc-coding", label: "Coding Project", emoji: "🧩", description: "Project README scaffold", runtime: "AI STUDIO" },
@@ -107,7 +113,13 @@ export const CHAT_CREATE_SECTIONS: ChatCreateMenuSection[] = [
       { id: "ai-chat", label: "AI Chat", emoji: "💬", description: "Stay in chat", runtime: "AI STUDIO" },
       { id: "ai-image", label: "AI Image", emoji: "🖼", description: "Open Media Studio", runtime: "AI STUDIO" },
       { id: "ai-video", label: "AI Video", emoji: "🎬", description: "Open Video AI", runtime: "AI STUDIO" },
-      { id: "ai-document", label: "AI Document", emoji: "📑", description: "Writing mode", runtime: "AI STUDIO" },
+      {
+        id: "ai-document",
+        label: "AI Document",
+        emoji: "📑",
+        description: "Open Document Studio",
+        runtime: "AI STUDIO",
+      },
       { id: "ai-coding", label: "AI Coding Assistant", emoji: "⚡", description: "Coding mode", runtime: "AI STUDIO" },
     ],
   },
@@ -136,8 +148,9 @@ const INLINE_TEMPLATES: Partial<Record<ChatCreateActionId, string>> = {
   "web-link":
     "Please read this public link and summarize the key points: ",
   "doc-pdf":
-    "Help me draft or analyze a PDF document.\n\nTopic:\n\nKey sections:\n1.\n2.\n3.\n",
-  "doc-lesson-notes": "📓 Lesson notes\n\nTopic:\n\nKey points:\n\nQuestions:\n",
+    "Create a polished document ready for PDF/Word export.\n\nTopic:\n\nKey sections:\n1.\n2.\n3.\n",
+  "doc-lesson-notes":
+    "Create lesson notes as a complete markdown document with headings and lists.\n\nTopic:\n\nKey points:\n\nQuestions:\n",
   "doc-coding":
     "🧩 Coding project\n\nProject name:\n\nGoals:\n\nStack:\n\nTasks:\n",
   "doc-programming":
@@ -183,7 +196,7 @@ export function resolveChatCreateRoute(action: ChatCreateActionId): ChatCreateRo
     case "ai-video":
       return { kind: "navigate", href: siteConfig.links.video };
     case "ai-document":
-      return { kind: "navigate", href: `${siteConfig.links.dashboard}?category=writing` };
+      return { kind: "navigate", href: "/documents/" };
     case "ai-coding":
       return { kind: "navigate", href: `${siteConfig.links.dashboard}?category=coding` };
     default:
