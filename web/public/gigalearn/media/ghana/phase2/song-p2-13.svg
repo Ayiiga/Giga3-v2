@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" role="img" aria-label="Market Call">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F48FB1"/>
+      <stop offset="100%" stop-color="#FFE082"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="480" rx="36" fill="url(#sky)"/>
+  <circle cx="400" cy="70" r="36" fill="#FFE082" opacity="0.95"/>
+  <circle cx="240" cy="170" r="48" fill="#8D5524"/><circle cx="225" cy="165" r="5" fill="#212121"/><circle cx="255" cy="165" r="5" fill="#212121"/><path d="M225 188 Q240 200 255 188" stroke="#5D4037" stroke-width="4" fill="none"/><path d="M180 230 Q240 210 300 230 L310 340 Q240 360 170 340 Z" fill="#42A5F5"/><rect x="210" y="340" width="22" height="50" rx="8" fill="#5D4037"/><rect x="248" y="340" width="22" height="50" rx="8" fill="#5D4037"/>
+  <rect x="24" y="400" width="432" height="56" rx="16" fill="#FFFFFF" opacity="0.92"/>
+  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="28" font-weight="700" fill="#1a233f">Market Call</text>
+</svg>

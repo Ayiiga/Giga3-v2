@@ -1,0 +1,7 @@
+file '/workspace/web/public/gigalearn/media/ghana/phase2/video-p2-9-f1.svg'
+duration 2.2
+file '/workspace/web/public/gigalearn/media/ghana/phase2/video-p2-9-f2.svg'
+duration 2.2
+file '/workspace/web/public/gigalearn/media/ghana/phase2/video-p2-9-f3.svg'
+duration 2.2
+file '/workspace/web/public/gigalearn/media/ghana/phase2/video-p2-9-f3.svg'

@@ -1,11 +1,15 @@
 /**
- * Ghana Discover catalogue — Phase 1 reference implementation.
- * Small complete KG2 media set: original SVG pictures, generated speech
- * recordings (educator-reviewed native voices should replace later),
- * one short educational video, original rhymes, and offline games.
- * No invented anthem lyrics, pledges, or unverified curriculum strands.
+ * Ghana Discover catalogue — Phase 1 reference + Phase 2 expansion shards.
+ * Nigeria and other countries stay empty until educator-reviewed content exists.
  */
 
+import { GHANA_PHASE2_CULTURE } from "@/lib/gigalearn/mediaLibrary/catalog.ghana.culture";
+import { GHANA_PHASE2_GAMES } from "@/lib/gigalearn/mediaLibrary/catalog.ghana.games";
+import { GHANA_PHASE2_PICTURES } from "@/lib/gigalearn/mediaLibrary/catalog.ghana.pictures";
+import { GHANA_PHASE2_RHYMES } from "@/lib/gigalearn/mediaLibrary/catalog.ghana.rhymes";
+import { GHANA_PHASE2_SONGS } from "@/lib/gigalearn/mediaLibrary/catalog.ghana.songs";
+import { GHANA_PHASE2_STORIES } from "@/lib/gigalearn/mediaLibrary/catalog.ghana.stories";
+import { GHANA_PHASE2_VIDEOS } from "@/lib/gigalearn/mediaLibrary/catalog.ghana.videos";
 import type { LearningMediaItem } from "@/lib/gigalearn/mediaLibrary/types";
 
 const MEDIA = "/gigalearn/media/ghana/kg2";
@@ -17,15 +21,13 @@ const ORIGINAL_ART = {
   reviewedAt: "2026-10-09",
 } as const;
 
-/** espeak-ng output — not educator-reviewed native speech. */
 const GENERATED_SPEECH = {
   source:
-    "Generated educational speech (espeak-ng) for offline packaging — not educator-reviewed native-speaker recordings; replace before certification claims",
+    "Generated educational speech (espeak-ng en+m3 warmer male) for offline packaging — not educator-reviewed native-speaker recordings; replace before certification claims",
   rights: "original",
   reviewed: false,
 } as const;
 
-/** Packs that ship generated speech must not inherit reviewed:true from art alone. */
 const ART_PLUS_GENERATED_SPEECH = {
   source: `${ORIGINAL_ART.source}; ${GENERATED_SPEECH.source}`,
   rights: "original",
@@ -34,14 +36,14 @@ const ART_PLUS_GENERATED_SPEECH = {
 
 const ORIGINAL_RHYME = {
   source:
-    "Original Giga3 educational rhyme text; spoken audio is generated (espeak-ng), not educator-reviewed native speech",
+    "Original Giga3 educational rhyme text; spoken audio is generated (espeak-ng en+m3), not educator-reviewed native speech",
   rights: "original",
   reviewed: false,
 } as const;
 
 const ORIGINAL_VIDEO = {
   source:
-    "Original Giga3 educational storyboard video from GigaLearn SVG art; narration track is generated (espeak-ng), not educator-reviewed native speech",
+    "Original Giga3 educational storyboard video from GigaLearn SVG art; narration track is generated (espeak-ng en+m3), not educator-reviewed native speech",
   rights: "original",
   reviewed: false,
 } as const;
@@ -85,7 +87,8 @@ function remote(
   };
 }
 
-export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
+/** Phase 1 seed packs — remapped into Phase 2 Discover categories. */
+export const GHANA_PHASE1_SEED: LearningMediaItem[] = [
   {
     id: "pic-mango-kg2",
     title: "Mango",
@@ -163,7 +166,7 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     title: "Talking drum",
     description: "Meet a drum used in Ghanaian music and storytelling gatherings.",
     contentType: "picture_card",
-    discoverCategory: "pictures-objects",
+    discoverCategory: "culture-occupations",
     levels: ["KG2", "P1", "P2"],
     subject: "Creative Arts",
     topic: "Musical instruments",
@@ -206,7 +209,7 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     title: "Count the bananas",
     description: "A short counting game with bananas for KG2 learners.",
     contentType: "game",
-    discoverCategory: "play-practise",
+    discoverCategory: "games",
     levels: ["KG1", "KG2"],
     subject: "Numeracy",
     topic: "Counting 1–10",
@@ -251,7 +254,7 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     title: "Mango Sweet",
     description: "A short original fruit rhyme in English and Twi.",
     contentType: "rhyme_song",
-    discoverCategory: "rhymes-songs",
+    discoverCategory: "rhymes-poems",
     levels: ["Creche", "KG1", "KG2", "P1"],
     subject: "Language",
     topic: "Nursery rhymes",
@@ -290,7 +293,7 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     description:
       "A short original story video about Ananse the spider — a familiar figure in Ghanaian storytelling.",
     contentType: "video_story",
-    discoverCategory: "videos-stories",
+    discoverCategory: "african-stories",
     levels: ["KG2", "P1", "P2"],
     subject: "Language",
     topic: "Stories",
@@ -332,7 +335,7 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     description:
       "Kente is a handwoven cloth tradition associated with Ashanti and Ewe communities in Ghana. Weavers make colourful patterns on a loom.",
     contentType: "culture",
-    discoverCategory: "africa-culture",
+    discoverCategory: "culture-occupations",
     levels: ["KG2", "P1", "P2", "P3"],
     subject: "Our World",
     topic: "Crafts",
@@ -368,99 +371,12 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
     rights: { ...CULTURE_SUMMARY, source: `${CULTURE_SUMMARY.source}; ${ORIGINAL_ART.source}` },
   },
   {
-    id: "culture-pottery-intro",
-    title: "Pottery",
-    description:
-      "Potters shape clay with their hands and fire it to make bowls and pots used at home and in markets.",
-    contentType: "culture",
-    discoverCategory: "africa-culture",
-    levels: ["KG2", "P1", "P2"],
-    subject: "Our World",
-    topic: "Crafts",
-    languages: ["en"],
-    ...GH,
-    curriculumLevelId: "kg-2",
-    curriculumNote: "Ghana Early Years — Our World / culture awareness",
-    culturalTheme: "pottery",
-    ageSuitability: KG2_AGE,
-    illustration: { kind: "emoji", emoji: "🏺", alt: "Clay pot" },
-    narrations: [
-      {
-        kind: "tts",
-        text: "A potter shapes soft clay into a pot. Then the pot is dried and fired.",
-        voiceId: "english",
-        language: "en",
-      },
-    ],
-    estimatedOfflineBytes: 2_100,
-    offlineEligible: true,
-    rights: CULTURE_SUMMARY,
-  },
-  {
-    id: "culture-farming-fishing",
-    title: "Farming and fishing",
-    description:
-      "Many families in Ghana grow food on farms and catch fish from rivers, lakes and the sea. These are important ways people work and feed their communities.",
-    contentType: "culture",
-    discoverCategory: "africa-culture",
-    levels: ["KG2", "P1", "P2", "P3"],
-    subject: "Our World",
-    topic: "Occupations",
-    languages: ["en"],
-    ...GH,
-    curriculumLevelId: "kg-2",
-    curriculumNote: "Ghana Early Years — Our World / occupations",
-    culturalTheme: "farming and fishing",
-    ageSuitability: KG2_AGE,
-    illustration: { kind: "emoji", emoji: "🌾", alt: "Farm crops" },
-    narrations: [
-      {
-        kind: "tts",
-        text: "Farmers grow food. Fishers catch fish. Both help feed the community.",
-        voiceId: "english",
-        language: "en",
-      },
-    ],
-    estimatedOfflineBytes: 2_200,
-    offlineEligible: true,
-    rights: CULTURE_SUMMARY,
-  },
-  {
-    id: "culture-blacksmith-intro",
-    title: "Blacksmith",
-    description:
-      "A blacksmith heats metal and shapes tools. In many Ghanaian communities, blacksmiths make and repair useful metal objects.",
-    contentType: "culture",
-    discoverCategory: "africa-culture",
-    levels: ["KG2", "P1", "P2", "P3"],
-    subject: "Our World",
-    topic: "Occupations",
-    languages: ["en"],
-    ...GH,
-    curriculumLevelId: "kg-2",
-    curriculumNote: "Ghana Early Years — Our World / occupations",
-    culturalTheme: "blacksmithing",
-    ageSuitability: KG2_AGE,
-    illustration: { kind: "emoji", emoji: "🔨", alt: "Hammer for metalwork" },
-    narrations: [
-      {
-        kind: "tts",
-        text: "A blacksmith works with hot metal to shape tools.",
-        voiceId: "english",
-        language: "en",
-      },
-    ],
-    estimatedOfflineBytes: 2_100,
-    offlineEligible: true,
-    rights: CULTURE_SUMMARY,
-  },
-  {
     id: "country-ghana-profile",
     title: "Ghana",
     description:
       "Ghana is a country in West Africa. The capital city is Accra. Official anthem recordings and pledge texts are not bundled here — they require licensed or officially published sources.",
     contentType: "country_profile",
-    discoverCategory: "africa-culture",
+    discoverCategory: "culture-occupations",
     levels: ["KG2", "P1", "P2", "P3"],
     subject: "Our World",
     topic: "Countries",
@@ -492,6 +408,17 @@ export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
   },
 ];
 
+export const GHANA_MEDIA_CATALOG: LearningMediaItem[] = [
+  ...GHANA_PHASE1_SEED,
+  ...GHANA_PHASE2_RHYMES,
+  ...GHANA_PHASE2_SONGS,
+  ...GHANA_PHASE2_STORIES,
+  ...GHANA_PHASE2_VIDEOS,
+  ...GHANA_PHASE2_PICTURES,
+  ...GHANA_PHASE2_CULTURE,
+  ...GHANA_PHASE2_GAMES,
+];
+
 /** Ids in the complete KG2 multimedia slice (required local assets when offline). */
 export const GHANA_KG2_MEDIA_SLICE_IDS = [
   "pic-mango-kg2",
@@ -502,3 +429,18 @@ export const GHANA_KG2_MEDIA_SLICE_IDS = [
   "story-ananse-listen",
   "culture-kente-intro",
 ] as const;
+
+export function countGhanaCatalogByKind(catalog: LearningMediaItem[] = GHANA_MEDIA_CATALOG) {
+  return {
+    total: catalog.length,
+    rhymesPoems: catalog.filter((i) => i.discoverCategory === "rhymes-poems").length,
+    songs: catalog.filter((i) => i.discoverCategory === "songs").length,
+    africanStories: catalog.filter((i) => i.discoverCategory === "african-stories").length,
+    videosAnimation: catalog.filter((i) => i.discoverCategory === "videos-animation").length,
+    picturesObjects: catalog.filter((i) => i.discoverCategory === "pictures-objects").length,
+    animalsNature: catalog.filter((i) => i.discoverCategory === "animals-nature").length,
+    numbersLetters: catalog.filter((i) => i.discoverCategory === "numbers-letters").length,
+    cultureOccupations: catalog.filter((i) => i.discoverCategory === "culture-occupations").length,
+    games: catalog.filter((i) => i.discoverCategory === "games").length,
+  };
+}

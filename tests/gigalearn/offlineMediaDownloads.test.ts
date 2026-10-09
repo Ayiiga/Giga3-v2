@@ -118,7 +118,8 @@ describe("Discover offline media downloads", () => {
 
   it("skips missing optional remote media without failing the pack", async () => {
     const item = {
-      ...getMediaItemById("culture-pottery-intro")!,
+      ...getMediaItemById("country-ghana-profile")!,
+      offlineEligible: true,
       remoteMedia: [
         {
           kind: "remote" as const,
