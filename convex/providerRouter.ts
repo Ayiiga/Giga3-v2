@@ -16,6 +16,7 @@ import {
   shouldEnableCareerOrEducationResearch,
 } from "./researchCapabilities";
 import { detectAnswerFromUserContextIntent } from "./newsEvidence/userContextRouting";
+import { isImageEditOrTransformQuery } from "./chatImageSource";
 
 /** User-facing AI access tier — drives default LLM provider. */
 export type AiProviderTier = "free" | "premium";
@@ -48,8 +49,15 @@ export type RoutingInput = {
   query: string;
   hasAttachments?: boolean;
   hasImageAttachment?: boolean;
+  /** Prior generated image or upload available for iterative edit. */
+  hasEditableImageSource?: boolean;
   /** Free-tier switchable chat system (maps to Giga3 Fast/Smart/Vision/Creator). */
   chatSystem?: string;
+};
+
+export type ClassifyRequestOptions = {
+  hasImageAttachment?: boolean;
+  hasEditableImageSource?: boolean;
 };
 
 /** Free user chat systems — each maps to a distinct provider priority. */
@@ -197,11 +205,26 @@ export function resolveAiProviderTier(profile: UserRoutingProfile): AiProviderTi
 export function classifyRequestKind(
   query: string,
   mode: string,
-  hasImageAttachment?: boolean
+  hasImageAttachmentOrOptions?: boolean | ClassifyRequestOptions
 ): RequestKind {
-  if (hasImageAttachment) return "text_chat";
+  const opts: ClassifyRequestOptions =
+    typeof hasImageAttachmentOrOptions === "boolean"
+      ? { hasImageAttachment: hasImageAttachmentOrOptions }
+      : hasImageAttachmentOrOptions ?? {};
+  const hasImageAttachment = Boolean(opts.hasImageAttachment);
+  const hasEditableImageSource = Boolean(
+    opts.hasEditableImageSource || hasImageAttachment
+  );
   const compact = query.trim();
   if (!compact) return "text_chat";
+
+  // Uploads / prior images: route edit/transform intents to the image pipeline;
+  // otherwise keep vision/text analysis (do not force text for non-image files).
+  if (hasEditableImageSource && isImageEditOrTransformQuery(compact, true)) {
+    return "image_generation";
+  }
+  if (hasImageAttachment) return "text_chat";
+
   if (mode === "social" && IMAGE_ASSET_RE.test(compact)) return "image_generation";
   if (IMAGE_GENERATION_RE.test(compact)) return "image_generation";
   if (IMAGE_NEED_RE.test(compact)) return "image_generation";
@@ -292,7 +315,10 @@ function premiumTierFailover(): ChatProviderId[] {
 }
 
 export function buildChatRoutePlan(input: RoutingInput): ChatRoutePlan {
-  const requestKind = classifyRequestKind(input.query, input.mode, input.hasAttachments);
+  const requestKind = classifyRequestKind(input.query, input.mode, {
+    hasImageAttachment: input.hasImageAttachment,
+    hasEditableImageSource: input.hasEditableImageSource,
+  });
 
   if (requestKind === "image_generation") {
     if (input.tier === "premium") {

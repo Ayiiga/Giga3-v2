@@ -22,8 +22,10 @@ import { SECURITY_EVENT_TYPES } from "./securityMonitoring";
 import { RateLimitError, UnauthorizedError } from "./securityErrors";
 import { resolveAiProviderTier } from "./providerRouter";
 import { getFreeOpenAiSnapshotDb } from "./freeOpenAiQuota";
+import { getFreeImageSnapshotDb } from "./freeImageQuota";
 import { isSubscriptionActive } from "./creditsConfig";
 import {
+  isFreeImageDailyQuotaEnabled,
   isFreeImageGenerationEnabled,
   isLiveNewsEnabled,
   isPushAlertsEnabled,
@@ -361,6 +363,7 @@ export const getChatCredits = query({
     });
 
     const freeOpenAi = await getFreeOpenAiSnapshotDb(ctx, email);
+    const freeImage = await getFreeImageSnapshotDb(ctx, email);
     const isPremium = aiTier === "premium";
     const subscriptionActive = isSubscriptionActive(
       user.subscriptionPlan ?? "free",
@@ -377,15 +380,26 @@ export const getChatCredits = query({
         user.subscriptionExpiresAt
       ),
       freeImageGenerationEnabled: isFreeImageGenerationEnabled(),
+      freeImageDailyQuotaEnabled: isFreeImageDailyQuotaEnabled(),
       features: {
         liveNews: isLiveNewsEnabled(),
         pushAlerts: isPushAlertsEnabled(),
         openAiImageRequiresSubscription: openAiImageRequiresSubscription(),
+        freeImageDailyQuotaEnabled: isFreeImageDailyQuotaEnabled(),
       },
       freeOpenAiRemaining: isPremium ? freeOpenAi.limit : freeOpenAi.remaining,
       freeOpenAiLimit: freeOpenAi.limit,
       freeOpenAiResetsAt: freeOpenAi.resetsAt,
       hasOpenAiAccess: isPremium || freeOpenAi.remaining > 0,
+      // Accra free-image allowance — only meaningful when daily quota flag is on.
+      freeImageRemaining: isFreeImageDailyQuotaEnabled()
+        ? isPremium
+          ? freeImage.limit
+          : freeImage.remaining
+        : null,
+      freeImageLimit: isFreeImageDailyQuotaEnabled() ? freeImage.limit : null,
+      freeImageResetsAt: isFreeImageDailyQuotaEnabled() ? freeImage.resetsAt : null,
+      freeImageTimeZone: isFreeImageDailyQuotaEnabled() ? freeImage.timeZone : null,
     };
   },
 });

@@ -32,16 +32,18 @@ import {
   type RequestKind,
 } from "./providerRouter";
 import { generateFreeImageForChat } from "./mediaEngine";
-import { openaiGenerateImage } from "./openaiImageClient";
+import { openaiEditImage, openaiGenerateImage } from "./openaiImageClient";
 import { persistImageUrlIfNeeded } from "./mediaStorage";
 import type { FalImageSize } from "./falClient";
 import type { NewsEvidenceContext } from "./newsEvidence/types";
 import { buildNewsEvidencePackage } from "./newsEvidence/pipeline";
-import { isLiveNewsEnabled } from "./featureFlags";
+import { isFreeImageDailyQuotaEnabled, isLiveNewsEnabled } from "./featureFlags";
 import {
   IMAGE_UPGRADE_MARKDOWN,
+  imageDailyLimitMarkdown,
   resolveImageGenerationDecision,
 } from "./premiumImage";
+import { resolveChatImageSourceUrl } from "./chatImageSource";
 import { isLiveWebEnabled } from "./liveWeb/liveWebConfig";
 import {
   buildLiveWebMetadata,
@@ -214,18 +216,35 @@ async function runHybridAiEngine(
     routing: ChatRoutingContext;
     hasAttachments: boolean;
     hasImageAttachment?: boolean;
+    imageAttachments?: Array<{ dataUrl?: string }>;
     conversationId: string;
     subscriptionPlan: string;
     subscriptionExpiresAt?: number | null;
     forceWebSearch?: boolean;
   }
-): Promise<ChatEngineResult & { cached: boolean; requestKind: RequestKind }> {
+): Promise<
+  ChatEngineResult & {
+    cached: boolean;
+    requestKind: RequestKind;
+    usedFreeImageQuota?: boolean;
+  }
+> {
+  const sourceImageUrl = resolveChatImageSourceUrl({
+    imageAttachments: args.imageAttachments ?? [],
+    history: args.chatMessages.map((m) => ({
+      role: m.role,
+      content: typeof m.content === "string" ? m.content : "",
+    })),
+  });
+  const hasEditableImageSource = Boolean(sourceImageUrl);
+
   const routePlan = buildChatRoutePlan({
     tier: args.routing.tier,
     mode: args.mode,
     query: args.query,
     hasAttachments: args.hasAttachments,
     hasImageAttachment: args.hasImageAttachment,
+    hasEditableImageSource,
     chatSystem: args.routing.chatSystem,
   });
   if (args.forceWebSearch && routePlan.requestKind === "text_chat") {
@@ -250,7 +269,8 @@ async function runHybridAiEngine(
     return exhausted;
   }
 
-  if (args.routing.usingFreeOpenAiQuota) {
+  // Image generation has its own free daily allowance — do not burn Pro text quota.
+  if (args.routing.usingFreeOpenAiQuota && routePlan.requestKind !== "image_generation") {
     const consumed = await ctx.runMutation(internal.freeOpenAiQuota.tryConsumeInternal, {
       userId: args.email,
     });
@@ -296,13 +316,18 @@ async function runHybridAiEngine(
     );
 
     if (imageDecision.action === "upgrade") {
-      const result: ChatEngineResult & { cached: boolean; requestKind: RequestKind } = {
+      const result: ChatEngineResult & {
+        cached: boolean;
+        requestKind: RequestKind;
+        usedFreeImageQuota?: boolean;
+      } = {
         content: IMAGE_UPGRADE_MARKDOWN,
         providerId: "policy",
         usedFallback: false,
         latencyMs: Date.now() - started,
         cached: false,
         requestKind: "image_generation",
+        usedFreeImageQuota: false,
       };
       await recordAiUsage(ctx, {
         email: args.email,
@@ -316,46 +341,171 @@ async function runHybridAiEngine(
       return result;
     }
 
+    // Free tier only: reserve one Accra-day slot before calling providers; release on failure.
+    // Gated by GIGA3_FREE_IMAGE_DAILY_QUOTA_ENABLED (default off) until staging validates.
+    // Subscribers and credit purchasers keep existing entitlements (image credits / OpenAI).
+    let usedFreeImageQuota = false;
+    if (
+      isFreeImageDailyQuotaEnabled() &&
+      args.routing.tier === "free" &&
+      imageDecision.action === "free_pipeline"
+    ) {
+      const reserved = await ctx.runMutation(internal.freeImageQuota.tryReserveInternal, {
+        userId: args.email,
+      });
+      if (!reserved.ok) {
+        const result: ChatEngineResult & {
+          cached: boolean;
+          requestKind: RequestKind;
+          usedFreeImageQuota?: boolean;
+        } = {
+          content: imageDailyLimitMarkdown({
+            limit: reserved.snapshot.limit,
+            resetsAt: reserved.snapshot.resetsAt,
+            timeZone: reserved.snapshot.timeZone,
+          }),
+          providerId: "policy",
+          usedFallback: false,
+          latencyMs: Date.now() - started,
+          cached: false,
+          requestKind: "image_generation",
+          usedFreeImageQuota: false,
+        };
+        await recordAiUsage(ctx, {
+          email: args.email,
+          mode: args.mode,
+          routing: args.routing,
+          engineResult: result,
+          requestKind: "image_generation",
+          cached: false,
+          conversationId: args.conversationId,
+        });
+        return result;
+      }
+      usedFreeImageQuota = true;
+      logChatReply("free_image_quota_reserved", {
+        conversationId: args.conversationId,
+        userId: args.email,
+        remaining: reserved.snapshot.remaining,
+        dateKey: reserved.snapshot.dateKey,
+      });
+    }
+
     let rawUrl: string;
     let providerId: string;
     let usedFallback = false;
 
-    if (imageDecision.action === "openai") {
-      try {
-        const image = await openaiGenerateImage(imagePrompt, { imageSize });
-        rawUrl = image.dataUrl;
-        providerId = "openai_image";
-      } catch (err) {
-        // Never fail a premium visual request outright — fall back to the
-        // free multi-provider image pipeline (fal → Replicate → Google).
-        logChatReply("image_openai_failed", {
+    try {
+      if (imageDecision.action === "openai") {
+        try {
+          if (sourceImageUrl) {
+            const image = await openaiEditImage(imagePrompt, sourceImageUrl, { imageSize });
+            rawUrl = image.dataUrl;
+            providerId = "openai_image";
+          } else {
+            const image = await openaiGenerateImage(imagePrompt, { imageSize });
+            rawUrl = image.dataUrl;
+            providerId = "openai_image";
+          }
+        } catch (err) {
+          // Never fail a premium visual request outright — fall back to the
+          // free multi-provider image pipeline (fal → Replicate → Google).
+          logChatReply("image_openai_failed", {
+            conversationId: args.conversationId,
+            userId: args.email,
+            error: err instanceof Error ? err.message : String(err),
+            edit: Boolean(sourceImageUrl),
+          });
+          const fallback = await generateFreeImageForChat(imagePrompt, {
+            sourceImageUrl,
+            imageSize,
+          });
+          rawUrl = fallback.imageUrl;
+          providerId = fallback.provider;
+          usedFallback = true;
+        }
+      } else {
+        const image = await generateFreeImageForChat(imagePrompt, {
+          sourceImageUrl,
+          imageSize,
+        });
+        rawUrl = image.imageUrl;
+        providerId = image.provider;
+      }
+    } catch (err) {
+      if (usedFreeImageQuota) {
+        await ctx.runMutation(internal.freeImageQuota.releaseInternal, {
+          userId: args.email,
+        });
+        logChatReply("free_image_quota_released", {
           conversationId: args.conversationId,
           userId: args.email,
           error: err instanceof Error ? err.message : String(err),
         });
-        const fallback = await generateFreeImageForChat(imagePrompt);
-        rawUrl = fallback.imageUrl;
-        providerId = fallback.provider;
-        usedFallback = true;
       }
-    } else {
-      const image = await generateFreeImageForChat(imagePrompt);
-      rawUrl = image.imageUrl;
-      providerId = image.provider;
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Image generation failed. Please try again.";
+      const friendly = /mime|too large|unsupported|fetch source|invalid image/i.test(
+        message
+      )
+        ? message
+        : "Image generation failed. Please try again with a clearer prompt or a smaller PNG/JPEG/WebP upload.";
+      const result: ChatEngineResult & {
+        cached: boolean;
+        requestKind: RequestKind;
+        usedFreeImageQuota?: boolean;
+      } = {
+        content: friendly,
+        providerId: "local_fallback",
+        usedFallback: true,
+        latencyMs: Date.now() - started,
+        cached: false,
+        requestKind: "image_generation",
+        usedFreeImageQuota: false,
+      };
+      await recordAiUsage(ctx, {
+        email: args.email,
+        mode: args.mode,
+        routing: args.routing,
+        engineResult: result,
+        requestKind: "image_generation",
+        cached: false,
+        conversationId: args.conversationId,
+      });
+      return result;
     }
 
     // Persist base64 data URLs (gpt-image-1, Gemini) to Convex file storage so
     // the assistant message stays small — a raw data URL exceeds Convex's value
     // size limit and would fail the insert, leaving chat stuck on a fallback.
-    const imageUrl = await persistImageUrlIfNeeded(ctx, rawUrl);
-    const content = `Here is your generated image:\n\n${imageUrl}`;
-    const result: ChatEngineResult & { cached: boolean; requestKind: RequestKind } = {
+    let imageUrl: string;
+    try {
+      imageUrl = await persistImageUrlIfNeeded(ctx, rawUrl);
+    } catch (persistErr) {
+      if (usedFreeImageQuota) {
+        await ctx.runMutation(internal.freeImageQuota.releaseInternal, {
+          userId: args.email,
+        });
+      }
+      throw persistErr;
+    }
+    const content = sourceImageUrl
+      ? `Here is your edited image:\n\n${imageUrl}`
+      : `Here is your generated image:\n\n${imageUrl}`;
+    const result: ChatEngineResult & {
+      cached: boolean;
+      requestKind: RequestKind;
+      usedFreeImageQuota?: boolean;
+    } = {
       content,
       providerId,
       usedFallback,
       latencyMs: Date.now() - started,
       cached: false,
       requestKind: "image_generation",
+      usedFreeImageQuota,
     };
     await recordAiUsage(ctx, {
       email: args.email,
@@ -870,6 +1020,9 @@ export const processJob = internalAction({
           routing,
           hasAttachments: attachments.length > 0,
           hasImageAttachment: attachments.some((a) => a.kind === "image"),
+          imageAttachments: attachments
+            .filter((a) => a.kind === "image")
+            .map((a) => ({ dataUrl: a.dataUrl })),
           conversationId: job.conversationId,
           subscriptionPlan: refreshedUser?.subscriptionPlan ?? "free",
           subscriptionExpiresAt: refreshedUser?.subscriptionExpiresAt,
@@ -1040,12 +1193,27 @@ export const processJob = internalAction({
 
       if (chargedAi) {
         try {
-          if (engineResult.providerId === "openai_image") {
-            await ctx.runMutation(internal.credits.deductCreditsInternal, {
-              userId: email,
-              action: "image",
-              reference: job.conversationId,
-            });
+          const usedFreeImageQuota = Boolean(
+            (engineResult as { usedFreeImageQuota?: boolean }).usedFreeImageQuota
+          );
+          if (engineResult.requestKind === "image_generation") {
+            // Preserve main billing: OpenAI images → image credits; free_pipeline
+            // failover → chat-mode credits. Accra free-quota successes charge nothing.
+            if (usedFreeImageQuota || engineResult.providerId === "policy") {
+              // no credit deduct
+            } else if (engineResult.providerId === "openai_image") {
+              await ctx.runMutation(internal.credits.deductCreditsInternal, {
+                userId: email,
+                action: "image",
+                reference: job.conversationId,
+              });
+            } else {
+              await ctx.runMutation(internal.credits.deductForChatModeInternal, {
+                userId: email,
+                mode,
+                reference: job.conversationId,
+              });
+            }
           } else {
             await ctx.runMutation(internal.credits.deductForChatModeInternal, {
               userId: email,

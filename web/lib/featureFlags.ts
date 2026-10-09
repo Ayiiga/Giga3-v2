@@ -12,6 +12,7 @@ export function useGiga3Features(sessionToken: string | null) {
       liveNews: true,
       pushAlerts: false,
       openAiImageRequiresSubscription: true,
+      freeImageDailyQuotaEnabled: false,
     }
   );
 }

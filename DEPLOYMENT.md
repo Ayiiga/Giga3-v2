@@ -57,6 +57,14 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `OPENAI_MODEL` | No | Default `gpt-4o-mini` |
    | `OPENAI_FALLBACK_MODEL` | No | Backup OpenAI model in failover |
    | `OPENAI_FALLBACK_API_KEY` | No | Optional second OpenAI key |
+   | `OPENAI_IMAGE_MODEL` | No | Chat/Media OpenAI image model, default `gpt-image-1` (generations + edits when account supports it) |
+   | `OPENAI_IMAGE_MAX_WAIT_MS` | No | OpenAI image timeout, default `90000` |
+   | `FREE_IMAGE_DAILY_LIMIT` | No | Free-tier successful AI images per calendar day, default `1` (only when daily quota flag is on) |
+   | `FREE_IMAGE_QUOTA_TIMEZONE` | No | Daily reset timezone, default `Africa/Accra` |
+   | `GIGA3_FREE_IMAGE_DAILY_QUOTA_ENABLED` | No | **Opt-in.** When `true`, enforces Accra free-image daily quota. Default **off** until staging validates |
+   | `GIGA3_FREE_IMAGE_GENERATION_ENABLED` | No | When `false`, free users see upgrade instead of free image pipeline (default enabled) |
+   | `GIGA3_OPENAI_IMAGE_REQUIRES_SUBSCRIPTION` | No | When `false`, OpenAI images are not subscription-gated (default requires subscription) |
+   | `FREE_OPENAI_DAILY_LIMIT` | No | Free Giga3 Pro *text* messages/day (separate from images), default `5` |
    | `GEMINI_API_KEY` | For Gemini failover + media backup | Google AI Studio key |
    | `GEMINI_MODEL` | No | Default `gemini-2.5-flash` |
    | `GEMINI_IMAGE_MODEL` | No | Imagen backup for text-to-image, default `imagen-4.0-fast-generate-001` |
@@ -97,6 +105,14 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    npx convex env set AUTH_FROM_EMAIL "Giga3 AI <noreply@giga3ai.com>"
    npx convex env set AUTH_EMAIL_FALLBACK_INBOX "ayiiga3@gmail.com"
    ```
+
+   **Chat AI images (cost & free allowance)**
+
+   - Free users (when `GIGA3_FREE_IMAGE_DAILY_QUOTA_ENABLED=true`): **1 successful** chat AI image per calendar day in `FREE_IMAGE_QUOTA_TIMEZONE` (default `Africa/Accra`). Failed generations release the reservation and do not consume the allowance. Concurrent requests are serialized via `feedbackRateLimits`. Leave the flag unset/false in production until staging has verified reserve/release.
+   - Subscribers use OpenAI Images (`OPENAI_IMAGE_MODEL`, default `gpt-image-1`) when configured, with fal → Replicate → Gemini failover. Image edits use OpenAI `/v1/images/edits` when supported, else Replicate Kontext / Gemini edit models. API keys stay on Convex only.
+   - Defaults: square HD / 1024×1024 class sizes to control cost; do not auto-generate images without an explicit user request.
+   - CV / resume and cover-letter scaffolds in chat are free templates and **do not** use the free image allowance or image credits.
+   - Expected OpenAI image cost: typically on the order of a few US cents per `gpt-image-1` generation/edit (see current OpenAI pricing). Prefer keeping free-tier traffic on fal/Replicate/Gemini.
 
    **`HF_TOKEN` (African TTS) — Convex server secret only**
 

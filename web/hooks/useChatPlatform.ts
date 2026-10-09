@@ -405,6 +405,36 @@ export function useChatPlatform() {
       ? 0
       : chatCreditsRow.freeOpenAiRemaining ?? 0;
 
+  const freeImageRemaining =
+    chatCreditsRow === undefined || chatCreditsRow === null
+      ? null
+      : (chatCreditsRow.freeImageRemaining as number | undefined) ?? null;
+  const freeImageLimit =
+    chatCreditsRow === undefined || chatCreditsRow === null
+      ? null
+      : (chatCreditsRow.freeImageLimit as number | undefined) ?? null;
+  const freeImageResetsAt =
+    chatCreditsRow === undefined || chatCreditsRow === null
+      ? null
+      : (chatCreditsRow.freeImageResetsAt as number | undefined) ?? null;
+  const freeImageTimeZone =
+    chatCreditsRow === undefined || chatCreditsRow === null
+      ? null
+      : (chatCreditsRow.freeImageTimeZone as string | undefined) ?? null;
+  const freeImageGenerationEnabled =
+    chatCreditsRow === undefined || chatCreditsRow === null
+      ? true
+      : Boolean(chatCreditsRow.freeImageGenerationEnabled);
+  const freeImageDailyQuotaEnabled =
+    chatCreditsRow === undefined || chatCreditsRow === null
+      ? false
+      : Boolean(
+          (chatCreditsRow as { freeImageDailyQuotaEnabled?: boolean })
+            .freeImageDailyQuotaEnabled ??
+            (chatCreditsRow as { features?: { freeImageDailyQuotaEnabled?: boolean } })
+              .features?.freeImageDailyQuotaEnabled
+        );
+
   if (chatCreditsRow !== undefined) {
     creditsCacheRef.current = credits;
   }
@@ -1491,6 +1521,12 @@ export function useChatPlatform() {
     isPremium,
     subscriptionActive,
     freeOpenAiRemaining,
+    freeImageRemaining,
+    freeImageLimit,
+    freeImageResetsAt,
+    freeImageTimeZone,
+    freeImageGenerationEnabled,
+    freeImageDailyQuotaEnabled,
     interestProfileJson,
     uploadUsage: uploadUsage ?? null,
     liveWebProgress: liveWebProgress ?? null,
