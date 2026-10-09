@@ -43,12 +43,14 @@ export async function recordMediaProgress(input: {
   score?: number;
   subject?: string;
   curriculum?: string;
+  countryId?: string;
 }): Promise<MediaProgressEvent> {
   const event: MediaProgressEvent = {
     clientEventId: newOfflineProgressEventId(),
     itemId: input.itemId,
     kind: input.kind,
     score: input.score,
+    countryId: input.countryId,
     createdAt: Date.now(),
   };
   const rows = readLocal();
@@ -57,9 +59,10 @@ export async function recordMediaProgress(input: {
 
   // Map game completions into the existing assessment sync queue.
   if (input.kind === "game_completed" && typeof input.score === "number") {
+    const countryPrefix = input.countryId ? `${input.countryId}:` : "";
     await queueOfflineAssessmentEvent({
       clientEventId: event.clientEventId,
-      topicKey: `media:${input.itemId}`,
+      topicKey: `media:${countryPrefix}${input.itemId}`,
       subject: input.subject,
       curriculum: input.curriculum,
       score: input.score,

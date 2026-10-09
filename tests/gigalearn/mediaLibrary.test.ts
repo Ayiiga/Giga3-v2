@@ -75,8 +75,12 @@ describe("GigaLearn multimedia Discover catalog", () => {
     const hub = read("web/components/gigalearn/hubs/StudentHub.tsx");
     expect(hub).toContain("DiscoverHub");
     expect(hub).toContain('{ id: "discover", label: "Discover" }');
+    expect(hub).toContain("preferredCountryId");
     expect(read("web/lib/gigalearn/mediaLibrary/types.ts")).toContain("My Offline Learning");
     expect(read("web/components/gigalearn/discover/DiscoverHub.tsx")).toContain("DISCOVER_CATEGORIES");
+    expect(read("web/components/gigalearn/discover/DiscoverHub.tsx")).toContain(
+      "loadCatalogForCountry"
+    );
     expect(read("web/components/gigalearn/discover/MediaItemPlayer.tsx")).toContain(
       "Save for offline"
     );

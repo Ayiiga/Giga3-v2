@@ -45,12 +45,13 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
         kind: "viewed",
         subject: item.subject,
         curriculum: item.curriculumLevelId,
+        countryId: item.countryId,
       });
     })();
     return () => {
       cancelled = true;
     };
-  }, [item.id, item.subject, item.curriculumLevelId]);
+  }, [item.id, item.subject, item.curriculumLevelId, item.countryId]);
 
   async function hear(text: string, voiceId: string) {
     setSpeaking(true);
@@ -61,6 +62,7 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
         kind: "heard",
         subject: item.subject,
         curriculum: item.curriculumLevelId,
+        countryId: item.countryId,
       });
     } finally {
       setSpeaking(false);
@@ -100,6 +102,7 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
         score: 100,
         subject: item.subject,
         curriculum: item.curriculumLevelId,
+        countryId: item.countryId,
       });
       void hear(item.game.feedbackCorrect, "english");
     }

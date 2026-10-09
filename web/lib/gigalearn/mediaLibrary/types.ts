@@ -3,9 +3,13 @@
  * Extends the existing TS-catalog pattern (rhymes / concrete objects) —
  * not a second CMS. Large binary media is optional; emoji + TTS packs
  * remain fully playable offline once downloaded as JSON snapshots.
+ *
+ * Country expansion: Ghana → West Africa → Africa → Global via
+ * countryId + regionScope (see countryRegistry.ts).
  */
 
 import type { GigaLearnLevelId } from "@/lib/gigalearn/levels";
+import type { MediaRegionTier } from "@/lib/gigalearn/mediaLibrary/countryRegistry";
 
 export type MediaContentType =
   | "video_story"
@@ -26,6 +30,14 @@ export type MediaDiscoverCategory =
 
 export type MediaLanguageCode = "en" | "tw" | "ee" | "gaa" | "dag" | "ha";
 
+export type MediaAgeSuitability = {
+  /** Inclusive ages in years when known. */
+  minAge?: number;
+  maxAge?: number;
+  /** Learner-facing label, e.g. "KG2 (ages 4–5)". */
+  label: string;
+};
+
 export type MediaSourceRights = {
   /** Human-readable provenance. */
   source: string;
@@ -33,6 +45,10 @@ export type MediaSourceRights = {
   rights: string;
   /** True when a human educator reviewed the pack. */
   reviewed: boolean;
+  /** Optional ISO date string when reviewed. */
+  reviewedAt?: string;
+  /** Optional public license or rights statement URL. */
+  licenseUrl?: string;
 };
 
 export type MediaAssetRef =
@@ -68,13 +84,28 @@ export type LearningMediaItem = {
   subject: string;
   topic: string;
   languages: MediaLanguageCode[];
-  /** Canonical Ghana curriculum level id when applicable (e.g. kg-2). */
+  /**
+   * Curriculum-engine country id (ghana, nigeria, …).
+   * Required for country-aware catalogs.
+   */
+  countryId: string;
+  /** ISO-3166 alpha-2 for display (GH, NG). */
+  countryCode: string;
+  /**
+   * How widely this pack may appear:
+   * - country: only that country's learners
+   * - west-africa / africa / global: shared packs (still loaded from an available shard)
+   */
+  regionScope: MediaRegionTier;
+  /** Canonical curriculum level id when applicable (e.g. kg-2). */
   curriculumLevelId?: string;
+  /** Curriculum definition id (e.g. gh-ccp). */
+  curriculumId?: string;
   curriculumNote?: string;
-  countryCode?: string;
   culturalTheme?: string;
+  ageSuitability?: MediaAgeSuitability;
   illustration: Extract<MediaAssetRef, { kind: "emoji" }>;
-  /** Spoken labels — English first, then Ghanaian languages when provided. */
+  /** Spoken labels — English first, then local languages when provided. */
   narrations: Extract<MediaAssetRef, { kind: "tts" }>[];
   /** Optional remote media — only downloaded when the learner opts in. */
   remoteMedia?: Extract<MediaAssetRef, { kind: "remote" }>[];
@@ -107,6 +138,7 @@ export type MediaProgressEvent = {
   itemId: string;
   kind: "viewed" | "heard" | "game_completed";
   score?: number;
+  countryId?: string;
   createdAt: number;
   syncedAt?: number;
 };

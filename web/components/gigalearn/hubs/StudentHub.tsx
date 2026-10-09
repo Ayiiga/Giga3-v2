@@ -104,6 +104,7 @@ export const StudentHub = memo(function StudentHub({
       {subView === "homework" && <GigaLearnHomeworkPanel />}
       {subView === "discover" && (
         <DiscoverHub
+          preferredCountryId={ctx.countryId || "ghana"}
           preferredLevel={
             // Studio context stores curriculum ids (kg-2); Discover filters use Creche/KG chips.
             (() => {

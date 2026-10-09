@@ -1,7 +1,11 @@
 "use client";
 
 import { MediaItemPlayer } from "@/components/gigalearn/discover/MediaItemPlayer";
-import { MEDIA_LIBRARY_CATALOG } from "@/lib/gigalearn/mediaLibrary/catalog";
+import { loadCatalogForCountry } from "@/lib/gigalearn/mediaLibrary/catalog";
+import {
+  getMediaCountry,
+  listAvailableMediaCountries,
+} from "@/lib/gigalearn/mediaLibrary/countryRegistry";
 import {
   filterMediaLibrary,
   formatBytes,
@@ -25,16 +29,30 @@ import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type DiscoverHubProps = {
-  /** Prefer studio context level when available. */
+  /** Prefer studio context level chip when available. */
   preferredLevel?: string | null;
+  /** Prefer studio context country id (ghana, nigeria, …). */
+  preferredCountryId?: string | null;
 };
 
-export function DiscoverHub({ preferredLevel }: DiscoverHubProps) {
+export function DiscoverHub({
+  preferredLevel,
+  preferredCountryId,
+}: DiscoverHubProps) {
+  const availableCountries = useMemo(() => listAvailableMediaCountries(), []);
+  const initialCountry =
+    preferredCountryId && availableCountries.some((c) => c.id === preferredCountryId)
+      ? preferredCountryId
+      : availableCountries[0]?.id ?? "ghana";
+
   const initialLevel =
     preferredLevel && (LOWER_GRADE_LEVELS as string[]).includes(preferredLevel)
       ? (preferredLevel as GigaLearnLevelId)
       : "KG2";
 
+  const [countryId, setCountryId] = useState(initialCountry);
+  const [catalog, setCatalog] = useState<LearningMediaItem[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(true);
   const [category, setCategory] = useState<MediaDiscoverCategory | "all">("all");
   const [level, setLevel] = useState<GigaLearnLevelId | "all">(initialLevel);
   const [subject, setSubject] = useState<string | "all">("all");
@@ -43,6 +61,9 @@ export function DiscoverHub({ preferredLevel }: DiscoverHubProps) {
   const [activeItem, setActiveItem] = useState<LearningMediaItem | null>(null);
   const [offlinePacks, setOfflinePacks] = useState<OfflineMediaPack[]>([]);
   const [storageLabel, setStorageLabel] = useState("No offline media yet");
+
+  const countryProfile = getMediaCountry(countryId);
+  const languageOptions = countryProfile?.languages ?? (["en"] as MediaLanguageCode[]);
 
   const refreshOffline = useCallback(async () => {
     const packs = await listOfflineMediaPacks();
@@ -59,30 +80,49 @@ export function DiscoverHub({ preferredLevel }: DiscoverHubProps) {
     void refreshOffline();
   }, [refreshOffline]);
 
-  const subjects = useMemo(() => uniqueSubjects(MEDIA_LIBRARY_CATALOG), []);
-  const topics = useMemo(() => uniqueTopics(MEDIA_LIBRARY_CATALOG), []);
+  useEffect(() => {
+    let cancelled = false;
+    setCatalogLoading(true);
+    setActiveItem(null);
+    setSubject("all");
+    setTopic("all");
+    setLanguage("all");
+    void loadCatalogForCountry(countryId).then((rows) => {
+      if (cancelled) return;
+      setCatalog(rows);
+      setCatalogLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [countryId]);
+
+  const subjects = useMemo(() => uniqueSubjects(catalog), [catalog]);
+  const topics = useMemo(() => uniqueTopics(catalog), [catalog]);
 
   const filtered = useMemo(() => {
     if (category === "offline") return [];
-    return filterMediaLibrary(MEDIA_LIBRARY_CATALOG, {
+    return filterMediaLibrary(catalog, {
       category,
+      countryId,
       level,
       subject,
       topic,
       language,
     });
-  }, [category, level, subject, topic, language]);
+  }, [catalog, category, countryId, level, subject, topic, language]);
 
   const offlineItems = useMemo(() => {
     return offlinePacks
       .filter((pack) => pack.status === "ready")
       .map((pack) => pack.item)
       .filter((item) => {
+        if (item.countryId && item.countryId !== countryId) return false;
         if (level !== "all" && !item.levels.includes(level)) return false;
         if (language !== "all" && !item.languages.includes(language)) return false;
         return true;
       });
-  }, [offlinePacks, level, language]);
+  }, [offlinePacks, countryId, level, language]);
 
   const list = category === "offline" ? offlineItems : filtered;
 
@@ -101,9 +141,32 @@ export function DiscoverHub({ preferredLevel }: DiscoverHubProps) {
       <div>
         <h3 className="text-base font-semibold text-foreground">Discover</h3>
         <p className="mt-1 text-sm text-muted">
-          Videos, pictures, rhymes, games and Ghana culture — save packs for offline learning.
+          Country-aware lessons — Ghana first, with architecture ready for West Africa and beyond.
         </p>
         <p className="mt-1 text-xs font-medium text-accent">📴 {storageLabel}</p>
+        {countryProfile ? (
+          <p className="mt-1 text-xs text-muted">
+            {countryProfile.flag} {countryProfile.name} · {countryProfile.note}
+          </p>
+        ) : null}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <label className="sr-only" htmlFor="discover-country">
+          Country
+        </label>
+        <select
+          id="discover-country"
+          className="min-h-11 rounded-xl border border-border bg-white px-3 text-sm font-medium"
+          value={countryId}
+          onChange={(e) => setCountryId(e.target.value)}
+        >
+          {availableCountries.map((country) => (
+            <option key={country.id} value={country.id}>
+              {country.flag} {country.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -180,7 +243,7 @@ export function DiscoverHub({ preferredLevel }: DiscoverHubProps) {
           aria-label="Language"
         >
           <option value="all">All languages</option>
-          {(Object.keys(LANGUAGE_LABELS) as MediaLanguageCode[]).map((code) => (
+          {languageOptions.map((code) => (
             <option key={code} value={code}>
               {LANGUAGE_LABELS[code]}
             </option>
@@ -188,7 +251,11 @@ export function DiscoverHub({ preferredLevel }: DiscoverHubProps) {
         </select>
       </div>
 
-      {list.length === 0 ? (
+      {catalogLoading ? (
+        <div className="rounded-2xl border border-border bg-card px-4 py-8 text-center text-sm text-muted">
+          Loading {countryProfile?.name ?? "country"} lessons…
+        </div>
+      ) : list.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border bg-card px-4 py-8 text-center">
           <p className="text-sm font-medium text-foreground">
             {category === "offline" ? "No downloads yet" : "No lessons match these filters"}
@@ -196,7 +263,7 @@ export function DiscoverHub({ preferredLevel }: DiscoverHubProps) {
           <p className="mt-1 text-xs text-muted">
             {category === "offline"
               ? "Open a lesson and tap Save for offline."
-              : "Try another grade, subject or category."}
+              : "Try another grade, subject, language or country."}
           </p>
         </div>
       ) : (
@@ -226,7 +293,8 @@ export function DiscoverHub({ preferredLevel }: DiscoverHubProps) {
                       {item.description}
                     </span>
                     <span className="mt-1 block text-[11px] font-medium text-accent">
-                      {item.levels.join(" · ")}
+                      {item.countryCode} · {item.levels.join(" · ")}
+                      {item.ageSuitability ? ` · ${item.ageSuitability.label}` : ""}
                       {saved ? " · Offline" : ""}
                     </span>
                   </span>

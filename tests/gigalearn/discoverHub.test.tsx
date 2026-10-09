@@ -17,13 +17,21 @@ describe("DiscoverHub learner vertical slice", () => {
   });
 
   it("lets a KG2 learner open mango, hear, play, and save offline", async () => {
-    render(<DiscoverHub preferredLevel="KG2" />);
+    render(<DiscoverHub preferredLevel="KG2" preferredCountryId="ghana" />);
 
     expect(screen.getByText("Discover")).toBeTruthy();
     expect(screen.getByText("Pictures & Objects")).toBeTruthy();
     expect(screen.getByText("My Offline Learning")).toBeTruthy();
+    expect(screen.getByLabelText("Country")).toBeTruthy();
+
+    await waitFor(() => {
+      expect(screen.queryByText(/Loading Ghana lessons/i)).toBeNull();
+    });
 
     fireEvent.click(screen.getByRole("button", { name: /Pictures & Objects/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /^Mango/i })).toBeTruthy();
+    });
     fireEvent.click(screen.getByRole("button", { name: /^Mango/i }));
 
     await waitFor(() => {

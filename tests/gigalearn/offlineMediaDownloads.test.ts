@@ -121,14 +121,15 @@ describe("Discover media progress", () => {
       score: 100,
       subject: "Our World",
       curriculum: "kg-2",
+      countryId: "ghana",
     });
     expect(hasCompletedGame("pic-mango-kg2")).toBe(true);
     expect(listLocalMediaProgress("pic-mango-kg2").map((row) => row.kind)).toEqual(
       expect.arrayContaining(["viewed", "heard", "game_completed"])
     );
     const queued = await listOfflineProgressEvents();
-    expect(queued.some((row) => row.topicKey === "media:pic-mango-kg2" && row.score === 100)).toBe(
-      true
-    );
+    expect(
+      queued.some((row) => row.topicKey === "media:ghana:pic-mango-kg2" && row.score === 100)
+    ).toBe(true);
   });
 });
