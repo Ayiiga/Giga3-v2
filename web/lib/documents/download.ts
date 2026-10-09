@@ -1,9 +1,20 @@
 import type { GigaDocument } from "@/lib/documents/types";
 import { slugFilename } from "@/lib/documents/model";
+import { tipTapJsonToMarkdown } from "@/lib/documents/model";
 import { exportDocumentPdf } from "@/lib/documents/exportPdf";
 import { exportDocumentDocx } from "@/lib/documents/exportDocx";
+import { analyzePdfUnicodeCoverage } from "@/lib/documents/pdfUnicode";
 
 export type DocumentExportFormat = "pdf" | "docx";
+
+export type DocumentExportResult = {
+  filename: string;
+  /** Present for PDF when WinAnsi cannot encode some characters. */
+  pdfUnicode?: {
+    substitutedCount: number;
+    samples: string[];
+  };
+};
 
 function triggerDownload(bytes: Uint8Array, filename: string, mime: string): void {
   // Copy into a fresh ArrayBuffer-backed view for DOM Blob typing (TS 5.x).
@@ -23,12 +34,19 @@ function triggerDownload(bytes: Uint8Array, filename: string, mime: string): voi
 export async function downloadDocumentExport(
   doc: GigaDocument,
   format: DocumentExportFormat
-): Promise<{ filename: string }> {
+): Promise<DocumentExportResult> {
   if (format === "pdf") {
+    const source = doc.markdown || tipTapJsonToMarkdown(doc.content);
+    const coverage = analyzePdfUnicodeCoverage(source);
     const bytes = await exportDocumentPdf(doc);
     const filename = slugFilename(doc.title.replace(/\s+/g, "_"), "pdf");
     triggerDownload(bytes, filename, "application/pdf");
-    return { filename };
+    return {
+      filename,
+      pdfUnicode: coverage.hasUnsupported
+        ? { substitutedCount: coverage.unsupportedCount, samples: coverage.samples }
+        : undefined,
+    };
   }
   const bytes = await exportDocumentDocx(doc);
   const filename = slugFilename(doc.title.replace(/\s+/g, "_"), "docx");

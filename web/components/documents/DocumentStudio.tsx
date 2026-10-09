@@ -10,6 +10,10 @@ import {
   tipTapJsonToMarkdown,
 } from "@/lib/documents/model";
 import { previewPageCss } from "@/lib/documents/paper";
+import {
+  analyzePdfUnicodeCoverage,
+  PDF_UNICODE_LIMITATION,
+} from "@/lib/documents/pdfUnicode";
 import type { DocJson, DocPaperSize, GigaDocument } from "@/lib/documents/types";
 import { cn } from "@/lib/utils";
 import { FontSize } from "@/lib/documents/fontSize";
@@ -26,7 +30,7 @@ import Underline from "@tiptap/extension-underline";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { FileDown, Loader2, Maximize2, Save, Share2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export type DocumentStudioProps = {
   document: GigaDocument;
@@ -48,6 +52,8 @@ export function DocumentStudio({
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  /** Explicit user consent required before PDF export substitutes unsupported glyphs. */
+  const [pdfUnicodeConfirm, setPdfUnicodeConfirm] = useState(false);
 
   const emit = useCallback(
     (next: GigaDocument) => {
@@ -115,18 +121,39 @@ export function DocumentStudio({
 
   const preview = previewPageCss(doc.paper, compact ? 360 : 720);
 
-  async function runExport(kind: "pdf" | "docx") {
+  const pdfUnicode = useMemo(
+    () => analyzePdfUnicodeCoverage(doc.markdown),
+    [doc.markdown]
+  );
+
+  async function runExport(kind: "pdf" | "docx", opts?: { acknowledgePdfUnicode?: boolean }) {
+    const latest = {
+      ...doc,
+      content: (editor?.getJSON() as DocJson) ?? doc.content,
+      markdown: editor ? tipTapJsonToMarkdown(editor.getJSON() as DocJson) : doc.markdown,
+    };
+    const coverage = analyzePdfUnicodeCoverage(latest.markdown);
+
+    if (kind === "pdf" && coverage.hasUnsupported && !opts?.acknowledgePdfUnicode) {
+      setPdfUnicodeConfirm(true);
+      setStatus(null);
+      setError(null);
+      return;
+    }
+
     setBusy(kind);
     setError(null);
     setStatus(null);
+    setPdfUnicodeConfirm(false);
     try {
-      const latest = {
-        ...doc,
-        content: (editor?.getJSON() as DocJson) ?? doc.content,
-        markdown: editor ? tipTapJsonToMarkdown(editor.getJSON() as DocJson) : doc.markdown,
-      };
-      const { filename } = await downloadDocumentExport(latest, kind);
-      setStatus(`${kind.toUpperCase()} ready — ${filename}`);
+      const result = await downloadDocumentExport(latest, kind);
+      if (kind === "pdf" && result.pdfUnicode) {
+        setStatus(
+          `PDF ready — ${result.filename}. ${result.pdfUnicode.substitutedCount} character(s) outside PDF font support were shown as “?” (e.g. ${result.pdfUnicode.samples.join(" ")}). Prefer Export Word for full Unicode.`
+        );
+      } else {
+        setStatus(`${kind.toUpperCase()} ready — ${result.filename}`);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Export failed. Please try again.");
     } finally {
@@ -261,6 +288,60 @@ export function DocumentStudio({
         </p>
       ) : null}
 
+      {pdfUnicode.hasUnsupported ? (
+        <p
+          className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950"
+          role="status"
+          data-testid="pdf-unicode-warning"
+        >
+          {pdfUnicode.warning}
+        </p>
+      ) : null}
+
+      {pdfUnicodeConfirm ? (
+        <div
+          className="space-y-2 rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-xs text-foreground"
+          role="alertdialog"
+          aria-labelledby="pdf-unicode-confirm-title"
+          data-testid="pdf-unicode-confirm"
+        >
+          <p id="pdf-unicode-confirm-title" className="font-semibold">
+            PDF cannot keep every character
+          </p>
+          <p className="text-muted">{PDF_UNICODE_LIMITATION}</p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              className="min-h-11"
+              disabled={busy !== null}
+              onClick={() => void runExport("pdf", { acknowledgePdfUnicode: true })}
+            >
+              Export PDF with “?”
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="min-h-11"
+              disabled={busy !== null}
+              onClick={() => void runExport("docx")}
+            >
+              Export Word instead
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="min-h-11"
+              onClick={() => setPdfUnicodeConfirm(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       <DocumentToolbar editor={editor} />
 
       <div className="overflow-x-auto pb-1">
@@ -276,7 +357,10 @@ export function DocumentStudio({
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 pb-[0.25rem]">
+      <div
+        className="document-studio-actions sticky bottom-0 z-10 flex flex-wrap gap-2 border-t border-border/60 bg-white/95 pt-2 pb-[calc(0.5rem+var(--primary-nav-offset,0px)+env(safe-area-inset-bottom,0px))]"
+        data-testid="document-studio-actions"
+      >
         <Button
           type="button"
           size="sm"
