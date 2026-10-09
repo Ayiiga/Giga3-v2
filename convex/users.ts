@@ -22,6 +22,7 @@ import { SECURITY_EVENT_TYPES } from "./securityMonitoring";
 import { RateLimitError, UnauthorizedError } from "./securityErrors";
 import { resolveAiProviderTier } from "./providerRouter";
 import { getFreeOpenAiSnapshotDb } from "./freeOpenAiQuota";
+import { getFreeImageSnapshotDb } from "./freeImageQuota";
 import { isSubscriptionActive } from "./creditsConfig";
 import {
   isFreeImageGenerationEnabled,
@@ -361,6 +362,7 @@ export const getChatCredits = query({
     });
 
     const freeOpenAi = await getFreeOpenAiSnapshotDb(ctx, email);
+    const freeImage = await getFreeImageSnapshotDb(ctx, email);
     const isPremium = aiTier === "premium";
     const subscriptionActive = isSubscriptionActive(
       user.subscriptionPlan ?? "free",
@@ -386,6 +388,11 @@ export const getChatCredits = query({
       freeOpenAiLimit: freeOpenAi.limit,
       freeOpenAiResetsAt: freeOpenAi.resetsAt,
       hasOpenAiAccess: isPremium || freeOpenAi.remaining > 0,
+      // Free Accra-day AI image allowance (not used for CV/letter scaffolds).
+      freeImageRemaining: isPremium ? freeImage.limit : freeImage.remaining,
+      freeImageLimit: freeImage.limit,
+      freeImageResetsAt: freeImage.resetsAt,
+      freeImageTimeZone: freeImage.timeZone,
     };
   },
 });

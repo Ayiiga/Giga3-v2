@@ -39,12 +39,12 @@ describe("mediaCapabilities", () => {
     expect(addon).toContain("/gigaedit/");
   });
 
-  it("guides image edits to Media Studio without claiming chat edits pixels", () => {
+  it("guides image edits honestly when chat or Media Studio may apply them", () => {
     const addon = mediaSystemPromptAddon("image_edit_request", {
       hasImageAttachment: true,
     });
     expect(addon).toContain("Media Studio");
-    expect(addon).toContain("Never say the edit is done");
+    expect(addon).toContain("Never say the edit is done unless");
   });
 
   it("builds overview template with studio links", () => {
