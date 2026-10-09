@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" role="img" aria-label="What happens next">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#90CAF9"/>
+      <stop offset="100%" stop-color="#FFCC80"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="480" rx="36" fill="url(#sky)"/>
+  <circle cx="400" cy="70" r="36" fill="#FFE082" opacity="0.95"/>
+  <circle cx="240" cy="220" r="70" fill="#FFD54F"/><g stroke="#FFB300" stroke-width="10" stroke-linecap="round"><line x1="240" y1="100" x2="240" y2="70"/><line x1="240" y1="370" x2="240" y2="340"/><line x1="100" y1="220" x2="70" y2="220"/><line x1="410" y1="220" x2="380" y2="220"/><line x1="140" y1="120" x2="120" y2="100"/><line x1="340" y1="120" x2="360" y2="100"/><line x1="140" y1="320" x2="120" y2="340"/><line x1="340" y1="320" x2="360" y2="340"/></g>
+  <rect x="24" y="400" width="432" height="56" rx="16" fill="#FFFFFF" opacity="0.92"/>
+  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1a233f">What happens next</text>
+</svg>

@@ -42,12 +42,18 @@ const LEARN_VOICE_IDS = [
   "zawadi-swahili",
 ] as const;
 
+/** Male English / male African profiles ask for warmer browser voices; female ids unchanged. */
+const MALE_WARM_VOICE_IDS = new Set(["english", "musa-hausa", "kofi-ewe"]);
+
 /** GigaLearn voice ids reuse the shared chat BCP-47 map (no duplicate tags). */
 export const GIGALEARN_VOICE_LANG: Record<string, VoiceLangConfig> = Object.fromEntries(
-  LEARN_VOICE_IDS.map((id) => [
-    id,
-    GIGA_VOICE_LANG[id] ?? GIGA_VOICE_LANG["english-british"],
-  ])
+  LEARN_VOICE_IDS.map((id) => {
+    const base = GIGA_VOICE_LANG[id] ?? GIGA_VOICE_LANG["english-british"];
+    return [
+      id,
+      MALE_WARM_VOICE_IDS.has(id) ? { ...base, preferWarmMale: true } : { ...base },
+    ];
+  })
 );
 
 export type ResolvedSpeechVoice = MatchedBrowserVoice;
@@ -326,9 +332,16 @@ function queueUtterances(
 
 /** Speak one line with language/voice selection from a GigaLearn profile. */
 export async function speakWithGigaLearnVoice(args: SpeakWithGigaLearnVoiceArgs): Promise<boolean> {
+  const voiceId = args.voiceId || "english";
+  // Slightly gentler defaults for male English only — female profiles keep prior defaults.
+  const maleWarm = voiceId === "english" || voiceId === "musa-hausa" || voiceId === "kofi-ewe";
   return speakPronunciationSequence(
-    [{ text: args.text, voiceId: args.voiceId || "english" }],
-    { rate: args.rate, pitch: args.pitch, onEnd: args.onEnd }
+    [{ text: args.text, voiceId }],
+    {
+      rate: args.rate ?? (maleWarm ? 0.92 : undefined),
+      pitch: args.pitch ?? (maleWarm ? 1.05 : undefined),
+      onEnd: args.onEnd,
+    }
   );
 }
 

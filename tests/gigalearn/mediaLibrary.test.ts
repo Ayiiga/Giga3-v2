@@ -51,7 +51,7 @@ describe("GigaLearn multimedia Discover catalog", () => {
     expect(pictures.every((item) => item.discoverCategory === "pictures-objects")).toBe(true);
 
     const kg2Culture = filterMediaLibrary(MEDIA_LIBRARY_CATALOG, {
-      category: "africa-culture",
+      category: "culture-occupations",
       level: "KG2",
     });
     expect(kg2Culture.length).toBeGreaterThan(0);

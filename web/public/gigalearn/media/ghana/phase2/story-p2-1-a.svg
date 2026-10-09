@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" role="img" aria-label="Ananse and the Sharing Pot">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#80CBC4"/>
+      <stop offset="100%" stop-color="#FFF59D"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="480" rx="36" fill="url(#sky)"/>
+  <circle cx="400" cy="70" r="36" fill="#FFE082" opacity="0.95"/>
+  <ellipse cx="240" cy="240" rx="70" ry="55" fill="#5D4037"/><circle cx="240" cy="170" r="36" fill="#6D4C41"/><circle cx="228" cy="165" r="5" fill="#FFD54F"/><circle cx="252" cy="165" r="5" fill="#FFD54F"/><path d="M180 220 Q120 180 90 140" stroke="#5D4037" stroke-width="8" fill="none"/><path d="M300 220 Q360 180 390 140" stroke="#5D4037" stroke-width="8" fill="none"/><path d="M180 260 Q120 300 90 340" stroke="#5D4037" stroke-width="8" fill="none"/><path d="M300 260 Q360 300 390 340" stroke="#5D4037" stroke-width="8" fill="none"/><ellipse cx="340" cy="300" rx="40" ry="30" fill="#FFCC80"/>
+  <rect x="24" y="400" width="432" height="56" rx="16" fill="#FFFFFF" opacity="0.92"/>
+  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1a233f">Ananse and the Sharing Pot</text>
+</svg>

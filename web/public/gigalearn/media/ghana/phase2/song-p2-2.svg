@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" role="img" aria-label="Hello Friend">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F48FB1"/>
+      <stop offset="100%" stop-color="#FFE082"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="480" rx="36" fill="url(#sky)"/>
+  <circle cx="400" cy="70" r="36" fill="#FFE082" opacity="0.95"/>
+  <circle cx="180" cy="170" r="36" fill="#8D5524"/><circle cx="300" cy="170" r="36" fill="#A1887F"/><path d="M140 230 Q180 210 220 230 L225 330 Q180 350 135 330 Z" fill="#42A5F5"/><path d="M260 230 Q300 210 340 230 L345 330 Q300 350 255 330 Z" fill="#EC407A"/><path d="M220 250 Q240 270 260 250" stroke="#F9A825" stroke-width="8" fill="none"/>
+  <rect x="24" y="400" width="432" height="56" rx="16" fill="#FFFFFF" opacity="0.92"/>
+  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1a233f">Hello Friend</text>
+</svg>

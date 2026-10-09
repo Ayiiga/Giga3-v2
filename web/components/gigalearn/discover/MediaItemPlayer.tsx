@@ -41,12 +41,14 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
   const [gameDone, setGameDone] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [speaking, setSpeaking] = useState(false);
+  const [frameIndex, setFrameIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const imageAsset = useMemo(
-    () => item.remoteMedia?.find((asset) => asset.mimeType.startsWith("image/")),
+  const imageAssets = useMemo(
+    () => item.remoteMedia?.filter((asset) => asset.mimeType.startsWith("image/")) ?? [],
     [item.remoteMedia]
   );
+  const imageAsset = imageAssets[0];
   const videoAsset = useMemo(
     () => item.remoteMedia?.find((asset) => asset.mimeType.startsWith("video/")),
     [item.remoteMedia]
@@ -55,6 +57,19 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
     () => item.remoteMedia?.filter((asset) => asset.mimeType.startsWith("audio/")) ?? [],
     [item.remoteMedia]
   );
+
+  useEffect(() => {
+    setFrameIndex(0);
+    if (imageAssets.length < 2) return;
+    const reduceMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) return;
+    const timer = window.setInterval(() => {
+      setFrameIndex((i) => (i + 1) % imageAssets.length);
+    }, 2200);
+    return () => window.clearInterval(timer);
+  }, [item.id, imageAssets.length]);
 
   useEffect(() => {
     let cancelled = false;
@@ -161,7 +176,8 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
   }
 
   const offlineReady = pack ? isOfflinePackComplete(pack) : false;
-  const imageSrc = resolveAssetUrl(pack, imageAsset?.url);
+  const activeImage = imageAssets[frameIndex] ?? imageAsset;
+  const imageSrc = resolveAssetUrl(pack, activeImage?.url);
   const videoSrc = resolveAssetUrl(pack, videoAsset?.url);
 
   return (
@@ -219,7 +235,19 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
       <p className="sr-only">{item.illustration.alt}</p>
 
       <div className="mt-4 space-y-2">
-        <p className="text-sm font-semibold text-foreground">Hear the name</p>
+        <p className="text-sm font-semibold text-foreground">
+          {item.discoverCategory === "songs" || item.discoverCategory === "rhymes-poems"
+            ? "Hear the words"
+            : item.discoverCategory === "african-stories" ||
+                item.discoverCategory === "videos-animation"
+              ? "Hear the story"
+              : "Hear the name"}
+        </p>
+        {item.discoverCategory === "songs" ? (
+          <p className="text-xs leading-5 text-muted">
+            Spoken lyric chant (TTS narration) — not a melodic music recording.
+          </p>
+        ) : null}
         <div className="flex flex-wrap gap-2">
           {item.narrations.map((n, index) => (
             <Button

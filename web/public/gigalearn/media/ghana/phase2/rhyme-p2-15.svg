@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" role="img" aria-label="Little Drum Beat">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#81D4FA"/>
+      <stop offset="100%" stop-color="#FFF59D"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="480" rx="36" fill="url(#sky)"/>
+  <circle cx="400" cy="70" r="36" fill="#FFE082" opacity="0.95"/>
+  <ellipse cx="240" cy="150" rx="100" ry="36" fill="#FFE0B2"/><path d="M140 150 L170 330 Q240 370 310 330 L340 150" fill="#8D6E63"/><ellipse cx="240" cy="330" rx="70" ry="24" fill="#5D4037"/><path d="M155 190 C200 230 280 230 325 190" stroke="#FFD54F" stroke-width="8" fill="none"/><line x1="360" y1="120" x2="400" y2="220" stroke="#5D4037" stroke-width="10" stroke-linecap="round"/><line x1="390" y1="110" x2="420" y2="200" stroke="#5D4037" stroke-width="10" stroke-linecap="round"/>
+  <rect x="24" y="400" width="432" height="56" rx="16" fill="#FFFFFF" opacity="0.92"/>
+  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1a233f">Little Drum Beat</text>
+</svg>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" role="img" aria-label="What happens next">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#90CAF9"/>
+      <stop offset="100%" stop-color="#FFCC80"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="480" rx="36" fill="url(#sky)"/>
+  <circle cx="400" cy="70" r="36" fill="#FFE082" opacity="0.95"/>
+  <rect x="220" y="260" width="40" height="100" fill="#6D4C41"/><circle cx="240" cy="200" r="90" fill="#43A047"/><circle cx="190" cy="180" r="50" fill="#66BB6A"/><circle cx="290" cy="190" r="55" fill="#2E7D32"/><circle cx="210" cy="230" r="16" fill="#E53935"/><circle cx="270" cy="220" r="14" fill="#FFB300"/>
+  <rect x="24" y="400" width="432" height="56" rx="16" fill="#FFFFFF" opacity="0.92"/>
+  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1a233f">What happens next</text>
+</svg>

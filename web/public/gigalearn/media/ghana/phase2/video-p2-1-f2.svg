@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" role="img" aria-label="Three bananas">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4FC3F7"/>
+      <stop offset="100%" stop-color="#FFF59D"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="480" rx="36" fill="url(#sky)"/>
+  <circle cx="400" cy="70" r="36" fill="#FFE082" opacity="0.95"/>
+  <path d="M140 160 Q100 250 150 330 Q190 270 185 170 Z" fill="#FDD835"/><path d="M200 145 Q155 255 205 345 Q245 285 235 165 Z" fill="#FFEE58"/><path d="M260 155 Q220 260 265 350 Q305 290 290 170 Z" fill="#FDD835"/><ellipse cx="210" cy="135" rx="40" ry="14" fill="#6D4C41"/>
+  <rect x="24" y="400" width="432" height="56" rx="16" fill="#FFFFFF" opacity="0.92"/>
+  <text x="240" y="436" text-anchor="middle" font-family="Nunito,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1a233f">Three bananas</text>
+</svg>

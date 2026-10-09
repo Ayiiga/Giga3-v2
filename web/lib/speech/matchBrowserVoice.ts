@@ -9,6 +9,11 @@
 export type VoiceLangConfig = {
   primary: string;
   fallbacks: string[];
+  /**
+   * When set, rank English/male browser voices toward warmer, more natural
+   * options. Female GigaLearn profiles must omit this so their matching is unchanged.
+   */
+  preferWarmMale?: boolean;
 };
 
 export type MatchedBrowserVoice = {
@@ -61,23 +66,46 @@ function voicesForTag(voices: SpeechSynthesisVoice[], tag: string): SpeechSynthe
   return pool;
 }
 
+/** Score warmer natural male voices higher; keep female matching paths untouched. */
+export function scoreWarmMaleVoice(voice: SpeechSynthesisVoice): number {
+  const name = `${voice.name || ""} ${voice.voiceURI || ""}`.toLowerCase();
+  let score = 0;
+  if (/(neural|natural|enhanced|premium|wavenet|studio|journey|onyx|echo)/.test(name)) score += 8;
+  if (/(male|man|david|daniel|arthur|thomas|james|google uk english male)/.test(name)) score += 4;
+  if (/(female|woman|samantha|karen|zira|google uk english female|abena|naa)/.test(name)) score -= 12;
+  if (/(espeak|compact|robot|mbrola)/.test(name)) score -= 6;
+  if (isLocalVoice(voice)) score += 2;
+  return score;
+}
+
+function pickBest(
+  pool: SpeechSynthesisVoice[],
+  preferWarmMale: boolean
+): SpeechSynthesisVoice | undefined {
+  if (pool.length === 0) return undefined;
+  if (!preferWarmMale) return pool.find(isLocalVoice) ?? pool[0];
+  return [...pool].sort((a, b) => scoreWarmMaleVoice(b) - scoreWarmMaleVoice(a))[0];
+}
+
 function findVoice(
   voices: SpeechSynthesisVoice[],
   tag: string,
-  localOnly: boolean
+  localOnly: boolean,
+  preferWarmMale: boolean
 ): SpeechSynthesisVoice | undefined {
   const pool = voicesForTag(voices, tag);
-  if (localOnly) return pool.find(isLocalVoice);
-  return pool.find(isLocalVoice) ?? pool[0];
+  const scoped = localOnly ? pool.filter(isLocalVoice) : pool;
+  return pickBest(scoped, preferWarmMale);
 }
 
 function findFirst(
   voices: SpeechSynthesisVoice[],
   tags: string[],
-  localOnly = false
+  localOnly = false,
+  preferWarmMale = false
 ): SpeechSynthesisVoice | undefined {
   for (const tag of tags) {
-    const found = findVoice(voices, tag, localOnly);
+    const found = findVoice(voices, tag, localOnly, preferWarmMale);
     if (found) return found;
   }
   return undefined;
@@ -89,10 +117,12 @@ export function matchBrowserVoice(
 ): MatchedBrowserVoice {
   const requested = config ? [config.primary, ...config.fallbacks] : ["en-GB", "en-US", "en"];
   const requestedEnglish = !config || isEnglishTag(config.primary);
+  const preferWarmMale = Boolean(config?.preferWarmMale);
   // On-device voices stay smooth on mobile data. A remote en-GB voice must not
   // beat a local en-US voice, or English playback stutters and drops.
   const nativeVoice =
-    findFirst(voices, requested, true) ?? findFirst(voices, requested, false);
+    findFirst(voices, requested, true, preferWarmMale) ??
+    findFirst(voices, requested, false, preferWarmMale);
 
   if (nativeVoice) {
     return {
@@ -104,8 +134,8 @@ export function matchBrowserVoice(
   }
 
   const english =
-    findFirst(voices, ENGLISH_PREFERENCE, true) ??
-    findFirst(voices, ENGLISH_PREFERENCE, false) ??
+    findFirst(voices, ENGLISH_PREFERENCE, true, preferWarmMale) ??
+    findFirst(voices, ENGLISH_PREFERENCE, false, preferWarmMale) ??
     voices.find((voice) => isEnglishTag(voice.lang || "")) ??
     null;
 

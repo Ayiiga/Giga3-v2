@@ -21,8 +21,17 @@ export type MediaContentType =
   | "country_profile";
 
 export type MediaDiscoverCategory =
-  | "videos-stories"
+  | "rhymes-poems"
+  | "songs"
   | "pictures-objects"
+  | "animals-nature"
+  | "african-stories"
+  | "videos-animation"
+  | "numbers-letters"
+  | "culture-occupations"
+  | "games"
+  /** @deprecated Phase 1 ids — still accepted by filters for older packs */
+  | "videos-stories"
   | "rhymes-songs"
   | "play-practise"
   | "africa-culture"
@@ -155,34 +164,58 @@ export const DISCOVER_CATEGORIES: Array<{
   description: string;
 }> = [
   {
-    id: "videos-stories",
-    label: "Videos & Stories",
-    emoji: "🎬",
-    description: "Short stories and animated lessons",
+    id: "rhymes-poems",
+    label: "Rhymes & Poems",
+    emoji: "📝",
+    description: "Nursery rhymes and short poems",
+  },
+  {
+    id: "songs",
+    label: "Songs",
+    emoji: "👏",
+    description: "Spoken lyric chants to clap or say along (not melodic music)",
   },
   {
     id: "pictures-objects",
     label: "Pictures & Objects",
     emoji: "🖼️",
-    description: "See real things and hear their names",
+    description: "See things and hear their names",
   },
   {
-    id: "rhymes-songs",
-    label: "Rhymes, Songs & Poems",
-    emoji: "🎵",
-    description: "Nursery rhymes and call-and-response",
+    id: "animals-nature",
+    label: "Animals & Nature",
+    emoji: "🌿",
+    description: "Animals, rivers, trees and outdoors",
   },
   {
-    id: "play-practise",
-    label: "Play & Practise",
-    emoji: "🎮",
-    description: "Counting, matching and identification games",
+    id: "african-stories",
+    label: "African Stories",
+    emoji: "📖",
+    description: "Folktales, kindness and everyday life",
   },
   {
-    id: "africa-culture",
-    label: "Africa & Culture",
+    id: "videos-animation",
+    label: "Videos & Animation",
+    emoji: "🎬",
+    description: "Short animated story experiences",
+  },
+  {
+    id: "numbers-letters",
+    label: "Numbers & Letters",
+    emoji: "🔤",
+    description: "Counting, letters and early literacy",
+  },
+  {
+    id: "culture-occupations",
+    label: "Culture & Occupations",
     emoji: "🌍",
-    description: "Ghana first — crafts, countries and culture",
+    description: "Ghana crafts, work and culture",
+  },
+  {
+    id: "games",
+    label: "Games",
+    emoji: "🎮",
+    description: "Play and practise activities",
   },
   {
     id: "offline",

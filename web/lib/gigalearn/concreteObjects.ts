@@ -303,11 +303,17 @@ export type GigaLearnVoice = {
 };
 
 export const GIGALEARN_VOICES: GigaLearnVoice[] = [
-  { id: "english", name: "English", language: "English · Primary · clear for every level", flag: "🇬🇧", style: "Primary language" },
+  {
+    id: "english",
+    name: "English",
+    language: "English · Warm male · clear for early years",
+    flag: "🇬🇧",
+    style: "Primary language",
+  },
   { id: "abena-twi", name: "Abena", language: "Twi · Female · slow & clear for KG", flag: "🇬🇭", style: "African language" },
-  { id: "musa-hausa", name: "Musa", language: "Hausa · Male", flag: "🇳🇬", style: "African language" },
+  { id: "musa-hausa", name: "Musa", language: "Hausa · Male · warmer selection", flag: "🇳🇬", style: "African language" },
   { id: "naa-ga", name: "Naa", language: "Ga · Female", flag: "🇬🇭", style: "African language" },
-  { id: "kofi-ewe", name: "Kofi", language: "Ewe · Male", flag: "🇬🇭", style: "African language" },
+  { id: "kofi-ewe", name: "Kofi", language: "Ewe · Male · warmer selection", flag: "🇬🇭", style: "African language" },
   { id: "ade-yoruba", name: "Ade", language: "Yoruba · Female", flag: "🇳🇬", style: "African language" },
   { id: "zawadi-swahili", name: "Zawadi", language: "Swahili · Female", flag: "🇰🇪", style: "African language" },
 ];
