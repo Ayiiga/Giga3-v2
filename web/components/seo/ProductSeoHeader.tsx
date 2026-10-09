@@ -10,6 +10,11 @@ type ProductSeoHeaderProps = {
   showProductNav?: boolean;
   /** Tighter padding for app pages that hydrate immediately below the header. */
   compact?: boolean;
+  /**
+   * Collapse longer detail behind Read more / Read less.
+   * Defaults to on when `compact` is true (product app shells).
+   */
+  collapsible?: boolean;
   className?: string;
 };
 
@@ -20,21 +25,50 @@ export function ProductSeoHeader({
   detail,
   showProductNav = true,
   compact = false,
+  collapsible,
   className = "",
 }: ProductSeoHeaderProps) {
+  const collapseIntro = collapsible ?? compact;
+  const bodyClass = compact
+    ? "text-sm leading-5 text-muted sm:text-base sm:leading-6"
+    : "section-lead";
+
   return (
     <header className={`border-b border-border bg-white ${className}`.trim()}>
-      <Container className={compact ? "py-4 sm:py-5" : "py-8 sm:py-10"}>
+      <Container className={compact ? "py-3 sm:py-4" : "py-8 sm:py-10"}>
         <div className="mx-auto max-w-3xl">
-          <h1 className={compact ? "text-xl font-bold tracking-tight sm:text-2xl" : "page-title"}>
+          <h1 className={compact ? "text-lg font-bold tracking-tight sm:text-xl" : "page-title"}>
             {title}
           </h1>
-          <p className={compact ? "mt-2 text-sm leading-6 text-muted sm:text-base" : "section-lead mt-4"}>
-            {description}
-          </p>
-          {detail ? (
-            <p className="mt-2 text-sm leading-6 text-muted">{detail}</p>
-          ) : null}
+          {collapseIntro ? (
+            <>
+              <p className={`mt-1.5 ${bodyClass}`}>{description}</p>
+              {detail ? (
+                <details className="group mt-1">
+                  <summary
+                    className="cursor-pointer list-none rounded-md outline-none marker:content-none focus-visible:ring-2 focus-visible:ring-accent/40 [&::-webkit-details-marker]:hidden"
+                  >
+                    <span className="inline-flex min-h-10 items-center text-sm font-medium text-accent group-open:hidden">
+                      Read more
+                    </span>
+                    <span className="hidden min-h-10 items-center text-sm font-medium text-accent group-open:inline-flex">
+                      Read less
+                    </span>
+                  </summary>
+                  <p className="mt-2 text-sm leading-6 text-muted">{detail}</p>
+                </details>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <p className={compact ? `mt-2 ${bodyClass}` : "section-lead mt-4"}>
+                {description}
+              </p>
+              {detail ? (
+                <p className="mt-2 text-sm leading-6 text-muted">{detail}</p>
+              ) : null}
+            </>
+          )}
           {showProductNav ? (
             <nav
               className="mt-8 flex flex-wrap gap-x-5 gap-y-3"

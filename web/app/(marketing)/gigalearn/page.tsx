@@ -52,9 +52,9 @@ export default function GigaLearnPage() {
       />
       <ProductSeoHeader
         compact
-        title="GigaLearn — AI Tutor & Exam Prep for Ghana"
-        description={GIGALEARN_META_DESCRIPTION}
-        detail="Structured study support for JHS and SHS students, teachers and parents — with BECE and WASSCE revision help, practice questions and responsible AI learning habits."
+        title="GigaLearn — Learn Smarter"
+        description="Learn, practise and prepare for exams with GigaLearn, your AI-powered learning companion for Ghana."
+        detail={`${GIGALEARN_META_DESCRIPTION} Structured study support for JHS and SHS students, teachers and parents — with BECE and WASSCE revision help, practice questions and responsible AI learning habits.`}
         showProductNav={false}
       />
       <div className="marketing-stable gigalearn-stable section-padding pt-4 pb-6 sm:pt-6">
