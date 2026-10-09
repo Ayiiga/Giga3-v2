@@ -1,4 +1,5 @@
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 import dynamic from "next/dynamic";
@@ -26,14 +27,20 @@ export const metadata = publicMetadata({
 export default function DocumentsPage() {
   return (
     <>
+      <JsonLd
+        breadcrumbs={[
+          { name: "Giga3 AI", path: "/" },
+          { name: "Document Studio", path: "/documents" },
+        ]}
+      />
       <ProductSeoHeader
+        className="sr-only"
         compact
         title="Document Studio"
         description="Edit, format and export professional documents as PDF or Word."
         showProductNav={false}
       />
       <div className="marketing-stable section-padding pt-3 pb-[calc(var(--primary-nav-offset,0px)+1rem)] sm:pt-5">
-        <h1 className="sr-only">Document Studio</h1>
         <Suspense fallback={<ClientAppHydrationNotice productName="Document Studio" />}>
           <DocumentsPageRoot />
         </Suspense>
