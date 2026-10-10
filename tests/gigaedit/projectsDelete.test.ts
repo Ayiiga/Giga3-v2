@@ -251,41 +251,133 @@ describe("deleteGigaEditProject owned media cleanup (D3)", () => {
 
   it("rolls back all deletes when the transaction aborts after requests are queued", async () => {
     const project = createEmptyProject({ kind: "video", title: "Abort me" });
+    const other = createEmptyProject({ kind: "video", title: "Keep me" });
     await saveGigaEditProject(project);
+    await saveGigaEditProject(other);
     await putProjectOriginalBlob(project.id, new Blob(["orig"]));
     await putProjectClipBlob(project.id, "c1", new Blob(["c1"]));
+    await putProjectClipBlob(project.id, "c2", new Blob(["c2"]));
     await putProjectAudioBlob(project.id, new Blob(["aud"]));
+    await putProjectOriginalBlob(other.id, new Blob(["other-orig"]));
+    await putProjectClipBlob(other.id, "ox", new Blob(["other-clip"]));
+    await putProjectAudioBlob(other.id, new Blob(["other-aud"]));
 
     const keysBefore = (await listMediaKeys()).slice().sort();
     const metaBefore = await getGigaEditProject(project.id);
+    const otherBefore = await getGigaEditProject(other.id);
     expect(metaBefore).not.toBeNull();
+    expect(otherBefore).not.toBeNull();
 
-    // After the delete path queues meta/primary/cursor work on one tx, abort it
-    // so nothing commits. Proves the path is all-or-nothing within that tx.
+    const expectedChildKeys = new Set([
+      `${project.id}::clip::c1`,
+      `${project.id}::clip::c2`,
+      `${project.id}::audio`,
+    ]);
+
+    const observed = {
+      metaDeleteQueued: false,
+      primaryMediaDeleteQueued: false,
+      ownedCursorOpened: false,
+      childDeletesQueued: new Set<string>(),
+      abortedAfterFullQueue: false,
+    };
+
+    let deleteTx: IDBTransaction | null = null;
+
     const originalTransaction = IDBDatabase.prototype.transaction;
+    const originalStoreDelete = IDBObjectStore.prototype.delete;
+    const originalOpenCursor = IDBObjectStore.prototype.openCursor;
+    const originalCursorDelete = IDBCursor.prototype.delete;
+
     const restore = () => {
       IDBDatabase.prototype.transaction = originalTransaction;
+      IDBObjectStore.prototype.delete = originalStoreDelete;
+      IDBObjectStore.prototype.openCursor = originalOpenCursor;
+      IDBCursor.prototype.delete = originalCursorDelete;
     };
+
+    const tryAbortAfterFullQueue = () => {
+      if (observed.abortedAfterFullQueue || !deleteTx) return;
+      const childrenDone =
+        observed.childDeletesQueued.size === expectedChildKeys.size &&
+        [...expectedChildKeys].every((k) => observed.childDeletesQueued.has(k));
+      if (
+        !(
+          observed.metaDeleteQueued &&
+          observed.primaryMediaDeleteQueued &&
+          observed.ownedCursorOpened &&
+          childrenDone
+        )
+      ) {
+        return;
+      }
+      // Abort synchronously after the final required delete was queued, before commit.
+      observed.abortedAfterFullQueue = true;
+      deleteTx.abort();
+    };
+
     IDBDatabase.prototype.transaction = function patchedTransaction(
       this: IDBDatabase,
-      ...args: Parameters<IDBDatabase["transaction"]>
+      storeNames: string | string[],
+      mode?: IDBTransactionMode,
+      options?: IDBTransactionOptions
     ) {
-      const tx = originalTransaction.apply(this, args);
+      const tx = originalTransaction.call(this, storeNames, mode, options);
+      const names = Array.isArray(storeNames) ? storeNames : [storeNames];
       if (
-        Array.isArray(args[0]) &&
-        args[0].includes(META_STORE) &&
-        args[0].includes(BLOB_STORE) &&
-        args[1] === "readwrite"
+        names.includes(META_STORE) &&
+        names.includes(BLOB_STORE) &&
+        mode === "readwrite"
       ) {
-        queueMicrotask(() => {
-          try {
-            tx.abort();
-          } catch {
-            /* already finished */
-          }
-        });
+        deleteTx = tx;
       }
       return tx;
+    };
+
+    IDBObjectStore.prototype.delete = function patchedStoreDelete(
+      this: IDBObjectStore,
+      key: IDBValidKey | IDBKeyRange
+    ) {
+      const keyStr = String(key);
+      if (this.name === META_STORE && keyStr === project.id) {
+        observed.metaDeleteQueued = true;
+      }
+      if (this.name === BLOB_STORE && keyStr === project.id) {
+        observed.primaryMediaDeleteQueued = true;
+      }
+      const req = originalStoreDelete.call(this, key);
+      tryAbortAfterFullQueue();
+      return req;
+    };
+
+    IDBObjectStore.prototype.openCursor = function patchedOpenCursor(
+      this: IDBObjectStore,
+      query?: IDBValidKey | IDBKeyRange | null,
+      direction?: IDBCursorDirection
+    ) {
+      const req = originalOpenCursor.call(this, query, direction);
+      if (
+        this.name === BLOB_STORE &&
+        query &&
+        typeof query === "object" &&
+        "lower" in query &&
+        String((query as IDBKeyRange).lower) === `${project.id}::`
+      ) {
+        observed.ownedCursorOpened = true;
+      }
+      tryAbortAfterFullQueue();
+      return req;
+    };
+
+    IDBCursor.prototype.delete = function patchedCursorDelete(this: IDBCursor) {
+      const keyStr = String(this.primaryKey ?? this.key);
+      if (expectedChildKeys.has(keyStr)) {
+        observed.childDeletesQueued.add(keyStr);
+      }
+      const req = originalCursorDelete.call(this);
+      // Abort from this hook only after every expected child delete is queued.
+      tryAbortAfterFullQueue();
+      return req;
     };
 
     try {
@@ -294,15 +386,36 @@ describe("deleteGigaEditProject owned media cleanup (D3)", () => {
       restore();
     }
 
-    expect(await getGigaEditProject(project.id)).not.toBeNull();
-    expect(await getGigaEditProject(project.id)).toMatchObject({
+    // Fail if abort raced ahead of the destructive queue (microtask-too-early case).
+    expect(observed.metaDeleteQueued).toBe(true);
+    expect(observed.primaryMediaDeleteQueued).toBe(true);
+    expect(observed.ownedCursorOpened).toBe(true);
+    expect([...observed.childDeletesQueued].sort()).toEqual(
+      [...expectedChildKeys].sort()
+    );
+    expect(observed.abortedAfterFullQueue).toBe(true);
+
+    const metaAfter = await getGigaEditProject(project.id);
+    expect(metaAfter).not.toBeNull();
+    expect(metaAfter).toMatchObject({
       id: project.id,
       title: "Abort me",
     });
+    expect(metaAfter?.updatedAt).toBe(metaBefore?.updatedAt);
+
     expect(await getProjectOriginalBlob(project.id)).not.toBeNull();
     expect(await getProjectClipBlob(project.id, "c1")).not.toBeNull();
+    expect(await getProjectClipBlob(project.id, "c2")).not.toBeNull();
     expect(await getProjectAudioBlob(project.id)).not.toBeNull();
     expect((await listMediaKeys()).slice().sort()).toEqual(keysBefore);
+
+    expect(await getGigaEditProject(other.id)).toMatchObject({
+      id: other.id,
+      title: "Keep me",
+    });
+    expect(await getProjectOriginalBlob(other.id)).not.toBeNull();
+    expect(await getProjectClipBlob(other.id, "ox")).not.toBeNull();
+    expect(await getProjectAudioBlob(other.id)).not.toBeNull();
   });
 
   it("queues meta, primary, and owned-child deletes in one transaction (source)", () => {
