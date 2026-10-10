@@ -44,24 +44,26 @@ function MarketplaceBrowseInner() {
     return [...listings].sort((a, b) => {
       if (sort === "price-low") return a.priceGhs - b.priceGhs;
       if (sort === "price-high") return b.priceGhs - a.priceGhs;
-      return 0;
+      const aTime = a.createdAt ?? a.updatedAt ?? 0;
+      const bTime = b.createdAt ?? b.updatedAt ?? 0;
+      return bTime - aTime;
     });
   }, [listings, sort]);
 
   return (
-    <Container className="discover-stable py-8 sm:py-12">
-      <div className="mx-auto max-w-5xl space-y-8">
-        <header className="space-y-4">
-          <div className="flex flex-wrap items-start justify-between gap-4">
+    <Container className="discover-stable document-compact py-4 pb-[calc(var(--primary-nav-offset,0px)+1rem)] sm:py-8">
+      <div className="mx-auto max-w-5xl space-y-5">
+        <header className="space-y-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="max-w-2xl">
-              <p className="mb-2 inline-flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-300">
+              <p className="mb-1 inline-flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-300">
                 <Store className="h-4 w-4" aria-hidden />
                 Giga3 Marketplace
               </p>
-              <h2 className="page-title font-serif tracking-tight">Buy. Pay. Download.</h2>
-              <p className="mt-2 text-muted">
-                Digital guides and templates in GHS. Pay with Paystack — your file unlocks only
-                after payment.
+              <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Buy. Pay. Download.</h2>
+              <p className="mt-1 text-sm text-muted">
+                Digital guides and templates in GHS. Pay with Paystack — files unlock only after
+                payment is verified.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">

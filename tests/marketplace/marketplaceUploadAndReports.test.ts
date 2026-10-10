@@ -46,6 +46,14 @@ describe("marketplace PDF upload intents", () => {
     const source = readFileSync(resolve(__dirname, "../../convex/marketplace.ts"), "utf8");
     expect(source).toContain("prepareListingUpload and completeListingUpload");
   });
+
+  it("gates purchase downloads on isListingFileApproved", () => {
+    const source = readFileSync(resolve(__dirname, "../../convex/marketplace.ts"), "utf8");
+    expect(source).toContain("export const getMyPurchases");
+    expect(source).toMatch(
+      /getMyPurchases[\s\S]*isListingFileApproved\(listing\)[\s\S]*downloadPendingReview/
+    );
+  });
 });
 
 describe("marketplace listing reports", () => {

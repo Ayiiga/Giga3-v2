@@ -5,6 +5,9 @@ import { AnswerContentBlock } from "@/components/chat/AnswerContentBlock";
 import { LiveWebSourceCards } from "@/components/chat/LiveWebSourceCards";
 import { ResearchResponseBadge } from "@/components/chat/ResearchResponseBadge";
 import { MessageBubbleActions } from "@/components/chat/MessageBubbleActions";
+import { DocumentResultCard } from "@/components/documents/DocumentResultCard";
+import { inferKindFromRequest } from "@/lib/documents/intent";
+import { looksLikeDocumentContent } from "@/lib/documents/model";
 import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
 import { MessageMarkdown } from "@/components/chat/MessageMarkdown";
 import { SmartAnswer } from "@/components/chat/SmartAnswer";
@@ -294,6 +297,16 @@ export const MessageBubble = memo(function MessageBubble({
             {body}
           </div>
           {bubbleActions}
+          {!streaming && !editing && looksLikeDocumentContent(content) ? (
+            <DocumentResultCard
+              content={content}
+              messageId={id}
+              templateKind={inferKindFromRequest(content)}
+              onRegenerate={
+                id && onRegenerate ? () => onRegenerate(id) : undefined
+              }
+            />
+          ) : null}
         </div>
       </div>
     </article>
