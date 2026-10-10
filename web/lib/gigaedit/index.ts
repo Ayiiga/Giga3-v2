@@ -69,7 +69,12 @@ export {
   createManagedObjectUrl,
   revokeManagedObjectUrl,
 } from "@/lib/gigaedit/mediaPipeline";
-export { GIGAEDIT_TEMPLATES } from "@/lib/gigaedit/templates";
+export {
+  GIGAEDIT_STARTER_PACK_IDS,
+  GIGAEDIT_TEMPLATES,
+  getGigaEditMoreTemplates,
+  getGigaEditStarterPackTemplates,
+} from "@/lib/gigaedit/templates";
 export {
   buildAiAssistPrompt,
   generateLocalCreativeDraft,
