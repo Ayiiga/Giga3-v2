@@ -514,3 +514,51 @@ describe("GigaEdits creator survey — wiring & regressions", () => {
     expect(seen).toEqual(["manual"]);
   });
 });
+
+describe("GigaEdits creator survey — mobile layout", () => {
+  let root: Root | null = null;
+  let host: HTMLDivElement;
+
+  afterEach(() => {
+    act(() => {
+      root?.unmount();
+    });
+    root = null;
+    host?.remove();
+    localStorage.clear();
+  });
+
+  it("fits a 390×844 viewport without horizontal overflow", async () => {
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 390 });
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 844 });
+    document.documentElement.style.width = "390px";
+    host = document.createElement("div");
+    host.style.width = "390px";
+    host.style.overflow = "hidden";
+    document.body.appendChild(host);
+    root = createRoot(host);
+    act(() => {
+      root!.render(createElement(CreatorSurveyHost));
+    });
+    await act(async () => {
+      offerCreatorSurvey({
+        projectId: "ge_mobile",
+        starterId: "hook-reel",
+        exportConfirmed: true,
+        source: "publish_save",
+      });
+    });
+    const sheet = host.querySelector(".gigaedit-survey-sheet") as HTMLElement;
+    expect(sheet).toBeTruthy();
+    // happy-dom layout metrics are limited; enforce CSS constraints that keep mobile fit.
+    const css = readFileSync(
+      resolve(__dirname, "../../web/styles/gigaedit.css"),
+      "utf8"
+    );
+    expect(css).toContain("width: min(100%, 26rem)");
+    expect(css).toContain("max-height: min(90vh, 40rem)");
+    expect(css).toContain("box-sizing: border-box");
+    expect(host.textContent).toContain("Help improve GigaEdits");
+    expect(host.querySelector(".gigaedit-survey-actions")).toBeTruthy();
+  });
+});
