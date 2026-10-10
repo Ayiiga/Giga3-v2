@@ -85,7 +85,8 @@ body {
   padding: 1rem 1rem calc(1rem + var(--ge-safe-bottom));
 }
 
-.ge-proto__screen[hidden] {
+.ge-proto__screen[hidden],
+.ge-proto [hidden] {
   display: none !important;
 }
 
