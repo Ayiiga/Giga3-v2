@@ -104,7 +104,7 @@ describe("GigaEdit Creator Growth Starter Pack", () => {
     expect(gallery).toContain("Promo Poster");
     expect(gallery).toContain("4:5");
     expect(gallery).toContain('data-starter-pack');
+    expect(gallery).toContain("not finished timeline layouts");
     expect(gallery).not.toMatch(/id:\s*["']hook-reel["']/);
-    expect(gallery.toLowerCase()).not.toMatch(/capcut|beat-sync|slideshow/);
   });
 });

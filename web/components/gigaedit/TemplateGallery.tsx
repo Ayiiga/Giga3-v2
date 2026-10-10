@@ -56,8 +56,9 @@ export function TemplateGallery({ onUseVideo, onUsePhoto }: TemplateGalleryProps
           </h3>
           <p className="mt-1 text-xs text-[var(--ge-muted)]">
             Format starters that open a correctly sized project with a starter title: Hook Reel
-            (9:16), YouTube Intro (16:9), and Promo Poster (4:5). Import your own media — not
-            CapCut layouts or auto-generated slideshows. Works offline after the app loads.
+            (9:16), YouTube Intro (16:9), and Promo Poster (4:5). Import your own media and finish
+            the edit with existing tools — these are not finished timeline layouts. Works offline
+            after the app loads.
           </p>
         </div>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
