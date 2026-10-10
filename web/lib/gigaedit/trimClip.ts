@@ -56,15 +56,17 @@ export function previewPlayheadTrim(
   const sourcePlayhead = timelineSecToSourceSec(clip, playheadSec);
 
   if (side === "after") {
-    const nextSourceStart = Math.max(sourceStart, Math.min(sourcePlayhead, sourceEnd - MIN_TRIM_SEC));
+    const nextSourceStart = Math.max(sourceStart, sourcePlayhead);
     const nextSourceEnd = sourceEnd;
-    const timelineDur = Math.max(MIN_TRIM_SEC, (nextSourceEnd - nextSourceStart) / speed);
-    const viable =
-      sourcePlayhead > sourceStart + MIN_TRIM_SEC * 0.5 &&
-      nextSourceEnd - nextSourceStart >= MIN_TRIM_SEC;
+    const remaining = nextSourceEnd - nextSourceStart;
+    const viable = remaining >= MIN_TRIM_SEC && nextSourceStart > sourceStart + 0.001;
+    const timelineDur = Math.max(MIN_TRIM_SEC, remaining / speed);
     return {
       side,
-      remainingLabel: formatRangeSec(nextSourceStart, nextSourceEnd),
+      remainingLabel: formatRangeSec(
+        viable ? nextSourceStart : sourceStart,
+        viable ? nextSourceEnd : sourceEnd
+      ),
       sourceStartSec: nextSourceStart,
       sourceEndSec: nextSourceEnd,
       timelineStartSec: clip.startSec,
@@ -74,14 +76,16 @@ export function previewPlayheadTrim(
   }
 
   const nextSourceStart = sourceStart;
-  const nextSourceEnd = Math.min(sourceEnd, Math.max(sourcePlayhead, sourceStart + MIN_TRIM_SEC));
-  const timelineDur = Math.max(MIN_TRIM_SEC, (nextSourceEnd - nextSourceStart) / speed);
-  const viable =
-    sourcePlayhead < sourceEnd - MIN_TRIM_SEC * 0.5 &&
-    nextSourceEnd - nextSourceStart >= MIN_TRIM_SEC;
+  const nextSourceEnd = Math.min(sourceEnd, sourcePlayhead);
+  const remaining = nextSourceEnd - nextSourceStart;
+  const viable = remaining >= MIN_TRIM_SEC && nextSourceEnd < sourceEnd - 0.001;
+  const timelineDur = Math.max(MIN_TRIM_SEC, remaining / speed);
   return {
     side,
-    remainingLabel: formatRangeSec(nextSourceStart, nextSourceEnd),
+    remainingLabel: formatRangeSec(
+      viable ? nextSourceStart : sourceStart,
+      viable ? nextSourceEnd : sourceEnd
+    ),
     sourceStartSec: nextSourceStart,
     sourceEndSec: nextSourceEnd,
     timelineStartSec: clip.startSec,
