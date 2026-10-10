@@ -88,6 +88,36 @@
   contain: none;
 }
 
+/* Create sub-nav on dark GigaEdit shell — selected state must stay obvious. */
+.gigaedit-shell .create-sub-nav__item {
+  color: var(--ge-muted);
+  background: var(--ge-card-solid);
+  border-color: var(--ge-border);
+}
+
+.gigaedit-shell .create-sub-nav__item--active {
+  color: var(--ge-text);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.35) 0%, rgba(251, 191, 36, 0.18) 100%);
+  border-color: rgba(251, 191, 36, 0.55);
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.25), 0 4px 14px -6px rgba(139, 92, 246, 0.45);
+}
+
+.gigaedit-shell .create-sub-nav__item--active .create-sub-nav__label {
+  color: var(--ge-text);
+}
+
+.gigaedit-shell .create-sub-nav__item--active .create-sub-nav__hint {
+  color: rgba(251, 191, 36, 0.85);
+}
+
+.gigaedit-shell .create-sub-nav__icon {
+  color: var(--ge-violet-soft);
+}
+
+.gigaedit-shell .create-sub-nav__item--active .create-sub-nav__icon {
+  color: var(--ge-gold);
+}
+
 .gigaedit-stable,
 .gigaedit-stable * {
   animation: none !important;

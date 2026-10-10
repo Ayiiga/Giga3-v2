@@ -96,7 +96,15 @@ describe("GigaEdit Creator Growth Starter Pack", () => {
     expect(gallery).toContain("getGigaEditStarterPackTemplates");
     expect(gallery).toContain("getGigaEditMoreTemplates");
     expect(gallery).toContain("Creator Growth Starter Pack");
+    expect(gallery).toContain("Start creating with GigaEdits");
+    expect(gallery).toContain("Hook Reel");
+    expect(gallery).toContain("9:16");
+    expect(gallery).toContain("YouTube Intro");
+    expect(gallery).toContain("16:9");
+    expect(gallery).toContain("Promo Poster");
+    expect(gallery).toContain("4:5");
     expect(gallery).toContain('data-starter-pack');
     expect(gallery).not.toMatch(/id:\s*["']hook-reel["']/);
+    expect(gallery.toLowerCase()).not.toMatch(/capcut|beat-sync|slideshow/);
   });
 });
