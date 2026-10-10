@@ -153,13 +153,79 @@ export async function duplicateGigaEditProject(id: string): Promise<GigaEditProj
   return copy;
 }
 
+/**
+ * Delete project metadata and every media blob owned by that project in one
+ * IndexedDB transaction (meta + original + `${id}::…` clip/audio keys).
+ *
+ * All deletes are queued on the same readwrite transaction and connection —
+ * no second transaction, no `await` between requests (which would risk
+ * auto-commit). Resolves only on `tx.oncomplete`; rejects on `tx.onerror` /
+ * `tx.onabort`. Missing rows are fine (IDB delete is idempotent). No schema bump.
+ *
+ * Brand-kit rows share the projects store; they are skipped via
+ * `isProjectMetaRow` inside this same transaction (no separate early ID guard).
+ */
 export async function deleteGigaEditProject(id: string): Promise<void> {
-  if (id === GIGAEDIT_BRAND_KIT_STORE_ID) return;
+  if (!id) return;
   const db = await openDb();
   if (!db) return;
-  const tx = db.transaction([META_STORE, BLOB_STORE], "readwrite");
-  await idbReq(tx.objectStore(META_STORE).delete(id));
-  await idbReq(tx.objectStore(BLOB_STORE).delete(id));
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      let settled = false;
+      const settleOk = () => {
+        if (settled) return;
+        settled = true;
+        resolve();
+      };
+      const settleErr = (err: unknown) => {
+        if (settled) return;
+        settled = true;
+        reject(err instanceof Error ? err : new Error(String(err)));
+      };
+
+      // Single connection + single readwrite transaction for meta, primary
+      // media, and every owned child key. Cursor deletes stay on this tx.
+      const tx = db.transaction([META_STORE, BLOB_STORE], "readwrite");
+      tx.oncomplete = () => settleOk();
+      tx.onerror = () =>
+        settleErr(tx.error ?? new Error("IndexedDB transaction error"));
+      tx.onabort = () =>
+        settleErr(tx.error ?? new Error("IndexedDB transaction aborted"));
+
+      const meta = tx.objectStore(META_STORE);
+      const blobs = tx.objectStore(BLOB_STORE);
+
+      // Read first on this tx so brand-kit / non-project docs are left alone.
+      // Further deletes are queued from this success handler (same tx).
+      const getReq = meta.get(id);
+      getReq.onsuccess = () => {
+        const row = getReq.result;
+        if (row && !isProjectMetaRow(row)) {
+          return;
+        }
+
+        meta.delete(id);
+        blobs.delete(id);
+
+        // Child keys use an explicit `::` namespace so prefix delete cannot touch
+        // another project whose id merely shares a string prefix. The bound
+        // already enforces `${id}::…`; cursor.delete() stays on this same tx.
+        const ownedRange = IDBKeyRange.bound(`${id}::`, `${id}::\uffff`);
+        const cursorReq = blobs.openCursor(ownedRange);
+        cursorReq.onsuccess = () => {
+          const cursor = cursorReq.result;
+          if (!cursor) return;
+          cursor.delete();
+          cursor.continue();
+        };
+      };
+      // Do not settle from request handlers — request errors abort the
+      // transaction, and we settle only via tx.oncomplete / onerror / onabort.
+    });
+  } finally {
+    db.close();
+  }
 }
 
 export async function putProjectOriginalBlob(id: string, blob: Blob): Promise<void> {
@@ -221,6 +287,16 @@ export async function getProjectAudioBlob(projectId: string): Promise<Blob | nul
 
 function clipBlobId(projectId: string, sourceKey: string): string {
   return `${projectId}::clip::${sourceKey}`;
+}
+
+/**
+ * Whether a `media` store key belongs to a project: the original blob id, or any
+ * namespaced child (`${projectId}::audio`, `${projectId}::clip::…`).
+ */
+export function isOwnedGigaEditMediaKey(projectId: string, mediaKey: string): boolean {
+  if (!projectId || !mediaKey) return false;
+  if (mediaKey === projectId) return true;
+  return mediaKey.startsWith(`${projectId}::`);
 }
 
 /** Persist a joined clip source blob without overwriting the legacy original slot. */
