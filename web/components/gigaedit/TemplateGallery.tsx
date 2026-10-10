@@ -44,8 +44,8 @@ export function TemplateGallery({ onUseVideo, onUsePhoto }: TemplateGalleryProps
       <div>
         <h2 className="text-lg font-semibold">Templates</h2>
         <p className="mt-1 text-xs text-[var(--ge-muted)]">
-          Each template opens the matching editor with the right aspect ratio and a starter title.
-          Import your own photo or video — no paid AI call is required to begin.
+          Start creating with GigaEdits. Choose a video or poster format, import your media, and
+          finish your edit with the tools already available in Giga3 AI.
         </p>
       </div>
 
@@ -55,8 +55,10 @@ export function TemplateGallery({ onUseVideo, onUsePhoto }: TemplateGalleryProps
             Creator Growth Starter Pack
           </h3>
           <p className="mt-1 text-xs text-[var(--ge-muted)]">
-            Three free starters for aspiring creators: a vertical reel, a YouTube-sized video, and a
-            promo poster. Works offline after the app loads.
+            Format starters that open a correctly sized project with a starter title: Hook Reel
+            (9:16), YouTube Intro (16:9), and Promo Poster (4:5). Import your own media and finish
+            the edit with existing tools — these are not finished timeline layouts. Works offline
+            after the app loads.
           </p>
         </div>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">

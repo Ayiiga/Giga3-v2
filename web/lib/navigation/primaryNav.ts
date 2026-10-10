@@ -43,7 +43,8 @@ export const PRIMARY_NAV_TABS: PrimaryNavTab[] = [
   {
     id: "create",
     label: "Create",
-    href: siteConfig.links.media,
+    /** Default Create destination when no explicit Media Studio / GigaEdits selection. */
+    href: siteConfig.links.gigaedit,
     match: (pathname) => {
       const path = normalizePath(pathname);
       return path.startsWith("/media") || path.startsWith("/gigaedit");

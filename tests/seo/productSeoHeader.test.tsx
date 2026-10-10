@@ -52,17 +52,18 @@ describe("ProductSeoHeader compact Read more", () => {
     expect(host!.querySelector("h1")?.textContent).toBe("GigaLearn — Learn Smarter");
     expect(host!.textContent).toMatch(/Learn, practise and prepare/);
     expect(host!.textContent).toMatch(/Read more/);
+    expect(host!.textContent).toMatch(/BECE and WASSCE/);
 
-    const details = host!.querySelector("details");
-    expect(details).toBeTruthy();
-    expect(details!.open).toBe(false);
-    expect(details!.textContent).toMatch(/BECE and WASSCE/);
+    const toggle = host!.querySelector('button[aria-expanded="false"]');
+    expect(toggle).toBeTruthy();
+    expect(toggle!.textContent).toMatch(/Read more/);
 
     act(() => {
-      details!.open = true;
-      details!.dispatchEvent(new Event("toggle"));
+      (toggle as HTMLButtonElement).click();
     });
-    expect(details!.open).toBe(true);
+
+    const expanded = host!.querySelector('button[aria-expanded="true"]');
+    expect(expanded).toBeTruthy();
     expect(host!.textContent).toMatch(/Read less/);
   });
 
@@ -78,5 +79,18 @@ describe("ProductSeoHeader compact Read more", () => {
     expect(page).toMatch(/publicMetadata\(/);
     expect(page).toContain("JsonLd");
     expect(page).toContain("GIGALEARN_META_DESCRIPTION");
+  });
+
+  it("keeps GigaEdit page compact with Read more and Starter Pack detail", () => {
+    const page = readFileSync(
+      resolve(__dirname, "../../web/app/(marketing)/gigaedit/page.tsx"),
+      "utf8"
+    );
+    expect(page).toContain("GigaEdit — Trim, join, and publish video");
+    expect(page).toMatch(/ProductSeoHeader[\s\S]*compact/);
+    expect(page).toContain("Creator Growth Starter Pack");
+    expect(page).toContain("Hook Reel");
+    expect(page).toMatch(/publicMetadata\(/);
+    expect(page).toContain("JsonLd");
   });
 });
