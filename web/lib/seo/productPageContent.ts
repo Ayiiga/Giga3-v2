@@ -50,7 +50,7 @@ export const GIGAEDITS_PAGE: PublicProductPageShellProps = {
     "Publish-ready exports for GigaSocial",
   ],
   giga3Connection:
-    "Creator Studio helps you draft; Media Studio and Video AI generate assets; GigaEdits (GigaEdit) finishes and publishes to GigaSocial or download. Sign in to save projects to your account.",
+    "Creator Studio helps you draft; Media Studio and Video AI generate assets; GigaEdits (GigaEdit) finishes and publishes to GigaSocial or download. Project drafts save on your device in the browser — not to cloud account backup yet.",
   primaryHref: "/gigaedit",
   primaryLabel: "Open GigaEdit",
   secondaryHref: "/creator-studio",

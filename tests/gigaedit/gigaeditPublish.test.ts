@@ -101,7 +101,7 @@ describe("GigaEdit publish redirect helpers", () => {
     expect(video).toContain("VideoEditorHeader");
     expect(video).toContain("openPublishOptions");
     expect(video).toContain("VoiceoverPanel");
-    expect(video).toContain("audioNoiseReduction");
+    expect(video).toContain("Export does not apply background-noise reduction yet");
     expect(video).toContain('case "fx"');
     expect(video).toContain("deleteSelectedClip");
   });
