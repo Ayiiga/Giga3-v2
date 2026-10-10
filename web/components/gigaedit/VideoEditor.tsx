@@ -102,6 +102,7 @@ import {
   clipAtTimelineSec,
   readVideoDuration,
   remainingJoinSlots,
+  resolvePlayheadTrimTarget,
   sortedVideoClips,
   sourceSecToTimelineSec,
   timelineSecToSourceSec,
@@ -751,9 +752,10 @@ export function VideoEditor({
   }
 
   function openTrimPrompt() {
-    const active = clipAtTimelineSec(clips, playhead) ?? sortedVideoClips(clips)[0];
+    const active = resolvePlayheadTrimTarget(clips, playhead, selectedClipId);
     if (!active) {
-      setStatus("Import a video and place the playhead on a clip to trim.");
+      setTrimPromptOpen(false);
+      setStatus("Move the playhead onto a video clip to trim.");
       return;
     }
     setTrimPromptOpen(true);
@@ -767,9 +769,10 @@ export function VideoEditor({
   }
 
   function confirmPlayheadTrim(side: PlayheadTrimSide) {
-    const active = clipAtTimelineSec(clips, playhead) ?? sortedVideoClips(clips)[0];
+    const active = resolvePlayheadTrimTarget(clips, playhead, selectedClipId);
     if (!active) {
       setTrimPromptOpen(false);
+      setStatus("Move the playhead onto a video clip to trim.");
       return;
     }
     const preview = previewPlayheadTrim(active, playhead, side);
@@ -1341,7 +1344,7 @@ export function VideoEditor({
   function renderToolPanel() {
     switch (activeToolTab) {
       case "edit": {
-        const trimTarget = clipAtTimelineSec(clips, playhead) ?? sortedVideoClips(clips)[0];
+        const trimTarget = resolvePlayheadTrimTarget(clips, playhead, selectedClipId);
         const keepAfter = trimTarget ? previewPlayheadTrim(trimTarget, playhead, "after") : null;
         const keepBefore = trimTarget ? previewPlayheadTrim(trimTarget, playhead, "before") : null;
         return (
@@ -1374,6 +1377,14 @@ export function VideoEditor({
                 disabled={!hasVideo || exporting}
               />
             </ToolGrid>
+            {trimPromptOpen && !trimTarget ? (
+              <p
+                className="rounded-xl border border-[var(--ge-border)] bg-[var(--ge-input)] px-3 py-2.5 text-xs text-[var(--ge-muted)]"
+                role="status"
+              >
+                Move the playhead onto a video clip to trim.
+              </p>
+            ) : null}
             {trimPromptOpen && trimTarget ? (
               <div
                 className="space-y-2 rounded-xl border border-[var(--ge-border)] bg-[var(--ge-input)] p-3"
