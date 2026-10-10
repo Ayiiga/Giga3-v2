@@ -156,43 +156,72 @@ export async function duplicateGigaEditProject(id: string): Promise<GigaEditProj
 /**
  * Delete project metadata and every media blob owned by that project in one
  * IndexedDB transaction (meta + original + `${id}::…` clip/audio keys).
- * Missing rows are fine — IDB delete is idempotent. No schema/version change.
- * Resolves only on transaction `complete` so queued cursor deletes are atomic
- * with the meta/original deletes within IndexedDB’s transaction guarantees.
+ *
+ * All deletes are queued on the same readwrite transaction and connection —
+ * no second transaction, no `await` between requests (which would risk
+ * auto-commit). Resolves only on `tx.oncomplete`; rejects on `tx.onerror` /
+ * `tx.onabort`. Missing rows are fine (IDB delete is idempotent). No schema bump.
+ *
+ * Brand-kit rows share the projects store; they are skipped via
+ * `isProjectMetaRow` inside this same transaction (no separate early ID guard).
  */
 export async function deleteGigaEditProject(id: string): Promise<void> {
-  if (!id || id === GIGAEDIT_BRAND_KIT_STORE_ID) return;
+  if (!id) return;
   const db = await openDb();
   if (!db) return;
 
   try {
     await new Promise<void>((resolve, reject) => {
+      let settled = false;
+      const settleOk = () => {
+        if (settled) return;
+        settled = true;
+        resolve();
+      };
+      const settleErr = (err: unknown) => {
+        if (settled) return;
+        settled = true;
+        reject(err instanceof Error ? err : new Error(String(err)));
+      };
+
+      // Single connection + single readwrite transaction for meta, primary
+      // media, and every owned child key. Cursor deletes stay on this tx.
       const tx = db.transaction([META_STORE, BLOB_STORE], "readwrite");
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error ?? new Error("IndexedDB transaction error"));
-      tx.onabort = () => reject(tx.error ?? new Error("IndexedDB transaction aborted"));
+      tx.oncomplete = () => settleOk();
+      tx.onerror = () =>
+        settleErr(tx.error ?? new Error("IndexedDB transaction error"));
+      tx.onabort = () =>
+        settleErr(tx.error ?? new Error("IndexedDB transaction aborted"));
 
       const meta = tx.objectStore(META_STORE);
       const blobs = tx.objectStore(BLOB_STORE);
-      meta.delete(id);
-      blobs.delete(id);
 
-      // Child keys use an explicit `::` namespace so prefix delete cannot touch
-      // another project whose id merely shares a string prefix.
-      const ownedRange = IDBKeyRange.bound(`${id}::`, `${id}::\uffff`);
-      const cursorReq = blobs.openCursor(ownedRange);
-      cursorReq.onsuccess = () => {
-        const cursor = cursorReq.result;
-        if (!cursor) return;
-        const key = String(cursor.primaryKey ?? cursor.key);
-        if (isOwnedGigaEditMediaKey(id, key)) {
-          cursor.delete();
+      // Read first on this tx so brand-kit / non-project docs are left alone.
+      // Further deletes are queued from this success handler (same tx).
+      const getReq = meta.get(id);
+      getReq.onsuccess = () => {
+        const row = getReq.result;
+        if (row && !isProjectMetaRow(row)) {
+          return;
         }
-        cursor.continue();
+
+        meta.delete(id);
+        blobs.delete(id);
+
+        // Child keys use an explicit `::` namespace so prefix delete cannot touch
+        // another project whose id merely shares a string prefix. The bound
+        // already enforces `${id}::…`; cursor.delete() stays on this same tx.
+        const ownedRange = IDBKeyRange.bound(`${id}::`, `${id}::\uffff`);
+        const cursorReq = blobs.openCursor(ownedRange);
+        cursorReq.onsuccess = () => {
+          const cursor = cursorReq.result;
+          if (!cursor) return;
+          cursor.delete();
+          cursor.continue();
+        };
       };
-      cursorReq.onerror = () => {
-        reject(cursorReq.error ?? new Error("IndexedDB cursor error"));
-      };
+      // Do not settle from request handlers — request errors abort the
+      // transaction, and we settle only via tx.oncomplete / onerror / onabort.
     });
   } finally {
     db.close();

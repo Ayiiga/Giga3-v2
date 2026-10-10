@@ -3,7 +3,10 @@
  */
 import "fake-indexeddb/auto";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { GIGAEDIT_BRAND_KIT_STORE_ID } from "../../web/lib/gigaedit/creatorStudio/brandKit";
+import {
+  DEFAULT_BRAND_KIT,
+  GIGAEDIT_BRAND_KIT_STORE_ID,
+} from "../../web/lib/gigaedit/creatorStudio/brandKit";
 import {
   createEmptyProject,
   deleteGigaEditProject,
@@ -22,6 +25,8 @@ import { resolve } from "node:path";
 
 const DB_NAME = "giga3-gigaedit-v1";
 const DB_VERSION = 2;
+const META_STORE = "projects";
+const BLOB_STORE = "media";
 
 /**
  * Clear stores instead of deleteDatabase — fake-indexeddb (and browsers) block
@@ -183,11 +188,143 @@ describe("deleteGigaEditProject owned media cleanup (D3)", () => {
     await expect(deleteGigaEditProject(project.id)).resolves.toBeUndefined();
     await expect(deleteGigaEditProject(project.id)).resolves.toBeUndefined();
     await expect(deleteGigaEditProject("ge_missing_zzzzzz")).resolves.toBeUndefined();
-    await expect(deleteGigaEditProject(GIGAEDIT_BRAND_KIT_STORE_ID)).resolves.toBeUndefined();
     await expect(deleteGigaEditProject("")).resolves.toBeUndefined();
 
     expect(await getGigaEditProject(project.id)).toBeNull();
     expect(await getProjectClipBlob(project.id, "only-clip")).toBeNull();
+  });
+
+  it("leaves brand-kit metadata intact when deleting a project", async () => {
+    const project = createEmptyProject({ kind: "video", title: "Has brand kit neighbor" });
+    await saveGigaEditProject(project);
+    await putProjectOriginalBlob(project.id, new Blob(["orig"]));
+
+    // Seed brand kit directly into the shared projects store.
+    await new Promise<void>((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onerror = () => reject(req.error ?? new Error("open failed"));
+      req.onsuccess = () => {
+        const db = req.result;
+        const tx = db.transaction(META_STORE, "readwrite");
+        tx.objectStore(META_STORE).put({
+          ...DEFAULT_BRAND_KIT,
+          id: GIGAEDIT_BRAND_KIT_STORE_ID,
+          updatedAt: Date.now(),
+        });
+        tx.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+        tx.onerror = () => {
+          db.close();
+          reject(tx.error ?? new Error("put brand kit failed"));
+        };
+      };
+    });
+
+    await deleteGigaEditProject(project.id);
+    await expect(deleteGigaEditProject(GIGAEDIT_BRAND_KIT_STORE_ID)).resolves.toBeUndefined();
+
+    const brandKit = await new Promise<unknown>((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onerror = () => reject(req.error ?? new Error("open failed"));
+      req.onsuccess = () => {
+        const db = req.result;
+        const tx = db.transaction(META_STORE, "readonly");
+        const getReq = tx.objectStore(META_STORE).get(GIGAEDIT_BRAND_KIT_STORE_ID);
+        getReq.onsuccess = () => {
+          const value = getReq.result;
+          db.close();
+          resolve(value ?? null);
+        };
+        getReq.onerror = () => {
+          db.close();
+          reject(getReq.error ?? new Error("get brand kit failed"));
+        };
+      };
+    });
+
+    expect(brandKit).not.toBeNull();
+    expect((brandKit as { id: string }).id).toBe(GIGAEDIT_BRAND_KIT_STORE_ID);
+    expect(await getGigaEditProject(project.id)).toBeNull();
+  });
+
+  it("rolls back all deletes when the transaction aborts after requests are queued", async () => {
+    const project = createEmptyProject({ kind: "video", title: "Abort me" });
+    await saveGigaEditProject(project);
+    await putProjectOriginalBlob(project.id, new Blob(["orig"]));
+    await putProjectClipBlob(project.id, "c1", new Blob(["c1"]));
+    await putProjectAudioBlob(project.id, new Blob(["aud"]));
+
+    const keysBefore = (await listMediaKeys()).slice().sort();
+    const metaBefore = await getGigaEditProject(project.id);
+    expect(metaBefore).not.toBeNull();
+
+    // After the delete path queues meta/primary/cursor work on one tx, abort it
+    // so nothing commits. Proves the path is all-or-nothing within that tx.
+    const originalTransaction = IDBDatabase.prototype.transaction;
+    const restore = () => {
+      IDBDatabase.prototype.transaction = originalTransaction;
+    };
+    IDBDatabase.prototype.transaction = function patchedTransaction(
+      this: IDBDatabase,
+      ...args: Parameters<IDBDatabase["transaction"]>
+    ) {
+      const tx = originalTransaction.apply(this, args);
+      if (
+        Array.isArray(args[0]) &&
+        args[0].includes(META_STORE) &&
+        args[0].includes(BLOB_STORE) &&
+        args[1] === "readwrite"
+      ) {
+        queueMicrotask(() => {
+          try {
+            tx.abort();
+          } catch {
+            /* already finished */
+          }
+        });
+      }
+      return tx;
+    };
+
+    try {
+      await expect(deleteGigaEditProject(project.id)).rejects.toBeTruthy();
+    } finally {
+      restore();
+    }
+
+    expect(await getGigaEditProject(project.id)).not.toBeNull();
+    expect(await getGigaEditProject(project.id)).toMatchObject({
+      id: project.id,
+      title: "Abort me",
+    });
+    expect(await getProjectOriginalBlob(project.id)).not.toBeNull();
+    expect(await getProjectClipBlob(project.id, "c1")).not.toBeNull();
+    expect(await getProjectAudioBlob(project.id)).not.toBeNull();
+    expect((await listMediaKeys()).slice().sort()).toEqual(keysBefore);
+  });
+
+  it("queues meta, primary, and owned-child deletes in one transaction (source)", () => {
+    const src = readFileSync(resolve(__dirname, "../../web/lib/gigaedit/projects.ts"), "utf8");
+    const fnStart = src.indexOf("export async function deleteGigaEditProject");
+    const fnEnd = src.indexOf("export async function putProjectOriginalBlob");
+    expect(fnStart).toBeGreaterThan(-1);
+    expect(fnEnd).toBeGreaterThan(fnStart);
+    const body = src.slice(fnStart, fnEnd);
+
+    expect(body).toContain('db.transaction([META_STORE, BLOB_STORE], "readwrite")');
+    expect(body).toContain("meta.delete(id)");
+    expect(body).toContain("blobs.delete(id)");
+    expect(body).toContain("IDBKeyRange.bound");
+    expect(body).toContain("blobs.openCursor(ownedRange)");
+    expect(body).toContain("tx.oncomplete");
+    expect(body).toContain("db.close()");
+    // No second transaction for cursor cleanup.
+    expect(body.match(/\.transaction\(/g)?.length).toBe(1);
+    // Early brand-kit id guard removed; protection is isProjectMetaRow in-tx.
+    expect(body).not.toContain("GIGAEDIT_BRAND_KIT_STORE_ID");
+    expect(body).toContain("isProjectMetaRow");
   });
 
   it("does not bump IndexedDB version and keeps ownership separator", () => {
