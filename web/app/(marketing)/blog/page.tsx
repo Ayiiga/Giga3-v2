@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { BlogPostGrid } from "@/components/blog/BlogPostGrid";
 import { BlogBreadcrumbs } from "@/components/blog/BlogBreadcrumbs";
+import { BlogPushSubscribe } from "@/components/blog/BlogPushSubscribe";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { BLOG_CATEGORIES, blogCategoryPath } from "@/lib/blog/categories";
 import { blogIndexMetadata } from "@/lib/blog/metadata";
@@ -97,6 +98,10 @@ export default function BlogIndexPage() {
                 ))}
               </ul>
             </nav>
+
+            <div className="mx-auto mt-10 max-w-3xl">
+              <BlogPushSubscribe />
+            </div>
 
             <section aria-labelledby="latest-articles-heading" className="mt-4">
               <h2 id="latest-articles-heading" className="sr-only">
