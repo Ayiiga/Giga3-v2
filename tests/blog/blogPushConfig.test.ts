@@ -1,14 +1,24 @@
-import { describe, expect, it } from "vitest";
+/**
+ * @vitest-environment happy-dom
+ */
+import { afterEach, describe, expect, it } from "vitest";
 import {
+  BLOG_PUSH_OPTED_IN_KEY,
   BLOG_PUSH_SW_PATH,
   BLOG_PUSH_SW_SCOPE,
   buildBlogArticleNotificationUrl,
   getOneSignalAppId,
+  hasBlogPushOptedInMarker,
   isApprovedBlogNotificationUrl,
   isBlogPushEnabled,
+  setBlogPushOptedInMarker,
 } from "../../web/lib/blog/blogPushConfig";
 
 describe("blogPushConfig", () => {
+  afterEach(() => {
+    localStorage.clear();
+  });
+
   it("stays disabled without flag or valid App ID", () => {
     expect(isBlogPushEnabled({ enabled: undefined, appId: undefined })).toBe(false);
     expect(isBlogPushEnabled({ enabled: "true", appId: "" })).toBe(false);
@@ -47,5 +57,14 @@ describe("blogPushConfig", () => {
     expect(buildBlogArticleNotificationUrl("make-money-with-ai-ghana-2026")).toBe(
       "https://www.giga3ai.com/blog/make-money-with-ai-ghana-2026/"
     );
+  });
+
+  it("tracks the blog-specific opted-in marker without implying SDK init", () => {
+    expect(BLOG_PUSH_OPTED_IN_KEY).toBe("giga3:blog-push:opted-in");
+    expect(hasBlogPushOptedInMarker()).toBe(false);
+    setBlogPushOptedInMarker(true);
+    expect(hasBlogPushOptedInMarker()).toBe(true);
+    setBlogPushOptedInMarker(false);
+    expect(hasBlogPushOptedInMarker()).toBe(false);
   });
 });

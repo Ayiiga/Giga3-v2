@@ -15,6 +15,33 @@ export const BLOG_PUSH_SW_SCOPE = "/push/onesignal/";
 export const BLOG_PUSH_DISMISS_KEY = "giga3:blog-push:dismissed";
 /** localStorage: reader chose not to be asked again */
 export const BLOG_PUSH_MUTE_KEY = "giga3:blog-push:muted";
+/**
+ * localStorage: reader completed blog-specific OneSignal opt-in via **Notify me**.
+ * Lifecycle: set only after a successful `subscribeBlogPush()` from the blog UI;
+ * cleared after a successful blog unsubscribe. Not migrated from other Giga3 push
+ * features or from OneSignal dashboard state. Used so mount can show "subscribed"
+ * without initializing the OneSignal SDK or registering its service worker.
+ */
+export const BLOG_PUSH_OPTED_IN_KEY = "giga3:blog-push:opted-in";
+
+export function hasBlogPushOptedInMarker(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return localStorage.getItem(BLOG_PUSH_OPTED_IN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function setBlogPushOptedInMarker(optedIn: boolean): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (optedIn) localStorage.setItem(BLOG_PUSH_OPTED_IN_KEY, "1");
+    else localStorage.removeItem(BLOG_PUSH_OPTED_IN_KEY);
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
 
 const APPROVED_ORIGINS = new Set(["https://www.giga3ai.com", "https://giga3ai.com"]);
 

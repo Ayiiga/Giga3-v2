@@ -3,11 +3,12 @@
 import {
   BLOG_PUSH_DISMISS_KEY,
   BLOG_PUSH_MUTE_KEY,
+  hasBlogPushOptedInMarker,
   isBlogPushEnabled,
+  setBlogPushOptedInMarker,
 } from "@/lib/blog/blogPushConfig";
 import {
   getBlogPushPermission,
-  isBlogPushOptedIn,
   isBlogPushSupported,
   subscribeBlogPush,
   unsubscribeBlogPush,
@@ -44,6 +45,9 @@ function writeFlag(key: string, value: boolean): void {
 /**
  * Soft opt-in for Giga3 AI blog article notifications (OneSignal).
  * Never auto-triggers the browser permission dialog.
+ * Never initializes OneSignal or registers its worker on mount — only after
+ * an explicit Notify me / Unsubscribe action (or when showing UI from the
+ * blog-specific opted-in marker, which does not touch the SDK).
  * Renders nothing when the feature flag / App ID is not configured.
  */
 export function BlogPushSubscribe({
@@ -70,24 +74,19 @@ export function BlogPushSubscribe({
       return;
     }
 
-    let cancelled = false;
-    void (async () => {
-      const optedIn = permission === "granted" ? await isBlogPushOptedIn() : false;
-      if (cancelled) return;
-      if (optedIn) {
-        setStatus("subscribed");
-        return;
-      }
-      if (readFlag(BLOG_PUSH_MUTE_KEY) || readFlag(BLOG_PUSH_DISMISS_KEY)) {
-        setStatus("hidden");
-        return;
-      }
-      setStatus("prompt");
-    })();
+    // Marker-only — do not call ensureBlogPushInitialized / load the SDK here,
+    // even when Notification.permission is already "granted" by another feature.
+    if (hasBlogPushOptedInMarker()) {
+      setStatus("subscribed");
+      return;
+    }
 
-    return () => {
-      cancelled = true;
-    };
+    if (readFlag(BLOG_PUSH_MUTE_KEY) || readFlag(BLOG_PUSH_DISMISS_KEY)) {
+      setStatus("hidden");
+      return;
+    }
+
+    setStatus("prompt");
   }, []);
 
   if (status === "hidden") return null;
@@ -98,6 +97,7 @@ export function BlogPushSubscribe({
     const result = await subscribeBlogPush();
     if (result.ok) {
       writeFlag(BLOG_PUSH_DISMISS_KEY, false);
+      setBlogPushOptedInMarker(true);
       setStatus("subscribed");
       setMessage("You are subscribed to new Giga3 AI blog articles.");
       return;
@@ -130,6 +130,7 @@ export function BlogPushSubscribe({
     setStatus("busy");
     const result = await unsubscribeBlogPush();
     if (result.ok) {
+      setBlogPushOptedInMarker(false);
       setStatus("prompt");
       setMessage("You unsubscribed from blog notifications on this device.");
       return;

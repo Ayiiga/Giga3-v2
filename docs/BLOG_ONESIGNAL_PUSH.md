@@ -53,10 +53,12 @@ Both required. Invalid/missing App ID → feature stays **off** (component rende
 
 - Soft prompt on blog index + article layout (`BlogPushSubscribe`)
 - Explains: optional alerts for new Giga3 AI articles
-- Permission requested only after **Notify me**
+- Permission requested only after **Notify me** (and only when permission is still `default`)
+- **No OneSignal SDK init / worker registration on mount** — even if the browser already granted notifications for another Giga3 feature (Convex VAPID / app `PushPrompt`)
+- Blog-specific opted-in marker: `localStorage` key `giga3:blog-push:opted-in` (`BLOG_PUSH_OPTED_IN_KEY`), set only after a successful blog **Notify me**, cleared after blog **Unsubscribe**. Not migrated from other push systems or the OneSignal dashboard
 - Dismiss / Don’t ask again stored in `localStorage`
 - Respects denied / unsupported
-- Unsubscribe control when opted in
+- Unsubscribe control when the blog marker is set (SDK init happens on that click only)
 - Max editorial cadence **policy**: ≤ 1 notification per day (configure in OneSignal campaigns / your sender)
 
 ## Enabling in OneSignal dashboard

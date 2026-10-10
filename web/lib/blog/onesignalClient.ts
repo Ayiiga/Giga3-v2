@@ -1,12 +1,17 @@
 /**
  * Lazy OneSignal Web SDK loader for blog push (Custom Code / v16).
  * Uses a subdirectory service worker so it does not replace /sw.js.
+ *
+ * Init / worker registration happens only from subscribe/unsubscribe (explicit
+ * blog actions). Mount-time UI must use `hasBlogPushOptedInMarker()` instead of
+ * calling `ensureBlogPushInitialized()`.
  */
 
 import {
   BLOG_PUSH_SW_PATH,
   BLOG_PUSH_SW_SCOPE,
   getOneSignalAppId,
+  hasBlogPushOptedInMarker,
   isBlogPushEnabled,
 } from "@/lib/blog/blogPushConfig";
 
@@ -146,10 +151,13 @@ export async function subscribeBlogPush(): Promise<{
   }
 
   try {
-    if (oneSignal.Notifications?.requestPermission) {
-      await oneSignal.Notifications.requestPermission();
-    } else if (Notification.permission === "default") {
-      await Notification.requestPermission();
+    // Native prompt only when still undecided — never re-prompt when already granted/denied.
+    if (Notification.permission === "default") {
+      if (oneSignal.Notifications?.requestPermission) {
+        await oneSignal.Notifications.requestPermission();
+      } else {
+        await Notification.requestPermission();
+      }
     }
 
     const permission = getBlogPushPermission();
@@ -185,14 +193,13 @@ export async function unsubscribeBlogPush(): Promise<{ ok: boolean; error?: stri
   }
 }
 
-export async function isBlogPushOptedIn(): Promise<boolean> {
-  if (!isBlogPushEnabled() || getBlogPushPermission() !== "granted") return false;
-  try {
-    const oneSignal = await ensureBlogPushInitialized();
-    return Boolean(oneSignal?.User?.PushSubscription?.optedIn);
-  } catch {
-    return false;
-  }
+/**
+ * Blog-specific opted-in status for UI only — reads the local marker.
+ * Does **not** initialize OneSignal or register its service worker.
+ */
+export function isBlogPushOptedIn(): boolean {
+  if (!isBlogPushEnabled()) return false;
+  return hasBlogPushOptedInMarker();
 }
 
 /** Test-only reset of module singletons. */
