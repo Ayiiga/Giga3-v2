@@ -24,6 +24,27 @@ describe("GigaEdits P0 UX reliability", () => {
     expect(client).toContain('params.set("project", id)');
   });
 
+  it("playhead trim never silently falls back to the first video clip (D1)", () => {
+    const src = read("web/components/gigaedit/VideoEditor.tsx");
+    expect(src).toContain("resolvePlayheadTrimTarget");
+    expect(src).toContain("TRIM_NEEDS_CLIP_STATUS");
+    expect(src).toContain("trimPromptPanelState");
+    const panel = read("web/lib/gigaedit/trimPromptPanel.ts");
+    expect(panel).toContain("Move the playhead onto a video clip to trim.");
+    // Trim open/confirm/preview must not use first-clip fallback.
+    expect(src).not.toMatch(
+      /resolvePlayheadTrimTarget[\s\S]{0,40}\?\?[\s\S]{0,40}sortedVideoClips\(clips\)\[0\]/
+    );
+    const openTrim = src.slice(src.indexOf("function openTrimPrompt"));
+    const openBody = openTrim.slice(0, openTrim.indexOf("function confirmPlayheadTrim"));
+    expect(openBody).not.toContain("sortedVideoClips(clips)[0]");
+    const confirmBody = src.slice(
+      src.indexOf("function confirmPlayheadTrim"),
+      src.indexOf("function splitAtPlayhead")
+    );
+    expect(confirmBody).not.toContain("sortedVideoClips(clips)[0]");
+  });
+
   it("voiceover mix messaging is on-device free (no credit charge UI)", () => {
     expect(VOICEOVER_EXPORT_CREDITS).toBe(0);
     const panel = read("web/components/gigaedit/VoiceoverPanel.tsx");
