@@ -188,6 +188,15 @@ function GigaEditClientInner() {
           initialOverlayText={initialOverlayText || undefined}
           initialImportUrls={initialImportUrls}
           onBackHome={() => openSection("home")}
+          onProjectIdChange={(id) => {
+            const params = new URLSearchParams(searchParams?.toString() ?? "");
+            params.set("tab", "video");
+            params.set("project", id);
+            params.delete("import");
+            params.delete("record");
+            const qs = params.toString();
+            router.replace(qs ? `/gigaedit/?${qs}` : "/gigaedit/", { scroll: false });
+          }}
         />
       )}
       {section === "photo" && (

@@ -18,6 +18,10 @@ describe("GigaEdits P0 UX reliability", () => {
     expect(src).toContain("readProjectCaptions");
     expect(src).toContain("Join on export");
     expect(src).toContain("Export does not apply background-noise reduction yet");
+    expect(src).toContain("onProjectIdChange");
+    const client = read("web/components/gigaedit/GigaEditClient.tsx");
+    expect(client).toContain("onProjectIdChange");
+    expect(client).toContain('params.set("project", id)');
   });
 
   it("voiceover mix messaging is on-device free (no credit charge UI)", () => {

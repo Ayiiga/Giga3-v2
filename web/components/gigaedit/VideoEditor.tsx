@@ -130,6 +130,8 @@ export type VideoEditorProps = {
   /** Remote video URLs from Media Studio / template handoff (`clip0`, `clip1`, …). */
   initialImportUrls?: string[];
   onBackHome?: () => void;
+  /** Keep `?project=` in sync after local save so reload recovers the draft. */
+  onProjectIdChange?: (projectId: string) => void;
 };
 
 export function VideoEditor({
@@ -139,6 +141,7 @@ export function VideoEditor({
   initialOverlayText = "",
   initialImportUrls = [],
   onBackHome,
+  onProjectIdChange,
 }: VideoEditorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const addClipInputRef = useRef<HTMLInputElement>(null);
@@ -1129,11 +1132,13 @@ export function VideoEditor({
       }
       enqueueGigaEditSync({ projectId: project.id, action: "backup" });
       setProjectId(project.id);
-      setAutosaveToast("Draft auto-saved locally. Original file preserved.");
+      onProjectIdChange?.(project.id);
+      setAutosaveToast("Draft auto-saved locally on this device. Original file preserved.");
       window.setTimeout(() => setAutosaveToast(null), 4000);
       return project.id;
     } catch (err) {
       setProjectId(project.id);
+      onProjectIdChange?.(project.id);
       setStatus(
         err instanceof Error
           ? `Draft save failed (${err.message}) — edits kept in memory.`
