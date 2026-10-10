@@ -54,7 +54,7 @@ describe("GigaEdits UX prototype isolation", () => {
     expect(html).toContain("Record");
     expect(html).toContain("Teleprompter");
     expect(html).toMatch(/Local device only/i);
-    expect(html).toContain("not synced to your account");
+    expect(html).toMatch(/not\s+synced to your account/i);
     expect(html).toContain('id="screen-quick-edit"');
     expect(html).toContain("Export");
     expect(html).toContain("Undo");
