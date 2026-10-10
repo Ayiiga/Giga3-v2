@@ -153,13 +153,50 @@ export async function duplicateGigaEditProject(id: string): Promise<GigaEditProj
   return copy;
 }
 
+/**
+ * Delete project metadata and every media blob owned by that project in one
+ * IndexedDB transaction (meta + original + `${id}::…` clip/audio keys).
+ * Missing rows are fine — IDB delete is idempotent. No schema/version change.
+ * Resolves only on transaction `complete` so queued cursor deletes are atomic
+ * with the meta/original deletes within IndexedDB’s transaction guarantees.
+ */
 export async function deleteGigaEditProject(id: string): Promise<void> {
-  if (id === GIGAEDIT_BRAND_KIT_STORE_ID) return;
+  if (!id || id === GIGAEDIT_BRAND_KIT_STORE_ID) return;
   const db = await openDb();
   if (!db) return;
-  const tx = db.transaction([META_STORE, BLOB_STORE], "readwrite");
-  await idbReq(tx.objectStore(META_STORE).delete(id));
-  await idbReq(tx.objectStore(BLOB_STORE).delete(id));
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction([META_STORE, BLOB_STORE], "readwrite");
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error ?? new Error("IndexedDB transaction error"));
+      tx.onabort = () => reject(tx.error ?? new Error("IndexedDB transaction aborted"));
+
+      const meta = tx.objectStore(META_STORE);
+      const blobs = tx.objectStore(BLOB_STORE);
+      meta.delete(id);
+      blobs.delete(id);
+
+      // Child keys use an explicit `::` namespace so prefix delete cannot touch
+      // another project whose id merely shares a string prefix.
+      const ownedRange = IDBKeyRange.bound(`${id}::`, `${id}::\uffff`);
+      const cursorReq = blobs.openCursor(ownedRange);
+      cursorReq.onsuccess = () => {
+        const cursor = cursorReq.result;
+        if (!cursor) return;
+        const key = String(cursor.primaryKey ?? cursor.key);
+        if (isOwnedGigaEditMediaKey(id, key)) {
+          cursor.delete();
+        }
+        cursor.continue();
+      };
+      cursorReq.onerror = () => {
+        reject(cursorReq.error ?? new Error("IndexedDB cursor error"));
+      };
+    });
+  } finally {
+    db.close();
+  }
 }
 
 export async function putProjectOriginalBlob(id: string, blob: Blob): Promise<void> {
@@ -221,6 +258,16 @@ export async function getProjectAudioBlob(projectId: string): Promise<Blob | nul
 
 function clipBlobId(projectId: string, sourceKey: string): string {
   return `${projectId}::clip::${sourceKey}`;
+}
+
+/**
+ * Whether a `media` store key belongs to a project: the original blob id, or any
+ * namespaced child (`${projectId}::audio`, `${projectId}::clip::…`).
+ */
+export function isOwnedGigaEditMediaKey(projectId: string, mediaKey: string): boolean {
+  if (!projectId || !mediaKey) return false;
+  if (mediaKey === projectId) return true;
+  return mediaKey.startsWith(`${projectId}::`);
 }
 
 /** Persist a joined clip source blob without overwriting the legacy original slot. */
