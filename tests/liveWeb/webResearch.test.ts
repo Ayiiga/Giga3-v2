@@ -79,6 +79,7 @@ describe("Tavily search provider", () => {
             title: "  Headline  ",
             url: "https://news.example.org/article",
             content: "  Snippet text  ",
+            published_date: "2026-03-15",
           },
           { url: "https://missing-title.example/" },
           { title: "No URL" },
@@ -94,6 +95,7 @@ describe("Tavily search provider", () => {
     expect(results[0].uri).toBe("https://news.example.org/article");
     expect(results[0].snippet).toBe("Snippet text");
     expect(results[0].domain).toBe("news.example.org");
+    expect(results[0].publishedAt).toBe("2026-03-15");
     expect(results[1].title).toBe("https://missing-title.example/");
     expect(results[1].domain).toBe("missing-title.example");
   });

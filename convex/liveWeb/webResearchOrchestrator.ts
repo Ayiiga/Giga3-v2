@@ -35,6 +35,7 @@ function sourceFromSearch(row: {
   uri: string;
   domain: string;
   snippet?: string;
+  publishedAt?: string;
 }): LiveWebSource {
   return {
     title: row.title,
@@ -42,6 +43,7 @@ function sourceFromSearch(row: {
     domain: row.domain,
     excerpt: sanitizeLiveWebSourceExcerpt(row.snippet),
     accessedAt: Date.now(),
+    ...(row.publishedAt ? { publishedAt: row.publishedAt } : {}),
   };
 }
 
