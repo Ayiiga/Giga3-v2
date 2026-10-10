@@ -23,7 +23,7 @@ export function TemplateGallery({ onUseVideo, onUsePhoto }: TemplateGalleryProps
   const starterPack = getGigaEditStarterPackTemplates();
   const moreTemplates = getGigaEditMoreTemplates();
 
-  async function useTemplate(t: GigaEditTemplate) {
+  async function openTemplate(t: GigaEditTemplate) {
     const project = createEmptyProject({
       kind: isPhotoTemplate(t) ? "photo" : "video",
       title: t.title,
@@ -61,7 +61,7 @@ export function TemplateGallery({ onUseVideo, onUsePhoto }: TemplateGalleryProps
         </div>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {starterPack.map((t) => (
-            <TemplateCard key={t.id} template={t} featured onUse={() => void useTemplate(t)} />
+            <TemplateCard key={t.id} template={t} featured onUse={() => void openTemplate(t)} />
           ))}
         </div>
       </section>
@@ -72,7 +72,7 @@ export function TemplateGallery({ onUseVideo, onUsePhoto }: TemplateGalleryProps
         </h3>
         <div className="grid gap-2 sm:grid-cols-2">
           {moreTemplates.map((t) => (
-            <TemplateCard key={t.id} template={t} onUse={() => void useTemplate(t)} />
+            <TemplateCard key={t.id} template={t} onUse={() => void openTemplate(t)} />
           ))}
         </div>
       </section>
