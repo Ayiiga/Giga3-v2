@@ -90,6 +90,7 @@ import {
 import {
   offerCreatorSurvey,
   resolveStarterFromNotes,
+  shouldAutoOfferCreatorSurvey,
 } from "@/lib/gigaedit/creatorSurvey";
 import { downloadExportedFile, saveExportedFileToDevice } from "@/lib/gigaedit/downloadExport";
 import { handoffAndOpenGigaSocial } from "@/lib/gigaedit/publishHandoff";
@@ -1338,24 +1339,30 @@ export function VideoEditor({
     setExporting(true);
     setStatus("Exporting…");
     try {
-      await saveProject();
+      const savedProjectId = await saveProject();
       const edited = await bakeEditedFile();
       if (!edited.size) {
         throw new Error("Export produced an empty file.");
       }
-      const savedVia = await saveExportedFileToDevice(edited, overlayText);
+      const saveResult = await saveExportedFileToDevice(edited, overlayText);
       setEditedPublishFile(edited);
+      if (saveResult.outcome === "cancelled") {
+        setStatus("Share cancelled — try Download again or use Export → Save to Gallery.");
+        return;
+      }
       setStatus(
-        savedVia === "shared"
-          ? "Opened share sheet — pick Gallery/Files to save, or another app."
-          : `Saved ${edited.name} to your device.`
+        saveResult.outcome === "shared"
+          ? "Opened share sheet — pick Gallery/Files to save, or another app. Gallery save is not verified by the app."
+          : `Download started for ${edited.name}. Check Files or Downloads — gallery save is not verified by the app.`
       );
-      offerCreatorSurvey({
-        projectId,
-        starterId: starterTemplateId,
-        exportConfirmed: true,
-        source: "video_download",
-      });
+      if (shouldAutoOfferCreatorSurvey(saveResult.outcome)) {
+        offerCreatorSurvey({
+          projectId: savedProjectId ?? projectId,
+          starterId: starterTemplateId,
+          deviceSaveOutcome: saveResult.outcome,
+          source: "video_download",
+        });
+      }
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Export failed.");
     } finally {

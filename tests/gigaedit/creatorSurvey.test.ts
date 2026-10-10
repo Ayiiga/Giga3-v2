@@ -73,7 +73,7 @@ function sampleAnswers(
     priceHypothesis: "too_high",
     researchConsent: true,
     projectId: "ge_test_1",
-    trigger: "export_confirmed",
+    trigger: "post_export",
     ...overrides,
   };
 }
@@ -114,28 +114,50 @@ describe("GigaEdits creator survey — contract & encoding", () => {
     ).toThrow(/1 to 5/);
   });
 
-  it("pre-fills export=Yes only for confirmed export offers", () => {
+  it("never auto-prefills export=Yes; uses not_confirmed after delivery attempts", () => {
     expect(
       defaultSurveyAnswersFromOffer({
         projectId: "p1",
         starterId: "yt-intro",
-        exportConfirmed: true,
+        deviceSaveOutcome: "shared",
         source: "publish_save",
       })
     ).toMatchObject({
       starter: "yt-intro",
-      exportSaved: "yes",
-      trigger: "export_confirmed",
+      exportSaved: "not_confirmed",
+      trigger: "post_export",
+    });
+    expect(
+      defaultSurveyAnswersFromOffer({
+        projectId: "p1",
+        starterId: "hook-reel",
+        deviceSaveOutcome: "downloaded",
+        source: "video_download",
+      })
+    ).toMatchObject({
+      exportSaved: "not_confirmed",
+      trigger: "post_export",
     });
     expect(
       defaultSurveyAnswersFromOffer({
         projectId: "p1",
         starterId: null,
-        exportConfirmed: false,
+        deviceSaveOutcome: null,
         source: "manual",
       })
     ).toMatchObject({
       starter: "other",
+      exportSaved: "not_attempted",
+      trigger: "manual",
+    });
+    expect(
+      defaultSurveyAnswersFromOffer({
+        projectId: "p1",
+        starterId: "hook-reel",
+        deviceSaveOutcome: "cancelled",
+        source: "video_download",
+      })
+    ).toMatchObject({
       exportSaved: "not_attempted",
       trigger: "manual",
     });
@@ -253,7 +275,7 @@ describe("GigaEdits creator survey — offer bus & UI", () => {
       offerCreatorSurvey({
         projectId: "ge_auth",
         starterId: "yt-intro",
-        exportConfirmed: true,
+        deviceSaveOutcome: "shared",
         source: "video_download",
       });
     });
@@ -275,10 +297,14 @@ describe("GigaEdits creator survey — offer bus & UI", () => {
       offerCreatorSurvey({
         projectId: "ge_ok",
         starterId: "poster-promo",
-        exportConfirmed: true,
+        deviceSaveOutcome: "shared",
         source: "publish_save",
       });
     });
+    const notConfirmed = host.querySelector(
+      'input[name="export"][value="not_confirmed"]'
+    ) as HTMLInputElement;
+    expect(notConfirmed.checked).toBe(true);
     await click(button("Submit feedback"));
     expect(host.textContent).toContain("Sending");
     expect(host.textContent).not.toContain("Thank you — feedback sent");
@@ -293,7 +319,7 @@ describe("GigaEdits creator survey — offer bus & UI", () => {
     expect(args.title).toBe(CREATOR_SURVEY_TITLE);
     expect(args.rating).toBe(3);
     expect(args.body).toContain("starter: poster-promo");
-    expect(args.body).toContain("export_saved: yes");
+    expect(args.body).toContain("export_saved: not_confirmed");
     expect(host.textContent).toContain("Thank you — feedback sent");
     expect(isSurveyAutoPromptBlocked("ge_ok")).toBe(true);
   });
@@ -307,7 +333,7 @@ describe("GigaEdits creator survey — offer bus & UI", () => {
       offerCreatorSurvey({
         projectId: "ge_retry",
         starterId: "hook-reel",
-        exportConfirmed: false,
+        deviceSaveOutcome: null,
         source: "manual",
       });
     });
@@ -340,7 +366,7 @@ describe("GigaEdits creator survey — offer bus & UI", () => {
       offerCreatorSurvey({
         projectId: "ge_off",
         starterId: null,
-        exportConfirmed: false,
+        deviceSaveOutcome: null,
         source: "manual",
       });
     });
@@ -358,7 +384,7 @@ describe("GigaEdits creator survey — offer bus & UI", () => {
       offerCreatorSurvey({
         projectId: "ge_skip",
         starterId: "hook-reel",
-        exportConfirmed: true,
+        deviceSaveOutcome: "shared",
         source: "video_download",
       });
     });
@@ -368,13 +394,26 @@ describe("GigaEdits creator survey — offer bus & UI", () => {
     expect(isSurveyAutoPromptBlocked("ge_skip")).toBe(true);
   });
 
-  it("does not auto-prompt twice for repeated confirmed-export callbacks", async () => {
+  it("does not auto-open survey when share was cancelled", async () => {
+    renderHost();
+    await act(async () => {
+      offerCreatorSurvey({
+        projectId: "ge_cancel",
+        starterId: "hook-reel",
+        deviceSaveOutcome: "cancelled",
+        source: "video_download",
+      });
+    });
+    expect(host.textContent).not.toContain("Help improve GigaEdits");
+  });
+
+  it("does not auto-prompt twice for repeated post-export callbacks", async () => {
     renderHost();
     await act(async () => {
       offerCreatorSurvey({
         projectId: "ge_dup",
         starterId: "hook-reel",
-        exportConfirmed: true,
+        deviceSaveOutcome: "shared",
         source: "video_download",
       });
     });
@@ -384,7 +423,7 @@ describe("GigaEdits creator survey — offer bus & UI", () => {
       offerCreatorSurvey({
         projectId: "ge_dup",
         starterId: "hook-reel",
-        exportConfirmed: true,
+        deviceSaveOutcome: "shared",
         source: "video_download",
       });
     });
@@ -397,7 +436,7 @@ describe("GigaEdits creator survey — offer bus & UI", () => {
       offerCreatorSurvey({
         projectId: "ge_reopen",
         starterId: "hook-reel",
-        exportConfirmed: true,
+        deviceSaveOutcome: "shared",
         source: "publish_save",
       });
     });
@@ -406,7 +445,7 @@ describe("GigaEdits creator survey — offer bus & UI", () => {
       offerCreatorSurvey({
         projectId: "ge_reopen",
         starterId: "hook-reel",
-        exportConfirmed: false,
+        deviceSaveOutcome: null,
         source: "manual",
       });
     });
@@ -415,7 +454,7 @@ describe("GigaEdits creator survey — offer bus & UI", () => {
 });
 
 describe("GigaEdits creator survey — wiring & regressions", () => {
-  it("triggers survey only after confirmed video/photo device save paths", () => {
+  it("triggers survey only after non-cancelled device-save delivery attempts", () => {
     const video = readFileSync(
       resolve(__dirname, "../../web/components/gigaedit/VideoEditor.tsx"),
       "utf8"
@@ -435,9 +474,11 @@ describe("GigaEdits creator survey — wiring & regressions", () => {
 
     expect(video).toContain("offerCreatorSurvey");
     expect(video).toContain('source: "video_download"');
-    expect(video).toContain("exportConfirmed: true");
+    expect(video).toContain("deviceSaveOutcome");
+    expect(video).toContain("shouldAutoOfferCreatorSurvey");
+    expect(video).toContain("savedProjectId");
     expect(video).toContain("saveExportedFileToDevice");
-    // Bake-to-publish must not mark export successful.
+    // Bake-to-publish must not offer the survey.
     const bakeFn = video.slice(
       video.indexOf("async function openPublishOptions"),
       video.indexOf("async function exportAndDownload")
@@ -452,7 +493,7 @@ describe("GigaEdits creator survey — wiring & regressions", () => {
     );
     expect(shareFn).not.toContain("offerCreatorSurvey");
 
-    // Photo PNG download path is not a confirmed saveExportedFileToDevice success.
+    // Photo PNG download path must not call offerCreatorSurvey.
     expect(photo).not.toContain("offerCreatorSurvey");
     expect(photo).toContain("starterTemplateId");
     expect(photo).toContain("CreatorSurveyManualLink");
@@ -482,6 +523,8 @@ describe("GigaEdits creator survey — wiring & regressions", () => {
     expect(feedback).toContain("export const submitFeedback = mutation");
     expect(feedback).toContain("requireSession");
     expect(feedback).toContain("MAX_FEEDBACK_PER_HOUR = 8");
+    expect(feedback).toContain("bodyFull");
+    expect(feedback).toContain("GIGAEDITS_CREATOR_SURVEY_TITLE");
     expect(schema).not.toContain("gigaeditSurvey");
     expect(schema).not.toContain("creatorSurvey");
   });
@@ -500,14 +543,14 @@ describe("GigaEdits creator survey — wiring & regressions", () => {
     const seen: string[] = [];
     const unsub = subscribeCreatorSurveyOffers((o) => seen.push(o.source));
     offerCreatorSurvey({
-      exportConfirmed: false,
+      deviceSaveOutcome: null,
       source: "manual",
       starterId: null,
     });
     expect(seen).toEqual(["manual"]);
     unsub();
     offerCreatorSurvey({
-      exportConfirmed: false,
+      deviceSaveOutcome: null,
       source: "manual",
       starterId: null,
     });
@@ -544,7 +587,7 @@ describe("GigaEdits creator survey — mobile layout", () => {
       offerCreatorSurvey({
         projectId: "ge_mobile",
         starterId: "hook-reel",
-        exportConfirmed: true,
+        deviceSaveOutcome: "shared",
         source: "publish_save",
       });
     });

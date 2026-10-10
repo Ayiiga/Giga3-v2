@@ -4,6 +4,7 @@
  * No new Convex table or mutation.
  */
 
+import type { DeviceSaveOutcome } from "@/lib/gigaedit/downloadExport";
 import {
   GIGAEDIT_STARTER_PACK_IDS,
   type GigaEditStarterPackId,
@@ -19,7 +20,8 @@ const STORAGE_PREFIX = "giga3_gigaedit_survey_v1";
 export type SurveyStarterChoice = GigaEditStarterPackId | "other";
 
 export type SurveyTaskCompleted = "yes" | "partly" | "no";
-export type SurveyExportSaved = "yes" | "no" | "not_attempted";
+/** Honest export answers — "yes" is never auto-prefilled (gallery not verified). */
+export type SurveyExportSaved = "yes" | "no" | "not_attempted" | "not_confirmed";
 export type SurveyReuse = "yes" | "maybe" | "no";
 export type SurveyWtp = "yes" | "maybe" | "no" | "not_sure";
 export type SurveyPriceHypothesis =
@@ -43,15 +45,19 @@ export type CreatorSurveyAnswers = {
   /** Optional product-research consent — not marketing. */
   researchConsent: boolean;
   projectId?: string;
-  trigger: "export_confirmed" | "manual";
+  /** post_export = after a non-cancelled device-save attempt; never claims gallery proof. */
+  trigger: "post_export" | "manual";
 };
 
 export type CreatorSurveyOffer = {
   projectId?: string;
   /** Resolved starter pack id, or null when unknown. */
   starterId?: GigaEditStarterPackId | null;
-  /** True only after saveExportedFileToDevice succeeded. */
-  exportConfirmed: boolean;
+  /**
+   * Outcome from saveExportedFileToDevice when auto-offering.
+   * Omit / null for manual entry. "cancelled" must not auto-offer.
+   */
+  deviceSaveOutcome?: DeviceSaveOutcome | null;
   source: "video_download" | "publish_save" | "manual";
 };
 
@@ -90,6 +96,27 @@ export function subscribeCreatorSurveyOffers(listener: OfferListener): () => voi
 /** Offer the survey UI (host decides dismiss/submit gates). */
 export function offerCreatorSurvey(offer: CreatorSurveyOffer): void {
   offerListener?.(offer);
+}
+
+/**
+ * Auto-offer only after a non-cancelled delivery attempt.
+ * Share cancel must not prompt; gallery save is never OS-verified.
+ */
+export function shouldAutoOfferCreatorSurvey(
+  outcome: DeviceSaveOutcome | null | undefined
+): boolean {
+  return outcome === "shared" || outcome === "downloaded";
+}
+
+/**
+ * Prefill export answer honestly from the save helper.
+ * Never returns "yes" — browsers cannot prove gallery persistence.
+ */
+export function surveyExportPrefillFromOutcome(
+  outcome: DeviceSaveOutcome | null | undefined
+): SurveyExportSaved {
+  if (outcome === "shared" || outcome === "downloaded") return "not_confirmed";
+  return "not_attempted";
 }
 
 export function resolveStarterFromNotes(
@@ -208,10 +235,11 @@ export function buildCreatorSurveySubmitPayload(
 export function defaultSurveyAnswersFromOffer(
   offer: CreatorSurveyOffer
 ): Pick<CreatorSurveyAnswers, "starter" | "exportSaved" | "trigger" | "projectId"> {
+  const postExport = shouldAutoOfferCreatorSurvey(offer.deviceSaveOutcome);
   return {
     starter: offer.starterId ?? "other",
-    exportSaved: offer.exportConfirmed ? "yes" : "not_attempted",
-    trigger: offer.exportConfirmed ? "export_confirmed" : "manual",
+    exportSaved: surveyExportPrefillFromOutcome(offer.deviceSaveOutcome),
+    trigger: postExport ? "post_export" : "manual",
     projectId: offer.projectId,
   };
 }

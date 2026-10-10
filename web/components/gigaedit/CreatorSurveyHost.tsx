@@ -9,6 +9,7 @@ import {
   markSurveyDismissed,
   markSurveySubmitted,
   offerCreatorSurvey,
+  shouldAutoOfferCreatorSurvey,
   starterChoiceLabel,
   subscribeCreatorSurveyOffers,
   type CreatorSurveyAnswers,
@@ -98,13 +99,18 @@ export function CreatorSurveyHost() {
       const sessionToken = getSessionToken();
       const isManual = next.source === "manual";
 
+      // Cancelled share sheets must never auto-open the survey.
+      if (!isManual && !shouldAutoOfferCreatorSurvey(next.deviceSaveOutcome)) {
+        return;
+      }
+
       if (!isManual && isSurveyAutoPromptBlocked(next.projectId)) {
         return;
       }
 
       // Dedupe rapid remount / double callbacks for the same auto offer.
       if (!isManual) {
-        const autoKey = `${next.projectId ?? "unknown"}:${next.source}:${next.exportConfirmed}`;
+        const autoKey = `${next.projectId ?? "unknown"}:${next.source}:${next.deviceSaveOutcome ?? "none"}`;
         if (lastAutoKeyRef.current === autoKey) return;
         lastAutoKeyRef.current = autoKey;
       }
@@ -259,6 +265,10 @@ export function CreatorSurveyHost() {
               options={[
                 { id: "yes", label: "Yes" },
                 { id: "no", label: "No" },
+                {
+                  id: "not_confirmed",
+                  label: "Not confirmed (share/download started; gallery not verified)",
+                },
                 { id: "not_attempted", label: "I did not attempt an export" },
               ]}
             />
@@ -416,7 +426,7 @@ export function CreatorSurveyManualLink(props: {
         offerCreatorSurvey({
           projectId: props.projectId,
           starterId: starter,
-          exportConfirmed: false,
+          deviceSaveOutcome: null,
           source: "manual",
         });
       }}

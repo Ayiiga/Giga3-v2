@@ -82,7 +82,11 @@ export {
   encodeCreatorSurveyBody,
   offerCreatorSurvey,
   resolveStarterFromNotes,
+  shouldAutoOfferCreatorSurvey,
+  surveyExportPrefillFromOutcome,
 } from "@/lib/gigaedit/creatorSurvey";
+export type { DeviceSaveOutcome, DeviceSaveResult } from "@/lib/gigaedit/downloadExport";
+export { saveExportedFileToDevice } from "@/lib/gigaedit/downloadExport";
 export {
   buildAiAssistPrompt,
   generateLocalCreativeDraft,
