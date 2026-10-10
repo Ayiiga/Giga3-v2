@@ -112,6 +112,10 @@ import {
   previewPlayheadTrim,
   type PlayheadTrimSide,
 } from "@/lib/gigaedit/trimClip";
+import {
+  TRIM_NEEDS_CLIP_STATUS,
+  trimPromptPanelState,
+} from "@/lib/gigaedit/trimPromptPanel";
 import { EXPORT_FORMATS, MAX_GIGAEDIT_JOIN_CLIPS, type BrandingAction, type ExportAspectRatio, type GigaEditTimelineClip, type GigaEditTimelineLane } from "@/lib/gigaedit/types";
 import { CAMERA_FILTERS, getCameraFilterCss } from "@/lib/gigasocial/cameraFilters";
 import { formatVideoTime } from "@/lib/gigasocial/videoTrim";
@@ -755,7 +759,7 @@ export function VideoEditor({
     const active = resolvePlayheadTrimTarget(clips, playhead, selectedClipId);
     if (!active) {
       setTrimPromptOpen(false);
-      setStatus("Move the playhead onto a video clip to trim.");
+      setStatus(TRIM_NEEDS_CLIP_STATUS);
       return;
     }
     setTrimPromptOpen(true);
@@ -772,7 +776,7 @@ export function VideoEditor({
     const active = resolvePlayheadTrimTarget(clips, playhead, selectedClipId);
     if (!active) {
       setTrimPromptOpen(false);
-      setStatus("Move the playhead onto a video clip to trim.");
+      setStatus(TRIM_NEEDS_CLIP_STATUS);
       return;
     }
     const preview = previewPlayheadTrim(active, playhead, side);
@@ -1347,6 +1351,7 @@ export function VideoEditor({
         const trimTarget = resolvePlayheadTrimTarget(clips, playhead, selectedClipId);
         const keepAfter = trimTarget ? previewPlayheadTrim(trimTarget, playhead, "after") : null;
         const keepBefore = trimTarget ? previewPlayheadTrim(trimTarget, playhead, "before") : null;
+        const trimPanel = trimPromptPanelState(trimPromptOpen, Boolean(trimTarget));
         return (
           <div className="space-y-3">
             <p className="text-[11px] leading-snug text-[var(--ge-muted)]">
@@ -1377,57 +1382,64 @@ export function VideoEditor({
                 disabled={!hasVideo || exporting}
               />
             </ToolGrid>
-            {trimPromptOpen && !trimTarget ? (
-              <p
-                className="rounded-xl border border-[var(--ge-border)] bg-[var(--ge-input)] px-3 py-2.5 text-xs text-[var(--ge-muted)]"
-                role="status"
-              >
-                Move the playhead onto a video clip to trim.
-              </p>
-            ) : null}
-            {trimPromptOpen && trimTarget ? (
+            {trimPanel.open ? (
               <div
                 className="space-y-2 rounded-xl border border-[var(--ge-border)] bg-[var(--ge-input)] p-3"
                 role="group"
-                aria-label="Confirm trim at playhead"
+                aria-label={
+                  trimPanel.showConfirm
+                    ? "Confirm trim at playhead"
+                    : "Trim needs a clip under the playhead"
+                }
               >
-                <p className="text-xs font-medium text-white">
-                  Trim at {formatVideoTime(playhead)} · “{trimTarget.label}”
-                </p>
-                <p className="text-[11px] text-[var(--ge-muted)]">
-                  Choose which footage stays. Preview ranges are exact source in/out times.
-                </p>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {trimPanel.showNeedsClipStatus ? (
+                  <p className="text-xs text-[var(--ge-muted)]" role="status">
+                    {TRIM_NEEDS_CLIP_STATUS}
+                  </p>
+                ) : null}
+                {trimPanel.showConfirm && trimTarget ? (
+                  <>
+                    <p className="text-xs font-medium text-white">
+                      Trim at {formatVideoTime(playhead)} · “{trimTarget.label}”
+                    </p>
+                    <p className="text-[11px] text-[var(--ge-muted)]">
+                      Choose which footage stays. Preview ranges are exact source in/out times.
+                    </p>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      <button
+                        type="button"
+                        className="rounded-lg border border-[var(--ge-violet,#8b5cf6)]/40 bg-[var(--ge-violet,#8b5cf6)]/15 px-3 py-2.5 text-left text-xs text-white disabled:opacity-40"
+                        disabled={!keepAfter?.viable}
+                        onClick={() => confirmPlayheadTrim("after")}
+                      >
+                        <span className="block font-semibold">Keep after playhead</span>
+                        <span className="text-[var(--ge-muted)]">
+                          Remaining {keepAfter?.remainingLabel ?? "—"}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-lg border border-[var(--ge-border)] bg-black/20 px-3 py-2.5 text-left text-xs text-white disabled:opacity-40"
+                        disabled={!keepBefore?.viable}
+                        onClick={() => confirmPlayheadTrim("before")}
+                      >
+                        <span className="block font-semibold">Keep before playhead</span>
+                        <span className="text-[var(--ge-muted)]">
+                          Remaining {keepBefore?.remainingLabel ?? "—"}
+                        </span>
+                      </button>
+                    </div>
+                  </>
+                ) : null}
+                {trimPanel.showCancel ? (
                   <button
                     type="button"
-                    className="rounded-lg border border-[var(--ge-violet,#8b5cf6)]/40 bg-[var(--ge-violet,#8b5cf6)]/15 px-3 py-2.5 text-left text-xs text-white disabled:opacity-40"
-                    disabled={!keepAfter?.viable}
-                    onClick={() => confirmPlayheadTrim("after")}
+                    className="text-[11px] text-[var(--ge-muted)] underline"
+                    onClick={() => setTrimPromptOpen(false)}
                   >
-                    <span className="block font-semibold">Keep after playhead</span>
-                    <span className="text-[var(--ge-muted)]">
-                      Remaining {keepAfter?.remainingLabel ?? "—"}
-                    </span>
+                    Cancel
                   </button>
-                  <button
-                    type="button"
-                    className="rounded-lg border border-[var(--ge-border)] bg-black/20 px-3 py-2.5 text-left text-xs text-white disabled:opacity-40"
-                    disabled={!keepBefore?.viable}
-                    onClick={() => confirmPlayheadTrim("before")}
-                  >
-                    <span className="block font-semibold">Keep before playhead</span>
-                    <span className="text-[var(--ge-muted)]">
-                      Remaining {keepBefore?.remainingLabel ?? "—"}
-                    </span>
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  className="text-[11px] text-[var(--ge-muted)] underline"
-                  onClick={() => setTrimPromptOpen(false)}
-                >
-                  Cancel
-                </button>
+                ) : null}
               </div>
             ) : null}
             <div className="grid gap-2 sm:grid-cols-2">

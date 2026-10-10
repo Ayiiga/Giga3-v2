@@ -27,7 +27,10 @@ describe("GigaEdits P0 UX reliability", () => {
   it("playhead trim never silently falls back to the first video clip (D1)", () => {
     const src = read("web/components/gigaedit/VideoEditor.tsx");
     expect(src).toContain("resolvePlayheadTrimTarget");
-    expect(src).toContain("Move the playhead onto a video clip to trim.");
+    expect(src).toContain("TRIM_NEEDS_CLIP_STATUS");
+    expect(src).toContain("trimPromptPanelState");
+    const panel = read("web/lib/gigaedit/trimPromptPanel.ts");
+    expect(panel).toContain("Move the playhead onto a video clip to trim.");
     // Trim open/confirm/preview must not use first-clip fallback.
     expect(src).not.toMatch(
       /resolvePlayheadTrimTarget[\s\S]{0,40}\?\?[\s\S]{0,40}sortedVideoClips\(clips\)\[0\]/
