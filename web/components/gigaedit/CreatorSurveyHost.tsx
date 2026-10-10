@@ -11,6 +11,7 @@ import {
   offerCreatorSurvey,
   shouldAutoOfferCreatorSurvey,
   starterChoiceLabel,
+  subscribeCreatorSurveyDismiss,
   subscribeCreatorSurveyOffers,
   type CreatorSurveyAnswers,
   type CreatorSurveyOffer,
@@ -93,6 +94,12 @@ export function CreatorSurveyHost() {
   const [signedIn, setSignedIn] = useState(false);
   const lastAutoKeyRef = useRef<string>("");
   const submittingLockRef = useRef(false);
+  const offerRef = useRef<CreatorSurveyOffer | null>(null);
+  const openRef = useRef(false);
+  const [publishDockOpen, setPublishDockOpen] = useState(false);
+
+  offerRef.current = offer;
+  openRef.current = open;
 
   useEffect(() => {
     return subscribeCreatorSurveyOffers((next) => {
@@ -125,9 +132,28 @@ export function CreatorSurveyHost() {
   }, []);
 
   function closeWithoutSubmit() {
-    if (offer) markSurveyDismissed(offer.projectId);
+    if (offerRef.current) markSurveyDismissed(offerRef.current.projectId);
     setOpen(false);
   }
+
+  // Allow Publish sticky Post to clear the overlay without removing auto-offer on Save.
+  useEffect(() => {
+    return subscribeCreatorSurveyDismiss(() => {
+      if (!openRef.current) return;
+      closeWithoutSubmit();
+    });
+  }, []);
+
+  // When PublishScreen is mounted, treat the sheet as non-modal so Post remains reachable.
+  useEffect(() => {
+    if (!open || typeof document === "undefined") {
+      setPublishDockOpen(false);
+      return;
+    }
+    setPublishDockOpen(
+      document.documentElement.classList.contains("gigaedit-publish-dock-open")
+    );
+  }, [open]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -190,7 +216,7 @@ export function CreatorSurveyHost() {
       <div
         className="gigaedit-survey-sheet"
         role="dialog"
-        aria-modal="true"
+        aria-modal={publishDockOpen ? "false" : "true"}
         aria-labelledby={titleId}
       >
         <div className="gigaedit-survey-header">
@@ -206,6 +232,9 @@ export function CreatorSurveyHost() {
             ×
           </button>
         </div>
+        <p className="gigaedit-survey-publish-hint">
+          Optional feedback — Save / Post controls stay available below when publishing.
+        </p>
 
         {submitted ? (
           <div className="gigaedit-survey-success" role="status">
