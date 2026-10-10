@@ -14,6 +14,9 @@
   --ge-muted: #94a3b8;
   --ge-gold: #fbbf24;
   --ge-blue: #3b82f6;
+  /* Giga3 violet accent — progressive alignment; gold kept for secondary highlights */
+  --ge-violet: #8b5cf6;
+  --ge-violet-soft: #a78bfa;
   --ge-border: rgba(148, 163, 184, 0.18);
   --ge-shadow: 0 8px 28px -12px rgba(0, 0, 0, 0.55);
   --ge-radius: 1.125rem;
@@ -770,7 +773,7 @@ html.gigaedit-video-mode .gigaedit-shell--editor {
 }
 
 .gigaedit-shell--editor {
-  --ge-cyan: #22d3ee;
+  --ge-cyan: var(--ge-violet-soft, #a78bfa);
   --ge-editor-bg: #05070b;
   background: var(--ge-editor-bg) !important;
   border-radius: 0 !important;
@@ -1179,7 +1182,7 @@ html.gigaedit-video-mode .gigaedit-shell--editor {
 
 .gigaedit-teleprompter-overlay__sliders input[type="range"] {
   width: 4.5rem;
-  accent-color: #eab308;
+  accent-color: var(--ge-violet, #8b5cf6);
 }
 
 .gigaedit-teleprompter-overlay__font {

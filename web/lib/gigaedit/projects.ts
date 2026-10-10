@@ -25,7 +25,19 @@ export type GigaEditProjectRecord = GigaEditProjectMeta & {
   brightness?: number;
   contrast?: number;
   saturate?: number;
+  /**
+   * Optional subtitle / caption draft text.
+   * Additive — legacy IndexedDB rows omit this field; readers must treat missing as "".
+   * No IndexedDB version bump required (object store stores whole documents).
+   */
+  captions?: string;
 };
+
+/** Read captions from a stored project — safe for pre-caption legacy rows. */
+export function readProjectCaptions(project: Pick<GigaEditProjectRecord, "captions"> | null | undefined): string {
+  if (!project || typeof project.captions !== "string") return "";
+  return project.captions;
+}
 
 function openDb(): Promise<IDBDatabase | null> {
   return new Promise((resolve) => {

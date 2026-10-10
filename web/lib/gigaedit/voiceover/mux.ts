@@ -112,5 +112,8 @@ export async function muxVoiceoverWithVideo(input: {
   }
 }
 
-/** Credit estimate shown before voiceover export. */
-export const VOICEOVER_EXPORT_CREDITS = 5;
+/**
+ * Legacy constant — voiceover mix is on-device and free.
+ * Kept so older imports do not break; do not show as a credit charge.
+ */
+export const VOICEOVER_EXPORT_CREDITS = 0;

@@ -30,8 +30,16 @@ export {
   putProjectOriginalBlob,
   getProjectOriginalBlob,
   exportProjectJson,
+  readProjectCaptions,
   type GigaEditProjectRecord,
 } from "@/lib/gigaedit/projects";
+export {
+  applyPlayheadTrim,
+  previewPlayheadTrim,
+  clipSourceBounds,
+  type PlayheadTrimSide,
+  type PlayheadTrimPreview,
+} from "@/lib/gigaedit/trimClip";
 export {
   GIGAEDIT_OFFLINE_CAPABILITIES,
   isGigaEditOnline,

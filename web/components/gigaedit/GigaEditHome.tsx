@@ -134,7 +134,8 @@ function ToolkitCard({
 }
 
 export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
-  const [category, setCategory] = useState<CreatorToolkitFilter>("all");
+  /** Default to Create so on-device editors lead; AI Studio tools stay one tap away. */
+  const [category, setCategory] = useState<CreatorToolkitFilter>("create");
   const [teleprompterPinned, setTeleprompterPinnedState] = useState(isTeleprompterPinned);
 
   const togglePin = useCallback(() => {
@@ -157,14 +158,15 @@ export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
   return (
     <div className={cn("gigaedit-home space-y-6", solidPanels && "gigaedit-solid-panels")}>
       <header className="gigaedit-hero gigaedit-glass space-y-2 p-4 sm:p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--ge-gold)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--ge-violet,#a78bfa)]">
           {CREATOR_STUDIO_PRODUCT_NAME}
         </p>
         <h2 className="gigaedit-hero__title text-2xl font-bold tracking-tight sm:text-3xl">
           Create on device
         </h2>
         <p className="max-w-xl text-sm text-[var(--ge-muted)]">
-          Video, photo, teleprompter, voice and camera recording — edit on-device, publish when ready.
+          Import a clip, trim, add text or captions, and export — drafts save on this device only
+          (not synced to your account).
         </p>
         <div className="flex flex-wrap gap-2 pt-0.5">
           <button type="button" className="gigaedit-cta gigaedit-cta--sm" onClick={() => onOpen("video")}>
@@ -211,7 +213,9 @@ export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
             <h2 id="gigaedit-creator-toolkit" className="text-sm font-semibold sm:text-base">
               Creator toolkit
             </h2>
-            <p className="text-[11px] text-[var(--ge-muted)]">{toolCount} tools</p>
+            <p className="text-[11px] text-[var(--ge-muted)]">
+              {toolCount} tools · On device is free · AI Studio uses credits
+            </p>
           </div>
           <div className="gigaedit-category-rail-wrap relative min-w-0 flex-1 sm:max-w-xl">
             <div

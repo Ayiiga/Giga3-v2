@@ -16,7 +16,6 @@ import {
 } from "@/lib/gigaedit/voiceover/opfsStorage";
 import {
   muxVoiceoverWithVideo,
-  VOICEOVER_EXPORT_CREDITS,
   type MuxProgress,
 } from "@/lib/gigaedit/voiceover/mux";
 import { VoiceoverRecorder } from "@/lib/gigaedit/voiceover/recorder";
@@ -119,7 +118,7 @@ export function VoiceoverPanel({
     setMuxProgress({
       phase: "preparing",
       progress: 0,
-      message: `This export uses ${VOICEOVER_EXPORT_CREDITS} credits`,
+      message: "Mixing voiceover on this device…",
     });
 
     try {
@@ -182,7 +181,7 @@ export function VoiceoverPanel({
   return (
     <div className="space-y-3">
       <p className="text-[11px] text-[var(--ge-muted)]">
-        This export uses {VOICEOVER_EXPORT_CREDITS} credits when you mix voiceover into video.
+        Voiceover mix runs on this device — free, no credits. Original video stays preserved until you export.
       </p>
 
       {/* ── African voice selector ─────────────────────────────────────── */}
