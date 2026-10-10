@@ -8,6 +8,7 @@ const AudioStudio = dynamic(
   { ssr: false, loading: () => <div className="h-32 animate-pulse rounded-xl bg-white/5" /> }
 );
 import { BrandKitPanel } from "@/components/gigaedit/BrandKitPanel";
+import { CreatorSurveyHost } from "@/components/gigaedit/CreatorSurveyHost";
 import { EditorShell } from "@/components/gigaedit/EditorShell";
 import { GigaEditBottomNav } from "@/components/gigaedit/GigaEditBottomNav";
 import { GigaEditHome } from "@/components/gigaedit/GigaEditHome";
@@ -169,71 +170,74 @@ function GigaEditClientInner() {
   }
 
   return (
-    <EditorShell
-      section={section}
-      immersive={section === "video"}
-      onBackHome={() => openSection("home")}
-      footer={
-        section === "video" ? undefined : (
-          <GigaEditBottomNav activeSection={section} onOpenSection={(s) => openSection(s)} />
-        )
-      }
-    >
-      {section === "home" && <GigaEditHome onOpen={openSection} />}
-      {section === "video" && (
-        <VideoEditor
-          initialProjectId={projectId}
-          initialAspect={aspect}
-          autoImport={autoImport}
-          initialOverlayText={initialOverlayText || undefined}
-          initialImportUrls={initialImportUrls}
-          onBackHome={() => openSection("home")}
-          onProjectIdChange={(id) => {
-            const params = new URLSearchParams(searchParams?.toString() ?? "");
-            params.set("tab", "video");
-            params.set("project", id);
-            params.delete("import");
-            params.delete("record");
-            const qs = params.toString();
-            router.replace(qs ? `/gigaedit/?${qs}` : "/gigaedit/", { scroll: false });
-          }}
-        />
-      )}
-      {section === "photo" && (
-        <PhotoEditor
-          initialProjectId={projectId}
-          initialAspect={aspect}
-          autoImport={autoImport}
-        />
-      )}
-      {section === "teleprompter" && (
-        <TeleprompterStudio focusRecord={focusRecord} autoOpenCamera />
-      )}
-      {section === "script" && features.enableGigaEditAiAssist ? (
-        <AiCreatorAssistant />
-      ) : null}
-      {section === "script" && !features.enableGigaEditAiAssist ? (
-        <p className="text-sm text-[var(--ge-muted)]">AI Script assist is disabled.</p>
-      ) : null}
-      {section === "ai" && features.enableGigaEditAiAssist ? <AiCreatorAssistant /> : null}
-      {section === "ai" && !features.enableGigaEditAiAssist ? (
-        <p className="text-sm text-[var(--ge-muted)]">AI Assist is disabled.</p>
-      ) : null}
-      {section === "templates" && (
-        <TemplateGallery
-          onUseVideo={(opts) => openSection("video", opts)}
-          onUsePhoto={(opts) => openSection("photo", opts)}
-        />
-      )}
-      {section === "audio" && <AudioStudio focusRecord={focusRecord} />}
-      {section === "social" && <SocialMediaCreator />}
-      {section === "brand" && <BrandKitPanel />}
-      {section === "projects" && (
-        <div className="space-y-4">
-          <ProjectManager onOpen={openSection} />
-          {features.enableGigaEditOffline ? <OfflineManager /> : null}
-        </div>
-      )}
-    </EditorShell>
+    <>
+      <EditorShell
+        section={section}
+        immersive={section === "video"}
+        onBackHome={() => openSection("home")}
+        footer={
+          section === "video" ? undefined : (
+            <GigaEditBottomNav activeSection={section} onOpenSection={(s) => openSection(s)} />
+          )
+        }
+      >
+        {section === "home" && <GigaEditHome onOpen={openSection} />}
+        {section === "video" && (
+          <VideoEditor
+            initialProjectId={projectId}
+            initialAspect={aspect}
+            autoImport={autoImport}
+            initialOverlayText={initialOverlayText || undefined}
+            initialImportUrls={initialImportUrls}
+            onBackHome={() => openSection("home")}
+            onProjectIdChange={(id) => {
+              const params = new URLSearchParams(searchParams?.toString() ?? "");
+              params.set("tab", "video");
+              params.set("project", id);
+              params.delete("import");
+              params.delete("record");
+              const qs = params.toString();
+              router.replace(qs ? `/gigaedit/?${qs}` : "/gigaedit/", { scroll: false });
+            }}
+          />
+        )}
+        {section === "photo" && (
+          <PhotoEditor
+            initialProjectId={projectId}
+            initialAspect={aspect}
+            autoImport={autoImport}
+          />
+        )}
+        {section === "teleprompter" && (
+          <TeleprompterStudio focusRecord={focusRecord} autoOpenCamera />
+        )}
+        {section === "script" && features.enableGigaEditAiAssist ? (
+          <AiCreatorAssistant />
+        ) : null}
+        {section === "script" && !features.enableGigaEditAiAssist ? (
+          <p className="text-sm text-[var(--ge-muted)]">AI Script assist is disabled.</p>
+        ) : null}
+        {section === "ai" && features.enableGigaEditAiAssist ? <AiCreatorAssistant /> : null}
+        {section === "ai" && !features.enableGigaEditAiAssist ? (
+          <p className="text-sm text-[var(--ge-muted)]">AI Assist is disabled.</p>
+        ) : null}
+        {section === "templates" && (
+          <TemplateGallery
+            onUseVideo={(opts) => openSection("video", opts)}
+            onUsePhoto={(opts) => openSection("photo", opts)}
+          />
+        )}
+        {section === "audio" && <AudioStudio focusRecord={focusRecord} />}
+        {section === "social" && <SocialMediaCreator />}
+        {section === "brand" && <BrandKitPanel />}
+        {section === "projects" && (
+          <div className="space-y-4">
+            <ProjectManager onOpen={openSection} />
+            {features.enableGigaEditOffline ? <OfflineManager /> : null}
+          </div>
+        )}
+      </EditorShell>
+      <CreatorSurveyHost />
+    </>
   );
 }

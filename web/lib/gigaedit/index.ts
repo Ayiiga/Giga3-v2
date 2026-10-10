@@ -76,6 +76,18 @@ export {
   getGigaEditStarterPackTemplates,
 } from "@/lib/gigaedit/templates";
 export {
+  CREATOR_SURVEY_TITLE,
+  CREATOR_SURVEY_VERSION,
+  buildCreatorSurveySubmitPayload,
+  encodeCreatorSurveyBody,
+  offerCreatorSurvey,
+  resolveStarterFromNotes,
+  shouldAutoOfferCreatorSurvey,
+  surveyExportPrefillFromOutcome,
+} from "@/lib/gigaedit/creatorSurvey";
+export type { DeviceSaveOutcome, DeviceSaveResult } from "@/lib/gigaedit/downloadExport";
+export { saveExportedFileToDevice } from "@/lib/gigaedit/downloadExport";
+export {
   buildAiAssistPrompt,
   generateLocalCreativeDraft,
   launchAiAssistInChat,

@@ -19,6 +19,9 @@ const VoiceoverPanel = dynamic(
 import { OverlayInspector } from "@/components/gigaedit/OverlayInspector";
 import { OverlayPreviewStack } from "@/components/gigaedit/OverlayPreviewStack";
 import { PreviewTransport } from "@/components/gigaedit/PreviewTransport";
+import {
+  CreatorSurveyManualLink,
+} from "@/components/gigaedit/CreatorSurveyHost";
 import { PublishScreen } from "@/components/gigaedit/PublishScreen";
 import { TeleprompterOverlay } from "@/components/gigaedit/TeleprompterOverlay";
 import { VideoEditorHeader } from "@/components/gigaedit/VideoEditorHeader";
@@ -84,8 +87,14 @@ import {
   createManagedObjectUrl,
   revokeManagedObjectUrl,
 } from "@/lib/gigaedit/mediaPipeline";
+import {
+  offerCreatorSurvey,
+  resolveStarterFromNotes,
+  shouldAutoOfferCreatorSurvey,
+} from "@/lib/gigaedit/creatorSurvey";
 import { downloadExportedFile, saveExportedFileToDevice } from "@/lib/gigaedit/downloadExport";
 import { handoffAndOpenGigaSocial } from "@/lib/gigaedit/publishHandoff";
+import type { GigaEditStarterPackId } from "@/lib/gigaedit/templates";
 import { fetchRemoteVideosForImport } from "@/lib/gigaedit/urlVideoImport";
 import {
   buildClipsFromImportCandidates,
@@ -170,6 +179,7 @@ export function VideoEditor({
   const [publishReady, setPublishReady] = useState(false);
   const [editedPublishFile, setEditedPublishFile] = useState<File | null>(null);
   const [projectId, setProjectId] = useState<string | undefined>(initialProjectId ?? undefined);
+  const [starterTemplateId, setStarterTemplateId] = useState<GigaEditStarterPackId | null>(null);
   const [cameraLook, setCameraLook] = useState<CameraLookOptions>(DEFAULT_CAMERA_LOOK);
   const [exporting, setExporting] = useState(false);
   const [audioLabel, setAudioLabel] = useState<string | null>(null);
@@ -330,6 +340,7 @@ export function VideoEditor({
       const project = await getGigaEditProject(initialProjectId);
       if (!project || cancelled) return;
       setProjectId(project.id);
+      setStarterTemplateId(resolveStarterFromNotes(project.notes));
       setAspectRatio(project.aspectRatio);
       setFilterId(project.filterId || "none");
       setOverlayText(project.overlayText || "");
@@ -1109,12 +1120,17 @@ export function VideoEditor({
   }
 
   async function saveProject(): Promise<string | undefined> {
+    const existing = projectId ? await getGigaEditProject(projectId) : null;
     const project = createEmptyProject({
       kind: "video",
       title: originalFileRef.current?.name.replace(/\.[^.]+$/, "") || "Video project",
       aspectRatio,
     });
     if (projectId) project.id = projectId;
+    if (existing?.createdAt) project.createdAt = existing.createdAt;
+    // Preserve Starter Pack id in notes so survey pre-fill stays reliable after draft saves.
+    if (existing?.notes) project.notes = existing.notes;
+    else if (starterTemplateId) project.notes = starterTemplateId;
     project.clips = clips;
     project.overlayText = overlayText;
     project.filterId = filterId;
@@ -1323,18 +1339,30 @@ export function VideoEditor({
     setExporting(true);
     setStatus("Exporting…");
     try {
-      await saveProject();
+      const savedProjectId = await saveProject();
       const edited = await bakeEditedFile();
       if (!edited.size) {
         throw new Error("Export produced an empty file.");
       }
-      const savedVia = await saveExportedFileToDevice(edited, overlayText);
+      const saveResult = await saveExportedFileToDevice(edited, overlayText);
       setEditedPublishFile(edited);
+      if (saveResult.outcome === "cancelled") {
+        setStatus("Share cancelled — try Download again or use Export → Save to Gallery.");
+        return;
+      }
       setStatus(
-        savedVia === "shared"
-          ? "Opened share sheet — pick Gallery/Files to save, or another app."
-          : `Saved ${edited.name} to your device.`
+        saveResult.outcome === "shared"
+          ? "Opened share sheet — pick Gallery/Files to save, or another app. Gallery save is not verified by the app."
+          : `Download started for ${edited.name}. Check Files or Downloads — gallery save is not verified by the app.`
       );
+      if (shouldAutoOfferCreatorSurvey(saveResult.outcome)) {
+        offerCreatorSurvey({
+          projectId: savedProjectId ?? projectId,
+          starterId: starterTemplateId,
+          deviceSaveOutcome: saveResult.outcome,
+          source: "video_download",
+        });
+      }
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Export failed.");
     } finally {
@@ -1639,6 +1667,7 @@ export function VideoEditor({
         aspectRatio={aspectRatio}
         durationSec={timelineDuration || undefined}
         projectId={projectId}
+        starterTemplateId={starterTemplateId}
         aiAssisted={Boolean(captions) || contrastBoost}
         defaultCaption={overlayText}
         onClose={() => setPublishReady(false)}
@@ -1911,6 +1940,10 @@ export function VideoEditor({
       {status ? (
         <p className="px-3 pb-2 text-center text-xs text-[var(--ge-gold)]">{status}</p>
       ) : null}
+
+      <div className="px-3 pb-3 text-center">
+        <CreatorSurveyManualLink projectId={projectId} starterId={starterTemplateId} />
+      </div>
 
       <ImportModeDialog
         open={importDialogOpen}

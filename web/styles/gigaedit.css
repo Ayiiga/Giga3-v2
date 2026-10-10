@@ -1437,3 +1437,223 @@ html.gigaedit-video-mode .gigaedit-shell--editor {
   border: 1px solid rgba(234, 179, 8, 0.9);
   box-shadow: 0 8px 24px -10px rgba(234, 179, 8, 0.55);
 }
+
+/* Creator survey — mobile-first bottom sheet */
+.gigaedit-survey-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.gigaedit-survey-sheet {
+  width: min(100%, 26rem);
+  max-height: min(90vh, 40rem);
+  overflow: auto;
+  border-radius: 1rem 1rem 0.75rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #141c2f;
+  color: var(--ge-text, #f8fafc);
+  padding: 0.85rem 0.9rem 1.1rem;
+  box-sizing: border-box;
+}
+
+.gigaedit-survey-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.gigaedit-survey-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.gigaedit-survey-close {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.gigaedit-survey-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.gigaedit-survey-fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.gigaedit-survey-legend {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+
+.gigaedit-survey-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.gigaedit-survey-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.65rem;
+  padding: 0.4rem 0.55rem;
+  font-size: 0.75rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.gigaedit-survey-choice input {
+  flex-shrink: 0;
+}
+
+.gigaedit-survey-ease {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.gigaedit-survey-ease-option {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(234, 179, 8, 0.45);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.gigaedit-survey-ease-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gigaedit-survey-ease-option:has(input:checked) {
+  background: rgba(234, 179, 8, 0.22);
+  border-color: #eab308;
+}
+
+.gigaedit-survey-hint {
+  font-size: 0.68rem;
+  color: var(--ge-muted, #94a3b8);
+}
+
+.gigaedit-survey-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.25);
+  color: inherit;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.85rem;
+  resize: vertical;
+  max-height: 6rem;
+}
+
+.gigaedit-survey-consent {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  font-size: 0.72rem;
+  color: var(--ge-muted, #94a3b8);
+  line-height: 1.35;
+}
+
+.gigaedit-survey-consent input {
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
+.gigaedit-survey-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  padding-top: 0.25rem;
+}
+
+.gigaedit-survey-btn {
+  border-radius: 0.7rem;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.gigaedit-survey-btn--primary {
+  background: #eab308;
+  color: #0f172a;
+}
+
+.gigaedit-survey-btn--primary:disabled {
+  opacity: 0.5;
+}
+
+.gigaedit-survey-btn--ghost {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.18);
+  color: inherit;
+}
+
+.gigaedit-survey-error {
+  font-size: 0.75rem;
+  color: #fca5a5;
+}
+
+.gigaedit-survey-banner {
+  font-size: 0.75rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  background: rgba(234, 179, 8, 0.08);
+  padding: 0.55rem 0.65rem;
+}
+
+.gigaedit-survey-success {
+  text-align: center;
+  padding: 1rem 0.25rem 0.5rem;
+}
+
+.gigaedit-survey-entry {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.5rem;
+  padding: 0.35rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--ge-cyan, #67e8f9);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
