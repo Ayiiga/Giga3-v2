@@ -13,7 +13,10 @@ import type {
   GigaEditPublishPrivacy,
 } from "@/lib/gigaedit/publishTypes";
 import { saveSound, type GigaEditSoundAsset } from "@/lib/gigaedit/soundLibrary";
+import { CreatorSurveyManualLink } from "@/components/gigaedit/CreatorSurveyHost";
+import { offerCreatorSurvey } from "@/lib/gigaedit/creatorSurvey";
 import { saveExportedFileToDevice } from "@/lib/gigaedit/downloadExport";
+import type { GigaEditStarterPackId } from "@/lib/gigaedit/templates";
 import type { ExportAspectRatio } from "@/lib/gigaedit/types";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -27,6 +30,8 @@ export type PublishScreenProps = {
   aspectRatio: ExportAspectRatio;
   durationSec?: number;
   projectId?: string;
+  /** Starter Pack id from project.notes when known — survey pre-fill only. */
+  starterTemplateId?: GigaEditStarterPackId | null;
   aiAssisted?: boolean;
   defaultCaption?: string;
   creatorHandle?: string;
@@ -66,6 +71,7 @@ export function PublishScreen({
   aspectRatio,
   durationSec,
   projectId,
+  starterTemplateId = null,
   aiAssisted = false,
   defaultCaption = "",
   creatorHandle = "creator",
@@ -229,6 +235,13 @@ export function PublishScreen({
           ? "Pick Gallery or Photos in the share sheet to save your video."
           : `Saved ${editedFile.name} to Downloads. Check Files or Gallery.`
       );
+      // Confirmed device save only — bake-to-publish alone must not offer export=Yes.
+      offerCreatorSurvey({
+        projectId,
+        starterId: starterTemplateId,
+        exportConfirmed: true,
+        source: "publish_save",
+      });
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Could not save to device.");
     } finally {
@@ -302,6 +315,11 @@ export function PublishScreen({
           >
             🚀 Post on GigaSocial
           </button>
+          <CreatorSurveyManualLink
+            projectId={projectId}
+            starterId={starterTemplateId}
+            className="gigaedit-survey-entry mx-auto"
+          />
         </div>
 
         {kind === "video" ? (
