@@ -18,6 +18,7 @@ export type EmailFailureReason =
   | "not_configured"
   | "sandbox_recipient"
   | "domain_unverified"
+  | "rate_limited"
   | "provider_error"
   | "network_error";
 
@@ -32,6 +33,18 @@ export type SendEmailResult =
 
 export function isEmailDeliveryConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY?.trim());
+}
+
+/** Minimal redaction for server logs — never print full recipient addresses. */
+function redactEmailForLog(email: string): string {
+  const trimmed = email.trim().toLowerCase();
+  const at = trimmed.indexOf("@");
+  if (at <= 0 || at === trimmed.length - 1) return "***";
+  const local = trimmed.slice(0, at);
+  const domain = trimmed.slice(at + 1);
+  const localRedacted =
+    local.length <= 1 ? "*" : `${local[0]}***${local[local.length - 1]}`;
+  return `${localRedacted}@${domain}`;
 }
 
 export function getAuthFromEmail(): string {
@@ -76,6 +89,9 @@ export function classifyResendFailure(
   body: string
 ): Pick<Extract<SendEmailResult, { ok: false }>, "reason" | "providerMessage"> {
   const lower = body.toLowerCase();
+  if (status === 429 || lower.includes("too many requests") || lower.includes("rate_limit")) {
+    return { reason: "rate_limited", providerMessage: body.slice(0, 400) || `HTTP ${status}` };
+  }
   if (
     lower.includes("only send testing emails") ||
     lower.includes("your own email address")
@@ -93,6 +109,49 @@ export function classifyResendFailure(
     reason: "provider_error",
     providerMessage: body.slice(0, 400) || `HTTP ${status}`,
   };
+}
+
+export type SendEmailRetryOptions = {
+  /** Total attempts including the first (default 3). */
+  maxAttempts?: number;
+  /** Injected delay for tests; defaults to setTimeout. */
+  sleep?: (ms: number) => Promise<void>;
+  /** Backoff schedule in ms after each 429 (attempt index 0..). */
+  backoffMs?: readonly number[];
+};
+
+const DEFAULT_429_BACKOFF_MS = [400, 900, 1600] as const;
+
+function defaultSleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Send with bounded retries on HTTP 429 / rate_limited only.
+ * Does not retry sandbox, domain, or other hard failures.
+ */
+export async function sendEmailWithBoundedRetry(
+  input: SendEmailInput,
+  opts: SendEmailRetryOptions = {}
+): Promise<SendEmailResult & { attempts: number }> {
+  const maxAttempts = Math.min(Math.max(opts.maxAttempts ?? 3, 1), 5);
+  const sleep = opts.sleep ?? defaultSleep;
+  const backoff = opts.backoffMs ?? DEFAULT_429_BACKOFF_MS;
+  let attempts = 0;
+  let last: SendEmailResult = { ok: false, reason: "provider_error" };
+
+  while (attempts < maxAttempts) {
+    attempts += 1;
+    last = await sendEmail(input);
+    if (last.ok) return { ...last, attempts };
+    if (last.reason !== "rate_limited" || attempts >= maxAttempts) {
+      return { ...last, attempts };
+    }
+    const delay = backoff[Math.min(attempts - 1, backoff.length - 1)] ?? 400;
+    await sleep(delay);
+  }
+
+  return { ...last, attempts };
 }
 
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
@@ -123,8 +182,9 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
     if (!res.ok) {
       const body = await res.text().catch(() => "");
       const classified = classifyResendFailure(res.status, body);
+      const toRedacted = redactEmailForLog(input.to);
       console.error(
-        `[email] Resend failed status=${res.status} reason=${classified.reason} to=${input.to} body=${body.slice(0, 400)}`
+        `[email] Resend failed status=${res.status} reason=${classified.reason} to=${toRedacted} body=${body.slice(0, 400)}`
       );
       return {
         ok: false,

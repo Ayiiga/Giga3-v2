@@ -266,6 +266,12 @@ export default defineSchema({
     /** Engagement email opt-in — undefined means opted in (soft default). */
     emailEngagementOptIn: v.optional(v.boolean()),
     lastEngagementEmailAt: v.optional(v.number()),
+    /**
+     * Feature-announcement campaign idempotency (separate from digest timing).
+     * Digests continue to use lastEngagementEmailAt only.
+     */
+    lastFeatureAnnouncementAt: v.optional(v.number()),
+    lastFeatureAnnouncementCampaignKey: v.optional(v.string()),
     emailUnsubscribeToken: v.optional(v.string()),
     /** Session tokens issued before this timestamp are rejected (password reset / sign-out everywhere). */
     sessionsValidAfter: v.optional(v.number()),

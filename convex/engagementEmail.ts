@@ -4,6 +4,11 @@ import { requireSession, tryRequireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { parseInterestProfile } from "./userLearning";
 import { todayKey } from "./creditsConfig";
+import {
+  campaignSendingKey,
+  campaignUncertainKey,
+  isCampaignBlockedForRecipient,
+} from "./engagementAnnouncementSafety";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -162,6 +167,236 @@ export const markEngagementEmailSentInternal = internalMutation({
     }
     await ctx.db.patch(user._id, patch);
     return { ok: true as const };
+  },
+});
+
+/**
+ * Announcement candidates: same opt-in / suspension rules as digests, but
+ * campaign-key idempotency is separate from digest lastEngagementEmailAt.
+ * Optional allowlist restricts to those emails only (server-side).
+ */
+export const listAnnouncementCandidatesInternal = internalQuery({
+  args: {
+    limit: v.optional(v.number()),
+    minDaysSinceLastEmail: v.optional(v.number()),
+    campaignKey: v.string(),
+    allowlist: v.optional(v.array(v.string())),
+  },
+  handler: async (ctx, args) => {
+    const limit = Math.min(Math.max(args.limit ?? 40, 1), 80);
+    const minDaysSinceLastEmail = args.minDaysSinceLastEmail ?? 10;
+    const campaignKey = args.campaignKey.trim();
+    const now = Date.now();
+    const cutoff = now - minDaysSinceLastEmail * DAY_MS;
+    const allowlist =
+      args.allowlist && args.allowlist.length > 0
+        ? new Set(args.allowlist.map((e) => e.trim().toLowerCase()))
+        : null;
+
+    const candidates: EngagementCandidate[] = [];
+
+    if (allowlist) {
+      for (const email of allowlist) {
+        if (candidates.length >= limit) break;
+        const user = await ctx.db
+          .query("users")
+          .withIndex("by_email", (q) => q.eq("email", email))
+          .first();
+        if (!user) continue;
+        if (user.accountStatus === "suspended") continue;
+        if (user.emailEngagementOptIn === false) continue;
+        if (
+          isCampaignBlockedForRecipient(
+            user.lastFeatureAnnouncementCampaignKey,
+            campaignKey,
+            user.lastFeatureAnnouncementAt,
+            now
+          )
+        ) {
+          continue;
+        }
+        if (
+          user.lastEngagementEmailAt != null &&
+          user.lastEngagementEmailAt > cutoff
+        ) {
+          continue;
+        }
+        const interests = parseInterestProfile(user.interestProfile);
+        candidates.push({
+          email: user.email,
+          name: user.name,
+          topics: interests.topics.slice(0, 4),
+          inactiveDays:
+            daysSinceDateKey(user.lastActiveDateKey, now) ??
+            (user.lastActiveDateKey ? 0 : 14),
+          streakDays: user.learningStreakDays ?? 0,
+          unsubscribeToken: user.emailUnsubscribeToken || newUnsubscribeToken(),
+          role: user.userRole ?? "general",
+        });
+      }
+      return candidates;
+    }
+
+    const users = await ctx.db.query("users").take(500);
+    for (const user of users) {
+      if (candidates.length >= limit) break;
+      if (user.accountStatus === "suspended") continue;
+      if (user.emailEngagementOptIn === false) continue;
+      if (
+        isCampaignBlockedForRecipient(
+          user.lastFeatureAnnouncementCampaignKey,
+          campaignKey,
+          user.lastFeatureAnnouncementAt,
+          now
+        )
+      ) {
+        continue;
+      }
+      if (
+        user.lastEngagementEmailAt != null &&
+        user.lastEngagementEmailAt > cutoff
+      ) {
+        continue;
+      }
+
+      const interests = parseInterestProfile(user.interestProfile);
+      candidates.push({
+        email: user.email,
+        name: user.name,
+        topics: interests.topics.slice(0, 4),
+        inactiveDays:
+          daysSinceDateKey(user.lastActiveDateKey, now) ??
+          (user.lastActiveDateKey ? 0 : 14),
+        streakDays: user.learningStreakDays ?? 0,
+        unsubscribeToken: user.emailUnsubscribeToken || newUnsubscribeToken(),
+        role: user.userRole ?? "general",
+      });
+    }
+
+    return candidates;
+  },
+});
+
+/**
+ * Claim a recipient before calling Resend so concurrent cron/manual runs
+ * cannot double-send the same campaign.
+ */
+export const claimFeatureAnnouncementSendInternal = internalMutation({
+  args: {
+    email: v.string(),
+    campaignKey: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const email = args.email.trim().toLowerCase();
+    const campaignKey = args.campaignKey.trim();
+    if (!campaignKey) return { ok: false as const, reason: "invalid_campaign" as const };
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    if (!user) return { ok: false as const, reason: "not_found" as const };
+    if (user.emailEngagementOptIn === false) {
+      return { ok: false as const, reason: "opted_out" as const };
+    }
+    const blocked = isCampaignBlockedForRecipient(
+      user.lastFeatureAnnouncementCampaignKey,
+      campaignKey,
+      user.lastFeatureAnnouncementAt
+    );
+    if (blocked === "sent") return { ok: false as const, reason: "already_sent_campaign" as const };
+    if (blocked === "uncertain") return { ok: false as const, reason: "uncertain_delivery" as const };
+    if (blocked === "in_flight") return { ok: false as const, reason: "in_flight" as const };
+
+    await ctx.db.patch(user._id, {
+      lastFeatureAnnouncementCampaignKey: campaignSendingKey(campaignKey),
+      lastFeatureAnnouncementAt: Date.now(),
+    });
+    return { ok: true as const };
+  },
+});
+
+/**
+ * Mark a successful feature announcement. Sets campaign idempotency fields and
+ * also bumps lastEngagementEmailAt so digests keep their cross-mail gap.
+ */
+export const markFeatureAnnouncementSentInternal = internalMutation({
+  args: {
+    email: v.string(),
+    campaignKey: v.string(),
+    unsubscribeToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const email = args.email.trim().toLowerCase();
+    const campaignKey = args.campaignKey.trim();
+    if (!campaignKey) return { ok: false as const };
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    if (!user) return { ok: false as const };
+    const now = Date.now();
+    const patch: Record<string, unknown> = {
+      lastFeatureAnnouncementAt: now,
+      lastFeatureAnnouncementCampaignKey: campaignKey,
+      lastEngagementEmailAt: now,
+    };
+    if (!user.emailUnsubscribeToken && args.unsubscribeToken) {
+      patch.emailUnsubscribeToken = args.unsubscribeToken;
+    } else if (!user.emailUnsubscribeToken) {
+      patch.emailUnsubscribeToken = newUnsubscribeToken();
+    }
+    await ctx.db.patch(user._id, patch);
+    return { ok: true as const };
+  },
+});
+
+/**
+ * Record ambiguous delivery (e.g. network error after request). Prevents blind resend.
+ * Does not bump lastEngagementEmailAt (digests unaffected).
+ */
+export const markFeatureAnnouncementUncertainInternal = internalMutation({
+  args: {
+    email: v.string(),
+    campaignKey: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const email = args.email.trim().toLowerCase();
+    const campaignKey = args.campaignKey.trim();
+    if (!campaignKey) return { ok: false as const };
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    if (!user) return { ok: false as const };
+    await ctx.db.patch(user._id, {
+      lastFeatureAnnouncementCampaignKey: campaignUncertainKey(campaignKey),
+      lastFeatureAnnouncementAt: Date.now(),
+    });
+    return { ok: true as const };
+  },
+});
+
+/** Release an in-flight claim after a definitive provider rejection (safe to retry later). */
+export const releaseFeatureAnnouncementClaimInternal = internalMutation({
+  args: {
+    email: v.string(),
+    campaignKey: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const email = args.email.trim().toLowerCase();
+    const campaignKey = args.campaignKey.trim();
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    if (!user) return { ok: false as const };
+    if (user.lastFeatureAnnouncementCampaignKey !== campaignSendingKey(campaignKey)) {
+      return { ok: true as const, released: false as const };
+    }
+    await ctx.db.patch(user._id, {
+      lastFeatureAnnouncementCampaignKey: undefined,
+    });
+    return { ok: true as const, released: true as const };
   },
 });
 
