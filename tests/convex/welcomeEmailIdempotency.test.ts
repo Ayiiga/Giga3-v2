@@ -89,18 +89,19 @@ describe("welcome email wiring (Stage B1)", () => {
     expect(engagement).toContain(
       "export const markWelcomeEmailFailedInternal = internalMutation"
     );
-    expect(engagement).toContain("evaluateWelcomeEmailClaim");
+    expect(engagement).toContain("claimWelcomeEmailSendInTxn");
     expect(engagement).not.toMatch(
       /export const claimWelcomeEmailSend\s*=\s*mutation/
     );
 
     expect(auth).toContain("deliverWelcomeEmail");
+    expect(auth).toContain("runWelcomeEmailDelivery");
     expect(auth).toContain("claimWelcomeEmailSendInternal");
     expect(auth).toContain("markWelcomeEmailSentInternal");
     expect(auth).toContain("markWelcomeEmailUncertainInternal");
     expect(auth).toContain("markWelcomeEmailFailedInternal");
-    expect(auth).toContain("isAmbiguousDeliveryFailure");
     expect(auth).toContain("void deliverWelcomeEmail(ctx, email)");
+    expect(engagement).toContain("claimWelcomeEmailSendInTxn");
     // Signup must stay non-blocking.
     expect(auth).toMatch(
       /void deliverWelcomeEmail\(ctx, email\)\.catch\(\(\) => undefined\)/
