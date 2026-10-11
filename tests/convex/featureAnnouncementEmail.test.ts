@@ -8,16 +8,23 @@ describe("feature announcement emails", () => {
       resolve(__dirname, "../../convex/engagementEmailActions.ts"),
       "utf8"
     );
+    const safety = readFileSync(
+      resolve(__dirname, "../../convex/engagementAnnouncementSafety.ts"),
+      "utf8"
+    );
     expect(actions).toContain("sendFeatureAnnouncementEmails");
     expect(actions).toContain("feature_announcement");
     expect(actions).toContain("Unsubscribe from these emails");
-    expect(actions).toContain("What’s new in Giga3 AI");
+    expect(actions).toContain("resolveCampaignEmailCopy");
+    expect(actions).toContain("isTipCampaignKey");
     expect(actions).toContain("announcementSenderPreflight");
     expect(actions).toContain("sendEmailWithBoundedRetry");
     expect(actions).toContain("markFeatureAnnouncementSentInternal");
     expect(actions).toContain('v.literal("smoke")');
     expect(actions).toContain("claimFeatureAnnouncementSendInternal");
     expect(actions).toContain("reconcileFeatureAnnouncementDeliveryInternal");
+    expect(safety).toContain("What’s new in Giga3 AI");
+    expect(safety).toContain("tipCampaignKey");
   });
 
   it("schedules weekly feature announcements via crons", () => {

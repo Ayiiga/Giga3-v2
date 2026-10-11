@@ -8,7 +8,6 @@ import {
   getConvexSiteUrl,
   getFrontendBaseUrl,
   isEmailDeliveryConfigured,
-  sendEmail,
   sendEmailWithBoundedRetry,
   wrapEmailHtml,
 } from "./emailClient";
@@ -16,14 +15,19 @@ import {
   ANNOUNCEMENT_429_MAX_ATTEMPTS,
   DEFAULT_FEATURE_ANNOUNCEMENT_CAMPAIGN,
   announcementSenderPreflight,
+  digestCopyForSegment,
   isAmbiguousDeliveryFailure,
   isAuthFromEmailConfigured,
   isEmailInAllowlist,
+  isTipCampaignKey,
   redactEmail,
   resolveAnnouncementAllowlist,
+  resolveCampaignEmailCopy,
+  resolveInterestSegment,
   shouldAbortAnnouncementBatch,
   type AnnouncementRecipientOutcome,
   type AnnouncementSendMode,
+  type FeatureEmailCopy,
 } from "./engagementAnnouncementSafety";
 
 type Candidate = {
@@ -36,121 +40,69 @@ type Candidate = {
   role: string;
 };
 
-function pickTheme(candidate: Candidate): {
-  title: string;
-  lead: string;
-  ctaLabel: string;
-  ctaPath: string;
-  bullets: string[];
-} {
-  const topics = candidate.topics.map((t) => t.toLowerCase());
-  const role = candidate.role.toLowerCase();
-  const joined = `${topics.join(" ")} ${role}`;
-
-  if (/learn|study|exam|school|education|teacher|student/.test(joined)) {
-    return {
-      title: "Your next learning streak is waiting",
-      lead: "GigaLearn and chat can turn a short session into clear notes, quizzes, and explanations.",
-      ctaLabel: "Continue learning",
-      ctaPath: "/gigalearn/",
-      bullets: [
-        "Ask for a lesson summary or practice questions",
-        "Save strong answers into your workspace",
-        "Come back tomorrow to keep your streak alive",
-      ],
-    };
-  }
-
-  if (/creat|design|image|video|edit|media|art/.test(joined)) {
-    return {
-      title: "Make something new in minutes",
-      lead: "Media Studio and GigaEdit are ready for your next poster, clip, or social Story.",
-      ctaLabel: "Start creating",
-      ctaPath: "/gigaedit/",
-      bullets: [
-        "Generate or refine an image for your brand",
-        "Edit and export with GigaEdit",
-        "Post a photo or video Story on GigaSocial",
-      ],
-    };
-  }
-
-  if (/fun|entertain|music|story|social|game/.test(joined)) {
-    return {
-      title: "Come back for entertainment & community",
-      lead: "GigaSocial now loads faster offline — reopen watched Reels and posts from cache, then remix with the original video attached.",
-      ctaLabel: "Open GigaSocial",
-      ctaPath: "/gigasocial/",
-      bullets: [
-        "Browse your cached feed and Stories offline",
-        "Remix keeps the source video in your composition",
-        "Tip, comment, and grow with the community",
-      ],
-    };
-  }
-
-  return {
-    title: "New on Giga3 AI — faster Social, smarter remix",
-    lead: "Your feed is snappier, offline-ready, and remix now keeps the original video attached. Open Giga3 when you are ready.",
-    ctaLabel: "Open Giga3",
-    ctaPath: "/gigasocial/",
-    bullets: [
-      "Faster photos & videos with smart caching",
-      "Offline feed, Reels, and Stories you already watched",
-      "Giga Remix preserves source media + attribution",
-    ],
-  };
+function pickTheme(candidate: Candidate): FeatureEmailCopy {
+  return digestCopyForSegment(
+    resolveInterestSegment(candidate.topics, candidate.role)
+  );
 }
 
-function buildFeatureAnnouncementHtml(candidate: Candidate): {
+function buildFeatureAnnouncementHtml(
+  candidate: Candidate,
+  campaignKey: string
+): {
   subject: string;
   html: string;
   text: string;
 } {
   const frontend = getFrontendBaseUrl();
+  const copy = resolveCampaignEmailCopy({
+    campaignKey,
+    topics: candidate.topics,
+    role: candidate.role,
+  });
   const greet = candidate.name?.trim()
     ? `Hi ${candidate.name.trim().split(/\s+/)[0]},`
     : "Hi there,";
   const unsub = `${getConvexSiteUrl()}/email/unsubscribe?email=${encodeURIComponent(
     candidate.email
   )}&token=${encodeURIComponent(candidate.unsubscribeToken)}`;
-  const ctaUrl = `${frontend}/gigasocial/`;
+  const ctaUrl = `${frontend}${copy.ctaPath}`;
+  const tip = isTipCampaignKey(campaignKey);
 
   const html = wrapEmailHtml({
-    title: "What’s new in Giga3 AI",
+    title: copy.title,
     bodyHtml: `
       <p style="margin:0 0 12px;">${greet}</p>
-      <p style="margin:0 0 12px;">
-        We upgraded <strong>GigaSocial</strong> so your feed feels faster, works offline with
-        content you already watched, and <strong>Remix</strong> keeps the original video in your take.
-      </p>
+      <p style="margin:0 0 12px;">${copy.lead}</p>
       <ul style="margin:0 0 20px;padding-left:18px;">
-        <li style="margin:0 0 6px;">Instant reopen for cached photos, videos, Reels &amp; Stories</li>
-        <li style="margin:0 0 6px;">Smarter lazy-loading and prefetch on slow networks</li>
-        <li style="margin:0 0 6px;">Remix attaches source media, audio timing &amp; attribution</li>
+        ${copy.bullets.map((b) => `<li style="margin:0 0 6px;">${b}</li>`).join("")}
       </ul>
       <p style="margin:0 0 8px;">
         <a href="${ctaUrl}"
            style="display:inline-block;background:#0f766e;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:700;">
-          Explore GigaSocial
+          ${copy.ctaLabel}
         </a>
       </p>
     `,
     footerHtml: `
-      <p style="margin:0;">Sent to your verified Giga3 account. Occasional product updates only.</p>
+      <p style="margin:0;">${
+        tip
+          ? "Occasional product tip for your Giga3 account."
+          : "Sent to your verified Giga3 account. Occasional product updates only."
+      }</p>
       <p style="margin:8px 0 0;"><a href="${unsub}" style="color:#0f766e;">Unsubscribe from these emails</a></p>
     `,
   });
 
   const text = [
     greet.replace(/,$/, ""),
-    "What’s new: faster GigaSocial, offline cached feed/Reels, and Remix that keeps the source video.",
-    `Explore: ${ctaUrl}`,
+    copy.lead,
+    `${copy.ctaLabel}: ${ctaUrl}`,
     `Unsubscribe: ${unsub}`,
   ].join("\n\n");
 
   return {
-    subject: "What’s new in Giga3 AI · GigaSocial upgrade",
+    subject: copy.subjectLine,
     html,
     text,
   };
@@ -227,6 +179,13 @@ function buildEngagementHtml(candidate: Candidate): {
 /**
  * Occasional re-engagement digests for inactive opted-in users.
  * Scheduled from crons.ts (every few days).
+ *
+ * Safety parity with announcements (no campaign claim — digests use
+ * lastEngagementEmailAt only; uncertain/network failures do not bump that field):
+ * - sender preflight (bulk)
+ * - bounded 429 retries
+ * - abort batch on sandbox_recipient / domain_unverified
+ * - redacted structured failure logs
  */
 export const sendEngagementDigests = internalAction({
   args: {
@@ -249,8 +208,28 @@ export const sendEngagementDigests = internalAction({
       }
     );
 
+    const from = getAuthFromEmail();
+    const authFromConfigured = isAuthFromEmailConfigured();
+    const preflight = announcementSenderPreflight({
+      from,
+      authFromConfigured,
+      effectiveRecipientCount: (candidates as Candidate[]).length,
+      mode: "bulk",
+    });
+    if (!preflight.ok) {
+      console.error(`[engagementEmail] preflight blocked: ${preflight.reason}`);
+      return {
+        ok: false as const,
+        reason: preflight.reason,
+        sent: 0,
+        attempted: 0,
+        failed: 0,
+      };
+    }
+
     let sent = 0;
     let failed = 0;
+    let abortedReason: string | undefined;
 
     for (const candidate of candidates as Candidate[]) {
       const ensured = await ctx.runMutation(
@@ -262,16 +241,19 @@ export const sendEngagementDigests = internalAction({
       );
       const ready = { ...candidate, unsubscribeToken: ensured.token };
       const content = buildEngagementHtml(ready);
-      const result = await sendEmail({
-        to: ready.email,
-        subject: content.subject,
-        html: content.html,
-        text: content.text,
-        tags: [
-          { name: "category", value: "engagement" },
-          { name: "app", value: "giga3" },
-        ],
-      });
+      const result = await sendEmailWithBoundedRetry(
+        {
+          to: ready.email,
+          subject: content.subject,
+          html: content.html,
+          text: content.text,
+          tags: [
+            { name: "category", value: "engagement" },
+            { name: "app", value: "giga3" },
+          ],
+        },
+        { maxAttempts: ANNOUNCEMENT_429_MAX_ATTEMPTS }
+      );
 
       if (result.ok) {
         sent += 1;
@@ -282,14 +264,28 @@ export const sendEngagementDigests = internalAction({
             unsubscribeToken: ready.unsubscribeToken,
           }
         );
-      } else {
-        failed += 1;
+        continue;
+      }
+
+      failed += 1;
+      const redacted = redactEmail(ready.email);
+      console.error(
+        `[engagementEmail] send failed reason=${result.reason} to=${redacted} attempts=${result.attempts}`
+      );
+      // Ambiguous network_error: do not bump lastEngagementEmailAt (already only on ok).
+      if (shouldAbortAnnouncementBatch(result.reason)) {
+        abortedReason = result.reason;
+        console.error(
+          `[engagementEmail] aborting digest batch after ${result.reason} (no further recipients)`
+        );
+        break;
       }
     }
 
     return {
-      ok: true as const,
-      attempted: candidates.length,
+      ok: !abortedReason,
+      reason: abortedReason,
+      attempted: (candidates as Candidate[]).length,
       sent,
       failed,
     };
@@ -457,7 +453,7 @@ export const sendFeatureAnnouncementEmails = internalAction({
         }
       );
       const ready = { ...candidate, unsubscribeToken: ensured.token };
-      const content = buildFeatureAnnouncementHtml(ready);
+      const content = buildFeatureAnnouncementHtml(ready, campaignKey);
       const result = await sendEmailWithBoundedRetry(
         {
           to: ready.email,
@@ -465,7 +461,12 @@ export const sendFeatureAnnouncementEmails = internalAction({
           html: content.html,
           text: content.text,
           tags: [
-            { name: "category", value: "feature_announcement" },
+            {
+              name: "category",
+              value: isTipCampaignKey(campaignKey)
+                ? "feature_tip"
+                : "feature_announcement",
+            },
             { name: "app", value: "giga3" },
           ],
         },
