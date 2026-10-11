@@ -323,3 +323,324 @@ export function backoffMsFor429Attempt(attemptIndexZeroBased: number): number {
   );
   return ANNOUNCEMENT_429_BACKOFF_MS[idx];
 }
+
+// ---------------------------------------------------------------------------
+// Shared eligibility / segmentation / tip campaign keys (Scope A — pure only)
+// ---------------------------------------------------------------------------
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Interest buckets used for digest themes and announcement/tip copy. */
+export type InterestSegment = "learn" | "create" | "social" | "general";
+
+/** Reusable tip campaign keys: tip_<feature>_v<n> (stored in lastFeatureAnnouncementCampaignKey). */
+export const TIP_CAMPAIGN_PREFIX = "tip_";
+
+export type TipFeatureSlug = "gigalearn" | "gigaedit" | "gigasocial" | "general";
+
+export function tipCampaignKey(feature: TipFeatureSlug, version = 1): string {
+  const v = Math.max(1, Math.floor(version));
+  return `${TIP_CAMPAIGN_PREFIX}${feature}_v${v}`;
+}
+
+export function isTipCampaignKey(campaignKey: string): boolean {
+  return /^tip_[a-z0-9]+_v\d+$/i.test(campaignKey.trim());
+}
+
+export function tipFeatureFromCampaignKey(
+  campaignKey: string
+): TipFeatureSlug | null {
+  const m = campaignKey.trim().toLowerCase().match(/^tip_([a-z0-9]+)_v\d+$/);
+  if (!m) return null;
+  const slug = m[1];
+  if (
+    slug === "gigalearn" ||
+    slug === "gigaedit" ||
+    slug === "gigasocial" ||
+    slug === "general"
+  ) {
+    return slug;
+  }
+  return null;
+}
+
+export function interestSegmentFromTipFeature(
+  feature: TipFeatureSlug
+): InterestSegment {
+  switch (feature) {
+    case "gigalearn":
+      return "learn";
+    case "gigaedit":
+      return "create";
+    case "gigasocial":
+      return "social";
+    default:
+      return "general";
+  }
+}
+
+export function resolveInterestSegment(
+  topics: string[] | undefined | null,
+  role?: string | null
+): InterestSegment {
+  const topicPart = (topics ?? []).map((t) => t.toLowerCase()).join(" ");
+  const joined = `${topicPart} ${(role ?? "").toLowerCase()}`;
+  if (/learn|study|exam|school|education|teacher|student/.test(joined)) {
+    return "learn";
+  }
+  if (/creat|design|image|video|edit|media|art/.test(joined)) {
+    return "create";
+  }
+  if (/fun|entertain|music|story|social|game/.test(joined)) {
+    return "social";
+  }
+  return "general";
+}
+
+/** True when last engagement mail is still inside the cooldown window. */
+export function isWithinEngagementCooldown(
+  lastEngagementEmailAt: number | null | undefined,
+  minDaysSinceLastEmail: number,
+  now = Date.now()
+): boolean {
+  if (lastEngagementEmailAt == null) return false;
+  const days = Math.max(0, minDaysSinceLastEmail);
+  return lastEngagementEmailAt > now - days * DAY_MS;
+}
+
+export type EngagementEligibilityReject =
+  | "opted_out"
+  | "suspended"
+  | "cooldown";
+
+/**
+ * Shared audience gate for digests / tips / announcements (opt-in + cooldown).
+ * Campaign-key blocking stays in isCampaignBlockedForRecipient / claim path.
+ */
+export function evaluateEngagementEligibility(input: {
+  emailEngagementOptIn?: boolean | null;
+  accountStatus?: string | null;
+  lastEngagementEmailAt?: number | null;
+  minDaysSinceLastEmail: number;
+  now?: number;
+}): { ok: true } | { ok: false; reason: EngagementEligibilityReject } {
+  if (input.accountStatus === "suspended") {
+    return { ok: false, reason: "suspended" };
+  }
+  if (input.emailEngagementOptIn === false) {
+    return { ok: false, reason: "opted_out" };
+  }
+  if (
+    isWithinEngagementCooldown(
+      input.lastEngagementEmailAt,
+      input.minDaysSinceLastEmail,
+      input.now ?? Date.now()
+    )
+  ) {
+    return { ok: false, reason: "cooldown" };
+  }
+  return { ok: true };
+}
+
+export type FeatureEmailCopy = {
+  title: string;
+  lead: string;
+  ctaLabel: string;
+  ctaPath: string;
+  bullets: string[];
+  /** Short subject fragment after the product name. */
+  subjectLine: string;
+};
+
+/** Digest / inactive-reminder theme copy (unchanged messaging, shared segmenter). */
+export function digestCopyForSegment(segment: InterestSegment): FeatureEmailCopy {
+  switch (segment) {
+    case "learn":
+      return {
+        title: "Your next learning streak is waiting",
+        lead: "GigaLearn and chat can turn a short session into clear notes, quizzes, and explanations.",
+        ctaLabel: "Continue learning",
+        ctaPath: "/gigalearn/",
+        bullets: [
+          "Ask for a lesson summary or practice questions",
+          "Save strong answers into your workspace",
+          "Come back tomorrow to keep your streak alive",
+        ],
+        subjectLine: "Your next learning streak is waiting",
+      };
+    case "create":
+      return {
+        title: "Make something new in minutes",
+        lead: "Media Studio and GigaEdit are ready for your next poster, clip, or social Story.",
+        ctaLabel: "Start creating",
+        ctaPath: "/gigaedit/",
+        bullets: [
+          "Generate or refine an image for your brand",
+          "Edit and export with GigaEdit",
+          "Post a photo or video Story on GigaSocial",
+        ],
+        subjectLine: "Make something new in minutes",
+      };
+    case "social":
+      return {
+        title: "Come back for entertainment & community",
+        lead: "GigaSocial now loads faster offline — reopen watched Reels and posts from cache, then remix with the original video attached.",
+        ctaLabel: "Open GigaSocial",
+        ctaPath: "/gigasocial/",
+        bullets: [
+          "Browse your cached feed and Stories offline",
+          "Remix keeps the source video in your composition",
+          "Tip, comment, and grow with the community",
+        ],
+        subjectLine: "Come back for entertainment & community",
+      };
+    default:
+      return {
+        title: "New on Giga3 AI — faster Social, smarter remix",
+        lead: "Your feed is snappier, offline-ready, and remix now keeps the original video attached. Open Giga3 when you are ready.",
+        ctaLabel: "Open Giga3",
+        ctaPath: "/gigasocial/",
+        bullets: [
+          "Faster photos & videos with smart caching",
+          "Offline feed, Reels, and Stories you already watched",
+          "Giga Remix preserves source media + attribution",
+        ],
+        subjectLine: "New on Giga3 AI — faster Social, smarter remix",
+      };
+  }
+}
+
+/** Feature-announcement copy segmented by interest (default campaign). */
+export function announcementCopyForSegment(
+  segment: InterestSegment
+): FeatureEmailCopy {
+  switch (segment) {
+    case "learn":
+      return {
+        title: "What’s new in Giga3 AI",
+        lead: "GigaLearn and chat now help you turn short sessions into clearer notes, quizzes, and explanations — built for Ghana classrooms and self-study.",
+        ctaLabel: "Open GigaLearn",
+        ctaPath: "/gigalearn/",
+        bullets: [
+          "Practice questions and lesson summaries in chat",
+          "Keep strong answers in your workspace",
+          "Build a daily learning streak",
+        ],
+        subjectLine: "What’s new in Giga3 AI · GigaLearn",
+      };
+    case "create":
+      return {
+        title: "What’s new in Giga3 AI",
+        lead: "Media Studio and GigaEdit are ready for posters, clips, and Stories — generate, refine, and export without leaving Giga3.",
+        ctaLabel: "Open GigaEdit",
+        ctaPath: "/gigaedit/",
+        bullets: [
+          "Generate or edit images for your brand",
+          "Timeline edits and exports in GigaEdit",
+          "Share a Story on GigaSocial when you are ready",
+        ],
+        subjectLine: "What’s new in Giga3 AI · GigaEdit & Media",
+      };
+    case "social":
+      return {
+        title: "What’s new in Giga3 AI",
+        lead: "We upgraded GigaSocial so your feed feels faster, works offline with content you already watched, and Remix keeps the original video in your take.",
+        ctaLabel: "Explore GigaSocial",
+        ctaPath: "/gigasocial/",
+        bullets: [
+          "Instant reopen for cached photos, videos, Reels & Stories",
+          "Smarter lazy-loading and prefetch on slow networks",
+          "Remix attaches source media, audio timing & attribution",
+        ],
+        subjectLine: "What’s new in Giga3 AI · GigaSocial upgrade",
+      };
+    default:
+      return {
+        title: "What’s new in Giga3 AI",
+        lead: "Learn, create, and share in one place — GigaLearn, GigaEdit, and GigaSocial are ready when you are.",
+        ctaLabel: "Open Giga3",
+        ctaPath: "/",
+        bullets: [
+          "Study with GigaLearn and chat",
+          "Create with Media Studio and GigaEdit",
+          "Share Stories and Reels on GigaSocial",
+        ],
+        subjectLine: "What’s new in Giga3 AI",
+      };
+  }
+}
+
+/** Tip campaign copy — same claim path as announcements; distinct campaignKey per tip. */
+export function tipCopyForFeature(feature: TipFeatureSlug): FeatureEmailCopy {
+  switch (feature) {
+    case "gigalearn":
+      return {
+        title: "Quick tip · GigaLearn",
+        lead: "Ask chat for a short quiz on one topic you are studying, then save the best explanation to your workspace.",
+        ctaLabel: "Try a practice question",
+        ctaPath: "/gigalearn/",
+        bullets: [
+          "One focused prompt beats a long session",
+          "Reuse saved answers as revision notes",
+          "Come back tomorrow to keep your streak",
+        ],
+        subjectLine: "Tip · Get more from GigaLearn",
+      };
+    case "gigaedit":
+      return {
+        title: "Quick tip · GigaEdit",
+        lead: "Start from a Media Studio still, then trim and caption in GigaEdit before you post.",
+        ctaLabel: "Open GigaEdit",
+        ctaPath: "/gigaedit/",
+        bullets: [
+          "Generate a base image first",
+          "Edit on-device for trim and overlays",
+          "Export when the cut feels right",
+        ],
+        subjectLine: "Tip · Faster edits in GigaEdit",
+      };
+    case "gigasocial":
+      return {
+        title: "Quick tip · GigaSocial",
+        lead: "Watch a Reel once so it caches, then reopen it offline — Remix keeps the source video attached.",
+        ctaLabel: "Open GigaSocial",
+        ctaPath: "/gigasocial/",
+        bullets: [
+          "Cached feed and Stories reopen instantly",
+          "Remix preserves attribution",
+          "Post a Story when you are ready",
+        ],
+        subjectLine: "Tip · Offline-ready GigaSocial",
+      };
+    default:
+      return {
+        title: "Quick tip · Giga3 AI",
+        lead: "Pick one surface today — learn, create, or share — and finish a small task in under ten minutes.",
+        ctaLabel: "Open Giga3",
+        ctaPath: "/",
+        bullets: [
+          "GigaLearn for a short study burst",
+          "GigaEdit for a quick creative cut",
+          "GigaSocial to share what you made",
+        ],
+        subjectLine: "Tip · Make the most of Giga3",
+      };
+  }
+}
+
+/**
+ * Resolve announcement vs tip copy for a campaign key + recipient interests.
+ * Tip keys use tip_* templates; other keys use segmented announcement copy.
+ */
+export function resolveCampaignEmailCopy(input: {
+  campaignKey: string;
+  topics?: string[] | null;
+  role?: string | null;
+}): FeatureEmailCopy {
+  const segment = resolveInterestSegment(input.topics, input.role);
+  if (isTipCampaignKey(input.campaignKey)) {
+    const feature = tipFeatureFromCampaignKey(input.campaignKey);
+    return tipCopyForFeature(feature ?? "general");
+  }
+  return announcementCopyForSegment(segment);
+}

@@ -8,6 +8,7 @@ import {
   campaignSendingKey,
   campaignUncertainKey,
   evaluateAnnouncementReconcile,
+  evaluateEngagementEligibility,
   isCampaignBlockedForRecipient,
   isStaleSendingClaim,
   redactEmail,
@@ -88,21 +89,20 @@ export const listEngagementCandidatesInternal = internalQuery({
     const minInactiveDays = args.minInactiveDays ?? 3;
     const minDaysSinceLastEmail = args.minDaysSinceLastEmail ?? 6;
     const now = Date.now();
-    const cutoff = now - minDaysSinceLastEmail * DAY_MS;
 
     const users = await ctx.db.query("users").take(500);
     const candidates: EngagementCandidate[] = [];
 
     for (const user of users) {
       if (candidates.length >= limit) break;
-      if (user.accountStatus === "suspended") continue;
-      if (user.emailEngagementOptIn === false) continue;
-      if (
-        user.lastEngagementEmailAt != null &&
-        user.lastEngagementEmailAt > cutoff
-      ) {
-        continue;
-      }
+      const eligible = evaluateEngagementEligibility({
+        emailEngagementOptIn: user.emailEngagementOptIn,
+        accountStatus: user.accountStatus,
+        lastEngagementEmailAt: user.lastEngagementEmailAt,
+        minDaysSinceLastEmail,
+        now,
+      });
+      if (!eligible.ok) continue;
 
       const inactiveDays =
         daysSinceDateKey(user.lastActiveDateKey, now) ??
@@ -191,7 +191,6 @@ export const listAnnouncementCandidatesInternal = internalQuery({
     const minDaysSinceLastEmail = args.minDaysSinceLastEmail ?? 10;
     const campaignKey = args.campaignKey.trim();
     const now = Date.now();
-    const cutoff = now - minDaysSinceLastEmail * DAY_MS;
     const allowlist =
       args.allowlist && args.allowlist.length > 0
         ? new Set(args.allowlist.map((e) => e.trim().toLowerCase()))
@@ -207,8 +206,14 @@ export const listAnnouncementCandidatesInternal = internalQuery({
           .withIndex("by_email", (q) => q.eq("email", email))
           .first();
         if (!user) continue;
-        if (user.accountStatus === "suspended") continue;
-        if (user.emailEngagementOptIn === false) continue;
+        const eligible = evaluateEngagementEligibility({
+          emailEngagementOptIn: user.emailEngagementOptIn,
+          accountStatus: user.accountStatus,
+          lastEngagementEmailAt: user.lastEngagementEmailAt,
+          minDaysSinceLastEmail,
+          now,
+        });
+        if (!eligible.ok) continue;
         if (
           isCampaignBlockedForRecipient(
             user.lastFeatureAnnouncementCampaignKey,
@@ -216,12 +221,6 @@ export const listAnnouncementCandidatesInternal = internalQuery({
             user.lastFeatureAnnouncementAt,
             now
           )
-        ) {
-          continue;
-        }
-        if (
-          user.lastEngagementEmailAt != null &&
-          user.lastEngagementEmailAt > cutoff
         ) {
           continue;
         }
@@ -244,8 +243,14 @@ export const listAnnouncementCandidatesInternal = internalQuery({
     const users = await ctx.db.query("users").take(500);
     for (const user of users) {
       if (candidates.length >= limit) break;
-      if (user.accountStatus === "suspended") continue;
-      if (user.emailEngagementOptIn === false) continue;
+      const eligible = evaluateEngagementEligibility({
+        emailEngagementOptIn: user.emailEngagementOptIn,
+        accountStatus: user.accountStatus,
+        lastEngagementEmailAt: user.lastEngagementEmailAt,
+        minDaysSinceLastEmail,
+        now,
+      });
+      if (!eligible.ok) continue;
       if (
         isCampaignBlockedForRecipient(
           user.lastFeatureAnnouncementCampaignKey,
@@ -253,12 +258,6 @@ export const listAnnouncementCandidatesInternal = internalQuery({
           user.lastFeatureAnnouncementAt,
           now
         )
-      ) {
-        continue;
-      }
-      if (
-        user.lastEngagementEmailAt != null &&
-        user.lastEngagementEmailAt > cutoff
       ) {
         continue;
       }

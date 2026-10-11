@@ -23,8 +23,17 @@ import {
   isStaleSendingClaim,
   redactEmail,
   resolveAnnouncementAllowlist,
+  resolveCampaignEmailCopy,
+  resolveInterestSegment,
   sanitizeOpsReason,
   shouldAbortAnnouncementBatch,
+  tipCampaignKey,
+  tipCopyForFeature,
+  evaluateEngagementEligibility,
+  isTipCampaignKey,
+  isWithinEngagementCooldown,
+  announcementCopyForSegment,
+  digestCopyForSegment,
 } from "../../convex/engagementAnnouncementSafety";
 import {
   classifyResendFailure,
@@ -419,6 +428,71 @@ describe("HTTP 429 bounded retry", () => {
   });
 });
 
+describe("eligibility, segmentation, and tip campaign keys", () => {
+  it("segments interests for learn / create / social / general", () => {
+    expect(resolveInterestSegment(["BECE maths"], "student")).toBe("learn");
+    expect(resolveInterestSegment(["poster design"], "creator")).toBe("create");
+    expect(resolveInterestSegment(["music"], "general")).toBe("social");
+    expect(resolveInterestSegment([], "general")).toBe("general");
+  });
+
+  it("enforces opt-out, suspension, and engagement cooldowns", () => {
+    const now = Date.now();
+    expect(
+      evaluateEngagementEligibility({
+        emailEngagementOptIn: false,
+        minDaysSinceLastEmail: 4,
+        now,
+      })
+    ).toEqual({ ok: false, reason: "opted_out" });
+    expect(
+      evaluateEngagementEligibility({
+        accountStatus: "suspended",
+        minDaysSinceLastEmail: 4,
+        now,
+      })
+    ).toEqual({ ok: false, reason: "suspended" });
+    expect(
+      evaluateEngagementEligibility({
+        lastEngagementEmailAt: now - 2 * 24 * 60 * 60 * 1000,
+        minDaysSinceLastEmail: 4,
+        now,
+      })
+    ).toEqual({ ok: false, reason: "cooldown" });
+    expect(
+      evaluateEngagementEligibility({
+        lastEngagementEmailAt: now - 10 * 24 * 60 * 60 * 1000,
+        minDaysSinceLastEmail: 4,
+        now,
+      })
+    ).toEqual({ ok: true });
+    expect(isWithinEngagementCooldown(undefined, 4, now)).toBe(false);
+  });
+
+  it("builds reusable tip campaign keys and tip/announcement copy", () => {
+    expect(tipCampaignKey("gigalearn", 1)).toBe("tip_gigalearn_v1");
+    expect(isTipCampaignKey("tip_gigaedit_v2")).toBe(true);
+    expect(isTipCampaignKey(DEFAULT_FEATURE_ANNOUNCEMENT_CAMPAIGN)).toBe(false);
+    expect(tipCopyForFeature("gigalearn").ctaPath).toBe("/gigalearn/");
+    expect(
+      resolveCampaignEmailCopy({
+        campaignKey: tipCampaignKey("gigasocial"),
+        topics: ["exam prep"],
+        role: "student",
+      }).ctaPath
+    ).toBe("/gigasocial/");
+    expect(
+      resolveCampaignEmailCopy({
+        campaignKey: DEFAULT_FEATURE_ANNOUNCEMENT_CAMPAIGN,
+        topics: ["exam prep"],
+        role: "student",
+      }).ctaPath
+    ).toBe("/gigalearn/");
+    expect(announcementCopyForSegment("social").subjectLine).toContain("GigaSocial");
+    expect(digestCopyForSegment("learn").ctaPath).toBe("/gigalearn/");
+  });
+});
+
 describe("wiring, digests, cron regressions", () => {
   it("wires smoke mode, claim/uncertain, reconcile, preflight, abort, and bounded retry", () => {
     const actions = readFileSync(
@@ -479,10 +553,15 @@ describe("wiring, digests, cron regressions", () => {
     const digestFn = actions.slice(start, end).replace(/\/\*\*[\s\S]*?\*\//g, "");
     expect(digestFn).toContain("listEngagementCandidatesInternal");
     expect(digestFn).toContain("markEngagementEmailSentInternal");
+    expect(digestFn).toContain("announcementSenderPreflight");
+    expect(digestFn).toContain("sendEmailWithBoundedRetry");
+    expect(digestFn).toContain("shouldAbortAnnouncementBatch");
+    expect(digestFn).toContain("redactEmail");
     expect(digestFn).not.toContain("markFeatureAnnouncementSentInternal");
     expect(digestFn).not.toContain("claimFeatureAnnouncementSendInternal");
     expect(digestFn).not.toContain("allowlist");
     expect(digestFn).not.toContain("campaignKey");
+    expect(digestFn).not.toContain("reconcileFeatureAnnouncementDeliveryInternal");
   });
 
   it("getAuthFromEmail still reads AUTH_FROM_EMAIL with sandbox fallback", () => {
