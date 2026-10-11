@@ -272,6 +272,20 @@ export default defineSchema({
      */
     lastFeatureAnnouncementAt: v.optional(v.number()),
     lastFeatureAnnouncementCampaignKey: v.optional(v.string()),
+    /**
+     * Welcome-email delivery tracking (Stage B1). Separate from engagement /
+     * announcement campaign keys. undefined = never claimed.
+     * sending | sent | uncertain | failed — uncertain is never auto-retried.
+     */
+    welcomeEmailStatus: v.optional(
+      v.union(
+        v.literal("sending"),
+        v.literal("sent"),
+        v.literal("uncertain"),
+        v.literal("failed")
+      )
+    ),
+    welcomeEmailAt: v.optional(v.number()),
     emailUnsubscribeToken: v.optional(v.string()),
     /** Session tokens issued before this timestamp are rejected (password reset / sign-out everywhere). */
     sessionsValidAfter: v.optional(v.number()),

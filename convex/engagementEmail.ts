@@ -14,6 +14,12 @@ import {
   redactEmail,
   sanitizeOpsReason,
 } from "./engagementAnnouncementSafety";
+import {
+  claimWelcomeEmailSendInTxn,
+  markWelcomeEmailFailedInTxn,
+  markWelcomeEmailSentInTxn,
+  markWelcomeEmailUncertainInTxn,
+} from "./welcomeEmailClaim";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -409,6 +415,35 @@ export const releaseFeatureAnnouncementClaimInternal = internalMutation({
     });
     return { ok: true as const, released: true as const };
   },
+});
+
+/**
+ * Claim welcome-email send (Stage B1). Blocks sent / in-flight / uncertain.
+ * Gate + patch run in one Convex mutation transaction (serializable OCC).
+ * Failed may be reclaimed only if deliverWelcome is invoked again (signup does not loop).
+ * Does not touch announcement campaign keys or lastEngagementEmailAt.
+ * Stuck "sending" is never auto-reclaimed.
+ */
+export const claimWelcomeEmailSendInternal = internalMutation({
+  args: { email: v.string() },
+  handler: async (ctx, args) => claimWelcomeEmailSendInTxn(ctx, args.email),
+});
+
+export const markWelcomeEmailSentInternal = internalMutation({
+  args: { email: v.string() },
+  handler: async (ctx, args) => markWelcomeEmailSentInTxn(ctx, args.email),
+});
+
+/** Ambiguous provider outcome — suppress automatic welcome retry. */
+export const markWelcomeEmailUncertainInternal = internalMutation({
+  args: { email: v.string() },
+  handler: async (ctx, args) => markWelcomeEmailUncertainInTxn(ctx, args.email),
+});
+
+/** Definitive provider rejection — not sent; may be reclaimed on a later explicit invoke. */
+export const markWelcomeEmailFailedInternal = internalMutation({
+  args: { email: v.string() },
+  handler: async (ctx, args) => markWelcomeEmailFailedInTxn(ctx, args.email),
 });
 
 /**
