@@ -44,6 +44,40 @@
   --shadow-premium: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -8px rgba(91, 33, 182, 0.2);
 }
 
+/*
+ * Chat dark mode readability: many chat components hardcode light surfaces
+ * (bg-white / text-black / gray chips). Remap those under .chat-stable so dark
+ * mode keeps readable contrast without rewriting every className.
+ * Yellow accent CTAs keep dark text for WCAG on #EAB308.
+ */
+html.dark .chat-stable .bg-white {
+  background-color: var(--card) !important;
+}
+html.dark .chat-stable .bg-\[\#F3F4F6\],
+html.dark .chat-stable .bg-\[\#F9FAFB\] {
+  background-color: var(--surface-elevated) !important;
+}
+html.dark .chat-stable .border-\[\#E5E7EB\] {
+  border-color: var(--border) !important;
+}
+html.dark .chat-stable .text-black {
+  color: var(--foreground) !important;
+}
+html.dark .chat-stable .text-gray-600 {
+  color: var(--muted) !important;
+}
+html.dark .chat-stable .hover\:bg-zinc-50:hover {
+  background-color: var(--surface-elevated) !important;
+}
+html.dark .chat-stable .bg-\[\#EAB308\],
+html.dark .chat-stable .bg-\[\#EAB308\].text-black,
+html.dark .chat-stable .bg-\[\#EAB308\] .text-black {
+  color: #0a0a0a !important;
+}
+html.dark .chat-stable .bg-\[\#EAB308\] {
+  background-color: #eab308 !important;
+}
+
 html {
   font-size: 16px;
   min-height: 100%;

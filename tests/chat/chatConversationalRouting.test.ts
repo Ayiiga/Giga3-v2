@@ -116,6 +116,16 @@ describe("decideJobRecovery conversational jobs", () => {
   });
 });
 
+describe("conversational failover acceptance", () => {
+  it("does not treat successful usedFallback as ALL_PROVIDERS_FAILED", () => {
+    const core = readFileSync("convex/chatConversationalCore.ts", "utf8");
+    expect(core).toContain("shouldAcceptConversationalEngineResult");
+    expect(core).not.toMatch(
+      /engineResult\.usedFallback\s*\|\|\s*engineResult\.providerId\s*===\s*"local_fallback"/
+    );
+  });
+});
+
 describe("chatReplyWorker logging", () => {
   it("imports logChatReply so the worker can start", () => {
     const source = readFileSync("convex/chatReplyWorker.ts", "utf8");

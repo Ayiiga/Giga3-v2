@@ -92,6 +92,7 @@ export const conversational = action({
         content,
         mode: setup.mode,
         personaId: setup.personaId,
+        chatSystem: args.chatSystem,
         since: setup.since,
       });
 
