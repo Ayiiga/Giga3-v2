@@ -298,6 +298,29 @@ export function isAmbiguousDeliveryFailure(
   return reason === "network_error";
 }
 
+/** Welcome-email delivery states (users.welcomeEmailStatus). */
+export type WelcomeEmailStatus = "sending" | "sent" | "uncertain" | "failed";
+
+export type WelcomeClaimRejectReason =
+  | "already_sent"
+  | "in_flight"
+  | "uncertain_delivery";
+
+/**
+ * Pure gate for welcome send claims.
+ * - undefined / failed → may claim (failed is not auto-scheduled; reclaim is explicit).
+ * - sent / sending / uncertain → blocked (uncertain never auto-retried).
+ */
+export function evaluateWelcomeEmailClaim(
+  status: WelcomeEmailStatus | undefined | null
+): { ok: true } | { ok: false; reason: WelcomeClaimRejectReason } {
+  if (status == null || status === "failed") return { ok: true };
+  if (status === "sent") return { ok: false, reason: "already_sent" };
+  if (status === "sending") return { ok: false, reason: "in_flight" };
+  if (status === "uncertain") return { ok: false, reason: "uncertain_delivery" };
+  return { ok: true };
+}
+
 export function filterEmailsToAllowlist(
   emails: string[],
   allowlist: string[] | null

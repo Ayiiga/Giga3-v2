@@ -21,6 +21,7 @@ import {
   sendEmail,
   wrapEmailHtml,
 } from "./emailClient";
+import { isAmbiguousDeliveryFailure, redactEmail } from "./engagementAnnouncementSafety";
 import { buildResetUrl, resolveResetBaseUrl } from "./authResetLinks";
 import {
   buildPasswordResetMessage,
@@ -68,8 +69,27 @@ async function issueSession(
   return { email, sessionToken };
 }
 
-async function sendWelcomeEmail(to: string): Promise<void> {
+/**
+ * Stage B1: claim → send → mark. Non-blocking for signup callers.
+ * Uncertain (network_error) is never auto-retried. Duplicate claims are skipped.
+ */
+async function deliverWelcomeEmail(
+  ctx: { runMutation: Function },
+  to: string
+): Promise<void> {
   if (!isEmailDeliveryConfigured()) return;
+
+  const claim = await ctx.runMutation(
+    internal.engagementEmail.claimWelcomeEmailSendInternal,
+    { email: to }
+  );
+  if (!claim.ok) {
+    console.info(
+      `[welcomeEmail] skip reason=${claim.reason} to=${redactEmail(to)}`
+    );
+    return;
+  }
+
   const frontend = getFrontendBaseUrl();
   const html = wrapEmailHtml({
     title: "Welcome to Giga3 AI",
@@ -84,7 +104,8 @@ async function sendWelcomeEmail(to: string): Promise<void> {
       </ul>
     `,
   });
-  await sendEmail({
+
+  const result = await sendEmail({
     to,
     subject: "Welcome to Giga3 AI — create, learn, and share",
     html,
@@ -93,6 +114,30 @@ async function sendWelcomeEmail(to: string): Promise<void> {
       { name: "category", value: "welcome" },
       { name: "app", value: "giga3" },
     ],
+  });
+
+  if (result.ok) {
+    await ctx.runMutation(internal.engagementEmail.markWelcomeEmailSentInternal, {
+      email: to,
+    });
+    return;
+  }
+
+  const redacted = redactEmail(to);
+  console.error(
+    `[welcomeEmail] send failed reason=${result.reason} to=${redacted}`
+  );
+
+  if (isAmbiguousDeliveryFailure(result.reason)) {
+    await ctx.runMutation(
+      internal.engagementEmail.markWelcomeEmailUncertainInternal,
+      { email: to }
+    );
+    return;
+  }
+
+  await ctx.runMutation(internal.engagementEmail.markWelcomeEmailFailedInternal, {
+    email: to,
   });
 }
 
@@ -149,8 +194,8 @@ export const signUpWithPassword = action({
     });
 
     const session = await issueSession(ctx, email);
-    // Best-effort welcome — never block sign-up if mail fails.
-    void sendWelcomeEmail(email).catch(() => undefined);
+    // Best-effort welcome — never block sign-up if mail fails; claim prevents duplicates.
+    void deliverWelcomeEmail(ctx, email).catch(() => undefined);
     return session;
   },
 });
