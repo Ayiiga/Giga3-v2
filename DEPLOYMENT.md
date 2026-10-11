@@ -89,9 +89,9 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `PAYSTACK_CREDITS_150_GHS` | No | Default `150` |
    | `PAYSTACK_CREDITS_500_GHS` | No | Default `500` |
    | `FRONTEND_URL` | **Yes (prod)** | Paystack/Stripe redirects + password-reset links, e.g. `https://www.giga3ai.com` |
-   | `RESEND_API_KEY` | **Yes for email** | Password reset + engagement emails via [Resend](https://resend.com). Without this, forgot-password cannot deliver mail. |
-   | `AUTH_FROM_EMAIL` | Recommended | Default `Giga3 AI <onboarding@resend.dev>` (testing only — can only deliver to the Resend account owner). After verifying `giga3ai.com`, set `Giga3 AI <noreply@giga3ai.com>`. |
-   | `AUTH_EMAIL_FALLBACK_INBOX` | Optional | Receives operational notices when a reset email fails to send. It must never receive another user's reset link. Default `ayiiga3@gmail.com`. |
+   | `RESEND_API_KEY` | **Yes for email** | Password reset + engagement emails via [Resend](https://resend.com). Without this, forgot-password cannot deliver mail. GitHub secret is synced on Convex deploy. |
+   | `AUTH_FROM_EMAIL` | Recommended | After verifying `giga3ai.com`, set `Giga3 AI <noreply@giga3ai.com>` on Convex **and** as a GitHub Actions variable/secret so deploy does not leave it unset. App code falls back to `onboarding@resend.dev` only when Convex env is empty (testing — owner inbox only). Deploy **does not** overwrite Convex when the GitHub value is unset. |
+   | `AUTH_EMAIL_FALLBACK_INBOX` | Optional | Receives operational notices when a reset email fails to send. It must never receive another user's reset link. Synced from GitHub only when set. |
    | `GOOGLE_CLIENT_ID` | For Google sign-in | OAuth web client ID. Same value as `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. Not a client secret. |
    | `STRIPE_SECRET_KEY` | Legacy only | Old token checkout in `payments.ts` |
    | `HF_TOKEN` | No (MMS not enabled) | Server-side Hugging Face token. Fine-grained read token. Not read by the static site. |
@@ -148,9 +148,10 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
       - Set `AUTH_FROM_EMAIL` to `Giga3 AI <noreply@giga3ai.com>` on Convex
    2. Until the domain is verified, `onboarding@resend.dev` can only deliver to the Resend owner inbox. Forgot-password still addresses the reset link **only** to the user's registered email. It does not forward the link to `AUTH_EMAIL_FALLBACK_INBOX`. That inbox may get a delivery-failure notice with no reset URL. Verify the domain before expecting other users to receive mail.
    3. Set GitHub secret `RESEND_API_KEY` (CI syncs it on Convex deploy) **and** set the same key on the Convex production deployment. Prefer a **full-access** key if you will manage domains via API (`node scripts/setup-resend-domain.mjs`).
-   4. Test Forgot password on `/chat/login/` for a non-owner address — you should receive a 1-hour reset link after domain verify.
-   5. Engagement digests run **daily** (UTC 15:00) for inactive opted-in users (still occasional per person — about every 4+ days); unsubscribe via `/email/unsubscribe` on the Convex site.
-   6. New sign-ups also receive a welcome email when Resend is configured.
+   4. Set GitHub Actions variable (or secret) `AUTH_FROM_EMAIL` to `Giga3 AI <noreply@giga3ai.com>` so deploy keeps Convex in sync after domain verify. Or run **Actions → Setup Resend sending domain**.
+   5. Test Forgot password on `/chat/login/` for a non-owner address — you should receive a 1-hour reset link after domain verify.
+   6. Engagement digests run **daily** (UTC 15:00) for inactive opted-in users (still occasional per person — about every 4+ days); unsubscribe via `/email/unsubscribe` on the Convex site.
+   7. New sign-ups also receive a welcome email when Resend is configured.
 
 6. **Configure Convex auth / CORS** (if needed): allow your Pages origin (`https://www.giga3ai.com`, `https://giga3ai.pages.dev`) in the Convex dashboard.
 
