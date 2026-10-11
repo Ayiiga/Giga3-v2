@@ -83,4 +83,23 @@ describe("GitHub Actions workflow expressions", () => {
     const script = join(root, "scripts/report-rollouts-deployment.sh");
     expect(() => execFileSync("bash", ["-n", script], { stdio: "pipe" })).not.toThrow();
   });
+
+  it("convex-deploy does not force AUTH_FROM_EMAIL to the Resend sandbox", () => {
+    const src = readFileSync(join(root, ".github/workflows/convex-deploy.yml"), "utf8");
+    // Must wire GitHub var/secret into the env step.
+    expect(src).toMatch(
+      /AUTH_FROM_EMAIL:\s*\$\{\{\s*vars\.AUTH_FROM_EMAIL\s*\|\|\s*secrets\.AUTH_FROM_EMAIL\s*\}\}/
+    );
+    // Must only sync when set — never default-clobber Convex to onboarding@resend.dev.
+    expect(src).toMatch(/if \[ -n "\$\{AUTH_FROM_EMAIL:-\}" \]/);
+    expect(src).toContain(
+      'npx convex env set AUTH_FROM_EMAIL "${AUTH_FROM_EMAIL}"'
+    );
+    expect(src).not.toMatch(
+      /FROM_EMAIL="\$\{AUTH_FROM_EMAIL:-Giga3 AI <onboarding@resend\.dev>\}"/
+    );
+    expect(src).not.toMatch(
+      /npx convex env set AUTH_FROM_EMAIL "\$\{FROM_EMAIL\}"/
+    );
+  });
 });
