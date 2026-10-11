@@ -91,7 +91,8 @@ jobs:
         run: |
           set -o pipefail
           echo "convex CLI: $(npx convex --version)"
-          if ! npx convex deploy --yes --verbose --typecheck disable 2>&1 | tee convex-deploy.log; then
+          # Avoid --verbose: Convex startPush can dump environment variable values into logs.
+          if ! npx convex deploy --yes --typecheck disable 2>&1 | tee convex-deploy.log; then
             echo "## Convex deploy failed" >> "$GITHUB_STEP_SUMMARY"
             echo "If you see Unauthorized or Invalid deploy key, regenerate **prod:perfect-lark-521|…** in Convex dashboard and update GitHub secret CONVEX_DEPLOY_KEY." >> "$GITHUB_STEP_SUMMARY"
             echo '```text' >> "$GITHUB_STEP_SUMMARY"
@@ -185,9 +186,16 @@ jobs:
             npx convex env set FRONTEND_URL "${FRONTEND_URL}"
             echo "FRONTEND_URL synced for Paystack callback redirects."
           fi
+          # Sync only a Resend-shaped key. Never write AUTH_FROM_EMAIL (or any email From)
+          # into RESEND_API_KEY — a mis-set GitHub secret previously clobbered production.
           if [ -n "${RESEND_API_KEY:-}" ]; then
-            npx convex env set RESEND_API_KEY "${RESEND_API_KEY}"
-            echo "RESEND_API_KEY synced — password reset + engagement email enabled."
+            if [[ "${RESEND_API_KEY}" == re_* ]] && [[ "${RESEND_API_KEY}" != *"@"* ]] && [[ "${RESEND_API_KEY}" != *"<"* ]] && [[ "${RESEND_API_KEY}" != *" "* ]]; then
+              npx convex env set RESEND_API_KEY "${RESEND_API_KEY}"
+              echo "RESEND_API_KEY synced — password reset + engagement email enabled."
+            else
+              echo "::error::RESEND_API_KEY GitHub secret is not a Resend API key shape (must start with re_ and must not look like an email From). Leaving Convex RESEND_API_KEY unchanged."
+              exit 1
+            fi
           else
             echo "::warning::RESEND_API_KEY GitHub secret is empty — forgot-password and engagement emails will not send until it is set."
           fi

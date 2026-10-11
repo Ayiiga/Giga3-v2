@@ -102,4 +102,20 @@ describe("GitHub Actions workflow expressions", () => {
       /npx convex env set AUTH_FROM_EMAIL "\$\{FROM_EMAIL\}"/
     );
   });
+
+  it("convex-deploy syncs RESEND_API_KEY only when it has Resend key shape", () => {
+    const src = readFileSync(join(root, ".github/workflows/convex-deploy.yml"), "utf8");
+    expect(src).toMatch(/RESEND_API_KEY:\s*\$\{\{\s*secrets\.RESEND_API_KEY\s*\}\}/);
+    expect(src).toMatch(/AUTH_FROM_EMAIL:\s*\$\{\{/);
+    // Separate env bindings — RESEND must not read AUTH_FROM.
+    expect(src).not.toMatch(
+      /RESEND_API_KEY:\s*\$\{\{\s*(vars|secrets)\.AUTH_FROM_EMAIL/
+    );
+    expect(src).toContain('[[ "${RESEND_API_KEY}" == re_* ]]');
+    expect(src).toContain(
+      "RESEND_API_KEY GitHub secret is not a Resend API key shape"
+    );
+    // Do not dump env values via convex deploy --verbose.
+    expect(src).not.toMatch(/convex deploy[^\n]*--verbose/);
+  });
 });
