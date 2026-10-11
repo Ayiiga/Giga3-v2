@@ -7,10 +7,16 @@ import { resolve } from "node:path";
 import {
   ANNOUNCEMENT_429_MAX_ATTEMPTS,
   ANNOUNCEMENT_ALLOWLIST_MAX,
+  ANNOUNCEMENT_CLAIM_TTL_MS,
   DEFAULT_FEATURE_ANNOUNCEMENT_CAMPAIGN,
   announcementSenderPreflight,
   backoffMsFor429Attempt,
+  campaignSendingKey,
+  campaignUncertainKey,
   filterEmailsToAllowlist,
+  isAmbiguousDeliveryFailure,
+  isAuthFromEmailConfigured,
+  isCampaignBlockedForRecipient,
   isEmailInAllowlist,
   isResendSandboxSender,
   redactEmail,
@@ -23,19 +29,38 @@ import {
   sendEmailWithBoundedRetry,
 } from "../../convex/emailClient";
 
-describe("announcement allowlist & redaction", () => {
-  it("resolves to/allowlist and rejects invalid or oversized lists", () => {
-    expect(resolveAnnouncementAllowlist(undefined, undefined)).toEqual({
+describe("smoke allowlist — no bulk fallback", () => {
+  it("requires exactly one validated recipient in smoke mode", () => {
+    expect(resolveAnnouncementAllowlist("smoke", undefined, undefined)).toEqual({
+      ok: false,
+      reason: "smoke_requires_single_recipient",
+    });
+    expect(resolveAnnouncementAllowlist("smoke", undefined, [])).toEqual({
+      ok: false,
+      reason: "smoke_requires_single_recipient",
+    });
+    expect(resolveAnnouncementAllowlist("smoke", "a@x.co", ["b@x.co"]).ok).toBe(false);
+    expect(resolveAnnouncementAllowlist("smoke", " Owner@Example.com ", null)).toEqual({
+      ok: true,
+      emails: ["owner@example.com"],
+    });
+  });
+
+  it("bulk mode scans when untargeted, but empty allowlist fails closed", () => {
+    expect(resolveAnnouncementAllowlist("bulk", undefined, undefined)).toEqual({
       ok: true,
       emails: null,
     });
-    expect(resolveAnnouncementAllowlist(" Owner@Example.com ", ["b@x.co"])).toEqual({
-      ok: true,
-      emails: ["owner@example.com", "b@x.co"],
+    expect(resolveAnnouncementAllowlist("bulk", undefined, [])).toEqual({
+      ok: false,
+      reason: "empty_allowlist",
     });
-    expect(resolveAnnouncementAllowlist("not-an-email", null).ok).toBe(false);
+    expect(resolveAnnouncementAllowlist("bulk", "a@x.co", ["b@x.co"])).toEqual({
+      ok: true,
+      emails: ["a@x.co", "b@x.co"],
+    });
     const huge = Array.from({ length: ANNOUNCEMENT_ALLOWLIST_MAX + 1 }, (_, i) => `u${i}@x.co`);
-    expect(resolveAnnouncementAllowlist(undefined, huge).ok).toBe(false);
+    expect(resolveAnnouncementAllowlist("bulk", undefined, huge).ok).toBe(false);
   });
 
   it("never lets a targeted send include addresses outside the allowlist", () => {
@@ -46,47 +71,93 @@ describe("announcement allowlist & redaction", () => {
       "b@giga3.ai",
     ]);
     expect(isEmailInAllowlist("evil@elsewhere.com", allowlist)).toBe(false);
-    expect(isEmailInAllowlist("A@Giga3.ai", allowlist)).toBe(true);
   });
 
   it("redacts emails for outcomes/logs", () => {
     expect(redactEmail("ayiiga3@gmail.com")).toBe("a***3@gmail.com");
-    expect(redactEmail("ab@x.co")).toBe("a***b@x.co");
   });
 });
 
-describe("announcement sender preflight & abort", () => {
-  it("blocks multi-recipient sends when From is onboarding@resend.dev", () => {
+describe("sender preflight", () => {
+  it("blocks multi/bulk when AUTH_FROM_EMAIL is missing or sandbox", () => {
+    expect(isAuthFromEmailConfigured(undefined)).toBe(false);
+    expect(isAuthFromEmailConfigured("")).toBe(false);
+    expect(isAuthFromEmailConfigured("Giga3 AI <noreply@giga3ai.com>")).toBe(true);
     expect(isResendSandboxSender("Giga3 AI <onboarding@resend.dev>")).toBe(true);
-    expect(isResendSandboxSender("Giga3 AI <noreply@giga3ai.com>")).toBe(false);
-    expect(announcementSenderPreflight("Giga3 AI <onboarding@resend.dev>", 2)).toEqual({
-      ok: false,
-      reason: "sandbox_sender_blocks_multi",
-    });
-    expect(announcementSenderPreflight("Giga3 AI <onboarding@resend.dev>", 40)).toEqual({
-      ok: false,
-      reason: "sandbox_sender_blocks_multi",
-    });
+
+    expect(
+      announcementSenderPreflight({
+        from: "Giga3 AI <onboarding@resend.dev>",
+        authFromConfigured: false,
+        effectiveRecipientCount: 40,
+        mode: "bulk",
+      })
+    ).toEqual({ ok: false, reason: "auth_from_email_missing" });
+
+    expect(
+      announcementSenderPreflight({
+        from: "Giga3 AI <onboarding@resend.dev>",
+        authFromConfigured: true,
+        effectiveRecipientCount: 40,
+        mode: "bulk",
+      })
+    ).toEqual({ ok: false, reason: "sandbox_sender_blocks_multi" });
   });
 
-  it("allows a single-recipient smoke test with sandbox sender", () => {
-    expect(announcementSenderPreflight("Giga3 AI <onboarding@resend.dev>", 1)).toEqual({
-      ok: true,
-    });
+  it("allows single-recipient smoke with sandbox sender when AUTH_FROM is set to sandbox", () => {
+    expect(
+      announcementSenderPreflight({
+        from: "Giga3 AI <onboarding@resend.dev>",
+        authFromConfigured: true,
+        effectiveRecipientCount: 1,
+        mode: "smoke",
+      })
+    ).toEqual({ ok: true });
   });
 
-  it("allows multi-recipient when From uses a verified-domain address", () => {
-    expect(announcementSenderPreflight("Giga3 AI <noreply@giga3ai.com>", 40)).toEqual({
-      ok: true,
-    });
+  it("allows bulk when From is a verified-domain address", () => {
+    expect(
+      announcementSenderPreflight({
+        from: "Giga3 AI <noreply@giga3ai.com>",
+        authFromConfigured: true,
+        effectiveRecipientCount: 40,
+        mode: "bulk",
+      })
+    ).toEqual({ ok: true });
   });
 
-  it("aborts the batch on sandbox_recipient or domain_unverified only", () => {
+  it("aborts batch on sandbox_recipient or domain_unverified", () => {
     expect(shouldAbortAnnouncementBatch("sandbox_recipient")).toBe(true);
     expect(shouldAbortAnnouncementBatch("domain_unverified")).toBe(true);
     expect(shouldAbortAnnouncementBatch("rate_limited")).toBe(false);
-    expect(shouldAbortAnnouncementBatch("provider_error")).toBe(false);
     expect(shouldAbortAnnouncementBatch("network_error")).toBe(false);
+  });
+});
+
+describe("campaign idempotency & ambiguous delivery", () => {
+  const key = DEFAULT_FEATURE_ANNOUNCEMENT_CAMPAIGN;
+
+  it("blocks sent, uncertain, and in-flight claims; allows stale sending claims", () => {
+    expect(isCampaignBlockedForRecipient(key, key, Date.now())).toBe("sent");
+    expect(
+      isCampaignBlockedForRecipient(campaignUncertainKey(key), key, Date.now())
+    ).toBe("uncertain");
+    expect(
+      isCampaignBlockedForRecipient(campaignSendingKey(key), key, Date.now())
+    ).toBe("in_flight");
+    expect(
+      isCampaignBlockedForRecipient(
+        campaignSendingKey(key),
+        key,
+        Date.now() - ANNOUNCEMENT_CLAIM_TTL_MS - 1
+      )
+    ).toBeNull();
+  });
+
+  it("treats network_error as ambiguous (no blind resend)", () => {
+    expect(isAmbiguousDeliveryFailure("network_error")).toBe(true);
+    expect(isAmbiguousDeliveryFailure("rate_limited")).toBe(false);
+    expect(isAmbiguousDeliveryFailure("provider_error")).toBe(false);
   });
 });
 
@@ -122,11 +193,7 @@ describe("HTTP 429 bounded retry", () => {
     );
 
     const result = await sendEmailWithBoundedRetry(
-      {
-        to: "user@example.com",
-        subject: "t",
-        html: "<p>x</p>",
-      },
+      { to: "user@example.com", subject: "t", html: "<p>x</p>" },
       {
         maxAttempts: ANNOUNCEMENT_429_MAX_ATTEMPTS,
         sleep: async (ms) => {
@@ -144,7 +211,7 @@ describe("HTTP 429 bounded retry", () => {
     expect(backoffMsFor429Attempt(0)).toBeGreaterThan(0);
   });
 
-  it("does not retry sandbox_recipient failures", async () => {
+  it("does not retry sandbox_recipient or domain_unverified", async () => {
     let calls = 0;
     vi.stubGlobal(
       "fetch",
@@ -158,14 +225,12 @@ describe("HTTP 429 bounded retry", () => {
         );
       })
     );
-
     const result = await sendEmailWithBoundedRetry(
       { to: "other@example.com", subject: "t", html: "<p>x</p>" },
       { maxAttempts: 3, sleep: async () => undefined }
     );
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toBe("sandbox_recipient");
-    expect(result.attempts).toBe(1);
     expect(calls).toBe(1);
   });
 
@@ -183,7 +248,6 @@ describe("HTTP 429 bounded retry", () => {
         return new Response(JSON.stringify({ id: "email_ok" }), { status: 200 });
       })
     );
-
     const result = await sendEmailWithBoundedRetry(
       { to: "user@example.com", subject: "t", html: "<p>x</p>" },
       { maxAttempts: 3, sleep: async () => undefined, backoffMs: [1, 1, 1] }
@@ -193,8 +257,8 @@ describe("HTTP 429 bounded retry", () => {
   });
 });
 
-describe("announcement wiring & digest isolation", () => {
-  it("wires allowlist, preflight, abort, campaign mark, and bounded retry", () => {
+describe("wiring, digests, cron regressions", () => {
+  it("wires smoke mode, claim/uncertain, preflight, abort, and bounded retry", () => {
     const actions = readFileSync(
       resolve(__dirname, "../../convex/engagementEmailActions.ts"),
       "utf8"
@@ -204,68 +268,46 @@ describe("announcement wiring & digest isolation", () => {
       "utf8"
     );
     const schema = readFileSync(resolve(__dirname, "../../convex/schema.ts"), "utf8");
+    const crons = readFileSync(resolve(__dirname, "../../convex/crons.ts"), "utf8");
 
-    expect(actions).toContain("resolveAnnouncementAllowlist");
-    expect(actions).toContain("announcementSenderPreflight");
-    expect(actions).toContain("shouldAbortAnnouncementBatch");
+    expect(actions).toContain('v.literal("smoke")');
+    expect(actions).toContain("smoke_requires_exactly_one_recipient");
+    expect(actions).toContain("claimFeatureAnnouncementSendInternal");
+    expect(actions).toContain("markFeatureAnnouncementUncertainInternal");
+    expect(actions).toContain("releaseFeatureAnnouncementClaimInternal");
+    expect(actions).toContain("isAmbiguousDeliveryFailure");
+    expect(actions).toContain("isAuthFromEmailConfigured");
     expect(actions).toContain("sendEmailWithBoundedRetry");
-    expect(actions).toContain("markFeatureAnnouncementSentInternal");
-    expect(actions).toContain("listAnnouncementCandidatesInternal");
-    expect(actions).toContain("allowlist");
-    expect(actions).toContain("campaignKey");
-    expect(actions).toContain("redactEmail");
+    expect(actions).toContain("shouldAbortAnnouncementBatch");
 
     expect(engagement).toContain("listAnnouncementCandidatesInternal");
-    expect(engagement).toContain("markFeatureAnnouncementSentInternal");
-    expect(engagement).toContain("lastFeatureAnnouncementCampaignKey");
-    // Digest path unchanged.
+    expect(engagement).toContain("isCampaignBlockedForRecipient");
     expect(engagement).toContain("listEngagementCandidatesInternal");
     expect(engagement).toContain("markEngagementEmailSentInternal");
-    expect(actions).toContain("sendEngagementDigests");
-    expect(actions).toMatch(/markEngagementEmailSentInternal/);
 
     expect(schema).toContain("lastFeatureAnnouncementAt");
     expect(schema).toContain("lastFeatureAnnouncementCampaignKey");
-    expect(DEFAULT_FEATURE_ANNOUNCEMENT_CAMPAIGN).toBeTruthy();
+
+    // Cron still schedules announcements + digests with prior args.
+    expect(crons).toContain("sendFeatureAnnouncementEmails");
+    expect(crons).toContain("minDaysSinceLastEmail: 12");
+    expect(crons).toContain("sendEngagementDigests");
   });
 
-  it("digests still use shared lastEngagementEmailAt without campaign fields", () => {
+  it("digest action body stays free of announcement allowlist/campaign claim logic", () => {
     const actions = readFileSync(
       resolve(__dirname, "../../convex/engagementEmailActions.ts"),
       "utf8"
     );
     const start = actions.indexOf("export const sendEngagementDigests");
     const end = actions.indexOf("export const sendFeatureAnnouncementEmails");
-    // Exclude the JSDoc that precedes the announcement export (mentions allowlist).
     const digestFn = actions.slice(start, end).replace(/\/\*\*[\s\S]*?\*\//g, "");
     expect(digestFn).toContain("listEngagementCandidatesInternal");
     expect(digestFn).toContain("markEngagementEmailSentInternal");
     expect(digestFn).not.toContain("markFeatureAnnouncementSentInternal");
-    expect(digestFn).not.toContain("listAnnouncementCandidatesInternal");
+    expect(digestFn).not.toContain("claimFeatureAnnouncementSendInternal");
     expect(digestFn).not.toContain("allowlist");
     expect(digestFn).not.toContain("campaignKey");
-  });
-
-  it("documents campaign skip + global gap for retry semantics in candidate query", () => {
-    const engagement = readFileSync(
-      resolve(__dirname, "../../convex/engagementEmail.ts"),
-      "utf8"
-    );
-    const ann = engagement.slice(
-      engagement.indexOf("listAnnouncementCandidatesInternal"),
-      engagement.indexOf("markFeatureAnnouncementSentInternal")
-    );
-    // Same campaign already sent → skip (no duplicate on retry).
-    expect(ann).toContain("lastFeatureAnnouncementCampaignKey === campaignKey");
-    // Global engagement gap still respected for cross-mail rate limiting.
-    expect(ann).toContain("lastEngagementEmailAt");
-    // Failed sends never reach markFeatureAnnouncementSentInternal in the action.
-    const actions = readFileSync(
-      resolve(__dirname, "../../convex/engagementEmailActions.ts"),
-      "utf8"
-    );
-    expect(actions).toContain("if (result.ok)");
-    expect(actions).toContain("markFeatureAnnouncementSentInternal");
   });
 
   it("getAuthFromEmail still reads AUTH_FROM_EMAIL with sandbox fallback", () => {

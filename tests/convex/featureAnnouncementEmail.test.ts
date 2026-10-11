@@ -15,6 +15,8 @@ describe("feature announcement emails", () => {
     expect(actions).toContain("announcementSenderPreflight");
     expect(actions).toContain("sendEmailWithBoundedRetry");
     expect(actions).toContain("markFeatureAnnouncementSentInternal");
+    expect(actions).toContain('v.literal("smoke")');
+    expect(actions).toContain("claimFeatureAnnouncementSendInternal");
   });
 
   it("schedules weekly feature announcements via crons", () => {

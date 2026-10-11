@@ -16,11 +16,14 @@ import {
   ANNOUNCEMENT_429_MAX_ATTEMPTS,
   DEFAULT_FEATURE_ANNOUNCEMENT_CAMPAIGN,
   announcementSenderPreflight,
+  isAmbiguousDeliveryFailure,
+  isAuthFromEmailConfigured,
   isEmailInAllowlist,
   redactEmail,
   resolveAnnouncementAllowlist,
   shouldAbortAnnouncementBatch,
   type AnnouncementRecipientOutcome,
+  type AnnouncementSendMode,
 } from "./engagementAnnouncementSafety";
 
 type Candidate = {
@@ -297,78 +300,89 @@ export const sendEngagementDigests = internalAction({
  * Branded major-feature announcement for opted-in users.
  *
  * Safety:
- * - Optional `to` / `allowlist` for single-recipient or controlled retries (server-validated).
- * - Sandbox From (`onboarding@resend.dev`) blocks multi-recipient sends before any mail.
+ * - mode "smoke" requires exactly one allowlisted recipient (never falls back to bulk).
+ * - mode "bulk" (default, cron) scans candidates; sandbox / missing AUTH_FROM_EMAIL blocked.
  * - Aborts the batch on sandbox_recipient / domain_unverified.
- * - Bounded 429 retries via sendEmailWithBoundedRetry.
- * - Campaign-key idempotency (lastFeatureAnnouncementCampaignKey) plus digest gap
- *   via lastEngagementEmailAt on success only.
+ * - Bounded 429 retries; network_error marks uncertain (no blind resend).
+ * - Campaign-key claim + sent/uncertain keys separate from digest lastEngagementEmailAt.
  *
  * Digests continue to use sendEngagementDigests + markEngagementEmailSentInternal unchanged.
+ *
+ * Schema (additive, optional fields — no destructive migration):
+ * - users.lastFeatureAnnouncementAt
+ * - users.lastFeatureAnnouncementCampaignKey
+ *   values: "<campaign>" | "sending:<campaign>" | "uncertain:<campaign>"
  */
 export const sendFeatureAnnouncementEmails = internalAction({
   args: {
     limit: v.optional(v.number()),
     minDaysSinceLastEmail: v.optional(v.number()),
+    /**
+     * "smoke" = single-recipient allowlist required (no bulk fallback).
+     * "bulk" = scheduled/manual blast (default).
+     */
+    mode: v.optional(v.union(v.literal("smoke"), v.literal("bulk"))),
     /** Single-recipient smoke test (normalized + allowlisted server-side). */
     to: v.optional(v.string()),
     /** Explicit allowlist; combined with `to`. Max size enforced in safety helpers. */
     allowlist: v.optional(v.array(v.string())),
-    /** Campaign idempotency key — successful recipients skip the same key on retry. */
+    /** Campaign idempotency key — successful/uncertain recipients skip the same key on retry. */
     campaignKey: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const empty = (reason: string) => ({
+      ok: false as const,
+      reason,
+      sent: 0,
+      failed: 0,
+      attempted: 0,
+      outcomes: [] as AnnouncementRecipientOutcome[],
+    });
+
     if (!isEmailDeliveryConfigured()) {
       console.error("[featureEmail] skipped — RESEND_API_KEY not configured");
-      return {
-        ok: false as const,
-        reason: "not_configured",
-        sent: 0,
-        failed: 0,
-        attempted: 0,
-        outcomes: [] as AnnouncementRecipientOutcome[],
-      };
+      return empty("not_configured");
     }
 
-    const allowlistResolved = resolveAnnouncementAllowlist(args.to, args.allowlist);
+    const mode: AnnouncementSendMode = args.mode ?? "bulk";
+    const allowlistResolved = resolveAnnouncementAllowlist(
+      mode,
+      args.to,
+      args.allowlist
+    );
     if (!allowlistResolved.ok) {
       console.error(`[featureEmail] invalid allowlist: ${allowlistResolved.reason}`);
-      return {
-        ok: false as const,
-        reason: allowlistResolved.reason,
-        sent: 0,
-        failed: 0,
-        attempted: 0,
-        outcomes: [] as AnnouncementRecipientOutcome[],
-      };
+      return empty(allowlistResolved.reason);
     }
     const allowlist = allowlistResolved.emails;
+
+    // Smoke mode must never proceed without a concrete allowlist of one.
+    if (mode === "smoke" && (!allowlist || allowlist.length !== 1)) {
+      return empty("smoke_requires_exactly_one_recipient");
+    }
+
     const campaignKey =
       (args.campaignKey?.trim() || DEFAULT_FEATURE_ANNOUNCEMENT_CAMPAIGN).slice(0, 80);
 
-    // Preflight sender before candidate work when we already know multi-recipient intent.
     const from = getAuthFromEmail();
+    const authFromConfigured = isAuthFromEmailConfigured();
     const plannedCount =
       allowlist != null ? allowlist.length : Math.min(Math.max(args.limit ?? 40, 1), 80);
-    const earlyPreflight = announcementSenderPreflight(from, plannedCount);
-    if (!earlyPreflight.ok && earlyPreflight.reason === "sandbox_sender_blocks_multi") {
-      console.error(
-        "[featureEmail] preflight blocked: sandbox From cannot send to multiple recipients"
-      );
-      return {
-        ok: false as const,
-        reason: earlyPreflight.reason,
-        sent: 0,
-        failed: 0,
-        attempted: 0,
-        outcomes: [] as AnnouncementRecipientOutcome[],
-      };
+    const earlyPreflight = announcementSenderPreflight({
+      from,
+      authFromConfigured,
+      effectiveRecipientCount: plannedCount,
+      mode,
+    });
+    if (!earlyPreflight.ok) {
+      console.error(`[featureEmail] preflight blocked: ${earlyPreflight.reason}`);
+      return empty(earlyPreflight.reason);
     }
 
     const candidates = await ctx.runQuery(
       internal.engagementEmail.listAnnouncementCandidatesInternal,
       {
-        limit: args.limit ?? 40,
+        limit: mode === "smoke" ? 1 : args.limit ?? 40,
         minDaysSinceLastEmail: args.minDaysSinceLastEmail ?? 10,
         campaignKey,
         allowlist: allowlist ?? undefined,
@@ -380,17 +394,22 @@ export const sendFeatureAnnouncementEmails = internalAction({
       isEmailInAllowlist(c.email, allowlist)
     );
 
-    const preflight = announcementSenderPreflight(from, eligible.length);
+    if (mode === "smoke") {
+      // Never widen a smoke test to other candidates.
+      if (eligible.length !== 1 || !allowlist || !isEmailInAllowlist(eligible[0].email, allowlist)) {
+        return empty("smoke_recipient_not_eligible");
+      }
+    }
+
+    const preflight = announcementSenderPreflight({
+      from,
+      authFromConfigured,
+      effectiveRecipientCount: eligible.length,
+      mode,
+    });
     if (!preflight.ok) {
       console.error(`[featureEmail] preflight blocked: ${preflight.reason}`);
-      return {
-        ok: false as const,
-        reason: preflight.reason,
-        sent: 0,
-        failed: 0,
-        attempted: 0,
-        outcomes: [] as AnnouncementRecipientOutcome[],
-      };
+      return empty(preflight.reason);
     }
 
     let sent = 0;
@@ -404,6 +423,26 @@ export const sendFeatureAnnouncementEmails = internalAction({
           emailRedacted: redactEmail(candidate.email),
           status: "skipped",
           reason: "not_in_allowlist",
+        });
+        continue;
+      }
+
+      const claim = await ctx.runMutation(
+        internal.engagementEmail.claimFeatureAnnouncementSendInternal,
+        { email: candidate.email, campaignKey }
+      );
+      if (!claim.ok) {
+        const skipReason =
+          claim.reason === "already_sent_campaign" ||
+          claim.reason === "uncertain_delivery" ||
+          claim.reason === "in_flight" ||
+          claim.reason === "opted_out"
+            ? claim.reason
+            : "claim_failed";
+        outcomes.push({
+          emailRedacted: redactEmail(candidate.email),
+          status: "skipped",
+          reason: skipReason,
         });
         continue;
       }
@@ -453,11 +492,29 @@ export const sendFeatureAnnouncementEmails = internalAction({
       console.error(
         `[featureEmail] send failed reason=${result.reason} to=${redacted} attempts=${result.attempts}`
       );
-      outcomes.push({
-        emailRedacted: redacted,
-        status: "failed",
-        reason: result.reason,
-      });
+
+      if (isAmbiguousDeliveryFailure(result.reason)) {
+        // Do not release claim or allow blind retry — acceptance is uncertain.
+        await ctx.runMutation(
+          internal.engagementEmail.markFeatureAnnouncementUncertainInternal,
+          { email: ready.email, campaignKey }
+        );
+        outcomes.push({
+          emailRedacted: redacted,
+          status: "failed",
+          reason: result.reason,
+        });
+      } else {
+        await ctx.runMutation(
+          internal.engagementEmail.releaseFeatureAnnouncementClaimInternal,
+          { email: ready.email, campaignKey }
+        );
+        outcomes.push({
+          emailRedacted: redacted,
+          status: "failed",
+          reason: result.reason,
+        });
+      }
 
       if (shouldAbortAnnouncementBatch(result.reason)) {
         abortedReason = result.reason;
@@ -471,6 +528,7 @@ export const sendFeatureAnnouncementEmails = internalAction({
     return {
       ok: !abortedReason,
       reason: abortedReason,
+      mode,
       campaignKey,
       attempted: eligible.length,
       sent,
