@@ -24,6 +24,12 @@ describe("feature announcement emails", () => {
     expect(actions).toContain("claimFeatureAnnouncementSendInternal");
     expect(actions).toContain("reconcileFeatureAnnouncementDeliveryInternal");
     expect(safety).toContain("What’s new in Giga3 AI");
+    expect(safety).toContain('feature_announcement_v2');
+    expect(safety).toContain("CV and resume writing");
+    expect(safety).toContain("book writing");
+    expect(safety).toContain("thesis and research writing");
+    expect(safety).toContain("WASSCE and BECE");
+    expect(safety).toMatch(/kids['’] learning environment/);
     expect(safety).toContain("tipCampaignKey");
   });
 

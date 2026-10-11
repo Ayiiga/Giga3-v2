@@ -491,6 +491,34 @@ describe("eligibility, segmentation, and tip campaign keys", () => {
     expect(announcementCopyForSegment("social").subjectLine).toContain("GigaSocial");
     expect(digestCopyForSegment("learn").ctaPath).toBe("/gigalearn/");
   });
+
+  it("feature_announcement_v2 copy mentions all five requested capabilities in every segment", () => {
+    expect(DEFAULT_FEATURE_ANNOUNCEMENT_CAMPAIGN).toBe("feature_announcement_v2");
+    const segments = ["learn", "create", "social", "general"] as const;
+    for (const segment of segments) {
+      const copy = announcementCopyForSegment(segment);
+      const blob = [
+        copy.title,
+        copy.lead,
+        copy.subjectLine,
+        ...copy.bullets,
+      ].join("\n");
+      expect(blob, segment).toMatch(/CV/i);
+      expect(blob, segment).toMatch(/resume/i);
+      expect(blob, segment).toMatch(/book writing/i);
+      expect(blob, segment).toMatch(/thesis/i);
+      expect(blob, segment).toMatch(/research writing/i);
+      expect(blob, segment).toMatch(/WASSCE/);
+      expect(blob, segment).toMatch(/BECE/);
+      expect(blob, segment).toMatch(/kids’ learning environment|kids' learning environment/i);
+    }
+    expect(announcementCopyForSegment("learn").ctaPath).toBe("/gigalearn/");
+    expect(announcementCopyForSegment("create").ctaPath).toBe("/gigaedit/");
+    expect(announcementCopyForSegment("social").ctaPath).toBe("/gigasocial/");
+    expect(announcementCopyForSegment("learn").lead).toContain("GigaLearn");
+    expect(announcementCopyForSegment("create").bullets.join(" ")).toContain("GigaEdit");
+    expect(announcementCopyForSegment("social").lead).toContain("GigaSocial");
+  });
 });
 
 describe("wiring, digests, cron regressions", () => {
