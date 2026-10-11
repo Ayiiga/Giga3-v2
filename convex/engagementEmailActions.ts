@@ -305,6 +305,8 @@ export const sendEngagementDigests = internalAction({
  * - Aborts the batch on sandbox_recipient / domain_unverified.
  * - Bounded 429 retries; network_error marks uncertain (no blind resend).
  * - Campaign-key claim + sent/uncertain keys separate from digest lastEngagementEmailAt.
+ * - sending:<campaign> is never auto-reclaimed after TTL (ops reconcile only).
+ * - Uncertain/stuck claims: reconcileFeatureAnnouncementDeliveryInternal (internal only).
  *
  * Digests continue to use sendEngagementDigests + markEngagementEmailSentInternal unchanged.
  *

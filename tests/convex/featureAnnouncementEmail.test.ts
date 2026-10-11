@@ -17,6 +17,7 @@ describe("feature announcement emails", () => {
     expect(actions).toContain("markFeatureAnnouncementSentInternal");
     expect(actions).toContain('v.literal("smoke")');
     expect(actions).toContain("claimFeatureAnnouncementSendInternal");
+    expect(actions).toContain("reconcileFeatureAnnouncementDeliveryInternal");
   });
 
   it("schedules weekly feature announcements via crons", () => {

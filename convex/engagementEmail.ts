@@ -7,7 +7,11 @@ import { todayKey } from "./creditsConfig";
 import {
   campaignSendingKey,
   campaignUncertainKey,
+  evaluateAnnouncementReconcile,
   isCampaignBlockedForRecipient,
+  isStaleSendingClaim,
+  redactEmail,
+  sanitizeOpsReason,
 } from "./engagementAnnouncementSafety";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -305,7 +309,15 @@ export const claimFeatureAnnouncementSendInternal = internalMutation({
     );
     if (blocked === "sent") return { ok: false as const, reason: "already_sent_campaign" as const };
     if (blocked === "uncertain") return { ok: false as const, reason: "uncertain_delivery" as const };
-    if (blocked === "in_flight") return { ok: false as const, reason: "in_flight" as const };
+    if (blocked === "in_flight") {
+      const stale = isStaleSendingClaim(
+        user.lastFeatureAnnouncementCampaignKey,
+        campaignKey,
+        user.lastFeatureAnnouncementAt
+      );
+      // Stale is observability only — never auto-reclaim for another Resend attempt.
+      return { ok: false as const, reason: "in_flight" as const, stale };
+    }
 
     await ctx.db.patch(user._id, {
       lastFeatureAnnouncementCampaignKey: campaignSendingKey(campaignKey),
@@ -397,6 +409,115 @@ export const releaseFeatureAnnouncementClaimInternal = internalMutation({
       lastFeatureAnnouncementCampaignKey: undefined,
     });
     return { ok: true as const, released: true as const };
+  },
+});
+
+/**
+ * Ops-only reconciliation for stuck `sending:` / `uncertain:` announcement claims.
+ * Internal mutation only (deploy-key / dashboard) — never a public client mutation.
+ * Does not send email. Never auto-invoked from the send path or cron.
+ *
+ * Audit: structured console log with redacted email (no durable audit table in-repo).
+ */
+export const reconcileFeatureAnnouncementDeliveryInternal = internalMutation({
+  args: {
+    email: v.string(),
+    campaignKey: v.string(),
+    decision: v.union(v.literal("confirm_sent"), v.literal("release_for_retry")),
+    /** Short operational reason (required; sanitized; never log secrets). */
+    opsReason: v.string(),
+    /**
+     * Required for release_for_retry — affirmative provider evidence of non-delivery.
+     * Ambiguous cases must stay suppressed (do not call release).
+     */
+    nonDeliveryEvidence: v.optional(
+      v.union(
+        v.literal("provider_confirmed_not_accepted"),
+        v.literal("provider_confirmed_failed")
+      )
+    ),
+  },
+  handler: async (ctx, args) => {
+    const email = args.email.trim().toLowerCase();
+    const campaignKey = args.campaignKey.trim();
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+
+    if (!user) {
+      console.error(
+        `[featureEmail.reconcile] rejected reason=not_found campaign=${campaignKey} decision=${args.decision}`
+      );
+      return { ok: false as const, reason: "not_found" as const };
+    }
+    if (user.emailEngagementOptIn === false) {
+      console.error(
+        `[featureEmail.reconcile] rejected reason=opted_out campaign=${campaignKey} to=${redactEmail(email)}`
+      );
+      return { ok: false as const, reason: "opted_out" as const };
+    }
+
+    const expectedKey = user.lastFeatureAnnouncementCampaignKey;
+    const evaluated = evaluateAnnouncementReconcile({
+      email,
+      campaignKey,
+      decision: args.decision,
+      opsReason: args.opsReason,
+      nonDeliveryEvidence: args.nonDeliveryEvidence,
+      storedKey: expectedKey,
+    });
+    if (!evaluated.ok) {
+      console.error(
+        `[featureEmail.reconcile] rejected reason=${evaluated.reason} campaign=${campaignKey} decision=${args.decision} to=${redactEmail(email)}`
+      );
+      return { ok: false as const, reason: evaluated.reason };
+    }
+
+    // Compare-and-swap: refuse if claim key changed inside this transaction snapshot
+    // (Convex OCC retries the whole mutation on concurrent writes to the same doc).
+    const fresh = await ctx.db.get(user._id);
+    if (!fresh || fresh.lastFeatureAnnouncementCampaignKey !== expectedKey) {
+      console.error(
+        `[featureEmail.reconcile] rejected reason=not_reconcilable campaign=${campaignKey} decision=${args.decision} to=${redactEmail(email)} detail=claim_changed`
+      );
+      return { ok: false as const, reason: "not_reconcilable" as const };
+    }
+
+    const now = Date.now();
+    const opsReason = sanitizeOpsReason(evaluated.opsReason);
+
+    if (evaluated.decision === "confirm_sent") {
+      const patch: Record<string, unknown> = {
+        lastFeatureAnnouncementCampaignKey: campaignKey,
+        lastFeatureAnnouncementAt: now,
+        lastEngagementEmailAt: now,
+      };
+      await ctx.db.patch(fresh._id, patch);
+      console.info(
+        `[featureEmail.reconcile] ok decision=confirm_sent campaign=${campaignKey} to=${redactEmail(email)} reason=${opsReason}`
+      );
+      return {
+        ok: true as const,
+        decision: "confirm_sent" as const,
+        emailRedacted: redactEmail(email),
+        campaignKey,
+      };
+    }
+
+    // release_for_retry — evidence already validated; clear claim only (no email send).
+    await ctx.db.patch(fresh._id, {
+      lastFeatureAnnouncementCampaignKey: undefined,
+    });
+    console.info(
+      `[featureEmail.reconcile] ok decision=release_for_retry campaign=${campaignKey} to=${redactEmail(email)} evidence=${args.nonDeliveryEvidence} reason=${opsReason}`
+    );
+    return {
+      ok: true as const,
+      decision: "release_for_retry" as const,
+      emailRedacted: redactEmail(email),
+      campaignKey,
+    };
   },
 });
 
