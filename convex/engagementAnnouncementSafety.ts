@@ -15,8 +15,30 @@ export const ANNOUNCEMENT_ALLOWLIST_MAX = 20;
 export const ANNOUNCEMENT_429_MAX_ATTEMPTS = 3;
 export const ANNOUNCEMENT_429_BACKOFF_MS = [400, 900, 1600] as const;
 
-/** In-flight claim TTL — concurrent cron/manual runs skip during this window. */
+/**
+ * In-flight claim staleness signal only (ops / observability).
+ * Expired sending claims stay blocked — they are never auto-reclaimed for Resend.
+ */
 export const ANNOUNCEMENT_CLAIM_TTL_MS = 15 * 60 * 1000;
+
+export type AnnouncementReconcileDecision = "confirm_sent" | "release_for_retry";
+
+/** Affirmative non-delivery evidence required before release_for_retry. */
+export type AnnouncementNonDeliveryEvidence =
+  | "provider_confirmed_not_accepted"
+  | "provider_confirmed_failed";
+
+export type AnnouncementReconcileRejectReason =
+  | "invalid_email"
+  | "invalid_campaign"
+  | "invalid_decision"
+  | "missing_ops_reason"
+  | "missing_non_delivery_evidence"
+  | "not_found"
+  | "opted_out"
+  | "already_sent"
+  | "not_reconcilable"
+  | "campaign_mismatch";
 
 export type AnnouncementSendMode = "smoke" | "bulk";
 
@@ -64,23 +86,99 @@ export function campaignUncertainKey(campaignKey: string): string {
   return `uncertain:${campaignKey}`;
 }
 
-/** True when this campaign was already accepted, is in-flight, or has uncertain delivery. */
+/**
+ * True when this campaign was already accepted, is in-flight, or has uncertain delivery.
+ * `sending:<campaign>` stays blocked forever for auto-send (including after TTL).
+ * TTL is exposed separately via `isStaleSendingClaim` for ops, not auto-reclaim.
+ */
 export function isCampaignBlockedForRecipient(
   storedKey: string | undefined | null,
   campaignKey: string,
-  storedAt: number | undefined | null,
-  now = Date.now()
+  _storedAt?: number | null,
+  _now = Date.now()
 ): "sent" | "uncertain" | "in_flight" | null {
   if (!storedKey) return null;
   if (storedKey === campaignKey) return "sent";
   if (storedKey === campaignUncertainKey(campaignKey)) return "uncertain";
-  if (storedKey === campaignSendingKey(campaignKey)) {
-    if (storedAt != null && now - storedAt < ANNOUNCEMENT_CLAIM_TTL_MS) {
-      return "in_flight";
-    }
-    return null; // stale claim — allow retry
-  }
+  if (storedKey === campaignSendingKey(campaignKey)) return "in_flight";
   return null;
+}
+
+/** Observability only — does not unlock claims for another Resend attempt. */
+export function isStaleSendingClaim(
+  storedKey: string | undefined | null,
+  campaignKey: string,
+  storedAt: number | undefined | null,
+  now = Date.now()
+): boolean {
+  if (storedKey !== campaignSendingKey(campaignKey)) return false;
+  if (storedAt == null) return true;
+  return now - storedAt >= ANNOUNCEMENT_CLAIM_TTL_MS;
+}
+
+/**
+ * Sanitize freeform ops reasons for logs/returns.
+ * Strips newlines, redacts email-shaped tokens, caps length — never log secrets.
+ */
+export function sanitizeOpsReason(reason: string, max = 200): string {
+  return reason
+    .replace(/\r?\n/g, " ")
+    .replace(/[^\s@]+@[^\s@]+\.[^\s@]+/g, "[redacted-email]")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, max);
+}
+
+/**
+ * Pure validation for reconcile transitions (unit-tested without DB).
+ * Caller still re-checks atomically inside the internal mutation.
+ */
+export function evaluateAnnouncementReconcile(input: {
+  email: string;
+  campaignKey: string;
+  decision: AnnouncementReconcileDecision | string;
+  opsReason: string;
+  nonDeliveryEvidence?: AnnouncementNonDeliveryEvidence | string | null;
+  storedKey: string | undefined | null;
+}):
+  | { ok: true; decision: AnnouncementReconcileDecision; opsReason: string }
+  | { ok: false; reason: AnnouncementReconcileRejectReason } {
+  const email = normalizeEmail(input.email);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { ok: false, reason: "invalid_email" };
+  }
+  const campaignKey = input.campaignKey.trim();
+  if (!campaignKey) return { ok: false, reason: "invalid_campaign" };
+
+  if (input.decision !== "confirm_sent" && input.decision !== "release_for_retry") {
+    return { ok: false, reason: "invalid_decision" };
+  }
+
+  const opsReason = sanitizeOpsReason(input.opsReason);
+  if (opsReason.length < 3) return { ok: false, reason: "missing_ops_reason" };
+
+  if (input.decision === "release_for_retry") {
+    const evidence = input.nonDeliveryEvidence;
+    if (
+      evidence !== "provider_confirmed_not_accepted" &&
+      evidence !== "provider_confirmed_failed"
+    ) {
+      return { ok: false, reason: "missing_non_delivery_evidence" };
+    }
+  }
+
+  const stored = input.storedKey ?? "";
+  if (stored === campaignKey) return { ok: false, reason: "already_sent" };
+  const sending = campaignSendingKey(campaignKey);
+  const uncertain = campaignUncertainKey(campaignKey);
+  if (stored !== sending && stored !== uncertain) {
+    if (stored.startsWith("sending:") || stored.startsWith("uncertain:")) {
+      return { ok: false, reason: "campaign_mismatch" };
+    }
+    return { ok: false, reason: "not_reconcilable" };
+  }
+
+  return { ok: true, decision: input.decision, opsReason };
 }
 
 /**
