@@ -165,6 +165,130 @@ export const markEngagementEmailSentInternal = internalMutation({
   },
 });
 
+/**
+ * Announcement candidates: same opt-in / suspension rules as digests, but
+ * campaign-key idempotency is separate from digest lastEngagementEmailAt.
+ * Optional allowlist restricts to those emails only (server-side).
+ */
+export const listAnnouncementCandidatesInternal = internalQuery({
+  args: {
+    limit: v.optional(v.number()),
+    minDaysSinceLastEmail: v.optional(v.number()),
+    campaignKey: v.string(),
+    allowlist: v.optional(v.array(v.string())),
+  },
+  handler: async (ctx, args) => {
+    const limit = Math.min(Math.max(args.limit ?? 40, 1), 80);
+    const minDaysSinceLastEmail = args.minDaysSinceLastEmail ?? 10;
+    const campaignKey = args.campaignKey.trim();
+    const now = Date.now();
+    const cutoff = now - minDaysSinceLastEmail * DAY_MS;
+    const allowlist =
+      args.allowlist && args.allowlist.length > 0
+        ? new Set(args.allowlist.map((e) => e.trim().toLowerCase()))
+        : null;
+
+    const candidates: EngagementCandidate[] = [];
+
+    if (allowlist) {
+      for (const email of allowlist) {
+        if (candidates.length >= limit) break;
+        const user = await ctx.db
+          .query("users")
+          .withIndex("by_email", (q) => q.eq("email", email))
+          .first();
+        if (!user) continue;
+        if (user.accountStatus === "suspended") continue;
+        if (user.emailEngagementOptIn === false) continue;
+        if (user.lastFeatureAnnouncementCampaignKey === campaignKey) continue;
+        if (
+          user.lastEngagementEmailAt != null &&
+          user.lastEngagementEmailAt > cutoff
+        ) {
+          continue;
+        }
+        const interests = parseInterestProfile(user.interestProfile);
+        candidates.push({
+          email: user.email,
+          name: user.name,
+          topics: interests.topics.slice(0, 4),
+          inactiveDays:
+            daysSinceDateKey(user.lastActiveDateKey, now) ??
+            (user.lastActiveDateKey ? 0 : 14),
+          streakDays: user.learningStreakDays ?? 0,
+          unsubscribeToken: user.emailUnsubscribeToken || newUnsubscribeToken(),
+          role: user.userRole ?? "general",
+        });
+      }
+      return candidates;
+    }
+
+    const users = await ctx.db.query("users").take(500);
+    for (const user of users) {
+      if (candidates.length >= limit) break;
+      if (user.accountStatus === "suspended") continue;
+      if (user.emailEngagementOptIn === false) continue;
+      if (user.lastFeatureAnnouncementCampaignKey === campaignKey) continue;
+      if (
+        user.lastEngagementEmailAt != null &&
+        user.lastEngagementEmailAt > cutoff
+      ) {
+        continue;
+      }
+
+      const interests = parseInterestProfile(user.interestProfile);
+      candidates.push({
+        email: user.email,
+        name: user.name,
+        topics: interests.topics.slice(0, 4),
+        inactiveDays:
+          daysSinceDateKey(user.lastActiveDateKey, now) ??
+          (user.lastActiveDateKey ? 0 : 14),
+        streakDays: user.learningStreakDays ?? 0,
+        unsubscribeToken: user.emailUnsubscribeToken || newUnsubscribeToken(),
+        role: user.userRole ?? "general",
+      });
+    }
+
+    return candidates;
+  },
+});
+
+/**
+ * Mark a successful feature announcement. Sets campaign idempotency fields and
+ * also bumps lastEngagementEmailAt so digests keep their cross-mail gap.
+ */
+export const markFeatureAnnouncementSentInternal = internalMutation({
+  args: {
+    email: v.string(),
+    campaignKey: v.string(),
+    unsubscribeToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const email = args.email.trim().toLowerCase();
+    const campaignKey = args.campaignKey.trim();
+    if (!campaignKey) return { ok: false as const };
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    if (!user) return { ok: false as const };
+    const now = Date.now();
+    const patch: Record<string, unknown> = {
+      lastFeatureAnnouncementAt: now,
+      lastFeatureAnnouncementCampaignKey: campaignKey,
+      lastEngagementEmailAt: now,
+    };
+    if (!user.emailUnsubscribeToken && args.unsubscribeToken) {
+      patch.emailUnsubscribeToken = args.unsubscribeToken;
+    } else if (!user.emailUnsubscribeToken) {
+      patch.emailUnsubscribeToken = newUnsubscribeToken();
+    }
+    await ctx.db.patch(user._id, patch);
+    return { ok: true as const };
+  },
+});
+
 export const unsubscribeByTokenInternal = internalMutation({
   args: {
     email: v.string(),

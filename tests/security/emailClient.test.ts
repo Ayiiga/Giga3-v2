@@ -34,7 +34,7 @@ describe("emailClient helpers", () => {
     expect(getEmailFallbackInbox()).toBe("ayiiga3@gmail.com");
   });
 
-  it("classifies Resend sandbox and domain errors", () => {
+  it("classifies Resend sandbox, domain, and rate-limit errors", () => {
     expect(
       classifyResendFailure(
         403,
@@ -47,6 +47,9 @@ describe("emailClient helpers", () => {
         "The giga3ai.com domain is not verified. Please, add and verify your domain"
       ).reason
     ).toBe("domain_unverified");
+    expect(classifyResendFailure(429, "Too many requests. rate_limit_exceeded").reason).toBe(
+      "rate_limited"
+    );
   });
 
   it("wraps branded HTML for transactional mail", () => {

@@ -12,6 +12,9 @@ describe("feature announcement emails", () => {
     expect(actions).toContain("feature_announcement");
     expect(actions).toContain("Unsubscribe from these emails");
     expect(actions).toContain("What’s new in Giga3 AI");
+    expect(actions).toContain("announcementSenderPreflight");
+    expect(actions).toContain("sendEmailWithBoundedRetry");
+    expect(actions).toContain("markFeatureAnnouncementSentInternal");
   });
 
   it("schedules weekly feature announcements via crons", () => {
