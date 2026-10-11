@@ -6,7 +6,7 @@
 import type { EmailFailureReason } from "./emailClient";
 
 /** Default campaign key for announcement idempotency (override via action args). */
-export const DEFAULT_FEATURE_ANNOUNCEMENT_CAMPAIGN = "feature_announcement_v1";
+export const DEFAULT_FEATURE_ANNOUNCEMENT_CAMPAIGN = "feature_announcement_v2";
 
 /** Max allowlist size for a controlled retry batch (smoke mode allows exactly 1). */
 export const ANNOUNCEMENT_ALLOWLIST_MAX = 20;
@@ -541,54 +541,54 @@ export function announcementCopyForSegment(
     case "learn":
       return {
         title: "What’s new in Giga3 AI",
-        lead: "GigaLearn and chat now help you turn short sessions into clearer notes, quizzes, and explanations — built for Ghana classrooms and self-study.",
+        lead: "GigaLearn and chat are ready for WASSCE and BECE prep, a kids’ learning environment for younger learners, plus CV and resume writing, book writing, and thesis and research writing when you need deeper support.",
         ctaLabel: "Open GigaLearn",
         ctaPath: "/gigalearn/",
         bullets: [
-          "Practice questions and lesson summaries in chat",
-          "Keep strong answers in your workspace",
-          "Build a daily learning streak",
+          "WASSCE and BECE practice with clear explanations in GigaLearn",
+          "Kids’ learning environment for parents and early learners",
+          "Draft a CV or resume, outline a book, or shape thesis and research writing in chat",
         ],
-        subjectLine: "What’s new in Giga3 AI · GigaLearn",
+        subjectLine: "What’s new in Giga3 AI · Learn, exams & writing",
       };
     case "create":
       return {
         title: "What’s new in Giga3 AI",
-        lead: "Media Studio and GigaEdit are ready for posters, clips, and Stories — generate, refine, and export without leaving Giga3.",
+        lead: "Create in Giga3 — draft a CV or resume, start book writing, or shape thesis and research writing in chat, then polish visuals in Media Studio and GigaEdit. GigaLearn still covers WASSCE and BECE prep and a kids’ learning environment.",
         ctaLabel: "Open GigaEdit",
         ctaPath: "/gigaedit/",
         bullets: [
-          "Generate or edit images for your brand",
-          "Timeline edits and exports in GigaEdit",
-          "Share a Story on GigaSocial when you are ready",
+          "CV and resume writing plus book writing and thesis and research writing in chat",
+          "WASSCE and BECE prep and a kids’ learning environment in GigaLearn",
+          "Generate, edit, and share with Media Studio, GigaEdit, and GigaSocial",
         ],
-        subjectLine: "What’s new in Giga3 AI · GigaEdit & Media",
+        subjectLine: "What’s new in Giga3 AI · Create & write",
       };
     case "social":
       return {
         title: "What’s new in Giga3 AI",
-        lead: "We upgraded GigaSocial so your feed feels faster, works offline with content you already watched, and Remix keeps the original video in your take.",
+        lead: "GigaSocial stays your place to share Stories and Reels — and the rest of Giga3 is ready for CV and resume writing, book writing, thesis and research writing, WASSCE and BECE prep, and a kids’ learning environment.",
         ctaLabel: "Explore GigaSocial",
         ctaPath: "/gigasocial/",
         bullets: [
-          "Instant reopen for cached photos, videos, Reels & Stories",
-          "Smarter lazy-loading and prefetch on slow networks",
-          "Remix attaches source media, audio timing & attribution",
+          "Share Stories and Reels on GigaSocial with faster, offline-friendly feeds",
+          "CV and resume writing, book writing, and thesis and research writing in chat",
+          "WASSCE and BECE prep plus a kids’ learning environment in GigaLearn",
         ],
-        subjectLine: "What’s new in Giga3 AI · GigaSocial upgrade",
+        subjectLine: "What’s new in Giga3 AI · GigaSocial & more",
       };
     default:
       return {
         title: "What’s new in Giga3 AI",
-        lead: "Learn, create, and share in one place — GigaLearn, GigaEdit, and GigaSocial are ready when you are.",
+        lead: "One place to learn, write, create, and share — GigaLearn, chat, GigaEdit, and GigaSocial cover school, work, and family learning.",
         ctaLabel: "Open Giga3",
         ctaPath: "/",
         bullets: [
-          "Study with GigaLearn and chat",
-          "Create with Media Studio and GigaEdit",
-          "Share Stories and Reels on GigaSocial",
+          "CV and resume writing for job-ready drafts in chat",
+          "Book writing plus thesis and research writing when you need structure",
+          "WASSCE and BECE preparation and a kids’ learning environment in GigaLearn",
         ],
-        subjectLine: "What’s new in Giga3 AI",
+        subjectLine: "What’s new in Giga3 AI · Writing, exams & kids",
       };
   }
 }
