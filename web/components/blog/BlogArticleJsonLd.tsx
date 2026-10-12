@@ -7,6 +7,15 @@ type BlogArticleJsonLdProps = {
   path: string;
 };
 
+/** Opt-in Person; omit or Organization keeps the editorial default. */
+export function blogJsonLdAuthor(post: Pick<BlogPost, "author" | "authorType">): {
+  "@type": "Person" | "Organization";
+  name: string;
+} {
+  const type = post.authorType === "Person" ? "Person" : "Organization";
+  return { "@type": type, name: post.author };
+}
+
 /** Article + BreadcrumbList structured data for blog posts. */
 export function BlogArticleJsonLd({ post, path }: BlogArticleJsonLdProps) {
   const pageUrl = new URL(path.endsWith("/") ? path : `${path}/`, siteConfig.url).toString();
@@ -21,10 +30,7 @@ export function BlogArticleJsonLd({ post, path }: BlogArticleJsonLdProps) {
     headline: post.title,
     description: post.description,
     image: [image],
-    author: {
-      "@type": "Organization",
-      name: post.author,
-    },
+    author: blogJsonLdAuthor(post),
     publisher: {
       "@type": "Organization",
       name: "Giga3 AI",

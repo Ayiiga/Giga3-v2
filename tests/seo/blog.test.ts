@@ -10,12 +10,13 @@ import {
   getRelatedRegistryBlogPosts,
 } from "../../web/lib/blog/postListing";
 import { blogArticleMetadata, blogIndexMetadata } from "../../web/lib/blog/metadata";
+import { blogJsonLdAuthor } from "../../web/components/blog/BlogArticleJsonLd";
 
 const WEB_ROOT = resolve(__dirname, "../../web");
 
 describe("blog post registry", () => {
-  it("has fifteen articles with valid categories", () => {
-    expect(BLOG_POST_REGISTRY).toHaveLength(15);
+  it("has sixteen articles with valid categories", () => {
+    expect(BLOG_POST_REGISTRY).toHaveLength(16);
     const slugs = BLOG_POST_REGISTRY.map((p) => p.slug);
     expect(slugs).toContain("best-ai-tools-in-ghana-2026");
     expect(slugs).toContain("ai-for-bece-wassce-preparation-ghana");
@@ -32,6 +33,7 @@ describe("blog post registry", () => {
     expect(slugs).toContain("ghana-ai-future-opportunities-challenges");
     expect(slugs).toContain("chatgpt-vs-gemini-vs-claude-ghana-2026");
     expect(slugs).toContain("make-money-with-ai-ghana-2026");
+    expect(slugs).toContain("africa-ai-that-solves-real-problems");
     for (const post of BLOG_POST_REGISTRY) {
       expect(categorySlugForName(post.category)).toBeTruthy();
       expect(post.featuredImageAlt.length).toBeGreaterThan(10);
@@ -40,7 +42,7 @@ describe("blog post registry", () => {
 
   it("exposes posts with hrefs and reading time", () => {
     const posts = getRegistryBlogPosts();
-    expect(posts).toHaveLength(15);
+    expect(posts).toHaveLength(16);
     for (const post of posts) {
       expect(post.href).toBe(`/blog/${post.slug}/`);
       expect(post.readingTime).toMatch(/min read/);
@@ -70,6 +72,28 @@ describe("blog metadata", () => {
       absolute: "Giga3 AI Blog — AI, Education & Technology in Ghana",
     });
     expect(meta.alternates?.canonical).toBe("/blog/");
+  });
+});
+
+describe("blog JSON-LD author type", () => {
+  it("defaults editorial-team authors to Organization", () => {
+    const editorial = getRegistryBlogPostBySlug("best-ai-tools-in-ghana-2026")!;
+    expect(editorial.author).toBe("Giga3 AI Editorial Team");
+    expect(editorial.authorType).toBeUndefined();
+    expect(blogJsonLdAuthor(editorial)).toEqual({
+      "@type": "Organization",
+      name: "Giga3 AI Editorial Team",
+    });
+  });
+
+  it("uses Person when authorType is opted in", () => {
+    const founder = getRegistryBlogPostBySlug("africa-ai-that-solves-real-problems")!;
+    expect(founder.author).toBe("Ayiiga Benard Issaka");
+    expect(founder.authorType).toBe("Person");
+    expect(blogJsonLdAuthor(founder)).toEqual({
+      "@type": "Person",
+      name: "Ayiiga Benard Issaka",
+    });
   });
 });
 

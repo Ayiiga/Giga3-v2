@@ -21,6 +21,7 @@ import { AfricanYouthAiFutureJobsBody } from "@/content/blog/african-youth-ai-fu
 import { GhanaAiFutureOpportunitiesChallengesBody } from "@/content/blog/ghana-ai-future-opportunities-challenges";
 import { ChatgptVsGeminiVsClaudeGhana2026Body } from "@/content/blog/chatgpt-vs-gemini-vs-claude-ghana-2026";
 import { MakeMoneyWithAiGhana2026Body } from "@/content/blog/make-money-with-ai-ghana-2026";
+import { AfricaAiThatSolvesRealProblemsBody } from "@/content/blog/africa-ai-that-solves-real-problems";
 import type { ComponentType } from "react";
 
 export type BlogArticleBodyProps = {
@@ -50,6 +51,7 @@ const BODY_BY_SLUG: Record<string, { Body: ComponentType<BlogArticleBodyProps>; 
     "ghana-ai-future-opportunities-challenges": GhanaAiFutureOpportunitiesChallengesBody,
     "chatgpt-vs-gemini-vs-claude-ghana-2026": ChatgptVsGeminiVsClaudeGhana2026Body,
     "make-money-with-ai-ghana-2026": MakeMoneyWithAiGhana2026Body,
+    "africa-ai-that-solves-real-problems": AfricaAiThatSolvesRealProblemsBody,
   };
 
 function withPath(post: BlogPost, readingTime: string): BlogPostWithPath {

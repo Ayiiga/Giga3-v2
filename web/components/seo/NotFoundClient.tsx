@@ -58,17 +58,16 @@ export function NotFoundClient() {
         >
           Go to home page
         </StableLink>
-        <button
-          type="button"
-          disabled={resetting}
-          onClick={() => void nuclearReset()}
+        <StableLink
+          href="/features"
+          hard
           className={cn(
             buttonBase,
-            "border border-zinc-200 bg-white text-foreground shadow-sm hover:border-zinc-300 hover:bg-zinc-50 disabled:opacity-60"
+            "border border-zinc-200 bg-white text-foreground shadow-sm hover:border-zinc-300 hover:bg-zinc-50"
           )}
         >
-          {resetting ? "Resetting…" : "Browse all features"}
-        </button>
+          Browse all features
+        </StableLink>
       </div>
       <nav aria-label="Popular destinations" className="mt-12 text-left">
         <h2 className="text-sm font-semibold text-foreground">Popular destinations</h2>
@@ -88,7 +87,16 @@ export function NotFoundClient() {
         </ul>
       </nav>
       <p className="mt-6 text-center text-[11px] text-muted">
-        &quot;Browse all features&quot; clears cached app files and reloads fresh.
+        Still seeing a missing page after an update?{" "}
+        <button
+          type="button"
+          disabled={resetting}
+          onClick={() => void nuclearReset()}
+          className="underline underline-offset-2 hover:text-foreground disabled:opacity-60"
+        >
+          {resetting ? "Resetting…" : "Clear cache and reload"}
+        </button>
+        .
       </p>
     </>
   );
