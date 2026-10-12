@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { isTestUserEmail } from "../../convex/cleanup";
+import {
+  assertOpsAccountDeleteAllowed,
+  isTestUserEmail,
+} from "../../convex/cleanup";
 
 describe("isTestUserEmail", () => {
   it("never deletes ayiiga3@gmail.com", () => {
@@ -27,5 +30,28 @@ describe("isTestUserEmail", () => {
   it("allows Gmail only when test pattern matches", () => {
     expect(isTestUserEmail("cursor-test@gmail.com")).toBe(true);
     expect(isTestUserEmail("pr412verify@gmail.com")).toBe(true);
+  });
+});
+
+describe("assertOpsAccountDeleteAllowed", () => {
+  it("requires confirmEmail to match", () => {
+    expect(
+      assertOpsAccountDeleteAllowed("user@example.com", "other@example.com")
+    ).toEqual({ ok: false, reason: "confirm_mismatch" });
+  });
+
+  it("never allows deleting the protected founder inbox", () => {
+    expect(
+      assertOpsAccountDeleteAllowed("ayiiga3@gmail.com", "ayiiga3@gmail.com")
+    ).toEqual({ ok: false, reason: "protected_email" });
+  });
+
+  it("allows a confirmed non-protected email", () => {
+    expect(
+      assertOpsAccountDeleteAllowed(
+        "  KwameGad90@gmail.com ",
+        "kwamegad90@gmail.com"
+      )
+    ).toEqual({ ok: true, email: "kwamegad90@gmail.com" });
   });
 });

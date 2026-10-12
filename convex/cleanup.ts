@@ -4,8 +4,35 @@
  */
 
 import { internalMutation, internalQuery } from "./_generated/server";
+import { v } from "convex/values";
 
 const PROTECTED_EMAIL = "ayiiga3@gmail.com";
+
+function normalizeEmail(raw: string): string {
+  return raw.trim().toLowerCase();
+}
+
+/**
+ * Guard for ops account wipe (re-signup). Requires confirmEmail to match email
+ * exactly after normalization. Never allows deleting the protected founder inbox.
+ */
+export function assertOpsAccountDeleteAllowed(
+  emailRaw: string,
+  confirmEmailRaw: string
+): { ok: true; email: string } | { ok: false; reason: string } {
+  const email = normalizeEmail(emailRaw);
+  const confirmEmail = normalizeEmail(confirmEmailRaw);
+  if (!email || !email.includes("@")) {
+    return { ok: false, reason: "invalid_email" };
+  }
+  if (email !== confirmEmail) {
+    return { ok: false, reason: "confirm_mismatch" };
+  }
+  if (email === PROTECTED_EMAIL) {
+    return { ok: false, reason: "protected_email" };
+  }
+  return { ok: true, email };
+}
 
 const INCLUDES_PATTERNS = ["example.com", "giga3-e2e.test", "mailinator.com"] as const;
 
@@ -77,6 +104,79 @@ export const previewTestUsersRemaining = internalQuery({
       userTestEmails: testUserEmails.sort(),
       totalUsers: users.length,
       totalCredentials: creds.length,
+    };
+  },
+});
+
+/**
+ * Ops-only: delete one user + password credentials so they can sign up fresh.
+ * Requires confirmEmail === email. Does not cascade chat/media history.
+ */
+export const deleteUserAccountForResignupInternal = internalMutation({
+  args: {
+    email: v.string(),
+    confirmEmail: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const allowed = assertOpsAccountDeleteAllowed(args.email, args.confirmEmail);
+    if (!allowed.ok) {
+      return {
+        ok: false as const,
+        reason: allowed.reason,
+        deletedUser: false,
+        deletedCredentials: false,
+      };
+    }
+    const email = allowed.email;
+
+    let deletedCredentials = false;
+    const creds = await ctx.db
+      .query("userCredentials")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    if (creds) {
+      await ctx.db.delete(creds._id);
+      deletedCredentials = true;
+    }
+
+    let deletedUser = false;
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    if (user) {
+      await ctx.db.delete(user._id);
+      deletedUser = true;
+    }
+
+    // Chat rows key userId as the email string — remove so re-signup starts clean.
+    let deletedConversations = 0;
+    let deletedMessages = 0;
+    const conversations = await ctx.db
+      .query("conversations")
+      .withIndex("by_user", (q) => q.eq("userId", email))
+      .collect();
+    for (const conversation of conversations) {
+      const messages = await ctx.db
+        .query("messages")
+        .withIndex("by_conversation", (q) => q.eq("conversationId", conversation._id))
+        .collect();
+      for (const message of messages) {
+        await ctx.db.delete(message._id);
+        deletedMessages += 1;
+      }
+      await ctx.db.delete(conversation._id);
+      deletedConversations += 1;
+    }
+
+    return {
+      ok: true as const,
+      email,
+      deletedUser,
+      deletedCredentials,
+      deletedConversations,
+      deletedMessages,
+      found: deletedUser || deletedCredentials,
     };
   },
 });
