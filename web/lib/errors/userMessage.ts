@@ -11,8 +11,11 @@ export function stripConvexErrorNoise(message: string): string {
   text = text.replace(/\[CONVEX [^\]]+\]\s*/gi, "");
   text = text.replace(/\[Request ID:\s*[^\]]+\]\s*/gi, "");
   text = text.replace(/^Server Error\s*/i, "");
+  // Convex wraps thrown Errors as "Uncaught Error:" or "Uncaught UnauthorizedError:" etc.
+  text = text.replace(/^Uncaught [A-Za-z0-9_]+Error:\s*/i, "");
   text = text.replace(/^Uncaught Error:\s*/i, "");
   text = text.replace(/\s+at handler\s*\([^)]*\)[\s\S]*$/i, "");
+  text = text.replace(/\s+at\s+\S+\s*\([^)]*\)[\s\S]*$/i, "");
   text = text.replace(/\s+Called by client\s*$/i, "");
   return text.trim();
 }

@@ -15,4 +15,11 @@ describe("toUserFacingError", () => {
     expect(toUserFacingError(raw)).not.toContain("Request ID");
     expect(toUserFacingError(raw)).not.toContain("CONVEX");
   });
+
+  it("strips Uncaught UnauthorizedError wrappers used by password auth", () => {
+    const raw =
+      "[Request ID: b43b80fe0c33054b] Server Error Uncaught UnauthorizedError: Incorrect email or password. at handler (../convex/authPasswordActions.ts:238:4)";
+    expect(stripConvexErrorNoise(raw)).toBe("Incorrect email or password.");
+  });
 });
+

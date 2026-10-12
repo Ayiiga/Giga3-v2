@@ -53,4 +53,13 @@ describe("auth client bundle", () => {
       "Incorrect email or password."
     );
   });
+
+  it("strips Convex UnauthorizedError wrappers from failed password sign-in", () => {
+    const raw =
+      "[Request ID: b43b80fe0c33054b] Server Error Uncaught UnauthorizedError: Incorrect email or password. at handler (../convex/authPasswordActions.ts:238:4)";
+    expect(publicAuthErrorMessage(new Error(raw))).toBe("Incorrect email or password.");
+    expect(publicAuthErrorMessage(new Error(raw))).not.toContain("Request ID");
+    expect(publicAuthErrorMessage(new Error(raw))).not.toContain("authPasswordActions");
+  });
 });
+
