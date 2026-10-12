@@ -21,8 +21,10 @@ import { consumeAuthRateLimit } from "./authRateLimit";
 import { SECURITY_EVENT_TYPES } from "./securityMonitoring";
 import { RateLimitError, UnauthorizedError } from "./securityErrors";
 import { resolveAiProviderTier } from "./providerRouter";
+import { getFreeAdvancedPersonaSnapshotDb } from "./freeAdvancedPersonaQuota";
 import { getFreeOpenAiSnapshotDb } from "./freeOpenAiQuota";
 import { getFreeImageSnapshotDb } from "./freeImageQuota";
+import { computeEntitlements, hasFeature } from "./entitlements";
 import { isSubscriptionActive } from "./creditsConfig";
 import {
   isFreeImageDailyQuotaEnabled,
@@ -364,11 +366,19 @@ export const getChatCredits = query({
 
     const freeOpenAi = await getFreeOpenAiSnapshotDb(ctx, email);
     const freeImage = await getFreeImageSnapshotDb(ctx, email);
+    const freePersona = await getFreeAdvancedPersonaSnapshotDb(ctx, email);
     const isPremium = aiTier === "premium";
     const subscriptionActive = isSubscriptionActive(
       user.subscriptionPlan ?? "free",
       user.subscriptionExpiresAt
     );
+    const entitlements = computeEntitlements({
+      subscriptionPlan: user.subscriptionPlan ?? "free",
+      subscriptionExpiresAt: user.subscriptionExpiresAt,
+      credits: user.credits,
+      hasPurchasedCredits,
+    });
+    const hasPaidPersonas = hasFeature(entitlements, "advanced_personas");
 
     return {
       credits: user.credits ?? 0,
@@ -400,6 +410,12 @@ export const getChatCredits = query({
       freeImageLimit: isFreeImageDailyQuotaEnabled() ? freeImage.limit : null,
       freeImageResetsAt: isFreeImageDailyQuotaEnabled() ? freeImage.resetsAt : null,
       freeImageTimeZone: isFreeImageDailyQuotaEnabled() ? freeImage.timeZone : null,
+      freePersonaRemaining: hasPaidPersonas
+        ? freePersona.limit
+        : freePersona.remaining,
+      freePersonaLimit: freePersona.limit,
+      freePersonaResetsAt: freePersona.resetsAt,
+      hasAdvancedPersonaAccess: hasPaidPersonas || freePersona.remaining > 0,
     };
   },
 });

@@ -21,5 +21,15 @@ describe("toUserFacingError", () => {
       "[Request ID: b43b80fe0c33054b] Server Error Uncaught UnauthorizedError: Incorrect email or password. at handler (../convex/authPasswordActions.ts:238:4)";
     expect(stripConvexErrorNoise(raw)).toBe("Incorrect email or password.");
   });
+
+  it("strips Convex stack noise from advanced persona entitlement errors", () => {
+    const raw =
+      "Server Error Uncaught Error: You've used all 15 free persona questions for today. Upgrade for unlimited advanced personas, or continue without a persona. at requireAndConsumeAdvancedPersonaAccess (../../convex/entitlements.ts:180:8) at async handler (../../convex/chatMessaging.ts:189:8)";
+    expect(stripConvexErrorNoise(raw)).toBe(
+      "You've used all 15 free persona questions for today. Upgrade for unlimited advanced personas, or continue without a persona."
+    );
+    expect(toUserFacingError(new Error(raw))).toContain("15 free persona");
+    expect(toUserFacingError(new Error(raw))).not.toContain("entitlements.ts");
+  });
 });
 

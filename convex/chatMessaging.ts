@@ -11,7 +11,7 @@ import {
   resolvePersonaForSend,
 } from "./gigaPersonas";
 import {
-  requireEntitlementForEmail,
+  requireAndConsumeAdvancedPersonaAccess,
   requireProModelAccess,
 } from "./entitlements";
 import {
@@ -186,12 +186,7 @@ export const acceptMessage = mutation({
     const mode = resolved.mode;
     const personaId = resolved.personaId;
     if (personaId) {
-      await requireEntitlementForEmail(
-        ctx,
-        email,
-        "advanced_personas",
-        "Advanced personas require a paid subscription."
-      );
+      await requireAndConsumeAdvancedPersonaAccess(ctx, email);
     }
     const rawAttachments = (args.attachments ?? []) as RawAttachmentInput[];
     const attachments = rawAttachments as ChatCompletionAttachment[];
