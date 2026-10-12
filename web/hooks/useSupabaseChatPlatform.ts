@@ -589,7 +589,7 @@ export function useSupabaseChatPlatform() {
             setPendingUserText(null);
           }
         } catch (e) {
-          const msg = e instanceof Error ? e.message : "Sync failed";
+          const msg = toUserFacingError(e, "Sync failed");
           await bumpOutboxAttempt(row.id, msg);
           if (row.attempts + 1 >= maxSendRetries(isSlowNetwork)) {
             await removeOutbox(row.id);

@@ -819,7 +819,7 @@ export function useChatPlatform() {
             setPendingUserText(null);
           }
         } catch (e) {
-          const msg = e instanceof Error ? e.message : "Sync failed";
+          const msg = toUserFacingError(e, "Sync failed");
           await bumpOutboxAttempt(row.id, msg);
           const maxOutboxAttempts = isSlowNetwork
             ? MAX_SEND_RETRIES_SLOW

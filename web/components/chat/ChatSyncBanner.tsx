@@ -4,6 +4,7 @@ import { OfflineModeBanner } from "@/components/pwa/OfflineModeBanner";
 import { Button } from "@/components/ui/Button";
 import type { OutboxEntry } from "@/lib/chat/offlineOutbox";
 import { previewOutboxContent } from "@/lib/chat/outboxUi";
+import { toUserFacingError } from "@/lib/errors/userMessage";
 import { memo } from "react";
 
 type ChatSyncBannerProps = {
@@ -88,7 +89,9 @@ function QueuedOutboxList({
           <div className="min-w-0">
             <p className="truncate text-foreground">{previewOutboxContent(entry.content)}</p>
             <p className="text-xs text-muted">
-              {entry.lastError ? `Failed — ${entry.lastError}` : "Queued — waiting for connection"}
+              {entry.lastError
+                ? `Couldn't send — ${toUserFacingError(entry.lastError, "Please try again.")}`
+                : "Queued — waiting for connection"}
             </p>
           </div>
           {onCancel ? (

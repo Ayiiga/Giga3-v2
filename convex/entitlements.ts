@@ -7,6 +7,10 @@
 import { internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
+import {
+  consumeFreeAdvancedPersonaDb,
+  getFreeAdvancedPersonaSnapshotDb,
+} from "./freeAdvancedPersonaQuota";
 import { getFreeOpenAiSnapshotDb } from "./freeOpenAiQuota";
 import { resolveAiProviderTier, type AiProviderTier } from "./providerRouter";
 import { isSubscriptionActive } from "./creditsConfig";
@@ -156,6 +160,44 @@ export async function requireProModelAccess(
   );
 }
 
+/**
+ * Advanced personas (academic tutors, etc.): paid plan, or consume one free
+ * daily quota slot. Call from the chat accept mutation so free users get a
+ * limited allowance (default 15/day) instead of a hard paywall.
+ */
+export async function requireAndConsumeAdvancedPersonaAccess(
+  ctx: EntitlementCtx,
+  email: string
+): Promise<void> {
+  const entitlements = await getEntitlementsForUser(ctx as QueryCtx, email);
+  if (!entitlements) throw new Error("User not found");
+  if (hasFeature(entitlements, "advanced_personas")) return;
+
+  const consumed = await consumeFreeAdvancedPersonaDb(ctx, email);
+  if (consumed.ok) return;
+
+  throw new Error(
+    `You've used today's free tutor questions (${consumed.snapshot.limit}). Upgrade for unlimited academic help, or continue without a persona.`
+  );
+}
+
+/** Check-only (no consume) — paid plan or remaining free persona quota. */
+export async function requireAdvancedPersonaAccess(
+  ctx: EntitlementCtx,
+  email: string
+): Promise<void> {
+  const entitlements = await getEntitlementsForUser(ctx as QueryCtx, email);
+  if (!entitlements) throw new Error("User not found");
+  if (hasFeature(entitlements, "advanced_personas")) return;
+
+  const snapshot = await getFreeAdvancedPersonaSnapshotDb(ctx, email);
+  if (snapshot.remaining > 0) return;
+
+  throw new Error(
+    `You've used today's free tutor questions (${snapshot.limit}). Upgrade for unlimited academic help, or continue without a persona.`
+  );
+}
+
 /** Callable from Node actions via ctx.runQuery. */
 export const assertFeatureInternal = internalQuery({
   args: {
@@ -175,5 +217,12 @@ export const assertProModelInternal = internalQuery({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
     await requireProModelAccess(ctx, args.userId);
+  },
+});
+
+export const assertAdvancedPersonaInternal = internalQuery({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    await requireAdvancedPersonaAccess(ctx, args.userId);
   },
 });

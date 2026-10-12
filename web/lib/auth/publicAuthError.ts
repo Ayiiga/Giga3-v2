@@ -17,12 +17,12 @@ export function publicAuthErrorMessage(
   if (/token=|password=/i.test(raw)) {
     return fallback;
   }
-  const cleaned = stripConvexErrorNoise(raw.split("\n")[0] ?? "");
+  const cleaned = stripConvexErrorNoise(raw);
   if (!cleaned.trim() || cleaned.length > 180) {
     return fallback;
   }
   // Never surface absolute/relative server paths from stack frames that survived stripping.
-  if (/\.ts:\d+|convex\//i.test(cleaned)) {
+  if (/\.ts:\d+|convex\/|Request ID|Uncaught\s+\w*Error/i.test(cleaned)) {
     return fallback;
   }
   return cleaned;
