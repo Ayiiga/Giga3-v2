@@ -177,7 +177,7 @@ export async function requireAndConsumeAdvancedPersonaAccess(
   if (consumed.ok) return;
 
   throw new Error(
-    `You've used all ${consumed.snapshot.limit} free persona questions for today. Upgrade for unlimited advanced personas, or continue without a persona.`
+    `You've used today's free tutor questions (${consumed.snapshot.limit}). Upgrade for unlimited academic help, or continue without a persona.`
   );
 }
 
@@ -194,7 +194,7 @@ export async function requireAdvancedPersonaAccess(
   if (snapshot.remaining > 0) return;
 
   throw new Error(
-    `You've used all ${snapshot.limit} free persona questions for today. Upgrade for unlimited advanced personas, or continue without a persona.`
+    `You've used today's free tutor questions (${snapshot.limit}). Upgrade for unlimited academic help, or continue without a persona.`
   );
 }
 
