@@ -22,13 +22,27 @@ const cfg: JobRecoveryConfig = {
   processingGiveUpAfterMs: 360_000,
   activityGraceMs: 120_000,
   maxReschedulesBeforeFinalize: 4,
+  doneRetainMs: 24 * 60 * 60 * 1000,
 };
 
 const now = 1_000_000_000;
 
 describe("decideJobRecovery", () => {
-  it("cleans up finished / cancelled leftovers", () => {
-    for (const status of ["done", "failed", "cancelled"] as const) {
+  it("retains fresh done jobs for clientRequestId reconcile, then cleans up", () => {
+    expect(
+      decideJobRecovery({ status: "done", createdAt: now - 60_000 }, now, cfg)
+    ).toBe("wait");
+    expect(
+      decideJobRecovery(
+        { status: "done", createdAt: now - cfg.doneRetainMs - 1 },
+        now,
+        cfg
+      )
+    ).toBe("cleanup");
+  });
+
+  it("cleans up failed / cancelled leftovers immediately", () => {
+    for (const status of ["failed", "cancelled"] as const) {
       expect(
         decideJobRecovery({ status, createdAt: now }, now, cfg)
       ).toBe("cleanup");

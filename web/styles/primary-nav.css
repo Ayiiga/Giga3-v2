@@ -322,11 +322,21 @@ html.primary-nav-route.primary-nav-bar-visible [data-marketing="true"] .marketin
   }
 }
 
-/* Chat mobile shell — keep composer a small gap above the tab bar.
-   Desktop chat hides this bar, so the taller offset must not apply there. */
+/* Chat mobile shell — clear the tab bar with a small gap (not a large blank band).
+   Desktop chat hides this bar, so the taller offset must not apply there.
+   Safe-area is included once here; composer dock must not add it again while nav is visible. */
 @media (max-width: 1023px) {
   html.chat-route.primary-nav-route.primary-nav-bar-visible {
-    --primary-nav-offset: calc(5.15rem + env(safe-area-inset-bottom, 0px));
+    --primary-nav-offset: calc(
+      var(--primary-nav-height) + 0.5rem + env(safe-area-inset-bottom, 0px)
+    );
+  }
+
+  html.chat-route.primary-nav-create-sub.primary-nav-bar-visible {
+    --primary-nav-offset: calc(
+      var(--primary-nav-height) + var(--primary-nav-create-sub-height) + 0.35rem +
+        env(safe-area-inset-bottom, 0px)
+    );
   }
 
   html.primary-nav-route.primary-nav-bar-visible.chat-route .chat-keyboard-shell {

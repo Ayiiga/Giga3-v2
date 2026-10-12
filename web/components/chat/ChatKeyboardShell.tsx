@@ -102,11 +102,16 @@ function readKeyboardLayoutState(baselineHeight: number): KeyboardLayoutState {
     layoutHeight,
     baselineHeight > 0 ? baselineHeight : undefined
   );
-  const composerFocused = Boolean(document.activeElement?.closest(".chat-composer"));
+  // Do not treat composer focus alone as keyboard-open — that hid the tab bar and
+  // fixed the composer before iOS reported an inset, leaving a large blank band.
   const keyboardOpen =
     measuredInset >= 80 ||
-    isKeyboardLikelyOpen(innerHeight, viewport, 80, baselineHeight > 0 ? baselineHeight : undefined) ||
-    composerFocused;
+    isKeyboardLikelyOpen(
+      innerHeight,
+      viewport,
+      80,
+      baselineHeight > 0 ? baselineHeight : undefined
+    );
 
   // Fixed composer bottom offset: full inset when layout still overlays the keyboard;
   // 0 when resizes-content already shrunk the layout to the visual viewport.
