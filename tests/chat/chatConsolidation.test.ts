@@ -16,7 +16,7 @@ describe("chat path consolidation", () => {
   it("enforces entitlements on primary chat accept path", () => {
     const chat = read("convex/chatMessaging.ts");
     expect(chat).toContain("requireProModelAccess");
-    expect(chat).toContain("advanced_personas");
+    expect(chat).toContain("requireAndConsumeAdvancedPersonaAccess");
   });
 
   it("enforces entitlements on gated mutations", () => {

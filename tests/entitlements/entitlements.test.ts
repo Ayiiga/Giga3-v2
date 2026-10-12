@@ -45,4 +45,12 @@ describe("entitlements layer", () => {
     });
     expect(() => requireFeature(entitlements, "media_studio")).toThrow(/plan upgrade/i);
   });
+
+  it("free users lack advanced_personas entitlement (daily quota is enforced separately)", () => {
+    const entitlements = computeEntitlements({
+      subscriptionPlan: "free",
+      subscriptionExpiresAt: null,
+    });
+    expect(hasFeature(entitlements, "advanced_personas")).toBe(false);
+  });
 });

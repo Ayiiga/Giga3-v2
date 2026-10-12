@@ -55,6 +55,16 @@ describe("public auth error messaging", () => {
       "Passwords do not match."
     );
   });
+
+  it("strips Convex stack noise from advanced persona entitlement errors", () => {
+    const raw =
+      "Server Error Uncaught Error: You've used all 15 free persona questions for today. Upgrade for unlimited advanced personas, or continue without a persona. at requireAndConsumeAdvancedPersonaAccess (../../convex/entitlements.ts:180:8) at async handler (../../convex/chatMessaging.ts:189:8)";
+    expect(stripConvexErrorNoise(raw)).toBe(
+      "You've used all 15 free persona questions for today. Upgrade for unlimited advanced personas, or continue without a persona."
+    );
+    expect(toUserFacingError(new Error(raw))).toContain("15 free persona");
+    expect(toUserFacingError(new Error(raw))).not.toContain("entitlements.ts");
+  });
 });
 
 describe("AI entitlement and chat error messaging", () => {
