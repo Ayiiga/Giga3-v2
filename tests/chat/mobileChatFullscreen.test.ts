@@ -41,6 +41,16 @@ describe("mobile chat fullscreen layout", () => {
     const list = read("web/components/chat/MessageList.tsx");
     expect(list).toContain("chat-message-scroll-region");
   });
+
+  it("compacts the reserved typing bar on phones without removing it", () => {
+    const css = read("web/styles/chat-mobile-app.css");
+    expect(css).toMatch(
+      /html\.chat-route\s+\.chat-typing-bar\s*\{[\s\S]*?min-height:\s*2\.5rem/
+    );
+    const bar = read("web/components/chat/ChatTypingBar.tsx");
+    expect(bar).toContain("invisible");
+    expect(bar).toContain("always reserved");
+  });
 });
 
 describe("chat credit idempotency retain", () => {
