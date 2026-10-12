@@ -29,7 +29,9 @@ export function OfflineManager({ compact = false }: { compact?: boolean }) {
       if (navigator.onLine) {
         void flushGigaEditSyncQueue().then((r) => {
           if (r.flushed > 0) {
-            setStatus(`Synced ${r.flushed} local backup item${r.flushed === 1 ? "" : "s"}.`);
+            setStatus(
+              `Cleared ${r.flushed} queued local item${r.flushed === 1 ? "" : "s"} (projects stay on this device).`
+            );
             refresh();
           }
         });

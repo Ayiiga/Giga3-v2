@@ -23,6 +23,31 @@ describe("Phase 5 feedback workflow", () => {
     expect(src).toContain("listFeedbackDashboardAdmin");
     expect(src).toContain('isPhase5FlagEnabled(ctx, "phase5.feedback")');
     expect(src).toContain("inferPriority");
+    expect(src).toContain("ensureAdminAccess");
+  });
+
+  it("exposes full GigaEdits survey body to admins via bodyFull without a new mutation", () => {
+    const src = readFileSync(
+      resolve(__dirname, "../../convex/platformFeedback.ts"),
+      "utf8"
+    );
+    expect(src).toContain("GIGAEDITS_CREATOR_SURVEY_TITLE");
+    expect(src).toContain('GigaEdits Starter Pack survey');
+    expect(src).toContain("bodyFull");
+    expect(src).toContain("body: preview");
+    // Still no public anonymous survey API.
+    expect(src).not.toContain("gigaeditSurveyResponses");
+    expect(src).toMatch(/export const listFeedbackDashboardAdmin = query/);
+
+    const panel = readFileSync(
+      resolve(__dirname, "../../web/components/admin/AdminPhase5FeedbackPanel.tsx"),
+      "utf8"
+    );
+    expect(panel).toContain("bodyFull");
+    expect(panel).toContain("Show full GigaEdits survey answers");
+    expect(panel).toContain("whitespace-pre-wrap");
+    // React text nodes escape user content — no dangerouslySetInnerHTML.
+    expect(panel).not.toContain("dangerouslySetInnerHTML");
   });
 
   it("only shows expanded feedback types when phase5.feedback is on", () => {

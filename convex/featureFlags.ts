@@ -20,6 +20,15 @@ export function openAiImageRequiresSubscription(): boolean {
   return process.env.GIGA3_OPENAI_IMAGE_REQUIRES_SUBSCRIPTION !== "false";
 }
 
+/**
+ * Accra free-image daily quota (1 successful image/day for free tier).
+ * Default OFF until staging verifies reserve/release/concurrency — preserves
+ * current production free_pipeline behaviour when unset.
+ */
+export function isFreeImageDailyQuotaEnabled(): boolean {
+  return process.env.GIGA3_FREE_IMAGE_DAILY_QUOTA_ENABLED === "true";
+}
+
 export function getVapidPublicKey(): string | undefined {
   return process.env.VAPID_PUBLIC_KEY?.trim() || undefined;
 }

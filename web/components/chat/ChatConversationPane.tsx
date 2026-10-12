@@ -38,6 +38,12 @@ interface ChatConversationPaneProps {
   uploadUsage?: UploadUsageSnapshot | null;
   credits?: number | null;
   subscriptionActive?: boolean;
+  isPremium?: boolean;
+  freeImageRemaining?: number | null;
+  freeImageLimit?: number | null;
+  freeImageResetsAt?: number | null;
+  freeImageTimeZone?: string | null;
+  freeImageGenerationEnabled?: boolean;
   error?: string | null;
   onDismissError?: () => void;
   onAttachmentsChange?: (attachments: PreparedChatAttachment[]) => void;
@@ -89,6 +95,12 @@ function panePropsEqual(
     prev.uploadUsage === next.uploadUsage &&
     prev.credits === next.credits &&
     prev.subscriptionActive === next.subscriptionActive &&
+    prev.isPremium === next.isPremium &&
+    prev.freeImageRemaining === next.freeImageRemaining &&
+    prev.freeImageLimit === next.freeImageLimit &&
+    prev.freeImageResetsAt === next.freeImageResetsAt &&
+    prev.freeImageTimeZone === next.freeImageTimeZone &&
+    prev.freeImageGenerationEnabled === next.freeImageGenerationEnabled &&
     prev.error === next.error &&
     prev.onDismissError === next.onDismissError &&
     prev.onAttachmentsChange === next.onAttachmentsChange &&
@@ -135,6 +147,12 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   uploadUsage,
   credits,
   subscriptionActive,
+  isPremium = false,
+  freeImageRemaining = null,
+  freeImageLimit = null,
+  freeImageResetsAt = null,
+  freeImageTimeZone = null,
+  freeImageGenerationEnabled = true,
   error,
   onDismissError,
   onAttachmentsChange,
@@ -255,6 +273,12 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           uploadUsage={uploadUsage}
           credits={credits}
           subscriptionActive={subscriptionActive}
+          isPremium={isPremium}
+          freeImageRemaining={freeImageRemaining}
+          freeImageLimit={freeImageLimit}
+          freeImageResetsAt={freeImageResetsAt}
+          freeImageTimeZone={freeImageTimeZone}
+          freeImageGenerationEnabled={freeImageGenerationEnabled}
           onAttachmentsChange={onAttachmentsChange}
           onSuggestVisionTier={onSuggestVisionTier}
           initialAttachments={initialAttachments}

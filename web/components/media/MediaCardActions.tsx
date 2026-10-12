@@ -48,9 +48,10 @@ function ActionButton({
       aria-label={label}
       title={label}
       onClick={onClick}
-      className="inline-flex h-9 min-w-9 items-center justify-center rounded-lg border border-border bg-card px-2.5 text-foreground shadow-sm hover:bg-muted/40 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+      className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-foreground shadow-sm hover:bg-muted/40 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
     >
       {children}
+      <span className="hidden text-xs font-medium sm:inline">{label}</span>
     </button>
   );
 }
@@ -104,11 +105,11 @@ export function MediaCardActions({
     <div className={cn("relative border-t border-border bg-muted/20 px-3 py-2.5", className)}>
       <ShareActionFeedback feedback={feedback} />
       {templateStatus ? (
-        <p className="mb-2 text-xs text-amber-200/90">{templateStatus}</p>
+        <p className="mb-2 text-xs text-amber-900">{templateStatus}</p>
       ) : null}
       <div className="flex flex-wrap items-center gap-2">
         <ActionButton
-          label={kind === "image" ? "Save image" : "Save video"}
+          label="Download"
           disabled={busy}
           onClick={() =>
             void run(() => saveRemoteMediaToDevice(url, kind), "Saved Successfully")
@@ -121,21 +122,21 @@ export function MediaCardActions({
           )}
         </ActionButton>
         <ActionButton
-          label={kind === "image" ? "Share image" : "Share video"}
+          label="Share"
           disabled={busy}
           onClick={() => void run(() => shareRemoteMedia(url, kind), SHARE_SUCCESS)}
         >
           <Share2 className="h-4 w-4" aria-hidden />
         </ActionButton>
         <ActionButton
-          label="Copy media link"
+          label="Copy"
           disabled={busy}
           onClick={() => void run(() => copyUrlToClipboard(url), COPY_SUCCESS)}
         >
           <Copy className="h-4 w-4" aria-hidden />
         </ActionButton>
         <ActionButton
-          label="Use as Template"
+          label="Template"
           disabled={busy || templateBusy || !prompt.trim()}
           onClick={() => {
             void (async () => {
@@ -155,19 +156,21 @@ export function MediaCardActions({
           <>
             <Link
               href={buildImageStudioActionUrl("edit", url)}
-              className="inline-flex h-9 min-w-9 items-center justify-center rounded-lg border border-border bg-card px-2.5 text-foreground shadow-sm hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-foreground shadow-sm hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
               aria-label="Edit image in studio"
               title="Edit in Image Studio"
             >
               <Pencil className="h-4 w-4" aria-hidden />
+              <span className="hidden text-xs font-medium sm:inline">Edit</span>
             </Link>
             <Link
               href={buildImageStudioActionUrl("enhance", url)}
-              className="inline-flex h-9 min-w-9 items-center justify-center rounded-lg border border-border bg-card px-2.5 text-foreground shadow-sm hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-foreground shadow-sm hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
               aria-label="Enhance image"
               title="Enhance"
             >
               <Wand2 className="h-4 w-4" aria-hidden />
+              <span className="hidden text-xs font-medium sm:inline">Enhance</span>
             </Link>
           </>
         )}

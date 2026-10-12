@@ -19,6 +19,9 @@ const VoiceoverPanel = dynamic(
 import { OverlayInspector } from "@/components/gigaedit/OverlayInspector";
 import { OverlayPreviewStack } from "@/components/gigaedit/OverlayPreviewStack";
 import { PreviewTransport } from "@/components/gigaedit/PreviewTransport";
+import {
+  CreatorSurveyManualLink,
+} from "@/components/gigaedit/CreatorSurveyHost";
 import { PublishScreen } from "@/components/gigaedit/PublishScreen";
 import { TeleprompterOverlay } from "@/components/gigaedit/TeleprompterOverlay";
 import { VideoEditorHeader } from "@/components/gigaedit/VideoEditorHeader";
@@ -76,6 +79,7 @@ import {
   putProjectAudioBlob,
   putProjectClipBlob,
   putProjectOriginalBlob,
+  readProjectCaptions,
   saveGigaEditProject,
 } from "@/lib/gigaedit/projects";
 import { enqueueGigaEditSync } from "@/lib/gigaedit/offline";
@@ -83,8 +87,14 @@ import {
   createManagedObjectUrl,
   revokeManagedObjectUrl,
 } from "@/lib/gigaedit/mediaPipeline";
+import {
+  offerCreatorSurvey,
+  resolveStarterFromNotes,
+  shouldAutoOfferCreatorSurvey,
+} from "@/lib/gigaedit/creatorSurvey";
 import { downloadExportedFile, saveExportedFileToDevice } from "@/lib/gigaedit/downloadExport";
 import { handoffAndOpenGigaSocial } from "@/lib/gigaedit/publishHandoff";
+import type { GigaEditStarterPackId } from "@/lib/gigaedit/templates";
 import { fetchRemoteVideosForImport } from "@/lib/gigaedit/urlVideoImport";
 import {
   buildClipsFromImportCandidates,
@@ -101,10 +111,20 @@ import {
   clipAtTimelineSec,
   readVideoDuration,
   remainingJoinSlots,
+  resolvePlayheadTrimTarget,
   sortedVideoClips,
   sourceSecToTimelineSec,
   timelineSecToSourceSec,
 } from "@/lib/gigaedit/timelineJoin";
+import {
+  applyPlayheadTrim,
+  previewPlayheadTrim,
+  type PlayheadTrimSide,
+} from "@/lib/gigaedit/trimClip";
+import {
+  TRIM_NEEDS_CLIP_STATUS,
+  trimPromptPanelState,
+} from "@/lib/gigaedit/trimPromptPanel";
 import { EXPORT_FORMATS, MAX_GIGAEDIT_JOIN_CLIPS, type BrandingAction, type ExportAspectRatio, type GigaEditTimelineClip, type GigaEditTimelineLane } from "@/lib/gigaedit/types";
 import { CAMERA_FILTERS, getCameraFilterCss } from "@/lib/gigasocial/cameraFilters";
 import { formatVideoTime } from "@/lib/gigasocial/videoTrim";
@@ -124,6 +144,8 @@ export type VideoEditorProps = {
   /** Remote video URLs from Media Studio / template handoff (`clip0`, `clip1`, …). */
   initialImportUrls?: string[];
   onBackHome?: () => void;
+  /** Keep `?project=` in sync after local save so reload recovers the draft. */
+  onProjectIdChange?: (projectId: string) => void;
 };
 
 export function VideoEditor({
@@ -133,6 +155,7 @@ export function VideoEditor({
   initialOverlayText = "",
   initialImportUrls = [],
   onBackHome,
+  onProjectIdChange,
 }: VideoEditorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const addClipInputRef = useRef<HTMLInputElement>(null);
@@ -156,6 +179,7 @@ export function VideoEditor({
   const [publishReady, setPublishReady] = useState(false);
   const [editedPublishFile, setEditedPublishFile] = useState<File | null>(null);
   const [projectId, setProjectId] = useState<string | undefined>(initialProjectId ?? undefined);
+  const [starterTemplateId, setStarterTemplateId] = useState<GigaEditStarterPackId | null>(null);
   const [cameraLook, setCameraLook] = useState<CameraLookOptions>(DEFAULT_CAMERA_LOOK);
   const [exporting, setExporting] = useState(false);
   const [audioLabel, setAudioLabel] = useState<string | null>(null);
@@ -169,7 +193,8 @@ export function VideoEditor({
   const [brandKit, setBrandKit] = useState<GigaEditBrandKit>(DEFAULT_BRAND_KIT);
   const [activeToolTab, setActiveToolTab] = useState<VideoEditorToolTab>("edit");
   const [toolPanelOpen, setToolPanelOpen] = useState(false);
-  const [audioNoiseReduction, setAudioNoiseReduction] = useState(false);
+  /** When true, Trim shows keep-before / keep-after confirmation instead of applying immediately. */
+  const [trimPromptOpen, setTrimPromptOpen] = useState(false);
   const [teleprompterOn, setTeleprompterOn] = useState(false);
   const [teleprompterOpacity, setTeleprompterOpacity] = useState(0.7);
   const [teleprompterScript, setTeleprompterScript] = useState("");
@@ -315,9 +340,11 @@ export function VideoEditor({
       const project = await getGigaEditProject(initialProjectId);
       if (!project || cancelled) return;
       setProjectId(project.id);
+      setStarterTemplateId(resolveStarterFromNotes(project.notes));
       setAspectRatio(project.aspectRatio);
       setFilterId(project.filterId || "none");
       setOverlayText(project.overlayText || "");
+      setCaptions(readProjectCaptions(project));
       commitClips(project.clips || [], { skipUndo: true });
       setUndoStack(createUndoStack(migrateTimelineClips(project.clips || [])));
       const blob = await getProjectOriginalBlob(project.id);
@@ -739,33 +766,49 @@ export function VideoEditor({
     };
   }
 
-  function trimActive() {
-    const active = clipAtTimelineSec(clips, playhead) ?? sortedVideoClips(clips)[0];
-    if (!active) return;
-    const file = resolveClipFile(active);
-    const sourceDuration = (active.sourceEndSec ?? active.endSec) - (active.sourceStartSec ?? 0);
-    const sourcePlayhead = timelineSecToSourceSec(active, playhead);
-    const start = Math.max(active.sourceStartSec ?? 0, sourcePlayhead);
-    const end = Math.min(
-      active.sourceEndSec ?? active.endSec - active.startSec,
-      start + Math.max(1, sourceDuration * 0.35)
+  function openTrimPrompt() {
+    const active = resolvePlayheadTrimTarget(clips, playhead, selectedClipId);
+    if (!active) {
+      setTrimPromptOpen(false);
+      setStatus(TRIM_NEEDS_CLIP_STATUS);
+      return;
+    }
+    setTrimPromptOpen(true);
+    setToolPanelOpen(true);
+    setActiveToolTab("edit");
+    const after = previewPlayheadTrim(active, playhead, "after");
+    const before = previewPlayheadTrim(active, playhead, "before");
+    setStatus(
+      `Trim at ${formatVideoTime(playhead)} — confirm keep after (${after.remainingLabel}) or keep before (${before.remainingLabel}). Or drag yellow handles on the timeline.`
     );
-    const trimmedDuration = Math.max(0.25, (end - start) / Math.max(0.25, active.speed || 1));
-    setClips((prev) =>
-      prev.map((clip) =>
-        clip.id === active.id
-          ? {
-              ...clip,
-              sourceStartSec: start,
-              sourceEndSec: end,
-              endSec: clip.startSec + trimmedDuration,
-              label: "Trimmed",
-            }
-          : clip
-      )
+  }
+
+  function confirmPlayheadTrim(side: PlayheadTrimSide) {
+    const active = resolvePlayheadTrimTarget(clips, playhead, selectedClipId);
+    if (!active) {
+      setTrimPromptOpen(false);
+      setStatus(TRIM_NEEDS_CLIP_STATUS);
+      return;
+    }
+    const preview = previewPlayheadTrim(active, playhead, side);
+    if (!preview.viable) {
+      setStatus(
+        side === "after"
+          ? "Move the playhead later in the clip to keep footage after it."
+          : "Move the playhead earlier in the clip to keep footage before it."
+      );
+      return;
+    }
+    commitClips((prev) =>
+      prev.map((clip) => (clip.id === active.id ? applyPlayheadTrim(clip, playhead, side) : clip))
     );
-    syncPreviewToTimeline(active.startSec);
-    setStatus(`Trimmed to ${formatVideoTime(start)}–${formatVideoTime(end)} (baked on export).`);
+    syncPreviewToTimeline(preview.timelineStartSec);
+    setTrimPromptOpen(false);
+    setStatus(
+      side === "after"
+        ? `Kept after playhead · remaining ${preview.remainingLabel} (baked on export).`
+        : `Kept before playhead · remaining ${preview.remainingLabel} (baked on export).`
+    );
   }
 
   function splitAtPlayhead() {
@@ -801,11 +844,11 @@ export function VideoEditor({
   function mergeClips() {
     const videoClips = sortedVideoClips(clips);
     if (videoClips.length < 2) {
-      setStatus("Add another video with “Add clip” to join up to 10 clips as one.");
+      setStatus("Add another video with “Add clip” — Export will join up to 10 clips into one file.");
       return;
     }
     setStatus(
-      `${videoClips.length}/${MAX_GIGAEDIT_JOIN_CLIPS} videos queued. Publish to export them as one video.`
+      `${videoClips.length}/${MAX_GIGAEDIT_JOIN_CLIPS} clips on the timeline. Export / Download joins them into one video — nothing is merged until then.`
     );
   }
 
@@ -1077,15 +1120,21 @@ export function VideoEditor({
   }
 
   async function saveProject(): Promise<string | undefined> {
+    const existing = projectId ? await getGigaEditProject(projectId) : null;
     const project = createEmptyProject({
       kind: "video",
       title: originalFileRef.current?.name.replace(/\.[^.]+$/, "") || "Video project",
       aspectRatio,
     });
     if (projectId) project.id = projectId;
+    if (existing?.createdAt) project.createdAt = existing.createdAt;
+    // Preserve Starter Pack id in notes so survey pre-fill stays reliable after draft saves.
+    if (existing?.notes) project.notes = existing.notes;
+    else if (starterTemplateId) project.notes = starterTemplateId;
     project.clips = clips;
     project.overlayText = overlayText;
     project.filterId = filterId;
+    project.captions = captions;
     project.aiAssisted = Boolean(captions) || contrastBoost;
     project.hasOriginal = Boolean(originalFileRef.current);
     project.status = "draft";
@@ -1106,11 +1155,13 @@ export function VideoEditor({
       }
       enqueueGigaEditSync({ projectId: project.id, action: "backup" });
       setProjectId(project.id);
-      setAutosaveToast("Draft auto-saved locally. Original file preserved.");
+      onProjectIdChange?.(project.id);
+      setAutosaveToast("Draft auto-saved locally on this device. Original file preserved.");
       window.setTimeout(() => setAutosaveToast(null), 4000);
       return project.id;
     } catch (err) {
       setProjectId(project.id);
+      onProjectIdChange?.(project.id);
       setStatus(
         err instanceof Error
           ? `Draft save failed (${err.message}) — edits kept in memory.`
@@ -1288,18 +1339,30 @@ export function VideoEditor({
     setExporting(true);
     setStatus("Exporting…");
     try {
-      await saveProject();
+      const savedProjectId = await saveProject();
       const edited = await bakeEditedFile();
       if (!edited.size) {
         throw new Error("Export produced an empty file.");
       }
-      const savedVia = await saveExportedFileToDevice(edited, overlayText);
+      const saveResult = await saveExportedFileToDevice(edited, overlayText);
       setEditedPublishFile(edited);
+      if (saveResult.outcome === "cancelled") {
+        setStatus("Share cancelled — try Download again or use Export → Save to Gallery.");
+        return;
+      }
       setStatus(
-        savedVia === "shared"
-          ? "Opened share sheet — pick Gallery/Files to save, or another app."
-          : `Saved ${edited.name} to your device.`
+        saveResult.outcome === "shared"
+          ? "Opened share sheet — pick Gallery/Files to save, or another app. Gallery save is not verified by the app."
+          : `Download started for ${edited.name}. Check Files or Downloads — gallery save is not verified by the app.`
       );
+      if (shouldAutoOfferCreatorSurvey(saveResult.outcome)) {
+        offerCreatorSurvey({
+          projectId: savedProjectId ?? projectId,
+          starterId: starterTemplateId,
+          deviceSaveOutcome: saveResult.outcome,
+          source: "video_download",
+        });
+      }
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Export failed.");
     } finally {
@@ -1312,13 +1375,25 @@ export function VideoEditor({
 
   function renderToolPanel() {
     switch (activeToolTab) {
-      case "edit":
+      case "edit": {
+        const trimTarget = resolvePlayheadTrimTarget(clips, playhead, selectedClipId);
+        const keepAfter = trimTarget ? previewPlayheadTrim(trimTarget, playhead, "after") : null;
+        const keepBefore = trimTarget ? previewPlayheadTrim(trimTarget, playhead, "before") : null;
+        const trimPanel = trimPromptPanelState(trimPromptOpen, Boolean(trimTarget));
         return (
           <div className="space-y-3">
+            <p className="text-[11px] leading-snug text-[var(--ge-muted)]">
+              Drag the yellow handles on the timeline for precise in/out. Tap Trim to cut at the
+              playhead with a keep-before / keep-after confirmation.
+            </p>
             <ToolGrid>
-              <ToolTile label="Trim" onClick={trimActive} disabled={!hasVideo} />
+              <ToolTile label="Trim" onClick={openTrimPrompt} disabled={!hasVideo} />
               <ToolTile label="Split" onClick={splitAtPlayhead} disabled={!hasVideo} />
-              <ToolTile label="Join" onClick={mergeClips} disabled={videoClipCount < 2} />
+              <ToolTile
+                label="Join on export"
+                onClick={mergeClips}
+                disabled={videoClipCount < 2}
+              />
               <ToolTile label="Rotate" onClick={() => setRotateDeg((d) => (d + 90) % 360)} disabled={!hasVideo} />
               <ToolTile label="Reset crop" onClick={() => setCropScale(1)} disabled={!hasVideo} />
               <ToolTile label="Speed 1x" onClick={() => setSpeed(1)} disabled={!hasVideo} />
@@ -1335,6 +1410,66 @@ export function VideoEditor({
                 disabled={!hasVideo || exporting}
               />
             </ToolGrid>
+            {trimPanel.open ? (
+              <div
+                className="space-y-2 rounded-xl border border-[var(--ge-border)] bg-[var(--ge-input)] p-3"
+                role="group"
+                aria-label={
+                  trimPanel.showConfirm
+                    ? "Confirm trim at playhead"
+                    : "Trim needs a clip under the playhead"
+                }
+              >
+                {trimPanel.showNeedsClipStatus ? (
+                  <p className="text-xs text-[var(--ge-muted)]" role="status">
+                    {TRIM_NEEDS_CLIP_STATUS}
+                  </p>
+                ) : null}
+                {trimPanel.showConfirm && trimTarget ? (
+                  <>
+                    <p className="text-xs font-medium text-white">
+                      Trim at {formatVideoTime(playhead)} · “{trimTarget.label}”
+                    </p>
+                    <p className="text-[11px] text-[var(--ge-muted)]">
+                      Choose which footage stays. Preview ranges are exact source in/out times.
+                    </p>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      <button
+                        type="button"
+                        className="rounded-lg border border-[var(--ge-violet,#8b5cf6)]/40 bg-[var(--ge-violet,#8b5cf6)]/15 px-3 py-2.5 text-left text-xs text-white disabled:opacity-40"
+                        disabled={!keepAfter?.viable}
+                        onClick={() => confirmPlayheadTrim("after")}
+                      >
+                        <span className="block font-semibold">Keep after playhead</span>
+                        <span className="text-[var(--ge-muted)]">
+                          Remaining {keepAfter?.remainingLabel ?? "—"}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-lg border border-[var(--ge-border)] bg-black/20 px-3 py-2.5 text-left text-xs text-white disabled:opacity-40"
+                        disabled={!keepBefore?.viable}
+                        onClick={() => confirmPlayheadTrim("before")}
+                      >
+                        <span className="block font-semibold">Keep before playhead</span>
+                        <span className="text-[var(--ge-muted)]">
+                          Remaining {keepBefore?.remainingLabel ?? "—"}
+                        </span>
+                      </button>
+                    </div>
+                  </>
+                ) : null}
+                {trimPanel.showCancel ? (
+                  <button
+                    type="button"
+                    className="text-[11px] text-[var(--ge-muted)] underline"
+                    onClick={() => setTrimPromptOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
             <div className="grid gap-2 sm:grid-cols-2">
               <label className="block text-xs text-[var(--ge-muted)]">
                 Export format
@@ -1385,6 +1520,7 @@ export function VideoEditor({
             />
           </div>
         );
+      }
       case "audio":
         return (
           <div className="space-y-3">
@@ -1407,28 +1543,20 @@ export function VideoEditor({
               <ToolTile label="Import audio" onClick={() => audioInputRef.current?.click()} />
               <ToolTile label="Latest take" onClick={() => void attachLatestAudioProject()} />
             </ToolGrid>
-            <label className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-[var(--ge-border)] bg-[var(--ge-input)] px-3 py-2.5 text-xs text-white">
-              <span>Reduce background noise on export</span>
-              <input
-                type="checkbox"
-                checked={audioNoiseReduction}
-                onChange={(e) => {
-                  setAudioNoiseReduction(e.target.checked);
-                  setStatus(
-                    e.target.checked
-                      ? "Noise reduction enabled — softer background on export."
-                      : "Noise reduction off."
-                  );
-                }}
-              />
-            </label>
+            <p className="rounded-xl border border-[var(--ge-border)] bg-[var(--ge-input)] px-3 py-2.5 text-[11px] leading-snug text-[var(--ge-muted)]">
+              Export does not apply background-noise reduction yet. Use mic suppression while
+              recording voiceover, or open AI cleanup in Media Studio (uses credits).
+            </p>
             {audioLabel ? (
               <p className="text-xs text-[var(--ge-gold)]">Attached: {audioLabel}</p>
             ) : (
               <p className="text-xs text-[var(--ge-muted)]">Import music or voiceover for your timeline.</p>
             )}
             <ToolGrid>
-              <ToolTile label="AI cleanup" onClick={() => window.open("/media/?action=denoise", "_blank", "noopener")} />
+              <ToolTile
+                label="AI cleanup"
+                onClick={() => window.open("/media/?action=denoise", "_blank", "noopener")}
+              />
             </ToolGrid>
           </div>
         );
@@ -1539,6 +1667,7 @@ export function VideoEditor({
         aspectRatio={aspectRatio}
         durationSec={timelineDuration || undefined}
         projectId={projectId}
+        starterTemplateId={starterTemplateId}
         aiAssisted={Boolean(captions) || contrastBoost}
         defaultCaption={overlayText}
         onClose={() => setPublishReady(false)}
@@ -1811,6 +1940,10 @@ export function VideoEditor({
       {status ? (
         <p className="px-3 pb-2 text-center text-xs text-[var(--ge-gold)]">{status}</p>
       ) : null}
+
+      <div className="px-3 pb-3 text-center">
+        <CreatorSurveyManualLink projectId={projectId} starterId={starterTemplateId} />
+      </div>
 
       <ImportModeDialog
         open={importDialogOpen}

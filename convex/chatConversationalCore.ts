@@ -21,6 +21,7 @@ import { personaSystemPromptAddon } from "./gigaPersonas";
 import { buildChatSubscriptionGuidanceAddon } from "./chatSubscriptionGuidance";
 import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
 import { prepareAnswerQualityContext, validateAnswerQuality } from "./answerQuality";
+import { shouldAcceptConversationalEngineResult } from "./chatConversationalAcceptance";
 import { CHAT_ERROR_CODES, classifyProviderError } from "./chatErrorCodes";
 import { logChatReply } from "./chatReplyLog";
 
@@ -59,6 +60,8 @@ export type ConversationalReplyArgs = {
   content: string;
   mode: string;
   personaId?: string;
+  /** User-selected chat system (fast/smart/…); defaults to fast when omitted. */
+  chatSystem?: string;
   since: number;
 };
 
@@ -92,9 +95,11 @@ export async function executeConversationalReply(
     history: history.map((turn) => ({ role: turn.role, content: turn.content })),
   });
 
+  const chatSystem = args.chatSystem?.trim() || "fast";
+
   let systemPrompt =
     getSystemPrompt(args.mode) +
-    chatSystemStyleAddon("fast") +
+    chatSystemStyleAddon(chatSystem) +
     buildInterestSystemAddon(parseInterestProfile(user?.interestProfile)) +
     "\n\n" +
     qualityContext.systemPromptAddon +
@@ -128,7 +133,7 @@ export async function executeConversationalReply(
     hasPurchasedCredits: user?.hasPurchasedCredits,
     mode: args.mode,
     query: args.content,
-    chatSystem: "fast",
+    chatSystem,
   });
 
   logChatReply("conversational_start", {
@@ -145,7 +150,15 @@ export async function executeConversationalReply(
       CONVERSATIONAL_REPLY_TIMEOUT_MS,
       "conversationalReply"
     );
-    if (engineResult.usedFallback || engineResult.providerId === "local_fallback") {
+    // Only reject true outages. usedFallback means a secondary provider succeeded —
+    // treating that as ALL_PROVIDERS_FAILED discarded real replies in production.
+    if (
+      !shouldAcceptConversationalEngineResult({
+        providerId: engineResult.providerId,
+        content: engineResult.content,
+        usedFallback: engineResult.usedFallback,
+      })
+    ) {
       throw new Error(CHAT_ERROR_CODES.ALL_PROVIDERS_FAILED);
     }
   } catch (err) {
@@ -186,13 +199,13 @@ export async function executeConversationalReply(
     providerId: engineResult.providerId,
     errorCode: null,
     durationMs: Date.now() - started,
-    fallbackUsed: false,
+    fallbackUsed: engineResult.usedFallback,
   });
 
   return {
     content: validated.content,
     chatProviderLabel: getChatProviderLabel(engineResult.providerId),
-    usedFallback: false,
+    usedFallback: engineResult.usedFallback,
     providerId: engineResult.providerId,
     durationMs: Date.now() - started,
   };

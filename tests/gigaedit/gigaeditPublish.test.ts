@@ -101,7 +101,7 @@ describe("GigaEdit publish redirect helpers", () => {
     expect(video).toContain("VideoEditorHeader");
     expect(video).toContain("openPublishOptions");
     expect(video).toContain("VoiceoverPanel");
-    expect(video).toContain("audioNoiseReduction");
+    expect(video).toContain("Export does not apply background-noise reduction yet");
     expect(video).toContain('case "fx"');
     expect(video).toContain("deleteSelectedClip");
   });
@@ -120,7 +120,7 @@ describe("GigaEdit publish flags & offline", () => {
 
   it("bumps SW cache for publish integration", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_VERSION = "giga3-v27"');
+    expect(sw).toContain('CACHE_VERSION = "giga3-v29"');
   });
 });
 

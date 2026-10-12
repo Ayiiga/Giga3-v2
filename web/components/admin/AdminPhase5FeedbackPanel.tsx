@@ -29,6 +29,8 @@ export function AdminPhase5FeedbackPanel({
   });
   const update = useMutation(api.platformFeedback.updateFeedbackStatus);
   const [busyId, setBusyId] = useState<string | null>(null);
+  /** Survey cards default to full body; admins may collapse to the 280-char preview. */
+  const [collapsedSurveyIds, setCollapsedSurveyIds] = useState<Record<string, boolean>>({});
 
   if (dashboard === undefined) {
     return <p className="text-sm text-muted">Loading feedback dashboard…</p>;
@@ -88,7 +90,31 @@ export function AdminPhase5FeedbackPanel({
               <span className="text-muted">{item.status}</span>
             </div>
             <h3 className="mt-2 font-medium">{item.title}</h3>
-            <p className="mt-1 text-sm text-muted">{item.body}</p>
+            {item.bodyFull ? (
+              <div className="mt-1 space-y-2">
+                <pre className="max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-xl bg-muted/40 p-3 text-xs text-foreground">
+                  {collapsedSurveyIds[item._id] ? item.body : item.bodyFull}
+                </pre>
+                {item.bodyFull.length > item.body.length ? (
+                  <button
+                    type="button"
+                    className="text-xs font-medium text-accent underline-offset-2 hover:underline"
+                    onClick={() =>
+                      setCollapsedSurveyIds((prev) => ({
+                        ...prev,
+                        [item._id]: !prev[item._id],
+                      }))
+                    }
+                  >
+                    {collapsedSurveyIds[item._id]
+                      ? "Show full GigaEdits survey answers"
+                      : "Collapse to preview"}
+                  </button>
+                ) : null}
+              </div>
+            ) : (
+              <p className="mt-1 text-sm text-muted">{item.body}</p>
+            )}
             <div className="mt-3 flex flex-wrap gap-2">
               {STATUSES.filter((s) => s !== item.status).map((next) => (
                 <Button

@@ -66,6 +66,7 @@ import type * as factVerification from "../factVerification.js";
 import type * as falClient from "../falClient.js";
 import type * as falVideoModels from "../falVideoModels.js";
 import type * as featureFlags from "../featureFlags.js";
+import type * as freeImageQuota from "../freeImageQuota.js";
 import type * as freeOpenAiQuota from "../freeOpenAiQuota.js";
 import type * as geminiImageClient from "../geminiImageClient.js";
 import type * as geolocationActions from "../geolocationActions.js";
@@ -295,6 +296,7 @@ declare const fullApi: ApiFromModules<{
   falClient: typeof falClient;
   falVideoModels: typeof falVideoModels;
   featureFlags: typeof featureFlags;
+  freeImageQuota: typeof freeImageQuota;
   freeOpenAiQuota: typeof freeOpenAiQuota;
   geminiImageClient: typeof geminiImageClient;
   geolocationActions: typeof geolocationActions;

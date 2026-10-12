@@ -4,8 +4,10 @@ import {
   CameraStylePreview,
   type CameraStylePreviewHandle,
 } from "@/components/gigaedit/CameraStylePreview";
+import { CreatorSurveyManualLink } from "@/components/gigaedit/CreatorSurveyHost";
 import { PublishScreen } from "@/components/gigaedit/PublishScreen";
 import { DEFAULT_CAMERA_LOOK, type CameraLookOptions } from "@/lib/gigaedit/cameraLook";
+import { resolveStarterFromNotes } from "@/lib/gigaedit/creatorSurvey";
 import { detectDeviceTier } from "@/lib/gigaedit/deviceCapability";
 import { aspectRatioCss } from "@/lib/gigaedit/exportFormats";
 import {
@@ -22,6 +24,7 @@ import {
   revokeManagedObjectUrl,
 } from "@/lib/gigaedit/mediaPipeline";
 import { handoffAndOpenGigaSocial } from "@/lib/gigaedit/publishHandoff";
+import type { GigaEditStarterPackId } from "@/lib/gigaedit/templates";
 import type { ExportAspectRatio } from "@/lib/gigaedit/types";
 import { CAMERA_FILTERS } from "@/lib/gigasocial/cameraFilters";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -50,6 +53,7 @@ export function PhotoEditor({
   const [status, setStatus] = useState<string | null>(null);
   const [publishFile, setPublishFile] = useState<File | null>(null);
   const [projectId, setProjectId] = useState<string | undefined>(initialProjectId ?? undefined);
+  const [starterTemplateId, setStarterTemplateId] = useState<GigaEditStarterPackId | null>(null);
   const [cameraLook, setCameraLook] = useState<CameraLookOptions>(DEFAULT_CAMERA_LOOK);
   const [exporting, setExporting] = useState(false);
   const originalRef = useRef<File | null>(null);
@@ -72,6 +76,7 @@ export function PhotoEditor({
       const project = await getGigaEditProject(initialProjectId);
       if (!project || cancelled) return;
       setProjectId(project.id);
+      setStarterTemplateId(resolveStarterFromNotes(project.notes));
       setAspectRatio(project.aspectRatio);
       setFilterId(project.filterId || "none");
       setBrightness(project.brightness ?? 1);
@@ -176,11 +181,17 @@ export function PhotoEditor({
   }
 
   async function saveDraft() {
+    const existing = projectId ? await getGigaEditProject(projectId) : null;
     const project = createEmptyProject({
       kind: "photo",
       title: originalRef.current?.name.replace(/\.[^.]+$/, "") || "Photo project",
       aspectRatio,
     });
+    if (projectId) project.id = projectId;
+    if (existing?.createdAt) project.createdAt = existing.createdAt;
+    // Preserve Starter Pack id so survey pre-fill survives draft save / publish open.
+    if (existing?.notes) project.notes = existing.notes;
+    else if (starterTemplateId) project.notes = starterTemplateId;
     project.filterId = filterId;
     project.brightness = brightness;
     project.contrast = contrast;
@@ -267,6 +278,7 @@ export function PhotoEditor({
         originalFile={originalRef.current}
         aspectRatio={aspectRatio}
         projectId={projectId}
+        starterTemplateId={starterTemplateId}
         aiAssisted={filterId === "hdr" || Boolean(posterTitle) || cameraLook.portrait}
         defaultCaption={posterTitle}
         onClose={() => setPublishFile(null)}
@@ -332,6 +344,7 @@ export function PhotoEditor({
         >
           Publish options
         </button>
+        <CreatorSurveyManualLink projectId={projectId} starterId={starterTemplateId} />
       </div>
 
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_16rem]">

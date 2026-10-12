@@ -208,7 +208,8 @@ describe("video pre-production workflow — integration surfaces", () => {
   it("keeps guided and quick generate modes in Media Studio", () => {
     const panel = read("web/components/media/MediaGeneratePanel.tsx");
     expect(panel).toContain('videoWorkflow === "preprod"');
-    expect(panel).toContain('videoWorkflow === "quick"');
+    expect(panel).toContain('id: "quick" as const');
+    expect(panel).toContain("Quick generate");
     expect(panel).toContain("recentImageUrls={recentImageUrls}");
   });
 

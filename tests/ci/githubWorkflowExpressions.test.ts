@@ -83,4 +83,39 @@ describe("GitHub Actions workflow expressions", () => {
     const script = join(root, "scripts/report-rollouts-deployment.sh");
     expect(() => execFileSync("bash", ["-n", script], { stdio: "pipe" })).not.toThrow();
   });
+
+  it("convex-deploy does not force AUTH_FROM_EMAIL to the Resend sandbox", () => {
+    const src = readFileSync(join(root, ".github/workflows/convex-deploy.yml"), "utf8");
+    // Must wire GitHub var/secret into the env step.
+    expect(src).toMatch(
+      /AUTH_FROM_EMAIL:\s*\$\{\{\s*vars\.AUTH_FROM_EMAIL\s*\|\|\s*secrets\.AUTH_FROM_EMAIL\s*\}\}/
+    );
+    // Must only sync when set — never default-clobber Convex to onboarding@resend.dev.
+    expect(src).toMatch(/if \[ -n "\$\{AUTH_FROM_EMAIL:-\}" \]/);
+    expect(src).toContain(
+      'npx convex env set AUTH_FROM_EMAIL "${AUTH_FROM_EMAIL}"'
+    );
+    expect(src).not.toMatch(
+      /FROM_EMAIL="\$\{AUTH_FROM_EMAIL:-Giga3 AI <onboarding@resend\.dev>\}"/
+    );
+    expect(src).not.toMatch(
+      /npx convex env set AUTH_FROM_EMAIL "\$\{FROM_EMAIL\}"/
+    );
+  });
+
+  it("convex-deploy syncs RESEND_API_KEY only when it has Resend key shape", () => {
+    const src = readFileSync(join(root, ".github/workflows/convex-deploy.yml"), "utf8");
+    expect(src).toMatch(/RESEND_API_KEY:\s*\$\{\{\s*secrets\.RESEND_API_KEY\s*\}\}/);
+    expect(src).toMatch(/AUTH_FROM_EMAIL:\s*\$\{\{/);
+    // Separate env bindings — RESEND must not read AUTH_FROM.
+    expect(src).not.toMatch(
+      /RESEND_API_KEY:\s*\$\{\{\s*(vars|secrets)\.AUTH_FROM_EMAIL/
+    );
+    expect(src).toContain('[[ "${RESEND_API_KEY}" == re_* ]]');
+    expect(src).toContain(
+      "RESEND_API_KEY GitHub secret is not a Resend API key shape"
+    );
+    // Do not dump env values via convex deploy --verbose.
+    expect(src).not.toMatch(/convex deploy[^\n]*--verbose/);
+  });
 });

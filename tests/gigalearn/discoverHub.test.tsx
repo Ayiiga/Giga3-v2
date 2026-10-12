@@ -71,11 +71,13 @@ describe("DiscoverHub learner vertical slice", () => {
         const buf = fs.readFileSync(file);
         const mime = file.endsWith(".svg")
           ? "image/svg+xml"
-          : file.endsWith(".mp3")
-            ? "audio/mpeg"
-            : file.endsWith(".mp4")
-              ? "video/mp4"
-              : "application/octet-stream";
+          : file.endsWith(".webp")
+            ? "image/webp"
+            : file.endsWith(".mp3")
+              ? "audio/mpeg"
+              : file.endsWith(".mp4")
+                ? "video/mp4"
+                : "application/octet-stream";
         return new Response(buf, { status: 200, headers: { "Content-Type": mime } });
       })
     );

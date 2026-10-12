@@ -10,21 +10,21 @@ export type CreateSubDestination = {
   description: string;
 };
 
-/** Create tab destinations — Media Studio + GigaEdits. */
+/** Create tab destinations — GigaEdits first (default), Media Studio still available. */
 export const CREATE_SUB_DESTINATIONS: CreateSubDestination[] = [
-  {
-    id: "media",
-    label: "Media Studio",
-    shortLabel: "Studio",
-    href: `${siteConfig.links.media}/`,
-    description: "AI images & video",
-  },
   {
     id: "gigaedit",
     label: "GigaEdits",
     shortLabel: "Edits",
     href: `${siteConfig.links.gigaedit}/`,
     description: "Trim, record & publish",
+  },
+  {
+    id: "media",
+    label: "Media Studio",
+    shortLabel: "Studio",
+    href: `${siteConfig.links.media}/`,
+    description: "AI images & video",
   },
 ];
 

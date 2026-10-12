@@ -4,6 +4,7 @@ import {
   clipAtTimelineSec,
   joinedTimelineDuration,
   remainingJoinSlots,
+  resolvePlayheadTrimTarget,
   sortedVideoClips,
   sourceSecToTimelineSec,
   timelineSecToSourceSec,
@@ -46,6 +47,16 @@ describe("GigaEdit timeline join helpers", () => {
     ];
     expect(clipAtTimelineSec(clips, 2)?.label).toBe("A");
     expect(clipAtTimelineSec(clips, 6)?.label).toBe("B");
+  });
+
+  it("resolvePlayheadTrimTarget returns null in gaps instead of the first clip", () => {
+    const clips = [
+      videoClip({ id: "a", label: "A", startSec: 0, endSec: 4, sourceEndSec: 4 }),
+      videoClip({ id: "b", label: "B", startSec: 5, endSec: 10, sourceKey: "b", sourceEndSec: 5 }),
+    ];
+    expect(resolvePlayheadTrimTarget(clips, 2, null)?.id).toBe("a");
+    expect(resolvePlayheadTrimTarget(clips, 4.5, null)).toBeNull();
+    expect(resolvePlayheadTrimTarget(clips, 11, "a")).toBeNull();
   });
 
   it("maps timeline and source seconds within a clip", () => {

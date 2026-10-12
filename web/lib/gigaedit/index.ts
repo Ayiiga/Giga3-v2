@@ -30,8 +30,16 @@ export {
   putProjectOriginalBlob,
   getProjectOriginalBlob,
   exportProjectJson,
+  readProjectCaptions,
   type GigaEditProjectRecord,
 } from "@/lib/gigaedit/projects";
+export {
+  applyPlayheadTrim,
+  previewPlayheadTrim,
+  clipSourceBounds,
+  type PlayheadTrimSide,
+  type PlayheadTrimPreview,
+} from "@/lib/gigaedit/trimClip";
 export {
   GIGAEDIT_OFFLINE_CAPABILITIES,
   isGigaEditOnline,
@@ -61,7 +69,24 @@ export {
   createManagedObjectUrl,
   revokeManagedObjectUrl,
 } from "@/lib/gigaedit/mediaPipeline";
-export { GIGAEDIT_TEMPLATES } from "@/lib/gigaedit/templates";
+export {
+  GIGAEDIT_STARTER_PACK_IDS,
+  GIGAEDIT_TEMPLATES,
+  getGigaEditMoreTemplates,
+  getGigaEditStarterPackTemplates,
+} from "@/lib/gigaedit/templates";
+export {
+  CREATOR_SURVEY_TITLE,
+  CREATOR_SURVEY_VERSION,
+  buildCreatorSurveySubmitPayload,
+  encodeCreatorSurveyBody,
+  offerCreatorSurvey,
+  resolveStarterFromNotes,
+  shouldAutoOfferCreatorSurvey,
+  surveyExportPrefillFromOutcome,
+} from "@/lib/gigaedit/creatorSurvey";
+export type { DeviceSaveOutcome, DeviceSaveResult } from "@/lib/gigaedit/downloadExport";
+export { saveExportedFileToDevice } from "@/lib/gigaedit/downloadExport";
 export {
   buildAiAssistPrompt,
   generateLocalCreativeDraft,

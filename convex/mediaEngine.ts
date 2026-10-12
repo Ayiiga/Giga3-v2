@@ -31,7 +31,11 @@ import {
   replicateGenerateImage,
   replicateGenerateVideo,
 } from "./replicateClient";
-import { openaiGenerateImage, getOpenAiImageApiKey } from "./openaiImageClient";
+import {
+  openaiGenerateImage,
+  openaiEditImage,
+  getOpenAiImageApiKey,
+} from "./openaiImageClient";
 import {
   isMediaProviderBillingError,
   type MediaProviderId,
@@ -116,9 +120,21 @@ export async function generateImageWithFallback(
   const errors: string[] = [];
   const allowOpenAi = options?.allowOpenAi !== false;
 
+  const sourceImageUrl = input.sourceImageUrl?.trim();
+
   // OpenAI first when allowed (Premium subscription on server); other providers are failover.
-  if (allowOpenAi && getOpenAiImageApiKey() && !input.sourceImageUrl?.trim()) {
+  if (allowOpenAi && getOpenAiImageApiKey()) {
     try {
+      if (sourceImageUrl) {
+        const result = await openaiEditImage(input.prompt, sourceImageUrl, {
+          imageSize: input.imageSize,
+        });
+        return {
+          imageUrl: result.dataUrl,
+          provider: "openai",
+          externalId: result.requestId,
+        };
+      }
       const result = await openaiGenerateImage(input.prompt, {
         imageSize: input.imageSize,
       });
@@ -132,7 +148,8 @@ export async function generateImageWithFallback(
     }
   }
 
-  if (getFalApiKey()) {
+  // fal text-to-image only — skip when editing a source image.
+  if (getFalApiKey() && !sourceImageUrl) {
     const primaryModel = process.env.FAL_IMAGE_MODEL?.trim() || "fal-ai/nano-banana-pro";
     try {
       const result = await falGenerateImageWithModel(primaryModel, input);
@@ -196,22 +213,31 @@ export async function generateImageWithFallback(
   throw new Error(`All providers failed for image: ${errors.join(" | ") || "no providers configured"}`);
 }
 
-/** Free-tier chat image generation — fal / Replicate / Gemini only (no OpenAI). */
+/** Free-tier chat image generation/editing — fal / Replicate / Gemini only (no OpenAI). */
 export async function generateFreeImageForChat(
-  prompt: string
+  prompt: string,
+  options?: { sourceImageUrl?: string; imageSize?: FalImageSize }
 ): Promise<{ imageUrl: string; provider: MediaProviderId; externalId: string }> {
   const errors: string[] = [];
+  const sourceImageUrl = options?.sourceImageUrl?.trim();
 
-  if (getFalApiKey()) {
+  // fal text-to-image only — skip when editing a source image.
+  if (getFalApiKey() && !sourceImageUrl) {
     const primaryModel = process.env.FAL_IMAGE_MODEL?.trim() || "fal-ai/flux/schnell";
     try {
-      const result = await falGenerateImageWithModel(primaryModel, { prompt });
+      const result = await falGenerateImageWithModel(primaryModel, {
+        prompt,
+        imageSize: options?.imageSize,
+      });
       return { imageUrl: result.imageUrl, provider: "fal", externalId: result.requestId };
     } catch (err) {
       errors.push(err instanceof Error ? err.message : String(err));
       if (FAL_IMAGE_FALLBACK_MODEL !== primaryModel) {
         try {
-          const fallback = await falGenerateImageWithModel(FAL_IMAGE_FALLBACK_MODEL, { prompt });
+          const fallback = await falGenerateImageWithModel(FAL_IMAGE_FALLBACK_MODEL, {
+            prompt,
+            imageSize: options?.imageSize,
+          });
           return {
             imageUrl: fallback.imageUrl,
             provider: "fal",
@@ -227,6 +253,7 @@ export async function generateFreeImageForChat(
   if (getReplicateToken()) {
     try {
       const result = await replicateGenerateImage(prompt, {
+        sourceImageUrl,
         aspectRatio: imageCategoryAspectRatio("anime_art"),
       });
       return {
@@ -241,7 +268,10 @@ export async function generateFreeImageForChat(
 
   if (getGeminiApiKey()) {
     try {
-      const result = await geminiImageWithFallback(prompt, {});
+      const result = await geminiImageWithFallback(prompt, {
+        sourceImageUrl,
+        aspectRatio: falImageSizeToAspectRatio(options?.imageSize),
+      });
       return {
         imageUrl: result.dataUrl,
         provider: "gemini",

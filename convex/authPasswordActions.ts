@@ -21,6 +21,7 @@ import {
   sendEmail,
   wrapEmailHtml,
 } from "./emailClient";
+import { redactEmail } from "./engagementAnnouncementSafety";
 import { buildResetUrl, resolveResetBaseUrl } from "./authResetLinks";
 import {
   buildPasswordResetMessage,
@@ -29,6 +30,7 @@ import {
 } from "./passwordResetMail";
 import { RESET_TTL_MS, assessResetToken } from "./passwordResetPolicy";
 import { SECURITY_EVENT_TYPES } from "./securityMonitoring";
+import { runWelcomeEmailDelivery } from "./welcomeEmailDelivery";
 
 /** Per-email attempts per 15 minutes. Reset/sign-up are tighter than sign-in. */
 const LIMITS = { signup: 5, signin: 10, reset: 4, resetComplete: 6 } as const;
@@ -68,8 +70,7 @@ async function issueSession(
   return { email, sessionToken };
 }
 
-async function sendWelcomeEmail(to: string): Promise<void> {
-  if (!isEmailDeliveryConfigured()) return;
+function buildWelcomeEmailPayload(to: string) {
   const frontend = getFrontendBaseUrl();
   const html = wrapEmailHtml({
     title: "Welcome to Giga3 AI",
@@ -84,7 +85,7 @@ async function sendWelcomeEmail(to: string): Promise<void> {
       </ul>
     `,
   });
-  await sendEmail({
+  return {
     to,
     subject: "Welcome to Giga3 AI — create, learn, and share",
     html,
@@ -93,6 +94,44 @@ async function sendWelcomeEmail(to: string): Promise<void> {
       { name: "category", value: "welcome" },
       { name: "app", value: "giga3" },
     ],
+  };
+}
+
+/**
+ * Stage B1: claim → send → mark. Non-blocking for signup callers.
+ * Uncertain (network_error) is never auto-retried. Duplicate claims are skipped.
+ */
+async function deliverWelcomeEmail(
+  ctx: { runMutation: Function },
+  to: string
+): Promise<void> {
+  await runWelcomeEmailDelivery(to, {
+    isConfigured: isEmailDeliveryConfigured,
+    claim: async (email) =>
+      ctx.runMutation(internal.engagementEmail.claimWelcomeEmailSendInternal, {
+        email,
+      }),
+    send: async (email) => sendEmail(buildWelcomeEmailPayload(email)),
+    markSent: async (email) =>
+      ctx.runMutation(internal.engagementEmail.markWelcomeEmailSentInternal, {
+        email,
+      }),
+    markUncertain: async (email) =>
+      ctx.runMutation(internal.engagementEmail.markWelcomeEmailUncertainInternal, {
+        email,
+      }),
+    markFailed: async (email) =>
+      ctx.runMutation(internal.engagementEmail.markWelcomeEmailFailedInternal, {
+        email,
+      }),
+    onSkip: (reason) => {
+      console.info(`[welcomeEmail] skip reason=${reason} to=${redactEmail(to)}`);
+    },
+    onSendFailed: (reason) => {
+      console.error(
+        `[welcomeEmail] send failed reason=${reason} to=${redactEmail(to)}`
+      );
+    },
   });
 }
 
@@ -149,8 +188,8 @@ export const signUpWithPassword = action({
     });
 
     const session = await issueSession(ctx, email);
-    // Best-effort welcome — never block sign-up if mail fails.
-    void sendWelcomeEmail(email).catch(() => undefined);
+    // Best-effort welcome — never block sign-up if mail fails; claim prevents duplicates.
+    void deliverWelcomeEmail(ctx, email).catch(() => undefined);
     return session;
   },
 });

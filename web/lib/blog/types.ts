@@ -9,6 +9,11 @@ export type BlogPost = {
   category: string;
   tags: string[];
   author: string;
+  /**
+   * JSON-LD `@type` for `author`. Defaults to Organization (editorial team).
+   * Set to Person for named individual bylines.
+   */
+  authorType?: "Person" | "Organization";
   publishedAt: string;
   updatedAt?: string;
   featuredImage: string;

@@ -38,19 +38,20 @@ export const GIGAEDITS_PAGE: PublicProductPageShellProps = {
     "GigaEdits is the creator editing product on Giga3 AI — trim, caption, and publish video with GigaEdit, then share on GigaSocial.",
   audience: "creators, educators, and social publishers",
   whatItDoes:
-    "GigaEdits is the marketing home for creator editing on Giga3. The GigaEdit app at /gigaedit/ is where you trim, join, caption, and publish — after you generate clips in Video AI or Media Studio.",
+    "GigaEdits is the marketing home for creator editing on Giga3. The GigaEdit app at /gigaedit/ is where you trim, join, caption, and publish — after you generate clips in Video AI or Media Studio. Start with the Creator Growth Starter Pack: Hook Reel (9:16), YouTube Intro (16:9), or Promo Poster (4:5) — format starters that seed aspect ratio and title; you import your media and finish with existing Giga3 AI tools.",
   whoFor: [
     "Short-form creators polishing reels and social clips",
     "Educators packaging lesson segments",
     "Marketers combining AI-generated assets before posting",
   ],
   capabilities: [
+    "Creator Growth Starter Pack — Hook Reel, YouTube Intro, Promo Poster format starters",
     "Timeline editing, captions, and audio in GigaEdit",
     "Import from Video AI and device uploads",
     "Publish-ready exports for GigaSocial",
   ],
   giga3Connection:
-    "Creator Studio helps you draft; Media Studio and Video AI generate assets; GigaEdits (GigaEdit) finishes and publishes to GigaSocial or download. Sign in to save projects to your account.",
+    "Creator Studio helps you draft; Media Studio and Video AI generate assets; GigaEdits (GigaEdit) finishes and publishes to GigaSocial or download. Project drafts save on your device in the browser — not to cloud account backup yet.",
   primaryHref: "/gigaedit",
   primaryLabel: "Open GigaEdit",
   secondaryHref: "/creator-studio",

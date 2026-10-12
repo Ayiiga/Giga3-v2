@@ -21,8 +21,8 @@ describe("voiceover duration guards", () => {
 });
 
 describe("voiceover export credits", () => {
-  it("shows 5 credits before export", () => {
-    expect(VOICEOVER_EXPORT_CREDITS).toBe(5);
+  it("keeps legacy constant at 0 — mix is on-device and free", () => {
+    expect(VOICEOVER_EXPORT_CREDITS).toBe(0);
   });
 });
 

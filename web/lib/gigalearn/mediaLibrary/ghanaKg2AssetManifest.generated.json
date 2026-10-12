@@ -1,0 +1,1211 @@
+{
+  "collectionId": "ghana-kg2-hq-v2",
+  "title": "Ghana KG2 high-quality visuals (v2 expansion)",
+  "country": "Ghana",
+  "level": "KG2 (ages 4–5)",
+  "styleGuide": "Object/occupation/environment cards: soft natural daylight, clean classroom-friendly backgrounds, culturally accurate Ghanaian subjects, photographic. Stories/rhymes: warm storybook illustration, consistent Ananse and village settings — not photorealistic. Never mix styles inside one learning collection card.",
+  "createdAt": "2026-10-09",
+  "assets": [
+    {
+      "id": "hq-mango",
+      "filename": "mango.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/mango.webp",
+      "learningObjective": "Recognise a ripe mango and say its name (English/Twi).",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en+tw",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A ripe orange-yellow mango on a woven mat in soft daylight",
+      "catalogItemIds": [
+        "pic-mango-kg2",
+        "rhyme-mango-sweet"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one ripe Ghanaian mango, orange-yellow skin with a soft blush, resting on a simple woven raffia mat, soft natural daylight, shallow depth of field, clean uncluttered background suitable for kindergarten flashcards, no text, no watermark, no hands",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Not a stock photo. Educator visual review pending before certification claims.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:30:23.091Z"
+      },
+      "status": "generated",
+      "byteLength": 69952,
+      "contentHash": "24f2cde3c5bd1818"
+    },
+    {
+      "id": "hq-pawpaw",
+      "filename": "pawpaw.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/pawpaw.webp",
+      "learningObjective": "Recognise a whole green-yellow pawpaw (papaya).",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en+gaa",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A whole green and yellow pawpaw fruit on a wooden stool outdoors",
+      "catalogItemIds": [
+        "pic-pawpaw-kg2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one whole Ghanaian pawpaw (papaya), green skin turning yellow, oval fruit sitting on a simple wooden stool outdoors in Ghana, soft morning light, clean background for KG flashcards, no text, no watermark, no cut fruit, no people",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:30:39.326Z"
+      },
+      "status": "generated",
+      "byteLength": 55396,
+      "contentHash": "b55f10a71dfaf93f"
+    },
+    {
+      "id": "hq-bananas-four",
+      "filename": "bananas-four.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/bananas-four.webp",
+      "learningObjective": "Count exactly four bananas (numeracy 1–10).",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en+tw",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "Exactly four yellow bananas arranged clearly for counting",
+      "catalogItemIds": [
+        "game-count-bananas-kg2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of exactly four ripe yellow bananas arranged in a clear row on a light wooden table, easy for young children to count, soft daylight, uncluttered background, no text, no price stickers, no hands",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, five bananas, bunch of many bananas, crowded",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated counting visual. Must show exactly four bananas — verify before ship.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:30:55.730Z"
+      },
+      "status": "generated",
+      "byteLength": 32432,
+      "contentHash": "4772a8028135749a"
+    },
+    {
+      "id": "hq-talking-drum",
+      "filename": "talking-drum.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/talking-drum.webp",
+      "learningObjective": "Identify a traditional Ghanaian talking drum.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A wooden hourglass talking drum with leather cords in soft light",
+      "catalogItemIds": [
+        "pic-drum-kg2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of a traditional Ghanaian hourglass talking drum (donno), carved wood body, leather drumheads, tension cords, resting upright on a simple cloth, soft studio-like daylight, culturally accurate West African instrument, no text, no people, no modern electronic drums",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, snare drum, drum kit, djembe only, plastic toy",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated cultural instrument photo. Cultural accuracy review recommended.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:31:13.588Z"
+      },
+      "status": "generated",
+      "byteLength": 117610,
+      "contentHash": "a14a2869b5339f17"
+    },
+    {
+      "id": "hq-kente",
+      "filename": "kente.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/kente.webp",
+      "learningObjective": "Recognise colourful kente cloth patterns from Ghana.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "Bright woven kente cloth with geometric yellow, green, blue and red strips",
+      "catalogItemIds": [
+        "culture-kente-intro"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational close-up of authentic Ghanaian kente cloth, bright geometric strips of gold yellow, green, blue and red, woven texture clearly visible, folded neatly on a wooden surface, soft daylight, no text, no logos, no people",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, scottish tartan, random plaid, batik only",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated textile close-up. Cultural accuracy review recommended.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:31:31.311Z"
+      },
+      "status": "generated",
+      "byteLength": 214202,
+      "contentHash": "ece58b31fb236dd8"
+    },
+    {
+      "id": "hq-ananse-listens",
+      "filename": "ananse-listens.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/ananse-listens.webp",
+      "learningObjective": "Follow a short Ananse listening story (storybook art).",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "storybook_illustration",
+      "altText": "Storybook illustration of Ananse the spider sitting under a shade tree, listening carefully",
+      "catalogItemIds": [
+        "story-ananse-listen"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Warm children's storybook illustration, Ghanaian village scene, friendly Ananse the spider character with a round kind face sitting under a large shade tree, listening carefully, soft watercolor-ink style, consistent character design for African children's books, bright but gentle colours, no text, no letters, no photorealism, culturally respectful West African setting",
+      "negativePrompt": "photorealistic photo, 3d render, text, watermark, logo, scary, violence, distorted anatomy, wrong cultural clothing, european fairy-tale style",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI storybook illustration (not photographic). Keep style separate from object photos.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:31:50.913Z"
+      },
+      "status": "generated",
+      "byteLength": 259716,
+      "contentHash": "175a1fa57cf401cc"
+    },
+    {
+      "id": "hq-orange",
+      "filename": "orange.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/orange.webp",
+      "learningObjective": "Recognise an orange fruit.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en+tw",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A whole ripe orange with a small green leaf on a light wooden table",
+      "catalogItemIds": [
+        "pic-p2-1"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one ripe orange fruit with a tiny green leaf, soft daylight, clean light wooden table, kindergarten flashcard, no text, no hands, no cut fruit",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:32:08.633Z"
+      },
+      "status": "generated",
+      "byteLength": 47614,
+      "contentHash": "985153496560fff5"
+    },
+    {
+      "id": "hq-coconut",
+      "filename": "coconut.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/coconut.webp",
+      "learningObjective": "Recognise a coconut.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en+tw",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A whole brown coconut and one half showing white flesh on a woven mat",
+      "catalogItemIds": [
+        "pic-p2-2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one whole brown coconut beside one coconut half showing white flesh, woven raffia mat, soft daylight, Ghana market produce, no text, no hands",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:32:26.107Z"
+      },
+      "status": "generated",
+      "byteLength": 211346,
+      "contentHash": "248f1bbb67271980"
+    },
+    {
+      "id": "hq-goat",
+      "filename": "goat.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/goat.webp",
+      "learningObjective": "Recognise a goat.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A brown and white goat standing in a grassy West African farmyard",
+      "catalogItemIds": [
+        "pic-p2-3",
+        "rhyme-p2-5",
+        "story-p2-4"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one friendly brown and white goat standing in a grassy West African farmyard, soft daylight, clean simple background, kindergarten animal card, no text, no people",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:32:42.364Z"
+      },
+      "status": "generated",
+      "byteLength": 189672,
+      "contentHash": "a6c54fa1d3c2c8f0"
+    },
+    {
+      "id": "hq-hen",
+      "filename": "hen.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/hen.webp",
+      "learningObjective": "Recognise a hen.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A brown hen standing on packed earth outdoors",
+      "catalogItemIds": [
+        "pic-p2-4"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one brown hen standing on packed earth in a Ghanaian compound, soft daylight, clear animal shape for children, no text, no chicks clutter",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:33:01.520Z"
+      },
+      "status": "generated",
+      "byteLength": 150330,
+      "contentHash": "8a87eec1d2015384"
+    },
+    {
+      "id": "hq-red-tomato",
+      "filename": "red-tomato.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/red-tomato.webp",
+      "learningObjective": "Recognise the colour red with a tomato.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A bright red ripe tomato on a white plate",
+      "catalogItemIds": [
+        "pic-p2-5"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one bright red ripe tomato on a plain white plate, soft daylight, clean background for colour learning, no text, no hands",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:33:19.343Z"
+      },
+      "status": "generated",
+      "byteLength": 23344,
+      "contentHash": "2d852812aa24af1b"
+    },
+    {
+      "id": "hq-blue-bowl",
+      "filename": "blue-bowl.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/blue-bowl.webp",
+      "learningObjective": "Recognise the colour blue with a bowl.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A simple bright blue plastic bowl on a light table",
+      "catalogItemIds": [
+        "pic-p2-6"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one simple bright blue plastic bowl on a light wooden table, soft daylight, colour learning flashcard, no text, no food clutter",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:33:35.144Z"
+      },
+      "status": "generated",
+      "byteLength": 52892,
+      "contentHash": "b1861370523c5803"
+    },
+    {
+      "id": "hq-three-oranges",
+      "filename": "three-oranges.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/three-oranges.webp",
+      "learningObjective": "Count three oranges.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "Exactly three oranges arranged in a clear row for counting",
+      "catalogItemIds": [
+        "pic-p2-7"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of exactly three ripe oranges in a clear row on a light wooden table, easy for children to count, soft daylight, no text, no hands, not four or five",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:33:51.095Z"
+      },
+      "status": "generated",
+      "byteLength": 57400,
+      "contentHash": "9360ddb367cfb461"
+    },
+    {
+      "id": "hq-five-mangoes",
+      "filename": "five-mangoes.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/five-mangoes.webp",
+      "learningObjective": "Count five mangoes.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "Exactly five mangoes arranged clearly for counting",
+      "catalogItemIds": [
+        "pic-p2-8",
+        "game-p2-count-5"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of exactly five ripe Ghanaian mangoes arranged in a clear arc on a woven mat, easy counting for kindergarten, soft daylight, no text, no hands, not four or six",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:34:10.356Z"
+      },
+      "status": "generated",
+      "byteLength": 192456,
+      "contentHash": "0a285ea030baffbe"
+    },
+    {
+      "id": "hq-letter-a-apple",
+      "filename": "letter-a-apple.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/letter-a-apple.webp",
+      "learningObjective": "Link letter A sound to apple.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A shiny red apple with a green leaf for letter A phonics",
+      "catalogItemIds": [
+        "pic-p2-9"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one shiny red apple with a green leaf on a light surface, soft daylight, phonics flashcard object only, no letters, no text, no watermark",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:34:27.923Z"
+      },
+      "status": "generated",
+      "byteLength": 41002,
+      "contentHash": "b4dde5b5cd4a72e6"
+    },
+    {
+      "id": "hq-letter-b-ball",
+      "filename": "letter-b-ball.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/letter-b-ball.webp",
+      "learningObjective": "Link letter B sound to ball.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A black and white football (soccer ball) on grass",
+      "catalogItemIds": [
+        "pic-p2-10"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one classic black and white soccer football resting on short green grass, soft daylight, phonics object card, no text, no logo brands",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:34:44.216Z"
+      },
+      "status": "generated",
+      "byteLength": 87600,
+      "contentHash": "c61f44cdfe268f13"
+    },
+    {
+      "id": "hq-circle-plate",
+      "filename": "circle-plate.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/circle-plate.webp",
+      "learningObjective": "Recognise a circle shape.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A round white plate showing a clear circle shape",
+      "catalogItemIds": [
+        "pic-p2-11"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one round white ceramic plate on a light wooden table viewed from above, clear circle shape for geometry learning, soft daylight, no food, no text",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:35:01.927Z"
+      },
+      "status": "generated",
+      "byteLength": 84514,
+      "contentHash": "61c919ff51fdac64"
+    },
+    {
+      "id": "hq-square-tile",
+      "filename": "square-tile.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/square-tile.webp",
+      "learningObjective": "Recognise a square shape.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A square wooden tile or block showing equal sides",
+      "catalogItemIds": [
+        "pic-p2-12"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one square light-wood block centered on a pale background, equal sides clearly visible for shape learning, soft daylight, no text, no numbers",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:35:21.067Z"
+      },
+      "status": "generated",
+      "byteLength": 26394,
+      "contentHash": "2970a84ef0f6bdc2"
+    },
+    {
+      "id": "hq-hand",
+      "filename": "hand.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/hand.webp",
+      "learningObjective": "Recognise a hand (body part).",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A child's open hand palm facing camera on a soft background",
+      "catalogItemIds": [
+        "pic-p2-13"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one child's open right hand, palm facing camera, soft neutral background, body-parts flashcard, natural skin tone of a West African child, no jewellery, no text, no extra limbs",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:35:38.429Z"
+      },
+      "status": "generated",
+      "byteLength": 30110,
+      "contentHash": "816a749b5258079e"
+    },
+    {
+      "id": "hq-eye",
+      "filename": "eye.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/eye.webp",
+      "learningObjective": "Recognise an eye (body part).",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A close-up of a child's eye with clear iris, educational and respectful",
+      "catalogItemIds": [
+        "pic-p2-14"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic respectful educational close-up of one child's eye and eyebrow, West African child, soft natural light, body-parts flashcard, calm expression, no makeup, no text, no distortion",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:35:56.001Z"
+      },
+      "status": "generated",
+      "byteLength": 140020,
+      "contentHash": "26de5d086697b1bc"
+    },
+    {
+      "id": "hq-cup",
+      "filename": "cup.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/cup.webp",
+      "learningObjective": "Recognise a cup.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A simple ceramic cup on a wooden table",
+      "catalogItemIds": [
+        "pic-p2-15"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one simple cream ceramic cup on a light wooden table, soft daylight, household object flashcard, no text, no logo, no steam clutter",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:36:13.367Z"
+      },
+      "status": "generated",
+      "byteLength": 17132,
+      "contentHash": "c928af47802ed46e"
+    },
+    {
+      "id": "hq-chair",
+      "filename": "chair.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/chair.webp",
+      "learningObjective": "Recognise a chair.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A simple wooden chair in a bright classroom corner",
+      "catalogItemIds": [
+        "pic-p2-16"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one simple wooden four-legged chair in a bright empty classroom corner, soft daylight, household object flashcard, no people, no text",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:36:31.153Z"
+      },
+      "status": "generated",
+      "byteLength": 47334,
+      "contentHash": "86dcddbc8d28cfc0"
+    },
+    {
+      "id": "hq-teacher",
+      "filename": "teacher.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/teacher.webp",
+      "learningObjective": "Recognise a teacher (community helper).",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A smiling Ghanaian woman teacher beside a chalkboard in a classroom",
+      "catalogItemIds": [
+        "pic-p2-17"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of a smiling Ghanaian woman teacher wearing a blue blazer, standing beside a clean chalkboard in a bright classroom, community helper flashcard, respectful, no readable text on board, no logos",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:36:55.197Z"
+      },
+      "status": "generated",
+      "byteLength": 100024,
+      "contentHash": "087e92ac452e0cd1"
+    },
+    {
+      "id": "hq-farmer",
+      "filename": "farmer.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/farmer.webp",
+      "learningObjective": "Recognise a farmer (community helper).",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A Ghanaian farmer with a hoe in a green field",
+      "catalogItemIds": [
+        "pic-p2-18"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of a Ghanaian man farmer in a straw hat holding a hoe in a green field, soft daylight, community helper flashcard, respectful, no text, no brand logos",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:37:12.961Z"
+      },
+      "status": "generated",
+      "byteLength": 151884,
+      "contentHash": "aaee7794b4ffe760"
+    },
+    {
+      "id": "hq-river",
+      "filename": "river.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/river.webp",
+      "learningObjective": "Recognise a river environment.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A calm river with green banks under soft daylight",
+      "catalogItemIds": [
+        "pic-p2-19"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of a calm West African river with green banks and soft daylight sky, environment flashcard, no people, no text, no litter",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:37:30.419Z"
+      },
+      "status": "generated",
+      "byteLength": 84048,
+      "contentHash": "7f9688cbaae5c1af"
+    },
+    {
+      "id": "hq-tree",
+      "filename": "tree.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/tree.webp",
+      "learningObjective": "Recognise a tree.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A large shade tree with green leaves in a Ghanaian landscape",
+      "catalogItemIds": [
+        "pic-p2-20"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one large healthy shade tree with green leaves in a Ghanaian landscape, soft daylight, nature flashcard, no text, no people close-up",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:37:47.927Z"
+      },
+      "status": "generated",
+      "byteLength": 130144,
+      "contentHash": "71fa098a9019ef9b"
+    },
+    {
+      "id": "hq-potter",
+      "filename": "potter.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/potter.webp",
+      "learningObjective": "Recognise pottery making as a traditional occupation.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A Ghanaian potter shaping a clay pot on a workshop floor",
+      "catalogItemIds": [
+        "culture-p2-potter"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of a Ghanaian potter shaping a brown clay pot by hand in a simple workshop, traditional craft, soft daylight, respectful, no text, no brand logos",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:38:05.280Z"
+      },
+      "status": "generated",
+      "byteLength": 119418,
+      "contentHash": "85e88cff03a6cf7c"
+    },
+    {
+      "id": "hq-pineapple",
+      "filename": "pineapple.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/pineapple.webp",
+      "learningObjective": "Recognise a pineapple.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en+tw",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A whole pineapple with green crown on a wooden surface",
+      "catalogItemIds": [
+        "pic-pineapple-kg2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one whole ripe pineapple with green crown on a light wooden surface, soft daylight, Ghana produce flashcard, no text, no hands, no cut fruit",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:38:22.719Z"
+      },
+      "status": "generated",
+      "byteLength": 91496,
+      "contentHash": "d00a99335fea6097"
+    },
+    {
+      "id": "hq-plantain",
+      "filename": "plantain.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/plantain.webp",
+      "learningObjective": "Recognise plantain.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en+tw",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A bunch of green and yellow plantains on a market mat",
+      "catalogItemIds": [
+        "pic-plantain-kg2",
+        "rhyme-p2-7"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of a small bunch of green-to-yellow plantains on a woven market mat, soft daylight, Ghana food flashcard, no text, no hands",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:38:40.435Z"
+      },
+      "status": "generated",
+      "byteLength": 105342,
+      "contentHash": "51ccb1dcc2ef1e3f"
+    },
+    {
+      "id": "hq-dog",
+      "filename": "dog.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/dog.webp",
+      "learningObjective": "Recognise a dog.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A friendly medium-sized brown dog sitting outdoors",
+      "catalogItemIds": [
+        "pic-dog-kg2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one friendly medium-sized brown dog sitting outdoors in soft daylight, calm expression, animal flashcard, no text, no collar logos",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:38:59.296Z"
+      },
+      "status": "generated",
+      "byteLength": 102010,
+      "contentHash": "58454a20f5091c7a"
+    },
+    {
+      "id": "hq-cat",
+      "filename": "cat.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/cat.webp",
+      "learningObjective": "Recognise a cat.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A grey and white cat sitting calmly indoors",
+      "catalogItemIds": [
+        "pic-cat-kg2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one grey and white cat sitting calmly on a simple floor, soft daylight, animal flashcard, no text",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:39:16.931Z"
+      },
+      "status": "generated",
+      "byteLength": 130206,
+      "contentHash": "c1c6638e96e64f87"
+    },
+    {
+      "id": "hq-pencil",
+      "filename": "pencil.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/pencil.webp",
+      "learningObjective": "Recognise a pencil.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A yellow wooden pencil with pink eraser on a notebook",
+      "catalogItemIds": [
+        "pic-pencil-kg2",
+        "story-p2-2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one yellow wooden pencil with pink eraser resting on a blank notebook page, soft daylight, school object flashcard, no writing, no text brands",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:39:34.311Z"
+      },
+      "status": "generated",
+      "byteLength": 16772,
+      "contentHash": "d56cacb1eefaa6bc"
+    },
+    {
+      "id": "hq-table",
+      "filename": "table.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/table.webp",
+      "learningObjective": "Recognise a table.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A simple four-legged wooden table in an empty room",
+      "catalogItemIds": [
+        "pic-table-kg2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one simple four-legged light wooden table in an empty bright room, soft daylight, household object flashcard, no clutter, no text",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:39:52.107Z"
+      },
+      "status": "generated",
+      "byteLength": 21848,
+      "contentHash": "5a56591d95cbf280"
+    },
+    {
+      "id": "hq-school-bag",
+      "filename": "school-bag.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/school-bag.webp",
+      "learningObjective": "Recognise a school bag.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A sturdy black school backpack on a classroom floor",
+      "catalogItemIds": [
+        "pic-school-bag-kg2",
+        "rhyme-p2-11"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one sturdy black school backpack standing on a classroom floor, soft daylight, school object flashcard, no logos, no text",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:40:11.106Z"
+      },
+      "status": "generated",
+      "byteLength": 84034,
+      "contentHash": "f92049f609643dc9"
+    },
+    {
+      "id": "hq-market-seller",
+      "filename": "market-seller.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/market-seller.webp",
+      "learningObjective": "Recognise a market seller.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A Ghanaian woman market seller at a tomato stall",
+      "catalogItemIds": [
+        "pic-market-seller-kg2",
+        "rhyme-p2-2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of a smiling Ghanaian woman market seller in colourful traditional dress and headwrap behind a tomato stall, Accra market feel, soft daylight, respectful, no readable brand text",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:40:29.762Z"
+      },
+      "status": "generated",
+      "byteLength": 204420,
+      "contentHash": "acf45bb9a832fec9"
+    },
+    {
+      "id": "hq-nurse",
+      "filename": "nurse.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/nurse.webp",
+      "learningObjective": "Recognise a nurse.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A Ghanaian nurse in a white uniform with a stethoscope",
+      "catalogItemIds": [
+        "pic-nurse-kg2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of a smiling Ghanaian woman nurse in a clean white uniform with a stethoscope, soft clinic background, community helper flashcard, respectful, no text, no logos",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:40:48.654Z"
+      },
+      "status": "generated",
+      "byteLength": 60388,
+      "contentHash": "6337adf4bcc8b6fb"
+    },
+    {
+      "id": "hq-ghana-flag",
+      "filename": "ghana-flag.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/ghana-flag.webp",
+      "learningObjective": "Recognise the flag of Ghana.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "The flag of Ghana waving outdoors with red gold green and black star",
+      "catalogItemIds": [
+        "country-ghana-profile",
+        "pic-ghana-flag-kg2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of the national flag of Ghana waving outdoors, red gold green horizontal stripes with black star, soft daylight blue sky, accurate colours, no other flags, no text watermarks",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:41:07.023Z"
+      },
+      "status": "generated",
+      "byteLength": 76912,
+      "contentHash": "18b10eff3657c251"
+    },
+    {
+      "id": "hq-basket",
+      "filename": "basket.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/basket.webp",
+      "learningObjective": "Recognise a woven Bolgatanga-style basket.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "photographic",
+      "altText": "A colourful woven basket with a handle on a wooden surface",
+      "catalogItemIds": [
+        "pic-basket-kg2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Photorealistic educational photo of one colourful woven Bolgatanga-style basket with handle on a wooden surface, Ghana craft, soft daylight, no text, no plastic look",
+      "negativePrompt": "cartoon, anime, clipart, emoji, text, watermark, logo, distorted hands, extra fingers, blurry, low quality, plastic toy look, european supermarket branding, letters in image, words",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI-generated for GigaLearn education. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:41:27.799Z"
+      },
+      "status": "generated",
+      "byteLength": 154560,
+      "contentHash": "8631d939e0828e7d"
+    },
+    {
+      "id": "hq-ananse-sharing-pot",
+      "filename": "ananse-sharing-pot.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/ananse-sharing-pot.webp",
+      "learningObjective": "Follow Ananse sharing-pot story.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "storybook_illustration",
+      "altText": "Storybook illustration of Ananse beside a large cooking pot under a shade tree in a Ghanaian village",
+      "catalogItemIds": [
+        "story-p2-1"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Warm children's storybook illustration, friendly Ananse the spider beside a large clay cooking pot under a shade tree in a Ghanaian village, soft watercolor-ink style, culturally respectful, no text, no photorealism",
+      "negativePrompt": "photorealistic photo, 3d render, text, watermark, logo, scary, violence, distorted anatomy, wrong cultural clothing, european fairy-tale style, disney, copyrighted character",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI storybook illustration for GigaLearn. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:41:47.176Z"
+      },
+      "status": "generated",
+      "byteLength": 193616,
+      "contentHash": "ed854ae9d91ef940"
+    },
+    {
+      "id": "hq-little-weaver",
+      "filename": "little-weaver.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/little-weaver.webp",
+      "learningObjective": "Follow a weaving story.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "storybook_illustration",
+      "altText": "Storybook illustration of a child watching a kente weaver at a wooden loom",
+      "catalogItemIds": [
+        "story-p2-10"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Warm children's storybook illustration of a Ghanaian child watching an adult weaver at a traditional wooden kente loom with colourful strips, soft watercolor-ink style, culturally respectful, no text, no photorealism",
+      "negativePrompt": "photorealistic photo, 3d render, text, watermark, logo, scary, violence, distorted anatomy, wrong cultural clothing, european fairy-tale style, disney, copyrighted character",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI storybook illustration for GigaLearn. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:42:06.249Z"
+      },
+      "status": "generated",
+      "byteLength": 302592,
+      "contentHash": "f0656ffda89e429a"
+    },
+    {
+      "id": "hq-market-morning",
+      "filename": "market-morning.webp",
+      "publicPath": "/gigalearn/media/ghana/kg2/hq/market-morning.webp",
+      "learningObjective": "Enjoy a market morning rhyme scene.",
+      "ageGroup": "KG2 (4–5)",
+      "country": "Ghana",
+      "language": "en",
+      "aspectRatio": "1:1",
+      "style": "storybook_illustration",
+      "altText": "Storybook illustration of a bright Ghanaian open-air market with fruit stalls",
+      "catalogItemIds": [
+        "rhyme-p2-2"
+      ],
+      "offlineRequired": true,
+      "generationPrompt": "Warm children's storybook illustration of a bright Ghanaian open-air market morning with fruit stalls and friendly shoppers, soft watercolor-ink style, culturally respectful West African setting, no text, no photorealism",
+      "negativePrompt": "photorealistic photo, 3d render, text, watermark, logo, scary, violence, distorted anatomy, wrong cultural clothing, european fairy-tale style, disney, copyrighted character",
+      "licensing": {
+        "rights": "original-ai-generated",
+        "provider": "fal",
+        "reviewed": false,
+        "notes": "AI storybook illustration for GigaLearn. Educator visual review pending.",
+        "model": "fal-ai/flux/schnell",
+        "generatedAt": "2026-10-09T13:42:23.752Z"
+      },
+      "status": "generated",
+      "byteLength": 304916,
+      "contentHash": "825da14d3317087c"
+    }
+  ],
+  "generatedAt": "2026-10-09T13:42:23.752Z",
+  "provider": "fal",
+  "model": "fal-ai/flux/schnell"
+}

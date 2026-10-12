@@ -119,6 +119,18 @@ export type LearningMediaItem = {
   culturalTheme?: string;
   ageSuitability?: MediaAgeSuitability;
   illustration: Extract<MediaAssetRef, { kind: "emoji" }>;
+  /**
+   * Optional high-quality poster for Discover cards / player hero.
+   * Prefer WebP/JPEG under /gigalearn/media/… — never invent remote CDN URLs.
+   * When set, include the same URL in `remoteMedia` with `required: true` for offline packs.
+   */
+  posterImage?: {
+    url: string;
+    alt: string;
+    mimeType: "image/webp" | "image/jpeg" | "image/png";
+    estimatedBytes: number;
+    aspectRatio?: "1:1" | "4:3" | "16:9";
+  };
   /** Spoken labels — English first, then local languages when provided. */
   narrations: Extract<MediaAssetRef, { kind: "tts" }>[];
   /** Optional remote media — only downloaded when the learner opts in. */

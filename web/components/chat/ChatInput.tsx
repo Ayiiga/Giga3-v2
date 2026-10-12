@@ -49,6 +49,12 @@ interface ChatInputProps {
   uploadUsage?: UploadUsageSnapshot | null;
   credits?: number | null;
   subscriptionActive?: boolean;
+  isPremium?: boolean;
+  freeImageRemaining?: number | null;
+  freeImageLimit?: number | null;
+  freeImageResetsAt?: number | null;
+  freeImageTimeZone?: string | null;
+  freeImageGenerationEnabled?: boolean;
   onAttachmentsChange?: (attachments: PreparedChatAttachment[]) => void;
   onSuggestVisionTier?: () => void;
   /** One-shot attachments from GigaLearn homework handoff. */
@@ -70,6 +76,12 @@ export const ChatInput = memo(function ChatInput({
   uploadUsage,
   credits,
   subscriptionActive = false,
+  isPremium = false,
+  freeImageRemaining = null,
+  freeImageLimit = null,
+  freeImageResetsAt = null,
+  freeImageTimeZone = null,
+  freeImageGenerationEnabled = true,
   onAttachmentsChange,
   onSuggestVisionTier,
   initialAttachments,
@@ -543,10 +555,42 @@ export const ChatInput = memo(function ChatInput({
             {attachments.length > 0 ? ` · max ${formatUploadBytes(uploadUsage.limits.maxFileBytes)}` : ""}
           </p>
         )}
+        {!isPremium &&
+        freeImageGenerationEnabled &&
+        freeImageRemaining != null &&
+        freeImageLimit != null ? (
+          <p
+            className="px-2 text-center text-[11px] leading-relaxed text-[#6D28D9]/90"
+            role="status"
+            aria-live="polite"
+          >
+            {freeImageRemaining > 0
+              ? `Free AI images today: ${freeImageRemaining} of ${freeImageLimit} remaining`
+              : `Free AI image limit reached (${freeImageLimit}/day)`}
+            {freeImageResetsAt
+              ? ` · resets ${formatFreeImageReset(freeImageResetsAt, freeImageTimeZone)}`
+              : ""}
+            . CV & letter templates stay free.
+          </p>
+        ) : null}
       </div>
     </form>
   );
 });
+
+function formatFreeImageReset(resetsAt: number, timeZone?: string | null): string {
+  try {
+    return new Intl.DateTimeFormat("en-GH", {
+      timeZone: timeZone || "Africa/Accra",
+      weekday: "short",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZoneName: "short",
+    }).format(new Date(resetsAt));
+  } catch {
+    return new Date(resetsAt).toLocaleString();
+  }
+}
 
 function NoticeBanner({
   message,

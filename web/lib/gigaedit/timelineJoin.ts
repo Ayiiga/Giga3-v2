@@ -36,6 +36,27 @@ export function clipAtTimelineSec(
   );
 }
 
+/**
+ * Resolve which main-track clip playhead Trim should edit.
+ * Never falls back to the first clip — gaps / past-end / stale selection → null.
+ */
+export function resolvePlayheadTrimTarget(
+  clips: GigaEditTimelineClip[],
+  playheadSec: number,
+  selectedClipId?: string | null
+): GigaEditTimelineClip | null {
+  const underPlayhead = clipAtTimelineSec(clips, playheadSec);
+  if (underPlayhead) return underPlayhead;
+
+  if (!selectedClipId) return null;
+  const selected = sortedMainVideoClips(clips).find((clip) => clip.id === selectedClipId);
+  if (!selected) return null;
+  if (playheadSec >= selected.startSec && playheadSec < selected.endSec - 0.001) {
+    return selected;
+  }
+  return null;
+}
+
 export function timelineSecToSourceSec(
   clip: GigaEditTimelineClip,
   timelineSec: number

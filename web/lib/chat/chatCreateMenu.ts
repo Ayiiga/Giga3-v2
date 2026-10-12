@@ -111,7 +111,13 @@ export const CHAT_CREATE_SECTIONS: ChatCreateMenuSection[] = [
     title: "AI Creation",
     items: [
       { id: "ai-chat", label: "AI Chat", emoji: "💬", description: "Stay in chat", runtime: "AI STUDIO" },
-      { id: "ai-image", label: "AI Image", emoji: "🖼", description: "Open Media Studio", runtime: "AI STUDIO" },
+      {
+        id: "ai-image",
+        label: "AI Image",
+        emoji: "🖼",
+        description: "Create or edit an image in chat",
+        runtime: "AI STUDIO",
+      },
       { id: "ai-video", label: "AI Video", emoji: "🎬", description: "Open Video AI", runtime: "AI STUDIO" },
       {
         id: "ai-document",
@@ -147,6 +153,8 @@ const DOCUMENT_TEMPLATE_MAP: Partial<Record<ChatCreateActionId, DocumentTemplate
 const INLINE_TEMPLATES: Partial<Record<ChatCreateActionId, string>> = {
   "web-link":
     "Please read this public link and summarize the key points: ",
+  "ai-image":
+    "Generate an image of: ",
   "doc-pdf":
     "Create a polished document ready for PDF/Word export.\n\nTopic:\n\nKey sections:\n1.\n2.\n3.\n",
   "doc-lesson-notes":
@@ -191,8 +199,6 @@ export function resolveChatCreateRoute(action: ChatCreateActionId): ChatCreateRo
   switch (action) {
     case "ai-chat":
       return { kind: "noop" };
-    case "ai-image":
-      return { kind: "navigate", href: siteConfig.links.media };
     case "ai-video":
       return { kind: "navigate", href: siteConfig.links.video };
     case "ai-document":

@@ -13,7 +13,13 @@ import type {
   GigaEditPublishPrivacy,
 } from "@/lib/gigaedit/publishTypes";
 import { saveSound, type GigaEditSoundAsset } from "@/lib/gigaedit/soundLibrary";
+import { CreatorSurveyManualLink } from "@/components/gigaedit/CreatorSurveyHost";
+import {
+  offerCreatorSurvey,
+  shouldAutoOfferCreatorSurvey,
+} from "@/lib/gigaedit/creatorSurvey";
 import { saveExportedFileToDevice } from "@/lib/gigaedit/downloadExport";
+import type { GigaEditStarterPackId } from "@/lib/gigaedit/templates";
 import type { ExportAspectRatio } from "@/lib/gigaedit/types";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -27,6 +33,8 @@ export type PublishScreenProps = {
   aspectRatio: ExportAspectRatio;
   durationSec?: number;
   projectId?: string;
+  /** Starter Pack id from project.notes when known — survey pre-fill only. */
+  starterTemplateId?: GigaEditStarterPackId | null;
   aiAssisted?: boolean;
   defaultCaption?: string;
   creatorHandle?: string;
@@ -66,6 +74,7 @@ export function PublishScreen({
   aspectRatio,
   durationSec,
   projectId,
+  starterTemplateId = null,
   aiAssisted = false,
   defaultCaption = "",
   creatorHandle = "creator",
@@ -220,15 +229,28 @@ export function PublishScreen({
   async function saveToDevice() {
     setBusy(true);
     try {
-      const savedVia = await saveExportedFileToDevice(
+      const saveResult = await saveExportedFileToDevice(
         editedFile,
         caption || "Made with GigaEdit on Giga3 AI"
       );
+      if (saveResult.outcome === "cancelled") {
+        setStatus("Share cancelled — tap Save to Gallery again when ready.");
+        return;
+      }
       setStatus(
-        savedVia === "shared"
-          ? "Pick Gallery or Photos in the share sheet to save your video."
-          : `Saved ${editedFile.name} to Downloads. Check Files or Gallery.`
+        saveResult.outcome === "shared"
+          ? "Pick Gallery or Photos in the share sheet if you want it there. The app cannot verify gallery save."
+          : `Download started for ${editedFile.name}. Check Files or Downloads — gallery save is not verified.`
       );
+      // Auto-offer after non-cancelled delivery; never prefill export=Yes (gallery unverified).
+      if (shouldAutoOfferCreatorSurvey(saveResult.outcome)) {
+        offerCreatorSurvey({
+          projectId,
+          starterId: starterTemplateId,
+          deviceSaveOutcome: saveResult.outcome,
+          source: "publish_save",
+        });
+      }
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Could not save to device.");
     } finally {
@@ -239,12 +261,16 @@ export function PublishScreen({
   async function shareExternal() {
     setBusy(true);
     try {
-      const savedVia = await saveExportedFileToDevice(
+      const saveResult = await saveExportedFileToDevice(
         editedFile,
         caption || "Made with GigaEdit on Giga3 AI"
       );
+      if (saveResult.outcome === "cancelled") {
+        setStatus("Share cancelled.");
+        return;
+      }
       setStatus(
-        savedVia === "shared"
+        saveResult.outcome === "shared"
           ? "Shared via device apps."
           : "Share API unavailable — downloaded file instead."
       );
@@ -302,6 +328,11 @@ export function PublishScreen({
           >
             🚀 Post on GigaSocial
           </button>
+          <CreatorSurveyManualLink
+            projectId={projectId}
+            starterId={starterTemplateId}
+            className="gigaedit-survey-entry mx-auto"
+          />
         </div>
 
         {kind === "video" ? (

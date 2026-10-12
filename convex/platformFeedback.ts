@@ -16,6 +16,9 @@ const MAX_SCREENSHOT = 500_000;
 const FEEDBACK_RATE_WINDOW_MS = 60 * 60 * 1000;
 const MAX_FEEDBACK_PER_HOUR = 8;
 
+/** Must match web/lib/gigaedit/creatorSurvey.ts CREATOR_SURVEY_TITLE — no shared package. */
+const GIGAEDITS_CREATOR_SURVEY_TITLE = "GigaEdits Starter Pack survey";
+
 const PHASE5_ONLY_TYPES = new Set(["usability", "content_report"]);
 
 const PRIORITY_RANK: Record<string, number> = {
@@ -192,20 +195,30 @@ export const listFeedbackDashboardAdmin = query({
       .take(50);
 
     return {
-      items: ranked.map((r) => ({
-        _id: r._id,
-        type: r.type,
-        status: r.status,
-        title: r.title,
-        body: r.body.slice(0, 280),
-        rating: r.rating,
-        priority: r.priority ?? inferPriority(r.type, r.rating),
-        adminNote: r.adminNote,
-        createdAt: r.createdAt,
-        updatedAt: r.updatedAt,
-        // Never expose raw user email internals beyond ops need — keep id only.
-        hasUser: Boolean(r.userId),
-      })),
+      items: ranked.map((r) => {
+        const preview = r.body.slice(0, 280);
+        const isGigaEditsSurvey = r.title === GIGAEDITS_CREATOR_SURVEY_TITLE;
+        return {
+          _id: r._id,
+          type: r.type,
+          status: r.status,
+          title: r.title,
+          body: preview,
+          /**
+           * Full body for GigaEdits creator survey only — admin dashboard preview
+           * truncates at 280 chars; survey answers past that need this field.
+           * Still admin-gated via ensureAdminAccess above. Cap at MAX_BODY.
+           */
+          bodyFull: isGigaEditsSurvey ? r.body.slice(0, MAX_BODY) : undefined,
+          rating: r.rating,
+          priority: r.priority ?? inferPriority(r.type, r.rating),
+          adminNote: r.adminNote,
+          createdAt: r.createdAt,
+          updatedAt: r.updatedAt,
+          // Never expose raw user email internals beyond ops need — keep id only.
+          hasUser: Boolean(r.userId),
+        };
+      }),
       counts: {
         open: open.length,
         reviewing: reviewing.length,

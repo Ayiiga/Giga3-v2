@@ -180,6 +180,11 @@ function ChatShellInner({
     isPremium,
     subscriptionActive,
     freeOpenAiRemaining,
+    freeImageRemaining,
+    freeImageLimit,
+    freeImageResetsAt,
+    freeImageTimeZone,
+    freeImageGenerationEnabled,
     interestProfileJson,
     uploadUsage,
     retryOutboxSync,
@@ -801,6 +806,12 @@ function ChatShellInner({
           uploadUsage={uploadUsage}
           credits={credits}
           subscriptionActive={subscriptionActive}
+          isPremium={isPremium}
+          freeImageRemaining={freeImageRemaining}
+          freeImageLimit={freeImageLimit}
+          freeImageResetsAt={freeImageResetsAt}
+          freeImageTimeZone={freeImageTimeZone}
+          freeImageGenerationEnabled={freeImageGenerationEnabled}
           error={visibleError}
           onDismissError={() => setDismissedError(error)}
           onRetryFailedReply={

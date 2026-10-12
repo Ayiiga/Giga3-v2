@@ -6,10 +6,10 @@ import {
 } from "../../web/lib/navigation/createDestinations";
 
 describe("createDestinations", () => {
-  it("lists Media Studio and GigaEdits under Create", () => {
-    expect(CREATE_SUB_DESTINATIONS.map((d) => d.id)).toEqual(["media", "gigaedit"]);
-    expect(CREATE_SUB_DESTINATIONS[0].href).toContain("/media");
-    expect(CREATE_SUB_DESTINATIONS[1].href).toContain("/gigaedit");
+  it("lists GigaEdits first (default) then Media Studio under Create", () => {
+    expect(CREATE_SUB_DESTINATIONS.map((d) => d.id)).toEqual(["gigaedit", "media"]);
+    expect(CREATE_SUB_DESTINATIONS[0].href).toContain("/gigaedit");
+    expect(CREATE_SUB_DESTINATIONS[1].href).toContain("/media");
   });
 
   it("resolves create sub-routes from pathname", () => {

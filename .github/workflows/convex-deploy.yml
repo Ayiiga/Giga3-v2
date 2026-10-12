@@ -91,7 +91,8 @@ jobs:
         run: |
           set -o pipefail
           echo "convex CLI: $(npx convex --version)"
-          if ! npx convex deploy --yes --verbose --typecheck disable 2>&1 | tee convex-deploy.log; then
+          # Avoid --verbose: Convex startPush can dump environment variable values into logs.
+          if ! npx convex deploy --yes --typecheck disable 2>&1 | tee convex-deploy.log; then
             echo "## Convex deploy failed" >> "$GITHUB_STEP_SUMMARY"
             echo "If you see Unauthorized or Invalid deploy key, regenerate **prod:perfect-lark-521|…** in Convex dashboard and update GitHub secret CONVEX_DEPLOY_KEY." >> "$GITHUB_STEP_SUMMARY"
             echo '```text' >> "$GITHUB_STEP_SUMMARY"
@@ -136,6 +137,9 @@ jobs:
           PAYSTACK_PUBLIC_KEY: ${{ secrets.PAYSTACK_PUBLIC_KEY }}
           FRONTEND_URL: ${{ vars.FRONTEND_URL || 'https://www.giga3ai.com' }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          # Only sync when set — never force the Resend onboarding sandbox onto Convex.
+          AUTH_FROM_EMAIL: ${{ vars.AUTH_FROM_EMAIL || secrets.AUTH_FROM_EMAIL }}
+          AUTH_EMAIL_FALLBACK_INBOX: ${{ vars.AUTH_EMAIL_FALLBACK_INBOX || secrets.AUTH_EMAIL_FALLBACK_INBOX }}
           GOOGLE_CLIENT_ID: ${{ vars.NEXT_PUBLIC_GOOGLE_CLIENT_ID || secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID || secrets.GOOGLE_CLIENT_ID }}
           PLATFORM_ADMIN_EMAILS: ${{ secrets.PLATFORM_ADMIN_EMAILS }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
@@ -182,9 +186,16 @@ jobs:
             npx convex env set FRONTEND_URL "${FRONTEND_URL}"
             echo "FRONTEND_URL synced for Paystack callback redirects."
           fi
+          # Sync only a Resend-shaped key. Never write AUTH_FROM_EMAIL (or any email From)
+          # into RESEND_API_KEY — a mis-set GitHub secret previously clobbered production.
           if [ -n "${RESEND_API_KEY:-}" ]; then
-            npx convex env set RESEND_API_KEY "${RESEND_API_KEY}"
-            echo "RESEND_API_KEY synced — password reset + engagement email enabled."
+            if [[ "${RESEND_API_KEY}" == re_* ]] && [[ "${RESEND_API_KEY}" != *"@"* ]] && [[ "${RESEND_API_KEY}" != *"<"* ]] && [[ "${RESEND_API_KEY}" != *" "* ]]; then
+              npx convex env set RESEND_API_KEY "${RESEND_API_KEY}"
+              echo "RESEND_API_KEY synced — password reset + engagement email enabled."
+            else
+              echo "::error::RESEND_API_KEY GitHub secret is not a Resend API key shape (must start with re_ and must not look like an email From). Leaving Convex RESEND_API_KEY unchanged."
+              exit 1
+            fi
           else
             echo "::warning::RESEND_API_KEY GitHub secret is empty — forgot-password and engagement emails will not send until it is set."
           fi
@@ -197,11 +208,21 @@ jobs:
           if [ -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
             npx convex env set SUPABASE_SERVICE_ROLE_KEY "${SUPABASE_SERVICE_ROLE_KEY}"
           fi
-          # Prefer a verified giga3ai.com sender. The onboarding sender cannot deliver
-          # to arbitrary recipients; reset links are still addressed only to the user.
-          FROM_EMAIL="${AUTH_FROM_EMAIL:-Giga3 AI <onboarding@resend.dev>}"
-          npx convex env set AUTH_FROM_EMAIL "${FROM_EMAIL}"
-          npx convex env set AUTH_EMAIL_FALLBACK_INBOX "${AUTH_EMAIL_FALLBACK_INBOX:-ayiiga3@gmail.com}"
+          # Prefer a verified giga3ai.com sender. Never clobber Convex with the Resend
+          # onboarding sandbox when GitHub AUTH_FROM_EMAIL is unset — that blocked
+          # bulk/digest preflight and undid domain-setup / manual Convex env sets.
+          if [ -n "${AUTH_FROM_EMAIL:-}" ]; then
+            npx convex env set AUTH_FROM_EMAIL "${AUTH_FROM_EMAIL}"
+            echo "AUTH_FROM_EMAIL synced from GitHub."
+          else
+            echo "::warning::AUTH_FROM_EMAIL GitHub var/secret unset — leaving Convex AUTH_FROM_EMAIL unchanged (will not force onboarding@resend.dev)."
+          fi
+          if [ -n "${AUTH_EMAIL_FALLBACK_INBOX:-}" ]; then
+            npx convex env set AUTH_EMAIL_FALLBACK_INBOX "${AUTH_EMAIL_FALLBACK_INBOX}"
+            echo "AUTH_EMAIL_FALLBACK_INBOX synced from GitHub."
+          else
+            echo "AUTH_EMAIL_FALLBACK_INBOX unset — leaving Convex value unchanged."
+          fi
           if [ -n "${GOOGLE_CLIENT_ID:-}" ]; then
             npx convex env set GOOGLE_CLIENT_ID "${GOOGLE_CLIENT_ID}"
             echo "GOOGLE_CLIENT_ID synced for Sign in with Google."
@@ -210,7 +231,6 @@ jobs:
           fi
           npx convex env set PLATFORM_ADMIN_EMAILS "${PLATFORM_ADMIN_EMAILS:-ayiiga3@gmail.com}"
           echo "Chat latency env applied (CHAT_*). Optional secrets synced if present."
-          echo "AUTH_FROM_EMAIL / AUTH_EMAIL_FALLBACK_INBOX set for transactional mail."
 
       - name: Convex deploy failure details
         if: failure() && steps.convex_deploy.outcome == 'failure'

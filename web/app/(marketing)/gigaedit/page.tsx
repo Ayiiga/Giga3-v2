@@ -33,9 +33,10 @@ export default function GigaEditPage() {
         ]}
       />
       <ProductSeoHeader
+        compact
         title="GigaEdit — Trim, join, and publish video"
-        description="Edit video and photos in the browser, then share finished work to GigaSocial. Pair with Media Studio when you need AI-generated images first. See /gigaedits/ for the creator editing product overview."
-        detail="Available tools include multi-clip timelines, audio tracks, teleprompter recording, templates, and offline project storage on supported devices."
+        description="Edit video and photos in the browser, then share finished work to GigaSocial."
+        detail="Pair with Media Studio when you need AI-generated images first. See /gigaedits/ for the creator editing product overview. Available tools include multi-clip timelines, audio tracks, teleprompter recording, the Creator Growth Starter Pack (Hook Reel 9:16, YouTube Intro 16:9, Promo Poster 4:5), and offline project storage on supported devices. Format starters open a correctly sized project with a starter title — import your media and finish with Giga3 AI tools."
         showProductNav={false}
         className="gigaedit-seo-header"
       />

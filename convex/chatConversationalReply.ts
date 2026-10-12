@@ -69,6 +69,7 @@ export const processTurn = internalAction({
         content: job.content,
         mode: job.mode,
         personaId: job.personaId,
+        chatSystem: job.chatSystem,
         since: job.createdAt,
       });
 

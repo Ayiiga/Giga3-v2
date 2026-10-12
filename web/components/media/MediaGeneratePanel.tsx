@@ -276,46 +276,36 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
         </button>
       </div>
 
-      <div className="saas-card space-y-6 p-6 shadow-premium sm:p-8">
+      <div className="saas-card space-y-5 p-4 shadow-premium sm:space-y-6 sm:p-8">
         {tab === "video" ? (
           <>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setVideoWorkflow("preprod")}
-                className={cn(
-                  "min-h-11 rounded-xl px-4 py-2 text-sm font-semibold",
-                  videoWorkflow === "preprod"
-                    ? "bg-violet-600 text-white"
-                    : "border border-border text-muted hover:text-foreground"
-                )}
-              >
-                Create video
-              </button>
-              <button
-                type="button"
-                onClick={() => setVideoWorkflow("quick")}
-                className={cn(
-                  "min-h-11 rounded-xl px-4 py-2 text-sm font-semibold",
-                  videoWorkflow === "quick"
-                    ? "bg-violet-600 text-white"
-                    : "border border-border text-muted hover:text-foreground"
-                )}
-              >
-                Quick generate
-              </button>
-              <button
-                type="button"
-                onClick={() => setVideoWorkflow("project")}
-                className={cn(
-                  "min-h-11 rounded-xl px-4 py-2 text-sm font-semibold",
-                  videoWorkflow === "project"
-                    ? "bg-violet-600 text-white"
-                    : "border border-border text-muted hover:text-foreground"
-                )}
-              >
-                Scene Director
-              </button>
+            <div
+              className="gigalearn-grade-scroll flex gap-2 overflow-x-auto overscroll-x-contain pb-1"
+              role="group"
+              aria-label="Video workflow"
+            >
+              {(
+                [
+                  { id: "preprod" as const, label: "Create video" },
+                  { id: "quick" as const, label: "Quick generate" },
+                  { id: "project" as const, label: "Scene Director" },
+                ] as const
+              ).map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  aria-pressed={videoWorkflow === item.id}
+                  onClick={() => setVideoWorkflow(item.id)}
+                  className={cn(
+                    "min-h-11 shrink-0 rounded-xl px-4 py-2 text-sm font-semibold",
+                    videoWorkflow === item.id
+                      ? "bg-violet-600 text-white"
+                      : "border border-border text-muted hover:text-foreground"
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
             {videoWorkflow === "preprod" ? (
               <VideoPreProductionFlow usage={usage} />
@@ -375,11 +365,63 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
           className="input-surface sm:text-lg"
         />
 
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-semibold text-foreground">Style</legend>
+          <div className="gigalearn-grade-scroll flex gap-2 overflow-x-auto overscroll-x-contain pb-1">
+            {categories.slice(0, 6).map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                aria-pressed={category === item.id}
+                onClick={() => setCategory(item.id)}
+                className={cn(
+                  "min-h-11 shrink-0 rounded-full border px-3.5 py-2 text-sm font-semibold",
+                  category === item.id
+                    ? "border-accent bg-accent/15 text-foreground"
+                    : "border-border text-muted hover:border-violet-500/40 hover:text-foreground"
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
+            {categories.length > 6 ? (
+              <button
+                type="button"
+                onClick={() => setAdvancedOpen(true)}
+                className="min-h-11 shrink-0 rounded-full border border-dashed border-border px-3.5 py-2 text-sm font-semibold text-muted"
+              >
+                More styles…
+              </button>
+            ) : null}
+          </div>
+        </fieldset>
+
+        {usage ? (
+          <dl className="grid grid-cols-3 gap-2 rounded-2xl border border-violet-200/80 bg-violet-50/70 px-3 py-3 text-xs">
+            <div>
+              <dt className="text-muted">This image</dt>
+              <dd className="mt-0.5 text-sm font-bold text-foreground">
+                {usage.creditCosts.image} cr
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Balance</dt>
+              <dd className="mt-0.5 text-sm font-bold text-foreground">{usage.credits} cr</dd>
+            </div>
+            <div>
+              <dt className="text-muted">After</dt>
+              <dd className="mt-0.5 text-sm font-bold text-foreground">
+                {Math.max(0, usage.credits - usage.creditCosts.image)} cr
+              </dd>
+            </div>
+          </dl>
+        ) : null}
+
         <div id="advanced-creator-controls" className="rounded-2xl border border-border bg-card/60">
           <button
             type="button"
             onClick={() => setAdvancedOpen((open) => !open)}
-            className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-bold uppercase tracking-wide text-muted"
+            className="flex min-h-11 w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-bold uppercase tracking-wide text-muted"
           >
             Creative options
             <span className="text-xs font-medium normal-case text-accent">
@@ -392,7 +434,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
           {advancedOpen && (
             <div className="grid gap-4 border-t border-border p-4 sm:grid-cols-2">
               <fieldset className="space-y-2 sm:col-span-2">
-                <legend className="text-sm font-semibold text-foreground">Style</legend>
+                <legend className="text-sm font-semibold text-foreground">All styles</legend>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
                   {categories.map((item) => (
                     <button
@@ -537,7 +579,7 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
           {phase === "success" && successMessage && !loading && (
             <div
               role="status"
-              className="flex items-start gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-4 text-base text-emerald-100"
+              className="flex items-start gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-4 text-base text-emerald-900"
             >
               <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0" aria-hidden />
               <span>{successMessage}</span>
@@ -547,10 +589,22 @@ export const MediaGeneratePanel = memo(function MediaGeneratePanel({
           {error && !loading && (
             <div
               role="alert"
-              className="flex items-start gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-4 text-base text-red-100"
+              className="flex flex-col gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-4 text-base text-red-900 sm:flex-row sm:items-center sm:justify-between"
             >
-              <XCircle className="mt-0.5 h-6 w-6 shrink-0" aria-hidden />
-              <span>{error}</span>
+              <span className="flex items-start gap-3">
+                <XCircle className="mt-0.5 h-6 w-6 shrink-0" aria-hidden />
+                <span>{error}</span>
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                className="min-h-11 shrink-0"
+                disabled={loading || !canGen || !prompt.trim()}
+                onClick={() => void handleGenerate()}
+              >
+                Retry
+              </Button>
             </div>
           )}
         </div>

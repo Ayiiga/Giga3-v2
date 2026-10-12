@@ -6,6 +6,7 @@ import {
   BlogArticleMetaStats,
   BlogArticleShareSection,
 } from "@/components/blog/BlogArticleEngagement";
+import { BlogPushSubscribe } from "@/components/blog/BlogPushSubscribe";
 import { BlogTableOfContents } from "@/components/blog/BlogTableOfContents";
 import { RelatedPosts } from "@/components/blog/RelatedPosts";
 import { categorySlugForName, blogCategoryPath } from "@/lib/blog/categories";
@@ -101,6 +102,10 @@ export function BlogArticleLayout({ post, toc, children, cta }: BlogArticleLayou
       </div>
 
       {cta}
+
+      <div className="mt-10">
+        <BlogPushSubscribe />
+      </div>
 
       <RelatedPosts current={post} />
 

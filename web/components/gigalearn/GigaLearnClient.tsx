@@ -156,29 +156,42 @@ function GigaLearnContent() {
       </header>
 
       <nav
-        className="grid grid-cols-3 gap-2 sm:grid-cols-6"
+        className="relative -mx-1"
         aria-label="GigaLearn areas"
       >
-        {GIGALEARN_PRIMARY_AREAS.map((item) => {
-          const Icon = item.icon;
-          const active = area === item.id;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => selectArea(item.id)}
-              className={cn(
-                "flex min-h-11 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-center text-xs font-medium sm:text-sm",
-                active
-                  ? "border-accent/40 bg-accent/10 text-foreground ring-1 ring-accent/20"
-                  : "border-border bg-white text-muted hover:border-accent/25"
-              )}
-            >
-              <Icon className="h-4 w-4 shrink-0" aria-hidden />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
+        <div
+          className="gigalearn-grade-scroll flex gap-2 overflow-x-auto overscroll-x-contain px-1 pb-1 sm:grid sm:grid-cols-6 sm:overflow-visible sm:px-0"
+          role="list"
+        >
+          {GIGALEARN_PRIMARY_AREAS.map((item) => {
+            const Icon = item.icon;
+            const active = area === item.id;
+            const shortLabel = item.id === "tutor" ? "Tutor" : item.label;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                role="listitem"
+                aria-current={active ? "page" : undefined}
+                onClick={() => selectArea(item.id)}
+                className={cn(
+                  "flex min-h-11 min-w-[4.75rem] shrink-0 flex-col items-center justify-center gap-1 rounded-xl border px-2.5 py-2 text-center text-xs font-medium sm:min-w-0 sm:text-sm",
+                  active
+                    ? "border-accent/40 bg-accent/10 text-foreground ring-1 ring-accent/20"
+                    : "border-border bg-white text-muted hover:border-accent/25"
+                )}
+              >
+                <Icon className="h-4 w-4 shrink-0" aria-hidden />
+                <span className="sm:hidden">{shortLabel}</span>
+                <span className="hidden sm:inline">{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div
+          className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[var(--background,#faf8ff)] to-transparent sm:hidden"
+          aria-hidden
+        />
       </nav>
 
       <section className="saas-card rounded-2xl border border-border p-4 sm:p-6">

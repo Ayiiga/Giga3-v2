@@ -150,7 +150,7 @@ export function VideoGenerateForm({
         </div>
       </fieldset>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4">
         <fieldset className="space-y-2">
           <legend className="text-sm font-bold uppercase tracking-wide text-muted">Format</legend>
           <div className="grid grid-cols-3 gap-2">
@@ -226,6 +226,27 @@ export function VideoGenerateForm({
         </fieldset>
       </div>
 
+      <dl className="grid grid-cols-3 gap-2 rounded-2xl border border-violet-200/80 bg-violet-50/70 px-3 py-3 text-xs">
+        <div>
+          <dt className="text-muted">This video</dt>
+          <dd className="mt-0.5 text-sm font-bold text-foreground">{creditCost} cr</dd>
+        </div>
+        <div>
+          <dt className="text-muted">Balance</dt>
+          <dd className="mt-0.5 text-sm font-bold text-foreground">
+            {creditsAvailable !== null ? `${creditsAvailable} cr` : "…"}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-muted">After</dt>
+          <dd className="mt-0.5 text-sm font-bold text-foreground">
+            {creditsAvailable !== null
+              ? `${Math.max(0, creditsAvailable - creditCost)} cr`
+              : "…"}
+          </dd>
+        </div>
+      </dl>
+
       <div className="space-y-2 rounded-2xl border border-border p-3">
         <label className="text-sm font-bold uppercase tracking-wide text-muted">
           Start image <span className="font-normal normal-case text-muted">(optional)</span>
@@ -288,8 +309,8 @@ export function VideoGenerateForm({
           />
           Add AI audio when the provider supports it (clips render at up to 12–15s per provider)
         </label>
-        <label className="flex min-h-11 cursor-pointer items-center justify-between gap-2 rounded-xl border border-border px-3 py-2 text-sm">
-          <span className="font-medium text-foreground">
+        <div className="flex min-h-11 items-center justify-between gap-2 rounded-xl border border-border px-3 py-2 text-sm">
+          <span className="font-medium text-foreground" id="african-voiceover-label">
             African voiceover · Abena Twi 🇬🇭
             <span className="block text-xs font-normal text-muted">
               Added in GigaEdits after generation — ON DEVICE · free
@@ -299,7 +320,7 @@ export function VideoGenerateForm({
             type="button"
             role="switch"
             aria-checked={values.africanVoice}
-            aria-label="African voiceover with Abena Twi"
+            aria-labelledby="african-voiceover-label"
             disabled={processing}
             onClick={() => onChange({ africanVoice: !values.africanVoice })}
             className={cn(
@@ -309,12 +330,12 @@ export function VideoGenerateForm({
           >
             <span
               className={cn(
-                "absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all",
+                "absolute top-0.5 h-6 w-6 rounded-full bg-white shadow",
                 values.africanVoice ? "left-[1.625rem]" : "left-0.5"
               )}
             />
           </button>
-        </label>
+        </div>
       </div>
 
       <div className="min-h-[4.5rem] space-y-3" aria-live="polite">
@@ -348,7 +369,7 @@ export function VideoGenerateForm({
                 Make another
               </button>
             </div>
-            <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
               <a
                 href={job.outputUrl}
                 download

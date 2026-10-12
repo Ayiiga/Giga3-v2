@@ -21,6 +21,7 @@ export default defineConfig({
       ),
       "react-dom": path.resolve(__dirname, "web/node_modules/react-dom"),
       "react-dom/client": path.resolve(__dirname, "web/node_modules/react-dom/client.js"),
+      "lucide-react": path.resolve(__dirname, "web/node_modules/lucide-react"),
       "next/navigation": path.resolve(__dirname, "tests/web/mocks/navigation.tsx"),
       "next/link": path.resolve(__dirname, "tests/web/mocks/navigation.tsx"),
       "convex/_generated/api": path.resolve(__dirname, "convex/_generated/api.js"),

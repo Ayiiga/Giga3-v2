@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  PRIMARY_NAV_TABS,
   isPrimaryNavRoute,
   resolvePrimaryNavTab,
   shouldShowDesktopRail,
@@ -54,6 +55,12 @@ describe("primaryNav route matching", () => {
     expect(resolvePrimaryNavTab("/gigasocial/post/abc")).toBe("social");
     expect(resolvePrimaryNavTab("/media/?tab=video")).toBe("create");
     expect(resolvePrimaryNavTab("/gigalearn/practice")).toBe("learn");
+  });
+
+  it("defaults the Create tab to GigaEdits when no explicit selection is present", () => {
+    const create = PRIMARY_NAV_TABS.find((tab) => tab.id === "create");
+    expect(create?.href).toContain("/gigaedit");
+    expect(create?.href).not.toContain("/media");
   });
 
   it("keeps navigation hidden on auth and payment routes", () => {
