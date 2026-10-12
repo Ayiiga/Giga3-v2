@@ -17,6 +17,10 @@ import { useChatShareShortcuts } from "@/hooks/useChatShareShortcuts";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { getSessionToken } from "@/lib/auth";
 import {
+  isAdvancedPersonaDailyLimitMessage,
+  isAdvancedPersonaEntitlementMessage,
+} from "@/lib/errors/userMessage";
+import {
   languageInstructionSuffix,
   readResponseLanguage,
 } from "@/lib/i18n/languagePreferences";
@@ -815,8 +819,21 @@ function ChatShellInner({
           error={visibleError}
           onDismissError={() => setDismissedError(error)}
           onRetryFailedReply={
-            visibleError && /retry/i.test(visibleError)
+            visibleError &&
+            /retry/i.test(visibleError) &&
+            !isAdvancedPersonaEntitlementMessage(visibleError) &&
+            !isAdvancedPersonaDailyLimitMessage(visibleError)
               ? () => void retryFailedReply()
+              : undefined
+          }
+          onTryStandardAi={
+            visibleError &&
+            (isAdvancedPersonaEntitlementMessage(visibleError) ||
+              isAdvancedPersonaDailyLimitMessage(visibleError))
+              ? () => {
+                  void changePersona(null);
+                  setDismissedError(error);
+                }
               : undefined
           }
           onAttachmentsChange={handleAttachmentsChange}
