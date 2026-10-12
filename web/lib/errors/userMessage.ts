@@ -10,12 +10,16 @@ export function stripConvexErrorNoise(message: string): string {
   let text = message.replace(/\s+/g, " ").trim();
   text = text.replace(/\[CONVEX [^\]]+\]\s*/gi, "");
   text = text.replace(/\[Request ID:\s*[^\]]+\]\s*/gi, "");
-  text = text.replace(/^Server Error\s*/i, "");
+  text = text.replace(/\bRequest ID:\s*[a-f0-9]+\b/gi, "");
+  text = text.replace(/^Server Error\s+/i, "");
+  text = text.replace(/^Error\s+Uncaught\s+[A-Za-z0-9_]*Error:\s*/i, "");
   // Convex wraps thrown Errors as "Uncaught Error:" or "Uncaught UnauthorizedError:" etc.
-  text = text.replace(/^Uncaught [A-Za-z0-9_]+Error:\s*/i, "");
+  text = text.replace(/^Uncaught\s+[A-Za-z0-9_]*Error:\s*/i, "");
   text = text.replace(/^Uncaught Error:\s*/i, "");
-  text = text.replace(/\s+at handler\s*\([^)]*\)[\s\S]*$/i, "");
-  text = text.replace(/\s+at\s+\S+\s*\([^)]*\)[\s\S]*$/i, "");
+  text = text.replace(
+    /\s+at\s+(?:async\s+)?[\w.$/]+\s*\([^)]*\)[\s\S]*$/i,
+    ""
+  );
   text = text.replace(/\s+Called by client\s*$/i, "");
   return text.trim();
 }
@@ -33,11 +37,22 @@ export function toUserFacingError(
   if (/Loading chunk [\d]+ failed/i.test(raw) || /ChunkLoadError/i.test(raw)) {
     return "The app was updated. Please refresh the page to load the latest version.";
   }
+  if (/Failed to fetch|NetworkError|net::ERR_|offline/i.test(raw)) {
+    return "You're offline or the connection dropped. Reconnect and try again.";
+  }
   if (!raw.trim() || SENSITIVE.test(raw)) return fallback;
-  const cleaned = stripConvexErrorNoise(raw.split("\n")[0] ?? "");
+  // Collapse multiline Convex envelopes (first-line-only leaked Request IDs).
+  const cleaned = stripConvexErrorNoise(raw);
   if (!cleaned || cleaned.length > 180) return fallback;
   if (/Gifts Hub|not unlocked/i.test(cleaned)) {
     return "This creator cannot receive tips yet. Please try again after refreshing.";
+  }
+  if (
+    /Request ID|\.ts:\d+|convex\/|Uncaught\s+\w*Error|at\s+\w+\s*\(/i.test(
+      cleaned
+    )
+  ) {
+    return fallback;
   }
   return cleaned;
 }

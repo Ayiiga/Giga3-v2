@@ -180,10 +180,22 @@ export const cancelJob = internalMutation({
   },
 });
 
+/**
+ * Finish a job without deleting the row yet. Keeping `done` / terminal rows for a
+ * short window lets `clientRequestId` dedupe reconcile client timeouts so outbox
+ * retries do not insert a second user turn or double-charge credits.
+ * Recovery deletes retained rows after CHAT_JOB_DONE_RETAIN_MS.
+ */
 export const deleteJob = internalMutation({
   args: { jobId: v.id("chatReplyJobs") },
   handler: async (ctx, args) => {
-    await ctx.db.delete(args.jobId);
+    const job = await ctx.db.get(args.jobId);
+    if (!job) return;
+    if (job.status === "pending" || job.status === "processing") {
+      await ctx.db.patch(args.jobId, { status: "done" });
+      return;
+    }
+    // Already terminal — leave for recovery TTL cleanup / dedupe.
   },
 });
 

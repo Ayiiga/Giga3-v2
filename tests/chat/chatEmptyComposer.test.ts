@@ -36,9 +36,10 @@ describe("empty chat stays quiet and the composer clears the bottom nav", () => 
     const phone = navCss.match(
       /@media \(max-width: 1023px\) \{[\s\S]*?html\.chat-route\.primary-nav-route\.primary-nav-bar-visible \{[\s\S]*?\}/
     )?.[0];
-    expect(phone).toContain(
-      "--primary-nav-offset: calc(5.15rem + env(safe-area-inset-bottom, 0px))"
-    );
+    expect(phone).toContain("var(--primary-nav-height)");
+    expect(phone).toContain("0.5rem");
+    expect(phone).toContain("env(safe-area-inset-bottom");
+    expect(phone).not.toContain("5.15rem");
     const desktop = navCss.match(/@media \(min-width: 1024px\) \{[\s\S]*?\n\}/g) ?? [];
     expect(desktop.join("\n")).not.toContain("5.15rem");
   });

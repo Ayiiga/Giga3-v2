@@ -116,8 +116,14 @@
     max-width: 100%;
     min-height: var(--chat-composer-height);
     padding-inline: var(--chat-edge-pad) var(--chat-edge-pad-right);
-    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    /* Shell already reserves safe-area via --primary-nav-offset while the tab bar shows. */
+    padding-bottom: 8px;
     background: #fff;
+  }
+
+  /* Keyboard open hides the tab bar — restore home-indicator padding under the dock. */
+  html.chat-route.chat-keyboard-open .chat-composer-dock {
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
   }
 
   html.chat-route .chat-composer {
