@@ -71,7 +71,7 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `GEMINI_IMAGE_EDIT_MODEL` | No | Gemini backup for editing + Imagen fallback, default `gemini-2.5-flash-image` |
    | `FAL_KEY` or `FAL_API_KEY` | For fal.ai failover | fal.ai dashboard |
    | `FAL_MODEL` | No | Chat LLM on fal OpenRouter / any-llm, default `google/gemini-2.5-flash` |
-   | `FAL_IMAGE_MODEL` | No | Image model, default `fal-ai/nano-banana-pro` (see fal.ai docs) |
+   | `FAL_IMAGE_MODEL` | No | Image model, default `fal-ai/flux/schnell` (see fal.ai docs) |
    | `REPLICATE_API_TOKEN` | For media | Image/video generation |
    | `REPLICATE_IMAGE_MODEL` | No | Text-to-image backup, default `black-forest-labs/flux-schnell` |
    | `REPLICATE_IMAGE_EDIT_MODEL` | No | Image editing backup, default `black-forest-labs/flux-kontext-pro` |
