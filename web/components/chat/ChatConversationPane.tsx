@@ -56,6 +56,8 @@ interface ChatConversationPaneProps {
   flushingOutboxId?: string | null;
   onCancelOutbox?: (id: string) => void;
   onRetryFailedReply?: () => void;
+  /** Switch off advanced persona after a paid-plan / daily-limit entitlement error. */
+  onTryStandardAi?: () => void;
   /** UI lock only (e.g. offline) — does not change send/outbox hooks. */
   inputDisabled?: boolean;
   conversationId?: string | null;
@@ -114,6 +116,7 @@ function panePropsEqual(
     prev.flushingOutboxId === next.flushingOutboxId &&
     prev.onCancelOutbox === next.onCancelOutbox &&
     prev.onRetryFailedReply === next.onRetryFailedReply &&
+    prev.onTryStandardAi === next.onTryStandardAi &&
     prev.conversationId === next.conversationId &&
     prev.online === next.online &&
     prev.liveWebProgress === next.liveWebProgress &&
@@ -165,6 +168,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   flushingOutboxId = null,
   onCancelOutbox,
   onRetryFailedReply,
+  onTryStandardAi,
   inputDisabled = false,
   conversationId = null,
   online = true,
@@ -256,6 +260,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
             message={error}
             onDismiss={onDismissError}
             onRetry={onRetryFailedReply}
+            onTryStandardAi={onTryStandardAi}
             subscriptionActive={subscriptionActive}
           />
         )}

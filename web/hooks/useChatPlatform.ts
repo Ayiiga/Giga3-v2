@@ -1501,7 +1501,6 @@ export function useChatPlatform() {
     selectConversation,
     deleteConversation,
     changeMode,
-    personaId,
     changePersona,
     sendMessage,
     stopGenerating,

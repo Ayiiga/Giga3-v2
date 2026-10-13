@@ -12,6 +12,7 @@ const cfg = {
   processingGiveUpAfterMs: 360_000,
   activityGraceMs: 120_000,
   maxReschedulesBeforeFinalize: 4,
+  doneRetainMs: 24 * 60 * 60 * 1000,
 };
 
 const now = 1_000_000_000;

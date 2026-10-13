@@ -49,7 +49,7 @@ describe("auth client bundle", () => {
     expect(publicAuthErrorMessage(new Error("see https://x.test/reset?token=abc"), "Failed", ["abc"])).toBe(
       "Failed"
     );
-    expect(publicAuthErrorMessage(new Error("Incorrect email or password."))).toBe(
+    expect(publicAuthErrorMessage(new Error("Incorrect email or password."))).toContain(
       "Incorrect email or password."
     );
   });
@@ -57,9 +57,11 @@ describe("auth client bundle", () => {
   it("strips Convex UnauthorizedError wrappers from failed password sign-in", () => {
     const raw =
       "[Request ID: b43b80fe0c33054b] Server Error Uncaught UnauthorizedError: Incorrect email or password. at handler (../convex/authPasswordActions.ts:238:4)";
-    expect(publicAuthErrorMessage(new Error(raw))).toBe("Incorrect email or password.");
-    expect(publicAuthErrorMessage(new Error(raw))).not.toContain("Request ID");
-    expect(publicAuthErrorMessage(new Error(raw))).not.toContain("authPasswordActions");
+    const shown = publicAuthErrorMessage(new Error(raw));
+    expect(shown).toContain("Incorrect email or password.");
+    expect(shown).toMatch(/Forgot password/i);
+    expect(shown).not.toContain("Request ID");
+    expect(shown).not.toContain("authPasswordActions");
   });
 });
 
