@@ -66,7 +66,7 @@ export type NormalizedAnswer = { ok: true; value: FieldValue } | { ok: false; er
 
 function matchOption(field: IntakeField, raw: string): string | null {
   const options = field.options ?? [];
-  const trimmed = raw.trim();
+  const trimmed = raw.trim().replace(/[.!?,;:]+$/g, "").trim();
   const asIndex = Number(trimmed);
   if (Number.isInteger(asIndex) && asIndex >= 1 && asIndex <= options.length) {
     return options[asIndex - 1]!;
@@ -76,6 +76,19 @@ function matchOption(field: IntakeField, raw: string): string | null {
   if (exact) return exact;
   const prefix = options.find((option) => option.toLowerCase().startsWith(lower) && lower.length >= 3);
   return prefix ?? null;
+}
+
+/** True when the user is giving a numeric count — not a sentence that happens to contain digits. */
+export function looksLikeNumericCountAnswer(text: string, field: IntakeField): boolean {
+  const t = text.trim();
+  if (/^\d{1,4}$/.test(t)) return true;
+  if (field.id === "chapterCount" || /chapter/i.test(field.label)) {
+    return (
+      /^\d{1,2}\s*chapters?\s*[.!]?$/i.test(t) ||
+      /^(about|around|roughly)\s+\d{1,2}\s*(chapters?)?[.!]?$/i.test(t)
+    );
+  }
+  return /^\d{1,4}\s*[a-z%]*\.?$/i.test(t);
 }
 
 /** Validate a typed answer (builder text box or chat message) for one field. */
@@ -91,9 +104,26 @@ export function normalizeAnswer(field: IntakeField, raw: FieldValue): Normalized
   }
   switch (field.kind) {
     case "number": {
+      if (!looksLikeNumericCountAnswer(text, field)) {
+        return {
+          ok: false,
+          error:
+            field.id === "chapterCount"
+              ? "Please enter a chapter count as a number (for example 8), describe your chapter topics, or ask me to suggest an outline."
+              : "Please enter a number.",
+        };
+      }
       const match = text.match(/\d+/);
       const value = match ? Number(match[0]) : NaN;
-      if (!Number.isFinite(value)) return { ok: false, error: "Please enter a number." };
+      if (!Number.isFinite(value)) {
+        return {
+          ok: false,
+          error:
+            field.id === "chapterCount"
+              ? "Please enter a chapter count as a number (for example 8), or ask me to suggest an outline."
+              : "Please enter a number.",
+        };
+      }
       if (field.min != null && value < field.min) return { ok: false, error: `Please enter at least ${field.min}.` };
       if (field.max != null && value > field.max) return { ok: false, error: `Please enter at most ${field.max}.` };
       return { ok: true, value: String(value) };
