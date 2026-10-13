@@ -37,6 +37,8 @@ export type JobRecoveryConfig = {
   processingGiveUpAfterMs: number;
   activityGraceMs: number;
   maxReschedulesBeforeFinalize: number;
+  /** Keep completed jobs so clientRequestId retries reconcile instead of re-charging. */
+  doneRetainMs: number;
 };
 
 export function getJobRecoveryConfig(
@@ -54,6 +56,7 @@ export function getJobRecoveryConfig(
       chatJobProcessingBudgetMs({ hasImageAttachment: true }),
     activityGraceMs: envMs("CHAT_JOB_ACTIVITY_GRACE_MS", 120_000),
     maxReschedulesBeforeFinalize: envMs("CHAT_JOB_MAX_RESCHEDULES", 4),
+    doneRetainMs: envMs("CHAT_JOB_DONE_RETAIN_MS", 24 * 60 * 60 * 1000),
   };
 }
 
@@ -76,12 +79,16 @@ export function decideJobRecovery(
   now: number,
   config: JobRecoveryConfig = getJobRecoveryConfig()
 ): JobRecoveryAction {
-  if (
-    job.cancelled ||
-    job.status === "cancelled" ||
-    job.status === "done" ||
-    job.status === "failed"
-  ) {
+  if (job.cancelled || job.status === "cancelled" || job.status === "failed") {
+    return "cleanup";
+  }
+
+  if (job.status === "done") {
+    // Retain briefly so timed-out clients retrying the same clientRequestId
+    // hit accept/createJob dedupe instead of a second charged turn.
+    if (now - job.createdAt < config.doneRetainMs) {
+      return "wait";
+    }
     return "cleanup";
   }
 

@@ -589,7 +589,7 @@ export function useSupabaseChatPlatform() {
             setPendingUserText(null);
           }
         } catch (e) {
-          const msg = e instanceof Error ? e.message : "Sync failed";
+          const msg = toUserFacingError(e, "Sync failed");
           await bumpOutboxAttempt(row.id, msg);
           if (row.attempts + 1 >= maxSendRetries(isSlowNetwork)) {
             await removeOutbox(row.id);
@@ -905,12 +905,14 @@ export function useSupabaseChatPlatform() {
   return {
     email,
     mounted,
+    sessionToken: getSessionToken(),
     conversations,
     conversationsLoading: conversationsRaw === undefined,
     messagesLoading: Boolean(activeId) && messagesRaw === undefined,
     activeId,
     messages,
     mode,
+    personaId: null as null,
     isSending,
     awaitingReply,
     isAcceptingMessage: isSending,
@@ -921,11 +923,13 @@ export function useSupabaseChatPlatform() {
     flushingOutboxId,
     cancelOutboxMessage,
     retryOutboxSync: flushOutbox,
+    retryFailedReply: async () => undefined,
     error,
     startNewChat,
     selectConversation,
     deleteConversation,
     changeMode,
+    changePersona: async (_next: string | null) => undefined,
     sendMessage,
     stopGenerating: async () => undefined,
     regenerateMessage,

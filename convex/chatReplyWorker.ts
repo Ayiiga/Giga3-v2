@@ -1192,6 +1192,8 @@ export const processJob = internalAction({
       }
 
       if (chargedAi) {
+        // Prefer jobId as reference so concurrent retries share one deduct key in logs.
+        const deductReference = String(args.jobId);
         try {
           const usedFreeImageQuota = Boolean(
             (engineResult as { usedFreeImageQuota?: boolean }).usedFreeImageQuota
@@ -1205,23 +1207,25 @@ export const processJob = internalAction({
               await ctx.runMutation(internal.credits.deductCreditsInternal, {
                 userId: email,
                 action: "image",
-                reference: job.conversationId,
+                reference: deductReference,
               });
             } else {
               await ctx.runMutation(internal.credits.deductForChatModeInternal, {
                 userId: email,
                 mode,
-                reference: job.conversationId,
+                reference: deductReference,
               });
             }
           } else {
             await ctx.runMutation(internal.credits.deductForChatModeInternal, {
               userId: email,
               mode,
-              reference: job.conversationId,
+              reference: deductReference,
             });
           }
         } catch (deductErr) {
+          // Reply already persisted — do not flip the job to failed (would confuse clients
+          // and recovery). acceptMessage pre-checks balance; residual races are logged.
           logChatReply("worker_credit_deduct_failed", {
             jobId: args.jobId,
             conversationId: job.conversationId,

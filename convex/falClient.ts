@@ -368,7 +368,7 @@ export async function falGenerateImage(
   const modelId =
     options?.modelId?.trim() ||
     process.env.FAL_IMAGE_MODEL?.trim() ||
-    "fal-ai/nano-banana-pro";
+    "fal-ai/flux/schnell";
   const payload: Record<string, unknown> = {
     prompt: input.prompt,
     ...(input.negative_prompt !== undefined && { negative_prompt: input.negative_prompt }),

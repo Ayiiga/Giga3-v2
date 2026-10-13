@@ -2,7 +2,10 @@
 
 import { Button } from "@/components/ui/Button";
 import { getUserEmail, isValidEmail } from "@/lib/auth";
-import { publicAuthErrorMessage } from "@/lib/auth/publicAuthError";
+import {
+  isInvalidCredentialsMessage,
+  publicAuthErrorMessage,
+} from "@/lib/auth/publicAuthError";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import {
   passwordRequirementsHint,
@@ -226,7 +229,24 @@ function ChatLoginFormInner() {
             />
           )}
 
-          {error && <p className="text-sm font-medium text-red-700">{error}</p>}
+          {error && (
+            <div className="space-y-1.5" role="alert">
+              <p className="text-sm font-medium text-red-700">{error}</p>
+              {mode === "signin" && isInvalidCredentialsMessage(error) ? (
+                <button
+                  type="button"
+                  className="text-sm font-medium text-accent underline-offset-2 hover:underline"
+                  onClick={() => {
+                    setMode("forgot");
+                    setError(null);
+                    setInfo(null);
+                  }}
+                >
+                  Reset your password
+                </button>
+              ) : null}
+            </div>
+          )}
           {info && <p className="text-sm font-medium text-emerald-700">{info}</p>}
 
           <Button type="submit" className="w-full" size="lg" disabled={submitting}>

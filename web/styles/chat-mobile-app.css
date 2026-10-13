@@ -88,6 +88,13 @@
     gap: 16px;
   }
 
+  /* Compact reserved typing row — still always present (scroll stability), smaller blank. */
+  html.chat-route .chat-typing-bar {
+    min-height: 2.5rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+
   /* Composer stack — pinned bottom, safe area */
   html.chat-route .chat-composer-stack {
     flex-shrink: 0;
@@ -116,8 +123,14 @@
     max-width: 100%;
     min-height: var(--chat-composer-height);
     padding-inline: var(--chat-edge-pad) var(--chat-edge-pad-right);
-    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    /* Shell already reserves safe-area via --primary-nav-offset while the tab bar shows. */
+    padding-bottom: 8px;
     background: #fff;
+  }
+
+  /* Keyboard open hides the tab bar — restore home-indicator padding under the dock. */
+  html.chat-route.chat-keyboard-open .chat-composer-dock {
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
   }
 
   html.chat-route .chat-composer {
@@ -315,6 +328,15 @@
     color: #111827;
     border-radius: 1.25rem;
     padding: 0.65rem 0.75rem;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+  }
+
+  html.chat-route .chat-assistant-body,
+  html.chat-route .chat-markdown,
+  html.chat-route .smart-answer {
+    font-size: 1.0625rem;
+    line-height: 1.7;
   }
 
   .dark .chat-message-bubble-assistant-inner--app {
