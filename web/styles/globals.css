@@ -1121,12 +1121,22 @@ button:focus-visible {
 
 .chat-markdown {
   @apply max-w-full text-foreground;
+  font-size: 1.0625rem; /* 17px — readable chat body on phones */
+  line-height: 1.7;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
+@media (min-width: 640px) {
+  .chat-markdown {
+    font-size: 1.125rem; /* 18px */
+  }
+}
+
 .chat-markdown .chat-md-p {
-  @apply mb-3 last:mb-0 whitespace-pre-wrap break-words leading-[1.7];
+  @apply mb-3 last:mb-0 whitespace-pre-wrap break-words;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 .chat-markdown .chat-md-h1 {

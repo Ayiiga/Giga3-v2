@@ -51,6 +51,21 @@ describe("mobile chat fullscreen layout", () => {
     expect(bar).toContain("invisible");
     expect(bar).toContain("always reserved");
   });
+
+  it("uses readable chat response font sizes on mobile (not text-sm)", () => {
+    const globals = read("web/styles/globals.css");
+    expect(globals).toMatch(/\.chat-markdown\s*\{[\s\S]*?font-size:\s*1\.0625rem/);
+    const premium = read("web/styles/chat-premium.css");
+    expect(premium).toMatch(/\.smart-answer\s*\{[\s\S]*?font-size:\s*1\.0625rem/);
+    expect(premium).toMatch(
+      /\.answer-content-block__body\s*\{[\s\S]*?font-size:\s*1\.0625rem/
+    );
+    const bubble = read("web/components/chat/MessageBubble.tsx");
+    expect(bubble).toContain('text-[1.0625rem]');
+    expect(bubble).not.toMatch(
+      /chat-assistant-body[^"]*text-sm/
+    );
+  });
 });
 
 describe("chat credit idempotency retain", () => {

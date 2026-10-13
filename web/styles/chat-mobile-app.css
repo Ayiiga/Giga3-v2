@@ -328,6 +328,15 @@
     color: #111827;
     border-radius: 1.25rem;
     padding: 0.65rem 0.75rem;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+  }
+
+  html.chat-route .chat-assistant-body,
+  html.chat-route .chat-markdown,
+  html.chat-route .smart-answer {
+    font-size: 1.0625rem;
+    line-height: 1.7;
   }
 
   .dark .chat-message-bubble-assistant-inner--app {
