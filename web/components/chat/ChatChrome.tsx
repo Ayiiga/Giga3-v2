@@ -135,7 +135,7 @@ export const ChatChrome = memo(function ChatChrome({
             aria-label={`${branding.name} home`}
           >
             <Giga3Logo size={32} aria-label="" />
-            <span className="chat-header-title-mobile truncate text-sm font-bold text-white">
+            <span className="chat-header-title-mobile truncate font-bold text-white">
               {branding.shortName}
             </span>
           </Link>

@@ -160,7 +160,7 @@ export const MessageBubble = memo(function MessageBubble({
         <>
           {displayContent &&
             (isUser ? (
-              <p className="whitespace-pre-wrap break-words text-[1.0625rem] leading-[1.7] sm:text-[1.125rem]">
+              <p className="chat-user-message-text whitespace-pre-wrap break-words">
                 {displayContent}
               </p>
             ) : (
@@ -292,7 +292,7 @@ export const MessageBubble = memo(function MessageBubble({
         </div>
         <div className="min-w-0 w-full max-w-full flex-1">
           <div
-            className="chat-assistant-body chat-message-bubble-inner chat-message-bubble-assistant-inner--app px-0 py-0.5 text-[1.0625rem] leading-[1.7] text-foreground sm:py-1 sm:text-[1.125rem]"
+            className="chat-assistant-body chat-message-bubble-inner chat-message-bubble-assistant-inner--app px-0 py-0.5 text-foreground sm:py-1"
           >
             {body}
           </div>

@@ -558,9 +558,11 @@ export const ChatInput = memo(function ChatInput({
         {!isPremium &&
         freeImageGenerationEnabled &&
         freeImageRemaining != null &&
-        freeImageLimit != null ? (
+        freeImageLimit != null &&
+        !composerFocused &&
+        !value.trim() ? (
           <p
-            className="px-2 text-center text-[11px] leading-relaxed text-[#6D28D9]/90"
+            className="px-2 text-center text-xs leading-relaxed text-[#6D28D9]/90 sm:text-sm"
             role="status"
             aria-live="polite"
           >
