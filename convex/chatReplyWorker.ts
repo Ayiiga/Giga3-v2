@@ -20,6 +20,7 @@ import {
   toRetrievalSystemMessage,
   validateAnswerQuality,
 } from "./answerQuality";
+import { hasWritingCraftIntent } from "./writingCraft";
 import { buildMultimodalPrompt } from "./multimodalPrompt";
 import type { ActionCtx } from "./_generated/server";
 import type { ChatEngineResult, ChatRoutingContext } from "./chatEngine";
@@ -767,7 +768,10 @@ export const processJob = internalAction({
         systemPrompt += `\n\n${USER_PROVIDED_CONTENT_GUIDANCE}`;
       }
 
-      const capabilityPrompt = researchSystemPromptAddon(researchCapability);
+      const writingCraft = hasWritingCraftIntent(job.content);
+      const capabilityPrompt = writingCraft
+        ? ""
+        : researchSystemPromptAddon(researchCapability);
       if (capabilityPrompt && infoRequestMode !== "answer_from_user_context") {
         systemPrompt += `\n\n${capabilityPrompt}`;
       }
@@ -785,13 +789,16 @@ export const processJob = internalAction({
         systemPrompt += `\n\n${mediaPrompt}`;
       }
 
-      const shouldResearch = shouldRunLiveWebResearch(researchCapability);
-      const needsLiveWeb = queryNeedsLiveWeb({
-        query: job.content,
-        capability: researchCapability,
-        mode,
-        hasImageAttachment,
-      });
+      const shouldResearch =
+        !writingCraft && shouldRunLiveWebResearch(researchCapability);
+      const needsLiveWeb =
+        !writingCraft &&
+        queryNeedsLiveWeb({
+          query: job.content,
+          capability: researchCapability,
+          mode,
+          hasImageAttachment,
+        });
 
       let liveWebSkippedReason: string | null = null;
 

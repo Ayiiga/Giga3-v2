@@ -25,6 +25,12 @@ import {
   shouldShowFullSourceList,
   stripSourcesSectionFromAnswer,
 } from "./newsEvidence/userPresentation";
+import {
+  DOCUMENT_EXPORT_SYSTEM_HINT,
+  hasDocumentDeliverableIntent,
+  hasWritingCraftIntent,
+  WRITING_CRAFT_SYSTEM_ADDON,
+} from "./writingCraft";
 
 type QueryClass =
   | "factual"
@@ -155,10 +161,9 @@ function hasAcademicIntent(query: string): boolean {
   );
 }
 
-function hasCreativeIntent(query: string): boolean {
-  return /\b(poem|story|novel|fiction|fictional|creative writing|brainstorm|caption|slogan|joke|screenplay|narrative)\b/i.test(
-    query
-  );
+/** Fiction / short creative — also covered by writing craft for response mode. */
+export function hasCreativeIntent(query: string): boolean {
+  return hasWritingCraftIntent(query);
 }
 
 function hasResearchBackedIntent(query: string): boolean {
@@ -168,8 +173,12 @@ function hasResearchBackedIntent(query: string): boolean {
 }
 
 function hasResearchWritingIntent(query: string): boolean {
+  // Bare "business report" / export PDF is document craft, not GigaResearch.
+  if (hasWritingCraftIntent(query) && !/\b(research|literature|thesis|dissertation|peer[- ]reviewed)\b/i.test(query)) {
+    return false;
+  }
   return (
-    /\b(write|create|draft|compose|develop|outline|prepare)\b[\s\S]{0,48}\b(book|ebook|report|article|essay|paper|thesis|dissertation|manuscript|chapter|monograph)\b/i.test(
+    /\b(write|create|draft|compose|develop|outline|prepare)\b[\s\S]{0,48}\b(book|ebook|research report|article|essay|paper|thesis|dissertation|manuscript|chapter|monograph)\b/i.test(
       query
     ) ||
     /\b(research and write|write (a |an )?research|research (report|paper|article|essay)|analyze this topic)\b/i.test(
@@ -582,6 +591,10 @@ export function detectDetailFollowUpIntent(query: string): boolean {
 }
 
 function inferQueryClass(mode: AiModeId, query: string): QueryClass {
+  // Writing craft wins over academic keyword false-positives (e.g. "explain" in a rewrite).
+  if (hasWritingCraftIntent(query) || CONVERSATIONAL_MODES.has(mode)) {
+    return "creative";
+  }
   if (
     hasAcademicIntent(query) ||
     mode === "homework" ||
@@ -592,7 +605,7 @@ function inferQueryClass(mode: AiModeId, query: string): QueryClass {
   ) {
     return "academic";
   }
-  if (hasCreativeIntent(query) || CONVERSATIONAL_MODES.has(mode)) {
+  if (hasCreativeIntent(query)) {
     return "creative";
   }
   if (hasOpinionIntent(query)) {
@@ -606,6 +619,9 @@ function inferQueryClass(mode: AiModeId, query: string): QueryClass {
 
 function inferResponseMode(mode: AiModeId, query: string): ResponseMode {
   if (hasConversationalIntent(query) || CONVERSATIONAL_MODES.has(mode)) {
+    return "conversational";
+  }
+  if (hasWritingCraftIntent(query) && !hasResearchBackedIntent(query)) {
     return "conversational";
   }
   if (hasCreativeIntent(query) && !hasResearchBackedIntent(query)) {
@@ -775,10 +791,15 @@ function buildSystemPromptAddon(params: {
         ].join("\n")
       : "";
 
+  const writingCraft = hasWritingCraftIntent(params.query);
   const conversationalRule =
-    params.responseMode === "conversational"
+    params.responseMode === "conversational" && !writingCraft
       ? "- Conversational mode: reply naturally and warmly. Do not include transparency notices, confidence scores, citation panels, verification warnings, or evidence sections."
       : "";
+  const writingCraftRule = writingCraft ? WRITING_CRAFT_SYSTEM_ADDON : "";
+  const documentExportRule = hasDocumentDeliverableIntent(params.query)
+    ? DOCUMENT_EXPORT_SYSTEM_HINT
+    : "";
 
   const catalogFormattingRule = hasStructuredCatalogIntent(params.query)
     ? [
@@ -875,6 +896,7 @@ function buildSystemPromptAddon(params: {
 
   const sectionRule =
     params.responseMode === "conversational" ||
+    writingCraft ||
     params.mtnHeroesOfChangeMode ||
     params.isBiographyRequest ||
     params.hasAnyAttachment ||
@@ -904,13 +926,16 @@ function buildSystemPromptAddon(params: {
   return [
     "Accuracy, Authenticity, and Trustworthiness Engine:",
     "- Prioritize factual correctness, authenticity, and clarity.",
+    // Priority: safety/facts (above) → user's deliverable (writing craft) → task formats → general quality.
+    writingCraftRule,
+    documentExportRule,
     conversationalRule,
     researchWritingRule,
     catalogFormattingRule,
-    educationalRule,
-    detailFollowUpRule,
-    learnerInstruction(params.learnerLevel),
-    examRule,
+    writingCraft ? "" : educationalRule,
+    writingCraft ? "" : detailFollowUpRule,
+    writingCraft ? "" : learnerInstruction(params.learnerLevel),
+    writingCraft ? "" : examRule,
     highStakesRule,
     citationRule,
     confidenceRule,

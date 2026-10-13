@@ -24,6 +24,7 @@ import { prepareAnswerQualityContext, validateAnswerQuality } from "./answerQual
 import { shouldAcceptConversationalEngineResult } from "./chatConversationalAcceptance";
 import { CHAT_ERROR_CODES, classifyProviderError } from "./chatErrorCodes";
 import { logChatReply } from "./chatReplyLog";
+import { hasWritingCraftIntent } from "./writingCraft";
 
 export const CONVERSATIONAL_REPLY_TIMEOUT_MS = 45_000;
 
@@ -115,8 +116,9 @@ export async function executeConversationalReply(
   if (personaAddon) {
     systemPrompt += `\n\n${personaAddon}`;
   }
-  systemPrompt +=
-    qualityContext.responseMode === "educational"
+  systemPrompt += hasWritingCraftIntent(args.content)
+    ? "\n\nDeliver the finished writing the user asked for. Stay natural and professional. Do not invent current news or run web research unless the user asks for live information."
+    : qualityContext.responseMode === "educational"
       ? "\n\nReply helpfully with clear, professional depth. Prefer concrete details and natural human phrasing over short recycled summaries. Do not invent current news or run web research unless the user asks for live information."
       : "\n\nReply helpfully and concisely. Do not invent current news or run web research unless the user asks for live information.";
 
