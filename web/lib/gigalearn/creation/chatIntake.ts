@@ -1,4 +1,12 @@
 import {
+  applySkip,
+  brainstormBookTitles,
+  classifyBookIntakeMessage,
+  defaultSeparationOutline,
+  educationalBookReply,
+  formatTitleSuggestions,
+} from "@/lib/gigalearn/creation/bookIntakeActions";
+import {
   formatValue,
   hasValue,
   nextIntakeField,
@@ -32,6 +40,8 @@ export type ChatCreationState = {
   inputs: CreationInputs;
   pendingFieldId: string | null;
   awaitingConfirmation: boolean;
+  /** Last title brainstorm options (book intake). */
+  titleSuggestions?: string[];
 };
 
 export type ChatCreationTurn = {
@@ -260,8 +270,188 @@ export function startChatCreation(raw: string): ChatCreationTurn | null {
 
 const CANCEL = /^(cancel|stop|exit|quit|never\s*mind|nevermind)\b/i;
 const RESTART = /^(start\s+over|restart|reset)\b/i;
-const CONFIRM = /^(yes|yeah|yep|y|confirm|ok|okay|sure|go\s+ahead|generate|please\s+do)\b/i;
+const CONFIRM = /^(yes|yeah|yep|y|confirm|ok|okay|sure|go\s+ahead|generate|please\s+do|use this outline)\b/i;
 const EDIT = /^(no|edit|change|not\s+yet)\b/i;
+const USE_OUTLINE = /^(use this outline|use the outline|accept outline|yes,? use (this|the) outline)\b/i;
+
+function withState(
+  template: CreationTemplate,
+  inputs: CreationInputs,
+  prefix: string,
+  extras?: Partial<ChatCreationState>
+): ChatCreationTurn {
+  const turn = askOrPreview(template, inputs, prefix);
+  if (!turn.state) return turn;
+  return {
+    ...turn,
+    state: {
+      ...turn.state,
+      titleSuggestions: extras?.titleSuggestions,
+    },
+  };
+}
+
+function continueBookCreation(state: ChatCreationState, text: string): ChatCreationTurn {
+  const template = getCreationTemplate("book")!;
+  const action = classifyBookIntakeMessage({
+    text,
+    pendingFieldId: state.pendingFieldId,
+    inputs: state.inputs,
+    titleSuggestions: state.titleSuggestions,
+  });
+
+  if (action.type === "cancel") {
+    return { state: null, reply: `No problem — I've stopped the ${template.label}. Ask me anything.` };
+  }
+  if (action.type === "restart") {
+    return askOrPreview(template, {}, "Starting over.");
+  }
+
+  if (action.type === "title_brainstorm") {
+    const titles = brainstormBookTitles(action.topicHint, state.inputs);
+    const reply = formatTitleSuggestions(titles, 0);
+    return {
+      state: {
+        ...state,
+        pendingFieldId: "title",
+        awaitingConfirmation: false,
+        titleSuggestions: titles,
+      },
+      reply,
+    };
+  }
+
+  if (action.type === "title_pick" || action.type === "title_use") {
+    const title =
+      action.type === "title_pick"
+        ? state.titleSuggestions?.[action.index - 1]
+        : action.title;
+    if (!title) {
+      return {
+        state: { ...state, pendingFieldId: "title" },
+        reply: "I couldn't match that title. Reply with a number from the list, or type your own title.",
+      };
+    }
+    const inputs = { ...state.inputs, title };
+    return withState(template, inputs, `Title set to **${title}**.`, { titleSuggestions: undefined });
+  }
+
+  if (action.type === "skip") {
+    const { inputs } = applySkip(state.pendingFieldId, state.inputs);
+    // Mark skipped required fields by writing defaults via applySkip, then advance
+    const skippedId = state.pendingFieldId;
+    if (skippedId && !hasValue(inputs[skippedId]) && skippedId !== "purpose" && skippedId !== "genre" && skippedId !== "chapterCount" && skippedId !== "tone") {
+      return {
+        state,
+        reply: `I still need a ${skippedId} to continue, or type **cancel** to stop.`,
+      };
+    }
+    return withState(template, inputs, "Skipped — using a sensible default where needed.");
+  }
+
+  if (action.type === "set_fields") {
+    const inputs = { ...state.inputs, ...action.patches };
+    if (action.resumePending && action.resumePending !== "audience") {
+      const field = template.fields.find((f) => f.id === action.resumePending);
+      const prefix = action.preface ?? "Updated.";
+      if (field && !hasValue(inputs[field.id])) {
+        return {
+          state: {
+            templateId: "book",
+            inputs,
+            pendingFieldId: field.id,
+            awaitingConfirmation: false,
+            titleSuggestions: state.titleSuggestions,
+          },
+          reply: `${prefix}\n\n${questionText(template, field, inputs)}`,
+        };
+      }
+    }
+    return withState(template, inputs, action.preface ?? "Updated.", {
+      titleSuggestions: state.titleSuggestions,
+    });
+  }
+
+  if (action.type === "chapter_topics") {
+    const inputs: CreationInputs = {
+      ...state.inputs,
+      chapterPlan: action.topics.join("\n"),
+      chapterCount: String(action.suggestedCount),
+    };
+    if (!inputs.subject && /\bmixtures\b/i.test(text)) {
+      inputs.subject = "Separation of mixtures";
+    }
+    return withState(
+      template,
+      inputs,
+      `I've saved a **${action.suggestedCount}-chapter** plan from your topics. You can edit it in the builder before generating.`
+    );
+  }
+
+  if (action.type === "educational") {
+    const patches: CreationInputs = { ...state.inputs };
+    if (/\bseparation of mixtures\b/i.test(action.question) && !patches.subject) {
+      patches.subject = "Separation of mixtures";
+    }
+    const audienceMatch = action.question.match(/\bjhs\s*-?\s*([1-3])\b/i);
+    if (audienceMatch && !patches.audience) {
+      patches.audience = `JHS ${audienceMatch[1]} students`;
+    }
+    const wantsOutline =
+      state.pendingFieldId === "chapterCount" ||
+      /\bmethods of separation\b/i.test(action.question) ||
+      /\bseparation of mixtures\b/i.test(action.question);
+    if (wantsOutline) {
+      patches.chapterPlan = defaultSeparationOutline().join("\n");
+    }
+    let reply = educationalBookReply(action.question, patches);
+    const pendingFieldId =
+      !hasValue(patches.title) && state.titleSuggestions?.length
+        ? "title"
+        : wantsOutline
+          ? "chapterCount"
+          : state.pendingFieldId;
+    if (pendingFieldId === "title") {
+      reply +=
+        "\n\n_Your book setup is still waiting on a **title** — reply with a number from the suggestions, or type your own._";
+    }
+    return {
+      state: {
+        templateId: "book",
+        inputs: patches,
+        pendingFieldId,
+        awaitingConfirmation: false,
+        titleSuggestions: state.titleSuggestions,
+      },
+      reply,
+    };
+  }
+
+  // Explicit accept of suggested outline while chapter count pending
+  if (USE_OUTLINE.test(text) && state.inputs.chapterPlan) {
+    const topics = String(state.inputs.chapterPlan)
+      .split(/\n+/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const inputs = {
+      ...state.inputs,
+      chapterCount: String(state.inputs.chapterCount || topics.length || 8),
+      chapterPlan: topics.join("\n"),
+    };
+    return withState(template, inputs, "Outline accepted.");
+  }
+
+  const field = template.fields.find((candidate) => candidate.id === state.pendingFieldId);
+  if (!field) return askOrPreview(template, state.inputs, "");
+
+  const answer = normalizeAnswer(field, text);
+  if (!answer.ok) {
+    return { state, reply: `${answer.error}\n\n${questionText(template, field, state.inputs)}` };
+  }
+  const inputs = { ...state.inputs, [field.id]: answer.value };
+  const ack = ACKS[Object.keys(inputs).length % ACKS.length]!;
+  return withState(template, inputs, ack);
+}
 
 export function continueChatCreation(state: ChatCreationState, raw: string): ChatCreationTurn {
   const template = getCreationTemplate(state.templateId)!;
@@ -297,8 +487,23 @@ export function continueChatCreation(state: ChatCreationState, raw: string): Cha
     };
   }
 
+  if (template.id === "book") {
+    return continueBookCreation(state, text);
+  }
+
   const field = template.fields.find((candidate) => candidate.id === state.pendingFieldId);
   if (!field) return askOrPreview(template, state.inputs, "");
+
+  // Non-book: never treat a clear content question as a numeric field answer.
+  if (
+    field.kind === "number" &&
+    (/[?]/.test(text) || /^(what|how|why|explain|describe|list)\b/i.test(text))
+  ) {
+    return {
+      state,
+      reply: `${field.id === "chapterCount" ? "That looks like a content question, not a chapter count." : "That does not look like a number."} Reply with a number, type **skip** if you want a default, or **cancel** to ask in regular chat.\n\n${questionText(template, field, state.inputs)}`,
+    };
+  }
 
   const answer = normalizeAnswer(field, text);
   if (!answer.ok) {
