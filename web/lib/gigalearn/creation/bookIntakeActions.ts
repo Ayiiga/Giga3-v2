@@ -20,6 +20,8 @@ export type BookIntakeAction =
   | { type: "title_use"; title: string }
   | { type: "set_fields"; patches: CreationInputs; resumePending?: string | null; preface?: string }
   | { type: "chapter_topics"; topics: string[]; suggestedCount: number }
+  | { type: "suggest_outline" }
+  | { type: "suggest_chapter_count" }
   | { type: "educational"; question: string }
   | { type: "field_answer"; text: string };
 
@@ -28,7 +30,13 @@ const TITLE_BRAINSTORM =
   /\b(brainstorm|suggest|recommend|investigate|list|give me|propose|come up with)\b[\s\S]{0,80}\b(titles?|name for (the |my )?book|book titles?)\b/i;
 const TITLE_LIST_AGAIN =
   /\b(list|show|give)\b[\s\S]{0,40}\b(suggested|your|the)\b[\s\S]{0,20}\btitles?\b/i;
+const MORE_TITLES =
+  /^(more(\s+title)?\s+options|more\s+titles|another\s+(set|batch|list)|different\s+titles|show\s+more)[.!]?\s*$/i;
 const TITLE_PICK_INDEX = /^(?:i(?:'|’)?ll\s+take\s+|use\s+|pick\s+|choose\s+|go with\s+|#)?\s*(\d{1,2})\s*[.)]?\s*$/i;
+const SUGGEST_OUTLINE =
+  /\b(suggest|propose|give me|create|build)\b[\s\S]{0,40}\b(an?\s+)?(chapter\s+)?outline\b|\bsuggest\s+a\s+chapter\s+plan\b|^suggest\s+an?\s+outline\b/i;
+const SUGGEST_CHAPTER_COUNT =
+  /\b(suggest|propose|recommend)\b[\s\S]{0,30}\b(a\s+)?(chapter\s+)?count\b|^suggest\s+a\s+count\b/i;
 const SUBJECT_CHANGE =
   /\b(?:change|switch|update)\s+(?:the\s+)?(?:subject|topic)\s+to\b|\b(?:subject|topic)\s*[:=]\s*/i;
 const DETAILS_ABOUT =
@@ -167,6 +175,21 @@ export function defaultSeparationOutline(): string[] {
   ];
 }
 
+/** Subject-aware chapter outline; mixtures get the curriculum-style plan. */
+export function outlineForSubject(subject: string, audience = ""): string[] {
+  const blob = `${subject} ${audience}`;
+  if (/\bseparation of mixtures|mixtures\b/i.test(blob)) return defaultSeparationOutline();
+  const topic = subject.trim() || "the topic";
+  return [
+    `Introduction to ${topic}`,
+    `Key ideas and vocabulary for ${topic}`,
+    `Step-by-step methods and worked examples`,
+    `Everyday examples and practical activities`,
+    `Common mistakes, safety and tips`,
+    `Revision questions and assessment practice`,
+  ];
+}
+
 export function formatTitleSuggestions(titles: string[], recommendedIndex = 0): string {
   const lines = titles.map((title, i) => `${i + 1}. ${title}`).join("\n");
   const pick = titles[recommendedIndex] ?? titles[0]!;
@@ -198,6 +221,13 @@ export function classifyBookIntakeMessage(args: {
     return { type: "title_brainstorm", topicHint: text };
   }
 
+  if (
+    MORE_TITLES.test(text) &&
+    (pending === "title" || Boolean(args.titleSuggestions?.length) || !args.inputs.title)
+  ) {
+    return { type: "title_brainstorm", topicHint: text };
+  }
+
   if (args.titleSuggestions?.length) {
     const pick = text.match(TITLE_PICK_INDEX);
     if (pick) {
@@ -212,6 +242,13 @@ export function classifyBookIntakeMessage(args: {
       (title) => title.toLowerCase() === stripTrailingPunct(text).toLowerCase()
     );
     if (exact) return { type: "title_use", title: exact };
+  }
+
+  if (SUGGEST_OUTLINE.test(text)) {
+    return { type: "suggest_outline" };
+  }
+  if (SUGGEST_CHAPTER_COUNT.test(text)) {
+    return { type: "suggest_chapter_count" };
   }
 
   const subjectFromChange = text.match(
@@ -259,7 +296,17 @@ export function classifyBookIntakeMessage(args: {
     };
   }
 
-  if (TONE_WORD.test(text) && (pending === "tone" || args.inputs.tone == null || pending === "purpose" || pending === "chapterCount")) {
+  // Exact tone words: apply when answering tone, or mid-flow after title is set /
+  // while brainstorming (pending title with suggestions). Do not steal a one-word
+  // custom title when the user has not asked for suggestions.
+  const toneEligible =
+    pending === "tone" ||
+    pending === "purpose" ||
+    pending === "chapterCount" ||
+    pending === "genre" ||
+    (args.inputs.tone == null &&
+      (Boolean(args.inputs.title) || Boolean(args.titleSuggestions?.length) || pending === "audience"));
+  if (TONE_WORD.test(text) && toneEligible) {
     const toneRaw = stripTrailingPunct(text);
     const tone =
       toneRaw.toLowerCase() === "formal"
@@ -269,6 +316,7 @@ export function classifyBookIntakeMessage(args: {
       type: "set_fields",
       patches: { tone },
       preface: `Tone set to **${tone}**.`,
+      resumePending: pending === "tone" ? undefined : pending,
     };
   }
 

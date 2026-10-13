@@ -94,6 +94,45 @@ describe("book writing workflow — seven-turn scenario", () => {
     expect(turn.state?.inputs.title).toBe("My Custom AI Title");
   });
 
+  it("treats more options as another title brainstorm, not a title value", () => {
+    let turn = startChatCreation("I want to write a book.")!;
+    turn = answer(turn.state, "Brainstorm titles about AI");
+    expect(turn.state?.titleSuggestions?.length).toBeGreaterThanOrEqual(5);
+    turn = answer(turn.state, "more options");
+    expect(turn.state?.inputs.title).toBeUndefined();
+    expect(String(turn.state?.inputs.title ?? "")).not.toMatch(/more options/i);
+    expect(turn.state?.pendingFieldId).toBe("title");
+    expect(turn.state?.titleSuggestions?.length).toBeGreaterThanOrEqual(5);
+    expect(turn.reply).toMatch(/Recommended:/i);
+  });
+
+  it("suggest an outline fills chapter plan instead of numeric validation", () => {
+    let turn = startChatCreation("I want to write a book.")!;
+    turn = answer(turn.state, "Separating Mixtures");
+    turn = answer(turn.state, "Separation of mixtures");
+    turn = answer(turn.state, "JHS 2 students");
+    turn = answer(turn.state, "Teach the topic clearly");
+    turn = answer(turn.state, "Formal");
+    expect(turn.state?.pendingFieldId).toBe("chapterCount");
+    turn = answer(turn.state, "suggest an outline");
+    expect(turn.reply).not.toMatch(/Please enter a (chapter count as a )?number/i);
+    expect(turn.state?.inputs.chapterPlan).toMatch(/filtration|Handpicking|mixtures/i);
+    expect(Number(turn.state?.inputs.chapterCount)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("does not attach mixtures outline to an unrelated subject", () => {
+    let turn = startChatCreation("I want to write a book.")!;
+    turn = answer(turn.state, "Green Leaves");
+    turn = answer(turn.state, "Photosynthesis");
+    turn = answer(turn.state, "JHS 2 students");
+    turn = answer(turn.state, "Teach clearly");
+    turn = answer(turn.state, "Formal");
+    turn = answer(turn.state, "What are the methods of separation of mixtures?");
+    expect(turn.state?.inputs.subject).toMatch(/Photosynthesis/i);
+    expect(String(turn.state?.inputs.chapterPlan ?? "")).not.toMatch(/Handpicking/i);
+    expect(turn.reply).not.toMatch(/Please enter a number/i);
+  });
+
   it("accepts natural-language chapter plans and validates numeric counts", () => {
     const book = getCreationTemplate("book")!;
     const chapterField = book.fields.find((f) => f.id === "chapterCount")!;
