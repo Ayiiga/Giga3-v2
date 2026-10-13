@@ -186,13 +186,9 @@ export const acceptMessage = mutation({
     });
     const mode = resolved.mode;
     const personaId = resolved.personaId;
-    if (personaId) {
-      await requireAndConsumeAdvancedPersonaAccess(ctx, email);
-    }
 
     // Server-side credit gate before enqueueing paid AI (client UI alone is not enough).
-    // Deduct still happens after a successful non-fallback reply; this prevents free rides
-    // when the balance is already below the mode cost.
+    // Must run before consuming free persona quota so a zero-balance send does not burn a daily slot.
     {
       const creditUser = await ctx.db
         .query("users")
@@ -206,6 +202,10 @@ export const acceptMessage = mutation({
           `Insufficient credits (${creditCost} required, ${creditBalance} available). Subscribe or renew to refill.`
         );
       }
+    }
+
+    if (personaId) {
+      await requireAndConsumeAdvancedPersonaAccess(ctx, email);
     }
 
     const rawAttachments = (args.attachments ?? []) as RawAttachmentInput[];

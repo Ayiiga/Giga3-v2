@@ -18,6 +18,10 @@ describe("chat acceptMessage credit gate", () => {
     expect(src).toContain("creditActionForMode(mode)");
     expect(src).toContain("Insufficient credits");
     expect(src).toMatch(/creditBalance\s*<\s*creditCost/);
+    const creditIdx = src.indexOf("creditBalance < creditCost");
+    const personaIdx = src.indexOf("requireAndConsumeAdvancedPersonaAccess");
+    expect(creditIdx).toBeGreaterThan(-1);
+    expect(personaIdx).toBeGreaterThan(creditIdx);
   });
 
   it("worker deduct uses jobId reference (not only conversationId)", () => {
