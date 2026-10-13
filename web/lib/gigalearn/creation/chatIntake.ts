@@ -5,6 +5,7 @@ import {
   defaultSeparationOutline,
   educationalBookReply,
   formatTitleSuggestions,
+  outlineForSubject,
 } from "@/lib/gigalearn/creation/bookIntakeActions";
 import {
   formatValue,
@@ -378,7 +379,7 @@ function continueBookCreation(state: ChatCreationState, text: string): ChatCreat
       chapterPlan: action.topics.join("\n"),
       chapterCount: String(action.suggestedCount),
     };
-    if (!inputs.subject && /\bmixtures\b/i.test(text)) {
+    if (!inputs.subject && /\bseparation of mixtures\b/i.test(text)) {
       inputs.subject = "Separation of mixtures";
     }
     return withState(
@@ -388,27 +389,77 @@ function continueBookCreation(state: ChatCreationState, text: string): ChatCreat
     );
   }
 
+  if (action.type === "suggest_outline") {
+    const subject = String(state.inputs.subject ?? "").trim() || "your topic";
+    const audience = String(state.inputs.audience ?? "");
+    const topics = outlineForSubject(subject, audience);
+    const inputs: CreationInputs = {
+      ...state.inputs,
+      chapterPlan: topics.join("\n"),
+      chapterCount: String(topics.length),
+    };
+    const listed = topics.map((line, i) => `${i + 1}. ${line}`).join("\n");
+    return withState(
+      template,
+      inputs,
+      [
+        `Here's a suggested **${topics.length}-chapter** outline for **${subject}**:`,
+        "",
+        listed,
+        "",
+        "Reply **use this outline** to keep it, paste edits, or enter a different **chapter count** (1–30).",
+      ].join("\n")
+    );
+  }
+
+  if (action.type === "suggest_chapter_count") {
+    const planLines = String(state.inputs.chapterPlan ?? "")
+      .split(/\n+/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const topics =
+      planLines.length >= 3
+        ? planLines
+        : outlineForSubject(String(state.inputs.subject ?? ""), String(state.inputs.audience ?? ""));
+    const count = Math.min(30, Math.max(3, topics.length));
+    const inputs: CreationInputs = {
+      ...state.inputs,
+      chapterPlan: topics.join("\n"),
+      chapterCount: String(count),
+    };
+    return withState(
+      template,
+      inputs,
+      `I'd suggest **${count} chapters** for this book (editable). Outline saved — reply **yes** at the preview to generate, or change the count.`
+    );
+  }
+
   if (action.type === "educational") {
     const patches: CreationInputs = { ...state.inputs };
-    if (/\bseparation of mixtures\b/i.test(action.question) && !patches.subject) {
+    const mixturesQuestion = /\bseparation of mixtures\b/i.test(action.question);
+    if (mixturesQuestion && !patches.subject) {
       patches.subject = "Separation of mixtures";
     }
     const audienceMatch = action.question.match(/\bjhs\s*-?\s*([1-3])\b/i);
     if (audienceMatch && !patches.audience) {
       patches.audience = `JHS ${audienceMatch[1]} students`;
     }
-    const wantsOutline =
-      state.pendingFieldId === "chapterCount" ||
-      /\bmethods of separation\b/i.test(action.question) ||
-      /\bseparation of mixtures\b/i.test(action.question);
-    if (wantsOutline) {
+    const mixturesSubject = /\bseparation of mixtures\b/i.test(String(patches.subject ?? ""));
+    // Only attach the hard-coded mixtures outline when the book subject matches
+    // (or was just inferred from this question) — never overwrite an unrelated topic.
+    const wantsMixturesOutline =
+      mixturesSubject &&
+      (state.pendingFieldId === "chapterCount" ||
+        /\bmethods of separation\b/i.test(action.question) ||
+        mixturesQuestion);
+    if (wantsMixturesOutline) {
       patches.chapterPlan = defaultSeparationOutline().join("\n");
     }
     let reply = educationalBookReply(action.question, patches);
     const pendingFieldId =
       !hasValue(patches.title) && state.titleSuggestions?.length
         ? "title"
-        : wantsOutline
+        : wantsMixturesOutline
           ? "chapterCount"
           : state.pendingFieldId;
     if (pendingFieldId === "title") {
