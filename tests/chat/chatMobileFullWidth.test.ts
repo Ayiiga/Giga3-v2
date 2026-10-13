@@ -24,7 +24,9 @@ describe("Chat mobile full-width layout", () => {
     expect(css).not.toContain("width: 96%");
     expect(css).toContain("html.chat-route .chat-composer");
     expect(css).toMatch(/html\.chat-route \.chat-composer[\s\S]*width: 100%/);
-    expect(css).toMatch(/html\.chat-route \.chat-footer-chips[\s\S]*width: 100%/);
+    expect(css).toMatch(
+      /html\.chat-route \.chat-footer-chips[\s\S]*display:\s*none\s*!important/
+    );
   });
 
   it("keeps readable user bubble width while assistant uses full rail", () => {

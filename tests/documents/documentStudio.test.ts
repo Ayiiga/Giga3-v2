@@ -41,6 +41,24 @@ describe("document model", () => {
     expect(isDocumentFollowUpRequest("make it one page and export as Word")).toBe(true);
   });
 
+  it("does not treat Smart Answers as Document Studio cards", () => {
+    const smart = `# Separation techniques
+
+## ⚡ Quick Answer
+Separation techniques split mixtures into pure substances.
+
+## 📘 Simple Definition
+They are school-lab methods that isolate components of a mixture.
+
+## 🧠 More Complete Explanation
+Filtration, distillation, and chromatography each exploit a different physical property.
+
+## 🚀 Next Step
+Ask for a BECE-style practice question on filtration.
+`;
+    expect(looksLikeDocumentContent(smart)).toBe(false);
+  });
+
   it("builds documents with A4/A5 and one-page fit warnings", () => {
     const doc = documentFromMarkdown(SAMPLE_CV, { templateKind: "cv", onePageFit: true });
     expect(doc.paper.size).toBe("A4");
