@@ -5,6 +5,7 @@ import {
   defaultSeparationOutline,
   educationalBookReply,
   formatTitleSuggestions,
+  MORE_TITLES,
   outlineForSubject,
 } from "@/lib/gigalearn/creation/bookIntakeActions";
 import {
@@ -309,7 +310,18 @@ function continueBookCreation(state: ChatCreationState, text: string): ChatCreat
   }
 
   if (action.type === "title_brainstorm") {
-    const titles = brainstormBookTitles(action.topicHint, state.inputs);
+    // "More options" must reuse subject / prior suggestions as the topic hint —
+    // never brainstorm from the navigation phrase itself.
+    const topicHint = MORE_TITLES.test(text)
+      ? [
+          String(state.inputs.subject ?? "").trim(),
+          String(state.inputs.audience ?? "").trim(),
+          ...(state.titleSuggestions ?? []).slice(0, 3),
+        ]
+          .filter(Boolean)
+          .join(" ") || action.topicHint
+      : action.topicHint;
+    const titles = brainstormBookTitles(topicHint, state.inputs);
     const reply = formatTitleSuggestions(titles, 0);
     return {
       state: {
@@ -390,7 +402,21 @@ function continueBookCreation(state: ChatCreationState, text: string): ChatCreat
   }
 
   if (action.type === "suggest_outline") {
-    const subject = String(state.inputs.subject ?? "").trim() || "your topic";
+    const subject = String(state.inputs.subject ?? "").trim();
+    if (!subject) {
+      const needTitle = !hasValue(state.inputs.title);
+      return {
+        state: {
+          ...state,
+          pendingFieldId: needTitle ? "title" : "subject",
+          awaitingConfirmation: false,
+          titleSuggestions: state.titleSuggestions,
+        },
+        reply: needTitle
+          ? "Before I can suggest an outline, I need a **title** and a **subject**. Share a title (or ask me to brainstorm titles), then tell me the topic."
+          : "What subject should the outline cover? Share the topic first (for example **Photosynthesis** or **Separation of mixtures**), then ask me to **suggest an outline** again.",
+      };
+    }
     const audience = String(state.inputs.audience ?? "");
     const topics = outlineForSubject(subject, audience);
     const inputs: CreationInputs = {
@@ -413,14 +439,26 @@ function continueBookCreation(state: ChatCreationState, text: string): ChatCreat
   }
 
   if (action.type === "suggest_chapter_count") {
+    const subject = String(state.inputs.subject ?? "").trim();
     const planLines = String(state.inputs.chapterPlan ?? "")
       .split(/\n+/)
       .map((line) => line.trim())
       .filter(Boolean);
+    if (planLines.length < 3 && !subject) {
+      return {
+        state: {
+          ...state,
+          pendingFieldId: state.pendingFieldId ?? "subject",
+          awaitingConfirmation: false,
+        },
+        reply:
+          "I need a **subject** (or a chapter plan) before I can suggest a chapter count. Tell me the topic, then ask again.",
+      };
+    }
     const topics =
       planLines.length >= 3
         ? planLines
-        : outlineForSubject(String(state.inputs.subject ?? ""), String(state.inputs.audience ?? ""));
+        : outlineForSubject(subject, String(state.inputs.audience ?? ""));
     const count = Math.min(30, Math.max(3, topics.length));
     const inputs: CreationInputs = {
       ...state.inputs,

@@ -30,7 +30,7 @@ const TITLE_BRAINSTORM =
   /\b(brainstorm|suggest|recommend|investigate|list|give me|propose|come up with)\b[\s\S]{0,80}\b(titles?|name for (the |my )?book|book titles?)\b/i;
 const TITLE_LIST_AGAIN =
   /\b(list|show|give)\b[\s\S]{0,40}\b(suggested|your|the)\b[\s\S]{0,20}\btitles?\b/i;
-const MORE_TITLES =
+export const MORE_TITLES =
   /^(more(\s+title)?\s+options|more\s+titles|another\s+(set|batch|list)|different\s+titles|show\s+more)[.!]?\s*$/i;
 const TITLE_PICK_INDEX = /^(?:i(?:'|’)?ll\s+take\s+|use\s+|pick\s+|choose\s+|go with\s+|#)?\s*(\d{1,2})\s*[.)]?\s*$/i;
 const SUGGEST_OUTLINE =
@@ -221,10 +221,9 @@ export function classifyBookIntakeMessage(args: {
     return { type: "title_brainstorm", topicHint: text };
   }
 
-  if (
-    MORE_TITLES.test(text) &&
-    (pending === "title" || Boolean(args.titleSuggestions?.length) || !args.inputs.title)
-  ) {
+  // Only treat "more options" as navigation when a suggestion list is already active —
+  // otherwise a literal title like "More Options" must remain a normal field answer.
+  if (MORE_TITLES.test(text) && Boolean(args.titleSuggestions?.length)) {
     return { type: "title_brainstorm", topicHint: text };
   }
 
