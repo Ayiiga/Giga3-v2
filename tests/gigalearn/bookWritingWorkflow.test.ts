@@ -8,6 +8,7 @@ import {
   brainstormBookTitles,
   classifyBookIntakeMessage,
   isNumericChapterCountAnswer,
+  outlineForSubject,
 } from "../../web/lib/gigalearn/creation/bookIntakeActions";
 import { normalizeAnswer } from "../../web/lib/gigalearn/creation/intake";
 import { getCreationTemplate, stagesFor } from "../../web/lib/gigalearn/creation/templates";
@@ -217,5 +218,168 @@ describe("bookIntakeActions classifiers", () => {
       }).type
     ).toBe("educational");
     expect(brainstormBookTitles("AI Africa", {}).length).toBeGreaterThanOrEqual(5);
+  });
+});
+
+describe("book writing verification — title / outline / subject / state", () => {
+  it("A: more-options variants refresh titles only when suggestions are active", () => {
+    let turn = startChatCreation("I want to write a book.")!;
+    turn = answer(turn.state, "Suggest titles about AI");
+    expect(turn.state!.titleSuggestions!.some((t) => /\bAI\b|Artificial/i.test(t))).toBe(true);
+    for (const phrase of ["More options", "MORE OPTIONS", "more options!", "More Options."]) {
+      turn = answer(turn.state, phrase);
+      expect(turn.state?.inputs.title).toBeUndefined();
+      expect(turn.state?.titleSuggestions?.length).toBeGreaterThanOrEqual(5);
+      expect(turn.reply).toMatch(/Recommended:/i);
+      // Must not invent titles from the navigation phrase.
+      expect(turn.state?.titleSuggestions?.join("\n")).not.toMatch(/^More Options/i);
+      expect(turn.state!.titleSuggestions!.some((t) => /\bAI\b|Artificial|Intelligence/i.test(t))).toBe(
+        true
+      );
+    }
+    turn = answer(turn.state, "1");
+    const chosen = turn.state!.inputs.title;
+    expect(chosen).toBeTruthy();
+    expect(String(chosen)).not.toMatch(/more options/i);
+    turn = answer(turn.state, "Photosynthesis");
+    expect(turn.state?.inputs.title).toBe(chosen);
+    expect(turn.state?.inputs.subject).toMatch(/Photosynthesis/i);
+  });
+
+  it("A: literal More Options is a title when no suggestion list exists", () => {
+    let turn = startChatCreation("I want to write a book.")!;
+    turn = answer(turn.state, "More Options");
+    expect(turn.state?.inputs.title).toBe("More Options");
+    expect(turn.state?.pendingFieldId).toBe("subject");
+  });
+
+  it("B: invalid and valid chapter counts after outline", () => {
+    let turn = startChatCreation("I want to write a book.")!;
+    turn = answer(turn.state, "Leaf Science");
+    turn = answer(turn.state, "Photosynthesis");
+    turn = answer(turn.state, "JHS 2");
+    turn = answer(turn.state, "Teach clearly");
+    turn = answer(turn.state, "Formal");
+    turn = answer(turn.state, "suggest an outline");
+    expect(turn.state?.inputs.chapterPlan).toMatch(/Photosynthesis/i);
+    // Force chapterCount pending by clearing via restart path with count-only answer:
+    // after outline, chapterCount is filled — enter invalid via normalizeAnswer contract
+    const chapterField = getCreationTemplate("book")!.fields.find((f) => f.id === "chapterCount")!;
+    const invalid = normalizeAnswer(chapterField, "zero");
+    expect(invalid.ok).toBe(false);
+    if (!invalid.ok) expect(invalid.error).toMatch(/chapter count|number|outline/i);
+    expect(normalizeAnswer(chapterField, "0").ok).toBe(false);
+    expect(normalizeAnswer(chapterField, "31").ok).toBe(false);
+    expect(normalizeAnswer(chapterField, "8").ok).toBe(true);
+  });
+
+  it("B: suggest outline without subject asks for clarification", () => {
+    let turn = startChatCreation("I want to write a book.")!;
+    turn = answer(turn.state, "suggest an outline");
+    expect(turn.reply).toMatch(/subject|title/i);
+    expect(turn.state?.inputs.chapterPlan).toBeUndefined();
+    expect(String(turn.state?.inputs.chapterPlan ?? "")).not.toMatch(/Handpicking/i);
+  });
+
+  it("C: subject-aware outlines for Photosynthesis, mixtures, and history", () => {
+    const photo = outlineForSubject("Photosynthesis").join("\n");
+    const mix = outlineForSubject("Separation of mixtures").join("\n");
+    const hist = outlineForSubject("Independence of Ghana").join("\n");
+    expect(photo).toMatch(/Photosynthesis/i);
+    expect(photo).not.toMatch(/Handpicking|Filtration/i);
+    expect(mix).toMatch(/Handpicking|Filtration|Sedimentation/i);
+    expect(hist).toMatch(/Independence of Ghana/i);
+    expect(hist).not.toMatch(/Handpicking|Filtration/i);
+
+    let turn = startChatCreation("I want to write a book.")!;
+    turn = answer(turn.state, "Green Energy of Leaves");
+    turn = answer(turn.state, "Photosynthesis");
+    turn = answer(turn.state, "JHS 2 students");
+    turn = answer(turn.state, "Teach clearly");
+    turn = answer(turn.state, "Formal");
+    turn = answer(turn.state, "suggest an outline");
+    expect(turn.state?.inputs.chapterPlan).toMatch(/Photosynthesis/i);
+    expect(String(turn.state?.inputs.chapterPlan)).not.toMatch(/Handpicking/i);
+
+    turn = startChatCreation("Help me write a book")!;
+    turn = answer(turn.state, "Mixture Methods");
+    turn = answer(turn.state, "Separation of mixtures");
+    turn = answer(turn.state, "JHS 2");
+    turn = answer(turn.state, "Teach");
+    turn = answer(turn.state, "Formal");
+    turn = answer(turn.state, "Suggest An Outline!");
+    expect(String(turn.state?.inputs.chapterPlan)).toMatch(/Filtration|Handpicking/i);
+  });
+
+  it("D: title/subject/outline changes and restart clear project state", () => {
+    let turn = startChatCreation("I want to write a book.")!;
+    turn = answer(turn.state, "First Title");
+    turn = answer(turn.state, "Artificial Intelligence");
+    turn = answer(turn.state, "change the subject to Photosynthesis");
+    expect(turn.state?.inputs.subject).toMatch(/Photosynthesis/i);
+    expect(turn.state?.inputs.title).toBe("First Title");
+    turn = answer(turn.state, "suggest an outline");
+    expect(turn.state?.inputs.chapterPlan).toMatch(/Photosynthesis/i);
+    turn = answer(turn.state, "change the subject to Separation of mixtures");
+    turn = answer(turn.state, "suggest an outline");
+    expect(turn.state?.inputs.chapterPlan).toMatch(/Handpicking|Filtration/i);
+    expect(turn.state?.inputs.title).toBe("First Title");
+
+    turn = answer(turn.state, "restart");
+    expect(turn.state?.inputs.title).toBeUndefined();
+    expect(turn.state?.inputs.subject).toBeUndefined();
+    expect(turn.state?.inputs.chapterPlan).toBeUndefined();
+    expect(turn.state?.pendingFieldId).toBe("title");
+  });
+
+  it("D: builder hydration link preserves final inputs", () => {
+    let turn = startChatCreation("I want to write a book.")!;
+    turn = answer(turn.state, "Hydration Title");
+    turn = answer(turn.state, "Photosynthesis");
+    turn = answer(turn.state, "JHS 2 students");
+    turn = answer(turn.state, "Teach");
+    turn = answer(turn.state, "Formal");
+    turn = answer(turn.state, "6");
+    turn = answer(turn.state, "Educational");
+    const confirmed = answer(turn.state, "yes");
+    const parsed = parseCreationLink(
+      new URL(confirmed.navigateTo!, "https://www.giga3ai.com").searchParams
+    );
+    expect(parsed?.inputs).toMatchObject({
+      title: "Hydration Title",
+      subject: "Photosynthesis",
+      chapterCount: "6",
+      tone: "Formal",
+    });
+  });
+
+  it("E: capitalization/punctuation variants and non-command titles", () => {
+    expect(
+      classifyBookIntakeMessage({
+        text: "  please suggest an outline  ",
+        pendingFieldId: "chapterCount",
+        inputs: { subject: "Photosynthesis" },
+      }).type
+    ).toBe("suggest_outline");
+    expect(
+      classifyBookIntakeMessage({
+        text: "more titles",
+        pendingFieldId: "title",
+        inputs: {},
+        titleSuggestions: ["One", "Two"],
+      }).type
+    ).toBe("title_brainstorm");
+    expect(
+      classifyBookIntakeMessage({
+        text: "more titles",
+        pendingFieldId: "title",
+        inputs: {},
+      }).type
+    ).toBe("field_answer");
+
+    let turn = startChatCreation("I want to write a book.")!;
+    turn = answer(turn.state, "Formal Methods in Science");
+    expect(turn.state?.inputs.title).toBe("Formal Methods in Science");
+    expect(turn.state?.inputs.tone).toBeUndefined();
   });
 });

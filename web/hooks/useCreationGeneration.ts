@@ -14,13 +14,22 @@ import { canGenerateToday, recordLearningActivity } from "@/lib/gigalearn/worksp
 import { formatMediaError } from "@/lib/media/errors";
 import { api } from "convex/_generated/api";
 import { useAction } from "convex/react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
+
+function newClientRequestId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `web_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
 
 /** Staged generation through the existing GigaLearn backend action (same credits and providers). */
 export function useCreationGeneration() {
   const generateContent = useAction(api.gigalearnStudio.generateContent);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** Stable idempotency keys per stage so ambiguous retries reuse the same reservation. */
+  const requestIdsRef = useRef<Map<string, string>>(new Map());
 
   const generateStage = useCallback(
     async (args: {
@@ -46,6 +55,12 @@ export function useCreationGeneration() {
       }
       setLoading(true);
       setError(null);
+      const stageKey = `${args.template.id}:${args.stage.id}`;
+      let clientRequestId = requestIdsRef.current.get(stageKey);
+      if (!clientRequestId) {
+        clientRequestId = newClientRequestId();
+        requestIdsRef.current.set(stageKey, clientRequestId);
+      }
       try {
         const { prompt, context } = buildStagePrompt(args);
         const subject = formatValue(args.inputs.subject) || undefined;
@@ -57,10 +72,13 @@ export function useCreationGeneration() {
           context,
           subject,
           level,
+          clientRequestId,
         });
         const content = response.content?.trim();
         if (!content) throw new Error("Giga3 AI returned an empty response. Please try again.");
         recordLearningActivity({ toolId: args.template.backendToolId, subject, creditsUsed: 2 });
+        // Success — next regenerate of this stage gets a fresh reservation id.
+        requestIdsRef.current.delete(stageKey);
         return {
           stageId: args.stage.id,
           label: args.stage.label,
@@ -75,7 +93,16 @@ export function useCreationGeneration() {
           provider: response.provider,
         };
       } catch (e) {
-        setError(formatMediaError(e));
+        const message = formatMediaError(e);
+        // Force a new id when the prior hold is terminal or expired.
+        if (
+          /already completed|hold expired|refunded|finalize the credit charge|settle credits/i.test(
+            message
+          )
+        ) {
+          requestIdsRef.current.delete(stageKey);
+        }
+        setError(message);
         return null;
       } finally {
         setLoading(false);

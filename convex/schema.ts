@@ -417,6 +417,30 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_created", ["userId", "createdAt"]),
 
+  /**
+   * Atomic credit holds for paid generation (GigaLearn / book creation).
+   * Balance is deducted on reserve; capture keeps the charge; release refunds.
+   */
+  creditReservations: defineTable({
+    userId: v.string(),
+    requestId: v.string(),
+    action: creditActionValidator,
+    amount: v.number(),
+    status: v.union(
+      v.literal("reserved"),
+      v.literal("captured"),
+      v.literal("released"),
+      /** Stale abandonment — refunded; requestId must not be reused. */
+      v.literal("expired")
+    ),
+    reference: v.optional(v.string()),
+    metadata: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_request", ["userId", "requestId"])
+    .index("by_status_created", ["status", "createdAt"]),
+
   conversations: defineTable({
     userId: v.string(),
     title: v.string(),

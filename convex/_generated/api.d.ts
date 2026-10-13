@@ -62,6 +62,8 @@ import type * as creatorProfiles from "../creatorProfiles.js";
 import type * as creatorStudio from "../creatorStudio.js";
 import type * as creatorVerificationPolicy from "../creatorVerificationPolicy.js";
 import type * as creditPacks from "../creditPacks.js";
+import type * as creditReservationLogic from "../creditReservationLogic.js";
+import type * as creditReservations from "../creditReservations.js";
 import type * as credits from "../credits.js";
 import type * as creditsConfig from "../creditsConfig.js";
 import type * as crons from "../crons.js";
@@ -337,6 +339,8 @@ declare const fullApi: ApiFromModules<{
   creatorStudio: typeof creatorStudio;
   creatorVerificationPolicy: typeof creatorVerificationPolicy;
   creditPacks: typeof creditPacks;
+  creditReservationLogic: typeof creditReservationLogic;
+  creditReservations: typeof creditReservations;
   credits: typeof credits;
   creditsConfig: typeof creditsConfig;
   crons: typeof crons;
