@@ -50,6 +50,10 @@ export function useCreationGeneration() {
         const { prompt, context } = buildStagePrompt(args);
         const subject = formatValue(args.inputs.subject) || undefined;
         const level = formatValue(args.inputs.level) || undefined;
+        const clientRequestId =
+          typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `web_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
         const response = await generateContent({
           sessionToken,
           toolId: args.template.backendToolId,
@@ -57,6 +61,7 @@ export function useCreationGeneration() {
           context,
           subject,
           level,
+          clientRequestId,
         });
         const content = response.content?.trim();
         if (!content) throw new Error("Giga3 AI returned an empty response. Please try again.");

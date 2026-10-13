@@ -35,49 +35,47 @@ describe("book / creation generation credit-safety contracts", () => {
     expect(hook).toContain("creditsUsed: 2");
   });
 
-  it("backend generateContent enforces session, entitlement, and credit gate before AI", () => {
+  it("backend generateContent enforces session, entitlement, and atomic reserve before AI", () => {
     const src = read("convex/gigalearnStudio.ts");
     const handlerIdx = src.indexOf("export const generateContent = action");
     expect(handlerIdx).toBeGreaterThan(-1);
-    const slice = src.slice(handlerIdx, handlerIdx + 4500);
+    const slice = src.slice(handlerIdx);
     expect(slice).toContain("requireSessionWithMonitoring");
     expect(slice).toContain('feature: "creator_studio"');
-    expect(slice).toContain("getUsageSnapshot");
+    expect(slice).toContain("tryReserveInternal");
     expect(slice).toContain("CREDIT_COSTS.writing");
     expect(slice).toContain("Insufficient credits");
-    const checkIdx = slice.indexOf("usage.credits < CREDIT_COSTS.writing");
+    const reserveIdx = slice.indexOf("tryReserveInternal");
     const completeIdx = slice.indexOf("completeChatWithFailover");
-    const deductIdx = slice.indexOf("deductCredits");
-    expect(checkIdx).toBeGreaterThan(-1);
-    expect(completeIdx).toBeGreaterThan(checkIdx);
-    expect(deductIdx).toBeGreaterThan(completeIdx);
+    const captureIdx = slice.indexOf("captureInternal");
+    expect(reserveIdx).toBeGreaterThan(-1);
+    expect(completeIdx).toBeGreaterThan(reserveIdx);
+    expect(captureIdx).toBeGreaterThan(completeIdx);
   });
 
-  it("deductCredits re-checks balance atomically and requires a session", () => {
-    const credits = read("convex/credits.ts");
-    expect(credits).toContain("async function performDeduct");
-    expect(credits).toContain("if (balance < cost)");
-    expect(credits).toContain("Insufficient credits");
-    expect(credits).toMatch(/export const deductCredits = mutation/);
-    const deduct = credits.slice(credits.indexOf("export const deductCredits = mutation"));
-    expect(deduct).toContain("requireSession(args.sessionToken, ctx)");
-    expect(deduct).toContain("performDeduct");
+  it("reservation mutations re-check balance atomically inside tryReserveInternal", () => {
+    const reservations = read("convex/creditReservations.ts");
+    expect(reservations).toContain("export const tryReserveInternal");
+    expect(reservations).toContain("if (balance < amount)");
+    expect(reservations).toContain('status: "reserved"');
+    expect(reservations).toContain("export const captureInternal");
+    expect(reservations).toContain("export const releaseInternal");
+    expect(reservations).toContain('action: "refund"');
   });
 
-  it("empty prompts fail before credit deduction", () => {
+  it("empty prompts fail before credit reservation", () => {
     const src = read("convex/gigalearnStudio.ts");
     const emptyIdx = src.indexOf('throw new Error("Please describe what you want to learn or create.")');
-    const deductIdx = src.indexOf('await ctx.runMutation(api.credits.deductCredits');
+    const reserveIdx = src.indexOf("tryReserveInternal");
     expect(emptyIdx).toBeGreaterThan(-1);
-    expect(deductIdx).toBeGreaterThan(emptyIdx);
+    expect(reserveIdx).toBeGreaterThan(emptyIdx);
   });
 
-  it("local_fallback responses do not deduct credits", () => {
+  it("local_fallback responses release the reservation instead of capturing", () => {
     const src = read("convex/gigalearnStudio.ts");
-    expect(src).toContain('engineResult.providerId !== "local_fallback"');
-    expect(src).toMatch(
-      /if \(engineResult\.providerId !== "local_fallback"\) \{\s*await ctx\.runMutation\(api\.credits\.deductCredits/
-    );
+    expect(src).toContain('providerId === "local_fallback"');
+    expect(src).toContain("releaseInternal");
+    expect(src).toContain("captureInternal");
   });
 
   it("book template routes through creation-book backend tool id", () => {

@@ -213,6 +213,8 @@ export const generateContent = action({
     sessionToken: v.string(),
     toolId: v.string(),
     prompt: v.string(),
+    /** Client-stable id for idempotent reserve / retry (max 128 chars). */
+    clientRequestId: v.optional(v.string()),
     curriculum: v.optional(v.string()),
     subject: v.optional(v.string()),
     level: v.optional(v.string()),
@@ -247,138 +249,184 @@ export const generateContent = action({
       sessionToken: args.sessionToken,
     });
     if (!usage) throw new Error("User not found");
-    if (usage.credits < CREDIT_COSTS.writing) {
+
+    const requestId =
+      args.clientRequestId?.trim() ||
+      `srv_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+    const reserveMeta = JSON.stringify({
+      source: "gigalearn",
+      toolId: args.toolId,
+      curriculum: args.curriculum ?? null,
+      subject: args.subject ?? null,
+      level: args.level ?? null,
+      country: args.country ?? null,
+      grade: args.grade ?? null,
+      strand: args.strand ?? null,
+      subStrand: args.subStrand ?? null,
+      topic: args.topic ?? null,
+      contentStandard: args.contentStandard ?? null,
+      indicator: args.indicator ?? null,
+    });
+
+    // Atomic reserve BEFORE any provider call — prevents concurrent overspend / duplicate AI.
+    const reserved = await ctx.runMutation(internal.creditReservations.tryReserveInternal, {
+      userId: verifiedEmail,
+      requestId,
+      action: "writing",
+      amount: CREDIT_COSTS.writing,
+      reference: `gigalearn:${args.toolId}:${requestId}`,
+      metadata: reserveMeta,
+    });
+    if (!reserved.ok) {
+      if (reserved.reason === "insufficient") {
+        throw new Error(
+          `Insufficient credits (${reserved.required} required, ${reserved.balance} available).`
+        );
+      }
+      if (reserved.reason === "in_progress") {
+        throw new Error(
+          "This generation request is already in progress. Wait for it to finish, or start a new request."
+        );
+      }
       throw new Error(
-        `Insufficient credits (${CREDIT_COSTS.writing} required, ${usage.credits} available).`
+        "This generation request already completed. Start a new request if you need another section."
       );
     }
 
-    const mode = TOOL_MODE_MAP[args.toolId] ?? "gigalearn";
-    const personaId = resolvePersonaForGigaLearnTool({
-      toolId: args.toolId,
-      curriculum: args.curriculum,
-    });
-    const personaAddon = personaSystemPromptAddon(personaId);
-    const levelDef = args.levelId ? getLevel(resolveLegacyLevelId(args.levelId)) : undefined;
-    const levelBand = levelDef?.band;
-    const explicitMethods =
-      args.methodologyIds
-        ?.map((id: string) => getMethodology(id))
-        .filter((m): m is NonNullable<ReturnType<typeof getMethodology>> => Boolean(m)) ?? [];
-    const methods =
-      explicitMethods.length > 0
-        ? explicitMethods
-        : selectMethodologiesForContext({
-            levelBand,
-            subjectId: args.subject,
-            topic: args.topic,
-            max: 6,
-          });
-    const methodologyBlock = buildMethodologyPromptBlock(methods, {
-      levelBand,
-      gradeLabel: args.grade ?? levelDef?.gradeLabel,
-    });
-    const userMessage = buildToolPrompt(
-      args.toolId,
-      trimmed,
-      args.curriculum,
-      args.subject,
-      args.level,
-      args.context,
-      {
-        country: args.country,
-        grade: args.grade,
-        strand: args.strand,
-        subStrand: args.subStrand,
-        topic: args.topic,
-        learningObjective: args.learningObjective,
-        contentStandard: args.contentStandard,
-        indicator: args.indicator,
-        methodologyBlock,
-      }
-    );
-
-    const qualityContext = prepareAnswerQualityContext({
-      mode,
-      query: trimmed,
-      history: [{ role: "user", content: userMessage }],
-    });
-
-    const hasPurchasedCredits = await ctx.runQuery(
-      internal.credits.userHasPurchasedCreditsInternal,
-      { userId: verifiedEmail }
-    );
-
-    const routing = buildRoutingContextFromUser({
-      subscriptionPlan: usage.subscriptionPlan ?? "free",
-      subscriptionExpiresAt: usage.subscriptionExpiresAt,
-      hasPurchasedCredits: Boolean(hasPurchasedCredits),
-      mode,
-      query: trimmed,
-    });
-
-    const engineResult = await completeChatWithFailover(
-      trimChatMessages(
-        [
-          {
-            role: "system",
-            content: `${getSystemPrompt(mode)}${personaAddon ? `\n\n${personaAddon}` : ""}\n\n${qualityContext.systemPromptAddon}`,
-          },
-          ...toRetrievalSystemMessage(qualityContext),
-          { role: "user", content: userMessage },
-        ],
-        4
-      ),
-      routing
-    );
-
-    const validated = validateAnswerQuality({
-      answer: engineResult.content,
-      context: qualityContext,
-    });
-
-    if (engineResult.providerId !== "local_fallback") {
-      await ctx.runMutation(api.credits.deductCredits, {
-        sessionToken: args.sessionToken,
-        action: "writing",
-        reference: `gigalearn:${args.toolId}`,
-        metadata: JSON.stringify({
-          source: "gigalearn",
-          toolId: args.toolId,
-          curriculum: args.curriculum ?? null,
-          subject: args.subject ?? null,
-          level: args.level ?? null,
-          country: args.country ?? null,
-          grade: args.grade ?? null,
-          strand: args.strand ?? null,
-          subStrand: args.subStrand ?? null,
-          topic: args.topic ?? null,
-          contentStandard: args.contentStandard ?? null,
-          indicator: args.indicator ?? null,
-        }),
+    let captured = false;
+    try {
+      const mode = TOOL_MODE_MAP[args.toolId] ?? "gigalearn";
+      const personaId = resolvePersonaForGigaLearnTool({
+        toolId: args.toolId,
+        curriculum: args.curriculum,
       });
+      const personaAddon = personaSystemPromptAddon(personaId);
+      const levelDef = args.levelId ? getLevel(resolveLegacyLevelId(args.levelId)) : undefined;
+      const levelBand = levelDef?.band;
+      const explicitMethods =
+        args.methodologyIds
+          ?.map((id: string) => getMethodology(id))
+          .filter((m): m is NonNullable<ReturnType<typeof getMethodology>> => Boolean(m)) ?? [];
+      const methods =
+        explicitMethods.length > 0
+          ? explicitMethods
+          : selectMethodologiesForContext({
+              levelBand,
+              subjectId: args.subject,
+              topic: args.topic,
+              max: 6,
+            });
+      const methodologyBlock = buildMethodologyPromptBlock(methods, {
+        levelBand,
+        gradeLabel: args.grade ?? levelDef?.gradeLabel,
+      });
+      const userMessage = buildToolPrompt(
+        args.toolId,
+        trimmed,
+        args.curriculum,
+        args.subject,
+        args.level,
+        args.context,
+        {
+          country: args.country,
+          grade: args.grade,
+          strand: args.strand,
+          subStrand: args.subStrand,
+          topic: args.topic,
+          learningObjective: args.learningObjective,
+          contentStandard: args.contentStandard,
+          indicator: args.indicator,
+          methodologyBlock,
+        }
+      );
+
+      const qualityContext = prepareAnswerQualityContext({
+        mode,
+        query: trimmed,
+        history: [{ role: "user", content: userMessage }],
+      });
+
+      const hasPurchasedCredits = await ctx.runQuery(
+        internal.credits.userHasPurchasedCreditsInternal,
+        { userId: verifiedEmail }
+      );
+
+      const routing = buildRoutingContextFromUser({
+        subscriptionPlan: usage.subscriptionPlan ?? "free",
+        subscriptionExpiresAt: usage.subscriptionExpiresAt,
+        hasPurchasedCredits: Boolean(hasPurchasedCredits),
+        mode,
+        query: trimmed,
+      });
+
+      const engineResult = await completeChatWithFailover(
+        trimChatMessages(
+          [
+            {
+              role: "system",
+              content: `${getSystemPrompt(mode)}${personaAddon ? `\n\n${personaAddon}` : ""}\n\n${qualityContext.systemPromptAddon}`,
+            },
+            ...toRetrievalSystemMessage(qualityContext),
+            { role: "user", content: userMessage },
+          ],
+          4
+        ),
+        routing
+      );
+
+      const validated = validateAnswerQuality({
+        answer: engineResult.content,
+        context: qualityContext,
+      });
+
+      // Local fallback remains free: release the hold instead of capturing.
+      if (engineResult.providerId === "local_fallback") {
+        await ctx.runMutation(internal.creditReservations.releaseInternal, {
+          userId: verifiedEmail,
+          requestId,
+        });
+      } else {
+        await ctx.runMutation(internal.creditReservations.captureInternal, {
+          userId: verifiedEmail,
+          requestId,
+        });
+        captured = true;
+      }
+
+      await ctx.runMutation(internal.gigaLearnProgress.recordAssessmentInternal, {
+        userId: verifiedEmail,
+        toolId: args.toolId,
+        subject: args.subject,
+        curriculum: args.curriculum,
+        score: args.practiceScore,
+      });
+
+      const updatedUsage = await ctx.runQuery(api.credits.getUsageSnapshot, {
+        sessionToken: args.sessionToken,
+      });
+
+      return {
+        content: validated.content,
+        toolId: args.toolId,
+        mode,
+        personaId,
+        credits: updatedUsage?.credits ?? reserved.balanceAfter,
+        usedFallback: engineResult.usedFallback,
+        provider: engineResult.providerId,
+        requestId,
+      };
+    } catch (err) {
+      if (!captured) {
+        try {
+          await ctx.runMutation(internal.creditReservations.releaseInternal, {
+            userId: verifiedEmail,
+            requestId,
+          });
+        } catch {
+          // Best-effort release; stale recovery will reclaim abandoned holds.
+        }
+      }
+      throw err;
     }
-
-    await ctx.runMutation(internal.gigaLearnProgress.recordAssessmentInternal, {
-      userId: verifiedEmail,
-      toolId: args.toolId,
-      subject: args.subject,
-      curriculum: args.curriculum,
-      score: args.practiceScore,
-    });
-
-    const updatedUsage = await ctx.runQuery(api.credits.getUsageSnapshot, {
-      sessionToken: args.sessionToken,
-    });
-
-    return {
-      content: validated.content,
-      toolId: args.toolId,
-      mode,
-      personaId,
-      credits: updatedUsage?.credits ?? usage.credits,
-      usedFallback: engineResult.usedFallback,
-      provider: engineResult.providerId,
-    };
   },
 });
