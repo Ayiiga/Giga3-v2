@@ -39,6 +39,7 @@ import {
   shouldUseConversationalWorker,
 } from "./researchCapabilities";
 import { isChatAssistantFailureStub } from "./chatUserMessages";
+import { CREDIT_COSTS, creditActionForMode } from "./creditsConfig";
 
 const attachmentValidator = v.optional(
   v.array(
@@ -193,6 +194,25 @@ export const acceptMessage = mutation({
         "Advanced personas require a paid subscription."
       );
     }
+
+    // Server-side credit gate before enqueueing paid AI (client UI alone is not enough).
+    // Deduct still happens after a successful non-fallback reply; this prevents free rides
+    // when the balance is already below the mode cost.
+    {
+      const creditUser = await ctx.db
+        .query("users")
+        .withIndex("by_email", (q) => q.eq("email", email))
+        .first();
+      const creditAction = creditActionForMode(mode);
+      const creditCost = CREDIT_COSTS[creditAction];
+      const creditBalance = creditUser?.credits ?? 0;
+      if (creditBalance < creditCost) {
+        throw new Error(
+          `Insufficient credits (${creditCost} required, ${creditBalance} available). Subscribe or renew to refill.`
+        );
+      }
+    }
+
     const rawAttachments = (args.attachments ?? []) as RawAttachmentInput[];
     const attachments = rawAttachments as ChatCompletionAttachment[];
     const resolvedResearchCapability = resolveResearchCapability({

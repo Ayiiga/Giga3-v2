@@ -26,6 +26,7 @@ describe("FAL_IMAGE_MODEL default", () => {
       "convex/mediaCatalog.ts",
       ".github/workflows/convex-deploy.yml",
       "DEPLOYMENT.md",
+      "scripts/convex-env-ai-providers.sh",
     ]) {
       const src = read(path);
       expect(src, path).toContain("fal-ai/flux/schnell");
@@ -35,7 +36,10 @@ describe("FAL_IMAGE_MODEL default", () => {
           /FAL_IMAGE_MODEL\s*=\s*\n?\s*process\.env\.FAL_IMAGE_MODEL\?\.trim\(\) \|\| "fal-ai\/flux\/schnell"/
         );
       }
-      if (path === ".github/workflows/convex-deploy.yml") {
+      if (
+        path === ".github/workflows/convex-deploy.yml" ||
+        path === "scripts/convex-env-ai-providers.sh"
+      ) {
         expect(src).toContain("${FAL_IMAGE_MODEL:-fal-ai/flux/schnell}");
         expect(src).not.toContain(`env set FAL_IMAGE_MODEL "${premiumPrimary}"`);
       } else {
