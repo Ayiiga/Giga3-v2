@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { prepareAnswerQualityContext } from "../../convex/answerQuality";
+import {
+  detectDetailFollowUpIntent,
+  prepareAnswerQualityContext,
+} from "../../convex/answerQuality";
 
 describe("Smart Answers prompt guidance", () => {
   it("asks educational replies to use adaptive section headings", () => {
@@ -21,5 +24,24 @@ describe("Smart Answers prompt guidance", () => {
     });
     expect(context.responseMode).toBe("conversational");
     expect(context.systemPromptAddon).not.toContain("## ⚡ Quick Answer");
+  });
+
+  it("asks detail follow-ups to deepen instead of repeating", () => {
+    expect(detectDetailFollowUpIntent("give me more detail")).toBe(true);
+    expect(detectDetailFollowUpIntent("don't repeat, explain further")).toBe(true);
+    const context = prepareAnswerQualityContext({
+      mode: "homework",
+      query: "Tell me more detail about filtration",
+      history: [
+        { role: "user", content: "What are separation techniques?" },
+        {
+          role: "assistant",
+          content: "## ⚡ Quick Answer\nSeparation techniques split mixtures.",
+        },
+      ],
+    });
+    expect(context.systemPromptAddon).toContain("Detail follow-up");
+    expect(context.systemPromptAddon).toContain("Do not repeat");
+    expect(context.systemPromptAddon).toContain("More Complete Explanation");
   });
 });
