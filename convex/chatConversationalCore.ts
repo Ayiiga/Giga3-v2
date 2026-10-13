@@ -116,7 +116,9 @@ export async function executeConversationalReply(
     systemPrompt += `\n\n${personaAddon}`;
   }
   systemPrompt +=
-    "\n\nReply helpfully and concisely. Do not invent current news or run web research unless the user asks for live information.";
+    qualityContext.responseMode === "educational"
+      ? "\n\nReply helpfully with clear, professional depth. Prefer concrete details and natural human phrasing over short recycled summaries. Do not invent current news or run web research unless the user asks for live information."
+      : "\n\nReply helpfully and concisely. Do not invent current news or run web research unless the user asks for live information.";
 
   const chatMessages = trimChatMessages([
     { role: "system" as const, content: systemPrompt },

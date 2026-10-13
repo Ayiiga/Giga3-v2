@@ -96,8 +96,7 @@
   }
 
   /* Distraction-free while composing: collapse soft upsells; keep essential chrome. */
-  html.chat-route.chat-composer-active .chat-banner-upsell,
-  html.chat-route.chat-composer-active .chat-footer-chips {
+  html.chat-route.chat-composer-active .chat-banner-upsell {
     display: none !important;
   }
 
@@ -112,14 +111,12 @@
     background: #fff;
   }
 
+  /*
+   * Hide suggestion chips on mobile chat — they stack above the composer and
+   * steal space from the reply (chips only mount when the thread has messages).
+   */
   html.chat-route .chat-footer-chips {
-    flex-shrink: 0;
-    width: 100%;
-    max-width: 100%;
-    margin-inline: 0;
-    padding-inline: var(--chat-edge-pad) var(--chat-edge-pad-right);
-    padding-top: 6px;
-    padding-bottom: 0;
+    display: none !important;
   }
 
   /* Chips sit flush above the composer — no double vertical padding */

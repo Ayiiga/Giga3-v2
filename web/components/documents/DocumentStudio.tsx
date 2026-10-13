@@ -358,7 +358,14 @@ export function DocumentStudio({
       </div>
 
       <div
-        className="document-studio-actions sticky bottom-0 z-10 flex flex-wrap gap-2 border-t border-border/60 bg-white/95 pt-2 pb-[calc(0.5rem+var(--primary-nav-offset,0px)+env(safe-area-inset-bottom,0px))]"
+        className={cn(
+          "document-studio-actions flex flex-wrap gap-2 border-t border-border/60 bg-white pt-2",
+          // Sticky only in true fullscreen — in chat, sticky bottom sticks to the
+          // message-list viewport and overlays the document/reply text.
+          fullscreen
+            ? "sticky bottom-0 z-10 bg-white/95 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))]"
+            : "relative z-0 pb-2"
+        )}
         data-testid="document-studio-actions"
       >
         <Button

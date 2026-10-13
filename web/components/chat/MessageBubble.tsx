@@ -297,7 +297,15 @@ export const MessageBubble = memo(function MessageBubble({
             {body}
           </div>
           {bubbleActions}
-          {!streaming && !editing && looksLikeDocumentContent(content) ? (
+          {/*
+            Smart Answers already render in the bubble. Mounting Document Studio
+            for the same markdown duplicates the answer and its sticky Export bar
+            floats over the readable reply on mobile.
+          */}
+          {!streaming &&
+          !editing &&
+          !smartAnswer &&
+          looksLikeDocumentContent(content) ? (
             <DocumentResultCard
               content={content}
               messageId={id}

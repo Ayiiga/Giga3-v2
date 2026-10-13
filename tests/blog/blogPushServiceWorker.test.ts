@@ -12,7 +12,7 @@ describe("blog OneSignal service worker coexistence", () => {
 
     expect(osSw).toContain('importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js")');
     expect(osSw).not.toContain("CACHE_VERSION");
-    expect(rootSw).toContain('CACHE_VERSION = "giga3-v34"');
+    expect(rootSw).toContain('CACHE_VERSION = "giga3-v35"');
     expect(rootSw).not.toContain("OneSignalSDK.sw.js");
     expect(rootSw).not.toContain("onesignal.com");
   });

@@ -228,9 +228,23 @@ export function evaluateOnePageFit(doc: GigaDocument): string | null {
   return `This ${doc.paper.size} one-page layout may be tight (${text.length.toLocaleString()} characters). Tighten wording or switch off one-page fit — content will not be deleted.`;
 }
 
+/**
+ * Smart Answers use multiple ## headings (Quick Answer, Key Points, …).
+ * Those are chat teaching layouts — not Document Studio export cards.
+ * Matching them as "documents" pinned sticky Export actions over the reply.
+ */
+export function isSmartAnswerShapedContent(raw: string): boolean {
+  const smartHeading =
+    /^#{1,3}\s*(?:[⚡📘🧠🔑🌍📝🚀]\s*)?(?:Quick Answer|Simple Definition|More Complete Explanation|Key Points|Real[- ]World Example|Practice\s*\/\s*Try It|Next Step)\b/gim;
+  const hits = raw.match(smartHeading) ?? [];
+  if (hits.length >= 2) return true;
+  return /^#{1,3}\s*⚡\s*Quick Answer\b/im.test(raw);
+}
+
 export function looksLikeDocumentContent(raw: string): boolean {
   const clean = extractCleanDocumentContent(raw);
   if (clean.length < 180) return false;
+  if (isSmartAnswerShapedContent(clean)) return false;
   const headings = (clean.match(/^#{1,3}\s+/gm) ?? []).length;
   const lists = (clean.match(/^[-*+\d]+\.?\s+/gm) ?? []).length;
   if (headings >= 2) return true;

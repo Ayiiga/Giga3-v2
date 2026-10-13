@@ -574,6 +574,13 @@ function detectExamQuestion(query: string): boolean {
   );
 }
 
+/** User wants deeper substance rather than a restated short answer. */
+export function detectDetailFollowUpIntent(query: string): boolean {
+  return /\b(more detail|more details|go deeper|elaborate|expand on|tell me more|explain (?:it |this |that )?(?:further|more|in detail|fully|better)|in more depth|don'?t repeat|stop repeating|without repeating|full(?:er)? explanation|deeper explanation|more thorough|can you explain|give (?:me )?(?:the )?details|break it down)\b/i.test(
+    query.trim()
+  );
+}
+
 function inferQueryClass(mode: AiModeId, query: string): QueryClass {
   if (
     hasAcademicIntent(query) ||
@@ -739,6 +746,8 @@ function buildSystemPromptAddon(params: {
   hasInlineImageData: boolean;
   rankedSources: RankedSource[];
   mtnHeroesOfChangeMode: boolean;
+  detailFollowUp: boolean;
+  hasPriorAssistant: boolean;
 }): string {
   const researchWritingTask =
     params.mode === "research" ||
@@ -785,7 +794,19 @@ function buildSystemPromptAddon(params: {
 
   const educationalRule =
     params.responseMode === "educational"
-      ? "- Educational mode: give a direct, professional answer first. Use clear sections only when they help. Never show Verification, Confidence scores, Citation count, Evidence used, or Validation flags unless the user explicitly asked for fact-checking. Do not add a **Sources** section or link list unless the user asked for sources, citations, or references — weave facts into the answer naturally."
+      ? "- Educational mode: give a direct, human, professional answer first — clear, confident, and useful. Use clear sections only when they help. Never show Verification, Confidence scores, Citation count, Evidence used, or Validation flags unless the user explicitly asked for fact-checking. Do not add a **Sources** section or link list unless the user asked for sources, citations, or references — weave facts into the answer naturally."
+      : "";
+
+  const detailFollowUpRule = params.detailFollowUp
+    ? [
+        "- Detail follow-up (required): the user wants deeper substance, not a restatement.",
+        "- Do not repeat or lightly rephrase the previous assistant reply.",
+        "- Skip or minimize ## ⚡ Quick Answer if it would recycle earlier wording; lead with ## 🧠 More Complete Explanation.",
+        "- Add new mechanisms, worked steps, edge cases, contrasts, and a concrete example the prior turn did not cover.",
+        "- Sound like a sharp human tutor or colleague: precise language, natural rhythm, no filler templates.",
+      ].join("\n")
+    : params.hasPriorAssistant && params.responseMode === "educational"
+      ? "- Thread follow-up: advance the explanation with new information. Never paste or paraphrase the previous answer."
       : "";
 
   const examRule = params.isExamQuestion
@@ -862,10 +883,12 @@ function buildSystemPromptAddon(params: {
         : [
           "Giga3 Smart Answers:",
           "- Prefer natural conversation. Use only the sections that help, and never leave a heading empty.",
-          "- Simple fact: ## ⚡ Quick Answer only (1–2 sentences).",
+          params.detailFollowUp
+            ? "- Detail request: prioritize ## 🧠 More Complete Explanation with real depth; only keep ## ⚡ Quick Answer if it adds a one-line frame that is not a repeat."
+            : "- Simple fact: ## ⚡ Quick Answer only (1–2 sentences).",
           "- Definition: ## ⚡ Quick Answer and ## 📘 Simple Definition.",
           "- Teaching or how-to: also use ## 🧠 More Complete Explanation, ## 🔑 Key Points, ## 🌍 Real-World Example, and ## 📝 Practice / Try It when they help. Add ## 🚀 Next Step for a useful follow-up.",
-          "- Bold keywords only. Keep paragraphs short. Use a Ghanaian, African, school, business, or everyday example when an example helps.",
+          "- Bold keywords only. Keep paragraphs short but substantive. Use a Ghanaian, African, school, business, or everyday example when an example helps.",
           "- Skip every Smart Answers heading for greetings and one-line chat.",
         ].join("\n");
 
@@ -885,6 +908,7 @@ function buildSystemPromptAddon(params: {
     researchWritingRule,
     catalogFormattingRule,
     educationalRule,
+    detailFollowUpRule,
     learnerInstruction(params.learnerLevel),
     examRule,
     highStakesRule,
@@ -939,6 +963,10 @@ export function prepareAnswerQualityContext(params: {
 
   const candidates = buildSourceCandidates({ query, attachments, history });
   const rankedSources = rankSources(query, candidates);
+  const detailFollowUp = detectDetailFollowUpIntent(query);
+  const hasPriorAssistant = history.some(
+    (message) => message.role === "assistant" && message.content.trim().length > 0
+  );
 
   return {
     query,
@@ -972,6 +1000,8 @@ export function prepareAnswerQualityContext(params: {
       hasInlineImageData,
       rankedSources,
       mtnHeroesOfChangeMode,
+      detailFollowUp,
+      hasPriorAssistant,
     }),
     retrievalContextBlock: buildRetrievalContextBlock(
       queryClass,
