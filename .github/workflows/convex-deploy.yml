@@ -171,7 +171,7 @@ jobs:
           npx convex env set FAL_VIDEO_MODEL "${FAL_IMAGE_VIDEO_MODEL:-fal-ai/bytedance/seedance/v1.5/pro/image-to-video}"
           if [ -n "${FAL_KEY:-}" ]; then
             npx convex env set FAL_KEY "${FAL_KEY}"
-            npx convex env set FAL_IMAGE_MODEL "fal-ai/nano-banana-pro"
+            npx convex env set FAL_IMAGE_MODEL "${FAL_IMAGE_MODEL:-fal-ai/flux/schnell}"
           fi
           if [ -n "${OPENAI_API_KEY:-}" ]; then
             npx convex env set OPENAI_API_KEY "${OPENAI_API_KEY}"

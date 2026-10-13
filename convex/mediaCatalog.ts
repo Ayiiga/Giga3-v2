@@ -109,7 +109,7 @@ export type VideoCategoryId = keyof typeof VIDEO_CATEGORIES;
 
 
 export const FAL_IMAGE_MODEL =
-  process.env.FAL_IMAGE_MODEL ?? "fal-ai/nano-banana-pro";
+  process.env.FAL_IMAGE_MODEL?.trim() || "fal-ai/flux/schnell";
 
 export const REPLICATE_IMAGE_MODEL =
   process.env.REPLICATE_IMAGE_MODEL ?? "black-forest-labs/flux-schnell";
