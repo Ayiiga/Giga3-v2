@@ -122,7 +122,7 @@ function GigaLearnContent() {
   const insightSub = insightSubViewFromTab(tabParam);
 
   return (
-    <div className="gigalearn-stable mx-auto max-w-6xl space-y-6 pb-[calc(var(--primary-nav-offset,0px)+1rem)]">
+    <div className="gigalearn-stable document-compact mx-auto max-w-6xl space-y-4 pb-[calc(var(--primary-nav-offset,0px)+1rem)]">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link

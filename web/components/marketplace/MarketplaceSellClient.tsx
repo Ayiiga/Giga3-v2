@@ -375,34 +375,60 @@ function MarketplaceSellInner() {
           </div>
         </section>
 
-        <section className="rounded-2xl border bg-card p-6">
+        <section className="rounded-2xl border bg-card p-4 sm:p-6">
           <h2 className="text-lg font-semibold">Identity verification</h2>
           <p className="mt-2 text-sm text-muted">
-            Marketplace registration requires your national ID, an ID photo, and current GPS
-            coordinates within Ghana. Verification runs automatically when you submit.
+            Selling requires your Ghana national ID, an ID photo, and GPS within Ghana. Location is
+            used only for this check and is never shown on public listings.
           </p>
           <p className="mt-2 text-sm font-medium capitalize text-foreground">
-            Status: {verificationStatus.replace(/_/g, " ")}
+            Status:{" "}
+            {verificationStatus === "approved"
+              ? "Verified"
+              : verificationStatus === "rejected"
+                ? "Needs resubmission"
+                : verificationStatus === "pending"
+                  ? "Incomplete — resubmit required"
+                  : "Not started"}
             {profile?.verificationSubmittedAt
-              ? ` · submitted ${formatTimestampDateTime(profile.verificationSubmittedAt)}`
+              ? ` · last attempt ${formatTimestampDateTime(profile.verificationSubmittedAt)}`
               : ""}
           </p>
           {profile?.nationalIdMasked && (
             <p className="mt-1 text-sm text-muted">ID on file: {profile.nationalIdMasked}</p>
           )}
 
+          {verificationStatus === "rejected" && (
+            <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">
+              {profile?.verificationRejectionReason ||
+                "Verification was rejected. Update your ID document and Ghana GPS location, then resubmit."}
+            </p>
+          )}
+
+          {verificationStatus === "pending" && (
+            <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+              Verification is incomplete. Submit your national ID, document photo, and Ghana GPS
+              below for automatic approval — listings stay unpublished until that succeeds. If
+              automatic checks keep failing, email{" "}
+              <a className="font-semibold underline" href="mailto:support@giga3ai.com">
+                support@giga3ai.com
+              </a>{" "}
+              for help. We never mark creators verified without a successful server-side check.
+            </p>
+          )}
+
           {(verificationStatus === "none" ||
             verificationStatus === "rejected" ||
             verificationStatus === "pending") && (
-            <div className="mt-4 grid gap-4">
+            <div className="mt-4 grid gap-3">
               <input
                 value={nationalIdNumber}
                 onChange={(e) => setNationalIdNumber(e.target.value)}
                 placeholder="National ID number"
-                className="rounded-xl border px-4 py-3"
+                className="min-h-11 rounded-xl border px-4 py-3"
                 autoComplete="off"
               />
-              <label className="flex cursor-pointer flex-col gap-2 rounded-xl border border-dashed px-4 py-4 text-sm">
+              <label className="flex min-h-11 cursor-pointer flex-col gap-2 rounded-xl border border-dashed px-4 py-3 text-sm">
                 <span className="font-medium">National ID document (photo or scan)</span>
                 <span className="text-muted">
                   {idDocumentFile?.name ?? "Tap to choose a JPG, PNG, or PDF"}
@@ -418,6 +444,7 @@ function MarketplaceSellInner() {
                 <Button
                   type="button"
                   variant="secondary"
+                  className="min-h-11"
                   onClick={handleCaptureLocation}
                   disabled={capturingLocation}
                 >
@@ -435,6 +462,7 @@ function MarketplaceSellInner() {
               </div>
               <Button
                 type="button"
+                className="min-h-11"
                 onClick={handleSubmitVerification}
                 disabled={submittingVerification}
               >
@@ -443,17 +471,10 @@ function MarketplaceSellInner() {
             </div>
           )}
 
-          {verificationStatus === "pending" && (
-            <p className="mt-4 text-sm text-amber-700">
-              Verification did not complete automatically. Resubmit your ID and GPS location
-              above, or contact support if you are already verified elsewhere.
-            </p>
-          )}
-
           {verificationStatus === "approved" && (
-            <p className="mt-4 text-sm text-emerald-700">
-              Verified creator — you can create listings. PDF products are checked automatically
-              when uploaded; publish once your file is attached.
+            <p className="mt-4 text-sm text-emerald-800">
+              Verified creator — you can create and publish listings. Product files must be attached
+              before publish; buyers only unlock downloads after Paystack payment is verified.
             </p>
           )}
         </section>
@@ -470,7 +491,7 @@ function MarketplaceSellInner() {
           ) : null}
           {verificationStatus === "pending" ? (
             <p className="mt-2 text-sm text-amber-700">
-              Complete automatic verification above before creating listings.
+              Finish identity verification above before you can publish listings.
             </p>
           ) : null}
           <div className="mt-4 grid gap-4">

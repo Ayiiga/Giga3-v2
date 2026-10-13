@@ -61,6 +61,7 @@ const STATIC_SITEMAP_PATHS = [
   "/gigalearn/",
   "/prompts/",
   "/trending/",
+  "/documents/",
   "/media/",
   "/video/",
   "/video/plans/",

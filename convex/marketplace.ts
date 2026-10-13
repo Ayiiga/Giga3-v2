@@ -494,7 +494,8 @@ export const getMyPurchases = query({
       const listing = await ctx.db.get(purchase.listingId);
       if (!listing) continue;
       let downloadUrl: string | null = null;
-      if (listing.fileStorageId) {
+      // Match getDownloadAccess: buyers only receive URLs for approved files.
+      if (listing.fileStorageId && isListingFileApproved(listing)) {
         downloadUrl = await ctx.storage.getUrl(listing.fileStorageId);
       }
       results.push({
@@ -504,6 +505,8 @@ export const getMyPurchases = query({
         downloadUrl,
         fileName: listing.fileName ?? "download",
         hasDownload: Boolean(downloadUrl),
+        downloadPendingReview:
+          Boolean(listing.fileStorageId) && !isListingFileApproved(listing),
       });
     }
     return results;

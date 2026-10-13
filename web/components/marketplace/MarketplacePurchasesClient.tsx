@@ -32,8 +32,8 @@ function MarketplacePurchasesInner() {
   );
 
   return (
-    <Container className="py-8 sm:py-12">
-      <div className="mx-auto max-w-4xl space-y-8">
+    <Container className="document-compact py-4 pb-[calc(var(--primary-nav-offset,0px)+1rem)] sm:py-8">
+      <div className="mx-auto max-w-4xl space-y-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-700 dark:text-emerald-300">
@@ -68,6 +68,7 @@ function MarketplacePurchasesInner() {
             {purchases.map((row: NonNullable<typeof purchases>[number]) => {
               const cover = row.listing.coverImageUrl;
               const canDownload = Boolean(row.hasDownload && row.downloadUrl);
+              const pendingReview = Boolean(row.downloadPendingReview);
               return (
                 <article
                   key={row.purchase._id}
@@ -112,9 +113,13 @@ function MarketplacePurchasesInner() {
                         <Download className="mr-2 h-4 w-4" aria-hidden />
                         Download PDF
                       </a>
+                    ) : pendingReview ? (
+                      <span className="inline-flex min-h-11 max-w-[14rem] items-center rounded-xl border border-amber-200 bg-amber-50 px-3 text-xs text-amber-950">
+                        Purchase recorded — file awaiting moderation before download unlocks.
+                      </span>
                     ) : (
                       <span className="inline-flex min-h-11 items-center rounded-xl border border-dashed border-border px-3 text-xs text-muted">
-                        File preparing…
+                        No downloadable file on this listing yet.
                       </span>
                     )}
                     <ButtonLink

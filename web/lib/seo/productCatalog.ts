@@ -81,6 +81,14 @@ export const PRODUCT_CATALOG: readonly ProductEntry[] = [
     group: "learn",
   },
   {
+    href: "/documents",
+    name: "Document Studio",
+    tagline: "CVs, letters and reports — PDF & Word",
+    description:
+      "Document Studio creates and edits CVs, application letters, business plans, lesson notes and reports with rich formatting, A4/A5 page setup, and real PDF and Word export. Also available from AI Chat and GigaLearn Create.",
+    group: "create",
+  },
+  {
     href: "/media",
     name: "Media Studio",
     tagline: "AI image generation and editing",
