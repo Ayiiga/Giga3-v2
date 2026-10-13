@@ -45,7 +45,7 @@ describe("mobile chat fullscreen layout", () => {
   it("compacts the reserved typing bar on phones without removing it", () => {
     const css = read("web/styles/chat-mobile-app.css");
     expect(css).toMatch(
-      /html\.chat-route\s+\.chat-typing-bar\s*\{[\s\S]*?min-height:\s*2\.5rem/
+      /html\.chat-route\s+\.chat-typing-bar\s*\{[\s\S]*?min-height:\s*2rem/
     );
     const bar = read("web/components/chat/ChatTypingBar.tsx");
     expect(bar).toContain("invisible");
@@ -54,17 +54,20 @@ describe("mobile chat fullscreen layout", () => {
 
   it("uses readable chat response font sizes on mobile (not text-sm)", () => {
     const globals = read("web/styles/globals.css");
-    expect(globals).toMatch(/\.chat-markdown\s*\{[\s\S]*?font-size:\s*1\.0625rem/);
+    expect(globals).toContain("--chat-font-conversation: 1.0625rem");
+    expect(globals).toMatch(
+      /\.chat-markdown\s*\{[\s\S]*?font-size:\s*var\(--chat-font-conversation\)/
+    );
     const premium = read("web/styles/chat-premium.css");
-    expect(premium).toMatch(/\.smart-answer\s*\{[\s\S]*?font-size:\s*1\.0625rem/);
     expect(premium).toMatch(
-      /\.answer-content-block__body\s*\{[\s\S]*?font-size:\s*1\.0625rem/
+      /\.smart-answer\s*\{[\s\S]*?font-size:\s*var\(--chat-font-conversation\)/
+    );
+    expect(premium).toMatch(
+      /\.answer-content-block__body\s*\{[\s\S]*?font-size:\s*var\(--chat-font-conversation\)/
     );
     const bubble = read("web/components/chat/MessageBubble.tsx");
-    expect(bubble).toContain('text-[1.0625rem]');
-    expect(bubble).not.toMatch(
-      /chat-assistant-body[^"]*text-sm/
-    );
+    expect(bubble).toContain("chat-assistant-body");
+    expect(bubble).not.toMatch(/chat-assistant-body[^"]*text-sm/);
   });
 });
 

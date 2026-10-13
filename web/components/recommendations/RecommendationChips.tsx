@@ -49,7 +49,7 @@ export function RecommendationChips({
               applyRecommendationAction({ item, onApplyPrompt, onSelectPersona })
             }
             className={cn(
-              "inline-flex shrink-0 items-center rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+              "inline-flex shrink-0 items-center rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
               item.entitlement === "pro"
                 ? "border-amber-500/40 bg-amber-500/10 text-foreground hover:bg-amber-500/15"
                 : "border-border bg-card text-foreground hover:border-accent/40 hover:bg-accent/5"
@@ -57,7 +57,7 @@ export function RecommendationChips({
           >
             <span>{item.title}</span>
             {item.entitlement === "pro" ? (
-              <span className="ml-1.5 shrink-0 text-[10px] uppercase text-amber-600">Pro</span>
+              <span className="ml-1.5 shrink-0 text-xs uppercase text-amber-600">Pro</span>
             ) : null}
           </button>
         ))}

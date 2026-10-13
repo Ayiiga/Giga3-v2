@@ -88,11 +88,21 @@
     gap: 16px;
   }
 
-  /* Compact reserved typing row — still always present (scroll stability), smaller blank. */
+  /* Compact reserved typing row — always present (scroll stability), minimal blank. */
   html.chat-route .chat-typing-bar {
-    min-height: 2.5rem;
-    padding-top: 0.25rem;
-    padding-bottom: 0.25rem;
+    min-height: 2rem;
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+  }
+
+  /* Distraction-free while composing: collapse soft upsells; keep essential chrome. */
+  html.chat-route.chat-composer-active .chat-banner-upsell,
+  html.chat-route.chat-composer-active .chat-footer-chips {
+    display: none !important;
+  }
+
+  html.chat-route.chat-composer-active .chat-header-band {
+    min-height: 0;
   }
 
   /* Composer stack — pinned bottom, safe area */
@@ -328,15 +338,20 @@
     color: #111827;
     border-radius: 1.25rem;
     padding: 0.65rem 0.75rem;
-    font-size: 1.0625rem;
-    line-height: 1.7;
+    font-size: var(--chat-font-conversation);
+    line-height: var(--chat-line-height);
   }
 
   html.chat-route .chat-assistant-body,
   html.chat-route .chat-markdown,
   html.chat-route .smart-answer {
-    font-size: 1.0625rem;
-    line-height: 1.7;
+    font-size: var(--chat-font-conversation);
+    line-height: var(--chat-line-height);
+  }
+
+  html.chat-route .chat-composer-textarea {
+    font-size: var(--chat-font-body);
+    line-height: 1.5;
   }
 
   .dark .chat-message-bubble-assistant-inner--app {
