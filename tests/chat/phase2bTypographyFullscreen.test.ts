@@ -77,4 +77,19 @@ describe("Phase 2B fullscreen + distraction-free invariants", () => {
     expect(push).toContain("shouldSuppressPushPrompt");
     expect(push).toContain("usePathname");
   });
+
+  it("guest browse shell uses ≥16px body/input and ≥14px secondary", () => {
+    const guest = read("web/components/chat/ChatGuestBrowseView.tsx");
+    expect(guest).toContain('text-sm text-muted">Guest browse');
+    expect(guest).toMatch(/max-w-md text-base leading-relaxed text-muted/);
+    expect(guest).toMatch(
+      /id="guest-chat-open-app"[\s\S]*?className="[^"]*\btext-base\b[^"]*"/
+    );
+    expect(guest).not.toMatch(
+      /id="guest-chat-open-app"[\s\S]*?className="[^"]*\btext-sm\b[^"]*"/
+    );
+    expect(guest).toMatch(
+      /className="mt-2 w-full min-h-11 text-base font-medium text-accent"/
+    );
+  });
 });
