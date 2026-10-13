@@ -429,7 +429,9 @@ export default defineSchema({
     status: v.union(
       v.literal("reserved"),
       v.literal("captured"),
-      v.literal("released")
+      v.literal("released"),
+      /** Stale abandonment — refunded; requestId must not be reused. */
+      v.literal("expired")
     ),
     reference: v.optional(v.string()),
     metadata: v.optional(v.string()),

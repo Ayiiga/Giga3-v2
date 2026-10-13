@@ -83,7 +83,7 @@ describe("credit reservation concurrency (deterministic ledger)", () => {
     expect(ledger.reservations.get("fail-1")?.status).toBe("released");
   });
 
-  it("6. ambiguous timeout: retry same key stays in_progress; stale recovery refunds then allows new reserve", () => {
+  it("6. ambiguous timeout: retry same key stays in_progress; stale refunds without re-reserving same id", () => {
     const ledger = new InMemoryCreditLedger(10);
     ledger.reserve({ userId: "u", requestId: "amb", action: "writing", amount, now });
     const quickRetry = ledger.reserve({
@@ -104,8 +104,53 @@ describe("credit reservation concurrency (deterministic ledger)", () => {
       now: now + CREDIT_RESERVATION_STALE_MS + 1,
       staleMs: CREDIT_RESERVATION_STALE_MS,
     });
-    expect(staleRetry.ok).toBe(true);
+    // Same id must not start a second provider call while the first may still be alive.
+    expect(staleRetry.ok).toBe(false);
+    if (!staleRetry.ok) expect(staleRetry.reason).toBe("stale_released");
+    expect(ledger.balance).toBe(10);
+    expect(ledger.reservations.get("amb")?.status).toBe("expired");
+
+    // Same id stays retired after expire.
+    const sameAgain = ledger.reserve({
+      userId: "u",
+      requestId: "amb",
+      action: "writing",
+      amount,
+      now: now + CREDIT_RESERVATION_STALE_MS + 2,
+    });
+    expect(sameAgain.ok).toBe(false);
+    if (!sameAgain.ok) expect(sameAgain.reason).toBe("already_completed");
+
+    // A fresh requestId can reserve after the refund.
+    const fresh = ledger.reserve({
+      userId: "u",
+      requestId: "amb-fresh",
+      action: "writing",
+      amount,
+      now: now + CREDIT_RESERVATION_STALE_MS + 3,
+    });
+    expect(fresh.ok).toBe(true);
     expect(ledger.balance).toBe(10 - amount);
+  });
+
+  it("6b. late capture after stale expire cannot revive a charge", () => {
+    const ledger = new InMemoryCreditLedger(10);
+    ledger.reserve({ userId: "u", requestId: "late", action: "writing", amount, now });
+    ledger.reserve({
+      userId: "u",
+      requestId: "late",
+      action: "writing",
+      amount,
+      now: now + CREDIT_RESERVATION_STALE_MS + 1,
+    });
+    expect(ledger.balance).toBe(10);
+    const lateCapture = ledger.capture({
+      requestId: "late",
+      now: now + CREDIT_RESERVATION_STALE_MS + 2,
+    });
+    expect(lateCapture.ok).toBe(false);
+    expect(lateCapture.reason).toBe("already_released");
+    expect(ledger.balance).toBe(10);
   });
 
   it("7. interrupted reservation recovery via release then new request", () => {
@@ -212,9 +257,19 @@ describe("gigalearnStudio reserve-before-generate wiring", () => {
     expect(schema).toContain('.index("by_user_request", ["userId", "requestId"])');
   });
 
-  it("client generation hook sends clientRequestId", () => {
+  it("client generation hook reuses clientRequestId until success or terminal failure", () => {
     const hook = read("web/hooks/useCreationGeneration.ts");
     expect(hook).toContain("clientRequestId");
-    expect(hook).toMatch(/randomUUID|web_/);
+    expect(hook).toContain("requestIdsRef");
+    expect(hook).toContain("stageKey");
+    expect(hook).toMatch(/already completed|hold expired/);
+  });
+
+  it("paid provider content is not returned when capture fails", () => {
+    const src = read("convex/gigalearnStudio.ts");
+    const handler = src.slice(src.indexOf("export const generateContent = action"));
+    expect(handler).toContain("Could not finalize the credit charge");
+    expect(handler).toContain("stale_released");
+    expect(handler).toContain("if (!settled.ok)");
   });
 });

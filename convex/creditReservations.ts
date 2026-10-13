@@ -52,19 +52,22 @@ async function logCredit(
 async function releaseRow(
   ctx: DbCtx,
   userId: string,
-  row: { _id: any; amount: number; reference?: string; metadata?: string }
+  row: { _id: any; amount: number; reference?: string; metadata?: string },
+  status: "released" | "expired" = "released"
 ) {
   const user = await getUserByEmail(ctx, userId);
   if (!user) throw new Error("User not found");
   const balanceAfter = (user.credits ?? 0) + row.amount;
   await ctx.db.patch(user._id, { credits: balanceAfter });
-  await ctx.db.patch(row._id, { status: "released", updatedAt: Date.now() });
+  await ctx.db.patch(row._id, { status, updatedAt: Date.now() });
   await logCredit(ctx, {
     userId,
     action: "refund",
     amount: row.amount,
     balanceAfter,
-    reference: row.reference ? `${row.reference}:release` : undefined,
+    reference: row.reference
+      ? `${row.reference}:${status === "expired" ? "expire" : "release"}`
+      : undefined,
     metadata: row.metadata,
   });
   return balanceAfter;
@@ -117,7 +120,7 @@ export const tryReserveInternal = internalMutation({
       : null;
 
     const now = Date.now();
-    let decision = decideReserve({
+    const decision = decideReserve({
       existing,
       balance: user.credits ?? 0,
       amount,
@@ -125,16 +128,15 @@ export const tryReserveInternal = internalMutation({
       staleMs: CREDIT_RESERVATION_STALE_MS,
     });
 
-    if (decision.kind === "recover_stale" && existingDoc) {
-      await releaseRow(ctx, args.userId, existingDoc);
-      const refreshedUser = await getUserByEmail(ctx, args.userId);
-      decision = decideReserve({
-        existing: null,
-        balance: refreshedUser?.credits ?? 0,
-        amount,
-        now,
-        staleMs: CREDIT_RESERVATION_STALE_MS,
-      });
+    // Refund abandoned holds as expired — never re-reserve this requestId
+    // (the original provider invocation may still be running).
+    if (decision.kind === "reject_stale_released" && existingDoc) {
+      await releaseRow(ctx, args.userId, existingDoc, "expired");
+      return {
+        ok: false as const,
+        reason: "stale_released" as const,
+        balance: (await getUserByEmail(ctx, args.userId))?.credits ?? 0,
+      };
     }
 
     if (decision.kind === "reject_insufficient") {
@@ -164,11 +166,19 @@ export const tryReserveInternal = internalMutation({
       };
     }
 
+    // Re-read reservation row immediately before write to avoid double-insert after release.
+    const currentRow = await getReservation(ctx, args.userId, requestId);
+    if (currentRow?.status === "captured" || currentRow?.status === "expired") {
+      return { ok: false as const, reason: "already_completed" as const };
+    }
+    if (currentRow?.status === "reserved") {
+      return { ok: false as const, reason: "in_progress" as const };
+    }
+
     const balanceAfter = balance - amount;
     await ctx.db.patch(latest._id, { credits: balanceAfter });
-    // Replace a released row in place when reusing the same requestId.
-    if (existingDoc && existingDoc.status === "released") {
-      await ctx.db.patch(existingDoc._id, {
+    if (currentRow?.status === "released") {
+      await ctx.db.patch(currentRow._id, {
         action,
         amount,
         status: "reserved",

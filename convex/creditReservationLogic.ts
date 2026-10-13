@@ -3,7 +3,7 @@
  * Used by Convex mutations and unit tests — no DB imports.
  */
 
-export type ReservationStatus = "reserved" | "captured" | "released";
+export type ReservationStatus = "reserved" | "captured" | "released" | "expired";
 
 export type CreditReservationRecord = {
   requestId: string;
@@ -22,7 +22,8 @@ export type ReserveDecision =
   | { kind: "reject_insufficient" }
   | { kind: "reject_in_progress"; reservation: CreditReservationRecord }
   | { kind: "reject_already_completed"; reservation: CreditReservationRecord }
-  | { kind: "recover_stale"; reservation: CreditReservationRecord };
+  /** Stale hold must be refunded and the caller must mint a new requestId — never re-reserve the same id in-band. */
+  | { kind: "reject_stale_released"; reservation: CreditReservationRecord };
 
 export type FinalizeDecision =
   | { kind: "capture"; reservation: CreditReservationRecord }
@@ -49,16 +50,18 @@ export function decideReserve(args: {
   if (!existing) {
     return args.balance >= amount ? { kind: "create" } : { kind: "reject_insufficient" };
   }
-  if (existing.status === "captured") {
+  if (existing.status === "captured" || existing.status === "expired") {
     return { kind: "reject_already_completed", reservation: existing };
   }
   if (existing.status === "released") {
+    // Voluntary failure refund — same requestId may retry.
     return args.balance >= amount ? { kind: "create" } : { kind: "reject_insufficient" };
   }
-  // reserved
+  // reserved — if abandoned long enough, refund as expired and force a fresh requestId.
+  // Do not re-reserve the same id: the original provider call may still be running.
   const staleMs = args.staleMs ?? CREDIT_RESERVATION_STALE_MS;
   if (args.now - existing.createdAt >= staleMs) {
-    return { kind: "recover_stale", reservation: existing };
+    return { kind: "reject_stale_released", reservation: existing };
   }
   return { kind: "reject_in_progress", reservation: existing };
 }
@@ -66,14 +69,18 @@ export function decideReserve(args: {
 export function decideCapture(existing: CreditReservationRecord | null): FinalizeDecision {
   if (!existing) return { kind: "missing" };
   if (existing.status === "captured") return { kind: "noop_already_captured", reservation: existing };
-  if (existing.status === "released") return { kind: "noop_already_released", reservation: existing };
+  if (existing.status === "released" || existing.status === "expired") {
+    return { kind: "noop_already_released", reservation: existing };
+  }
   return { kind: "capture", reservation: existing };
 }
 
 export function decideRelease(existing: CreditReservationRecord | null): FinalizeDecision {
   if (!existing) return { kind: "missing" };
   if (existing.status === "captured") return { kind: "noop_already_captured", reservation: existing };
-  if (existing.status === "released") return { kind: "noop_already_released", reservation: existing };
+  if (existing.status === "released" || existing.status === "expired") {
+    return { kind: "noop_already_released", reservation: existing };
+  }
   return { kind: "release", reservation: existing };
 }
 
@@ -99,7 +106,10 @@ export class InMemoryCreditLedger {
     staleMs?: number;
   }):
     | { ok: true; balanceAfter: number; status: "reserved" }
-    | { ok: false; reason: "insufficient" | "in_progress" | "already_completed" } {
+    | {
+        ok: false;
+        reason: "insufficient" | "in_progress" | "already_completed" | "stale_released";
+      } {
     const existing = this.reservations.get(args.requestId) ?? null;
     let decision = decideReserve({
       existing,
@@ -109,15 +119,9 @@ export class InMemoryCreditLedger {
       staleMs: args.staleMs,
     });
 
-    if (decision.kind === "recover_stale") {
-      this.release({ requestId: args.requestId, now: args.now });
-      decision = decideReserve({
-        existing: this.reservations.get(args.requestId) ?? null,
-        balance: this.balance,
-        amount: args.amount,
-        now: args.now,
-        staleMs: args.staleMs,
-      });
+    if (decision.kind === "reject_stale_released") {
+      this.expire({ requestId: args.requestId, now: args.now });
+      return { ok: false, reason: "stale_released" };
     }
 
     if (decision.kind === "reject_insufficient") return { ok: false, reason: "insufficient" };
@@ -157,12 +161,24 @@ export class InMemoryCreditLedger {
   }
 
   release(args: { requestId: string; now: number }): { ok: boolean; reason?: string } {
+    return this.finalizeRefund(args, "released");
+  }
+
+  /** Stale abandonment — refund and permanently retire this requestId. */
+  expire(args: { requestId: string; now: number }): { ok: boolean; reason?: string } {
+    return this.finalizeRefund(args, "expired");
+  }
+
+  private finalizeRefund(
+    args: { requestId: string; now: number },
+    status: "released" | "expired"
+  ): { ok: boolean; reason?: string } {
     const decision = decideRelease(this.reservations.get(args.requestId) ?? null);
     if (decision.kind === "missing") return { ok: false, reason: "missing" };
     if (decision.kind === "noop_already_released") return { ok: true };
     if (decision.kind === "noop_already_captured") return { ok: false, reason: "already_captured" };
     this.balance += decision.reservation.amount;
-    const row = { ...decision.reservation, status: "released" as const, updatedAt: args.now };
+    const row = { ...decision.reservation, status, updatedAt: args.now };
     this.reservations.set(args.requestId, row);
     this.logs.push({
       action: "refund",

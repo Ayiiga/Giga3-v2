@@ -288,6 +288,11 @@ export const generateContent = action({
           "This generation request is already in progress. Wait for it to finish, or start a new request."
         );
       }
+      if (reserved.reason === "stale_released") {
+        throw new Error(
+          "A previous generation hold expired and was refunded. Start a new request to try again."
+        );
+      }
       throw new Error(
         "This generation request already completed. Start a new request if you need another section."
       );
@@ -381,15 +386,27 @@ export const generateContent = action({
 
       // Local fallback remains free: release the hold instead of capturing.
       if (engineResult.providerId === "local_fallback") {
-        await ctx.runMutation(internal.creditReservations.releaseInternal, {
+        const released = await ctx.runMutation(internal.creditReservations.releaseInternal, {
           userId: verifiedEmail,
           requestId,
         });
+        if (!released.ok && released.reason !== "missing") {
+          // already_captured would mean we must not treat this as free — fail closed.
+          throw new Error(
+            "Could not settle credits for this generation. Please retry with a new request."
+          );
+        }
       } else {
-        await ctx.runMutation(internal.creditReservations.captureInternal, {
+        const settled = await ctx.runMutation(internal.creditReservations.captureInternal, {
           userId: verifiedEmail,
           requestId,
         });
+        // Never return paid provider content if the hold was released/raced away.
+        if (!settled.ok) {
+          throw new Error(
+            "Could not finalize the credit charge for this generation. Please retry with a new request."
+          );
+        }
         captured = true;
       }
 
