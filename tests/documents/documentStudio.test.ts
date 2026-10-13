@@ -39,6 +39,14 @@ describe("document model", () => {
     expect(looksLikeDocumentContent("Sure, here is a short tip.")).toBe(false);
     expect(isDocumentCreationRequest("Create a CV for a teaching job")).toBe(true);
     expect(isDocumentFollowUpRequest("make it one page and export as Word")).toBe(true);
+    expect(
+      isDocumentCreationRequest(
+        "Prepare a professional business report and export it as PDF."
+      )
+    ).toBe(true);
+    expect(isDocumentFollowUpRequest("Make it shorter and more professional.")).toBe(
+      true
+    );
   });
 
   it("does not treat Smart Answers as Document Studio cards", () => {

@@ -39,6 +39,10 @@ export function DocumentResultCard({
 
   return (
     <div className="mt-2" data-testid="document-result-card">
+      <p className="mb-2 text-sm text-muted">
+        Edit below, then use Export PDF or Export Word when you want a file. Nothing is
+        downloaded until you tap export.
+      </p>
       <DocumentStudio
         document={doc}
         onChange={(next) => {
