@@ -150,7 +150,7 @@ export async function generateImageWithFallback(
 
   // fal text-to-image only — skip when editing a source image.
   if (getFalApiKey() && !sourceImageUrl) {
-    const primaryModel = process.env.FAL_IMAGE_MODEL?.trim() || "fal-ai/nano-banana-pro";
+    const primaryModel = process.env.FAL_IMAGE_MODEL?.trim() || "fal-ai/flux/schnell";
     try {
       const result = await falGenerateImageWithModel(primaryModel, input);
       return { imageUrl: result.imageUrl, provider: "fal", externalId: result.requestId };
