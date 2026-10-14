@@ -347,7 +347,7 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     title: "How to Start Learning Coding in Ghana: A Beginner's Guide",
     seoTitle: "How to Start Learning Coding in Ghana | Beginner Guide",
     description:
-      "A practical beginner guide to learning coding in Ghana — mindset, first tools, a 30-day plan, local learning paths, and traps to avoid. No hype, no fake job guarantees.",
+      "Beginner coding in Ghana: mindset, first tools, a 30-day plan, local learning paths, and traps to avoid — without hype or fake job guarantees.",
     excerpt:
       "Start coding in Ghana with a light setup, one language for 30 days, tiny projects, and honest habits — whether you are in JHS, SHS, university or switching careers.",
     category: "Technology",
