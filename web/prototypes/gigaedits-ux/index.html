@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>GigaEdits UX prototype (isolated)</title>
+    <link rel="stylesheet" href="./proto.css" />
+  </head>
+  <body>
+    <div
+      id="root"
+      class="ge-proto"
+      data-prototype="gigaedits-ux"
+      data-production-route="false"
+    >
+      <div class="ge-proto__banner" role="note">
+        <strong>Prototype only</strong> — not wired to production
+        <code>/gigaedit</code>. Mock media; Export does not write a file.
+      </div>
+
+      <!-- Create Home -->
+      <section
+        id="screen-home"
+        class="ge-proto__screen"
+        aria-label="Create Home"
+      >
+        <p class="ge-proto__brand">GigaEdits</p>
+        <h1 class="ge-proto__title">Create on your device</h1>
+        <p class="ge-proto__lede">
+          Trim, caption, and export locally. Drafts stay on this phone — not
+          synced to your account yet.
+        </p>
+
+        <button
+          type="button"
+          class="ge-proto__primary"
+          id="btn-create-video"
+          data-action="open-quick-edit"
+        >
+          Create a video
+        </button>
+
+        <div class="ge-proto__secondary-row" role="group" aria-label="More create options">
+          <button type="button" class="ge-proto__secondary" data-action="toast" data-toast="Photo studio opens in production Media / Photo — not in this prototype.">
+            <span aria-hidden="true">🖼</span>
+            Photo
+          </button>
+          <button type="button" class="ge-proto__secondary" data-action="toast" data-toast="Record opens teleprompter/camera in production — not simulated here.">
+            <span aria-hidden="true">⏺</span>
+            Record
+          </button>
+          <button type="button" class="ge-proto__secondary" data-action="toast" data-toast="Teleprompter is a separate production tab — not simulated here.">
+            <span aria-hidden="true">📜</span>
+            Teleprompter
+          </button>
+        </div>
+
+        <h2 class="ge-proto__section-label" id="workspaces-label">Workspaces</h2>
+        <div
+          class="ge-proto__workspaces"
+          role="listbox"
+          aria-labelledby="workspaces-label"
+        >
+          <button
+            type="button"
+            class="ge-proto__workspace ge-proto__workspace--active"
+            role="option"
+            aria-selected="true"
+            data-workspace="quick"
+            data-action="open-quick-edit"
+          >
+            <span class="ge-proto__workspace-icon" aria-hidden="true">✂</span>
+            <span class="ge-proto__workspace-body">
+              <strong>Quick Edit</strong>
+              <p>Import, trim, text, captions — one clear path to export.</p>
+            </span>
+          </button>
+          <button
+            type="button"
+            class="ge-proto__workspace"
+            role="option"
+            aria-selected="false"
+            data-workspace="film"
+            data-action="toast"
+            data-toast="Film Studio is a future workspace — not built in this prototype."
+          >
+            <span class="ge-proto__workspace-icon" aria-hidden="true">🎞</span>
+            <span class="ge-proto__workspace-body">
+              <strong>Film Studio</strong>
+              <p>Multi-track timeline and joins when you need more control.</p>
+            </span>
+          </button>
+          <button
+            type="button"
+            class="ge-proto__workspace"
+            role="option"
+            aria-selected="false"
+            data-workspace="creator"
+            data-action="toast"
+            data-toast="Creator Studio packs teleprompter + toolkit — not built here."
+          >
+            <span class="ge-proto__workspace-icon" aria-hidden="true">✦</span>
+            <span class="ge-proto__workspace-body">
+              <strong>Creator Studio</strong>
+              <p>Teleprompter, brand kit, and publishing helpers together.</p>
+            </span>
+          </button>
+        </div>
+
+        <p class="ge-proto__local-note">
+          <strong>Local device only.</strong> Recent projects below are mock
+          rows for layout — this prototype does not read IndexedDB.
+        </p>
+
+        <h2 class="ge-proto__section-label" id="recent-label">Recent projects</h2>
+        <ul class="ge-proto__recent" aria-labelledby="recent-label">
+          <li class="ge-proto__recent-item">
+            <div class="ge-proto__thumb" aria-hidden="true"></div>
+            <div class="ge-proto__recent-meta">
+              <strong>Market walk — Accra</strong>
+              <span>Mock · 0:42 · on this device</span>
+            </div>
+            <button
+              type="button"
+              class="ge-proto__recent-open"
+              data-action="open-quick-edit"
+              aria-label="Open mock project Market walk Accra"
+            >
+              Open
+            </button>
+          </li>
+          <li class="ge-proto__recent-item">
+            <div class="ge-proto__thumb" aria-hidden="true"></div>
+            <div class="ge-proto__recent-meta">
+              <strong>Lesson intro cut</strong>
+              <span>Mock · 1:05 · on this device</span>
+            </div>
+            <button
+              type="button"
+              class="ge-proto__recent-open"
+              data-action="open-quick-edit"
+              aria-label="Open mock project Lesson intro cut"
+            >
+              Open
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Quick Edit -->
+      <section
+        id="screen-quick-edit"
+        class="ge-proto__screen"
+        aria-label="Quick Edit"
+        hidden
+      >
+        <div class="ge-proto__qe-header">
+          <button type="button" class="ge-proto__back" data-action="go-home" aria-label="Back to Create Home">
+            ←
+          </button>
+          <h1>Quick Edit</h1>
+          <button type="button" class="ge-proto__export" id="btn-export" disabled>
+            Export
+          </button>
+        </div>
+
+        <div class="ge-proto__preview" aria-label="Media preview">
+          <div class="ge-proto__preview-mock" id="preview-empty">
+            <strong>No clip yet</strong>
+            <span>Tap Import to attach mock media for this layout preview.</span>
+          </div>
+          <div class="ge-proto__preview-mock" id="preview-filled" hidden>
+            <strong>Mock clip ready</strong>
+            <span>Layout only — playback and real export are not simulated.</span>
+          </div>
+        </div>
+
+        <div class="ge-proto__tools" role="toolbar" aria-label="Quick Edit tools">
+          <button type="button" class="ge-proto__tool" data-tool="import" aria-pressed="false">
+            <span aria-hidden="true">＋</span>
+            Import
+          </button>
+          <button type="button" class="ge-proto__tool" data-tool="trim" aria-pressed="false" disabled>
+            <span aria-hidden="true">✂</span>
+            Trim
+          </button>
+          <button type="button" class="ge-proto__tool" data-tool="text" aria-pressed="false" disabled>
+            <span aria-hidden="true">T</span>
+            Text
+          </button>
+          <button type="button" class="ge-proto__tool" data-tool="audio" aria-pressed="false" disabled>
+            <span aria-hidden="true">♪</span>
+            Audio
+          </button>
+          <button type="button" class="ge-proto__tool" data-tool="captions" aria-pressed="false" disabled>
+            <span aria-hidden="true">CC</span>
+            Captions
+          </button>
+        </div>
+
+        <div class="ge-proto__timeline-wrap">
+          <div class="ge-proto__timeline-label">
+            <span>Timeline</span>
+            <span id="timeline-time">0:00 / 0:00</span>
+          </div>
+          <div
+            class="ge-proto__timeline"
+            role="slider"
+            aria-valuemin="0"
+            aria-valuemax="42"
+            aria-valuenow="16"
+            aria-label="Playhead on mock timeline"
+            tabindex="0"
+            id="timeline"
+          >
+            <div class="ge-proto__clip" id="timeline-clip" hidden>Mock clip</div>
+            <div class="ge-proto__playhead" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="ge-proto__history">
+          <button type="button" id="btn-undo" disabled>Undo</button>
+          <button type="button" id="btn-redo" disabled>Redo</button>
+        </div>
+
+        <div class="ge-proto__panel" id="tool-panel" hidden>
+          <h2 id="panel-title">Tool</h2>
+          <p id="panel-body">Select a tool.</p>
+          <textarea
+            id="panel-captions"
+            hidden
+            maxlength="280"
+            placeholder="Caption lines (mock — not saved to IndexedDB)"
+            aria-label="Mock captions"
+          ></textarea>
+        </div>
+
+        <p class="ge-proto__status" id="status" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+    <script src="./proto.js" defer></script>
+  </body>
+</html>
