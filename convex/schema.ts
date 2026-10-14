@@ -1467,6 +1467,176 @@ export default defineSchema({
     .index("by_user_topic", ["userId", "topicKey"])
     .index("by_user_updated", ["userId", "updatedAt"]),
 
+  /**
+   * GigaLearn Academy — author-created structured courses (additive).
+   * Built-in catalogue courses live in web/lib/gigalearn/academy/courseCatalog.ts.
+   * Does not replace curriculumEngine or gigaLearnProgress.
+   */
+  gigaLearnAcademyCourses: defineTable({
+    slug: v.string(),
+    title: v.string(),
+    description: v.string(),
+    subject: v.string(),
+    category: v.string(),
+    difficulty: v.union(
+      v.literal("beginner"),
+      v.literal("intermediate"),
+      v.literal("advanced")
+    ),
+    durationMinutes: v.number(),
+    learningObjectives: v.array(v.string()),
+    prerequisites: v.array(v.string()),
+    curriculumPreview: v.string(),
+    assessmentDescription: v.string(),
+    instructorName: v.optional(v.string()),
+    instructorBio: v.optional(v.string()),
+    access: v.union(
+      v.literal("free"),
+      v.literal("credits"),
+      v.literal("subscription")
+    ),
+    creditCost: v.optional(v.number()),
+    certificateEligible: v.boolean(),
+    completionRequirements: v.string(),
+    /** JSON-serialized AcademyModule[] pathway */
+    modulesJson: v.string(),
+    status: v.union(
+      v.literal("draft"),
+      v.literal("published"),
+      v.literal("archived")
+    ),
+    authorUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_status", ["status"])
+    .index("by_status_category", ["status", "category"])
+    .index("by_author", ["authorUserId", "updatedAt"]),
+
+  /**
+   * GigaLearn Academy enrolments — consumer pathway progress.
+   * Separate from enterprise orgEnrollments. Does not mutate gigaLearnProgress.
+   */
+  gigaLearnAcademyEnrolments: defineTable({
+    userId: v.string(),
+    courseSlug: v.string(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("withdrawn"),
+      v.literal("completed")
+    ),
+    enrolledAt: v.number(),
+    lastModuleId: v.optional(v.string()),
+    lastLessonId: v.optional(v.string()),
+    progressPercent: v.number(),
+    /** Phase 4 — server-tracked pathway lesson completions (JSON string[]). */
+    completedLessonIdsJson: v.optional(v.string()),
+    /** Instructor approval timestamp for certificate policies that require it. */
+    certificateInstructorApprovedAt: v.optional(v.number()),
+    certificateInstructorApprovedBy: v.optional(v.string()),
+    /** Optional project approval for certificate policies. */
+    certificateProjectApprovedAt: v.optional(v.number()),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_course", ["courseSlug"])
+    .index("by_user_course", ["userId", "courseSlug"])
+    .index("by_user_status", ["userId", "status"]),
+
+  /**
+   * GigaLearn Academy assessment attempts (Phase 3).
+   * Server-authoritative scores — never trust client-supplied grades.
+   * Separate from school-curriculum practice / gigaLearnProgress.
+   */
+  gigaLearnAcademyAttempts: defineTable({
+    userId: v.string(),
+    courseSlug: v.string(),
+    assessmentId: v.string(),
+    attemptNumber: v.number(),
+    status: v.union(
+      v.literal("in_progress"),
+      v.literal("submitted"),
+      v.literal("graded"),
+      v.literal("pending_review")
+    ),
+    /** Learner answers only (no official score fields from client). */
+    answersJson: v.string(),
+    score: v.optional(v.number()),
+    maxScore: v.optional(v.number()),
+    passed: v.optional(v.boolean()),
+    resultsJson: v.optional(v.string()),
+    feedbackSummary: v.optional(v.string()),
+    revisionHint: v.optional(v.string()),
+    gradingMode: v.union(
+      v.literal("objective"),
+      v.literal("ai_assisted"),
+      v.literal("instructor_review")
+    ),
+    gradedBy: v.optional(
+      v.union(
+        v.literal("objective"),
+        v.literal("ai"),
+        v.literal("instructor"),
+        v.literal("mixed")
+      )
+    ),
+    idempotencyKey: v.string(),
+    startedAt: v.number(),
+    submittedAt: v.optional(v.number()),
+    gradedAt: v.optional(v.number()),
+    reviewerUserId: v.optional(v.string()),
+    reviewNotes: v.optional(v.string()),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_assessment", ["userId", "assessmentId"])
+    .index("by_user_course", ["userId", "courseSlug"])
+    .index("by_idempotency", ["userId", "assessmentId", "idempotencyKey"])
+    .index("by_status", ["status", "updatedAt"]),
+
+  /**
+   * GigaLearn Academy certificates (Phase 4).
+   * Server-issued only — never trust client completion/grade payloads.
+   * Soft-revoke only; never hard-delete learner certificate history.
+   */
+  gigaLearnAcademyCertificates: defineTable({
+    /** Unpredictable public verification id (not sequential). */
+    publicId: v.string(),
+    /** Deterministic key userId::courseSlug for idempotent issuance. */
+    issuanceKey: v.string(),
+    userId: v.string(),
+    /** Public-safe display name snapshot (never email). */
+    learnerDisplayName: v.string(),
+    courseSlug: v.string(),
+    courseTitle: v.string(),
+    issuingOrganization: v.string(),
+    issuedAt: v.number(),
+    completedAt: v.number(),
+    finalGrade: v.optional(v.number()),
+    status: v.union(v.literal("valid"), v.literal("revoked")),
+    templateVersion: v.string(),
+    verificationUrl: v.string(),
+    revokedAt: v.optional(v.number()),
+    revokedBy: v.optional(v.string()),
+    revocationReason: v.optional(v.string()),
+    /** Optional cached PDF in Convex storage (regenerable from record). */
+    pdfStorageId: v.optional(v.id("_storage")),
+    updatedAt: v.number(),
+  })
+    .index("by_public_id", ["publicId"])
+    .index("by_issuance_key", ["issuanceKey"])
+    .index("by_user", ["userId"])
+    .index("by_user_course", ["userId", "courseSlug"])
+    .index("by_status_issued", ["status", "issuedAt"]),
+
+  /** Lightweight rate limit buckets for public certificate verification. */
+  gigaLearnAcademyCertVerifyLimits: defineTable({
+    bucketKey: v.string(),
+    windowStartedAt: v.number(),
+    count: v.number(),
+  }).index("by_bucket", ["bucketKey"]),
+
   /** Per-user developer API keys (hashed at rest). */
   apiKeys: defineTable({
     userId: v.string(),
