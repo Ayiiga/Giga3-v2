@@ -32,7 +32,6 @@ export default function GigaLearnAcademyVerifyPage() {
         description="Check authenticity and validity with a certificate ID."
         showProductNav={false}
       />
-      <h1 className="sr-only">Verify GigaLearn Academy certificate</h1>
       <div className="marketing-stable gigalearn-stable section-padding pt-4 pb-6 sm:pt-6">
         <Suspense fallback={<ClientAppHydrationNotice productName="GigaLearn Academy" />}>
           <AcademyVerifyRoot />
