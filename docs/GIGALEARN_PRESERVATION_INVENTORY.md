@@ -20,7 +20,9 @@ This document is the pre-implementation baseline. Academy work must extend what 
 
 **Query tabs / areas** (via `?tab=`): `student`, `teacher`, `create`, `parent`, `insight`, `tutor` plus legacy aliases (`homework`, `rhymes`, `workspace`, `studio`, `learn`, `library`, `my-learning`, `revision`, `insights`) resolved in `web/lib/gigalearn/sectionRouting.ts`.
 
-**Naming note:** There is **no** GigaLearn “Academy” product route today. **Creator Academy** (`/marketplace`, `CreatorAcademySection`) is a separate marketplace PDF series — do not conflate or replace it when adding GigaLearn Academy features.
+**Naming note:** **Creator Academy** (`/marketplace`, `CreatorAcademySection`) is a separate marketplace PDF series — do not conflate with GigaLearn Academy.
+
+**Phase 1 additive routes (do not replace hubs):** `/gigalearn/academy/`, `/gigalearn/academy/course/`, `/gigalearn/academy/my/`, `/gigalearn/academy/author/`. See `docs/GIGALEARN_ACADEMY_PHASE1_MIGRATION.md`.
 
 ---
 

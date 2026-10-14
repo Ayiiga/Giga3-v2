@@ -143,6 +143,14 @@ function GigaLearnContent() {
               <p className="text-sm text-muted">
                 Student · Teacher · Create · Parent · Insight · AI Tutor
               </p>
+              <p className="mt-2">
+                <Link
+                  href="/gigalearn/academy/"
+                  className="text-sm font-semibold text-accent hover:underline"
+                >
+                  Open GigaLearn Academy →
+                </Link>
+              </p>
             </div>
           </div>
         </div>

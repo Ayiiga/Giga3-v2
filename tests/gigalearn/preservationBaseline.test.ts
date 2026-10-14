@@ -138,4 +138,14 @@ describe("GigaLearn preservation baseline", () => {
     const sitemap = readFileSync(resolve(ROOT, "web/public/sitemap-gigalearn.xml"), "utf8");
     expect(sitemap).toContain("https://www.giga3ai.com/gigalearn/");
   });
+
+  it("keeps gigaLearnProgress untouched when Academy tables are present", () => {
+    const schema = readFileSync(resolve(ROOT, "convex/schema.ts"), "utf8");
+    expect(schema).toContain("gigaLearnProgress: defineTable");
+    expect(schema).toContain('.index("by_user_topic"');
+    // Academy tables are additive only.
+    if (schema.includes("gigaLearnAcademyCourses")) {
+      expect(schema).toContain("gigaLearnAcademyEnrolments: defineTable");
+    }
+  });
 });

@@ -14,6 +14,7 @@ import { STUDENT_TOOLS } from "@/lib/gigalearn/tools";
 import { getStudioContext, saveStudioContext, type StudioContext } from "@/lib/gigalearn/studioContext";
 import type { GigaLearnLevelId } from "@/lib/gigalearn/levels";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 import { memo, useEffect, useState } from "react";
 
 const SUB_VIEWS: Array<{ id: StudentSubView; label: string }> = [
@@ -59,6 +60,12 @@ export const StudentHub = memo(function StudentHub({
         <h2 className="text-lg font-semibold text-foreground">Student</h2>
         <p className="mt-1 text-sm text-muted">
           Your learning path, practice, revision and grade-appropriate activities.
+        </p>
+        <p className="mt-2 text-sm">
+          <Link href="/gigalearn/academy/" className="font-semibold text-accent hover:underline">
+            Browse GigaLearn Academy courses
+          </Link>
+          <span className="text-muted"> — structured pathways on top of these hubs.</span>
         </p>
       </div>
 

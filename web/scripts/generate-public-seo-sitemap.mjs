@@ -80,6 +80,7 @@ const STATIC_SITEMAP_PATHS = [
  */
 const GIGALEARN_SITEMAP_PATHS = [
   "/gigalearn/",
+  "/gigalearn/academy/",
   "/ai-for-bece-wassce-ghana/",
   "/ai-tools-for-students-ghana/",
   "/ai-for-teachers-ghana/",
@@ -380,8 +381,9 @@ function writeGigaLearnSitemap() {
       loc,
       lastmod: truthfulLastmod(route, loc),
       changefreq: "weekly",
-      // GigaLearn landing gets a slight priority bump for education discovery.
-      priority: route === "/gigalearn/" ? "0.9" : "0.8",
+      // GigaLearn landing / Academy catalogue get a slight priority bump for education discovery.
+      priority:
+        route === "/gigalearn/" ? "0.9" : route === "/gigalearn/academy/" ? "0.85" : "0.8",
     };
   });
   return writeUrlset("sitemap-gigalearn.xml", urls);
