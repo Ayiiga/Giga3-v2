@@ -19,6 +19,7 @@ import type {
   AcademyCourseListItem,
   AcademyModule,
 } from "../web/lib/gigalearn/academy/types";
+import { buildAcademyTutorFocus } from "../web/lib/gigalearn/academy/tutorContext";
 
 const MAX_MODULES_JSON = 80_000;
 const MAX_STRING = 4_000;
@@ -258,6 +259,65 @@ export const listMyEnrolments = query({
         progressPercent: row.progressPercent,
         updatedAt: row.updatedAt,
       }));
+  },
+});
+
+/**
+ * Phase 2 — server-authorized Academy tutoring context.
+ * Verifies the caller's enrolment; never trusts client-supplied ownership.
+ * Does not mark lessons complete or mutate gigaLearnProgress.
+ */
+export const getEnrolledTutorContext = query({
+  args: {
+    ...sessionArgs,
+    courseSlug: v.string(),
+    moduleId: v.optional(v.string()),
+    lessonId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken, ctx);
+    const course = await resolveCourse(ctx, args.courseSlug);
+    if (!course || course.status !== "published") {
+      return { ok: false as const, reason: "course_unavailable" as const };
+    }
+
+    const slug = course.slug;
+    const enrolment = await ctx.db
+      .query("gigaLearnAcademyEnrolments")
+      .withIndex("by_user_course", (q) => q.eq("userId", email).eq("courseSlug", slug))
+      .first();
+
+    if (!enrolment || enrolment.status === "withdrawn") {
+      return { ok: false as const, reason: "not_enrolled" as const };
+    }
+
+    const moduleId = args.moduleId?.trim() || enrolment.lastModuleId;
+    const lessonId = args.lessonId?.trim() || enrolment.lastLessonId;
+    const focus = buildAcademyTutorFocus(course, moduleId, lessonId);
+    if (!focus) {
+      return { ok: false as const, reason: "missing_materials" as const };
+    }
+
+    return {
+      ok: true as const,
+      courseSlug: focus.courseSlug,
+      courseTitle: focus.courseTitle,
+      subject: course.subject,
+      difficulty: course.difficulty,
+      enrolmentStatus: enrolment.status,
+      progressPercent: enrolment.progressPercent,
+      moduleId: focus.module.id,
+      moduleTitle: focus.module.title,
+      lessonId: focus.lesson.id,
+      lessonTitle: focus.lesson.title,
+      lessonSummary: focus.lesson.summary,
+      activityKind: focus.lesson.activityKind,
+      materialsBlock: focus.materialsBlock,
+      revisionHint: focus.revisionHint,
+      nextLesson: focus.next,
+      /** Explicit: tutoring never auto-completes pathway lessons. */
+      tutoringCompletesLesson: false as const,
+    };
   },
 });
 

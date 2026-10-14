@@ -41,3 +41,11 @@ Until Convex is deployed, catalogue still renders from the built-in TypeScript c
 - `subscription` — `isSubscriptionActive(...)`
 
 Client-side UI labels are informational only; enrolment is enforced in `enrolInCourse`.
+
+## Phase 2 — course-aware tutoring (additive)
+
+- `getEnrolledTutorContext` verifies enrolment server-side before exposing approved lesson materials.
+- `adaptiveLearning.tutorTurn` accepts optional `academyContext` (does **not** replace the action).
+- Tutoring never calls `updatePathwayProgress` or `gigaLearnProgress` mutations.
+- Deep link: `/gigalearn/?tab=tutor&academyCourse=<slug>&module=<id>&lesson=<id>`
+- Depends on Phase 1 tables/enrolment being deployed for live course-aware turns; builtin catalogue materials still resolve when courses are builtin + learner is enrolled.

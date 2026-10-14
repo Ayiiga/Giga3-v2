@@ -314,6 +314,14 @@ function AcademyCourseDetailInner() {
                           Open resource
                         </Link>
                         {isEnrolled ? (
+                          <Link
+                            href={`/gigalearn/?tab=tutor&academyCourse=${encodeURIComponent(slug)}&module=${encodeURIComponent(mod.id)}&lesson=${encodeURIComponent(lesson.id)}`}
+                            className="inline-flex min-h-11 items-center rounded-xl border border-accent/30 bg-accent/10 px-3 text-xs font-semibold text-foreground"
+                          >
+                            Ask AI Tutor
+                          </Link>
+                        ) : null}
+                        {isEnrolled ? (
                           <button
                             type="button"
                             disabled={busy}
