@@ -42,9 +42,9 @@ const BUILTIN_COURSES: AcademyCourse[] = [
     instructorName: "GigaLearn Faculty",
     instructorBio: "Curriculum-aligned pathways curated for Ghanaian BECE learners.",
     access: "free",
-    certificateEligible: false,
+    certificateEligible: true,
     completionRequirements:
-      "Complete all required lessons and finish at least one scored practice set per module.",
+      "Complete required lessons, pass module quizzes and the protected final (server-graded Academy assessments). Tutoring alone does not complete the course.",
     source: "catalog",
     status: "published",
     modules: [
@@ -271,8 +271,9 @@ const BUILTIN_COURSES: AcademyCourse[] = [
     instructorName: "GigaLearn Faculty",
     access: "credits",
     creditCost: 2,
-    certificateEligible: false,
-    completionRequirements: "Complete required Teacher Studio lessons in the pathway.",
+    certificateEligible: true,
+    completionRequirements:
+      "Complete required Teacher Studio lessons, pass the reflection assessment, and receive instructor approval before a certificate is issued.",
     source: "catalog",
     status: "published",
     modules: [

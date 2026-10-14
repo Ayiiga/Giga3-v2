@@ -250,6 +250,15 @@ function AcademyCourseDetailInner() {
                 Assessments
               </ButtonLink>
             ) : null}
+            {isEnrolled && course.certificateEligible ? (
+              <ButtonLink
+                href={`/gigalearn/academy/certificates/?course=${encodeURIComponent(slug)}`}
+                variant="outline"
+                className="min-h-11"
+              >
+                Certificates
+              </ButtonLink>
+            ) : null}
             {course.access !== "free" ? (
               <ButtonLink href={siteConfig.links.credits} variant="outline" className="min-h-11">
                 Credits / plans

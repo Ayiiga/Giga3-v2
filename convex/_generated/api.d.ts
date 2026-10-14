@@ -92,6 +92,7 @@ import type * as giga3BlogCatalog from "../giga3BlogCatalog.js";
 import type * as giga3Products from "../giga3Products.js";
 import type * as gigaLearnAcademy from "../gigaLearnAcademy.js";
 import type * as gigaLearnAcademyAssessments from "../gigaLearnAcademyAssessments.js";
+import type * as gigaLearnAcademyCertificates from "../gigaLearnAcademyCertificates.js";
 import type * as gigaLearnProgress from "../gigaLearnProgress.js";
 import type * as gigaPersonas from "../gigaPersonas.js";
 import type * as gigaSocial from "../gigaSocial.js";
@@ -371,6 +372,7 @@ declare const fullApi: ApiFromModules<{
   giga3Products: typeof giga3Products;
   gigaLearnAcademy: typeof gigaLearnAcademy;
   gigaLearnAcademyAssessments: typeof gigaLearnAcademyAssessments;
+  gigaLearnAcademyCertificates: typeof gigaLearnAcademyCertificates;
   gigaLearnProgress: typeof gigaLearnProgress;
   gigaPersonas: typeof gigaPersonas;
   gigaSocial: typeof gigaSocial;

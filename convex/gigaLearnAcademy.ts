@@ -410,11 +410,70 @@ export const updatePathwayProgress = mutation({
       Math.min(100, Math.round(args.progressPercent ?? enrolment.progressPercent))
     );
     const now = Date.now();
+    let completedLessonIds: string[] = [];
+    try {
+      const parsed = enrolment.completedLessonIdsJson
+        ? (JSON.parse(enrolment.completedLessonIdsJson) as unknown)
+        : [];
+      if (Array.isArray(parsed)) {
+        completedLessonIds = parsed.filter((x) => typeof x === "string").map((x) => x.slice(0, 80));
+      }
+    } catch {
+      completedLessonIds = [];
+    }
+    const lessonId = args.lessonId.slice(0, 80);
+    if (!completedLessonIds.includes(lessonId)) {
+      completedLessonIds.push(lessonId);
+    }
+    // Cap stored history — pathway size is small for builtin courses.
+    completedLessonIds = completedLessonIds.slice(-200);
+
     await ctx.db.patch(enrolment._id, {
       lastModuleId: args.moduleId.slice(0, 80),
-      lastLessonId: args.lessonId.slice(0, 80),
+      lastLessonId: lessonId,
       progressPercent: pct,
+      completedLessonIdsJson: JSON.stringify(completedLessonIds),
+      // Client markCompleted may update enrolment status for UX, but certificate
+      // eligibility never trusts this flag — it re-checks assessments server-side.
       status: args.markCompleted ? "completed" : enrolment.status,
+      updatedAt: now,
+    });
+    return { ok: true as const, completedLessonIds };
+  },
+});
+
+/** Admin/creator: grant instructor approval for certificate policies that require it. */
+export const approveEnrolmentForCertificate = mutation({
+  args: {
+    ...sessionArgs,
+    courseSlug: v.string(),
+    learnerUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken, ctx);
+    const invite = await ctx.db
+      .query("adminInvites")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    const allowed =
+      invite &&
+      invite.status === "accepted" &&
+      (invite.role === "admin" || invite.role === "creator");
+    if (!allowed) throw new Error("Not authorized to approve Academy certificates.");
+
+    const slug = normalizeSlug(args.courseSlug);
+    const learner = args.learnerUserId.trim().toLowerCase().slice(0, 320);
+    const enrolment = await ctx.db
+      .query("gigaLearnAcademyEnrolments")
+      .withIndex("by_user_course", (q) => q.eq("userId", learner).eq("courseSlug", slug))
+      .first();
+    if (!enrolment || enrolment.status === "withdrawn") {
+      throw new Error("Learner enrolment not found.");
+    }
+    const now = Date.now();
+    await ctx.db.patch(enrolment._id, {
+      certificateInstructorApprovedAt: now,
+      certificateInstructorApprovedBy: email,
       updatedAt: now,
     });
     return { ok: true as const };

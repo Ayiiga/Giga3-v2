@@ -9,6 +9,8 @@ import type { ReactNode } from "react";
 const NAV = [
   { href: "/gigalearn/academy/", label: "Catalogue" },
   { href: "/gigalearn/academy/my/", label: "My courses" },
+  { href: "/gigalearn/academy/certificates/", label: "Certificates" },
+  { href: "/gigalearn/academy/verify/", label: "Verify" },
   { href: "/gigalearn/academy/author/", label: "Author" },
   { href: "/gigalearn/", label: "GigaLearn hubs" },
 ] as const;
@@ -22,7 +24,7 @@ export function AcademyChrome({
   children: ReactNode;
   title: string;
   subtitle?: string;
-  active?: "catalogue" | "my" | "author" | "course";
+  active?: "catalogue" | "my" | "author" | "course" | "certificates" | "verify";
 }) {
   return (
     <div className="gigalearn-stable document-compact mx-auto max-w-6xl space-y-4 pb-[calc(var(--primary-nav-offset,0px)+1rem)]">
@@ -56,12 +58,18 @@ export function AcademyChrome({
                   ? "catalogue"
                   : item.label === "My courses"
                     ? "my"
-                    : item.label === "Author"
-                      ? "author"
-                      : null;
+                    : item.label === "Certificates"
+                      ? "certificates"
+                      : item.label === "Verify"
+                        ? "verify"
+                        : item.label === "Author"
+                          ? "author"
+                          : null;
               const isActive =
                 (active === "catalogue" && key === "catalogue") ||
                 (active === "my" && key === "my") ||
+                (active === "certificates" && key === "certificates") ||
+                (active === "verify" && key === "verify") ||
                 (active === "author" && key === "author") ||
                 (active === "course" && key === "catalogue");
               return (

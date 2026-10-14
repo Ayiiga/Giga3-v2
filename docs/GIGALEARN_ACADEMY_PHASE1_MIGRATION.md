@@ -69,3 +69,35 @@ Indexes: `by_user`, `by_user_assessment`, `by_user_course`, `by_idempotency`, `b
 
 ### Rollback
 Archive/stop using assessments in UI; do not drop `gigaLearnAcademyAttempts` with learner history without owner approval.
+
+## Phase 4 — certificates & public verification (additive)
+
+| Table | Purpose |
+|-------|---------|
+| `gigaLearnAcademyCertificates` | Issued certificates (soft-revoke only) |
+| `gigaLearnAcademyCertVerifyLimits` | Public verify rate-limit buckets |
+
+Enrolment additive fields: `completedLessonIdsJson`, `certificateInstructorApprovedAt`, `certificateInstructorApprovedBy`, `certificateProjectApprovedAt`.
+
+### Indexes
+- Certificates: `by_public_id`, `by_issuance_key`, `by_user`, `by_user_course`, `by_status_issued`
+- Verify limits: `by_bucket`
+
+### Modules
+- Policy: `web/lib/gigalearn/academy/certificatePolicy.ts`
+- PDF/QR (client, pdf-lib + qrcode): `web/lib/gigalearn/academy/certificatePdf.ts`
+- Backend: `convex/gigaLearnAcademyCertificates.ts`
+- Routes: `/gigalearn/academy/certificates/`, `/gigalearn/academy/verify/?c=`
+
+### PDF strategy
+Generate PDFs in the browser from the authoritative certificate record using existing `pdf-lib` (same family as Document Studio). No paid PDF SaaS. No Convex/Cloudflare filesystem writes required for issuance. Optional `pdfStorageId` reserved for future cached storage.
+
+### Deploy order (required)
+Phases 1–3 tables are **not** assumed deployed in production. Safe sequence:
+
+1. Deploy Convex schema + functions for Phase 1 (`gigaLearnAcademyCourses`, `gigaLearnAcademyEnrolments`) **then** Phase 3 (`gigaLearnAcademyAttempts`) **then** Phase 4 (`gigaLearnAcademyCertificates`, verify limits + enrolment field additions). A single `npx convex deploy` with the full branch schema is fine — tables are additive.
+2. Deploy Cloudflare Pages (`web/out`) so certificate/verify routes exist against the new APIs.
+3. Do **not** backfill certificates from legacy `gigaLearnProgress` or school practice scores.
+
+### Rollback
+Hide certificate UI; do not hard-delete `gigaLearnAcademyCertificates` rows with learner history without owner approval. Revocation is soft (`status: revoked`).

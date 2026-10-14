@@ -81,6 +81,7 @@ const STATIC_SITEMAP_PATHS = [
 const GIGALEARN_SITEMAP_PATHS = [
   "/gigalearn/",
   "/gigalearn/academy/",
+  "/gigalearn/academy/verify/",
   "/ai-for-bece-wassce-ghana/",
   "/ai-tools-for-students-ghana/",
   "/ai-for-teachers-ghana/",
