@@ -1,4 +1,5 @@
 import {
+  ArticleFigure,
   ArticleH2,
   ArticleH3,
   ArticleLink,
@@ -51,7 +52,13 @@ function ArticleContent() {
         Charge per package (e.g., weekly posts + revisions), not vague promises of virality.
       </Prose>
 
-      <ArticleH2 id="design-video">Design and video</ArticleH2>
+      
+      <ArticleFigure
+        src="/images/blog/ai-hustle-ghana.jpg"
+        alt="Young Ghanaian creator filming with a phone on a tripod"
+        caption="Content income depends on audience trust, not raw AI drafts."
+      />
+<ArticleH2 id="design-video">Design and video</ArticleH2>
       <Prose>
         AI assists with image concepts via <ArticleLink href="/media/">Media Studio</ArticleLink>,
         short clips via <ArticleLink href="/video/">Video AI</ArticleLink>, and edits via{" "}
@@ -77,7 +84,13 @@ function ArticleContent() {
       />
 
       <ArticleH2 id="scam-warnings">Scams to avoid</ArticleH2>
-      <BulletList
+      
+      <ArticleFigure
+        src="/images/blog/support-small-business-phone.jpg"
+        alt="Small business owner working from a phone at a shop counter"
+        caption="If a hustle promises effortless cedis, pause and verify."
+      />
+<BulletList
         items={[
           "Fake investment schemes promising daily returns — if it sounds guaranteed, walk away.",
           "Fake 'AI job' listings asking for registration fees upfront.",

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { BlogImage } from "@/components/blog/BlogImage";
 import type { BlogPostWithPath } from "@/lib/blog/types";
 import { categorySlugForName, blogCategoryPath } from "@/lib/blog/categories";
 import { formatBlogViewLabel } from "@/lib/blog/viewStats";
@@ -31,15 +31,13 @@ export function BlogCard({
   return (
     <article className="saas-card flex h-full flex-col overflow-hidden rounded-2xl border border-border transition hover:border-violet-300 hover:shadow-md">
       <Link href={post.href} className="block">
-        <div className="relative aspect-[16/9] w-full bg-slate-50">
-          <Image
-            src={post.featuredImage}
-            alt={post.featuredImageAlt}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        </div>
+        <BlogImage
+          src={post.featuredImage}
+          alt={post.featuredImageAlt}
+          aspect="16/9"
+          rounded={false}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
       </Link>
       <div className="flex flex-1 flex-col p-5">
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">

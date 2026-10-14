@@ -1,4 +1,5 @@
 import {
+  ArticleFigure,
   ArticleH2,
   ArticleH3,
   ArticleLink,
@@ -59,7 +60,13 @@ function ArticleContent() {
         Individual candidates can check results through WAEC Ghana&apos;s official result-checking
         portal. You will typically need:
       </Prose>
-      <BulletList
+      
+      <ArticleFigure
+        src="/images/blog/wassce-2026-results.jpg"
+        alt="Student and parent reviewing examination papers and a phone at home"
+        caption="Always use official WAEC channels when checking results."
+      />
+<BulletList
         items={[
           "Your 9-digit Index Number exactly as printed on your exam documents.",
           "Examination type set to WASSCE (May/June).",
@@ -96,7 +103,13 @@ function ArticleContent() {
         and skill-building paths remain available. Speak with your school&apos;s guidance unit before
         making major decisions.
       </Prose>
-      <BulletList
+      
+      <ArticleFigure
+        src="/images/blog/support-campus-opportunity.jpg"
+        alt="Students networking on a Ghanaian campus after exams"
+        caption="After results, plan tertiary options with verified requirements, not social media speculation."
+      />
+<BulletList
         items={[
           "Research admission requirements on each institution's official website.",
           "Keep physical and digital copies of your results slip.",
