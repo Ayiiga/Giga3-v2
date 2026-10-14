@@ -23,5 +23,10 @@
 /pricing.html       /pricing/                    301
 /payment-success.html /payment/success/          301
 
+# Blog slug aliases — title-inferred / Search Console variants → published canonicals.
+# The published Phase 2 slug omits "should"; Google LIVE TEST used the title-shaped URL.
+/blog/coding-vs-ai-which-skill-should-beginners-learn-first  /blog/coding-vs-ai-which-skill-beginners-learn-first/  301
+/blog/coding-vs-ai-which-skill-should-beginners-learn-first/ /blog/coding-vs-ai-which-skill-beginners-learn-first/  301
+
 # Unknown URLs must 404 via web/out/404.html. Do not rewrite them to /index.html.
 # Apex → www is handled in functions/_middleware.js. Pages _redirects cannot change hostname.
