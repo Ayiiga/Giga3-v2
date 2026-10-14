@@ -369,7 +369,7 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     title: "One Million Coders Ghana: Courses, Skills and Career Opportunities",
     seoTitle: "One Million Coders Ghana: Courses, Skills & Careers",
     description:
-      "A practical map of course families, beginner skills and early career paths around Ghana's One Million Coders digital-skills agenda — verify details on the official portal; no invented statistics.",
+      "Course families, beginner skills and early career paths around One Million Coders — verify details on the official portal; no invented statistics.",
     excerpt:
       "What course families and skills to expect, how to choose a track, and how to pair training with portfolio practice — without hype or invented enrolment numbers.",
     category: "Technology",
