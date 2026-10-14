@@ -49,3 +49,23 @@ Client-side UI labels are informational only; enrolment is enforced in `enrolInC
 - Tutoring never calls `updatePathwayProgress` or `gigaLearnProgress` mutations.
 - Deep link: `/gigalearn/?tab=tutor&academyCourse=<slug>&module=<id>&lesson=<id>`
 - Depends on Phase 1 tables/enrolment being deployed for live course-aware turns; builtin catalogue materials still resolve when courses are builtin + learner is enrolled.
+
+## Phase 3 — assessments & grading (additive)
+
+| Table | Purpose |
+|-------|---------|
+| `gigaLearnAcademyAttempts` | Attempt history, server scores, idempotency |
+
+Indexes: `by_user`, `by_user_assessment`, `by_user_course`, `by_idempotency`, `by_status`
+
+- Definitions: `web/lib/gigalearn/academy/assessmentCatalog.ts` (reuses `GigaLearnQuestion` + `gradeAnswer`)
+- Module: `convex/gigaLearnAcademyAssessments.ts`
+- AI assist reuses `adaptiveLearning.markAnswer` (not a new grading engine)
+- Instructor review via accepted admin/creator invites
+- No certificates; no code execution sandbox in this phase
+- Does **not** write `gigaLearnProgress`
+- Route: `/gigalearn/academy/assess/?course=&assessment=` (index: false — not in public sitemap)
+- Depends on Phase 1 enrolment tables being deployed for live submit/list queries
+
+### Rollback
+Archive/stop using assessments in UI; do not drop `gigaLearnAcademyAttempts` with learner history without owner approval.

@@ -1537,6 +1537,57 @@ export default defineSchema({
     .index("by_user_course", ["userId", "courseSlug"])
     .index("by_user_status", ["userId", "status"]),
 
+  /**
+   * GigaLearn Academy assessment attempts (Phase 3).
+   * Server-authoritative scores — never trust client-supplied grades.
+   * Separate from school-curriculum practice / gigaLearnProgress.
+   */
+  gigaLearnAcademyAttempts: defineTable({
+    userId: v.string(),
+    courseSlug: v.string(),
+    assessmentId: v.string(),
+    attemptNumber: v.number(),
+    status: v.union(
+      v.literal("in_progress"),
+      v.literal("submitted"),
+      v.literal("graded"),
+      v.literal("pending_review")
+    ),
+    /** Learner answers only (no official score fields from client). */
+    answersJson: v.string(),
+    score: v.optional(v.number()),
+    maxScore: v.optional(v.number()),
+    passed: v.optional(v.boolean()),
+    resultsJson: v.optional(v.string()),
+    feedbackSummary: v.optional(v.string()),
+    revisionHint: v.optional(v.string()),
+    gradingMode: v.union(
+      v.literal("objective"),
+      v.literal("ai_assisted"),
+      v.literal("instructor_review")
+    ),
+    gradedBy: v.optional(
+      v.union(
+        v.literal("objective"),
+        v.literal("ai"),
+        v.literal("instructor"),
+        v.literal("mixed")
+      )
+    ),
+    idempotencyKey: v.string(),
+    startedAt: v.number(),
+    submittedAt: v.optional(v.number()),
+    gradedAt: v.optional(v.number()),
+    reviewerUserId: v.optional(v.string()),
+    reviewNotes: v.optional(v.string()),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_assessment", ["userId", "assessmentId"])
+    .index("by_user_course", ["userId", "courseSlug"])
+    .index("by_idempotency", ["userId", "assessmentId", "idempotencyKey"])
+    .index("by_status", ["status", "updatedAt"]),
+
   /** Per-user developer API keys (hashed at rest). */
   apiKeys: defineTable({
     userId: v.string(),

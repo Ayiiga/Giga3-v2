@@ -241,6 +241,15 @@ function AcademyCourseDetailInner() {
             <ButtonLink href="/gigalearn/academy/my/" variant="outline" className="min-h-11">
               My courses
             </ButtonLink>
+            {isEnrolled ? (
+              <ButtonLink
+                href={`/gigalearn/academy/assess/?course=${encodeURIComponent(slug)}`}
+                variant="outline"
+                className="min-h-11"
+              >
+                Assessments
+              </ButtonLink>
+            ) : null}
             {course.access !== "free" ? (
               <ButtonLink href={siteConfig.links.credits} variant="outline" className="min-h-11">
                 Credits / plans
