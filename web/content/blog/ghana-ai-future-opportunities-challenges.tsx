@@ -1,4 +1,5 @@
 import {
+  ArticleFigure,
   ArticleH2,
   ArticleH3,
   ArticleLink,
@@ -46,7 +47,13 @@ function ArticleContent() {
         tools to everyday users with local billing.
       </Prose>
 
-      <ArticleH2 id="education">AI in education</ArticleH2>
+      
+      <ArticleFigure
+        src="/images/blog/ghana-ai-future.jpg"
+        alt="Accra skyline with young professionals at golden hour"
+        caption="Ghana’s AI landscape mixes opportunity with infrastructure realities."
+      />
+<ArticleH2 id="education">AI in education</ArticleH2>
       <Prose>
         Teachers can save prep time with AI drafts — always reviewed for accuracy. Students can use
         AI for explanation and practice — not cheating. Read our guides for{" "}
@@ -78,7 +85,13 @@ function ArticleContent() {
       </Prose>
 
       <ArticleH2 id="risks">Risks and challenges</ArticleH2>
-      <BulletList
+      
+      <ArticleFigure
+        src="/images/blog/support-fact-check-moment.jpg"
+        alt="Person carefully evaluating information on a phone"
+        caption="Risks include misinformation, skills gaps, and uneven access."
+      />
+<BulletList
         items={[
           "Digital divide: rural and low-income users may lack devices and affordable data.",
           "Misinformation: AI makes fake content easier — literacy is essential.",

@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { categorySlugForName } from "@/lib/blog/categories";
 import type { BlogPost } from "@/lib/blog/types";
 
@@ -60,6 +62,27 @@ export function validateBlogPost(post: BlogPost, seenSlugs: Set<string>): void {
 
   if (!Array.isArray(post.tags) || post.tags.length === 0) {
     throw new Error(`Blog post "${post.slug}" must include at least one tag`);
+  }
+
+  if (!post.featuredImage.startsWith("/images/blog/")) {
+    throw new Error(
+      `Blog post "${post.slug}" featuredImage must be a local /images/blog/ asset for static export`
+    );
+  }
+
+  // Resolve from web/ when vitest runs at repo root or inside web/.
+  const candidates = [
+    join(process.cwd(), "public", post.featuredImage.replace(/^\//, "")),
+    join(process.cwd(), "web", "public", post.featuredImage.replace(/^\//, "")),
+  ];
+  if (!candidates.some((path) => existsSync(path))) {
+    throw new Error(
+      `Blog post "${post.slug}" featuredImage file missing: ${post.featuredImage}`
+    );
+  }
+
+  if (post.featuredImageAlt.trim().length < 12) {
+    throw new Error(`Blog post "${post.slug}" featuredImageAlt is too short for accessibility`);
   }
 }
 

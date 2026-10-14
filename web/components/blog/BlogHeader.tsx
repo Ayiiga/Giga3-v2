@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { BlogAuthor } from "@/components/blog/BlogAuthor";
 import { BlogBreadcrumbs } from "@/components/blog/BlogBreadcrumbs";
@@ -6,6 +5,7 @@ import {
   BlogArticleMetaStats,
   BlogArticleShareSection,
 } from "@/components/blog/BlogArticleEngagement";
+import { BlogImage } from "@/components/blog/BlogImage";
 import { BlogPushSubscribe } from "@/components/blog/BlogPushSubscribe";
 import { BlogTableOfContents } from "@/components/blog/BlogTableOfContents";
 import { RelatedPosts } from "@/components/blog/RelatedPosts";
@@ -82,13 +82,12 @@ export function BlogArticleLayout({ post, toc, children, cta }: BlogArticleLayou
           </dl>
         </div>
 
-        <div className="relative mt-8 aspect-[16/9] w-full overflow-hidden rounded-2xl bg-slate-50">
-          <Image
+        <div className="mt-8 max-w-full">
+          <BlogImage
             src={post.featuredImage}
             alt={post.featuredImageAlt}
-            fill
             priority
-            className="object-cover"
+            aspect="16/9"
             sizes="(max-width: 768px) 100vw, 768px"
           />
         </div>

@@ -143,8 +143,8 @@ function ArticleContent() {
       />
 
       <ArticleFigure
-        src="/images/blog/ai-study-writing-comparison-ghana.svg"
-        alt="Illustration comparing AI use cases for study and writing among Ghanaian students"
+        src="/images/blog/ai-study-writing-comparison-ghana.jpg"
+        alt="Ghanaian student writing by hand beside an open laptop while comparing study approaches"
         caption="Study and writing are different jobs — match the assistant to the task, not the hype."
       />
 
@@ -239,8 +239,8 @@ function ArticleContent() {
       />
 
       <ArticleFigure
-        src="/images/blog/ai-creator-coding-comparison-ghana.svg"
-        alt="Illustration of AI tools for content creation and coding workflows in Ghana"
+        src="/images/blog/ai-creator-coding-comparison-ghana.jpg"
+        alt="Creator sketching ideas while another person codes on a laptop in a Ghana co-working space"
         caption="Creators and developers often need different assistants for scripts versus code."
       />
 

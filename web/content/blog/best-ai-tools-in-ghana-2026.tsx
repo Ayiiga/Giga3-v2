@@ -1,4 +1,5 @@
 import {
+  ArticleFigure,
   ArticleH2,
   ArticleH3,
   ArticleLink,
@@ -69,7 +70,13 @@ function ArticleContent() {
         payment rails. Giga3 AI, for example, uses Paystack so subscriptions and credit top-ups can
         be completed in cedis without foreign cards.
       </Prose>
-      <BulletList
+      
+      <ArticleFigure
+        src="/images/blog/support-mobile-learning.jpg"
+        alt="Ghanaian student learning from a smartphone with earphones, reflecting mobile-first AI use"
+        caption="Most Ghanaian AI workflows start on a phone — tools must respect data and attention."
+      />
+<BulletList
         items={[
           "Students need explanations, not just answers — especially before BECE and WASSCE.",
           "Creators need fast drafts for captions, thumbnails, and short-form video ideas.",
@@ -110,7 +117,13 @@ function ArticleContent() {
         is most valuable when it speeds up the boring middle: turning a bullet list into a script,
         generating thumbnail concepts, or resizing assets for different platforms.
       </Prose>
-      <BulletList
+      
+      <ArticleFigure
+        src="/images/blog/support-creator-editing.jpg"
+        alt="Ghanaian creator editing video on a laptop at a home desk"
+        caption="Creators use AI to accelerate drafts, then finish with human taste and brand voice."
+      />
+<BulletList
         items={[
           "Media Studio — image generation and visual assets (/media).",
           "Video AI — short clips and motion concepts (/video).",

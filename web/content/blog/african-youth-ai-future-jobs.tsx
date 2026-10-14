@@ -1,4 +1,5 @@
 import {
+  ArticleFigure,
   ArticleH2,
   ArticleH3,
   ArticleLink,
@@ -56,7 +57,13 @@ function ArticleContent() {
         </ArticleLink>.
       </Prose>
 
-      <ArticleH2 id="human-skills">Human skills that still matter</ArticleH2>
+      
+      <ArticleFigure
+        src="/images/blog/african-youth-ai-jobs.jpg"
+        alt="African youth collaborating on laptops outdoors"
+        caption="AI literacy pairs with domain skill — not either alone."
+      />
+<ArticleH2 id="human-skills">Human skills that still matter</ArticleH2>
       <BulletList
         items={[
           "Critical thinking and fact-checking — see our social media literacy guide.",
@@ -68,7 +75,13 @@ function ArticleContent() {
       />
 
       <ArticleH2 id="practical-steps">Practical steps for youth</ArticleH2>
-      <BulletList
+      
+      <ArticleFigure
+        src="/images/blog/support-campus-opportunity.jpg"
+        alt="Students networking about careers on a Ghanaian campus"
+        caption="Practical steps: ship small projects and learn in public."
+      />
+<BulletList
         items={[
           "Learn one AI tool deeply — e.g. Giga3 AI Chat or GigaLearn — before chasing ten apps.",
           "Build a portfolio project: app, blog, dataset, or community service with digital tools.",

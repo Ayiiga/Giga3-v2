@@ -118,8 +118,8 @@ function ArticleContent() {
       </Prose>
 
       <ArticleFigure
-        src="/images/blog/ai-freelance-services-ghana.svg"
-        alt="Illustration of AI-assisted freelance services such as content, design, and tutoring in Ghana"
+        src="/images/blog/ai-freelance-services-ghana.jpg"
+        alt="Ghanaian freelancer on a client video call with a notebook of service packages"
         caption="Clients pay for outcomes they can use — not raw AI output."
       />
 
@@ -451,8 +451,8 @@ function ArticleContent() {
       </MethodBlock>
 
       <ArticleFigure
-        src="/images/blog/ai-seven-day-start-plan-ghana.svg"
-        alt="Seven-day plan illustration for starting an AI-assisted service business in Ghana"
+        src="/images/blog/ai-seven-day-start-plan-ghana.jpg"
+        alt="Desk with a weekly planner notebook, pen, phone and laptop for starting a service week"
         caption="One focused week beats months of unfocused tool-hopping."
       />
 

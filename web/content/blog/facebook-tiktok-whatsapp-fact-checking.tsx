@@ -1,4 +1,5 @@
 import {
+  ArticleFigure,
   ArticleH2,
   ArticleH3,
   ArticleLink,
@@ -41,7 +42,13 @@ function ArticleContent() {
         during elections, exam seasons, and economic debates.
       </Prose>
 
-      <ArticleH2 id="types">Types of misleading content</ArticleH2>
+      
+      <ArticleFigure
+        src="/images/blog/support-fact-check-moment.jpg"
+        alt="Person pausing before sharing a post on a smartphone"
+        caption="A short pause before forwarding stops many false stories."
+      />
+<ArticleH2 id="types">Types of misleading content</ArticleH2>
       <BulletList
         items={[
           "Misleading headlines that do not match the linked article.",
@@ -55,7 +62,13 @@ function ArticleContent() {
 
       <ArticleH2 id="checklist">Six-step verification checklist</ArticleH2>
       <Prose>Before you share, ask:</Prose>
-      <BulletList
+      
+      <ArticleFigure
+        src="/images/blog/digital-literacy-social.jpg"
+        alt="Young adults verifying information together on a phone"
+        caption="Verification is a social skill — ask who published it and when."
+      />
+<BulletList
         items={[
           "1. Who published it? Is the account official and long-established?",
           "2. What is the original source? Trace back to a primary outlet or document.",

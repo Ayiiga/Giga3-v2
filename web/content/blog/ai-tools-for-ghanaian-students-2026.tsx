@@ -1,4 +1,5 @@
 import {
+  ArticleFigure,
   ArticleH2,
   ArticleH3,
   ArticleLink,
@@ -47,6 +48,12 @@ function ArticleContent() {
         what performs best on your network.
       </Prose>
 
+      
+      <ArticleFigure
+        src="/images/blog/ai-tools-students-2026.jpg"
+        alt="University student studying with textbooks and a laptop"
+        caption="Use tutoring chat to explain steps, then solve similar questions yourself."
+      />
       <ArticleH2 id="research">2. Research helpers</ArticleH2>
       <Prose>
         Tools such as Perplexity and research modes in major chat apps summarise topics and suggest
@@ -93,6 +100,12 @@ function ArticleContent() {
         or similar tools. Label AI-generated images when submitting coursework if required.
       </Prose>
 
+      
+      <ArticleFigure
+        src="/images/blog/support-students-group-study.jpg"
+        alt="Students collaborating on notes in a bright classroom"
+        caption="Peer study still beats solitary copy-paste when exams reward understanding."
+      />
       <ArticleH2 id="planning">9. Study planning</ArticleH2>
       <Prose>
         Build weekly timetables around weak subjects. Combine AI plans with your teacher&apos;s

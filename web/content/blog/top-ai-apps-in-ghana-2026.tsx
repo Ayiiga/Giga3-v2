@@ -1,4 +1,5 @@
 import {
+  ArticleFigure,
   ArticleH2,
   ArticleH3,
   ArticleLink,
@@ -75,7 +76,13 @@ function ArticleContent() {
         <ArticleLink href="/chat/login/">Giga3 AI Chat</ArticleLink> offers multiple modes for
         writing, research, and coding with server-side models and credit-based usage.
       </Prose>
-      <ArticleH3>When to use which</ArticleH3>
+      
+      <ArticleFigure
+        src="/images/blog/support-mobile-learning.jpg"
+        alt="Young Ghanaian adult using a smartphone for chat and writing work"
+        caption="Chat and writing apps matter when they fit Ghanaian phones and data habits."
+      />
+<ArticleH3>When to use which</ArticleH3>
       <BulletList
         items={[
           "Quick explanations and brainstorming — any reputable chat app.",
@@ -104,6 +111,12 @@ function ArticleContent() {
         than the prompt took to type.
       </Prose>
 
+      
+      <ArticleFigure
+        src="/images/blog/support-creator-editing.jpg"
+        alt="Creator editing media on a laptop in a tidy home workspace"
+        caption="Image and video tools help when you still direct the story."
+      />
       <ArticleH2 id="productivity">Productivity assistants</ArticleH2>
       <Prose>
         Productivity use cases include meeting summaries, inbox drafts, calendar planning, and
