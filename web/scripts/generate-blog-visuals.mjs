@@ -189,6 +189,50 @@ const ASSETS = [
     file: "blog-hero.jpg",
     prompt: `${STYLE}. Wide editorial hero of young Africans learning and creating with technology in Accra, hopeful and grounded.`,
   },
+  // Phase 2 — coding & AI skills series
+  {
+    id: "start-learning-coding-ghana",
+    file: "start-learning-coding-ghana.jpg",
+    prompt: `${STYLE}. Absolute beginner in Ghana learning to code on a laptop at a simple wooden desk, notebook with sketched flowboxes (no readable text), calm focused morning light.`,
+  },
+  {
+    id: "one-million-coders-courses-careers",
+    file: "one-million-coders-courses-careers.jpg",
+    prompt: `${STYLE}. Young Ghanaian graduates discussing career paths after digital skills training, laptops closed on table, campus courtyard, practical career conversation.`,
+  },
+  {
+    id: "ai-skills-ghanaian-students-2026",
+    file: "ai-skills-ghanaian-students-2026.jpg",
+    prompt: `${STYLE}. Ghanaian university students practising prompt writing and note-taking together, laptops and exercise books, library corner, skill-building mood.`,
+  },
+  {
+    id: "coding-vs-ai-beginners",
+    file: "coding-vs-ai-beginners.jpg",
+    prompt: `${STYLE}. Two young learners in Ghana at one desk — one writing simple code on a laptop, the other drafting prompts in a notebook, comparing learning paths, friendly debate.`,
+  },
+  {
+    id: "first-software-project-ghana",
+    file: "first-software-project-ghana.jpg",
+    prompt: `${STYLE}. Beginner developer in Accra celebrating a small working app on a phone and laptop, sticky notes for project steps, home desk, first-project pride.`,
+  },
+  {
+    id: "support-coding-practice-desk",
+    file: "support-coding-practice-desk.jpg",
+    prompt: `${STYLE}. Close documentary shot of hands typing on a laptop with a water bottle and phone charging, Ghana home study desk, daily coding practice.`,
+    size: "landscape_4_3",
+  },
+  {
+    id: "support-skills-roadmap-notebook",
+    file: "support-skills-roadmap-notebook.jpg",
+    prompt: `${STYLE}. Open notebook with simple hand-drawn roadmap boxes (no readable words) beside a laptop, planning digital skills journey in Ghana.`,
+    size: "landscape_4_3",
+  },
+  {
+    id: "support-team-project-build",
+    file: "support-team-project-build.jpg",
+    prompt: `${STYLE}. Small student team in Ghana building a first software project around one laptop, pointing at the screen, collaborative energy.`,
+    size: "landscape_4_3",
+  },
 ];
 
 function getKey() {

@@ -19,6 +19,8 @@ export type PublicProductPageShellProps = {
   primaryLabel: string;
   secondaryHref?: string;
   secondaryLabel?: string;
+  /** Optional editorial / hub links for discoverability (public URLs only). */
+  relatedLinks?: readonly { href: string; label: string }[];
   /** Use h2 when the interactive app above already provides the page h1. */
   titleAs?: "h1" | "h2";
 };
@@ -36,6 +38,7 @@ export function PublicProductPageShell({
   primaryLabel,
   secondaryHref,
   secondaryLabel,
+  relatedLinks,
   titleAs = "h1",
 }: PublicProductPageShellProps) {
   const TitleTag = titleAs;
@@ -79,6 +82,21 @@ export function PublicProductPageShell({
             <ArticleH2>How it connects to Giga3</ArticleH2>
             <Prose>{giga3Connection}</Prose>
           </section>
+
+          {relatedLinks && relatedLinks.length > 0 ? (
+            <section className="space-y-3">
+              <ArticleH2>Related guides</ArticleH2>
+              <ul className="list-disc space-y-2 pl-5 text-base text-foreground">
+                {relatedLinks.map((link) => (
+                  <li key={link.href}>
+                    <a href={link.href} className="font-medium text-accent underline-offset-2 hover:underline">
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
           <noscript>
             <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">

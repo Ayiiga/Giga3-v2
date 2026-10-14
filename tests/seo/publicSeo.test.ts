@@ -59,11 +59,12 @@ describe("publicMetadata", () => {
 });
 
 describe("sitemap.xml", () => {
-  it("is a sitemap index pointing at static and blog child sitemaps", () => {
+  it("is a sitemap index pointing at static, blog, and gigalearn child sitemaps", () => {
     const xml = readFileSync(resolve(__dirname, "../../web/public/sitemap.xml"), "utf8");
     expect(xml).toContain("<sitemapindex");
     expect(xml).toContain("https://www.giga3ai.com/sitemap-static.xml");
     expect(xml).toContain("https://www.giga3ai.com/sitemap-blog.xml");
+    expect(xml).toContain("https://www.giga3ai.com/sitemap-gigalearn.xml");
   });
 
   it("lists core marketing routes in sitemap-static.xml", () => {
@@ -73,6 +74,21 @@ describe("sitemap.xml", () => {
       "https://www.giga3ai.com/blog/",
       "https://www.giga3ai.com/gigasocial/",
       "https://www.giga3ai.com/pricing/",
+    ]) {
+      expect(xml).toContain(path);
+    }
+    // Education hubs live in sitemap-gigalearn.xml (no duplicate locs).
+    expect(xml).not.toContain("https://www.giga3ai.com/gigalearn/");
+  });
+
+  it("lists GigaLearn and public education hubs in sitemap-gigalearn.xml", () => {
+    const xml = readFileSync(resolve(__dirname, "../../web/public/sitemap-gigalearn.xml"), "utf8");
+    for (const path of [
+      "https://www.giga3ai.com/gigalearn/",
+      "https://www.giga3ai.com/ai-for-bece-wassce-ghana/",
+      "https://www.giga3ai.com/ai-tools-for-students-ghana/",
+      "https://www.giga3ai.com/ai-for-teachers-ghana/",
+      "https://www.giga3ai.com/ai-for-schools-ghana/",
     ]) {
       expect(xml).toContain(path);
     }

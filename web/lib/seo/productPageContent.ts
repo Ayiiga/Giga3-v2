@@ -105,6 +105,32 @@ export const GIGALEARN_PAGE_SHELL: PublicProductPageShellProps = {
   primaryLabel: "BECE & WASSCE prep guide",
   secondaryHref: "/chat/login",
   secondaryLabel: "Sign in",
+  relatedLinks: [
+    {
+      href: "/blog/ai-skills-every-ghanaian-student-should-learn-2026/",
+      label: "AI skills every Ghanaian student should learn in 2026",
+    },
+    {
+      href: "/blog/how-to-start-learning-coding-in-ghana/",
+      label: "How to start learning coding in Ghana",
+    },
+    {
+      href: "/blog/coding-vs-ai-which-skill-beginners-learn-first/",
+      label: "Coding vs AI: which skill beginners should learn first",
+    },
+    {
+      href: "/ai-tools-for-students-ghana/",
+      label: "AI tools for students in Ghana",
+    },
+    {
+      href: "/ai-for-teachers-ghana/",
+      label: "AI for teachers in Ghana",
+    },
+    {
+      href: "/ai-for-schools-ghana/",
+      label: "AI for schools in Ghana",
+    },
+  ],
 };
 
 export const ENTERPRISE_PAGE_SHELL: PublicProductPageShellProps = {

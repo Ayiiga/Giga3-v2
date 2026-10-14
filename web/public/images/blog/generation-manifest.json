@@ -1,151 +1,46 @@
 {
-  "generatedAt": "2026-10-14T15:11:16.303Z",
+  "generatedAt": "2026-10-14T16:44:18.332Z",
   "model": "fal-ai/flux/schnell",
   "results": [
     {
-      "id": "best-ai-tools-ghana",
+      "id": "start-learning-coding-ghana",
       "skipped": false,
-      "file": "best-ai-tools-ghana.jpg"
+      "file": "start-learning-coding-ghana.jpg"
     },
     {
-      "id": "bece-wassce-ai",
+      "id": "one-million-coders-courses-careers",
       "skipped": false,
-      "file": "bece-wassce-ai.jpg"
+      "file": "one-million-coders-courses-careers.jpg"
     },
     {
-      "id": "top-ai-apps-ghana",
+      "id": "ai-skills-ghanaian-students-2026",
       "skipped": false,
-      "file": "top-ai-apps-ghana.jpg"
+      "file": "ai-skills-ghanaian-students-2026.jpg"
     },
     {
-      "id": "wassce-2026-results",
+      "id": "coding-vs-ai-beginners",
       "skipped": false,
-      "file": "wassce-2026-results.jpg"
+      "file": "coding-vs-ai-beginners.jpg"
     },
     {
-      "id": "ghana-wage-system",
+      "id": "first-software-project-ghana",
       "skipped": false,
-      "file": "ghana-wage-system.jpg"
+      "file": "first-software-project-ghana.jpg"
     },
     {
-      "id": "one-million-coders",
+      "id": "support-coding-practice-desk",
       "skipped": false,
-      "file": "one-million-coders.jpg"
+      "file": "support-coding-practice-desk.jpg"
     },
     {
-      "id": "ai-tools-students-2026",
+      "id": "support-skills-roadmap-notebook",
       "skipped": false,
-      "file": "ai-tools-students-2026.jpg"
+      "file": "support-skills-roadmap-notebook.jpg"
     },
     {
-      "id": "ai-for-teachers",
+      "id": "support-team-project-build",
       "skipped": false,
-      "file": "ai-for-teachers.jpg"
-    },
-    {
-      "id": "wassce-ai-study",
-      "skipped": false,
-      "file": "wassce-ai-study.jpg"
-    },
-    {
-      "id": "ai-hustle-ghana",
-      "skipped": false,
-      "file": "ai-hustle-ghana.jpg"
-    },
-    {
-      "id": "digital-literacy-social",
-      "skipped": false,
-      "file": "digital-literacy-social.jpg"
-    },
-    {
-      "id": "african-youth-ai-jobs",
-      "skipped": false,
-      "file": "african-youth-ai-jobs.jpg"
-    },
-    {
-      "id": "ghana-ai-future",
-      "skipped": false,
-      "file": "ghana-ai-future.jpg"
-    },
-    {
-      "id": "chatgpt-gemini-claude-comparison-ghana",
-      "skipped": false,
-      "file": "chatgpt-gemini-claude-comparison-ghana.jpg"
-    },
-    {
-      "id": "make-money-ai-ghana-2026",
-      "skipped": false,
-      "file": "make-money-ai-ghana-2026.jpg"
-    },
-    {
-      "id": "africa-ai-solves-real-problems",
-      "skipped": false,
-      "file": "africa-ai-solves-real-problems.jpg"
-    },
-    {
-      "id": "support-students-group-study",
-      "skipped": false,
-      "file": "support-students-group-study.jpg"
-    },
-    {
-      "id": "support-teacher-planning",
-      "skipped": false,
-      "file": "support-teacher-planning.jpg"
-    },
-    {
-      "id": "support-mobile-learning",
-      "skipped": false,
-      "file": "support-mobile-learning.jpg"
-    },
-    {
-      "id": "support-creator-editing",
-      "skipped": false,
-      "file": "support-creator-editing.jpg"
-    },
-    {
-      "id": "support-small-business-phone",
-      "skipped": false,
-      "file": "support-small-business-phone.jpg"
-    },
-    {
-      "id": "support-coding-mentorship",
-      "skipped": false,
-      "file": "support-coding-mentorship.jpg"
-    },
-    {
-      "id": "support-fact-check-moment",
-      "skipped": false,
-      "file": "support-fact-check-moment.jpg"
-    },
-    {
-      "id": "support-campus-opportunity",
-      "skipped": false,
-      "file": "support-campus-opportunity.jpg"
-    },
-    {
-      "id": "ai-freelance-services-ghana",
-      "skipped": false,
-      "file": "ai-freelance-services-ghana.jpg"
-    },
-    {
-      "id": "ai-seven-day-start-plan-ghana",
-      "skipped": false,
-      "file": "ai-seven-day-start-plan-ghana.jpg"
-    },
-    {
-      "id": "ai-study-writing-comparison-ghana",
-      "skipped": false,
-      "file": "ai-study-writing-comparison-ghana.jpg"
-    },
-    {
-      "id": "ai-creator-coding-comparison-ghana",
-      "skipped": false,
-      "file": "ai-creator-coding-comparison-ghana.jpg"
-    },
-    {
-      "id": "blog-hero",
-      "skipped": false,
-      "file": "blog-hero.jpg"
+      "file": "support-team-project-build.jpg"
     }
   ]
 }

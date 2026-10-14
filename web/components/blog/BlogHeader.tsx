@@ -3,6 +3,7 @@ import { BlogAuthor } from "@/components/blog/BlogAuthor";
 import { BlogBreadcrumbs } from "@/components/blog/BlogBreadcrumbs";
 import {
   BlogArticleMetaStats,
+  BlogArticleRatingSection,
   BlogArticleShareSection,
 } from "@/components/blog/BlogArticleEngagement";
 import { BlogImage } from "@/components/blog/BlogImage";
@@ -101,6 +102,10 @@ export function BlogArticleLayout({ post, toc, children, cta }: BlogArticleLayou
       </div>
 
       {cta}
+
+      <div className="mt-10">
+        <BlogArticleRatingSection slug={post.slug} path={path} />
+      </div>
 
       <div className="mt-10">
         <BlogPushSubscribe />

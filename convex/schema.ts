@@ -1429,12 +1429,27 @@ export default defineSchema({
     .index("by_user_date", ["userId", "dateKey"])
     .index("by_challenge", ["challengeId"]),
 
-  /** View counts for static editorial blog articles (keyed by slug). */
+  /** View counts + rating aggregates for static editorial blog articles (keyed by slug). */
   blogPostStats: defineTable({
     slug: v.string(),
     viewCount: v.number(),
+    /** Sum of all submitted integer ratings (1–5). Optional for legacy rows. */
+    ratingSum: v.optional(v.number()),
+    ratingCount: v.optional(v.number()),
+    ratingAvg: v.optional(v.number()),
     updatedAt: v.number(),
   }).index("by_slug", ["slug"]),
+
+  /** One rating row per anonymous clientId per blog slug (duplicate-submission safeguard). */
+  blogPostRatings: defineTable({
+    slug: v.string(),
+    clientId: v.string(),
+    rating: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_slug_client", ["slug", "clientId"]),
 
   /** GigaLearn weakness → practice → reassess loop (server sync). */
   gigaLearnProgress: defineTable({
