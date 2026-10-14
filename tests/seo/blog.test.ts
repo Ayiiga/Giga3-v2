@@ -14,6 +14,25 @@ import { blogJsonLdAuthor } from "../../web/components/blog/BlogArticleJsonLd";
 
 const WEB_ROOT = resolve(__dirname, "../../web");
 
+describe("blog slug aliases for Search Console / title-inferred URLs", () => {
+  it("301s the title-shaped coding-vs-ai URL to the published canonical slug", () => {
+    const redirects = readFileSync(resolve(WEB_ROOT, "public/_redirects"), "utf8");
+    expect(redirects).toContain(
+      "/blog/coding-vs-ai-which-skill-should-beginners-learn-first/ /blog/coding-vs-ai-which-skill-beginners-learn-first/  301"
+    );
+    expect(redirects).toContain(
+      "/blog/coding-vs-ai-which-skill-should-beginners-learn-first  /blog/coding-vs-ai-which-skill-beginners-learn-first/  301"
+    );
+    // Canonical published slug remains without the extra "should" segment.
+    expect(
+      BLOG_POST_REGISTRY.some((p) => p.slug === "coding-vs-ai-which-skill-beginners-learn-first")
+    ).toBe(true);
+    expect(
+      BLOG_POST_REGISTRY.some((p) => p.slug === "coding-vs-ai-which-skill-should-beginners-learn-first")
+    ).toBe(false);
+  });
+});
+
 describe("blog post registry", () => {
   it("has twenty-one articles with valid categories", () => {
     expect(BLOG_POST_REGISTRY).toHaveLength(21);
