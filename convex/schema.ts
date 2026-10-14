@@ -1467,6 +1467,76 @@ export default defineSchema({
     .index("by_user_topic", ["userId", "topicKey"])
     .index("by_user_updated", ["userId", "updatedAt"]),
 
+  /**
+   * GigaLearn Academy — author-created structured courses (additive).
+   * Built-in catalogue courses live in web/lib/gigalearn/academy/courseCatalog.ts.
+   * Does not replace curriculumEngine or gigaLearnProgress.
+   */
+  gigaLearnAcademyCourses: defineTable({
+    slug: v.string(),
+    title: v.string(),
+    description: v.string(),
+    subject: v.string(),
+    category: v.string(),
+    difficulty: v.union(
+      v.literal("beginner"),
+      v.literal("intermediate"),
+      v.literal("advanced")
+    ),
+    durationMinutes: v.number(),
+    learningObjectives: v.array(v.string()),
+    prerequisites: v.array(v.string()),
+    curriculumPreview: v.string(),
+    assessmentDescription: v.string(),
+    instructorName: v.optional(v.string()),
+    instructorBio: v.optional(v.string()),
+    access: v.union(
+      v.literal("free"),
+      v.literal("credits"),
+      v.literal("subscription")
+    ),
+    creditCost: v.optional(v.number()),
+    certificateEligible: v.boolean(),
+    completionRequirements: v.string(),
+    /** JSON-serialized AcademyModule[] pathway */
+    modulesJson: v.string(),
+    status: v.union(
+      v.literal("draft"),
+      v.literal("published"),
+      v.literal("archived")
+    ),
+    authorUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_status", ["status"])
+    .index("by_status_category", ["status", "category"])
+    .index("by_author", ["authorUserId", "updatedAt"]),
+
+  /**
+   * GigaLearn Academy enrolments — consumer pathway progress.
+   * Separate from enterprise orgEnrollments. Does not mutate gigaLearnProgress.
+   */
+  gigaLearnAcademyEnrolments: defineTable({
+    userId: v.string(),
+    courseSlug: v.string(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("withdrawn"),
+      v.literal("completed")
+    ),
+    enrolledAt: v.number(),
+    lastModuleId: v.optional(v.string()),
+    lastLessonId: v.optional(v.string()),
+    progressPercent: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_course", ["courseSlug"])
+    .index("by_user_course", ["userId", "courseSlug"])
+    .index("by_user_status", ["userId", "status"]),
+
   /** Per-user developer API keys (hashed at rest). */
   apiKeys: defineTable({
     userId: v.string(),

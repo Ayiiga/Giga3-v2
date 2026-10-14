@@ -90,6 +90,7 @@ import type * as geminiImageClient from "../geminiImageClient.js";
 import type * as geolocationActions from "../geolocationActions.js";
 import type * as giga3BlogCatalog from "../giga3BlogCatalog.js";
 import type * as giga3Products from "../giga3Products.js";
+import type * as gigaLearnAcademy from "../gigaLearnAcademy.js";
 import type * as gigaLearnProgress from "../gigaLearnProgress.js";
 import type * as gigaPersonas from "../gigaPersonas.js";
 import type * as gigaSocial from "../gigaSocial.js";
@@ -367,6 +368,7 @@ declare const fullApi: ApiFromModules<{
   geolocationActions: typeof geolocationActions;
   giga3BlogCatalog: typeof giga3BlogCatalog;
   giga3Products: typeof giga3Products;
+  gigaLearnAcademy: typeof gigaLearnAcademy;
   gigaLearnProgress: typeof gigaLearnProgress;
   gigaPersonas: typeof gigaPersonas;
   gigaSocial: typeof gigaSocial;
