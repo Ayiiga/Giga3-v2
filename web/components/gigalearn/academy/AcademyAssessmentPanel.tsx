@@ -63,7 +63,7 @@ function AssessmentInner() {
   } | null>(null);
 
   const selectedMeta = useMemo(
-    () => list?.assessments.find((a) => a.id === assessmentId) ?? null,
+    () => list?.assessments.find((a: { id: string }) => a.id === assessmentId) ?? null,
     [list, assessmentId]
   );
 
@@ -180,7 +180,18 @@ function AssessmentInner() {
         <section className="saas-card space-y-3 rounded-2xl border border-border p-4">
           <h2 className="text-sm font-semibold text-foreground">Available assessments</h2>
           <ul className="space-y-2">
-            {list.assessments.map((a) => (
+            {list.assessments.map(
+              (a: {
+                id: string;
+                title: string;
+                kind: string;
+                passThreshold: number;
+                gradingMode: string;
+                protectedFinal: boolean;
+                unlocked: boolean;
+                passed: boolean;
+                attemptsRemaining: number;
+              }) => (
               <li key={a.id}>
                 <Link
                   href={`/gigalearn/academy/assess/?course=${encodeURIComponent(courseSlug)}&assessment=${encodeURIComponent(a.id)}`}
@@ -200,7 +211,8 @@ function AssessmentInner() {
                   </span>
                 </Link>
               </li>
-            ))}
+            )
+            )}
           </ul>
         </section>
       )}
@@ -228,14 +240,23 @@ function AssessmentInner() {
             <p className="text-sm text-muted">No attempts remaining.</p>
           ) : (
             <div className="space-y-4">
-              {view.questions.map((q, idx) => (
+              {view.questions.map(
+                (
+                  q: {
+                    id: string;
+                    stem: string;
+                    type: string;
+                    options?: string[];
+                  },
+                  idx: number
+                ) => (
                 <fieldset key={q.id} className="rounded-xl border border-border p-3">
                   <legend className="px-1 text-sm font-medium text-foreground">
                     {idx + 1}. {q.stem}
                   </legend>
                   {q.options?.length ? (
                     <div className="mt-2 space-y-2">
-                      {q.options.map((opt) => (
+                      {q.options.map((opt: string) => (
                         <label key={opt} className="flex min-h-11 items-center gap-2 text-sm">
                           <input
                             type="radio"
@@ -274,7 +295,8 @@ function AssessmentInner() {
                     />
                   )}
                 </fieldset>
-              ))}
+              )
+              )}
               <Button
                 type="button"
                 className="min-h-11"
@@ -330,13 +352,22 @@ function AssessmentInner() {
         <section className="saas-card rounded-2xl border border-border p-4">
           <h2 className="text-sm font-semibold text-foreground">Attempt history</h2>
           <ul className="mt-2 space-y-2 text-xs text-muted">
-            {history.map((h) => (
+            {history.map(
+              (h: {
+                id: string;
+                assessmentId: string;
+                attemptNumber: number;
+                status: string;
+                score?: number | null;
+                passed?: boolean | null;
+              }) => (
               <li key={h.id} className="rounded-lg border border-border px-3 py-2">
                 {h.assessmentId} · attempt {h.attemptNumber} · {h.status}
                 {h.score != null ? ` · ${h.score}%` : ""}
                 {h.passed ? " · passed" : ""}
               </li>
-            ))}
+            )
+            )}
           </ul>
         </section>
       ) : null}
