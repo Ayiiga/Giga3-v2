@@ -22,6 +22,11 @@ import { GhanaAiFutureOpportunitiesChallengesBody } from "@/content/blog/ghana-a
 import { ChatgptVsGeminiVsClaudeGhana2026Body } from "@/content/blog/chatgpt-vs-gemini-vs-claude-ghana-2026";
 import { MakeMoneyWithAiGhana2026Body } from "@/content/blog/make-money-with-ai-ghana-2026";
 import { AfricaAiThatSolvesRealProblemsBody } from "@/content/blog/africa-ai-that-solves-real-problems";
+import { HowToStartLearningCodingInGhanaBody } from "@/content/blog/how-to-start-learning-coding-in-ghana";
+import { OneMillionCodersCoursesSkillsCareersBody } from "@/content/blog/one-million-coders-ghana-courses-skills-careers";
+import { AiSkillsEveryGhanaianStudent2026Body } from "@/content/blog/ai-skills-every-ghanaian-student-should-learn-2026";
+import { CodingVsAiBeginnersBody } from "@/content/blog/coding-vs-ai-which-skill-beginners-learn-first";
+import { HowToBuildFirstSoftwareProjectBody } from "@/content/blog/how-to-build-first-software-project-beginner-ghana";
 import type { ComponentType } from "react";
 
 export type BlogArticleBodyProps = {
@@ -52,6 +57,11 @@ const BODY_BY_SLUG: Record<string, { Body: ComponentType<BlogArticleBodyProps>; 
     "chatgpt-vs-gemini-vs-claude-ghana-2026": ChatgptVsGeminiVsClaudeGhana2026Body,
     "make-money-with-ai-ghana-2026": MakeMoneyWithAiGhana2026Body,
     "africa-ai-that-solves-real-problems": AfricaAiThatSolvesRealProblemsBody,
+    "how-to-start-learning-coding-in-ghana": HowToStartLearningCodingInGhanaBody,
+    "one-million-coders-ghana-courses-skills-careers": OneMillionCodersCoursesSkillsCareersBody,
+    "ai-skills-every-ghanaian-student-should-learn-2026": AiSkillsEveryGhanaianStudent2026Body,
+    "coding-vs-ai-which-skill-beginners-learn-first": CodingVsAiBeginnersBody,
+    "how-to-build-first-software-project-beginner-ghana": HowToBuildFirstSoftwareProjectBody,
   };
 
 function withPath(post: BlogPost, readingTime: string): BlogPostWithPath {

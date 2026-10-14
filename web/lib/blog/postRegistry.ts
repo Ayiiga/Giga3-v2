@@ -342,4 +342,120 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
       "ai for african students",
     ],
   },
+  {
+    slug: "how-to-start-learning-coding-in-ghana",
+    title: "How to Start Learning Coding in Ghana: A Beginner's Guide",
+    seoTitle: "How to Start Learning Coding in Ghana | Beginner Guide",
+    description:
+      "A practical beginner guide to learning coding in Ghana — mindset, first tools, a 30-day plan, local learning paths, and traps to avoid. No hype, no fake job guarantees.",
+    excerpt:
+      "Start coding in Ghana with a light setup, one language for 30 days, tiny projects, and honest habits — whether you are in JHS, SHS, university or switching careers.",
+    category: "Technology",
+    tags: ["learn coding ghana", "beginner programming", "digital skills", "students", "gigalearn"],
+    author: "Giga3 AI Editorial Team",
+    publishedAt: "2026-10-14",
+    featuredImage: "/images/blog/start-learning-coding-ghana.jpg",
+    featuredImageAlt:
+      "Beginner in Ghana learning to code on a laptop at a simple wooden desk with a notebook",
+    keywords: [
+      "how to start learning coding in ghana",
+      "learn programming ghana",
+      "coding for beginners ghana",
+      "beginner coding guide",
+    ],
+  },
+  {
+    slug: "one-million-coders-ghana-courses-skills-careers",
+    title: "One Million Coders Ghana: Courses, Skills and Career Opportunities",
+    seoTitle: "One Million Coders Ghana: Courses, Skills & Careers",
+    description:
+      "A practical map of course families, beginner skills and early career paths around Ghana's One Million Coders digital-skills agenda — verify details on the official portal; no invented statistics.",
+    excerpt:
+      "What course families and skills to expect, how to choose a track, and how to pair training with portfolio practice — without hype or invented enrolment numbers.",
+    category: "Technology",
+    tags: [
+      "one million coders",
+      "digital skills ghana",
+      "coding courses",
+      "tech careers",
+      "youth skills",
+    ],
+    author: "Giga3 AI Editorial Team",
+    publishedAt: "2026-10-14",
+    featuredImage: "/images/blog/one-million-coders-courses-careers.jpg",
+    featuredImageAlt:
+      "Young Ghanaians discussing career paths after digital skills training on a campus courtyard",
+    keywords: [
+      "one million coders ghana courses",
+      "one million coders skills",
+      "digital skills careers ghana",
+      "coding programme ghana careers",
+    ],
+  },
+  {
+    slug: "ai-skills-every-ghanaian-student-should-learn-2026",
+    title: "AI Skills Every Ghanaian Student Should Learn in 2026",
+    seoTitle: "AI Skills Every Ghanaian Student Should Learn (2026)",
+    description:
+      "Transferable AI skills for Ghanaian students in 2026 — clear prompting, verification, study workflows, academic integrity and privacy — not a hype list of app logos.",
+    excerpt:
+      "Learn the AI habits that still matter when apps change: prompting, verification, study workflows, integrity and privacy for JHS, SHS and tertiary learners.",
+    category: "Education",
+    tags: ["ai skills", "ghana students", "study skills", "academic integrity", "gigalearn", "2026"],
+    author: "Giga3 AI Editorial Team",
+    publishedAt: "2026-10-14",
+    featuredImage: "/images/blog/ai-skills-ghanaian-students-2026.jpg",
+    featuredImageAlt:
+      "Ghanaian university students practising note-taking and digital study skills together in a library",
+    keywords: [
+      "ai skills for ghanaian students",
+      "ai study skills 2026",
+      "responsible ai for students ghana",
+      "prompting skills students",
+    ],
+  },
+  {
+    slug: "coding-vs-ai-which-skill-beginners-learn-first",
+    title: "Coding vs AI: Which Skill Should Beginners Learn First?",
+    seoTitle: "Coding vs AI: What Beginners Should Learn First",
+    description:
+      "Should beginners in Ghana learn coding or AI first? A practical decision guide with an 8-week combined path — no false either/or, no guaranteed outcomes.",
+    excerpt:
+      "Choose a starting emphasis for eight weeks: when coding-first wins, when AI literacy-first wins, and how to combine both without skipping real understanding.",
+    category: "Education",
+    tags: ["coding vs ai", "beginners", "digital skills", "students ghana", "learning paths"],
+    author: "Giga3 AI Editorial Team",
+    publishedAt: "2026-10-14",
+    featuredImage: "/images/blog/coding-vs-ai-beginners.jpg",
+    featuredImageAlt:
+      "Two young learners in Ghana comparing coding practice and AI study notes at one desk",
+    keywords: [
+      "coding vs ai for beginners",
+      "learn coding or ai first",
+      "ai literacy vs programming",
+      "beginner digital skills ghana",
+    ],
+  },
+  {
+    slug: "how-to-build-first-software-project-beginner-ghana",
+    title: "How to Build Your First Software Project as a Beginner in Ghana",
+    seoTitle: "Build Your First Software Project (Ghana Beginners)",
+    description:
+      "A beginner checklist for shipping your first software project in Ghana — pick a real problem, scope small, build in five steps, and demo your work without hype.",
+    excerpt:
+      "Ship a tiny, real project: define success, build the happy path, add basic validation, write a README, and get one person to try it.",
+    category: "Technology",
+    tags: ["first project", "beginner coding", "portfolio", "software projects ghana", "students"],
+    author: "Giga3 AI Editorial Team",
+    publishedAt: "2026-10-14",
+    featuredImage: "/images/blog/first-software-project-ghana.jpg",
+    featuredImageAlt:
+      "Beginner developer in Accra showing a small working app on a phone and laptop",
+    keywords: [
+      "first software project for beginners",
+      "beginner coding project ghana",
+      "how to build first app ghana",
+      "student portfolio project",
+    ],
+  },
 ];
