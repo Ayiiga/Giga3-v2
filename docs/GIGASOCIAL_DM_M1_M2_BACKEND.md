@@ -29,7 +29,7 @@ Ordering (desc): higher `createdAt` first; for equal `createdAt`, lexicographica
 
 `nextCursor` is an opaque string encoding `{ createdAt, messageId }` of the oldest item on the page when hasMore; otherwise `null`.
 
-`hasMore` uses `take(limit + 1)`.
+Handlers read a bounded scan window (`lte(createdAt)` + sort/filter by compound order). `hasMore` is true when more filtered rows remain in-window or the scan window was full.
 
 Legacy numeric `cursor` (createdAt-only) is still accepted as a `createdAt` exclusive upper bound with empty `messageId` tie-break (compat); new clients should send the compound string.
 
