@@ -107,3 +107,102 @@ export function sanitizeDmReportReason(raw: string): string {
   if (!reason) throw new ValidationError("Report reason is required.");
   return reason;
 }
+
+/** Shared Forbidden copy when a DM block is in force either direction. */
+export const DM_BLOCKED_MESSAGE = "You cannot message this user.";
+
+/**
+ * M1 — After a block either way, participants must not receive thread list
+ * entries or message bodies. Records stay in the database (no auto-delete).
+ */
+export function shouldHideDmThreadForBlock(blockedEitherWay: boolean): boolean {
+  return blockedEitherWay;
+}
+
+export function assertDmNotBlocked(blockedEitherWay: boolean): void {
+  if (blockedEitherWay) {
+    throw new ForbiddenError(DM_BLOCKED_MESSAGE);
+  }
+}
+
+export type DmRequestStatus = "open" | "accepted" | "declined";
+
+/**
+ * Soft decline state machine (no auto-block).
+ * - Recipient-only transitions open → declined (idempotent if already declined).
+ * - Declined cannot be accepted.
+ * - A later send may reopen declined → open with a new initiator (handler-owned).
+ */
+export function assertCanDeclineDmRequest(args: {
+  requestStatus: DmRequestStatus;
+  initiatedBy: string;
+  actorUserId: string;
+}): { alreadyDeclined: boolean } {
+  const actor = args.actorUserId.trim().toLowerCase();
+  const initiator = args.initiatedBy.trim().toLowerCase();
+  if (actor === initiator) {
+    throw new ForbiddenError("Only the recipient can decline this request.");
+  }
+  if (args.requestStatus === "accepted") {
+    throw new ForbiddenError("This conversation is already accepted.");
+  }
+  if (args.requestStatus === "declined") {
+    return { alreadyDeclined: true };
+  }
+  return { alreadyDeclined: false };
+}
+
+export function assertCanAcceptDmRequest(args: {
+  requestStatus: DmRequestStatus;
+  initiatedBy: string;
+  actorUserId: string;
+}): { alreadyAccepted: boolean } {
+  const actor = args.actorUserId.trim().toLowerCase();
+  const initiator = args.initiatedBy.trim().toLowerCase();
+  if (actor === initiator) {
+    throw new ForbiddenError("Only the recipient can accept this request.");
+  }
+  if (args.requestStatus === "accepted") {
+    return { alreadyAccepted: true };
+  }
+  if (args.requestStatus === "declined") {
+    throw new ForbiddenError("This conversation was declined.");
+  }
+  return { alreadyAccepted: false };
+}
+
+/**
+ * M2 — Deterministic newest-first pagination using createdAt cursor.
+ * Simulates index range: threadId eq + optional createdAt < cursor, then take(limit+1)
+ * to detect hasMore without a false empty trailing page.
+ * Does not scan the full conversation beyond one bounded window.
+ */
+export function paginateDmMessagesByCreatedAtDesc<
+  T extends { messageId: string; createdAt: number },
+>(
+  newestFirst: T[],
+  opts: { cursor?: number; limit: number }
+): { page: T[]; nextCursor: number | null } {
+  const limit = clampDmMessageLimit(opts.limit);
+  const filtered =
+    opts.cursor === undefined
+      ? newestFirst
+      : newestFirst.filter((m) => m.createdAt < opts.cursor!);
+  const window = filtered.slice(0, limit + 1);
+  const hasMore = window.length > limit;
+  const page = hasMore ? window.slice(0, limit) : window;
+  const nextCursor = hasMore ? (page[page.length - 1]?.createdAt ?? null) : null;
+  return { page, nextCursor };
+}
+
+/** Build Convex index range args for listThreadMessages (documentation + tests). */
+export function dmMessageIndexRange(
+  threadId: string,
+  cursor?: number
+): { threadId: string; createdAtLt?: number } {
+  if (cursor === undefined) return { threadId };
+  if (!Number.isFinite(cursor)) {
+    throw new ValidationError("Invalid message cursor.");
+  }
+  return { threadId, createdAtLt: cursor };
+}

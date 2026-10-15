@@ -127,6 +127,35 @@ Participant authorization: every query/mutation requires `requireSession`; recip
 4. Rate limit action `dm_send` in `socialRateLimit.ts`
 5. Focused tests: `tests/gigasocial/gigaSocialDmFoundation.test.ts`
 
-## Next small PR
+## Phase 2E — backend hardening (M1 / M2 / soft decline)
 
-**Phase 2D — DM UI** behind the same flags (Activity | Messages tabs), still no public rollout until QA.
+See `docs/GIGASOCIAL_DM_PHASE2E.md` and `docs/GIGASOCIAL_DM_M1_M2_BACKEND.md`.
+
+### M1 block access matrix (server-enforced)
+
+| Operation | Blocker | Blocked peer | Notes |
+|-----------|---------|--------------|-------|
+| `listMyThreads` | Hidden | Hidden | Thread row retained; not returned |
+| `listThreadMessages` | Forbidden | Forbidden | No bodies; history not deleted |
+| `sendMessage` | Forbidden | Forbidden | Either direction |
+| `acceptRequest` | Forbidden | Forbidden | While block exists |
+| `declineRequest` | Allowed if participant | Allowed if participant | Soft close; does not create a block |
+| `blockUser` | Idempotent | N/A | Declines open request as side effect |
+| `reportMessage` | Allowed | Allowed | Abuse path; response has no peer bodies |
+
+### Soft decline (`declineRequest`)
+
+- Recipient only; not the initiator.
+- `open` → `declined` (idempotent if already declined).
+- `accepted` → Forbidden (cannot soft-decline an accepted chat; use block).
+- Declined cannot be `acceptRequest`ed.
+- Later `sendMessage` (if not blocked) re-opens as `open` with `initiatedBy` = sender (new request).
+- Blocking remains a separate action and still hides history (M1).
+
+### M2 pagination
+
+`listThreadMessages` uses `by_thread_created` with optional `.lt("createdAt", cursor)`, `order("desc")`, `take(limit)`. Empty deep pages are real empties, not false EOF from a newest-only window.
+
+### UI contract note (Phase 2D)
+
+Phase 2D UI still maps “Decline & block” → `blockUser` only. Wire `declineRequest` in a **separate UI PR** (do not mix into this backend PR).
