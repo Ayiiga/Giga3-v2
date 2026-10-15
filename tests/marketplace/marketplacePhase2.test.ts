@@ -73,8 +73,8 @@ describe("marketplace Phase 2 Convex storefront + analytics", () => {
       "";
     expect(block).toContain("toPublicListing(listing)");
     expect(block).toContain("toPublicCreatorProfile(profile)");
-    expect(block).toContain('listing.status === "published"');
-    expect(block).toContain("isListingFileApproved(listing)");
+    expect(block).toContain('eq("status", "published")');
+    expect(block).toContain("isListingFileApproved");
   });
 
   it("sales analytics strips buyer identity and discloses refund limits", () => {
@@ -92,6 +92,7 @@ describe("marketplace Phase 2 Convex storefront + analytics", () => {
     const block =
       marketplaceSrc.match(/export const getCreatorRevenue = query\([\s\S]*?\n}\);/)?.[0] ?? "";
     expect(block).toContain("sales.map((sale) => ({");
+    expect(block).toContain("toSellerRevenueProfile(profile)");
     expect(block).not.toMatch(/buyerId:\s*sale\.buyerId/);
   });
 

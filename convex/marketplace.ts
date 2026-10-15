@@ -10,6 +10,12 @@ import {
 } from "./schema";
 import { marketplaceUploadsEnabled } from "./marketplaceUploadPolicy";
 import { isListingFileApproved } from "./marketplaceListingHelpers";
+import {
+  aggregatePurchaseTotals,
+  clampStorefrontLimit,
+  pickEligibleStorefrontListings,
+  toSellerRevenueProfile,
+} from "./marketplaceCompleteness";
 import { requireEntitlementForEmail } from "./entitlements";
 import {
   toCreatorListing,
@@ -167,6 +173,7 @@ export const getMyListings = query({
 /**
  * Public storefront catalogue for a creator handle.
  * Only published + file-approved listings; never exposes storage IDs or seller email.
+ * Uses by_creator_status so drafts/archived cannot crowd out eligible products.
  */
 export const listPublishedByHandle = query({
   args: {
@@ -187,20 +194,21 @@ export const listPublishedByHandle = query({
       .first();
     if (!profile) return { profile: null, listings: [] as const };
 
-    const cap = Math.min(args.limit ?? 48, 80);
-    const rows = await ctx.db
+    const cap = clampStorefrontLimit(args.limit);
+    // Published-only index stream — drafts/archived never consume the result budget.
+    const publishedRows = await ctx.db
       .query("marketplaceListings")
-      .withIndex("by_creator", (q) => q.eq("creatorId", profile.userId))
-      .order("desc")
-      .take(120);
-
-    const listings = rows
-      .filter(
-        (listing) =>
-          listing.status === "published" && isListingFileApproved(listing)
+      .withIndex("by_creator_status", (q) =>
+        q.eq("creatorId", profile.userId).eq("status", "published")
       )
-      .slice(0, cap)
-      .map((listing) => toPublicListing(listing));
+      .order("desc")
+      .collect();
+
+    const listings = pickEligibleStorefrontListings(
+      publishedRows,
+      cap,
+      isListingFileApproved
+    ).map((listing) => toPublicListing(listing));
 
     return {
       profile: toPublicCreatorProfile(profile),
@@ -640,9 +648,9 @@ export const getCreatorRevenue = query({
       .order("desc")
       .take(30);
 
-    // Strip buyer emails from the seller dashboard payload.
+    // Strip buyer emails and sensitive verification/location fields.
     return {
-      profile,
+      profile: toSellerRevenueProfile(profile),
       payouts,
       sales: sales.map((sale) => ({
         _id: sale._id,
@@ -662,6 +670,9 @@ export const getCreatorRevenue = query({
  * Seller sales analytics. marketplacePurchases rows are written only after
  * successful Paystack fulfilment (pending/failed charges never appear here).
  * Refunds are not modeled in the current schema — disclosed in the response.
+ *
+ * Date filtering uses the by_creator(createdAt) index range + collect() so
+ * totals are never silently truncated by a pre-filter take(N).
  */
 export const getCreatorSalesAnalytics = query({
   args: {
@@ -680,26 +691,31 @@ export const getCreatorSalesAnalytics = query({
     const fromMs = args.fromMs ?? 0;
     const toMs = args.toMs ?? Number.MAX_SAFE_INTEGER;
 
-    const sales = (
-      await ctx.db
-        .query("marketplacePurchases")
-        .withIndex("by_creator", (q) => q.eq("creatorId", email))
-        .order("desc")
-        .take(200)
-    ).filter((sale) => sale.createdAt >= fromMs && sale.createdAt <= toMs);
+    // Indexed range on (creatorId, createdAt) — every matching purchase.
+    const sales = await ctx.db
+      .query("marketplacePurchases")
+      .withIndex("by_creator", (q) =>
+        q.eq("creatorId", email).gte("createdAt", fromMs).lte("createdAt", toMs)
+      )
+      .order("desc")
+      .collect();
 
-    let grossSalesGhs = 0;
-    let platformFeesGhs = 0;
-    let creatorEarningsGhs = 0;
+    const totals = aggregatePurchaseTotals(
+      sales.map((sale) => ({
+        listingId: String(sale.listingId),
+        amountGhs: sale.amountGhs,
+        platformFeeGhs: sale.platformFeeGhs,
+        creatorEarningsGhs: sale.creatorEarningsGhs,
+        createdAt: sale.createdAt,
+      }))
+    );
+
     const byListing = new Map<
       string,
       { listingId: string; purchaseCount: number; grossGhs: number; earningsGhs: number; feesGhs: number }
     >();
 
     for (const sale of sales) {
-      grossSalesGhs += sale.amountGhs;
-      platformFeesGhs += sale.platformFeeGhs;
-      creatorEarningsGhs += sale.creatorEarningsGhs;
       const key = String(sale.listingId);
       const row = byListing.get(key) ?? {
         listingId: key,
@@ -752,10 +768,10 @@ export const getCreatorSalesAnalytics = query({
 
     return {
       summary: {
-        grossSalesGhs,
-        purchaseCount: sales.length,
-        platformFeesGhs,
-        creatorEarningsGhs,
+        grossSalesGhs: totals.grossSalesGhs,
+        purchaseCount: totals.purchaseCount,
+        platformFeesGhs: totals.platformFeesGhs,
+        creatorEarningsGhs: totals.creatorEarningsGhs,
         payoutBalanceGhs: profile.payoutBalanceGhs,
         lifetimeSales: profile.totalSales,
         lifetimeEarningsGhs: profile.totalEarningsGhs,
