@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { formatUnreadBadge } from "@/lib/gigasocial/notificationInbox";
 import type { GigaSocialSection } from "@/lib/gigasocial/sections";
 import {
   recordAppOpen,
@@ -21,6 +22,7 @@ const CONTEXT_NAV_ITEMS: {
   { id: "feed", label: "Feed", section: "feed", icon: Home },
   { id: "discover", label: "Discover", section: "discover", icon: Compass },
   { id: "create", label: "Create", create: true, icon: Plus },
+  /** Label stays "Inbox"; content is the notifications activity panel until DMs ship. */
   { id: "notifications", label: "Inbox", section: "notifications", icon: Bell },
   { id: "profile", label: "Profile", section: "profile", icon: User },
 ];
@@ -89,7 +91,13 @@ export const GigaSocialContextNav = memo(function GigaSocialContextNav({
               )}
               aria-current={active ? "true" : undefined}
               aria-label={
-                showAttention ? `${item.label} (welcome back)` : item.label
+                item.id === "notifications"
+                  ? unread > 0
+                    ? `Notifications inbox, ${unread} unread`
+                    : "Notifications inbox"
+                  : showAttention
+                    ? `${item.label} (welcome back)`
+                    : item.label
               }
               onClick={() => {
                 if (item.id === "feed") setAttention(false);
@@ -100,7 +108,7 @@ export const GigaSocialContextNav = memo(function GigaSocialContextNav({
                 <Icon className="h-4 w-4" aria-hidden />
                 {item.id === "notifications" && unread > 0 ? (
                   <span className="absolute -right-2 -top-1 rounded-full bg-[var(--gs-gold)] px-1 text-[9px] font-bold text-[#0b1220]">
-                    {unread > 9 ? "9+" : unread}
+                    {formatUnreadBadge(unread)}
                   </span>
                 ) : null}
                 {showAttention ? (

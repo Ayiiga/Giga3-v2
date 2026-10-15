@@ -66,7 +66,7 @@ export const GIGASOCIAL_SECTIONS: GigaSocialSectionDefinition[] = [
   {
     id: "notifications",
     label: "Notifications",
-    description: "Likes, comments, and community updates",
+    description: "Activity inbox — likes, comments, and community updates (not DMs)",
     icon: Bell,
   },
 ];
