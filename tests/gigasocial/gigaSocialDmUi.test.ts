@@ -78,10 +78,11 @@ describe("GigaSocial DM UI — sections and wiring", () => {
       expect(dmApiSrc).toContain(`export const ${name}`);
       expect(panelSrc).toContain(`api.gigaSocialDm.${name}`);
     }
-    // Soft decline does not exist — UI must use blockUser
-    expect(dmApiSrc).not.toContain("export const declineRequest");
+    // Soft decline exists on the server; Phase 2D UI still uses Decline & block → blockUser
+    expect(dmApiSrc).toContain("export const declineRequest");
     expect(panelSrc).toContain("declineAndBlock");
     expect(panelSrc).toContain("blockUser");
+    expect(panelSrc).not.toContain("api.gigaSocialDm.declineRequest");
   });
 
   it("uses sessionToken for mutations and never client identity as auth", () => {

@@ -19,11 +19,18 @@ import {
   clampDmThreadLimit,
   DM_BLOCKED_MESSAGE,
   dmPreviewFromBody,
+  encodeDmMessageCursor,
+  encodeDmThreadCursor,
+  isDmMessageOlderThanCursor,
+  isDmThreadOlderThanCursor,
   isDmThreadParticipant,
   normalizeDmParticipantPair,
+  parseDmMessageCursor,
+  parseDmThreadCursor,
   sanitizeDmBody,
   sanitizeDmReportReason,
-  SOCIAL_DM_THREAD_PAGE_MAX,
+  SOCIAL_DM_MESSAGE_SCAN_MAX,
+  SOCIAL_DM_THREAD_SCAN_MAX,
   shouldHideDmThreadForBlock,
 } from "./gigaSocialDmPolicy";
 import { consumeSocialWriteRateLimit } from "./socialRateLimit";
@@ -98,38 +105,67 @@ function toPublicThread(thread: ThreadDoc, viewerId: string) {
 /**
  * List DM threads for the authenticated user.
  * M1: excludes threads where a block exists either way with the other participant.
+ * Bounded scan + opaque cursor so blocked rows cannot permanently underfill pages.
  */
 export const listMyThreads = query({
   args: {
     sessionToken: v.string(),
     limit: v.optional(v.number()),
+    /** Opaque `${updatedAt}:${threadId}` — exclusive (older) compound cursor. */
+    cursor: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     assertGigaSocialDmEnabled();
     const userId = await requireDmUserId(args.sessionToken, ctx);
     const cap = clampDmThreadLimit(args.limit);
-    // Over-fetch bounded so block filtering still fills a page when possible.
-    const fetchCap = Math.min(SOCIAL_DM_THREAD_PAGE_MAX, Math.max(cap * 3, cap));
+    const threadCursor = parseDmThreadCursor(args.cursor);
+    const scanCap = SOCIAL_DM_THREAD_SCAN_MAX;
 
     const [asA, asB] = await Promise.all([
       ctx.db
         .query("socialDmThreads")
-        .withIndex("by_participantA_updated", (q) => q.eq("participantAId", userId))
+        .withIndex("by_participantA_updated", (q) => {
+          const base = q.eq("participantAId", userId);
+          if (!threadCursor) return base;
+          return base.lte("updatedAt", threadCursor.updatedAt);
+        })
         .order("desc")
-        .take(fetchCap),
+        .take(scanCap),
       ctx.db
         .query("socialDmThreads")
-        .withIndex("by_participantB_updated", (q) => q.eq("participantBId", userId))
+        .withIndex("by_participantB_updated", (q) => {
+          const base = q.eq("participantBId", userId);
+          if (!threadCursor) return base;
+          return base.lte("updatedAt", threadCursor.updatedAt);
+        })
         .order("desc")
-        .take(fetchCap),
+        .take(scanCap),
     ]);
 
+    const seen = new Set<string>();
     const merged = [...asA, ...asB]
-      .filter((t) => isDmThreadParticipant(t, userId))
-      .sort((a, b) => b.updatedAt - a.updatedAt);
+      .filter((t) => {
+        if (seen.has(t._id)) return false;
+        seen.add(t._id);
+        return isDmThreadParticipant(t, userId);
+      })
+      .sort(
+        (a, b) =>
+          b.updatedAt - a.updatedAt ||
+          (a._id < b._id ? 1 : a._id > b._id ? -1 : 0)
+      );
+
+    const afterCursor = threadCursor
+      ? merged.filter((t) =>
+          isDmThreadOlderThanCursor(
+            { updatedAt: t.updatedAt, threadId: t._id },
+            threadCursor
+          )
+        )
+      : merged;
 
     const visible: ThreadDoc[] = [];
-    for (const thread of merged) {
+    for (const thread of afterCursor) {
       if (visible.length >= cap) break;
       const other = otherParticipant(thread, userId);
       const blocked = await findBlockEitherWay(ctx, userId, other);
@@ -137,8 +173,20 @@ export const listMyThreads = query({
       visible.push(thread);
     }
 
+    const scanHitCap = asA.length === scanCap || asB.length === scanCap;
+    const hasMore =
+      visible.length === cap &&
+      (afterCursor.length > visible.length || scanHitCap);
+
     return {
       threads: visible.map((t) => toPublicThread(t, userId)),
+      nextCursor:
+        hasMore && visible.length > 0
+          ? encodeDmThreadCursor({
+              updatedAt: visible[visible.length - 1]!.updatedAt,
+              threadId: visible[visible.length - 1]!._id,
+            })
+          : null,
     };
   },
 });
@@ -146,15 +194,18 @@ export const listMyThreads = query({
 /**
  * List messages in a thread. Participant-only.
  * M1: Forbidden when blocked either way (no bodies returned).
- * M2: Index-range cursor on createdAt (no post-filter of a newest-only window).
+ * M2: Compound cursor (createdAt, messageId) — no skips on timestamp ties.
  */
 export const listThreadMessages = query({
   args: {
     sessionToken: v.string(),
     threadId: v.id("socialDmThreads"),
     limit: v.optional(v.number()),
-    /** Exclusive upper bound on createdAt (newest-first pages). */
-    cursor: v.optional(v.number()),
+    /**
+     * Compound cursor string `${createdAt}:${messageId}`, or legacy numeric
+     * createdAt (exclusive upper bound, same-ts peers excluded).
+     */
+    cursor: v.optional(v.union(v.string(), v.number())),
   },
   handler: async (ctx, args) => {
     assertGigaSocialDmEnabled();
@@ -163,24 +214,40 @@ export const listThreadMessages = query({
     assertDmThreadParticipant(thread, userId);
     await assertPairNotBlocked(ctx, thread.participantAId, thread.participantBId);
 
-    if (args.cursor !== undefined && !Number.isFinite(args.cursor)) {
-      throw new ValidationError("Invalid message cursor.");
-    }
-
+    const messageCursor = parseDmMessageCursor(args.cursor);
     const cap = clampDmMessageLimit(args.limit);
-    // take(cap+1) detects hasMore without emitting a false empty trailing page.
-    const rows = await ctx.db
+    const scanCap = Math.min(
+      SOCIAL_DM_MESSAGE_SCAN_MAX,
+      Math.max(cap + 50, cap * 3)
+    );
+
+    const raw = await ctx.db
       .query("socialDmMessages")
       .withIndex("by_thread_created", (q) => {
         const base = q.eq("threadId", args.threadId);
-        if (args.cursor === undefined) return base;
-        return base.lt("createdAt", args.cursor);
+        if (!messageCursor) return base;
+        // Inclusive createdAt so same-timestamp peers can be tie-broken by id.
+        return base.lte("createdAt", messageCursor.createdAt);
       })
       .order("desc")
-      .take(cap + 1);
+      .take(scanCap);
 
-    const hasMore = rows.length > cap;
-    const page = hasMore ? rows.slice(0, cap) : rows;
+    const sorted = [...raw].sort(
+      (a, b) =>
+        b.createdAt - a.createdAt ||
+        (a._id < b._id ? 1 : a._id > b._id ? -1 : 0)
+    );
+    const filtered = messageCursor
+      ? sorted.filter((m) =>
+          isDmMessageOlderThanCursor(
+            { messageId: m._id, createdAt: m.createdAt },
+            messageCursor
+          )
+        )
+      : sorted;
+
+    const page = filtered.slice(0, cap);
+    const hasMore = filtered.length > cap || raw.length === scanCap;
 
     return {
       messages: page.map((m) => ({
@@ -191,7 +258,13 @@ export const listThreadMessages = query({
         createdAt: m.createdAt,
         mine: normalizeUserId(m.senderId) === userId,
       })),
-      nextCursor: hasMore ? page[page.length - 1]?.createdAt ?? null : null,
+      nextCursor:
+        hasMore && page.length > 0
+          ? encodeDmMessageCursor({
+              createdAt: page[page.length - 1]!.createdAt,
+              messageId: page[page.length - 1]!._id,
+            })
+          : null,
     };
   },
 });

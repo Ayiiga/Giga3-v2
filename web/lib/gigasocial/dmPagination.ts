@@ -1,35 +1,44 @@
 /**
- * Safe DM history pagination helpers for Phase 2C M2.
+ * Safe DM history pagination helpers.
+ * Compound cursors are opaque strings (`createdAt:messageId`).
  * Never treat an empty filtered page as end-of-history.
  */
 
 export type DmHistoryPageResult = {
-  /** Append these (already oldest→newest or newest→oldest — caller decides). */
   messages: Array<{ messageId: string; createdAt: number }>;
-  nextCursor: number | null;
+  /** Compound cursor string, or null when exhausted. */
+  nextCursor: string | number | null;
 };
 
 export type DmHistoryLoadOutcome =
-  | { kind: "appended"; nextCursor: number | null; exhausted: boolean }
+  | { kind: "appended"; nextCursor: string | null; exhausted: boolean }
   | { kind: "empty_not_exhausted"; retry: true }
   | { kind: "exhausted" };
+
+function normalizeCursor(
+  cursor: string | number | null | undefined
+): string | null {
+  if (cursor == null) return null;
+  return String(cursor);
+}
 
 /**
  * Interpret a page load when fetching older messages with a cursor.
  * - Non-empty + null cursor → end of history
  * - Non-empty + cursor → more may exist
- * - Empty while a cursor was requested → NOT end (M2); caller should retry
- * - Empty on first load (no prior cursor) → exhausted (no messages)
+ * - Empty while a cursor was requested → NOT end; caller should retry
+ * - Empty on first load (no prior cursor) → exhausted
  */
 export function interpretDmHistoryPage(
   page: DmHistoryPageResult,
   opts: { usedCursor: boolean }
 ): DmHistoryLoadOutcome {
   if (page.messages.length > 0) {
-    if (page.nextCursor == null) {
+    const next = normalizeCursor(page.nextCursor);
+    if (next == null) {
       return { kind: "appended", nextCursor: null, exhausted: true };
     }
-    return { kind: "appended", nextCursor: page.nextCursor, exhausted: false };
+    return { kind: "appended", nextCursor: next, exhausted: false };
   }
   if (opts.usedCursor) {
     return { kind: "empty_not_exhausted", retry: true };

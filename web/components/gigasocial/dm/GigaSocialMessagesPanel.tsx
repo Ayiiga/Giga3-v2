@@ -492,7 +492,7 @@ const DmConversation = memo(function DmConversation({
   }, [threadsQuery?.threads, threadId]);
 
   const [messages, setMessages] = useState<DmMessage[]>([]);
-  const [nextCursor, setNextCursor] = useState<number | null>(null);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [exhausted, setExhausted] = useState(false);
   const [olderError, setOlderError] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
@@ -508,9 +508,9 @@ const DmConversation = memo(function DmConversation({
   const pendingClientId = useRef<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // First page via useQuery (newest). Older pages via cursor args.
-  // M2: empty pages with a cursor are NOT treated as end-of-history.
-  const [historyCursor, setHistoryCursor] = useState<number | undefined>(undefined);
+  // First page via useQuery (newest). Older pages via compound cursor string.
+  // Empty pages with a cursor are NOT treated as end-of-history.
+  const [historyCursor, setHistoryCursor] = useState<string | undefined>(undefined);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const page = useQuery(api.gigaSocialDm.listThreadMessages, {

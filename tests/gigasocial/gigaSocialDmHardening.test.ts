@@ -66,18 +66,21 @@ describe("Phase 2E M1 — block policy", () => {
 });
 
 describe("Phase 2E M2 — index-range pagination", () => {
-  it("builds createdAtLt range for cursors", () => {
+  it("builds legacy index range helper for cursors", () => {
     expect(dmMessageIndexRange("t1")).toEqual({ threadId: "t1" });
-    expect(dmMessageIndexRange("t1", 50)).toEqual({ threadId: "t1", createdAtLt: 50 });
+    expect(dmMessageIndexRange("t1", 50)).toEqual({
+      threadId: "t1",
+      createdAtLte: 50,
+    });
     expect(() => dmMessageIndexRange("t1", Number.NaN)).toThrow(ValidationError);
   });
 
-  it("uses index .lt(createdAt) in listThreadMessages (not post-filter take window)", () => {
+  it("uses compound cursor helpers in listThreadMessages (not cap+8 post-filter)", () => {
     const block =
       dmSrc.match(/export const listThreadMessages = query\([\s\S]*?\n\}\);/)?.[0] ?? "";
-    expect(block).toContain('.lt("createdAt"');
+    expect(block).toContain('lte("createdAt"');
+    expect(block).toContain("parseDmMessageCursor");
     expect(block).not.toContain("cap + 8");
-    expect(block).not.toContain("rows.filter((m) => m.createdAt < args.cursor");
     expect(block).toContain("assertPairNotBlocked");
   });
 
@@ -85,7 +88,7 @@ describe("Phase 2E M2 — index-range pagination", () => {
     const all = makeMessages(120);
     const pageSize = 30;
     const seen = new Set<string>();
-    let cursor: number | undefined;
+    let cursor: string | undefined;
     let pages = 0;
     for (;;) {
       const { page, nextCursor } = paginateDmMessagesByCreatedAtDesc(all, {
@@ -98,7 +101,6 @@ describe("Phase 2E M2 — index-range pagination", () => {
         seen.add(m.messageId);
       }
       if (nextCursor == null) break;
-      // Repeated cursor must be stable
       const again = paginateDmMessagesByCreatedAtDesc(all, {
         cursor: nextCursor,
         limit: pageSize,
@@ -116,8 +118,7 @@ describe("Phase 2E M2 — index-range pagination", () => {
     expect(pages).toBe(4);
   });
 
-  it("empty intermediate cursor window is a real empty page, not false EOF from newest-only take", () => {
-    // Messages clustered far below a high cursor — range query returns them.
+  it("legacy numeric cursor still pages older unique timestamps", () => {
     const all = makeMessages(10, 100);
     const { page, nextCursor } = paginateDmMessagesByCreatedAtDesc(all, {
       cursor: 10_000,
@@ -125,7 +126,6 @@ describe("Phase 2E M2 — index-range pagination", () => {
     });
     expect(page.length).toBe(5);
     expect(nextCursor).not.toBeNull();
-    // Boundary: cursor equal to oldest createdAt → empty (exclusive)
     const atOldest = paginateDmMessagesByCreatedAtDesc(all, {
       cursor: all[all.length - 1]!.createdAt,
       limit: 5,

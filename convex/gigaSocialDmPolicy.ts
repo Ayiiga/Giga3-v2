@@ -171,38 +171,161 @@ export function assertCanAcceptDmRequest(args: {
   return { alreadyAccepted: false };
 }
 
+/** Max docs read from by_thread_created per listThreadMessages call (bounded). */
+export const SOCIAL_DM_MESSAGE_SCAN_MAX = 200;
+
+/** Max thread docs scanned per listMyThreads call across both participant indexes. */
+export const SOCIAL_DM_THREAD_SCAN_MAX = 120;
+
+export type DmMessageCursor = { createdAt: number; messageId: string };
+
 /**
- * M2 — Deterministic newest-first pagination using createdAt cursor.
- * Simulates index range: threadId eq + optional createdAt < cursor, then take(limit+1)
- * to detect hasMore without a false empty trailing page.
- * Does not scan the full conversation beyond one bounded window.
+ * Encode compound message cursor. Format: `${createdAt}:${messageId}`.
+ * Legacy numeric cursors are parsed via parseDmMessageCursor.
+ */
+export function encodeDmMessageCursor(cursor: DmMessageCursor): string {
+  return `${cursor.createdAt}:${cursor.messageId}`;
+}
+
+/**
+ * Parse cursor from clients.
+ * - string `createdAt:messageId` → compound
+ * - finite number → legacy exclusive createdAt (messageId "")
+ */
+export function parseDmMessageCursor(
+  raw: string | number | undefined
+): DmMessageCursor | undefined {
+  if (raw === undefined || raw === null || raw === "") return undefined;
+  if (typeof raw === "number") {
+    if (!Number.isFinite(raw)) throw new ValidationError("Invalid message cursor.");
+    return { createdAt: raw, messageId: "" };
+  }
+  const s = String(raw);
+  // Legacy: pure numeric string
+  if (/^\d+(\.\d+)?$/.test(s)) {
+    const n = Number(s);
+    if (!Number.isFinite(n)) throw new ValidationError("Invalid message cursor.");
+    return { createdAt: n, messageId: "" };
+  }
+  const colon = s.indexOf(":");
+  if (colon <= 0) throw new ValidationError("Invalid message cursor.");
+  const createdAt = Number(s.slice(0, colon));
+  const messageId = s.slice(colon + 1);
+  if (!Number.isFinite(createdAt) || !messageId) {
+    throw new ValidationError("Invalid message cursor.");
+  }
+  return { createdAt, messageId };
+}
+
+/**
+ * Newest-first ordering: higher createdAt first; tie-break by messageId desc.
+ * Returns true if `m` is strictly older than `cursor` (should appear on later pages).
+ */
+export function isDmMessageOlderThanCursor(
+  m: { messageId: string; createdAt: number },
+  cursor: DmMessageCursor
+): boolean {
+  if (m.createdAt < cursor.createdAt) return true;
+  if (m.createdAt > cursor.createdAt) return false;
+  // Same timestamp: lexicographically smaller id is "older" in our desc tie-break
+  // (we page toward smaller ids). Empty legacy messageId means exclude all same-ts.
+  if (cursor.messageId === "") return false;
+  return m.messageId < cursor.messageId;
+}
+
+/**
+ * M2 — Deterministic newest-first pagination with compound (createdAt, messageId) cursor.
+ * Does not scan beyond one bounded window of newest-first candidates.
  */
 export function paginateDmMessagesByCreatedAtDesc<
   T extends { messageId: string; createdAt: number },
 >(
   newestFirst: T[],
-  opts: { cursor?: number; limit: number }
-): { page: T[]; nextCursor: number | null } {
+  opts: { cursor?: DmMessageCursor | number | string; limit: number }
+): { page: T[]; nextCursor: string | null } {
   const limit = clampDmMessageLimit(opts.limit);
-  const filtered =
+  const cursor =
     opts.cursor === undefined
-      ? newestFirst
-      : newestFirst.filter((m) => m.createdAt < opts.cursor!);
+      ? undefined
+      : typeof opts.cursor === "object"
+        ? opts.cursor
+        : parseDmMessageCursor(opts.cursor);
+  const filtered = cursor
+    ? newestFirst.filter((m) => isDmMessageOlderThanCursor(m, cursor))
+    : newestFirst;
   const window = filtered.slice(0, limit + 1);
   const hasMore = window.length > limit;
   const page = hasMore ? window.slice(0, limit) : window;
-  const nextCursor = hasMore ? (page[page.length - 1]?.createdAt ?? null) : null;
+  const nextCursor =
+    hasMore && page.length > 0
+      ? encodeDmMessageCursor({
+          createdAt: page[page.length - 1]!.createdAt,
+          messageId: page[page.length - 1]!.messageId,
+        })
+      : null;
   return { page, nextCursor };
 }
 
-/** Build Convex index range args for listThreadMessages (documentation + tests). */
+/** @deprecated Use compound cursor helpers; kept for source-compat tests. */
 export function dmMessageIndexRange(
   threadId: string,
   cursor?: number
-): { threadId: string; createdAtLt?: number } {
+): { threadId: string; createdAtLt?: number; createdAtLte?: number } {
   if (cursor === undefined) return { threadId };
   if (!Number.isFinite(cursor)) {
     throw new ValidationError("Invalid message cursor.");
   }
-  return { threadId, createdAtLt: cursor };
+  return { threadId, createdAtLte: cursor };
+}
+
+export type DmThreadCursor = { updatedAt: number; threadId: string };
+
+export function encodeDmThreadCursor(cursor: DmThreadCursor): string {
+  return `${cursor.updatedAt}:${cursor.threadId}`;
+}
+
+export function parseDmThreadCursor(raw?: string): DmThreadCursor | undefined {
+  if (!raw?.trim()) return undefined;
+  const colon = raw.indexOf(":");
+  if (colon <= 0) throw new ValidationError("Invalid thread cursor.");
+  const updatedAt = Number(raw.slice(0, colon));
+  const threadId = raw.slice(colon + 1);
+  if (!Number.isFinite(updatedAt) || !threadId) {
+    throw new ValidationError("Invalid thread cursor.");
+  }
+  return { updatedAt, threadId };
+}
+
+export function isDmThreadOlderThanCursor(
+  t: { updatedAt: number; threadId: string },
+  cursor: DmThreadCursor
+): boolean {
+  if (t.updatedAt < cursor.updatedAt) return true;
+  if (t.updatedAt > cursor.updatedAt) return false;
+  return t.threadId < cursor.threadId;
+}
+
+/**
+ * Filter/sort thread candidates for listMyThreads (block filtering applied by caller).
+ */
+export function paginateDmThreadsByUpdatedAtDesc<
+  T extends { threadId: string; updatedAt: number },
+>(
+  newestFirst: T[],
+  opts: { cursor?: DmThreadCursor; limit: number; scanHitCap: boolean }
+): { page: T[]; nextCursor: string | null } {
+  const limit = clampDmThreadLimit(opts.limit);
+  const filtered = opts.cursor
+    ? newestFirst.filter((t) => isDmThreadOlderThanCursor(t, opts.cursor!))
+    : newestFirst;
+  const page = filtered.slice(0, limit);
+  const hasMore = filtered.length > limit || (opts.scanHitCap && page.length === limit);
+  const nextCursor =
+    hasMore && page.length > 0
+      ? encodeDmThreadCursor({
+          updatedAt: page[page.length - 1]!.updatedAt,
+          threadId: page[page.length - 1]!.threadId,
+        })
+      : null;
+  return { page, nextCursor };
 }
