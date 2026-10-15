@@ -122,6 +122,24 @@ export const socialNotificationTypeValidator = v.union(
   v.literal("creator")
 );
 
+/** GigaSocial DM thread request gate (Phase 2C foundation). */
+export const socialDmRequestStatusValidator = v.union(
+  v.literal("open"),
+  v.literal("accepted"),
+  v.literal("declined")
+);
+
+export const socialDmDeliveryStateValidator = v.union(
+  v.literal("sent"),
+  v.literal("delivered")
+);
+
+export const socialDmReportStatusValidator = v.union(
+  v.literal("open"),
+  v.literal("reviewed"),
+  v.literal("dismissed")
+);
+
 /** Enterprise / education workspace — isolated from consumer users table. */
 export const orgTypeValidator = v.union(
   v.literal("school"),
@@ -1087,6 +1105,62 @@ export default defineSchema({
     .index("by_follower", ["followerId"])
     .index("by_following", ["followingId"])
     .index("by_pair", ["followerId", "followingId"]),
+
+  /**
+   * GigaSocial 1:1 DM threads (Phase 2C — additive; flagged off by default).
+   * participantAId is the lexicographically smaller userId for stable pair keys.
+   */
+  socialDmThreads: defineTable({
+    participantAId: v.string(),
+    participantBId: v.string(),
+    initiatedBy: v.string(),
+    requestStatus: socialDmRequestStatusValidator,
+    lastMessageAt: v.optional(v.number()),
+    lastMessagePreview: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_pair", ["participantAId", "participantBId"])
+    .index("by_participantA_updated", ["participantAId", "updatedAt"])
+    .index("by_participantB_updated", ["participantBId", "updatedAt"]),
+
+  socialDmMessages: defineTable({
+    threadId: v.id("socialDmThreads"),
+    senderId: v.string(),
+    body: v.string(),
+    clientId: v.optional(v.string()),
+    deliveryState: socialDmDeliveryStateValidator,
+    createdAt: v.number(),
+  })
+    .index("by_thread_created", ["threadId", "createdAt"])
+    .index("by_sender_created", ["senderId", "createdAt"])
+    .index("by_thread_client", ["threadId", "clientId"]),
+
+  socialDmReads: defineTable({
+    threadId: v.id("socialDmThreads"),
+    userId: v.string(),
+    lastReadAt: v.number(),
+  }).index("by_thread_user", ["threadId", "userId"]),
+
+  socialDmBlocks: defineTable({
+    blockerId: v.string(),
+    blockedId: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_blocker", ["blockerId", "createdAt"])
+    .index("by_pair", ["blockerId", "blockedId"]),
+
+  socialDmReports: defineTable({
+    reporterId: v.string(),
+    threadId: v.optional(v.id("socialDmThreads")),
+    messageId: v.optional(v.id("socialDmMessages")),
+    reason: v.string(),
+    details: v.optional(v.string()),
+    status: socialDmReportStatusValidator,
+    createdAt: v.number(),
+  })
+    .index("by_reporter_created", ["reporterId", "createdAt"])
+    .index("by_status", ["status", "createdAt"]),
 
   socialLiveStreams: defineTable({
     hostId: v.string(),
