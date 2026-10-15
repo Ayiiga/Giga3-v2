@@ -38,12 +38,21 @@ export const searchListings = query({
   args: {
     query: v.optional(v.string()),
     category: v.optional(v.string()),
+    /** Comma-separated legacy categories for discovery collections. */
+    categoriesAny: v.optional(v.array(v.string())),
     productType: v.optional(marketplaceProductTypeValidator),
+    /** Match any of these product types (discovery collections). */
+    productTypesAny: v.optional(v.array(marketplaceProductTypeValidator)),
+    minPriceGhs: v.optional(v.number()),
+    maxPriceGhs: v.optional(v.number()),
     verifiedOnly: v.optional(v.boolean()),
     limit: v.optional(v.number()),
+    /** Skip first N purchasable rows after filters (simple pagination). */
+    offset: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const cap = Math.min(args.limit ?? 40, 80);
+    const offset = Math.max(0, Math.min(args.offset ?? 0, 400));
     let rows = await ctx.db
       .query("marketplaceListings")
       .withIndex("by_status", (q) => q.eq("status", "published"))
@@ -54,8 +63,30 @@ export const searchListings = query({
     if (args.category) {
       rows = rows.filter((r) => r.category === args.category);
     }
+    // Discovery collections pass both arrays and mean OR (category or product type).
+    const catsAny = args.categoriesAny?.filter(Boolean) ?? [];
+    const typesAny = args.productTypesAny ?? [];
+    if (catsAny.length > 0 && typesAny.length > 0) {
+      const catSet = new Set(catsAny);
+      const typeSet = new Set(typesAny);
+      rows = rows.filter(
+        (r) => catSet.has(r.category) || typeSet.has(r.productType)
+      );
+    } else if (catsAny.length > 0) {
+      const set = new Set(catsAny);
+      rows = rows.filter((r) => set.has(r.category));
+    } else if (typesAny.length > 0) {
+      const set = new Set(typesAny);
+      rows = rows.filter((r) => set.has(r.productType));
+    }
     if (args.productType) {
       rows = rows.filter((r) => r.productType === args.productType);
+    }
+    if (args.minPriceGhs != null) {
+      rows = rows.filter((r) => r.priceGhs >= args.minPriceGhs!);
+    }
+    if (args.maxPriceGhs != null) {
+      rows = rows.filter((r) => r.priceGhs <= args.maxPriceGhs!);
     }
     if (q) {
       rows = rows.filter((r) => {
@@ -65,7 +96,8 @@ export const searchListings = query({
     }
 
     const creators = new Map<string, { displayName: string; handle: string; verified: boolean }>();
-    for (const row of rows.slice(0, cap)) {
+    // Load creator profiles for every candidate before verified-only filtering.
+    for (const row of rows) {
       if (creators.has(row.creatorId)) continue;
       const profile = await ctx.db
         .query("creatorProfiles")
@@ -88,7 +120,9 @@ export const searchListings = query({
       (listing) => listing.status === "published" && isListingFileApproved(listing)
     );
 
-    return purchasable.slice(0, cap).map((listing) => ({
+    const page = purchasable.slice(offset, offset + cap);
+
+    return page.map((listing) => ({
       ...toPublicListing(listing),
       creator: creators.get(listing.creatorId) ?? null,
     }));
@@ -499,9 +533,19 @@ export const getMyPurchases = query({
         downloadUrl = await ctx.storage.getUrl(listing.fileStorageId);
       }
       results.push({
-        purchase,
-        listing,
-        /** Signed Convex storage URL when the buyer owns a file-backed listing. */
+        purchase: {
+          _id: purchase._id,
+          listingId: purchase.listingId,
+          amountGhs: purchase.amountGhs,
+          platformFeeGhs: purchase.platformFeeGhs,
+          creatorEarningsGhs: purchase.creatorEarningsGhs,
+          license: purchase.license,
+          createdAt: purchase.createdAt,
+          paymentReference: purchase.paymentReference,
+        },
+        // Never expose private storage IDs or seller email on the buyer library.
+        listing: toPublicListing(listing),
+        /** Expiring Convex storage URL when the buyer owns a file-backed listing. */
         downloadUrl,
         fileName: listing.fileName ?? "download",
         hasDownload: Boolean(downloadUrl),

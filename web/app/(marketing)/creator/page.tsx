@@ -1,5 +1,6 @@
 "use client";
 
+import { ProductCover } from "@/components/marketplace/ProductCover";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -31,7 +32,7 @@ function CreatorProfileInner() {
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{profile.displayName}</h1>
           {profile.verified && (
-            <BadgeCheck className="h-6 w-6 text-emerald-600" aria-label="Verified" />
+            <BadgeCheck className="h-6 w-6 text-emerald-600" aria-label="Verified seller" />
           )}
         </div>
         <p className="mt-1 text-muted">@{profile.handle}</p>
@@ -44,19 +45,29 @@ function CreatorProfileInner() {
 
       <section>
         <h2 className="mb-4 text-xl font-semibold">Listings</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {creatorListings.map((item: NonNullable<typeof listings>[number]) => (
-            <Link
-              key={item._id}
-              href={`/marketplace/item/${item._id}/`}
-              className="rounded-2xl border bg-card p-5 hover:border-accent/30"
-            >
-              <h3 className="font-semibold">{item.title}</h3>
-              <p className="mt-1 text-sm text-muted line-clamp-2">{item.description}</p>
-              <p className="mt-3 font-bold">{formatGhs(item.priceGhs)}</p>
-            </Link>
-          ))}
-        </div>
+        {creatorListings.length === 0 ? (
+          <p className="text-sm text-muted">No published listings from this seller yet.</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+            {creatorListings.map((item: NonNullable<typeof listings>[number]) => (
+              <Link
+                key={item._id}
+                href={`/marketplace/item/${item._id}/`}
+                className="saas-card flex flex-col rounded-2xl p-2.5 hover:border-emerald-600/35 sm:p-3"
+              >
+                <ProductCover
+                  src={item.coverImageUrl}
+                  title={item.title}
+                  category={item.category}
+                  className="w-full"
+                />
+                <h3 className="mt-2 line-clamp-2 text-sm font-semibold">{item.title}</h3>
+                <p className="mt-1 line-clamp-2 text-xs text-muted">{item.description}</p>
+                <p className="mt-2 text-sm font-bold tabular-nums">{formatGhs(item.priceGhs)}</p>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
