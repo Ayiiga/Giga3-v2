@@ -121,5 +121,19 @@ describe("Creator Academy preservation", () => {
       source.match(/export const getMyPurchases = query\([\s\S]*?\n}\);/)?.[0] ?? "";
     expect(block).toContain("toPublicListing(listing)");
     expect(block).toContain("downloadPendingReview");
+    // Purchase summary is a whitelist — no raw Doc dump / buyerId / seller email.
+    expect(block).toContain("paymentReference: purchase.paymentReference");
+    expect(block).not.toMatch(/purchase,\s*\n\s*listing,/);
+    expect(block).not.toContain("buyerId: purchase.buyerId");
+  });
+
+  it("searchListings and getListing return toPublicListing (no raw storage id)", () => {
+    const source = readFileSync(resolve(__dirname, "../../convex/marketplace.ts"), "utf8");
+    const search = source.match(/export const searchListings = query\([\s\S]*?\n}\);/)?.[0] ?? "";
+    const get = source.match(/export const getListing = query\([\s\S]*?\n}\);/)?.[0] ?? "";
+    expect(search).toContain("toPublicListing(listing)");
+    expect(get).toContain("toPublicListing(listing)");
+    expect(get).toContain("toPublicCreatorProfile");
+    expect(get).toContain("toPublicReview");
   });
 });
