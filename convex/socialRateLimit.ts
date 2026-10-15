@@ -17,6 +17,8 @@ const LIMITS: Record<string, LimitConfig> = {
   create_post: { max: 30, label: "posts" },
   add_comment: { max: 60, label: "comments" },
   toggle_like: { max: 120, label: "likes" },
+  /** Phase 2C DM foundation — only consumed when GIGASOCIAL_DM_ENABLED. */
+  dm_send: { max: 60, label: "messages" },
 };
 
 type DbCtx = { db: any };
