@@ -14,6 +14,7 @@ import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { withChunkRetryLoader } from "@/lib/pwa/dynamicWithChunkRetry";
 import { getSessionToken } from "@/lib/auth";
 import { getGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
+import { formatUnreadBadge } from "@/lib/gigasocial/notificationInbox";
 import {
   GIGASOCIAL_SECTIONS,
   type GigaSocialSection,
@@ -279,7 +280,7 @@ function GigaSocialContent() {
               {item.label}
               {item.id === "notifications" && unread > 0 && (
                 <span className="ml-1 rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-white">
-                  {unread > 9 ? "9+" : unread}
+                  {formatUnreadBadge(unread)}
                 </span>
               )}
             </button>
@@ -397,14 +398,14 @@ function GigaSocialContent() {
           <>
             <SectionIntro
               title="Notifications"
-              description="Likes, comments, replies, and community activity."
+              description="Activity inbox for likes, comments, replies, and community updates. Direct messages are not available yet."
             />
             {sessionToken ? (
               <GigaSocialPanelErrorBoundary panelName="Notifications">
                 <GigaSocialNotificationsPanel sessionToken={sessionToken} />
               </GigaSocialPanelErrorBoundary>
             ) : (
-              <GigaSocialAuthPrompt title="Sign in to open your inbox" />
+              <GigaSocialAuthPrompt title="Sign in to view notifications" />
             )}
           </>
         )}

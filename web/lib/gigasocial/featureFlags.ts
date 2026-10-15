@@ -49,6 +49,11 @@ export type GigaSocialFeatureFlags = {
   enableSocialReferrals: boolean;
   /** Grouped notification center + granular local prefs. */
   enableSmartNotifications: boolean;
+  /**
+   * Direct messaging UI/API (Phase 2B+). Default off until foundation ships.
+   * Reserved — do not enable in production until DM schema + authz land.
+   */
+  enableDirectMessages: boolean;
   /** Explorer → Legend loyalty ladder (display over XP). */
   enableLoyaltyLevels: boolean;
   /** Personal AI assistant card (summaries / reminders). */
@@ -94,6 +99,7 @@ export const GIGASOCIAL_FEATURE_DEFAULTS: GigaSocialFeatureFlags = {
   enableCreatorChallenges: envFlag("NEXT_PUBLIC_GIGASOCIAL_CHALLENGES", true),
   enableSocialReferrals: envFlag("NEXT_PUBLIC_GIGASOCIAL_REFERRALS", true),
   enableSmartNotifications: envFlag("NEXT_PUBLIC_GIGASOCIAL_SMART_NOTIFICATIONS", true),
+  enableDirectMessages: envFlag("NEXT_PUBLIC_GIGASOCIAL_DM", false),
   enableLoyaltyLevels: envFlag("NEXT_PUBLIC_GIGASOCIAL_LOYALTY", true),
   enablePersonalAssistant: envFlag("NEXT_PUBLIC_GIGASOCIAL_PERSONAL_ASSISTANT", true),
   enableUseAsTemplate: envFlag("NEXT_PUBLIC_GIGASOCIAL_USE_AS_TEMPLATE", true),
