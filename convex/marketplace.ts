@@ -164,6 +164,51 @@ export const getMyListings = query({
   },
 });
 
+/**
+ * Public storefront catalogue for a creator handle.
+ * Only published + file-approved listings; never exposes storage IDs or seller email.
+ */
+export const listPublishedByHandle = query({
+  args: {
+    handle: v.string(),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const handle = args.handle
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 32);
+    if (!handle) return { profile: null, listings: [] as const };
+    const profile = await ctx.db
+      .query("creatorProfiles")
+      .withIndex("by_handle", (q) => q.eq("handle", handle))
+      .first();
+    if (!profile) return { profile: null, listings: [] as const };
+
+    const cap = Math.min(args.limit ?? 48, 80);
+    const rows = await ctx.db
+      .query("marketplaceListings")
+      .withIndex("by_creator", (q) => q.eq("creatorId", profile.userId))
+      .order("desc")
+      .take(120);
+
+    const listings = rows
+      .filter(
+        (listing) =>
+          listing.status === "published" && isListingFileApproved(listing)
+      )
+      .slice(0, cap)
+      .map((listing) => toPublicListing(listing));
+
+    return {
+      profile: toPublicCreatorProfile(profile),
+      listings,
+    };
+  },
+});
+
 export const createListing = mutation({
   args: {
     sessionToken: v.string(),
@@ -246,12 +291,14 @@ export const updateListing = mutation({
     listingId: v.id("marketplaceListings"),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
+    category: v.optional(v.string()),
     priceGhs: v.optional(v.number()),
     status: v.optional(
       v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))
     ),
     previewText: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
+    coverImageUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);
@@ -285,9 +332,23 @@ export const updateListing = mutation({
     if (args.description !== undefined) {
       patch.description = args.description.trim().slice(0, 4000);
     }
-    if (args.priceGhs !== undefined) patch.priceGhs = Math.round(args.priceGhs);
+    if (args.category !== undefined) {
+      const category = args.category.trim();
+      if (!(MARKETPLACE_CATEGORIES as readonly string[]).includes(category)) {
+        throw new Error("Invalid category.");
+      }
+      patch.category = category;
+    }
+    if (args.priceGhs !== undefined) {
+      const price = Math.round(args.priceGhs);
+      if (price < 1 || price > 100_000) throw new Error("Price must be between GHS 1 and GHS 100,000.");
+      patch.priceGhs = price;
+    }
     if (args.status !== undefined) patch.status = args.status;
     if (args.previewText !== undefined) patch.previewText = args.previewText?.slice(0, 2000);
+    if (args.coverImageUrl !== undefined) {
+      patch.coverImageUrl = args.coverImageUrl.trim().slice(0, 500) || undefined;
+    }
     if (args.tags !== undefined) {
       patch.tags = args.tags.map((t) => t.trim().slice(0, 40)).filter(Boolean).slice(0, 12);
     }
@@ -579,7 +640,142 @@ export const getCreatorRevenue = query({
       .order("desc")
       .take(30);
 
-    return { profile, payouts, sales };
+    // Strip buyer emails from the seller dashboard payload.
+    return {
+      profile,
+      payouts,
+      sales: sales.map((sale) => ({
+        _id: sale._id,
+        listingId: sale.listingId,
+        amountGhs: sale.amountGhs,
+        platformFeeGhs: sale.platformFeeGhs,
+        creatorEarningsGhs: sale.creatorEarningsGhs,
+        createdAt: sale.createdAt,
+        paymentReference: sale.paymentReference,
+        license: sale.license,
+      })),
+    };
+  },
+});
+
+/**
+ * Seller sales analytics. marketplacePurchases rows are written only after
+ * successful Paystack fulfilment (pending/failed charges never appear here).
+ * Refunds are not modeled in the current schema — disclosed in the response.
+ */
+export const getCreatorSalesAnalytics = query({
+  args: {
+    sessionToken: v.string(),
+    fromMs: v.optional(v.number()),
+    toMs: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken, ctx);
+    const profile = await ctx.db
+      .query("creatorProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", email))
+      .first();
+    if (!profile) return null;
+
+    const fromMs = args.fromMs ?? 0;
+    const toMs = args.toMs ?? Number.MAX_SAFE_INTEGER;
+
+    const sales = (
+      await ctx.db
+        .query("marketplacePurchases")
+        .withIndex("by_creator", (q) => q.eq("creatorId", email))
+        .order("desc")
+        .take(200)
+    ).filter((sale) => sale.createdAt >= fromMs && sale.createdAt <= toMs);
+
+    let grossSalesGhs = 0;
+    let platformFeesGhs = 0;
+    let creatorEarningsGhs = 0;
+    const byListing = new Map<
+      string,
+      { listingId: string; purchaseCount: number; grossGhs: number; earningsGhs: number; feesGhs: number }
+    >();
+
+    for (const sale of sales) {
+      grossSalesGhs += sale.amountGhs;
+      platformFeesGhs += sale.platformFeeGhs;
+      creatorEarningsGhs += sale.creatorEarningsGhs;
+      const key = String(sale.listingId);
+      const row = byListing.get(key) ?? {
+        listingId: key,
+        purchaseCount: 0,
+        grossGhs: 0,
+        earningsGhs: 0,
+        feesGhs: 0,
+      };
+      row.purchaseCount += 1;
+      row.grossGhs += sale.amountGhs;
+      row.earningsGhs += sale.creatorEarningsGhs;
+      row.feesGhs += sale.platformFeeGhs;
+      byListing.set(key, row);
+    }
+
+    const productSummaries = [];
+    for (const row of byListing.values()) {
+      const listing = await ctx.db.get(row.listingId as any);
+      productSummaries.push({
+        listingId: row.listingId,
+        title: listing?.title ?? "Deleted listing",
+        status: listing?.status ?? "archived",
+        purchaseCount: row.purchaseCount,
+        grossGhs: row.grossGhs,
+        feesGhs: row.feesGhs,
+        earningsGhs: row.earningsGhs,
+      });
+    }
+    productSummaries.sort((a, b) => b.grossGhs - a.grossGhs);
+
+    const payouts = await ctx.db
+      .query("creatorPayouts")
+      .withIndex("by_creator", (q) => q.eq("creatorId", email))
+      .order("desc")
+      .take(30);
+
+    const recentSales = [];
+    for (const sale of sales.slice(0, 20)) {
+      const listing = await ctx.db.get(sale.listingId);
+      recentSales.push({
+        _id: sale._id,
+        listingId: sale.listingId,
+        listingTitle: listing?.title ?? "Listing",
+        amountGhs: sale.amountGhs,
+        platformFeeGhs: sale.platformFeeGhs,
+        creatorEarningsGhs: sale.creatorEarningsGhs,
+        createdAt: sale.createdAt,
+      });
+    }
+
+    return {
+      summary: {
+        grossSalesGhs,
+        purchaseCount: sales.length,
+        platformFeesGhs,
+        creatorEarningsGhs,
+        payoutBalanceGhs: profile.payoutBalanceGhs,
+        lifetimeSales: profile.totalSales,
+        lifetimeEarningsGhs: profile.totalEarningsGhs,
+      },
+      productSummaries,
+      recentSales,
+      payouts: payouts.map((p) => ({
+        _id: p._id,
+        amountGhs: p.amountGhs,
+        status: p.status,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+        method: p.method ?? null,
+      })),
+      limitations: {
+        refundsSupported: false,
+        automatedPayouts: false,
+        source: "marketplacePurchases rows are created only after successful Paystack fulfilment",
+      },
+    };
   },
 });
 
