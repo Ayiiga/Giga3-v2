@@ -1,7 +1,7 @@
 /**
- * GigaSocial direct messaging foundation (Phase 2C).
- * Schema-backed, session-authenticated stubs. Default feature flag OFF.
- * No UI. No public listing of private messages.
+ * GigaSocial direct messaging foundation (Phase 2C + 2E hardening).
+ * Schema-backed, session-authenticated. Default feature flag OFF.
+ * Phase 2E: M1 block enforcement, M2 cursor pagination, soft declineRequest.
  */
 
 import { mutation, query } from "./_generated/server";
@@ -10,15 +10,28 @@ import { requireSession } from "./auth";
 import type { Doc, Id } from "./_generated/dataModel";
 import { ForbiddenError, ValidationError } from "./securityErrors";
 import {
+  assertCanAcceptDmRequest,
+  assertCanDeclineDmRequest,
+  assertDmNotBlocked,
   assertDmThreadParticipant,
   assertGigaSocialDmEnabled,
   clampDmMessageLimit,
   clampDmThreadLimit,
+  DM_BLOCKED_MESSAGE,
   dmPreviewFromBody,
+  encodeDmMessageCursor,
+  encodeDmThreadCursor,
+  isDmMessageOlderThanCursor,
+  isDmThreadOlderThanCursor,
   isDmThreadParticipant,
   normalizeDmParticipantPair,
+  parseDmMessageCursor,
+  parseDmThreadCursor,
   sanitizeDmBody,
   sanitizeDmReportReason,
+  SOCIAL_DM_MESSAGE_SCAN_MAX,
+  SOCIAL_DM_THREAD_SCAN_MAX,
+  shouldHideDmThreadForBlock,
 } from "./gigaSocialDmPolicy";
 import { consumeSocialWriteRateLimit } from "./socialRateLimit";
 import { normalizeUserId } from "./userIds";
@@ -67,6 +80,15 @@ async function findBlockEitherWay(
     .first();
 }
 
+async function assertPairNotBlocked(
+  ctx: { db: any },
+  userA: string,
+  userB: string
+): Promise<void> {
+  const blocked = await findBlockEitherWay(ctx, userA, userB);
+  assertDmNotBlocked(Boolean(blocked));
+}
+
 function toPublicThread(thread: ThreadDoc, viewerId: string) {
   return {
     threadId: thread._id,
@@ -81,73 +103,154 @@ function toPublicThread(thread: ThreadDoc, viewerId: string) {
 }
 
 /**
- * List DM threads for the authenticated user (empty until messages exist).
- * Flag-gated; session required.
+ * List DM threads for the authenticated user.
+ * M1: excludes threads where a block exists either way with the other participant.
+ * Bounded scan + opaque cursor so blocked rows cannot permanently underfill pages.
  */
 export const listMyThreads = query({
   args: {
     sessionToken: v.string(),
     limit: v.optional(v.number()),
+    /** Opaque `${updatedAt}:${threadId}` — exclusive (older) compound cursor. */
+    cursor: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     assertGigaSocialDmEnabled();
     const userId = await requireDmUserId(args.sessionToken, ctx);
     const cap = clampDmThreadLimit(args.limit);
+    const threadCursor = parseDmThreadCursor(args.cursor);
+    const scanCap = SOCIAL_DM_THREAD_SCAN_MAX;
 
     const [asA, asB] = await Promise.all([
       ctx.db
         .query("socialDmThreads")
-        .withIndex("by_participantA_updated", (q) => q.eq("participantAId", userId))
+        .withIndex("by_participantA_updated", (q) => {
+          const base = q.eq("participantAId", userId);
+          if (!threadCursor) return base;
+          return base.lte("updatedAt", threadCursor.updatedAt);
+        })
         .order("desc")
-        .take(cap),
+        .take(scanCap),
       ctx.db
         .query("socialDmThreads")
-        .withIndex("by_participantB_updated", (q) => q.eq("participantBId", userId))
+        .withIndex("by_participantB_updated", (q) => {
+          const base = q.eq("participantBId", userId);
+          if (!threadCursor) return base;
+          return base.lte("updatedAt", threadCursor.updatedAt);
+        })
         .order("desc")
-        .take(cap),
+        .take(scanCap),
     ]);
 
+    const seen = new Set<string>();
     const merged = [...asA, ...asB]
-      .filter((t) => isDmThreadParticipant(t, userId))
-      .sort((a, b) => b.updatedAt - a.updatedAt)
-      .slice(0, cap);
+      .filter((t) => {
+        if (seen.has(t._id)) return false;
+        seen.add(t._id);
+        return isDmThreadParticipant(t, userId);
+      })
+      .sort(
+        (a, b) =>
+          b.updatedAt - a.updatedAt ||
+          (a._id < b._id ? 1 : a._id > b._id ? -1 : 0)
+      );
+
+    const afterCursor = threadCursor
+      ? merged.filter((t) =>
+          isDmThreadOlderThanCursor(
+            { updatedAt: t.updatedAt, threadId: t._id },
+            threadCursor
+          )
+        )
+      : merged;
+
+    const visible: ThreadDoc[] = [];
+    for (const thread of afterCursor) {
+      if (visible.length >= cap) break;
+      const other = otherParticipant(thread, userId);
+      const blocked = await findBlockEitherWay(ctx, userId, other);
+      if (shouldHideDmThreadForBlock(Boolean(blocked))) continue;
+      visible.push(thread);
+    }
+
+    const scanHitCap = asA.length === scanCap || asB.length === scanCap;
+    const hasMore =
+      visible.length === cap &&
+      (afterCursor.length > visible.length || scanHitCap);
 
     return {
-      threads: merged.map((t) => toPublicThread(t, userId)),
+      threads: visible.map((t) => toPublicThread(t, userId)),
+      nextCursor:
+        hasMore && visible.length > 0
+          ? encodeDmThreadCursor({
+              updatedAt: visible[visible.length - 1]!.updatedAt,
+              threadId: visible[visible.length - 1]!._id,
+            })
+          : null,
     };
   },
 });
 
 /**
- * List messages in a thread. Participant-only; never returns another user's threads.
+ * List messages in a thread. Participant-only.
+ * M1: Forbidden when blocked either way (no bodies returned).
+ * M2: Compound cursor (createdAt, messageId) — no skips on timestamp ties.
  */
 export const listThreadMessages = query({
   args: {
     sessionToken: v.string(),
     threadId: v.id("socialDmThreads"),
     limit: v.optional(v.number()),
-    cursor: v.optional(v.number()),
+    /**
+     * Compound cursor string `${createdAt}:${messageId}`, or legacy numeric
+     * createdAt (exclusive upper bound, same-ts peers excluded).
+     */
+    cursor: v.optional(v.union(v.string(), v.number())),
   },
   handler: async (ctx, args) => {
     assertGigaSocialDmEnabled();
     const userId = await requireDmUserId(args.sessionToken, ctx);
     const thread = await getThreadOrThrow(ctx, args.threadId);
     assertDmThreadParticipant(thread, userId);
+    await assertPairNotBlocked(ctx, thread.participantAId, thread.participantBId);
 
+    const messageCursor = parseDmMessageCursor(args.cursor);
     const cap = clampDmMessageLimit(args.limit);
-    let rows = await ctx.db
-      .query("socialDmMessages")
-      .withIndex("by_thread_created", (q) => q.eq("threadId", args.threadId))
-      .order("desc")
-      .take(cap + 8);
+    const scanCap = Math.min(
+      SOCIAL_DM_MESSAGE_SCAN_MAX,
+      Math.max(cap + 50, cap * 3)
+    );
 
-    if (args.cursor !== undefined) {
-      rows = rows.filter((m) => m.createdAt < args.cursor!);
-    }
-    const slice = rows.slice(0, cap);
+    const raw = await ctx.db
+      .query("socialDmMessages")
+      .withIndex("by_thread_created", (q) => {
+        const base = q.eq("threadId", args.threadId);
+        if (!messageCursor) return base;
+        // Inclusive createdAt so same-timestamp peers can be tie-broken by id.
+        return base.lte("createdAt", messageCursor.createdAt);
+      })
+      .order("desc")
+      .take(scanCap);
+
+    const sorted = [...raw].sort(
+      (a, b) =>
+        b.createdAt - a.createdAt ||
+        (a._id < b._id ? 1 : a._id > b._id ? -1 : 0)
+    );
+    const filtered = messageCursor
+      ? sorted.filter((m) =>
+          isDmMessageOlderThanCursor(
+            { messageId: m._id, createdAt: m.createdAt },
+            messageCursor
+          )
+        )
+      : sorted;
+
+    const page = filtered.slice(0, cap);
+    const hasMore = filtered.length > cap || raw.length === scanCap;
 
     return {
-      messages: slice.map((m) => ({
+      messages: page.map((m) => ({
         messageId: m._id,
         senderId: m.senderId,
         body: m.body,
@@ -156,13 +259,19 @@ export const listThreadMessages = query({
         mine: normalizeUserId(m.senderId) === userId,
       })),
       nextCursor:
-        slice.length === cap ? slice[slice.length - 1]?.createdAt ?? null : null,
+        hasMore && page.length > 0
+          ? encodeDmMessageCursor({
+              createdAt: page[page.length - 1]!.createdAt,
+              messageId: page[page.length - 1]!._id,
+            })
+          : null,
     };
   },
 });
 
 /**
- * Send a text DM (or open a message request). Idempotent when clientId is set.
+ * Send a text DM (or open / re-open a message request). Idempotent when clientId is set.
+ * Soft-declined threads re-open as a new request from the current sender (block still wins).
  */
 export const sendMessage = mutation({
   args: {
@@ -187,6 +296,7 @@ export const sendMessage = mutation({
       assertDmThreadParticipant(thread, userId);
     } else {
       const pair = normalizeDmParticipantPair(userId, args.recipientUserId);
+      await assertPairNotBlocked(ctx, pair.participantAId, pair.participantBId);
       thread = await ctx.db
         .query("socialDmThreads")
         .withIndex("by_pair", (q) =>
@@ -194,15 +304,6 @@ export const sendMessage = mutation({
         )
         .first();
       if (!thread) {
-        const blocked = await findBlockEitherWay(
-          ctx,
-          userId,
-          args.recipientUserId
-        );
-        if (blocked) {
-          throw new ForbiddenError("You cannot message this user.");
-        }
-        // Foundation: new threads start as message requests until accept.
         const threadId = await ctx.db.insert("socialDmThreads", {
           participantAId: pair.participantAId,
           participantBId: pair.participantBId,
@@ -219,17 +320,22 @@ export const sendMessage = mutation({
 
     if (!thread) throw new ValidationError("Conversation not found.");
     assertDmThreadParticipant(thread, userId);
+    await assertPairNotBlocked(ctx, thread.participantAId, thread.participantBId);
 
     if (thread.requestStatus === "declined") {
-      throw new ForbiddenError("This conversation was declined.");
+      // Soft decline recovery: re-open as a message request from this sender.
+      await ctx.db.patch(thread._id, {
+        requestStatus: "open",
+        initiatedBy: userId,
+        updatedAt: now,
+      });
+      thread = {
+        ...thread,
+        requestStatus: "open",
+        initiatedBy: userId,
+        updatedAt: now,
+      };
     }
-
-    const blocked = await findBlockEitherWay(
-      ctx,
-      thread.participantAId,
-      thread.participantBId
-    );
-    if (blocked) throw new ForbiddenError("You cannot message this user.");
 
     if (clientId) {
       const existing = await ctx.db
@@ -272,7 +378,7 @@ export const sendMessage = mutation({
   },
 });
 
-/** Accept an open message request (recipient only). */
+/** Accept an open message request (recipient only). Declined requests cannot be accepted. */
 export const acceptRequest = mutation({
   args: {
     sessionToken: v.string(),
@@ -283,15 +389,15 @@ export const acceptRequest = mutation({
     const userId = await requireDmUserId(args.sessionToken, ctx);
     const thread = await getThreadOrThrow(ctx, args.threadId);
     assertDmThreadParticipant(thread, userId);
+    await assertPairNotBlocked(ctx, thread.participantAId, thread.participantBId);
 
-    if (normalizeUserId(thread.initiatedBy) === userId) {
-      throw new ForbiddenError("Only the recipient can accept this request.");
-    }
-    if (thread.requestStatus === "accepted") {
+    const gate = assertCanAcceptDmRequest({
+      requestStatus: thread.requestStatus,
+      initiatedBy: thread.initiatedBy,
+      actorUserId: userId,
+    });
+    if (gate.alreadyAccepted) {
       return { ok: true as const, requestStatus: "accepted" as const };
-    }
-    if (thread.requestStatus === "declined") {
-      throw new ForbiddenError("This conversation was declined.");
     }
 
     await ctx.db.patch(thread._id, {
@@ -302,7 +408,49 @@ export const acceptRequest = mutation({
   },
 });
 
-/** Block a user for DMs (session user is blocker). */
+/**
+ * Soft-decline an open message request (recipient only).
+ * Does not create a block. Idempotent when already declined.
+ */
+export const declineRequest = mutation({
+  args: {
+    sessionToken: v.string(),
+    threadId: v.id("socialDmThreads"),
+  },
+  handler: async (ctx, args) => {
+    assertGigaSocialDmEnabled();
+    const userId = await requireDmUserId(args.sessionToken, ctx);
+    const thread = await getThreadOrThrow(ctx, args.threadId);
+    assertDmThreadParticipant(thread, userId);
+    // Decline is allowed even when blocked so a recipient can close an open request
+    // without needing send access; block itself remains a separate action.
+
+    const gate = assertCanDeclineDmRequest({
+      requestStatus: thread.requestStatus,
+      initiatedBy: thread.initiatedBy,
+      actorUserId: userId,
+    });
+    if (gate.alreadyDeclined) {
+      return {
+        ok: true as const,
+        requestStatus: "declined" as const,
+        alreadyDeclined: true as const,
+      };
+    }
+
+    await ctx.db.patch(thread._id, {
+      requestStatus: "declined",
+      updatedAt: Date.now(),
+    });
+    return {
+      ok: true as const,
+      requestStatus: "declined" as const,
+      alreadyDeclined: false as const,
+    };
+  },
+});
+
+/** Block a user for DMs (session user is blocker). Does not delete history. */
 export const blockUser = mutation({
   args: {
     sessionToken: v.string(),
@@ -332,7 +480,7 @@ export const blockUser = mutation({
       createdAt: Date.now(),
     });
 
-    // Decline any open request between the pair.
+    // Decline any open request between the pair (separate from soft declineRequest).
     const thread = await ctx.db
       .query("socialDmThreads")
       .withIndex("by_pair", (q) =>
@@ -350,7 +498,11 @@ export const blockUser = mutation({
   },
 });
 
-/** Report a thread or message (no public listing). */
+/**
+ * Report a thread or message (no public listing).
+ * Allowed for participants even when blocked so abuse can still be reported
+ * without returning other users' private content in this response.
+ */
 export const reportMessage = mutation({
   args: {
     sessionToken: v.string(),
@@ -393,7 +545,7 @@ export const reportMessage = mutation({
   },
 });
 
-/** Probe for clients — never leaks message content. */
+/** Probe for clients — never leaks message content or secrets. */
 export const getDmFoundationStatus = query({
   args: {
     sessionToken: v.optional(v.string()),
@@ -423,6 +575,15 @@ export const getDmFoundationStatus = query({
       authenticated,
       uiAvailable: false,
       note: "DM foundation is server-only; UI ships in a later phase.",
+      // Keep status free of env values / secrets.
+      hardening: {
+        blockHidesHistory: true,
+        indexRangePagination: true,
+        softDeclineRequest: true,
+      },
     };
   },
 });
+
+// Re-export for tests / clarity that blocked sends use the same copy.
+export { DM_BLOCKED_MESSAGE };

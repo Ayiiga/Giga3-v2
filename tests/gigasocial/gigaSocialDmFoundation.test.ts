@@ -18,6 +18,10 @@ import { socialWriteLimitForAction } from "../../convex/socialRateLimit";
 
 const schemaSrc = readFileSync(resolve(__dirname, "../../convex/schema.ts"), "utf8");
 const dmSrc = readFileSync(resolve(__dirname, "../../convex/gigaSocialDm.ts"), "utf8");
+const dmPolicySrc = readFileSync(
+  resolve(__dirname, "../../convex/gigaSocialDmPolicy.ts"),
+  "utf8"
+);
 const gigaSocialSrc = readFileSync(
   resolve(__dirname, "../../convex/gigaSocial.ts"),
   "utf8"
@@ -47,6 +51,7 @@ describe("GigaSocial DM feature flag (default off)", () => {
       "listThreadMessages",
       "sendMessage",
       "acceptRequest",
+      "declineRequest",
       "blockUser",
       "reportMessage",
     ]) {
@@ -127,7 +132,8 @@ describe("GigaSocial DM authz wiring in handlers", () => {
   it("acceptRequest forbids initiator accepting own request", () => {
     const block =
       dmSrc.match(/export const acceptRequest = mutation\([\s\S]*?\n\}\);/)?.[0] ?? "";
-    expect(block).toContain("Only the recipient can accept this request.");
+    expect(block).toContain("assertCanAcceptDmRequest");
+    expect(dmPolicySrc).toContain("Only the recipient can accept this request.");
   });
 
   it("registers dm_send rate limit action", () => {

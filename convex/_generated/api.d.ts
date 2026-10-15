@@ -99,6 +99,7 @@ import type * as gigaSocial from "../gigaSocial.js";
 import type * as gigaSocialCommunities from "../gigaSocialCommunities.js";
 import type * as gigaSocialDeveloperApi from "../gigaSocialDeveloperApi.js";
 import type * as gigaSocialDeveloperApiRateLimit from "../gigaSocialDeveloperApiRateLimit.js";
+import type * as gigaSocialDm from "../gigaSocialDm.js";
 import type * as gigaSocialEconomy from "../gigaSocialEconomy.js";
 import type * as gigaSocialLive from "../gigaSocialLive.js";
 import type * as gigaSocialMediaPolicy from "../gigaSocialMediaPolicy.js";
@@ -379,6 +380,7 @@ declare const fullApi: ApiFromModules<{
   gigaSocialCommunities: typeof gigaSocialCommunities;
   gigaSocialDeveloperApi: typeof gigaSocialDeveloperApi;
   gigaSocialDeveloperApiRateLimit: typeof gigaSocialDeveloperApiRateLimit;
+  gigaSocialDm: typeof gigaSocialDm;
   gigaSocialEconomy: typeof gigaSocialEconomy;
   gigaSocialLive: typeof gigaSocialLive;
   gigaSocialMediaPolicy: typeof gigaSocialMediaPolicy;
