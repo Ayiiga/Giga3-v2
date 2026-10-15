@@ -764,6 +764,7 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_creator", ["creatorId", "updatedAt"])
+    .index("by_creator_status", ["creatorId", "status", "updatedAt"])
     .index("by_status", ["status", "updatedAt"])
     .index("by_category", ["category", "updatedAt"]),
 
