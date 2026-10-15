@@ -6,37 +6,33 @@ import {
   recordAppOpen,
   shouldShowAttentionDot,
 } from "@/lib/pwa/attentionDot";
-import { Bell, Compass, Home, Plus, User } from "lucide-react";
-import { memo, useEffect, useState } from "react";
+import { Bell, Compass, Home, MessageCircle, Plus, User } from "lucide-react";
+import { memo, useEffect, useMemo, useState } from "react";
 
-type ContextNavId = "feed" | "discover" | "create" | "notifications" | "profile";
-
-const CONTEXT_NAV_ITEMS: {
-  id: ContextNavId;
-  label: string;
-  section?: GigaSocialSection;
-  create?: boolean;
-  icon: typeof Home;
-}[] = [
-  { id: "feed", label: "Feed", section: "feed", icon: Home },
-  { id: "discover", label: "Discover", section: "discover", icon: Compass },
-  { id: "create", label: "Create", create: true, icon: Plus },
-  { id: "notifications", label: "Inbox", section: "notifications", icon: Bell },
-  { id: "profile", label: "Profile", section: "profile", icon: User },
-];
+type ContextNavId =
+  | "feed"
+  | "discover"
+  | "create"
+  | "notifications"
+  | "messages"
+  | "profile";
 
 /**
  * GigaSocial secondary navigation — inline top bar on mobile/tablet.
  * Must NOT be a fixed bottom bar (global primary nav owns the bottom).
+ * Inbox remains activity notifications; Messages is a separate optional entry.
  */
 export const GigaSocialContextNav = memo(function GigaSocialContextNav({
   activeSection,
   unread = 0,
+  showMessages = false,
   onNavigate,
   onCreate,
 }: {
   activeSection: GigaSocialSection;
   unread?: number;
+  /** Phase 2D — only when NEXT_PUBLIC_GIGASOCIAL_DM enables UI chrome. */
+  showMessages?: boolean;
   onNavigate: (section: GigaSocialSection) => void;
   onCreate: () => void;
 }) {
@@ -53,13 +49,38 @@ export const GigaSocialContextNav = memo(function GigaSocialContextNav({
     }
   }, [activeSection, attention]);
 
+  const items = useMemo(() => {
+    const base: {
+      id: ContextNavId;
+      label: string;
+      section?: GigaSocialSection;
+      create?: boolean;
+      icon: typeof Home;
+    }[] = [
+      { id: "feed", label: "Feed", section: "feed", icon: Home },
+      { id: "discover", label: "Discover", section: "discover", icon: Compass },
+      { id: "create", label: "Create", create: true, icon: Plus },
+      { id: "notifications", label: "Inbox", section: "notifications", icon: Bell },
+    ];
+    if (showMessages) {
+      base.push({
+        id: "messages",
+        label: "Messages",
+        section: "messages",
+        icon: MessageCircle,
+      });
+    }
+    base.push({ id: "profile", label: "Profile", section: "profile", icon: User });
+    return base;
+  }, [showMessages]);
+
   return (
     <nav
       className="gigasocial-context-nav lg:hidden"
       aria-label="GigaSocial sections"
     >
       <div className="gigasocial-context-nav__scroll">
-        {CONTEXT_NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           if (item.create) {
             return (
               <button

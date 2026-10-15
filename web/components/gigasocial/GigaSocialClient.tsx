@@ -33,6 +33,7 @@ const AUTH_REQUIRED_SECTIONS = new Set<GigaSocialSection>([
   "creator",
   "profile",
   "notifications",
+  "messages",
 ]);
 
 const panelLoading = (label: string) => (
@@ -102,6 +103,15 @@ const GigaSocialNotificationsPanel = dynamic(
   { ssr: false, loading: () => panelLoading("Loading notifications…") }
 );
 
+const GigaSocialMessagesPanel = dynamic(
+  withChunkRetryLoader(() =>
+    import("@/components/gigasocial/dm/GigaSocialMessagesPanel").then((m) => ({
+      default: m.GigaSocialMessagesPanel,
+    }))
+  ),
+  { ssr: false, loading: () => panelLoading("Loading messages…") }
+);
+
 function GigaSocialContent() {
   useRenderDiagnostic("GigaSocialContent");
 
@@ -136,9 +146,14 @@ function GigaSocialContent() {
   }, [ensureMyProfile, sessionToken]);
 
   useEffect(() => {
+    const featuresNow = getGigaSocialFeatures();
     const tab = params.get("tab") as GigaSocialSection;
     if (tab && GIGASOCIAL_SECTIONS.some((s) => s.id === tab)) {
-      setSection(tab);
+      if (tab === "messages" && !featuresNow.enableDirectMessages) {
+        setSection("feed");
+      } else {
+        setSection(tab);
+      }
     }
     const community = params.get("community");
     if (community) setCommunitySlug(community);
@@ -244,6 +259,7 @@ function GigaSocialContent() {
       <GigaSocialContextNav
         activeSection={section}
         unread={unread}
+        showMessages={features.enableDirectMessages}
         onNavigate={openSection}
         onCreate={handleCreate}
       />
@@ -252,9 +268,11 @@ function GigaSocialContent() {
         className="gigasocial-section-nav hidden gap-1 overflow-x-auto overscroll-x-contain lg:flex lg:gap-1.5"
         aria-label="GigaSocial sections"
       >
-        {GIGASOCIAL_SECTIONS.filter((item) =>
-          item.id === "live" ? features.enableGigaLive : true
-        ).map((item) => {
+        {GIGASOCIAL_SECTIONS.filter((item) => {
+          if (item.id === "live") return features.enableGigaLive;
+          if (item.id === "messages") return features.enableDirectMessages;
+          return true;
+        }).map((item) => {
           const Icon = item.icon;
           const active = section === item.id;
           return (
@@ -405,6 +423,22 @@ function GigaSocialContent() {
               </GigaSocialPanelErrorBoundary>
             ) : (
               <GigaSocialAuthPrompt title="Sign in to open your inbox" />
+            )}
+          </>
+        )}
+
+        {section === "messages" && features.enableDirectMessages && (
+          <>
+            <SectionIntro
+              title="Messages"
+              description="Direct messages and message requests — separate from activity notifications."
+            />
+            {sessionToken ? (
+              <GigaSocialPanelErrorBoundary panelName="Messages">
+                <GigaSocialMessagesPanel sessionToken={sessionToken} />
+              </GigaSocialPanelErrorBoundary>
+            ) : (
+              <GigaSocialAuthPrompt title="Sign in to open messages" />
             )}
           </>
         )}

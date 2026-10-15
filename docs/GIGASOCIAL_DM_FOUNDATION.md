@@ -1,10 +1,11 @@
 # GigaSocial Direct Messaging Foundation (Phase 2B design / Phase 2C stubs)
 
-**Status:** Phase 2C implements additive schema + session-auth server stubs in `convex/gigaSocialDm.ts` (no UI).  
+**Status:** Phase 2C stubs + Phase 2D UI chrome (flag-gated, default OFF).  
 **Feature flags (default OFF):**
-- Convex / server: `GIGASOCIAL_DM_ENABLED` (preferred for production)
-- Client mirror: `NEXT_PUBLIC_GIGASOCIAL_DM` (must stay `false` until UI phase)
+- Convex / server: `GIGASOCIAL_DM_ENABLED` (preferred for production; keep `false` until rollout)
+- Client mirror: `NEXT_PUBLIC_GIGASOCIAL_DM` (default `false`; controls Messages nav/UI only)
 - Rollout flag is **not** authentication — every handler still requires `requireSession` + participant checks.
+- See `docs/GIGASOCIAL_DM_M1_M2_BACKEND.md` for block/pagination server follow-ups before public enablement.
 
 **Date:** 2026-10-15  
 **Depends on:** Phase 2A notifications inbox stabilization (separate PR).
@@ -127,6 +128,7 @@ Participant authorization: every query/mutation requires `requireSession`; recip
 4. Rate limit action `dm_send` in `socialRateLimit.ts`
 5. Focused tests: `tests/gigasocial/gigaSocialDmFoundation.test.ts`
 
+<<<<<<< HEAD
 ## Phase 2E — backend hardening (M1 / M2 / soft decline)
 
 See `docs/GIGASOCIAL_DM_PHASE2E.md` and `docs/GIGASOCIAL_DM_M1_M2_BACKEND.md`.
@@ -159,3 +161,20 @@ See `docs/GIGASOCIAL_DM_PHASE2E.md` and `docs/GIGASOCIAL_DM_M1_M2_BACKEND.md`.
 ### UI contract note (Phase 2D)
 
 Phase 2D UI still maps “Decline & block” → `blockUser` only. Wire `declineRequest` in a **separate UI PR** (do not mix into this backend PR).
+=======
+## Implemented in Phase 2D
+
+1. Distinct **Messages** section (does not replace Inbox / notifications)
+2. Mobile-first thread list + conversation + composer (`web/components/gigasocial/dm/`)
+3. Accept via `acceptRequest`; decline via **Decline & block** → `blockUser` (no soft-decline API)
+4. Block / report menus using existing mutations
+5. en/fr UI catalog (`web/lib/gigasocial/dmLocale.ts`)
+6. Client-only unread via localStorage (no server unread API yet)
+7. M1/M2 safe UI alternatives documented in `docs/GIGASOCIAL_DM_M1_M2_BACKEND.md`
+
+## Next release gate
+
+- Land M1/M2 backend PR
+- Keep flags off until QA on non-prod with `GIGASOCIAL_DM_ENABLED=true`
+- Soft decline + server unread optional follow-ups
+>>>>>>> 8a31865 (feat(gigasocial): Phase 2D direct messaging UI behind default-off flags)

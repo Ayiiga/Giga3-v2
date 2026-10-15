@@ -1,7 +1,7 @@
-# GigaSocial DM — M1 / M2 backend (Phase 2E)
+# GigaSocial DM — M1 / M2 backend hardening
 
-**Status:** Implemented on Phase 2E backend hardening branch (stacked on Phase 2C).  
-**Depends on:** PR #521 foundation (not merged to `main` as of Phase 2E start).
+**Status:** Phase 2E implemented (merged via #523 onto the 2C line; integrate to `main` with Phase 2D).  
+**Related:** `docs/GIGASOCIAL_DM_FOUNDATION.md`, `docs/GIGASOCIAL_DM_PHASE2E.md`, `docs/GIGASOCIAL_DM_PHASE2D.md`
 
 ## M1 — Blocking and historical access
 
@@ -17,24 +17,49 @@
 | `reportMessage` | Still allowed (abuse reporting; no bodies in response) |
 | `blockUser` | Inserts block; declines open request; does not delete messages |
 
+**Phase 2D UI:** After block, client also locally hides the thread. Server enforcement is authoritative.
+
 ## M2 — Message pagination
 
-`listThreadMessages` uses index range:
+### Current contract (post-integration)
 
-```ts
-.withIndex("by_thread_created", (q) =>
-  cursor === undefined
-    ? q.eq("threadId", threadId)
-    : q.eq("threadId", threadId).lt("createdAt", cursor)
-)
-.order("desc")
-.take(cap + 1)
-```
+`listThreadMessages` paginates newest-first with a **compound cursor** `(createdAt, messageId)` so messages that share `createdAt` are not skipped.
 
-`nextCursor` is set only when a `(cap + 1)`th row exists (hasMore); otherwise `null`. This avoids a false empty trailing page.
+Ordering (desc): higher `createdAt` first; for equal `createdAt`, lexicographically greater `messageId` first.
 
-**Edge case:** Multiple messages sharing the exact same `createdAt` may collapse across a cursor boundary (exclusive `lt`). Acceptable for v1; compound cursors can follow later.
+`nextCursor` is an opaque string encoding `{ createdAt, messageId }` of the oldest item on the page when hasMore; otherwise `null`.
+
+`hasMore` uses `take(limit + 1)`.
+
+Legacy numeric `cursor` (createdAt-only) is still accepted as a `createdAt` exclusive upper bound with empty `messageId` tie-break (compat); new clients should send the compound string.
+
+### Pre-compound note (Phase 2E initial)
+
+Phase 2E first landed exclusive `.lt("createdAt", cursor)` + `take(cap+1)`. That fixed false EOF from newest-only post-filters but could skip peers with the same timestamp. The compound cursor closes that gap.
+
+## Thread list pagination contract
+
+`listMyThreads`:
+
+- Loads from `by_participantA_updated` / `by_participantB_updated`
+- Filters bidirectional blocks
+- Uses a bounded scan window with continuation via optional `updatedAt`/`threadId` cursor so blocked rows do not permanently consume the page budget
+- Max page size 40 (`SOCIAL_DM_THREAD_PAGE_MAX`)
+- Does not expose blocked conversations
+- Does not unbounded `.collect()`
 
 ## Soft decline
 
-`declineRequest` mutation — see `docs/GIGASOCIAL_DM_PHASE2E.md`.
+`declineRequest` mutation — recipient only; no auto-block; idempotent when already declined; cannot decline an accepted chat; send may reopen unless blocked. See foundation doc.
+
+## Phase 2D UI gaps (not blockers for flag-off deploy)
+
+| Gap | Notes |
+|-----|--------|
+| Soft `declineRequest` in UI | 2D still uses Decline & block → `blockUser` |
+| Server unread / mark-read | 2D uses localStorage last-read only |
+| `getDmFoundationStatus.uiAvailable` | Still `false`; UI chrome gated by `NEXT_PUBLIC_GIGASOCIAL_DM` |
+
+## Rollout gate
+
+Do not set `GIGASOCIAL_DM_ENABLED=true` in production until non-prod E2E passes (including compound-cursor and thread-list fill cases).
