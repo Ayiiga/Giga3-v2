@@ -63,11 +63,13 @@ describe("marketplace browse discovery UI", () => {
     expect(browse).toContain("ProductCover");
     expect(browse).toContain("DISCOVERY_COLLECTIONS");
     expect(browse).toContain("PRICE_FILTERS");
-    expect(browse).toContain("categoriesAny");
-    expect(browse).toContain("productTypesAny");
-    expect(browse).toContain("minPriceGhs");
+    expect(browse).toContain("listingMatchesCollection");
+    expect(browse).toContain("listingMatchesPrice");
     expect(browse).toContain("Load more");
     expect(browse).toContain("verifiedOnly");
+    // Stay compatible with currently deployed Convex validators until this PR deploys.
+    expect(browse).not.toContain("categoriesAny");
+    expect(browse).not.toContain("offset:");
     expect(browse).not.toContain("PRODUCT_TYPES");
   });
 

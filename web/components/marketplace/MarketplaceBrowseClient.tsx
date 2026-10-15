@@ -13,6 +13,8 @@ import { formatGhs } from "@/lib/marketplace/catalog";
 import {
   DISCOVERY_COLLECTIONS,
   PRICE_FILTERS,
+  listingMatchesCollection,
+  listingMatchesPrice,
   type DiscoveryCollectionId,
 } from "@/lib/marketplace/discovery";
 import { api } from "convex/_generated/api";
@@ -33,20 +35,7 @@ function MarketplaceBrowseInner() {
   const [priceFilterId, setPriceFilterId] = useState<string>("");
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [sort, setSort] = useState<"newest" | "price-low" | "price-high">("newest");
-  const [offset, setOffset] = useState(0);
-  const [accumulated, setAccumulated] = useState<
-    Array<{
-      _id: string;
-      title: string;
-      description: string;
-      category: string;
-      priceGhs: number;
-      coverImageUrl?: string | null;
-      createdAt?: number;
-      updatedAt?: number;
-      creator?: { verified?: boolean; displayName?: string; handle?: string } | null;
-    }> | null
-  >(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
     const q = searchParams.get("q");
@@ -55,50 +44,38 @@ function MarketplaceBrowseInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  const collection = DISCOVERY_COLLECTIONS.find((c) => c.id === collectionId);
-  const priceFilter = PRICE_FILTERS.find((p) => p.id === priceFilterId) ?? PRICE_FILTERS[0]!;
-
-  // Reset pagination when filters change.
   useEffect(() => {
-    setOffset(0);
-    setAccumulated(null);
-  }, [debouncedQuery, collectionId, priceFilterId, verifiedOnly]);
+    setVisibleCount(PAGE_SIZE);
+  }, [debouncedQuery, collectionId, priceFilterId, verifiedOnly, sort]);
 
-  const page = useQuery(api.marketplace.searchListings, {
+  // Call production-compatible args only. Server-side discovery filters land with
+  // the Convex deploy from this PR; until then filter client-side so browse works.
+  const listings = useQuery(api.marketplace.searchListings, {
     query: debouncedQuery || undefined,
-    categoriesAny: collection?.categories,
-    productTypesAny: collection?.productTypes,
-    minPriceGhs: priceFilter.min,
-    maxPriceGhs: priceFilter.max,
     verifiedOnly: verifiedOnly || undefined,
-    limit: PAGE_SIZE,
-    offset,
+    limit: 80,
   });
 
-  useEffect(() => {
-    if (!page) return;
-    setAccumulated((prev) => {
-      if (offset === 0 || !prev) return page;
-      const seen = new Set(prev.map((item) => item._id));
-      return [...prev, ...page.filter((item) => !seen.has(item._id))];
-    });
-  }, [page, offset]);
+  const priceFilter = PRICE_FILTERS.find((p) => p.id === priceFilterId) ?? PRICE_FILTERS[0]!;
 
-  const sortedListings = useMemo(() => {
-    if (!accumulated) return accumulated;
-    return [...accumulated].sort((a, b) => {
+  const filteredSorted = useMemo(() => {
+    if (!listings) return listings;
+    const matched = listings.filter((item) => {
+      if (!listingMatchesCollection(item, collectionId)) return false;
+      if (!listingMatchesPrice(item.priceGhs, priceFilter.min, priceFilter.max)) return false;
+      return true;
+    });
+    return [...matched].sort((a, b) => {
       if (sort === "price-low") return a.priceGhs - b.priceGhs;
       if (sort === "price-high") return b.priceGhs - a.priceGhs;
       const aTime = a.createdAt ?? a.updatedAt ?? 0;
       const bTime = b.createdAt ?? b.updatedAt ?? 0;
       return bTime - aTime;
     });
-  }, [accumulated, sort]);
+  }, [listings, collectionId, priceFilter.min, priceFilter.max, sort]);
 
-  // Keep "Load more" visible while the next page is in flight.
-  const hasMore =
-    page === undefined ? offset > 0 : page.length === PAGE_SIZE;
-  const loadingInitial = offset === 0 && page === undefined;
+  const visible = filteredSorted?.slice(0, visibleCount) ?? null;
+  const hasMore = Boolean(filteredSorted && filteredSorted.length > visibleCount);
 
   return (
     <Container className="discover-stable document-compact py-4 pb-[calc(var(--primary-nav-offset,0px)+1rem)] sm:py-8">
@@ -228,9 +205,9 @@ function MarketplaceBrowseInner() {
           </div>
         </div>
 
-        {loadingInitial ? (
+        {!visible ? (
           <LoadingState label="Loading marketplace…" />
-        ) : !sortedListings || sortedListings.length === 0 ? (
+        ) : visible.length === 0 ? (
           <EmptyState
             icon={Store}
             title="No products found"
@@ -239,7 +216,7 @@ function MarketplaceBrowseInner() {
         ) : (
           <>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-              {sortedListings.map((item: NonNullable<typeof sortedListings>[number]) => (
+              {visible.map((item: NonNullable<typeof visible>[number]) => (
                 <Link
                   key={item._id}
                   href={`/marketplace/item/${item._id}/`}
@@ -277,12 +254,8 @@ function MarketplaceBrowseInner() {
             </div>
             {hasMore ? (
               <div className="flex justify-center pt-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => setOffset((o) => o + PAGE_SIZE)}
-                  disabled={page === undefined}
-                >
-                  {page === undefined ? "Loading…" : "Load more"}
+                <Button variant="secondary" onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}>
+                  Load more
                 </Button>
               </div>
             ) : null}
