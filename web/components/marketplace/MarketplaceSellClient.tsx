@@ -317,19 +317,68 @@ function MarketplaceSellInner() {
         )}
 
         {revenue?.profile ? (
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border bg-card p-5">
-              <div className="text-sm text-muted">Payout balance</div>
-              <div className="text-2xl font-bold">{formatGhs(revenue.profile.payoutBalanceGhs)}</div>
+          <div className="space-y-3">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="rounded-2xl border bg-card p-5">
+                <div className="text-sm text-muted">Payout balance</div>
+                <div className="text-2xl font-bold">{formatGhs(revenue.profile.payoutBalanceGhs)}</div>
+              </div>
+              <div className="rounded-2xl border bg-card p-5">
+                <div className="text-sm text-muted">Total sales</div>
+                <div className="text-2xl font-bold">{revenue.profile.totalSales}</div>
+              </div>
+              <div className="rounded-2xl border bg-card p-5">
+                <div className="text-sm text-muted">Earnings</div>
+                <div className="text-2xl font-bold">{formatGhs(revenue.profile.totalEarningsGhs)}</div>
+              </div>
             </div>
-            <div className="rounded-2xl border bg-card p-5">
-              <div className="text-sm text-muted">Total sales</div>
-              <div className="text-2xl font-bold">{revenue.profile.totalSales}</div>
-            </div>
-            <div className="rounded-2xl border bg-card p-5">
-              <div className="text-sm text-muted">Earnings</div>
-              <div className="text-2xl font-bold">{formatGhs(revenue.profile.totalEarningsGhs)}</div>
-            </div>
+            <p className="text-xs text-muted">
+              Platform fee: 15% of each sale (server-configured). Earnings and payout balance are
+              net of that fee. Payout requests create a pending record for ops review — automated
+              bank splits are not claimed here.
+            </p>
+            {revenue.sales && revenue.sales.length > 0 ? (
+              <div className="rounded-2xl border bg-card p-4 sm:p-5">
+                <h3 className="text-sm font-semibold">Recent sales</h3>
+                <ul className="mt-3 space-y-2 text-sm">
+                  {revenue.sales.slice(0, 8).map((sale) => (
+                    <li
+                      key={sale._id}
+                      className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-2 last:border-0 last:pb-0"
+                    >
+                      <span className="text-muted">
+                        {formatTimestampDateTime(sale.createdAt)} · {formatGhs(sale.amountGhs)}
+                      </span>
+                      <span className="tabular-nums text-foreground">
+                        You earned {formatGhs(sale.creatorEarningsGhs)}
+                        <span className="text-muted">
+                          {" "}
+                          (fee {formatGhs(sale.platformFeeGhs)})
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {revenue.payouts && revenue.payouts.length > 0 ? (
+              <div className="rounded-2xl border bg-card p-4 sm:p-5">
+                <h3 className="text-sm font-semibold">Payout requests</h3>
+                <ul className="mt-3 space-y-2 text-sm">
+                  {revenue.payouts.slice(0, 5).map((payout) => (
+                    <li
+                      key={payout._id}
+                      className="flex flex-wrap items-center justify-between gap-2"
+                    >
+                      <span className="capitalize text-muted">
+                        {payout.status} · {formatTimestampDateTime(payout.createdAt)}
+                      </span>
+                      <span className="font-medium tabular-nums">{formatGhs(payout.amountGhs)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
         ) : sessionToken ? (
           <RevenueStatsSkeleton />

@@ -1,5 +1,6 @@
 "use client";
 
+import { ProductCover } from "@/components/marketplace/ProductCover";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
@@ -152,26 +153,33 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
 
       <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
         <div>
-          {listing.coverImageUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={listing.coverImageUrl}
-                alt={`${listing.title} product cover`}
-                loading="lazy"
-              className="mb-6 aspect-video w-full rounded-2xl object-cover"
-            />
-          )}
-          <h1 className="text-3xl font-bold">{listing.title}</h1>
+          <ProductCover
+            src={listing.coverImageUrl}
+            title={listing.title}
+            category={listing.category}
+            className="mb-6 w-full max-w-md"
+            aspectClassName="aspect-[4/5] sm:aspect-[16/10]"
+          />
+          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">
+            {listing.category}
+            {listing.productType ? ` · ${String(listing.productType).replace(/_/g, " ")}` : ""}
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight">{listing.title}</h1>
           {creator && (
             <p className="mt-2 text-muted">
               by{" "}
               <a href={`/creator/?handle=${creator.handle}`} className="text-emerald-600 underline">
                 {creator.displayName}
               </a>
-              {creator.verified ? " · Verified creator" : ""}
+              {creator.verified ? (
+                <span className="ml-2 inline-flex items-center gap-1 text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                  <BadgeCheck className="h-4 w-4" aria-hidden />
+                  Verified seller
+                </span>
+              ) : null}
             </p>
           )}
-          <p className="mt-4 whitespace-pre-wrap text-foreground/90">{listing.description}</p>
+          <p className="mt-4 whitespace-pre-wrap text-foreground/90 leading-relaxed">{listing.description}</p>
           {listing.previewText && (
             <div className="mt-6 rounded-2xl border border-border bg-card p-5">
               <h2 className="font-semibold">Preview</h2>
