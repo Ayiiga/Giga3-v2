@@ -23,6 +23,15 @@ const PushPrompt = dynamic(
   { ssr: false }
 );
 
+const EngagementHost = dynamic(
+  withChunkRetryLoader(() =>
+    import("@/components/engagement/EngagementHost").then((module) => ({
+      default: module.EngagementHost,
+    }))
+  ),
+  { ssr: false }
+);
+
 /** Defers non-critical PWA UI until after first paint / idle time. */
 export function DeferredPwaChrome() {
   const [ready, setReady] = useState(false);
@@ -42,6 +51,7 @@ export function DeferredPwaChrome() {
   return (
     <>
       <SwUpdatePrompt />
+      <EngagementHost />
       <InstallPrompt />
       <PushPrompt />
     </>

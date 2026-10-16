@@ -70,6 +70,7 @@ import type * as crons from "../crons.js";
 import type * as developerApi from "../developerApi.js";
 import type * as emailClient from "../emailClient.js";
 import type * as engagementAnnouncementSafety from "../engagementAnnouncementSafety.js";
+import type * as engagementControls from "../engagementControls.js";
 import type * as engagementEmail from "../engagementEmail.js";
 import type * as engagementEmailActions from "../engagementEmailActions.js";
 import type * as engagementEmailHttp from "../engagementEmailHttp.js";
@@ -351,6 +352,7 @@ declare const fullApi: ApiFromModules<{
   developerApi: typeof developerApi;
   emailClient: typeof emailClient;
   engagementAnnouncementSafety: typeof engagementAnnouncementSafety;
+  engagementControls: typeof engagementControls;
   engagementEmail: typeof engagementEmail;
   engagementEmailActions: typeof engagementEmailActions;
   engagementEmailHttp: typeof engagementEmailHttp;
