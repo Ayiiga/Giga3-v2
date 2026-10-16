@@ -96,6 +96,25 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `STRIPE_SECRET_KEY` | Legacy only | Old token checkout in `payments.ts` |
    | `HF_TOKEN` | No (MMS not enabled) | Server-side Hugging Face token. Fine-grained read token. Not read by the static site. |
    | `KHAYA_SUBSCRIPTION_KEY` | For African voice and translation | GhanaNLP / Khaya key. Sent only as `Ocp-Apim-Subscription-Key` from Convex. |
+   | `TAVILY_API_KEY` | Optional (live web) | Primary server-side web search provider for chat live-web research. Never expose in the browser or `NEXT_PUBLIC_*`. |
+   | `SERPER_API_KEY` | Optional (live web) | Fallback search API when Tavily is unavailable or not configured. |
+   | `BRAVE_SEARCH_API_KEY` | Optional (live web) | Third fallback search API. |
+   | `GIGA3_LIVE_WEB_ENABLED` | No | Default enabled. Set `false` to disable live web research server-side. |
+   | `LIVE_WEB_SEARCH_TIMEOUT_MS` | No | Search API timeout (default `10000`). |
+   | `LIVE_WEB_MAX_SEARCH_RESULTS` | No | Max search hits per query (default `5`). |
+   | `LIVE_WEB_MAX_PAGES_TO_READ` | No | Max pages fetched after search (default `3`). |
+   | `LIVE_WEB_RATE_LIMIT_PER_HOUR` | No | Per-user live web requests per hour (default `30`). |
+
+   **Live web search (`TAVILY_API_KEY`) — Convex server secret only**
+
+   Chat live-web research (current news, fact-check, sports scores, etc.) runs in Convex via `convex/liveWeb/`. When `TAVILY_API_KEY` is set, Tavily is the preferred search provider; Serper and Brave are optional fallbacks. If no search API key is configured, Giga3 falls back to Gemini Google Search grounding during answer generation — chat continues to work normally.
+
+   Do **not** set `TAVILY_API_KEY` (or other search keys) in Cloudflare Pages, GitHub Pages build env, or any `NEXT_PUBLIC_*` variable.
+
+   1. Convex Dashboard → production deployment → **Settings → Environment Variables** → add `TAVILY_API_KEY`.
+   2. Or from a trusted machine: `npx convex env set TAVILY_API_KEY "tvly-…"` (never commit the key).
+
+   Optional: add GitHub secret `TAVILY_API_KEY` so **Deploy Convex backend** can sync it on each deploy (same pattern as `GEMINI_API_KEY`).
 
    ```bash
    npx convex env set OPENAI_API_KEY "sk-..."
