@@ -57,6 +57,11 @@ function EngagementHostInner() {
     if (!sessionToken || !configReady || isLoading || !profile) return false;
     if (!checklistOn || localChecklistGone || showWelcome) return false;
     if (onboarding.checklistDismissedAt) return false;
+    // First-session / engagement-welcome path only — do not surprise long-time users
+    // who never saw the new welcome modal when the campaign flips on.
+    const engagedWelcome =
+      Boolean(onboarding.welcomeCompletedAt) || Boolean(onboarding.welcomeDismissedAt);
+    if (profile.onboardingCompletedAt && !engagedWelcome) return false;
     const completed = onboarding.checklistCompleted ?? {};
     return Object.keys(completed).length < 7;
   }, [
@@ -69,6 +74,8 @@ function EngagementHostInner() {
     showWelcome,
     onboarding.checklistDismissedAt,
     onboarding.checklistCompleted,
+    onboarding.welcomeCompletedAt,
+    onboarding.welcomeDismissedAt,
   ]);
 
   async function persist(args: PatchArgs) {

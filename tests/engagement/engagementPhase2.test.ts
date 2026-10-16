@@ -69,6 +69,16 @@ describe("engagement Phase 2 — welcome persistence", () => {
     expect(deferred).toContain("EngagementHost");
   });
 
+  it("keeps checklist off for long-time users who never saw engagement welcome", () => {
+    const host = readFileSync(
+      resolve(root, "web/components/engagement/EngagementHost.tsx"),
+      "utf8"
+    );
+    expect(host).toContain("profile.onboardingCompletedAt && !engagedWelcome");
+    expect(host).toContain("welcomeCompletedAt");
+    expect(host).toContain("welcomeDismissedAt");
+  });
+
   it("does not enable GigaSocial DM flags", () => {
     const flags = readFileSync(
       resolve(root, "web/lib/gigasocial/featureFlags.ts"),
