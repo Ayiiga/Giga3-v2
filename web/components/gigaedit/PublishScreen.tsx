@@ -16,6 +16,7 @@ import { saveSound, type GigaEditSoundAsset } from "@/lib/gigaedit/soundLibrary"
 import { CreatorSurveyManualLink } from "@/components/gigaedit/CreatorSurveyHost";
 import {
   offerCreatorSurvey,
+  requestCreatorSurveyDismiss,
   shouldAutoOfferCreatorSurvey,
 } from "@/lib/gigaedit/creatorSurvey";
 import { saveExportedFileToDevice } from "@/lib/gigaedit/downloadExport";
@@ -23,6 +24,9 @@ import type { GigaEditStarterPackId } from "@/lib/gigaedit/templates";
 import type { ExportAspectRatio } from "@/lib/gigaedit/types";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+
+/** Signals CSS to keep survey backdrop above the sticky Save/Post dock. */
+const PUBLISH_DOCK_CLASS = "gigaedit-publish-dock-open";
 
 export type PublishScreenProps = {
   kind: GigaEditPublishMediaKind;
@@ -100,6 +104,15 @@ export function PublishScreen({
     return () => URL.revokeObjectURL(url);
   }, [editedFile]);
 
+  // Keep sticky Save/Post above the auto-opened survey sheet (survey still opens immediately).
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.classList.add(PUBLISH_DOCK_CLASS);
+    return () => {
+      document.documentElement.classList.remove(PUBLISH_DOCK_CLASS);
+    };
+  }, []);
+
   async function prepareAudioPackage(): Promise<{
     audioBlob: Blob | null;
     soundId?: string;
@@ -151,6 +164,8 @@ export function PublishScreen({
   }
 
   async function publishToSocial(destination: "feed" | "reel" | "story") {
+    // Clear survey overlay so Post is never trapped; Save still auto-opens the survey first.
+    requestCreatorSurveyDismiss();
     setBusy(true);
     setStatus("Opening GigaSocial…");
     try {

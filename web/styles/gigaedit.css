@@ -950,6 +950,20 @@ html.gigaedit-video-mode .gigaedit-shell--editor {
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45);
 }
 
+/*
+ * While PublishScreen is mounted, leave a dock lane clear of the survey backdrop
+ * so Save / Post stay tappable. Survey still auto-opens after Save to Gallery.
+ * Include safe-area so iOS home-indicator devices keep the sticky dock clear.
+ */
+html.gigaedit-publish-dock-open {
+  --gigaedit-publish-dock-height: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+html.gigaedit-publish-dock-open .gigaedit-publish-sticky {
+  position: relative;
+  z-index: 100;
+}
+
 .gigaedit-preview-stage {
   display: flex;
   min-height: 0;
@@ -1450,6 +1464,12 @@ html.gigaedit-video-mode .gigaedit-shell--editor {
   background: rgba(0, 0, 0, 0.55);
 }
 
+/* Publish dock stays interactive under the sheet (class set by PublishScreen). */
+html.gigaedit-publish-dock-open .gigaedit-survey-backdrop {
+  bottom: var(--gigaedit-publish-dock-height, 4.75rem);
+  padding-bottom: 0.35rem;
+}
+
 .gigaedit-survey-sheet {
   width: min(100%, 26rem);
   max-height: min(90vh, 40rem);
@@ -1460,6 +1480,17 @@ html.gigaedit-video-mode .gigaedit-shell--editor {
   color: var(--ge-text, #f8fafc);
   padding: 0.85rem 0.9rem 1.1rem;
   box-sizing: border-box;
+}
+
+html.gigaedit-publish-dock-open .gigaedit-survey-sheet {
+  max-height: min(calc(90vh - var(--gigaedit-publish-dock-height, 4.75rem)), 36rem);
+}
+
+.gigaedit-survey-publish-hint {
+  margin: 0 0 0.65rem;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: var(--ge-muted, #94a3b8);
 }
 
 .gigaedit-survey-header {
