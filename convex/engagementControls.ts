@@ -31,14 +31,14 @@ export const ENGAGEMENT_FLAG_DEFAULTS: Record<
     enabled: false,
   },
   "engagement.welcome": {
-    value: "disabled",
+    value: "enabled",
     description: "Cross-product welcome modal + interest picker (does not replace chat OnboardingWizard)",
-    enabled: false,
+    enabled: true,
   },
   "engagement.checklist": {
-    value: "disabled",
+    value: "enabled",
     description: "Dismissible first-session checklist across Giga3 surfaces",
-    enabled: false,
+    enabled: true,
   },
   "engagement.rating": {
     value: "disabled",

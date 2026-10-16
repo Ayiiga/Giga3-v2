@@ -3,7 +3,8 @@
 **Date:** 2026-10-16  
 **Base:** `main` @ `a909fa3`  
 **Scope:** Notifications, email, onboarding, ratings, lifecycle, push, admin, analytics  
-**Constraints:** Reuse existing systems; keep GigaSocial DM flags off; Inbox ≠ Messages; no production campaign activation without approval.
+**Constraints:** Reuse existing systems; keep GigaSocial DM flags off; Inbox ≠ Messages.  
+**Live (approved):** `engagement.welcome` + `engagement.checklist` default ON; kill switch / rating / campaigns_admin remain OFF.
 
 ---
 
@@ -294,12 +295,13 @@ Ship behind **`engagement.*` remote-config flags (default OFF)** and DRAFT campa
 
 ## 11. Phase 2 progress (same branch)
 
-Shipped behind **default-OFF** `engagement.*` remote-config keys:
+Shipped with **live welcome + checklist** (approved go-live):
 
 - `convex/engagementControls.ts` + admin get/update in `remoteConfig.ts`
 - `patchEngagementOnboarding` merge mutation (preserves chat onboarding JSON)
 - `WelcomeExperience`, `FirstSessionChecklist`, `EngagementHost` (priority: kill → welcome → checklist)
 - Mounted via `DeferredPwaChrome` (before install/push prompts)
-- Client `useRemoteConfig` treats `engagement.*` as OFF until loaded
+- Defaults: `engagement.welcome` + `engagement.checklist` **ON**; kill switch / rating / campaigns_admin **OFF**
+- Client `useRemoteConfig` still treats unset `engagement.*` as OFF until config loads (then defaults apply)
 
-Still OFF in production until an admin enables flags. No live campaigns. DM flags untouched.
+DM flags untouched.

@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  AFRICAN_READER_VOICES,
-} from "@/components/chat/AfricanVoiceReader";
+import { GIGA_CHAT_VOICES } from "@/lib/speech/gigaVoiceProfiles";
 import { CHAT_CREATE_SECTIONS } from "@/lib/chat/chatCreateMenu";
 import { getSuggestedPrompts } from "@/lib/chat/suggestedPrompts";
 import {
@@ -74,9 +72,9 @@ describe("global suggested prompts", () => {
 
 describe("African reader voices", () => {
   it("defaults to English (British) first with male and female African voices", () => {
-    expect(AFRICAN_READER_VOICES.length).toBeGreaterThanOrEqual(11);
-    expect(AFRICAN_READER_VOICES[0].id).toBe("english-british");
-    expect(AFRICAN_READER_VOICES.some((v) => v.name.includes("(M)"))).toBe(true);
-    expect(AFRICAN_READER_VOICES.some((v) => v.name.includes("(F)"))).toBe(true);
+    expect(GIGA_CHAT_VOICES.length).toBeGreaterThanOrEqual(11);
+    expect(GIGA_CHAT_VOICES[0].id).toBe("english-british");
+    expect(GIGA_CHAT_VOICES.some((v) => v.name.includes("(M)"))).toBe(true);
+    expect(GIGA_CHAT_VOICES.some((v) => v.name.includes("(F)"))).toBe(true);
   });
 });

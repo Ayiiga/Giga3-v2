@@ -9,12 +9,14 @@ import { DEFAULT_ONBOARDING } from "../../web/lib/platform/types";
 
 const root = resolve(__dirname, "../..");
 
-describe("engagement Phase 2 — flags default OFF", () => {
-  it("defines engagement remote-config keys all disabled by default", () => {
+describe("engagement Phase 2 — live campaign flags", () => {
+  it("enables welcome + checklist by default; keeps kill switch / rating / admin off", () => {
     expect(ENGAGEMENT_FLAG_KEYS.length).toBeGreaterThanOrEqual(4);
-    for (const key of ENGAGEMENT_FLAG_KEYS) {
-      expect(ENGAGEMENT_FLAG_DEFAULTS[key].enabled).toBe(false);
-    }
+    expect(ENGAGEMENT_FLAG_DEFAULTS["engagement.welcome"].enabled).toBe(true);
+    expect(ENGAGEMENT_FLAG_DEFAULTS["engagement.checklist"].enabled).toBe(true);
+    expect(ENGAGEMENT_FLAG_DEFAULTS["engagement.kill_switch"].enabled).toBe(false);
+    expect(ENGAGEMENT_FLAG_DEFAULTS["engagement.rating"].enabled).toBe(false);
+    expect(ENGAGEMENT_FLAG_DEFAULTS["engagement.campaigns_admin"].enabled).toBe(false);
   });
 
   it("wires engagement defaults into remoteConfig and client isEnabled", () => {
