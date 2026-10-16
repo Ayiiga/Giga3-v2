@@ -64,6 +64,30 @@ describe("marketplace Phase 2 sales analytics helpers", () => {
     const r = analyticsRangePreset("7d");
     expect(r.fromMs).toBeLessThan(r.toMs!);
   });
+
+  it("floors range endpoints to the minute so useQuery args stay stable", () => {
+    const a = analyticsRangePreset("30d", 1_700_000_123_456);
+    const b = analyticsRangePreset("30d", 1_700_000_123_999);
+    expect(a).toEqual(b);
+    expect(a.toMs! % 60_000).toBe(0);
+    expect(a.fromMs).toBe(a.toMs! - 30 * 24 * 60 * 60 * 1000);
+  });
+});
+
+describe("marketplace sell client — analytics query stability", () => {
+  it("memoizes analyticsRangePreset by preset (avoids React #301 re-render loop)", () => {
+    const sell = readFileSync(
+      resolve(__dirname, "../../web/components/marketplace/MarketplaceSellClient.tsx"),
+      "utf8"
+    );
+    expect(sell).toContain("useMemo");
+    expect(sell).toMatch(
+      /analyticsRangePreset\(analyticsPreset\)[\s\S]*?\[analyticsPreset\]/
+    );
+    expect(sell).not.toMatch(
+      /const analyticsRange = analyticsRangePreset\(analyticsPreset\);/
+    );
+  });
 });
 
 describe("marketplace Phase 2 Convex storefront + analytics", () => {
