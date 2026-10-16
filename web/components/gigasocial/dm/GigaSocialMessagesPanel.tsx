@@ -69,8 +69,14 @@ function displayPeer(userId: string): string {
 
 export const GigaSocialMessagesPanel = memo(function GigaSocialMessagesPanel({
   sessionToken,
+  initialRecipient,
+  initialThreadId,
 }: {
   sessionToken: string;
+  /** Prefill compose from `?to=` deep link (email / user id). */
+  initialRecipient?: string;
+  /** Open a thread from `?thread=` deep link. */
+  initialThreadId?: string;
 }) {
   const features = useGigaSocialFeatures();
   const [locale, setLocale] = useState<DmUiLocale>("en");
@@ -78,17 +84,31 @@ export const GigaSocialMessagesPanel = memo(function GigaSocialMessagesPanel({
   const { effectiveOnline } = useEffectiveOnline();
 
   const [activeThreadId, setActiveThreadId] = useState<Id<"socialDmThreads"> | null>(
-    null
+    () => (initialThreadId ? (initialThreadId as Id<"socialDmThreads">) : null)
   );
   const [hiddenTick, setHiddenTick] = useState(0);
-  const [composeOpen, setComposeOpen] = useState(false);
-  const [recipient, setRecipient] = useState("");
+  const [composeOpen, setComposeOpen] = useState(
+    () => Boolean(initialRecipient && !initialThreadId)
+  );
+  const [recipient, setRecipient] = useState(() => initialRecipient?.trim() ?? "");
   const [firstMessage, setFirstMessage] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setLocale(readDmUiLocale());
   }, []);
+
+  useEffect(() => {
+    if (initialThreadId) {
+      setActiveThreadId(initialThreadId as Id<"socialDmThreads">);
+      setComposeOpen(false);
+      return;
+    }
+    if (initialRecipient?.trim()) {
+      setRecipient(initialRecipient.trim());
+      setComposeOpen(true);
+    }
+  }, [initialRecipient, initialThreadId]);
 
   const setLocaleAndPersist = (next: DmUiLocale) => {
     setLocale(next);
@@ -239,25 +259,36 @@ const DmThreadList = memo(function DmThreadList({
   const t = dmUiStrings(locale);
   const recipientId = useId();
   const status = useQuery(api.gigaSocialDm.getDmFoundationStatus, { sessionToken });
+  const [threadCursor, setThreadCursor] = useState<string | undefined>(undefined);
+  const [accumulatedThreads, setAccumulatedThreads] = useState<DmThread[]>([]);
+  const [threadsNextCursor, setThreadsNextCursor] = useState<string | null>(null);
   const threadsQuery = useQuery(
     api.gigaSocialDm.listMyThreads,
-    status?.enabled ? { sessionToken, limit: 40 } : "skip"
+    status?.enabled
+      ? { sessionToken, limit: 40, cursor: threadCursor }
+      : "skip"
   );
   const sendMessage = useMutation(api.gigaSocialDm.sendMessage);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
   const [listError, setListError] = useState(false);
 
-  const threads = useMemo(() => {
-    void hiddenTick;
-    const rows = (threadsQuery?.threads ?? []) as DmThread[];
-    return rows.filter((row) => !isDmThreadHiddenLocally(row.threadId));
-  }, [threadsQuery?.threads, hiddenTick]);
-
   useEffect(() => {
     if (threadsQuery === undefined) return;
     setListError(false);
-  }, [threadsQuery]);
+    const rows = (threadsQuery.threads ?? []) as DmThread[];
+    setThreadsNextCursor(threadsQuery.nextCursor ?? null);
+    setAccumulatedThreads((prev) => {
+      if (threadCursor === undefined) return rows;
+      const seen = new Set(prev.map((t) => t.threadId));
+      return [...prev, ...rows.filter((t) => !seen.has(t.threadId))];
+    });
+  }, [threadsQuery, threadCursor]);
+
+  const threads = useMemo(() => {
+    void hiddenTick;
+    return accumulatedThreads.filter((row) => !isDmThreadHiddenLocally(row.threadId));
+  }, [accumulatedThreads, hiddenTick]);
 
   const startConversation = async () => {
     if (!online) {
@@ -451,6 +482,19 @@ const DmThreadList = memo(function DmThreadList({
           })}
         </ul>
       )}
+
+      {threadsNextCursor ? (
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="min-h-11 w-full"
+          disabled={threadsQuery === undefined}
+          onClick={() => setThreadCursor(threadsNextCursor)}
+        >
+          {t.loadMoreThreads}
+        </Button>
+      ) : null}
     </div>
   );
 });
@@ -483,6 +527,7 @@ const DmConversation = memo(function DmConversation({
   });
   const sendMessage = useMutation(api.gigaSocialDm.sendMessage);
   const acceptRequest = useMutation(api.gigaSocialDm.acceptRequest);
+  const declineRequest = useMutation(api.gigaSocialDm.declineRequest);
   const blockUser = useMutation(api.gigaSocialDm.blockUser);
   const reportMessage = useMutation(api.gigaSocialDm.reportMessage);
 
@@ -654,9 +699,24 @@ const DmConversation = memo(function DmConversation({
     }
   };
 
+  const handleDecline = async () => {
+    if (acting) return;
+    if (!window.confirm(t.declineConfirm)) return;
+    setActing(true);
+    try {
+      await declineRequest({ sessionToken, threadId });
+      onStatus(t.declined);
+      onBack();
+    } catch (err) {
+      onStatus(err instanceof Error ? err.message : t.errorTitle);
+    } finally {
+      setActing(false);
+    }
+  };
+
   const handleDeclineAndBlock = async () => {
     if (!thread || acting) return;
-    if (!window.confirm(t.declineConfirm)) return;
+    if (!window.confirm(t.declineAndBlockConfirm)) return;
     setActing(true);
     try {
       await blockUser({ sessionToken, blockedUserId: thread.otherUserId });
@@ -782,6 +842,16 @@ const DmConversation = memo(function DmConversation({
               onClick={() => void handleAccept()}
             >
               {t.acceptRequest}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="min-h-11"
+              disabled={acting}
+              onClick={() => void handleDecline()}
+            >
+              {t.declineRequest}
             </Button>
             <Button
               type="button"

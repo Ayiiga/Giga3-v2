@@ -31,6 +31,6 @@ Keep disabled:
 
 1. Merge / deploy Phase 2C schema + module (or deploy this stack including 2C).  
 2. Land Phase 2D UI (optional for API-only QA).  
-3. Follow-up UI PR to call `declineRequest` for soft decline.  
+3. Soft `declineRequest` is wired in the Messages UI (Accept / Decline / Decline & block). 
 4. Enable flags **only** on a non-production Convex deployment for E2E.  
 5. Optional: compound cursor if same-ms message collisions appear in QA.  

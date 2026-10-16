@@ -11,11 +11,13 @@
 - en/fr strings, a11y labels, offline/error/retry/loading/empty states
 - Client-only unread dots (localStorage)
 
-## Actual APIs used (Phase 2C only)
+## Actual APIs used (Phase 2C + soft decline)
 
-`listMyThreads`, `listThreadMessages`, `sendMessage`, `acceptRequest`, `blockUser`, `reportMessage`, `getDmFoundationStatus`
+`listMyThreads`, `listThreadMessages`, `sendMessage`, `acceptRequest`, `declineRequest`, `blockUser`, `reportMessage`, `getDmFoundationStatus`
 
-Not available: soft `declineRequest`, server mark-read / unread badge query.
+Deep links: `/gigasocial/?tab=messages&to=<userId>` (compose) and `&thread=<threadId>` (open).
+
+Still client-only: unread dots (localStorage). Server mark-read / unread badge query not shipped.
 
 ## Known limitations
 

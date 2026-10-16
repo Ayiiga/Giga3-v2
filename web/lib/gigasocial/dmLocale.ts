@@ -32,9 +32,12 @@ export type DmUiStrings = {
   backToList: string;
   requestBanner: string;
   acceptRequest: string;
-  declineAndBlock: string;
+  declineRequest: string;
   declineConfirm: string;
+  declineAndBlock: string;
+  declineAndBlockConfirm: string;
   accepted: string;
+  declined: string;
   declinedBlocked: string;
   blockUser: string;
   blockConfirm: string;
@@ -53,6 +56,7 @@ export type DmUiStrings = {
   loadOlderRetry: string;
   loadOlderHint: string;
   endOfHistory: string;
+  loadMoreThreads: string;
   featureDisabledTitle: string;
   featureDisabledBody: string;
   serverDisabledTitle: string;
@@ -89,18 +93,22 @@ const EN: DmUiStrings = {
   startConversation: "Start",
   cancel: "Cancel",
   backToList: "Back to conversations",
-  requestBanner: "Message request — accept to continue chatting, or decline and block.",
+  requestBanner:
+    "Message request — accept to chat, decline to close quietly, or decline and block.",
   acceptRequest: "Accept",
-  declineAndBlock: "Decline & block",
+  declineRequest: "Decline",
   declineConfirm:
-    "Decline this request and block the sender? Soft decline is not available yet; this uses the block API.",
+    "Decline this request without blocking? They can message you again later unless you block them.",
+  declineAndBlock: "Decline & block",
+  declineAndBlockConfirm:
+    "Decline this request and block the sender? They will not be able to message you.",
   accepted: "Request accepted.",
+  declined: "Request declined.",
   declinedBlocked: "Request declined and user blocked.",
   blockUser: "Block",
   blockConfirm: "Block this person from messaging you?",
   blockSuccess: "User blocked. You can no longer send messages to each other.",
-  blockHistoryNote:
-    "Note: older messages may still appear until a server update hides blocked threads.",
+  blockHistoryNote: "Blocked conversations are hidden from your Messages list.",
   reportMessage: "Report",
   reportReasonLabel: "Reason",
   reportReasonPlaceholder: "Spam, harassment, other…",
@@ -114,6 +122,7 @@ const EN: DmUiStrings = {
   loadOlderRetry: "Could not load older messages. Retry.",
   loadOlderHint: "An empty page does not mean the end of history.",
   endOfHistory: "No older messages.",
+  loadMoreThreads: "Load more conversations",
   featureDisabledTitle: "Messages are not enabled",
   featureDisabledBody:
     "Direct messaging UI is off in this build. Activity notifications remain in Inbox.",
@@ -154,18 +163,22 @@ const FR: DmUiStrings = {
   cancel: "Annuler",
   backToList: "Retour aux conversations",
   requestBanner:
-    "Demande de message — acceptez pour continuer, ou refusez et bloquez.",
+    "Demande de message — acceptez pour discuter, refusez sans bloquer, ou refusez et bloquez.",
   acceptRequest: "Accepter",
-  declineAndBlock: "Refuser et bloquer",
+  declineRequest: "Refuser",
   declineConfirm:
-    "Refuser cette demande et bloquer l’expéditeur ? Le refus soft n’existe pas encore ; ceci utilise l’API de blocage.",
+    "Refuser cette demande sans bloquer ? Cette personne pourra vous écrire plus tard sauf si vous la bloquez.",
+  declineAndBlock: "Refuser et bloquer",
+  declineAndBlockConfirm:
+    "Refuser cette demande et bloquer l’expéditeur ? Elle ne pourra plus vous écrire.",
   accepted: "Demande acceptée.",
+  declined: "Demande refusée.",
   declinedBlocked: "Demande refusée et utilisateur bloqué.",
   blockUser: "Bloquer",
   blockConfirm: "Bloquer cette personne pour la messagerie ?",
   blockSuccess: "Utilisateur bloqué. Vous ne pouvez plus vous écrire.",
   blockHistoryNote:
-    "Remarque : d’anciens messages peuvent encore s’afficher jusqu’à une mise à jour serveur.",
+    "Les conversations bloquées sont masquées de votre liste Messages.",
   reportMessage: "Signaler",
   reportReasonLabel: "Motif",
   reportReasonPlaceholder: "Spam, harcèlement, autre…",
@@ -179,6 +192,7 @@ const FR: DmUiStrings = {
   loadOlderRetry: "Impossible de charger. Réessayer.",
   loadOlderHint: "Une page vide ne signifie pas la fin de l’historique.",
   endOfHistory: "Pas de messages plus anciens.",
+  loadMoreThreads: "Charger plus de conversations",
   featureDisabledTitle: "Messages désactivés",
   featureDisabledBody:
     "L’interface de messagerie est désactivée dans cette version. Les notifications restent dans la Boîte de réception.",

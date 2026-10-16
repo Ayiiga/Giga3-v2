@@ -54,8 +54,8 @@ describe("GigaSocial DM UI — feature disabled by default", () => {
     expect(notificationsSrc).toContain("markNotificationsRead");
     expect(clientSrc).toContain("GigaSocialNotificationsPanel");
     expect(clientSrc).toContain('section === "notifications"');
-    expect(navSrc).toContain('label: "Inbox"');
-    expect(navSrc).toContain('section: "notifications"');
+    expect(navSrc).toContain('"Inbox"');
+    expect(navSrc).toContain('item.id === "notifications"');
   });
 });
 
@@ -65,12 +65,13 @@ describe("GigaSocial DM UI — sections and wiring", () => {
     expect(GIGASOCIAL_SECTIONS.some((s) => s.id === "notifications")).toBe(true);
   });
 
-  it("wires only existing Phase 2C DM handlers", () => {
+  it("wires Phase 2C/2E DM handlers including soft decline", () => {
     for (const name of [
       "listMyThreads",
       "listThreadMessages",
       "sendMessage",
       "acceptRequest",
+      "declineRequest",
       "blockUser",
       "reportMessage",
       "getDmFoundationStatus",
@@ -78,16 +79,18 @@ describe("GigaSocial DM UI — sections and wiring", () => {
       expect(dmApiSrc).toContain(`export const ${name}`);
       expect(panelSrc).toContain(`api.gigaSocialDm.${name}`);
     }
-    // Soft decline exists on the server; Phase 2D UI still uses Decline & block → blockUser
-    expect(dmApiSrc).toContain("export const declineRequest");
     expect(panelSrc).toContain("declineAndBlock");
     expect(panelSrc).toContain("blockUser");
-    expect(panelSrc).not.toContain("api.gigaSocialDm.declineRequest");
+    expect(panelSrc).toContain("loadMoreThreads");
+    expect(panelSrc).toContain("initialRecipient");
+    expect(clientSrc).toContain('params.get("to")');
+    expect(clientSrc).toContain('params.get("thread")');
   });
 
   it("uses sessionToken for mutations and never client identity as auth", () => {
     expect(panelSrc).toMatch(/sendMessage\(\{[\s\S]*sessionToken/);
     expect(panelSrc).toMatch(/acceptRequest\(\{[\s\S]*sessionToken/);
+    expect(panelSrc).toMatch(/declineRequest\(\{[\s\S]*sessionToken/);
     expect(panelSrc).toMatch(/blockUser\(\{[\s\S]*sessionToken/);
     expect(panelSrc).toMatch(/reportMessage\(\{[\s\S]*sessionToken/);
   });
