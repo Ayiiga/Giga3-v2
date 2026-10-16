@@ -56,7 +56,7 @@ Phase 2E first landed exclusive `.lt("createdAt", cursor)` + `take(cap+1)`. That
 
 | Gap | Notes |
 |-----|--------|
-| Soft `declineRequest` in UI | 2D still uses Decline & block → `blockUser` |
+| Soft `declineRequest` in UI | Wired — Decline calls `declineRequest`; Decline & block still uses `blockUser` |
 | Server unread / mark-read | 2D uses localStorage last-read only |
 | `getDmFoundationStatus.uiAvailable` | Still `false`; UI chrome gated by `NEXT_PUBLIC_GIGASOCIAL_DM` |
 

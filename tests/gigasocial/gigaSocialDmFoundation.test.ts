@@ -48,6 +48,7 @@ describe("GigaSocial DM feature flag (default off)", () => {
   it("every exported DM handler asserts the flag before work", () => {
     for (const name of [
       "listMyThreads",
+      "getThread",
       "listThreadMessages",
       "sendMessage",
       "acceptRequest",

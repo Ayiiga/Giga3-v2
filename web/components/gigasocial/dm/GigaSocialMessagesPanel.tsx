@@ -69,8 +69,14 @@ function displayPeer(userId: string): string {
 
 export const GigaSocialMessagesPanel = memo(function GigaSocialMessagesPanel({
   sessionToken,
+  initialRecipient,
+  initialThreadId,
 }: {
   sessionToken: string;
+  /** Prefill compose from `?to=` deep link (email / user id). */
+  initialRecipient?: string;
+  /** Open a thread from `?thread=` deep link. */
+  initialThreadId?: string;
 }) {
   const features = useGigaSocialFeatures();
   const [locale, setLocale] = useState<DmUiLocale>("en");
@@ -78,17 +84,31 @@ export const GigaSocialMessagesPanel = memo(function GigaSocialMessagesPanel({
   const { effectiveOnline } = useEffectiveOnline();
 
   const [activeThreadId, setActiveThreadId] = useState<Id<"socialDmThreads"> | null>(
-    null
+    () => (initialThreadId ? (initialThreadId as Id<"socialDmThreads">) : null)
   );
   const [hiddenTick, setHiddenTick] = useState(0);
-  const [composeOpen, setComposeOpen] = useState(false);
-  const [recipient, setRecipient] = useState("");
+  const [composeOpen, setComposeOpen] = useState(
+    () => Boolean(initialRecipient && !initialThreadId)
+  );
+  const [recipient, setRecipient] = useState(() => initialRecipient?.trim() ?? "");
   const [firstMessage, setFirstMessage] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setLocale(readDmUiLocale());
   }, []);
+
+  useEffect(() => {
+    if (initialThreadId) {
+      setActiveThreadId(initialThreadId as Id<"socialDmThreads">);
+      setComposeOpen(false);
+      return;
+    }
+    if (initialRecipient?.trim()) {
+      setRecipient(initialRecipient.trim());
+      setComposeOpen(true);
+    }
+  }, [initialRecipient, initialThreadId]);
 
   const setLocaleAndPersist = (next: DmUiLocale) => {
     setLocale(next);
@@ -239,25 +259,54 @@ const DmThreadList = memo(function DmThreadList({
   const t = dmUiStrings(locale);
   const recipientId = useId();
   const status = useQuery(api.gigaSocialDm.getDmFoundationStatus, { sessionToken });
-  const threadsQuery = useQuery(
+  // Keep first page subscribed so new/reordered threads stay live after load-more.
+  const firstPage = useQuery(
     api.gigaSocialDm.listMyThreads,
     status?.enabled ? { sessionToken, limit: 40 } : "skip"
+  );
+  const [loadCursor, setLoadCursor] = useState<string | null>(null);
+  const [olderThreads, setOlderThreads] = useState<DmThread[]>([]);
+  const [threadsNextCursor, setThreadsNextCursor] = useState<string | null>(null);
+  const olderPage = useQuery(
+    api.gigaSocialDm.listMyThreads,
+    status?.enabled && loadCursor
+      ? { sessionToken, limit: 40, cursor: loadCursor }
+      : "skip"
   );
   const sendMessage = useMutation(api.gigaSocialDm.sendMessage);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
   const [listError, setListError] = useState(false);
 
-  const threads = useMemo(() => {
-    void hiddenTick;
-    const rows = (threadsQuery?.threads ?? []) as DmThread[];
-    return rows.filter((row) => !isDmThreadHiddenLocally(row.threadId));
-  }, [threadsQuery?.threads, hiddenTick]);
+  useEffect(() => {
+    if (firstPage === undefined) return;
+    setListError(false);
+    if (olderThreads.length === 0 && loadCursor === null) {
+      setThreadsNextCursor(firstPage.nextCursor ?? null);
+    }
+  }, [firstPage, olderThreads.length, loadCursor]);
 
   useEffect(() => {
-    if (threadsQuery === undefined) return;
-    setListError(false);
-  }, [threadsQuery]);
+    if (olderPage === undefined || loadCursor === null) return;
+    const rows = (olderPage.threads ?? []) as DmThread[];
+    setOlderThreads((prev) => {
+      const seen = new Set(prev.map((t) => t.threadId));
+      return [...prev, ...rows.filter((t) => !seen.has(t.threadId))];
+    });
+    setThreadsNextCursor(olderPage.nextCursor ?? null);
+    setLoadCursor(null);
+  }, [olderPage, loadCursor]);
+
+  const threads = useMemo(() => {
+    void hiddenTick;
+    const first = (firstPage?.threads ?? []) as DmThread[];
+    const firstIds = new Set(first.map((t) => t.threadId));
+    const merged = [
+      ...first,
+      ...olderThreads.filter((t) => !firstIds.has(t.threadId)),
+    ];
+    return merged.filter((row) => !isDmThreadHiddenLocally(row.threadId));
+  }, [firstPage?.threads, olderThreads, hiddenTick]);
 
   const startConversation = async () => {
     if (!online) {
@@ -299,7 +348,7 @@ const DmThreadList = memo(function DmThreadList({
     );
   }
 
-  if (threadsQuery === undefined) {
+  if (firstPage === undefined) {
     return <p className="py-8 text-center text-sm text-muted">{t.loadingThreads}</p>;
   }
 
@@ -451,6 +500,19 @@ const DmThreadList = memo(function DmThreadList({
           })}
         </ul>
       )}
+
+      {threadsNextCursor ? (
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="min-h-11 w-full"
+          disabled={loadCursor !== null}
+          onClick={() => setLoadCursor(threadsNextCursor)}
+        >
+          {t.loadMoreThreads}
+        </Button>
+      ) : null}
     </div>
   );
 });
@@ -477,19 +539,15 @@ const DmConversation = memo(function DmConversation({
   const reasonId = useId();
   const menuId = useId();
 
-  const threadsQuery = useQuery(api.gigaSocialDm.listMyThreads, {
+  const thread = useQuery(api.gigaSocialDm.getThread, {
     sessionToken,
-    limit: 40,
-  });
+    threadId,
+  }) as DmThread | null | undefined;
   const sendMessage = useMutation(api.gigaSocialDm.sendMessage);
   const acceptRequest = useMutation(api.gigaSocialDm.acceptRequest);
+  const declineRequest = useMutation(api.gigaSocialDm.declineRequest);
   const blockUser = useMutation(api.gigaSocialDm.blockUser);
   const reportMessage = useMutation(api.gigaSocialDm.reportMessage);
-
-  const thread = useMemo(() => {
-    const rows = (threadsQuery?.threads ?? []) as DmThread[];
-    return rows.find((row) => row.threadId === threadId) ?? null;
-  }, [threadsQuery?.threads, threadId]);
 
   const [messages, setMessages] = useState<DmMessage[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -654,9 +712,24 @@ const DmConversation = memo(function DmConversation({
     }
   };
 
+  const handleDecline = async () => {
+    if (acting) return;
+    if (!window.confirm(t.declineConfirm)) return;
+    setActing(true);
+    try {
+      await declineRequest({ sessionToken, threadId });
+      onStatus(t.declined);
+      onBack();
+    } catch (err) {
+      onStatus(err instanceof Error ? err.message : t.errorTitle);
+    } finally {
+      setActing(false);
+    }
+  };
+
   const handleDeclineAndBlock = async () => {
     if (!thread || acting) return;
-    if (!window.confirm(t.declineConfirm)) return;
+    if (!window.confirm(t.declineAndBlockConfirm)) return;
     setActing(true);
     try {
       await blockUser({ sessionToken, blockedUserId: thread.otherUserId });
@@ -706,9 +779,29 @@ const DmConversation = memo(function DmConversation({
     }
   };
 
-  const isRequest =
-    thread?.requestStatus === "open" && thread && !thread.initiatedByMe;
-  const peerLabel = thread ? displayPeer(thread.otherUserId) : "…";
+  if (thread === undefined) {
+    return (
+      <div className="rounded-xl border border-border bg-white px-3 py-8 text-center text-sm text-muted">
+        {t.loadingMessages}
+      </div>
+    );
+  }
+
+  if (thread === null) {
+    return (
+      <div className="space-y-3 rounded-xl border border-border bg-white p-3">
+        <p className="text-sm text-muted" role="alert">
+          {t.errorTitle}
+        </p>
+        <Button type="button" size="sm" className="min-h-11" onClick={onBack}>
+          {t.backToList}
+        </Button>
+      </div>
+    );
+  }
+
+  const isRequest = thread.requestStatus === "open" && !thread.initiatedByMe;
+  const peerLabel = displayPeer(thread.otherUserId);
 
   return (
     <div className="flex min-h-[60vh] flex-col rounded-xl border border-border bg-white">
@@ -723,7 +816,7 @@ const DmConversation = memo(function DmConversation({
         </button>
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-sm font-semibold text-foreground">{peerLabel}</h3>
-          {thread?.requestStatus === "open" ? (
+          {thread.requestStatus === "open" ? (
             <p className="text-[11px] text-amber-800">{t.messageRequest}</p>
           ) : null}
         </div>
@@ -782,6 +875,16 @@ const DmConversation = memo(function DmConversation({
               onClick={() => void handleAccept()}
             >
               {t.acceptRequest}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="min-h-11"
+              disabled={acting}
+              onClick={() => void handleDecline()}
+            >
+              {t.declineRequest}
             </Button>
             <Button
               type="button"

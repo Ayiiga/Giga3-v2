@@ -260,6 +260,7 @@ function GigaSocialContent() {
         activeSection={section}
         unread={unread}
         showMessages={features.enableDirectMessages}
+        showLive={features.enableGigaLive}
         onNavigate={openSection}
         onCreate={handleCreate}
       />
@@ -435,7 +436,11 @@ function GigaSocialContent() {
             />
             {sessionToken ? (
               <GigaSocialPanelErrorBoundary panelName="Messages">
-                <GigaSocialMessagesPanel sessionToken={sessionToken} />
+                <GigaSocialMessagesPanel
+                  sessionToken={sessionToken}
+                  initialRecipient={params.get("to")?.trim() || undefined}
+                  initialThreadId={params.get("thread")?.trim() || undefined}
+                />
               </GigaSocialPanelErrorBoundary>
             ) : (
               <GigaSocialAuthPrompt title="Sign in to open messages" />

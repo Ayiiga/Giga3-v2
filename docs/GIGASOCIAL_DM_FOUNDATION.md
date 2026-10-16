@@ -155,7 +155,7 @@ Participant authorization: every query/mutation requires `requireSession`; recip
 
 1. Distinct **Messages** section (does not replace Inbox / notifications)
 2. Mobile-first thread list + conversation + composer (`web/components/gigasocial/dm/`)
-3. Accept via `acceptRequest`; Decline & block → `blockUser` (soft `declineRequest` not wired in UI yet)
+3. Accept via `acceptRequest`; soft Decline → `declineRequest`; Decline & block → `blockUser`
 4. Block / report menus using existing mutations
 5. en/fr UI catalog (`web/lib/gigasocial/dmLocale.ts`)
 6. Client-only unread via localStorage
@@ -165,4 +165,4 @@ Participant authorization: every query/mutation requires `requireSession`; recip
 
 - Keep both flags off until non-prod QA with `GIGASOCIAL_DM_ENABLED=true`
 - Compound cursor + thread-list fill fixes required before high-volume messaging
-- Optional: wire UI soft decline to `declineRequest`; server unread APIs
+- Optional: server unread APIs

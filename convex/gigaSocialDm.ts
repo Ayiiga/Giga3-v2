@@ -192,6 +192,31 @@ export const listMyThreads = query({
 });
 
 /**
+ * Fetch one thread the viewer participates in (deep links / open conversation).
+ * M1: returns null when blocked either way (same hide rule as listMyThreads).
+ */
+export const getThread = query({
+  args: {
+    sessionToken: v.string(),
+    threadId: v.id("socialDmThreads"),
+  },
+  handler: async (ctx, args) => {
+    assertGigaSocialDmEnabled();
+    const userId = await requireDmUserId(args.sessionToken, ctx);
+    const thread = await ctx.db.get(args.threadId);
+    if (!thread || !isDmThreadParticipant(thread, userId)) {
+      return null;
+    }
+    const other = otherParticipant(thread, userId);
+    const blocked = await findBlockEitherWay(ctx, userId, other);
+    if (shouldHideDmThreadForBlock(Boolean(blocked))) {
+      return null;
+    }
+    return toPublicThread(thread, userId);
+  },
+});
+
+/**
  * List messages in a thread. Participant-only.
  * M1: Forbidden when blocked either way (no bodies returned).
  * M2: Compound cursor (createdAt, messageId) — no skips on timestamp ties.
