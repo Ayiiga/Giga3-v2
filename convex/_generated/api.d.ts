@@ -33,6 +33,7 @@ import type * as authActions from "../authActions.js";
 import type * as authPasswordActions from "../authPasswordActions.js";
 import type * as authRateLimit from "../authRateLimit.js";
 import type * as authResetLinks from "../authResetLinks.js";
+import type * as blogRatingLogic from "../blogRatingLogic.js";
 import type * as blogStats from "../blogStats.js";
 import type * as browse from "../browse.js";
 import type * as chat from "../chat.js";
@@ -101,6 +102,7 @@ import type * as gigaSocialCommunities from "../gigaSocialCommunities.js";
 import type * as gigaSocialDeveloperApi from "../gigaSocialDeveloperApi.js";
 import type * as gigaSocialDeveloperApiRateLimit from "../gigaSocialDeveloperApiRateLimit.js";
 import type * as gigaSocialDm from "../gigaSocialDm.js";
+import type * as gigaSocialDmPolicy from "../gigaSocialDmPolicy.js";
 import type * as gigaSocialEconomy from "../gigaSocialEconomy.js";
 import type * as gigaSocialLive from "../gigaSocialLive.js";
 import type * as gigaSocialMediaPolicy from "../gigaSocialMediaPolicy.js";
@@ -145,6 +147,7 @@ import type * as liveWeb_webPageReader from "../liveWeb/webPageReader.js";
 import type * as liveWeb_webResearchOrchestrator from "../liveWeb/webResearchOrchestrator.js";
 import type * as liveWebRateLimit from "../liveWebRateLimit.js";
 import type * as marketplace from "../marketplace.js";
+import type * as marketplaceCompleteness from "../marketplaceCompleteness.js";
 import type * as marketplaceListingHelpers from "../marketplaceListingHelpers.js";
 import type * as marketplacePayments from "../marketplacePayments.js";
 import type * as marketplaceSeed from "../marketplaceSeed.js";
@@ -282,6 +285,7 @@ import type * as voices from "../voices.js";
 import type * as webSearch from "../webSearch.js";
 import type * as welcomeEmailClaim from "../welcomeEmailClaim.js";
 import type * as welcomeEmailDelivery from "../welcomeEmailDelivery.js";
+import type * as writingCraft from "../writingCraft.js";
 
 import type {
   ApiFromModules,
@@ -315,6 +319,7 @@ declare const fullApi: ApiFromModules<{
   authPasswordActions: typeof authPasswordActions;
   authRateLimit: typeof authRateLimit;
   authResetLinks: typeof authResetLinks;
+  blogRatingLogic: typeof blogRatingLogic;
   blogStats: typeof blogStats;
   browse: typeof browse;
   chat: typeof chat;
@@ -383,6 +388,7 @@ declare const fullApi: ApiFromModules<{
   gigaSocialDeveloperApi: typeof gigaSocialDeveloperApi;
   gigaSocialDeveloperApiRateLimit: typeof gigaSocialDeveloperApiRateLimit;
   gigaSocialDm: typeof gigaSocialDm;
+  gigaSocialDmPolicy: typeof gigaSocialDmPolicy;
   gigaSocialEconomy: typeof gigaSocialEconomy;
   gigaSocialLive: typeof gigaSocialLive;
   gigaSocialMediaPolicy: typeof gigaSocialMediaPolicy;
@@ -427,6 +433,7 @@ declare const fullApi: ApiFromModules<{
   "liveWeb/webResearchOrchestrator": typeof liveWeb_webResearchOrchestrator;
   liveWebRateLimit: typeof liveWebRateLimit;
   marketplace: typeof marketplace;
+  marketplaceCompleteness: typeof marketplaceCompleteness;
   marketplaceListingHelpers: typeof marketplaceListingHelpers;
   marketplacePayments: typeof marketplacePayments;
   marketplaceSeed: typeof marketplaceSeed;
@@ -564,6 +571,7 @@ declare const fullApi: ApiFromModules<{
   webSearch: typeof webSearch;
   welcomeEmailClaim: typeof welcomeEmailClaim;
   welcomeEmailDelivery: typeof welcomeEmailDelivery;
+  writingCraft: typeof writingCraft;
 }>;
 
 /**
