@@ -21,7 +21,7 @@ import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 
 function RevenueStatsSkeleton() {
   return (
@@ -60,7 +60,12 @@ function MarketplaceSellInner() {
     sessionToken ? { sessionToken } : "skip"
   );
   const [analyticsPreset, setAnalyticsPreset] = useState<"7d" | "30d" | "90d" | "all">("30d");
-  const analyticsRange = analyticsRangePreset(analyticsPreset);
+  // Memoize so Date.now()-based presets are not new useQuery args every render
+  // (that loop surfaces as React minified error #301 on /marketplace/sell).
+  const analyticsRange = useMemo(
+    () => analyticsRangePreset(analyticsPreset),
+    [analyticsPreset]
+  );
   const analytics = useQuery(
     api.marketplace.getCreatorSalesAnalytics,
     sessionToken

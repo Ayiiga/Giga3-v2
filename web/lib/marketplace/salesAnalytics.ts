@@ -71,13 +71,19 @@ export function productSalesSummaries(
   return [...map.values()].sort((a, b) => b.grossGhs - a.grossGhs);
 }
 
-/** Date presets for the seller analytics UI (local calendar days). */
+/**
+ * Date presets for the seller analytics UI (local calendar days).
+ * `toMs` is floored to the minute so callers that pass the result into
+ * Convex `useQuery` args do not thrash / infinite-rerender when `Date.now()`
+ * changes every render (React minified error #301).
+ */
 export function analyticsRangePreset(
-  preset: "7d" | "30d" | "90d" | "all"
+  preset: "7d" | "30d" | "90d" | "all",
+  nowMs: number = Date.now()
 ): { fromMs?: number; toMs?: number } {
   if (preset === "all") return {};
   const days = preset === "7d" ? 7 : preset === "30d" ? 30 : 90;
-  const toMs = Date.now();
+  const toMs = Math.floor(nowMs / 60_000) * 60_000;
   const fromMs = toMs - days * 24 * 60 * 60 * 1000;
   return { fromMs, toMs };
 }
