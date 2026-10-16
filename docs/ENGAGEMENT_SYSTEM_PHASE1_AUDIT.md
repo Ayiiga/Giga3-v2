@@ -289,3 +289,17 @@ Ship behind **`engagement.*` remote-config flags (default OFF)** and DRAFT campa
 - [ ] Implementation proceeds on `cursor/engagement-lifecycle-system-161d` behind default-off flags  
 
 **Next:** Phase 2 — Smart Welcome Experience (extend onboarding; do not remove chat wizard).
+
+---
+
+## 11. Phase 2 progress (same branch)
+
+Shipped behind **default-OFF** `engagement.*` remote-config keys:
+
+- `convex/engagementControls.ts` + admin get/update in `remoteConfig.ts`
+- `patchEngagementOnboarding` merge mutation (preserves chat onboarding JSON)
+- `WelcomeExperience`, `FirstSessionChecklist`, `EngagementHost` (priority: kill → welcome → checklist)
+- Mounted via `DeferredPwaChrome` (before install/push prompts)
+- Client `useRemoteConfig` treats `engagement.*` as OFF until loaded
+
+Still OFF in production until an admin enables flags. No live campaigns. DM flags untouched.

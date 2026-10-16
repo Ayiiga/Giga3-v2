@@ -47,6 +47,14 @@ export type OnboardingState = {
   role: UserRoleId;
   stepsSeen: string[];
   dismissedTips: string[];
+  /** Cross-product welcome modal (engagement.welcome) — once dismissed, do not re-show. */
+  welcomeDismissedAt?: number;
+  welcomeCompletedAt?: number;
+  /** Selected engagement interests (stable ids from engagementControls). */
+  interests?: string[];
+  /** First-session checklist completion map. */
+  checklistCompleted?: Record<string, number>;
+  checklistDismissedAt?: number;
 };
 
 export const DEFAULT_USER_PREFERENCES: UserPreferences = {
