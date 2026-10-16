@@ -16,3 +16,17 @@ web/out/
 web/.indexnow-pending.json
 web/public/sw.js.map
 *.log
+
+# Android TWA tooling (SDK is local-only; never commit)
+.android-sdk/
+android/local.properties
+android/node_modules/
+android/.gradle/
+android/app/build/
+android/build/
+android/*.keystore
+android/*.jks
+android/*.apk
+android/*.aab
+android/signing.properties
+android/upload-keystore.jks

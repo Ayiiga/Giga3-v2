@@ -1,0 +1,66 @@
+/**
+ * Release signing for Giga3 TWA — credentials stay local (never committed).
+ * See docs/google-play/signing.md and android/signing.properties.example
+ *
+ * Sources (first match wins):
+ *   1. android/signing.properties (gitignored)
+ *   2. Environment variables GIGA3_ANDROID_KEYSTORE_*
+ */
+
+def signingPropertiesFile = rootProject.file("signing.properties")
+def signingProperties = new Properties()
+if (signingPropertiesFile.exists()) {
+    signingPropertiesFile.withInputStream { signingProperties.load(it) }
+}
+
+def resolveSigning = {
+    def result = [configured: false]
+    def storePath = signingProperties.getProperty("storeFile")
+    if (storePath) {
+        result.storeFile = file(storePath)
+        result.storePassword = signingProperties.getProperty("storePassword")
+        result.keyAlias = signingProperties.getProperty("keyAlias", "android")
+        result.keyPassword = signingProperties.getProperty("keyPassword")
+        result.configured = result.storeFile.exists()
+        return result
+    }
+    def envStore = System.getenv("GIGA3_ANDROID_KEYSTORE_PATH")
+    if (envStore) {
+        result.storeFile = file(envStore)
+        result.storePassword = System.getenv("GIGA3_ANDROID_KEYSTORE_PASSWORD")
+        result.keyAlias = System.getenv("GIGA3_ANDROID_KEY_ALIAS") ?: "android"
+        result.keyPassword = System.getenv("GIGA3_ANDROID_KEY_PASSWORD") ?: result.storePassword
+        result.configured = result.storeFile.exists()
+    }
+    return result
+}
+
+def signing = resolveSigning()
+
+android {
+    signingConfigs {
+        release {
+            if (signing.configured) {
+                storeFile signing.storeFile
+                storePassword signing.storePassword
+                keyAlias signing.keyAlias
+                keyPassword signing.keyPassword
+            }
+        }
+    }
+    buildTypes {
+        release {
+            if (signing.configured) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+}
+
+if (!signing.configured) {
+    logger.lifecycle(
+        "Giga3 release signing: not configured. " +
+        "Copy signing.properties.example → signing.properties or set GIGA3_ANDROID_KEYSTORE_* env vars. " +
+        "bundleRelease will produce an unsigned AAB."
+    )
+}
