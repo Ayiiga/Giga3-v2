@@ -69,12 +69,12 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-accent/10 hover:text-foreground"
+        className="chat-header-menu inline-flex h-9 w-9 items-center justify-center rounded-lg text-white hover:bg-white/15 hover:text-white"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="More actions"
       >
-        <MoreHorizontal className="h-5 w-5" aria-hidden />
+        <MoreHorizontal className="h-5 w-5" strokeWidth={2.5} aria-hidden />
       </button>
 
       {open ? (

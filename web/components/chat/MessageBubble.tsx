@@ -1,6 +1,5 @@
 "use client";
 
-import { AfricanVoiceReader } from "@/components/chat/AfricanVoiceReader";
 import { AnswerContentBlock } from "@/components/chat/AnswerContentBlock";
 import { LiveWebSourceCards } from "@/components/chat/LiveWebSourceCards";
 import { ResearchResponseBadge } from "@/components/chat/ResearchResponseBadge";
@@ -16,7 +15,7 @@ import { useStreamingReveal } from "@/hooks/useStreamingReveal";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { formatMessageTime } from "@/lib/chat/groupMessagesByDate";
 import { parseAnswerBlocks } from "@/lib/chat/parseAnswerBlocks";
-import { parseSmartAnswer, smartAnswerSpokenText } from "@/lib/chat/parseSmartAnswer";
+import { parseSmartAnswer } from "@/lib/chat/parseSmartAnswer";
 import { extractProductRedirectsFromText } from "@/lib/chat/productRedirects";
 import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
 import {
@@ -202,21 +201,6 @@ export const MessageBubble = memo(function MessageBubble({
                 {productRedirects.length > 0 ? (
                   <ProductRedirectCards products={productRedirects} />
                 ) : null}
-                {!streaming && displayContent ? (
-                  smartAnswer ? (
-                    <AfricanVoiceReader
-                      content={smartAnswerSpokenText(smartAnswer)}
-                      messageId={id}
-                    />
-                  ) : answerBlocks?.isStructured ? (
-                    <AfricanVoiceReader content="" messageId={id} selectorOnly />
-                  ) : (
-                    <AfricanVoiceReader
-                      content={answerBlocks?.plainContent ?? displayContent}
-                      messageId={id}
-                    />
-                  )
-                ) : null}
               </>
             ))}
           {parsed.images.map((url) => (
@@ -298,13 +282,14 @@ export const MessageBubble = memo(function MessageBubble({
           </div>
           {bubbleActions}
           {/*
-            Smart Answers already render in the bubble. Mounting Document Studio
-            for the same markdown duplicates the answer and its sticky Export bar
-            floats over the readable reply on mobile.
+            Smart Answers and structured answer blocks already render in the bubble.
+            Mounting Document Studio for the same markdown duplicates the reply
+            (and its sticky Export bar) on mobile.
           */}
           {!streaming &&
           !editing &&
           !smartAnswer &&
+          !answerBlocks?.isStructured &&
           looksLikeDocumentContent(content) ? (
             <DocumentResultCard
               content={content}

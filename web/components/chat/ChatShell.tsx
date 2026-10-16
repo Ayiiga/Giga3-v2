@@ -4,7 +4,6 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ChatSegmentNotice } from "@/components/chat/ChatSegmentNotice";
 import { ChatBanners } from "@/components/chat/ChatBanners";
 import { ChatChrome } from "@/components/chat/ChatChrome";
-import { ChatVoiceLanguageBar } from "@/components/chat/ChatVoiceLanguageBar";
 import type { ChatActionsMenuHandle } from "@/components/chat/ChatActionsMenu";
 import { ChatConversationPane } from "@/components/chat/ChatConversationPane";
 import { ChatOverflowProbe } from "@/components/chat/ChatOverflowProbe";
@@ -281,6 +280,19 @@ function ChatShellInner({
     setLocalTurns([]);
     creationIntakeRef.current = null;
   }, [activeId]);
+
+  // Drop optimistic local turns once the server conversation echoes the same content
+  // (prevents duplicated user/assistant bubbles after sync).
+  useEffect(() => {
+    if (!localTurns.length || !messages.length) return;
+    const serverKeys = new Set(
+      messages.map((m) => `${m.role}\0${m.content.trim()}`)
+    );
+    setLocalTurns((prev) => {
+      const next = prev.filter((m) => !serverKeys.has(`${m.role}\0${m.content.trim()}`));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [messages, localTurns.length]);
 
   const appendLocalTurn = useCallback((userText: string, assistantText: string) => {
     const now = Date.now();
@@ -745,10 +757,6 @@ function ChatShellInner({
               handleCloseMobile();
             }}
           />
-
-          {displayMessages.length === 0 ? (
-            <ChatVoiceLanguageBar className="chat-voice-language-bar--mobile lg:hidden" />
-          ) : null}
 
           <ChatBanners
             email={email}

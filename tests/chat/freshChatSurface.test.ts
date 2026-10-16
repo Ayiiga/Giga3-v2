@@ -39,15 +39,15 @@ describe("fresh chat surface", () => {
     );
   });
 
-  it("renders answer blocks for structured replies and AfricanVoiceReader for all completed replies", () => {
+  it("renders answer blocks for structured replies without in-chat voice pickers", () => {
     const bubble = readFileSync(
       resolve(__dirname, "../../web/components/chat/MessageBubble.tsx"),
       "utf8"
     );
     expect(bubble).toContain("AnswerContentBlock");
     expect(bubble).toContain("answerBlocks?.isStructured");
-    expect(bubble).toContain("<AfricanVoiceReader");
-    expect(bubble).toContain("messageId={id}");
+    expect(bubble).not.toContain("AfricanVoiceReader");
+    expect(bubble).toContain("MessageBubbleActions");
   });
 
   it("routes answer block read-aloud through the shared Giga voice layer", () => {
@@ -69,20 +69,20 @@ describe("fresh chat surface", () => {
     expect(actions).toContain("shareText");
   });
 
-  it("keeps voice selector available for structured answer blocks", () => {
+  it("keeps read-aloud voice selection in Settings only", () => {
     const bubble = readFileSync(
       resolve(__dirname, "../../web/components/chat/MessageBubble.tsx"),
       "utf8"
     );
-    const reader = readFileSync(
-      resolve(__dirname, "../../web/components/chat/AfricanVoiceReader.tsx"),
+    const settings = readFileSync(
+      resolve(__dirname, "../../web/components/settings/LanguagePreferencesSettings.tsx"),
       "utf8"
     );
-    expect(bubble).toContain("selectorOnly");
-    expect(reader).toContain("selectorOnly");
-    // Compact control — expand to pick a voice (no always-visible pill strip).
-    expect(reader).toContain("Change voice");
-    expect(reader).toContain("aria-expanded={open}");
+    expect(bubble).not.toContain("Change voice");
+    expect(bubble).not.toContain("selectorOnly");
+    expect(settings).toContain("Read-aloud voice");
+    expect(settings).toContain("writeVoiceLanguageId");
+    expect(settings).toContain("GIGA_CHAT_VOICES");
   });
 
   it("stops speech when deleting a conversation", () => {

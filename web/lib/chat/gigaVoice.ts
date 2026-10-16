@@ -1,6 +1,6 @@
 /**
  * Shared Giga3 browser TTS layer for chat — voice selection, fallback, playback, cancel.
- * Answer blocks, AfricanVoiceReader, and MessageBubbleActions all delegate here.
+ * Answer blocks and MessageBubbleActions delegate here. Voice pick lives in Settings.
  */
 
 import { cancelKhayaPlayback, playKhayaVoice } from "@/lib/voice/khayaPlayback";

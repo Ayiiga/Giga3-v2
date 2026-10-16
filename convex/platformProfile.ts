@@ -67,12 +67,19 @@ export const saveOnboarding = mutation({
     if (!user) throw new Error("User not found");
 
     const now = Date.now();
+    const existing = parseJson(user.onboardingState, {
+      completed: Boolean(user.onboardingCompletedAt),
+      role: user.userRole ?? "general",
+      stepsSeen: [] as string[],
+      dismissedTips: [] as string[],
+    });
     const onboardingState = JSON.stringify({
+      ...existing,
       completed: args.completed,
-      completedAt: args.completed ? now : undefined,
+      completedAt: args.completed ? now : existing.completedAt,
       role: args.role,
       stepsSeen: args.stepsSeen,
-      dismissedTips: [],
+      dismissedTips: existing.dismissedTips ?? [],
     });
 
     const patch: Record<string, unknown> = {
@@ -88,6 +95,68 @@ export const saveOnboarding = mutation({
 
     await ctx.db.patch(user._id, patch);
     return { ok: true };
+  },
+});
+
+/**
+ * Merge additive engagement fields into onboardingState JSON without wiping
+ * chat OnboardingWizard progress.
+ */
+export const patchEngagementOnboarding = mutation({
+  args: {
+    ...sessionArgs,
+    welcomeDismissed: v.optional(v.boolean()),
+    welcomeCompleted: v.optional(v.boolean()),
+    interests: v.optional(v.array(v.string())),
+    checklistItemId: v.optional(v.string()),
+    checklistDismissed: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken);
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    if (!user) throw new Error("User not found");
+
+    const now = Date.now();
+    const existing = parseJson(user.onboardingState, {
+      completed: Boolean(user.onboardingCompletedAt),
+      role: user.userRole ?? "general",
+      stepsSeen: [] as string[],
+      dismissedTips: [] as string[],
+      interests: [] as string[],
+      checklistCompleted: {} as Record<string, number>,
+    });
+
+    const next: Record<string, unknown> = { ...existing };
+    if (args.welcomeDismissed) next.welcomeDismissedAt = now;
+    if (args.welcomeCompleted) {
+      next.welcomeCompletedAt = now;
+      next.welcomeDismissedAt = existing.welcomeDismissedAt ?? now;
+    }
+    if (args.interests) {
+      next.interests = args.interests
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean)
+        .slice(0, 16);
+    }
+    if (args.checklistItemId?.trim()) {
+      const map = {
+        ...(typeof existing.checklistCompleted === "object" &&
+        existing.checklistCompleted
+          ? existing.checklistCompleted
+          : {}),
+      } as Record<string, number>;
+      map[args.checklistItemId.trim()] = now;
+      next.checklistCompleted = map;
+    }
+    if (args.checklistDismissed) next.checklistDismissedAt = now;
+
+    await ctx.db.patch(user._id, {
+      onboardingState: JSON.stringify(next),
+    });
+    return { ok: true as const };
   },
 });
 

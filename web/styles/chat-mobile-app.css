@@ -212,12 +212,18 @@
 }
 
 .chat-header-bar--app .chat-header-menu {
-  color: #fff;
+  color: #fff !important;
+  opacity: 1;
 }
 
 .chat-header-bar--app .chat-header-menu:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff !important;
+}
+
+.chat-header-bar--app .chat-header-menu svg {
   color: #fff;
+  stroke: #fff;
 }
 
 .chat-header-title-mobile {

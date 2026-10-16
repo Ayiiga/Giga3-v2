@@ -16,6 +16,11 @@ import {
   PHASE6_FLAG_KEYS,
   type Phase6FlagKey,
 } from "./phase6Controls";
+import {
+  ENGAGEMENT_FLAG_DEFAULTS,
+  ENGAGEMENT_FLAG_KEYS,
+  type EngagementFlagKey,
+} from "./engagementControls";
 
 const DEFAULT_CONFIG: Record<
   string,
@@ -59,6 +64,12 @@ const DEFAULT_CONFIG: Record<
   ),
   ...Object.fromEntries(
     Object.entries(PHASE6_FLAG_DEFAULTS).map(([key, def]) => [
+      key,
+      { value: def.value, description: def.description, enabled: def.enabled },
+    ])
+  ),
+  ...Object.fromEntries(
+    Object.entries(ENGAGEMENT_FLAG_DEFAULTS).map(([key, def]) => [
       key,
       { value: def.value, description: def.description, enabled: def.enabled },
     ])
@@ -357,6 +368,66 @@ export const updatePhase6ConfigAdmin = mutation({
     }
     const key = args.key as Phase6FlagKey;
     const def = PHASE6_FLAG_DEFAULTS[key];
+    const existing = await ctx.db
+      .query("remoteConfigEntries")
+      .withIndex("by_key", (q) => q.eq("key", key))
+      .first();
+    const now = Date.now();
+    const payload = {
+      value: (args.value?.trim() || existing?.value || def.value).slice(0, 80),
+      description: def.description,
+      enabled: args.enabled,
+      rolloutPercent: Math.max(
+        0,
+        Math.min(100, args.rolloutPercent ?? existing?.rolloutPercent ?? 0)
+      ),
+      updatedAt: now,
+    };
+    if (existing) {
+      await ctx.db.patch(existing._id, payload);
+    } else {
+      await ctx.db.insert("remoteConfigEntries", { key, ...payload });
+    }
+    return { ok: true, key, enabled: payload.enabled };
+  },
+});
+
+/** Admin: list engagement lifecycle flags (defaults OFF when unset). */
+export const getEngagementConfigAdmin = query({
+  args: adminCredentialArgs,
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    const rows = await ctx.db.query("remoteConfigEntries").take(200);
+    return ENGAGEMENT_FLAG_KEYS.map((key) => {
+      const def = ENGAGEMENT_FLAG_DEFAULTS[key];
+      const row = rows.find((r) => r.key === key);
+      return {
+        key,
+        value: row?.value ?? def.value,
+        description: def.description,
+        enabled: row?.enabled ?? def.enabled,
+        rolloutPercent: row?.rolloutPercent ?? 0,
+      };
+    });
+  },
+});
+
+/** Admin: enable/disable an engagement module flag. */
+export const updateEngagementConfigAdmin = mutation({
+  args: {
+    ...adminCredentialArgs,
+    key: v.string(),
+    enabled: v.boolean(),
+    value: v.optional(v.string()),
+    rolloutPercent: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    if (!ENGAGEMENT_FLAG_KEYS.includes(args.key as EngagementFlagKey)) {
+      throw new Error("Invalid engagement config key.");
+    }
+    const key = args.key as EngagementFlagKey;
+    const def = ENGAGEMENT_FLAG_DEFAULTS[key];
     const existing = await ctx.db
       .query("remoteConfigEntries")
       .withIndex("by_key", (q) => q.eq("key", key))
