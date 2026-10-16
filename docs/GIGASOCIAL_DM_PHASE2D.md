@@ -13,9 +13,9 @@
 
 ## Actual APIs used (Phase 2C + soft decline)
 
-`listMyThreads`, `listThreadMessages`, `sendMessage`, `acceptRequest`, `declineRequest`, `blockUser`, `reportMessage`, `getDmFoundationStatus`
+`listMyThreads`, `getThread`, `listThreadMessages`, `sendMessage`, `acceptRequest`, `declineRequest`, `blockUser`, `reportMessage`, `getDmFoundationStatus`
 
-Deep links: `/gigasocial/?tab=messages&to=<userId>` (compose) and `&thread=<threadId>` (open).
+Deep links: `/gigasocial/?tab=messages&to=<userId>` (compose) and `&thread=<threadId>` (open via `getThread`).
 
 Still client-only: unread dots (localStorage). Server mark-read / unread badge query not shipped.
 

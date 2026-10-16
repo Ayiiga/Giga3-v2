@@ -69,6 +69,7 @@ describe("GigaSocial DM UI — sections and wiring", () => {
     for (const name of [
       "listMyThreads",
       "listThreadMessages",
+      "getThread",
       "sendMessage",
       "acceptRequest",
       "declineRequest",
@@ -83,6 +84,8 @@ describe("GigaSocial DM UI — sections and wiring", () => {
     expect(panelSrc).toContain("blockUser");
     expect(panelSrc).toContain("loadMoreThreads");
     expect(panelSrc).toContain("initialRecipient");
+    expect(panelSrc).toContain("firstPage");
+    expect(panelSrc).toContain("olderPage");
     expect(clientSrc).toContain('params.get("to")');
     expect(clientSrc).toContain('params.get("thread")');
   });
