@@ -9,6 +9,7 @@ import {
   SOCIAL_MAX_PHOTOS_PER_POST,
   SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC,
   SOCIAL_MAX_VIDEO_DURATION_MIN,
+  SOCIAL_MAX_VIDEO_MB,
   SOCIAL_VIDEO_ACCEPT,
   type SocialPostMediaItemInput,
 } from "@/lib/gigasocial/constants";
@@ -23,9 +24,15 @@ import {
 import { composePhotoMusicVideo } from "@/lib/gigasocial/photoMusicVideo";
 import { needsVideoTrim, VIDEO_CLIP_LENGTH_OPTIONS_SEC } from "@/lib/gigasocial/videoTrim";
 import {
+  canOptionalEpisodeSplit,
+  SOCIAL_EPISODE_SPLIT_COUNT,
+  shouldOfferEpisodeSplit,
+} from "@/lib/gigasocial/videoEpisodeSplit";
+import {
   getAudioDuration,
   getVideoDuration,
   generateVideoThumbnail,
+  isSocialVideoOverSizeLimit,
   uploadSocialImages,
   uploadSocialVideo,
   type SocialMediaUploadDeps,
@@ -54,6 +61,10 @@ import {
 } from "@/components/gigasocial/studio/GigaSocialMediaReview";
 import { GigaSocialMediaStudio } from "@/components/gigasocial/studio/GigaSocialMediaStudio";
 import { GigaSocialVideoTrimEditor } from "@/components/gigasocial/studio/GigaSocialVideoTrimEditor";
+import {
+  GigaSocialEpisodeConfirm,
+  type GigaSocialEpisodeConfirmResult,
+} from "@/components/gigasocial/studio/GigaSocialEpisodeConfirm";
 import {
   appendRemixMarker,
   buildRemixBodyPrefix,
@@ -94,6 +105,13 @@ interface VideoTrimDraft {
   file: File;
   previewUrl: string;
   durationSec: number;
+}
+
+interface EpisodeSplitDraft {
+  file: File;
+  previewUrl: string;
+  durationSec: number;
+  reason: "oversized" | "creator";
 }
 
 export type GigaSocialComposerInitialMedia = {
@@ -171,6 +189,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [pendingVideo, setPendingVideo] = useState<PendingVideo | null>(null);
   const [videoTrimDraft, setVideoTrimDraft] = useState<VideoTrimDraft | null>(null);
+  const [episodeSplitDraft, setEpisodeSplitDraft] = useState<EpisodeSplitDraft | null>(null);
   const [pendingAudio, setPendingAudio] = useState<PendingAudio | null>(null);
   const [soundAttribution, setSoundAttribution] = useState<string | null>(
     () => initialMedia?.soundAttribution ?? null
@@ -212,7 +231,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const router = useRouter();
 
   const fullscreenFlowActive = Boolean(
-    mediaReviewDraft || videoTrimDraft || cameraStudioOpen
+    mediaReviewDraft || videoTrimDraft || episodeSplitDraft || cameraStudioOpen
   );
 
   useEffect(() => {
@@ -464,6 +483,42 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     });
   }, [revokePreview]);
 
+  const clearEpisodeSplitDraft = useCallback(() => {
+    setEpisodeSplitDraft((current) => {
+      if (current) revokePreview(current.previewUrl);
+      return null;
+    });
+  }, [revokePreview]);
+
+  const openEpisodeSplitDraft = useCallback(
+    (args: {
+      file: File;
+      durationSec: number;
+      reason: "oversized" | "creator";
+    }) => {
+      clearVideoTrimDraft();
+      setEpisodeSplitDraft((current) => {
+        if (current) revokePreview(current.previewUrl);
+        return {
+          file: args.file,
+          previewUrl: URL.createObjectURL(args.file),
+          durationSec: args.durationSec,
+          reason: args.reason,
+        };
+      });
+      setPostType("video");
+      setError(null);
+      if (args.reason === "oversized") {
+        setSuccess(
+          `Video is over ${SOCIAL_MAX_VIDEO_MB} MB. Review the ${SOCIAL_EPISODE_SPLIT_COUNT} episode names, then confirm upload.`
+        );
+      } else {
+        setSuccess(`Name your ${SOCIAL_EPISODE_SPLIT_COUNT} episodes, then confirm upload.`);
+      }
+    },
+    [clearVideoTrimDraft, revokePreview]
+  );
+
   const applyPendingVideo = useCallback(
     (args: {
       file: File;
@@ -494,11 +549,12 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     pendingImages.forEach((image) => revokePreview(image.previewUrl));
     if (pendingVideo) revokePreview(pendingVideo.previewUrl);
     clearVideoTrimDraft();
+    clearEpisodeSplitDraft();
     setPendingImages([]);
     setPendingVideo(null);
     setPendingAudio(null);
     setPreviewFilterId("none");
-  }, [clearVideoTrimDraft, pendingImages, pendingVideo, revokePreview]);
+  }, [clearEpisodeSplitDraft, clearVideoTrimDraft, pendingImages, pendingVideo, revokePreview]);
 
   const addImageFiles = useCallback(
     async (files: FileList | File[]) => {
@@ -556,12 +612,28 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         );
         return;
       }
+      if (shouldOfferEpisodeSplit(file.size, durationSec)) {
+        openEpisodeSplitDraft({ file, durationSec, reason: "oversized" });
+        return;
+      }
+      if (isSocialVideoOverSizeLimit(file)) {
+        setError(
+          `Video is too large (maximum ${SOCIAL_MAX_VIDEO_MB} MB). Compress it, or use a clip of at least 45 seconds so we can split it into ${SOCIAL_EPISODE_SPLIT_COUNT} episodes.`
+        );
+        return;
+      }
       const thumbnailUrl = await generateVideoThumbnail(file);
       applyPendingVideo({ file, durationSec, thumbnailUrl });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not read video.");
     }
-  }, [applyPendingVideo, clearVideoTrimDraft, pendingAudio, pendingImages.length]);
+  }, [
+    applyPendingVideo,
+    clearVideoTrimDraft,
+    openEpisodeSplitDraft,
+    pendingAudio,
+    pendingImages.length,
+  ]);
 
   const handleCameraCapture = useCallback((capture: GigaSocialCameraCapture) => {
     setCameraStudioOpen(false);
@@ -593,6 +665,16 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
             durationSec,
           });
           setPostType("video");
+        } else if (shouldOfferEpisodeSplit(result.file.size, durationSec)) {
+          openEpisodeSplitDraft({
+            file: result.file,
+            durationSec,
+            reason: "oversized",
+          });
+        } else if (isSocialVideoOverSizeLimit(result.file)) {
+          setError(
+            `Video is too large (maximum ${SOCIAL_MAX_VIDEO_MB} MB). Compress it, or use a longer clip so we can split it into ${SOCIAL_EPISODE_SPLIT_COUNT} episodes.`
+          );
         } else {
           applyPendingVideo({
             file: result.file,
@@ -605,7 +687,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       }
       setMediaReviewDraft(null);
     },
-    [addImageFiles, applyPendingVideo, clearVideoTrimDraft]
+    [addImageFiles, applyPendingVideo, clearVideoTrimDraft, openEpisodeSplitDraft]
   );
 
   const addAudioFile = useCallback(async (file: File) => {
@@ -770,8 +852,72 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     setError("Upload cancelled.");
   }
 
+  async function publishEpisodeSeries(result: GigaSocialEpisodeConfirmResult) {
+    if (busy || disabled) return;
+    setBusy(true);
+    setError(null);
+    setSuccess(null);
+    setUploadPercent(0);
+    const controller = new AbortController();
+    uploadAbortRef.current = controller;
+
+    try {
+      const total = result.episodes.length;
+      for (let i = 0; i < total; i += 1) {
+        const episode = result.episodes[i];
+        setSuccess(`Uploading episode ${i + 1} of ${total}…`);
+        const uploaded = await uploadSocialVideo(uploadDeps, episode.file, {
+          signal: controller.signal,
+          onProgress: (progress) => {
+            const overall = Math.round(((i + progress.percent / 100) / total) * 100);
+            setUploadPercent(overall);
+          },
+        });
+        let finalBody = episode.body.trim();
+        if (locationTag.trim()) {
+          finalBody = `${finalBody}\n📍 ${locationTag.trim()}`.trim();
+        }
+        if (soundAttribution && !finalBody.includes(soundAttribution)) {
+          finalBody = `${finalBody}\n🎵 ${soundAttribution}`.trim();
+        }
+        await onSubmit({
+          body: finalBody,
+          postType: "video",
+          mediaItems: [uploaded],
+          communitySlug,
+          visibility,
+          profileId,
+          ...(features.enableUseAsTemplate ? { templatePolicy } : {}),
+        });
+      }
+      setBody("");
+      clearPendingMedia();
+      setSoundAttribution(null);
+      setPostType("text");
+      setSuccess(`Published ${total} episodes successfully.`);
+      onPosted?.();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not publish episodes.");
+    } finally {
+      uploadAbortRef.current = null;
+      setBusy(false);
+      setUploadPercent(null);
+    }
+  }
+
   async function handleSubmit() {
     if (busy || disabled || !canPost) return;
+    if (
+      pendingVideo &&
+      shouldOfferEpisodeSplit(pendingVideo.file.size, pendingVideo.durationSec)
+    ) {
+      openEpisodeSplitDraft({
+        file: pendingVideo.file,
+        durationSec: pendingVideo.durationSec,
+        reason: "oversized",
+      });
+      return;
+    }
     setBusy(true);
     setError(null);
     setSuccess(null);
@@ -865,12 +1011,43 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       setSuccess("Post published successfully.");
       onPosted?.();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not create post.");
+      const message = e instanceof Error ? e.message : "Could not create post.";
+      if (
+        pendingVideo &&
+        /too large/i.test(message) &&
+        shouldOfferEpisodeSplit(pendingVideo.file.size, pendingVideo.durationSec)
+      ) {
+        openEpisodeSplitDraft({
+          file: pendingVideo.file,
+          durationSec: pendingVideo.durationSec,
+          reason: "oversized",
+        });
+        setError(null);
+      } else {
+        setError(message);
+      }
     } finally {
       uploadAbortRef.current = null;
       setBusy(false);
       setUploadPercent(null);
     }
+  }
+
+  if (episodeSplitDraft) {
+    return (
+      <GigaSocialEpisodeConfirm
+        file={episodeSplitDraft.file}
+        previewUrl={episodeSplitDraft.previewUrl}
+        durationSec={episodeSplitDraft.durationSec}
+        caption={body}
+        reason={episodeSplitDraft.reason}
+        onCancel={clearEpisodeSplitDraft}
+        onConfirm={(result) => {
+          clearEpisodeSplitDraft();
+          void publishEpisodeSeries(result);
+        }}
+      />
+    );
   }
 
   if (mediaReviewDraft) {
@@ -898,6 +1075,20 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         onCancel={clearVideoTrimDraft}
         onComplete={(result) => {
           clearVideoTrimDraft();
+          if (shouldOfferEpisodeSplit(result.file.size, result.durationSec)) {
+            openEpisodeSplitDraft({
+              file: result.file,
+              durationSec: result.durationSec,
+              reason: "oversized",
+            });
+            return;
+          }
+          if (isSocialVideoOverSizeLimit(result.file)) {
+            setError(
+              `Trimmed video is still over ${SOCIAL_MAX_VIDEO_MB} MB. Compress it further or split a longer source into ${SOCIAL_EPISODE_SPLIT_COUNT} episodes.`
+            );
+            return;
+          }
           applyPendingVideo(result);
         }}
       />
@@ -1068,6 +1259,25 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         onRemoveAudio={() => setPendingAudio(null)}
       />
 
+      {pendingVideo && canOptionalEpisodeSplit(pendingVideo.durationSec) ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-full"
+          disabled={disabled || busy}
+          onClick={() =>
+            openEpisodeSplitDraft({
+              file: pendingVideo.file,
+              durationSec: pendingVideo.durationSec,
+              reason: "creator",
+            })
+          }
+        >
+          Split into {SOCIAL_EPISODE_SPLIT_COUNT} episodes
+        </Button>
+      ) : null}
+
       <CreatorTemplateQuickPick compact={compact} />
 
       {enableMediaStudio && studioOpen && studioPreviewUrl ? (
@@ -1087,8 +1297,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       ) : compact ? null : (
         <p className="text-xs text-muted">
           Add photos + music (publishes as a {SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC}s video with
-          soundtrack), or a video. Long videos
-          open the trim editor (max {SOCIAL_MAX_VIDEO_DURATION_MIN} min).
+          soundtrack), or a video up to {SOCIAL_MAX_VIDEO_MB} MB /{" "}
+          {SOCIAL_MAX_VIDEO_DURATION_MIN} min. Oversized long videos can be split into{" "}
+          {SOCIAL_EPISODE_SPLIT_COUNT} named episodes before upload.
         </p>
       )}
 
