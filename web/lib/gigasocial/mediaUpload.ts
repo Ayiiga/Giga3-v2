@@ -25,6 +25,7 @@ import {
   SOCIAL_MAX_PHOTOS_PER_POST,
   SOCIAL_MAX_VIDEO_BYTES,
   SOCIAL_MAX_VIDEO_DURATION_SEC,
+  SOCIAL_MAX_VIDEO_MB,
   SOCIAL_VIDEO_BUCKETS,
   SOCIAL_VIDEO_MIME_TYPES,
   type SocialPostMediaItemInput,
@@ -108,8 +109,13 @@ function validateVideoFile(file: File): void {
     throw new Error("Unsupported video type. Use MP4, MOV, or WebM.");
   }
   if (file.size > SOCIAL_MAX_VIDEO_BYTES) {
-    throw new Error("Video is too large. Maximum size is 100 MB.");
+    throw new Error(`Video is too large. Maximum size is ${SOCIAL_MAX_VIDEO_MB} MB.`);
   }
+}
+
+/** True when the file exceeds the GigaSocial video byte cap. */
+export function isSocialVideoOverSizeLimit(file: Pick<File, "size">): boolean {
+  return file.size > SOCIAL_MAX_VIDEO_BYTES;
 }
 
 export function getVideoDuration(file: File): Promise<number> {

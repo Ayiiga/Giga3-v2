@@ -2,6 +2,7 @@ import { action, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
 import { requireSession } from "./auth";
+import { SOCIAL_MAX_VIDEO_BYTES } from "./gigaSocialMediaPolicy";
 import { sanitizeHttpHeaderValue } from "./sanitizeHttpHeader";
 import { assertSafeUploadFileName } from "./uploadSecurity";
 import { sessionArgs } from "./validators";
@@ -40,7 +41,9 @@ const VIDEO_MIME = new Set([
 ]);
 
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
-const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
+/** Keep in sync with web/lib/gigasocial/constants.ts SOCIAL_MAX_VIDEO_BYTES. */
+const MAX_VIDEO_BYTES = SOCIAL_MAX_VIDEO_BYTES;
+const MAX_VIDEO_MB = Math.round(MAX_VIDEO_BYTES / (1024 * 1024));
 
 function cleanSegment(value: string): string {
   return value.trim().replace(/^\/+|\/+$/g, "").replace(/[^a-zA-Z0-9._@-]+/g, "-");
@@ -124,7 +127,7 @@ function validateMimeAndSize(
     throw new Error("Unsupported video type. Use MP4, MOV, or WebM.");
   }
   if (sizeBytes > MAX_VIDEO_BYTES) {
-    throw new Error("Video is too large. Maximum size is 100 MB.");
+    throw new Error(`Video is too large. Maximum size is ${MAX_VIDEO_MB} MB.`);
   }
 }
 
