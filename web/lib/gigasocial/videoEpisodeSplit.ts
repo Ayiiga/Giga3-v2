@@ -46,11 +46,13 @@ function extractHashtagSuffix(text: string): string {
   return unique.slice(0, 8).join(" ");
 }
 
-/** Base title for episode naming (caption without hashtags, capped). */
+/** Base title for episode naming (caption without hashtags, capped for mobile inputs). */
 export function episodeSeriesBaseTitle(caption: string, fileName?: string): string {
+  const cap = (value: string, max = 42) =>
+    value.length > max ? `${value.slice(0, max - 1).trimEnd()}…` : value;
   const fromCaption = stripHashtags(caption).replace(/^["'“”]+|["'“”]+$/g, "").trim();
   if (fromCaption.length >= 3) {
-    return fromCaption.length > 72 ? `${fromCaption.slice(0, 69).trimEnd()}…` : fromCaption;
+    return cap(fromCaption);
   }
   const fromFile = (fileName ?? "")
     .replace(/\.[^.]+$/, "")
@@ -58,7 +60,7 @@ export function episodeSeriesBaseTitle(caption: string, fileName?: string): stri
     .replace(/\s+/g, " ")
     .trim();
   if (fromFile.length >= 3) {
-    return fromFile.length > 72 ? `${fromFile.slice(0, 69).trimEnd()}…` : fromFile;
+    return cap(fromFile);
   }
   return "Untitled series";
 }
