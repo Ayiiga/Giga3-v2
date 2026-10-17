@@ -179,6 +179,8 @@ export async function exportVideoEpisodes(
       overallPercent: number;
     }) => void;
     signal?: AbortSignal;
+    /** Shared blob URL for the source file (avoids extra decode handles on mobile). */
+    objectUrl?: string;
   }
 ): Promise<Array<{ file: File; durationSec: number; index: number; title: string }>> {
   const results: Array<{ file: File; durationSec: number; index: number; title: string }> = [];
@@ -191,6 +193,7 @@ export async function exportVideoEpisodes(
     const episode = episodes[i];
     const exported = await trimVideoFile(file, episode.range, {
       signal: options?.signal,
+      objectUrl: options?.objectUrl,
       onProgress: (percent) => {
         const episodePercent = Math.round(percent * 100);
         const overallPercent = Math.round(((i + percent) / episodeCount) * 100);

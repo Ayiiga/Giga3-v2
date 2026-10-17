@@ -48,6 +48,7 @@ export const GigaSocialEpisodeConfirm = memo(function GigaSocialEpisodeConfirm({
   onConfirm,
 }: GigaSocialEpisodeConfirmProps) {
   const abortRef = useRef<AbortController | null>(null);
+  const previewVideoRef = useRef<HTMLVideoElement | null>(null);
   const [plan, setPlan] = useState<VideoEpisodePlan | null>(null);
   const [titles, setTitles] = useState<string[]>([]);
   const [planError, setPlanError] = useState<string | null>(null);
@@ -55,6 +56,7 @@ export const GigaSocialEpisodeConfirm = memo(function GigaSocialEpisodeConfirm({
   const [exportLabel, setExportLabel] = useState("");
   const [exportPercent, setExportPercent] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [previewActive, setPreviewActive] = useState(true);
 
   useEffect(() => {
     try {
@@ -107,6 +109,20 @@ export const GigaSocialEpisodeConfirm = memo(function GigaSocialEpisodeConfirm({
     const controller = new AbortController();
     abortRef.current = controller;
 
+    // Release the visible preview decoder before MediaRecorder export.
+    // Android Chrome often fails a second decode of the same large local file.
+    const preview = previewVideoRef.current;
+    if (preview) {
+      try {
+        preview.pause();
+        preview.removeAttribute("src");
+        preview.load();
+      } catch {
+        /* ignore */
+      }
+    }
+    setPreviewActive(false);
+
     try {
       const confirmed: ConfirmedVideoEpisode[] = plan.items.map((item, index) => ({
         index: item.index,
@@ -117,6 +133,7 @@ export const GigaSocialEpisodeConfirm = memo(function GigaSocialEpisodeConfirm({
 
       const exported = await exportVideoEpisodes(file, confirmed, {
         signal: controller.signal,
+        objectUrl: previewUrl,
         onProgress: ({ episodeIndex, episodeCount, overallPercent }) => {
           setExportPercent(overallPercent);
           setExportLabel(`Creating episode ${episodeIndex + 1} of ${episodeCount}…`);
@@ -136,6 +153,7 @@ export const GigaSocialEpisodeConfirm = memo(function GigaSocialEpisodeConfirm({
       if (!controller.signal.aborted) {
         setError(e instanceof Error ? e.message : "Could not create episodes.");
       }
+      setPreviewActive(true);
     } finally {
       abortRef.current = null;
       setExporting(false);
@@ -184,13 +202,20 @@ export const GigaSocialEpisodeConfirm = memo(function GigaSocialEpisodeConfirm({
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 space-y-3">
         <p className="text-sm text-[var(--muted-foreground)]">{headline}</p>
 
-        <video
-          src={previewUrl}
-          className="mx-auto max-h-40 w-full rounded-xl bg-black object-contain"
-          controls
-          playsInline
-          preload="metadata"
-        />
+        {previewActive ? (
+          <video
+            ref={previewVideoRef}
+            src={previewUrl}
+            className="mx-auto max-h-40 w-full rounded-xl bg-black object-contain"
+            controls
+            playsInline
+            preload="metadata"
+          />
+        ) : (
+          <div className="mx-auto flex max-h-40 w-full items-center justify-center rounded-xl bg-black px-3 py-10 text-center text-xs text-white/80">
+            Preview paused while creating episodes…
+          </div>
+        )}
 
         {planError ? (
           <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-300">
