@@ -153,7 +153,7 @@ export const GigaSocialEpisodeConfirm = memo(function GigaSocialEpisodeConfirm({
   return (
     <div
       className={cn(
-        "flex h-full min-h-0 flex-col bg-[var(--background)] text-[var(--foreground)]",
+        "fixed inset-0 z-[80] flex min-h-0 flex-col bg-[var(--background)] text-[var(--foreground)]",
         className
       )}
       role="dialog"
@@ -256,7 +256,7 @@ export const GigaSocialEpisodeConfirm = memo(function GigaSocialEpisodeConfirm({
         ) : null}
       </div>
 
-      <footer className="flex gap-2 border-t border-[var(--border)] p-3">
+      <footer className="flex gap-2 border-t border-[var(--border)] bg-[var(--background)] p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <Button type="button" variant="outline" className="flex-1" disabled={exporting} onClick={handleCancel}>
           Cancel
         </Button>
