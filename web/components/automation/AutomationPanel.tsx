@@ -114,7 +114,10 @@ export function AutomationPanel({
 
       <p className="flex items-center gap-1 text-xs text-muted">
         <Zap className="h-3 w-3" aria-hidden />
-        {getActiveIntegrations().length} platform integrations active
+        {
+          getActiveIntegrations().filter((i) => i.status === "active").length
+        }{" "}
+        platform integrations active
       </p>
     </div>
   );

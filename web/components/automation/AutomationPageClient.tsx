@@ -1,12 +1,12 @@
 "use client";
 
+import { ConnectorsPanel } from "@/components/automation/ConnectorsPanel";
 import { PlatformSearchPanel } from "@/components/automation/PlatformSearchPanel";
 import { AutomationNotificationsPanel } from "@/components/automation/AutomationNotificationsPanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { AI_AGENTS, getAgent } from "@/lib/automation/agents";
-import { getActiveIntegrations, INTEGRATION_ADAPTERS } from "@/lib/automation/integrations";
 import { useAutomation } from "@/hooks/useAutomation";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -232,40 +232,7 @@ function AutomationPageInner() {
         </div>
       )}
 
-      {tab === "integrations" && (
-        <div className="space-y-4">
-          <p className="text-sm text-muted">
-            {getActiveIntegrations().length} active ·{" "}
-            {INTEGRATION_ADAPTERS.length - getActiveIntegrations().length} planned
-          </p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {INTEGRATION_ADAPTERS.map((adapter) => (
-              <article
-                key={adapter.id}
-                className={cn(
-                  "rounded-xl border px-4 py-3 text-sm",
-                  adapter.available
-                    ? "border-emerald-500/30 bg-emerald-500/5"
-                    : "border-border text-muted"
-                )}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium">{adapter.label}</span>
-                  <span className="text-xs">
-                    {adapter.available ? "Active" : "Planned"}
-                  </span>
-                </div>
-                <p className="mt-1 text-xs">{adapter.description}</p>
-                {adapter.href && (
-                  <Link href={adapter.href} className="mt-2 inline-block text-xs text-accent hover:underline">
-                    Open →
-                  </Link>
-                )}
-              </article>
-            ))}
-          </div>
-        </div>
-      )}
+      {tab === "integrations" && <ConnectorsPanel />}
 
       {tab === "search" && <PlatformSearchPanel />}
 

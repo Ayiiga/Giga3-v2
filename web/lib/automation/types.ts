@@ -85,13 +85,25 @@ export type IntegrationId =
   | "moodle"
   | "notion";
 
+export type IntegrationStatus =
+  | "active"
+  | "available"
+  | "connected"
+  | "needs_configuration"
+  | "needs_reauth"
+  | "temporarily_unavailable"
+  | "planned";
+
 export type IntegrationAdapter = {
   id: IntegrationId;
   label: string;
   category: string;
+  /** @deprecated Prefer `status` — kept for older callers. */
   available: boolean;
+  status: IntegrationStatus;
   description: string;
   href?: string;
+  external?: boolean;
 };
 
 export type AutomationNotificationKey =
