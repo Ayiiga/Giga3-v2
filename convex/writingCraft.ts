@@ -28,7 +28,21 @@ export function hasMemorialOrSpeechIntent(query: string): boolean {
 
 /** Captions, posts, short creative copy. */
 export function hasShortFormCreativeIntent(query: string): boolean {
-  return /\b(poem|poetry|story|novel|fiction|fictional|creative writing|brainstorm|caption|slogan|joke|screenplay|narrative|linkedin (?:post|about)|instagram (?:caption|post)|facebook post|tweet|x post)\b/i.test(
+  return /\b(poem|poetry|story|novel|fiction|fictional|creative writing|brainstorm|caption|slogan|joke|screenplay|narrative|linkedin (?:post|about)|instagram (?:caption|post)|facebook (?:post|caption)|tweet|x post)\b/i.test(
+    query
+  );
+}
+
+/** Email / message drafts delivered as finished copy (not teaching templates). */
+export function hasEmailDraftIntent(query: string): boolean {
+  return /\b(write|draft|compose|prepare|generate|create)\b[\s\S]{0,40}\b(e-?mail|email|message|sms|whatsapp message)\b/i.test(
+    query
+  ) || /\b(e-?mail|email)\b[\s\S]{0,40}\b(requesting|asking for|about|to)\b/i.test(query);
+}
+
+/** Translation requests — return the translation, not a lesson unless asked. */
+export function hasTranslationIntent(query: string): boolean {
+  return /\b(translate|translation|in twi|into twi|in hausa|into hausa|in ga|into ga|in ewe|into ewe|in yoruba|into yoruba|in swahili|into swahili|in french|into french|in spanish|into spanish|in arabic|into arabic)\b/i.test(
     query
   );
 }
@@ -66,10 +80,34 @@ export function hasWritingCraftIntent(query: string): boolean {
     hasRewritePolishIntent(q) ||
     hasMemorialOrSpeechIntent(q) ||
     hasShortFormCreativeIntent(q) ||
+    hasEmailDraftIntent(q) ||
+    hasTranslationIntent(q) ||
     hasDocumentDeliverableIntent(q) ||
     hasWritingFollowUpIntent(q)
   );
 }
+
+/**
+ * Shared natural-response rules (always applied via answerQuality).
+ * Prevents rigid intro→body→conclusion padding across chat products.
+ */
+export const NATURAL_RESPONSE_STYLE_ADDON = [
+  "Natural response organization (required):",
+  "- NOT every response needs an introduction or a conclusion. Choose structure from the user's request and the task — never from a fixed template.",
+  "- Simple factual questions: answer directly in 1–3 sentences of plain prose. Do not add a preamble, summary, or closing invitation.",
+  "- Definitions: give the definition (and a brief clarifying sentence only if useful). No forced intro/outro.",
+  "- Translations: return the translation (and a short pronunciation note only if helpful). No lesson unless asked.",
+  "- Emails, captions, posts, and other finished copy: output the piece itself — no “Here is an email…” preamble or trailing commentary.",
+  "- Math: give the answer and show working when appropriate; skip motivational framing.",
+  "- Code: give the code and necessary notes; skip generic intro/conclusion paragraphs.",
+  "- Complex teaching, essays, reports, or comparisons: use headings, examples, and conclusions only when they improve understanding or the user asked for them.",
+  "- If the user explicitly asks for an introduction, conclusion, essay, report, executive summary, or N sections, follow that request.",
+  "- Do not repeat the same point in the opening, body, and closing. A final paragraph must add new value — never restate the whole answer to look complete.",
+  "- Avoid filler openers/closers unless they truly fit the requested style: “In conclusion…”, “To conclude…”, “In summary…”, “Overall…”, “It is important to note that…”, “Ultimately…”, “Here is everything you need to know…”, “Let's dive in…”.",
+  "- Length must vary with task complexity, requested depth, evidence, and audience. Do not pad short answers or truncate complex ones for uniformity.",
+  "- Uncertainty: state what is known vs unknown once, clearly. Ask for missing context when needed. Do not stack several paragraphs that only restate the same uncertainty.",
+  "- Preserve accuracy: answer the real question, separate facts from assumptions, avoid inventing information, and do not present speculation as verified fact.",
+].join("\n");
 
 /** Appended when writing craft is active — overrides Smart Answers / research panels. */
 export const WRITING_CRAFT_SYSTEM_ADDON = [
@@ -84,6 +122,8 @@ export const WRITING_CRAFT_SYSTEM_ADDON = [
   "- Do not expose internal provider names, stack traces, integration details, or backend errors.",
   "- Ask clarifying questions only when essential information is genuinely missing; otherwise make reasonable assumptions and proceed.",
   "- For rewrites/humanize/polish: return only the improved text (or clearly labeled short options if the user asked for alternatives), ready to send.",
+  "- For translations: return the translation first; add brief notes only if useful. Do not teach a language lesson unless asked.",
+  "- For emails and short messages: output only the message (subject line optional if natural).",
   "- For tributes, obituaries, eulogies, and condolences: write with dignity and warmth — a carefully crafted personal piece, not a generic AI essay.",
   "- For documents (CV, letter, report, proposal, business plan, etc.): use clear markdown headings and lists ready for PDF/Word export. Do not claim a file was generated unless an export actually ran.",
   "- For follow-ups like “make it shorter/more professional”: revise the previous draft; do not restart from scratch or drop important facts.",

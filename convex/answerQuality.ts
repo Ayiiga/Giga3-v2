@@ -29,6 +29,7 @@ import {
   DOCUMENT_EXPORT_SYSTEM_HINT,
   hasDocumentDeliverableIntent,
   hasWritingCraftIntent,
+  NATURAL_RESPONSE_STYLE_ADDON,
   WRITING_CRAFT_SYSTEM_ADDON,
 } from "./writingCraft";
 
@@ -804,18 +805,18 @@ function buildSystemPromptAddon(params: {
   const catalogFormattingRule = hasStructuredCatalogIntent(params.query)
     ? [
         "Structured catalog format (scholarships, grants, programs, opportunities):",
-        "- Start with a short intro paragraph (2–3 sentences).",
+        "- Optional one-sentence frame only if it helps; otherwise start with the list.",
         "- Use a numbered list — one blank line between items.",
         "- Each item: **Program name** on its own line, then nested bullets with **Funding:**, **Eligibility:**, **Deadline:**, **Study mode:**, **Application:** (only include fields you know).",
         "- Use *italics* for deadlines or notes; use markdown links for application URLs.",
-        "- End with one closing paragraph — no share footer or 'Made with Giga3 AI' line.",
+        "- Skip a closing wrap-up unless it adds a concrete next step (deadline tip, eligibility caveat). No share footer or 'Made with Giga3 AI' line.",
         "- Never run multiple programs into one paragraph.",
       ].join("\n")
     : "";
 
   const educationalRule =
     params.responseMode === "educational"
-      ? "- Educational mode: give a direct, human, professional answer first — clear, confident, and useful. Use clear sections only when they help. Never show Verification, Confidence scores, Citation count, Evidence used, or Validation flags unless the user explicitly asked for fact-checking. Do not add a **Sources** section or link list unless the user asked for sources, citations, or references — weave facts into the answer naturally."
+      ? "- Educational mode: lead with the answer. Add teaching structure only when the user is learning or asked for steps/examples. Never show Verification, Confidence scores, Citation count, Evidence used, or Validation flags unless the user explicitly asked for fact-checking. Do not add a **Sources** section or link list unless the user asked for sources, citations, or references — weave facts into the answer naturally."
       : "";
 
   const detailFollowUpRule = params.detailFollowUp
@@ -903,13 +904,14 @@ function buildSystemPromptAddon(params: {
     researchWritingTask
       ? ""
         : [
-          "Giga3 Smart Answers:",
-          "- Prefer natural conversation. Use only the sections that help, and never leave a heading empty.",
+          "Giga3 Smart Answers (optional teaching aid — never a mandatory template):",
+          "- Prefer plain natural prose. Use a Smart Answers heading only when that section genuinely helps understanding.",
+          "- Never force an introduction, summary, or conclusion. Never leave a heading empty.",
           params.detailFollowUp
-            ? "- Detail request: prioritize ## 🧠 More Complete Explanation with real depth; only keep ## ⚡ Quick Answer if it adds a one-line frame that is not a repeat."
-            : "- Simple fact: ## ⚡ Quick Answer only (1–2 sentences).",
-          "- Definition: ## ⚡ Quick Answer and ## 📘 Simple Definition.",
-          "- Teaching or how-to: also use ## 🧠 More Complete Explanation, ## 🔑 Key Points, ## 🌍 Real-World Example, and ## 📝 Practice / Try It when they help. Add ## 🚀 Next Step for a useful follow-up.",
+            ? "- Detail request: expand with new substance (mechanisms, steps, edge cases, fresh examples). Do not recycle earlier wording. Skip ## ⚡ Quick Answer if it would only repeat."
+            : "- Simple fact or short definition: answer in plain prose without Smart Answers headings.",
+          "- Teaching / how-to / “explain step by step”: optionally use ## ⚡ Quick Answer, ## 📘 Simple Definition, ## 🧠 More Complete Explanation, ## 🔑 Key Points, ## 🌍 Real-World Example, ## 📝 Practice / Try It, and ## 🚀 Next Step — only the ones that help; skip the rest.",
+          "- If the user asked for an essay, report, introduction, or conclusion, follow their structure instead of Smart Answers.",
           "- Bold keywords only. Keep paragraphs short but substantive. Use a Ghanaian, African, school, business, or everyday example when an example helps.",
           "- Skip every Smart Answers heading for greetings and one-line chat.",
         ].join("\n");
@@ -926,7 +928,8 @@ function buildSystemPromptAddon(params: {
   return [
     "Accuracy, Authenticity, and Trustworthiness Engine:",
     "- Prioritize factual correctness, authenticity, and clarity.",
-    // Priority: safety/facts (above) → user's deliverable (writing craft) → task formats → general quality.
+    // Priority: safety/facts → natural organization → user's deliverable → task formats → general quality.
+    NATURAL_RESPONSE_STYLE_ADDON,
     writingCraftRule,
     documentExportRule,
     conversationalRule,
