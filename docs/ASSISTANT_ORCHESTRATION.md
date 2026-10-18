@@ -19,8 +19,10 @@ Additive layer on PR #536 connectors. Does not replace chat routing, billing, or
 - Cross-user isolation on every plan/step.
 - External content treated as untrusted (reuse connector tool policy).
 - Never mark a provider connected without a live connection row.
-- Plans expire; cancelled / completed / failed plans do not re-execute.
+- Plans expire; cancelled / completed / failed plans do not re-execute (failed plans are rejected at the atomic claim boundary — `confirmStepId` cannot resume them).
 - Confirmation claims the staged `connectorPendingActions` row atomically and runs that locked `payloadJson` only (client `params` / post-stage overrides cannot change the action).
+- Step transitions are atomic server-side mutations with revision CAS; stale snapshots cannot overwrite running/completed/failed/awaiting state.
+- Interrupted running steps are not blindly retried (provider outcome unknown).
 - Operations are validated against the server-side connector allowlist.
 
 ## Files

@@ -1860,6 +1860,8 @@ export default defineSchema({
     reportJson: v.optional(v.string()),
     conversationId: v.optional(v.string()),
     expiresAt: v.number(),
+    /** Monotonic revision for CAS / stale-write rejection. */
+    revision: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
