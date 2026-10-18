@@ -4,14 +4,65 @@ import { requireSession } from "../auth";
 import {
   EXTERNAL_CONNECTORS,
   PLATFORM_CONNECTORS,
+  convexSiteBaseUrl,
+  frontendBaseUrl,
   isProviderConfigured,
   missingEnvKeysForProvider,
+  oauthCallbackUrl,
 } from "./registry";
 import {
   CONNECTOR_STATUS_LABELS,
   type ConnectorCardView,
   type ConnectorStatus,
 } from "./types";
+
+/**
+ * Ops readiness for connector activation (no secret values).
+ * Reports missing env key *names*, callback URL, and whether encryption key is dedicated.
+ */
+export const getConnectorDeploymentReadiness = query({
+  args: {},
+  handler: async () => {
+    const callbackUrl = oauthCallbackUrl();
+    const siteBase = convexSiteBaseUrl();
+    const frontend = frontendBaseUrl();
+    const hasDedicatedEncryptionKey = Boolean(
+      process.env.CONNECTOR_TOKEN_ENCRYPTION_KEY?.trim()
+    );
+    const hasSessionSigningFallback = Boolean(
+      process.env.SESSION_SIGNING_SECRET?.trim()
+    );
+    const providers = EXTERNAL_CONNECTORS.map((provider) => {
+      const missingEnvKeys = missingEnvKeysForProvider(provider);
+      return {
+        id: provider.id,
+        label: provider.label,
+        authKind: provider.authKind,
+        configured: isProviderConfigured(provider),
+        missingEnvKeys,
+        scopes: provider.scopes,
+        mayNeedProviderApproval: Boolean(provider.mayNeedProviderApproval),
+      };
+    });
+    return {
+      oauthCallbackUrl: callbackUrl || null,
+      convexSiteBaseUrl: siteBase || null,
+      frontendUrl: frontend,
+      encryption: {
+        dedicatedKeyConfigured: hasDedicatedEncryptionKey,
+        sessionSigningSecretPresent: hasSessionSigningFallback,
+        note: hasDedicatedEncryptionKey
+          ? "Using CONNECTOR_TOKEN_ENCRYPTION_KEY"
+          : hasSessionSigningFallback
+            ? "Falling back to SESSION_SIGNING_SECRET — set a dedicated CONNECTOR_TOKEN_ENCRYPTION_KEY when possible (do not rotate without migration)"
+            : "No encryption key available — connector tokens cannot be stored safely",
+      },
+      providers,
+      readyProviderCount: providers.filter((p) => p.configured).length,
+      needsConfigurationCount: providers.filter((p) => !p.configured).length,
+    };
+  },
+});
 
 function platformCards(): ConnectorCardView[] {
   return PLATFORM_CONNECTORS.map((p) => ({
