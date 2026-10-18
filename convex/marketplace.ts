@@ -23,6 +23,11 @@ import {
   toPublicListing,
   toPublicReview,
 } from "./marketplaceViews";
+import {
+  assertWithdrawalEligibility,
+  loadEconomySettings,
+  validateWithdrawalAmountGhs,
+} from "./gigaSocialEconomy";
 
 const MARKETPLACE_CATEGORIES = [
   "Education",
@@ -809,16 +814,50 @@ export const requestPayout = mutation({
       .withIndex("by_user", (q) => q.eq("userId", email))
       .first();
     if (!profile) throw new Error("Creator profile required.");
-    const minPayout = Number(process.env.MARKETPLACE_MIN_PAYOUT_GHS) || 50;
-    const amount = Math.round(args.amountGhs);
-    if (amount < minPayout) {
-      throw new Error(`Minimum payout is GHS ${minPayout}.`);
-    }
-    if (amount > profile.payoutBalanceGhs) {
-      throw new Error("Insufficient payout balance.");
+    if (profile.userId !== email) {
+      throw new Error("Payout profile ownership mismatch.");
     }
 
+    // When the seller also has a GigaSocial profile, enforce 50-fan + acceptance rules.
+    const socialProfile = await ctx.db
+      .query("socialProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", email))
+      .first();
+    let minPayout = Number(process.env.MARKETPLACE_MIN_PAYOUT_GHS) || 50;
+    if (socialProfile) {
+      if (socialProfile.userId !== email) {
+        throw new Error("Profile ownership mismatch.");
+      }
+      const { settings } = await assertWithdrawalEligibility(ctx, socialProfile);
+      minPayout = Math.max(minPayout, settings.minWithdrawalGhs);
+    } else {
+      const settings = await loadEconomySettings(ctx);
+      minPayout = Math.max(minPayout, settings.minWithdrawalGhs);
+    }
+
+    const validated = validateWithdrawalAmountGhs({
+      rawAmount: args.amountGhs,
+      availableBalanceGhs: profile.payoutBalanceGhs,
+      minWithdrawalGhs: minPayout,
+    });
+    if (!validated.ok) {
+      throw new Error(validated.error);
+    }
+    const amount = validated.amountGhs;
+
     const now = Date.now();
+    const recent = await ctx.db
+      .query("creatorPayouts")
+      .withIndex("by_creator", (q) => q.eq("creatorId", email))
+      .order("desc")
+      .take(10);
+    const inFlight = recent.find(
+      (p) => p.status === "pending" || p.status === "processing"
+    );
+    if (inFlight) {
+      throw new Error("A withdrawal is already in progress.");
+    }
+
     await ctx.db.patch(profile._id, {
       payoutBalanceGhs: profile.payoutBalanceGhs - amount,
       updatedAt: now,

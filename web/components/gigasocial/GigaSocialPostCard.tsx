@@ -17,6 +17,7 @@ import {
   Bookmark,
   Eye,
   Heart,
+  Megaphone,
   MessageCircle,
   Pencil,
   Pin,
@@ -32,6 +33,7 @@ import { GigaSocialPostCommentBox } from "@/components/gigasocial/GigaSocialPost
 import { GigaSocialPostMedia } from "@/components/gigasocial/GigaSocialPostMedia";
 import { GigaSocialProfileLink } from "@/components/gigasocial/GigaSocialProfileLink";
 import { VerifiedBadge } from "@/components/gigasocial/VerifiedBadge";
+import { GigaSocialBoostDialog } from "@/components/gigasocial/economy/GigaSocialBoostDialog";
 import { GigaSocialTipButton } from "@/components/gigasocial/economy/GigaSocialTipButton";
 import { getUserEmail } from "@/lib/auth";
 import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
@@ -94,7 +96,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   enableRemix = false,
   enableUseAsTemplate = false,
   enablePostAIActions = false,
-  /** Tips are open on all posts/photos/videos — not gated by 500-fan earn unlock. */
+  /** Tips are open on all posts/photos/videos — not gated by monetisation acceptance. */
   enablePostTips = true,
   feedAutoPlay = false,
   feedPaused = false,
@@ -107,6 +109,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   const [shareCount, setShareCount] = useState(post.shareCount);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [boostOpen, setBoostOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [following, setFollowing] = useState(Boolean(post.author.supportingByMe));
@@ -578,6 +581,19 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
             {post.viewCount}
           </span>
         ) : null}
+        {isOwnPost && sessionToken ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className={cn("min-h-9 text-violet-700", !canPin && !canDelete && "ml-auto")}
+            onClick={() => setBoostOpen(true)}
+            aria-label="Boost post"
+          >
+            <Megaphone className="h-4 w-4" aria-hidden />
+            <span className={cn(isVisualPost && "sr-only")}>Boost</span>
+          </Button>
+        ) : null}
         {canPin ? (
           <Button
             type="button"
@@ -586,7 +602,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
             className={cn(
               "min-h-9",
               pinned ? "text-accent" : "text-muted",
-              !(canDelete && enableEdit && onEdit) && "ml-auto"
+              !(canDelete && enableEdit && onEdit) && !isOwnPost && "ml-auto"
             )}
             onClick={() => void handlePin()}
             aria-label={pinned ? "Unpin post" : "Pin post"}
@@ -600,7 +616,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
             type="button"
             size="sm"
             variant="ghost"
-            className={cn("min-h-9 text-muted", !canPin && "ml-auto")}
+            className={cn("min-h-9 text-muted", !canPin && !isOwnPost && "ml-auto")}
             onClick={() => setEditorOpen(true)}
             aria-label="Edit post"
           >
@@ -614,7 +630,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
             variant="ghost"
             className={cn(
               "min-h-9 text-red-700",
-              !(enableEdit && onEdit) && !canPin && "ml-auto"
+              !(enableEdit && onEdit) && !canPin && !isOwnPost && "ml-auto"
             )}
             onClick={() => void onDelete(post._id)}
           >
@@ -663,6 +679,16 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
             }}
           />
         </div>
+      ) : null}
+
+      {isOwnPost && sessionToken ? (
+        <GigaSocialBoostDialog
+          open={boostOpen}
+          onClose={() => setBoostOpen(false)}
+          sessionToken={sessionToken}
+          postId={post._id}
+          postPreview={displayBody.slice(0, 160)}
+        />
       ) : null}
     </article>
   );

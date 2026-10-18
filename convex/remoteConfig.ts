@@ -37,9 +37,17 @@ const DEFAULT_CONFIG: Record<
     enabled: false,
   },
   "gigasocial.economy.minFans": {
-    value: "500",
+    value: "5",
     description:
-      "Minimum fans to unlock affiliate and payout tools — tips and ad boosts stay open",
+      "Minimum fans to accept creator monetisation rules and start earning — tips, affiliate, and ad boosts stay open without this gate",
+  },
+  "gigasocial.economy.minFansWithdrawal": {
+    value: "50",
+    description: "Minimum fans required to request a creator withdrawal (balance and payment checks still apply)",
+  },
+  "gigasocial.economy.minWithdrawalGhs": {
+    value: "50",
+    description: "Minimum creator withdrawal amount in GHS",
   },
   "gigasocial.economy.viewRewardRate": { value: "0.001", description: "GHS per content view" },
   "gigasocial.economy.watchTimeRate": { value: "0.01", description: "GHS per video watch minute" },

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-/** Guard: tips stay open; 500 fans unlocks earn tools only. */
+/** Guard: tips stay open; monetisation requires acceptance; affiliate has no fan gate. */
 describe("sendCreatorGift policy", () => {
   it("does not block tips behind Gifts Hub unlock", () => {
     const src = readFileSync(
@@ -31,12 +31,16 @@ describe("sendCreatorGift policy", () => {
     expect(handler).not.toContain("isMonetizationUnlocked");
   });
 
-  it("keeps affiliate gated at 500 fans; boosts require Paystack not fan unlock", () => {
+  it("opens affiliate to everyone and keeps boosts on Paystack", () => {
     const src = readFileSync(
       resolve(__dirname, "../../convex/gigaSocialEconomy.ts"),
       "utf8"
     );
-    expect(src).toContain("Affiliate program unlocks at 500 Fans.");
+    expect(src).not.toContain("Affiliate program unlocks at 500 Fans.");
+    expect(src).toContain("No fan-count gate");
+    expect(src).toContain("MIN_FANS_FOR_MONETIZATION = 5");
+    expect(src).toContain("MIN_FANS_FOR_WITHDRAWAL = 50");
+    expect(src).toContain("acceptMonetizationTerms");
     expect(src).not.toContain("Boost campaigns unlock at 500 Fans.");
     const boostStart = src.indexOf("export const createBoostCampaign");
     expect(boostStart).toBeGreaterThan(-1);
@@ -53,6 +57,7 @@ describe("sendCreatorGift policy", () => {
     );
     expect(src).toMatch(/enablePostTips\s*=\s*true/);
     expect(src).not.toMatch(/monetizationUnlocked/);
+    expect(src).toContain("Boost post");
   });
 
   it("shows public profile gifts without monetization unlock", () => {
@@ -63,5 +68,26 @@ describe("sendCreatorGift policy", () => {
     expect(src).toContain('["gifts", "Gifts"]');
     expect(src).not.toMatch(/monetizationUnlocked \? \[\[\"gifts\"/);
     expect(src).toContain("enablePostTips");
+  });
+
+  it("removes contradictory 100/500 fan copy from creator UI", () => {
+    const client = readFileSync(
+      resolve(__dirname, "../../web/components/gigasocial/GigaSocialClient.tsx"),
+      "utf8"
+    );
+    const affiliate = readFileSync(
+      resolve(__dirname, "../../web/components/gigasocial/economy/GigaSocialAffiliatePanel.tsx"),
+      "utf8"
+    );
+    const dashboard = readFileSync(
+      resolve(__dirname, "../../web/components/gigasocial/economy/GigaSocialCreatorDashboard.tsx"),
+      "utf8"
+    );
+    expect(client).not.toContain("500 fans");
+    expect(client).not.toContain("100 fans");
+    expect(affiliate).not.toContain("500 fans");
+    expect(dashboard).not.toContain("500 fans");
+    expect(dashboard).not.toContain("100 fans");
+    expect(affiliate).toContain("Open to everyone");
   });
 });

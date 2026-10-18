@@ -233,7 +233,7 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
             ["videos", "Videos"],
             ["ai", "AI"],
             ["liked", "Liked"],
-            // Tips/gifts are open regardless of 500-fan earn unlock.
+            // Tips/gifts are open regardless of monetisation acceptance.
             ["gifts", "Gifts"],
           ] as const
         ).map(([id, label]) => (

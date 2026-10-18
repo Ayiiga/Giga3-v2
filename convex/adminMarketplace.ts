@@ -152,8 +152,25 @@ export const setPayoutStatus = mutation({
     const payout = await ctx.db.get(args.payoutId);
     if (!payout) throw new Error("Payout not found");
 
-    // Returning funds to the creator when a payout fails.
-    if (args.status === "failed" && payout.status !== "failed") {
+    const from = payout.status;
+    const to = args.status;
+    if (from === to) {
+      return { ok: true as const, unchanged: true as const };
+    }
+
+    // Allowed transitions only — never rewind a paid payout to refund balance.
+    const allowed: Record<string, ReadonlyArray<string>> = {
+      pending: ["processing", "failed"],
+      processing: ["paid", "failed"],
+      paid: [],
+      failed: [],
+    };
+    if (!(allowed[from] ?? []).includes(to)) {
+      throw new Error(`Invalid payout transition: ${from} → ${to}.`);
+    }
+
+    // Refund balance only when abandoning an in-flight (pending/processing) payout.
+    if (to === "failed" && (from === "pending" || from === "processing")) {
       const profile = await ctx.db
         .query("creatorProfiles")
         .withIndex("by_user", (q) => q.eq("userId", payout.creatorId))
@@ -167,7 +184,7 @@ export const setPayoutStatus = mutation({
     }
 
     await ctx.db.patch(args.payoutId, {
-      status: args.status,
+      status: to,
       reference: args.reference?.trim() || payout.reference,
       updatedAt: Date.now(),
     });
