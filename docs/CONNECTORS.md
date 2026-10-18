@@ -29,7 +29,9 @@ Tokens, refresh tokens, and client secrets never leave Convex. Do not put connec
 | `FRONTEND_URL` | OAuth return redirects |
 | `CONVEX_SITE_URL` / site URL | OAuth redirect URI base |
 
-Moodle uses a **per-user** site URL + personal web-service token (no platform admin password).
+Moodle uses a **per-user** site URL + personal web-service token (no platform admin password). Site URLs must be `https://` and must not target localhost, private, or link-local hosts (SSRF guard).
+
+Consequential operations stage a `connectorPendingActions` row; confirm claims that row and executes the locked payload only (idempotent replay returns the stored result if already executed).
 
 ## OAuth redirect URI
 

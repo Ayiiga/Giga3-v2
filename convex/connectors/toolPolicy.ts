@@ -27,6 +27,43 @@ export type ConnectorToolName =
   | "create_page"
   | "append_page";
 
+/** Server-side allowlist: provider → operations (LLM / client cannot invent others). */
+export const ALLOWED_CONNECTOR_OPERATIONS: Record<string, ReadonlySet<string>> = {
+  google_drive: new Set([
+    "list_files",
+    "search_files",
+    "read_file",
+    "import_file",
+    "export_file",
+  ]),
+  gmail: new Set([
+    "list_messages",
+    "search_messages",
+    "read_message",
+    "summarise_messages",
+    "draft_reply",
+    "send_email",
+  ]),
+  outlook_calendar: new Set([
+    "list_events",
+    "search_availability",
+    "create_event",
+    "update_event",
+    "cancel_event",
+  ]),
+  zoom: new Set(["list_meetings", "create_meeting"]),
+  moodle: new Set(["list_courses", "read_course", "list_assignments"]),
+  notion: new Set(["search_pages", "read_page", "create_page", "append_page"]),
+};
+
+export function isAllowedConnectorOperation(
+  provider: string,
+  operation: string
+): operation is ConnectorToolName {
+  const set = ALLOWED_CONNECTOR_OPERATIONS[provider];
+  return Boolean(set?.has(operation));
+}
+
 const REQUIRES_CONFIRMATION = new Set<ConnectorToolName>([
   "send_email",
   "create_event",

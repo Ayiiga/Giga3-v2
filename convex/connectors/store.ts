@@ -192,6 +192,67 @@ export const getPendingActionInternal = internalQuery({
   handler: async (ctx, args) => ctx.db.get(args.actionId),
 });
 
+/**
+ * Atomically claim a pending action for execution (pending → confirmed).
+ * Binds confirm to the staged payload; rejects replay of used/expired/cancelled rows.
+ */
+export const claimPendingActionInternal = internalMutation({
+  args: {
+    actionId: v.id("connectorPendingActions"),
+    userId: v.string(),
+    provider: v.string(),
+    actionType: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const row = await ctx.db.get(args.actionId);
+    if (!row || row.userId !== args.userId) {
+      return { ok: false as const, error: "Pending action not found." };
+    }
+    if (row.provider !== args.provider || row.actionType !== args.actionType) {
+      return { ok: false as const, error: "Pending action mismatch." };
+    }
+    if (row.status === "executed") {
+      return {
+        ok: false as const,
+        error: "Pending action already executed.",
+        alreadyExecuted: true as const,
+        resultJson: row.resultJson,
+      };
+    }
+    if (row.status === "cancelled") {
+      return { ok: false as const, error: "Pending action was cancelled." };
+    }
+    if (row.status === "failed") {
+      return { ok: false as const, error: "Pending action already failed." };
+    }
+    if (row.status === "confirmed") {
+      return {
+        ok: false as const,
+        error: "Pending action is already being executed.",
+      };
+    }
+    if (row.status !== "pending") {
+      return { ok: false as const, error: "Pending action is no longer valid." };
+    }
+    if (row.expiresAt < Date.now()) {
+      await ctx.db.patch(args.actionId, {
+        status: "cancelled",
+        updatedAt: Date.now(),
+      });
+      return { ok: false as const, error: "Pending action expired. Stage it again." };
+    }
+    await ctx.db.patch(args.actionId, {
+      status: "confirmed",
+      updatedAt: Date.now(),
+    });
+    return {
+      ok: true as const,
+      payloadJson: row.payloadJson,
+      summary: row.summary,
+    };
+  },
+});
+
 export const updatePendingActionInternal = internalMutation({
   args: {
     actionId: v.id("connectorPendingActions"),

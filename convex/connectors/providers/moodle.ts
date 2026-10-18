@@ -2,12 +2,60 @@
 
 type FetchLike = typeof fetch;
 
+const MOODLE_FETCH_TIMEOUT_MS = 15_000;
+
+/** Block localhost, link-local, and private/reserved IPv4 literals (SSRF). */
+function isBlockedHostname(hostname: string): boolean {
+  const h = hostname.toLowerCase().replace(/\.$/, "");
+  if (
+    h === "localhost" ||
+    h.endsWith(".localhost") ||
+    h === "localhost.localdomain" ||
+    h === "metadata.google.internal" ||
+    h.endsWith(".internal") ||
+    h === "0.0.0.0"
+  ) {
+    return true;
+  }
+
+  const ipv4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(h);
+  if (ipv4) {
+    const parts = ipv4.slice(1).map(Number);
+    if (parts.some((p) => p > 255)) return true;
+    const [a, b] = parts;
+    if (a === 0 || a === 10 || a === 127) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 100 && b >= 64 && b <= 127) return true;
+    if (a >= 224) return true;
+    return false;
+  }
+
+  // Reject IPv6 literals (incl. ::1 / ULA / link-local) — use hostnames only.
+  if (h.includes(":")) return true;
+
+  return false;
+}
+
 function normalizeSiteUrl(siteUrl: string): string {
-  const trimmed = siteUrl.trim().replace(/\/$/, "");
-  if (!/^https:\/\//i.test(trimmed)) {
+  let parsed: URL;
+  try {
+    parsed = new URL(siteUrl.trim());
+  } catch {
+    throw new Error("Invalid Moodle site URL.");
+  }
+  if (parsed.protocol !== "https:") {
     throw new Error("Moodle site URL must use https://");
   }
-  return trimmed;
+  if (parsed.username || parsed.password) {
+    throw new Error("Moodle site URL must not include credentials.");
+  }
+  if (isBlockedHostname(parsed.hostname)) {
+    throw new Error("Moodle site URL host is not allowed.");
+  }
+  const path = parsed.pathname.replace(/\/$/, "");
+  return `${parsed.protocol}//${parsed.host}${path}`;
 }
 
 async function moodleCall(
@@ -24,11 +72,24 @@ async function moodleCall(
     moodlewsrestformat: "json",
     ...params,
   });
-  const res = await fetchImpl(`${base}/webservice/rest/server.php`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body,
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), MOODLE_FETCH_TIMEOUT_MS);
+  let res: Response;
+  try {
+    res = await fetchImpl(`${base}/webservice/rest/server.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+      signal: controller.signal,
+    });
+  } catch (e) {
+    if (e instanceof Error && e.name === "AbortError") {
+      throw new Error("Moodle request timed out.");
+    }
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
   const json = (await res.json()) as
     | { exception?: string; message?: string; errorcode?: string }
     | unknown;
@@ -110,7 +171,9 @@ export async function listMoodleAssignments(
       "mod_assign_get_assignments",
       params,
       fetchImpl
-    )) as { courses?: Array<{ id: number; assignments?: Array<Record<string, unknown>> }> };
+    )) as {
+      courses?: Array<{ id: number; assignments?: Array<Record<string, unknown>> }>;
+    };
     return result.courses ?? [];
   } catch (e) {
     // Not every Moodle site enables this function.
@@ -122,4 +185,4 @@ export async function listMoodleAssignments(
   }
 }
 
-export { normalizeSiteUrl };
+export { normalizeSiteUrl, isBlockedHostname };

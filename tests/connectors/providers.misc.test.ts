@@ -65,6 +65,15 @@ describe("microsoft / zoom / notion / moodle providers", () => {
 
   it("validates Moodle https URLs and verifies tokens via mock", async () => {
     expect(() => normalizeSiteUrl("http://insecure.example")).toThrow(/https/);
+    expect(() => normalizeSiteUrl("https://127.0.0.1/moodle")).toThrow(/not allowed/);
+    expect(() => normalizeSiteUrl("https://169.254.169.254/latest")).toThrow(/not allowed/);
+    expect(() => normalizeSiteUrl("https://localhost/moodle")).toThrow(/not allowed/);
+    expect(() => normalizeSiteUrl("https://user:pass@moodle.example.edu")).toThrow(
+      /credentials/
+    );
+    expect(normalizeSiteUrl("https://moodle.example.edu/path/")).toBe(
+      "https://moodle.example.edu/path"
+    );
     const fetchImpl = vi.fn(async () =>
       new Response(
         JSON.stringify({ sitename: "Campus LMS", username: "student", userid: 3 }),
