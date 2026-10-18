@@ -151,6 +151,9 @@ function ChatShellInner({
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const [localTurns, setLocalTurns] = useState<UiMessage[]>([]);
   const insertRef = useRef<((text: string, notice?: string) => void) | null>(null);
+  const pickFilesRef = useRef<
+    ((files: File[], kind: import("@/lib/chat/multimodalAttachments").AttachmentKind) => void) | null
+  >(null);
   const chatActionsRef = useRef<ChatActionsMenuHandle | null>(null);
   const { effectiveOnline } = useEffectiveOnline();
 
@@ -240,6 +243,18 @@ function ChatShellInner({
 
   const handleInsertTemplate = useCallback((text: string) => {
     insertRef.current?.(text);
+  }, []);
+
+  const handlePickFilesFromMenu = useCallback(
+    (files: File[], kind: import("@/lib/chat/multimodalAttachments").AttachmentKind) => {
+      pickFilesRef.current?.(files, kind);
+    },
+    []
+  );
+
+  const handleComposerNotice = useCallback((message: string) => {
+    // Informational status only — templates are inserted via onInsertTemplate.
+    setTemplateNotice(message);
   }, []);
 
   const handleInsertDocument = useCallback((text: string) => {
@@ -769,6 +784,11 @@ function ChatShellInner({
               selectConversation(id);
               handleCloseMobile();
             }}
+            onPickFiles={handlePickFilesFromMenu}
+            onSelectDocumentTemplate={handleSelectDocumentTemplate}
+            onInsertTemplate={handleInsertTemplate}
+            onComposerError={handleTemplateError}
+            onComposerNotice={handleComposerNotice}
           />
 
           <ChatBanners
@@ -798,11 +818,17 @@ function ChatShellInner({
             className={displayMessages.length > 0 ? "hidden md:block" : undefined}
           />
 
-          {templateNotice && (
-            <p className="border-b border-red-500/20 bg-red-500/10 px-4 py-2.5 text-center text-sm text-red-200">
+          {templateNotice ? (
+            <p
+              className={
+                /could not|not found|unavailable|error|failed/i.test(templateNotice)
+                  ? "border-b border-red-500/20 bg-red-500/10 px-4 py-2.5 text-center text-sm text-red-700 dark:text-red-200"
+                  : "border-b border-accent/20 bg-accent/10 px-4 py-2.5 text-center text-sm text-foreground"
+              }
+            >
               {templateNotice}
             </p>
-          )}
+          ) : null}
         </div>
 
         <ChatConversationPane
@@ -821,6 +847,7 @@ function ChatShellInner({
           flushingOutboxId={flushingOutboxId}
           onCancelOutbox={(id) => void cancelOutboxMessage(id)}
           insertRef={insertRef}
+          pickFilesRef={pickFilesRef}
           onSend={handleSend}
           onInsertTemplate={handleInsertTemplate}
           onSelectDocumentTemplate={handleSelectDocumentTemplate}

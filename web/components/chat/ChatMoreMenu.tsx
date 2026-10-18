@@ -1,9 +1,12 @@
 "use client";
 
+import { ChatDiscoverPanel } from "@/components/chat/ChatDiscoverPanel";
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
 import { StableLink } from "@/components/ui/StableLink";
 import { clearAllClientAuth } from "@/lib/auth";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
+import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
+import type { AttachmentKind } from "@/lib/chat/multimodalAttachments";
 import { safeNavigate } from "@/lib/navigation/safeNavigate";
 import { signOutSupabase } from "@/lib/supabase/auth";
 import {
@@ -20,13 +23,24 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 interface ChatMoreMenuProps {
   credits: number | null;
   className?: string;
+  onPickFiles?: (files: File[], kind: AttachmentKind) => void;
+  onSelectDocumentTemplate?: (templateId: DocumentTemplateId) => void;
+  onInsertTemplate?: (text: string) => void;
+  onError?: (message: string) => void;
+  onNotice?: (message: string) => void;
 }
 
 export const ChatMoreMenu = memo(function ChatMoreMenu({
   credits,
   className,
+  onPickFiles,
+  onSelectDocumentTemplate,
+  onInsertTemplate,
+  onError,
+  onNotice,
 }: ChatMoreMenuProps) {
   const [open, setOpen] = useState(false);
+  const [discoverOpen, setDiscoverOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
   const close = useCallback(() => setOpen(false), []);
@@ -64,6 +78,11 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
   const itemClass =
     "flex min-h-10 w-full items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-accent/10";
 
+  const discoverReady =
+    Boolean(onPickFiles) &&
+    Boolean(onSelectDocumentTemplate) &&
+    Boolean(onInsertTemplate);
+
   return (
     <div ref={rootRef} className={className}>
       <button
@@ -94,6 +113,21 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
             >
               {credits} credits
             </StableLink>
+          ) : null}
+
+          {discoverReady ? (
+            <button
+              type="button"
+              role="menuitem"
+              className={`${itemClass} font-semibold text-accent`}
+              onClick={() => {
+                close();
+                setDiscoverOpen(true);
+              }}
+            >
+              <span aria-hidden>✨</span>
+              Discover
+            </button>
           ) : null}
 
           <StableLink
@@ -178,6 +212,18 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
             Sign out
           </button>
         </div>
+      ) : null}
+
+      {discoverReady ? (
+        <ChatDiscoverPanel
+          open={discoverOpen}
+          onClose={() => setDiscoverOpen(false)}
+          onPickFiles={onPickFiles!}
+          onSelectDocumentTemplate={onSelectDocumentTemplate!}
+          onInsertTemplate={onInsertTemplate!}
+          onError={onError ?? (() => undefined)}
+          onNotice={onNotice}
+        />
       ) : null}
     </div>
   );

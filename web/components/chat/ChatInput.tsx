@@ -43,6 +43,9 @@ interface ChatInputProps {
   placeholder?: string;
   /** Parent can call `.current(text, notice?)` to insert templates into the textarea. */
   insertRef?: MutableRefObject<((text: string, notice?: string) => void) | null>;
+  pickFilesRef?: MutableRefObject<
+    ((files: File[], kind: AttachmentKind) => void) | null
+  >;
   uploadUsage?: UploadUsageSnapshot | null;
   credits?: number | null;
   subscriptionActive?: boolean;
@@ -70,6 +73,7 @@ export const ChatInput = memo(function ChatInput({
   disabled,
   placeholder = "Ask Giga3 anything…",
   insertRef,
+  pickFilesRef,
   uploadUsage,
   credits,
   subscriptionActive = false,
@@ -259,6 +263,16 @@ export const ChatInput = memo(function ChatInput({
 
   const handlePickFilesRef = useRef(handlePickFiles);
   handlePickFilesRef.current = handlePickFiles;
+
+  useEffect(() => {
+    if (!pickFilesRef) return;
+    pickFilesRef.current = (files, kind) => {
+      void handlePickFilesRef.current(files, kind);
+    };
+    return () => {
+      pickFilesRef.current = null;
+    };
+  }, [pickFilesRef]);
 
   useEffect(() => {
     const el = textareaRef.current;

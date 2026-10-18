@@ -14,6 +14,8 @@ import { Giga3Logo } from "@/components/brand/Giga3Logo";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { clearAllClientAuth } from "@/lib/auth";
+import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
+import type { AttachmentKind } from "@/lib/chat/multimodalAttachments";
 import type { GigaModelId } from "@/lib/chat/gigaModels";
 import type { ResponseDetailId } from "@/lib/chat/responseDetail";
 import type { AiModeId } from "@/lib/aiRouter";
@@ -56,6 +58,11 @@ interface ChatChromeProps {
   conversations: ConversationItem[];
   activeConversationId: string | null;
   onSelectConversation: (id: string) => void;
+  onPickFiles?: (files: File[], kind: AttachmentKind) => void;
+  onSelectDocumentTemplate?: (templateId: DocumentTemplateId) => void;
+  onInsertTemplate?: (text: string) => void;
+  onComposerError?: (message: string) => void;
+  onComposerNotice?: (message: string) => void;
 }
 
 function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean {
@@ -87,7 +94,12 @@ function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean
     prev.onConversationSearchChange === next.onConversationSearchChange &&
     prev.conversations === next.conversations &&
     prev.activeConversationId === next.activeConversationId &&
-    prev.onSelectConversation === next.onSelectConversation
+    prev.onSelectConversation === next.onSelectConversation &&
+    prev.onPickFiles === next.onPickFiles &&
+    prev.onSelectDocumentTemplate === next.onSelectDocumentTemplate &&
+    prev.onInsertTemplate === next.onInsertTemplate &&
+    prev.onComposerError === next.onComposerError &&
+    prev.onComposerNotice === next.onComposerNotice
   );
 }
 
@@ -119,6 +131,11 @@ export const ChatChrome = memo(function ChatChrome({
   conversations,
   activeConversationId,
   onSelectConversation,
+  onPickFiles,
+  onSelectDocumentTemplate,
+  onInsertTemplate,
+  onComposerError,
+  onComposerNotice,
 }: ChatChromeProps) {
   useRenderDiagnostic("ChatChrome");
 
@@ -207,7 +224,15 @@ export const ChatChrome = memo(function ChatChrome({
             />
           </div>
 
-          <ChatMoreMenu credits={credits} className="relative lg:hidden" />
+          <ChatMoreMenu
+            credits={credits}
+            className="relative"
+            onPickFiles={onPickFiles}
+            onSelectDocumentTemplate={onSelectDocumentTemplate}
+            onInsertTemplate={onInsertTemplate}
+            onError={onComposerError}
+            onNotice={onComposerNotice}
+          />
 
           <button
             type="button"
