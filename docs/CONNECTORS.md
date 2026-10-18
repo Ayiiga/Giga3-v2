@@ -29,7 +29,7 @@ Tokens, refresh tokens, and client secrets never leave Convex. Do not put connec
 | `FRONTEND_URL` | OAuth return redirects |
 | `CONVEX_SITE_URL` / site URL | OAuth redirect URI base |
 
-Moodle uses a **per-user** site URL + personal web-service token (no platform admin password). Site URLs must be `https://` and must not target localhost, private, or link-local hosts (SSRF guard). Moodle HTTP calls use `redirect: "manual"` and reject 3xx responses so tokens are never posted to a redirected host. Hostname checks alone do **not** provide complete DNS-rebinding protection; redirects are refused so the validated URL cannot be swapped mid-request. Response bodies are size-capped (~1 MiB) and read under the same timeout as headers.
+Moodle uses a **per-user** site URL + personal web-service token (no platform admin password). Site URLs must be `https://` and must not target localhost, private, or link-local hosts. Before connect, the hostname is DNS-resolved and **every** resolved address is checked against the private/link-local/CGNAT/multicast denylist; HTTPS then connects to the pinned public IP with `Host`/`SNI` set to the original hostname (connection-time destination enforcement). 3xx responses are rejected (no redirect follow). Response bodies are size-capped (~1 MiB) under the request timeout. Remaining residual risk: OS/TLS stack behaviour outside our pin path is assumed standard Node `https.request`.
 
 Consequential operations stage a `connectorPendingActions` row; confirm claims that row and executes the locked payload only (idempotent replay returns the stored result if already executed).
 

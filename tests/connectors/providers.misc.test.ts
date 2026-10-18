@@ -2,7 +2,12 @@ import { describe, expect, it, vi } from "vitest";
 import { microsoftAuthUrl, createCalendarEvent } from "../../convex/connectors/providers/microsoft";
 import { zoomAuthUrl, createZoomMeeting } from "../../convex/connectors/providers/zoom";
 import { notionAuthUrl, notionSearch } from "../../convex/connectors/providers/notion";
-import { normalizeSiteUrl, verifyMoodleToken } from "../../convex/connectors/providers/moodle";
+import {
+  normalizeSiteUrl,
+  setMoodleAddressResolverForTests,
+  setMoodleTransportForTests,
+  verifyMoodleToken,
+} from "../../convex/connectors/providers/moodle";
 
 describe("microsoft / zoom / notion / moodle providers", () => {
   it("builds Microsoft and Zoom authorize URLs", () => {
@@ -74,15 +79,23 @@ describe("microsoft / zoom / notion / moodle providers", () => {
     expect(normalizeSiteUrl("https://moodle.example.edu/path/")).toBe(
       "https://moodle.example.edu/path"
     );
-    const fetchImpl = vi.fn(async (_url: string, init?: RequestInit) => {
-      expect(init?.redirect).toBe("manual");
-      return new Response(
-        JSON.stringify({ sitename: "Campus LMS", username: "student", userid: 3 }),
-        { status: 200 }
-      );
-    }) as unknown as typeof fetch;
+    setMoodleAddressResolverForTests(async () => ["93.184.216.34"]);
+    setMoodleTransportForTests(async (req) => {
+      expect(req.connectAddress).toBe("93.184.216.34");
+      return {
+        status: 200,
+        headers: {},
+        body: JSON.stringify({
+          sitename: "Campus LMS",
+          username: "student",
+          userid: 3,
+        }),
+      };
+    });
     await expect(
-      verifyMoodleToken("https://moodle.example.edu", "token-value-123456", fetchImpl)
+      verifyMoodleToken("https://moodle.example.edu", "token-value-123456")
     ).resolves.toMatchObject({ siteName: "Campus LMS", userId: 3 });
+    setMoodleAddressResolverForTests(null);
+    setMoodleTransportForTests(null);
   });
 });
