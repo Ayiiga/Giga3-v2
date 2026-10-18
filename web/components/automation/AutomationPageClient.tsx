@@ -1,6 +1,7 @@
 "use client";
 
 import { ConnectorsPanel } from "@/components/automation/ConnectorsPanel";
+import { ExecutiveAssistantPanel } from "@/components/automation/ExecutiveAssistantPanel";
 import { PlatformSearchPanel } from "@/components/automation/PlatformSearchPanel";
 import { AutomationNotificationsPanel } from "@/components/automation/AutomationNotificationsPanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
@@ -12,6 +13,7 @@ import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import {
   Bot,
+  Briefcase,
   Plug,
   Search,
   Workflow,
@@ -21,13 +23,26 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
-type Tab = "workflows" | "agents" | "integrations" | "search" | "notifications";
+type Tab =
+  | "workflows"
+  | "agents"
+  | "assistant"
+  | "integrations"
+  | "search"
+  | "notifications";
 
 function AutomationPageInner() {
   const params = useSearchParams();
   const initialTab = (params.get("tab") as Tab) || "workflows";
   const [tab, setTab] = useState<Tab>(
-    ["workflows", "agents", "integrations", "search", "notifications"].includes(initialTab)
+    [
+      "workflows",
+      "agents",
+      "assistant",
+      "integrations",
+      "search",
+      "notifications",
+    ].includes(initialTab)
       ? initialTab
       : "workflows"
   );
@@ -65,6 +80,7 @@ function AutomationPageInner() {
   const tabs: Array<{ id: Tab; label: string; icon: typeof Workflow }> = [
     { id: "workflows", label: "Workflows", icon: Workflow },
     { id: "agents", label: "Agents", icon: Bot },
+    { id: "assistant", label: "Assistant", icon: Briefcase },
     { id: "integrations", label: "Integrations", icon: Plug },
     { id: "search", label: "Search", icon: Search },
     { id: "notifications", label: "Alerts", icon: Zap },
@@ -231,6 +247,8 @@ function AutomationPageInner() {
           ))}
         </div>
       )}
+
+      {tab === "assistant" && <ExecutiveAssistantPanel />}
 
       {tab === "integrations" && <ConnectorsPanel />}
 

@@ -21,6 +21,7 @@ export type ChatCreateActionId =
   | "media-audio"
   | "web-search"
   | "connectors"
+  | "executive-assistant"
   | "web-link"
   | "doc-pdf"
   | "doc-research"
@@ -85,6 +86,13 @@ export const CHAT_PLUS_SECTIONS: ChatCreateMenuSection[] = [
         label: "Connectors",
         emoji: "🔌",
         description: "Automation integrations",
+        runtime: "AI STUDIO",
+      },
+      {
+        id: "executive-assistant",
+        label: "Executive Assistant",
+        emoji: "🗂",
+        description: "Plan and run connected tasks",
         runtime: "AI STUDIO",
       },
     ],
@@ -275,6 +283,10 @@ export function resolveChatCreateRoute(action: ChatCreateActionId): ChatCreateRo
 
   if (action === "connectors") {
     return { kind: "navigate", href: "/automation/?tab=integrations" };
+  }
+
+  if (action === "executive-assistant") {
+    return { kind: "navigate", href: "/automation/?tab=assistant" };
   }
 
   const documentId = DOCUMENT_TEMPLATE_MAP[action];
