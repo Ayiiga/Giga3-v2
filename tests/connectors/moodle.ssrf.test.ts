@@ -38,7 +38,7 @@ describe("Moodle SSRF and fetch hardening", () => {
   it("rejects http and credentialed URLs", () => {
     expect(() => normalizeSiteUrl("http://moodle.example.edu")).toThrow(/https/);
     expect(() => normalizeSiteUrl("https://user:pass@moodle.example.edu")).toThrow(
-      /credentials/
+      /username|password|credentials/i
     );
   });
 
@@ -71,6 +71,12 @@ describe("Moodle SSRF and fetch hardening", () => {
   it("allows public https hostnames", () => {
     expect(normalizeSiteUrl("https://moodle.example.edu/path/")).toBe(
       "https://moodle.example.edu/path"
+    );
+  });
+
+  it("accepts bare hostnames by assuming https and trims whitespace", () => {
+    expect(normalizeSiteUrl("  moodle.example.edu/moodle/  ")).toBe(
+      "https://moodle.example.edu/moodle"
     );
   });
 

@@ -74,7 +74,7 @@ describe("microsoft / zoom / notion / moodle providers", () => {
     expect(() => normalizeSiteUrl("https://169.254.169.254/latest")).toThrow(/not allowed/);
     expect(() => normalizeSiteUrl("https://localhost/moodle")).toThrow(/not allowed/);
     expect(() => normalizeSiteUrl("https://user:pass@moodle.example.edu")).toThrow(
-      /credentials/
+      /username|password|credentials/i
     );
     expect(normalizeSiteUrl("https://moodle.example.edu/path/")).toBe(
       "https://moodle.example.edu/path"

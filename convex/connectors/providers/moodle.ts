@@ -8,7 +8,12 @@
 
 import https from "node:https";
 import { lookup as dnsLookup } from "node:dns/promises";
-import { isBlockedIpAddress, ipv4ToInt } from "../../liveWeb/browsePolicy";
+import { ipv4ToInt } from "../../liveWeb/browsePolicy";
+import {
+  isBlockedHostname,
+  isProhibitedMoodleDestinationIp,
+  normalizeSiteUrl,
+} from "../moodleUrl";
 
 const MOODLE_FETCH_TIMEOUT_MS = 15_000;
 /** Conservative response-size limit (~1 MiB). */
@@ -36,76 +41,6 @@ export type MoodleTransportResponse = {
 export type MoodleTransport = (
   req: MoodleTransportRequest
 ) => Promise<MoodleTransportResponse>;
-
-/**
- * Block localhost, link-local, private/reserved IPv4 literals, and IPv6 literals
- * in the URL hostname (pre-DNS). Resolved addresses are checked separately.
- */
-function isBlockedHostname(hostname: string): boolean {
-  const h = hostname.toLowerCase().replace(/\.$/, "");
-  if (
-    h === "localhost" ||
-    h.endsWith(".localhost") ||
-    h === "localhost.localdomain" ||
-    h === "metadata.google.internal" ||
-    h.endsWith(".internal") ||
-    h === "0.0.0.0" ||
-    h === "[::1]" ||
-    h === "[::]"
-  ) {
-    return true;
-  }
-
-  if (/^0x[0-9a-f]+$/i.test(h) || /^\d+$/.test(h)) {
-    return true;
-  }
-
-  if (isProhibitedMoodleDestinationIp(h)) return true;
-
-  // Incomplete dotted quads / weird dotted forms.
-  if (/^\d+(\.\d+)*$/.test(h) && !/^\d{1,3}(\.\d{1,3}){3}$/.test(h)) return true;
-
-  // Reject IPv6 literals in the URL — resolve hostnames only.
-  if (h.includes(":") || h.startsWith("[")) return true;
-
-  return false;
-}
-
-/** Extra ranges beyond browsePolicy (CGNAT, multicast/reserved). */
-function isProhibitedMoodleDestinationIp(address: string): boolean {
-  if (isBlockedIpAddress(address)) return true;
-  const raw = address.trim().toLowerCase().replace(/^\[|\]$/g, "");
-  const v4 = ipv4ToInt(raw);
-  if (v4 !== null) {
-    const a = (v4 >>> 24) & 0xff;
-    const b = (v4 >>> 16) & 0xff;
-    // 100.64.0.0/10 CGNAT
-    if (a === 100 && b >= 64 && b <= 127) return true;
-    // 224.0.0.0/4 multicast and 240.0.0.0/4 reserved
-    if (a >= 224) return true;
-  }
-  return false;
-}
-
-function normalizeSiteUrl(siteUrl: string): string {
-  let parsed: URL;
-  try {
-    parsed = new URL(siteUrl.trim());
-  } catch {
-    throw new Error("Invalid Moodle site URL.");
-  }
-  if (parsed.protocol !== "https:") {
-    throw new Error("Moodle site URL must use https://");
-  }
-  if (parsed.username || parsed.password) {
-    throw new Error("Moodle site URL must not include credentials.");
-  }
-  if (isBlockedHostname(parsed.hostname)) {
-    throw new Error("Moodle site URL host is not allowed.");
-  }
-  const path = parsed.pathname.replace(/\/$/, "");
-  return `${parsed.protocol}//${parsed.host}${path}`;
-}
 
 async function defaultResolver(hostname: string): Promise<string[]> {
   if (isProhibitedMoodleDestinationIp(hostname) || /^\d{1,3}(\.\d{1,3}){3}$/.test(hostname)) {
@@ -377,6 +312,6 @@ export {
   normalizeSiteUrl,
   isBlockedHostname,
   isProhibitedMoodleDestinationIp,
-  MOODLE_MAX_RESPONSE_BYTES,
-  MOODLE_FETCH_TIMEOUT_MS,
-};
+} from "../moodleUrl";
+
+export { MOODLE_MAX_RESPONSE_BYTES, MOODLE_FETCH_TIMEOUT_MS };
