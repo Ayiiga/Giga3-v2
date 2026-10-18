@@ -93,6 +93,13 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `AUTH_FROM_EMAIL` | Recommended | After verifying `giga3ai.com`, set `Giga3 AI <noreply@giga3ai.com>` on Convex **and** as a GitHub Actions variable/secret so deploy does not leave it unset. App code falls back to `onboarding@resend.dev` only when Convex env is empty (testing — owner inbox only). Deploy **does not** overwrite Convex when the GitHub value is unset. |
    | `AUTH_EMAIL_FALLBACK_INBOX` | Optional | Receives operational notices when a reset email fails to send. It must never receive another user's reset link. Synced from GitHub only when set. |
    | `GOOGLE_CLIENT_ID` | For Google sign-in | OAuth web client ID. Same value as `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. Not a client secret. |
+   | `CONNECTOR_TOKEN_ENCRYPTION_KEY` | For Connectors | AES-GCM key for Drive/Gmail/Outlook/Zoom/Moodle/Notion tokens. Falls back to `SESSION_SIGNING_SECRET` if unset. |
+   | `GOOGLE_CONNECTOR_CLIENT_ID` / `GOOGLE_CONNECTOR_CLIENT_SECRET` | Google Drive + Gmail connectors | Confidential OAuth web client (not the GIS sign-in client). Redirect: `https://<deployment>.convex.site/connectors/oauth/callback`. |
+   | `MICROSOFT_CONNECTOR_CLIENT_ID` / `MICROSOFT_CONNECTOR_CLIENT_SECRET` | Outlook Calendar | Entra app registration. Optional `MICROSOFT_CONNECTOR_TENANT` (default `common`). |
+   | `ZOOM_CONNECTOR_CLIENT_ID` / `ZOOM_CONNECTOR_CLIENT_SECRET` | Zoom meetings | Zoom Marketplace OAuth app. |
+   | `NOTION_CONNECTOR_CLIENT_ID` / `NOTION_CONNECTOR_CLIENT_SECRET` | Notion | Notion public integration. |
+
+   See `docs/CONNECTORS.md` for scopes, status meanings, and smoke checks. Never put connector secrets in `NEXT_PUBLIC_*`.
    | `STRIPE_SECRET_KEY` | Legacy only | Old token checkout in `payments.ts` |
    | `HF_TOKEN` | No (MMS not enabled) | Server-side Hugging Face token. Fine-grained read token. Not read by the static site. |
    | `KHAYA_SUBSCRIPTION_KEY` | For African voice and translation | GhanaNLP / Khaya key. Sent only as `Ocp-Apim-Subscription-Key` from Convex. |

@@ -21,8 +21,15 @@ import {
   khayaTranslate,
   khayaTranslateOptions,
 } from "./khayaHttp";
+import { oauthCallback as connectorsOAuthCallback } from "./connectors/http";
 
 const http = httpRouter();
+
+http.route({
+  path: "/connectors/oauth/callback",
+  method: "GET",
+  handler: connectorsOAuthCallback,
+});
 
 http.route({
   path: "/health",

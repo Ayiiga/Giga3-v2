@@ -1762,4 +1762,79 @@ export default defineSchema({
     .index("by_email", ["email"])
     .index("by_status_invited", ["status", "invitedAt"])
     .index("by_token", ["magicLinkToken"]),
+
+  /**
+   * External connector OAuth / token connections.
+   * Access and refresh tokens are stored encrypted (AES-GCM); never returned to clients.
+   */
+  connectorConnections: defineTable({
+    userId: v.string(),
+    provider: v.string(),
+    status: v.union(
+      v.literal("connected"),
+      v.literal("needs_reauth"),
+      v.literal("revoked"),
+      v.literal("error")
+    ),
+    accountLabel: v.optional(v.string()),
+    scopes: v.array(v.string()),
+    accessTokenEnc: v.string(),
+    refreshTokenEnc: v.optional(v.string()),
+    tokenExpiresAt: v.optional(v.number()),
+    /** Provider-specific non-secret metadata (JSON string). */
+    metadataJson: v.optional(v.string()),
+    lastError: v.optional(v.string()),
+    connectedAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_provider", ["userId", "provider"])
+    .index("by_provider_status", ["provider", "status"]),
+
+  /** Short-lived OAuth CSRF state for connector authorization. */
+  connectorOAuthStates: defineTable({
+    state: v.string(),
+    userId: v.string(),
+    provider: v.string(),
+    returnPath: v.string(),
+    codeVerifier: v.optional(v.string()),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_state", ["state"])
+    .index("by_expires", ["expiresAt"]),
+
+  /** Confirm-before-act staging for consequential connector operations. */
+  connectorPendingActions: defineTable({
+    userId: v.string(),
+    provider: v.string(),
+    actionType: v.string(),
+    payloadJson: v.string(),
+    summary: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("confirmed"),
+      v.literal("cancelled"),
+      v.literal("executed"),
+      v.literal("failed")
+    ),
+    resultJson: v.optional(v.string()),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_status", ["userId", "status"])
+    .index("by_expires", ["expiresAt"]),
+
+  /** Connector audit trail (no secrets). */
+  connectorAuditLogs: defineTable({
+    userId: v.string(),
+    provider: v.string(),
+    action: v.string(),
+    ok: v.boolean(),
+    detail: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_provider_created", ["provider", "createdAt"]),
 });
