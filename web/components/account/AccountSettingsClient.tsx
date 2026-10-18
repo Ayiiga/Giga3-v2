@@ -1,5 +1,6 @@
 "use client";
 
+import { LinkedProvidersSettings } from "@/components/account/LinkedProvidersSettings";
 import { GigaLiteSettings } from "@/components/settings/GigaLiteSettings";
 import { LanguagePreferencesSettings } from "@/components/settings/LanguagePreferencesSettings";
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
@@ -51,6 +52,7 @@ function AccountSettingsClientInner() {
 
       <GigaLiteSettings />
       <LanguagePreferencesSettings />
+      <LinkedProvidersSettings />
 
       <section className="rounded-2xl border border-border bg-card p-4">
         <div className="flex items-center justify-between gap-3">

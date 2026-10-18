@@ -22,6 +22,10 @@ import {
   khayaTranslateOptions,
 } from "./khayaHttp";
 import { oauthCallback as connectorsOAuthCallback } from "./connectors/http";
+import {
+  socialOAuthCallbackGet,
+  socialOAuthCallbackPost,
+} from "./socialAuth/http";
 
 const http = httpRouter();
 
@@ -29,6 +33,19 @@ http.route({
   path: "/connectors/oauth/callback",
   method: "GET",
   handler: connectorsOAuthCallback,
+});
+
+/** Social login OAuth — separate from connector OAuth above. */
+http.route({
+  path: "/auth/oauth/callback",
+  method: "GET",
+  handler: socialOAuthCallbackGet,
+});
+
+http.route({
+  path: "/auth/oauth/callback",
+  method: "POST",
+  handler: socialOAuthCallbackPost,
 });
 
 http.route({
