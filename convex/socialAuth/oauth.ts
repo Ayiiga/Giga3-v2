@@ -271,5 +271,3 @@ export const exchangeSocialAuthCode = action({
     return { email: consumed.email, sessionToken };
   },
 });
-
-export { socialLinkRejectionMessage };
