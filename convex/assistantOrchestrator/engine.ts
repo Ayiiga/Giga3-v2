@@ -201,6 +201,7 @@ async function persist(
 /**
  * Execute ready steps until blocked on confirmation, failure, or completion.
  * Pass `confirmStepId` + optional `pendingActionId` to approve a consequential step.
+ * Confirmation executes the staged pending payload only — client paramOverrides are ignored.
  */
 export const advancePlan = action({
   args: {
@@ -208,7 +209,10 @@ export const advancePlan = action({
     planId: v.id("assistantOrchestrationPlans"),
     confirmStepId: v.optional(v.string()),
     pendingActionId: v.optional(v.string()),
-    /** Optional param overrides for the confirmed step (e.g. fill startIso). */
+    /**
+     * Allowed only while a step is still pending/ready (before staging).
+     * Ignored once a step is awaiting confirmation so confirm cannot change action details.
+     */
     paramOverrides: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
@@ -218,6 +222,10 @@ export const advancePlan = action({
     });
     if (!row || row.userId !== userId) throw new Error("Plan not found.");
     if (row.status === "cancelled") throw new Error("Plan was cancelled.");
+    if (row.status === "completed") throw new Error("Plan already completed.");
+    if (row.status === "failed" && !args.confirmStepId) {
+      throw new Error("Plan already failed. Create a new plan.");
+    }
     if (row.expiresAt < Date.now()) throw new Error("Plan expired. Create a new plan.");
 
     const steps = JSON.parse(row.stepsJson) as StoredPlanStep[];
@@ -252,53 +260,78 @@ export const advancePlan = action({
         if (!target.requiresConfirmation) {
           throw new Error("This step does not require confirmation.");
         }
-        if (args.paramOverrides && typeof args.paramOverrides === "object") {
-          target.params = {
-            ...target.params,
-            ...(args.paramOverrides as Record<string, unknown>),
-          };
+        if (target.status === "completed") {
+          throw new Error("Step already completed.");
         }
+        if (target.status === "failed") {
+          throw new Error("Step already failed.");
+        }
+        if (target.status === "skipped") {
+          throw new Error("Step was skipped.");
+        }
+        if (target.status !== "awaiting_confirmation") {
+          throw new Error(
+            "Step is not awaiting confirmation. Advance the plan to stage it first."
+          );
+        }
+        const boundPendingId = pendingActionId || target.pendingActionId;
+        if (!boundPendingId) {
+          throw new Error("pendingActionId is required to confirm this step.");
+        }
+        // Do not apply paramOverrides after staging — confirm binds to locked payload.
 
-        target.status = "running";
-        target.startedAt = Date.now();
-        await persist(ctx, args.planId, steps);
+        const claimed = (await ctx.runMutation(
+          internal.assistantOrchestrator.store.claimPlanStepInternal,
+          {
+            planId: args.planId,
+            userId,
+            stepId: target.stepId,
+            fromStatuses: ["awaiting_confirmation"],
+          }
+        )) as
+          | { ok: true; steps: StoredPlanStep[] }
+          | { ok: false; error: string; status?: string };
+        if (!claimed.ok) throw new Error(claimed.error);
+        steps.splice(0, steps.length, ...claimed.steps);
+        const runningTarget = steps.find((s) => s.stepId === confirmStepId)!;
 
         try {
           const result = (await ctx.runAction(api.connectors.operations.invoke, {
             sessionToken: args.sessionToken,
-            provider: target.provider,
-            operation: target.operation,
-            params: target.params,
+            provider: runningTarget.provider,
+            operation: runningTarget.operation,
+            // Params ignored on confirm; server uses staged payloadJson.
+            params: {},
             confirm: true,
-            pendingActionId: pendingActionId || target.pendingActionId,
+            pendingActionId: boundPendingId,
           })) as InvokeResult;
 
           if (result.requiresConfirmation) {
-            target.status = "awaiting_confirmation";
-            target.pendingActionId = String(result.pendingActionId || "");
-            target.resultSummary = result.summary || "Awaiting confirmation";
+            runningTarget.status = "awaiting_confirmation";
+            runningTarget.pendingActionId = String(result.pendingActionId || "");
+            runningTarget.resultSummary = result.summary || "Awaiting confirmation";
             const saved = await persist(ctx, args.planId, steps);
             return {
               ok: true as const,
               paused: true as const,
-              awaitingStepId: target.stepId,
-              pendingActionId: target.pendingActionId,
-              summary: target.resultSummary,
+              awaitingStepId: runningTarget.stepId,
+              pendingActionId: runningTarget.pendingActionId,
+              summary: runningTarget.resultSummary,
               ...saved,
               steps,
             };
           }
 
-          target.status = "completed";
-          target.completedAt = Date.now();
-          target.resultSummary = summarizeResult(result.result ?? result);
-          target.error = undefined;
+          runningTarget.status = "completed";
+          runningTarget.completedAt = Date.now();
+          runningTarget.resultSummary = summarizeResult(result.result ?? result);
+          runningTarget.error = undefined;
           confirmStepId = undefined;
           pendingActionId = undefined;
         } catch (e) {
-          target.status = "failed";
-          target.completedAt = Date.now();
-          target.error = e instanceof Error ? e.message : "Step failed";
+          runningTarget.status = "failed";
+          runningTarget.completedAt = Date.now();
+          runningTarget.error = e instanceof Error ? e.message : "Step failed";
           const saved = await persist(ctx, args.planId, steps);
           return { ok: false as const, paused: false as const, ...saved, steps };
         }
@@ -308,45 +341,77 @@ export const advancePlan = action({
       if (!next) break;
 
       if (next.requiresConfirmation) {
-        // Stage via invoke without confirm to get pendingActionId
-        next.status = "running";
-        next.startedAt = Date.now();
-        await persist(ctx, args.planId, steps);
+        // Optional pre-stage param fill (e.g. startIso) — only before confirmation staging.
+        if (args.paramOverrides && typeof args.paramOverrides === "object") {
+          next.params = {
+            ...next.params,
+            ...(args.paramOverrides as Record<string, unknown>),
+          };
+          await persist(ctx, args.planId, steps);
+        }
+        const claimed = (await ctx.runMutation(
+          internal.assistantOrchestrator.store.claimPlanStepInternal,
+          {
+            planId: args.planId,
+            userId,
+            stepId: next.stepId,
+            fromStatuses: ["pending", "ready"],
+          }
+        )) as
+          | { ok: true; steps: StoredPlanStep[] }
+          | { ok: false; error: string };
+        if (!claimed.ok) {
+          // Another advance claimed this step — reload and continue.
+          const refreshed = await ctx.runQuery(
+            internal.assistantOrchestrator.store.getPlanInternal,
+            { planId: args.planId }
+          );
+          if (refreshed?.stepsJson) {
+            steps.splice(
+              0,
+              steps.length,
+              ...(JSON.parse(refreshed.stepsJson) as StoredPlanStep[])
+            );
+          }
+          continue;
+        }
+        steps.splice(0, steps.length, ...claimed.steps);
+        const staging = steps.find((s) => s.stepId === next.stepId)!;
         try {
           const staged = (await ctx.runAction(api.connectors.operations.invoke, {
             sessionToken: args.sessionToken,
-            provider: next.provider,
-            operation: next.operation,
-            params: next.params,
+            provider: staging.provider,
+            operation: staging.operation,
+            params: staging.params,
             confirm: false,
           })) as InvokeResult;
 
           if (staged.requiresConfirmation) {
-            next.status = "awaiting_confirmation";
-            next.pendingActionId = staged.pendingActionId
+            staging.status = "awaiting_confirmation";
+            staging.pendingActionId = staged.pendingActionId
               ? String(staged.pendingActionId)
               : undefined;
-            next.resultSummary = staged.summary || next.title;
+            staging.resultSummary = staged.summary || staging.title;
             const saved = await persist(ctx, args.planId, steps);
             return {
               ok: true as const,
               paused: true as const,
-              awaitingStepId: next.stepId,
-              pendingActionId: next.pendingActionId,
-              summary: next.resultSummary,
+              awaitingStepId: staging.stepId,
+              pendingActionId: staging.pendingActionId,
+              summary: staging.resultSummary,
               ...saved,
               steps,
             };
           }
 
           // Unexpected: consequential op ran without staging — record result
-          next.status = "completed";
-          next.completedAt = Date.now();
-          next.resultSummary = summarizeResult(staged.result ?? staged);
+          staging.status = "completed";
+          staging.completedAt = Date.now();
+          staging.resultSummary = summarizeResult(staged.result ?? staged);
         } catch (e) {
-          next.status = "failed";
-          next.completedAt = Date.now();
-          next.error = e instanceof Error ? e.message : "Step failed";
+          staging.status = "failed";
+          staging.completedAt = Date.now();
+          staging.error = e instanceof Error ? e.message : "Step failed";
           const saved = await persist(ctx, args.planId, steps);
           return { ok: false as const, paused: false as const, ...saved, steps };
         }
@@ -354,23 +419,45 @@ export const advancePlan = action({
       }
 
       // Auto-run read-only / non-confirm step
-      next.status = "running";
-      next.startedAt = Date.now();
-      await persist(ctx, args.planId, steps);
+      const claimedRead = (await ctx.runMutation(
+        internal.assistantOrchestrator.store.claimPlanStepInternal,
+        {
+          planId: args.planId,
+          userId,
+          stepId: next.stepId,
+          fromStatuses: ["pending", "ready"],
+        }
+      )) as { ok: true; steps: StoredPlanStep[] } | { ok: false; error: string };
+      if (!claimedRead.ok) {
+        const refreshed = await ctx.runQuery(
+          internal.assistantOrchestrator.store.getPlanInternal,
+          { planId: args.planId }
+        );
+        if (refreshed?.stepsJson) {
+          steps.splice(
+            0,
+            steps.length,
+            ...(JSON.parse(refreshed.stepsJson) as StoredPlanStep[])
+          );
+        }
+        continue;
+      }
+      steps.splice(0, steps.length, ...claimedRead.steps);
+      const running = steps.find((s) => s.stepId === next.stepId)!;
       try {
         const result = (await ctx.runAction(api.connectors.operations.invoke, {
           sessionToken: args.sessionToken,
-          provider: next.provider,
-          operation: next.operation,
-          params: next.params,
+          provider: running.provider,
+          operation: running.operation,
+          params: running.params,
         })) as InvokeResult;
-        next.status = "completed";
-        next.completedAt = Date.now();
-        next.resultSummary = summarizeResult(result.result ?? result);
+        running.status = "completed";
+        running.completedAt = Date.now();
+        running.resultSummary = summarizeResult(result.result ?? result);
       } catch (e) {
-        next.status = "failed";
-        next.completedAt = Date.now();
-        next.error = e instanceof Error ? e.message : "Step failed";
+        running.status = "failed";
+        running.completedAt = Date.now();
+        running.error = e instanceof Error ? e.message : "Step failed";
         const saved = await persist(ctx, args.planId, steps);
         return { ok: false as const, paused: false as const, ...saved, steps };
       }

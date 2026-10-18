@@ -4,6 +4,7 @@ import {
   formatPlanSummary,
   planNeedsUserConfirmation,
 } from "../../convex/assistantOrchestrator/planner";
+import { isAllowedConnectorOperation } from "../../convex/connectors/toolPolicy";
 
 describe("executive assistant planner", () => {
   it("maps Zoom + email invite into confirmable steps", () => {
@@ -67,5 +68,27 @@ describe("executive assistant planner", () => {
     expect(plan.intent).toBe("unmapped");
     expect(plan.steps).toEqual([]);
     expect(plan.notes[0]).toMatch(/Gmail|Drive|Outlook/i);
+  });
+
+  it("only emits server-allowlisted connector operations", () => {
+    const samples = [
+      'Create a Zoom meeting about "BECE" and email teacher@school.edu',
+      "Search my Drive for syllabus and export notes",
+      "List Moodle assignments and create a calendar event",
+      "Search Notion for notes and append a page",
+    ];
+    for (const request of samples) {
+      const plan = buildExecutionPlan(request, {
+        zoom: { connected: true },
+        gmail: { connected: true },
+        google_drive: { connected: true },
+        moodle: { connected: true },
+        outlook_calendar: { connected: true },
+        notion: { connected: true },
+      });
+      for (const s of plan.steps) {
+        expect(isAllowedConnectorOperation(s.provider, s.operation)).toBe(true);
+      }
+    }
   });
 });

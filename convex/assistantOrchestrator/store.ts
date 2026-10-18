@@ -63,6 +63,57 @@ export const patchPlanInternal = internalMutation({
   },
 });
 
+/**
+ * Atomically claim a plan step for execution (pending/ready/awaiting → running).
+ * Prevents duplicate side effects from concurrent advancePlan calls.
+ */
+export const claimPlanStepInternal = internalMutation({
+  args: {
+    planId: v.id("assistantOrchestrationPlans"),
+    userId: v.string(),
+    stepId: v.string(),
+    fromStatuses: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const row = await ctx.db.get(args.planId);
+    if (!row || row.userId !== args.userId) {
+      return { ok: false as const, error: "Plan not found." };
+    }
+    if (
+      row.status === "cancelled" ||
+      row.status === "completed" ||
+      row.expiresAt < Date.now()
+    ) {
+      return { ok: false as const, error: "Plan is not executable." };
+    }
+    let steps: StoredPlanStep[];
+    try {
+      steps = JSON.parse(row.stepsJson) as StoredPlanStep[];
+    } catch {
+      return { ok: false as const, error: "Plan steps are corrupt." };
+    }
+    const step = steps.find((s) => s.stepId === args.stepId);
+    if (!step) {
+      return { ok: false as const, error: "Unknown step." };
+    }
+    if (!args.fromStatuses.includes(step.status)) {
+      return {
+        ok: false as const,
+        error: `Step is not claimable (status=${step.status}).`,
+        status: step.status,
+      };
+    }
+    step.status = "running";
+    step.startedAt = Date.now();
+    await ctx.db.patch(args.planId, {
+      status: "running",
+      stepsJson: JSON.stringify(steps),
+      updatedAt: Date.now(),
+    });
+    return { ok: true as const, steps };
+  },
+});
+
 function publicPlanView(row: {
   _id: string;
   userId: string;

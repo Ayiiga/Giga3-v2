@@ -19,7 +19,9 @@ Additive layer on PR #536 connectors. Does not replace chat routing, billing, or
 - Cross-user isolation on every plan/step.
 - External content treated as untrusted (reuse connector tool policy).
 - Never mark a provider connected without a live connection row.
-- Plans expire; cancelled plans do not execute.
+- Plans expire; cancelled / completed / failed plans do not re-execute.
+- Confirmation claims the staged `connectorPendingActions` row atomically and runs that locked `payloadJson` only (client `params` / post-stage overrides cannot change the action).
+- Operations are validated against the server-side connector allowlist.
 
 ## Files
 
