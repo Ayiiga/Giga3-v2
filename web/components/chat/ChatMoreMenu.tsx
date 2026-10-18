@@ -16,7 +16,6 @@ import {
   MoreHorizontal,
   Settings,
   Shield,
-  Sparkles,
   User,
 } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
@@ -126,7 +125,7 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
                 setDiscoverOpen(true);
               }}
             >
-              <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
+              <span aria-hidden>✨</span>
               Discover
             </button>
           ) : null}
