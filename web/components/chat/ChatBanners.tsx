@@ -78,12 +78,10 @@ export const ChatBanners = memo(function ChatBanners({
     setLowCreditDismissed(true);
   }
 
-  // Empty balance stays visible (recovery). Soft "low" upsell hides once a thread
-  // has messages so the conversation stays distraction-free on mobile.
+  // Soft credit upsell for premium tools only — hide once a thread has messages
+  // so ordinary (credit-free) chat stays distraction-free on mobile.
   const showCreditBanner =
-    showBalancePrompt &&
-    balancePrompt &&
-    (balancePrompt === "empty" || !hasMessages);
+    showBalancePrompt && Boolean(balancePrompt) && !hasMessages;
 
   return (
     <div className="chat-banners-band shrink-0">
