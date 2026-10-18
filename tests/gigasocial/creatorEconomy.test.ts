@@ -71,6 +71,15 @@ describe("creatorEconomy eligibility", () => {
         fanCount: 12,
         fansRequired: 5,
         withdrawalFansRequired: 50,
+        accepted: false,
+        requiresPolicyReacceptance: true,
+      })
+    ).toContain("current creator monetisation rules");
+    expect(
+      monetizationStatusMessage({
+        fanCount: 12,
+        fansRequired: 5,
+        withdrawalFansRequired: 50,
         accepted: true,
       })
     ).toContain("50 fans");
@@ -93,6 +102,28 @@ describe("cameraModes", () => {
     const ids = CAMERA_CAPTURE_MODES.map((m) => m.id);
     expect(ids).toContain("standard");
     expect(ids).toContain("cinematic");
+    expect(ids).toContain("night");
+    expect(ids).toContain("portrait");
+    expect(ids).toContain("hdr");
+    expect(ids).toContain("ultra-hdr");
+    expect(ids).toContain("vivid");
+    expect(ids).toContain("natural");
+    expect(ids).toContain("film-look");
+    expect(ids).toContain("pro");
+    expect(ids).toContain("video-4k");
+    expect(ids).toContain("video-8k");
+    expect(ids).toContain("slow-motion");
+    expect(ids).toContain("time-lapse");
+    expect(ids).toContain("beauty");
+    expect(ids).toContain("blur");
+    expect(ids).toContain("lighting");
+    expect(ids).toContain("framing");
+    expect(ids).toContain("stabilize");
+    expect(ids).toContain("color");
+  });
+
+  it("defaults to standard auto mode", () => {
     expect(getCameraMode(null).id).toBe("standard");
+    expect(getCameraMode("unknown-mode").id).toBe("standard");
   });
 });

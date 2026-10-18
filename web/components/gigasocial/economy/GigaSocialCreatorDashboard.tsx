@@ -88,6 +88,7 @@ export const GigaSocialCreatorDashboard = memo(function GigaSocialCreatorDashboa
     fansRequired,
     withdrawalFansRequired,
     accepted: Boolean(dashboard.monetizationAccepted),
+    requiresPolicyReacceptance: Boolean(dashboard.requiresPolicyReacceptance),
   });
 
   return (
@@ -142,8 +143,13 @@ export const GigaSocialCreatorDashboard = memo(function GigaSocialCreatorDashboa
         </p>
       </section>
 
-      {dashboard.showEligibleInvite || (dashboard.fanEligible && !dashboard.monetizationAccepted) ? (
-        <GigaSocialMonetizationAccept sessionToken={sessionToken} />
+      {dashboard.showEligibleInvite ||
+      dashboard.requiresPolicyReacceptance ||
+      (dashboard.fanEligible && !dashboard.monetizationAccepted) ? (
+        <GigaSocialMonetizationAccept
+          sessionToken={sessionToken}
+          reacceptance={Boolean(dashboard.requiresPolicyReacceptance)}
+        />
       ) : null}
 
       <div className="grid gap-2 sm:grid-cols-2">

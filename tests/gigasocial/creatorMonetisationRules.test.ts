@@ -10,7 +10,9 @@ describe("creator monetisation server rules", () => {
     );
     expect(src).toContain("MIN_FANS_FOR_MONETIZATION = 5");
     expect(src).toContain("MIN_FANS_FOR_WITHDRAWAL = 50");
-    expect(src).toContain('CREATOR_MONETIZATION_POLICY_VERSION = "giga-creator-monetisation-v1"');
+    expect(src).toContain('CREATOR_MONETIZATION_POLICY_VERSION');
+    expect(src).toContain("hasValidMonetizationConsent");
+    expect(src).not.toContain("function hasAcceptedMonetization");
   });
 
   it("records acceptance server-side with fan verification", () => {
@@ -26,7 +28,12 @@ describe("creator monetisation server rules", () => {
     expect(handler).toContain("minFansForMonetization");
     expect(handler).toContain("monetizationAcceptedAt");
     expect(handler).toContain("monetizationPolicyVersion");
+    expect(handler).toContain("monetizationAcceptedBy: userId");
     expect(handler).toContain("Outdated policy version");
+    expect(handler).toContain("Date.now()");
+    expect(handler).toContain("monetizationAcceptedAt: now");
+    expect(handler).not.toContain("args.acceptedAt");
+    expect(handler).not.toContain("args.userId");
   });
 
   it("blocks withdrawals below 50 fans and without acceptance", () => {
@@ -38,7 +45,47 @@ describe("creator monetisation server rules", () => {
     expect(src).toContain("Accept the creator monetisation rules before requesting a withdrawal");
     expect(src).toContain("Withdrawals unlock at");
     expect(src).toContain("requestCreatorWithdrawal");
-    expect(src).toContain("A matching withdrawal request is already pending");
+    expect(src).toContain("validateWithdrawalAmountGhs");
+    expect(src).toContain("A withdrawal is already in progress");
+  });
+
+  it("never treats legacy unlock timestamps as current-policy consent", () => {
+    const consent = readFileSync(
+      resolve(__dirname, "../../convex/gigaSocialMonetizationConsent.ts"),
+      "utf8"
+    );
+    expect(consent).toContain("Legacy monetizationUnlockedAt alone is NEVER valid consent");
+    expect(consent).toContain("hasValidMonetizationConsent");
+    const economy = readFileSync(
+      resolve(__dirname, "../../convex/gigaSocialEconomy.ts"),
+      "utf8"
+    );
+    expect(economy).toContain("requiresPolicyReacceptance");
+    expect(economy).toContain("legacyUnlockOnly");
+  });
+
+  it("marketplace payouts reuse amount validation and in-flight guards", () => {
+    const src = readFileSync(resolve(__dirname, "../../convex/marketplace.ts"), "utf8");
+    const start = src.indexOf("export const requestPayout");
+    const next = src.indexOf("export const ", start + 10);
+    const handler = src.slice(start, next === -1 ? undefined : next);
+    expect(handler).toContain("assertWithdrawalEligibility");
+    expect(handler).toContain("validateWithdrawalAmountGhs");
+    expect(handler).toContain("A withdrawal is already in progress");
+    expect(handler).toContain("Payout profile ownership mismatch");
+  });
+
+  it("admin payout status changes reject paid→failed refunds", () => {
+    const src = readFileSync(
+      resolve(__dirname, "../../convex/adminMarketplace.ts"),
+      "utf8"
+    );
+    const start = src.indexOf("export const setPayoutStatus");
+    const next = src.indexOf("export const ", start + 10);
+    const handler = src.slice(start, next === -1 ? undefined : next);
+    expect(handler).toContain("Invalid payout transition");
+    expect(handler).toContain('from === "pending" || from === "processing"');
+    expect(handler).toContain('paid: []');
   });
 
   it("rejects affiliate self-referrals", () => {

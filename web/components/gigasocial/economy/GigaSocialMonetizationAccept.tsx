@@ -14,9 +14,12 @@ import { memo, useCallback, useState } from "react";
 export const GigaSocialMonetizationAccept = memo(function GigaSocialMonetizationAccept({
   sessionToken,
   onAccepted,
+  reacceptance = false,
 }: {
   sessionToken: string;
   onAccepted?: () => void;
+  /** Legacy unlock without current-policy consent — must re-accept. */
+  reacceptance?: boolean;
 }) {
   const accept = useMutation(api.gigaSocialEconomy.acceptMonetizationTerms);
   const [checked, setChecked] = useState(false);
@@ -51,6 +54,9 @@ export const GigaSocialMonetizationAccept = memo(function GigaSocialMonetization
       </h3>
       <p className="mt-1 text-xs text-muted">
         Policy version {CREATOR_MONETIZATION_POLICY_VERSION}. Acceptance is recorded on the server.
+        {reacceptance
+          ? " A previous unlock does not replace accepting the current rules."
+          : null}
       </p>
       <div className="mt-3 max-h-56 space-y-3 overflow-y-auto overscroll-contain rounded-xl border border-border bg-white p-3 text-sm">
         {CREATOR_MONETIZATION_POLICY_SECTIONS.map((section) => (
@@ -76,7 +82,7 @@ export const GigaSocialMonetizationAccept = memo(function GigaSocialMonetization
         onClick={() => void handleAccept()}
       >
         {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
-        Accept and activate earning
+        {reacceptance ? "Accept current rules" : "Accept and activate earning"}
       </Button>
       {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
     </section>

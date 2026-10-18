@@ -37,7 +37,7 @@ export function isEligibleForWithdrawal(
   return fanCount >= required;
 }
 
-/** True when the creator has accepted terms (or legacy unlock) — not merely fan-eligible. */
+/** True only when the server reports current-policy acceptance — never fan count alone. */
 export function isCreatorMonetizationUnlocked(
   _fanCount: number,
   unlocked?: boolean,
@@ -51,13 +51,23 @@ export function monetizationStatusMessage(args: {
   fansRequired: number;
   withdrawalFansRequired: number;
   accepted: boolean;
+  requiresPolicyReacceptance?: boolean;
 }): string {
-  const { fanCount, fansRequired, withdrawalFansRequired, accepted } = args;
+  const {
+    fanCount,
+    fansRequired,
+    withdrawalFansRequired,
+    accepted,
+    requiresPolicyReacceptance,
+  } = args;
   if (!isEligibleForMonetization(fanCount, fansRequired)) {
     const n = fansRemaining(fanCount, fansRequired);
     return `Invite ${n} more ${n === 1 ? "fan" : "fans"} to unlock creator monetisation.`;
   }
   if (!accepted) {
+    if (requiresPolicyReacceptance) {
+      return "Please accept the current creator monetisation rules to continue earning and withdraw.";
+    }
     return "You are eligible to monetise. Accept the creator rules to get started.";
   }
   if (!isEligibleForWithdrawal(fanCount, withdrawalFansRequired)) {

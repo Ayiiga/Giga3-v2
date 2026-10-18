@@ -4,6 +4,17 @@ import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { parseGamification } from "./gigaSocialViews";
 import type { Doc, Id } from "./_generated/dataModel";
+import {
+  CREATOR_MONETIZATION_POLICY_VERSION,
+  hasValidMonetizationConsent,
+  validateWithdrawalAmountGhs,
+} from "./gigaSocialMonetizationConsent";
+
+export {
+  CREATOR_MONETIZATION_POLICY_VERSION,
+  hasValidMonetizationConsent,
+  validateWithdrawalAmountGhs,
+} from "./gigaSocialMonetizationConsent";
 
 /** Paystack tip tiers in GHS (MoMo / card / bank). */
 export const CREATOR_TIP_CATALOG = [
@@ -24,8 +35,6 @@ type DbCtx = { db: import("./_generated/server").QueryCtx["db"] };
 export const MIN_FANS_FOR_MONETIZATION = 5;
 /** Fans required to request a withdrawal (balance/payment checks still apply). */
 export const MIN_FANS_FOR_WITHDRAWAL = 50;
-/** Must match web/lib/gigasocial/creatorMonetizationPolicy.ts */
-export const CREATOR_MONETIZATION_POLICY_VERSION = "giga-creator-monetisation-v1";
 
 export type EconomySettings = {
   minFansForMonetization: number;
@@ -74,7 +83,7 @@ const ECONOMY_CONFIG_KEYS: Record<keyof EconomySettings, string> = {
 
 type EconomyJson = {
   affiliateCode?: string;
-  /** Legacy unlock timestamp — treated as acceptance for older accounts. */
+  /** Legacy auto-unlock — never counts as current-policy consent. */
   monetizationUnlockedAt?: number;
   monetizationAcceptedAt?: number;
   monetizationPolicyVersion?: string;
@@ -192,18 +201,17 @@ async function getMutualFanCount(
   return theirFans.filter((f) => myFanIds.has(f.followerId)).length;
 }
 
-function hasAcceptedMonetization(economy: EconomyJson): boolean {
-  return Boolean(economy.monetizationAcceptedAt || economy.monetizationUnlockedAt);
-}
-
-/** True only after server-recorded policy acceptance (or legacy unlock). Fan count alone is not enough. */
+/**
+ * True only after explicit acceptance of the *current* policy for this creator.
+ * Legacy monetizationUnlockedAt alone is never sufficient.
+ */
 export async function isMonetizationUnlocked(
   ctx: DbCtx,
   profile: Doc<"socialProfiles">,
   _settings?: EconomySettings
 ): Promise<boolean> {
   const economy = parseEconomyJson(profile.economyJson);
-  return hasAcceptedMonetization(economy);
+  return hasValidMonetizationConsent(economy, profile.userId);
 }
 
 export async function getMonetizationEligibility(
@@ -220,12 +228,17 @@ export async function getMonetizationEligibility(
   unlocked: boolean;
   policyVersion: string;
   showEligibleInvite: boolean;
+  requiresPolicyReacceptance: boolean;
 }> {
   const config = settings ?? (await loadEconomySettings(ctx));
   const fanCount = await getFanCount(ctx, profile.userId);
   const economy = parseEconomyJson(profile.economyJson);
-  const accepted = hasAcceptedMonetization(economy);
+  const accepted = hasValidMonetizationConsent(economy, profile.userId);
   const fanEligible = fanCount >= config.minFansForMonetization;
+  const legacyUnlockOnly =
+    !accepted &&
+    typeof economy.monetizationUnlockedAt === "number" &&
+    economy.monetizationUnlockedAt > 0;
   return {
     fanCount,
     fansRequired: config.minFansForMonetization,
@@ -235,7 +248,9 @@ export async function getMonetizationEligibility(
     accepted,
     unlocked: accepted,
     policyVersion: CREATOR_MONETIZATION_POLICY_VERSION,
-    showEligibleInvite: fanEligible && !accepted && !economy.unlockEligibleNotifiedAt,
+    // Always surface the accept UI when eligible and not consented (including legacy unlock).
+    showEligibleInvite: fanEligible && !accepted,
+    requiresPolicyReacceptance: legacyUnlockOnly,
   };
 }
 
@@ -455,7 +470,8 @@ export const getCreatorDashboard = query({
       withdrawalFanEligible: eligibility.withdrawalFanEligible,
       monetizationAccepted: eligibility.accepted,
       policyVersion: eligibility.policyVersion,
-      showEligibleInvite: eligibility.fanEligible && !eligibility.accepted,
+      showEligibleInvite: eligibility.showEligibleInvite,
+      requiresPolicyReacceptance: eligibility.requiresPolicyReacceptance,
       fanProgress: Math.min(100, Math.round((fanCount / settings.minFansForMonetization) * 100)),
       level: gamification.level,
       xp: gamification.xp,
@@ -829,6 +845,9 @@ export const acceptMonetizationTerms = mutation({
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .first();
     if (!profile) throw new Error("Profile not found.");
+    if (profile.userId !== userId) {
+      throw new Error("Profile ownership mismatch.");
+    }
 
     if (args.policyVersion !== CREATOR_MONETIZATION_POLICY_VERSION) {
       throw new Error("Outdated policy version. Refresh and accept the latest rules.");
@@ -843,12 +862,13 @@ export const acceptMonetizationTerms = mutation({
     }
 
     const economy = parseEconomyJson(profile.economyJson);
-    if (hasAcceptedMonetization(economy)) {
+    // Idempotent only when current-policy consent is already valid for this creator.
+    if (hasValidMonetizationConsent(economy, userId)) {
       return {
         ok: true as const,
         alreadyAccepted: true as const,
-        acceptedAt: economy.monetizationAcceptedAt ?? economy.monetizationUnlockedAt!,
-        policyVersion: economy.monetizationPolicyVersion ?? CREATOR_MONETIZATION_POLICY_VERSION,
+        acceptedAt: economy.monetizationAcceptedAt!,
+        policyVersion: CREATOR_MONETIZATION_POLICY_VERSION,
         fanCount,
       };
     }
@@ -892,6 +912,9 @@ export const requestCreatorWithdrawal = mutation({
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .first();
     if (!profile) throw new Error("GigaSocial profile required.");
+    if (profile.userId !== userId) {
+      throw new Error("Profile ownership mismatch.");
+    }
 
     const { settings } = await assertWithdrawalEligibility(ctx, profile);
 
@@ -900,33 +923,33 @@ export const requestCreatorWithdrawal = mutation({
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .first();
     if (!creatorProfile) throw new Error("Creator payout profile required.");
-
-    const amount = Math.round(args.amountGhs);
-    if (amount < settings.minWithdrawalGhs) {
-      throw new Error(`Minimum withdrawal is GHS ${settings.minWithdrawalGhs}.`);
+    if (creatorProfile.userId !== userId) {
+      throw new Error("Payout profile ownership mismatch.");
     }
-    if (amount > creatorProfile.payoutBalanceGhs) {
-      throw new Error("Insufficient withdrawable balance.");
-    }
-    if (amount <= 0) throw new Error("Invalid withdrawal amount.");
 
-    // Prevent concurrent duplicate pending requests for the same amount within a short window.
+    const validated = validateWithdrawalAmountGhs({
+      rawAmount: args.amountGhs,
+      availableBalanceGhs: creatorProfile.payoutBalanceGhs,
+      minWithdrawalGhs: settings.minWithdrawalGhs,
+    });
+    if (!validated.ok) {
+      throw new Error(validated.error);
+    }
+    const amount = validated.amountGhs;
+
     const recent = await ctx.db
       .query("creatorPayouts")
       .withIndex("by_creator", (q) => q.eq("creatorId", userId))
       .order("desc")
-      .take(5);
-    const now = Date.now();
-    const duplicate = recent.find(
-      (p) =>
-        p.status === "pending" &&
-        p.amountGhs === amount &&
-        now - p.createdAt < 60_000
+      .take(10);
+    const inFlight = recent.find(
+      (p) => p.status === "pending" || p.status === "processing"
     );
-    if (duplicate) {
-      throw new Error("A matching withdrawal request is already pending.");
+    if (inFlight) {
+      throw new Error("A withdrawal is already in progress.");
     }
 
+    const now = Date.now();
     await ctx.db.patch(creatorProfile._id, {
       payoutBalanceGhs: creatorProfile.payoutBalanceGhs - amount,
       updatedAt: now,

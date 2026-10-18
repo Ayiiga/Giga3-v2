@@ -1,5 +1,6 @@
 "use client";
 
+import { GigaSocialMonetizationAccept } from "@/components/gigasocial/economy/GigaSocialMonetizationAccept";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import {
@@ -75,6 +76,7 @@ export const GigaSocialCreatorWallet = memo(function GigaSocialCreatorWallet({
     fansRequired: dashboard.fansRequired,
     withdrawalFansRequired: dashboard.withdrawalFansRequired ?? 50,
     accepted: Boolean(dashboard.monetizationAccepted),
+    requiresPolicyReacceptance: Boolean(dashboard.requiresPolicyReacceptance),
   });
 
   return (
@@ -102,6 +104,16 @@ export const GigaSocialCreatorWallet = memo(function GigaSocialCreatorWallet({
           </div>
         </div>
         <p className="mt-3 text-sm text-foreground">{withdrawalMsg}</p>
+        {dashboard.showEligibleInvite ||
+        dashboard.requiresPolicyReacceptance ||
+        (dashboard.fanEligible && !dashboard.monetizationAccepted) ? (
+          <div className="mt-3">
+            <GigaSocialMonetizationAccept
+              sessionToken={sessionToken}
+              reacceptance={Boolean(dashboard.requiresPolicyReacceptance)}
+            />
+          </div>
+        ) : null}
         <Button
           type="button"
           size="sm"
