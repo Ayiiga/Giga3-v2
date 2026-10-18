@@ -110,14 +110,15 @@ describe("writing craft response modes (A–F)", () => {
     expect(ctx.systemPromptAddon).not.toContain("## ⚡ Quick Answer");
   });
 
-  it("E: ordinary factual questions stay direct (Smart Answers allowed)", () => {
+  it("E: ordinary factual questions stay direct (plain prose, not forced Smart Answers)", () => {
     const ctx = prepareAnswerQualityContext({
       mode: "general",
       query: "What is the capital of Ghana?",
     });
     expect(ctx.responseMode).toBe("educational");
     expect(ctx.queryClass).toBe("factual");
-    expect(ctx.systemPromptAddon).toContain("## ⚡ Quick Answer");
+    expect(ctx.systemPromptAddon).toContain("Natural response organization");
+    expect(ctx.systemPromptAddon).toMatch(/plain prose without Smart Answers headings/i);
     expect(ctx.systemPromptAddon).not.toContain("Writing Quality Standard");
   });
 
@@ -127,6 +128,7 @@ describe("writing craft response modes (A–F)", () => {
       query: "Explain photosynthesis for a junior high student in Accra",
     });
     expect(edu.responseMode).toBe("educational");
+    expect(edu.systemPromptAddon).toContain("optional teaching aid");
     expect(edu.systemPromptAddon).toContain("## ⚡ Quick Answer");
 
     const research = prepareAnswerQualityContext({
