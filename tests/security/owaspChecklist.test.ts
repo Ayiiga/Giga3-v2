@@ -78,6 +78,14 @@ describe("API Security Top 10 — no session minting from a bare email", () => {
     expect(handler.indexOf("verifyGoogleIdToken")).toBeGreaterThan(-1);
     expect(handler.indexOf("verifyGoogleIdToken")).toBeLessThan(handler.indexOf("createSessionToken"));
     expect(google).not.toContain("access_token");
+    const socialOAuth = read("convex/socialAuth/oauth.ts");
+    const exchange = exportBlock(socialOAuth, "exchangeSocialAuthCode");
+    expect(exchange.indexOf("consumeExchangeCodeInternal")).toBeGreaterThan(-1);
+    expect(exchange.indexOf("consumeExchangeCodeInternal")).toBeLessThan(
+      exchange.indexOf("createSessionToken")
+    );
+    expect(socialOAuth).not.toContain("GOOGLE_CONNECTOR");
+    expect(socialOAuth).not.toContain("MICROSOFT_CONNECTOR");
   });
 
   it("ops-only mutations are internal, not client-callable", () => {

@@ -92,7 +92,10 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `RESEND_API_KEY` | **Yes for email** | Password reset + engagement emails via [Resend](https://resend.com). Without this, forgot-password cannot deliver mail. GitHub secret is synced on Convex deploy. |
    | `AUTH_FROM_EMAIL` | Recommended | After verifying `giga3ai.com`, set `Giga3 AI <noreply@giga3ai.com>` on Convex **and** as a GitHub Actions variable/secret so deploy does not leave it unset. App code falls back to `onboarding@resend.dev` only when Convex env is empty (testing — owner inbox only). Deploy **does not** overwrite Convex when the GitHub value is unset. |
    | `AUTH_EMAIL_FALLBACK_INBOX` | Optional | Receives operational notices when a reset email fails to send. It must never receive another user's reset link. Synced from GitHub only when set. |
-   | `GOOGLE_CLIENT_ID` | For Google sign-in | OAuth web client ID. Same value as `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. Not a client secret. |
+   | `GOOGLE_CLIENT_ID` | For Google sign-in | OAuth web client ID. Same value as `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. Not a client secret. Also accepts `AUTH_GOOGLE_CLIENT_ID` / `AUTH_GOOGLE_ID`. |
+   | `AUTH_APPLE_CLIENT_ID` / `AUTH_APPLE_TEAM_ID` / `AUTH_APPLE_KEY_ID` / `AUTH_APPLE_PRIVATE_KEY` | Apple sign-in | Services ID + Sign in with Apple key. Redirect: `https://<deployment>.convex.site/auth/oauth/callback`. See `docs/SOCIAL_AUTH.md`. Separate from connectors. |
+   | `AUTH_MICROSOFT_CLIENT_ID` / `AUTH_MICROSOFT_CLIENT_SECRET` | Microsoft sign-in | Entra web app. Optional `AUTH_MICROSOFT_TENANT`. Not `MICROSOFT_CONNECTOR_*`. |
+   | `AUTH_GITHUB_CLIENT_ID` / `AUTH_GITHUB_CLIENT_SECRET` | GitHub sign-in | GitHub OAuth App callback on `/auth/oauth/callback`. |
    | `CONNECTOR_TOKEN_ENCRYPTION_KEY` | For Connectors | AES-GCM key for Drive/Gmail/Outlook/Zoom/Moodle/Notion tokens. Falls back to `SESSION_SIGNING_SECRET` if unset. |
    | `GOOGLE_CONNECTOR_CLIENT_ID` / `GOOGLE_CONNECTOR_CLIENT_SECRET` | Google Drive + Gmail connectors | Confidential OAuth web client (not the GIS sign-in client). Redirect: `https://<deployment>.convex.site/connectors/oauth/callback`. |
    | `MICROSOFT_CONNECTOR_CLIENT_ID` / `MICROSOFT_CONNECTOR_CLIENT_SECRET` | Outlook Calendar | Entra app registration. Optional `MICROSOFT_CONNECTOR_TENANT` (default `common`). |

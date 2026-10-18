@@ -1839,6 +1839,59 @@ export default defineSchema({
     .index("by_provider_created", ["provider", "createdAt"]),
 
   /**
+   * Social login identities (Google / Apple / Microsoft / GitHub).
+   * Stable provider `subject` is the join key — never email alone.
+   * Separate from connector OAuth (`connectorConnections`).
+   */
+  authProviderIdentities: defineTable({
+    provider: v.union(
+      v.literal("google"),
+      v.literal("apple"),
+      v.literal("microsoft"),
+      v.literal("github")
+    ),
+    subject: v.string(),
+    userId: v.string(),
+    emailAtLink: v.optional(v.string()),
+    createdAt: v.number(),
+    lastLoginAt: v.optional(v.number()),
+  })
+    .index("by_provider_subject", ["provider", "subject"])
+    .index("by_user", ["userId"])
+    .index("by_user_provider", ["userId", "provider"]),
+
+  /** Short-lived CSRF/PKCE state for social login OAuth (not connector OAuth). */
+  authOAuthStates: defineTable({
+    state: v.string(),
+    provider: v.union(
+      v.literal("google"),
+      v.literal("apple"),
+      v.literal("microsoft"),
+      v.literal("github")
+    ),
+    codeVerifier: v.optional(v.string()),
+    nonce: v.optional(v.string()),
+    returnPath: v.string(),
+    /** When set, OAuth completes as an explicit link for this signed-in user. */
+    linkUserId: v.optional(v.string()),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_state", ["state"])
+    .index("by_expires", ["expiresAt"]),
+
+  /** One-time codes that hand a minted session to the browser after OAuth. */
+  authExchangeCodes: defineTable({
+    code: v.string(),
+    email: v.string(),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+    consumedAt: v.optional(v.number()),
+  })
+    .index("by_code", ["code"])
+    .index("by_expires", ["expiresAt"]),
+
+  /**
    * Executive assistant orchestration plans.
    * Steps JSON never stores provider secrets — only operation metadata/results summaries.
    */

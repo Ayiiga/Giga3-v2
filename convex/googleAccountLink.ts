@@ -16,7 +16,8 @@ export type GoogleLinkRejectCode =
   | "invalid_identity"
   | "unverified_email"
   | "suspended"
-  | "linked_to_other_google";
+  | "linked_to_other_google"
+  | "account_exists_requires_link";
 
 export type GoogleLinkDecision =
   | { kind: "create"; email: string }
@@ -37,18 +38,23 @@ export function googleLinkRejectionMessage(code: GoogleLinkRejectCode): string {
       return "This account has been suspended. Contact support.";
     case "linked_to_other_google":
       return "This email is already linked to a different Google account. Sign in with that Google account or with your password.";
+    case "account_exists_requires_link":
+      return "An account with this email already exists. Sign in with your password, then link Google from Settings.";
     default:
       return "Google sign-in could not be completed.";
   }
 }
 
 /**
- * Decide how a verified Google identity maps onto Giga3.
+ * Decide how a verified Google identity maps onto Giga3 for sign-up / sign-in.
  *
  * - `sub` already stored → sign in to that account (do not follow a changed email).
- * - Same verified email, no Google link yet → link onto the existing account.
- * - Same verified email, different `sub` → reject. Never create a duplicate.
+ * - Same verified email, already linked to this `sub` → sign in.
+ * - Same verified email, different `sub` → reject.
+ * - Same verified email, no Google link yet → reject (require authenticated link).
  * - No account → create one.
+ *
+ * Explicit linking (session + matching verified email) is handled separately.
  */
 export function decideGoogleAccountLink(input: {
   googleSub: string;
@@ -80,10 +86,45 @@ export function decideGoogleAccountLink(input: {
     if (existingSub === googleSub) {
       return { kind: "sign-in", email: input.byEmail.email.trim().toLowerCase() };
     }
-    return { kind: "link", email: input.byEmail.email.trim().toLowerCase() };
+    // Never auto-merge solely because email addresses match.
+    return { kind: "reject", code: "account_exists_requires_link" };
   }
 
   return { kind: "create", email };
+}
+
+/** Authenticated link: session email must match verified Google email. */
+export function decideGoogleExplicitLink(input: {
+  googleSub: string;
+  email: string;
+  emailVerified: boolean;
+  sessionEmail: string;
+  bySub: GoogleLinkAccount | null;
+  sessionGoogleSub: string | null;
+}): GoogleLinkDecision {
+  const googleSub = input.googleSub.trim();
+  const email = input.email.trim().toLowerCase();
+  const sessionEmail = input.sessionEmail.trim().toLowerCase();
+  if (!googleSub || !sessionEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { kind: "reject", code: "invalid_identity" };
+  }
+  if (input.emailVerified !== true) {
+    return { kind: "reject", code: "unverified_email" };
+  }
+  if (email !== sessionEmail) {
+    return { kind: "reject", code: "invalid_identity" };
+  }
+  if (input.bySub && input.bySub.email.trim().toLowerCase() !== sessionEmail) {
+    return { kind: "reject", code: "linked_to_other_google" };
+  }
+  const existing = cleanSub(input.sessionGoogleSub);
+  if (existing && existing !== googleSub) {
+    return { kind: "reject", code: "linked_to_other_google" };
+  }
+  if (existing === googleSub || (input.bySub && input.bySub.email.trim().toLowerCase() === sessionEmail)) {
+    return { kind: "sign-in", email: sessionEmail };
+  }
+  return { kind: "link", email: sessionEmail };
 }
 
 /** Fill empty profile fields only. Never store a non-HTTPS picture URL. */
