@@ -36,6 +36,25 @@ const TERMINAL_PLAN: ReadonlySet<PlanStatus> = new Set([
   "failed",
 ]);
 
+/**
+ * Running-step lease. After this, the step may be reconciled as interrupted.
+ * Never auto-retry the external operation — outcome is unknown.
+ */
+export const RUNNING_STEP_LEASE_MS = 15 * 60 * 1000;
+
+export const INTERRUPTED_STEP_ERROR =
+  "Interrupted: provider outcome unknown. Create a new plan to retry.";
+
+export function isRunningStepLeaseExpired(
+  step: StoredPlanStep,
+  now: number,
+  leaseMs: number = RUNNING_STEP_LEASE_MS
+): boolean {
+  if (step.status !== "running") return false;
+  if (typeof step.startedAt !== "number") return true;
+  return now - step.startedAt >= leaseMs;
+}
+
 export function buildReport(steps: StoredPlanStep[]): PlanReport {
   const completedSteps = steps.filter((s) => s.status === "completed").length;
   const failedSteps = steps.filter((s) => s.status === "failed").length;
@@ -173,6 +192,21 @@ export function claimPlanStep(
     return { ok: false, error: "Step dependencies are not completed." };
   }
 
+  // Block new claims while another step is still within its running lease.
+  const activeRunner = steps.find(
+    (s) =>
+      s.stepId !== args.stepId &&
+      s.status === "running" &&
+      !isRunningStepLeaseExpired(s, now)
+  );
+  if (activeRunner) {
+    return {
+      ok: false,
+      error: "Another step is still running. Wait or reconcile after the lease expires.",
+      status: activeRunner.status,
+    };
+  }
+
   step.status = "running";
   step.startedAt = now;
   step.error = undefined;
@@ -297,6 +331,57 @@ export function refreshConnectionGates(
   return finalize(steps, plan.revision);
 }
 
+/**
+ * Reconcile an interrupted running step to failed without retrying the provider.
+ * Only allowed after the running lease expires (or startedAt is missing).
+ */
+export function reconcileInterruptedRunningStep(
+  plan: PlanSnapshot,
+  args: {
+    userId: string;
+    stepId: string;
+    now?: number;
+    leaseMs?: number;
+    expectedRevision?: number;
+  }
+): TransitionOk | TransitionFail {
+  if (plan.userId !== args.userId) {
+    return { ok: false, error: "Plan not found." };
+  }
+  if (plan.status === "cancelled" || plan.status === "completed") {
+    return { ok: false, error: `Plan is not reconciliable (status=${plan.status}).` };
+  }
+  if (args.expectedRevision !== undefined && plan.revision !== args.expectedRevision) {
+    return { ok: false, error: "Plan revision conflict." };
+  }
+
+  const now = args.now ?? Date.now();
+  const leaseMs = args.leaseMs ?? RUNNING_STEP_LEASE_MS;
+  const steps = cloneSteps(plan.steps);
+  const step = steps.find((s) => s.stepId === args.stepId);
+  if (!step) return { ok: false, error: "Unknown step." };
+  if (step.status !== "running") {
+    return {
+      ok: false,
+      error: `Step is not running (status=${step.status}).`,
+      status: step.status,
+    };
+  }
+  if (!isRunningStepLeaseExpired(step, now, leaseMs)) {
+    return {
+      ok: false,
+      error: "Step lease has not expired. Wait before reconciling.",
+      status: step.status,
+    };
+  }
+
+  step.status = "failed";
+  step.completedAt = now;
+  step.error = INTERRUPTED_STEP_ERROR;
+  step.resultSummary = "interrupted_unknown_outcome";
+  return finalize(steps, plan.revision);
+}
+
 /** Merge params into a pending/ready step before staging (never after confirmation). */
 export function applyStepParamOverrides(
   plan: PlanSnapshot,
@@ -376,6 +461,25 @@ export class InMemoryPlanStore {
     expectedRevision?: number;
   }) {
     const result = finishPlanStep(this.plan, args);
+    if (result.ok) {
+      this.plan = {
+        ...this.plan,
+        steps: result.steps,
+        status: result.status,
+        revision: result.revision,
+      };
+    }
+    return result;
+  }
+
+  reconcile(args: {
+    userId: string;
+    stepId: string;
+    now?: number;
+    leaseMs?: number;
+    expectedRevision?: number;
+  }) {
+    const result = reconcileInterruptedRunningStep(this.plan, args);
     if (result.ok) {
       this.plan = {
         ...this.plan,

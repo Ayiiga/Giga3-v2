@@ -6,6 +6,7 @@ import {
   applyStepParamOverrides,
   claimPlanStep,
   finishPlanStep,
+  reconcileInterruptedRunningStep,
   refreshConnectionGates,
   type FinishStepOutcome,
   type PlanSnapshot,
@@ -181,6 +182,43 @@ export const finishPlanStepInternal = internalMutation({
         stepId: args.stepId,
         expectedStatus: args.expectedStatus as PlanStepStatus,
         outcome,
+        expectedRevision: args.expectedRevision,
+      });
+    } catch {
+      return { ok: false as const, error: "Plan steps are corrupt." };
+    }
+    if (!result.ok) return result;
+    await persistTransition(ctx, args.planId, result);
+    return {
+      ok: true as const,
+      steps: result.steps,
+      status: result.status,
+      report: result.report,
+      revision: result.revision,
+    };
+  },
+});
+
+/**
+ * Mark a lease-expired running step as failed without retrying the provider.
+ */
+export const reconcileInterruptedStepInternal = internalMutation({
+  args: {
+    planId: v.id("assistantOrchestrationPlans"),
+    userId: v.string(),
+    stepId: v.string(),
+    expectedRevision: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const row = await ctx.db.get(args.planId);
+    if (!row || row.userId !== args.userId) {
+      return { ok: false as const, error: "Plan not found." };
+    }
+    let result;
+    try {
+      result = reconcileInterruptedRunningStep(toSnapshot(row as never), {
+        userId: args.userId,
+        stepId: args.stepId,
         expectedRevision: args.expectedRevision,
       });
     } catch {

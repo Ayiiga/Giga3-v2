@@ -22,7 +22,7 @@ Additive layer on PR #536 connectors. Does not replace chat routing, billing, or
 - Plans expire; cancelled / completed / failed plans do not re-execute (failed plans are rejected at the atomic claim boundary — `confirmStepId` cannot resume them).
 - Confirmation claims the staged `connectorPendingActions` row atomically and runs that locked `payloadJson` only (client `params` / post-stage overrides cannot change the action).
 - Step transitions are atomic server-side mutations with revision CAS; stale snapshots cannot overwrite running/completed/failed/awaiting state.
-- Interrupted running steps are not blindly retried (provider outcome unknown).
+- Interrupted running steps use a lease: after expiry they may be reconciled to `failed` with “provider outcome unknown” (explicit action or on next advance). Never auto-retry the external operation.
 - Operations are validated against the server-side connector allowlist.
 
 ## Files

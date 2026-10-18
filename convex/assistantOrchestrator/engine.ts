@@ -11,10 +11,34 @@ import {
   buildReport,
   dependenciesMet,
   derivePlanStatus,
+  isRunningStepLeaseExpired,
 } from "./planState";
 import type { PlanReport, StoredPlanStep } from "./types";
 
 const PLAN_TTL_MS = 60 * 60 * 1000;
+
+async function reconcileExpiredRunningSteps(
+  ctx: { runMutation: Function },
+  planId: string,
+  userId: string,
+  steps: StoredPlanStep[]
+): Promise<StoredPlanStep[]> {
+  const now = Date.now();
+  let current = steps;
+  for (const step of steps) {
+    if (!isRunningStepLeaseExpired(step, now)) continue;
+    const result = (await ctx.runMutation(
+      internal.assistantOrchestrator.store.reconcileInterruptedStepInternal,
+      {
+        planId: planId as never,
+        userId,
+        stepId: step.stepId,
+      }
+    )) as StepTransitionResult;
+    if (result.ok) current = result.steps;
+  }
+  return current;
+}
 
 function summarizeResult(result: unknown): string {
   if (result == null) return "ok";
@@ -209,7 +233,26 @@ export const advancePlan = action({
     )) as StepTransitionResult;
     if (!refreshed.ok) throw new Error(refreshed.error);
 
-    let steps = refreshed.steps;
+    // Lease-expired running steps → failed (unknown outcome). Never auto-retry.
+    let steps = await reconcileExpiredRunningSteps(
+      ctx,
+      args.planId,
+      userId,
+      refreshed.steps
+    );
+    if (steps.some((s) => s.status === "failed")) {
+      throw new Error("Plan already failed. Create a new plan.");
+    }
+
+    const activeRunner = steps.find(
+      (s) => s.status === "running" && !isRunningStepLeaseExpired(s, Date.now())
+    );
+    if (activeRunner) {
+      throw new Error(
+        "A step is still running. Wait for it to finish or reconcile after the lease expires."
+      );
+    }
+
     let confirmStepId = args.confirmStepId;
     let pendingActionId = args.pendingActionId;
 
@@ -497,6 +540,42 @@ export const advancePlan = action({
       status,
       report,
       steps,
+    };
+  },
+});
+
+/**
+ * Explicit reconciliation for a lease-expired running step.
+ * Marks the step failed with unknown outcome — does not call providers.
+ */
+export const reconcileInterruptedStep = action({
+  args: {
+    sessionToken: v.string(),
+    planId: v.id("assistantOrchestrationPlans"),
+    stepId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken, ctx);
+    const row = await ctx.runQuery(internal.assistantOrchestrator.store.getPlanInternal, {
+      planId: args.planId,
+    });
+    if (!row || row.userId !== userId) throw new Error("Plan not found.");
+
+    const result = (await ctx.runMutation(
+      internal.assistantOrchestrator.store.reconcileInterruptedStepInternal,
+      {
+        planId: args.planId,
+        userId,
+        stepId: args.stepId,
+      }
+    )) as StepTransitionResult;
+    if (!result.ok) throw new Error(result.error);
+    return {
+      ok: true as const,
+      status: result.status,
+      report: result.report,
+      steps: result.steps,
+      note: "Step marked failed with unknown provider outcome. Create a new plan to retry.",
     };
   },
 });

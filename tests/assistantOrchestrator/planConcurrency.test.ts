@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  INTERRUPTED_STEP_ERROR,
   InMemoryPlanStore,
+  RUNNING_STEP_LEASE_MS,
   claimPlanStep,
   finishPlanStep,
+  reconcileInterruptedRunningStep,
   type PlanSnapshot,
 } from "../../convex/assistantOrchestrator/planState";
 import type { StoredPlanStep } from "../../convex/assistantOrchestrator/types";
@@ -201,5 +204,118 @@ describe("assistant plan concurrency / failed-plan guards", () => {
         fromStatuses: ["pending"],
       }).ok
     ).toBe(false);
+  });
+
+  it("reconciles lease-expired running steps to failed without retry", () => {
+    const now = Date.now();
+    const fresh = reconcileInterruptedRunningStep(
+      basePlan({
+        status: "running",
+        steps: [
+          step({
+            stepId: "s1",
+            status: "running",
+            startedAt: now - 1_000,
+          }),
+        ],
+      }),
+      { userId: "user-a", stepId: "s1", now, leaseMs: RUNNING_STEP_LEASE_MS }
+    );
+    expect(fresh.ok).toBe(false);
+
+    const store = new InMemoryPlanStore(
+      basePlan({
+        status: "running",
+        steps: [
+          step({
+            stepId: "s1",
+            status: "running",
+            startedAt: now - RUNNING_STEP_LEASE_MS - 1,
+          }),
+          step({
+            stepId: "s2",
+            status: "pending",
+            requiresConfirmation: true,
+            dependsOn: ["s1"],
+          }),
+        ],
+      })
+    );
+    const reconciled = store.reconcile({
+      userId: "user-a",
+      stepId: "s1",
+      now,
+      leaseMs: RUNNING_STEP_LEASE_MS,
+    });
+    expect(reconciled.ok).toBe(true);
+    if (!reconciled.ok) return;
+    const s1 = reconciled.steps.find((s) => s.stepId === "s1");
+    expect(s1?.status).toBe("failed");
+    expect(s1?.error).toBe(INTERRUPTED_STEP_ERROR);
+    expect(reconciled.status).toBe("failed");
+
+    // Cannot claim further steps on the failed plan.
+    expect(
+      store.claim({
+        userId: "user-a",
+        stepId: "s2",
+        fromStatuses: ["pending"],
+      }).ok
+    ).toBe(false);
+  });
+
+  it("does not reconcile a non-running or cross-user step", () => {
+    const plan = basePlan({
+      status: "running",
+      steps: [
+        step({
+          stepId: "s1",
+          status: "running",
+          startedAt: Date.now() - RUNNING_STEP_LEASE_MS - 5,
+        }),
+      ],
+    });
+    expect(
+      reconcileInterruptedRunningStep(plan, {
+        userId: "user-b",
+        stepId: "s1",
+      }).ok
+    ).toBe(false);
+    expect(
+      reconcileInterruptedRunningStep(
+        basePlan({
+          steps: [step({ stepId: "s1", status: "completed" })],
+        }),
+        { userId: "user-a", stepId: "s1" }
+      ).ok
+    ).toBe(false);
+  });
+
+  it("blocks claiming while another step is within its running lease", () => {
+    const now = Date.now();
+    const plan = basePlan({
+      status: "running",
+      steps: [
+        step({
+          stepId: "s1",
+          status: "running",
+          startedAt: now - 1_000,
+        }),
+        step({
+          stepId: "s2",
+          status: "pending",
+          operation: "list_messages",
+          dependsOn: [],
+        }),
+      ],
+    });
+    const result = claimPlanStep(plan, {
+      userId: "user-a",
+      stepId: "s2",
+      fromStatuses: ["pending", "ready"],
+      now,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/still running/i);
   });
 });
