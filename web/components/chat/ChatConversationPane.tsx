@@ -8,7 +8,10 @@ import { ChatTypingBar } from "@/components/chat/ChatTypingBar";
 import { MessageList, type UiMessage } from "@/components/chat/MessageList";
 import { MessageListErrorBoundary } from "@/components/chat/MessageListErrorBoundary";
 import { RecommendationChips } from "@/components/recommendations/RecommendationChips";
-import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
+import type {
+  AttachmentKind,
+  PreparedChatAttachment,
+} from "@/lib/chat/multimodalAttachments";
 import type { GigaPersonaId } from "@/lib/personas/gigaPersonas";
 import type { UploadUsageSnapshot } from "@/lib/chat/uploadLimits";
 import type { AiModeId } from "@/lib/aiRouter";
@@ -28,6 +31,9 @@ interface ChatConversationPaneProps {
   isAcceptingMessage?: boolean;
   isSlowNetwork?: boolean;
   insertRef: MutableRefObject<((text: string, notice?: string) => void) | null>;
+  pickFilesRef?: MutableRefObject<
+    ((files: File[], kind: AttachmentKind) => void) | null
+  >;
   onSend: (msg: string, attachments?: PreparedChatAttachment[]) => void;
   onInsertTemplate: (text: string) => void;
   onSelectDocumentTemplate?: (templateId: DocumentTemplateId) => void;
@@ -109,6 +115,7 @@ function panePropsEqual(
     prev.onSuggestVisionTier === next.onSuggestVisionTier &&
     prev.initialAttachments === next.initialAttachments &&
     prev.insertRef === next.insertRef &&
+    prev.pickFilesRef === next.pickFilesRef &&
     prev.onRetryOutboxSync === next.onRetryOutboxSync &&
     prev.outboxCount === next.outboxCount &&
     prev.outboxEntries === next.outboxEntries &&
@@ -140,6 +147,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   isAcceptingMessage,
   isSlowNetwork,
   insertRef,
+  pickFilesRef,
   onSend,
   onInsertTemplate,
   onSelectDocumentTemplate,
@@ -273,6 +281,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         />
         <ChatInput
           insertRef={insertRef}
+          pickFilesRef={pickFilesRef}
           onSend={onSend}
           disabled={composerDisabled}
           uploadUsage={uploadUsage}
