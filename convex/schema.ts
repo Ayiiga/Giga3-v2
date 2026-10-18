@@ -1837,4 +1837,35 @@ export default defineSchema({
   })
     .index("by_user_created", ["userId", "createdAt"])
     .index("by_provider_created", ["provider", "createdAt"]),
+
+  /**
+   * Executive assistant orchestration plans.
+   * Steps JSON never stores provider secrets — only operation metadata/results summaries.
+   */
+  assistantOrchestrationPlans: defineTable({
+    userId: v.string(),
+    goal: v.string(),
+    intent: v.string(),
+    status: v.union(
+      v.literal("planned"),
+      v.literal("awaiting_confirmation"),
+      v.literal("running"),
+      v.literal("completed"),
+      v.literal("failed"),
+      v.literal("cancelled")
+    ),
+    stepsJson: v.string(),
+    missingHintsJson: v.string(),
+    notesJson: v.string(),
+    reportJson: v.optional(v.string()),
+    conversationId: v.optional(v.string()),
+    expiresAt: v.number(),
+    /** Monotonic revision for CAS / stale-write rejection. */
+    revision: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_user_status", ["userId", "status"])
+    .index("by_expires", ["expiresAt"]),
 });

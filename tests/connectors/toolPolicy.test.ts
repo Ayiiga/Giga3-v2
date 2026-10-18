@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   gateConnectorTool,
+  isAllowedConnectorOperation,
   isCrossUserForbidden,
   sanitizeUntrustedExternalText,
   toolRequiresConfirmation,
@@ -47,5 +48,12 @@ describe("connector tool policy", () => {
 
   it("strips nulls and truncates untrusted external text", () => {
     expect(sanitizeUntrustedExternalText("hi\u0000there", 4)).toBe("hith");
+  });
+
+  it("allowlists only known provider operations", () => {
+    expect(isAllowedConnectorOperation("gmail", "send_email")).toBe(true);
+    expect(isAllowedConnectorOperation("gmail", "delete_all")).toBe(false);
+    expect(isAllowedConnectorOperation("zoom", "create_meeting")).toBe(true);
+    expect(isAllowedConnectorOperation("unknown", "list_files")).toBe(false);
   });
 });

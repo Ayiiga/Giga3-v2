@@ -2,7 +2,12 @@ import { describe, expect, it, vi } from "vitest";
 import { microsoftAuthUrl, createCalendarEvent } from "../../convex/connectors/providers/microsoft";
 import { zoomAuthUrl, createZoomMeeting } from "../../convex/connectors/providers/zoom";
 import { notionAuthUrl, notionSearch } from "../../convex/connectors/providers/notion";
-import { normalizeSiteUrl, verifyMoodleToken } from "../../convex/connectors/providers/moodle";
+import {
+  normalizeSiteUrl,
+  setMoodleAddressResolverForTests,
+  setMoodleTransportForTests,
+  verifyMoodleToken,
+} from "../../convex/connectors/providers/moodle";
 
 describe("microsoft / zoom / notion / moodle providers", () => {
   it("builds Microsoft and Zoom authorize URLs", () => {
@@ -65,14 +70,32 @@ describe("microsoft / zoom / notion / moodle providers", () => {
 
   it("validates Moodle https URLs and verifies tokens via mock", async () => {
     expect(() => normalizeSiteUrl("http://insecure.example")).toThrow(/https/);
-    const fetchImpl = vi.fn(async () =>
-      new Response(
-        JSON.stringify({ sitename: "Campus LMS", username: "student", userid: 3 }),
-        { status: 200 }
-      )
-    ) as unknown as typeof fetch;
+    expect(() => normalizeSiteUrl("https://127.0.0.1/moodle")).toThrow(/not allowed/);
+    expect(() => normalizeSiteUrl("https://169.254.169.254/latest")).toThrow(/not allowed/);
+    expect(() => normalizeSiteUrl("https://localhost/moodle")).toThrow(/not allowed/);
+    expect(() => normalizeSiteUrl("https://user:pass@moodle.example.edu")).toThrow(
+      /credentials/
+    );
+    expect(normalizeSiteUrl("https://moodle.example.edu/path/")).toBe(
+      "https://moodle.example.edu/path"
+    );
+    setMoodleAddressResolverForTests(async () => ["93.184.216.34"]);
+    setMoodleTransportForTests(async (req) => {
+      expect(req.connectAddress).toBe("93.184.216.34");
+      return {
+        status: 200,
+        headers: {},
+        body: JSON.stringify({
+          sitename: "Campus LMS",
+          username: "student",
+          userid: 3,
+        }),
+      };
+    });
     await expect(
-      verifyMoodleToken("https://moodle.example.edu", "token-value-123456", fetchImpl)
+      verifyMoodleToken("https://moodle.example.edu", "token-value-123456")
     ).resolves.toMatchObject({ siteName: "Campus LMS", userId: 3 });
+    setMoodleAddressResolverForTests(null);
+    setMoodleTransportForTests(null);
   });
 });

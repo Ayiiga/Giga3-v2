@@ -1,5 +1,6 @@
 import { internalMutation, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
+import { evaluatePendingClaim } from "./pendingActionPolicy";
 
 export const getConnectionInternal = internalQuery({
   args: { userId: v.string(), provider: v.string() },
@@ -190,6 +191,45 @@ export const createPendingActionInternal = internalMutation({
 export const getPendingActionInternal = internalQuery({
   args: { actionId: v.id("connectorPendingActions") },
   handler: async (ctx, args) => ctx.db.get(args.actionId),
+});
+
+/**
+ * Atomically claim a pending action for execution (pending → confirmed).
+ * Binds confirm to the staged payload; rejects replay of used/expired/cancelled rows.
+ */
+export const claimPendingActionInternal = internalMutation({
+  args: {
+    actionId: v.id("connectorPendingActions"),
+    userId: v.string(),
+    provider: v.string(),
+    actionType: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const row = await ctx.db.get(args.actionId);
+    const decision = evaluatePendingClaim(row, {
+      userId: args.userId,
+      provider: args.provider,
+      actionType: args.actionType,
+    });
+    if (!decision.ok) {
+      if (decision.markCancelled && row) {
+        await ctx.db.patch(args.actionId, {
+          status: "cancelled",
+          updatedAt: Date.now(),
+        });
+      }
+      return decision;
+    }
+    await ctx.db.patch(args.actionId, {
+      status: "confirmed",
+      updatedAt: Date.now(),
+    });
+    return {
+      ok: true as const,
+      payloadJson: decision.payloadJson,
+      summary: decision.summary,
+    };
+  },
 });
 
 export const updatePendingActionInternal = internalMutation({

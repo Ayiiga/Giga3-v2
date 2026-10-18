@@ -1,9 +1,15 @@
+"use node";
+
 import { action } from "../_generated/server";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { requireSession } from "../auth";
 import { ensureFreshAccessToken, loadDecryptedTokens } from "./tokenAccess";
-import { sanitizeUntrustedExternalText, toolRequiresConfirmation } from "./toolPolicy";
+import {
+  isAllowedConnectorOperation,
+  sanitizeUntrustedExternalText,
+  toolRequiresConfirmation,
+} from "./toolPolicy";
 import {
   createDriveTextFile,
   createGmailDraft,
@@ -53,6 +59,10 @@ async function audit(
   });
 }
 
+/**
+ * Stage consequential actions, or execute after atomic claim of the staged payload.
+ * On confirm, client `params` are ignored — only the locked pending payload runs.
+ */
 async function stageOrExecute(args: {
   ctx: { runMutation: Function; runQuery: Function };
   userId: string;
@@ -62,7 +72,7 @@ async function stageOrExecute(args: {
   payload: Record<string, unknown>;
   confirm: boolean;
   pendingActionId?: string;
-  execute: () => Promise<unknown>;
+  execute: (payload: Record<string, unknown>) => Promise<unknown>;
 }) {
   if (toolRequiresConfirmation(args.actionType as never) && !args.confirm) {
     const pendingId = await args.ctx.runMutation(
@@ -84,30 +94,58 @@ async function stageOrExecute(args: {
     };
   }
 
+  let lockedPayload = args.payload;
+
   if (args.confirm) {
     if (!args.pendingActionId) {
       throw new Error("pendingActionId is required to confirm this action.");
     }
-    const pending = await args.ctx.runQuery(
-      internal.connectors.store.getPendingActionInternal,
-      { actionId: args.pendingActionId as never }
-    );
-    if (!pending || pending.userId !== args.userId) {
-      throw new Error("Pending action not found.");
+    const claim = (await args.ctx.runMutation(
+      internal.connectors.store.claimPendingActionInternal,
+      {
+        actionId: args.pendingActionId as never,
+        userId: args.userId,
+        provider: args.provider,
+        actionType: args.actionType,
+      }
+    )) as
+      | {
+          ok: true;
+          payloadJson: string;
+          summary: string;
+        }
+      | {
+          ok: false;
+          error: string;
+          alreadyExecuted?: boolean;
+          resultJson?: string;
+        };
+
+    if (!claim.ok) {
+      if (claim.alreadyExecuted && claim.resultJson) {
+        try {
+          return {
+            ok: true as const,
+            requiresConfirmation: false as const,
+            result: JSON.parse(claim.resultJson) as unknown,
+            idempotentReplay: true as const,
+          };
+        } catch {
+          throw new Error(claim.error);
+        }
+      }
+      throw new Error(claim.error);
     }
-    if (pending.status !== "pending" && pending.status !== "confirmed") {
-      throw new Error("Pending action is no longer valid.");
-    }
-    if (pending.expiresAt < Date.now()) {
-      throw new Error("Pending action expired. Stage it again.");
-    }
-    if (pending.provider !== args.provider || pending.actionType !== args.actionType) {
-      throw new Error("Pending action mismatch.");
+
+    try {
+      lockedPayload = JSON.parse(claim.payloadJson) as Record<string, unknown>;
+    } catch {
+      throw new Error("Pending action payload is corrupt.");
     }
   }
 
   try {
-    const result = await args.execute();
+    const result = await args.execute(lockedPayload);
     if (args.pendingActionId) {
       await args.ctx.runMutation(internal.connectors.store.updatePendingActionInternal, {
         actionId: args.pendingActionId as never,
@@ -150,6 +188,9 @@ export const invoke = action({
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken, ctx);
+    if (!isAllowedConnectorOperation(args.provider, args.operation)) {
+      throw new Error(`Unsupported operation ${args.operation} for ${args.provider}`);
+    }
     const params = (args.params ?? {}) as Record<string, unknown>;
     const confirm = args.confirm === true;
     const pendingActionId = args.pendingActionId;
@@ -166,22 +207,25 @@ export const invoke = action({
       if (args.operation === "read_file" || args.operation === "import_file") {
         const fileId = String(params.fileId || "");
         const mimeType = String(params.mimeType || "text/plain");
-        if (!fileId) throw new Error("fileId is required.");
+        if (!fileId && args.operation === "read_file") throw new Error("fileId is required.");
         if (args.operation === "import_file") {
           return await stageOrExecute({
             ctx,
             userId,
             provider: "google_drive",
             actionType: "import_file",
-            summary: `Import Drive file ${fileId}`,
+            summary: `Import Drive file ${fileId || "(staged)"}`,
             payload: params,
             confirm,
             pendingActionId,
-            execute: async () => {
+            execute: async (payload) => {
+              const id = String(payload.fileId || "");
+              const mime = String(payload.mimeType || "text/plain");
+              if (!id) throw new Error("fileId is required.");
               const text = sanitizeUntrustedExternalText(
-                await readDriveFileText(accessToken, fileId, mimeType)
+                await readDriveFileText(accessToken, id, mime)
               );
-              return { fileId, text };
+              return { fileId: id, text };
             },
           });
         }
@@ -201,10 +245,10 @@ export const invoke = action({
           payload: params,
           confirm,
           pendingActionId,
-          execute: async () =>
+          execute: async (payload) =>
             createDriveTextFile(accessToken, {
-              name: String(params.name || "Giga3 export"),
-              content: String(params.content || ""),
+              name: String(payload.name || "Giga3 export"),
+              content: String(payload.content || ""),
             }),
         });
       }
@@ -262,11 +306,11 @@ export const invoke = action({
           payload: params,
           confirm,
           pendingActionId,
-          execute: async () => {
+          execute: async (payload) => {
             const sent = await sendGmailMessage(accessToken, {
-              to: String(params.to || ""),
-              subject: String(params.subject || ""),
-              body: String(params.body || ""),
+              to: String(payload.to || ""),
+              subject: String(payload.subject || ""),
+              body: String(payload.body || ""),
             });
             return { sent: true as const, drafted: false as const, message: sent };
           },
@@ -302,13 +346,13 @@ export const invoke = action({
           payload: params,
           confirm,
           pendingActionId,
-          execute: async () =>
+          execute: async (payload) =>
             createCalendarEvent(accessToken, {
-              subject: String(params.subject || ""),
-              startIso: String(params.startIso || ""),
-              endIso: String(params.endIso || ""),
-              timeZone: typeof params.timeZone === "string" ? params.timeZone : "UTC",
-              body: typeof params.body === "string" ? params.body : undefined,
+              subject: String(payload.subject || ""),
+              startIso: String(payload.startIso || ""),
+              endIso: String(payload.endIso || ""),
+              timeZone: typeof payload.timeZone === "string" ? payload.timeZone : "UTC",
+              body: typeof payload.body === "string" ? payload.body : undefined,
             }),
         });
       }
@@ -322,11 +366,11 @@ export const invoke = action({
           payload: params,
           confirm,
           pendingActionId,
-          execute: async () =>
+          execute: async (payload) =>
             updateCalendarEvent(
               accessToken,
-              String(params.eventId || ""),
-              (params.patch as Record<string, unknown>) || {}
+              String(payload.eventId || ""),
+              (payload.patch as Record<string, unknown>) || {}
             ),
         });
       }
@@ -340,8 +384,8 @@ export const invoke = action({
           payload: params,
           confirm,
           pendingActionId,
-          execute: async () => {
-            await cancelCalendarEvent(accessToken, String(params.eventId || ""));
+          execute: async (payload) => {
+            await cancelCalendarEvent(accessToken, String(payload.eventId || ""));
             return { cancelled: true };
           },
         });
@@ -365,14 +409,14 @@ export const invoke = action({
           payload: params,
           confirm,
           pendingActionId,
-          execute: async () =>
+          execute: async (payload) =>
             createZoomMeeting(accessToken, {
-              topic: String(params.topic || "Giga3 meeting"),
+              topic: String(payload.topic || "Giga3 meeting"),
               startTimeIso:
-                typeof params.startTimeIso === "string" ? params.startTimeIso : undefined,
+                typeof payload.startTimeIso === "string" ? payload.startTimeIso : undefined,
               durationMinutes:
-                typeof params.durationMinutes === "number"
-                  ? params.durationMinutes
+                typeof payload.durationMinutes === "number"
+                  ? payload.durationMinutes
                   : undefined,
             }),
         });
@@ -440,11 +484,11 @@ export const invoke = action({
           payload: params,
           confirm,
           pendingActionId,
-          execute: async () =>
+          execute: async (payload) =>
             notionCreatePage(accessToken, {
-              parentPageId: String(params.parentPageId || ""),
-              title: String(params.title || "Giga3 note"),
-              content: typeof params.content === "string" ? params.content : undefined,
+              parentPageId: String(payload.parentPageId || ""),
+              title: String(payload.title || "Giga3 note"),
+              content: typeof payload.content === "string" ? payload.content : undefined,
             }),
         });
       }
@@ -458,11 +502,11 @@ export const invoke = action({
           payload: params,
           confirm,
           pendingActionId,
-          execute: async () =>
+          execute: async (payload) =>
             notionAppendBlocks(
               accessToken,
-              String(params.pageId || ""),
-              String(params.content || "")
+              String(payload.pageId || ""),
+              String(payload.content || "")
             ),
         });
       }
@@ -483,6 +527,9 @@ export const cancelPendingAction = action({
       actionId: args.pendingActionId,
     });
     if (!pending || pending.userId !== userId) throw new Error("Pending action not found.");
+    if (pending.status === "executed" || pending.status === "confirmed") {
+      throw new Error("Pending action can no longer be cancelled.");
+    }
     await ctx.runMutation(internal.connectors.store.updatePendingActionInternal, {
       actionId: args.pendingActionId,
       status: "cancelled",
