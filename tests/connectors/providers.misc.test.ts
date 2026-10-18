@@ -74,12 +74,13 @@ describe("microsoft / zoom / notion / moodle providers", () => {
     expect(normalizeSiteUrl("https://moodle.example.edu/path/")).toBe(
       "https://moodle.example.edu/path"
     );
-    const fetchImpl = vi.fn(async () =>
-      new Response(
+    const fetchImpl = vi.fn(async (_url: string, init?: RequestInit) => {
+      expect(init?.redirect).toBe("manual");
+      return new Response(
         JSON.stringify({ sitename: "Campus LMS", username: "student", userid: 3 }),
         { status: 200 }
-      )
-    ) as unknown as typeof fetch;
+      );
+    }) as unknown as typeof fetch;
     await expect(
       verifyMoodleToken("https://moodle.example.edu", "token-value-123456", fetchImpl)
     ).resolves.toMatchObject({ siteName: "Campus LMS", userId: 3 });

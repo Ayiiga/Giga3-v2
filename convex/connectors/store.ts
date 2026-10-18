@@ -1,5 +1,6 @@
 import { internalMutation, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
+import { evaluatePendingClaim } from "./pendingActionPolicy";
 
 export const getConnectionInternal = internalQuery({
   args: { userId: v.string(), provider: v.string() },
@@ -205,41 +206,19 @@ export const claimPendingActionInternal = internalMutation({
   },
   handler: async (ctx, args) => {
     const row = await ctx.db.get(args.actionId);
-    if (!row || row.userId !== args.userId) {
-      return { ok: false as const, error: "Pending action not found." };
-    }
-    if (row.provider !== args.provider || row.actionType !== args.actionType) {
-      return { ok: false as const, error: "Pending action mismatch." };
-    }
-    if (row.status === "executed") {
-      return {
-        ok: false as const,
-        error: "Pending action already executed.",
-        alreadyExecuted: true as const,
-        resultJson: row.resultJson,
-      };
-    }
-    if (row.status === "cancelled") {
-      return { ok: false as const, error: "Pending action was cancelled." };
-    }
-    if (row.status === "failed") {
-      return { ok: false as const, error: "Pending action already failed." };
-    }
-    if (row.status === "confirmed") {
-      return {
-        ok: false as const,
-        error: "Pending action is already being executed.",
-      };
-    }
-    if (row.status !== "pending") {
-      return { ok: false as const, error: "Pending action is no longer valid." };
-    }
-    if (row.expiresAt < Date.now()) {
-      await ctx.db.patch(args.actionId, {
-        status: "cancelled",
-        updatedAt: Date.now(),
-      });
-      return { ok: false as const, error: "Pending action expired. Stage it again." };
+    const decision = evaluatePendingClaim(row, {
+      userId: args.userId,
+      provider: args.provider,
+      actionType: args.actionType,
+    });
+    if (!decision.ok) {
+      if (decision.markCancelled && row) {
+        await ctx.db.patch(args.actionId, {
+          status: "cancelled",
+          updatedAt: Date.now(),
+        });
+      }
+      return decision;
     }
     await ctx.db.patch(args.actionId, {
       status: "confirmed",
@@ -247,8 +226,8 @@ export const claimPendingActionInternal = internalMutation({
     });
     return {
       ok: true as const,
-      payloadJson: row.payloadJson,
-      summary: row.summary,
+      payloadJson: decision.payloadJson,
+      summary: decision.summary,
     };
   },
 });

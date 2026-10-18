@@ -3,8 +3,14 @@
 type FetchLike = typeof fetch;
 
 const MOODLE_FETCH_TIMEOUT_MS = 15_000;
+/** Conservative response-size limit (~1 MiB). */
+const MOODLE_MAX_RESPONSE_BYTES = 1_048_576;
 
-/** Block localhost, link-local, and private/reserved IPv4 literals (SSRF). */
+/**
+ * Block localhost, link-local, private/reserved IPv4 literals, and IPv6 literals.
+ * Hostname checks alone do not stop DNS rebinding — redirects are refused so the
+ * validated URL cannot be swapped mid-request.
+ */
 function isBlockedHostname(hostname: string): boolean {
   const h = hostname.toLowerCase().replace(/\.$/, "");
   if (
@@ -13,8 +19,15 @@ function isBlockedHostname(hostname: string): boolean {
     h === "localhost.localdomain" ||
     h === "metadata.google.internal" ||
     h.endsWith(".internal") ||
-    h === "0.0.0.0"
+    h === "0.0.0.0" ||
+    h === "[::1]" ||
+    h === "[::]"
   ) {
+    return true;
+  }
+
+  // Unusual numeric / hex host forms that can encode loopback (e.g. 2130706433).
+  if (/^0x[0-9a-f]+$/i.test(h) || /^\d+$/.test(h)) {
     return true;
   }
 
@@ -32,8 +45,11 @@ function isBlockedHostname(hostname: string): boolean {
     return false;
   }
 
+  // Incomplete dotted quads / weird dotted forms.
+  if (/^\d+(\.\d+)*$/.test(h)) return true;
+
   // Reject IPv6 literals (incl. ::1 / ULA / link-local) — use hostnames only.
-  if (h.includes(":")) return true;
+  if (h.includes(":") || h.startsWith("[")) return true;
 
   return false;
 }
@@ -58,6 +74,64 @@ function normalizeSiteUrl(siteUrl: string): string {
   return `${parsed.protocol}//${parsed.host}${path}`;
 }
 
+async function readResponseTextLimited(
+  res: Response,
+  maxBytes: number,
+  signal: AbortSignal
+): Promise<string> {
+  const contentLength = res.headers.get("content-length");
+  if (contentLength != null && contentLength !== "") {
+    const declared = Number(contentLength);
+    if (Number.isFinite(declared) && declared > maxBytes) {
+      throw new Error("Moodle response too large.");
+    }
+  }
+
+  if (!res.body || typeof res.body.getReader !== "function") {
+    const text = await res.text();
+    if (new TextEncoder().encode(text).byteLength > maxBytes) {
+      throw new Error("Moodle response too large.");
+    }
+    return text;
+  }
+
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      if (signal.aborted) {
+        const abortErr = new Error("The operation was aborted.");
+        abortErr.name = "AbortError";
+        throw abortErr;
+      }
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel().catch(() => undefined);
+        throw new Error("Moodle response too large.");
+      }
+      chunks.push(value);
+    }
+  } finally {
+    try {
+      reader.releaseLock();
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const merged = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    merged.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder("utf-8", { fatal: false }).decode(merged);
+}
+
 async function moodleCall(
   siteUrl: string,
   token: string,
@@ -74,14 +148,48 @@ async function moodleCall(
   });
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), MOODLE_FETCH_TIMEOUT_MS);
-  let res: Response;
   try {
-    res = await fetchImpl(`${base}/webservice/rest/server.php`, {
+    const res = await fetchImpl(`${base}/webservice/rest/server.php`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body,
       signal: controller.signal,
+      // Never follow redirects — token must not be posted to another host.
+      redirect: "manual",
     });
+
+    if (res.status >= 300 && res.status < 400) {
+      throw new Error("Moodle redirect rejected.");
+    }
+    if (!res.ok) {
+      // Drain/cancel body under the same timeout, then fail without leaking details.
+      try {
+        await readResponseTextLimited(res, MOODLE_MAX_RESPONSE_BYTES, controller.signal);
+      } catch {
+        /* ignore drain errors */
+      }
+      throw new Error(`Moodle request failed (${res.status})`);
+    }
+
+    const text = await readResponseTextLimited(
+      res,
+      MOODLE_MAX_RESPONSE_BYTES,
+      controller.signal
+    );
+
+    let json: unknown;
+    try {
+      json = JSON.parse(text) as unknown;
+    } catch {
+      throw new Error("Moodle returned an invalid response.");
+    }
+
+    if (json && typeof json === "object" && "exception" in json) {
+      const err = json as { message?: string; errorcode?: string };
+      // Surface Moodle WS error codes/messages only — never tokens or request bodies.
+      throw new Error(err.message || err.errorcode || "Moodle web service error");
+    }
+    return json;
   } catch (e) {
     if (e instanceof Error && e.name === "AbortError") {
       throw new Error("Moodle request timed out.");
@@ -90,15 +198,6 @@ async function moodleCall(
   } finally {
     clearTimeout(timer);
   }
-  const json = (await res.json()) as
-    | { exception?: string; message?: string; errorcode?: string }
-    | unknown;
-  if (!res.ok) throw new Error(`Moodle request failed (${res.status})`);
-  if (json && typeof json === "object" && "exception" in json) {
-    const err = json as { message?: string; errorcode?: string };
-    throw new Error(err.message || err.errorcode || "Moodle web service error");
-  }
-  return json;
 }
 
 export async function verifyMoodleToken(
@@ -176,7 +275,6 @@ export async function listMoodleAssignments(
     };
     return result.courses ?? [];
   } catch (e) {
-    // Not every Moodle site enables this function.
     throw new Error(
       e instanceof Error
         ? `${e.message} (assignment APIs may be disabled on this Moodle site)`
@@ -185,4 +283,9 @@ export async function listMoodleAssignments(
   }
 }
 
-export { normalizeSiteUrl, isBlockedHostname };
+export {
+  normalizeSiteUrl,
+  isBlockedHostname,
+  MOODLE_MAX_RESPONSE_BYTES,
+  MOODLE_FETCH_TIMEOUT_MS,
+};
