@@ -82,7 +82,7 @@ export const GigaSocialCreatorDashboard = memo(function GigaSocialCreatorDashboa
   }
 
   const fansRequired = dashboard.fansRequired;
-  const withdrawalFansRequired = dashboard.withdrawalFansRequired ?? 20;
+  const withdrawalFansRequired = dashboard.withdrawalFansRequired ?? 50;
   const statusMessage = monetizationStatusMessage({
     fanCount: dashboard.fanCount,
     fansRequired,

@@ -20,9 +20,9 @@ describe("creatorEconomy eligibility", () => {
     expect(formatGhs(12.5)).toBe("GHS 12.50");
   });
 
-  it("uses 5 fans for monetisation and 20 for withdrawals", () => {
+  it("uses 5 fans for monetisation and 50 for withdrawals", () => {
     expect(MIN_FANS_FOR_MONETIZATION).toBe(5);
-    expect(MIN_FANS_FOR_WITHDRAWAL).toBe(20);
+    expect(MIN_FANS_FOR_WITHDRAWAL).toBe(50);
     expect(DEFAULT_MIN_FANS_FOR_MONETIZATION).toBe(5);
   });
 
@@ -38,9 +38,9 @@ describe("creatorEconomy eligibility", () => {
     expect(isEligibleForMonetization(5)).toBe(true);
   });
 
-  it("gates withdrawal eligibility at 20 fans", () => {
-    expect(isEligibleForWithdrawal(19)).toBe(false);
-    expect(isEligibleForWithdrawal(20)).toBe(true);
+  it("gates withdrawal eligibility at 50 fans", () => {
+    expect(isEligibleForWithdrawal(49)).toBe(false);
+    expect(isEligibleForWithdrawal(50)).toBe(true);
   });
 
   it("does not treat fan count alone as monetisation unlocked", () => {
@@ -54,7 +54,7 @@ describe("creatorEconomy eligibility", () => {
       monetizationStatusMessage({
         fanCount: 2,
         fansRequired: 5,
-        withdrawalFansRequired: 20,
+        withdrawalFansRequired: 50,
         accepted: false,
       })
     ).toContain("Invite 3 more fans");
@@ -62,7 +62,7 @@ describe("creatorEconomy eligibility", () => {
       monetizationStatusMessage({
         fanCount: 5,
         fansRequired: 5,
-        withdrawalFansRequired: 20,
+        withdrawalFansRequired: 50,
         accepted: false,
       })
     ).toContain("Accept the creator rules");
@@ -70,10 +70,10 @@ describe("creatorEconomy eligibility", () => {
       monetizationStatusMessage({
         fanCount: 12,
         fansRequired: 5,
-        withdrawalFansRequired: 20,
+        withdrawalFansRequired: 50,
         accepted: true,
       })
-    ).toContain("20 fans");
+    ).toContain("50 fans");
   });
 
   it("publishes a stable monetisation policy version", () => {

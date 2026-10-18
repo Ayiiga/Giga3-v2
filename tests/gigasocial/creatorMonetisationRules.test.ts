@@ -3,13 +3,13 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("creator monetisation server rules", () => {
-  it("exports 5 / 20 fan thresholds and policy version", () => {
+  it("exports 5 / 50 fan thresholds and policy version", () => {
     const src = readFileSync(
       resolve(__dirname, "../../convex/gigaSocialEconomy.ts"),
       "utf8"
     );
     expect(src).toContain("MIN_FANS_FOR_MONETIZATION = 5");
-    expect(src).toContain("MIN_FANS_FOR_WITHDRAWAL = 20");
+    expect(src).toContain("MIN_FANS_FOR_WITHDRAWAL = 50");
     expect(src).toContain('CREATOR_MONETIZATION_POLICY_VERSION = "giga-creator-monetisation-v1"');
   });
 
@@ -29,7 +29,7 @@ describe("creator monetisation server rules", () => {
     expect(handler).toContain("Outdated policy version");
   });
 
-  it("blocks withdrawals below 20 fans and without acceptance", () => {
+  it("blocks withdrawals below 50 fans and without acceptance", () => {
     const src = readFileSync(
       resolve(__dirname, "../../convex/gigaSocialEconomy.ts"),
       "utf8"

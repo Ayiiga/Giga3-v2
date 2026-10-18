@@ -39,7 +39,7 @@ describe("sendCreatorGift policy", () => {
     expect(src).not.toContain("Affiliate program unlocks at 500 Fans.");
     expect(src).toContain("No fan-count gate");
     expect(src).toContain("MIN_FANS_FOR_MONETIZATION = 5");
-    expect(src).toContain("MIN_FANS_FOR_WITHDRAWAL = 20");
+    expect(src).toContain("MIN_FANS_FOR_WITHDRAWAL = 50");
     expect(src).toContain("acceptMonetizationTerms");
     expect(src).not.toContain("Boost campaigns unlock at 500 Fans.");
     const boostStart = src.indexOf("export const createBoostCampaign");

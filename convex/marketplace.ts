@@ -811,7 +811,7 @@ export const requestPayout = mutation({
       .first();
     if (!profile) throw new Error("Creator profile required.");
 
-    // When the seller also has a GigaSocial profile, enforce 20-fan + acceptance rules.
+    // When the seller also has a GigaSocial profile, enforce 50-fan + acceptance rules.
     const socialProfile = await ctx.db
       .query("socialProfiles")
       .withIndex("by_user", (q) => q.eq("userId", email))

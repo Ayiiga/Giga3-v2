@@ -73,7 +73,7 @@ export const GigaSocialCreatorWallet = memo(function GigaSocialCreatorWallet({
   const withdrawalMsg = monetizationStatusMessage({
     fanCount: dashboard.fanCount,
     fansRequired: dashboard.fansRequired,
-    withdrawalFansRequired: dashboard.withdrawalFansRequired ?? 20,
+    withdrawalFansRequired: dashboard.withdrawalFansRequired ?? 50,
     accepted: Boolean(dashboard.monetizationAccepted),
   });
 

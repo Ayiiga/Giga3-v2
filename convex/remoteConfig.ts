@@ -42,7 +42,7 @@ const DEFAULT_CONFIG: Record<
       "Minimum fans to accept creator monetisation rules and start earning — tips, affiliate, and ad boosts stay open without this gate",
   },
   "gigasocial.economy.minFansWithdrawal": {
-    value: "20",
+    value: "50",
     description: "Minimum fans required to request a creator withdrawal (balance and payment checks still apply)",
   },
   "gigasocial.economy.minWithdrawalGhs": {

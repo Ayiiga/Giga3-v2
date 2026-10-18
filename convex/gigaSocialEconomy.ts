@@ -23,7 +23,7 @@ type DbCtx = { db: import("./_generated/server").QueryCtx["db"] };
 /** Fans required to accept monetisation terms and start earning. */
 export const MIN_FANS_FOR_MONETIZATION = 5;
 /** Fans required to request a withdrawal (balance/payment checks still apply). */
-export const MIN_FANS_FOR_WITHDRAWAL = 20;
+export const MIN_FANS_FOR_WITHDRAWAL = 50;
 /** Must match web/lib/gigasocial/creatorMonetizationPolicy.ts */
 export const CREATOR_MONETIZATION_POLICY_VERSION = "giga-creator-monetisation-v1";
 
@@ -142,11 +142,12 @@ export async function loadEconomySettings(ctx: DbCtx): Promise<EconomySettings> 
   }
 
   // Legacy remote config stored 500 as a combined affiliate/payout gate.
-  // Migrate in-memory to the split 5-fan monetisation / 20-fan withdrawal model.
+  // Migrate in-memory to the split 5-fan monetisation / 50-fan withdrawal model.
   if (settings.minFansForMonetization >= 100) {
     settings.minFansForMonetization = MIN_FANS_FOR_MONETIZATION;
   }
-  if (!sawWithdrawalKey) {
+  // Missing key, or prior interim default of 20 → current product rule (50).
+  if (!sawWithdrawalKey || settings.minFansForWithdrawal === 20) {
     settings.minFansForWithdrawal = MIN_FANS_FOR_WITHDRAWAL;
   }
   if (!sawMinWithdrawalKey) {

@@ -4,7 +4,7 @@
 export const MIN_FANS_FOR_MONETIZATION = 5;
 
 /** Fans required before a creator may request a withdrawal. */
-export const MIN_FANS_FOR_WITHDRAWAL = 20;
+export const MIN_FANS_FOR_WITHDRAWAL = 50;
 
 /** @deprecated Use MIN_FANS_FOR_MONETIZATION — kept for older imports. */
 export const DEFAULT_MIN_FANS_FOR_MONETIZATION = MIN_FANS_FOR_MONETIZATION;
