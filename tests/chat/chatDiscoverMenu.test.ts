@@ -9,19 +9,30 @@ import {
 } from "@/lib/chat/chatCreateMenu";
 
 describe("chat plus (+) menu", () => {
-  it("exposes exactly Camera, Photos, Media, Connectors, and Web Search", () => {
+  it("exposes Camera, Photos, Media, Connectors, Executive Assistant, and Web Search", () => {
     const labels = CHAT_PLUS_SECTIONS.flatMap((s) => s.items.map((i) => i.label));
-    expect(labels).toEqual(["Camera", "Photos", "Media", "Connectors", "Web Search"]);
+    expect(labels).toEqual([
+      "Camera",
+      "Photos",
+      "Media",
+      "Connectors",
+      "Executive Assistant",
+      "Web Search",
+    ]);
   });
 
   it("groups plus items into Media, Integrations, and Web", () => {
     expect(CHAT_PLUS_SECTIONS.map((s) => s.id)).toEqual(["media", "integrations", "web"]);
   });
 
-  it("routes Connectors and Web Search to their handlers", () => {
+  it("routes Connectors, Executive Assistant, and Web Search to their handlers", () => {
     expect(resolveChatCreateRoute("connectors")).toEqual({
       kind: "navigate",
       href: "/automation/?tab=integrations",
+    });
+    expect(resolveChatCreateRoute("executive-assistant")).toEqual({
+      kind: "navigate",
+      href: "/automation/?tab=assistant",
     });
     expect(resolveChatCreateRoute("web-search")).toEqual({ kind: "web-search" });
   });
@@ -35,6 +46,7 @@ describe("chat Discover panel inventory", () => {
       "media-photos",
       "media-unified",
       "connectors",
+      "executive-assistant",
       "web-search",
     ] as const) {
       expect(isChatPlusAction(id)).toBe(true);
