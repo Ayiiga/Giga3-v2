@@ -99,9 +99,11 @@ export const EXTERNAL_CONNECTORS: ConnectorProviderConfig[] = [
     authKind: "oauth2",
     scopes: [
       "openid",
+      "profile",
       "email",
       "offline_access",
-      "Calendars.Read",
+      // Graph delegated scopes (v2 endpoint). User.Read supports /me label fetch.
+      "User.Read",
       "Calendars.ReadWrite",
     ],
     capabilities: [
@@ -117,7 +119,7 @@ export const EXTERNAL_CONNECTORS: ConnectorProviderConfig[] = [
       "MICROSOFT_CONNECTOR_CLIENT_SECRET",
     ],
     setupNotes:
-      "Microsoft Entra app registration (web) with redirect URI on Convex site /connectors/oauth/callback. Tenant defaults to common.",
+      "Entra app: Accounts in any org directory + personal Microsoft accounts. Web redirect https://perfect-lark-521.convex.site/connectors/oauth/callback. Leave MICROSOFT_CONNECTOR_TENANT unset (uses /common). Do not use AUTH_MICROSOFT_* social-login secrets. Delegated Graph: User.Read, Calendars.ReadWrite.",
   },
   {
     id: "zoom",

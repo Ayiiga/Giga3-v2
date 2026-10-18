@@ -1,4 +1,6 @@
-/** Microsoft identity + Graph calendar helpers. */
+/** Microsoft identity + Graph calendar helpers (connector OAuth — not social login). */
+
+import { resolveMicrosoftConnectorTenant } from "../oauthErrors";
 
 export type MsTokenResponse = {
   access_token: string;
@@ -9,8 +11,8 @@ export type MsTokenResponse = {
 
 type FetchLike = typeof fetch;
 
-function tenant(envTenant?: string): string {
-  return envTenant?.trim() || "common";
+function tenantPath(envTenant?: string): string {
+  return resolveMicrosoftConnectorTenant(envTenant).tenant;
 }
 
 export function microsoftAuthUrl(args: {
@@ -20,15 +22,18 @@ export function microsoftAuthUrl(args: {
   state: string;
   tenantId?: string;
 }): string {
+  const authority = resolveMicrosoftConnectorTenant(args.tenantId);
   const params = new URLSearchParams({
-    client_id: args.clientId,
+    client_id: args.clientId.trim(),
     response_type: "code",
     redirect_uri: args.redirectUri,
     response_mode: "query",
     scope: args.scopes.join(" "),
     state: args.state,
+    // Helps users pick the intended work or personal account.
+    prompt: "select_account",
   });
-  return `https://login.microsoftonline.com/${tenant(args.tenantId)}/oauth2/v2.0/authorize?${params}`;
+  return `https://login.microsoftonline.com/${authority.tenant}/oauth2/v2.0/authorize?${params}`;
 }
 
 export async function exchangeMicrosoftCode(
@@ -51,16 +56,21 @@ export async function exchangeMicrosoftCode(
     scope: args.scopes.join(" "),
   });
   const res = await fetchImpl(
-    `https://login.microsoftonline.com/${tenant(args.tenantId)}/oauth2/v2.0/token`,
+    `https://login.microsoftonline.com/${tenantPath(args.tenantId)}/oauth2/v2.0/token`,
     {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body,
     }
   );
-  const json = (await res.json()) as MsTokenResponse & { error_description?: string };
+  const json = (await res.json()) as MsTokenResponse & {
+    error?: string;
+    error_description?: string;
+  };
   if (!res.ok || !json.access_token) {
-    throw new Error(json.error_description || `Microsoft token exchange failed (${res.status})`);
+    throw new Error(
+      json.error_description || json.error || `Microsoft token exchange failed (${res.status})`
+    );
   }
   return json;
 }
@@ -83,7 +93,7 @@ export async function refreshMicrosoftToken(
     scope: args.scopes.join(" "),
   });
   const res = await fetchImpl(
-    `https://login.microsoftonline.com/${tenant(args.tenantId)}/oauth2/v2.0/token`,
+    `https://login.microsoftonline.com/${tenantPath(args.tenantId)}/oauth2/v2.0/token`,
     {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },

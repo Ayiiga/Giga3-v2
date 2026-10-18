@@ -15,6 +15,7 @@ import {
   type ConnectorCardView,
   type ConnectorStatus,
 } from "./types";
+import { resolveMicrosoftConnectorTenant } from "./oauthErrors";
 
 /**
  * Ops readiness for connector activation (no secret values).
@@ -31,6 +32,9 @@ export const getConnectorDeploymentReadiness = query({
     );
     const hasSessionSigningFallback = Boolean(
       process.env.SESSION_SIGNING_SECRET?.trim()
+    );
+    const msAuthority = resolveMicrosoftConnectorTenant(
+      process.env.MICROSOFT_CONNECTOR_TENANT
     );
     const providers = EXTERNAL_CONNECTORS.map((provider) => {
       const missingEnvKeys = missingEnvKeysForProvider(provider);
@@ -58,6 +62,23 @@ export const getConnectorDeploymentReadiness = query({
           : hasSessionSigningFallback
             ? "Falling back to SESSION_SIGNING_SECRET — set a dedicated CONNECTOR_TOKEN_ENCRYPTION_KEY when possible (do not rotate without migration)"
             : "No encryption key available — connector tokens cannot be stored safely",
+      },
+      microsoft: {
+        authority: msAuthority.tenant,
+        authorityKind: msAuthority.kind,
+        authorizeHost: `https://login.microsoftonline.com/${msAuthority.tenant}/oauth2/v2.0/authorize`,
+        warnsPersonalAccounts: msAuthority.warnsPersonalAccounts,
+        note: msAuthority.warnsPersonalAccounts
+          ? "Current MICROSOFT_CONNECTOR_TENANT excludes or likely blocks personal Microsoft accounts. Use unset/common for work + personal."
+          : "Using /common — compatible with work/school and personal Microsoft accounts when the Entra app allows both.",
+      },
+      googleConnector: {
+        configured: Boolean(
+          process.env.GOOGLE_CONNECTOR_CLIENT_ID?.trim() &&
+            process.env.GOOGLE_CONNECTOR_CLIENT_SECRET?.trim()
+        ),
+        note:
+          "Uses GOOGLE_CONNECTOR_* only (not GOOGLE_CLIENT_ID / AUTH_GOOGLE_* social login). If users see 403 access_denied while the app is in Testing, add their Google account as an OAuth consent-screen test user.",
       },
       providers,
       readyProviderCount: providers.filter((p) => p.configured).length,

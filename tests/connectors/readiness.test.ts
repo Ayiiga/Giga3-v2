@@ -69,6 +69,9 @@ describe("connector readiness accuracy", () => {
     expect(src).toContain("dedicatedKeyConfigured");
     expect(src).toContain("oauthCallbackUrl");
     expect(src).toContain("separationNote");
+    expect(src).toContain("microsoft");
+    expect(src).toContain("warnsPersonalAccounts");
+    expect(src).toContain("googleConnector");
     expect(src).not.toContain("CLIENT_SECRET]");
   });
 

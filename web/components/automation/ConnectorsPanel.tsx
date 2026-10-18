@@ -9,6 +9,7 @@ import {
   validateMoodleSiteUrl,
   validateMoodleToken,
 } from "../../../convex/connectors/moodleUrl";
+import { mapConnectorOAuthError } from "../../../convex/connectors/oauthErrors";
 import { api } from "convex/_generated/api";
 import { useAction, useQuery } from "convex/react";
 import Link from "next/link";
@@ -45,8 +46,14 @@ export function ConnectorsPanel() {
   const flash = useMemo(() => {
     const connected = params.get("connector_connected");
     const error = params.get("connector_error");
+    const detail = params.get("connector_error_detail");
     if (connected) return { kind: "ok" as const, text: `Connected ${connected}.` };
-    if (error) return { kind: "err" as const, text: `Connection issue: ${error}` };
+    if (error) {
+      return {
+        kind: "err" as const,
+        text: mapConnectorOAuthError(error, detail),
+      };
+    }
     return null;
   }, [params]);
 
@@ -244,7 +251,13 @@ export function ConnectorsPanel() {
                     disabled={busyId === card.id}
                     onClick={() => void handleConnect(card)}
                   >
-                    {card.status === "needs_reauth" ? "Reconnect" : "Connect"}
+                    {busyId === card.id
+                      ? "Connecting…"
+                      : card.status === "needs_reauth"
+                        ? "Reconnect"
+                        : flash?.kind === "err"
+                          ? "Retry connect"
+                          : "Connect"}
                   </Button>
                 ) : null}
                 {card.canDisconnect ? (
