@@ -27,6 +27,7 @@ export const conversational = action({
     personaId: v.optional(v.string()),
     clientRequestId: v.optional(v.string()),
     chatSystem: v.optional(v.string()),
+    responseDetail: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);
@@ -93,6 +94,7 @@ export const conversational = action({
         mode: setup.mode,
         personaId: setup.personaId,
         chatSystem: args.chatSystem,
+        responseDetail: args.responseDetail,
         since: setup.since,
       });
 

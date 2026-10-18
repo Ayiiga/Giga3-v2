@@ -472,6 +472,12 @@ export default defineSchema({
     pinned: v.optional(v.boolean()),
     archived: v.optional(v.boolean()),
     isFavorite: v.optional(v.boolean()),
+    /**
+     * Short-lived JSON of the latest image attachments (data URLs) so follow-up
+     * questions can re-run vision after chatReplyJobs rows are deleted.
+     */
+    lastVisionAttachmentsJson: v.optional(v.string()),
+    lastVisionAttachmentsAt: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_user_updated", ["userId", "updatedAt"])
@@ -876,6 +882,8 @@ export default defineSchema({
     regenerateFromMessageId: v.optional(v.id("messages")),
     clientRequestId: v.optional(v.string()),
     chatSystem: v.optional(v.string()),
+    /** Optional reply depth: quick | detailed | expert */
+    responseDetail: v.optional(v.string()),
     liveWeb: v.optional(v.boolean()),
     liveWebMode: v.optional(
       v.union(v.literal("research"), v.literal("actions"))

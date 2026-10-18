@@ -16,7 +16,10 @@ import {
   type ChatEngineResult,
 } from "./chatEngine";
 import { getSystemPrompt } from "./aiModes";
-import { chatSystemStyleAddon } from "./assistantIdentity";
+import {
+  chatSystemStyleAddon,
+  responseDetailStyleAddon,
+} from "./assistantIdentity";
 import { personaSystemPromptAddon } from "./gigaPersonas";
 import { buildChatSubscriptionGuidanceAddon } from "./chatSubscriptionGuidance";
 import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
@@ -63,6 +66,8 @@ export type ConversationalReplyArgs = {
   personaId?: string;
   /** User-selected chat system (fast/smart/…); defaults to fast when omitted. */
   chatSystem?: string;
+  /** Optional reply depth: quick | detailed | expert */
+  responseDetail?: string;
   since: number;
 };
 
@@ -101,6 +106,7 @@ export async function executeConversationalReply(
   let systemPrompt =
     getSystemPrompt(args.mode) +
     chatSystemStyleAddon(chatSystem) +
+    responseDetailStyleAddon(args.responseDetail, args.content) +
     buildInterestSystemAddon(parseInterestProfile(user?.interestProfile)) +
     "\n\n" +
     qualityContext.systemPromptAddon +

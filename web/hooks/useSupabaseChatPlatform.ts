@@ -20,6 +20,7 @@ import { stopGigaVoice } from "@/lib/chat/gigaVoice";
 import { emitOutboxStatus } from "@/lib/chat/outboxEvents";
 import { isValidMode, type AiModeId } from "@/lib/aiRouter";
 import { chatSystemForModel, gigaModelForMode, type GigaModelId } from "@/lib/chat/gigaModels";
+import { loadResponseDetailPreference } from "@/lib/chat/responseDetail";
 import { getSessionToken, getUserEmail } from "@/lib/auth";
 import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
 import {
@@ -98,6 +99,7 @@ async function sendConvexMessage(
     mode: string;
     clientRequestId?: string;
     chatSystem?: GigaModelId;
+    responseDetail?: string;
     attachments?: Omit<PreparedChatAttachment, "previewUrl">[];
     liveWeb?: boolean;
     liveWebMode?: "research" | "actions";
@@ -128,6 +130,7 @@ async function sendConvexQuickReply(
     mode: string;
     clientRequestId: string;
     chatSystem?: GigaModelId;
+    responseDetail?: string;
   },
   slowNetwork: boolean
 ) {
@@ -206,6 +209,7 @@ async function dispatchConvexReply(
     mode: string;
     clientRequestId: string;
     chatSystem: GigaModelId;
+    responseDetail?: string;
     attachments?: Omit<PreparedChatAttachment, "previewUrl">[];
     liveWeb?: boolean;
     liveWebMode?: "research" | "actions";
@@ -220,6 +224,8 @@ async function dispatchConvexReply(
       query: args.content,
       hasImageAttachment: hasImages,
     }) && args.online;
+  const responseDetail =
+    args.responseDetail ?? loadResponseDetailPreference() ?? undefined;
 
   if (useQuickReply) {
     return await sendConvexQuickReply(
@@ -230,6 +236,7 @@ async function dispatchConvexReply(
         mode: args.mode,
         clientRequestId: args.clientRequestId,
         chatSystem: args.chatSystem,
+        ...(responseDetail ? { responseDetail } : {}),
       },
       slowNetwork
     );
@@ -243,6 +250,7 @@ async function dispatchConvexReply(
       mode: args.mode,
       clientRequestId: args.clientRequestId,
       chatSystem: args.chatSystem,
+      ...(responseDetail ? { responseDetail } : {}),
       liveWeb: args.liveWeb,
       liveWebMode: args.liveWebMode,
       researchCapability: args.researchCapability,

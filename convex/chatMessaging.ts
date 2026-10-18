@@ -129,6 +129,8 @@ export const acceptMessage = mutation({
     attachments: attachmentValidator,
     clientRequestId: v.optional(v.string()),
     chatSystem: v.optional(v.string()),
+    /** Optional reply depth: quick | detailed | expert */
+    responseDetail: v.optional(v.string()),
     liveWeb: v.optional(v.boolean()),
     liveWebMode: v.optional(
       v.union(v.literal("research"), v.literal("actions"))
@@ -241,6 +243,23 @@ export const acceptMessage = mutation({
       if (mode !== conv.mode) patch.mode = mode;
       if (personaId !== (conv.personaId ?? null)) {
         patch.personaId = personaId ?? undefined;
+      }
+      const visionAttachments = attachments.filter(
+        (a) => a.kind === "image" && Boolean(a.dataUrl)
+      );
+      if (visionAttachments.length > 0) {
+        // Keep only compact vision payloads for follow-ups (already client-compressed).
+        patch.lastVisionAttachmentsJson = JSON.stringify(
+          visionAttachments.slice(0, 2).map((a) => ({
+            kind: a.kind,
+            name: a.name,
+            mimeType: a.mimeType,
+            sizeBytes: a.sizeBytes,
+            dataUrl: a.dataUrl,
+            text: a.text,
+          }))
+        );
+        patch.lastVisionAttachmentsAt = now;
       }
       if (Object.keys(patch).length > 1) {
         await ctx.db.patch(conversationId!, patch);
@@ -426,6 +445,7 @@ export const acceptMessage = mutation({
           : ("reply" as const),
       clientRequestId: args.clientRequestId,
       chatSystem: args.chatSystem,
+      responseDetail: args.responseDetail,
       liveWeb: needsLiveWeb,
       liveWebMode: args.liveWebMode,
       researchCapability: resolvedResearchCapability,

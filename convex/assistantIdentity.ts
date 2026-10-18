@@ -147,3 +147,58 @@ export function chatSystemStyleAddon(chatSystem?: string): string {
   const style = chatSystem ? GIGA3_CHAT_SYSTEM_STYLES[chatSystem] : undefined;
   return style ? `\n\n${style}` : "";
 }
+
+export const RESPONSE_DETAIL_IDS = ["quick", "detailed", "expert"] as const;
+export type ResponseDetailId = (typeof RESPONSE_DETAIL_IDS)[number];
+
+export function isValidResponseDetail(id: string): id is ResponseDetailId {
+  return (RESPONSE_DETAIL_IDS as readonly string[]).includes(id);
+}
+
+const RESPONSE_DETAIL_STYLES: Record<ResponseDetailId, string> = {
+  quick:
+    "Response detail: Quick Answer. Give the direct answer with only the necessary explanation. Skip long teaching templates unless the user asked to learn.",
+  detailed:
+    "Response detail: Detailed Explanation. Explain step by step, define difficult terms, give relevant examples, and end with a short summary when useful.",
+  expert:
+    "Response detail: Expert Analysis. Provide structured analysis with evidence, assumptions, limitations, comparisons, and recommendations when appropriate. Stay concise where the question is narrow.",
+};
+
+/** Infer detail preference from explicit user phrasing when no UI preference is set. */
+export function inferResponseDetailFromQuery(query: string): ResponseDetailId | undefined {
+  const q = query.trim();
+  if (!q) return undefined;
+  if (
+    /\b(quick answer|briefly|in brief|short answer|tl;?dr|just the answer|be concise|keep it short)\b/i.test(
+      q
+    )
+  ) {
+    return "quick";
+  }
+  if (
+    /\b(expert analysis|in depth|in-depth|comprehensive analysis|critical analysis|evaluate with evidence)\b/i.test(
+      q
+    )
+  ) {
+    return "expert";
+  }
+  if (
+    /\b(detailed explanation|explain in detail|step by step|step-by-step|thoroughly|in detail|teach me)\b/i.test(
+      q
+    )
+  ) {
+    return "detailed";
+  }
+  return undefined;
+}
+
+export function responseDetailStyleAddon(
+  detail?: string | null,
+  query?: string
+): string {
+  const resolved =
+    (detail && isValidResponseDetail(detail) ? detail : undefined) ??
+    (query ? inferResponseDetailFromQuery(query) : undefined);
+  if (!resolved) return "";
+  return `\n\n${RESPONSE_DETAIL_STYLES[resolved]}`;
+}
