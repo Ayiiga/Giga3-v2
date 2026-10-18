@@ -203,17 +203,35 @@ export const completeOAuthInternal = internalAction({
         redirectUrl: `${frontendBaseUrl()}${oauthState.returnPath}${sep}connector_connected=${provider.id}`,
       };
     } catch (e) {
+      const raw = e instanceof Error ? e.message : "oauth_failed";
+      // Audit stores a short safe detail — never tokens/secrets.
+      const detail = raw
+        .replace(/client_secret=[^&\s]+/gi, "client_secret=[redacted]")
+        .replace(/refresh_token=[^&\s]+/gi, "refresh_token=[redacted]")
+        .replace(/access_token=[^&\s]+/gi, "access_token=[redacted]")
+        .slice(0, 200);
       await ctx.runMutation(internal.connectors.store.writeAuditInternal, {
         userId: oauthState.userId,
         provider: provider.id,
         action: "oauth_complete",
         ok: false,
-        detail: e instanceof Error ? e.message : "oauth_failed",
+        detail,
       });
       const sep = oauthState.returnPath.includes("?") ? "&" : "?";
+      const lower = raw.toLowerCase();
+      let errCode = "oauth_failed";
+      if (lower.includes("not enabled for consumers") || lower.includes("unauthorized_client")) {
+        errCode = "unauthorized_client";
+      } else if (lower.includes("access_denied") || lower.includes("verification")) {
+        errCode = "access_denied";
+      } else if (lower.includes("invalid_client")) {
+        errCode = "invalid_client";
+      } else if (lower.includes("invalid_grant")) {
+        errCode = "invalid_grant";
+      }
       return {
         ok: false as const,
-        redirectUrl: `${frontendBaseUrl()}${oauthState.returnPath}${sep}connector_error=oauth_failed`,
+        redirectUrl: `${frontendBaseUrl()}${oauthState.returnPath}${sep}connector_error=${encodeURIComponent(errCode)}`,
       };
     }
   },

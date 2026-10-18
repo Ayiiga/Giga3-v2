@@ -15,7 +15,7 @@ describe("microsoft / zoom / notion / moodle providers", () => {
       microsoftAuthUrl({
         clientId: "ms",
         redirectUri: "https://cb",
-        scopes: ["Calendars.Read"],
+        scopes: ["Calendars.ReadWrite", "User.Read"],
         state: "s1",
       })
     ).toContain("login.microsoftonline.com/common");

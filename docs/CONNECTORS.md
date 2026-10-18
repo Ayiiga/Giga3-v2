@@ -52,8 +52,8 @@ Register this exact redirect on each provider console:
 
 | Provider | Console | Redirect URI | Convex secrets |
 |----------|---------|--------------|----------------|
-| Google Drive / Gmail | Google Cloud OAuth web client | Convex `/connectors/oauth/callback` | `GOOGLE_CONNECTOR_*` (not `GOOGLE_CLIENT_ID`) |
-| Outlook Calendar | Entra app registration | Same | `MICROSOFT_CONNECTOR_*` (not `AUTH_MICROSOFT_*`) |
+| Google Drive / Gmail | Google Cloud OAuth **web** client + consent screen | Convex `/connectors/oauth/callback` on the **connector** client | `GOOGLE_CONNECTOR_*` only (not GIS `GOOGLE_CLIENT_ID`). If consent screen is **Testing**, only listed test users can connect; others see `access_denied` / verification messaging until Google verification is completed in Console. |
+| Outlook Calendar | Entra app registration | Same | `MICROSOFT_CONNECTOR_*` (not `AUTH_MICROSOFT_*`). Supported accounts: **any org directory + personal Microsoft accounts**. Leave `MICROSOFT_CONNECTOR_TENANT` unset (`/common`). Setting `organizations` or a tenant GUID causes `unauthorized_client` for personal MSA. Delegated Graph: `User.Read`, `Calendars.ReadWrite`. |
 | Zoom | Zoom Marketplace OAuth app | Same | `ZOOM_CONNECTOR_*` |
 | Notion | Notion public integration | Same | `NOTION_CONNECTOR_*` |
 | Moodle | N/A | N/A | Per-user URL + token |
