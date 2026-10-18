@@ -58,10 +58,12 @@ describe("Phase 2B fullscreen + distraction-free invariants", () => {
     expect(input).toContain("Free AI images today");
   });
 
-  it("keeps empty-credit banner but soft low-credit upsell off once messages exist", () => {
+  it("hides credit upsell once a thread has messages (ordinary chat is credit-free)", () => {
     const banners = read("web/components/chat/ChatBanners.tsx");
-    expect(banners).toContain('balancePrompt === "empty" || !hasMessages');
+    // Soft premium-tool upsell only on empty threads — not after ordinary chat starts.
+    expect(banners).toMatch(/showCreditBanner[\s\S]*?!hasMessages/);
     expect(banners).toContain("chat-banner-upsell");
+    expect(banners).toContain("credit-free");
   });
 
   it("resolves mobile header title without conflicting text-sm", () => {
