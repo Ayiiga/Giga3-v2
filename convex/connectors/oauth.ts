@@ -18,7 +18,12 @@ import {
 } from "./providers/microsoft";
 import { notionAuthUrl } from "./providers/notion";
 import { zoomAuthUrl, fetchZoomUser } from "./providers/zoom";
-import { normalizeSiteUrl, verifyMoodleToken } from "./providers/moodle";
+import { verifyMoodleToken } from "./providers/moodle";
+import {
+  normalizeSiteUrl,
+  safeMoodleConnectErrorMessage,
+  validateMoodleToken,
+} from "./moodleUrl";
 import {
   exchangeAuthorizationCode,
   loadDecryptedTokens,
@@ -222,29 +227,43 @@ export const connectMoodle = action({
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken, ctx);
-    const siteUrl = normalizeSiteUrl(args.siteUrl);
-    const token = args.token.trim();
-    if (!token || token.length < 16) throw new Error("Invalid Moodle web-service token.");
+    try {
+      const siteUrl = normalizeSiteUrl(args.siteUrl);
+      const tokenCheck = validateMoodleToken(args.token);
+      if (!tokenCheck.ok) throw new Error(tokenCheck.message);
+      const token = tokenCheck.token;
 
-    const info = await verifyMoodleToken(siteUrl, token);
-    const accessTokenEnc = await encryptSecret(token);
-    await ctx.runMutation(internal.connectors.store.upsertConnectionInternal, {
-      userId,
-      provider: "moodle",
-      status: "connected",
-      accountLabel: `${info.username || "user"} @ ${info.siteName}`,
-      scopes: ["moodle_webservice"],
-      accessTokenEnc,
-      metadataJson: JSON.stringify({ siteUrl }),
-    });
-    await ctx.runMutation(internal.connectors.store.writeAuditInternal, {
-      userId,
-      provider: "moodle",
-      action: "connect_token",
-      ok: true,
-      detail: siteUrl,
-    });
-    return { ok: true as const, accountLabel: info.siteName };
+      const info = await verifyMoodleToken(siteUrl, token);
+      const accessTokenEnc = await encryptSecret(token);
+      await ctx.runMutation(internal.connectors.store.upsertConnectionInternal, {
+        userId,
+        provider: "moodle",
+        status: "connected",
+        accountLabel: `${info.username || "user"} @ ${info.siteName}`,
+        scopes: ["moodle_webservice"],
+        accessTokenEnc,
+        metadataJson: JSON.stringify({ siteUrl }),
+      });
+      await ctx.runMutation(internal.connectors.store.writeAuditInternal, {
+        userId,
+        provider: "moodle",
+        action: "connect_token",
+        ok: true,
+        detail: siteUrl,
+      });
+      return { ok: true as const, accountLabel: info.siteName };
+    } catch (e) {
+      await ctx
+        .runMutation(internal.connectors.store.writeAuditInternal, {
+          userId,
+          provider: "moodle",
+          action: "connect_token",
+          ok: false,
+          detail: e instanceof Error ? e.message.slice(0, 200) : "connect_failed",
+        })
+        .catch(() => null);
+      throw new Error(safeMoodleConnectErrorMessage(e));
+    }
   },
 });
 

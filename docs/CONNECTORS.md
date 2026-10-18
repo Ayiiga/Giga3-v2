@@ -2,6 +2,8 @@
 
 External integrations for Automation → Integrations. Platform modules (Chat, Media, GigaLearn, Marketplace) are always Active as first-party links. External providers are **never** marked Active/Connected unless Convex credentials exist and (for Connected) the user has completed authorisation.
 
+> **Security boundary:** Connector OAuth authorises Giga3 to call an external API on behalf of an already-signed-in user. It is **not** user authentication. Social sign-in uses separate credentials (`AUTH_*` / `GOOGLE_CLIENT_ID`), callback (`/auth/oauth/callback`), and records. Never reuse `*_CONNECTOR_*` secrets for login.
+
 ## Architecture
 
 - Adapter registry: `convex/connectors/registry.ts`
@@ -9,6 +11,8 @@ External integrations for Automation → Integrations. Platform modules (Chat, M
 - OAuth callback: `https://<deployment>.convex.site/connectors/oauth/callback`
 - Operations: `connectors/operations.invoke` (confirmation staging for consequential actions)
 - UI: `web/components/automation/ConnectorsPanel.tsx`
+- Ops readiness (no secrets): `connectors/status.getConnectorDeploymentReadiness`
+- Moodle URL validation (pure): `convex/connectors/moodleUrl.ts`
 
 Tokens, refresh tokens, and client secrets never leave Convex. Do not put connector secrets in `NEXT_PUBLIC_*` or Cloudflare Pages.
 
@@ -16,7 +20,7 @@ Tokens, refresh tokens, and client secrets never leave Convex. Do not put connec
 
 | Variable | Providers |
 |----------|-----------|
-| `CONNECTOR_TOKEN_ENCRYPTION_KEY` | All (recommended dedicated key) |
+| `CONNECTOR_TOKEN_ENCRYPTION_KEY` | All (recommended dedicated key; do **not** rotate without a credential migration plan) |
 | `GOOGLE_CONNECTOR_CLIENT_ID` | Drive, Gmail |
 | `GOOGLE_CONNECTOR_CLIENT_SECRET` | Drive, Gmail |
 | `MICROSOFT_CONNECTOR_CLIENT_ID` | Outlook Calendar |
@@ -26,12 +30,17 @@ Tokens, refresh tokens, and client secrets never leave Convex. Do not put connec
 | `ZOOM_CONNECTOR_CLIENT_SECRET` | Zoom |
 | `NOTION_CONNECTOR_CLIENT_ID` | Notion |
 | `NOTION_CONNECTOR_CLIENT_SECRET` | Notion |
-| `FRONTEND_URL` | OAuth return redirects |
-| `CONVEX_SITE_URL` / site URL | OAuth redirect URI base |
+| `FRONTEND_URL` | OAuth return redirects (production: `https://www.giga3ai.com`) |
+| `CONVEX_SITE_URL` | OAuth redirect URI base (`https://perfect-lark-521.convex.site`) |
 
-Moodle uses a **per-user** site URL + personal web-service token (no platform admin password). Site URLs must be `https://` and must not target localhost, private, or link-local hosts. Before connect, the hostname is DNS-resolved and **every** resolved address is checked against the private/link-local/CGNAT/multicast denylist; HTTPS then connects to the pinned public IP with `Host`/`SNI` set to the original hostname (connection-time destination enforcement). 3xx responses are rejected (no redirect follow). Response bodies are size-capped (~1 MiB) under the request timeout. Remaining residual risk: OS/TLS stack behaviour outside our pin path is assumed standard Node `https.request`.
+### Moodle (per-user, no platform OAuth secrets)
 
-Consequential operations stage a `connectorPendingActions` row; confirm claims that row and executes the locked payload only (idempotent replay returns the stored result if already executed).
+Users supply:
+
+1. Public **HTTPS** Moodle site URL (bare hostnames are normalized to `https://…`; trailing slashes trimmed).
+2. Personal Moodle **web-service token** (not an admin password).
+
+Rejected: HTTP, credentials in URL, fragments, localhost/private/link-local/metadata hosts, unsupported schemes. After URL validation, DNS is resolved and every address is checked; HTTPS connects to the pinned public IP with `Host`/`SNI` set to the original hostname. 3xx redirects rejected. Response bodies size-capped (~1 MiB).
 
 ## OAuth redirect URI
 
@@ -39,15 +48,19 @@ Register this exact redirect on each provider console:
 
 `https://perfect-lark-521.convex.site/connectors/oauth/callback`
 
-(or your deployment’s `*.convex.site` host)
+### Provider console checklist (owner)
 
-## Scopes
+| Provider | Console | Redirect URI | Convex secrets |
+|----------|---------|--------------|----------------|
+| Google Drive / Gmail | Google Cloud OAuth web client | Convex `/connectors/oauth/callback` | `GOOGLE_CONNECTOR_*` (not `GOOGLE_CLIENT_ID`) |
+| Outlook Calendar | Entra app registration | Same | `MICROSOFT_CONNECTOR_*` (not `AUTH_MICROSOFT_*`) |
+| Zoom | Zoom Marketplace OAuth app | Same | `ZOOM_CONNECTOR_*` |
+| Notion | Notion public integration | Same | `NOTION_CONNECTOR_*` |
+| Moodle | N/A | N/A | Per-user URL + token |
 
-See `EXTERNAL_CONNECTORS` in `convex/connectors/registry.ts`.
+## Ops readiness query
 
-### Google verification
-
-Gmail `gmail.send` / `gmail.compose` and Drive sensitive scopes may require Google OAuth app verification for production users outside the test-user list. Until approved, keep the Google Cloud project in testing mode and add testers, or the UI correctly shows connection failures / needs configuration.
+`connectors:getConnectorDeploymentReadiness` returns callback URL, encryption key presence, and per-provider `configured` + `missingEnvKeys` (**names only**). Unconfigured providers show **Needs configuration** in the UI. Connected is only returned after a verified token exchange.
 
 ## Status meanings
 
@@ -63,9 +76,12 @@ Gmail `gmail.send` / `gmail.compose` and Drive sensitive scopes may require Goog
 ## Smoke checklist (after secrets)
 
 1. Deploy Convex with schema + connector modules.
-2. Set provider secrets on Convex.
+2. Set provider secrets on Convex. Confirm readiness query shows `configured: true`.
 3. Sign in → Automation → Integrations → Connect.
 4. Complete provider consent → land on integrations with `connector_connected=…`.
-5. Invoke a read operation via Manage / server `connectors/operations.invoke`.
-6. Stage a send/create action → confirm with `pendingActionId` → verify provider side.
-7. Disconnect and confirm tokens removed.
+5. Moodle: enter HTTPS URL + personal token → Connecting… → Connected only after site-info succeeds.
+6. Invoke a read operation via Manage / server `connectors/operations.invoke`.
+7. Stage a send/create action → confirm with `pendingActionId` → verify provider side.
+8. Disconnect and confirm tokens removed.
+
+Live OAuth smoke is blocked until the owner supplies `*_CONNECTOR_*` credentials. Do not invent smoke results.
