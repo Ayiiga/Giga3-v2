@@ -39,7 +39,11 @@ import {
   shouldUseConversationalWorker,
 } from "./researchCapabilities";
 import { isChatAssistantFailureStub } from "./chatUserMessages";
-import { CREDIT_COSTS, creditActionForMode } from "./creditsConfig";
+import {
+  CREDIT_COSTS,
+  creditActionForChatImageGeneration,
+} from "./creditsConfig";
+import { classifyRequestKind } from "./providerRouter";
 
 const attachmentValidator = v.optional(
   v.array(
@@ -129,6 +133,8 @@ export const acceptMessage = mutation({
     attachments: attachmentValidator,
     clientRequestId: v.optional(v.string()),
     chatSystem: v.optional(v.string()),
+    /** Optional reply depth: quick | detailed | expert */
+    responseDetail: v.optional(v.string()),
     liveWeb: v.optional(v.boolean()),
     liveWebMode: v.optional(
       v.union(v.literal("research"), v.literal("actions"))
@@ -187,14 +193,21 @@ export const acceptMessage = mutation({
     const mode = resolved.mode;
     const personaId = resolved.personaId;
 
-    // Server-side credit gate before enqueueing paid AI (client UI alone is not enough).
-    // Must run before consuming free persona quota so a zero-balance send does not burn a daily slot.
-    {
+    const rawAttachments = (args.attachments ?? []) as RawAttachmentInput[];
+    const attachments = rawAttachments as ChatCompletionAttachment[];
+    const hasImageAttachment = attachments.some((a) => a.kind === "image");
+    // Ordinary text chat is credit-free. Only in-chat image *generation* requires credits.
+    // Run before persona consumption so a failed image credit check cannot burn a daily slot.
+    const requestKind = classifyRequestKind(args.content, mode, {
+      hasImageAttachment,
+      hasEditableImageSource: hasImageAttachment,
+    });
+    if (requestKind === "image_generation") {
       const creditUser = await ctx.db
         .query("users")
         .withIndex("by_email", (q) => q.eq("email", email))
         .first();
-      const creditAction = creditActionForMode(mode);
+      const creditAction = creditActionForChatImageGeneration();
       const creditCost = CREDIT_COSTS[creditAction];
       const creditBalance = creditUser?.credits ?? 0;
       if (creditBalance < creditCost) {
@@ -208,19 +221,17 @@ export const acceptMessage = mutation({
       await requireAndConsumeAdvancedPersonaAccess(ctx, email);
     }
 
-    const rawAttachments = (args.attachments ?? []) as RawAttachmentInput[];
-    const attachments = rawAttachments as ChatCompletionAttachment[];
     const resolvedResearchCapability = resolveResearchCapability({
       explicit: resolved.researchCapability,
       query: args.content,
       liveWebEnabled: args.liveWeb === true,
-      hasImageAttachment: attachments.some((a) => a.kind === "image"),
+      hasImageAttachment,
     });
     const needsLiveWeb = queryNeedsLiveWeb({
       query: args.content,
       capability: resolvedResearchCapability,
       mode,
-      hasImageAttachment: attachments.some((a) => a.kind === "image"),
+      hasImageAttachment,
     });
     const imageCapability = assessImageProcessingCapability(attachments);
 
@@ -241,6 +252,23 @@ export const acceptMessage = mutation({
       if (mode !== conv.mode) patch.mode = mode;
       if (personaId !== (conv.personaId ?? null)) {
         patch.personaId = personaId ?? undefined;
+      }
+      const visionAttachments = attachments.filter(
+        (a) => a.kind === "image" && Boolean(a.dataUrl)
+      );
+      if (visionAttachments.length > 0) {
+        // Keep only compact vision payloads for follow-ups (already client-compressed).
+        patch.lastVisionAttachmentsJson = JSON.stringify(
+          visionAttachments.slice(0, 2).map((a) => ({
+            kind: a.kind,
+            name: a.name,
+            mimeType: a.mimeType,
+            sizeBytes: a.sizeBytes,
+            dataUrl: a.dataUrl,
+            text: a.text,
+          }))
+        );
+        patch.lastVisionAttachmentsAt = now;
       }
       if (Object.keys(patch).length > 1) {
         await ctx.db.patch(conversationId!, patch);
@@ -426,6 +454,7 @@ export const acceptMessage = mutation({
           : ("reply" as const),
       clientRequestId: args.clientRequestId,
       chatSystem: args.chatSystem,
+      responseDetail: args.responseDetail,
       liveWeb: needsLiveWeb,
       liveWebMode: args.liveWebMode,
       researchCapability: resolvedResearchCapability,

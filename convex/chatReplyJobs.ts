@@ -78,6 +78,32 @@ export const getActiveJobForConversation = internalQuery({
   },
 });
 
+/** Recent jobs that may still carry vision attachment payloads for follow-ups. */
+export const listRecentJobsWithAttachments = internalQuery({
+  args: {
+    conversationId: v.id("conversations"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = Math.max(1, Math.min(args.limit ?? 8, 20));
+    const rows = await ctx.db
+      .query("chatReplyJobs")
+      .withIndex("by_conversation", (q) =>
+        q.eq("conversationId", args.conversationId)
+      )
+      .order("desc")
+      .take(limit + 4);
+    return rows
+      .filter((row) => Boolean(row.attachmentsJson))
+      .slice(0, limit)
+      .map((row) => ({
+        _id: row._id,
+        attachmentsJson: row.attachmentsJson,
+        createdAt: row.createdAt,
+      }));
+  },
+});
+
 export const updateLiveWebProgress = internalMutation({
   args: {
     jobId: v.id("chatReplyJobs"),

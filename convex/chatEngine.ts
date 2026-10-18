@@ -161,7 +161,8 @@ export function normalizeGeminiChatModel(raw: string): string {
 function chatConfig() {
   return {
     providerTimeoutMs: Number(process.env.CHAT_PROVIDER_TIMEOUT_MS) || 22_000,
-    maxTokens: Number(process.env.CHAT_MAX_TOKENS) || 1024,
+    // Default raised from 1024 so multi-part educational answers complete more often.
+    maxTokens: Number(process.env.CHAT_MAX_TOKENS) || 2048,
     maxDialogueMessages: Number(process.env.CHAT_MAX_HISTORY_TURNS) || 12,
     enableFalChat: process.env.CHAT_ENABLE_FAL !== "false",
     falTimeoutMs: Number(process.env.CHAT_FAL_TIMEOUT_MS) || 12_000,
@@ -472,8 +473,11 @@ function buildProviderAttempts(args: {
   falTimeoutMs: number;
   enableFalChat: boolean;
   temperature: number;
+  /** When true, skip providers that cannot receive image pixels. */
+  requireVision?: boolean;
 }): Attempt[] {
   const attempts: Attempt[] = [];
+  const requireVision = Boolean(args.requireVision);
 
   for (const providerId of args.plan.failoverOrder) {
     if (providerId === "gemini" && args.geminiKey) {
@@ -516,6 +520,9 @@ function buildProviderAttempts(args: {
       });
       continue;
     }
+
+    // Text-only lanes — never use when the user uploaded an image for analysis.
+    if (requireVision) continue;
 
     if (providerId === "openai_fallback_model" && args.apiKey && args.fallbackModel !== args.primaryModel) {
       attempts.push({
@@ -715,7 +722,18 @@ export async function completeChatWithFailover(
     enableFalChat: cfg.enableFalChat,
     temperature: profile.temperature,
     geminiThinkingBudget: profile.geminiThinkingBudget,
+    requireVision: hasImageAttachment,
   });
+
+  if (hasImageAttachment && attempts.length === 0) {
+    return {
+      content:
+        "Image analysis is temporarily unavailable because no vision-capable AI provider is configured. Please try again later, or contact support if this continues.",
+      providerId: "local_fallback",
+      usedFallback: true,
+      latencyMs: Date.now() - started,
+    };
+  }
 
   const sequential = await runSequentialPlan(
     attempts,
@@ -724,6 +742,16 @@ export async function completeChatWithFailover(
     cfg.totalBudgetMs
   );
   if (sequential) return sequential;
+
+  if (hasImageAttachment) {
+    return {
+      content:
+        "I could not analyze this image with a vision-capable model right now. Please try again in a moment — I will not invent what the image shows.",
+      providerId: "local_fallback",
+      usedFallback: true,
+      latencyMs: Date.now() - started,
+    };
+  }
 
   return {
     content:

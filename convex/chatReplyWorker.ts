@@ -10,7 +10,10 @@ import { buildRoutingContextFromUser,
   type ChatCompletionAttachment,
 } from "./chatEngine";
 import { getSystemPrompt, isValidMode, type AiModeId } from "./aiModes";
-import { chatSystemStyleAddon } from "./assistantIdentity";
+import {
+  chatSystemStyleAddon,
+  responseDetailStyleAddon,
+} from "./assistantIdentity";
 import { personaSystemPromptAddon } from "./gigaPersonas";
 import { buildChatSubscriptionGuidanceAddon } from "./chatSubscriptionGuidance";
 import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
@@ -653,7 +656,7 @@ export const processJob = internalAction({
 
     const email = job.userId;
     const mode = (isValidMode(job.mode) ? job.mode : "general") as AiModeId;
-    const attachments = job.attachmentsJson
+    let attachments = job.attachmentsJson
       ? (JSON.parse(job.attachmentsJson) as ChatCompletionAttachment[])
       : [];
 
@@ -680,6 +683,31 @@ export const processJob = internalAction({
       }
       const history = context.history;
       const segmentRecap = context.segmentRecap;
+
+      // Follow-ups like "explain that diagram" often omit a re-upload. Reuse the
+      // latest vision payloads stored on the conversation (jobs are deleted after reply).
+      if (!attachments.some((a) => a.kind === "image" && a.dataUrl)) {
+        const VISION_FOLLOWUP_TTL_MS = 45 * 60 * 1000;
+        const storedAt = conv.lastVisionAttachmentsAt ?? 0;
+        if (
+          conv.lastVisionAttachmentsJson &&
+          Date.now() - storedAt <= VISION_FOLLOWUP_TTL_MS
+        ) {
+          try {
+            const prior = JSON.parse(
+              conv.lastVisionAttachmentsJson
+            ) as ChatCompletionAttachment[];
+            const images = prior.filter(
+              (a) => a.kind === "image" && Boolean(a.dataUrl)
+            );
+            if (images.length > 0) {
+              attachments = [...attachments, ...images.slice(0, 2)];
+            }
+          } catch {
+            /* ignore corrupt JSON */
+          }
+        }
+      }
 
       const last = history[history.length - 1];
       if (
@@ -722,6 +750,7 @@ export const processJob = internalAction({
       const systemPromptBase =
         getSystemPrompt(mode) +
         chatSystemStyleAddon(job.chatSystem) +
+        responseDetailStyleAddon(job.responseDetail, job.content) +
         buildInterestSystemAddon(parseInterestProfile(refreshedUser?.interestProfile)) +
         "\n\n" +
         qualityContext.systemPromptAddon +
@@ -1198,31 +1227,24 @@ export const processJob = internalAction({
         }
       }
 
-      if (chargedAi) {
+      if (chargedAi && engineResult.requestKind === "image_generation") {
         // Prefer jobId as reference so concurrent retries share one deduct key in logs.
+        // Ordinary text chat is credit-free — never deduct for text_chat.
         const deductReference = String(args.jobId);
         try {
           const usedFreeImageQuota = Boolean(
             (engineResult as { usedFreeImageQuota?: boolean }).usedFreeImageQuota
           );
-          if (engineResult.requestKind === "image_generation") {
-            // Preserve main billing: OpenAI images → image credits; free_pipeline
-            // failover → chat-mode credits. Accra free-quota successes charge nothing.
-            if (usedFreeImageQuota || engineResult.providerId === "policy") {
-              // no credit deduct
-            } else if (engineResult.providerId === "openai_image") {
-              await ctx.runMutation(internal.credits.deductCreditsInternal, {
-                userId: email,
-                action: "image",
-                reference: deductReference,
-              });
-            } else {
-              await ctx.runMutation(internal.credits.deductForChatModeInternal, {
-                userId: email,
-                mode,
-                reference: deductReference,
-              });
-            }
+          // Preserve image billing: OpenAI images → image credits; free_pipeline
+          // failover → chat-mode credits. Accra free-quota successes charge nothing.
+          if (usedFreeImageQuota || engineResult.providerId === "policy") {
+            // no credit deduct
+          } else if (engineResult.providerId === "openai_image") {
+            await ctx.runMutation(internal.credits.deductCreditsInternal, {
+              userId: email,
+              action: "image",
+              reference: deductReference,
+            });
           } else {
             await ctx.runMutation(internal.credits.deductForChatModeInternal, {
               userId: email,
@@ -1232,7 +1254,7 @@ export const processJob = internalAction({
           }
         } catch (deductErr) {
           // Reply already persisted — do not flip the job to failed (would confuse clients
-          // and recovery). acceptMessage pre-checks balance; residual races are logged.
+          // and recovery). Image acceptMessage pre-checks balance; residual races are logged.
           logChatReply("worker_credit_deduct_failed", {
             jobId: args.jobId,
             conversationId: job.conversationId,

@@ -38,6 +38,11 @@ import {
   storeGigaModel,
   type GigaModelId,
 } from "@/lib/chat/gigaModels";
+import {
+  loadResponseDetailPreference,
+  saveResponseDetailPreference,
+  type ResponseDetailId,
+} from "@/lib/chat/responseDetail";
 import { findLatestImageUrlInMessages } from "@/lib/chat/parseMessageMedia";
 import { consumeGigaLearnChatHandoff } from "@/lib/gigalearn/chatHandoff";
 import { consumePromptChatHandoff } from "@/lib/chat/promptHandoff";
@@ -138,6 +143,9 @@ function ChatShellInner({
   const [templateNotice, setTemplateNotice] = useState<string | null>(null);
   const [dismissedError, setDismissedError] = useState<string | null>(null);
   const [modelTier, setModelTier] = useState<GigaModelId>("fast");
+  const [responseDetail, setResponseDetail] = useState<ResponseDetailId | null>(
+    () => loadResponseDetailPreference()
+  );
   const [handoffAttachments, setHandoffAttachments] = useState<PreparedChatAttachment[]>([]);
   const [conversationSearch, setConversationSearch] = useState("");
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
@@ -744,6 +752,11 @@ function ChatShellInner({
             modelTier={modelTier}
             mode={mode}
             onModelTierChange={handleModelTierChange}
+            responseDetail={responseDetail}
+            onResponseDetailChange={(id) => {
+              setResponseDetail(id);
+              saveResponseDetailPreference(id);
+            }}
             onOpenSidebar={handleOpenSidebar}
             onSetPublicShare={onSetPublicShare}
             chatActionsRef={chatActionsRef}
