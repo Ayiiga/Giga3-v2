@@ -314,6 +314,24 @@ function premiumTierFailover(): ChatProviderId[] {
   ];
 }
 
+/**
+ * Providers that can receive real image pixels (data URL / inline_data).
+ * fal.ai OpenRouter chat and OpenAI text-only fallbacks must not run for vision
+ * — they strip images and can invent analysis from filenames/captions.
+ */
+export const VISION_CAPABLE_PROVIDERS: ChatProviderId[] = [
+  "gemini",
+  "openai_primary",
+];
+
+/** Failover order when the request includes an inline image attachment. */
+export function visionFailoverOrder(tier: AiProviderTier): ChatProviderId[] {
+  if (tier === "premium") {
+    return ["openai_primary", "gemini"];
+  }
+  return ["gemini", "openai_primary"];
+}
+
 export function buildChatRoutePlan(input: RoutingInput): ChatRoutePlan {
   const requestKind = classifyRequestKind(input.query, input.mode, {
     hasImageAttachment: input.hasImageAttachment,
@@ -341,8 +359,10 @@ export function buildChatRoutePlan(input: RoutingInput): ChatRoutePlan {
     };
   }
 
-  const failoverOrder =
-    input.tier === "premium"
+  // Image analysis must never primary/failover onto text-only lanes.
+  const failoverOrder = input.hasImageAttachment
+    ? visionFailoverOrder(input.tier)
+    : input.tier === "premium"
       ? premiumTierFailover()
       : freeTierFailover(input.chatSystem);
 
