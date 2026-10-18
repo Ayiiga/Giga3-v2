@@ -23,6 +23,7 @@ import {
   toPublicListing,
   toPublicReview,
 } from "./marketplaceViews";
+import { assertWithdrawalEligibility } from "./gigaSocialEconomy";
 
 const MARKETPLACE_CATEGORIES = [
   "Education",
@@ -809,6 +810,16 @@ export const requestPayout = mutation({
       .withIndex("by_user", (q) => q.eq("userId", email))
       .first();
     if (!profile) throw new Error("Creator profile required.");
+
+    // When the seller also has a GigaSocial profile, enforce 20-fan + acceptance rules.
+    const socialProfile = await ctx.db
+      .query("socialProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", email))
+      .first();
+    if (socialProfile) {
+      await assertWithdrawalEligibility(ctx, socialProfile);
+    }
+
     const minPayout = Number(process.env.MARKETPLACE_MIN_PAYOUT_GHS) || 50;
     const amount = Math.round(args.amountGhs);
     if (amount < minPayout) {
@@ -819,6 +830,19 @@ export const requestPayout = mutation({
     }
 
     const now = Date.now();
+    const recent = await ctx.db
+      .query("creatorPayouts")
+      .withIndex("by_creator", (q) => q.eq("creatorId", email))
+      .order("desc")
+      .take(5);
+    if (
+      recent.some(
+        (p) => p.status === "pending" && p.amountGhs === amount && now - p.createdAt < 60_000
+      )
+    ) {
+      throw new Error("A matching withdrawal request is already pending.");
+    }
+
     await ctx.db.patch(profile._id, {
       payoutBalanceGhs: profile.payoutBalanceGhs - amount,
       updatedAt: now,

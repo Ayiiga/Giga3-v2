@@ -1,15 +1,19 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { formatGhs } from "@/lib/gigasocial/creatorEconomy";
+import {
+  formatGhs,
+  monetizationStatusMessage,
+} from "@/lib/gigasocial/creatorEconomy";
 import { buildGrowthInsights } from "@/lib/gigasocial/feedRanking";
 import { formatCompactCount } from "@/lib/gigasocial/ogMeta";
 import { siteConfig } from "@/lib/site";
 import { api } from "convex/_generated/api";
-import { useQuery } from "convex/react";
-import { Coins, Gift, Sparkles, Star, Users, Wallet } from "lucide-react";
+import { useMutation, useQuery } from "convex/react";
+import { Coins, Gift, Loader2, Sparkles, Star, Users, Wallet } from "lucide-react";
 import Link from "next/link";
-import { memo, useMemo } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 
 export const GigaSocialCreatorWallet = memo(function GigaSocialCreatorWallet({
   sessionToken,
@@ -18,6 +22,10 @@ export const GigaSocialCreatorWallet = memo(function GigaSocialCreatorWallet({
 }) {
   const dashboard = useQuery(api.gigaSocialEconomy.getCreatorDashboard, { sessionToken });
   const gifts = useQuery(api.gigaSocialEconomy.getGiftsHub, { sessionToken });
+  const requestWithdrawal = useMutation(api.gigaSocialEconomy.requestCreatorWithdrawal);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const insights = useMemo(() => {
     if (!dashboard) return [];
@@ -27,6 +35,30 @@ export const GigaSocialCreatorWallet = memo(function GigaSocialCreatorWallet({
       topHashtags: ["GigaSocial", "CreatorZone"],
     });
   }, [dashboard]);
+
+  const handleWithdraw = useCallback(async () => {
+    if (!dashboard) return;
+    const amount = Math.floor(dashboard.payoutBalanceGhs ?? 0);
+    if (amount <= 0) {
+      setError("No withdrawable balance available.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const result = await requestWithdrawal({
+        sessionToken,
+        amountGhs: amount,
+        method: "paystack",
+      });
+      setNotice(`Withdrawal of ${formatGhs(result.amountGhs)} submitted (${result.status}).`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not request withdrawal.");
+    } finally {
+      setBusy(false);
+    }
+  }, [dashboard, requestWithdrawal, sessionToken]);
 
   if (dashboard === undefined || gifts === undefined) {
     return <LoadingState label="Loading creator wallet…" />;
@@ -38,6 +70,13 @@ export const GigaSocialCreatorWallet = memo(function GigaSocialCreatorWallet({
     );
   }
 
+  const withdrawalMsg = monetizationStatusMessage({
+    fanCount: dashboard.fanCount,
+    fansRequired: dashboard.fansRequired,
+    withdrawalFansRequired: dashboard.withdrawalFansRequired ?? 20,
+    accepted: Boolean(dashboard.monetizationAccepted),
+  });
+
   return (
     <div className="space-y-4">
       <div className="saas-card rounded-2xl border border-border p-4">
@@ -48,16 +87,42 @@ export const GigaSocialCreatorWallet = memo(function GigaSocialCreatorWallet({
               Creator Wallet
             </h2>
             <p className="mt-1 text-sm text-muted">
-              Tips, gifts, and estimated creator earnings — withdraw via Giga3 Wallet when settled.
+              Tips, gifts, affiliate, and content estimates. Affiliate earnings stay listed
+              separately from creator tips.
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-muted">Estimated balance</p>
+            <p className="text-xs text-muted">Estimated earnings</p>
             <p className="text-2xl font-bold text-foreground">
               {formatGhs(dashboard.estimatedEarningsGhs)}
             </p>
+            <p className="mt-1 text-xs text-muted">
+              Withdrawable: {formatGhs(dashboard.payoutBalanceGhs ?? 0)}
+            </p>
           </div>
         </div>
+        <p className="mt-3 text-sm text-foreground">{withdrawalMsg}</p>
+        <Button
+          type="button"
+          size="sm"
+          className="mt-3"
+          disabled={
+            busy ||
+            !dashboard.withdrawalFanEligible ||
+            !dashboard.monetizationAccepted ||
+            (dashboard.payoutBalanceGhs ?? 0) < (dashboard.minWithdrawalGhs ?? 50)
+          }
+          onClick={() => void handleWithdraw()}
+        >
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+          Request withdrawal
+        </Button>
+        <p className="mt-2 text-xs text-muted">
+          Minimum withdrawal {formatGhs(dashboard.minWithdrawalGhs ?? 50)}. Status stays pending
+          until payment processing confirms success.
+        </p>
+        {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
+        {notice ? <p className="mt-2 text-sm text-emerald-700">{notice}</p> : null}
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -103,6 +168,23 @@ export const GigaSocialCreatorWallet = memo(function GigaSocialCreatorWallet({
           </Link>
         </div>
       </section>
+
+      {(dashboard.recentPayouts?.length ?? 0) > 0 ? (
+        <section className="saas-card rounded-2xl border border-border p-4">
+          <h3 className="text-sm font-semibold text-foreground">Withdrawal history</h3>
+          <ul className="mt-2 space-y-1.5 text-sm">
+            {dashboard.recentPayouts!.map((p) => (
+              <li
+                key={p.payoutId}
+                className="flex items-center justify-between rounded-lg border border-border px-3 py-2"
+              >
+                <span className="text-muted">{p.status}</span>
+                <span className="font-medium text-foreground">{formatGhs(p.amountGhs)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="saas-card rounded-2xl border border-violet-200 bg-violet-50/40 p-4">
         <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">

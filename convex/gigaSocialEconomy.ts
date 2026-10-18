@@ -20,8 +20,17 @@ export function getCreatorTipTier(giftType: string) {
 
 type DbCtx = { db: import("./_generated/server").QueryCtx["db"] };
 
+/** Fans required to accept monetisation terms and start earning. */
+export const MIN_FANS_FOR_MONETIZATION = 5;
+/** Fans required to request a withdrawal (balance/payment checks still apply). */
+export const MIN_FANS_FOR_WITHDRAWAL = 20;
+/** Must match web/lib/gigasocial/creatorMonetizationPolicy.ts */
+export const CREATOR_MONETIZATION_POLICY_VERSION = "giga-creator-monetisation-v1";
+
 export type EconomySettings = {
   minFansForMonetization: number;
+  minFansForWithdrawal: number;
+  minWithdrawalGhs: number;
   viewRewardRateGhs: number;
   watchTimeRewardRateGhsPerMin: number;
   engagementRewardRateGhs: number;
@@ -34,7 +43,9 @@ export type EconomySettings = {
 };
 
 export const DEFAULT_ECONOMY_SETTINGS: EconomySettings = {
-  minFansForMonetization: 500,
+  minFansForMonetization: MIN_FANS_FOR_MONETIZATION,
+  minFansForWithdrawal: MIN_FANS_FOR_WITHDRAWAL,
+  minWithdrawalGhs: 50,
   viewRewardRateGhs: 0.001,
   watchTimeRewardRateGhsPerMin: 0.01,
   engagementRewardRateGhs: 0.05,
@@ -48,6 +59,8 @@ export const DEFAULT_ECONOMY_SETTINGS: EconomySettings = {
 
 const ECONOMY_CONFIG_KEYS: Record<keyof EconomySettings, string> = {
   minFansForMonetization: "gigasocial.economy.minFans",
+  minFansForWithdrawal: "gigasocial.economy.minFansWithdrawal",
+  minWithdrawalGhs: "gigasocial.economy.minWithdrawalGhs",
   viewRewardRateGhs: "gigasocial.economy.viewRewardRate",
   watchTimeRewardRateGhsPerMin: "gigasocial.economy.watchTimeRate",
   engagementRewardRateGhs: "gigasocial.economy.engagementRate",
@@ -61,8 +74,13 @@ const ECONOMY_CONFIG_KEYS: Record<keyof EconomySettings, string> = {
 
 type EconomyJson = {
   affiliateCode?: string;
+  /** Legacy unlock timestamp — treated as acceptance for older accounts. */
   monetizationUnlockedAt?: number;
+  monetizationAcceptedAt?: number;
+  monetizationPolicyVersion?: string;
+  monetizationAcceptedBy?: string;
   unlockNotified?: boolean;
+  unlockEligibleNotifiedAt?: number;
 };
 
 type PrivacySettings = {
@@ -99,6 +117,8 @@ function serializeEconomyJson(data: EconomyJson): string {
 export async function loadEconomySettings(ctx: DbCtx): Promise<EconomySettings> {
   const rows = await ctx.db.query("remoteConfigEntries").take(200);
   const settings = { ...DEFAULT_ECONOMY_SETTINGS };
+  let sawWithdrawalKey = false;
+  let sawMinWithdrawalKey = false;
 
   for (const [field, key] of Object.entries(ECONOMY_CONFIG_KEYS) as [
     keyof EconomySettings,
@@ -115,9 +135,22 @@ export async function loadEconomySettings(ctx: DbCtx): Promise<EconomySettings> 
       continue;
     }
     const num = Number(row.value);
-    if (Number.isFinite(num)) {
-      (settings as Record<string, number>)[field] = num;
-    }
+    if (!Number.isFinite(num)) continue;
+    if (field === "minFansForWithdrawal") sawWithdrawalKey = true;
+    if (field === "minWithdrawalGhs") sawMinWithdrawalKey = true;
+    (settings as Record<string, number>)[field] = num;
+  }
+
+  // Legacy remote config stored 500 as a combined affiliate/payout gate.
+  // Migrate in-memory to the split 5-fan monetisation / 20-fan withdrawal model.
+  if (settings.minFansForMonetization >= 100) {
+    settings.minFansForMonetization = MIN_FANS_FOR_MONETIZATION;
+  }
+  if (!sawWithdrawalKey) {
+    settings.minFansForWithdrawal = MIN_FANS_FOR_WITHDRAWAL;
+  }
+  if (!sawMinWithdrawalKey) {
+    settings.minWithdrawalGhs = DEFAULT_ECONOMY_SETTINGS.minWithdrawalGhs;
   }
 
   return settings;
@@ -158,39 +191,99 @@ async function getMutualFanCount(
   return theirFans.filter((f) => myFanIds.has(f.followerId)).length;
 }
 
+function hasAcceptedMonetization(economy: EconomyJson): boolean {
+  return Boolean(economy.monetizationAcceptedAt || economy.monetizationUnlockedAt);
+}
+
+/** True only after server-recorded policy acceptance (or legacy unlock). Fan count alone is not enough. */
 export async function isMonetizationUnlocked(
   ctx: DbCtx,
   profile: Doc<"socialProfiles">,
-  settings?: EconomySettings
+  _settings?: EconomySettings
 ): Promise<boolean> {
   const economy = parseEconomyJson(profile.economyJson);
-  if (economy.monetizationUnlockedAt) return true;
-  const config = settings ?? (await loadEconomySettings(ctx));
-  const fanCount = await getFanCount(ctx, profile.userId);
-  return fanCount >= config.minFansForMonetization;
+  return hasAcceptedMonetization(economy);
 }
 
+export async function getMonetizationEligibility(
+  ctx: DbCtx,
+  profile: Doc<"socialProfiles">,
+  settings?: EconomySettings
+): Promise<{
+  fanCount: number;
+  fansRequired: number;
+  withdrawalFansRequired: number;
+  fanEligible: boolean;
+  withdrawalFanEligible: boolean;
+  accepted: boolean;
+  unlocked: boolean;
+  policyVersion: string;
+  showEligibleInvite: boolean;
+}> {
+  const config = settings ?? (await loadEconomySettings(ctx));
+  const fanCount = await getFanCount(ctx, profile.userId);
+  const economy = parseEconomyJson(profile.economyJson);
+  const accepted = hasAcceptedMonetization(economy);
+  const fanEligible = fanCount >= config.minFansForMonetization;
+  return {
+    fanCount,
+    fansRequired: config.minFansForMonetization,
+    withdrawalFansRequired: config.minFansForWithdrawal,
+    fanEligible,
+    withdrawalFanEligible: fanCount >= config.minFansForWithdrawal,
+    accepted,
+    unlocked: accepted,
+    policyVersion: CREATOR_MONETIZATION_POLICY_VERSION,
+    showEligibleInvite: fanEligible && !accepted && !economy.unlockEligibleNotifiedAt,
+  };
+}
+
+/**
+ * Marks that the creator has been notified they are eligible (5 fans).
+ * Does NOT activate earning — acceptance is required via acceptMonetizationTerms.
+ */
 export async function ensureMonetizationUnlock(
   ctx: { db: import("./_generated/server").MutationCtx["db"] },
   profile: Doc<"socialProfiles">
-): Promise<{ unlocked: boolean; fanCount: number }> {
+): Promise<{ unlocked: boolean; fanCount: number; eligible: boolean }> {
   const settings = await loadEconomySettings(ctx);
-  const fanCount = await getFanCount(ctx, profile.userId);
+  const eligibility = await getMonetizationEligibility(ctx, profile, settings);
   const economy = parseEconomyJson(profile.economyJson);
 
-  if (fanCount >= settings.minFansForMonetization && !economy.monetizationUnlockedAt) {
-    const next: EconomyJson = {
-      ...economy,
-      monetizationUnlockedAt: Date.now(),
-    };
+  if (eligibility.fanEligible && !eligibility.accepted && !economy.unlockEligibleNotifiedAt) {
     await ctx.db.patch(profile._id, {
-      economyJson: serializeEconomyJson(next),
+      economyJson: serializeEconomyJson({
+        ...economy,
+        unlockEligibleNotifiedAt: Date.now(),
+        unlockNotified: true,
+      }),
       updatedAt: Date.now(),
     });
-    return { unlocked: true, fanCount };
   }
 
-  return { unlocked: Boolean(economy.monetizationUnlockedAt), fanCount };
+  return {
+    unlocked: eligibility.unlocked,
+    fanCount: eligibility.fanCount,
+    eligible: eligibility.fanEligible,
+  };
+}
+
+export async function assertWithdrawalEligibility(
+  ctx: DbCtx,
+  profile: Doc<"socialProfiles">,
+  settings?: EconomySettings
+): Promise<{ fanCount: number; settings: EconomySettings }> {
+  const config = settings ?? (await loadEconomySettings(ctx));
+  const eligibility = await getMonetizationEligibility(ctx, profile, config);
+  if (!eligibility.accepted) {
+    throw new Error("Accept the creator monetisation rules before requesting a withdrawal.");
+  }
+  if (!eligibility.withdrawalFanEligible) {
+    throw new Error(
+      `Withdrawals unlock at ${config.minFansForWithdrawal} fans. You have ${eligibility.fanCount}.`
+    );
+  }
+  return { fanCount: eligibility.fanCount, settings: config };
 }
 
 function generateAffiliateCode(handle: string): string {
@@ -252,9 +345,9 @@ export const getCreatorDashboard = query({
     if (!profile) return null;
 
     const settings = await loadEconomySettings(ctx);
-    const fanCount = await getFanCount(ctx, userId);
     const supportingCount = await getSupportingCount(ctx, userId);
-    const unlocked = await isMonetizationUnlocked(ctx, profile, settings);
+    const eligibility = await getMonetizationEligibility(ctx, profile, settings);
+    const { fanCount, unlocked } = eligibility;
     const gamification = parseGamification(profile.gamificationJson);
 
     const posts = await ctx.db
@@ -339,11 +432,29 @@ export const getCreatorDashboard = query({
 
     const economy = parseEconomyJson(profile.economyJson);
 
+    const creatorProfile = await ctx.db
+      .query("creatorProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+    const payoutBalanceGhs = creatorProfile?.payoutBalanceGhs ?? 0;
+    const pendingPayouts = await ctx.db
+      .query("creatorPayouts")
+      .withIndex("by_creator", (q) => q.eq("creatorId", userId))
+      .order("desc")
+      .take(20);
+
     return {
       unlocked,
       fanCount,
       supportingCount,
       fansRequired: settings.minFansForMonetization,
+      withdrawalFansRequired: settings.minFansForWithdrawal,
+      minWithdrawalGhs: settings.minWithdrawalGhs,
+      fanEligible: eligibility.fanEligible,
+      withdrawalFanEligible: eligibility.withdrawalFanEligible,
+      monetizationAccepted: eligibility.accepted,
+      policyVersion: eligibility.policyVersion,
+      showEligibleInvite: eligibility.fanEligible && !eligibility.accepted,
       fanProgress: Math.min(100, Math.round((fanCount / settings.minFansForMonetization) * 100)),
       level: gamification.level,
       xp: gamification.xp,
@@ -354,6 +465,14 @@ export const getCreatorDashboard = query({
       affiliateEarningsGhs,
       adSpendGhs,
       adImpressions,
+      payoutBalanceGhs,
+      recentPayouts: pendingPayouts.map((p) => ({
+        payoutId: p._id,
+        amountGhs: p.amountGhs,
+        status: p.status,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+      })),
       postPerformance: {
         postCount: activePosts.length,
         totalViews,
@@ -377,6 +496,7 @@ export const getCreatorDashboard = query({
       topPosts,
       activeBoostCount: activeBoosts.length,
       affiliateCode: economy.affiliateCode,
+      affiliateOpenToEveryone: true,
       affiliateClicks,
       affiliateConversions,
       settings,
@@ -551,7 +671,7 @@ export const sendCreatorGift = mutation({
     if (!profile) throw new Error("Creator not found.");
 
     // Tips are allowed for any creator with a social profile (hotfix #220 / SW v171).
-    // The 500-fan monetization unlock gates affiliate/payout tools — not tips or ad boosts.
+    // Monetisation acceptance + fan thresholds gate earning/withdrawals — not tips or ad boosts.
     const settings = await loadEconomySettings(ctx);
 
     const credits = Math.max(1, Math.min(500, Math.floor(args.credits)));
@@ -592,8 +712,8 @@ export const getAffiliateDashboard = query({
     if (!profile) return null;
 
     const settings = await loadEconomySettings(ctx);
-    const unlocked = await isMonetizationUnlocked(ctx, profile, settings);
     const economy = parseEconomyJson(profile.economyJson);
+    const fanCount = await getFanCount(ctx, userId);
 
     const events = await ctx.db
       .query("socialAffiliateEvents")
@@ -612,7 +732,10 @@ export const getAffiliateDashboard = query({
       : null;
 
     return {
-      unlocked,
+      // Affiliate programme is open to everyone — no fan minimum.
+      unlocked: true,
+      openToEveryone: true,
+      fanCount,
       affiliateCode: economy.affiliateCode,
       affiliateLink,
       clicks,
@@ -631,18 +754,14 @@ export const getAffiliateDashboard = query({
 export const ensureAffiliateCode = mutation({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const profile = await ctx.db
       .query("socialProfiles")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .first();
     if (!profile) throw new Error("Profile not found.");
 
-    const unlocked = await isMonetizationUnlocked(ctx, profile);
-    if (!unlocked) {
-      throw new Error("Affiliate program unlocks at 500 Fans.");
-    }
-
+    // No fan-count gate — anyone with a profile can join the affiliate programme.
     const economy = parseEconomyJson(profile.economyJson);
     if (economy.affiliateCode) {
       return { affiliateCode: economy.affiliateCode };
@@ -662,6 +781,7 @@ export const trackAffiliateClick = mutation({
   args: {
     affiliateCode: v.string(),
     visitorId: v.optional(v.string()),
+    sessionToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const code = args.affiliateCode.trim().slice(0, 32);
@@ -670,6 +790,18 @@ export const trackAffiliateClick = mutation({
     const profiles = await ctx.db.query("socialProfiles").take(500);
     const profile = profiles.find((p) => parseEconomyJson(p.economyJson).affiliateCode === code);
     if (!profile) return { ok: false };
+
+    // Reject self-referrals when the visitor is authenticated as the affiliate.
+    if (args.sessionToken) {
+      try {
+        const visitorId = await requireSession(args.sessionToken, ctx);
+        if (visitorId === profile.userId) {
+          return { ok: false, reason: "self_referral" as const };
+        }
+      } catch {
+        /* anonymous click ok */
+      }
+    }
 
     await ctx.db.insert("socialAffiliateEvents", {
       creatorId: profile.userId,
@@ -680,6 +812,136 @@ export const trackAffiliateClick = mutation({
     });
 
     return { ok: true, creatorId: profile.userId };
+  },
+});
+
+/** Server-side acceptance of creator monetisation rules (required before earning activation). */
+export const acceptMonetizationTerms = mutation({
+  args: {
+    sessionToken: v.string(),
+    policyVersion: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken, ctx);
+    const profile = await ctx.db
+      .query("socialProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+    if (!profile) throw new Error("Profile not found.");
+
+    if (args.policyVersion !== CREATOR_MONETIZATION_POLICY_VERSION) {
+      throw new Error("Outdated policy version. Refresh and accept the latest rules.");
+    }
+
+    const settings = await loadEconomySettings(ctx);
+    const fanCount = await getFanCount(ctx, userId);
+    if (fanCount < settings.minFansForMonetization) {
+      throw new Error(
+        `Creator monetisation unlocks at ${settings.minFansForMonetization} fans. You have ${fanCount}.`
+      );
+    }
+
+    const economy = parseEconomyJson(profile.economyJson);
+    if (hasAcceptedMonetization(economy)) {
+      return {
+        ok: true as const,
+        alreadyAccepted: true as const,
+        acceptedAt: economy.monetizationAcceptedAt ?? economy.monetizationUnlockedAt!,
+        policyVersion: economy.monetizationPolicyVersion ?? CREATOR_MONETIZATION_POLICY_VERSION,
+        fanCount,
+      };
+    }
+
+    const now = Date.now();
+    await ctx.db.patch(profile._id, {
+      economyJson: serializeEconomyJson({
+        ...economy,
+        monetizationAcceptedAt: now,
+        monetizationUnlockedAt: now,
+        monetizationPolicyVersion: CREATOR_MONETIZATION_POLICY_VERSION,
+        monetizationAcceptedBy: userId,
+        unlockEligibleNotifiedAt: economy.unlockEligibleNotifiedAt ?? now,
+        unlockNotified: true,
+      }),
+      updatedAt: now,
+    });
+
+    return {
+      ok: true as const,
+      alreadyAccepted: false as const,
+      acceptedAt: now,
+      policyVersion: CREATOR_MONETIZATION_POLICY_VERSION,
+      fanCount,
+    };
+  },
+});
+
+/** Request a GigaSocial/creator payout — fans, acceptance, balance, and min amount checked server-side. */
+export const requestCreatorWithdrawal = mutation({
+  args: {
+    sessionToken: v.string(),
+    amountGhs: v.number(),
+    method: v.optional(v.string()),
+    note: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken, ctx);
+    const profile = await ctx.db
+      .query("socialProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+    if (!profile) throw new Error("GigaSocial profile required.");
+
+    const { settings } = await assertWithdrawalEligibility(ctx, profile);
+
+    const creatorProfile = await ctx.db
+      .query("creatorProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+    if (!creatorProfile) throw new Error("Creator payout profile required.");
+
+    const amount = Math.round(args.amountGhs);
+    if (amount < settings.minWithdrawalGhs) {
+      throw new Error(`Minimum withdrawal is GHS ${settings.minWithdrawalGhs}.`);
+    }
+    if (amount > creatorProfile.payoutBalanceGhs) {
+      throw new Error("Insufficient withdrawable balance.");
+    }
+    if (amount <= 0) throw new Error("Invalid withdrawal amount.");
+
+    // Prevent concurrent duplicate pending requests for the same amount within a short window.
+    const recent = await ctx.db
+      .query("creatorPayouts")
+      .withIndex("by_creator", (q) => q.eq("creatorId", userId))
+      .order("desc")
+      .take(5);
+    const now = Date.now();
+    const duplicate = recent.find(
+      (p) =>
+        p.status === "pending" &&
+        p.amountGhs === amount &&
+        now - p.createdAt < 60_000
+    );
+    if (duplicate) {
+      throw new Error("A matching withdrawal request is already pending.");
+    }
+
+    await ctx.db.patch(creatorProfile._id, {
+      payoutBalanceGhs: creatorProfile.payoutBalanceGhs - amount,
+      updatedAt: now,
+    });
+
+    const payoutId = await ctx.db.insert("creatorPayouts", {
+      creatorId: userId,
+      amountGhs: amount,
+      status: "pending",
+      method: args.method?.slice(0, 80),
+      note: args.note?.slice(0, 300) || "gigasocial_creator_withdrawal",
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    return { ok: true as const, payoutId, status: "pending" as const, amountGhs: amount };
   },
 });
 

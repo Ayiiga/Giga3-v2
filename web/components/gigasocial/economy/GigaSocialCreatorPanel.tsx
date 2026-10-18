@@ -13,11 +13,13 @@ type CreatorTab = "dashboard" | "wallet" | "gifts" | "affiliate" | "boost";
 
 export const GigaSocialCreatorPanel = memo(function GigaSocialCreatorPanel({
   sessionToken,
+  initialTab,
 }: {
   sessionToken: string;
+  initialTab?: CreatorTab;
 }) {
   const features = useGigaSocialFeatures();
-  const [tab, setTab] = useState<CreatorTab>("dashboard");
+  const [tab, setTab] = useState<CreatorTab>(initialTab ?? "dashboard");
 
   const tabs = useMemo(() => {
     const items: { id: CreatorTab; label: string }[] = [
@@ -37,7 +39,7 @@ export const GigaSocialCreatorPanel = memo(function GigaSocialCreatorPanel({
   return (
     <div className="space-y-4">
       <nav
-        className="flex gap-1 overflow-x-auto overscroll-x-contain pb-1"
+        className="flex flex-wrap gap-1.5 pb-1"
         aria-label="Creator economy"
       >
         {tabs.map(({ id, label }) => (
@@ -46,7 +48,7 @@ export const GigaSocialCreatorPanel = memo(function GigaSocialCreatorPanel({
             type="button"
             onClick={() => setTab(id)}
             className={cn(
-              "inline-flex min-h-10 shrink-0 items-center rounded-full border px-4 text-sm font-medium",
+              "inline-flex min-h-10 min-w-[5.5rem] flex-1 items-center justify-center rounded-full border px-3 text-sm font-medium sm:flex-none sm:px-4",
               tab === id
                 ? "border-accent/40 bg-accent/10 text-foreground"
                 : "border-border bg-white text-muted"
@@ -57,7 +59,13 @@ export const GigaSocialCreatorPanel = memo(function GigaSocialCreatorPanel({
         ))}
       </nav>
 
-      {tab === "dashboard" ? <GigaSocialCreatorDashboard sessionToken={sessionToken} /> : null}
+      {tab === "dashboard" ? (
+        <GigaSocialCreatorDashboard
+          sessionToken={sessionToken}
+          onOpenBoost={() => setTab("boost")}
+          onOpenAffiliate={() => setTab("affiliate")}
+        />
+      ) : null}
       {tab === "wallet" && features.enableCreatorWallet ? (
         <GigaSocialCreatorWallet sessionToken={sessionToken} />
       ) : null}
