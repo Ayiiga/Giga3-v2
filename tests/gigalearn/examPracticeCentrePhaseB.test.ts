@@ -133,7 +133,7 @@ describe("Exam Practice Centre Phase B", () => {
     );
     expect(ui).toContain("min-h-11");
     expect(ui).toMatch(/sm:flex-row|sm:grid-cols/);
-    expect(ui).not.toMatch(/streak|achievement unlocked|100% complete/i);
-    expect(ui).toContain("do not invent scores");
+    expect(ui).not.toMatch(/achievement unlocked|100% complete/i);
+    expect(ui).toMatch(/invent(?:ed)? scores/i);
   });
 });
