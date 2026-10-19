@@ -30,6 +30,7 @@ export const siteConfig = {
     gigaedit: "/gigaedit",
     gigalearn: "/gigalearn",
     gigalearnAcademy: "/gigalearn/academy",
+    gigalearnExam: "/gigalearn/exam",
     gigasocial: "/gigasocial/",
     developers: "/developers",
     enterprise: "/enterprise",

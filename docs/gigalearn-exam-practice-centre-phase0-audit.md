@@ -177,7 +177,8 @@ Ship a mobile-first **Examination Practice Centre** landing under GigaLearn (e.g
 | Marks of a Movement | Not in uploads; exclusion rule documented |
 | Answer-key / marking notes | Done at source level (see §2) |
 | Smallest safe next step | Phase B landing (above) |
-| Implementation / import / deploy | **Not started** (by design) |
+| Phase B landing | See `docs/gigalearn-exam-practice-centre-phaseB.md` — `/gigalearn/exam/` |
+| Implementation / import / deploy | Landing only; **no import / merge / deploy** |
 
 ---
 

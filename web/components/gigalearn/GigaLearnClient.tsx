@@ -168,6 +168,9 @@ function GigaLearnContent() {
             <ButtonLink href="/gigalearn/academy/" className="min-h-10">
               Open GigaLearn Academy
             </ButtonLink>
+            <ButtonLink href="/gigalearn/exam/" variant="secondary" className="min-h-10">
+              Exam Practice Centre
+            </ButtonLink>
           </div>
         </div>
         {usage?.credits != null ? (

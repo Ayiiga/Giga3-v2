@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 
 const NAV = [
   { href: "/gigalearn/academy/", label: "Catalogue" },
+  { href: "/gigalearn/exam/", label: "Exam Practice" },
   { href: "/gigalearn/academy/my/", label: "My courses" },
   { href: "/gigalearn/academy/certificates/", label: "Certificates" },
   { href: "/gigalearn/academy/verify/", label: "Verify" },
