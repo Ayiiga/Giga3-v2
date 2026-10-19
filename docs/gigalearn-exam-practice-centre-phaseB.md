@@ -41,3 +41,15 @@ AI practice CTAs explicitly labelled non-source.
 ## Out of scope
 
 Question import, schema, grading/credit/certificate changes, timed mocks.
+
+## Verification (Phase B)
+
+| Check | Result |
+|-------|--------|
+| `vitest` examPracticeCentrePhaseB + academyPhase1 | **13/13 passed** |
+| `web` lint | Pass (pre-existing warnings elsewhere) |
+| Phase B `tsc` filter | No errors |
+| `web` `npm run build` | **Success** — `/gigalearn/exam` |
+| Mobile Playwright (390×844 on :3011) | BECE empty, promotion inventory, Academy nav |
+
+**Merge / deploy:** not done.
