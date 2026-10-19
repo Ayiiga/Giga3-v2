@@ -1,162 +1,103 @@
 {
-  "availableSources": 3,
-  "missingSources": [
-    {
-      "file": "AI_500_Practical_Objective_Questions.pdf",
-      "courseSlug": "ai-machine-learning"
-    },
-    {
-      "file": "Mobile_App_500_Practical_Objective_Questions.pdf",
-      "courseSlug": "mobile-app-development"
-    }
-  ],
-  "banks": [
+  "techBanks": [
     {
       "sourceFile": "Website_PWA_500_Practical_Objective_Questions_df45.pdf",
       "bankId": "website-pwa",
       "courseSlug": "website-pwa-development",
-      "pages": 85,
       "extracted": 500,
-      "expected": 500,
-      "missingCount": 0,
-      "parseFailed": 0,
-      "validWithStructure": 500,
-      "nearDuplicates": 227,
       "uniqueImportable": 273,
       "approvedImported": 273,
       "pendingImported": 0,
-      "needsCorrectionImported": 0,
-      "topics": [
-        "Accessibility",
-        "Authentication",
-        "Browser compatibility",
-        "CORS",
-        "Cache updates",
-        "Database migration",
-        "File uploads",
-        "Forms",
-        "HTTPS",
-        "Installability",
-        "Offline sync",
-        "PWA update UX",
-        "Payments",
-        "Performance",
-        "Privacy",
-        "Push notifications",
-        "Rate limiting",
-        "Responsive design",
-        "SEO",
-        "Security headers",
-        "Service worker",
-        "Static export",
-        "Testing",
-        "Web storage",
-        "XSS"
-      ],
       "topicCount": 25
     },
     {
       "sourceFile": "Robotics_500_Practical_Objective_Questions_042e.pdf",
       "bankId": "robotics",
       "courseSlug": "robotics-intelligent-systems",
-      "pages": 85,
       "extracted": 500,
-      "expected": 500,
-      "missingCount": 0,
-      "parseFailed": 0,
-      "validWithStructure": 500,
-      "nearDuplicates": 227,
       "uniqueImportable": 273,
       "approvedImported": 273,
       "pendingImported": 0,
-      "needsCorrectionImported": 0,
-      "topics": [
-        "Arm safety",
-        "Battery",
-        "Calibration",
-        "Communication",
-        "Cybersecurity",
-        "Emergency stop",
-        "Encoders",
-        "Fleet control",
-        "Gripper",
-        "I2C wiring",
-        "Kinematics",
-        "Localisation",
-        "Maintenance",
-        "Mechanical vibration",
-        "Motor control",
-        "Obstacle avoidance",
-        "PID",
-        "Path planning",
-        "Power",
-        "Power budgeting",
-        "Sensors",
-        "Servo",
-        "Simulation",
-        "Testing",
-        "Vision"
-      ],
       "topicCount": 25
     },
     {
       "sourceFile": "Other_Digital_Technologies_500_Practical_Objective_Questions_424c.pdf",
       "bankId": "other-digital",
       "courseSlug": "other-digital-technologies",
-      "pages": 85,
       "extracted": 500,
-      "expected": 500,
-      "missingCount": 0,
-      "parseFailed": 0,
-      "validWithStructure": 500,
-      "nearDuplicates": 227,
       "uniqueImportable": 273,
       "approvedImported": 273,
       "pendingImported": 0,
-      "needsCorrectionImported": 0,
-      "topics": [
-        "API integration",
-        "Automation",
-        "Backups",
-        "Charts",
-        "Cloud access",
-        "Cloud backup",
-        "Cloud cost",
-        "DNS",
-        "Data cleaning",
-        "Digital identity",
-        "Digital marketing",
-        "Digital payments",
-        "Encryption",
-        "Incident response",
-        "IoT",
-        "IoT security",
-        "MFA",
-        "Media literacy",
-        "Networking",
-        "Open source",
-        "Phishing",
-        "Privacy",
-        "Project planning",
-        "Spreadsheet",
-        "Version control"
-      ],
+      "topicCount": 25
+    },
+    {
+      "sourceFile": "AI_500_Practical_Objective_Questions_ad8b.pdf",
+      "bankId": "ai-ml",
+      "courseSlug": "ai-machine-learning",
+      "extracted": 500,
+      "uniqueImportable": 273,
+      "approvedImported": 273,
+      "pendingImported": 0,
       "topicCount": 25
     }
   ],
+  "examBanks": [
+    {
+      "sourceFile": "Ghana_BECE_Preparation_500_Objective_Questions_Explained_c887.pdf",
+      "kind": "exam",
+      "extracted": 500,
+      "pages": 37,
+      "nearDuplicates": 32,
+      "uniqueImportable": 468,
+      "approvedImported": 468,
+      "pendingImported": 0,
+      "parseFailed": 0,
+      "topicCount": 10
+    },
+    {
+      "sourceFile": "GES_Teachers_Promotion_500_Objective_Questions_Explained_fb4d.pdf",
+      "kind": "exam",
+      "extracted": 500,
+      "pages": 46,
+      "nearDuplicates": 261,
+      "uniqueImportable": 239,
+      "approvedImported": 60,
+      "pendingImported": 179,
+      "parseFailed": 0,
+      "topicCount": 10
+    },
+    {
+      "sourceFile": "Attractive_GES_Assistant_Director_II_Study_Guide_2026_d118.pdf",
+      "kind": "study_guide",
+      "extracted": 0,
+      "pages": 16,
+      "nearDuplicates": 0,
+      "uniqueImportable": 0,
+      "approvedImported": 0,
+      "pendingImported": 0,
+      "parseFailed": 0,
+      "topicCount": 0
+    }
+  ],
+  "missingSources": [
+    {
+      "file": "Mobile_App_500_Practical_Objective_Questions.pdf",
+      "courseSlug": "mobile-app-development"
+    }
+  ],
   "totals": {
-    "extracted": 1500,
-    "nearDuplicates": 681,
-    "uniqueImportable": 819,
-    "approvedImported": 819,
-    "pendingImported": 0,
-    "needsCorrectionImported": 0,
-    "claimedAs2500": false
+    "techExtracted": 2000,
+    "techUniqueApproved": 1092,
+    "examExtracted": 1000,
+    "examUniqueImportable": 707,
+    "examApproved": 528,
+    "examPendingReview": 179,
+    "claimedAs2500Tech": false
   },
   "notes": [
-    "Each available PDF contains exactly 500 numbered questions (validated).",
-    "Many items are near-duplicates (same scenario, prompt/option variants); unique stem cores imported.",
-    "AI and Mobile PDFs not yet uploaded \u2014 courses scaffolded with awaiting-materials.",
-    "Do not claim 2,500 questions imported."
+    "AI bank added to Technology Hub (273 unique approved after near-dupe removal).",
+    "BECE and Teacher Promotion banks imported for Exam Practice.",
+    "AD II study guide has no extractable A–D MCQs (0 imported; not invented).",
+    "Mobile App PDF still not uploaded."
   ]
 }

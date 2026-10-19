@@ -416,11 +416,137 @@
       "courseSlug": "ai-machine-learning",
       "title": "Artificial Intelligence and Machine Learning",
       "difficulty": "beginner",
-      "awaitingMaterials": true,
-      "sourceDocument": null,
-      "extractedFromSource": 0,
-      "approvedQuestionCount": 0,
-      "topics": []
+      "awaitingMaterials": false,
+      "sourceDocument": "AI_500_Practical_Objective_Questions_ad8b.pdf",
+      "extractedFromSource": 500,
+      "approvedQuestionCount": 273,
+      "topics": [
+        {
+          "id": "bias",
+          "label": "Bias",
+          "questionCount": 12
+        },
+        {
+          "id": "local-language",
+          "label": "Local language",
+          "questionCount": 12
+        },
+        {
+          "id": "monitoring",
+          "label": "Monitoring",
+          "questionCount": 12
+        },
+        {
+          "id": "uncertainty",
+          "label": "Uncertainty",
+          "questionCount": 12
+        },
+        {
+          "id": "copyright",
+          "label": "Copyright",
+          "questionCount": 12
+        },
+        {
+          "id": "incident-response",
+          "label": "Incident response",
+          "questionCount": 12
+        },
+        {
+          "id": "testing",
+          "label": "Testing",
+          "questionCount": 12
+        },
+        {
+          "id": "accuracy",
+          "label": "Accuracy",
+          "questionCount": 11
+        },
+        {
+          "id": "evaluation",
+          "label": "Evaluation",
+          "questionCount": 11
+        },
+        {
+          "id": "rag",
+          "label": "RAG",
+          "questionCount": 11
+        },
+        {
+          "id": "ai-agents",
+          "label": "AI agents",
+          "questionCount": 11
+        },
+        {
+          "id": "api-security",
+          "label": "API security",
+          "questionCount": 11
+        },
+        {
+          "id": "education",
+          "label": "Education",
+          "questionCount": 11
+        },
+        {
+          "id": "data-quality",
+          "label": "Data quality",
+          "questionCount": 11
+        },
+        {
+          "id": "metrics",
+          "label": "Metrics",
+          "questionCount": 11
+        },
+        {
+          "id": "ai-workflow",
+          "label": "AI workflow",
+          "questionCount": 11
+        },
+        {
+          "id": "feedback-loops",
+          "label": "Feedback loops",
+          "questionCount": 11
+        },
+        {
+          "id": "human-oversight",
+          "label": "Human oversight",
+          "questionCount": 11
+        },
+        {
+          "id": "planning",
+          "label": "Planning",
+          "questionCount": 11
+        },
+        {
+          "id": "privacy",
+          "label": "Privacy",
+          "questionCount": 10
+        },
+        {
+          "id": "security",
+          "label": "Security",
+          "questionCount": 10
+        },
+        {
+          "id": "latency",
+          "label": "Latency",
+          "questionCount": 10
+        },
+        {
+          "id": "prompting",
+          "label": "Prompting",
+          "questionCount": 9
+        },
+        {
+          "id": "cost",
+          "label": "Cost",
+          "questionCount": 9
+        },
+        {
+          "id": "embeddings",
+          "label": "Embeddings",
+          "questionCount": 9
+        }
+      ]
     },
     {
       "bankId": "mobile-app",
@@ -433,6 +559,5 @@
       "approvedQuestionCount": 0,
       "topics": []
     }
-  ],
-  "importReportPath": "import-report.json"
+  ]
 }

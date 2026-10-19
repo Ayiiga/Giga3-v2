@@ -63,19 +63,23 @@ async function requireActiveEnrolment(ctx: { db: any }, email: string, courseSlu
   const course = getBuiltinAcademyCourse(slug);
   const meta = getTechCourseMeta(slug);
   if (!course || !meta) {
-    throw new Error("Technology Learning Hub course not found.");
+    throw new Error("Practice course not found.");
   }
-  if (meta.awaitingMaterials || meta.approvedQuestionCount === 0) {
+  const loaded = listLoadedTechBankSlugs().includes(slug);
+  if (meta.awaitingMaterials || (!loaded && meta.approvedQuestionCount === 0)) {
     throw new Error(
       "Question bank materials are not available yet for this course. Check back after the source PDF is imported."
     );
+  }
+  if (loaded && getTechBankQuestions(slug).length === 0) {
+    throw new Error("No practiceable questions are available for this bank yet.");
   }
   const enrolment = await ctx.db
     .query("gigaLearnAcademyEnrolments")
     .withIndex("by_user_course", (q: any) => q.eq("userId", email).eq("courseSlug", slug))
     .first();
   if (!enrolment || enrolment.status === "withdrawn") {
-    throw new Error("Enrol in this Academy course before starting Technology Hub practice.");
+    throw new Error("Enrol in this Academy course before starting practice.");
   }
   return { enrolment, slug, meta, course };
 }
@@ -357,7 +361,10 @@ export const saveTechPracticeAnswer = mutation({
 
     if (session.mode === "learn") {
       const q = getTechBankQuestionById(session.courseSlug, args.questionId);
-      if (!q || q.reviewStatus !== "approved") {
+      if (
+        !q ||
+        (q.reviewStatus !== "approved" && q.reviewStatus !== "pending_review")
+      ) {
         return {
           saved: true,
           feedback: {
@@ -369,12 +376,15 @@ export const saveTechPracticeAnswer = mutation({
           },
         };
       }
+      const pendingReview = q.reviewStatus === "pending_review";
       return {
         saved: true,
         feedback: {
           correct: args.selectedIndex === q.correctIndex,
-          pendingReview: false,
-          explanation: q.explanation,
+          pendingReview,
+          explanation: pendingReview
+            ? `Provisional key (pending review). ${q.explanation}`
+            : q.explanation,
           correctIndex: q.correctIndex,
         },
       };

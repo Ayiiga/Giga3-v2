@@ -331,14 +331,14 @@ const BUILTIN_COURSES: AcademyCourse[] = [
     ],
     prerequisites: ["Basic computer literacy", "Signed-in Giga3 account"],
     curriculumPreview:
-      "Technology Learning Hub · awaiting AI_500_Practical_Objective_Questions.pdf import.",
+      "Technology Learning Hub · AI_500 bank (unique approved items after near-duplicate removal).",
     assessmentDescription:
       "Interactive MCQ practice (learn, timed, topic, revision). Answer keys are server-graded; unverified items stay flagged for review.",
     instructorName: "GigaLearn Technology Faculty",
     access: "free",
     certificateEligible: true,
     completionRequirements:
-      "Enrol, complete Technology Hub practice sessions, and pass module checkpoints when the bank is available.",
+      "Enrol and complete Technology Hub practice sessions across prompting, evaluation, and responsible AI topics.",
     source: "catalog",
     status: "published",
     modules: [
@@ -363,14 +363,14 @@ const BUILTIN_COURSES: AcademyCourse[] = [
           {
             id: "l-ai-practice",
             title: "AI practice bank",
-            summary: "Starts when the AI question bank PDF is imported and validated.",
+            summary: "Interactive learn mode with explanations after each submit.",
             required: true,
             estimatedMinutes: 60,
             activityKind: "practice",
             resource: {
               kind: "external",
               href: "/gigalearn/academy/tech/?course=ai-machine-learning&mode=learn",
-              label: "Learn mode (when available)",
+              label: "Start learn mode",
             },
           },
         ],
@@ -593,6 +593,132 @@ const BUILTIN_COURSES: AcademyCourse[] = [
               kind: "external",
               href: "/gigalearn/academy/tech/?course=robotics-intelligent-systems&mode=challenge",
               label: "Challenge mode",
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "exam-bece-prep",
+    title: "Ghana BECE Preparation Practice",
+    description:
+      "Independent BECE-style objective practice across English, Mathematics, Science, Social Studies and more — with explanations. Not an official WAEC paper.",
+    subject: "Integrated studies",
+    category: "Exam prep",
+    difficulty: "beginner",
+    durationMinutes: 720,
+    learningObjectives: [
+      "Practise objective items across core BECE subject areas",
+      "Review explanations after each attempt",
+      "Use topic practice and timed sessions to build exam stamina",
+      "Treat this as revision support — confirm current WAEC/NaCCA guidance for your year",
+    ],
+    prerequisites: ["JHS / Basic 7–9 learners", "Signed-in Giga3 account"],
+    curriculumPreview:
+      "Exam Practice · Ghana_BECE_Preparation_500 bank (unique items after validation).",
+    assessmentDescription:
+      "Server-graded learn, timed, topic, and revision modes. Independent practice — not an official WAEC paper.",
+    instructorName: "GigaLearn Exam Faculty",
+    access: "free",
+    certificateEligible: false,
+    completionRequirements:
+      "Enrol and complete practice sessions; certificates are not claimed for this independent bank.",
+    source: "catalog",
+    status: "published",
+    modules: [
+      {
+        id: "m-bece-core",
+        title: "BECE subject practice",
+        summary: "Topic and timed practice across imported subjects.",
+        lessons: [
+          {
+            id: "l-bece-hub",
+            title: "Open BECE practice",
+            summary: "Browse subjects and start interactive practice.",
+            required: true,
+            estimatedMinutes: 20,
+            activityKind: "practice",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=exam-bece-prep",
+              label: "BECE practice hub",
+            },
+          },
+          {
+            id: "l-bece-timed",
+            title: "Timed practice set",
+            summary: "Server-authoritative timer for exam-style pacing.",
+            required: true,
+            estimatedMinutes: 45,
+            activityKind: "quiz",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=exam-bece-prep&mode=timed",
+              label: "Timed BECE practice",
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "exam-teacher-promotion",
+    title: "GES Teachers Promotion Aptitude Practice",
+    description:
+      "Independent promotion aptitude practice covering GES history, ethics, leadership, finance, safeguarding and reasoning. Not an official GES examination paper.",
+    subject: "Teaching",
+    category: "Exam prep",
+    difficulty: "intermediate",
+    durationMinutes: 600,
+    learningObjectives: [
+      "Practise promotion-style objective items with explanations",
+      "Revise weak topics through revision mode",
+      "Treat pending-review items as provisional until verified",
+      "Confirm current promotion notices and GES directives for your cohort",
+    ],
+    prerequisites: ["Teachers preparing for GES promotion", "Signed-in Giga3 account"],
+    curriculumPreview:
+      "Exam Practice · GES_Teachers_Promotion_500 bank (approved + provisional pending_review items).",
+    assessmentDescription:
+      "Server-graded practice modes. Provisional keys are labelled — not claimed as official GES keys.",
+    instructorName: "GigaLearn Exam Faculty",
+    access: "free",
+    certificateEligible: false,
+    completionRequirements:
+      "Enrol and complete practice sessions; verify official promotion requirements separately.",
+    source: "catalog",
+    status: "published",
+    modules: [
+      {
+        id: "m-promo-core",
+        title: "Promotion aptitude practice",
+        summary: "Laws, ethics, leadership and professional judgement.",
+        lessons: [
+          {
+            id: "l-promo-hub",
+            title: "Open promotion practice",
+            summary: "Interactive practice for Teacher Promotion Aptitude.",
+            required: true,
+            estimatedMinutes: 20,
+            activityKind: "practice",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=exam-teacher-promotion",
+              label: "Teacher promotion practice",
+            },
+          },
+          {
+            id: "l-promo-learn",
+            title: "Learn mode",
+            summary: "Submit before seeing explanations; provisional items are labelled.",
+            required: true,
+            estimatedMinutes: 40,
+            activityKind: "practice",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=exam-teacher-promotion&mode=learn",
+              label: "Start learn mode",
             },
           },
         ],

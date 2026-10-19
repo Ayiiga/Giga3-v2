@@ -12,6 +12,7 @@ import {
   listTechCourseMeta,
   TECH_HUB_COURSE_SLUGS,
 } from "../../web/lib/gigalearn/academy/techBanks/techBankMeta";
+import { getExamBankMeta } from "../../web/lib/gigalearn/examPractice/examBankMeta";
 import { getBuiltinAcademyCourse, listBuiltinAcademyCourses } from "../../web/lib/gigalearn/academy/courseCatalog";
 
 const ROOT = resolve(__dirname, "../..");
@@ -30,41 +31,44 @@ describe("Technology Learning Hub question banks", () => {
     }
   });
 
-  it("import report does not claim 2500 imported and notes missing PDFs", () => {
+  it("import report does not claim 2500 imported and notes missing Mobile PDF", () => {
     const report = JSON.parse(
       read("web/lib/gigalearn/academy/techBanks/import-report.json")
     ) as {
       missingSources: unknown[];
       totals: {
-        extracted: number;
-        uniqueImportable: number;
-        approvedImported: number;
-        claimedAs2500: boolean;
+        techExtracted: number;
+        techUniqueApproved: number;
+        claimedAs2500Tech: boolean;
       };
-      banks: Array<{
+      techBanks: Array<{
         sourceFile: string;
         extracted: number;
         uniqueImportable: number;
-        nearDuplicates: number;
+        approvedImported: number;
         topicCount: number;
       }>;
     };
-    expect(report.totals.claimedAs2500).toBe(false);
-    expect(report.missingSources).toHaveLength(2);
-    expect(report.totals.extracted).toBe(1500);
-    expect(report.totals.approvedImported).toBe(report.totals.uniqueImportable);
-    expect(report.totals.approvedImported).toBeLessThan(1500);
-    expect(report.banks).toHaveLength(3);
-    for (const bank of report.banks) {
+    expect(report.totals.claimedAs2500Tech).toBe(false);
+    expect(report.missingSources).toHaveLength(1);
+    expect(report.totals.techExtracted).toBe(2000);
+    expect(report.totals.techUniqueApproved).toBe(1092);
+    expect(report.techBanks).toHaveLength(4);
+    for (const bank of report.techBanks) {
       expect(bank.extracted).toBe(500);
       expect(bank.topicCount).toBeGreaterThanOrEqual(20);
-      expect(bank.nearDuplicates).toBeGreaterThan(0);
       expect(bank.uniqueImportable).toBeLessThan(500);
+      expect(bank.approvedImported).toBe(bank.uniqueImportable);
     }
   });
 
-  it("each loaded bank has approved MCQs with four options and a valid key", () => {
-    for (const slug of ["website-pwa-development", "robotics-intelligent-systems", "other-digital-technologies"]) {
+  it("each loaded tech bank has approved MCQs with four options and a valid key", () => {
+    for (const slug of [
+      "website-pwa-development",
+      "robotics-intelligent-systems",
+      "other-digital-technologies",
+      "ai-machine-learning",
+    ]) {
       const qs = getTechBankQuestions(slug, { approvedOnly: true });
       expect(qs.length).toBeGreaterThan(200);
       expect(qs.length).toBe(getTechCourseMeta(slug)?.approvedQuestionCount);
@@ -81,13 +85,44 @@ describe("Technology Learning Hub question banks", () => {
     }
   });
 
-  it("AI and Mobile courses await materials without inventing banks", () => {
-    expect(getTechCourseMeta("ai-machine-learning")?.awaitingMaterials).toBe(true);
+  it("Mobile awaits materials; AI bank is imported", () => {
+    expect(getTechCourseMeta("ai-machine-learning")?.awaitingMaterials).toBe(false);
     expect(getTechCourseMeta("mobile-app-development")?.awaitingMaterials).toBe(true);
-    expect(getTechBankQuestions("ai-machine-learning")).toHaveLength(0);
+    expect(getTechBankQuestions("ai-machine-learning").length).toBeGreaterThan(200);
     expect(existsSync(resolve(ROOT, "web/lib/gigalearn/academy/techBanks/ai-ml.json"))).toBe(
-      false
+      true
     );
+    expect(getTechBankQuestions("mobile-app-development")).toHaveLength(0);
+  });
+
+  it("wires BECE and Teacher Promotion exam banks into shared practice loader", () => {
+    const beceMeta = getExamBankMeta("exam-bece-prep");
+    const teacherMeta = getExamBankMeta("exam-teacher-promotion");
+    const ad2Meta = getExamBankMeta("exam-ad2-study-guide");
+    expect(beceMeta?.approvedQuestionCount).toBe(468);
+    expect(teacherMeta?.approvedQuestionCount).toBe(60);
+    expect(teacherMeta?.pendingQuestionCount).toBe(179);
+    expect(ad2Meta?.approvedQuestionCount).toBe(0);
+
+    const bece = getTechBankQuestions("exam-bece-prep");
+    expect(bece.length).toBe(468);
+    expect(getTechCourseMeta("exam-bece-prep")?.awaitingMaterials).toBe(false);
+
+    const teacher = getTechBankQuestions("exam-teacher-promotion");
+    expect(teacher.length).toBe(239);
+    expect(teacher.filter((q) => q.reviewStatus === "pending_review").length).toBe(179);
+
+    const provisional = teacher.find((q) => q.reviewStatus === "pending_review")!;
+    const graded = gradeTechAnswers({
+      courseSlug: "exam-teacher-promotion",
+      questionIds: [provisional.questionId],
+      answers: { [provisional.questionId]: provisional.correctIndex },
+    });
+    expect(graded.score).toBe(1);
+    expect(graded.results[0]?.provisional).toBe(true);
+
+    expect(getBuiltinAcademyCourse("exam-bece-prep")?.category).toBe("Exam prep");
+    expect(getBuiltinAcademyCourse("exam-teacher-promotion")?.category).toBe("Exam prep");
   });
 
   it("selects shuffled sets without dropping answer-key integrity", () => {
@@ -147,6 +182,6 @@ describe("Technology Learning Hub question banks", () => {
     expect(listTechCourseMeta()).toHaveLength(5);
     expect(
       listTechCourseMeta().reduce((n, c) => n + c.approvedQuestionCount, 0)
-    ).toBe(819);
+    ).toBe(1092);
   });
 });

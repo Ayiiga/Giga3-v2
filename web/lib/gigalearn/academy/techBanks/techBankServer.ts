@@ -7,9 +7,12 @@ import type {
   TechPracticeMode,
   TechPublicQuestion,
 } from "@/lib/gigalearn/academy/techBanks/techBankTypes";
+import aiMl from "@/lib/gigalearn/academy/techBanks/ai-ml.json";
 import otherDigital from "@/lib/gigalearn/academy/techBanks/other-digital.json";
 import robotics from "@/lib/gigalearn/academy/techBanks/robotics.json";
 import websitePwa from "@/lib/gigalearn/academy/techBanks/website-pwa.json";
+import becePrep from "@/lib/gigalearn/examPractice/banks/bece-prep.json";
+import teacherPromotion from "@/lib/gigalearn/examPractice/banks/teacher-promotion.json";
 
 type BankFile = {
   bankId: string;
@@ -23,7 +26,16 @@ const BANKS: Record<string, BankFile> = {
   [websitePwa.courseSlug]: websitePwa as BankFile,
   [robotics.courseSlug]: robotics as BankFile,
   [otherDigital.courseSlug]: otherDigital as BankFile,
+  [aiMl.courseSlug]: aiMl as BankFile,
+  [becePrep.courseSlug]: becePrep as BankFile,
+  [teacherPromotion.courseSlug]: teacherPromotion as BankFile,
 };
+
+/** Exam Practice banks allow pending_review items with provisional feedback. */
+const INCLUDE_PENDING_SLUGS = new Set([
+  "exam-bece-prep",
+  "exam-teacher-promotion",
+]);
 
 export function listLoadedTechBankSlugs(): string[] {
   return Object.keys(BANKS);
@@ -31,12 +43,21 @@ export function listLoadedTechBankSlugs(): string[] {
 
 export function getTechBankQuestions(
   courseSlug: string,
-  opts?: { approvedOnly?: boolean; topicId?: string }
+  opts?: { approvedOnly?: boolean; topicId?: string; includePending?: boolean }
 ): TechBankQuestion[] {
-  const bank = BANKS[courseSlug.trim().toLowerCase()];
+  const slug = courseSlug.trim().toLowerCase();
+  const bank = BANKS[slug];
   if (!bank) return [];
   let rows = bank.questions;
-  if (opts?.approvedOnly !== false) {
+  const includePending = opts?.includePending ?? INCLUDE_PENDING_SLUGS.has(slug);
+  if (opts?.approvedOnly === false) {
+    // all statuses except rejected
+    rows = rows.filter((q) => q.reviewStatus !== "rejected");
+  } else if (includePending) {
+    rows = rows.filter(
+      (q) => q.reviewStatus === "approved" || q.reviewStatus === "pending_review"
+    );
+  } else {
     rows = rows.filter((q) => q.reviewStatus === "approved");
   }
   if (opts?.topicId) {
@@ -126,6 +147,10 @@ export function selectTechQuestionIds(args: {
   return ids.slice(0, Math.min(count, ids.length));
 }
 
+function isScorableReviewStatus(status: TechBankQuestion["reviewStatus"]): boolean {
+  return status === "approved" || status === "pending_review";
+}
+
 export function gradeTechAnswers(args: {
   courseSlug: string;
   questionIds: string[];
@@ -142,6 +167,7 @@ export function gradeTechAnswers(args: {
     explanation: string;
     questionText: string;
     options: string[];
+    provisional?: boolean;
   }>;
 } {
   const results = args.questionIds.map((id) => {
@@ -150,7 +176,7 @@ export function gradeTechAnswers(args: {
       typeof args.answers[id] === "number" && Number.isInteger(args.answers[id])
         ? args.answers[id]
         : null;
-    if (!q || q.reviewStatus !== "approved") {
+    if (!q || !isScorableReviewStatus(q.reviewStatus)) {
       return {
         questionId: id,
         selectedIndex: selected,
@@ -162,15 +188,19 @@ export function gradeTechAnswers(args: {
         options: q?.options ?? [],
       };
     }
+    const provisional = q.reviewStatus === "pending_review";
     const correct = selected === q.correctIndex;
     return {
       questionId: id,
       selectedIndex: selected,
       correctIndex: q.correctIndex,
       correct,
-      explanation: q.explanation,
+      explanation: provisional
+        ? `Provisional key (pending review). ${q.explanation}`
+        : q.explanation,
       questionText: q.questionText,
       options: q.options,
+      provisional,
     };
   });
   const maxScore = results.length;

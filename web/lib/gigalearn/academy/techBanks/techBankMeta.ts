@@ -1,9 +1,15 @@
 /**
  * Client-safe Technology Learning Hub metadata (no answer keys).
  * Full banks are loaded only on the Convex server via techBankServer.
+ * Exam Practice banks are adapted into the same practice surface.
  */
 import type { TechCourseMeta } from "@/lib/gigalearn/academy/techBanks/techBankTypes";
 import metaJson from "@/lib/gigalearn/academy/techBanks/meta.json";
+import {
+  examBankAsTechCourseMeta,
+  getExamBankMeta,
+  listExamBankMeta,
+} from "@/lib/gigalearn/examPractice/examBankMeta";
 
 const COURSES = metaJson.courses as TechCourseMeta[];
 
@@ -15,11 +21,21 @@ export function listTechCourseMeta(): TechCourseMeta[] {
 
 export function getTechCourseMeta(courseSlug: string): TechCourseMeta | undefined {
   const slug = courseSlug.trim().toLowerCase();
-  return COURSES.find((c) => c.courseSlug === slug);
+  const tech = COURSES.find((c) => c.courseSlug === slug);
+  if (tech) return tech;
+  const exam = getExamBankMeta(slug);
+  return exam ? examBankAsTechCourseMeta(exam) : undefined;
 }
 
 export function isTechHubCourse(courseSlug: string): boolean {
   return Boolean(getTechCourseMeta(courseSlug));
+}
+
+export function listPracticeCourseMeta(): TechCourseMeta[] {
+  return [
+    ...COURSES,
+    ...listExamBankMeta().map(examBankAsTechCourseMeta),
+  ];
 }
 
 export function techPracticeHref(
