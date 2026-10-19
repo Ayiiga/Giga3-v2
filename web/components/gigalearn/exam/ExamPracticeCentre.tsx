@@ -4,7 +4,7 @@ import { LearningProgressRing } from "@/components/gigalearn/ui/LearningProgress
 import { ButtonLink } from "@/components/ui/Button";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { ProductSignInPrompt } from "@/components/seo/ProductSignInPrompt";
-import { getSessionToken } from "@/lib/auth";
+import { getSessionToken, getUserEmail } from "@/lib/auth";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import { ACADEMY_SURFACE_CLASS } from "@/lib/gigalearn/academy/visualTheme";
 import {
@@ -17,10 +17,12 @@ import {
   TEACHER_PROMOTION_SOURCE_INVENTORY,
   answerStatusLabel,
 } from "@/lib/gigalearn/examPractice/centreConfig";
+import { PROMOTION_FREE_SET_META } from "@/lib/gigalearn/examPractice/promotionOrientationBank";
 import {
   learnerEventSessionKey,
   markLearnerEventFired,
 } from "@/lib/gigalearn/learnerEngagement";
+import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
@@ -29,11 +31,24 @@ import {
   BookOpen,
   ClipboardList,
   GraduationCap,
+  LineChart,
   MessageCircle,
+  NotebookPen,
+  Play,
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, type ReactNode } from "react";
+
+function welcomeDisplayName(): string {
+  const email = getUserEmail();
+  if (!email) return "learner";
+  const local = email.split("@")[0] || "learner";
+  return local
+    .replace(/[._-]+/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .trim();
+}
 
 const EXAM_NAV = [
   { href: "/gigalearn/exam/", label: "Exam Practice", key: "exam" as const },
@@ -114,7 +129,8 @@ function StudentLearnFromExamLink() {
   return (
     <Link
       href={EXAM_PRACTICE_DESTINATIONS.studentLearn}
-      className="academy-visual-cta academy-visual-cta--solid"
+      className="exam-landing-cta exam-landing-cta--ghost"
+      style={{ color: "#4C1D95", background: "#F5F3FF", borderColor: "#DDD6FE" }}
       onClick={() => {
         if (!sessionToken) return;
         const key = learnerEventSessionKey("student_learn_from_exam");
@@ -136,7 +152,7 @@ function TeacherHubPracticeLink() {
   return (
     <Link
       href={EXAM_PRACTICE_DESTINATIONS.teacherHub}
-      className="academy-visual-cta academy-visual-cta--solid"
+      className="exam-landing-cta exam-landing-cta--ghost"
       onClick={() => {
         if (!sessionToken) return;
         const key = learnerEventSessionKey("teacher_hub_from_exam");
@@ -156,163 +172,215 @@ function BeceCentreCard() {
   const hasSubjects = BECE_SUBJECTS_AVAILABLE.length > 0;
 
   return (
-    <section
-      id="bece-centre"
-      aria-labelledby="bece-centre-heading"
-      className={cn(ACADEMY_SURFACE_CLASS.bece, "p-4 sm:p-5")}
-    >
-      <div className="flex flex-wrap items-center gap-2">
-        <GraduationCap className="h-5 w-5" aria-hidden />
-        <h2 id="bece-centre-heading" className="text-lg font-bold">
-          BECE Mock Examination Centre
-        </h2>
-        <span className="academy-visual-chip rounded-full px-2.5 py-0.5 text-[11px] font-semibold">
-          Awaiting sources
+    <section id="bece-centre" aria-labelledby="bece-centre-heading" className="space-y-3">
+      <div className="exam-landing-banner exam-landing-banner--bece">
+        <div className="exam-ghana-stripe" aria-hidden />
+        <div className="space-y-2 p-4 sm:p-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <GraduationCap className="h-5 w-5" aria-hidden />
+            <h2 id="bece-centre-heading" className="text-lg font-bold">
+              BECE Mock Examination Centre
+            </h2>
+            <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-semibold">
+              Awaiting sources
+            </span>
+          </div>
+          <p className="text-sm text-white/90">
+            Practise by subject and review mistakes when verified BECE papers are available.
+            Teacher-promotion materials are never shown here.
+          </p>
+        </div>
+      </div>
+
+      <article className="exam-landing-card" data-testid="bece-awaiting-materials" role="status">
+        <span className="exam-landing-pill" style={{ background: "#DDD6FE", color: "#4C1D95" }}>
+          Coming soon
         </span>
-      </div>
-      <p className="academy-visual-muted mt-2 text-sm">
-        Practise by subject, review mistakes, and prepare for BECE — using verified papers only when
-        they are available. Teacher-promotion materials are never shown here.
-      </p>
-
-      <div
-        className="academy-visual-tile mt-4 rounded-xl border-dashed px-3 py-4"
-        role="status"
-        data-testid="bece-awaiting-materials"
-      >
-        <p className="text-sm font-semibold">{BECE_AWAITING_MATERIALS_MESSAGE}</p>
-        <p className="academy-visual-muted mt-1 text-xs">
-          No BECE examination papers were identified in the current source set. Subjects and mock
-          sets will appear here after verified materials are imported and reviewed.
+        <h3 className="mt-3 text-base font-bold text-[#4C1D95]">{BECE_AWAITING_MATERIALS_MESSAGE}</h3>
+        <p className="mt-1 text-sm text-slate-600">
+          No BECE examination papers were identified in the current source set. Subject cards and
+          timed mocks will appear here after verified materials are imported and reviewed — we will
+          not invent WAEC papers.
         </p>
-      </div>
-
-      {!hasSubjects ? (
-        <ul
-          className="mt-3 hidden"
-          aria-hidden
-          data-testid="bece-subjects-slot"
-          data-ready="false"
-        />
-      ) : (
-        <ul className="mt-3 grid gap-2 sm:grid-cols-2" data-testid="bece-subjects-slot">
-          {BECE_SUBJECTS_AVAILABLE.map((s) => (
-            <li key={s.id} className="academy-visual-tile rounded-xl px-3 py-2 text-sm">
-              {s.label}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div className="mt-4 space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wide opacity-80">
-          Related study tools (not official BECE papers)
-        </p>
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        {!hasSubjects ? (
+          <ul
+            className="mt-3 hidden"
+            aria-hidden
+            data-testid="bece-subjects-slot"
+            data-ready="false"
+          />
+        ) : (
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2" data-testid="bece-subjects-slot">
+            {BECE_SUBJECTS_AVAILABLE.map((s) => (
+              <li key={s.id} className="rounded-xl border border-slate-200 px-3 py-2 text-sm">
+                {s.label}
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
           <StudentLearnFromExamLink />
           <Link
             href={EXAM_PRACTICE_DESTINATIONS.aiTutor}
-            className="academy-visual-cta academy-visual-cta--ghost"
+            className="exam-landing-cta exam-landing-cta--ghost"
+            style={{ color: "#4C1D95", background: "#F5F3FF", borderColor: "#DDD6FE" }}
           >
             Ask AI Tutor
           </Link>
         </div>
-        <p className="academy-visual-muted text-xs">
+        <p className="mt-3 text-xs text-slate-500">
           AI-generated practice is labelled separately and is not an official WAEC/BECE paper bank.
         </p>
-      </div>
+      </article>
     </section>
   );
 }
 
 function TeacherPromotionCentreCard() {
+  const name = welcomeDisplayName();
+  const signedIn = Boolean(getUserEmail());
+
   return (
     <section
       id="teacher-promotion-centre"
       aria-labelledby="teacher-promotion-heading"
-      className={cn(ACADEMY_SURFACE_CLASS.teacher, "relative overflow-hidden p-4 sm:p-5")}
+      className="space-y-3"
       data-testid="teacher-promotion-centre"
     >
-      <div className="pointer-events-none absolute right-0 top-0 rounded-bl-2xl bg-[var(--av-accent,#FACC15)] px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#14532D]">
-        Full access path
+      <div className="exam-landing-banner">
+        <div className="exam-ghana-stripe" aria-hidden />
+        <div className="space-y-2 p-4 sm:p-5">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-[#FACC15]">Welcome</p>
+          <h2 id="teacher-promotion-heading" className="text-xl font-bold sm:text-2xl">
+            Ghana Teacher Promotion Practice
+          </h2>
+          {signedIn ? (
+            <p className="text-sm font-semibold text-[#FACC15]">Hello, {name}</p>
+          ) : null}
+          <p className="text-sm text-white/90">
+            {signedIn
+              ? "Your free 30-question practice is ready."
+              : "Independent practice for Ghana Education Service promotion-exam preparation."}
+          </p>
+          <p className="text-xs text-white/75">
+            Promotion Exam Preparation Practice · GigaLearn on {siteConfig.name}
+          </p>
+        </div>
       </div>
-      <div className="flex flex-wrap items-center gap-2 pr-16">
-        <BookOpen className="h-5 w-5" aria-hidden />
-        <h2 id="teacher-promotion-heading" className="text-lg font-bold">
-          Ghana Teacher Promotion Practice
-        </h2>
-        <span className="academy-visual-chip rounded-full px-2.5 py-0.5 text-[11px] font-semibold">
-          Sources identified
-        </span>
-      </div>
-      <p className="academy-visual-muted mt-2 text-sm">
-        Prepare for Ghana Education Service promotion aptitude practice. Source-derived question
-        banks are not published until review. Separate from BECE student papers.
-      </p>
 
-      <div className="mt-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--av-accent,#FACC15)]">
-          Promotion levels (from GES advert metadata)
+      <article className="exam-landing-card">
+        <span className="exam-landing-pill">{PROMOTION_FREE_SET_META.freeLabel}</span>
+        <div className="mt-3 flex items-start gap-3">
+          <div
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#ECFDF5] text-[#14532D]"
+            aria-hidden
+          >
+            <NotebookPen className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-base font-bold text-[#14532D]">{PROMOTION_FREE_SET_META.title}</h3>
+            <p className="mt-1 text-sm text-slate-600">{PROMOTION_FREE_SET_META.subtitle}</p>
+          </div>
+        </div>
+        <Link
+          href={EXAM_PRACTICE_DESTINATIONS.promotionFreePractice}
+          className="exam-landing-cta mt-4"
+        >
+          <Play className="h-4 w-4 fill-current" aria-hidden />
+          Start Free 30 Questions
+        </Link>
+        <p className="mt-2 text-xs text-slate-500">{PROMOTION_FREE_SET_META.provenanceNote}</p>
+      </article>
+
+      <Link
+        href="#my-performance"
+        className="exam-landing-card flex items-center gap-3 hover:border-[#86EFAC]"
+      >
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FEF2F2] text-[#DC2626]"
+          aria-hidden
+        >
+          <LineChart className="h-5 w-5" />
+        </div>
+        <div className="min-w-0">
+          <p className="font-bold text-slate-900">My Performance</p>
+          <p className="text-sm text-slate-600">Scores and improvement from your real practice.</p>
+        </div>
+      </Link>
+
+      <article className="exam-landing-card exam-landing-card--gold">
+        <span className="exam-landing-ribbon" aria-hidden>
+          Full access
+        </span>
+        <div className="pr-10 text-center">
+          <span className="exam-landing-pill">Full access available</span>
+          <h3 className="mt-3 text-lg font-bold text-[#14532D]">Upgrade whenever you are ready</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Unlock GigaLearn credits, Academy pathways, Teacher hub tools, and AI Tutor — without
+            Mobile Money side channels.
+          </p>
+          <p className="mt-3 text-3xl font-extrabold text-[#14532D]">Credits &amp; plans</p>
+        </div>
+        <div className="mt-4 space-y-2 rounded-xl bg-[#FFFBEB] px-3 py-3 text-sm text-[#78350F]">
+          <p className="font-semibold">What you get on Giga3</p>
+          <ul className="list-inside list-disc space-y-1 text-[#92400E]">
+            <li>Free 30-question orientation practice (repeat anytime)</li>
+            <li>Teacher hub AI practice tools</li>
+            <li>Academy assessments when enrolled</li>
+            <li>Paystack billing in GHS — no unofficial MoMo activation</li>
+          </ul>
+        </div>
+        <div className="mt-3 flex flex-col gap-2">
+          <Link href={EXAM_PRACTICE_DESTINATIONS.credits} className="exam-landing-cta">
+            Open credits / plans
+          </Link>
+          <Link
+            href={EXAM_PRACTICE_DESTINATIONS.pricing}
+            className="exam-landing-cta exam-landing-cta--ghost"
+          >
+            View pricing
+          </Link>
+          <TeacherHubPracticeLink />
+        </div>
+        <p className="mt-3 text-xs text-slate-500" data-testid="promotion-bank-pending">
+          Larger source-derived GES banks remain pending review. Until then, free orientation
+          practice and AI tools are clearly labelled as non-official.
         </p>
+      </article>
+
+      <div className="exam-landing-card">
+        <div className="flex items-center gap-2">
+          <BookOpen className="h-4 w-4 text-[#14532D]" aria-hidden />
+          <p className="text-xs font-bold uppercase tracking-wide text-[#14532D]">
+            Promotion levels
+          </p>
+        </div>
         <ul className="mt-2 flex flex-wrap gap-2">
           {TEACHER_PROMOTION_LEVEL_LABELS.map((level) => (
             <li
               key={level.id}
-              className="rounded-full border border-[var(--av-border)] bg-[var(--av-surface)] px-3 py-1.5 text-xs font-medium"
+              className="rounded-full border border-[#BBF7D0] bg-[#ECFDF5] px-3 py-1.5 text-xs font-semibold text-[#14532D]"
             >
               {level.label}
             </li>
           ))}
         </ul>
-        <p className="academy-visual-muted mt-2 text-xs">
-          Levels are labels only — no rank-specific mock is unlocked until a reviewed bank is
-          published for that rank.
-        </p>
-      </div>
-
-      <div className="academy-visual-tile mt-4 rounded-xl p-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--av-accent,#FACC15)]">
-          Source inventory (not yet imported)
-        </p>
-        <ul className="mt-2 space-y-2">
+        <ul className="mt-3 space-y-2 border-t border-slate-100 pt-3">
           {TEACHER_PROMOTION_SOURCE_INVENTORY.map((src) => (
             <li key={src.id} className="text-sm">
-              <span className="font-medium">{src.title}</span>
-              <span className="academy-visual-muted mt-0.5 block text-xs">
+              <span className="font-medium text-slate-800">{src.title}</span>
+              <span className="mt-0.5 block text-xs text-slate-500">
                 {answerStatusLabel(src.answerStatus)}
               </span>
             </li>
           ))}
         </ul>
-        <p className="academy-visual-muted mt-3 text-xs" data-testid="promotion-bank-pending">
-          Reviewed import is a later phase. Answer keys are not treated as verified until review.
-        </p>
       </div>
 
-      <div className="mt-4 space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--av-accent,#FACC15)]">
-          Available now (AI practice — not source papers)
-        </p>
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <TeacherHubPracticeLink />
-          <Link
-            href={EXAM_PRACTICE_DESTINATIONS.aiTutor}
-            className="academy-visual-cta academy-visual-cta--ghost"
-          >
-            AI Tutor
-          </Link>
-          <Link
-            href={EXAM_PRACTICE_DESTINATIONS.academyAssess}
-            className="academy-visual-cta academy-visual-cta--ghost"
-          >
-            Academy assessments
-          </Link>
-        </div>
-        <p className="academy-visual-muted text-xs">
-          Distinguishes AI-generated practice from source-derived questions (pending) and verified
-          keys (none published yet).
-        </p>
-      </div>
+      <p className="px-1 text-center text-[11px] text-slate-500">
+        Independent study and revision on GigaLearn. Not an official Ghana Education Service
+        examination portal.
+      </p>
     </section>
   );
 }
@@ -600,37 +668,38 @@ export function ExamPracticeCentre() {
     <ExamPracticeChrome>
       <section
         aria-labelledby="exam-hero-heading"
-        className={cn(ACADEMY_SURFACE_CLASS.hero, "relative overflow-hidden p-5 sm:p-7")}
+        className="exam-landing-banner relative overflow-hidden"
       >
-        <div className="relative max-w-2xl space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-white/90">Welcome</p>
+        <div className="exam-ghana-stripe" aria-hidden />
+        <div className="relative max-w-2xl space-y-3 p-5 sm:p-7">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#FACC15]">Welcome</p>
           <h2
             id="exam-hero-heading"
             className="text-2xl font-bold tracking-tight text-white sm:text-3xl"
           >
             {EXAM_PRACTICE_CENTRE_TITLE}
           </h2>
-          <p className="academy-visual-muted text-sm sm:text-base">{EXAM_PRACTICE_CENTRE_TAGLINE}</p>
-          <p className="academy-visual-muted text-sm">
-            Separate centres for BECE learners and Ghana Teacher Promotion candidates. No invented
-            question banks or scores.
+          <p className="text-sm text-white/90 sm:text-base">{EXAM_PRACTICE_CENTRE_TAGLINE}</p>
+          <p className="text-sm text-white/80">
+            Clear centres for BECE learners and Ghana Teacher Promotion candidates — with honest
+            labels, timed practice, and real performance only.
           </p>
           <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:flex-wrap">
-            <Link href="#bece-centre" className="academy-visual-cta academy-visual-cta--solid">
-              BECE centre
+            <Link href="#teacher-promotion-centre" className="exam-landing-cta sm:w-auto sm:px-5">
+              Teacher Promotion
             </Link>
             <Link
-              href="#teacher-promotion-centre"
-              className="academy-visual-cta academy-visual-cta--ghost"
+              href="#bece-centre"
+              className="exam-landing-cta exam-landing-cta--ghost sm:w-auto sm:px-5"
             >
-              Teacher Promotion
+              BECE centre
             </Link>
           </div>
         </div>
       </section>
 
-      <BeceCentreCard />
       <TeacherPromotionCentreCard />
+      <BeceCentreCard />
       <AiStudyTutorCard />
       <MyPerformanceCard />
       <ContinuePractisingCard />
