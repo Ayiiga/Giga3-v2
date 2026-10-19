@@ -1,5 +1,5 @@
 /**
- * GigaLearn Academy visual design tokens (Phase visual upgrade).
+ * GigaLearn Academy / Exam Practice visual design tokens.
  * Presentation only — no behaviour or data changes.
  */
 
@@ -18,9 +18,12 @@ export type AcademySurfaceId =
   | "practice"
   | "performance"
   | "certificates"
-  | "catalogue";
+  | "catalogue"
+  | "bece"
+  | "teacher"
+  | "shell";
 
-/** Canonical hex tokens from the design brief (may be tuned for AA contrast). */
+/** Canonical hex tokens (dashboard refresh — soft UI + exam integrity colours). */
 export const ACADEMY_COLOUR_TOKENS = {
   hero: { bg: "#4C1D95", bgAlt: "#312E81", fg: "#FFFFFF" },
   dashboard: { bg: "#F3E8FF", fg: "#2E1065" },
@@ -28,6 +31,12 @@ export const ACADEMY_COLOUR_TOKENS = {
   performance: { bg: "#DCFCE7", fg: "#14532D" },
   certificates: { bg: "#FEF3C7", fg: "#78350F" },
   catalogue: { bg: "#FFFFFF", fg: "#0F172A" },
+  /** Soft page atmosphere behind Academy / Exam shells */
+  shell: { bg: "#F5F0FF", bgAlt: "#EEF2FF", fg: "#1E1B4B" },
+  /** BECE centre — calm violet awaiting state */
+  bece: { bg: "#EDE9FE", fg: "#4C1D95" },
+  /** Teacher Promotion — forest green + gold accents (visual only) */
+  teacher: { bg: "#14532D", bgAlt: "#166534", accent: "#FACC15", fg: "#FFFFFF" },
   studios: {
     "giga-ai": { bg: "#312E81", fg: "#FFFFFF" },
     "giga-web": { bg: "#DBEAFE", fg: "#172554" },
@@ -46,6 +55,9 @@ export const ACADEMY_SURFACE_CLASS: Record<AcademySurfaceId, string> = {
   performance: "academy-visual-performance",
   certificates: "academy-visual-certificates",
   catalogue: "academy-visual-catalogue",
+  bece: "academy-visual-bece",
+  teacher: "academy-visual-teacher",
+  shell: "academy-visual-shell",
 };
 
 export const ACADEMY_STUDIO_CLASS: Record<AcademyStudioThemeId, string> = {

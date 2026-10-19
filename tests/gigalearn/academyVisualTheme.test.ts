@@ -23,6 +23,10 @@ describe("Academy visual theme", () => {
     expect(ACADEMY_COLOUR_TOKENS.performance.bg).toBe("#DCFCE7");
     expect(ACADEMY_COLOUR_TOKENS.certificates.bg).toBe("#FEF3C7");
     expect(ACADEMY_COLOUR_TOKENS.catalogue.bg).toBe("#FFFFFF");
+    expect(ACADEMY_COLOUR_TOKENS.shell.bg).toBe("#F5F0FF");
+    expect(ACADEMY_COLOUR_TOKENS.bece.bg).toBe("#EDE9FE");
+    expect(ACADEMY_COLOUR_TOKENS.teacher.bg).toBe("#14532D");
+    expect(ACADEMY_COLOUR_TOKENS.teacher.accent).toBe("#FACC15");
     expect(Object.keys(ACADEMY_COLOUR_TOKENS.studios)).toHaveLength(7);
   });
 
@@ -33,6 +37,9 @@ describe("Academy visual theme", () => {
     }
     expect(ACADEMY_SURFACE_CLASS.hero).toBe("academy-visual-hero");
     expect(ACADEMY_SURFACE_CLASS.practice).toBe("academy-visual-practice");
+    expect(ACADEMY_SURFACE_CLASS.shell).toBe("academy-visual-shell");
+    expect(ACADEMY_SURFACE_CLASS.bece).toBe("academy-visual-bece");
+    expect(ACADEMY_SURFACE_CLASS.teacher).toBe("academy-visual-teacher");
   });
 
   it("applies visual classes on AcademyHome without inventing progress copy", () => {
@@ -48,15 +55,34 @@ describe("Academy visual theme", () => {
     expect(home).toContain("ACADEMY_SURFACE_CLASS.certificates");
     expect(home).toContain("ACADEMY_SURFACE_CLASS.catalogue");
     expect(home).toContain("studioThemeClass");
+    expect(home).toContain("LearningProgressRing");
+    expect(home).toContain("academy-visual-quick");
     expect(home).toContain("Coming soon");
     expect(home).toContain("Available");
     expect(home).toContain("we will not invent progress");
     expect(home).not.toContain("localStorage.setItem");
   });
 
+  it("styles Exam Practice BECE and Teacher centres with distinct surfaces", () => {
+    const exam = readFileSync(
+      resolve(ROOT, "web/components/gigalearn/exam/ExamPracticeCentre.tsx"),
+      "utf8"
+    );
+    expect(exam).toContain("ACADEMY_SURFACE_CLASS.bece");
+    expect(exam).toContain("ACADEMY_SURFACE_CLASS.teacher");
+    expect(exam).toContain("ACADEMY_SURFACE_CLASS.shell");
+    expect(exam).toContain("data-testid=\"bece-awaiting-materials\"");
+    expect(exam).not.toContain("0248");
+    expect(exam).not.toContain("MoMo");
+  });
+
   it("ships CSS tokens with reduced-motion and focus styles", () => {
     const css = readFileSync(resolve(ROOT, "web/styles/globals.css"), "utf8");
     expect(css).toContain(".academy-visual-hero");
+    expect(css).toContain(".academy-visual-shell");
+    expect(css).toContain(".academy-visual-bece");
+    expect(css).toContain(".academy-visual-teacher");
+    expect(css).toContain(".academy-visual-nav-link--active");
     expect(css).toContain(".academy-visual-studio--giga-ai");
     expect(css).toContain(".academy-visual-studio--giga-innovation");
     expect(css).toContain("prefers-reduced-motion");
