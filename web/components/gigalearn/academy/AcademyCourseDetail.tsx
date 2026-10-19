@@ -11,7 +11,10 @@ import {
   getBuiltinAcademyCourse,
   resolveResumeLesson,
 } from "@/lib/gigalearn/academy/courseCatalog";
-import { friendlyAcademyEnrolError } from "@/lib/gigalearn/academy/enrolErrors";
+import {
+  ALREADY_ENROLLED_MESSAGE,
+  friendlyAcademyEnrolError,
+} from "@/lib/gigalearn/academy/enrolErrors";
 import { hrefForAcademyResource } from "@/lib/gigalearn/academy/resourceLinks";
 import { ACADEMY_SURFACE_CLASS } from "@/lib/gigalearn/academy/visualTheme";
 import { siteConfig } from "@/lib/site";
@@ -92,7 +95,8 @@ function AcademyCourseDetailInner() {
       return;
     }
     if (isEnrolled) {
-      setInfo("You are already enrolled. Use Resume learning below.");
+      setError(null);
+      setInfo(ALREADY_ENROLLED_MESSAGE);
       return;
     }
     setBusy(true);
@@ -101,7 +105,7 @@ function AcademyCourseDetailInner() {
     try {
       const result = await enrol({ sessionToken, courseSlug: slug });
       if ("alreadyEnrolled" in result && result.alreadyEnrolled) {
-        setInfo("You are already enrolled. Use Resume learning below.");
+        setInfo(ALREADY_ENROLLED_MESSAGE);
       } else if ("alreadyCompleted" in result && result.alreadyCompleted) {
         setInfo("You have already completed this course.");
       } else {
@@ -302,14 +306,35 @@ function AcademyCourseDetailInner() {
           </p>
         ) : null}
         {info ? (
-          <p
+          <div
             className={cn(
               ACADEMY_SURFACE_CLASS.performance,
-              "min-w-0 break-words rounded-xl px-3 py-2 text-sm"
+              "flex min-w-0 flex-col gap-2 rounded-xl px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
             )}
+            role="status"
           >
-            {info}
-          </p>
+            <p className="min-w-0 break-words text-sm font-medium">{info}</p>
+            {info === ALREADY_ENROLLED_MESSAGE ? (
+              <Button
+                type="button"
+                className="academy-visual-cta academy-visual-cta--success min-h-11 w-full shrink-0 sm:w-auto"
+                disabled={busy || !resume}
+                onClick={() => {
+                  if (!resume) return;
+                  void onResumeCheckpoint(
+                    resume.moduleId,
+                    resume.lessonId,
+                    Math.max(0, pathwayCounts.total - 1)
+                  );
+                  const el = document.getElementById("pathway-heading");
+                  el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+              >
+                <PlayCircle className="mr-2 h-4 w-4 shrink-0" aria-hidden />
+                Continue course
+              </Button>
+            ) : null}
+          </div>
         ) : null}
       </section>
 

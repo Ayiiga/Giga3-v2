@@ -165,19 +165,17 @@ function PersonalLearningSummary() {
 
         {resume && resumeTitle ? (
           <article className="academy-visual-course-card">
-            <div className="flex min-w-0 items-start gap-3">
+            <div className="academy-visual-course-card__body">
               <LearningProgressRing
                 percent={progressPercent}
-                size={64}
+                size={56}
                 label={`${resumeTitle} ${progressPercent}% complete`}
               />
-              <div className="min-w-0 flex-1 overflow-hidden">
+              <div className="academy-visual-course-card__copy">
                 <p className="text-xs font-semibold uppercase tracking-wide text-[#6D28D9]">
                   Continue learning
                 </p>
-                <p className="break-words text-base font-bold leading-snug text-[#1E1B4B]">
-                  {resumeTitle}
-                </p>
+                <p className="text-base font-bold leading-snug text-[#1E1B4B]">{resumeTitle}</p>
                 <p className="academy-visual-muted mt-1 text-xs">
                   Pathway {progressPercent}%
                   {resume.lastLessonId ? ` · ${resume.lastLessonId}` : ""}
@@ -192,7 +190,7 @@ function PersonalLearningSummary() {
             </div>
             <ButtonLink
               href={`/gigalearn/academy/course/?slug=${encodeURIComponent(resume.courseSlug)}`}
-              className="academy-visual-cta academy-visual-cta--success min-h-11 w-full sm:w-auto"
+              className="academy-visual-cta academy-visual-cta--success min-h-11 w-full shrink-0 sm:w-auto"
             >
               Continue
             </ButtonLink>

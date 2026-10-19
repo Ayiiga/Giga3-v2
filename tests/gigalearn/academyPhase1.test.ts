@@ -149,7 +149,7 @@ describe("GigaLearn Academy Phase 1", () => {
     const raw =
       "[CONVEX M(gigaLearnAcademy:enrollInCourse)] [Request ID: 640d34de82b37113] Server Error Uncaught Error: You are already enrolled in this course. at handler (../convex/gigaLearnAcademy.ts:350:24) Called by client";
     expect(friendlyAcademyEnrolError(new Error(raw))).toBe(
-      "You are already enrolled. Use Resume learning below."
+      "You're already enrolled in this course."
     );
     expect(friendlyAcademyEnrolError(new Error("You have already completed this course."))).toBe(
       "You have already completed this course."

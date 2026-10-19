@@ -925,7 +925,6 @@ button:focus-visible {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  overflow-x: clip;
   border-radius: 1.5rem;
   background:
     radial-gradient(120% 80% at 0% 0%, #fce7f3 0%, transparent 55%),
@@ -946,7 +945,6 @@ button:focus-visible {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  overflow-x: clip;
   border-radius: 1.25rem;
   border: 1px solid color-mix(in srgb, #4c1d95 10%, #ffffff);
   background: color-mix(in srgb, #ffffff 92%, #f5f0ff);
@@ -990,7 +988,6 @@ button:focus-visible {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  overflow-x: clip;
 }
 
 .academy-visual-practice {
@@ -1254,11 +1251,30 @@ button:focus-visible {
   box-shadow: 0 8px 24px color-mix(in srgb, #4c1d95 6%, transparent);
 }
 
+.academy-visual-course-card__body {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.academy-visual-course-card__copy {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 @media (min-width: 640px) {
   .academy-visual-course-card {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+  }
+
+  .academy-visual-course-card__body {
+    flex: 1 1 auto;
   }
 }
 
