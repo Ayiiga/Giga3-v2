@@ -45,3 +45,29 @@ Both share merge-base `8751affa` (main). Neither merged/deployed at review time.
 - Studio “available” links open hubs, not dedicated studio workspaces.
 - Academy assessments still require `?course=`.
 - Full Pages workflow / production E2E not claimed here unless run on the integration head.
+
+## Integration head verification (post SEO fix)
+
+| Check | Result |
+|-------|--------|
+| Vitest Academy + Exam + integration | **50/50** then **16/16** on recheck |
+| Lint | Pass (pre-existing warnings elsewhere) |
+| `npm run build` | Success — `/gigalearn/academy`, `/courses`, `/exam` |
+| `npm run seo:audit` | **0 errors** (7 unrelated warnings) |
+| CI subscription | Watching `cursor/gigalearn-academy-exam-integrate-161d` |
+
+### Fixes on integration branch beyond merge resolution
+
+- Duplicate `<h1>` on Academy/Exam pages removed (`ProductSeoHeader` owns H1).
+- `generate-public-seo-sitemap.mjs` registers `/gigalearn/exam/` and `/gigalearn/academy/courses/`.
+
+## Ready to merge?
+
+| PR | Standalone merge onto current main? | Notes |
+|----|-------------------------------------|-------|
+| #548 | Yes for Academy-only | Missing Exam Practice link until #549 integrated |
+| #549 | **No after #548** without Chrome fix | Conflicts with Phase 1 nav; would drop Exam Practice or Phase 1 structure |
+| #550 (integration) | **Preferred** | Contains both + conflict resolution + SEO fixes |
+
+**Authorisation required before merge.** Not deployed.
+
