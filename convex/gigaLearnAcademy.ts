@@ -5,6 +5,7 @@
  */
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { requireSession, tryRequireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { isSubscriptionActive } from "./creditsConfig";
@@ -359,6 +360,10 @@ export const enrolInCourse = mutation({
         progressPercent: existing.progressPercent ?? 0,
         updatedAt: now,
       });
+      await ctx.runMutation(internal.gigaLearnEngagement.bumpLearnerEventInternal, {
+        userId: email,
+        event: "enrol",
+      });
       return { enrolmentId: existing._id, reactivated: true as const };
     }
 
@@ -369,6 +374,10 @@ export const enrolInCourse = mutation({
       enrolledAt: now,
       progressPercent: 0,
       updatedAt: now,
+    });
+    await ctx.runMutation(internal.gigaLearnEngagement.bumpLearnerEventInternal, {
+      userId: email,
+      event: "enrol",
     });
     return { enrolmentId, reactivated: false as const };
   },
@@ -437,6 +446,10 @@ export const updatePathwayProgress = mutation({
       // eligibility never trusts this flag — it re-checks assessments server-side.
       status: args.markCompleted ? "completed" : enrolment.status,
       updatedAt: now,
+    });
+    await ctx.runMutation(internal.gigaLearnEngagement.bumpLearnerEventInternal, {
+      userId: email,
+      event: "pathway_update",
     });
     return { ok: true as const, completedLessonIds };
   },

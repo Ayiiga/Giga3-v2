@@ -72,6 +72,7 @@ export const ENGAGEMENT_CHECKLIST_IDS = [
   "follow_creators",
   "try_ai_tool",
   "visit_gigalearn",
+  "academy_next_step",
   "explore_creator",
   "notification_prefs",
 ] as const;

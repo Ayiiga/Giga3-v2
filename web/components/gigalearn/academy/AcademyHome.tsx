@@ -17,9 +17,14 @@ import {
   ACADEMY_SURFACE_CLASS,
   studioThemeClass,
 } from "@/lib/gigalearn/academy/visualTheme";
+import {
+  learnerEventSessionKey,
+  markLearnerEventFired,
+} from "@/lib/gigalearn/learnerEngagement";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
+import { useEffect } from "react";
 import {
   ArrowRight,
   Award,
@@ -269,6 +274,74 @@ function QuickActions() {
   );
 }
 
+function LearnerNextSteps() {
+  const sessionToken = getSessionToken();
+  const recordEvent = useMutation(api.gigaLearnEngagement.recordLearnerEvent);
+  const next = useQuery(
+    api.gigaLearnEngagement.listMyNextSteps,
+    sessionToken ? { sessionToken, limit: 6 } : "skip"
+  );
+
+  if (!sessionToken && !hasPersistedAuth()) return null;
+  if (next === undefined) {
+    return (
+      <section aria-labelledby="next-steps-heading" className="space-y-2">
+        <h2 id="next-steps-heading" className="text-lg font-bold text-foreground">
+          Your next steps
+        </h2>
+        <ClientAppHydrationNotice productName="GigaLearn Academy" />
+      </section>
+    );
+  }
+  if (next.steps.length === 0) return null;
+
+  return (
+    <section aria-labelledby="next-steps-heading" className="space-y-3">
+      <div>
+        <h2 id="next-steps-heading" className="text-lg font-bold text-foreground">
+          Your next steps
+        </h2>
+        <p className="mt-1 text-sm text-muted">
+          From your enrolments, unlocked assessments, and practice topics that need reassessment —
+          not invented recommendations.
+        </p>
+      </div>
+      <ul className="space-y-2">
+        {next.steps.map((step) => (
+          <li key={`${step.kind}:${step.href}`}>
+            <Link
+              href={step.href}
+              className="saas-card flex flex-col gap-1 rounded-2xl border border-border p-3 hover:border-accent/35 sm:flex-row sm:items-center sm:justify-between"
+              onClick={() => {
+                if (!sessionToken || step.kind !== "resume_course") return;
+                const key = learnerEventSessionKey("resume_course_click", step.courseSlug ?? "");
+                if (!markLearnerEventFired(key)) return;
+                void recordEvent({
+                  sessionToken,
+                  event: "resume_course_click",
+                }).catch(() => undefined);
+              }}
+            >
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-wide text-accent">
+                  {step.kind === "resume_course"
+                    ? "Continue course"
+                    : step.kind === "take_assessment"
+                      ? "Take assessment"
+                      : "Revise weakness"}
+                </p>
+                <p className="font-semibold text-foreground">{step.title}</p>
+                <p className="text-xs text-muted">{step.detail}</p>
+              </div>
+              <span className="text-sm font-semibold text-accent">Open →</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function PracticeCentreCard() {
   return (
     <section
@@ -373,6 +446,16 @@ function LearningStudiosDirectory() {
 }
 
 export function AcademyHome() {
+  const sessionToken = getSessionToken();
+  const recordEvent = useMutation(api.gigaLearnEngagement.recordLearnerEvent);
+
+  useEffect(() => {
+    if (!sessionToken) return;
+    const key = learnerEventSessionKey("academy_home_open");
+    if (!markLearnerEventFired(key)) return;
+    void recordEvent({ sessionToken, event: "academy_home_open" }).catch(() => undefined);
+  }, [sessionToken, recordEvent]);
+
   return (
     <AcademyChrome
       active="home"
@@ -413,6 +496,8 @@ export function AcademyHome() {
       </section>
 
       <PersonalLearningSummary />
+
+      <LearnerNextSteps />
 
       <QuickActions />
 

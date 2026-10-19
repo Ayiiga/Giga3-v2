@@ -4,7 +4,7 @@
  * Does not mutate gigaLearnProgress or compete with PracticeSession school practice.
  */
 import { action, mutation, query } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import { requireSession, requireSessionWithMonitoring, tryRequireSession } from "./auth";
 import { sessionArgs } from "./validators";
@@ -347,6 +347,10 @@ export const submitAssessmentAttempt = mutation({
         feedbackSummary: "Submitted for instructor review. This is not an official AI grade.",
         revisionHint: "Await instructor feedback. You may continue learning with the AI Tutor meanwhile.",
       });
+      await ctx.runMutation(internal.gigaLearnEngagement.bumpLearnerEventInternal, {
+        userId: email,
+        event: "assessment_submit",
+      });
       return {
         attemptId,
         duplicate: false as const,
@@ -402,6 +406,11 @@ export const submitAssessmentAttempt = mutation({
       submittedAt: now,
       gradedAt: needsAi ? undefined : now,
       updatedAt: now,
+    });
+
+    await ctx.runMutation(internal.gigaLearnEngagement.bumpLearnerEventInternal, {
+      userId: email,
+      event: "assessment_submit",
     });
 
     return {

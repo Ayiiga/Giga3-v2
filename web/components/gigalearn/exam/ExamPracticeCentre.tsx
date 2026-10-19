@@ -17,9 +17,13 @@ import {
   TEACHER_PROMOTION_SOURCE_INVENTORY,
   answerStatusLabel,
 } from "@/lib/gigalearn/examPractice/centreConfig";
+import {
+  learnerEventSessionKey,
+  markLearnerEventFired,
+} from "@/lib/gigalearn/learnerEngagement";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import {
   ArrowLeft,
   BookOpen,
@@ -29,7 +33,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 const EXAM_NAV = [
   { href: "/gigalearn/exam/", label: "Exam Practice", key: "exam" as const },
@@ -104,6 +108,50 @@ function ExamPracticeChrome({ children }: { children: ReactNode }) {
   );
 }
 
+function StudentLearnFromExamLink() {
+  const sessionToken = getSessionToken();
+  const recordEvent = useMutation(api.gigaLearnEngagement.recordLearnerEvent);
+  return (
+    <Link
+      href={EXAM_PRACTICE_DESTINATIONS.studentLearn}
+      className="academy-visual-cta academy-visual-cta--solid"
+      onClick={() => {
+        if (!sessionToken) return;
+        const key = learnerEventSessionKey("student_learn_from_exam");
+        if (!markLearnerEventFired(key)) return;
+        void recordEvent({
+          sessionToken,
+          event: "student_learn_from_exam",
+        }).catch(() => undefined);
+      }}
+    >
+      Student Learn (AI practice)
+    </Link>
+  );
+}
+
+function TeacherHubPracticeLink() {
+  const sessionToken = getSessionToken();
+  const recordEvent = useMutation(api.gigaLearnEngagement.recordLearnerEvent);
+  return (
+    <Link
+      href={EXAM_PRACTICE_DESTINATIONS.teacherHub}
+      className="academy-visual-cta academy-visual-cta--solid"
+      onClick={() => {
+        if (!sessionToken) return;
+        const key = learnerEventSessionKey("teacher_hub_from_exam");
+        if (!markLearnerEventFired(key)) return;
+        void recordEvent({
+          sessionToken,
+          event: "teacher_hub_from_exam",
+        }).catch(() => undefined);
+      }}
+    >
+      Teacher hub tools
+    </Link>
+  );
+}
+
 function BeceCentreCard() {
   const hasSubjects = BECE_SUBJECTS_AVAILABLE.length > 0;
 
@@ -161,12 +209,7 @@ function BeceCentreCard() {
           Related study tools (not official BECE papers)
         </p>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <Link
-            href={EXAM_PRACTICE_DESTINATIONS.studentLearn}
-            className="academy-visual-cta academy-visual-cta--solid"
-          >
-            Student Learn (AI practice)
-          </Link>
+          <StudentLearnFromExamLink />
           <Link
             href={EXAM_PRACTICE_DESTINATIONS.aiTutor}
             className="academy-visual-cta academy-visual-cta--ghost"
@@ -251,12 +294,7 @@ function TeacherPromotionCentreCard() {
           Available now (AI practice — not source papers)
         </p>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <Link
-            href={EXAM_PRACTICE_DESTINATIONS.teacherHub}
-            className="academy-visual-cta academy-visual-cta--solid"
-          >
-            Teacher hub tools
-          </Link>
+          <TeacherHubPracticeLink />
           <Link
             href={EXAM_PRACTICE_DESTINATIONS.aiTutor}
             className="academy-visual-cta academy-visual-cta--ghost"
@@ -548,6 +586,16 @@ function ContinuePractisingCard() {
 }
 
 export function ExamPracticeCentre() {
+  const sessionToken = getSessionToken();
+  const recordEvent = useMutation(api.gigaLearnEngagement.recordLearnerEvent);
+
+  useEffect(() => {
+    if (!sessionToken) return;
+    const key = learnerEventSessionKey("exam_centre_open");
+    if (!markLearnerEventFired(key)) return;
+    void recordEvent({ sessionToken, event: "exam_centre_open" }).catch(() => undefined);
+  }, [sessionToken, recordEvent]);
+
   return (
     <ExamPracticeChrome>
       <section

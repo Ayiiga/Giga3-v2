@@ -38,6 +38,11 @@ export const ENGAGEMENT_CHECKLIST = [
     href: "/gigalearn/",
   },
   {
+    id: "academy_next_step",
+    label: "Continue Academy learning",
+    href: "/gigalearn/academy/",
+  },
+  {
     id: "explore_creator",
     label: "Explore Creator tools",
     href: "/creator-studio/",
