@@ -112,13 +112,40 @@ export function NotificationCenter({ open, onClose }: NotificationCenterProps) {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="font-medium">{n.title}</p>
-                    <p className="mt-0.5 text-xs text-muted">{n.body}</p>
-                    {n.href && (
-                      <Link href={n.href} className="mt-1 inline-block text-xs text-accent hover:underline" onClick={onClose}>
-                        View
-                      </Link>
-                    )}
+                    <div className="flex gap-2">
+                      {n.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={n.imageUrl}
+                          alt=""
+                          className="mt-0.5 h-12 w-10 shrink-0 rounded-md object-cover"
+                        />
+                      ) : null}
+                      <div className="min-w-0">
+                        <p className="font-medium">{n.title}</p>
+                        <p className="mt-0.5 whitespace-pre-wrap text-xs text-muted">{n.body}</p>
+                        <div className="mt-1 flex flex-wrap gap-3">
+                          {n.href ? (
+                            <Link
+                              href={n.href}
+                              className="text-xs text-accent hover:underline"
+                              onClick={onClose}
+                            >
+                              {n.secondaryLabel ? "View Product" : "View"}
+                            </Link>
+                          ) : null}
+                          {n.secondaryHref ? (
+                            <Link
+                              href={n.secondaryHref}
+                              className="text-xs text-accent hover:underline"
+                              onClick={onClose}
+                            >
+                              {n.secondaryLabel || "Open"}
+                            </Link>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   {!n.read && sessionToken && (
                     <button

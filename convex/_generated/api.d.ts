@@ -170,8 +170,13 @@ import type * as liveWeb_webResearchOrchestrator from "../liveWeb/webResearchOrc
 import type * as liveWebRateLimit from "../liveWebRateLimit.js";
 import type * as marketplace from "../marketplace.js";
 import type * as marketplaceCompleteness from "../marketplaceCompleteness.js";
+import type * as marketplaceCover from "../marketplaceCover.js";
+import type * as marketplaceCoverBackfill from "../marketplaceCoverBackfill.js";
 import type * as marketplaceListingHelpers from "../marketplaceListingHelpers.js";
 import type * as marketplacePayments from "../marketplacePayments.js";
+import type * as marketplacePublishCopy from "../marketplacePublishCopy.js";
+import type * as marketplacePublishEmail from "../marketplacePublishEmail.js";
+import type * as marketplacePublishNotify from "../marketplacePublishNotify.js";
 import type * as marketplaceSeed from "../marketplaceSeed.js";
 import type * as marketplaceUploadIntents from "../marketplaceUploadIntents.js";
 import type * as marketplaceUploadPolicy from "../marketplaceUploadPolicy.js";
@@ -491,8 +496,13 @@ declare const fullApi: ApiFromModules<{
   liveWebRateLimit: typeof liveWebRateLimit;
   marketplace: typeof marketplace;
   marketplaceCompleteness: typeof marketplaceCompleteness;
+  marketplaceCover: typeof marketplaceCover;
+  marketplaceCoverBackfill: typeof marketplaceCoverBackfill;
   marketplaceListingHelpers: typeof marketplaceListingHelpers;
   marketplacePayments: typeof marketplacePayments;
+  marketplacePublishCopy: typeof marketplacePublishCopy;
+  marketplacePublishEmail: typeof marketplacePublishEmail;
+  marketplacePublishNotify: typeof marketplacePublishNotify;
   marketplaceSeed: typeof marketplaceSeed;
   marketplaceUploadIntents: typeof marketplaceUploadIntents;
   marketplaceUploadPolicy: typeof marketplaceUploadPolicy;

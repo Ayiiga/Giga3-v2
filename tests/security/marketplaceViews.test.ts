@@ -28,11 +28,15 @@ describe("marketplaceViews", () => {
     updatedAt: 1,
   };
 
-  it("removes fileStorageId and creatorId from public listings", () => {
-    const pub = toPublicListing(listing);
+  it("removes fileStorageId, coverStorageId, and creatorId from public listings", () => {
+    const pub = toPublicListing({
+      ...listing,
+      coverStorageId: "_storage:cover-blob" as any,
+    });
     expect(pub.hasFile).toBe(true);
     expect(pub.title).toBe("Test ebook");
     expect(pub).not.toHaveProperty("fileStorageId");
+    expect(pub).not.toHaveProperty("coverStorageId");
     expect(pub).not.toHaveProperty("creatorId");
   });
 

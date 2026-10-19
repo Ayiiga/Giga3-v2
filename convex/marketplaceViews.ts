@@ -1,4 +1,5 @@
-import type { Doc } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
+import { resolveListingCoverUrl } from "./marketplaceCover";
 import {
   isListingFileApproved,
   listingFileReviewLabel,
@@ -8,11 +9,16 @@ type ListingDoc = Doc<"marketplaceListings">;
 type ReviewDoc = Doc<"marketplaceReviews">;
 type CreatorDoc = Doc<"creatorProfiles">;
 
+type StorageReader = {
+  getUrl: (storageId: Id<"_storage">) => Promise<string | null>;
+};
+
 /** Public marketplace listing — omits internal storage IDs and creator email. */
 export type PublicMarketplaceListing = Omit<
   ListingDoc,
-  "fileStorageId" | "creatorId"
+  "fileStorageId" | "creatorId" | "coverStorageId"
 > & {
+  coverImageUrl?: string;
   hasFile: boolean;
   purchaseReady: boolean;
   fileReviewLabel: ReturnType<typeof listingFileReviewLabel>;
@@ -32,14 +38,33 @@ export type PublicCreatorProfile = Pick<
   | "createdAt"
 >;
 
+/**
+ * Sync public projection — does not refresh Convex storage URLs.
+ * Prefer `toPublicListingResolved` in Convex query handlers.
+ */
 export function toPublicListing(listing: ListingDoc): PublicMarketplaceListing {
-  const { fileStorageId, creatorId: _creatorId, ...rest } = listing;
+  const {
+    fileStorageId,
+    creatorId: _creatorId,
+    coverStorageId: _coverStorageId,
+    ...rest
+  } = listing;
   return {
     ...rest,
     hasFile: Boolean(fileStorageId),
     purchaseReady: listing.status === "published" && isListingFileApproved(listing),
     fileReviewLabel: listingFileReviewLabel(listing),
   };
+}
+
+/** Public listing with a fresh cover URL (or stable CDN fallback). */
+export async function toPublicListingResolved(
+  storage: StorageReader,
+  listing: ListingDoc
+): Promise<PublicMarketplaceListing> {
+  const base = toPublicListing(listing);
+  const coverImageUrl = await resolveListingCoverUrl(storage, listing);
+  return { ...base, coverImageUrl };
 }
 
 export function toPublicReview(review: ReviewDoc): PublicMarketplaceReview {
@@ -63,7 +88,22 @@ export function toPublicCreatorProfile(
   };
 }
 
-/** Creator-owned listing view — keeps fileStorageId for seller tools. */
+/** Creator-owned listing view — keeps fileStorageId for seller tools; refreshes cover. */
+export async function toCreatorListingResolved(
+  storage: StorageReader,
+  listing: ListingDoc
+) {
+  const coverImageUrl = await resolveListingCoverUrl(storage, listing);
+  return {
+    ...listing,
+    coverImageUrl,
+    hasFile: Boolean(listing.fileStorageId),
+    purchaseReady: listing.status === "published" && isListingFileApproved(listing),
+    fileReviewLabel: listingFileReviewLabel(listing),
+  };
+}
+
+/** Sync creator listing (tests / callers that do not need fresh covers). */
 export function toCreatorListing(listing: ListingDoc) {
   return {
     ...listing,
