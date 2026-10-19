@@ -22,7 +22,7 @@ function AccountProfileClientInner() {
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-6">
+    <div className="mx-auto w-full min-w-0 max-w-lg space-y-6">
       <header className="text-center">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/10 text-accent">
           <User className="h-7 w-7" aria-hidden />

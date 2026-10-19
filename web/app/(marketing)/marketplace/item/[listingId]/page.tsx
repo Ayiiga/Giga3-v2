@@ -95,9 +95,15 @@ export default async function MarketplaceItemDetailPage({ params }: PageProps) {
         ratingValue={bundle.ratingValue}
       />
       <ProductSeoHeader
+        compact
+        collapsible
+        expandLabel="Read more"
+        collapseLabel="Show less"
         title={bundle.listing.title}
         description={bundle.description}
         detail={`${creatorLine} Pay with Paystack in GHS — downloads unlock only after payment.`}
+        coverImageUrl={bundle.listing.coverImageUrl}
+        coverImageAlt={`${bundle.listing.title} cover`}
         showProductNav={false}
       />
       <MarketplaceItemDetailShell listingId={params.listingId} />

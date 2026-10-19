@@ -40,8 +40,8 @@ export default function GigaEditPage() {
         showProductNav={false}
         className="gigaedit-seo-header"
       />
-      <div className="gigaedit-page gigaedit-stable px-0 pb-3 pt-4 sm:px-3 sm:pb-6 sm:pt-6">
-        <Container className="!px-0 sm:!px-4">
+      <div className="gigaedit-page gigaedit-stable px-3 pb-3 pt-4 sm:px-4 sm:pb-6 sm:pt-6">
+        <Container className="!px-0">
           <Suspense fallback={<ClientAppHydrationNotice productName="GigaEdit" />}>
             <GigaEditPageRoot />
           </Suspense>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ProductCover } from "@/components/marketplace/ProductCover";
+import { isBookLikeProduct, ProductCover } from "@/components/marketplace/ProductCover";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
@@ -149,32 +149,64 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
     }
   }
 
+  const bookLike = isBookLikeProduct({
+    category: listing.category,
+    productType: listing.productType ? String(listing.productType) : null,
+  });
+  const hasTextPreview = Boolean(
+    listing.previewText || listing.previewToc || listing.previewIntro || listing.previewUrl
+  );
+
   return (
-    <Container className="py-8 sm:py-12">
-      <div className="mx-auto max-w-4xl space-y-8">
-      <div className="flex items-center justify-between gap-3">
-        <ButtonLink href="/marketplace" variant="ghost" size="sm">
+    <Container className="document-compact py-6 pb-[calc(var(--primary-nav-offset,0px)+1.25rem)] sm:py-10">
+      <div className="mx-auto max-w-4xl space-y-6 sm:space-y-8">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <ButtonLink href="/marketplace" variant="ghost" size="sm" className="min-h-11">
           ← Marketplace
         </ButtonLink>
-        <ButtonLink href="/marketplace/purchases" variant="ghost" size="sm">
+        <ButtonLink href="/marketplace/purchases" variant="ghost" size="sm" className="min-h-11">
           My purchases
         </ButtonLink>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-        <div>
-          <ProductCover
-            src={listing.coverImageUrl}
-            title={listing.title}
-            category={listing.category}
-            className="mb-6 w-full max-w-md"
-            aspectClassName="aspect-[4/5] sm:aspect-[16/10]"
-          />
+      <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:gap-8">
+        <div className="min-w-0">
+          <div
+            id="preview"
+            className="mb-5"
+            onMouseEnter={() => {
+              if (previewTracked || !listingId) return;
+              setPreviewTracked(true);
+              void recordPreviewOpen({
+                listingId,
+                sessionToken: getSessionToken() ?? undefined,
+              }).catch(() => undefined);
+            }}
+          >
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
+              {bookLike ? "Book cover" : "Product cover"}
+            </p>
+            <ProductCover
+              src={listing.coverImageUrl}
+              title={listing.title}
+              category={listing.category}
+              className="w-full max-w-sm"
+              aspectClassName={bookLike ? "aspect-[3/4]" : "aspect-[4/5] sm:aspect-[16/10]"}
+              fit={bookLike ? "contain" : "cover"}
+            />
+            <p className="mt-2 text-xs text-muted">
+              {listing.coverImageUrl
+                ? bookLike
+                  ? "Cover image for this book. Sample pages below are author-controlled previews."
+                  : "Listing cover image. Purchasing unlocks the full paid file."
+                : "Cover image not available yet — the seller can upload one from Sell."}
+            </p>
+          </div>
           <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">
             {listing.category}
             {listing.productType ? ` · ${String(listing.productType).replace(/_/g, " ")}` : ""}
           </p>
-          <h1 className="text-3xl font-bold tracking-tight">{listing.title}</h1>
+          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{listing.title}</h2>
           {creator && (
             <p className="mt-2 text-muted">
               by{" "}
@@ -190,49 +222,27 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
             </p>
           )}
           <p className="mt-4 whitespace-pre-wrap text-foreground/90 leading-relaxed">{listing.description}</p>
-          {(listing.previewText ||
-            listing.previewToc ||
-            listing.previewIntro ||
-            listing.previewUrl) && (
-            <div
-              id="preview"
-              className="mt-6 space-y-4 rounded-2xl border border-violet-200/60 bg-card p-5 dark:border-violet-900/40"
-              onMouseEnter={() => {
-                if (previewTracked || !listingId) return;
-                setPreviewTracked(true);
-                void recordPreviewOpen({
-                  listingId,
-                  sessionToken: getSessionToken() ?? undefined,
-                }).catch(() => undefined);
-              }}
-            >
-              <h2 className="font-semibold">Product preview</h2>
+          {hasTextPreview ? (
+            <div className="mt-6 space-y-4 rounded-2xl border border-violet-200/60 bg-card p-4 sm:p-5 dark:border-violet-900/40">
+              <h3 className="font-semibold">Inside this {bookLike ? "book" : "product"}</h3>
               <p className="text-xs text-muted">
                 Author-controlled sample only — purchasing unlocks the full paid file.
               </p>
-              <ProductCover
-                src={listing.coverImageUrl}
-                title={listing.title}
-                category={listing.category}
-                className="w-full max-w-xs"
-                aspectClassName="aspect-[3/4]"
-                fit="contain"
-              />
               {listing.previewToc ? (
                 <div>
-                  <h3 className="text-sm font-semibold">Table of contents</h3>
+                  <h4 className="text-sm font-semibold">Table of contents</h4>
                   <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{listing.previewToc}</p>
                 </div>
               ) : null}
               {listing.previewIntro ? (
                 <div>
-                  <h3 className="text-sm font-semibold">Introduction</h3>
+                  <h4 className="text-sm font-semibold">Introduction</h4>
                   <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{listing.previewIntro}</p>
                 </div>
               ) : null}
               {listing.previewText ? (
                 <div>
-                  <h3 className="text-sm font-semibold">Sample pages</h3>
+                  <h4 className="text-sm font-semibold">Sample pages</h4>
                   <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{listing.previewText}</p>
                 </div>
               ) : null}
@@ -241,13 +251,13 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
                   href={listing.previewUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex text-sm font-medium text-violet-700 underline dark:text-violet-300"
+                  className="inline-flex min-h-11 items-center text-sm font-medium text-violet-700 underline dark:text-violet-300"
                 >
                   Open sample file
                 </a>
               ) : null}
             </div>
-          )}
+          ) : null}
           {listing.copyrightNotice && (
             <p className="mt-4 text-xs text-muted">© {listing.copyrightNotice}</p>
           )}

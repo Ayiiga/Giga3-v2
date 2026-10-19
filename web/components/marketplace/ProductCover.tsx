@@ -33,7 +33,25 @@ function fallbackTone(category?: string): string {
   if (c.includes("software") || c.includes("developer")) return "from-indigo-800 to-slate-900";
   if (c.includes("course") || c.includes("training")) return "from-violet-700 to-stone-900";
   if (c.includes("creator")) return "from-violet-800 to-emerald-950";
+  if (c.includes("education") || c.includes("ebook") || c.includes("book")) {
+    return "from-emerald-800 to-slate-900";
+  }
   return "from-violet-800 to-indigo-950";
+}
+
+export function isBookLikeProduct(opts?: {
+  category?: string | null;
+  productType?: string | null;
+}): boolean {
+  const category = (opts?.category ?? "").toLowerCase();
+  const productType = (opts?.productType ?? "").toLowerCase();
+  return (
+    productType.includes("ebook") ||
+    productType.includes("book") ||
+    category.includes("education") ||
+    category.includes("ebook") ||
+    category.includes("book")
+  );
 }
 
 function CoverFallback({
@@ -105,21 +123,23 @@ export function ProductCover({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl bg-violet-950/5",
+        "relative overflow-hidden rounded-xl border border-border/70 bg-zinc-50 dark:bg-zinc-900/40",
         aspectClassName,
         className
       )}
       data-cover-state="image"
+      data-testid="product-cover-image"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
-        alt=""
+        alt={`${title} cover`}
         loading="lazy"
         decoding="async"
+        referrerPolicy="no-referrer"
         className={cn(
           "absolute inset-0 h-full w-full",
-          fit === "contain" ? "object-contain" : "object-cover"
+          fit === "contain" ? "object-contain p-1" : "object-cover"
         )}
         onError={() => {
           console.info("[marketplace-cover] image failed", { title, src });

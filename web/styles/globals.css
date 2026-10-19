@@ -303,6 +303,17 @@ button:focus-visible {
   overflow-anchor: none;
 }
 
+/* Mobile safety: keep unpadded marketing shells off the screen edges.
+   Pages that already set px-* / section-padding are untouched. */
+@media (max-width: 639px) {
+  .marketing-scroll-main > .marketing-stable:not([class*="px-"]):not(.section-padding),
+  .marketing-scroll-main > .discover-stable:not([class*="px-"]):not(.section-padding),
+  .marketing-scroll-main > .media-stable:not([class*="px-"]):not(.section-padding) {
+    padding-left: max(1rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1rem, env(safe-area-inset-right, 0px));
+  }
+}
+
 @media (max-width: 1023px) {
   .marketing-scroll-main {
     -webkit-overflow-scrolling: auto;

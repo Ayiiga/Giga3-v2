@@ -97,7 +97,7 @@ function AdminInner() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-10">
+    <div className="mx-auto w-full max-w-6xl space-y-10 px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="page-title">Admin dashboard</h1>

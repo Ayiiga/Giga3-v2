@@ -363,7 +363,7 @@ function MarketplaceSellInner() {
   }
 
   return (
-    <Container className="discover-stable py-8 sm:py-12">
+    <Container className="discover-stable document-compact py-6 pb-[calc(var(--primary-nav-offset,0px)+1.25rem)] sm:py-10">
       <div className="mx-auto max-w-5xl space-y-10">
         <div className="overflow-hidden rounded-3xl border border-emerald-900/10 bg-[#042f2e] px-6 py-7 text-emerald-50 sm:px-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

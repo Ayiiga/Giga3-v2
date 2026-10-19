@@ -35,7 +35,7 @@ function MarketplacePurchasesInner() {
   );
 
   return (
-    <Container className="document-compact py-4 pb-[calc(var(--primary-nav-offset,0px)+1rem)] sm:py-8">
+    <Container className="document-compact py-4 pb-[calc(var(--primary-nav-offset,0px)+1.25rem)] sm:py-8">
       <div className="mx-auto max-w-4xl space-y-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>

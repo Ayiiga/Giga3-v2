@@ -16,7 +16,7 @@ export function DocumentsPageRoot() {
   }, [doc?.updatedAt]);
 
   return (
-    <div className="document-compact mx-auto max-w-3xl space-y-4">
+    <div className="document-compact mx-auto w-full min-w-0 max-w-3xl space-y-4">
       <header className="space-y-1">
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">Shared across Chat · GigaLearn · Create</p>
         <h2 className="text-xl font-bold text-foreground">Document Studio</h2>
