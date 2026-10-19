@@ -1,13 +1,15 @@
 "use client";
 
+import { generatedBookCoverDataUrl } from "@/lib/marketplace/generatedBookCover";
 import { cn } from "@/lib/utils";
 import { BookOpen, FileText, LayoutTemplate, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type ProductCoverProps = {
   src?: string | null;
   title: string;
   category?: string;
+  productType?: string | null;
   className?: string;
   /** Tailwind aspect class, default portrait card cover. */
   aspectClassName?: string;
@@ -99,17 +101,28 @@ export function ProductCover({
   src,
   title,
   category,
+  productType,
   className,
   aspectClassName = "aspect-[4/5]",
   fit = "cover",
 }: ProductCoverProps) {
   const [broken, setBroken] = useState(false);
+  const bookLike = isBookLikeProduct({ category, productType });
+  const generatedCover = useMemo(
+    () =>
+      bookLike
+        ? generatedBookCoverDataUrl({ title, category, productType })
+        : null,
+    [bookLike, title, category, productType]
+  );
 
   useEffect(() => {
     setBroken(false);
   }, [src]);
 
-  if (!src || broken) {
+  const displaySrc = !src || broken ? generatedCover : src;
+
+  if (!displaySrc) {
     return (
       <CoverFallback
         title={title}
@@ -127,23 +140,25 @@ export function ProductCover({
         aspectClassName,
         className
       )}
-      data-cover-state="image"
+      data-cover-state={!src || broken ? "generated" : "image"}
       data-testid="product-cover-image"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={src}
+        src={displaySrc}
         alt={`${title} cover`}
         loading="lazy"
         decoding="async"
         referrerPolicy="no-referrer"
         className={cn(
           "absolute inset-0 h-full w-full",
-          fit === "contain" ? "object-contain p-1" : "object-cover"
+          fit === "contain" || bookLike ? "object-contain p-1" : "object-cover"
         )}
         onError={() => {
-          console.info("[marketplace-cover] image failed", { title, src });
-          setBroken(true);
+          if (src && !broken) {
+            console.info("[marketplace-cover] image failed", { title, src });
+            setBroken(true);
+          }
         }}
       />
     </div>

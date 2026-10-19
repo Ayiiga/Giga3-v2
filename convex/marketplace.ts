@@ -356,6 +356,15 @@ export const updateListing = mutation({
       if (!isListingFileApproved(listing)) {
         throw new Error("Attach and upload your PDF before publishing.");
       }
+      const productType = String(listing.productType || "").toLowerCase();
+      const ebookLike = productType.includes("ebook") || productType === "book";
+      const nextCoverUrl =
+        args.coverImageUrl !== undefined ? args.coverImageUrl : listing.coverImageUrl;
+      if (ebookLike && !listing.coverStorageId && !String(nextCoverUrl || "").trim()) {
+        throw new Error(
+          "Add a cover image (upload or durable image URL) before publishing an ebook."
+        );
+      }
     }
 
     const wasPublished = listing.status === "published";

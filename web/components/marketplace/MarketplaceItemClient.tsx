@@ -190,6 +190,7 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
               src={listing.coverImageUrl}
               title={listing.title}
               category={listing.category}
+              productType={listing.productType ? String(listing.productType) : null}
               className="w-full max-w-sm"
               aspectClassName={bookLike ? "aspect-[3/4]" : "aspect-[4/5] sm:aspect-[16/10]"}
               fit={bookLike ? "contain" : "cover"}
@@ -197,9 +198,11 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
             <p className="mt-2 text-xs text-muted">
               {listing.coverImageUrl
                 ? bookLike
-                  ? "Cover image for this book. Sample pages below are author-controlled previews."
+                  ? "Book cover for this listing. Sample pages below are author-controlled previews."
                   : "Listing cover image. Purchasing unlocks the full paid file."
-                : "Cover image not available yet — the seller can upload one from Sell."}
+                : bookLike
+                  ? "Showing a title cover page until the seller uploads a custom cover image."
+                  : "Cover image not available yet — the seller can upload one from Sell."}
             </p>
           </div>
           <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">

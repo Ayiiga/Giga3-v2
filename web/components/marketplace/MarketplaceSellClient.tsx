@@ -225,6 +225,15 @@ function MarketplaceSellInner() {
         setMessage(uploadResult.message);
       }
 
+      const ebookLike =
+        productType.toLowerCase().includes("ebook") ||
+        productType.toLowerCase() === "book";
+      if (!asDraft && ebookLike && !coverImageFile && !coverImageUrl.trim()) {
+        throw new Error(
+          "Add a cover image (upload or URL) before publishing an ebook."
+        );
+      }
+
       if (!asDraft) {
         await updateListing({ sessionToken, listingId, status: "published" });
         setMessage("Published — buyers can purchase and download your PDF.");
@@ -770,13 +779,14 @@ function MarketplaceSellInner() {
             <input
               value={coverImageUrl}
               onChange={(e) => setCoverImageUrl(e.target.value)}
-              placeholder="Cover image URL (optional)"
+              placeholder="Cover image URL (required for ebooks if not uploading)"
               className="rounded-xl border px-4 py-3"
             />
             <label className="flex cursor-pointer flex-col gap-2 rounded-xl border border-dashed px-4 py-4 text-sm">
-              <span className="font-medium">Cover image upload (optional)</span>
+              <span className="font-medium">Cover image upload</span>
               <span className="text-muted">
-                {coverImageFile?.name ?? "JPG or PNG for your listing card"}
+                {coverImageFile?.name ??
+                  "JPG or PNG book cover — required before publishing ebooks"}
               </span>
               <input
                 type="file"

@@ -43,5 +43,6 @@ describe("mobile edge padding + marketplace book cover", () => {
     expect(cover).toContain("export function isBookLikeProduct");
     expect(cover).toContain('data-testid="product-cover-image"');
     expect(cover).toContain('alt={`${title} cover`}');
+    expect(cover).toContain("generatedBookCoverDataUrl");
   });
 });
