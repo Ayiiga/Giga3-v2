@@ -31,35 +31,79 @@ describe("Technology Learning Hub question banks", () => {
     }
   });
 
-  it("import report does not claim 2500 imported and notes missing Mobile PDF", () => {
+  it("import report does not claim 2500/500 unique and notes missing Mobile PDF", () => {
     const report = JSON.parse(
       read("web/lib/gigalearn/academy/techBanks/import-report.json")
     ) as {
-      missingSources: unknown[];
+      missingSources: Array<{
+        file: string;
+        courseSlug: string;
+        expectedRepoImportPath?: string;
+        status?: string;
+      }>;
       totals: {
         techExtracted: number;
         techUniqueApproved: number;
         claimedAs2500Tech: boolean;
+        aiExtracted: number;
+        aiNearDuplicatesRemoved: number;
+        aiUniqueApproved: number;
+        aiRejected: number;
+        claimedAs500AiUnique: boolean;
+        examApproved: number;
+        examPendingReview: number;
       };
       techBanks: Array<{
+        bankId: string;
         sourceFile: string;
         extracted: number;
         uniqueImportable: number;
         approvedImported: number;
         topicCount: number;
+        nearDuplicates?: number;
+        claimedAs500Unique?: boolean;
+      }>;
+      examBanks: Array<{
+        sourceFile: string;
+        approvedImported: number;
+        pendingImported: number;
+        claimedAsOfficialWaec?: boolean;
+        claimedAsOfficialGes?: boolean;
+        sourceKind?: string;
       }>;
     };
     expect(report.totals.claimedAs2500Tech).toBe(false);
+    expect(report.totals.claimedAs500AiUnique).toBe(false);
     expect(report.missingSources).toHaveLength(1);
+    expect(report.missingSources[0]?.courseSlug).toBe("mobile-app-development");
+    expect(report.missingSources[0]?.status).toBe("not_uploaded");
+    expect(report.missingSources[0]?.expectedRepoImportPath).toContain("mobile-app.json");
     expect(report.totals.techExtracted).toBe(2000);
     expect(report.totals.techUniqueApproved).toBe(1092);
+    expect(report.totals.aiExtracted).toBe(500);
+    expect(report.totals.aiNearDuplicatesRemoved).toBe(227);
+    expect(report.totals.aiUniqueApproved).toBe(273);
+    expect(report.totals.aiRejected).toBe(0);
     expect(report.techBanks).toHaveLength(4);
+    const ai = report.techBanks.find((b) => b.bankId === "ai-ml");
+    expect(ai?.nearDuplicates).toBe(227);
+    expect(ai?.claimedAs500Unique).toBe(false);
     for (const bank of report.techBanks) {
       expect(bank.extracted).toBe(500);
       expect(bank.topicCount).toBeGreaterThanOrEqual(20);
       expect(bank.uniqueImportable).toBeLessThan(500);
       expect(bank.approvedImported).toBe(bank.uniqueImportable);
     }
+    const bece = report.examBanks.find((b) => b.sourceFile.includes("BECE"));
+    const teacher = report.examBanks.find((b) => b.sourceFile.includes("Teachers_Promotion"));
+    expect(bece?.approvedImported).toBe(468);
+    expect(bece?.claimedAsOfficialWaec).toBe(false);
+    expect(bece?.sourceKind).toBe("authored_practice");
+    expect(teacher?.approvedImported).toBe(60);
+    expect(teacher?.pendingImported).toBe(179);
+    expect(teacher?.claimedAsOfficialGes).toBe(false);
+    expect(report.totals.examApproved).toBe(528);
+    expect(report.totals.examPendingReview).toBe(179);
   });
 
   it("each loaded tech bank has approved MCQs with four options and a valid key", () => {
@@ -107,6 +151,7 @@ describe("Technology Learning Hub question banks", () => {
     const bece = getTechBankQuestions("exam-bece-prep");
     expect(bece.length).toBe(468);
     expect(getTechCourseMeta("exam-bece-prep")?.awaitingMaterials).toBe(false);
+    expect(new Set(bece.map((q) => q.topicId)).size).toBe(10);
 
     const teacher = getTechBankQuestions("exam-teacher-promotion");
     expect(teacher.length).toBe(239);
@@ -121,8 +166,21 @@ describe("Technology Learning Hub question banks", () => {
     expect(graded.score).toBe(1);
     expect(graded.results[0]?.provisional).toBe(true);
 
+    // Answer keys stripped from public shape for exam banks too.
+    const pubBece = toPublicTechQuestion(bece[0]!);
+    expect(pubBece).not.toHaveProperty("correctIndex");
+    expect(pubBece).not.toHaveProperty("explanation");
+    const wrong = gradeTechAnswers({
+      courseSlug: "exam-bece-prep",
+      questionIds: [bece[0]!.questionId],
+      answers: { [bece[0]!.questionId]: (bece[0]!.correctIndex + 1) % 4 },
+    });
+    expect(wrong.score).toBe(0);
+    expect(wrong.results[0]?.correct).toBe(false);
+
     expect(getBuiltinAcademyCourse("exam-bece-prep")?.category).toBe("Exam prep");
     expect(getBuiltinAcademyCourse("exam-teacher-promotion")?.category).toBe("Exam prep");
+    expect(getBuiltinAcademyCourse("exam-bece-prep")?.description).toMatch(/practice|not.*official|WAEC/i);
   });
 
   it("selects shuffled sets without dropping answer-key integrity", () => {
@@ -162,19 +220,43 @@ describe("Technology Learning Hub question banks", () => {
     expect(schema).toContain('v.literal("timed")');
     const convex = read("convex/gigaLearnTechBanks.ts");
     expect(convex).toContain("requireSession(args.sessionToken, ctx)");
+    expect(convex).toContain("requireActiveEnrolment");
     expect(convex).toContain("endsAt");
     expect(convex).toContain("toPublicTechQuestion");
+    expect(convex).toContain("saveTechPracticeAnswer");
+    expect(convex).toContain("submitTechPracticeSession");
     const startBlock = convex.slice(
       convex.indexOf("export const startTechPracticeSession"),
       convex.indexOf("export const getTechPracticeSession")
     );
     expect(startBlock).toContain("toPublicTechQuestion");
     expect(startBlock).not.toContain("correctIndex:");
+    // In-progress session query must not leak keys; learn-mode feedback is gated.
+    const getBlock = convex.slice(
+      convex.indexOf("export const getTechPracticeSession"),
+      convex.indexOf("export const saveTechPracticeAnswer")
+    );
+    expect(getBlock).toContain("toPublicTechQuestion");
+    expect(getBlock).not.toContain("correctIndex:");
+    expect(getBlock).toContain('session.status === "graded"');
+    const saveBlock = convex.slice(
+      convex.indexOf("export const saveTechPracticeAnswer"),
+      convex.indexOf("export const submitTechPracticeSession")
+    );
+    expect(saveBlock).toContain('session.mode === "learn"');
+    expect(saveBlock).toContain("feedback: null");
     expect(read("web/components/gigalearn/academy/TechHubPractice.tsx")).toContain(
       "startTechPracticeSession"
     );
     expect(read("web/app/(marketing)/gigalearn/academy/tech/page.tsx")).toContain(
       "Technology Learning Hub"
+    );
+    // Mobile pipeline stays ready: extract script keeps awaitingMaterials until JSON exists.
+    const extract = read("scripts/extract-question-banks.py");
+    expect(extract).toContain("mobile-app-development");
+    expect(extract).toContain("awaitingMaterials");
+    expect(existsSync(resolve(ROOT, "web/lib/gigalearn/academy/techBanks/mobile-app.json"))).toBe(
+      false
     );
   });
 

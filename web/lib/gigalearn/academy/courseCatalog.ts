@@ -318,7 +318,7 @@ const BUILTIN_COURSES: AcademyCourse[] = [
     slug: "ai-machine-learning",
     title: "Artificial Intelligence and Machine Learning",
     description:
-      "Practical AI fundamentals — prompts, generative AI, agents, evaluation, privacy, and responsible use. Interactive objective practice when the AI question bank is imported.",
+      "Practical AI fundamentals — prompts, generative AI, agents, evaluation, privacy, and responsible use. Interactive objective practice from the imported AI question bank (273 unique approved after near-duplicate removal).",
     subject: "Artificial Intelligence",
     category: "Technology",
     difficulty: "beginner",
@@ -331,7 +331,7 @@ const BUILTIN_COURSES: AcademyCourse[] = [
     ],
     prerequisites: ["Basic computer literacy", "Signed-in Giga3 account"],
     curriculumPreview:
-      "Technology Learning Hub · AI_500 bank (unique approved items after near-duplicate removal).",
+      "Technology Learning Hub · AI_500 bank · 273 unique approved (227 near-duplicates removed; not claimed as 500 unique).",
     assessmentDescription:
       "Interactive MCQ practice (learn, timed, topic, revision). Answer keys are server-graded; unverified items stay flagged for review.",
     instructorName: "GigaLearn Technology Faculty",

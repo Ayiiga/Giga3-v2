@@ -38,7 +38,12 @@
       "uniqueImportable": 273,
       "approvedImported": 273,
       "pendingImported": 0,
-      "topicCount": 25
+      "topicCount": 25,
+      "nearDuplicates": 227,
+      "exactOrNearDuplicateRemoved": 227,
+      "parseFailed": 0,
+      "rejected": 0,
+      "claimedAs500Unique": false
     }
   ],
   "examBanks": [
@@ -52,7 +57,23 @@
       "approvedImported": 468,
       "pendingImported": 0,
       "parseFailed": 0,
-      "topicCount": 10
+      "rejected": 0,
+      "exactDuplicates": 0,
+      "topics": [
+        "Integrated Science",
+        "Social Studies",
+        "RME",
+        "Computing",
+        "Career Technology",
+        "Creative Arts",
+        "Ghanaian Language / Culture",
+        "Mathematics",
+        "French",
+        "English"
+      ],
+      "topicCount": 10,
+      "claimedAsOfficialWaec": false,
+      "sourceKind": "authored_practice"
     },
     {
       "sourceFile": "GES_Teachers_Promotion_500_Objective_Questions_Explained_fb4d.pdf",
@@ -64,7 +85,23 @@
       "approvedImported": 60,
       "pendingImported": 179,
       "parseFailed": 0,
-      "topicCount": 10
+      "rejected": 0,
+      "exactDuplicates": 0,
+      "topics": [
+        "Applied Education Administration & Professional Judgement",
+        "Professional Ethics & Conduct",
+        "Finance & Public Accountability",
+        "Ges History & Legislation",
+        "Ges Administration & Institutions",
+        "School Leadership & Improvement",
+        "Staff Management & Discipline",
+        "Reasoning & General Aptitude",
+        "Child Protection, Inclusion & Ict",
+        "Professional Judgement"
+      ],
+      "topicCount": 10,
+      "claimedAsOfficialGes": false,
+      "sourceKind": "authored_practice"
     },
     {
       "sourceFile": "Attractive_GES_Assistant_Director_II_Study_Guide_2026_d118.pdf",
@@ -76,28 +113,42 @@
       "approvedImported": 0,
       "pendingImported": 0,
       "parseFailed": 0,
-      "topicCount": 0
+      "rejected": 0,
+      "topics": [],
+      "topicCount": 0,
+      "note": "Study guide PDF with no extractable A–D MCQs; not invented."
     }
   ],
   "missingSources": [
     {
       "file": "Mobile_App_500_Practical_Objective_Questions.pdf",
-      "courseSlug": "mobile-app-development"
+      "courseSlug": "mobile-app-development",
+      "expectedUploadPath": "/home/ubuntu/.cursor/projects/workspace/uploads/Mobile_App_500_Practical_Objective_Questions.pdf",
+      "expectedRepoImportPath": "web/lib/gigalearn/academy/techBanks/mobile-app.json",
+      "status": "not_uploaded"
     }
   ],
   "totals": {
-    "techExtracted": 2000,
     "techUniqueApproved": 1092,
     "examExtracted": 1000,
     "examUniqueImportable": 707,
     "examApproved": 528,
     "examPendingReview": 179,
-    "claimedAs2500Tech": false
+    "claimedAs2500Tech": false,
+    "techExtracted": 2000,
+    "aiExtracted": 500,
+    "aiNearDuplicatesRemoved": 227,
+    "aiUniqueApproved": 273,
+    "aiRejected": 0,
+    "claimedAs500AiUnique": false
   },
   "notes": [
-    "AI bank added to Technology Hub (273 unique approved after near-dupe removal).",
-    "BECE and Teacher Promotion banks imported for Exam Practice.",
-    "AD II study guide has no extractable A–D MCQs (0 imported; not invented).",
-    "Mobile App PDF still not uploaded."
+    "AI bank: extracted 500, removed 227 near-duplicates, imported 273 unique approved. Not claimed as 500 unique.",
+    "Website/PWA, Robotics, Other Digital: 273 unique approved each (same extract pipeline).",
+    "BECE: 468 approved across 10 subjects; independent practice, not an official WAEC paper.",
+    "Teacher Promotion: 60 approved + 179 provisional pending_review; not an official GES paper.",
+    "AD II study guide: 0 extractable A–D MCQs (not invented).",
+    "Mobile App PDF still missing — course remains awaitingMaterials until import.",
+    "Exam banks reuse gigaLearnTechSessions server-graded practice (no second assessment system)."
   ]
 }
