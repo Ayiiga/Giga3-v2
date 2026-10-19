@@ -55,6 +55,16 @@ No new Convex functions or schema. Summary uses existing session-scoped queries 
 
 Grading, answer keys, credits, certificate eligibility, project schema, robotics sim, deleting builtin courses.
 
+## Tests executed
+
+| Check | Result |
+|-------|--------|
+| `vitest` Academy suites (Phase1 + transform landing + tutor/assess/certs) | **39/39 passed** |
+| `web` `npm run lint` | Pass (pre-existing warnings elsewhere) |
+| Phase 1 files via `tsc --noEmit` | No errors in new Academy files |
+| `web` `npm run build` | **Success** — includes `/gigalearn/academy/courses` |
+| Mobile Playwright walkthrough (390×844) | Home → studios → Practice → Courses |
+
 ## Known limitations
 
 - Assessments still require a `?course=` slug (existing behaviour).
