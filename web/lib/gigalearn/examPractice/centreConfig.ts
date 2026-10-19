@@ -53,6 +53,9 @@ export const TEACHER_PROMOTION_SOURCE_INVENTORY = [
 
 /** Verified deep-links only — existing GigaLearn experiences. */
 export const EXAM_PRACTICE_DESTINATIONS = {
+  examHome: "/gigalearn/exam/",
+  /** Timed Teacher Promotion free orientation practice (not an official GES paper). */
+  promotionFreePractice: "/gigalearn/exam/practice/",
   academy: "/gigalearn/academy/",
   academyAssess: "/gigalearn/academy/assess/",
   academyMy: "/gigalearn/academy/my/",
@@ -62,6 +65,8 @@ export const EXAM_PRACTICE_DESTINATIONS = {
   teacherHub: "/gigalearn/?tab=teacher&intent=promotion-practice",
   revision: "/gigalearn/?tab=revision",
   gigalearnHome: "/gigalearn/",
+  credits: "/credits/",
+  pricing: "/pricing/",
 } as const;
 
 /**

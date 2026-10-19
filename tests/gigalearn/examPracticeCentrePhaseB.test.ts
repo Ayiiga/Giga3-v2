@@ -120,6 +120,7 @@ describe("Exam Practice Centre Phase B", () => {
 
     const sitemap = readFileSync(resolve(ROOT, "web/public/sitemap-gigalearn.xml"), "utf8");
     expect(sitemap).toContain("/gigalearn/exam/");
+    expect(sitemap).toContain("/gigalearn/exam/practice/");
 
     const client = readFileSync(
       resolve(ROOT, "web/components/gigalearn/GigaLearnClient.tsx"),

@@ -201,7 +201,7 @@ export const scheduleLiveStream = mutation({
     scheduledAt: v.number(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const title = sanitizeSocialText(args.title, 120);
     if (!title) throw new Error("Stream title is required.");
     const now = Date.now();
@@ -235,7 +235,7 @@ export const startLiveStream = mutation({
     streamId: v.optional(v.id("socialLiveStreams")),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const now = Date.now();
     if (args.streamId) {
       const existing = await ctx.db.get(args.streamId);
@@ -276,7 +276,7 @@ export const endLiveStream = mutation({
     replayUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const stream = await ctx.db.get(args.streamId);
     if (!stream || stream.hostId !== userId) throw new Error("Stream not found.");
     const now = Date.now();
@@ -296,7 +296,7 @@ export const joinLiveStream = mutation({
     streamId: v.id("socialLiveStreams"),
   },
   handler: async (ctx, args) => {
-    await requireSession(args.sessionToken);
+    await requireSession(args.sessionToken, ctx);
     const stream = await ctx.db.get(args.streamId);
     if (!stream || stream.status !== "live") return { viewerCount: stream?.viewerCount ?? 0 };
     const next = stream.viewerCount + 1;
@@ -316,7 +316,7 @@ export const sendLiveChat = mutation({
     body: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const stream = await ctx.db.get(args.streamId);
     if (!stream || stream.status !== "live") throw new Error("Stream is not live.");
     if (stream.mutedUserIds?.includes(userId)) throw new Error("You are muted in this stream.");
@@ -344,7 +344,7 @@ export const sendLiveReaction = mutation({
     emoji: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireSession(args.sessionToken);
+    await requireSession(args.sessionToken, ctx);
     const stream = await ctx.db.get(args.streamId);
     if (!stream || stream.status !== "live") throw new Error("Stream is not live.");
     const emoji = args.emoji.trim().slice(0, 8);
@@ -367,7 +367,7 @@ export const sendLiveGift = mutation({
     amount: v.number(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const stream = await ctx.db.get(args.streamId);
     if (!stream || stream.status !== "live") throw new Error("Stream is not live.");
     if (userId === stream.hostId) throw new Error("You cannot gift yourself.");
@@ -424,7 +424,7 @@ export const addLiveCaption = mutation({
     line: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const stream = await ctx.db.get(args.streamId);
     if (!stream || stream.hostId !== userId) throw new Error("Only the host can add captions.");
     const line = sanitizeSocialText(args.line, 200);
@@ -446,7 +446,7 @@ export const addLiveCoHost = mutation({
     coHostHandle: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const stream = await ctx.db.get(args.streamId);
     if (!stream || stream.hostId !== userId) throw new Error("Only the host can add co-hosts.");
     const handle = args.coHostHandle.trim().toLowerCase().replace(/^@/, "");
@@ -470,7 +470,7 @@ export const moderateLiveChat = mutation({
     muteUserId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const stream = await ctx.db.get(args.streamId);
     if (!stream || stream.hostId !== userId) throw new Error("Only the host can moderate.");
     if (args.messageId) {
@@ -493,7 +493,7 @@ export const getMyLiveStreams = query({
   handler: async (ctx, args) => {
     let userId: string;
     try {
-      userId = await requireSession(args.sessionToken);
+      userId = await requireSession(args.sessionToken, ctx);
     } catch {
       return { streams: [] };
     }

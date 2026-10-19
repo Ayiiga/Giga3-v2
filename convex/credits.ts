@@ -74,9 +74,16 @@ async function performDeduct(
   const user = await getUserByEmail(ctx, userId);
   if (!user) throw new Error("User not found");
 
-  const cost = amountOverride ?? CREDIT_COSTS[action];
-  if (!Number.isFinite(cost) || cost <= 0) {
+  const catalogCost = CREDIT_COSTS[action];
+  const cost = amountOverride ?? catalogCost;
+  if (!Number.isFinite(cost) || cost <= 0 || !Number.isInteger(cost)) {
     throw new Error("Invalid credit amount");
+  }
+  // Server-side overrides (e.g. duration-priced video) may charge more, never less.
+  if (amountOverride != null && cost < catalogCost) {
+    throw new Error(
+      `Credit undercharge blocked (${cost} < ${catalogCost} for ${action})`
+    );
   }
   const balance = user.credits ?? 0;
   if (balance < cost) {
@@ -176,7 +183,7 @@ export const deductCredits = mutation({
     action: creditActionValidator,
     reference: v.optional(v.string()),
     metadata: v.optional(v.string()),
-    amount: v.optional(v.number()),
+    // Client amount overrides are rejected — variable pricing uses deductCreditsInternal.
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken, ctx);
@@ -185,8 +192,7 @@ export const deductCredits = mutation({
       userId,
       args.action as CreditAction,
       args.reference,
-      args.metadata,
-      args.amount
+      args.metadata
     );
   },
 });
