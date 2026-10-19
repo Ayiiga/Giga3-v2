@@ -8,9 +8,13 @@ import { getSessionToken } from "@/lib/auth";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import { api } from "convex/_generated/api";
 import { useAction, useMutation, useQuery } from "convex/react";
+import {
+  learnerEventSessionKey,
+  markLearnerEventFired,
+} from "@/lib/gigalearn/learnerEngagement";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 
 function newIdempotencyKey(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
@@ -41,9 +45,14 @@ function AssessmentInner() {
     api.gigaLearnAcademyAssessments.getCourseProgression,
     sessionToken && courseSlug ? { sessionToken, courseSlug } : "skip"
   );
+  const enrolments = useQuery(
+    api.gigaLearnAcademy.listMyEnrolments,
+    sessionToken && !courseSlug ? { sessionToken } : "skip"
+  );
 
   const submit = useMutation(api.gigaLearnAcademyAssessments.submitAssessmentAttempt);
   const aiAssist = useAction(api.gigaLearnAcademyAssessments.runAiAssistedAssessmentFeedback);
+  const recordEvent = useMutation(api.gigaLearnEngagement.recordLearnerEvent);
 
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -67,6 +76,13 @@ function AssessmentInner() {
     [list, assessmentId]
   );
 
+  useEffect(() => {
+    if (!sessionToken) return;
+    const key = learnerEventSessionKey("assess_hub_open", courseSlug || "hub");
+    if (!markLearnerEventFired(key)) return;
+    void recordEvent({ sessionToken, event: "assess_hub_open" }).catch(() => undefined);
+  }, [sessionToken, courseSlug, recordEvent]);
+
   if (!sessionToken && !hasPersistedAuth()) {
     return (
       <AcademyChrome active="practice" title="Academy assessments">
@@ -80,12 +96,42 @@ function AssessmentInner() {
   }
 
   if (!courseSlug) {
+    const active =
+      enrolments?.filter((e: { status: string }) => e.status === "active") ?? null;
     return (
       <AcademyChrome active="practice" title="Academy assessments">
-        <p className="text-sm text-muted">Choose a course from the catalogue first.</p>
-        <ButtonLink href="/gigalearn/academy/courses/" className="mt-4 min-h-11">
-          Course catalogue
-        </ButtonLink>
+        <p className="text-sm text-muted">
+          Choose an enrolled course to take server-graded assessments, or browse the catalogue to
+          enrol first.
+        </p>
+        {sessionToken && enrolments === undefined ? (
+          <ClientAppHydrationNotice productName="GigaLearn Academy" />
+        ) : null}
+        {active && active.length > 0 ? (
+          <ul className="mt-4 space-y-2" aria-label="Enrolled courses for assessment">
+            {active.map((row: { courseSlug: string; progressPercent: number }) => (
+              <li key={row.courseSlug}>
+                <ButtonLink
+                  href={`/gigalearn/academy/assess/?course=${encodeURIComponent(row.courseSlug)}`}
+                  className="min-h-11 w-full justify-between sm:w-auto"
+                >
+                  Assess {row.courseSlug}
+                  <span className="text-xs font-normal opacity-80">
+                    {row.progressPercent}% pathway
+                  </span>
+                </ButtonLink>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+          <ButtonLink href="/gigalearn/academy/my/" variant="secondary" className="min-h-11">
+            My courses
+          </ButtonLink>
+          <ButtonLink href="/gigalearn/academy/courses/" className="min-h-11">
+            Course catalogue
+          </ButtonLink>
+        </div>
       </AcademyChrome>
     );
   }

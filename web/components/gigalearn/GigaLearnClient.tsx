@@ -44,6 +44,7 @@ function GigaLearnContent() {
 
   const params = useSearchParams();
   const tabParam = params.get("tab");
+  const intentParam = params.get("intent");
   const { email, usage, mounted } = useMediaBilling();
 
   const [area, setArea] = useState<GigaLearnPrimaryArea>(() => resolvePrimaryArea(tabParam));
@@ -172,6 +173,17 @@ function GigaLearnContent() {
               Exam Practice Centre
             </ButtonLink>
           </div>
+          {intentParam === "promotion-practice" && area === "teacher" ? (
+            <p
+              className="mt-3 rounded-xl border border-border bg-[var(--surface,#fafafa)] px-3 py-2 text-sm text-muted"
+              role="status"
+              data-testid="promotion-practice-intent"
+            >
+              Teacher Promotion practice path from Exam Practice Centre. Use Teacher tools for AI
+              practice now — source-derived promotion banks remain pending review (not invented
+              here).
+            </p>
+          ) : null}
         </div>
         {usage?.credits != null ? (
           <div className="rounded-xl border border-border bg-white px-3 py-2 text-right text-sm">

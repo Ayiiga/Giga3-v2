@@ -58,7 +58,8 @@ export const EXAM_PRACTICE_DESTINATIONS = {
   academyMy: "/gigalearn/academy/my/",
   studentLearn: "/gigalearn/?tab=learn",
   aiTutor: "/gigalearn/?tab=tutor",
-  teacherHub: "/gigalearn/?tab=teacher",
+  /** Intent query helps Teacher hub open practice tools (not a new bank). */
+  teacherHub: "/gigalearn/?tab=teacher&intent=promotion-practice",
   revision: "/gigalearn/?tab=revision",
   gigalearnHome: "/gigalearn/",
 } as const;

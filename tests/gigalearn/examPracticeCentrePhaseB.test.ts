@@ -46,7 +46,9 @@ describe("Exam Practice Centre Phase B", () => {
   it("deep-links only to verified existing GigaLearn destinations", () => {
     expect(EXAM_PRACTICE_DESTINATIONS.aiTutor).toBe("/gigalearn/?tab=tutor");
     expect(EXAM_PRACTICE_DESTINATIONS.studentLearn).toBe("/gigalearn/?tab=learn");
-    expect(EXAM_PRACTICE_DESTINATIONS.teacherHub).toBe("/gigalearn/?tab=teacher");
+    expect(EXAM_PRACTICE_DESTINATIONS.teacherHub).toBe(
+      "/gigalearn/?tab=teacher&intent=promotion-practice"
+    );
     expect(EXAM_PRACTICE_DESTINATIONS.academy).toBe("/gigalearn/academy/");
     expect(EXAM_PRACTICE_DESTINATIONS.academyAssess).toBe("/gigalearn/academy/assess/");
     expect(EXAM_PRACTICE_DESTINATIONS.revision).toBe("/gigalearn/?tab=revision");
