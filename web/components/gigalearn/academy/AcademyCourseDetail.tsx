@@ -16,6 +16,10 @@ import {
   friendlyAcademyEnrolError,
 } from "@/lib/gigalearn/academy/enrolErrors";
 import { hrefForAcademyResource } from "@/lib/gigalearn/academy/resourceLinks";
+import {
+  getTechCourseMeta,
+  techPracticeHref,
+} from "@/lib/gigalearn/academy/techBanks/techBankMeta";
 import { ACADEMY_SURFACE_CLASS } from "@/lib/gigalearn/academy/visualTheme";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -172,6 +176,30 @@ function AcademyCourseDetailInner() {
         </div>
 
         <p className="academy-visual-muted text-sm leading-relaxed">{course.description}</p>
+
+        {(() => {
+          const tech = getTechCourseMeta(slug);
+          if (!tech) return null;
+          return (
+            <div
+              className="academy-visual-tile min-w-0 space-y-2 rounded-xl p-3"
+              data-testid="tech-hub-course-cta"
+            >
+              <h2 className="text-sm font-semibold">Technology Learning Hub</h2>
+              <p className="academy-visual-muted text-sm">
+                {tech.awaitingMaterials
+                  ? "Course pathway is ready. Interactive question practice unlocks after the source PDF is imported and validated."
+                  : `${tech.approvedQuestionCount} approved practice questions across ${tech.topics.length} topics (unique items after near-duplicate removal).`}
+              </p>
+              <ButtonLink
+                href={techPracticeHref(slug, { mode: "learn" })}
+                className="academy-visual-cta min-h-11"
+              >
+                {tech.awaitingMaterials ? "Open hub (awaiting bank)" : "Start interactive practice"}
+              </ButtonLink>
+            </div>
+          );
+        })()}
 
         <div className="grid min-w-0 gap-4 sm:grid-cols-2">
           <div className="academy-visual-tile min-w-0 rounded-xl p-3">

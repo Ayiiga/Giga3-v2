@@ -1,0 +1,438 @@
+{
+  "courses": [
+    {
+      "bankId": "website-pwa",
+      "courseSlug": "website-pwa-development",
+      "title": "Website Development and Progressive Web Apps",
+      "difficulty": "intermediate",
+      "awaitingMaterials": false,
+      "sourceDocument": "Website_PWA_500_Practical_Objective_Questions_df45.pdf",
+      "extractedFromSource": 500,
+      "approvedQuestionCount": 273,
+      "topics": [
+        {
+          "id": "cache-updates",
+          "label": "Cache updates",
+          "questionCount": 12
+        },
+        {
+          "id": "seo",
+          "label": "SEO",
+          "questionCount": 12
+        },
+        {
+          "id": "xss",
+          "label": "XSS",
+          "questionCount": 12
+        },
+        {
+          "id": "offline-sync",
+          "label": "Offline sync",
+          "questionCount": 12
+        },
+        {
+          "id": "browser-compatibility",
+          "label": "Browser compatibility",
+          "questionCount": 12
+        },
+        {
+          "id": "cors",
+          "label": "CORS",
+          "questionCount": 12
+        },
+        {
+          "id": "privacy",
+          "label": "Privacy",
+          "questionCount": 12
+        },
+        {
+          "id": "installability",
+          "label": "Installability",
+          "questionCount": 11
+        },
+        {
+          "id": "https",
+          "label": "HTTPS",
+          "questionCount": 11
+        },
+        {
+          "id": "accessibility",
+          "label": "Accessibility",
+          "questionCount": 11
+        },
+        {
+          "id": "performance",
+          "label": "Performance",
+          "questionCount": 11
+        },
+        {
+          "id": "forms",
+          "label": "Forms",
+          "questionCount": 11
+        },
+        {
+          "id": "static-export",
+          "label": "Static export",
+          "questionCount": 11
+        },
+        {
+          "id": "web-storage",
+          "label": "Web storage",
+          "questionCount": 11
+        },
+        {
+          "id": "file-uploads",
+          "label": "File uploads",
+          "questionCount": 11
+        },
+        {
+          "id": "rate-limiting",
+          "label": "Rate limiting",
+          "questionCount": 11
+        },
+        {
+          "id": "security-headers",
+          "label": "Security headers",
+          "questionCount": 11
+        },
+        {
+          "id": "database-migration",
+          "label": "Database migration",
+          "questionCount": 11
+        },
+        {
+          "id": "payments",
+          "label": "Payments",
+          "questionCount": 11
+        },
+        {
+          "id": "service-worker",
+          "label": "Service worker",
+          "questionCount": 10
+        },
+        {
+          "id": "push-notifications",
+          "label": "Push notifications",
+          "questionCount": 10
+        },
+        {
+          "id": "pwa-update-ux",
+          "label": "PWA update UX",
+          "questionCount": 10
+        },
+        {
+          "id": "responsive-design",
+          "label": "Responsive design",
+          "questionCount": 9
+        },
+        {
+          "id": "authentication",
+          "label": "Authentication",
+          "questionCount": 9
+        },
+        {
+          "id": "testing",
+          "label": "Testing",
+          "questionCount": 9
+        }
+      ]
+    },
+    {
+      "bankId": "robotics",
+      "courseSlug": "robotics-intelligent-systems",
+      "title": "Robotics and Intelligent Systems",
+      "difficulty": "intermediate",
+      "awaitingMaterials": false,
+      "sourceDocument": "Robotics_500_Practical_Objective_Questions_042e.pdf",
+      "extractedFromSource": 500,
+      "approvedQuestionCount": 273,
+      "topics": [
+        {
+          "id": "power",
+          "label": "Power",
+          "questionCount": 12
+        },
+        {
+          "id": "path-planning",
+          "label": "Path planning",
+          "questionCount": 12
+        },
+        {
+          "id": "arm-safety",
+          "label": "Arm safety",
+          "questionCount": 12
+        },
+        {
+          "id": "communication",
+          "label": "Communication",
+          "questionCount": 12
+        },
+        {
+          "id": "obstacle-avoidance",
+          "label": "Obstacle avoidance",
+          "questionCount": 12
+        },
+        {
+          "id": "calibration",
+          "label": "Calibration",
+          "questionCount": 12
+        },
+        {
+          "id": "cybersecurity",
+          "label": "Cybersecurity",
+          "questionCount": 12
+        },
+        {
+          "id": "motor-control",
+          "label": "Motor control",
+          "questionCount": 11
+        },
+        {
+          "id": "i2c-wiring",
+          "label": "I2C wiring",
+          "questionCount": 11
+        },
+        {
+          "id": "pid",
+          "label": "PID",
+          "questionCount": 11
+        },
+        {
+          "id": "localisation",
+          "label": "Localisation",
+          "questionCount": 11
+        },
+        {
+          "id": "vision",
+          "label": "Vision",
+          "questionCount": 11
+        },
+        {
+          "id": "battery",
+          "label": "Battery",
+          "questionCount": 11
+        },
+        {
+          "id": "simulation",
+          "label": "Simulation",
+          "questionCount": 11
+        },
+        {
+          "id": "gripper",
+          "label": "Gripper",
+          "questionCount": 11
+        },
+        {
+          "id": "maintenance",
+          "label": "Maintenance",
+          "questionCount": 11
+        },
+        {
+          "id": "kinematics",
+          "label": "Kinematics",
+          "questionCount": 11
+        },
+        {
+          "id": "mechanical-vibration",
+          "label": "Mechanical vibration",
+          "questionCount": 11
+        },
+        {
+          "id": "testing",
+          "label": "Testing",
+          "questionCount": 11
+        },
+        {
+          "id": "emergency-stop",
+          "label": "Emergency stop",
+          "questionCount": 10
+        },
+        {
+          "id": "encoders",
+          "label": "Encoders",
+          "questionCount": 10
+        },
+        {
+          "id": "power-budgeting",
+          "label": "Power budgeting",
+          "questionCount": 10
+        },
+        {
+          "id": "sensors",
+          "label": "Sensors",
+          "questionCount": 9
+        },
+        {
+          "id": "servo",
+          "label": "Servo",
+          "questionCount": 9
+        },
+        {
+          "id": "fleet-control",
+          "label": "Fleet control",
+          "questionCount": 9
+        }
+      ]
+    },
+    {
+      "bankId": "other-digital",
+      "courseSlug": "other-digital-technologies",
+      "title": "Other Digital Technologies",
+      "difficulty": "beginner",
+      "awaitingMaterials": false,
+      "sourceDocument": "Other_Digital_Technologies_500_Practical_Objective_Questions_424c.pdf",
+      "extractedFromSource": 500,
+      "approvedQuestionCount": 273,
+      "topics": [
+        {
+          "id": "iot",
+          "label": "IoT",
+          "questionCount": 12
+        },
+        {
+          "id": "api-integration",
+          "label": "API integration",
+          "questionCount": 12
+        },
+        {
+          "id": "privacy",
+          "label": "Privacy",
+          "questionCount": 12
+        },
+        {
+          "id": "charts",
+          "label": "Charts",
+          "questionCount": 12
+        },
+        {
+          "id": "project-planning",
+          "label": "Project planning",
+          "questionCount": 12
+        },
+        {
+          "id": "dns",
+          "label": "DNS",
+          "questionCount": 12
+        },
+        {
+          "id": "cloud-backup",
+          "label": "Cloud backup",
+          "questionCount": 12
+        },
+        {
+          "id": "mfa",
+          "label": "MFA",
+          "questionCount": 11
+        },
+        {
+          "id": "cloud-cost",
+          "label": "Cloud cost",
+          "questionCount": 11
+        },
+        {
+          "id": "data-cleaning",
+          "label": "Data cleaning",
+          "questionCount": 11
+        },
+        {
+          "id": "version-control",
+          "label": "Version control",
+          "questionCount": 11
+        },
+        {
+          "id": "digital-payments",
+          "label": "Digital payments",
+          "questionCount": 11
+        },
+        {
+          "id": "media-literacy",
+          "label": "Media literacy",
+          "questionCount": 11
+        },
+        {
+          "id": "automation",
+          "label": "Automation",
+          "questionCount": 11
+        },
+        {
+          "id": "iot-security",
+          "label": "IoT security",
+          "questionCount": 11
+        },
+        {
+          "id": "spreadsheet",
+          "label": "Spreadsheet",
+          "questionCount": 11
+        },
+        {
+          "id": "networking",
+          "label": "Networking",
+          "questionCount": 11
+        },
+        {
+          "id": "incident-response",
+          "label": "Incident response",
+          "questionCount": 11
+        },
+        {
+          "id": "digital-marketing",
+          "label": "Digital marketing",
+          "questionCount": 11
+        },
+        {
+          "id": "backups",
+          "label": "Backups",
+          "questionCount": 10
+        },
+        {
+          "id": "cloud-access",
+          "label": "Cloud access",
+          "questionCount": 10
+        },
+        {
+          "id": "digital-identity",
+          "label": "Digital identity",
+          "questionCount": 10
+        },
+        {
+          "id": "phishing",
+          "label": "Phishing",
+          "questionCount": 9
+        },
+        {
+          "id": "encryption",
+          "label": "Encryption",
+          "questionCount": 9
+        },
+        {
+          "id": "open-source",
+          "label": "Open source",
+          "questionCount": 9
+        }
+      ]
+    },
+    {
+      "bankId": "ai-ml",
+      "courseSlug": "ai-machine-learning",
+      "title": "Artificial Intelligence and Machine Learning",
+      "difficulty": "beginner",
+      "awaitingMaterials": true,
+      "sourceDocument": null,
+      "extractedFromSource": 0,
+      "approvedQuestionCount": 0,
+      "topics": []
+    },
+    {
+      "bankId": "mobile-app",
+      "courseSlug": "mobile-app-development",
+      "title": "Mobile App Development",
+      "difficulty": "intermediate",
+      "awaitingMaterials": true,
+      "sourceDocument": null,
+      "extractedFromSource": 0,
+      "approvedQuestionCount": 0,
+      "topics": []
+    }
+  ],
+  "importReportPath": "import-report.json"
+}
