@@ -118,13 +118,13 @@ describe("GigaLearn Academy Phase 1", () => {
   });
 
   it("catalogue and detail UI components exist (mobile-first class patterns)", () => {
-    const catalogue = readFileSync(
-      resolve(ROOT, "web/components/gigalearn/academy/AcademyCatalogue.tsx"),
+    const catalogueBody = readFileSync(
+      resolve(ROOT, "web/components/gigalearn/academy/AcademyCourseCatalogueBody.tsx"),
       "utf8"
     );
-    expect(catalogue).toContain("min-h-11");
-    expect(catalogue).toContain("sm:grid-cols-2");
-    expect(catalogue).toContain("Search");
+    expect(catalogueBody).toContain("min-h-11");
+    expect(catalogueBody).toContain("sm:grid-cols-2");
+    expect(catalogueBody).toContain("Search");
 
     const detail = readFileSync(
       resolve(ROOT, "web/components/gigalearn/academy/AcademyCourseDetail.tsx"),

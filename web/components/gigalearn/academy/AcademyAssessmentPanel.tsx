@@ -69,7 +69,7 @@ function AssessmentInner() {
 
   if (!sessionToken && !hasPersistedAuth()) {
     return (
-      <AcademyChrome active="course" title="Academy assessments">
+      <AcademyChrome active="practice" title="Academy assessments">
         <ProductSignInPrompt
           productName="GigaLearn Academy"
           description="Sign in and enrol to take server-graded Academy assessments."
@@ -81,10 +81,10 @@ function AssessmentInner() {
 
   if (!courseSlug) {
     return (
-      <AcademyChrome active="course" title="Academy assessments">
+      <AcademyChrome active="practice" title="Academy assessments">
         <p className="text-sm text-muted">Choose a course from the catalogue first.</p>
-        <ButtonLink href="/gigalearn/academy/" className="mt-4 min-h-11">
-          Catalogue
+        <ButtonLink href="/gigalearn/academy/courses/" className="mt-4 min-h-11">
+          Course catalogue
         </ButtonLink>
       </AcademyChrome>
     );
@@ -145,7 +145,7 @@ function AssessmentInner() {
 
   return (
     <AcademyChrome
-      active="course"
+      active="practice"
       title="Course assessments"
       subtitle="Server-authoritative grading. Tutoring alone never completes an assessment. No certificates in this phase."
     >

@@ -5,10 +5,10 @@ import { publicMetadata } from "@/lib/seo/publicMetadata";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
-const AcademyCatalogueRoot = dynamic(
+const AcademyHomeRoot = dynamic(
   () =>
     import("@/components/gigalearn/academy/AcademyPageRoots").then((m) => ({
-      default: m.AcademyCatalogueRoot,
+      default: m.AcademyHomeRoot,
     })),
   {
     ssr: false,
@@ -18,9 +18,9 @@ const AcademyCatalogueRoot = dynamic(
 
 export const metadata = publicMetadata({
   path: "/gigalearn/academy",
-  title: "GigaLearn Academy — Structured Courses for Ghana | Giga3 AI",
+  title: "GigaLearn Academy — Learn by Doing | Giga3 AI",
   description:
-    "Browse GigaLearn Academy courses: BECE and WASSCE pathways, early years Discover media, and teacher studio tracks that reuse existing GigaLearn tools.",
+    "Learn by Doing. Build with AI. Create the Future. Practice Centre, Learning Studios, and existing GigaLearn Academy pathways — not a separate curriculum rebuild.",
 });
 
 export default function GigaLearnAcademyPage() {
@@ -31,7 +31,7 @@ export default function GigaLearnAcademyPage() {
           path: "/gigalearn/academy",
           name: "GigaLearn Academy",
           description:
-            "Structured course catalogue and learning pathways on GigaLearn — additive to existing hubs.",
+            "Practice-oriented GigaLearn Academy hub with Learning Studios, Practice Centre, and existing course pathways.",
         }}
       />
       <JsonLd
@@ -44,12 +44,14 @@ export default function GigaLearnAcademyPage() {
       <ProductSeoHeader
         compact
         title="GigaLearn Academy"
-        description="Structured courses and pathways that build on GigaLearn — not a replacement for Student, Teacher, or AI Tutor hubs."
+        description="Learn by Doing. Build with AI. Create the Future. Practice, studios, and existing Academy pathways on GigaLearn."
         showProductNav={false}
       />
+      {/* SSR H1 for SEO — client shell repeats branding without a second document h1 conflict via ProductSeoHeader */}
+      <h1 className="sr-only">GigaLearn Academy — Learn by Doing. Build with AI. Create the Future.</h1>
       <div className="marketing-stable gigalearn-stable section-padding pt-4 pb-6 sm:pt-6">
         <Suspense fallback={<ClientAppHydrationNotice productName="GigaLearn Academy" />}>
-          <AcademyCatalogueRoot />
+          <AcademyHomeRoot />
         </Suspense>
       </div>
     </>

@@ -43,4 +43,4 @@ Redesign **landing + nav only**:
 
 ## Next step
 
-Implement Phase 1 on this branch after plan approval; keep Phases 2–6 incremental.
+Phase 1 landing + nav implemented on this branch — see `docs/gigalearn-academy-phase1-implementation.md`. Keep Phases 2–6 incremental.
