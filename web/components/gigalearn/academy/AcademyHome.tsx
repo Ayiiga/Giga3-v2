@@ -110,10 +110,10 @@ function PersonalLearningSummary() {
   return (
     <section
       aria-labelledby="academy-summary-heading"
-      className={cn(ACADEMY_SURFACE_CLASS.dashboard, "p-4 sm:p-5")}
+      className={cn(ACADEMY_SURFACE_CLASS.dashboard, "min-w-0 p-4 sm:p-5")}
     >
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
+      <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
           <h2 id="academy-summary-heading" className="text-base font-semibold">
             Your learning summary
           </h2>
@@ -123,69 +123,66 @@ function PersonalLearningSummary() {
         </div>
         <Link
           href="/gigalearn/academy/my/"
-          className="text-sm font-semibold underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="shrink-0 text-sm font-semibold underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           My courses →
         </Link>
       </div>
 
-      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-4 grid min-w-0 gap-3">
+        <dl className="academy-visual-stat-grid">
           <div className="academy-visual-tile rounded-xl p-3">
-            <dt className="academy-visual-muted text-[11px] font-medium uppercase tracking-wide">
-              Enrolments
-            </dt>
-            <dd className="mt-1 text-xl font-bold">{enrolments.length}</dd>
+            <dt className="academy-visual-stat-label academy-visual-muted">Enrolments</dt>
+            <dd className="mt-1 text-xl font-bold tabular-nums">{enrolments.length}</dd>
           </div>
           <div
-            className={cn(ACADEMY_SURFACE_CLASS.performance, "rounded-xl p-3")}
+            className={cn(ACADEMY_SURFACE_CLASS.performance, "min-w-0 rounded-xl p-3")}
             aria-label="Assessment performance"
           >
-            <dt className="academy-visual-muted text-[11px] font-medium uppercase tracking-wide">
-              Assessments
-            </dt>
-            <dd className="mt-1 text-xl font-bold">{attempts.length}</dd>
+            <dt className="academy-visual-stat-label academy-visual-muted">Assessments</dt>
+            <dd className="mt-1 text-xl font-bold tabular-nums">{attempts.length}</dd>
           </div>
           <div
-            className={cn(ACADEMY_SURFACE_CLASS.performance, "rounded-xl p-3")}
+            className={cn(ACADEMY_SURFACE_CLASS.performance, "min-w-0 rounded-xl p-3")}
             aria-label="Passed assessments"
           >
-            <dt className="academy-visual-muted text-[11px] font-medium uppercase tracking-wide">
-              Passed
-            </dt>
-            <dd className="mt-1 text-xl font-bold">
-              {graded.length === 0 ? "—" : passedCount}
+            <dt className="academy-visual-stat-label academy-visual-muted">Passed</dt>
+            <dd className="mt-1 text-xl font-bold tabular-nums">
+              {graded.length === 0 ? 0 : passedCount}
             </dd>
           </div>
           <div
-            className={cn(ACADEMY_SURFACE_CLASS.certificates, "rounded-xl p-3")}
+            className={cn(ACADEMY_SURFACE_CLASS.certificates, "min-w-0 rounded-xl p-3")}
             aria-label="Certificates earned"
           >
-            <dt className="academy-visual-muted flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide">
-              <Award className="h-3.5 w-3.5" aria-hidden />
-              Certificates
+            <dt className="academy-visual-stat-label academy-visual-muted flex items-center gap-1">
+              <Award className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              <span>Certificates</span>
             </dt>
-            <dd className="mt-1 text-xl font-bold">{certificates.length}</dd>
+            <dd className="mt-1 text-xl font-bold tabular-nums">{certificates.length}</dd>
           </div>
         </dl>
 
         {resume && resumeTitle ? (
           <article className="academy-visual-course-card">
-            <div className="flex min-w-0 flex-1 items-start gap-3">
+            <div className="flex min-w-0 items-start gap-3">
               <LearningProgressRing
                 percent={progressPercent}
+                size={64}
                 label={`${resumeTitle} ${progressPercent}% complete`}
               />
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 overflow-hidden">
                 <p className="text-xs font-semibold uppercase tracking-wide text-[#6D28D9]">
                   Continue learning
                 </p>
-                <p className="truncate text-base font-bold text-[#1E1B4B]">{resumeTitle}</p>
+                <p className="break-words text-base font-bold leading-snug text-[#1E1B4B]">
+                  {resumeTitle}
+                </p>
                 <p className="academy-visual-muted mt-1 text-xs">
                   Pathway {progressPercent}%
                   {resume.lastLessonId ? ` · ${resume.lastLessonId}` : ""}
                 </p>
-                <div className="academy-visual-progress-track mt-2 max-w-xs">
+                <div className="academy-visual-progress-track mt-2 w-full max-w-full">
                   <div
                     className="academy-visual-progress-fill"
                     style={{ width: `${Math.max(0, Math.min(100, progressPercent))}%` }}
@@ -195,7 +192,7 @@ function PersonalLearningSummary() {
             </div>
             <ButtonLink
               href={`/gigalearn/academy/course/?slug=${encodeURIComponent(resume.courseSlug)}`}
-              className="academy-visual-cta academy-visual-cta--success min-h-11 shrink-0"
+              className="academy-visual-cta academy-visual-cta--success min-h-11 w-full sm:w-auto"
             >
               Continue
             </ButtonLink>

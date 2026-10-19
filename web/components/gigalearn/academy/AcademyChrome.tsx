@@ -48,10 +48,10 @@ export function AcademyChrome({
     <div
       className={cn(
         ACADEMY_SURFACE_CLASS.shell,
-        "gigalearn-stable document-compact mx-auto max-w-6xl pb-[calc(var(--primary-nav-offset,0px)+1rem)]"
+        "gigalearn-stable document-compact mx-auto w-full min-w-0 max-w-6xl pb-[calc(var(--primary-nav-offset,0px)+1rem)]"
       )}
     >
-      <div className="academy-visual-panel space-y-4 p-4 sm:p-6">
+      <div className="academy-visual-panel min-w-0 space-y-4 p-3 sm:p-6">
         <header className="space-y-3">
           <Link
             href={siteConfig.links.gigalearn}
@@ -99,7 +99,7 @@ export function AcademyChrome({
             </div>
           </nav>
         </header>
-        <div className="space-y-4">{children}</div>
+        <div className="min-w-0 space-y-4">{children}</div>
       </div>
     </div>
   );

@@ -921,6 +921,11 @@ button:focus-visible {
 .academy-visual-shell {
   --av-bg: #f5f0ff;
   --av-fg: #1e1b4b;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
   border-radius: 1.5rem;
   background:
     radial-gradient(120% 80% at 0% 0%, #fce7f3 0%, transparent 55%),
@@ -937,6 +942,11 @@ button:focus-visible {
 }
 
 .academy-visual-panel {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
   border-radius: 1.25rem;
   border: 1px solid color-mix(in srgb, #4c1d95 10%, #ffffff);
   background: color-mix(in srgb, #ffffff 92%, #f5f0ff);
@@ -976,6 +986,11 @@ button:focus-visible {
 .academy-visual-dashboard {
   --av-bg: #f3e8ff;
   --av-fg: #2e1065;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
 }
 
 .academy-visual-practice {
@@ -1087,9 +1102,38 @@ button:focus-visible {
 }
 
 .academy-visual-tile {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
   border: 1px solid var(--av-border);
   background: var(--av-surface);
   color: var(--av-fg);
+  overflow-wrap: anywhere;
+}
+
+.academy-visual-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .academy-visual-stat-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.academy-visual-stat-label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .academy-visual-cta {
@@ -1199,6 +1243,10 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   border-radius: 1.25rem;
   border: 1px solid #e9e4ff;
   background: #ffffff;

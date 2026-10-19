@@ -72,7 +72,7 @@ export function AcademyMyCourses() {
                         Status: {row.status} · Pathway {percent}%
                         {row.lastLessonId ? ` · Resume @ ${row.lastLessonId}` : ""}
                       </p>
-                      <div className="academy-visual-progress-track mt-2 max-w-xs">
+                      <div className="academy-visual-progress-track mt-2 w-full max-w-full">
                         <div
                           className="academy-visual-progress-fill"
                           style={{ width: `${Math.max(0, Math.min(100, percent))}%` }}

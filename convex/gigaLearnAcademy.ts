@@ -345,11 +345,20 @@ export const enrolInCourse = mutation({
       .withIndex("by_user_course", (q) => q.eq("userId", email).eq("courseSlug", slug))
       .first();
 
+    // Idempotent for active/completed — client may race after "Enrolled" is shown.
     if (existing && existing.status === "active") {
-      throw new Error("You are already enrolled in this course.");
+      return {
+        enrolmentId: existing._id,
+        reactivated: false as const,
+        alreadyEnrolled: true as const,
+      };
     }
     if (existing && existing.status === "completed") {
-      throw new Error("You have already completed this course.");
+      return {
+        enrolmentId: existing._id,
+        reactivated: false as const,
+        alreadyCompleted: true as const,
+      };
     }
 
     const now = Date.now();
