@@ -111,14 +111,6 @@ function MarketplaceBrowseInner() {
           </div>
         </header>
 
-        <CreatorAcademySection />
-
-        <SurfaceRecommendations
-          surface="marketplace"
-          title="Suggested marketplace actions"
-          limit={3}
-        />
-
         <div className="space-y-2.5">
           <div className="relative min-w-0">
             <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted" aria-hidden />
@@ -206,11 +198,18 @@ function MarketplaceBrowseInner() {
         {!visible ? (
           <LoadingState label="Loading marketplace…" />
         ) : visible.length === 0 ? (
-          <EmptyState
-            icon={Store}
-            title="No products found"
-            description="Try another search, collection, or price range — or browse the Creator Academy guides above."
-          />
+          <div className="space-y-3">
+            <EmptyState
+              icon={Store}
+              title="No products found"
+              description="Try another search, collection, or price range — or list your own digital product."
+            />
+            <div className="flex justify-center">
+              <ButtonLink href="/marketplace/sell" size="sm">
+                Start Selling
+              </ButtonLink>
+            </div>
+          </div>
         ) : (
           <>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
@@ -218,7 +217,7 @@ function MarketplaceBrowseInner() {
                 <Link
                   key={item._id}
                   href={`/marketplace/item/${item._id}/`}
-                  className="saas-card group flex flex-col overflow-hidden rounded-2xl p-2.5 sm:p-3 hover:border-emerald-600/35"
+                  className="saas-card group flex flex-col overflow-hidden rounded-2xl p-2.5 sm:p-3 hover:border-accent/35"
                 >
                   <ProductCover
                     src={item.coverImageUrl}
