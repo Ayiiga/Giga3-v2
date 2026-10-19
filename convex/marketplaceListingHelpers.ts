@@ -25,3 +25,26 @@ export function listingFileReviewLabel(
   if (isOfficialMarketplaceListing(listing)) return "approved";
   return listing.fileReviewStatus ?? "approved";
 }
+
+/**
+ * Public preview/cover URLs must be http(s) only — reject javascript:/data: etc.
+ * Empty input clears the field (returns undefined).
+ */
+export function sanitizePublicHttpUrl(
+  raw: string | undefined,
+  fieldLabel: string,
+  maxLen = 500
+): string | undefined {
+  const trimmed = raw?.trim();
+  if (!trimmed) return undefined;
+  let parsed: URL;
+  try {
+    parsed = new URL(trimmed);
+  } catch {
+    throw new Error(`${fieldLabel} must be a valid http(s) URL.`);
+  }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    throw new Error(`${fieldLabel} must use http or https.`);
+  }
+  return trimmed.slice(0, maxLen);
+}

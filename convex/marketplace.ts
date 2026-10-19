@@ -10,7 +10,10 @@ import {
   marketplaceReportReasonValidator,
 } from "./schema";
 import { marketplaceUploadsEnabled } from "./marketplaceUploadPolicy";
-import { isListingFileApproved } from "./marketplaceListingHelpers";
+import {
+  isListingFileApproved,
+  sanitizePublicHttpUrl,
+} from "./marketplaceListingHelpers";
 import {
   aggregatePurchaseTotals,
   clampStorefrontLimit,
@@ -275,10 +278,11 @@ export const createListing = mutation({
     if (!title || !description) throw new Error("Title and description are required.");
     if (args.priceGhs < 1) throw new Error("Minimum price is GHS 1.");
 
-    let coverImageUrl = args.coverImageUrl?.trim();
     if (args.coverStorageId) {
       throw new Error("Use prepareListingUpload for cover images.");
     }
+    const coverImageUrl = sanitizePublicHttpUrl(args.coverImageUrl, "Cover image URL");
+    const previewUrl = sanitizePublicHttpUrl(args.previewUrl, "Preview URL");
 
     const now = Date.now();
     return await ctx.db.insert("marketplaceListings", {
@@ -292,7 +296,7 @@ export const createListing = mutation({
       copyrightNotice: args.copyrightNotice?.trim().slice(0, 500),
       tags: args.tags.map((t) => t.trim().slice(0, 40)).filter(Boolean).slice(0, 12),
       previewText: args.previewText?.trim().slice(0, 2000),
-      previewUrl: args.previewUrl?.trim().slice(0, 500) || undefined,
+      previewUrl,
       previewToc: args.previewToc?.trim().slice(0, 4000) || undefined,
       previewIntro: args.previewIntro?.trim().slice(0, 4000) || undefined,
       coverImageUrl,
@@ -375,7 +379,7 @@ export const updateListing = mutation({
     if (args.status !== undefined) patch.status = args.status;
     if (args.previewText !== undefined) patch.previewText = args.previewText?.slice(0, 2000);
     if (args.previewUrl !== undefined) {
-      patch.previewUrl = args.previewUrl.trim().slice(0, 500) || undefined;
+      patch.previewUrl = sanitizePublicHttpUrl(args.previewUrl, "Preview URL");
     }
     if (args.previewToc !== undefined) {
       patch.previewToc = args.previewToc.trim().slice(0, 4000) || undefined;
@@ -385,8 +389,7 @@ export const updateListing = mutation({
     }
     if (args.coverImageUrl !== undefined) {
       // External / CDN covers only — seller file covers must use prepareListingUpload.
-      const url = args.coverImageUrl.trim().slice(0, 500);
-      patch.coverImageUrl = url || undefined;
+      patch.coverImageUrl = sanitizePublicHttpUrl(args.coverImageUrl, "Cover image URL");
     }
     if (args.tags !== undefined) {
       patch.tags = args.tags.map((t) => t.trim().slice(0, 40)).filter(Boolean).slice(0, 12);
