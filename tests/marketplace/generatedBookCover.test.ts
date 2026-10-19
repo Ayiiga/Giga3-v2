@@ -34,7 +34,7 @@ describe("generated book cover page", () => {
       "utf8"
     );
     expect(cover).toContain("generatedBookCoverDataUrl");
-    expect(cover).toContain('data-cover-state={!src || broken ? "generated"');
+    expect(cover).toContain('data-cover-state={isGenerated ? "generated" : "image"}');
     expect(cover).toContain("productType");
   });
 });
