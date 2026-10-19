@@ -585,6 +585,10 @@ export const deductTokens = mutation({
   args: { ...sessionArgs, amount: v.number() },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);
+    // Reject non-positive amounts — a negative value would mint tokens.
+    if (!Number.isFinite(args.amount) || args.amount <= 0 || !Number.isInteger(args.amount)) {
+      throw new Error("Invalid token amount");
+    }
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", email))
@@ -592,7 +596,13 @@ export const deductTokens = mutation({
     if (!user) {
       throw new Error("User not found");
     }
-    const tokens = Math.max(0, (user.tokens ?? 0) - args.amount);
+    const balance = user.tokens ?? 0;
+    if (balance < args.amount) {
+      throw new Error(
+        `Insufficient tokens (${args.amount} required, ${balance} available)`
+      );
+    }
+    const tokens = balance - args.amount;
     await ctx.db.patch(user._id, { tokens });
     return tokens;
   },

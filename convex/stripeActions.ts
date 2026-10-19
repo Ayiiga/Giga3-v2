@@ -17,7 +17,7 @@ export const createCheckout = action({
       throw new Error("Stripe secret not configured");
     }
 
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
 
     const unitAmount = Math.max(100, Math.round(args.tokens * 100));
     const frontendUrl = process.env.FRONTEND_URL || "https://www.giga3ai.com";

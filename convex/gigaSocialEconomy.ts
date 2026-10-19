@@ -353,7 +353,7 @@ export const getEconomySettings = query({
 export const getCreatorDashboard = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const profile = await ctx.db
       .query("socialProfiles")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -530,7 +530,7 @@ export const getGiftsHub = query({
     let viewerId: string | null = null;
     if (args.sessionToken) {
       try {
-        viewerId = await requireSession(args.sessionToken);
+        viewerId = await requireSession(args.sessionToken, ctx);
       } catch {
         viewerId = null;
       }
@@ -678,7 +678,7 @@ export const sendCreatorGift = mutation({
     postId: v.optional(v.id("socialPosts")),
   },
   handler: async (ctx, args) => {
-    const senderId = await requireSession(args.sessionToken);
+    const senderId = await requireSession(args.sessionToken, ctx);
     if (senderId === args.creatorId) throw new Error("You cannot gift yourself.");
 
     const profile = await ctx.db
@@ -721,7 +721,7 @@ export const sendCreatorGift = mutation({
 export const getAffiliateDashboard = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const profile = await ctx.db
       .query("socialProfiles")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -1043,7 +1043,7 @@ export const createBoostCampaign = mutation({
 export const listBoostCampaigns = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const boosts = await ctx.db
       .query("socialPostBoosts")
       .withIndex("by_creator_created", (q) => q.eq("creatorId", userId))
@@ -1086,7 +1086,7 @@ export const getProfileEconomySummary = query({
     let viewerId: string | null = null;
     if (args.sessionToken) {
       try {
-        viewerId = await requireSession(args.sessionToken);
+        viewerId = await requireSession(args.sessionToken, ctx);
       } catch {
         viewerId = null;
       }

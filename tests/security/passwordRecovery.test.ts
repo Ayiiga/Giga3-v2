@@ -147,6 +147,9 @@ describe("password recovery and account flows — source invariants", () => {
       "convex/credits.ts",
       "convex/gigaWallet.ts",
       "convex/marketplace.ts",
+      "convex/gigaSocialEconomy.ts",
+      "convex/gigaSocialLive.ts",
+      "convex/stripeActions.ts",
     ]) {
       expect(read(file), file).not.toMatch(/requireSession\(args\.sessionToken\)/);
     }
