@@ -52,17 +52,25 @@ export default function GigaLearnPage() {
       />
       <ProductSeoHeader
         compact
-        title="GigaLearn — Learn Smarter"
-        description="Learn, practise and prepare for exams with GigaLearn, your AI-powered learning companion for Ghana."
+        expandLabel="Learn more"
+        collapseLabel="Show less"
+        title="GigaLearn — Learn Smarter, Score Higher"
+        description="Explore Ghana curriculum-aligned lessons, practise exam questions, track your progress, and learn with your AI tutor."
         detail={`${GIGALEARN_META_DESCRIPTION} Structured study support for JHS and SHS students, teachers and parents — with BECE and WASSCE revision help, practice questions and responsible AI learning habits.`}
         showProductNav={false}
       />
-      <div className="marketing-stable gigalearn-stable section-padding pt-4 pb-6 sm:pt-6">
+      {/* Compact app shell padding — do not use the marketing py-20 utility here. */}
+      <div className="marketing-stable gigalearn-stable px-4 py-3 pb-6 sm:px-6 sm:py-4">
         <Suspense fallback={<ClientAppHydrationNotice productName="GigaLearn" />}>
           <GigaLearnPageRoot />
         </Suspense>
       </div>
-      <PublicProductPageShell {...GIGALEARN_PAGE_SHELL} titleAs="h2" />
+      <PublicProductPageShell
+        {...GIGALEARN_PAGE_SHELL}
+        title="How GigaLearn works"
+        titleAs="h2"
+        compact
+      />
     </>
   );
 }

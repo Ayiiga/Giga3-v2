@@ -23,6 +23,8 @@ export type PublicProductPageShellProps = {
   relatedLinks?: readonly { href: string; label: string }[];
   /** Use h2 when the interactive app above already provides the page h1. */
   titleAs?: "h1" | "h2";
+  /** Tighter spacing when mounted below an interactive product app. */
+  compact?: boolean;
 };
 
 /** Structured SEO shell for thin public product pages (static-export safe). */
@@ -40,17 +42,28 @@ export function PublicProductPageShell({
   secondaryLabel,
   relatedLinks,
   titleAs = "h1",
+  compact = false,
 }: PublicProductPageShellProps) {
   const TitleTag = titleAs;
   return (
-    <section className="marketing-stable bg-white py-12 sm:py-16">
+    <section
+      className={
+        compact
+          ? "marketing-stable border-t border-border bg-white py-6 sm:py-8"
+          : "marketing-stable bg-white py-12 sm:py-16"
+      }
+    >
       <Container>
-        <div className="mx-auto max-w-3xl space-y-10">
+        <div className={compact ? "mx-auto max-w-3xl space-y-6" : "mx-auto max-w-3xl space-y-10"}>
           <header>
-            <TitleTag className="page-title">{title}</TitleTag>
-            <p className="section-lead mt-5">{description}</p>
-            <p className="mt-3 text-sm text-muted">Built for {audience}.</p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <TitleTag className={compact ? "text-xl font-bold tracking-tight sm:text-2xl" : "page-title"}>
+              {title}
+            </TitleTag>
+            <p className={compact ? "mt-2 text-sm leading-6 text-muted sm:text-base" : "section-lead mt-5"}>
+              {description}
+            </p>
+            <p className="mt-2 text-sm text-muted">Built for {audience}.</p>
+            <div className={compact ? "mt-4 flex flex-wrap gap-2" : "mt-8 flex flex-wrap gap-3"}>
               <ButtonLink href={primaryHref}>{primaryLabel}</ButtonLink>
               {secondaryHref && secondaryLabel ? (
                 <ButtonLink href={secondaryHref} variant="secondary">

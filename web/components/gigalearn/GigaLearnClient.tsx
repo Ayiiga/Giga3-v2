@@ -28,6 +28,7 @@ import {
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import { getSessionToken } from "@/lib/auth";
 import { saveGigaLearnProfile } from "@/lib/gigalearn/profile";
+import { loadPracticeSession } from "@/lib/gigalearn/practiceSessionStorage";
 import { getStudioContext, saveStudioContext, type StudioContext } from "@/lib/gigalearn/studioContext";
 import type { LearnerRole } from "@/lib/gigalearn/curricula";
 import { siteConfig } from "@/lib/site";
@@ -47,10 +48,16 @@ function GigaLearnContent() {
 
   const [area, setArea] = useState<GigaLearnPrimaryArea>(() => resolvePrimaryArea(tabParam));
   const [studentSubOverride, setStudentSubOverride] = useState<StudentSubView | undefined>();
+  const [hasUnfinishedPractice, setHasUnfinishedPractice] = useState(false);
 
   useEffect(() => {
     setArea(resolvePrimaryArea(params.get("tab")));
   }, [params]);
+
+  useEffect(() => {
+    const session = loadPracticeSession();
+    setHasUnfinishedPractice(Boolean(session && !session.finished));
+  }, [area, tabParam]);
 
   useEffect(() => {
     warmUpBrowserVoices();
@@ -122,45 +129,56 @@ function GigaLearnContent() {
   const insightSub = insightSubViewFromTab(tabParam);
 
   return (
-    <div className="gigalearn-stable document-compact mx-auto max-w-6xl space-y-4 pb-[calc(var(--primary-nav-offset,0px)+1rem)]">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
+    <div className="gigalearn-stable document-compact mx-auto max-w-6xl space-y-3 pb-[calc(var(--primary-nav-offset,0px)+1rem)]">
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <Link
             href={siteConfig.links.dashboard}
-            className="mb-3 inline-flex min-h-9 items-center gap-2 text-sm text-muted hover:text-foreground"
+            className="mb-1.5 inline-flex min-h-9 items-center gap-1.5 text-sm text-muted hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden />
             Back to chat
           </Link>
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 text-accent">
-              <GraduationCap className="h-6 w-6" aria-hidden />
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+              <GraduationCap className="h-5 w-5" aria-hidden />
             </div>
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            <div className="min-w-0">
+              <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
                 GigaLearn
               </h2>
-              <p className="text-sm text-muted">
+              <p className="text-xs text-muted sm:text-sm">
                 Student · Teacher · Create · Parent · Insight · AI Tutor
-              </p>
-              <p className="mt-2">
-                <Link
-                  href="/gigalearn/academy/"
-                  className="text-sm font-semibold text-accent hover:underline"
-                >
-                  Open GigaLearn Academy →
-                </Link>
               </p>
             </div>
           </div>
+          <div className="mt-2.5 flex flex-wrap gap-2">
+            {hasUnfinishedPractice ? (
+              <button
+                type="button"
+                onClick={() => {
+                  selectArea("student");
+                  setStudentSubOverride("revision");
+                }}
+                className="inline-flex min-h-10 items-center rounded-xl border border-accent/40 bg-accent/10 px-3 text-sm font-semibold text-foreground hover:bg-accent/15"
+              >
+                Continue Learning
+              </button>
+            ) : null}
+            <ButtonLink href="/gigalearn/academy/" className="min-h-10">
+              Open GigaLearn Academy
+            </ButtonLink>
+          </div>
         </div>
-        <div className="rounded-2xl border border-border bg-white px-3 py-2 text-right text-sm">
-          <p className="text-xs text-muted">Credits</p>
-          <p className="font-semibold text-foreground">{usage?.credits ?? "—"}</p>
-          <Link href={siteConfig.links.credits} className="text-xs text-accent hover:underline">
-            Get more
-          </Link>
-        </div>
+        {usage?.credits != null ? (
+          <div className="rounded-xl border border-border bg-white px-3 py-2 text-right text-sm">
+            <p className="text-xs text-muted">Credits</p>
+            <p className="font-semibold text-foreground">{usage.credits}</p>
+            <Link href={siteConfig.links.credits} className="text-xs text-accent hover:underline">
+              Get more
+            </Link>
+          </div>
+        ) : null}
       </header>
 
       <nav
