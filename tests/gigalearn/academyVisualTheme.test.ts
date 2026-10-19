@@ -68,12 +68,17 @@ describe("Academy visual theme", () => {
       resolve(ROOT, "web/components/gigalearn/exam/ExamPracticeCentre.tsx"),
       "utf8"
     );
-    expect(exam).toContain("ACADEMY_SURFACE_CLASS.bece");
-    expect(exam).toContain("ACADEMY_SURFACE_CLASS.teacher");
     expect(exam).toContain("ACADEMY_SURFACE_CLASS.shell");
+    expect(exam).toContain("exam-landing-banner");
+    expect(exam).toContain("exam-landing-banner--bece");
+    expect(exam).toContain("exam-ghana-stripe");
+    expect(exam).toContain("Start Free 30 Questions");
     expect(exam).toContain("data-testid=\"bece-awaiting-materials\"");
     expect(exam).not.toContain("0248");
-    expect(exam).not.toContain("MoMo");
+    // Anti-MoMo copy is allowed; unofficial activation flows are not.
+    expect(exam.toLowerCase()).not.toContain("copy momo");
+    expect(exam.toLowerCase()).not.toContain("whatsapp sir");
+    expect(exam.toLowerCase()).not.toContain("i have paid");
   });
 
   it("ships CSS tokens with reduced-motion and focus styles", () => {
