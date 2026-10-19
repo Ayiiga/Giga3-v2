@@ -1,0 +1,15 @@
+# Android / Bubblewrap — never commit secrets or build artifacts
+node_modules/
+.gradle/
+build/
+app/build/
+local.properties
+*.keystore
+*.jks
+android.keystore
+*.aab
+*.apk
+.DS_Store
+.idea/
+*.iml
+signing.properties
