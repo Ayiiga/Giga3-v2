@@ -340,16 +340,31 @@ export const enrolInCourse = mutation({
     }
 
     const slug = course.slug;
-    const existing = await ctx.db
+    // Collect all rows for this user+course so retries never create duplicates.
+    const existingRows = await ctx.db
       .query("gigaLearnAcademyEnrolments")
       .withIndex("by_user_course", (q) => q.eq("userId", email).eq("courseSlug", slug))
-      .first();
+      .collect();
+    const existing =
+      existingRows.find((row) => row.status === "active") ??
+      existingRows.find((row) => row.status === "completed") ??
+      existingRows.find((row) => row.status === "withdrawn") ??
+      existingRows[0];
 
+    // Idempotent for active/completed — preserve progress; do not insert again.
     if (existing && existing.status === "active") {
-      throw new Error("You are already enrolled in this course.");
+      return {
+        enrolmentId: existing._id,
+        reactivated: false as const,
+        alreadyEnrolled: true as const,
+      };
     }
     if (existing && existing.status === "completed") {
-      throw new Error("You have already completed this course.");
+      return {
+        enrolmentId: existing._id,
+        reactivated: false as const,
+        alreadyCompleted: true as const,
+      };
     }
 
     const now = Date.now();
@@ -357,7 +372,11 @@ export const enrolInCourse = mutation({
       await ctx.db.patch(existing._id, {
         status: "active",
         enrolledAt: now,
+        // Keep prior pathway progress when reactivating.
         progressPercent: existing.progressPercent ?? 0,
+        lastModuleId: existing.lastModuleId,
+        lastLessonId: existing.lastLessonId,
+        completedLessonIdsJson: existing.completedLessonIdsJson,
         updatedAt: now,
       });
       await ctx.runMutation(internal.gigaLearnEngagement.bumpLearnerEventInternal, {
@@ -365,6 +384,15 @@ export const enrolInCourse = mutation({
         event: "enrol",
       });
       return { enrolmentId: existing._id, reactivated: true as const };
+    }
+
+    if (existingRows.length > 0) {
+      // Defensive: unexpected status — reuse the oldest row instead of inserting.
+      return {
+        enrolmentId: existingRows[0]._id,
+        reactivated: false as const,
+        alreadyEnrolled: true as const,
+      };
     }
 
     const enrolmentId = await ctx.db.insert("gigaLearnAcademyEnrolments", {

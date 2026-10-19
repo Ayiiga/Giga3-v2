@@ -108,7 +108,10 @@ describe("GigaLearn Academy Phase 1", () => {
     expect(academy).toMatch(/export const enrolInCourse\s*=\s*mutation/);
     expect(academy).toMatch(/export const updatePathwayProgress\s*=\s*mutation/);
     expect(academy).toMatch(/export const upsertAuthoredCourse\s*=\s*mutation/);
-    expect(academy).toContain("You are already enrolled");
+    // Idempotent enrol — already-active learners get a soft return, not a thrown error.
+    expect(academy).toContain("alreadyEnrolled");
+    expect(academy).toContain("alreadyCompleted");
+    expect(academy).not.toMatch(/throw new Error\("You are already enrolled/);
     expect(academy).toContain("gigaLearnProgress");
     // Must not call progress mutations from Academy module.
     expect(academy).not.toMatch(/gigaLearnProgress\.(recordAssessment|recordPractice)/);
@@ -132,8 +135,29 @@ describe("GigaLearn Academy Phase 1", () => {
     );
     expect(detail).toContain("Enrol in course");
     expect(detail).toContain("Learning pathway");
+    expect(detail).toContain("friendlyAcademyEnrolError");
+    expect(detail).toContain("alreadyEnrolled");
     // Enrolment goes through Convex mutation, not localStorage as source of truth.
     expect(detail).toContain("enrolInCourse");
     expect(detail).not.toContain('localStorage.setItem("academy_enrolment"');
+  });
+
+  it("maps Convex enrol stack traces to short learner-facing copy", async () => {
+    const { friendlyAcademyEnrolError } = await import(
+      "../../web/lib/gigalearn/academy/enrolErrors"
+    );
+    const raw =
+      "[CONVEX M(gigaLearnAcademy:enrollInCourse)] [Request ID: 640d34de82b37113] Server Error Uncaught Error: You are already enrolled in this course. at handler (../convex/gigaLearnAcademy.ts:350:24) Called by client";
+    expect(friendlyAcademyEnrolError(new Error(raw))).toBe(
+      "You're already enrolled in this course."
+    );
+    expect(friendlyAcademyEnrolError(new Error("You have already completed this course."))).toBe(
+      "You have already completed this course."
+    );
+    expect(
+      friendlyAcademyEnrolError(
+        new Error("[CONVEX M(x)] Server Error Uncaught Error: boom at handler")
+      )
+    ).toBe("Could not enrol right now. Please try again.");
   });
 });

@@ -11,8 +11,14 @@ import {
   getBuiltinAcademyCourse,
   resolveResumeLesson,
 } from "@/lib/gigalearn/academy/courseCatalog";
+import {
+  ALREADY_ENROLLED_MESSAGE,
+  friendlyAcademyEnrolError,
+} from "@/lib/gigalearn/academy/enrolErrors";
 import { hrefForAcademyResource } from "@/lib/gigalearn/academy/resourceLinks";
+import { ACADEMY_SURFACE_CLASS } from "@/lib/gigalearn/academy/visualTheme";
 import { siteConfig } from "@/lib/site";
+import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { CheckCircle2, Lock, PlayCircle } from "lucide-react";
@@ -88,18 +94,29 @@ function AcademyCourseDetailInner() {
       setError("Sign in required to enrol.");
       return;
     }
+    if (isEnrolled) {
+      setError(null);
+      setInfo(ALREADY_ENROLLED_MESSAGE);
+      return;
+    }
     setBusy(true);
     setError(null);
     setInfo(null);
     try {
       const result = await enrol({ sessionToken, courseSlug: slug });
-      setInfo(
-        result.reactivated
-          ? "Enrolment reactivated. You can resume your pathway."
-          : "Enrolled successfully. Start with the first module below."
-      );
+      if ("alreadyEnrolled" in result && result.alreadyEnrolled) {
+        setInfo(ALREADY_ENROLLED_MESSAGE);
+      } else if ("alreadyCompleted" in result && result.alreadyCompleted) {
+        setInfo("You have already completed this course.");
+      } else {
+        setInfo(
+          result.reactivated
+            ? "Enrolment reactivated. You can resume your pathway."
+            : "Enrolled successfully. Start with the first module below."
+        );
+      }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Enrolment failed.");
+      setError(friendlyAcademyEnrolError(e));
     } finally {
       setBusy(false);
     }
@@ -135,37 +152,39 @@ function AcademyCourseDetailInner() {
       title={course.title}
       subtitle={`${course.subject} · ${course.category} · ${course.difficulty}`}
     >
-      <section className="saas-card space-y-4 rounded-2xl border border-border p-4 sm:p-6">
-        <div className="flex flex-wrap gap-2">
-          <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-[11px] font-semibold">
+      <section
+        className={cn(ACADEMY_SURFACE_CLASS.dashboard, "min-w-0 space-y-4 p-4 sm:p-5")}
+      >
+        <div className="flex min-w-0 flex-wrap gap-2">
+          <span className="academy-visual-chip rounded-full px-2.5 py-0.5 text-[11px] font-semibold">
             {accessBadge(course.access, course.creditCost)}
           </span>
           {course.certificateEligible ? (
-            <span className="rounded-full border border-border px-2.5 py-0.5 text-[11px] text-muted">
+            <span className="academy-visual-chip rounded-full px-2.5 py-0.5 text-[11px]">
               Certificate eligibility configured (issuance in a later phase)
             </span>
           ) : null}
           {enrolment ? (
-            <span className="rounded-full border border-border px-2.5 py-0.5 text-[11px] text-muted">
+            <span className="academy-visual-chip rounded-full px-2.5 py-0.5 text-[11px]">
               {enrolment.status} · {enrolment.progressPercent}% pathway
             </span>
           ) : null}
         </div>
 
-        <p className="text-sm leading-relaxed text-muted">{course.description}</p>
+        <p className="academy-visual-muted text-sm leading-relaxed">{course.description}</p>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <h2 className="text-sm font-semibold text-foreground">Learning objectives</h2>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
+        <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+          <div className="academy-visual-tile min-w-0 rounded-xl p-3">
+            <h2 className="text-sm font-semibold">Learning objectives</h2>
+            <ul className="academy-visual-muted mt-2 list-disc space-y-1 pl-5 text-sm">
               {course.learningObjectives.map((o) => (
                 <li key={o}>{o}</li>
               ))}
             </ul>
           </div>
-          <div>
-            <h2 className="text-sm font-semibold text-foreground">Prerequisites</h2>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
+          <div className="academy-visual-tile min-w-0 rounded-xl p-3">
+            <h2 className="text-sm font-semibold">Prerequisites</h2>
+            <ul className="academy-visual-muted mt-2 list-disc space-y-1 pl-5 text-sm">
               {course.prerequisites.map((o) => (
                 <li key={o}>{o}</li>
               ))}
@@ -173,22 +192,22 @@ function AcademyCourseDetailInner() {
           </div>
         </div>
 
-        <div className="grid gap-3 text-sm text-muted sm:grid-cols-2">
-          <p>
-            <span className="font-semibold text-foreground">Curriculum preview: </span>
+        <div className="grid min-w-0 gap-3 text-sm sm:grid-cols-2">
+          <p className="academy-visual-muted">
+            <span className="font-semibold text-[var(--av-fg)]">Curriculum preview: </span>
             {course.curriculumPreview}
           </p>
-          <p>
-            <span className="font-semibold text-foreground">Assessment: </span>
+          <p className="academy-visual-muted">
+            <span className="font-semibold text-[var(--av-fg)]">Assessment: </span>
             {course.assessmentDescription}
           </p>
-          <p>
-            <span className="font-semibold text-foreground">Completion: </span>
+          <p className="academy-visual-muted">
+            <span className="font-semibold text-[var(--av-fg)]">Completion: </span>
             {course.completionRequirements}
           </p>
           {course.instructorName ? (
-            <p>
-              <span className="font-semibold text-foreground">Instructor: </span>
+            <p className="academy-visual-muted">
+              <span className="font-semibold text-[var(--av-fg)]">Instructor: </span>
               {course.instructorName}
               {course.instructorBio ? ` — ${course.instructorBio}` : ""}
             </p>
@@ -202,11 +221,11 @@ function AcademyCourseDetailInner() {
             nextPath={`/gigalearn/academy/course/?slug=${encodeURIComponent(slug)}`}
           />
         ) : (
-          <div className="flex flex-wrap gap-3">
+          <div className="flex min-w-0 flex-wrap gap-2 sm:gap-3">
             {!isEnrolled ? (
               <Button
                 type="button"
-                className="min-h-11"
+                className="academy-visual-cta academy-visual-cta--success min-h-11 w-full sm:w-auto"
                 disabled={busy || !sessionToken}
                 onClick={() => void onEnrol()}
               >
@@ -214,15 +233,19 @@ function AcademyCourseDetailInner() {
               </Button>
             ) : (
               <>
-                <span className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-accent/30 bg-accent/10 px-3 text-sm font-semibold text-foreground">
-                  <CheckCircle2 className="h-4 w-4" aria-hidden />
+                <span
+                  className={cn(
+                    ACADEMY_SURFACE_CLASS.performance,
+                    "inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold"
+                  )}
+                >
+                  <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />
                   Enrolled
                 </span>
                 {resume ? (
                   <Button
                     type="button"
-                    variant="outline"
-                    className="min-h-11"
+                    className="academy-visual-cta academy-visual-cta--success min-h-11 w-full sm:w-auto"
                     disabled={busy}
                     onClick={() =>
                       void onResumeCheckpoint(
@@ -232,20 +255,22 @@ function AcademyCourseDetailInner() {
                       )
                     }
                   >
-                    <PlayCircle className="mr-2 h-4 w-4" aria-hidden />
+                    <PlayCircle className="mr-2 h-4 w-4 shrink-0" aria-hidden />
                     Resume learning
                   </Button>
                 ) : null}
               </>
             )}
-            <ButtonLink href="/gigalearn/academy/my/" variant="outline" className="min-h-11">
+            <ButtonLink
+              href="/gigalearn/academy/my/"
+              className="academy-visual-cta min-h-11 w-full sm:w-auto"
+            >
               My courses
             </ButtonLink>
             {isEnrolled ? (
               <ButtonLink
                 href={`/gigalearn/academy/assess/?course=${encodeURIComponent(slug)}`}
-                variant="outline"
-                className="min-h-11"
+                className="academy-visual-cta min-h-11 w-full sm:w-auto"
               >
                 Assessments
               </ButtonLink>
@@ -253,14 +278,19 @@ function AcademyCourseDetailInner() {
             {isEnrolled && course.certificateEligible ? (
               <ButtonLink
                 href={`/gigalearn/academy/certificates/?course=${encodeURIComponent(slug)}`}
-                variant="outline"
-                className="min-h-11"
+                className={cn(
+                  ACADEMY_SURFACE_CLASS.certificates,
+                  "academy-visual-cta min-h-11 w-full sm:w-auto"
+                )}
               >
                 Certificates
               </ButtonLink>
             ) : null}
             {course.access !== "free" ? (
-              <ButtonLink href={siteConfig.links.credits} variant="outline" className="min-h-11">
+              <ButtonLink
+                href={siteConfig.links.credits}
+                className="academy-visual-cta min-h-11 w-full sm:w-auto"
+              >
                 Credits / plans
               </ButtonLink>
             ) : null}
@@ -268,38 +298,70 @@ function AcademyCourseDetailInner() {
         )}
 
         {error ? (
-          <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+          <p
+            className="min-w-0 break-words rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+            role="alert"
+          >
             {error}
           </p>
         ) : null}
         {info ? (
-          <p className="rounded-xl border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-foreground">
-            {info}
-          </p>
+          <div
+            className={cn(
+              ACADEMY_SURFACE_CLASS.performance,
+              "flex min-w-0 flex-col gap-2 rounded-xl px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
+            )}
+            role="status"
+          >
+            <p className="min-w-0 break-words text-sm font-medium">{info}</p>
+            {info === ALREADY_ENROLLED_MESSAGE ? (
+              <Button
+                type="button"
+                className="academy-visual-cta academy-visual-cta--success min-h-11 w-full shrink-0 sm:w-auto"
+                disabled={busy || !resume}
+                onClick={() => {
+                  if (!resume) return;
+                  void onResumeCheckpoint(
+                    resume.moduleId,
+                    resume.lessonId,
+                    Math.max(0, pathwayCounts.total - 1)
+                  );
+                  const el = document.getElementById("pathway-heading");
+                  el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+              >
+                <PlayCircle className="mr-2 h-4 w-4 shrink-0" aria-hidden />
+                Continue course
+              </Button>
+            ) : null}
+          </div>
         ) : null}
       </section>
 
-      <section className="space-y-3" aria-labelledby="pathway-heading">
-        <h2 id="pathway-heading" className="text-lg font-semibold text-foreground">
+      <section
+        className={cn(ACADEMY_SURFACE_CLASS.catalogue, "min-w-0 space-y-3 p-4 sm:p-5")}
+        aria-labelledby="pathway-heading"
+      >
+        <h2 id="pathway-heading" className="text-lg font-semibold">
           Learning pathway
         </h2>
-        <p className="text-sm text-muted">
+        <p className="academy-visual-muted text-sm">
           {pathwayCounts.required} required · {pathwayCounts.total} activities. Resources open
           existing GigaLearn hubs/tools.
         </p>
         {!isEnrolled ? (
-          <p className="inline-flex items-center gap-2 text-sm text-muted">
-            <Lock className="h-4 w-4" aria-hidden />
+          <p className="academy-visual-muted inline-flex items-center gap-2 text-sm">
+            <Lock className="h-4 w-4 shrink-0" aria-hidden />
             Enrol to save pathway resume checkpoints.
           </p>
         ) : null}
 
-        <ol className="space-y-3">
+        <ol className="min-w-0 space-y-3">
           {course.modules.map((mod) => (
-            <li key={mod.id} className="saas-card rounded-2xl border border-border p-4">
-              <h3 className="font-semibold text-foreground">{mod.title}</h3>
-              <p className="mt-1 text-sm text-muted">{mod.summary}</p>
-              <ul className="mt-3 space-y-2">
+            <li key={mod.id} className="academy-visual-tile min-w-0 rounded-2xl p-4">
+              <h3 className="font-semibold">{mod.title}</h3>
+              <p className="academy-visual-muted mt-1 text-sm">{mod.summary}</p>
+              <ul className="mt-3 min-w-0 space-y-2">
                 {mod.lessons.map((lesson) => {
                   const idx = lessonIndex;
                   lessonIndex += 1;
@@ -309,32 +371,34 @@ function AcademyCourseDetailInner() {
                   return (
                     <li
                       key={lesson.id}
-                      className="flex flex-col gap-2 rounded-xl border border-border/80 bg-white px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
+                      className="flex min-w-0 flex-col gap-2 rounded-xl border border-[var(--av-border)] bg-white px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
                     >
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-foreground">
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <p className="break-words text-sm font-medium">
                           {lesson.title}
                           {lesson.required ? (
-                            <span className="ml-2 text-[11px] font-semibold text-accent">Required</span>
+                            <span className="ml-2 text-[11px] font-semibold text-[#6D28D9]">
+                              Required
+                            </span>
                           ) : (
-                            <span className="ml-2 text-[11px] text-muted">Optional</span>
+                            <span className="academy-visual-muted ml-2 text-[11px]">Optional</span>
                           )}
                         </p>
-                        <p className="text-xs text-muted">
+                        <p className="academy-visual-muted break-words text-xs">
                           {lesson.summary} · ~{lesson.estimatedMinutes} min · {lesson.activityKind}
                         </p>
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex min-w-0 flex-wrap gap-2">
                         <Link
                           href={href}
-                          className="inline-flex min-h-11 items-center rounded-xl border border-border px-3 text-xs font-semibold text-foreground hover:border-accent/30"
+                          className="academy-visual-cta inline-flex min-h-11 items-center px-3 text-xs"
                         >
                           Open resource
                         </Link>
                         {isEnrolled ? (
                           <Link
                             href={`/gigalearn/?tab=tutor&academyCourse=${encodeURIComponent(slug)}&module=${encodeURIComponent(mod.id)}&lesson=${encodeURIComponent(lesson.id)}`}
-                            className="inline-flex min-h-11 items-center rounded-xl border border-accent/30 bg-accent/10 px-3 text-xs font-semibold text-foreground"
+                            className="academy-visual-cta inline-flex min-h-11 items-center px-3 text-xs"
                           >
                             Ask AI Tutor
                           </Link>
@@ -344,7 +408,7 @@ function AcademyCourseDetailInner() {
                             type="button"
                             disabled={busy}
                             onClick={() => void onResumeCheckpoint(mod.id, lesson.id, idx)}
-                            className="inline-flex min-h-11 items-center rounded-xl border border-accent/30 bg-accent/10 px-3 text-xs font-semibold text-foreground"
+                            className="academy-visual-cta inline-flex min-h-11 items-center px-3 text-xs"
                           >
                             Mark checkpoint
                           </button>

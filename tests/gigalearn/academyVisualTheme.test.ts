@@ -88,4 +88,42 @@ describe("Academy visual theme", () => {
     expect(css).toContain("prefers-reduced-motion");
     expect(css).toContain(".academy-visual-cta:focus-visible");
   });
+
+  it("lays out Academy summary on mobile without clipping as a layout fix", () => {
+    const css = readFileSync(resolve(ROOT, "web/styles/globals.css"), "utf8");
+    expect(css).toContain(".academy-visual-stat-grid");
+    expect(css).toContain(".academy-visual-stat-label");
+    expect(css).toContain(".academy-visual-course-card__body");
+    expect(css).toContain(".academy-visual-course-card__copy");
+    expect(css).toMatch(/\.academy-visual-shell\s*\{[^}]*min-width:\s*0/s);
+    expect(css).toMatch(/\.academy-visual-panel\s*\{[^}]*min-width:\s*0/s);
+    // Do not use overflow clip as a substitute for fixing flex/grid children.
+    expect(css).not.toMatch(/\.academy-visual-shell\s*\{[^}]*overflow-x:\s*clip/s);
+    expect(css).not.toMatch(/\.academy-visual-panel\s*\{[^}]*overflow-x:\s*clip/s);
+    expect(css).not.toMatch(/\.academy-visual-dashboard\s*\{[^}]*overflow-x:\s*clip/s);
+    expect(css).toMatch(
+      /\.academy-visual-course-card\s*\{[^}]*flex-direction:\s*column/s
+    );
+    expect(css).toMatch(
+      /@media \(min-width: 640px\)\s*\{\s*\.academy-visual-course-card\s*\{[^}]*flex-direction:\s*row/s
+    );
+
+    const home = readFileSync(
+      resolve(ROOT, "web/components/gigalearn/academy/AcademyHome.tsx"),
+      "utf8"
+    );
+    expect(home).toContain("academy-visual-stat-grid");
+    expect(home).toContain("academy-visual-course-card__body");
+    expect(home).toContain("w-full shrink-0 sm:w-auto");
+
+    const detail = readFileSync(
+      resolve(ROOT, "web/components/gigalearn/academy/AcademyCourseDetail.tsx"),
+      "utf8"
+    );
+    expect(detail).toContain("ACADEMY_SURFACE_CLASS.dashboard");
+    expect(detail).toContain("ACADEMY_SURFACE_CLASS.catalogue");
+    expect(detail).toContain("friendlyAcademyEnrolError");
+    expect(detail).toContain("ALREADY_ENROLLED_MESSAGE");
+    expect(detail).toContain("Continue course");
+  });
 });
