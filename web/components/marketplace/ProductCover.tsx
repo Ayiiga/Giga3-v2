@@ -133,14 +133,19 @@ export function ProductCover({
     );
   }
 
+  const isGenerated = !src || broken;
+  const imageFit =
+    isGenerated ? "cover" : fit === "contain" || bookLike ? "contain" : "cover";
+
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl border border-border/70 bg-zinc-50 dark:bg-zinc-900/40",
+        "relative overflow-hidden rounded-xl border border-border/70",
+        isGenerated ? "bg-emerald-950" : "bg-zinc-50 dark:bg-zinc-900/40",
         aspectClassName,
         className
       )}
-      data-cover-state={!src || broken ? "generated" : "image"}
+      data-cover-state={isGenerated ? "generated" : "image"}
       data-testid="product-cover-image"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -152,7 +157,7 @@ export function ProductCover({
         referrerPolicy="no-referrer"
         className={cn(
           "absolute inset-0 h-full w-full",
-          fit === "contain" || bookLike ? "object-contain p-1" : "object-cover"
+          imageFit === "contain" ? "object-contain p-1" : "object-cover"
         )}
         onError={() => {
           if (src && !broken) {
