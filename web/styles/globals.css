@@ -917,23 +917,50 @@ button:focus-visible {
   isolation: isolate;
 }
 
-/* GigaLearn Academy visual system — section/studio colour tokens (presentation only) */
+/* GigaLearn Academy / Exam visual system — dashboard soft-UI (presentation only) */
+.academy-visual-shell {
+  --av-bg: #f5f0ff;
+  --av-fg: #1e1b4b;
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(120% 80% at 0% 0%, #fce7f3 0%, transparent 55%),
+    radial-gradient(100% 70% at 100% 0%, #ddd6fe 0%, transparent 50%),
+    linear-gradient(180deg, #f5f0ff 0%, #eef2ff 45%, #f8fafc 100%);
+  padding: 0.75rem;
+  color: var(--av-fg);
+}
+
+@media (min-width: 640px) {
+  .academy-visual-shell {
+    padding: 1.25rem;
+  }
+}
+
+.academy-visual-panel {
+  border-radius: 1.25rem;
+  border: 1px solid color-mix(in srgb, #4c1d95 10%, #ffffff);
+  background: color-mix(in srgb, #ffffff 92%, #f5f0ff);
+  box-shadow: 0 8px 28px color-mix(in srgb, #4c1d95 8%, transparent);
+}
+
 .academy-visual-hero,
 .academy-visual-dashboard,
 .academy-visual-practice,
 .academy-visual-performance,
 .academy-visual-certificates,
 .academy-visual-catalogue,
-.academy-visual-studio {
+.academy-visual-studio,
+.academy-visual-bece,
+.academy-visual-teacher {
   --av-muted: color-mix(in srgb, var(--av-fg) 72%, transparent);
-  --av-border: color-mix(in srgb, var(--av-fg) 20%, transparent);
+  --av-border: color-mix(in srgb, var(--av-fg) 18%, transparent);
   --av-chip-bg: color-mix(in srgb, var(--av-fg) 10%, transparent);
-  --av-surface: color-mix(in srgb, #ffffff 88%, var(--av-bg));
-  border-radius: 1rem;
+  --av-surface: color-mix(in srgb, #ffffff 90%, var(--av-bg));
+  border-radius: 1.25rem;
   border: 1px solid var(--av-border);
   background: var(--av-bg);
   color: var(--av-fg);
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--av-fg) 8%, transparent);
+  box-shadow: 0 10px 30px color-mix(in srgb, #312e81 7%, transparent);
 }
 
 .academy-visual-hero {
@@ -941,7 +968,9 @@ button:focus-visible {
   --av-fg: #ffffff;
   --av-muted: color-mix(in srgb, #ffffff 82%, transparent);
   --av-border: color-mix(in srgb, #ffffff 22%, transparent);
-  background: linear-gradient(135deg, #4c1d95 0%, #312e81 55%, #1e1b4b 100%);
+  background:
+    radial-gradient(80% 120% at 100% 0%, #a78bfa 0%, transparent 55%),
+    linear-gradient(135deg, #4c1d95 0%, #312e81 55%, #1e1b4b 100%);
 }
 
 .academy-visual-dashboard {
@@ -973,7 +1002,40 @@ button:focus-visible {
   --av-fg: #0f172a;
   --av-muted: #475569;
   --av-border: #e2e8f0;
-  box-shadow: none;
+  box-shadow: 0 6px 20px color-mix(in srgb, #0f172a 5%, transparent);
+}
+
+.academy-visual-bece {
+  --av-bg: #ede9fe;
+  --av-fg: #4c1d95;
+  --av-muted: #5b21b6;
+  --av-border: color-mix(in srgb, #4c1d95 18%, transparent);
+  --av-surface: #ffffff;
+  background:
+    radial-gradient(90% 80% at 0% 0%, #ddd6fe 0%, transparent 55%),
+    linear-gradient(160deg, #f5f3ff 0%, #ede9fe 100%);
+}
+
+.academy-visual-teacher {
+  --av-bg: #14532d;
+  --av-fg: #ffffff;
+  --av-muted: color-mix(in srgb, #ffffff 86%, transparent);
+  --av-border: color-mix(in srgb, #facc15 55%, #14532d);
+  --av-surface: color-mix(in srgb, #ffffff 12%, #14532d);
+  --av-accent: #facc15;
+  background:
+    radial-gradient(70% 90% at 100% 0%, #166534 0%, transparent 55%),
+    linear-gradient(160deg, #14532d 0%, #166534 55%, #052e16 100%);
+}
+
+.academy-visual-teacher .academy-visual-cta--solid {
+  background: #facc15;
+  color: #14532d;
+  border-color: #facc15;
+}
+
+.academy-visual-teacher .academy-visual-cta--solid:hover {
+  background: #fde047;
 }
 
 .academy-visual-studio--giga-ai {
@@ -1036,7 +1098,7 @@ button:focus-visible {
   align-items: center;
   justify-content: center;
   gap: 0.25rem;
-  border-radius: 0.75rem;
+  border-radius: 0.9rem;
   border: 1px solid var(--av-border);
   background: var(--av-surface);
   padding: 0.5rem 0.875rem;
@@ -1069,10 +1131,139 @@ button:focus-visible {
   color: var(--av-fg);
 }
 
+.academy-visual-cta--success {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
+}
+
+.academy-visual-cta--success:hover {
+  background: #15803d;
+}
+
+.academy-visual-nav {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.35rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, #4c1d95 12%, #ffffff);
+  background: color-mix(in srgb, #ffffff 88%, #f5f0ff);
+  box-shadow: 0 4px 16px color-mix(in srgb, #4c1d95 6%, transparent);
+}
+
+.academy-visual-nav-link {
+  display: inline-flex;
+  min-height: 2.75rem;
+  shrink: 0;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 0.5rem 0.95rem;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: #64748b;
+  background: transparent;
+}
+
+.academy-visual-nav-link:hover {
+  color: #1e1b4b;
+  background: color-mix(in srgb, #4c1d95 6%, #ffffff);
+}
+
+.academy-visual-nav-link:focus-visible {
+  outline: 2px solid #4c1d95;
+  outline-offset: 2px;
+}
+
+.academy-visual-nav-link--active {
+  color: #ffffff;
+  background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%);
+  box-shadow: 0 4px 12px color-mix(in srgb, #4c1d95 28%, transparent);
+}
+
+.academy-visual-progress-track {
+  height: 0.45rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, #16a34a 16%, #e2e8f0);
+}
+
+.academy-visual-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+}
+
+.academy-visual-course-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border-radius: 1.25rem;
+  border: 1px solid #e9e4ff;
+  background: #ffffff;
+  padding: 1rem;
+  box-shadow: 0 8px 24px color-mix(in srgb, #4c1d95 6%, transparent);
+}
+
+@media (min-width: 640px) {
+  .academy-visual-course-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.academy-visual-quick {
+  display: flex;
+  min-height: 6.5rem;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 1.15rem;
+  padding: 0.9rem 1rem;
+  font-weight: 650;
+  color: #ffffff;
+  box-shadow: 0 10px 24px color-mix(in srgb, #312e81 12%, transparent);
+}
+
+.academy-visual-quick:focus-visible {
+  outline: 2px solid #1e1b4b;
+  outline-offset: 3px;
+}
+
+.academy-visual-quick--practice {
+  background: linear-gradient(145deg, #7c3aed 0%, #4c1d95 100%);
+}
+
+.academy-visual-quick--exam {
+  background: linear-gradient(145deg, #0f766e 0%, #115e59 100%);
+}
+
+.academy-visual-quick--tutor {
+  background: linear-gradient(145deg, #f59e0b 0%, #d97706 100%);
+}
+
+.academy-visual-quick--certs {
+  background: linear-gradient(145deg, #ec4899 0%, #db2777 100%);
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .academy-visual-hero,
-  .academy-visual-practice {
-    transition: box-shadow 180ms ease;
+  .academy-visual-practice,
+  .academy-visual-teacher,
+  .academy-visual-course-card,
+  .academy-visual-quick {
+    transition: box-shadow 180ms ease, border-color 180ms ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .academy-visual-hero,
+  .academy-visual-practice,
+  .academy-visual-teacher,
+  .academy-visual-course-card,
+  .academy-visual-quick {
+    transition: none;
   }
 }
 

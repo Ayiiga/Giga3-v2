@@ -2,6 +2,7 @@
 
 import { AcademyChrome } from "@/components/gigalearn/academy/AcademyChrome";
 import { AcademyCourseCatalogueBody } from "@/components/gigalearn/academy/AcademyCourseCatalogueBody";
+import { LearningProgressRing } from "@/components/gigalearn/ui/LearningProgressRing";
 import { ButtonLink } from "@/components/ui/Button";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { ProductSignInPrompt } from "@/components/seo/ProductSignInPrompt";
@@ -25,7 +26,9 @@ import {
   BookOpen,
   ClipboardCheck,
   GraduationCap,
+  MessageCircle,
   Sparkles,
+  Target,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -96,6 +99,8 @@ function PersonalLearningSummary() {
     : null;
   const graded = attempts.filter((a: { score?: number | null }) => a.score != null);
   const passedCount = graded.filter((a: { passed?: boolean | null }) => a.passed).length;
+  const progressPercent =
+    typeof resume?.progressPercent === "number" ? resume.progressPercent : 0;
 
   return (
     <section
@@ -119,69 +124,85 @@ function PersonalLearningSummary() {
         </Link>
       </div>
 
-      <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="academy-visual-tile rounded-xl p-3">
-          <dt className="academy-visual-muted text-[11px] font-medium uppercase tracking-wide">
-            Enrolments
-          </dt>
-          <dd className="mt-1 text-xl font-bold">{enrolments.length}</dd>
-        </div>
-        <div
-          className={cn(ACADEMY_SURFACE_CLASS.performance, "rounded-xl p-3")}
-          aria-label="Assessment performance"
-        >
-          <dt className="academy-visual-muted text-[11px] font-medium uppercase tracking-wide">
-            Assessments
-          </dt>
-          <dd className="mt-1 text-xl font-bold">{attempts.length}</dd>
-        </div>
-        <div
-          className={cn(ACADEMY_SURFACE_CLASS.performance, "rounded-xl p-3")}
-          aria-label="Passed assessments"
-        >
-          <dt className="academy-visual-muted text-[11px] font-medium uppercase tracking-wide">
-            Passed
-          </dt>
-          <dd className="mt-1 text-xl font-bold">
-            {graded.length === 0 ? "—" : passedCount}
-          </dd>
-        </div>
-        <div
-          className={cn(ACADEMY_SURFACE_CLASS.certificates, "rounded-xl p-3")}
-          aria-label="Certificates earned"
-        >
-          <dt className="academy-visual-muted flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide">
-            <Award className="h-3.5 w-3.5" aria-hidden />
-            Certificates
-          </dt>
-          <dd className="mt-1 text-xl font-bold">{certificates.length}</dd>
-        </div>
-      </dl>
+      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+          <div className="academy-visual-tile rounded-xl p-3">
+            <dt className="academy-visual-muted text-[11px] font-medium uppercase tracking-wide">
+              Enrolments
+            </dt>
+            <dd className="mt-1 text-xl font-bold">{enrolments.length}</dd>
+          </div>
+          <div
+            className={cn(ACADEMY_SURFACE_CLASS.performance, "rounded-xl p-3")}
+            aria-label="Assessment performance"
+          >
+            <dt className="academy-visual-muted text-[11px] font-medium uppercase tracking-wide">
+              Assessments
+            </dt>
+            <dd className="mt-1 text-xl font-bold">{attempts.length}</dd>
+          </div>
+          <div
+            className={cn(ACADEMY_SURFACE_CLASS.performance, "rounded-xl p-3")}
+            aria-label="Passed assessments"
+          >
+            <dt className="academy-visual-muted text-[11px] font-medium uppercase tracking-wide">
+              Passed
+            </dt>
+            <dd className="mt-1 text-xl font-bold">
+              {graded.length === 0 ? "—" : passedCount}
+            </dd>
+          </div>
+          <div
+            className={cn(ACADEMY_SURFACE_CLASS.certificates, "rounded-xl p-3")}
+            aria-label="Certificates earned"
+          >
+            <dt className="academy-visual-muted flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide">
+              <Award className="h-3.5 w-3.5" aria-hidden />
+              Certificates
+            </dt>
+            <dd className="mt-1 text-xl font-bold">{certificates.length}</dd>
+          </div>
+        </dl>
+
+        {resume && resumeTitle ? (
+          <article className="academy-visual-course-card">
+            <div className="flex min-w-0 flex-1 items-start gap-3">
+              <LearningProgressRing
+                percent={progressPercent}
+                label={`${resumeTitle} ${progressPercent}% complete`}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#6D28D9]">
+                  Continue learning
+                </p>
+                <p className="truncate text-base font-bold text-[#1E1B4B]">{resumeTitle}</p>
+                <p className="academy-visual-muted mt-1 text-xs">
+                  Pathway {progressPercent}%
+                  {resume.lastLessonId ? ` · ${resume.lastLessonId}` : ""}
+                </p>
+                <div className="academy-visual-progress-track mt-2 max-w-xs">
+                  <div
+                    className="academy-visual-progress-fill"
+                    style={{ width: `${Math.max(0, Math.min(100, progressPercent))}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+            <ButtonLink
+              href={`/gigalearn/academy/course/?slug=${encodeURIComponent(resume.courseSlug)}`}
+              className="academy-visual-cta academy-visual-cta--success min-h-11 shrink-0"
+            >
+              Continue
+            </ButtonLink>
+          </article>
+        ) : null}
+      </div>
 
       {enrolments.length === 0 && attempts.length === 0 && certificates.length === 0 ? (
         <p className="academy-visual-tile academy-visual-muted mt-4 rounded-xl border-dashed px-3 py-3 text-sm">
           No Academy activity yet. Enrol in a course or open Practice Centre when you are ready —
           we will not invent progress for you.
         </p>
-      ) : null}
-
-      {resume && resumeTitle ? (
-        <div className="academy-visual-tile mt-4 flex flex-col gap-2 rounded-xl p-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wide">Continue</p>
-            <p className="truncate text-sm font-semibold">{resumeTitle}</p>
-            <p className="academy-visual-muted text-xs">
-              Pathway {resume.progressPercent}%
-              {resume.lastLessonId ? ` · ${resume.lastLessonId}` : ""}
-            </p>
-          </div>
-          <ButtonLink
-            href={`/gigalearn/academy/course/?slug=${encodeURIComponent(resume.courseSlug)}`}
-            className="min-h-11 shrink-0"
-          >
-            Resume
-          </ButtonLink>
-        </div>
       ) : null}
 
       <div className="mt-4">
@@ -194,6 +215,54 @@ function PersonalLearningSummary() {
         >
           View certificates
           <ArrowRight className="h-4 w-4" aria-hidden />
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function QuickActions() {
+  return (
+    <section aria-labelledby="quick-actions-heading" className="space-y-3">
+      <div>
+        <h2 id="quick-actions-heading" className="text-lg font-bold text-[#1E1B4B]">
+          Jump back in
+        </h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Colourful shortcuts to real Academy and Exam Practice destinations — no invented tools.
+        </p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Link href="#practice-centre" className="academy-visual-quick academy-visual-quick--practice">
+          <ClipboardCheck className="h-5 w-5" aria-hidden />
+          <span>
+            Practice Centre
+            <span className="mt-1 block text-xs font-medium text-white/85">Assessments & tools</span>
+          </span>
+        </Link>
+        <Link href="/gigalearn/exam/" className="academy-visual-quick academy-visual-quick--exam">
+          <Target className="h-5 w-5" aria-hidden />
+          <span>
+            Exam Practice
+            <span className="mt-1 block text-xs font-medium text-white/85">BECE & Promotion</span>
+          </span>
+        </Link>
+        <Link href="/gigalearn/?tab=tutor" className="academy-visual-quick academy-visual-quick--tutor">
+          <MessageCircle className="h-5 w-5" aria-hidden />
+          <span>
+            AI Tutor
+            <span className="mt-1 block text-xs font-medium text-white/85">Guided help</span>
+          </span>
+        </Link>
+        <Link
+          href="/gigalearn/academy/certificates/"
+          className="academy-visual-quick academy-visual-quick--certs"
+        >
+          <Award className="h-5 w-5" aria-hidden />
+          <span>
+            Certificates
+            <span className="mt-1 block text-xs font-medium text-white/85">Verify & share</span>
+          </span>
         </Link>
       </div>
     </section>
@@ -246,10 +315,10 @@ function LearningStudiosDirectory() {
   return (
     <section aria-labelledby="studios-heading" className="space-y-3">
       <div>
-        <h2 id="studios-heading" className="text-lg font-bold text-foreground">
+        <h2 id="studios-heading" className="text-lg font-bold text-[#1E1B4B]">
           Learning Studios
         </h2>
-        <p className="mt-1 text-sm text-muted">
+        <p className="mt-1 text-sm text-slate-600">
           Hands-on labs with distinct studio colours. Available studios open real GigaLearn
           experiences; others are labelled coming soon (not colour-only).
         </p>
@@ -323,7 +392,7 @@ export function AcademyHome() {
             id="academy-hero-heading"
             className="text-2xl font-bold tracking-tight text-white sm:text-3xl"
           >
-            Practise, build, and learn by doing
+            Hello, learner — practise, build, and learn by doing
           </h2>
           <p className="academy-visual-muted text-sm sm:text-base">
             {ACADEMY_TRANSFORM_TAGLINE} Explore Learning Studios, open the Practice Centre, and keep
@@ -344,6 +413,8 @@ export function AcademyHome() {
       </section>
 
       <PersonalLearningSummary />
+
+      <QuickActions />
 
       <div id="practice-centre">
         <PracticeCentreCard />

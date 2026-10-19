@@ -1,5 +1,6 @@
 "use client";
 
+import { ACADEMY_SURFACE_CLASS } from "@/lib/gigalearn/academy/visualTheme";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/site";
 import { ArrowLeft, GraduationCap } from "lucide-react";
@@ -44,54 +45,62 @@ export function AcademyChrome({
   active?: AcademyNavActive;
 }) {
   return (
-    <div className="gigalearn-stable document-compact mx-auto max-w-6xl space-y-4 pb-[calc(var(--primary-nav-offset,0px)+1rem)]">
-      <header className="space-y-3">
-        <Link
-          href={siteConfig.links.gigalearn}
-          className="inline-flex min-h-9 items-center gap-2 text-sm text-muted hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden />
-          Back to GigaLearn
-        </Link>
-        <div className="flex flex-wrap items-start gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 text-accent">
-            <GraduationCap className="h-6 w-6" aria-hidden />
+    <div
+      className={cn(
+        ACADEMY_SURFACE_CLASS.shell,
+        "gigalearn-stable document-compact mx-auto max-w-6xl pb-[calc(var(--primary-nav-offset,0px)+1rem)]"
+      )}
+    >
+      <div className="academy-visual-panel space-y-4 p-4 sm:p-6">
+        <header className="space-y-3">
+          <Link
+            href={siteConfig.links.gigalearn}
+            className="inline-flex min-h-9 items-center gap-2 text-sm text-muted hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden />
+            Back to GigaLearn
+          </Link>
+          <div className="flex flex-wrap items-start gap-3">
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#7C3AED] to-[#4C1D95] text-white shadow-md"
+              aria-hidden
+            >
+              <GraduationCap className="h-6 w-6" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[#6D28D9]">
+                GigaLearn Academy
+              </p>
+              <h2 className="text-2xl font-bold tracking-tight text-[#1E1B4B] sm:text-3xl">
+                {title}
+              </h2>
+              {subtitle ? <p className="mt-1 text-sm text-slate-600">{subtitle}</p> : null}
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold uppercase tracking-wide text-accent">
-              GigaLearn Academy
-            </p>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              {title}
-            </h2>
-            {subtitle ? <p className="mt-1 text-sm text-muted">{subtitle}</p> : null}
-          </div>
-        </div>
-        <nav aria-label="Academy sections" className="relative -mx-1">
-          <div className="gigalearn-grade-scroll flex gap-2 overflow-x-auto px-1 pb-1">
-            {NAV.map((item) => {
-              const isActive =
-                item.key != null &&
-                (active === item.key || (active === "course" && item.key === "catalogue"));
-              return (
-                <Link
-                  key={`${item.href}:${item.label}`}
-                  href={item.href}
-                  className={cn(
-                    "min-h-11 shrink-0 rounded-full border px-3.5 py-2 text-xs font-semibold",
-                    isActive
-                      ? "border-accent/40 bg-accent/10 text-foreground"
-                      : "border-border bg-white text-muted hover:border-accent/25"
-                  )}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-      </header>
-      {children}
+          <nav aria-label="Academy sections" className="relative -mx-1">
+            <div className="academy-visual-nav gigalearn-grade-scroll px-1">
+              {NAV.map((item) => {
+                const isActive =
+                  item.key != null &&
+                  (active === item.key || (active === "course" && item.key === "catalogue"));
+                return (
+                  <Link
+                    key={`${item.href}:${item.label}`}
+                    href={item.href}
+                    className={cn(
+                      "academy-visual-nav-link",
+                      isActive && "academy-visual-nav-link--active"
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
+        </header>
+        <div className="space-y-4">{children}</div>
+      </div>
     </div>
   );
 }

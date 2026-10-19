@@ -1,10 +1,12 @@
 "use client";
 
+import { LearningProgressRing } from "@/components/gigalearn/ui/LearningProgressRing";
 import { ButtonLink } from "@/components/ui/Button";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { ProductSignInPrompt } from "@/components/seo/ProductSignInPrompt";
 import { getSessionToken } from "@/lib/auth";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
+import { ACADEMY_SURFACE_CLASS } from "@/lib/gigalearn/academy/visualTheme";
 import {
   BECE_AWAITING_MATERIALS_MESSAGE,
   BECE_SUBJECTS_AVAILABLE,
@@ -44,52 +46,60 @@ const EXAM_NAV = [
 
 function ExamPracticeChrome({ children }: { children: ReactNode }) {
   return (
-    <div className="gigalearn-stable document-compact mx-auto max-w-6xl space-y-4 pb-[calc(var(--primary-nav-offset,0px)+1rem)]">
-      <header className="space-y-3">
-        <Link
-          href={EXAM_PRACTICE_DESTINATIONS.gigalearnHome}
-          className="inline-flex min-h-9 items-center gap-2 text-sm text-muted hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden />
-          Back to GigaLearn
-        </Link>
-        <div className="flex flex-wrap items-start gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 text-accent">
-            <ClipboardList className="h-6 w-6" aria-hidden />
+    <div
+      className={cn(
+        ACADEMY_SURFACE_CLASS.shell,
+        "gigalearn-stable document-compact mx-auto max-w-6xl pb-[calc(var(--primary-nav-offset,0px)+1rem)]"
+      )}
+    >
+      <div className="academy-visual-panel space-y-4 p-4 sm:p-6">
+        <header className="space-y-3">
+          <Link
+            href={EXAM_PRACTICE_DESTINATIONS.gigalearnHome}
+            className="inline-flex min-h-9 items-center gap-2 text-sm text-muted hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden />
+            Back to GigaLearn
+          </Link>
+          <div className="flex flex-wrap items-start gap-3">
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0F766E] to-[#115E59] text-white shadow-md"
+              aria-hidden
+            >
+              <ClipboardList className="h-6 w-6" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[#0F766E]">
+                GigaLearn
+              </p>
+              <h2 className="text-2xl font-bold tracking-tight text-[#1E1B4B] sm:text-3xl">
+                {EXAM_PRACTICE_CENTRE_TITLE}
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">{EXAM_PRACTICE_CENTRE_TAGLINE}</p>
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold uppercase tracking-wide text-accent">
-              GigaLearn
-            </p>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              {EXAM_PRACTICE_CENTRE_TITLE}
-            </h2>
-            <p className="mt-1 text-sm text-muted">{EXAM_PRACTICE_CENTRE_TAGLINE}</p>
-          </div>
-        </div>
-        <nav aria-label="Exam Practice and Academy" className="relative -mx-1">
-          <div className="gigalearn-grade-scroll flex gap-2 overflow-x-auto px-1 pb-1">
-            {EXAM_NAV.map((item) => {
-              const isActive = item.key === "exam";
-              return (
-                <Link
-                  key={item.href + item.label}
-                  href={item.href}
-                  className={cn(
-                    "min-h-11 shrink-0 rounded-full border px-3.5 py-2 text-xs font-semibold",
-                    isActive
-                      ? "border-accent/40 bg-accent/10 text-foreground"
-                      : "border-border bg-white text-muted hover:border-accent/25"
-                  )}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-      </header>
-      {children}
+          <nav aria-label="Exam Practice and Academy" className="relative -mx-1">
+            <div className="academy-visual-nav gigalearn-grade-scroll px-1">
+              {EXAM_NAV.map((item) => {
+                const isActive = item.key === "exam";
+                return (
+                  <Link
+                    key={item.href + item.label}
+                    href={item.href}
+                    className={cn(
+                      "academy-visual-nav-link",
+                      isActive && "academy-visual-nav-link--active"
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
+        </header>
+        <div className="space-y-4">{children}</div>
+      </div>
     </div>
   );
 }
@@ -101,29 +111,29 @@ function BeceCentreCard() {
     <section
       id="bece-centre"
       aria-labelledby="bece-centre-heading"
-      className="saas-card rounded-2xl border border-border bg-white p-4 sm:p-5"
+      className={cn(ACADEMY_SURFACE_CLASS.bece, "p-4 sm:p-5")}
     >
       <div className="flex flex-wrap items-center gap-2">
-        <GraduationCap className="h-5 w-5 text-accent" aria-hidden />
-        <h2 id="bece-centre-heading" className="text-lg font-bold text-foreground">
+        <GraduationCap className="h-5 w-5" aria-hidden />
+        <h2 id="bece-centre-heading" className="text-lg font-bold">
           BECE Mock Examination Centre
         </h2>
-        <span className="rounded-full border border-border px-2.5 py-0.5 text-[11px] font-semibold text-muted">
+        <span className="academy-visual-chip rounded-full px-2.5 py-0.5 text-[11px] font-semibold">
           Awaiting sources
         </span>
       </div>
-      <p className="mt-2 text-sm text-muted">
+      <p className="academy-visual-muted mt-2 text-sm">
         Practise by subject, review mistakes, and prepare for BECE — using verified papers only when
         they are available. Teacher-promotion materials are never shown here.
       </p>
 
       <div
-        className="mt-4 rounded-xl border border-dashed border-border bg-[var(--surface,#fafafa)] px-3 py-4"
+        className="academy-visual-tile mt-4 rounded-xl border-dashed px-3 py-4"
         role="status"
         data-testid="bece-awaiting-materials"
       >
-        <p className="text-sm font-semibold text-foreground">{BECE_AWAITING_MATERIALS_MESSAGE}</p>
-        <p className="mt-1 text-xs text-muted">
+        <p className="text-sm font-semibold">{BECE_AWAITING_MATERIALS_MESSAGE}</p>
+        <p className="academy-visual-muted mt-1 text-xs">
           No BECE examination papers were identified in the current source set. Subjects and mock
           sets will appear here after verified materials are imported and reviewed.
         </p>
@@ -139,10 +149,7 @@ function BeceCentreCard() {
       ) : (
         <ul className="mt-3 grid gap-2 sm:grid-cols-2" data-testid="bece-subjects-slot">
           {BECE_SUBJECTS_AVAILABLE.map((s) => (
-            <li
-              key={s.id}
-              className="rounded-xl border border-border px-3 py-2 text-sm text-foreground"
-            >
+            <li key={s.id} className="academy-visual-tile rounded-xl px-3 py-2 text-sm">
               {s.label}
             </li>
           ))}
@@ -150,26 +157,24 @@ function BeceCentreCard() {
       )}
 
       <div className="mt-4 space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+        <p className="text-xs font-semibold uppercase tracking-wide opacity-80">
           Related study tools (not official BECE papers)
         </p>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <ButtonLink
+          <Link
             href={EXAM_PRACTICE_DESTINATIONS.studentLearn}
-            variant="secondary"
-            className="min-h-11"
+            className="academy-visual-cta academy-visual-cta--solid"
           >
             Student Learn (AI practice)
-          </ButtonLink>
-          <ButtonLink
+          </Link>
+          <Link
             href={EXAM_PRACTICE_DESTINATIONS.aiTutor}
-            variant="secondary"
-            className="min-h-11"
+            className="academy-visual-cta academy-visual-cta--ghost"
           >
             Ask AI Tutor
-          </ButtonLink>
+          </Link>
         </div>
-        <p className="text-xs text-muted">
+        <p className="academy-visual-muted text-xs">
           AI-generated practice is labelled separately and is not an official WAEC/BECE paper bank.
         </p>
       </div>
@@ -182,86 +187,90 @@ function TeacherPromotionCentreCard() {
     <section
       id="teacher-promotion-centre"
       aria-labelledby="teacher-promotion-heading"
-      className="saas-card rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/10 via-white to-white p-4 sm:p-5"
+      className={cn(ACADEMY_SURFACE_CLASS.teacher, "relative overflow-hidden p-4 sm:p-5")}
       data-testid="teacher-promotion-centre"
     >
-      <div className="flex flex-wrap items-center gap-2">
-        <BookOpen className="h-5 w-5 text-accent" aria-hidden />
-        <h2 id="teacher-promotion-heading" className="text-lg font-bold text-foreground">
+      <div className="pointer-events-none absolute right-0 top-0 rounded-bl-2xl bg-[var(--av-accent,#FACC15)] px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#14532D]">
+        Full access path
+      </div>
+      <div className="flex flex-wrap items-center gap-2 pr-16">
+        <BookOpen className="h-5 w-5" aria-hidden />
+        <h2 id="teacher-promotion-heading" className="text-lg font-bold">
           Ghana Teacher Promotion Practice
         </h2>
-        <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-[11px] font-semibold text-foreground">
+        <span className="academy-visual-chip rounded-full px-2.5 py-0.5 text-[11px] font-semibold">
           Sources identified
         </span>
       </div>
-      <p className="mt-2 text-sm text-muted">
+      <p className="academy-visual-muted mt-2 text-sm">
         Prepare for Ghana Education Service promotion aptitude practice. Source-derived question
         banks are not published until review. Separate from BECE student papers.
       </p>
 
       <div className="mt-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--av-accent,#FACC15)]">
           Promotion levels (from GES advert metadata)
         </p>
         <ul className="mt-2 flex flex-wrap gap-2">
           {TEACHER_PROMOTION_LEVEL_LABELS.map((level) => (
             <li
               key={level.id}
-              className="rounded-full border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground"
+              className="rounded-full border border-[var(--av-border)] bg-[var(--av-surface)] px-3 py-1.5 text-xs font-medium"
             >
               {level.label}
             </li>
           ))}
         </ul>
-        <p className="mt-2 text-xs text-muted">
+        <p className="academy-visual-muted mt-2 text-xs">
           Levels are labels only — no rank-specific mock is unlocked until a reviewed bank is
           published for that rank.
         </p>
       </div>
 
-      <div className="mt-4 rounded-xl border border-border bg-white p-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+      <div className="academy-visual-tile mt-4 rounded-xl p-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--av-accent,#FACC15)]">
           Source inventory (not yet imported)
         </p>
         <ul className="mt-2 space-y-2">
           {TEACHER_PROMOTION_SOURCE_INVENTORY.map((src) => (
-            <li key={src.id} className="text-sm text-foreground">
+            <li key={src.id} className="text-sm">
               <span className="font-medium">{src.title}</span>
-              <span className="mt-0.5 block text-xs text-muted">
+              <span className="academy-visual-muted mt-0.5 block text-xs">
                 {answerStatusLabel(src.answerStatus)}
               </span>
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-xs text-muted" data-testid="promotion-bank-pending">
+        <p className="academy-visual-muted mt-3 text-xs" data-testid="promotion-bank-pending">
           Reviewed import is a later phase. Answer keys are not treated as verified until review.
         </p>
       </div>
 
       <div className="mt-4 space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--av-accent,#FACC15)]">
           Available now (AI practice — not source papers)
         </p>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <ButtonLink href={EXAM_PRACTICE_DESTINATIONS.teacherHub} className="min-h-11">
+          <Link
+            href={EXAM_PRACTICE_DESTINATIONS.teacherHub}
+            className="academy-visual-cta academy-visual-cta--solid"
+          >
             Teacher hub tools
-          </ButtonLink>
-          <ButtonLink
+          </Link>
+          <Link
             href={EXAM_PRACTICE_DESTINATIONS.aiTutor}
-            variant="secondary"
-            className="min-h-11"
+            className="academy-visual-cta academy-visual-cta--ghost"
           >
             AI Tutor
-          </ButtonLink>
-          <ButtonLink
+          </Link>
+          <Link
             href={EXAM_PRACTICE_DESTINATIONS.academyAssess}
-            variant="secondary"
-            className="min-h-11"
+            className="academy-visual-cta academy-visual-cta--ghost"
           >
             Academy assessments
-          </ButtonLink>
+          </Link>
         </div>
-        <p className="text-xs text-muted">
+        <p className="academy-visual-muted text-xs">
           Distinguishes AI-generated practice from source-derived questions (pending) and verified
           keys (none published yet).
         </p>
@@ -275,20 +284,20 @@ function AiStudyTutorCard() {
     <section
       id="ai-study-tutor"
       aria-labelledby="ai-tutor-heading"
-      className="saas-card rounded-2xl border border-border bg-white p-4 sm:p-5"
+      className={cn(ACADEMY_SURFACE_CLASS.catalogue, "p-4 sm:p-5")}
       data-testid="ai-study-tutor"
     >
       <div className="flex flex-wrap items-center gap-2">
-        <MessageCircle className="h-5 w-5 text-accent" aria-hidden />
-        <h2 id="ai-tutor-heading" className="text-lg font-bold text-foreground">
+        <MessageCircle className="h-5 w-5 text-[#6D28D9]" aria-hidden />
+        <h2 id="ai-tutor-heading" className="text-lg font-bold text-[#1E1B4B]">
           AI Study Tutor
         </h2>
       </div>
-      <p className="mt-2 text-sm text-muted">
+      <p className="mt-2 text-sm text-slate-600">
         Use the existing GigaLearn AI Tutor to explain topics, walk through similar practice, and
         plan revision. The tutor does not replace verified examination answer keys.
       </p>
-      <ul className="mt-3 list-inside list-disc space-y-1 text-sm text-muted">
+      <ul className="mt-3 list-inside list-disc space-y-1 text-sm text-slate-600">
         <li>Explain a question or concept</li>
         <li>Why an answer might be correct or incorrect</li>
         <li>Similar practice (AI-generated, not official papers)</li>
@@ -330,17 +339,17 @@ function MyPerformanceCard() {
       <section
         id="my-performance"
         aria-labelledby="performance-heading"
-        className="saas-card rounded-2xl border border-border bg-white p-4 sm:p-5"
+        className={cn(ACADEMY_SURFACE_CLASS.performance, "p-4 sm:p-5")}
         data-testid="my-performance"
       >
-        <h2 id="performance-heading" className="text-lg font-bold text-foreground">
+        <h2 id="performance-heading" className="text-lg font-bold">
           My Performance
         </h2>
-        <p className="mt-2 text-sm text-muted">
+        <p className="academy-visual-muted mt-2 text-sm">
           Sign in to see your real GigaLearn practice and Academy assessment history. We do not
           invent scores or streaks.
         </p>
-        <div className="mt-4">
+        <div className="mt-4 rounded-xl border border-[var(--av-border)] bg-[var(--av-surface)] p-3">
           <ProductSignInPrompt
             productName="GigaLearn Exam Practice"
             description="Performance data stays private to your signed-in account."
@@ -356,10 +365,10 @@ function MyPerformanceCard() {
       <section
         id="my-performance"
         aria-labelledby="performance-heading"
-        className="saas-card rounded-2xl border border-border p-4 sm:p-5"
+        className={cn(ACADEMY_SURFACE_CLASS.performance, "p-4 sm:p-5")}
         data-testid="my-performance"
       >
-        <h2 id="performance-heading" className="text-lg font-bold text-foreground">
+        <h2 id="performance-heading" className="text-lg font-bold">
           My Performance
         </h2>
         <ClientAppHydrationNotice productName="GigaLearn Exam Practice" />
@@ -376,50 +385,50 @@ function MyPerformanceCard() {
     <section
       id="my-performance"
       aria-labelledby="performance-heading"
-      className="saas-card rounded-2xl border border-border bg-white p-4 sm:p-5"
+      className={cn(ACADEMY_SURFACE_CLASS.performance, "p-4 sm:p-5")}
       data-testid="my-performance"
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h2 id="performance-heading" className="text-lg font-bold text-foreground">
+          <h2 id="performance-heading" className="text-lg font-bold">
             My Performance
           </h2>
-          <p className="mt-1 text-sm text-muted">
+          <p className="academy-visual-muted mt-1 text-sm">
             Server-verified practice topics and Academy assessments for your account only.
           </p>
         </div>
         <Link
           href={EXAM_PRACTICE_DESTINATIONS.academyMy}
-          className="text-sm font-semibold text-accent hover:underline"
+          className="text-sm font-semibold underline-offset-2 hover:underline"
         >
           My courses →
         </Link>
       </div>
 
       <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-border p-3">
-          <dt className="text-[11px] font-medium uppercase tracking-wide text-muted">
+        <div className="academy-visual-tile rounded-xl p-3">
+          <dt className="academy-visual-muted text-[11px] font-medium uppercase tracking-wide">
             Practice topics
           </dt>
-          <dd className="mt-1 text-xl font-bold text-foreground">{progress.length}</dd>
+          <dd className="mt-1 text-xl font-bold">{progress.length}</dd>
         </div>
-        <div className="rounded-xl border border-border p-3">
-          <dt className="text-[11px] font-medium uppercase tracking-wide text-muted">
+        <div className="academy-visual-tile rounded-xl p-3">
+          <dt className="academy-visual-muted text-[11px] font-medium uppercase tracking-wide">
             Scored topics
           </dt>
-          <dd className="mt-1 text-xl font-bold text-foreground">{topicsWithScores.length}</dd>
+          <dd className="mt-1 text-xl font-bold">{topicsWithScores.length}</dd>
         </div>
-        <div className="rounded-xl border border-border p-3">
-          <dt className="text-[11px] font-medium uppercase tracking-wide text-muted">
+        <div className="academy-visual-tile rounded-xl p-3">
+          <dt className="academy-visual-muted text-[11px] font-medium uppercase tracking-wide">
             Academy attempts
           </dt>
-          <dd className="mt-1 text-xl font-bold text-foreground">{attempts.length}</dd>
+          <dd className="mt-1 text-xl font-bold">{attempts.length}</dd>
         </div>
       </dl>
 
       {progress.length === 0 && attempts.length === 0 && enrolments.length === 0 ? (
         <p
-          className="mt-4 rounded-xl border border-dashed border-border px-3 py-3 text-sm text-muted"
+          className="academy-visual-tile academy-visual-muted mt-4 rounded-xl border-dashed px-3 py-3 text-sm"
           data-testid="performance-empty"
         >
           No practice or Academy assessment activity yet. When you practise in GigaLearn or submit
@@ -439,13 +448,13 @@ function MyPerformanceCard() {
             }) => (
               <li
                 key={row.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border px-3 py-2 text-sm"
+                className="academy-visual-tile flex flex-wrap items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm"
               >
-                <span className="min-w-0 truncate font-medium text-foreground">
+                <span className="min-w-0 truncate font-medium">
                   {row.subject ? `${row.subject} · ` : ""}
                   {row.topicKey}
                 </span>
-                <span className="text-xs text-muted">
+                <span className="academy-visual-muted text-xs">
                   {row.lastScore != null ? `Last score ${row.lastScore}%` : "No score yet"} ·{" "}
                   {row.practiceCount} practise
                   {row.practiceCount === 1 ? "" : "s"}
@@ -473,41 +482,47 @@ function ContinuePractisingCard() {
         ) ?? enrolments.find((e: { status: string }) => e.status === "active")
       : null;
 
+  const progressPercent =
+    resume && typeof resume.progressPercent === "number" ? resume.progressPercent : 0;
+
   return (
     <section
       id="continue-practising"
       aria-labelledby="continue-heading"
-      className="saas-card rounded-2xl border border-border bg-white p-4 sm:p-5"
+      className={cn(ACADEMY_SURFACE_CLASS.catalogue, "p-4 sm:p-5")}
     >
       <div className="flex items-center gap-2">
-        <Sparkles className="h-5 w-5 text-accent" aria-hidden />
-        <h2 id="continue-heading" className="text-lg font-bold text-foreground">
+        <Sparkles className="h-5 w-5 text-[#6D28D9]" aria-hidden />
+        <h2 id="continue-heading" className="text-lg font-bold text-[#1E1B4B]">
           Continue practising
         </h2>
       </div>
       {!sessionToken && !hasPersistedAuth() ? (
-        <p className="mt-2 text-sm text-muted">
+        <p className="mt-2 text-sm text-slate-600">
           Sign in to resume your own Academy pathway. You cannot open another learner&apos;s private
           attempt.
         </p>
       ) : enrolments === undefined ? (
         <ClientAppHydrationNotice productName="GigaLearn Exam Practice" />
       ) : resume ? (
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-muted">
-            Resume enrolled course{" "}
-            <span className="font-semibold text-foreground">{resume.courseSlug}</span>
-            {resume.progressPercent != null ? ` · ${resume.progressPercent}%` : ""}
-          </p>
+        <div className="academy-visual-course-card mt-3">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <LearningProgressRing percent={progressPercent} />
+            <p className="text-sm text-slate-600">
+              Resume enrolled course{" "}
+              <span className="font-semibold text-[#1E1B4B]">{resume.courseSlug}</span>
+              {resume.progressPercent != null ? ` · ${resume.progressPercent}%` : ""}
+            </p>
+          </div>
           <ButtonLink
             href={`/gigalearn/academy/course/?slug=${encodeURIComponent(resume.courseSlug)}`}
-            className="min-h-11 shrink-0"
+            className="academy-visual-cta academy-visual-cta--success min-h-11 shrink-0"
           >
             Continue
           </ButtonLink>
         </div>
       ) : (
-        <p className="mt-2 text-sm text-muted" data-testid="continue-empty">
+        <p className="mt-2 text-sm text-slate-600" data-testid="continue-empty">
           No unfinished Academy attempt to resume. Open Student Learn or AI Tutor to practise, or
           enrol from the Academy catalogue.
         </p>
@@ -537,28 +552,31 @@ export function ExamPracticeCentre() {
     <ExamPracticeChrome>
       <section
         aria-labelledby="exam-hero-heading"
-        className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-accent/20 via-white to-violet-50 p-5 sm:p-7"
+        className={cn(ACADEMY_SURFACE_CLASS.hero, "relative overflow-hidden p-5 sm:p-7")}
       >
         <div className="relative max-w-2xl space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-accent">Welcome</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/90">Welcome</p>
           <h2
             id="exam-hero-heading"
-            className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl"
+            className="text-2xl font-bold tracking-tight text-white sm:text-3xl"
           >
             {EXAM_PRACTICE_CENTRE_TITLE}
           </h2>
-          <p className="text-sm text-muted sm:text-base">{EXAM_PRACTICE_CENTRE_TAGLINE}</p>
-          <p className="text-sm text-muted">
+          <p className="academy-visual-muted text-sm sm:text-base">{EXAM_PRACTICE_CENTRE_TAGLINE}</p>
+          <p className="academy-visual-muted text-sm">
             Separate centres for BECE learners and Ghana Teacher Promotion candidates. No invented
             question banks or scores.
           </p>
           <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:flex-wrap">
-            <ButtonLink href="#bece-centre" className="min-h-11">
+            <Link href="#bece-centre" className="academy-visual-cta academy-visual-cta--solid">
               BECE centre
-            </ButtonLink>
-            <ButtonLink href="#teacher-promotion-centre" variant="secondary" className="min-h-11">
+            </Link>
+            <Link
+              href="#teacher-promotion-centre"
+              className="academy-visual-cta academy-visual-cta--ghost"
+            >
               Teacher Promotion
-            </ButtonLink>
+            </Link>
           </div>
         </div>
       </section>

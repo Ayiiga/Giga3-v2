@@ -1,12 +1,15 @@
 "use client";
 
 import { AcademyChrome } from "@/components/gigalearn/academy/AcademyChrome";
+import { LearningProgressRing } from "@/components/gigalearn/ui/LearningProgressRing";
 import { ButtonLink } from "@/components/ui/Button";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { ProductSignInPrompt } from "@/components/seo/ProductSignInPrompt";
 import { getSessionToken } from "@/lib/auth";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import { getBuiltinAcademyCourse } from "@/lib/gigalearn/academy/courseCatalog";
+import { ACADEMY_SURFACE_CLASS } from "@/lib/gigalearn/academy/visualTheme";
+import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import Link from "next/link";
@@ -39,8 +42,8 @@ export function AcademyMyCourses() {
       {enrolments === undefined ? (
         <ClientAppHydrationNotice productName="GigaLearn Academy" />
       ) : enrolments.length === 0 ? (
-        <div className="saas-card rounded-2xl border border-border p-6">
-          <p className="text-sm text-muted">You are not enrolled in any Academy courses yet.</p>
+        <div className={cn(ACADEMY_SURFACE_CLASS.catalogue, "p-6")}>
+          <p className="text-sm text-slate-600">You are not enrolled in any Academy courses yet.</p>
           <ButtonLink href="/gigalearn/academy/" className="mt-4 min-h-11">
             Browse catalogue
           </ButtonLink>
@@ -50,20 +53,36 @@ export function AcademyMyCourses() {
           {enrolments.map((row) => {
             const title =
               getBuiltinAcademyCourse(row.courseSlug)?.title ?? row.courseSlug;
+            const percent =
+              typeof row.progressPercent === "number" ? row.progressPercent : 0;
             return (
               <li key={`${row.courseSlug}-${row.enrolledAt}`}>
                 <Link
                   href={`/gigalearn/academy/course/?slug=${encodeURIComponent(row.courseSlug)}`}
-                  className="saas-card flex flex-col gap-2 rounded-2xl border border-border p-4 hover:border-accent/35 sm:flex-row sm:items-center sm:justify-between"
+                  className="academy-visual-course-card hover:border-[#C4B5FD]"
                 >
-                  <div>
-                    <p className="font-semibold text-foreground">{title}</p>
-                    <p className="text-xs text-muted">
-                      Status: {row.status} · Pathway {row.progressPercent}%
-                      {row.lastLessonId ? ` · Resume @ ${row.lastLessonId}` : ""}
-                    </p>
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <LearningProgressRing
+                      percent={percent}
+                      label={`${title} ${percent}% complete`}
+                    />
+                    <div className="min-w-0">
+                      <p className="font-semibold text-[#1E1B4B]">{title}</p>
+                      <p className="text-xs text-slate-600">
+                        Status: {row.status} · Pathway {percent}%
+                        {row.lastLessonId ? ` · Resume @ ${row.lastLessonId}` : ""}
+                      </p>
+                      <div className="academy-visual-progress-track mt-2 max-w-xs">
+                        <div
+                          className="academy-visual-progress-fill"
+                          style={{ width: `${Math.max(0, Math.min(100, percent))}%` }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-sm font-semibold text-accent">Continue →</span>
+                  <span className="academy-visual-cta academy-visual-cta--success text-sm">
+                    Continue →
+                  </span>
                 </Link>
               </li>
             );
