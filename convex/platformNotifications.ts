@@ -68,16 +68,36 @@ export const createNotificationInternal = internalMutation({
     title: v.string(),
     body: v.string(),
     href: v.optional(v.string()),
+    secondaryHref: v.optional(v.string()),
+    secondaryLabel: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+    dedupeKey: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.insert("platformNotifications", {
+    const dedupeKey = args.dedupeKey?.trim().slice(0, 200) || undefined;
+    if (dedupeKey) {
+      const existing = await ctx.db
+        .query("platformNotifications")
+        .withIndex("by_dedupe", (q) => q.eq("dedupeKey", dedupeKey))
+        .first();
+      if (existing) {
+        return { notificationId: existing._id, created: false as const };
+      }
+    }
+
+    const notificationId = await ctx.db.insert("platformNotifications", {
       userId: args.userId,
       category: args.category,
-      title: args.title,
-      body: args.body,
-      href: args.href,
+      title: args.title.trim().slice(0, 160),
+      body: args.body.trim().slice(0, 800),
+      href: args.href?.trim().slice(0, 500),
+      secondaryHref: args.secondaryHref?.trim().slice(0, 500),
+      secondaryLabel: args.secondaryLabel?.trim().slice(0, 80),
+      imageUrl: args.imageUrl?.trim().slice(0, 500),
+      dedupeKey,
       read: false,
       createdAt: Date.now(),
     });
+    return { notificationId, created: true as const };
   },
 });

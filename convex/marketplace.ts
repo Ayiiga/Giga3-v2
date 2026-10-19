@@ -1,5 +1,6 @@
 import { internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { verificationStatusOf } from "./creatorProfiles";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
@@ -9,7 +10,10 @@ import {
   marketplaceReportReasonValidator,
 } from "./schema";
 import { marketplaceUploadsEnabled } from "./marketplaceUploadPolicy";
-import { isListingFileApproved } from "./marketplaceListingHelpers";
+import {
+  isListingFileApproved,
+  sanitizePublicHttpUrl,
+} from "./marketplaceListingHelpers";
 import {
   aggregatePurchaseTotals,
   clampStorefrontLimit,
@@ -18,9 +22,9 @@ import {
 } from "./marketplaceCompleteness";
 import { requireEntitlementForEmail } from "./entitlements";
 import {
-  toCreatorListing,
+  toCreatorListingResolved,
   toPublicCreatorProfile,
-  toPublicListing,
+  toPublicListingResolved,
   toPublicReview,
 } from "./marketplaceViews";
 import {
@@ -133,10 +137,12 @@ export const searchListings = query({
 
     const page = purchasable.slice(offset, offset + cap);
 
-    return page.map((listing) => ({
-      ...toPublicListing(listing),
-      creator: creators.get(listing.creatorId) ?? null,
-    }));
+    return await Promise.all(
+      page.map(async (listing) => ({
+        ...(await toPublicListingResolved(ctx.storage, listing)),
+        creator: creators.get(listing.creatorId) ?? null,
+      }))
+    );
   },
 });
 
@@ -155,7 +161,7 @@ export const getListing = query({
       .order("desc")
       .take(20);
     return {
-      listing: toPublicListing(listing),
+      listing: await toPublicListingResolved(ctx.storage, listing),
       creator: creator ? toPublicCreatorProfile(creator) : null,
       reviews: reviews.map(toPublicReview),
     };
@@ -166,12 +172,12 @@ export const getMyListings = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);
-    return (await ctx.db
+    const rows = await ctx.db
       .query("marketplaceListings")
       .withIndex("by_creator", (q) => q.eq("creatorId", email))
       .order("desc")
-      .take(100)
-    ).map(toCreatorListing);
+      .take(100);
+    return await Promise.all(rows.map((row) => toCreatorListingResolved(ctx.storage, row)));
   },
 });
 
@@ -209,11 +215,13 @@ export const listPublishedByHandle = query({
       .order("desc")
       .collect();
 
-    const listings = pickEligibleStorefrontListings(
-      publishedRows,
-      cap,
-      isListingFileApproved
-    ).map((listing) => toPublicListing(listing));
+    const listings = await Promise.all(
+      pickEligibleStorefrontListings(
+        publishedRows,
+        cap,
+        isListingFileApproved
+      ).map((listing) => toPublicListingResolved(ctx.storage, listing))
+    );
 
     return {
       profile: toPublicCreatorProfile(profile),
@@ -235,6 +243,8 @@ export const createListing = mutation({
     tags: v.array(v.string()),
     previewText: v.optional(v.string()),
     previewUrl: v.optional(v.string()),
+    previewToc: v.optional(v.string()),
+    previewIntro: v.optional(v.string()),
     coverImageUrl: v.optional(v.string()),
     coverStorageId: v.optional(v.id("_storage")),
     publish: v.optional(v.boolean()),
@@ -268,10 +278,11 @@ export const createListing = mutation({
     if (!title || !description) throw new Error("Title and description are required.");
     if (args.priceGhs < 1) throw new Error("Minimum price is GHS 1.");
 
-    let coverImageUrl = args.coverImageUrl?.trim();
     if (args.coverStorageId) {
       throw new Error("Use prepareListingUpload for cover images.");
     }
+    const coverImageUrl = sanitizePublicHttpUrl(args.coverImageUrl, "Cover image URL");
+    const previewUrl = sanitizePublicHttpUrl(args.previewUrl, "Preview URL");
 
     const now = Date.now();
     return await ctx.db.insert("marketplaceListings", {
@@ -285,13 +296,17 @@ export const createListing = mutation({
       copyrightNotice: args.copyrightNotice?.trim().slice(0, 500),
       tags: args.tags.map((t) => t.trim().slice(0, 40)).filter(Boolean).slice(0, 12),
       previewText: args.previewText?.trim().slice(0, 2000),
-      previewUrl: args.previewUrl,
+      previewUrl,
+      previewToc: args.previewToc?.trim().slice(0, 4000) || undefined,
+      previewIntro: args.previewIntro?.trim().slice(0, 4000) || undefined,
       coverImageUrl,
       status: "draft",
       ratingAvg: 0,
       ratingCount: 0,
       purchaseCount: 0,
       viewCount: 0,
+      promoClickCount: 0,
+      previewOpenCount: 0,
       createdAt: now,
       updatedAt: now,
     });
@@ -310,6 +325,9 @@ export const updateListing = mutation({
       v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))
     ),
     previewText: v.optional(v.string()),
+    previewUrl: v.optional(v.string()),
+    previewToc: v.optional(v.string()),
+    previewIntro: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     coverImageUrl: v.optional(v.string()),
   },
@@ -340,6 +358,7 @@ export const updateListing = mutation({
       }
     }
 
+    const wasPublished = listing.status === "published";
     const patch: Record<string, unknown> = { updatedAt: Date.now() };
     if (args.title !== undefined) patch.title = args.title.trim().slice(0, 120);
     if (args.description !== undefined) {
@@ -359,13 +378,36 @@ export const updateListing = mutation({
     }
     if (args.status !== undefined) patch.status = args.status;
     if (args.previewText !== undefined) patch.previewText = args.previewText?.slice(0, 2000);
+    if (args.previewUrl !== undefined) {
+      patch.previewUrl = sanitizePublicHttpUrl(args.previewUrl, "Preview URL");
+    }
+    if (args.previewToc !== undefined) {
+      patch.previewToc = args.previewToc.trim().slice(0, 4000) || undefined;
+    }
+    if (args.previewIntro !== undefined) {
+      patch.previewIntro = args.previewIntro.trim().slice(0, 4000) || undefined;
+    }
     if (args.coverImageUrl !== undefined) {
-      patch.coverImageUrl = args.coverImageUrl.trim().slice(0, 500) || undefined;
+      // External / CDN covers only — seller file covers must use prepareListingUpload.
+      patch.coverImageUrl = sanitizePublicHttpUrl(args.coverImageUrl, "Cover image URL");
     }
     if (args.tags !== undefined) {
       patch.tags = args.tags.map((t) => t.trim().slice(0, 40)).filter(Boolean).slice(0, 12);
     }
+    // Confirm publication in the DB before any success notification.
     await ctx.db.patch(args.listingId, patch);
+
+    if (args.status === "published" && !wasPublished) {
+      try {
+        await ctx.scheduler.runAfter(
+          0,
+          internal.marketplacePublishNotify.notifyListingPublishedInternal,
+          { listingId: args.listingId }
+        );
+      } catch {
+        // Publication already succeeded — notify retries must never fail the mutation.
+      }
+    }
   },
 });
 
@@ -465,14 +507,81 @@ export const recordView = mutation({
     sessionToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    if (!args.sessionToken) return;
+    // Signed-in views only — privacy-conscious; anonymous traffic is not counted.
+    if (!args.sessionToken) return { ok: false as const, reason: "anonymous" as const };
     await requireSession(args.sessionToken, ctx);
     const listing = await ctx.db.get(args.listingId);
-    if (!listing || listing.status !== "published") return;
+    if (!listing || listing.status !== "published") {
+      return { ok: false as const, reason: "not_found" as const };
+    }
     await ctx.db.patch(args.listingId, {
       viewCount: listing.viewCount + 1,
       updatedAt: Date.now(),
     });
+    return { ok: true as const, kind: "view" as const };
+  },
+});
+
+/** Promotion-link clicks from the author share panel (privacy-conscious counters). */
+export const recordPromoClick = mutation({
+  args: {
+    listingId: v.id("marketplaceListings"),
+    channel: v.optional(
+      v.union(
+        v.literal("copy"),
+        v.literal("whatsapp"),
+        v.literal("facebook"),
+        v.literal("telegram"),
+        v.literal("linkedin"),
+        v.literal("other")
+      )
+    ),
+    sessionToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const listing = await ctx.db.get(args.listingId);
+    if (!listing || listing.status !== "published") {
+      return { ok: false as const };
+    }
+    // Optional session — promo clicks may come from the author dashboard while signed in.
+    if (args.sessionToken) {
+      try {
+        await requireSession(args.sessionToken, ctx);
+      } catch {
+        return { ok: false as const };
+      }
+    }
+    await ctx.db.patch(args.listingId, {
+      promoClickCount: (listing.promoClickCount ?? 0) + 1,
+      updatedAt: Date.now(),
+    });
+    return { ok: true as const, kind: "promo_click" as const, channel: args.channel ?? "other" };
+  },
+});
+
+/** Preview engagement (TOC / intro / sample) — not a purchase signal. */
+export const recordPreviewOpen = mutation({
+  args: {
+    listingId: v.id("marketplaceListings"),
+    sessionToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const listing = await ctx.db.get(args.listingId);
+    if (!listing || listing.status !== "published") {
+      return { ok: false as const };
+    }
+    if (args.sessionToken) {
+      try {
+        await requireSession(args.sessionToken, ctx);
+      } catch {
+        /* count anonymously when token is stale */
+      }
+    }
+    await ctx.db.patch(args.listingId, {
+      previewOpenCount: (listing.previewOpenCount ?? 0) + 1,
+      updatedAt: Date.now(),
+    });
+    return { ok: true as const, kind: "preview_open" as const };
   },
 });
 
@@ -618,7 +727,7 @@ export const getMyPurchases = query({
           paymentReference: purchase.paymentReference,
         },
         // Never expose private storage IDs or seller email on the buyer library.
-        listing: toPublicListing(listing),
+        listing: await toPublicListingResolved(ctx.storage, listing),
         /** Expiring Convex storage URL when the buyer owns a file-backed listing. */
         downloadUrl,
         fileName: listing.fileName ?? "download",
@@ -747,6 +856,10 @@ export const getCreatorSalesAnalytics = query({
         grossGhs: row.grossGhs,
         feesGhs: row.feesGhs,
         earningsGhs: row.earningsGhs,
+        // Engagement counters (distinct from confirmed Paystack purchases).
+        viewCount: listing?.viewCount ?? 0,
+        promoClickCount: listing?.promoClickCount ?? 0,
+        previewOpenCount: listing?.previewOpenCount ?? 0,
       });
     }
     productSummaries.sort((a, b) => b.grossGhs - a.grossGhs);

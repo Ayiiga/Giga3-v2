@@ -213,41 +213,70 @@ function MarketplaceBrowseInner() {
         ) : (
           <>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-              {visible.map((item: NonNullable<typeof visible>[number]) => (
-                <Link
-                  key={item._id}
-                  href={`/marketplace/item/${item._id}/`}
-                  className="saas-card group flex flex-col overflow-hidden rounded-2xl p-2.5 sm:p-3 hover:border-accent/35"
-                >
-                  <ProductCover
-                    src={item.coverImageUrl}
-                    title={item.title}
-                    category={item.category}
-                    className="w-full"
-                    aspectClassName="aspect-[4/5]"
-                  />
-                  <div className="mt-2.5 flex min-h-0 flex-1 flex-col gap-1 px-0.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <h2 className="line-clamp-2 text-sm font-semibold leading-snug group-hover:text-emerald-800 dark:group-hover:text-emerald-300 sm:text-base">
-                        {item.title}
-                      </h2>
-                      <span className="shrink-0 text-sm font-bold tabular-nums">
-                        {formatGhs(item.priceGhs)}
-                      </span>
-                    </div>
-                    <p className="line-clamp-2 text-xs text-muted sm:text-sm">{item.description}</p>
-                    <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-1 text-[11px] text-muted">
-                      <span className="truncate">{item.category}</span>
-                      {item.creator?.verified ? (
-                        <span className="inline-flex items-center gap-0.5 text-emerald-700 dark:text-emerald-400">
-                          <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
-                          Verified
+              {visible.map((item: NonNullable<typeof visible>[number]) => {
+                const hasPreview = Boolean(
+                  item.previewText ||
+                    item.previewToc ||
+                    item.previewIntro ||
+                    item.previewUrl
+                );
+                return (
+                  <article
+                    key={item._id}
+                    className="saas-card group flex flex-col overflow-hidden rounded-2xl p-2.5 sm:p-3 hover:border-violet-400/40"
+                  >
+                    <Link href={`/marketplace/item/${item._id}/`} className="block">
+                      <ProductCover
+                        src={item.coverImageUrl}
+                        title={item.title}
+                        category={item.category}
+                        className="w-full"
+                        aspectClassName="aspect-[3/4]"
+                      />
+                    </Link>
+                    <div className="mt-2 flex min-h-0 flex-1 flex-col gap-1 px-0.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <Link href={`/marketplace/item/${item._id}/`}>
+                          <h2 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground group-hover:text-violet-800 dark:group-hover:text-violet-300 sm:text-[0.95rem]">
+                            {item.title}
+                          </h2>
+                        </Link>
+                        <span className="shrink-0 text-sm font-bold tabular-nums text-violet-800 dark:text-violet-300">
+                          {formatGhs(item.priceGhs)}
                         </span>
-                      ) : null}
+                      </div>
+                      <p className="line-clamp-2 text-xs text-muted">{item.description}</p>
+                      <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
+                        <span className="rounded-md bg-violet-500/10 px-1.5 py-0.5 text-violet-800 dark:text-violet-200">
+                          {item.category}
+                        </span>
+                        {item.creator?.verified ? (
+                          <span className="inline-flex items-center gap-0.5 font-medium text-violet-700 dark:text-violet-300">
+                            <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
+                            Verified
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="mt-auto flex flex-wrap gap-1.5 pt-2">
+                        {hasPreview ? (
+                          <Link
+                            href={`/marketplace/item/${item._id}/#preview`}
+                            className="inline-flex min-h-8 flex-1 items-center justify-center rounded-lg border border-border px-2 text-[11px] font-medium hover:border-violet-400"
+                          >
+                            Preview
+                          </Link>
+                        ) : null}
+                        <Link
+                          href={`/marketplace/item/${item._id}/`}
+                          className="inline-flex min-h-8 flex-1 items-center justify-center rounded-lg bg-violet-700 px-2 text-[11px] font-semibold text-white hover:bg-violet-800"
+                        >
+                          {item.purchaseReady ? "Buy / details" : "View details"}
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </article>
+                );
+              })}
             </div>
             {hasMore ? (
               <div className="flex justify-center pt-2">

@@ -52,6 +52,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     path: marketplaceItemPath(params.listingId),
     title: clampSeoTitle(`${bundle.listing.title}${creatorLabel}`, ref),
     description: clampSeoDescription(bundle.description, ref),
+    image: bundle.listing.coverImageUrl,
+    imageAlt: bundle.listing.title,
   });
 }
 

@@ -137,7 +137,7 @@ describe("marketplace follow-up — storefront completeness", () => {
     expect(block).toContain('eq("status", "published")');
     expect(block).toContain("clampStorefrontLimit");
     expect(block).toContain("pickEligibleStorefrontListings");
-    expect(block).toContain("toPublicListing(listing)");
+    expect(block).toContain("toPublicListingResolved");
     expect(block).toContain("toPublicCreatorProfile(profile)");
     expect(block).not.toMatch(/\.take\(\s*120\s*\)/);
     expect(block).not.toContain("nationalId");

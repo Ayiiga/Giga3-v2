@@ -1,5 +1,6 @@
 "use client";
 
+import { ProductPromotionPanel } from "@/components/marketplace/ProductPromotionPanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
@@ -20,8 +21,8 @@ import {
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 
 function RevenueStatsSkeleton() {
   return (
@@ -38,6 +39,8 @@ function RevenueStatsSkeleton() {
 
 function MarketplaceSellInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const promoteListingId = searchParams.get("promote")?.trim() || null;
   const [sessionToken] = useState<string | null>(() => getSessionToken());
   const profileHydrated = useRef(false);
 
@@ -105,7 +108,11 @@ function MarketplaceSellInner() {
   const [license, setLicense] = useState("personal");
   const [tags, setTags] = useState("");
   const [previewText, setPreviewText] = useState("");
+  const [previewToc, setPreviewToc] = useState("");
+  const [previewIntro, setPreviewIntro] = useState("");
   const [copyrightNotice, setCopyrightNotice] = useState("");
+  const [editPreviewToc, setEditPreviewToc] = useState("");
+  const [editPreviewIntro, setEditPreviewIntro] = useState("");
   const [coverImageUrl, setCoverImageUrl] = useState("");
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [productFile, setProductFile] = useState<File | null>(null);
@@ -205,6 +212,8 @@ function MarketplaceSellInner() {
         copyrightNotice: copyrightNotice || undefined,
         tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
         previewText: previewText || undefined,
+        previewToc: previewToc || undefined,
+        previewIntro: previewIntro || undefined,
         coverImageUrl: coverImageUrl.trim() || undefined,
       });
 
@@ -246,6 +255,8 @@ function MarketplaceSellInner() {
     setEditDescription(listing.description);
     setEditPriceGhs(listing.priceGhs);
     setEditPreviewText(listing.previewText ?? "");
+    setEditPreviewToc(listing.previewToc ?? "");
+    setEditPreviewIntro(listing.previewIntro ?? "");
     setEditCategory(listing.category);
     setMessage(null);
     setError(null);
@@ -262,6 +273,8 @@ function MarketplaceSellInner() {
         description: editDescription,
         priceGhs: editPriceGhs,
         previewText: editPreviewText || undefined,
+        previewToc: editPreviewToc || undefined,
+        previewIntro: editPreviewIntro || undefined,
         category: editCategory,
       });
       setMessage("Listing updated.");
@@ -722,13 +735,32 @@ function MarketplaceSellInner() {
               placeholder="Tags (comma separated)"
               className="rounded-xl border px-4 py-3"
             />
-            <textarea
-              value={previewText}
-              onChange={(e) => setPreviewText(e.target.value)}
-              rows={3}
-              placeholder="Preview excerpt"
-              className="w-full rounded-xl border px-4 py-3"
-            />
+            <div className="space-y-3 rounded-xl border border-border bg-background/60 p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                Public preview (optional — never attach the paid PDF here)
+              </p>
+              <textarea
+                value={previewToc}
+                onChange={(e) => setPreviewToc(e.target.value)}
+                rows={2}
+                placeholder="Table of contents (ebooks)"
+                className="w-full rounded-xl border px-4 py-3"
+              />
+              <textarea
+                value={previewIntro}
+                onChange={(e) => setPreviewIntro(e.target.value)}
+                rows={2}
+                placeholder="Introduction excerpt"
+                className="w-full rounded-xl border px-4 py-3"
+              />
+              <textarea
+                value={previewText}
+                onChange={(e) => setPreviewText(e.target.value)}
+                rows={3}
+                placeholder="Sample pages / preview excerpt"
+                className="w-full rounded-xl border px-4 py-3"
+              />
+            </div>
             <input
               value={copyrightNotice}
               onChange={(e) => setCopyrightNotice(e.target.value)}
@@ -920,10 +952,26 @@ function MarketplaceSellInner() {
                         />
                       </div>
                       <textarea
+                        value={editPreviewToc}
+                        onChange={(e) => setEditPreviewToc(e.target.value)}
+                        rows={2}
+                        placeholder="Table of contents preview"
+                        className="rounded-xl border px-4 py-3"
+                        aria-label="Edit preview TOC"
+                      />
+                      <textarea
+                        value={editPreviewIntro}
+                        onChange={(e) => setEditPreviewIntro(e.target.value)}
+                        rows={2}
+                        placeholder="Introduction preview"
+                        className="rounded-xl border px-4 py-3"
+                        aria-label="Edit preview intro"
+                      />
+                      <textarea
                         value={editPreviewText}
                         onChange={(e) => setEditPreviewText(e.target.value)}
                         rows={2}
-                        placeholder="Preview text"
+                        placeholder="Sample pages preview"
                         className="rounded-xl border px-4 py-3"
                         aria-label="Edit preview text"
                       />
@@ -935,6 +983,19 @@ function MarketplaceSellInner() {
                           Cancel
                         </Button>
                       </div>
+                    </div>
+                  ) : null}
+                  {listing.status === "published" ||
+                  (promoteListingId && promoteListingId === listing._id) ? (
+                    <div
+                      id={promoteListingId === listing._id ? "promote-panel" : undefined}
+                      className={
+                        promoteListingId === listing._id
+                          ? "ring-2 ring-violet-500/40 rounded-2xl"
+                          : undefined
+                      }
+                    >
+                      <ProductPromotionPanel listing={listing} />
                     </div>
                   ) : null}
                 </article>
@@ -950,7 +1011,9 @@ function MarketplaceSellInner() {
 export function MarketplaceSellClient() {
   return (
     <ConvexAppShell>
-      <MarketplaceSellInner />
+      <Suspense fallback={<p className="p-8 text-center text-muted">Loading seller dashboard…</p>}>
+        <MarketplaceSellInner />
+      </Suspense>
     </ConvexAppShell>
   );
 }

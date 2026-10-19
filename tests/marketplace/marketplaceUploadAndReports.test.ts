@@ -5,6 +5,7 @@ import {
   isListingFileApproved,
   isOfficialMarketplaceListing,
   listingFileReviewLabel,
+  sanitizePublicHttpUrl,
 } from "../../convex/marketplaceListingHelpers";
 
 describe("marketplace listing helpers", () => {
@@ -27,6 +28,17 @@ describe("marketplace listing helpers", () => {
     };
     expect(isListingFileApproved(listing)).toBe(false);
     expect(listingFileReviewLabel(listing)).toBe("pending");
+  });
+
+  it("accepts http(s) public URLs and rejects javascript/data schemes", () => {
+    expect(sanitizePublicHttpUrl("https://www.giga3ai.com/c.jpg", "Cover")).toContain(
+      "giga3ai.com"
+    );
+    expect(sanitizePublicHttpUrl("", "Cover")).toBeUndefined();
+    expect(() => sanitizePublicHttpUrl("javascript:alert(1)", "Preview URL")).toThrow(
+      /http or https/
+    );
+    expect(() => sanitizePublicHttpUrl("not a url", "Cover image URL")).toThrow(/valid http/);
   });
 });
 

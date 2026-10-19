@@ -770,8 +770,14 @@ export default defineSchema({
     copyrightNotice: v.optional(v.string()),
     tags: v.array(v.string()),
     previewText: v.optional(v.string()),
+    /** Public sample URL only — never the paid product file. */
     previewUrl: v.optional(v.string()),
+    /** Optional ebook preview sections (author-controlled; public when published). */
+    previewToc: v.optional(v.string()),
+    previewIntro: v.optional(v.string()),
     coverImageUrl: v.optional(v.string()),
+    /** Durable cover blob — resolve fresh URLs via storage.getUrl at read time. */
+    coverStorageId: v.optional(v.id("_storage")),
     fileStorageId: v.optional(v.id("_storage")),
     fileName: v.optional(v.string()),
     fileReviewStatus: v.optional(marketplaceFileReviewStatusValidator),
@@ -784,6 +790,11 @@ export default defineSchema({
     ratingCount: v.number(),
     purchaseCount: v.number(),
     viewCount: v.number(),
+    /** Privacy-conscious promo / preview engagement (not purchase). */
+    promoClickCount: v.optional(v.number()),
+    previewOpenCount: v.optional(v.number()),
+    /** Set after publish confirmation notify+email claim — prevents retry duplicates. */
+    publishConfirmationAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -1389,11 +1400,18 @@ export default defineSchema({
     title: v.string(),
     body: v.string(),
     href: v.optional(v.string()),
+    /** Optional secondary CTA (e.g. Promote Product). */
+    secondaryHref: v.optional(v.string()),
+    secondaryLabel: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+    /** Idempotency key — one notification per logical event. */
+    dedupeKey: v.optional(v.string()),
     read: v.boolean(),
     createdAt: v.number(),
   })
     .index("by_user_created", ["userId", "createdAt"])
-    .index("by_user_read", ["userId", "read"]),
+    .index("by_user_read", ["userId", "read"])
+    .index("by_dedupe", ["dedupeKey"]),
 
   userFeedbackSubmissions: defineTable({
     userId: v.optional(v.string()),

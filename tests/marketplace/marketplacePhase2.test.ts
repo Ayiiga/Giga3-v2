@@ -95,7 +95,7 @@ describe("marketplace Phase 2 Convex storefront + analytics", () => {
     const block =
       marketplaceSrc.match(/export const listPublishedByHandle = query\([\s\S]*?\n}\);/)?.[0] ??
       "";
-    expect(block).toContain("toPublicListing(listing)");
+    expect(block).toContain("toPublicListingResolved");
     expect(block).toContain("toPublicCreatorProfile(profile)");
     expect(block).toContain('eq("status", "published")');
     expect(block).toContain("isListingFileApproved");

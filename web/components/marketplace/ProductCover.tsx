@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { BookOpen, FileText, LayoutTemplate, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type ProductCoverProps = {
   src?: string | null;
@@ -11,6 +11,11 @@ type ProductCoverProps = {
   className?: string;
   /** Tailwind aspect class, default portrait card cover. */
   aspectClassName?: string;
+  /**
+   * object-cover crops to fill; object-contain preserves the full image
+   * (letterboxed on the branded surface). Default cover for cards.
+   */
+  fit?: "cover" | "contain";
 };
 
 function fallbackIcon(category?: string) {
@@ -23,12 +28,12 @@ function fallbackIcon(category?: string) {
 
 function fallbackTone(category?: string): string {
   const c = (category ?? "").toLowerCase();
-  if (c.includes("prompt") || c.includes("ai")) return "from-teal-700 to-slate-900";
-  if (c.includes("design") || c.includes("template")) return "from-rose-700 to-orange-900";
-  if (c.includes("software") || c.includes("developer")) return "from-sky-700 to-slate-900";
-  if (c.includes("course") || c.includes("training")) return "from-amber-700 to-stone-900";
-  if (c.includes("creator")) return "from-cyan-800 to-emerald-950";
-  return "from-emerald-800 to-teal-950";
+  if (c.includes("prompt") || c.includes("ai")) return "from-violet-700 to-slate-900";
+  if (c.includes("design") || c.includes("template")) return "from-violet-800 to-fuchsia-950";
+  if (c.includes("software") || c.includes("developer")) return "from-indigo-800 to-slate-900";
+  if (c.includes("course") || c.includes("training")) return "from-violet-700 to-stone-900";
+  if (c.includes("creator")) return "from-violet-800 to-emerald-950";
+  return "from-violet-800 to-indigo-950";
 }
 
 function CoverFallback({
@@ -54,6 +59,7 @@ function CoverFallback({
       )}
       role="img"
       aria-label={`${title} cover placeholder`}
+      data-cover-state="fallback"
     >
       <Icon className="mb-2 h-7 w-7 opacity-90" aria-hidden />
       <span className="line-clamp-3 text-xs font-semibold leading-snug">{title}</span>
@@ -67,7 +73,9 @@ function CoverFallback({
 }
 
 /**
- * Consistent marketplace cover with meaningful fallback (no fabricated product art).
+ * Consistent marketplace cover with branded fallback (no fabricated product art).
+ * Root cause of blank cards: persisted Convex signed storage URLs expire — callers
+ * must resolve fresh URLs via coverStorageId. This component still fails over cleanly.
  */
 export function ProductCover({
   src,
@@ -75,8 +83,13 @@ export function ProductCover({
   category,
   className,
   aspectClassName = "aspect-[4/5]",
+  fit = "cover",
 }: ProductCoverProps) {
   const [broken, setBroken] = useState(false);
+
+  useEffect(() => {
+    setBroken(false);
+  }, [src]);
 
   if (!src || broken) {
     return (
@@ -92,18 +105,26 @@ export function ProductCover({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl bg-emerald-950/5",
+        "relative overflow-hidden rounded-xl bg-violet-950/5",
         aspectClassName,
         className
       )}
+      data-cover-state="image"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt=""
         loading="lazy"
-        className="absolute inset-0 h-full w-full object-cover"
-        onError={() => setBroken(true)}
+        decoding="async"
+        className={cn(
+          "absolute inset-0 h-full w-full",
+          fit === "contain" ? "object-contain" : "object-cover"
+        )}
+        onError={() => {
+          console.info("[marketplace-cover] image failed", { title, src });
+          setBroken(true);
+        }}
       />
     </div>
   );
