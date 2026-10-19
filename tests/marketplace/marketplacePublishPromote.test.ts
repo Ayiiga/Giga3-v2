@@ -35,7 +35,8 @@ describe("marketplace publish confirmation", () => {
     expect(notifySrc).toContain("marketplace_publish:");
     expect(notifySrc).toContain("by_dedupe");
     expect(notifySrc).toContain("sendPublishEmailInternal");
-    expect(notifySrc).toContain(PUBLISH_CONFIRMATION_BODY.slice(0, 40));
+    expect(notifySrc).toContain("PUBLISH_CONFIRMATION_BODY");
+    expect(PUBLISH_CONFIRMATION_BODY).toContain("Congratulations! Your product is now live");
   });
 
   it("persists coverStorageId on cover upload completion", () => {

@@ -33,7 +33,9 @@ describe("marketplace fraud gates", () => {
   it("counts views only for signed-in users", () => {
     const source = readFileSync(resolve(__dirname, "../../convex/marketplace.ts"), "utf8");
     expect(source).toMatch(/recordView[\s\S]*sessionToken: v\.optional\(v\.string\(\)\)/);
-    expect(source).toContain("if (!args.sessionToken) return;");
+    expect(source).toMatch(
+      /recordView[\s\S]*if \(!args\.sessionToken\) return \{ ok: false as const/
+    );
   });
 
   it("exposes verification uploads separate from seller product uploads", () => {
