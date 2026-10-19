@@ -18,8 +18,10 @@ import type { AiModeId } from "@/lib/aiRouter";
 import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
 import { memo, useCallback, useState, type MutableRefObject } from "react";
 import { modeForQuickAction, type HomeQuickActionId } from "@/lib/chat/homeQuickActions";
+import { homeQuickActionStarter } from "@/lib/chat/homeContinuity";
 import type { RecentConversationItem } from "@/components/chat/MessageList";
 import type { OutboxEntry } from "@/lib/chat/offlineOutbox";
+import { recordTrendActivity } from "@/lib/trends/personalizedRecommendations";
 
 interface ChatConversationPaneProps {
   messages: UiMessage[];
@@ -77,6 +79,8 @@ interface ChatConversationPaneProps {
   /** Compact "Continue" history for the empty state. */
   recentConversations?: RecentConversationItem[];
   onSelectConversation?: (id: string) => void;
+  /** Signed-in email for personalized empty-state greeting (local-part only). */
+  userEmail?: string | null;
 }
 
 function panePropsEqual(
@@ -132,7 +136,8 @@ function panePropsEqual(
     prev.onSelectPersona === next.onSelectPersona &&
     prev.onQuickAction === next.onQuickAction &&
     prev.recentConversations === next.recentConversations &&
-    prev.onSelectConversation === next.onSelectConversation
+    prev.onSelectConversation === next.onSelectConversation &&
+    prev.userEmail === next.userEmail
   );
 }
 
@@ -187,6 +192,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onQuickAction,
   recentConversations,
   onSelectConversation,
+  userEmail = null,
 }: ChatConversationPaneProps) {
   const showTyping = awaitingReply || isSending;
   const typingPhase = awaitingReply ? "replying" : "sending";
@@ -202,9 +208,13 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         onQuickAction(action);
         return;
       }
-      onModeChange(modeForQuickAction(action));
+      const mode = modeForQuickAction(action);
+      onModeChange(mode);
+      recordTrendActivity(`/chat?mode=${mode}`, action);
+      const starter = homeQuickActionStarter(action);
+      if (starter) onInsertTemplate(starter);
     },
-    [onQuickAction, onModeChange]
+    [onQuickAction, onModeChange, onInsertTemplate]
   );
 
   return (
@@ -225,6 +235,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           onQuickAction={handleQuickAction}
           recentConversations={recentConversations}
           onSelectConversation={onSelectConversation}
+          userEmail={userEmail}
           outboxEntries={outboxEntries}
           flushingOutboxId={flushingOutboxId}
         />

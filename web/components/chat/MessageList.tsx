@@ -4,6 +4,13 @@ import { MessageBubble } from "@/components/chat/MessageBubble";
 import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
 import { watchLocalDay } from "@/lib/chat/dailyChat";
 import { HOME_QUICK_ACTIONS, type HomeQuickActionId } from "@/lib/chat/homeQuickActions";
+import {
+  HOME_DESTINATIONS,
+  buildHomeGreeting,
+  listSyncHomeResumeItems,
+  listUserSavedPrompts,
+  type HomeResumeItem,
+} from "@/lib/chat/homeContinuity";
 import { getDailySuggestedPrompts, getSuggestedPrompts } from "@/lib/chat/suggestedPrompts";
 import type { AiModeId } from "@/lib/aiRouter";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
@@ -14,6 +21,8 @@ import { messageListScrollKey } from "@/lib/chat/stableMessages";
 import { groupMessagesByDate } from "@/lib/chat/groupMessagesByDate";
 import type { OutboxEntry } from "@/lib/chat/offlineOutbox";
 import { resolvePendingDeliveryState } from "@/lib/chat/outboxUi";
+import { listGigaEditProjects } from "@/lib/gigaedit/projects";
+import Link from "next/link";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 export interface UiMessage {
@@ -41,6 +50,8 @@ interface MessageListProps {
   /** Compact "Continue" history — only the user's own authorized conversations. */
   recentConversations?: RecentConversationItem[];
   onSelectConversation?: (id: string) => void;
+  /** Signed-in email for greeting (local-part only; never shown raw). */
+  userEmail?: string | null;
   outboxEntries?: OutboxEntry[];
   flushingOutboxId?: string | null;
 }
@@ -71,6 +82,7 @@ function MessageListInner({
   onQuickAction,
   recentConversations,
   onSelectConversation,
+  userEmail = null,
   outboxEntries = [],
   flushingOutboxId = null,
 }: MessageListProps) {
@@ -110,6 +122,50 @@ function MessageListInner({
     [mode, dayKey]
   );
 
+  const greeting = useMemo(
+    () => buildHomeGreeting({ email: userEmail }),
+    [userEmail]
+  );
+
+  const [resumeItems, setResumeItems] = useState<HomeResumeItem[]>([]);
+  const [savedPrompts, setSavedPrompts] = useState<
+    ReturnType<typeof listUserSavedPrompts>
+  >([]);
+
+  useEffect(() => {
+    if (messages.length > 0) return;
+    setResumeItems(listSyncHomeResumeItems(4));
+    setSavedPrompts(listUserSavedPrompts(3));
+    let cancelled = false;
+    void listGigaEditProjects()
+      .then((projects) => {
+        if (cancelled) return;
+        const draft = projects
+          .filter((p) => p.status === "draft")
+          .sort((a, b) => b.updatedAt - a.updatedAt)[0];
+        if (!draft) return;
+        setResumeItems((prev) => {
+          if (prev.some((i) => i.id === `edit-${draft.id}`)) return prev;
+          return [
+            {
+              id: `edit-${draft.id}`,
+              label: draft.title?.trim() || "Untitled edit",
+              detail: "GigaEdit draft on this device",
+              href: `/gigaedit/?project=${encodeURIComponent(draft.id)}`,
+              kind: "create" as const,
+            },
+            ...prev,
+          ].slice(0, 4);
+        });
+      })
+      .catch(() => {
+        /* IndexedDB unavailable — skip */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [messages.length]);
+
   return (
     <div className="chat-message-list relative min-h-0 min-w-0 max-w-full overflow-x-clip overflow-y-hidden bg-background">
       <div
@@ -121,16 +177,14 @@ function MessageListInner({
         )}
 
         {messages.length === 0 && !isLoading && (
-          <div className="chat-rail flex w-full flex-col items-center px-4 pt-8 text-center sm:pt-12">
-            <h2 className="chat-welcome-title text-2xl font-bold tracking-tight text-foreground sm:text-4xl">
-              Welcome to Giga3 👋
+          <div className="chat-rail flex w-full flex-col items-center px-4 pt-5 text-center sm:pt-8">
+            <h2 className="chat-welcome-title text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              {greeting.title}
             </h2>
-            <p className="mt-2 text-sm text-muted sm:text-base">
-              What would you like to do?
-            </p>
+            <p className="mt-1.5 text-sm text-muted sm:text-base">{greeting.subtitle}</p>
 
             <div
-              className="mt-5 grid w-full max-w-md grid-cols-2 gap-2"
+              className="mt-4 grid w-full max-w-md grid-cols-2 gap-2"
               role="group"
               aria-label="Quick actions"
             >
@@ -151,11 +205,11 @@ function MessageListInner({
 
             {onSelectConversation && recentConversations && recentConversations.length > 0 && (
               <section
-                className="mt-6 w-full max-w-md text-left"
-                aria-label="Continue where you left off"
+                className="mt-5 w-full max-w-md text-left"
+                aria-label="Continue recent chats"
               >
                 <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted">
-                  Continue
+                  Recent chats
                 </h3>
                 <ul className="mt-2 space-y-1.5">
                   {recentConversations.slice(0, 3).map((c) => (
@@ -165,12 +219,11 @@ function MessageListInner({
                         onClick={() => onSelectConversation(c.id)}
                         className="flex min-h-11 w-full items-center gap-2 rounded-xl border border-border bg-white px-3 py-2 text-left text-sm text-foreground shadow-sm hover:border-accent/30"
                       >
-                        <span aria-hidden>💬</span>
                         <span className="min-w-0 flex-1 truncate">
                           {c.title || "Untitled chat"}
                         </span>
                         <span className="shrink-0 text-xs font-medium text-accent">
-                          Continue →
+                          Continue
                         </span>
                       </button>
                     </li>
@@ -179,9 +232,83 @@ function MessageListInner({
               </section>
             )}
 
+            {resumeItems.length > 0 && (
+              <section
+                className="mt-4 w-full max-w-md text-left"
+                aria-label="Resume unfinished work"
+              >
+                <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted">
+                  Pick up unfinished work
+                </h3>
+                <ul className="mt-2 space-y-1.5">
+                  {resumeItems.map((item) => (
+                    <li key={item.id}>
+                      <Link
+                        href={item.href}
+                        className="flex min-h-11 w-full items-center gap-2 rounded-xl border border-border bg-white px-3 py-2 text-left text-sm text-foreground shadow-sm hover:border-accent/30"
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-medium">{item.label}</span>
+                          <span className="block truncate text-xs text-muted">
+                            {item.detail}
+                          </span>
+                        </span>
+                        <span className="shrink-0 text-xs font-medium text-accent">Open</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {onInsertTemplate && savedPrompts.length > 0 && (
+              <section
+                className="mt-4 w-full max-w-md text-left"
+                aria-label="Saved prompts"
+              >
+                <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted">
+                  Saved prompts
+                </h3>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {savedPrompts.map((prompt) => (
+                    <button
+                      key={prompt.id}
+                      type="button"
+                      onClick={() => onInsertTemplate(prompt.body)}
+                      className="min-h-10 rounded-full border border-border bg-white px-3 py-1.5 text-sm text-foreground shadow-sm hover:border-accent/30 hover:bg-accent/5"
+                    >
+                      {prompt.title}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <nav
+              className="mt-5 w-full max-w-md"
+              aria-label="Giga3 destinations"
+            >
+              <h3 className="px-1 text-left text-xs font-semibold uppercase tracking-wide text-muted">
+                Destinations
+              </h3>
+              <ul className="mt-2 grid grid-cols-5 gap-1.5">
+                {HOME_DESTINATIONS.map((d) => (
+                  <li key={d.id}>
+                    <Link
+                      href={d.href}
+                      title={d.description}
+                      className="flex min-h-11 flex-col items-center justify-center rounded-xl border border-border bg-white px-1 py-1.5 text-center text-[11px] font-medium text-foreground shadow-sm hover:border-accent/30 hover:bg-accent/5 sm:text-xs"
+                    >
+                      {d.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
             {onInsertTemplate && (
               <>
-                <p className="mt-6 text-xs font-medium uppercase tracking-wide text-muted">
+                <p className="mt-5 text-xs font-medium uppercase tracking-wide text-muted">
                   Try an example
                 </p>
                 <div className="mt-2 flex w-full max-w-md flex-wrap justify-center gap-2">
@@ -260,6 +387,7 @@ function propsEqual(prev: MessageListProps, next: MessageListProps): boolean {
     prev.onQuickAction === next.onQuickAction &&
     prev.recentConversations === next.recentConversations &&
     prev.onSelectConversation === next.onSelectConversation &&
+    prev.userEmail === next.userEmail &&
     prev.messages === next.messages &&
     prev.outboxEntries === next.outboxEntries &&
     prev.flushingOutboxId === next.flushingOutboxId
