@@ -78,58 +78,48 @@ function MarketplaceBrowseInner() {
   const hasMore = Boolean(filteredSorted && filteredSorted.length > visibleCount);
 
   return (
-    <Container className="discover-stable document-compact py-4 pb-[calc(var(--primary-nav-offset,0px)+1rem)] sm:py-8">
-      <div className="mx-auto max-w-5xl space-y-5">
-        <header className="space-y-3">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="max-w-2xl">
-              <p className="mb-1 inline-flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-300">
+    <Container className="discover-stable document-compact px-4 py-3 pb-[calc(var(--primary-nav-offset,0px)+1rem)] sm:px-6 sm:py-4">
+      <div id="marketplace-catalogue" className="mx-auto max-w-5xl scroll-mt-20 space-y-4">
+        <header className="space-y-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="inline-flex items-center gap-1.5 text-xs font-medium text-accent sm:text-sm">
                 <Store className="h-4 w-4" aria-hidden />
-                Giga3 Marketplace
+                Marketplace
               </p>
-              <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Buy. Pay. Download.</h2>
-              <p className="mt-1 text-sm text-muted">
-                Digital guides and templates in GHS. Pay with Paystack — files unlock only after
-                payment is verified.
-              </p>
+              <h2 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
+                Buy, pay, download
+              </h2>
             </div>
             <div className="flex flex-wrap gap-2">
-              <ButtonLink href="/marketplace/purchases" variant="secondary">
+              <ButtonLink href="/marketplace/purchases" variant="secondary" size="sm">
                 My purchases
               </ButtonLink>
-              <ButtonLink href="/marketplace/sell">
-                <ShoppingBag className="mr-2 h-4 w-4" aria-hidden />
+              <ButtonLink href="/marketplace/sell" size="sm">
+                <ShoppingBag className="mr-1.5 h-4 w-4" aria-hidden />
                 Sell
               </ButtonLink>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-emerald-800/15 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-100">
-            <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden />
+          <div className="flex items-start gap-2 rounded-xl border border-accent/20 bg-accent/5 px-3 py-2.5 text-sm text-foreground">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden />
             <span>
-              Paystack checkout only. Never pay sellers outside the app. Prefer{" "}
-              <strong>Verified</strong> creators.
+              Secure checkout with Paystack. Digital downloads unlock after verified payment.
+              Prefer <strong>Verified</strong> creators — never pay sellers outside the app.
             </span>
           </div>
         </header>
 
-        <CreatorAcademySection />
-
-        <SurfaceRecommendations
-          surface="marketplace"
-          title="Suggested marketplace actions"
-          limit={4}
-        />
-
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           <div className="relative min-w-0">
-            <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted" aria-hidden />
+            <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted" aria-hidden />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by name or description…"
               aria-label="Search marketplace"
-              className="w-full rounded-xl border border-border bg-card py-3 pl-10 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/30"
+              className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-accent/30"
             />
           </div>
 
@@ -208,11 +198,18 @@ function MarketplaceBrowseInner() {
         {!visible ? (
           <LoadingState label="Loading marketplace…" />
         ) : visible.length === 0 ? (
-          <EmptyState
-            icon={Store}
-            title="No products found"
-            description="Try another search, collection, or price range — or browse the Creator Academy guides above."
-          />
+          <div className="space-y-3">
+            <EmptyState
+              icon={Store}
+              title="No products found"
+              description="Try another search, collection, or price range — or list your own digital product."
+            />
+            <div className="flex justify-center">
+              <ButtonLink href="/marketplace/sell" size="sm">
+                Start Selling
+              </ButtonLink>
+            </div>
+          </div>
         ) : (
           <>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
@@ -220,7 +217,7 @@ function MarketplaceBrowseInner() {
                 <Link
                   key={item._id}
                   href={`/marketplace/item/${item._id}/`}
-                  className="saas-card group flex flex-col overflow-hidden rounded-2xl p-2.5 sm:p-3 hover:border-emerald-600/35"
+                  className="saas-card group flex flex-col overflow-hidden rounded-2xl p-2.5 sm:p-3 hover:border-accent/35"
                 >
                   <ProductCover
                     src={item.coverImageUrl}

@@ -83,28 +83,30 @@ export const MEDIA_PAGE_SHELL: PublicProductPageShellProps = {
 };
 
 export const GIGALEARN_PAGE_SHELL: PublicProductPageShellProps = {
-  title: "GigaLearn — AI tutor and exam prep on Giga3 AI",
-  description: catalogEntry("/gigalearn").description,
+  title: "How GigaLearn works",
+  description:
+    "GigaLearn helps you study Ghana curriculum topics, practise exam-style questions, track progress, and learn with an AI tutor — then continue into structured Academy pathways when you want a guided course.",
   audience: "students, teachers, and parents in Ghana and across Africa",
   whatItDoes:
-    "GigaLearn is Giga3 AI's learning assistant for homework help, practice questions, study plans, and BECE and WASSCE revision support for JHS and SHS. Personas and progress tracking require a signed-in Giga3 account.",
+    "Open Student for subjects, lessons, quizzes and exam prep; Teacher for classroom tools; Create for learning materials; Parent for home support; Insight for progress signals; and AI Tutor for guided help. Sign-in is required to save progress and use credits.",
   whoFor: [
     "JHS and SHS students preparing for BECE and WASSCE",
     "Teachers building classroom activities and quizzes",
     "Parents supporting revision at home",
   ],
   capabilities: [
-    "Study modes with Ghana-focused curriculum context",
-    "Practice questions and progress saved to your account",
-    "Persona hand-off from chat when you choose a tutor style",
+    "Ghana curriculum-aligned study modes and practice questions",
+    "Exam preparation workflows for BECE and WASSCE revision",
+    "Teacher tools and parent-friendly progress views",
+    "Academy courses for structured pathways on top of daily practice",
     "Responsible AI learning — verify answers with teachers and syllabus materials",
   ],
   giga3Connection:
     "GigaLearn uses the same credits and entitlements as Giga3 chat. For exam-focused workflows, see AI for BECE and WASSCE preparation at /ai-for-bece-wassce-ghana/. Organisation workspaces can route students through /workspace when your school is onboarded.",
-  primaryHref: "/ai-for-bece-wassce-ghana",
-  primaryLabel: "BECE & WASSCE prep guide",
-  secondaryHref: "/chat/login",
-  secondaryLabel: "Sign in",
+  primaryHref: "/gigalearn/academy/",
+  primaryLabel: "Open GigaLearn Academy",
+  secondaryHref: "/ai-for-bece-wassce-ghana",
+  secondaryLabel: "BECE & WASSCE guide",
   relatedLinks: [
     {
       href: "/blog/ai-skills-every-ghanaian-student-should-learn-2026/",
@@ -158,25 +160,27 @@ export const ENTERPRISE_PAGE_SHELL: PublicProductPageShellProps = {
 };
 
 export const MARKETPLACE_PAGE_SHELL: PublicProductPageShellProps = {
-  title: "Giga3 Marketplace — Buy digital products in GHS",
-  description: catalogEntry("/marketplace").description,
+  title: "Digital Products for Learning, Business, and Creativity",
+  description:
+    "Discover eligible ebooks, educational materials, templates, and business resources from Giga3 creators. Buy in Ghana cedis with Paystack, or list your own digital products after account review.",
   audience: "learners, creators, and buyers in Ghana and beyond",
   whatItDoes:
-    "Browse ebooks, templates, and educational PDFs from verified creators. Pay with Paystack in GHS — files unlock only after payment succeeds.",
+    "Search the catalogue, open a listing, pay with Paystack, then download from My purchases once payment is verified. Sellers list products through Start Selling — uploads are moderated before they appear publicly.",
   whoFor: [
     "Students buying study guides and templates",
     "Creators selling digital products alongside GigaSocial",
     "Teams sourcing vetted educational resources",
   ],
   capabilities: [
-    "Search, categories, and verified creator badges",
-    "Paystack checkout with secure file delivery",
-    "Creator Academy official series (priced separately from subscriptions)",
+    "How to purchase: browse → checkout with Paystack → download from My purchases",
+    "How to sell: open Start Selling, submit product details, wait for moderation",
+    "Payment security: Paystack only; files unlock after verified payment",
+    "Verified creator badges when a seller has completed verification",
   ],
   giga3Connection:
-    "Marketplace complements GigaLearn and Creator Studio — sell what you create on Giga3. Purchases do not replace chat subscription credits; each product lists its own GHS price.",
-  primaryHref: "/marketplace",
-  primaryLabel: "Browse marketplace",
+    "Marketplace complements GigaLearn and Creator Studio — sell what you create on Giga3. Purchases do not replace chat subscription credits; each product lists its own GHS price. Terms: /legal/terms and /legal/refunds.",
+  primaryHref: "/marketplace/#marketplace-catalogue",
+  primaryLabel: "Browse products",
   secondaryHref: "/marketplace/sell",
   secondaryLabel: "Start selling",
 };
