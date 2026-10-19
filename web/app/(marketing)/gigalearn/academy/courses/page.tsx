@@ -48,7 +48,6 @@ export default function GigaLearnAcademyCoursesPage() {
         description="Structured courses and pathways that build on GigaLearn hubs."
         showProductNav={false}
       />
-      <h1 className="sr-only">GigaLearn Academy course catalogue</h1>
       <div className="marketing-stable gigalearn-stable section-padding pt-4 pb-6 sm:pt-6">
         <Suspense fallback={<ClientAppHydrationNotice productName="GigaLearn Academy" />}>
           <AcademyCatalogueRoot />

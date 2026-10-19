@@ -47,8 +47,6 @@ export default function GigaLearnAcademyPage() {
         description="Learn by Doing. Build with AI. Create the Future. Practice, studios, and existing Academy pathways on GigaLearn."
         showProductNav={false}
       />
-      {/* SSR H1 for SEO — client shell repeats branding without a second document h1 conflict via ProductSeoHeader */}
-      <h1 className="sr-only">GigaLearn Academy — Learn by Doing. Build with AI. Create the Future.</h1>
       <div className="marketing-stable gigalearn-stable section-padding pt-4 pb-6 sm:pt-6">
         <Suspense fallback={<ClientAppHydrationNotice productName="GigaLearn Academy" />}>
           <AcademyHomeRoot />

@@ -20,7 +20,7 @@ export const metadata = publicMetadata({
   path: "/gigalearn/exam",
   title: "GigaLearn Exam Practice Centre | Giga3 AI",
   description:
-    "Practise smarter. Understand your mistakes. Prepare with confidence. Separate BECE and Ghana Teacher Promotion practice centres on GigaLearn — verified sources only when available.",
+    "Practise smarter for BECE and Ghana Teacher Promotion on GigaLearn. Honest awaiting-sources states; verified materials only when available.",
 });
 
 export default function GigaLearnExamPracticePage() {
@@ -47,10 +47,6 @@ export default function GigaLearnExamPracticePage() {
         description="Practise smarter. Understand your mistakes. Prepare with confidence."
         showProductNav={false}
       />
-      <h1 className="sr-only">
-        GigaLearn Exam Practice Centre — Practise smarter. Understand your mistakes. Prepare with
-        confidence.
-      </h1>
       <div className="marketing-stable gigalearn-stable section-padding pt-4 pb-6 sm:pt-6">
         <Suspense fallback={<ClientAppHydrationNotice productName="GigaLearn Exam Practice" />}>
           <ExamPracticePageRoot />
