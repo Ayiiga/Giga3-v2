@@ -71,3 +71,7 @@ Both share merge-base `8751affa` (main). Neither merged/deployed at review time.
 
 **Authorisation required before merge.** Not deployed.
 
+
+## Release candidate
+
+Tip `427aac37` — merge via PR #551 into main.
