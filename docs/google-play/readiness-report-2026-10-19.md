@@ -74,10 +74,15 @@ Signing for Play: see `docs/google-play/signing.md` (`signing.properties` gitign
 - No keystores, passwords, or private keys committed.
 - `android/.gitignore` excludes `*.jks`, `*.keystore`, `signing.properties`, `*.apk`, `*.aab`, `local.properties`.
 
+## Packaging fix (2026-10-19 follow-up)
+
+- Corrected Bubblewrap typo `androix.browser.trusted.*` → `androidx.browser.trusted.*` for navigation-bar divider meta-data (debug APK rebuilt).
+
 ## Not done (by design / blockers)
 
 - No website deploy.
 - No Google Play upload/publish.
-- No production DAL publish.
-- No Play-signed release AAB (needs owner credentials).
-- No successful emulator/device smoke of the installed package.
+- No production DAL publish (prepared file still contains `PASTE_*` placeholders).
+- No Play-signed release AAB (needs owner credentials) — current AAB remains **unsigned**.
+- No successful emulator/device smoke of the installed package — see `device-test-status-2026-10-19.md` (`adb` stayed offline despite open ports).
+- Owner actions: `docs/google-play/next-owner-actions.md`

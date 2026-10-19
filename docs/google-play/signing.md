@@ -122,7 +122,16 @@ keytool -list -v \
 
 Copy the **SHA-256** line (colon-separated hex). Use this in `assetlinks.json` — see `digital-asset-links.md`.
 
-**Play App Signing note:** If Google re-signs your app, you may need the **app signing certificate** SHA-256 from Play Console (Setup → App signing → App signing key certificate), not only the upload key. Follow [Chrome TWA verification guidance](https://developer.chrome.com/docs/android/trusted-web-activity/quick-start).
+**Play App Signing note:** With Play App Signing enabled, Google **re-signs** installs with the **app signing key**. Digital Asset Links for Play users must include that **app signing** SHA-256 from Play Console (Setup → App signing → App signing key certificate). The upload-key SHA-256 alone is **not sufficient** for Play-distributed builds. Follow [Chrome TWA verification guidance](https://developer.chrome.com/docs/android/trusted-web-activity/quick-start).
+
+### Verified state in Cloud Agent (2026-10-19)
+
+| Artifact | Signing state |
+|----------|----------------|
+| `app-debug.apk` | Signed with local **Android Debug** certificate |
+| `app-release.aab` | **Unsigned** (`jarsigner -verify` → “jar is unsigned”) — not Play-uploadable until `signing.properties` / `GIGA3_ANDROID_KEYSTORE_*` is configured |
+
+No keystore was created in this environment (avoids inventing a production signing key without owner approval).
 
 ---
 

@@ -59,8 +59,21 @@ A non-production template is kept at:
 Production check: `https://www.giga3ai.com/.well-known/assetlinks.json` → **404**.  
 Google statements API → fetch error. **TWA domain verification is not complete.**
 
-For local debug installs only, the Android debug keystore SHA-256 observed in this environment was:
+### Which SHA-256 to use
+
+| Certificate | Where you get it | When it matters |
+|-------------|------------------|-----------------|
+| **Play App Signing key** | Play Console → Setup → App signing → *App signing key certificate* | **Required** for Play-installed builds (users get this cert) |
+| **Upload key** | Same page → *Upload key certificate*, or `keytool -list -v` on `upload-keystore.jks` | Signs the AAB you upload; may also be listed in assetlinks if you sideload upload-signed APKs |
+| **Android debug key** | `~/.android/debug.keystore` | Debug APK sideloads only — never treat as production |
+
+Prepared JSON (placeholders only — **not** for deploy): `docs/google-play/assetlinks.prepared.json`
+
+For local debug installs only, the Android debug keystore SHA-256 observed in this Cloud Agent was:
 
 `2B:BE:F1:14:2A:BB:36:DA:70:19:AE:F7:CC:97:7E:53:4C:F6:60:54:80:10:F3:10:36:F2:97:70:38:52:A6:FE`
 
-Do **not** publish that fingerprint as the production Play App Signing certificate.
+Do **not** publish that fingerprint as the production Play App Signing certificate.  
+Do **not** copy `assetlinks.prepared.json` to `web/public/` until real fingerprints replace every `PASTE_*` token.
+
+Owner action list: `docs/google-play/next-owner-actions.md`
