@@ -88,12 +88,13 @@ export function getLocalPersonalizedRecommendations(limit = 6): PersonalizedReco
   }
 
   if (!items.length) {
+    // Neutral explore suggestions — do not fabricate popularity rankings.
     return DISCOVER_ITEMS.slice(0, limit).map((d: DiscoverItem) => ({
       id: d.id,
       title: d.title,
       description: d.description,
       href: d.href,
-      reason: "Popular on Giga3",
+      reason: "Explore on Giga3",
     }));
   }
 

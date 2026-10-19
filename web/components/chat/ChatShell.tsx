@@ -895,6 +895,7 @@ function ChatShellInner({
           onSelectPersona={(id) => void changePersona(id)}
           recentConversations={recentConversations}
           onSelectConversation={handleSelectConversation}
+          userEmail={email}
         />
       </div>
     </div>

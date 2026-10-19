@@ -10,32 +10,41 @@ import { PlatformProfileProvider } from "@/components/platform/PlatformProfilePr
 import { PrivacyControlsPanel } from "@/components/platform/PrivacyControlsPanel";
 import { PlatformSettingsPanel } from "@/components/platform/PlatformSettingsPanel";
 import { SettingsAdminDashboardPanel } from "@/components/platform/SettingsAdminDashboardPanel";
-import { VisionTagline } from "@/components/vision/VisionTagline";
 import { Container } from "@/components/ui/Container";
-import { siteConfig } from "@/lib/site";
 
+/**
+ * Secondary overview surface. Primary Home for day-to-day work is AI Chat (`/chat`).
+ * Kept lean: resume + destinations first; settings/growth hubs below.
+ */
 export default function HomeDashboardPage() {
   return (
     <ConvexAppShell>
       <PlatformProfileProvider>
         <Container className="section-padding">
           <div className="dashboard-stable mx-auto max-w-4xl">
-            <h1 className="page-title">Your dashboard</h1>
-            <VisionTagline className="mt-2" variant="subtle" />
+            <h1 className="page-title">Your hub</h1>
             <p className="mt-2 text-sm text-muted">
-              Personalized overview for {siteConfig.name} — activity, goals, and recommendations.
+              Resume unfinished work, open destinations, and jump back into Chat when you are
+              ready to accomplish something.
             </p>
-            <div className="mt-8 space-y-6">
+            <div className="mt-6 space-y-6">
               <HomeDashboardPanel />
-              <Phase5GrowthHub />
-              <Phase6ScaleHub />
-              <PlatformSettingsPanel />
-              <SettingsAdminDashboardPanel />
               <div className="dashboard-panel-grid">
                 <ReferralCard />
                 <PrivacyControlsPanel />
               </div>
-              <AccessibilitySettings />
+              <details className="rounded-xl border border-border px-4 py-3">
+                <summary className="cursor-pointer text-sm font-medium text-foreground">
+                  Settings and growth tools
+                </summary>
+                <div className="mt-4 space-y-6">
+                  <PlatformSettingsPanel />
+                  <SettingsAdminDashboardPanel />
+                  <Phase5GrowthHub />
+                  <Phase6ScaleHub />
+                  <AccessibilitySettings />
+                </div>
+              </details>
             </div>
           </div>
         </Container>
