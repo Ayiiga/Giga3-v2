@@ -38,3 +38,22 @@ adb shell am start -n com.giga3ai.app/.LauncherActivity
 For **fullscreen TWA** (no URL bar), production Digital Asset Links must include the SHA-256 of the certificate that signed the installed build (debug keystore for debug APK; Play App Signing cert for Play builds).
 
 Checklist: `docs/google-play/internal-testing-checklist.md`
+
+## Follow-up attempt (2026-10-19 ~09:50 UTC)
+
+After merge of #545: freed PATH quoting issues, ~3–4 GB free RAM, AVD 1536M, no-snapshot.
+Result unchanged: `emulator-5554 offline` for 4+ minutes; no `adb install` performed.
+
+## Connect a physical phone (owner)
+
+1. On the phone: Settings → Developer options → **USB debugging** ON.
+2. Connect USB (or `adb pair` / wireless debugging).
+3. On your machine:
+
+```bash
+adb devices   # must show device (not offline / unauthorized)
+adb install -r path/to/app-debug.apk
+adb shell am start -n com.giga3ai.app/.LauncherActivity
+```
+
+4. Confirm fullscreen (no Chrome URL bar) only after production DAL includes the cert that signed the installed APK.
