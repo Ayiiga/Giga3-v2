@@ -12,10 +12,16 @@ import {
   ACADEMY_TRANSFORM_TAGLINE,
   LEARNING_STUDIOS,
 } from "@/lib/gigalearn/academy/learningStudios";
+import {
+  ACADEMY_SURFACE_CLASS,
+  studioThemeClass,
+} from "@/lib/gigalearn/academy/visualTheme";
+import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import {
   ArrowRight,
+  Award,
   BookOpen,
   ClipboardCheck,
   GraduationCap,
@@ -42,15 +48,15 @@ function PersonalLearningSummary() {
     return (
       <section
         aria-labelledby="academy-summary-heading"
-        className="saas-card rounded-2xl border border-border bg-white p-4 sm:p-5"
+        className={cn(ACADEMY_SURFACE_CLASS.dashboard, "p-4 sm:p-5")}
       >
-        <h2 id="academy-summary-heading" className="text-base font-semibold text-foreground">
+        <h2 id="academy-summary-heading" className="text-base font-semibold">
           Your learning summary
         </h2>
-        <p className="mt-1 text-sm text-muted">
+        <p className="academy-visual-muted mt-1 text-sm">
           Sign in to see enrolments, assessment history, and certificates from your account.
         </p>
-        <div className="mt-4">
+        <div className="mt-4 rounded-xl border border-[var(--av-border)] bg-[var(--av-surface)] p-3">
           <ProductSignInPrompt
             productName="GigaLearn Academy"
             description="Your progress stays private to your signed-in account."
@@ -69,9 +75,9 @@ function PersonalLearningSummary() {
     return (
       <section
         aria-labelledby="academy-summary-heading"
-        className="saas-card rounded-2xl border border-border p-4 sm:p-5"
+        className={cn(ACADEMY_SURFACE_CLASS.dashboard, "p-4 sm:p-5")}
       >
-        <h2 id="academy-summary-heading" className="text-base font-semibold text-foreground">
+        <h2 id="academy-summary-heading" className="text-base font-semibold">
           Your learning summary
         </h2>
         <ClientAppHydrationNotice productName="GigaLearn Academy" />
@@ -94,65 +100,77 @@ function PersonalLearningSummary() {
   return (
     <section
       aria-labelledby="academy-summary-heading"
-      className="saas-card rounded-2xl border border-border bg-white p-4 sm:p-5"
+      className={cn(ACADEMY_SURFACE_CLASS.dashboard, "p-4 sm:p-5")}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h2 id="academy-summary-heading" className="text-base font-semibold text-foreground">
+          <h2 id="academy-summary-heading" className="text-base font-semibold">
             Your learning summary
           </h2>
-          <p className="mt-1 text-sm text-muted">
+          <p className="academy-visual-muted mt-1 text-sm">
             Based on server-verified Academy data for your account only.
           </p>
         </div>
         <Link
           href="/gigalearn/academy/my/"
-          className="text-sm font-semibold text-accent hover:underline"
+          className="text-sm font-semibold underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           My courses →
         </Link>
       </div>
 
       <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-border bg-[var(--surface,#fafafa)] p-3">
-          <dt className="text-[11px] font-medium uppercase tracking-wide text-muted">
+        <div className="academy-visual-tile rounded-xl p-3">
+          <dt className="academy-visual-muted text-[11px] font-medium uppercase tracking-wide">
             Enrolments
           </dt>
-          <dd className="mt-1 text-xl font-bold text-foreground">{enrolments.length}</dd>
+          <dd className="mt-1 text-xl font-bold">{enrolments.length}</dd>
         </div>
-        <div className="rounded-xl border border-border bg-[var(--surface,#fafafa)] p-3">
-          <dt className="text-[11px] font-medium uppercase tracking-wide text-muted">
+        <div
+          className={cn(ACADEMY_SURFACE_CLASS.performance, "rounded-xl p-3")}
+          aria-label="Assessment performance"
+        >
+          <dt className="academy-visual-muted text-[11px] font-medium uppercase tracking-wide">
             Assessments
           </dt>
-          <dd className="mt-1 text-xl font-bold text-foreground">{attempts.length}</dd>
+          <dd className="mt-1 text-xl font-bold">{attempts.length}</dd>
         </div>
-        <div className="rounded-xl border border-border bg-[var(--surface,#fafafa)] p-3">
-          <dt className="text-[11px] font-medium uppercase tracking-wide text-muted">Passed</dt>
-          <dd className="mt-1 text-xl font-bold text-foreground">
+        <div
+          className={cn(ACADEMY_SURFACE_CLASS.performance, "rounded-xl p-3")}
+          aria-label="Passed assessments"
+        >
+          <dt className="academy-visual-muted text-[11px] font-medium uppercase tracking-wide">
+            Passed
+          </dt>
+          <dd className="mt-1 text-xl font-bold">
             {graded.length === 0 ? "—" : passedCount}
           </dd>
         </div>
-        <div className="rounded-xl border border-border bg-[var(--surface,#fafafa)] p-3">
-          <dt className="text-[11px] font-medium uppercase tracking-wide text-muted">
+        <div
+          className={cn(ACADEMY_SURFACE_CLASS.certificates, "rounded-xl p-3")}
+          aria-label="Certificates earned"
+        >
+          <dt className="academy-visual-muted flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide">
+            <Award className="h-3.5 w-3.5" aria-hidden />
             Certificates
           </dt>
-          <dd className="mt-1 text-xl font-bold text-foreground">{certificates.length}</dd>
+          <dd className="mt-1 text-xl font-bold">{certificates.length}</dd>
         </div>
       </dl>
 
       {enrolments.length === 0 && attempts.length === 0 && certificates.length === 0 ? (
-        <p className="mt-4 rounded-xl border border-dashed border-border px-3 py-3 text-sm text-muted">
+        <p className="academy-visual-tile academy-visual-muted mt-4 rounded-xl border-dashed px-3 py-3 text-sm">
           No Academy activity yet. Enrol in a course or open Practice Centre when you are ready —
           we will not invent progress for you.
         </p>
       ) : null}
 
       {resume && resumeTitle ? (
-        <div className="mt-4 flex flex-col gap-2 rounded-xl border border-accent/25 bg-accent/5 p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="academy-visual-tile mt-4 flex flex-col gap-2 rounded-xl p-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wide text-accent">Continue</p>
-            <p className="truncate text-sm font-semibold text-foreground">{resumeTitle}</p>
-            <p className="text-xs text-muted">
+            <p className="text-xs font-semibold uppercase tracking-wide">Continue</p>
+            <p className="truncate text-sm font-semibold">{resumeTitle}</p>
+            <p className="academy-visual-muted text-xs">
               Pathway {resume.progressPercent}%
               {resume.lastLessonId ? ` · ${resume.lastLessonId}` : ""}
             </p>
@@ -165,6 +183,19 @@ function PersonalLearningSummary() {
           </ButtonLink>
         </div>
       ) : null}
+
+      <div className="mt-4">
+        <Link
+          href="/gigalearn/academy/certificates/"
+          className={cn(
+            ACADEMY_SURFACE_CLASS.certificates,
+            "academy-visual-cta flex w-full sm:w-auto"
+          )}
+        >
+          View certificates
+          <ArrowRight className="h-4 w-4" aria-hidden />
+        </Link>
+      </div>
     </section>
   );
 }
@@ -173,32 +204,38 @@ function PracticeCentreCard() {
   return (
     <section
       aria-labelledby="practice-centre-heading"
-      className="relative overflow-hidden rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/15 via-white to-white p-4 sm:p-6"
+      className={cn(ACADEMY_SURFACE_CLASS.practice, "relative overflow-hidden p-4 sm:p-6")}
     >
       <div className="relative space-y-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent text-white">
-          <ClipboardCheck className="h-5 w-5" aria-hidden />
+        <div
+          className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--av-border)] bg-[var(--av-surface)]"
+          aria-hidden
+        >
+          <ClipboardCheck className="h-5 w-5" />
         </div>
-        <h2 id="practice-centre-heading" className="text-lg font-bold text-foreground sm:text-xl">
+        <h2 id="practice-centre-heading" className="text-lg font-bold sm:text-xl">
           Practice Centre
         </h2>
-        <p className="max-w-xl text-sm text-muted">
+        <p className="academy-visual-muted max-w-xl text-sm">
           Take server-graded Academy assessments for enrolled courses, or open GigaLearn practice
           tools and the AI Tutor. No new grading engine — existing assessments and practice only.
         </p>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <ButtonLink href="/gigalearn/academy/assess/" className="min-h-11">
+          <Link href="/gigalearn/academy/assess/" className="academy-visual-cta academy-visual-cta--solid">
             Academy assessments
-          </ButtonLink>
-          <ButtonLink href="/gigalearn/academy/my/" variant="secondary" className="min-h-11">
+          </Link>
+          <Link href="/gigalearn/academy/my/" className="academy-visual-cta academy-visual-cta--ghost">
             My enrolled courses
-          </ButtonLink>
-          <ButtonLink href="/gigalearn/?tab=learn" variant="secondary" className="min-h-11">
+          </Link>
+          <Link href="/gigalearn/?tab=learn" className="academy-visual-cta academy-visual-cta--ghost">
             Student practice tools
-          </ButtonLink>
-          <ButtonLink href="/gigalearn/?tab=tutor" variant="secondary" className="min-h-11">
+          </Link>
+          <Link href="/gigalearn/?tab=tutor" className="academy-visual-cta academy-visual-cta--ghost">
             AI Tutor
-          </ButtonLink>
+          </Link>
+          <Link href="/gigalearn/exam/" className="academy-visual-cta academy-visual-cta--ghost">
+            Exam Practice Centre
+          </Link>
         </div>
       </div>
     </section>
@@ -213,38 +250,48 @@ function LearningStudiosDirectory() {
           Learning Studios
         </h2>
         <p className="mt-1 text-sm text-muted">
-          Hands-on labs. Available studios open real GigaLearn experiences; others are marked
-          coming soon.
+          Hands-on labs with distinct studio colours. Available studios open real GigaLearn
+          experiences; others are labelled coming soon (not colour-only).
         </p>
       </div>
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {LEARNING_STUDIOS.map((studio) => (
           <li key={studio.id}>
-            <article className="saas-card flex h-full flex-col rounded-2xl border border-border bg-white p-4">
+            <article
+              className={cn(
+                studioThemeClass(studio.id),
+                "flex h-full flex-col p-4"
+              )}
+            >
               <div className="flex flex-wrap items-center gap-2">
-                <Sparkles className="h-4 w-4 text-accent" aria-hidden />
+                <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
                 {studio.status === "planned" ? (
-                  <span className="rounded-full border border-border px-2 py-0.5 text-[11px] font-semibold text-muted">
+                  <span className="academy-visual-chip rounded-full px-2 py-0.5 text-[11px] font-semibold">
                     Coming soon
                   </span>
                 ) : (
-                  <span className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[11px] font-semibold text-foreground">
+                  <span className="academy-visual-chip rounded-full px-2 py-0.5 text-[11px] font-semibold">
                     Available
                   </span>
                 )}
               </div>
-              <h3 className="mt-2 text-base font-semibold text-foreground">{studio.name}</h3>
-              <p className="mt-1 flex-1 text-sm text-muted">{studio.blurb}</p>
+              <h3 className="mt-2 text-base font-semibold">{studio.name}</h3>
+              <p className="academy-visual-muted mt-1 flex-1 text-sm">{studio.blurb}</p>
               {studio.status === "available" && studio.href ? (
                 <Link
                   href={studio.href}
-                  className="mt-4 inline-flex min-h-11 items-center justify-center gap-1 rounded-xl border border-accent/35 bg-accent/10 px-3 text-sm font-semibold text-foreground hover:border-accent/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  className={cn(
+                    "academy-visual-cta mt-4",
+                    studio.id === "giga-ai"
+                      ? "academy-visual-cta--solid"
+                      : undefined
+                  )}
                 >
                   {studio.ctaLabel ?? "Open"}
                   <ArrowRight className="h-4 w-4" aria-hidden />
                 </Link>
               ) : (
-                <p className="mt-4 min-h-11 text-sm font-medium text-muted">
+                <p className="academy-visual-muted mt-4 min-h-11 text-sm font-medium">
                   Planned — not available yet
                 </p>
               )}
@@ -265,27 +312,33 @@ export function AcademyHome() {
     >
       <section
         aria-labelledby="academy-hero-heading"
-        className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-accent/20 via-white to-violet-50 p-5 sm:p-8"
+        className={cn(ACADEMY_SURFACE_CLASS.hero, "relative overflow-hidden p-5 sm:p-8")}
       >
         <div className="relative max-w-2xl space-y-3">
-          <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-accent">
+          <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white">
             <GraduationCap className="h-4 w-4" aria-hidden />
             Welcome
           </p>
-          <h2 id="academy-hero-heading" className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          <h2
+            id="academy-hero-heading"
+            className="text-2xl font-bold tracking-tight text-white sm:text-3xl"
+          >
             Practise, build, and learn by doing
           </h2>
-          <p className="text-sm text-muted sm:text-base">
+          <p className="academy-visual-muted text-sm sm:text-base">
             {ACADEMY_TRANSFORM_TAGLINE} Explore Learning Studios, open the Practice Centre, and keep
             your existing Academy pathways — without inventing progress or fake tools.
           </p>
           <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:flex-wrap">
-            <ButtonLink href="#practice-centre-heading" className="min-h-11">
+            <Link
+              href="#practice-centre"
+              className="academy-visual-cta academy-visual-cta--solid"
+            >
               Go to Practice Centre
-            </ButtonLink>
-            <ButtonLink href="#existing-academy" variant="secondary" className="min-h-11">
+            </Link>
+            <Link href="#existing-academy" className="academy-visual-cta academy-visual-cta--ghost">
               Browse courses
-            </ButtonLink>
+            </Link>
           </div>
         </div>
       </section>
@@ -298,23 +351,27 @@ export function AcademyHome() {
 
       <LearningStudiosDirectory />
 
-      <section id="existing-academy" aria-labelledby="existing-academy-heading" className="space-y-3">
+      <section
+        id="existing-academy"
+        aria-labelledby="existing-academy-heading"
+        className={cn(ACADEMY_SURFACE_CLASS.catalogue, "space-y-3 p-4 sm:p-5")}
+      >
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
             <h2
               id="existing-academy-heading"
-              className="flex items-center gap-2 text-lg font-bold text-foreground"
+              className="flex items-center gap-2 text-lg font-bold"
             >
-              <BookOpen className="h-5 w-5 text-accent" aria-hidden />
+              <BookOpen className="h-5 w-5" aria-hidden />
               Existing Academy
             </h2>
-            <p className="mt-1 text-sm text-muted">
+            <p className="academy-visual-muted mt-1 text-sm">
               Full course catalogue and pathways that reuse GigaLearn tools — preserved as-is.
             </p>
           </div>
           <Link
             href="/gigalearn/academy/courses/"
-            className="text-sm font-semibold text-accent hover:underline"
+            className="text-sm font-semibold text-[#4C1D95] underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4C1D95]"
           >
             Full catalogue page →
           </Link>
