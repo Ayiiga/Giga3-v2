@@ -89,6 +89,7 @@ describe("Academy transform Phase 1 landing", () => {
     for (const href of [
       "/gigalearn/academy/",
       "/gigalearn/academy/courses/",
+      "/gigalearn/exam/",
       "/gigalearn/academy/assess/",
       "/gigalearn/academy/my/",
       "/gigalearn/academy/certificates/",
@@ -98,6 +99,8 @@ describe("Academy transform Phase 1 landing", () => {
     ]) {
       expect(chrome).toContain(href);
     }
+    // Exam Practice is a cross-link (not an Academy active key).
+    expect(chrome).toContain('label: "Exam Practice"');
   });
 
   it("keeps existing Academy route files", () => {

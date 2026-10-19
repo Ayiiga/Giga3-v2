@@ -6,9 +6,14 @@ import { ArrowLeft, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+/**
+ * Academy Phase 1 nav + Exam Practice Centre entry (PR #548 + #549 integration).
+ * Exam Practice uses its own page chrome for section highlighting.
+ */
 const NAV = [
   { href: "/gigalearn/academy/", label: "Home", key: "home" as const },
   { href: "/gigalearn/academy/courses/", label: "Courses", key: "catalogue" as const },
+  { href: "/gigalearn/exam/", label: "Exam Practice", key: null },
   { href: "/gigalearn/academy/assess/", label: "Practice", key: "practice" as const },
   { href: "/gigalearn/academy/my/", label: "My courses", key: "my" as const },
   { href: "/gigalearn/academy/certificates/", label: "Certificates", key: "certificates" as const },
@@ -70,7 +75,7 @@ export function AcademyChrome({
                 (active === item.key || (active === "course" && item.key === "catalogue"));
               return (
                 <Link
-                  key={item.href}
+                  key={`${item.href}:${item.label}`}
                   href={item.href}
                   className={cn(
                     "min-h-11 shrink-0 rounded-full border px-3.5 py-2 text-xs font-semibold",
