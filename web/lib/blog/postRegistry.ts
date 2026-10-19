@@ -13,8 +13,8 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     tags: ["ai tools ghana", "ai apps", "students", "creators", "business", "free ai"],
     author: "Giga3 AI Editorial Team",
     publishedAt: "2026-09-04",
-    featuredImage: "/images/blog/best-ai-tools-ghana.svg",
-    featuredImageAlt: "Illustration of AI tools for students, creators and businesses in Ghana",
+    featuredImage: "/images/blog/best-ai-tools-ghana.jpg",
+    featuredImageAlt: "Young people in Ghana collaborating with laptops and phones while exploring practical AI tools",
     keywords: [
       "best ai tools in ghana",
       "ai tools ghana",
@@ -34,8 +34,8 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     tags: ["bece", "wassce", "education", "study", "ghana students", "gigalearn"],
     author: "Giga3 AI Editorial Team",
     publishedAt: "2026-09-04",
-    featuredImage: "/images/blog/bece-wassce-ai.svg",
-    featuredImageAlt: "Student using AI to prepare for BECE and WASSCE exams in Ghana",
+    featuredImage: "/images/blog/bece-wassce-ai.jpg",
+    featuredImageAlt: "Ghanaian senior high school students studying together with notebooks and a laptop for exam preparation",
     keywords: [
       "ai for bece preparation",
       "ai for wassce",
@@ -54,8 +54,8 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     tags: ["ai apps ghana", "productivity", "chat ai", "image ai", "creators"],
     author: "Giga3 AI Editorial Team",
     publishedAt: "2026-09-04",
-    featuredImage: "/images/blog/top-ai-apps-ghana.svg",
-    featuredImageAlt: "Collection of popular AI apps used by people in Ghana",
+    featuredImage: "/images/blog/top-ai-apps-ghana.jpg",
+    featuredImageAlt: "Young Ghanaian adult using a smartphone for productive mobile AI and digital work",
     keywords: ["top ai apps in ghana", "ai apps ghana 2026", "free ai apps"],
   },
   {
@@ -69,8 +69,8 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     tags: ["wassce 2026", "waec results", "ghana students", "tertiary education", "exam results"],
     author: "Giga3 AI Editorial Team",
     publishedAt: "2026-09-07",
-    featuredImage: "/images/blog/wassce-2026-results.svg",
-    featuredImageAlt: "Ghanaian students and parents reviewing WASSCE 2026 examination results",
+    featuredImage: "/images/blog/wassce-2026-results.jpg",
+    featuredImageAlt: "Ghanaian student and parent reviewing examination papers and a phone together at home",
     keywords: [
       "wassce 2026 results",
       "waec results ghana",
@@ -89,8 +89,8 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     tags: ["minimum wage ghana", "public sector pay", "fair wages", "cost of living", "transparency"],
     author: "Giga3 AI Editorial Team",
     publishedAt: "2026-09-07",
-    featuredImage: "/images/blog/ghana-wage-system.svg",
-    featuredImageAlt: "Illustration representing Ghana's national wage and compensation debate",
+    featuredImage: "/images/blog/ghana-wage-system.jpg",
+    featuredImageAlt: "Ghanaian office worker reviewing figures at a desk, representing everyday livelihoods and wages",
     keywords: [
       "ghana minimum wage 2026",
       "ghana wage system",
@@ -109,8 +109,8 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     tags: ["one million coders", "coding ghana", "digital skills", "tech jobs", "youth employment"],
     author: "Giga3 AI Editorial Team",
     publishedAt: "2026-09-07",
-    featuredImage: "/images/blog/one-million-coders.svg",
-    featuredImageAlt: "Ghana One Million Coders digital skills training programme illustration",
+    featuredImage: "/images/blog/one-million-coders.jpg",
+    featuredImageAlt: "Young Ghanaians learning to code together in a community tech hub",
     keywords: [
       "one million coders ghana",
       "coding programme ghana",
@@ -129,8 +129,8 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     tags: ["ai tools students", "study ai", "ghana students", "academic integrity", "gigalearn"],
     author: "Giga3 AI Editorial Team",
     publishedAt: "2026-09-07",
-    featuredImage: "/images/blog/ai-tools-students-2026.svg",
-    featuredImageAlt: "Collection of AI study tools recommended for Ghanaian students in 2026",
+    featuredImage: "/images/blog/ai-tools-students-2026.jpg",
+    featuredImageAlt: "University student in Ghana studying with textbooks, notes, and a laptop",
     keywords: [
       "ai tools for ghanaian students",
       "ai study tools ghana",
@@ -148,8 +148,8 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     tags: ["ai for teachers", "lesson planning", "ghana education", "bece", "classroom tools"],
     author: "Giga3 AI Editorial Team",
     publishedAt: "2026-09-07",
-    featuredImage: "/images/blog/ai-for-teachers.svg",
-    featuredImageAlt: "Ghanaian teacher using AI tools for lesson planning and classroom preparation",
+    featuredImage: "/images/blog/ai-for-teachers.jpg",
+    featuredImageAlt: "Ghanaian teacher preparing lesson materials at a classroom desk",
     keywords: [
       "ai for ghanaian teachers",
       "ai lesson planning ghana",
@@ -167,8 +167,8 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     tags: ["wassce ai", "ai study guide", "exam revision", "ghana students", "gigalearn"],
     author: "Giga3 AI Editorial Team",
     publishedAt: "2026-09-07",
-    featuredImage: "/images/blog/wassce-ai-study.svg",
-    featuredImageAlt: "Ghanaian student using AI responsibly to prepare for WASSCE examinations",
+    featuredImage: "/images/blog/wassce-ai-study.jpg",
+    featuredImageAlt: "Ghanaian SHS student revising under a desk lamp with an open notebook",
     keywords: [
       "wassce ai study guide",
       "ai for wassce preparation",
@@ -186,8 +186,8 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     tags: ["make money online ghana", "ai side hustle", "freelancing", "content creation", "scam warning"],
     author: "Giga3 AI Editorial Team",
     publishedAt: "2026-09-07",
-    featuredImage: "/images/blog/ai-hustle-ghana.svg",
-    featuredImageAlt: "Young Ghanaian using AI tools for online content creation and freelancing",
+    featuredImage: "/images/blog/ai-hustle-ghana.jpg",
+    featuredImageAlt: "Young Ghanaian creator filming content with a phone on a small tripod at home",
     keywords: [
       "make money with ai ghana",
       "ai side hustle ghana",
@@ -205,8 +205,8 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     tags: ["fact checking", "misinformation", "social media ghana", "deepfakes", "digital literacy"],
     author: "Giga3 AI Editorial Team",
     publishedAt: "2026-09-07",
-    featuredImage: "/images/blog/digital-literacy-social.svg",
-    featuredImageAlt: "Digital literacy guide for verifying content on Ghanaian social media platforms",
+    featuredImage: "/images/blog/digital-literacy-social.jpg",
+    featuredImageAlt: "Young adults in Ghana carefully checking information on a smartphone together",
     keywords: [
       "fact checking ghana",
       "social media misinformation",
@@ -224,8 +224,8 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     tags: ["ai literacy", "future of work africa", "youth employment", "digital skills", "education"],
     author: "Giga3 AI Editorial Team",
     publishedAt: "2026-09-07",
-    featuredImage: "/images/blog/african-youth-ai-jobs.svg",
-    featuredImageAlt: "African youth learning AI and digital skills for future employment opportunities",
+    featuredImage: "/images/blog/african-youth-ai-jobs.jpg",
+    featuredImageAlt: "African youth collaborating on laptops outdoors, building digital skills for future work",
     keywords: [
       "african youth ai",
       "future of work africa",
@@ -243,8 +243,8 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     tags: ["ghana ai", "artificial intelligence ghana", "digital inclusion", "ai education", "entrepreneurship"],
     author: "Giga3 AI Editorial Team",
     publishedAt: "2026-09-07",
-    featuredImage: "/images/blog/ghana-ai-future.svg",
-    featuredImageAlt: "Overview of artificial intelligence opportunities and challenges in Ghana",
+    featuredImage: "/images/blog/ghana-ai-future.jpg",
+    featuredImageAlt: "Accra cityscape at golden hour with young professionals walking, technology and opportunity",
     keywords: [
       "ghana ai future",
       "artificial intelligence ghana",
@@ -270,9 +270,9 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     ],
     author: "Giga3 AI Editorial Team",
     publishedAt: "2026-10-08",
-    featuredImage: "/images/blog/chatgpt-gemini-claude-comparison-ghana.svg",
+    featuredImage: "/images/blog/chatgpt-gemini-claude-comparison-ghana.jpg",
     featuredImageAlt:
-      "Illustration comparing ChatGPT, Google Gemini and Claude for Ghanaian students and creators",
+      "Ghanaian students comparing notes on different laptops while discussing which AI fits each task",
     keywords: [
       "chatgpt vs gemini vs claude",
       "best ai for students in ghana",
@@ -300,9 +300,9 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     ],
     author: "Giga3 AI Editorial Team",
     publishedAt: "2026-10-08",
-    featuredImage: "/images/blog/make-money-ai-ghana-2026.svg",
+    featuredImage: "/images/blog/make-money-ai-ghana-2026.jpg",
     featuredImageAlt:
-      "Illustration representing realistic AI income opportunities for Ghanaian entrepreneurs and creators",
+      "Young Ghanaian freelancer working on a laptop in a small co-working space",
     keywords: [
       "make money with ai in ghana",
       "ai jobs ghana",
@@ -331,15 +331,131 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     author: "Ayiiga Benard Issaka",
     authorType: "Person",
     publishedAt: "2026-10-11",
-    featuredImage: "/images/blog/africa-ai-solves-real-problems.svg",
+    featuredImage: "/images/blog/africa-ai-solves-real-problems.jpg",
     featuredImageAlt:
-      "Illustration representing practical AI that solves real problems for people across Africa",
+      "Students and a mentor solving a practical study problem with a laptop in a community library",
     keywords: [
       "ai that solves real problems",
       "practical ai africa",
       "responsible ai ghana",
       "giga3 ai founder",
       "ai for african students",
+    ],
+  },
+  {
+    slug: "how-to-start-learning-coding-in-ghana",
+    title: "How to Start Learning Coding in Ghana: A Beginner's Guide",
+    seoTitle: "How to Start Learning Coding in Ghana | Beginner Guide",
+    description:
+      "Beginner coding in Ghana: mindset, first tools, a 30-day plan, local learning paths, and traps to avoid — without hype or fake job guarantees.",
+    excerpt:
+      "Start coding in Ghana with a light setup, one language for 30 days, tiny projects, and honest habits — whether you are in JHS, SHS, university or switching careers.",
+    category: "Technology",
+    tags: ["learn coding ghana", "beginner programming", "digital skills", "students", "gigalearn"],
+    author: "Giga3 AI Editorial Team",
+    publishedAt: "2026-10-14",
+    featuredImage: "/images/blog/start-learning-coding-ghana.jpg",
+    featuredImageAlt:
+      "Beginner in Ghana learning to code on a laptop at a simple wooden desk with a notebook",
+    keywords: [
+      "how to start learning coding in ghana",
+      "learn programming ghana",
+      "coding for beginners ghana",
+      "beginner coding guide",
+    ],
+  },
+  {
+    slug: "one-million-coders-ghana-courses-skills-careers",
+    title: "One Million Coders Ghana: Courses, Skills and Career Opportunities",
+    seoTitle: "One Million Coders Ghana: Courses, Skills & Careers",
+    description:
+      "Course families, beginner skills and early career paths around One Million Coders — verify details on the official portal; no invented statistics.",
+    excerpt:
+      "What course families and skills to expect, how to choose a track, and how to pair training with portfolio practice — without hype or invented enrolment numbers.",
+    category: "Technology",
+    tags: [
+      "one million coders",
+      "digital skills ghana",
+      "coding courses",
+      "tech careers",
+      "youth skills",
+    ],
+    author: "Giga3 AI Editorial Team",
+    publishedAt: "2026-10-14",
+    featuredImage: "/images/blog/one-million-coders-courses-careers.jpg",
+    featuredImageAlt:
+      "Young Ghanaians discussing career paths after digital skills training on a campus courtyard",
+    keywords: [
+      "one million coders ghana courses",
+      "one million coders skills",
+      "digital skills careers ghana",
+      "coding programme ghana careers",
+    ],
+  },
+  {
+    slug: "ai-skills-every-ghanaian-student-should-learn-2026",
+    title: "AI Skills Every Ghanaian Student Should Learn in 2026",
+    seoTitle: "AI Skills Every Ghanaian Student Should Learn (2026)",
+    description:
+      "Transferable AI skills for Ghanaian students in 2026 — clear prompting, verification, study workflows, academic integrity and privacy — not a hype list of app logos.",
+    excerpt:
+      "Learn the AI habits that still matter when apps change: prompting, verification, study workflows, integrity and privacy for JHS, SHS and tertiary learners.",
+    category: "Education",
+    tags: ["ai skills", "ghana students", "study skills", "academic integrity", "gigalearn", "2026"],
+    author: "Giga3 AI Editorial Team",
+    publishedAt: "2026-10-14",
+    featuredImage: "/images/blog/ai-skills-ghanaian-students-2026.jpg",
+    featuredImageAlt:
+      "Ghanaian university students practising note-taking and digital study skills together in a library",
+    keywords: [
+      "ai skills for ghanaian students",
+      "ai study skills 2026",
+      "responsible ai for students ghana",
+      "prompting skills students",
+    ],
+  },
+  {
+    slug: "coding-vs-ai-which-skill-beginners-learn-first",
+    title: "Coding vs AI: Which Skill Should Beginners Learn First?",
+    seoTitle: "Coding vs AI: What Beginners Should Learn First",
+    description:
+      "Should beginners in Ghana learn coding or AI first? A practical decision guide with an 8-week combined path — no false either/or, no guaranteed outcomes.",
+    excerpt:
+      "Choose a starting emphasis for eight weeks: when coding-first wins, when AI literacy-first wins, and how to combine both without skipping real understanding.",
+    category: "Education",
+    tags: ["coding vs ai", "beginners", "digital skills", "students ghana", "learning paths"],
+    author: "Giga3 AI Editorial Team",
+    publishedAt: "2026-10-14",
+    featuredImage: "/images/blog/coding-vs-ai-beginners.jpg",
+    featuredImageAlt:
+      "Two young learners in Ghana comparing coding practice and AI study notes at one desk",
+    keywords: [
+      "coding vs ai for beginners",
+      "learn coding or ai first",
+      "ai literacy vs programming",
+      "beginner digital skills ghana",
+    ],
+  },
+  {
+    slug: "how-to-build-first-software-project-beginner-ghana",
+    title: "How to Build Your First Software Project as a Beginner in Ghana",
+    seoTitle: "Build Your First Software Project (Ghana Beginners)",
+    description:
+      "A beginner checklist for shipping your first software project in Ghana — pick a real problem, scope small, build in five steps, and demo your work without hype.",
+    excerpt:
+      "Ship a tiny, real project: define success, build the happy path, add basic validation, write a README, and get one person to try it.",
+    category: "Technology",
+    tags: ["first project", "beginner coding", "portfolio", "software projects ghana", "students"],
+    author: "Giga3 AI Editorial Team",
+    publishedAt: "2026-10-14",
+    featuredImage: "/images/blog/first-software-project-ghana.jpg",
+    featuredImageAlt:
+      "Beginner developer in Accra showing a small working app on a phone and laptop",
+    keywords: [
+      "first software project for beginners",
+      "beginner coding project ghana",
+      "how to build first app ghana",
+      "student portfolio project",
     ],
   },
 ];

@@ -7,6 +7,7 @@ import { GigaSocialAuthPrompt } from "@/components/gigasocial/ux/GigaSocialAuthP
 import { LoadingState } from "@/components/ui/LoadingState";
 import { cn } from "@/lib/utils";
 import { getSessionToken, getUserEmail } from "@/lib/auth";
+import { getGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { BADGE_LABELS } from "@/lib/gigasocial/sections";
 import { buildGigaSocialProfileUrl } from "@/lib/gigasocial/shareLinks";
 import { parseProfileHandle } from "@/lib/gigasocial/profileRoute";
@@ -207,6 +208,16 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
               <Sparkles className="h-3.5 w-3.5" aria-hidden />
               Marketplace
             </Link>
+            {getGigaSocialFeatures().enableDirectMessages &&
+            myUserId &&
+            profile.userId !== myUserId ? (
+              <Link
+                href={`/gigasocial/?tab=messages&to=${encodeURIComponent(profile.userId)}`}
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-medium hover:bg-accent/5"
+              >
+                Message
+              </Link>
+            ) : null}
           </div>
         </div>
       </div>
@@ -222,7 +233,7 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
             ["videos", "Videos"],
             ["ai", "AI"],
             ["liked", "Liked"],
-            // Tips/gifts are open regardless of 500-fan earn unlock.
+            // Tips/gifts are open regardless of monetisation acceptance.
             ["gifts", "Gifts"],
           ] as const
         ).map(([id, label]) => (

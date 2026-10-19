@@ -1,16 +1,18 @@
 "use client";
 
+import { LinkedProvidersSettings } from "@/components/account/LinkedProvidersSettings";
 import { GigaLiteSettings } from "@/components/settings/GigaLiteSettings";
 import { LanguagePreferencesSettings } from "@/components/settings/LanguagePreferencesSettings";
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ButtonLink } from "@/components/ui/Button";
 import { StableLink } from "@/components/ui/StableLink";
+import { ACCOUNT_SETTINGS_NAV } from "@/lib/account/accountNav";
 import { clearAllClientAuth, getUserEmail } from "@/lib/auth";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { safeNavigate } from "@/lib/navigation/safeNavigate";
 import { signOutSupabase } from "@/lib/supabase/auth";
-import { LogOut, Shield } from "lucide-react";
+import { ChevronRight, LogOut, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -50,6 +52,7 @@ function AccountSettingsClientInner() {
 
       <GigaLiteSettings />
       <LanguagePreferencesSettings />
+      <LinkedProvidersSettings />
 
       <section className="rounded-2xl border border-border bg-card p-4">
         <div className="flex items-center justify-between gap-3">
@@ -63,12 +66,26 @@ function AccountSettingsClientInner() {
 
       <section className="rounded-2xl border border-border bg-card p-4">
         <h2 className="text-sm font-semibold text-foreground">Account</h2>
-        <ul className="mt-3 space-y-2 text-sm">
-          <li>
-            <StableLink href="/wallet/" className="text-accent underline underline-offset-2">
-              Billing &amp; wallet
-            </StableLink>
-          </li>
+        <p className="mt-1 text-xs text-muted">
+          Wallet, subscription, credits, and help — moved here so chat workspace stays uncluttered.
+        </p>
+        <ul className="mt-3 divide-y divide-border rounded-xl border border-border">
+          {ACCOUNT_SETTINGS_NAV.map((item) => (
+            <li key={item.label}>
+              <StableLink
+                href={item.href}
+                className="flex min-h-12 items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-accent/5"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="font-medium">{item.label}</span>
+                  <span className="mt-0.5 block text-[11px] text-muted">{item.description}</span>
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted" aria-hidden />
+              </StableLink>
+            </li>
+          ))}
+        </ul>
+        <ul className="mt-4 space-y-2 text-sm">
           <li>
             <StableLink
               href="/chat/login/reset/"

@@ -61,7 +61,7 @@ export function blogIndexMetadata(): Metadata {
   const title = "Giga3 AI Blog — AI, Education & Technology in Ghana";
   const description =
     "Guides on artificial intelligence, education, BECE and WASSCE preparation, creator tools, business automation and digital opportunities in Ghana and across Africa.";
-  const image = brandingAssetUrl("/images/blog/blog-hero.svg");
+  const image = brandingAssetUrl("/images/blog/blog-hero.jpg");
 
   return {
     title: { absolute: title },

@@ -2,7 +2,7 @@
 
 import { CreditPromptLinks } from "@/components/billing/CreditPromptLinks";
 import { StudioContextBar } from "@/components/gigalearn/StudioContextBar";
-import { Button } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { useTutorSession } from "@/hooks/useTutorSession";
 import { getSessionToken } from "@/lib/auth";
 import {
@@ -14,7 +14,6 @@ import {
 } from "@/lib/gigalearn/curriculumEngine";
 import {
   getStudioContext,
-  saveStudioContext,
   studioContextIds,
   validateStudioContext,
   type StudioContext,
@@ -22,8 +21,10 @@ import {
 import { performanceSummaryForTutor } from "@/lib/gigalearn/recommendations";
 import { logSignal } from "@/lib/gigalearn/signals";
 import { cn } from "@/lib/utils";
+import { api } from "convex/_generated/api";
+import { useQuery } from "convex/react";
 import { BookOpen, FlaskConical, GraduationCap, HelpCircle, Lightbulb, ListChecks, MessageCircle, Sparkles, Target, Telescope } from "lucide-react";
-import { memo, useRef, useState } from "react";
+import { memo, useMemo, useRef, useState } from "react";
 
 /** Only auto-scroll when the user is already near the bottom — avoids mobile jump fights. */
 function scrollTutorEndIfNear(anchor: HTMLElement | null) {
@@ -37,6 +38,10 @@ function scrollTutorEndIfNear(anchor: HTMLElement | null) {
 
 interface AdaptiveTutorProps {
   credits: number | null;
+  /** Optional Academy course focus from deep link / TutorHub. */
+  academyCourseSlug?: string | null;
+  academyModuleId?: string | null;
+  academyLessonId?: string | null;
 }
 
 type TutorAction = "explain" | "simplify" | "example" | "hint" | "check" | "practice" | "correct" | "challenge";
@@ -52,7 +57,12 @@ const TUTOR_ACTIONS: Array<{ id: TutorAction; label: string; icon: typeof Lightb
   { id: "challenge", label: "Challenge", icon: Telescope, hint: "Increase difficulty" },
 ];
 
-export const AdaptiveTutor = memo(function AdaptiveTutor({ credits }: AdaptiveTutorProps) {
+export const AdaptiveTutor = memo(function AdaptiveTutor({
+  credits,
+  academyCourseSlug = null,
+  academyModuleId = null,
+  academyLessonId = null,
+}: AdaptiveTutorProps) {
   const [ctx, setCtx] = useState<StudioContext>(() => getStudioContext());
   const [socratic, setSocratic] = useState(false);
   const [input, setInput] = useState("");
@@ -63,6 +73,42 @@ export const AdaptiveTutor = memo(function AdaptiveTutor({ credits }: AdaptiveTu
   const ids = studioContextIds(ctx);
   const level = getLevel(resolveLegacyLevelId(ctx.levelId));
   const insufficientCredits = credits != null && credits < 1;
+  const sessionToken = getSessionToken();
+
+  const academySlug = academyCourseSlug?.trim() || "";
+  const academyFocus = useQuery(
+    api.gigaLearnAcademy.getEnrolledTutorContext,
+    sessionToken && academySlug
+      ? {
+          sessionToken,
+          courseSlug: academySlug,
+          moduleId: academyModuleId?.trim() || undefined,
+          lessonId: academyLessonId?.trim() || undefined,
+        }
+      : "skip"
+  );
+
+  const academyContext = useMemo(() => {
+    if (!academySlug) return null;
+    if (academyFocus && academyFocus.ok) {
+      return {
+        courseSlug: academyFocus.courseSlug,
+        moduleId: academyFocus.moduleId,
+        lessonId: academyFocus.lessonId,
+      };
+    }
+    // Still pass slug so tutorTurn can authorize; optional ids from URL.
+    return {
+      courseSlug: academySlug,
+      moduleId: academyModuleId?.trim() || undefined,
+      lessonId: academyLessonId?.trim() || undefined,
+    };
+  }, [academySlug, academyFocus, academyModuleId, academyLessonId]);
+
+  const lessonTopic =
+    academyFocus && academyFocus.ok
+      ? academyFocus.lessonTitle
+      : ids.topic || getSubject(ctx.subjectId)?.label || "this topic";
 
   const contextPayload = {
     country: getCountry(ctx.countryId)?.name,
@@ -74,7 +120,9 @@ export const AdaptiveTutor = memo(function AdaptiveTutor({ credits }: AdaptiveTu
     subStrand: ctx.subStrand.trim() || undefined,
     contentStandard: ctx.contentStandard.trim() || undefined,
     indicator: ctx.indicator.trim() || undefined,
-    topic: ctx.topic.trim() || undefined,
+    topic: (ctx.topic.trim() || lessonTopic) || undefined,
+    learningObjective:
+      academyFocus && academyFocus.ok ? academyFocus.lessonSummary : undefined,
     countryId: ids.countryId || undefined,
     curriculumId: ids.curriculumId || undefined,
     levelId: ids.levelId || undefined,
@@ -82,14 +130,21 @@ export const AdaptiveTutor = memo(function AdaptiveTutor({ credits }: AdaptiveTu
     methodologyIds: ctx.methodologyIds?.length ? [...ctx.methodologyIds] : undefined,
   };
 
-  const sessionToken = getSessionToken();
-  const { messages, loading, error, send, reset } = useTutorSession({
+  const { messages, loading, error, send, reset, lastAcademyGuidance } = useTutorSession({
     sessionToken,
     context: contextPayload,
-    getPerformanceSummary: () => performanceSummaryForTutor({ subjectId: ids.subjectId, topic: ids.topic }),
+    getPerformanceSummary: () =>
+      performanceSummaryForTutor({ subjectId: ids.subjectId, topic: ids.topic || lessonTopic }),
+    academyContext,
   });
 
-  const canSend = validation.valid && !loading && !insufficientCredits && Boolean(sessionToken);
+  const academyReady = !academySlug || (academyFocus !== undefined && academyFocus.ok);
+  const canSend =
+    validation.valid &&
+    !loading &&
+    !insufficientCredits &&
+    Boolean(sessionToken) &&
+    academyReady;
 
   function afterSend(mode: string) {
     logSignal({
@@ -109,16 +164,20 @@ export const AdaptiveTutor = memo(function AdaptiveTutor({ credits }: AdaptiveTu
   }
 
   function sendAction(action: TutorAction) {
-    const topic = ids.topic || getSubject(ctx.subjectId)?.label || "this topic";
+    const topic = lessonTopic;
+    const academyPrefix =
+      academyFocus && academyFocus.ok
+        ? `Using my enrolled Academy course “${academyFocus.courseTitle}”, lesson “${academyFocus.lessonTitle}”: `
+        : "";
     const prompts: Record<TutorAction, string> = {
-      explain: `Explain ${topic} at my level.`,
-      simplify: `Give me a simpler explanation of ${topic}.`,
-      example: `Give me an appropriate example for ${topic}.`,
-      hint: `Give me a hint for ${topic} without revealing the answer.`,
-      check: `Check my understanding of ${topic} with one question.`,
-      practice: `Give me another practice question on ${topic}.`,
-      correct: `I answered a question on ${topic} incorrectly — explain what I likely got wrong and how to fix it. My attempt: ${input.trim() || "(see conversation)"}`,
-      challenge: `Challenge me on ${topic} — I am ready for something harder.`,
+      explain: `${academyPrefix}Explain ${topic} at my level.`,
+      simplify: `${academyPrefix}Give me a simpler explanation of ${topic}.`,
+      example: `${academyPrefix}Give me an appropriate example for ${topic}.`,
+      hint: `${academyPrefix}Give me a hint for ${topic} without revealing the answer.`,
+      check: `${academyPrefix}Check my understanding of ${topic} with one lesson-specific question.`,
+      practice: `${academyPrefix}Give me another lesson-specific practice question on ${topic}. Do not reveal the answer yet.`,
+      correct: `${academyPrefix}I answered a question on ${topic} incorrectly — explain what I likely got wrong using the lesson materials (AI feedback only, not an official grade). My attempt: ${input.trim() || "(see conversation)"}`,
+      challenge: `${academyPrefix}Challenge me on ${topic} — I am ready for something harder.`,
     };
     setLastAction(action);
     void send(socratic && action !== "correct" ? "socratic" : action, prompts[action]).then(() => afterSend(action));
@@ -134,6 +193,46 @@ export const AdaptiveTutor = memo(function AdaptiveTutor({ credits }: AdaptiveTu
   return (
     <div className="space-y-4">
       <StudioContextBar ctx={ctx} onChange={(next) => setCtx(next)} idPrefix="gl-tutor" changeLabel="Change context" />
+
+      {academySlug ? (
+        <div className="rounded-2xl border border-accent/30 bg-accent/5 px-3 py-3 text-sm">
+          {academyFocus === undefined ? (
+            <p className="text-muted">Loading Academy course context…</p>
+          ) : !academyFocus.ok ? (
+            <div className="space-y-2">
+              <p className="font-medium text-foreground">
+                {academyFocus.reason === "not_enrolled"
+                  ? "Enrol in this Academy course to use course-aware tutoring."
+                  : academyFocus.reason === "missing_materials"
+                    ? "Approved lesson materials are missing for this checkpoint."
+                    : "This Academy course is unavailable for tutoring."}
+              </p>
+              <ButtonLink
+                href={`/gigalearn/academy/course/?slug=${encodeURIComponent(academySlug)}`}
+                className="min-h-11"
+              >
+                Open course
+              </ButtonLink>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-accent">
+                Academy tutoring
+              </p>
+              <p className="font-semibold text-foreground">{academyFocus.courseTitle}</p>
+              <p className="text-xs text-muted">
+                {academyFocus.moduleTitle} · {academyFocus.lessonTitle}
+                {" · "}Tutoring does not auto-complete lessons
+              </p>
+              {academyFocus.nextLesson ? (
+                <p className="text-xs text-muted">
+                  Next pathway lesson (suggestion only): {academyFocus.nextLesson.title}
+                </p>
+              ) : null}
+            </div>
+          )}
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-white px-3 py-2.5">
         <div>
@@ -243,6 +342,20 @@ export const AdaptiveTutor = memo(function AdaptiveTutor({ credits }: AdaptiveTu
           {error}
         </p>
       )}
+
+      {lastAcademyGuidance ? (
+        <div className="rounded-xl border border-border bg-white px-3 py-2 text-xs text-muted">
+          {lastAcademyGuidance.revisionHint ? (
+            <p>Revision: {lastAcademyGuidance.revisionHint}</p>
+          ) : null}
+          {lastAcademyGuidance.nextLesson ? (
+            <p className="mt-1">
+              Suggested next lesson: {lastAcademyGuidance.nextLesson.title}{" "}
+              <span className="text-muted">(mark checkpoint on the course page when ready)</span>
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="flex flex-col gap-2 sm:flex-row">
         <label htmlFor="gl-tutor-input" className="sr-only">

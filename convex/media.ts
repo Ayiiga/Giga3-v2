@@ -236,6 +236,10 @@ export const generateImage = action({
           String(jobId),
           IMAGE_TOKEN_COST
         );
+        await ctx.runMutation(internal.mediaInternal.setMediaJobCharge, {
+          jobId,
+          creditsCharged: IMAGE_TOKEN_COST,
+        });
       }
 
       if (jobId) {

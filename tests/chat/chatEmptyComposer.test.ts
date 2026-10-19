@@ -20,8 +20,10 @@ const navCss = readFileSync(
 
 describe("empty chat stays quiet and the composer clears the bottom nav", () => {
   it("shows quick actions, examples and leaves templates in Workspace", () => {
-    expect(messageList).toContain("What would you like to do?");
+    expect(messageList).toContain("buildHomeGreeting");
+    expect(messageList).toContain("greeting.subtitle");
     expect(messageList).toContain("HOME_QUICK_ACTIONS");
+    expect(messageList).toContain("HOME_DESTINATIONS");
     expect(messageList).toContain("getSuggestedPrompts(mode, 3)");
     expect(messageList).not.toContain("Document templates");
     expect(messageList).not.toContain("DOCUMENT_TEMPLATES");
@@ -36,9 +38,10 @@ describe("empty chat stays quiet and the composer clears the bottom nav", () => 
     const phone = navCss.match(
       /@media \(max-width: 1023px\) \{[\s\S]*?html\.chat-route\.primary-nav-route\.primary-nav-bar-visible \{[\s\S]*?\}/
     )?.[0];
-    expect(phone).toContain(
-      "--primary-nav-offset: calc(5.15rem + env(safe-area-inset-bottom, 0px))"
-    );
+    expect(phone).toContain("var(--primary-nav-height)");
+    expect(phone).toContain("0.5rem");
+    expect(phone).toContain("env(safe-area-inset-bottom");
+    expect(phone).not.toContain("5.15rem");
     const desktop = navCss.match(/@media \(min-width: 1024px\) \{[\s\S]*?\n\}/g) ?? [];
     expect(desktop.join("\n")).not.toContain("5.15rem");
   });
@@ -56,14 +59,17 @@ describe("empty chat stays quiet and the composer clears the bottom nav", () => 
         onSelectConversation: () => undefined,
       })
     );
-    expect(html).toContain("Welcome to Giga3");
-    expect(html).toContain("What would you like to do?");
+    expect(html).toMatch(/Good (morning|afternoon|evening)/);
+    expect(html).toContain("Ask anything — or pick up where you left off.");
     expect(html).toContain("Learn");
     expect(html).toContain("Research");
     expect(html).toContain("Create");
     expect(html).toContain("Code");
     expect(html).toContain("Continue");
     expect(html).toContain("JHS 2 Career Technology");
+    expect(html).toContain("Destinations");
+    expect(html).toContain("/gigalearn");
+    expect(html).toContain("/marketplace");
     expect(html).toContain("Try an example");
     expect(html).toContain("Open GigaSocial");
     expect(html).toContain("Summarize");
@@ -85,6 +91,7 @@ describe("empty chat stays quiet and the composer clears the bottom nav", () => 
         onQuickAction: () => undefined,
       })
     );
+    expect(html).not.toContain("Continue recent chats");
     expect(html).not.toContain("Continue where you left off");
   });
 });

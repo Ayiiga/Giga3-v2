@@ -1,7 +1,17 @@
 import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
 import { siteConfig } from "@/lib/site";
 
-export type ChatCreateCategoryId = "media" | "documents" | "ai" | "education" | "web";
+export type ChatCreateCategoryId =
+  | "media"
+  | "integrations"
+  | "web"
+  | "writing"
+  | "education"
+  | "coding"
+  | "research"
+  | "creative"
+  | "documents"
+  | "ai";
 
 export type ChatCreateActionId =
   | "media-unified"
@@ -9,6 +19,9 @@ export type ChatCreateActionId =
   | "media-photos"
   | "media-video"
   | "media-audio"
+  | "web-search"
+  | "connectors"
+  | "executive-assistant"
   | "web-link"
   | "doc-pdf"
   | "doc-research"
@@ -47,11 +60,14 @@ export type ChatCreateMenuSection = {
   items: ChatCreateMenuItem[];
 };
 
-export const CHAT_CREATE_SECTIONS: ChatCreateMenuSection[] = [
+/** Plus (+) menu — only attachment + search + connectors. */
+export const CHAT_PLUS_SECTIONS: ChatCreateMenuSection[] = [
   {
     id: "media",
     title: "Media",
     items: [
+      { id: "media-camera", label: "Camera", emoji: "📷", description: "Capture a photo", runtime: "ON DEVICE" },
+      { id: "media-photos", label: "Photos", emoji: "🖼", description: "One or more images", runtime: "ON DEVICE" },
       {
         id: "media-unified",
         label: "Media",
@@ -59,62 +75,70 @@ export const CHAT_CREATE_SECTIONS: ChatCreateMenuSection[] = [
         description: "Photos, video, camera, audio, files",
         runtime: "ON DEVICE",
       },
-      { id: "media-camera", label: "Camera", emoji: "📷", description: "Capture a photo", runtime: "ON DEVICE" },
-      { id: "media-photos", label: "Photos", emoji: "🖼", description: "One or more images", runtime: "ON DEVICE" },
-      { id: "media-video", label: "Videos", emoji: "🎥", description: "Attach a video", runtime: "ON DEVICE" },
-      { id: "media-audio", label: "Audio", emoji: "🎵", description: "Music or voice file", runtime: "ON DEVICE" },
+    ],
+  },
+  {
+    id: "integrations",
+    title: "Integrations",
+    items: [
+      {
+        id: "connectors",
+        label: "Connectors",
+        emoji: "🔌",
+        description: "Automation integrations",
+        runtime: "AI STUDIO",
+      },
+      {
+        id: "executive-assistant",
+        label: "Executive Assistant",
+        emoji: "🗂",
+        description: "Plan and run connected tasks",
+        runtime: "AI STUDIO",
+      },
     ],
   },
   {
     id: "web",
     title: "Web",
     items: [
-      { id: "web-link", label: "Read a link", emoji: "🔗", description: "Summarize a public page", runtime: "AI STUDIO" },
+      {
+        id: "web-search",
+        label: "Web Search",
+        emoji: "🌐",
+        description: "Turn on live web for this chat",
+        runtime: "AI STUDIO",
+      },
     ],
   },
+];
+
+/** Discover panel — writing, education, coding, research, creative tools. */
+export const CHAT_DISCOVER_SECTIONS: ChatCreateMenuSection[] = [
   {
-    id: "documents",
-    title: "Documents",
+    id: "writing",
+    title: "Writing & Documents",
     items: [
-      { id: "doc-pdf", label: "PDF", emoji: "📄", description: "PDF outline or analysis brief", runtime: "AI STUDIO" },
       {
-        id: "doc-research",
-        label: "Action Research",
-        emoji: "🔬",
-        description: "Research plan template",
+        id: "ai-document",
+        label: "AI Document Studio",
+        emoji: "📑",
+        description: "Open Document Studio",
         runtime: "AI STUDIO",
       },
       { id: "doc-essay", label: "Essay", emoji: "✍️", description: "Essay scaffold", runtime: "AI STUDIO" },
       { id: "doc-thesis", label: "Thesis", emoji: "🎓", description: "Graduate thesis structure", runtime: "AI STUDIO" },
-      { id: "doc-cv-resume", label: "CV / Resume", emoji: "💼", description: "Professional CV template", runtime: "AI STUDIO" },
-      { id: "doc-book", label: "Books", emoji: "📚", description: "Book outline", runtime: "AI STUDIO" },
-      { id: "doc-lesson-notes", label: "Lesson Notes", emoji: "📓", description: "Class notes template", runtime: "AI STUDIO" },
-      { id: "doc-coding", label: "Coding Project", emoji: "🧩", description: "Project README scaffold", runtime: "AI STUDIO" },
       {
-        id: "doc-programming",
-        label: "Programming File",
-        emoji: "💻",
-        description: "Source file draft",
-      },
-      { id: "doc-markdown", label: "Markdown", emoji: "📋", description: "Markdown document", runtime: "AI STUDIO" },
-      { id: "doc-notes", label: "Notes", emoji: "🗒", description: "Quick notes template", runtime: "AI STUDIO" },
-    ],
-  },
-  {
-    id: "ai",
-    title: "AI Creation",
-    items: [
-      { id: "ai-chat", label: "AI Chat", emoji: "💬", description: "Stay in chat", runtime: "AI STUDIO" },
-      {
-        id: "ai-image",
-        label: "AI Image",
-        emoji: "🖼",
-        description: "Create or edit an image in chat",
+        id: "doc-cv-resume",
+        label: "CV / Resume",
+        emoji: "💼",
+        description: "CV in chat — edit & export PDF/Word",
         runtime: "AI STUDIO",
       },
-      { id: "ai-video", label: "AI Video", emoji: "🎬", description: "Open Video AI", runtime: "AI STUDIO" },
-      { id: "ai-document", label: "AI Document", emoji: "📑", description: "Writing mode", runtime: "AI STUDIO" },
-      { id: "ai-coding", label: "AI Coding Assistant", emoji: "⚡", description: "Coding mode", runtime: "AI STUDIO" },
+      { id: "doc-book", label: "Books", emoji: "📚", description: "Book outline", runtime: "AI STUDIO" },
+      { id: "doc-pdf", label: "PDF", emoji: "📄", description: "PDF outline or analysis brief", runtime: "AI STUDIO" },
+      { id: "doc-markdown", label: "Markdown", emoji: "📋", description: "Markdown document", runtime: "AI STUDIO" },
+      { id: "doc-notes", label: "Notes", emoji: "🗒", description: "Quick notes template", runtime: "AI STUDIO" },
+      { id: "doc-lesson-notes", label: "Lesson Notes", emoji: "📓", description: "Class notes template", runtime: "AI STUDIO" },
     ],
   },
   {
@@ -123,12 +147,89 @@ export const CHAT_CREATE_SECTIONS: ChatCreateMenuSection[] = [
     items: [
       { id: "edu-assignment", label: "Assignment", emoji: "📌", description: "Assignment brief", runtime: "AI STUDIO" },
       { id: "edu-homework", label: "Homework", emoji: "🏠", description: "Homework planner", runtime: "AI STUDIO" },
-      { id: "edu-quiz", label: "Quiz", emoji: "❓", description: "Quiz template", runtime: "AI STUDIO" },
       { id: "edu-lesson-plan", label: "Lesson Plan", emoji: "📅", description: "Lesson objectives", runtime: "AI STUDIO" },
       { id: "edu-study-notes", label: "Study Notes", emoji: "📖", description: "Study notes scaffold", runtime: "AI STUDIO" },
+      { id: "edu-quiz", label: "Quiz", emoji: "❓", description: "Quiz template", runtime: "AI STUDIO" },
+    ],
+  },
+  {
+    id: "coding",
+    title: "Coding & Development",
+    items: [
+      { id: "ai-coding", label: "AI Coding Assistant", emoji: "⚡", description: "Coding mode", runtime: "AI STUDIO" },
+      { id: "doc-coding", label: "Coding Project", emoji: "🧩", description: "Project README scaffold", runtime: "AI STUDIO" },
+      {
+        id: "doc-programming",
+        label: "Programming File",
+        emoji: "💻",
+        description: "Source file draft",
+      },
+    ],
+  },
+  {
+    id: "research",
+    title: "Research & Productivity",
+    items: [
+      {
+        id: "doc-research",
+        label: "Action Research",
+        emoji: "🔬",
+        description: "Research plan template",
+        runtime: "AI STUDIO",
+      },
+      { id: "web-link", label: "Read a Link", emoji: "🔗", description: "Summarize a public page", runtime: "AI STUDIO" },
+      { id: "ai-chat", label: "AI Chat", emoji: "💬", description: "Stay in chat", runtime: "AI STUDIO" },
+    ],
+  },
+  {
+    id: "creative",
+    title: "Media & Creativity",
+    items: [
+      {
+        id: "ai-image",
+        label: "AI Image",
+        emoji: "🖼",
+        description: "Create or edit an image in chat",
+        runtime: "AI STUDIO",
+      },
+      { id: "ai-video", label: "AI Video", emoji: "🎬", description: "Open Video AI", runtime: "AI STUDIO" },
+      { id: "media-video", label: "Videos", emoji: "🎥", description: "Attach a video", runtime: "ON DEVICE" },
+      { id: "media-audio", label: "Audio", emoji: "🎵", description: "Music or voice file", runtime: "ON DEVICE" },
     ],
   },
 ];
+
+/**
+ * Legacy combined sections (Discover tools). Prefer CHAT_PLUS_SECTIONS /
+ * CHAT_DISCOVER_SECTIONS for new UI.
+ */
+export const CHAT_CREATE_SECTIONS: ChatCreateMenuSection[] = CHAT_DISCOVER_SECTIONS;
+
+const PLUS_ACTION_IDS = new Set(
+  CHAT_PLUS_SECTIONS.flatMap((section) => section.items.map((item) => item.id))
+);
+
+export function isChatPlusAction(action: ChatCreateActionId): boolean {
+  return PLUS_ACTION_IDS.has(action);
+}
+
+export function listDiscoverTools(): ChatCreateMenuItem[] {
+  return CHAT_DISCOVER_SECTIONS.flatMap((section) => section.items);
+}
+
+export function filterDiscoverTools(query: string): ChatCreateMenuSection[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return CHAT_DISCOVER_SECTIONS;
+  return CHAT_DISCOVER_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter(
+      (item) =>
+        item.label.toLowerCase().includes(q) ||
+        item.description.toLowerCase().includes(q) ||
+        item.id.toLowerCase().includes(q)
+    ),
+  })).filter((section) => section.items.length > 0);
+}
 
 const DOCUMENT_TEMPLATE_MAP: Partial<Record<ChatCreateActionId, DocumentTemplateId>> = {
   "doc-cv-resume": "resume",
@@ -139,17 +240,15 @@ const DOCUMENT_TEMPLATE_MAP: Partial<Record<ChatCreateActionId, DocumentTemplate
 };
 
 const INLINE_TEMPLATES: Partial<Record<ChatCreateActionId, string>> = {
-  "web-link":
-    "Please read this public link and summarize the key points: ",
-  "ai-image":
-    "Generate an image of: ",
+  "web-link": "Please read this public link and summarize the key points: ",
+  "web-search": "Search the live web for: ",
+  "ai-image": "Generate an image of: ",
   "doc-pdf":
-    "Help me draft or analyze a PDF document.\n\nTopic:\n\nKey sections:\n1.\n2.\n3.\n",
-  "doc-lesson-notes": "📓 Lesson notes\n\nTopic:\n\nKey points:\n\nQuestions:\n",
-  "doc-coding":
-    "🧩 Coding project\n\nProject name:\n\nGoals:\n\nStack:\n\nTasks:\n",
-  "doc-programming":
-    "💻 Programming file\n\nLanguage:\n\nPurpose:\n\n```\n// code here\n```\n",
+    "Create a polished document ready for PDF/Word export.\n\nTopic:\n\nKey sections:\n1.\n2.\n3.\n",
+  "doc-lesson-notes":
+    "Create lesson notes as a complete markdown document with headings and lists.\n\nTopic:\n\nKey points:\n\nQuestions:\n",
+  "doc-coding": "🧩 Coding project\n\nProject name:\n\nGoals:\n\nStack:\n\nTasks:\n",
+  "doc-programming": "💻 Programming file\n\nLanguage:\n\nPurpose:\n\n```\n// code here\n```\n",
   "doc-markdown": "# Markdown document\n\n## Section\n\n- Item one\n- Item two\n",
   "doc-notes": "Quick notes\n\nTopic:\n\nSummary:\n\nAction items:\n",
   "edu-assignment": "📌 Assignment\n\nSubject:\n\nDue date:\n\nTasks:\n1.\n2.\n",
@@ -164,6 +263,7 @@ export type ChatCreateRoute =
   | { kind: "template"; documentId: DocumentTemplateId }
   | { kind: "insert"; body: string }
   | { kind: "navigate"; href: string }
+  | { kind: "web-search" }
   | { kind: "noop" };
 
 export function resolveChatCreateRoute(action: ChatCreateActionId): ChatCreateRoute {
@@ -175,6 +275,18 @@ export function resolveChatCreateRoute(action: ChatCreateActionId): ChatCreateRo
     action === "media-audio"
   ) {
     return { kind: "media", action };
+  }
+
+  if (action === "web-search") {
+    return { kind: "web-search" };
+  }
+
+  if (action === "connectors") {
+    return { kind: "navigate", href: "/automation/?tab=integrations" };
+  }
+
+  if (action === "executive-assistant") {
+    return { kind: "navigate", href: "/automation/?tab=assistant" };
   }
 
   const documentId = DOCUMENT_TEMPLATE_MAP[action];
@@ -189,7 +301,7 @@ export function resolveChatCreateRoute(action: ChatCreateActionId): ChatCreateRo
     case "ai-video":
       return { kind: "navigate", href: siteConfig.links.video };
     case "ai-document":
-      return { kind: "navigate", href: `${siteConfig.links.dashboard}?category=writing` };
+      return { kind: "navigate", href: "/documents/" };
     case "ai-coding":
       return { kind: "navigate", href: `${siteConfig.links.dashboard}?category=coding` };
     default:

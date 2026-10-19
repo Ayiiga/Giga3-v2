@@ -78,10 +78,20 @@ export const ChatBanners = memo(function ChatBanners({
     setLowCreditDismissed(true);
   }
 
+  // Soft credit upsell for premium tools only — hide once a thread has messages
+  // so ordinary (credit-free) chat stays distraction-free on mobile.
+  const showCreditBanner =
+    showBalancePrompt && Boolean(balancePrompt) && !hasMessages;
+
   return (
     <div className="chat-banners-band shrink-0">
-      {showBalancePrompt && balancePrompt && (
-        <div className="border-b border-amber-200/50 px-3 py-2 sm:px-4">
+      {showCreditBanner && balancePrompt ? (
+        <div
+          className={cn(
+            "border-b border-amber-200/50 px-3 py-2 sm:px-4",
+            balancePrompt === "low" && "chat-banner-upsell"
+          )}
+        >
           <CreditPromptBanner
             variant={balancePrompt}
             credits={credits}
@@ -89,11 +99,13 @@ export const ChatBanners = memo(function ChatBanners({
             onDismiss={balancePrompt === "low" ? dismissLowCredit : undefined}
           />
         </div>
-      )}
+      ) : null}
       <div className={cn(hasMessages && "hidden sm:block")}>
         <UserLearningBanner interestProfileJson={interestProfileJson} />
       </div>
-      <ChatProviderBanner label={chatProviderLabel} usedFallback={usedFallback} />
+      <div className={cn(hasMessages && "hidden sm:block")}>
+        <ChatProviderBanner label={chatProviderLabel} usedFallback={usedFallback} />
+      </div>
     </div>
   );
 }, bannersPropsEqual);

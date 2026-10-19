@@ -68,7 +68,8 @@ export const GigaSocialGiftsHub = memo(function GigaSocialGiftsHub({
         </p>
         {hub.isOwner && hub.monetizationUnlocked === false ? (
           <p className="mt-2 text-xs text-muted">
-            Tips and ad boosts are open now. Affiliate and payout tools unlock at 500 fans.
+            Tips and ad boosts are open now. Affiliate is open to everyone; monetisation starts at 5
+            fans after you accept the rules; withdrawals unlock at 50 fans.
           </p>
         ) : null}
       </div>

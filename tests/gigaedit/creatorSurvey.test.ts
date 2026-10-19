@@ -53,7 +53,9 @@ import {
   markSurveyDismissed,
   markSurveySubmitted,
   offerCreatorSurvey,
+  requestCreatorSurveyDismiss,
   resolveStarterFromNotes,
+  shouldAutoOfferCreatorSurvey,
   subscribeCreatorSurveyOffers,
   type CreatorSurveyAnswers,
 } from "../../web/lib/gigaedit/creatorSurvey";
@@ -395,6 +397,7 @@ describe("GigaEdits creator survey — offer bus & UI", () => {
   });
 
   it("does not auto-open survey when share was cancelled", async () => {
+    expect(shouldAutoOfferCreatorSurvey("cancelled")).toBe(false);
     renderHost();
     await act(async () => {
       offerCreatorSurvey({
@@ -405,6 +408,25 @@ describe("GigaEdits creator survey — offer bus & UI", () => {
       });
     });
     expect(host.textContent).not.toContain("Help improve GigaEdits");
+  });
+
+  it("requestCreatorSurveyDismiss closes an open auto-offered survey without submit", async () => {
+    renderHost();
+    await act(async () => {
+      offerCreatorSurvey({
+        projectId: "ge_dismiss_bus",
+        starterId: "hook-reel",
+        deviceSaveOutcome: "downloaded",
+        source: "publish_save",
+      });
+    });
+    expect(host.textContent).toContain("Help improve GigaEdits");
+    await act(async () => {
+      requestCreatorSurveyDismiss();
+    });
+    expect(host.textContent).not.toContain("Help improve GigaEdits");
+    expect(submitMock).not.toHaveBeenCalled();
+    expect(isSurveyAutoPromptBlocked("ge_dismiss_bus")).toBe(true);
   });
 
   it("does not auto-prompt twice for repeated post-export callbacks", async () => {
@@ -487,6 +509,13 @@ describe("GigaEdits creator survey — wiring & regressions", () => {
 
     expect(publish).toContain("offerCreatorSurvey");
     expect(publish).toContain('source: "publish_save"');
+    expect(publish).toContain("requestCreatorSurveyDismiss");
+    const saveFn = publish.slice(
+      publish.indexOf("async function saveToDevice"),
+      publish.indexOf("async function shareExternal")
+    );
+    expect(saveFn).toContain("offerCreatorSurvey");
+    expect(saveFn).toContain("shouldAutoOfferCreatorSurvey");
     const shareFn = publish.slice(
       publish.indexOf("async function shareExternal"),
       publish.indexOf("return (")

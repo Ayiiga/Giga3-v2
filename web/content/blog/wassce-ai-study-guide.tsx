@@ -1,4 +1,5 @@
 import {
+  ArticleFigure,
   ArticleH2,
   ArticleH3,
   ArticleLink,
@@ -43,7 +44,13 @@ function ArticleContent() {
         teachers. Repeat daily.
       </Prose>
 
-      <ArticleH2 id="practice">Practice questions and quizzes</ArticleH2>
+      
+      <ArticleFigure
+        src="/images/blog/support-students-group-study.jpg"
+        alt="Ghanaian students revising together with shared notes"
+        caption="AI helps most when it sits inside a real revision habit."
+      />
+<ArticleH2 id="practice">Practice questions and quizzes</ArticleH2>
       <Prose>
         Request WASSCE-style questions for Core Mathematics, Integrated Science, English Language,
         Social Studies, and your electives. Specify difficulty and time limits to simulate exam
@@ -51,7 +58,13 @@ function ArticleContent() {
       </Prose>
 
       <ArticleH2 id="subjects">Subject-by-subject support</ArticleH2>
-      <ArticleH3>Mathematics</ArticleH3>
+      
+      <ArticleFigure
+        src="/images/blog/wassce-ai-study.jpg"
+        alt="Student revising under a desk lamp with an open notebook"
+        caption="Subject tactics still need past questions and marking schemes."
+      />
+<ArticleH3>Mathematics</ArticleH3>
       <Prose>
         Ask for step-by-step methods, then solve similar problems independently. Show working — exam
         markers reward process, not just final answers.

@@ -1,7 +1,10 @@
 "use client";
 
 import { clearAllClientAuth } from "@/lib/auth";
-import { toUserFacingError } from "@/lib/errors/userMessage";
+import {
+  logClientDiagnostic,
+  toUserFacingError,
+} from "@/lib/errors/userMessage";
 import { Component, type ReactNode } from "react";
 import { Button, ButtonLink } from "@/components/ui/Button";
 
@@ -43,23 +46,16 @@ function friendlyMessage(message: string): string {
     );
   }
   if (message.includes("Could not find public function")) {
-    return (
-      "The chat backend is still updating. This usually means the latest Convex deploy " +
-      "has not finished yet. Wait a minute, refresh, or sign in again. If it persists, " +
-      "confirm GitHub Actions “Deploy Convex backend” succeeded."
-    );
+    return "Chat is updating. Wait a moment, then refresh or sign in again.";
   }
   if (
     message.includes("exceeded the free plan limits") ||
     message.includes("deployments have been disabled")
   ) {
-    return (
-      "Giga3 is running on Supabase for chat history and profile data. AI replies may be " +
-      "limited until Convex billing is restored. Refresh the page — chat should still open."
-    );
+    return "Chat is temporarily limited. Refresh the page and try again shortly.";
   }
   if (message.includes("NEXT_PUBLIC_CONVEX_URL")) {
-    return "Chat is misconfigured: missing NEXT_PUBLIC_CONVEX_URL at build time. Rebuild with GitHub Actions or Cloudflare env set.";
+    return "Chat is temporarily unavailable. Please refresh and try again.";
   }
   return toUserFacingError(message);
 }
@@ -79,7 +75,12 @@ export class ChatErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error) {
+    // Keep stacks / Request IDs in developer logs only — never in the UI.
     console.error("[ChatErrorBoundary]", error);
+    logClientDiagnostic("chat_error_boundary", {
+      name: error.name,
+      message: error.message?.slice(0, 240),
+    });
     if (isUnauthorizedMessage(error.message || "")) {
       clearAllClientAuth();
     }

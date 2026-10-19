@@ -23,13 +23,19 @@ export function isBillingRelatedError(message: string): boolean {
   );
 }
 
-/** Proactive balance warning — null when no prompt is needed. */
+/**
+ * Proactive balance warning for premium ops (image/video) — null when not needed.
+ * Ordinary text chat is credit-free, so a zero balance must not block chat or
+ * imply a per-message chat charge.
+ */
 export function creditBalancePrompt(
   credits: number | null,
-  minCost = CHAT_CREDIT_COST
+  minCost = CREDIT_COSTS.image
 ): Exclude<CreditPromptVariant, "error" | "subscribe"> | null {
   if (credits === null) return null;
-  if (credits < minCost) return "empty";
+  // Soft upsell only — never treat chat as requiring credits.
+  if (credits <= 0) return "low";
+  if (credits < minCost) return "low";
   if (credits <= LOW_CREDIT_THRESHOLD) return "low";
   return null;
 }
@@ -53,11 +59,11 @@ export function creditPromptMessage(args: {
   }
 
   if (variant === "empty") {
-    return `You're out of credits (${creditCost} per message). Subscribe for monthly refills — **${proUpsell}** at /subscribe/ — or buy a credit pack to continue.`;
+    return `You're out of credits for premium generation (about ${creditCost} per image). Ordinary chat stays free — subscribe for monthly refills (**${proUpsell}** at /subscribe/) or buy a credit pack for images and video.`;
   }
 
   if (variant === "low" && credits != null) {
-    return `You have ${credits} credit${credits === 1 ? "" : "s"} left. Subscribe (**${proUpsell}**) or top up before you run out.`;
+    return `You have ${credits} credit${credits === 1 ? "" : "s"} left for images and other premium tools. Ordinary chat stays free — subscribe (**${proUpsell}**) or top up when you need generation.`;
   }
 
   return `Subscribe (${proUpsell}) or buy credits to continue using Giga3 AI.`;

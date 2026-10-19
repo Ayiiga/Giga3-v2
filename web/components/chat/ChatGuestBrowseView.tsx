@@ -70,7 +70,7 @@ export const ChatGuestBrowseView = memo(function ChatGuestBrowseView() {
           </div>
           <div className="min-w-0">
             <h1 className="truncate text-base font-semibold text-foreground">Giga3 AI Chat</h1>
-            <p className="truncate text-xs text-muted">Guest browse — sign in to send prompts</p>
+            <p className="truncate text-sm text-muted">Guest browse — sign in to send prompts</p>
           </div>
         </div>
         <ButtonLink href="/chat/login?next=%2Fchat" size="sm" className="min-h-11 shrink-0">
@@ -79,7 +79,7 @@ export const ChatGuestBrowseView = memo(function ChatGuestBrowseView() {
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 overflow-y-auto px-6 py-10 text-center">
-        <p className="max-w-md text-sm text-muted">
+        <p className="max-w-md text-base leading-relaxed text-muted">
           Ask to open GigaSocial, GigaEdits, GigaLearn, Media Studio, or another Giga3 app.
           Sending AI prompts requires an account.
         </p>
@@ -89,7 +89,7 @@ export const ChatGuestBrowseView = memo(function ChatGuestBrowseView() {
               key={app.id}
               href={app.href}
               variant="outline"
-              className="min-h-11"
+              className="min-h-11 text-base"
             >
               Open {app.label}
             </ButtonLink>
@@ -99,7 +99,7 @@ export const ChatGuestBrowseView = memo(function ChatGuestBrowseView() {
         {suggest ? (
           <div className="mt-2 w-full max-w-md text-left">
             <p className="mb-2 text-sm text-muted">You: {suggest.user}</p>
-            <p className="text-sm text-foreground">
+            <p className="text-base leading-relaxed text-foreground">
               {suggest.products
                 ? `Open ${suggest.products.product.label} — ${suggest.products.product.hint}`
                 : suggest.answer}
@@ -122,12 +122,12 @@ export const ChatGuestBrowseView = memo(function ChatGuestBrowseView() {
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             placeholder="Try “Open GigaSocial” or sign in to chat…"
-            className="flex w-full min-h-12 items-center rounded-2xl border border-border bg-muted/20 px-4 text-sm text-foreground outline-none focus:ring-2 focus:ring-accent/30"
+            className="flex w-full min-h-12 items-center rounded-2xl border border-border bg-muted/20 px-4 text-base text-foreground outline-none focus:ring-2 focus:ring-accent/30"
           />
         </form>
         <button
           type="button"
-          className="mt-2 w-full min-h-11 text-sm font-medium text-accent"
+          className="mt-2 w-full min-h-11 text-base font-medium text-accent"
           onClick={() => setAuthOpen(true)}
         >
           Sign in to chat with Giga3

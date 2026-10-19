@@ -38,9 +38,10 @@ describe("productPageContent", () => {
     expect(AI_STUDIO_PAGE.secondaryHref).toBe("/video");
   });
 
-  it("routes media shell to the app and gigalearn shell to BECE prep guide", () => {
+  it("routes media shell to the app and gigalearn shell to Academy", () => {
     expect(MEDIA_PAGE_SHELL.primaryHref).toBe("/media");
-    expect(GIGALEARN_PAGE_SHELL.primaryHref).toBe("/ai-for-bece-wassce-ghana");
+    expect(GIGALEARN_PAGE_SHELL.primaryHref).toBe("/gigalearn/academy/");
+    expect(GIGALEARN_PAGE_SHELL.secondaryHref).toBe("/ai-for-bece-wassce-ghana");
   });
 
   it("loads Media Studio app first on /media (SEO header is sr-only)", () => {

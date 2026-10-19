@@ -55,6 +55,12 @@ export type GigaSocialFeatureFlags = {
   enablePersonalAssistant: boolean;
   /** GigaSocial posts as creative templates for AI Studio. */
   enableUseAsTemplate: boolean;
+  /**
+   * Direct messaging UI chrome (Phase 2D). Default OFF.
+   * Client flag is rollout control only — Convex `GIGASOCIAL_DM_ENABLED`
+   * still gates every server handler. Never treat this as authorization.
+   */
+  enableDirectMessages: boolean;
 };
 
 const STORAGE_KEY = "giga3_gigasocial_flags";
@@ -97,6 +103,8 @@ export const GIGASOCIAL_FEATURE_DEFAULTS: GigaSocialFeatureFlags = {
   enableLoyaltyLevels: envFlag("NEXT_PUBLIC_GIGASOCIAL_LOYALTY", true),
   enablePersonalAssistant: envFlag("NEXT_PUBLIC_GIGASOCIAL_PERSONAL_ASSISTANT", true),
   enableUseAsTemplate: envFlag("NEXT_PUBLIC_GIGASOCIAL_USE_AS_TEMPLATE", true),
+  /** Default false — DM UI stays hidden until explicit rollout. */
+  enableDirectMessages: envFlag("NEXT_PUBLIC_GIGASOCIAL_DM", false),
 };
 
 export function readGigaSocialFeatureOverrides(): Partial<GigaSocialFeatureFlags> {

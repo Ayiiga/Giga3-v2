@@ -1,5 +1,17 @@
 import { stripConvexErrorNoise } from "@/lib/errors/userMessage";
 
+export const INVALID_CREDENTIALS_MESSAGE = "Incorrect email or password.";
+
+export const INVALID_CREDENTIALS_RESET_HINT =
+  "Forgot your password? Use Forgot password above to reset it.";
+
+/** Full public copy for a failed password sign-in with invalid credentials. */
+export const INVALID_CREDENTIALS_PUBLIC_MESSAGE = `${INVALID_CREDENTIALS_MESSAGE} ${INVALID_CREDENTIALS_RESET_HINT}`;
+
+export function isInvalidCredentialsMessage(message: string): boolean {
+  return /incorrect email or password/i.test(message);
+}
+
 /**
  * User-facing auth errors. Strips Convex wrappers, stack paths, tokens and JWTs
  * so a failed sign-in cannot leak Request IDs or server file paths into the UI.
@@ -17,12 +29,23 @@ export function publicAuthErrorMessage(
   if (/token=|password=/i.test(raw)) {
     return fallback;
   }
+
   const cleaned = stripConvexErrorNoise(raw);
-  if (!cleaned.trim() || cleaned.length > 180) {
+  if (!cleaned.trim()) {
     return fallback;
   }
-  // Never surface absolute/relative server paths from stack frames that survived stripping.
-  if (/\.ts:\d+|convex\/|Request ID|Uncaught\s+\w*Error/i.test(cleaned)) {
+
+  if (isInvalidCredentialsMessage(cleaned)) {
+    return INVALID_CREDENTIALS_PUBLIC_MESSAGE;
+  }
+
+  // Preserve short field / product validation messages; never show internals.
+  if (
+    /\.ts:\d+|convex\/|Request ID|Uncaught\s+\w*Error|authPasswordActions|\[CONVEX/i.test(
+      cleaned
+    ) ||
+    cleaned.length > 180
+  ) {
     return fallback;
   }
   return cleaned;

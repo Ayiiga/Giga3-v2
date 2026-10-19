@@ -72,7 +72,7 @@ export async function resolveVideoTextPipeline(
         guidanceScale: 7.5,
         enableSafetyChecker: true,
       },
-      { allowOpenAi: true }
+      { allowOpenAi: false }
     );
     const persisted = await persistImageUrlIfNeeded(ctx, imageResult.imageUrl);
     const videoPrompt = buildVideoPromptWithOptionalImage(

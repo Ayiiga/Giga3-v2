@@ -59,20 +59,70 @@ function pickRecorderMimeType(): string {
   return "video/webm";
 }
 
-function waitForEvent(target: EventTarget, event: string): Promise<void> {
+function mediaErrorMessage(video: HTMLVideoElement): string {
+  const code = video.error?.code;
+  const unsupported =
+    typeof MediaError !== "undefined" ? MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED : 4;
+  const decode = typeof MediaError !== "undefined" ? MediaError.MEDIA_ERR_DECODE : 3;
+  const network = typeof MediaError !== "undefined" ? MediaError.MEDIA_ERR_NETWORK : 2;
+  if (code === unsupported) {
+    return "This video format cannot be edited in-browser. Try MP4 (H.264) or a shorter export.";
+  }
+  if (code === decode) {
+    return "Could not decode this video for editing. Try re-exporting it as MP4, or split on a desktop browser.";
+  }
+  if (code === network) {
+    return "Could not read the video file. Close other previews and try again.";
+  }
+  return "Could not load video for trimming.";
+}
+
+function waitForEvent(
+  target: HTMLVideoElement,
+  event: string,
+  timeoutMs = 20_000
+): Promise<void> {
   return new Promise((resolve, reject) => {
+    let settled = false;
     const onOk = () => {
+      if (settled) return;
+      settled = true;
       cleanup();
       resolve();
     };
     const onErr = () => {
+      if (settled) return;
+      settled = true;
       cleanup();
-      reject(new Error("Could not load video for trimming."));
+      reject(new Error(mediaErrorMessage(target)));
+    };
+    const onTimeout = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(new Error("Timed out loading video for trimming. Try again on Wi‑Fi or a shorter clip."));
     };
     const cleanup = () => {
       target.removeEventListener(event, onOk);
       target.removeEventListener("error", onErr);
+      window.clearTimeout(timer);
     };
+    const timer = window.setTimeout(onTimeout, timeoutMs);
+    if (event === "loadedmetadata" && target.readyState >= 1) {
+      window.clearTimeout(timer);
+      resolve();
+      return;
+    }
+    if (event === "loadeddata" && target.readyState >= 2) {
+      window.clearTimeout(timer);
+      resolve();
+      return;
+    }
+    if (event === "canplay" && target.readyState >= 3) {
+      window.clearTimeout(timer);
+      resolve();
+      return;
+    }
     target.addEventListener(event, onOk, { once: true });
     target.addEventListener("error", onErr, { once: true });
   });
@@ -89,6 +139,47 @@ function getCaptureStream(video: HTMLVideoElement): MediaStream | null {
   return null;
 }
 
+async function seekVideo(video: HTMLVideoElement, timeSec: number): Promise<void> {
+  const target = Math.max(0, Math.min(timeSec, Number.isFinite(video.duration) ? video.duration : timeSec));
+  if (Math.abs(video.currentTime - target) < 0.05) return;
+
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      // Some Android WebViews only seek reliably after canplay.
+      if (video.readyState < 2) {
+        await waitForEvent(video, "loadeddata", 15_000);
+      }
+      const seeked = waitForEvent(video, "seeked", 12_000);
+      video.currentTime = target;
+      await seeked;
+      return;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error("Could not seek video.");
+      await new Promise((resolve) => window.setTimeout(resolve, 120 * (attempt + 1)));
+    }
+  }
+  throw lastError ?? new Error("Could not seek video for trimming.");
+}
+
+function mountHiddenVideo(video: HTMLVideoElement): () => void {
+  video.setAttribute("playsinline", "true");
+  video.setAttribute("webkit-playsinline", "true");
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = "auto";
+  // Keep off-screen but in the document — required for captureStream on many Android browsers.
+  video.style.cssText =
+    "position:fixed;width:2px;height:2px;opacity:0;pointer-events:none;left:-9999px;top:0;";
+  document.body.appendChild(video);
+  return () => {
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
+    video.remove();
+  };
+}
+
 /**
  * Re-encodes a segment of a local video file to meet the GigaSocial duration cap.
  * Uses MediaRecorder + captureStream (best-effort; preserves audio when the browser allows).
@@ -99,6 +190,8 @@ export async function trimVideoFile(
   options?: {
     onProgress?: (percent: number) => void;
     signal?: AbortSignal;
+    /** Reuse an existing object URL (e.g. composer preview) instead of creating another. */
+    objectUrl?: string;
   }
 ): Promise<{ file: File; durationSec: number }> {
   if (typeof window === "undefined" || typeof MediaRecorder === "undefined") {
@@ -110,20 +203,37 @@ export async function trimVideoFile(
     throw new Error("Invalid trim range. Choose a shorter clip and try again.");
   }
 
-  const url = URL.createObjectURL(file);
+  const ownsUrl = !options?.objectUrl;
+  const url = options?.objectUrl ?? URL.createObjectURL(file);
   const video = document.createElement("video");
-  video.playsInline = true;
-  video.preload = "auto";
-  video.crossOrigin = "anonymous";
+  // Never set crossOrigin on blob: URLs — it breaks load/seek on Android Chrome/WebView.
+  const unmount = mountHiddenVideo(video);
   video.src = url;
 
   let stream: MediaStream | null = null;
 
   try {
-    await waitForEvent(video, "loadedmetadata");
+    if (options?.signal?.aborted) {
+      throw new Error("Trim cancelled.");
+    }
+
+    await waitForEvent(video, "loadedmetadata", 25_000);
+    if (!Number.isFinite(video.duration) || video.duration <= 0) {
+      // Force a duration probe used by some mobile browsers.
+      try {
+        video.currentTime = 1e101;
+        await waitForEvent(video, "timeupdate", 8_000);
+        video.currentTime = 0;
+        await waitForEvent(video, "seeked", 8_000);
+      } catch {
+        /* fall through */
+      }
+    }
     if (!Number.isFinite(video.duration) || video.duration <= 0) {
       throw new Error("Could not read this video length. Try another file.");
     }
+
+    await waitForEvent(video, "loadeddata", 20_000).catch(() => undefined);
 
     stream = getCaptureStream(video);
     if (!stream || stream.getVideoTracks().length === 0) {
@@ -132,10 +242,12 @@ export async function trimVideoFile(
       );
     }
 
+    // Lower bitrate for large sources so mobile encode is less likely to OOM.
+    const largeSource = file.size > 80 * 1024 * 1024;
     const mimeType = pickRecorderMimeType();
     const recorder = new MediaRecorder(stream, {
       mimeType,
-      videoBitsPerSecond: 5_000_000,
+      videoBitsPerSecond: largeSource ? 2_500_000 : 5_000_000,
       audioBitsPerSecond: 128_000,
     });
     const chunks: BlobPart[] = [];
@@ -152,11 +264,11 @@ export async function trimVideoFile(
       };
     });
 
+    await seekVideo(video, range.startSec);
+
     // Prefer unmuted capture so audio tracks are recorded when the browser allows.
     video.muted = false;
     video.volume = 1;
-    video.currentTime = range.startSec;
-    await waitForEvent(video, "seeked");
 
     recorder.start(200);
     try {
@@ -234,9 +346,9 @@ export async function trimVideoFile(
     return { file: trimmed, durationSec: clipDuration };
   } finally {
     stream?.getTracks().forEach((track) => track.stop());
-    video.pause();
-    video.removeAttribute("src");
-    video.load();
-    URL.revokeObjectURL(url);
+    unmount();
+    if (ownsUrl) {
+      URL.revokeObjectURL(url);
+    }
   }
 }

@@ -9,6 +9,7 @@ import {
   SIMPLE_PRODUCT_TYPES,
   formatGhs,
 } from "@/lib/marketplace/catalog";
+import { analyticsRangePreset } from "@/lib/marketplace/salesAnalytics";
 import { getSessionToken } from "@/lib/auth";
 import { formatCurrentDateTime, formatTimestampDateTime } from "@/lib/datetime";
 import {
@@ -20,7 +21,7 @@ import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 
 function RevenueStatsSkeleton() {
   return (
@@ -58,7 +59,31 @@ function MarketplaceSellInner() {
     api.marketplace.getCreatorRevenue,
     sessionToken ? { sessionToken } : "skip"
   );
+  const [analyticsPreset, setAnalyticsPreset] = useState<"7d" | "30d" | "90d" | "all">("30d");
+  // Memoize so Date.now()-based presets are not new useQuery args every render
+  // (that loop surfaces as React minified error #301 on /marketplace/sell).
+  const analyticsRange = useMemo(
+    () => analyticsRangePreset(analyticsPreset),
+    [analyticsPreset]
+  );
+  const analytics = useQuery(
+    api.marketplace.getCreatorSalesAnalytics,
+    sessionToken
+      ? {
+          sessionToken,
+          fromMs: analyticsRange.fromMs,
+          toMs: analyticsRange.toMs,
+        }
+      : "skip"
+  );
   const uploadStatus = useQuery(api.marketplace.getUploadStatus, {});
+  const [editingId, setEditingId] = useState<Id<"marketplaceListings"> | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editPriceGhs, setEditPriceGhs] = useState(20);
+  const [editPreviewText, setEditPreviewText] = useState("");
+  const [editCategory, setEditCategory] = useState<string>(SIMPLE_CATEGORIES[0]);
+  const [showCreatePreview, setShowCreatePreview] = useState(false);
 
   const upsertProfile = useMutation(api.creatorProfiles.upsertProfile);
   const submitCreatorVerification = useMutation(api.creatorProfiles.submitCreatorVerification);
@@ -215,6 +240,47 @@ function MarketplaceSellInner() {
     setMessage(result.message);
   }
 
+  function beginEdit(listing: NonNullable<typeof listings>[number]) {
+    setEditingId(listing._id);
+    setEditTitle(listing.title);
+    setEditDescription(listing.description);
+    setEditPriceGhs(listing.priceGhs);
+    setEditPreviewText(listing.previewText ?? "");
+    setEditCategory(listing.category);
+    setMessage(null);
+    setError(null);
+  }
+
+  async function saveEdit() {
+    if (!editingId) return;
+    setError(null);
+    try {
+      await updateListing({
+        sessionToken,
+        listingId: editingId,
+        title: editTitle,
+        description: editDescription,
+        priceGhs: editPriceGhs,
+        previewText: editPreviewText || undefined,
+        category: editCategory,
+      });
+      setMessage("Listing updated.");
+      setEditingId(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not update listing.");
+    }
+  }
+
+  async function unpublishListing(listingId: Id<"marketplaceListings">) {
+    setError(null);
+    try {
+      await updateListing({ sessionToken, listingId, status: "draft" });
+      setMessage("Listing unpublished (saved as draft).");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not unpublish.");
+    }
+  }
+
   async function publishExistingListing(listingId: Id<"marketplaceListings">) {
     setError(null);
     try {
@@ -316,21 +382,145 @@ function MarketplaceSellInner() {
           <p className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-700">{error}</p>
         )}
 
-        {revenue?.profile ? (
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border bg-card p-5">
-              <div className="text-sm text-muted">Payout balance</div>
-              <div className="text-2xl font-bold">{formatGhs(revenue.profile.payoutBalanceGhs)}</div>
+        {analytics?.summary ? (
+          <section className="space-y-3" aria-labelledby="sales-analytics-heading">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <h2 id="sales-analytics-heading" className="text-lg font-semibold">
+                Sales analytics
+              </h2>
+              <label className="text-sm">
+                <span className="sr-only">Date range</span>
+                <select
+                  value={analyticsPreset}
+                  onChange={(e) => setAnalyticsPreset(e.target.value as typeof analyticsPreset)}
+                  className="rounded-xl border border-border bg-card px-3 py-2"
+                  aria-label="Sales date range"
+                >
+                  <option value="7d">Last 7 days</option>
+                  <option value="30d">Last 30 days</option>
+                  <option value="90d">Last 90 days</option>
+                  <option value="all">All time</option>
+                </select>
+              </label>
             </div>
-            <div className="rounded-2xl border bg-card p-5">
-              <div className="text-sm text-muted">Total sales</div>
-              <div className="text-2xl font-bold">{revenue.profile.totalSales}</div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-2xl border bg-card p-4">
+                <div className="text-sm text-muted">Gross sales</div>
+                <div className="text-xl font-bold tabular-nums">
+                  {formatGhs(analytics.summary.grossSalesGhs)}
+                </div>
+              </div>
+              <div className="rounded-2xl border bg-card p-4">
+                <div className="text-sm text-muted">Purchases</div>
+                <div className="text-xl font-bold tabular-nums">
+                  {analytics.summary.purchaseCount}
+                </div>
+              </div>
+              <div className="rounded-2xl border bg-card p-4">
+                <div className="text-sm text-muted">Platform fees</div>
+                <div className="text-xl font-bold tabular-nums">
+                  {formatGhs(analytics.summary.platformFeesGhs)}
+                </div>
+              </div>
+              <div className="rounded-2xl border bg-card p-4">
+                <div className="text-sm text-muted">Your earnings</div>
+                <div className="text-xl font-bold tabular-nums">
+                  {formatGhs(analytics.summary.creatorEarningsGhs)}
+                </div>
+              </div>
             </div>
-            <div className="rounded-2xl border bg-card p-5">
-              <div className="text-sm text-muted">Earnings</div>
-              <div className="text-2xl font-bold">{formatGhs(revenue.profile.totalEarningsGhs)}</div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border bg-card p-4">
+                <div className="text-sm text-muted">Payout balance (manual)</div>
+                <div className="text-xl font-bold tabular-nums">
+                  {formatGhs(analytics.summary.payoutBalanceGhs)}
+                </div>
+              </div>
+              <div className="rounded-2xl border bg-card p-4">
+                <div className="text-sm text-muted">Lifetime earnings</div>
+                <div className="text-xl font-bold tabular-nums">
+                  {formatGhs(analytics.summary.lifetimeEarningsGhs)}
+                </div>
+              </div>
             </div>
-          </div>
+            <p className="text-xs text-muted">
+              Metrics use successful Paystack fulfilments only (pending/failed charges are excluded).
+              Refunds are not modeled in the current data. Payout requests are manual ops records —
+              automated bank splits are not claimed.
+            </p>
+            {analytics.productSummaries.length > 0 ? (
+              <div className="rounded-2xl border bg-card p-4 sm:p-5">
+                <h3 className="text-sm font-semibold">By product</h3>
+                <ul className="mt-3 space-y-2 text-sm">
+                  {analytics.productSummaries.slice(0, 10).map((row) => (
+                    <li
+                      key={row.listingId}
+                      className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-2 last:border-0 last:pb-0"
+                    >
+                      <span className="min-w-0">
+                        <span className="font-medium">{row.title}</span>
+                        <span className="text-muted"> · {row.purchaseCount} sales</span>
+                      </span>
+                      <span className="tabular-nums">
+                        {formatGhs(row.grossGhs)} gross · {formatGhs(row.earningsGhs)} earned
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {analytics.recentSales.length > 0 ? (
+              <div className="rounded-2xl border bg-card p-4 sm:p-5">
+                <h3 className="text-sm font-semibold">Recent sales</h3>
+                <ul className="mt-3 space-y-2 text-sm">
+                  {analytics.recentSales.slice(0, 8).map((sale) => (
+                    <li
+                      key={sale._id}
+                      className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-2 last:border-0 last:pb-0"
+                    >
+                      <span className="text-muted">
+                        {formatTimestampDateTime(sale.createdAt)} · {sale.listingTitle}
+                      </span>
+                      <span className="tabular-nums">
+                        {formatGhs(sale.amountGhs)} · earned {formatGhs(sale.creatorEarningsGhs)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {analytics.payouts.length > 0 ? (
+              <div className="rounded-2xl border bg-card p-4 sm:p-5">
+                <h3 className="text-sm font-semibold">Payout requests (manual)</h3>
+                <ul className="mt-3 space-y-2 text-sm">
+                  {analytics.payouts.slice(0, 8).map((payout) => (
+                    <li
+                      key={payout._id}
+                      className="flex flex-wrap items-center justify-between gap-2"
+                    >
+                      <span className="capitalize text-muted">
+                        {payout.status} · {formatTimestampDateTime(payout.createdAt)}
+                      </span>
+                      <span className="font-medium tabular-nums">{formatGhs(payout.amountGhs)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {revenue?.profile && revenue.profile.payoutBalanceGhs >= 50 ? (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  requestPayout({
+                    sessionToken,
+                    amountGhs: revenue.profile.payoutBalanceGhs,
+                  }).then(() => setMessage("Payout requested (pending ops review)."))
+                }
+              >
+                Request payout
+              </Button>
+            ) : null}
+          </section>
         ) : sessionToken ? (
           <RevenueStatsSkeleton />
         ) : null}
@@ -360,49 +550,68 @@ function MarketplaceSellInner() {
           />
           <div className="mt-4 flex flex-wrap gap-3">
             <Button onClick={saveProfile}>Save profile</Button>
-            {revenue?.profile && revenue.profile.payoutBalanceGhs >= 50 && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  requestPayout({ sessionToken, amountGhs: revenue.profile.payoutBalanceGhs }).then(() =>
-                    setMessage("Payout requested.")
-                  )
-                }
-              >
-                Request payout
-              </Button>
-            )}
+            {profile?.handle ? (
+              <ButtonLink href={`/creator/?handle=${encodeURIComponent(profile.handle)}`} variant="secondary">
+                View storefront
+              </ButtonLink>
+            ) : null}
           </div>
         </section>
 
-        <section className="rounded-2xl border bg-card p-6">
+        <section className="rounded-2xl border bg-card p-4 sm:p-6">
           <h2 className="text-lg font-semibold">Identity verification</h2>
           <p className="mt-2 text-sm text-muted">
-            Marketplace registration requires your national ID, an ID photo, and current GPS
-            coordinates within Ghana. Verification runs automatically when you submit.
+            Selling requires your Ghana national ID, an ID photo, and GPS within Ghana. Location is
+            used only for this check and is never shown on public listings.
           </p>
           <p className="mt-2 text-sm font-medium capitalize text-foreground">
-            Status: {verificationStatus.replace(/_/g, " ")}
+            Status:{" "}
+            {verificationStatus === "approved"
+              ? "Verified"
+              : verificationStatus === "rejected"
+                ? "Needs resubmission"
+                : verificationStatus === "pending"
+                  ? "Incomplete — resubmit required"
+                  : "Not started"}
             {profile?.verificationSubmittedAt
-              ? ` · submitted ${formatTimestampDateTime(profile.verificationSubmittedAt)}`
+              ? ` · last attempt ${formatTimestampDateTime(profile.verificationSubmittedAt)}`
               : ""}
           </p>
           {profile?.nationalIdMasked && (
             <p className="mt-1 text-sm text-muted">ID on file: {profile.nationalIdMasked}</p>
           )}
 
+          {verificationStatus === "rejected" && (
+            <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">
+              {profile?.verificationRejectionReason ||
+                "Verification was rejected. Update your ID document and Ghana GPS location, then resubmit."}
+            </p>
+          )}
+
+          {verificationStatus === "pending" && (
+            <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+              Verification is incomplete. Submit your national ID, document photo, and Ghana GPS
+              below for automatic approval — listings stay unpublished until that succeeds. If
+              automatic checks keep failing, email{" "}
+              <a className="font-semibold underline" href="mailto:support@giga3ai.com">
+                support@giga3ai.com
+              </a>{" "}
+              for help. We never mark creators verified without a successful server-side check.
+            </p>
+          )}
+
           {(verificationStatus === "none" ||
             verificationStatus === "rejected" ||
             verificationStatus === "pending") && (
-            <div className="mt-4 grid gap-4">
+            <div className="mt-4 grid gap-3">
               <input
                 value={nationalIdNumber}
                 onChange={(e) => setNationalIdNumber(e.target.value)}
                 placeholder="National ID number"
-                className="rounded-xl border px-4 py-3"
+                className="min-h-11 rounded-xl border px-4 py-3"
                 autoComplete="off"
               />
-              <label className="flex cursor-pointer flex-col gap-2 rounded-xl border border-dashed px-4 py-4 text-sm">
+              <label className="flex min-h-11 cursor-pointer flex-col gap-2 rounded-xl border border-dashed px-4 py-3 text-sm">
                 <span className="font-medium">National ID document (photo or scan)</span>
                 <span className="text-muted">
                   {idDocumentFile?.name ?? "Tap to choose a JPG, PNG, or PDF"}
@@ -418,6 +627,7 @@ function MarketplaceSellInner() {
                 <Button
                   type="button"
                   variant="secondary"
+                  className="min-h-11"
                   onClick={handleCaptureLocation}
                   disabled={capturingLocation}
                 >
@@ -435,6 +645,7 @@ function MarketplaceSellInner() {
               </div>
               <Button
                 type="button"
+                className="min-h-11"
                 onClick={handleSubmitVerification}
                 disabled={submittingVerification}
               >
@@ -443,17 +654,10 @@ function MarketplaceSellInner() {
             </div>
           )}
 
-          {verificationStatus === "pending" && (
-            <p className="mt-4 text-sm text-amber-700">
-              Verification did not complete automatically. Resubmit your ID and GPS location
-              above, or contact support if you are already verified elsewhere.
-            </p>
-          )}
-
           {verificationStatus === "approved" && (
-            <p className="mt-4 text-sm text-emerald-700">
-              Verified creator — you can create listings. PDF products are checked automatically
-              when uploaded; publish once your file is attached.
+            <p className="mt-4 text-sm text-emerald-800">
+              Verified creator — you can create and publish listings. Product files must be attached
+              before publish; buyers only unlock downloads after Paystack payment is verified.
             </p>
           )}
         </section>
@@ -470,7 +674,7 @@ function MarketplaceSellInner() {
           ) : null}
           {verificationStatus === "pending" ? (
             <p className="mt-2 text-sm text-amber-700">
-              Complete automatic verification above before creating listings.
+              Finish identity verification above before you can publish listings.
             </p>
           ) : null}
           <div className="mt-4 grid gap-4">
@@ -568,7 +772,25 @@ function MarketplaceSellInner() {
                 ? "PDFs are reviewed by Giga3 before buyers can purchase. Paystack checkout stays fraud-safe."
                 : "Upload a PDF after verification is approved."}
             </p>
+            {showCreatePreview && title.trim() ? (
+              <div className="rounded-xl border border-dashed border-border bg-background p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Preview</p>
+                <h3 className="mt-2 font-semibold">{title}</h3>
+                <p className="mt-1 text-sm text-muted line-clamp-4">{description || "No description yet."}</p>
+                <p className="mt-2 text-sm font-bold tabular-nums">{formatGhs(priceGhs)}</p>
+                {previewText ? (
+                  <p className="mt-2 whitespace-pre-wrap text-xs text-muted">{previewText}</p>
+                ) : null}
+              </div>
+            ) : null}
             <div className="flex flex-wrap gap-3">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setShowCreatePreview((v) => !v)}
+              >
+                {showCreatePreview ? "Hide preview" : "Preview"}
+              </Button>
               <Button
                 type="button"
                 variant="secondary"
@@ -621,6 +843,19 @@ function MarketplaceSellInner() {
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
+                      <Button type="button" size="sm" variant="ghost" onClick={() => beginEdit(listing)}>
+                        Edit
+                      </Button>
+                      {listing.status === "published" ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => void unpublishListing(listing._id)}
+                        >
+                          Unpublish
+                        </Button>
+                      ) : null}
                       {listing.status === "draft" &&
                         listing.fileReviewLabel === "approved" && (
                           <Button
@@ -647,6 +882,61 @@ function MarketplaceSellInner() {
                       </label>
                     </div>
                   </div>
+                  {editingId === listing._id ? (
+                    <div className="mt-4 grid gap-3 border-t border-border pt-4">
+                      <input
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        className="rounded-xl border px-4 py-3"
+                        aria-label="Edit title"
+                      />
+                      <textarea
+                        value={editDescription}
+                        onChange={(e) => setEditDescription(e.target.value)}
+                        rows={3}
+                        className="rounded-xl border px-4 py-3"
+                        aria-label="Edit description"
+                      />
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <select
+                          value={editCategory}
+                          onChange={(e) => setEditCategory(e.target.value)}
+                          className="rounded-xl border px-4 py-3"
+                          aria-label="Edit category"
+                        >
+                          {SIMPLE_CATEGORIES.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          type="number"
+                          min={1}
+                          value={editPriceGhs}
+                          onChange={(e) => setEditPriceGhs(Number(e.target.value))}
+                          className="rounded-xl border px-4 py-3"
+                          aria-label="Edit price GHS"
+                        />
+                      </div>
+                      <textarea
+                        value={editPreviewText}
+                        onChange={(e) => setEditPreviewText(e.target.value)}
+                        rows={2}
+                        placeholder="Preview text"
+                        className="rounded-xl border px-4 py-3"
+                        aria-label="Edit preview text"
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        <Button type="button" onClick={() => void saveEdit()}>
+                          Save changes
+                        </Button>
+                        <Button type="button" variant="ghost" onClick={() => setEditingId(null)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
                 </article>
               ))}
             </div>

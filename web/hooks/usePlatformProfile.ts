@@ -240,6 +240,7 @@ export function usePlatformProfile() {
     updatePreferences,
     saveUserRole,
     trackDailyActivity,
+    reloadProfile,
     referralCode: profile?.referralCode ?? null,
     learningStreak: profile?.learningStreakDays ?? 0,
   };

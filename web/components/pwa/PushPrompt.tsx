@@ -1,7 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { shouldSuppressPushPrompt } from "@/lib/pwa/installPromptPaths";
 import { Bell, X } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const MUTE_KEY = "giga3:notif:mute";
@@ -25,19 +27,24 @@ function readDismissed(): boolean {
 
 /** Gentle push permission prompt on app open (respects mute + prior dismiss). */
 export function PushPrompt() {
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined" || !("Notification" in window)) return;
+    if (shouldSuppressPushPrompt(pathname)) {
+      setVisible(false);
+      return;
+    }
     if (readMuted() || readDismissed()) return;
     if (Notification.permission === "granted" || Notification.permission === "denied") {
       return;
     }
     const timer = window.setTimeout(() => setVisible(true), 1800);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [pathname]);
 
-  if (!visible) return null;
+  if (!visible || shouldSuppressPushPrompt(pathname)) return null;
 
   async function enable() {
     try {
@@ -82,10 +89,10 @@ export function PushPrompt() {
           <Bell className="h-5 w-5" aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
-          <p id="push-prompt-title" className="text-sm font-semibold text-foreground">
+          <p id="push-prompt-title" className="text-sm font-semibold text-foreground sm:text-base">
             Enable notifications
           </p>
-          <p className="mt-1 text-xs leading-relaxed text-muted">
+          <p className="mt-1 text-sm leading-relaxed text-muted">
             Get alerts for new messages, GigaLearn reminders, and when your media is ready.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">

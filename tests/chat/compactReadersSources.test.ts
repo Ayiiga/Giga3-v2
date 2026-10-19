@@ -3,16 +3,29 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("compact Readers and Sources UI", () => {
-  it("keeps AfricanVoiceReader collapsed behind a Change voice control", () => {
-    const src = readFileSync(
-      resolve(__dirname, "../../web/components/chat/AfricanVoiceReader.tsx"),
+  it("keeps voice language selection out of the chat bubble (Settings only)", () => {
+    const bubble = readFileSync(
+      resolve(__dirname, "../../web/components/chat/MessageBubble.tsx"),
       "utf8"
     );
-    expect(src).toContain("Change voice");
-    expect(src).toContain("aria-expanded={open}");
-    expect(src).toContain("AFRICAN_READER_VOICES.map");
-    // Voices render only when the picker is open — not an always-visible pill strip.
-    expect(src).toMatch(/\{open \? \([\s\S]*AFRICAN_READER_VOICES\.map/);
+    const settings = readFileSync(
+      resolve(__dirname, "../../web/components/settings/LanguagePreferencesSettings.tsx"),
+      "utf8"
+    );
+    expect(bubble).not.toContain("Change voice");
+    expect(bubble).not.toContain("AfricanVoiceReader");
+    expect(settings).toContain("Read-aloud voice");
+    expect(settings).toContain("GIGA_CHAT_VOICES.map");
+  });
+
+  it("does not mount Document Studio for structured answer blocks (avoids duplicate reply)", () => {
+    const bubble = readFileSync(
+      resolve(__dirname, "../../web/components/chat/MessageBubble.tsx"),
+      "utf8"
+    );
+    expect(bubble).toContain("!answerBlocks?.isStructured");
+    expect(bubble).toContain("!smartAnswer");
+    expect(bubble).toContain("DocumentResultCard");
   });
 
   it("keeps LiveWebSourceCards collapsed behind a Read more control", () => {

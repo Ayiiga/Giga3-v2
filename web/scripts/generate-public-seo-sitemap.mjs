@@ -5,9 +5,13 @@
  * sitemap.xml           — sitemap index (entry point for Google)
  * sitemap-static.xml    — marketing / product / legal pages
  * sitemap-blog.xml      — editorial blog (from postRegistry.ts)
+ * sitemap-gigalearn.xml — GigaLearn + public education hubs (BECE/WASSCE, teachers, schools)
  * sitemap-gigasocial.xml — public posts + profiles (Convex at build)
  * sitemap-marketplace.xml — published listings (Convex at build)
  * blog/rss.xml          — RSS feed for blog discovery
+ *
+ * Justified omissions (single landing already in sitemap-static.xml):
+ *   sitemap-media.xml, sitemap-gigaedits.xml, sitemap-creator-studio.xml
  */
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
@@ -50,17 +54,13 @@ const STATIC_SITEMAP_PATHS = [
   "/legal/ai-usage/",
   "/legal/security/",
   "/ai-for-ghana/",
-  "/ai-tools-for-students-ghana/",
-  "/ai-for-teachers-ghana/",
-  "/ai-for-schools-ghana/",
-  "/ai-for-bece-wassce-ghana/",
   "/ai-for-business-ghana/",
   "/ai-for-creators-ghana/",
   "/african-ai-tools/",
   "/ghana-ai/",
-  "/gigalearn/",
   "/prompts/",
   "/trending/",
+  "/documents/",
   "/media/",
   "/video/",
   "/video/plans/",
@@ -71,6 +71,21 @@ const STATIC_SITEMAP_PATHS = [
   "/discover/",
   "/enterprise/",
   "/developers/",
+];
+
+/**
+ * Public education discovery routes — GigaLearn priority.
+ * Only indexable marketing landings (no authenticated student sessions).
+ * Kept out of sitemap-static.xml to avoid duplicate locs across child sitemaps.
+ */
+const GIGALEARN_SITEMAP_PATHS = [
+  "/gigalearn/",
+  "/gigalearn/academy/",
+  "/gigalearn/academy/verify/",
+  "/ai-for-bece-wassce-ghana/",
+  "/ai-tools-for-students-ghana/",
+  "/ai-for-teachers-ghana/",
+  "/ai-for-schools-ghana/",
 ];
 
 function convexUrl() {
@@ -266,7 +281,13 @@ function pageSource(route) {
 
 function readExistingLastmods() {
   const map = new Map();
-  for (const filename of ["sitemap-static.xml", "sitemap-blog.xml", "sitemap-marketplace.xml", "sitemap-gigasocial.xml"]) {
+  for (const filename of [
+    "sitemap-static.xml",
+    "sitemap-blog.xml",
+    "sitemap-gigalearn.xml",
+    "sitemap-marketplace.xml",
+    "sitemap-gigasocial.xml",
+  ]) {
     const filePath = path.join(publicDir, filename);
     if (!existsSync(filePath)) continue;
     const xml = readFileSync(filePath, "utf8");
@@ -353,6 +374,22 @@ function writeStaticSitemap() {
   return writeUrlset("sitemap-static.xml", urls);
 }
 
+function writeGigaLearnSitemap() {
+  const uniquePaths = [...new Set(GIGALEARN_SITEMAP_PATHS)];
+  const urls = uniquePaths.map((route) => {
+    const loc = `${siteOrigin}${route}`;
+    return {
+      loc,
+      lastmod: truthfulLastmod(route, loc),
+      changefreq: "weekly",
+      // GigaLearn landing / Academy catalogue get a slight priority bump for education discovery.
+      priority:
+        route === "/gigalearn/" ? "0.9" : route === "/gigalearn/academy/" ? "0.85" : "0.8",
+    };
+  });
+  return writeUrlset("sitemap-gigalearn.xml", urls);
+}
+
 function writeBlogSitemap() {
   const posts = loadBlogSitemapEntries();
   const blogLastmod = maxLastmod(posts);
@@ -417,7 +454,13 @@ function pushChild(childSitemaps, filename, lastmod) {
 
 function collectPageLocs() {
   const map = new Map();
-  for (const filename of ["sitemap-static.xml", "sitemap-blog.xml", "sitemap-marketplace.xml", "sitemap-gigasocial.xml"]) {
+  for (const filename of [
+    "sitemap-static.xml",
+    "sitemap-blog.xml",
+    "sitemap-gigalearn.xml",
+    "sitemap-marketplace.xml",
+    "sitemap-gigasocial.xml",
+  ]) {
     const filePath = path.join(publicDir, filename);
     if (!existsSync(filePath)) continue;
     const xml = readFileSync(filePath, "utf8");
@@ -437,6 +480,9 @@ async function main() {
 
   const blogSitemap = writeBlogSitemap();
   if (blogSitemap?.count) pushChild(childSitemaps, "sitemap-blog.xml", blogSitemap.lastmod);
+
+  const gigaLearnSitemap = writeGigaLearnSitemap();
+  if (gigaLearnSitemap?.count) pushChild(childSitemaps, "sitemap-gigalearn.xml", gigaLearnSitemap.lastmod);
 
   writeBlogRss();
 

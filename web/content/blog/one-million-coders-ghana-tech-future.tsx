@@ -1,4 +1,5 @@
 import {
+  ArticleFigure,
   ArticleH2,
   ArticleH3,
   ArticleLink,
@@ -52,7 +53,13 @@ function ArticleContent() {
         platforms for recognised credentials.
       </Prose>
 
-      <ArticleH2 id="verified-numbers">Verified numbers</ArticleH2>
+      
+      <ArticleFigure
+        src="/images/blog/support-coding-mentorship.jpg"
+        alt="Mentor guiding a young Ghanaian learner at a laptop"
+        caption="Skills programmes succeed with mentoring and steady practice."
+      />
+<ArticleH2 id="verified-numbers">Verified numbers</ArticleH2>
       <Prose>
         Always distinguish official milestones from marketing targets:
       </Prose>
@@ -123,7 +130,13 @@ function ArticleContent() {
         for the broader picture.
       </Prose>
 
-      <RelatedReading
+      
+      <ArticleFigure
+        src="/images/blog/one-million-coders.jpg"
+        alt="Young Ghanaians learning to code in a community tech hub"
+        caption="What you can do now: practise projects you can show employers."
+      />
+<RelatedReading
         links={[
           { href: "/blog/ghana-ai-future-opportunities-challenges/", label: "Ghana's AI future" },
           { href: "/blog/african-youth-ai-future-jobs/", label: "African youth and AI jobs" },

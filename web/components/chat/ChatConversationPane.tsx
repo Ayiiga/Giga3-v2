@@ -8,15 +8,20 @@ import { ChatTypingBar } from "@/components/chat/ChatTypingBar";
 import { MessageList, type UiMessage } from "@/components/chat/MessageList";
 import { MessageListErrorBoundary } from "@/components/chat/MessageListErrorBoundary";
 import { RecommendationChips } from "@/components/recommendations/RecommendationChips";
-import type { PreparedChatAttachment } from "@/lib/chat/multimodalAttachments";
+import type {
+  AttachmentKind,
+  PreparedChatAttachment,
+} from "@/lib/chat/multimodalAttachments";
 import type { GigaPersonaId } from "@/lib/personas/gigaPersonas";
 import type { UploadUsageSnapshot } from "@/lib/chat/uploadLimits";
 import type { AiModeId } from "@/lib/aiRouter";
 import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
 import { memo, useCallback, useState, type MutableRefObject } from "react";
 import { modeForQuickAction, type HomeQuickActionId } from "@/lib/chat/homeQuickActions";
+import { homeQuickActionStarter } from "@/lib/chat/homeContinuity";
 import type { RecentConversationItem } from "@/components/chat/MessageList";
 import type { OutboxEntry } from "@/lib/chat/offlineOutbox";
+import { recordTrendActivity } from "@/lib/trends/personalizedRecommendations";
 
 interface ChatConversationPaneProps {
   messages: UiMessage[];
@@ -28,6 +33,9 @@ interface ChatConversationPaneProps {
   isAcceptingMessage?: boolean;
   isSlowNetwork?: boolean;
   insertRef: MutableRefObject<((text: string, notice?: string) => void) | null>;
+  pickFilesRef?: MutableRefObject<
+    ((files: File[], kind: AttachmentKind) => void) | null
+  >;
   onSend: (msg: string, attachments?: PreparedChatAttachment[]) => void;
   onInsertTemplate: (text: string) => void;
   onSelectDocumentTemplate?: (templateId: DocumentTemplateId) => void;
@@ -56,6 +64,8 @@ interface ChatConversationPaneProps {
   flushingOutboxId?: string | null;
   onCancelOutbox?: (id: string) => void;
   onRetryFailedReply?: () => void;
+  /** Switch off advanced persona after a paid-plan / daily-limit entitlement error. */
+  onTryStandardAi?: () => void;
   /** UI lock only (e.g. offline) — does not change send/outbox hooks. */
   inputDisabled?: boolean;
   conversationId?: string | null;
@@ -69,6 +79,8 @@ interface ChatConversationPaneProps {
   /** Compact "Continue" history for the empty state. */
   recentConversations?: RecentConversationItem[];
   onSelectConversation?: (id: string) => void;
+  /** Signed-in email for personalized empty-state greeting (local-part only). */
+  userEmail?: string | null;
 }
 
 function panePropsEqual(
@@ -107,6 +119,7 @@ function panePropsEqual(
     prev.onSuggestVisionTier === next.onSuggestVisionTier &&
     prev.initialAttachments === next.initialAttachments &&
     prev.insertRef === next.insertRef &&
+    prev.pickFilesRef === next.pickFilesRef &&
     prev.onRetryOutboxSync === next.onRetryOutboxSync &&
     prev.outboxCount === next.outboxCount &&
     prev.outboxEntries === next.outboxEntries &&
@@ -114,6 +127,7 @@ function panePropsEqual(
     prev.flushingOutboxId === next.flushingOutboxId &&
     prev.onCancelOutbox === next.onCancelOutbox &&
     prev.onRetryFailedReply === next.onRetryFailedReply &&
+    prev.onTryStandardAi === next.onTryStandardAi &&
     prev.conversationId === next.conversationId &&
     prev.online === next.online &&
     prev.liveWebProgress === next.liveWebProgress &&
@@ -122,7 +136,8 @@ function panePropsEqual(
     prev.onSelectPersona === next.onSelectPersona &&
     prev.onQuickAction === next.onQuickAction &&
     prev.recentConversations === next.recentConversations &&
-    prev.onSelectConversation === next.onSelectConversation
+    prev.onSelectConversation === next.onSelectConversation &&
+    prev.userEmail === next.userEmail
   );
 }
 
@@ -137,6 +152,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   isAcceptingMessage,
   isSlowNetwork,
   insertRef,
+  pickFilesRef,
   onSend,
   onInsertTemplate,
   onSelectDocumentTemplate,
@@ -165,6 +181,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   flushingOutboxId = null,
   onCancelOutbox,
   onRetryFailedReply,
+  onTryStandardAi,
   inputDisabled = false,
   conversationId = null,
   online = true,
@@ -175,6 +192,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
   onQuickAction,
   recentConversations,
   onSelectConversation,
+  userEmail = null,
 }: ChatConversationPaneProps) {
   const showTyping = awaitingReply || isSending;
   const typingPhase = awaitingReply ? "replying" : "sending";
@@ -190,9 +208,13 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         onQuickAction(action);
         return;
       }
-      onModeChange(modeForQuickAction(action));
+      const mode = modeForQuickAction(action);
+      onModeChange(mode);
+      recordTrendActivity(`/chat?mode=${mode}`, action);
+      const starter = homeQuickActionStarter(action);
+      if (starter) onInsertTemplate(starter);
     },
-    [onQuickAction, onModeChange]
+    [onQuickAction, onModeChange, onInsertTemplate]
   );
 
   return (
@@ -213,6 +235,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
           onQuickAction={handleQuickAction}
           recentConversations={recentConversations}
           onSelectConversation={onSelectConversation}
+          userEmail={userEmail}
           outboxEntries={outboxEntries}
           flushingOutboxId={flushingOutboxId}
         />
@@ -256,6 +279,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
             message={error}
             onDismiss={onDismissError}
             onRetry={onRetryFailedReply}
+            onTryStandardAi={onTryStandardAi}
             subscriptionActive={subscriptionActive}
           />
         )}
@@ -268,6 +292,7 @@ export const ChatConversationPane = memo(function ChatConversationPane({
         />
         <ChatInput
           insertRef={insertRef}
+          pickFilesRef={pickFilesRef}
           onSend={onSend}
           disabled={composerDisabled}
           uploadUsage={uploadUsage}

@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { BlogImage, type BlogImageAspect } from "@/components/blog/BlogImage";
 import type { FaqItem } from "@/components/seo/JsonLd";
 
 /** Shared prose primitives for long-form public SEO articles. */
@@ -64,27 +64,26 @@ export function ArticleFigure({
   alt,
   caption,
   priority = false,
+  aspect = "16/10",
 }: {
   src: string;
   alt: string;
   caption?: string;
   priority?: boolean;
+  aspect?: BlogImageAspect;
 }) {
   return (
-    <figure className="my-8 overflow-hidden rounded-2xl border border-border bg-slate-50">
-      <div className="relative aspect-[16/10] w-full">
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          loading={priority ? undefined : "lazy"}
-          priority={priority}
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, 672px"
-        />
-      </div>
+    <figure className="my-8 max-w-full overflow-hidden rounded-2xl border border-border bg-slate-50">
+      <BlogImage
+        src={src}
+        alt={alt}
+        priority={priority}
+        aspect={aspect}
+        rounded={false}
+        sizes="(max-width: 768px) 100vw, 672px"
+      />
       {caption ? (
-        <figcaption className="px-4 py-3 text-sm text-muted">{caption}</figcaption>
+        <figcaption className="px-4 py-3 text-sm leading-snug text-muted">{caption}</figcaption>
       ) : null}
     </figure>
   );

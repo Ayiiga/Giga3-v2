@@ -19,8 +19,12 @@ export type PublicProductPageShellProps = {
   primaryLabel: string;
   secondaryHref?: string;
   secondaryLabel?: string;
+  /** Optional editorial / hub links for discoverability (public URLs only). */
+  relatedLinks?: readonly { href: string; label: string }[];
   /** Use h2 when the interactive app above already provides the page h1. */
   titleAs?: "h1" | "h2";
+  /** Tighter spacing when mounted below an interactive product app. */
+  compact?: boolean;
 };
 
 /** Structured SEO shell for thin public product pages (static-export safe). */
@@ -36,18 +40,30 @@ export function PublicProductPageShell({
   primaryLabel,
   secondaryHref,
   secondaryLabel,
+  relatedLinks,
   titleAs = "h1",
+  compact = false,
 }: PublicProductPageShellProps) {
   const TitleTag = titleAs;
   return (
-    <section className="marketing-stable bg-white py-12 sm:py-16">
+    <section
+      className={
+        compact
+          ? "marketing-stable border-t border-border bg-white py-6 sm:py-8"
+          : "marketing-stable bg-white py-12 sm:py-16"
+      }
+    >
       <Container>
-        <div className="mx-auto max-w-3xl space-y-10">
+        <div className={compact ? "mx-auto max-w-3xl space-y-6" : "mx-auto max-w-3xl space-y-10"}>
           <header>
-            <TitleTag className="page-title">{title}</TitleTag>
-            <p className="section-lead mt-5">{description}</p>
-            <p className="mt-3 text-sm text-muted">Built for {audience}.</p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <TitleTag className={compact ? "text-xl font-bold tracking-tight sm:text-2xl" : "page-title"}>
+              {title}
+            </TitleTag>
+            <p className={compact ? "mt-2 text-sm leading-6 text-muted sm:text-base" : "section-lead mt-5"}>
+              {description}
+            </p>
+            <p className="mt-2 text-sm text-muted">Built for {audience}.</p>
+            <div className={compact ? "mt-4 flex flex-wrap gap-2" : "mt-8 flex flex-wrap gap-3"}>
               <ButtonLink href={primaryHref}>{primaryLabel}</ButtonLink>
               {secondaryHref && secondaryLabel ? (
                 <ButtonLink href={secondaryHref} variant="secondary">
@@ -79,6 +95,21 @@ export function PublicProductPageShell({
             <ArticleH2>How it connects to Giga3</ArticleH2>
             <Prose>{giga3Connection}</Prose>
           </section>
+
+          {relatedLinks && relatedLinks.length > 0 ? (
+            <section className="space-y-3">
+              <ArticleH2>Related guides</ArticleH2>
+              <ul className="list-disc space-y-2 pl-5 text-base text-foreground">
+                {relatedLinks.map((link) => (
+                  <li key={link.href}>
+                    <a href={link.href} className="font-medium text-accent underline-offset-2 hover:underline">
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
           <noscript>
             <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">

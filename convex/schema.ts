@@ -122,6 +122,24 @@ export const socialNotificationTypeValidator = v.union(
   v.literal("creator")
 );
 
+/** GigaSocial DM thread request gate (Phase 2C foundation). */
+export const socialDmRequestStatusValidator = v.union(
+  v.literal("open"),
+  v.literal("accepted"),
+  v.literal("declined")
+);
+
+export const socialDmDeliveryStateValidator = v.union(
+  v.literal("sent"),
+  v.literal("delivered")
+);
+
+export const socialDmReportStatusValidator = v.union(
+  v.literal("open"),
+  v.literal("reviewed"),
+  v.literal("dismissed")
+);
+
 /** Enterprise / education workspace — isolated from consumer users table. */
 export const orgTypeValidator = v.union(
   v.literal("school"),
@@ -417,6 +435,30 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_created", ["userId", "createdAt"]),
 
+  /**
+   * Atomic credit holds for paid generation (GigaLearn / book creation).
+   * Balance is deducted on reserve; capture keeps the charge; release refunds.
+   */
+  creditReservations: defineTable({
+    userId: v.string(),
+    requestId: v.string(),
+    action: creditActionValidator,
+    amount: v.number(),
+    status: v.union(
+      v.literal("reserved"),
+      v.literal("captured"),
+      v.literal("released"),
+      /** Stale abandonment — refunded; requestId must not be reused. */
+      v.literal("expired")
+    ),
+    reference: v.optional(v.string()),
+    metadata: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_request", ["userId", "requestId"])
+    .index("by_status_created", ["status", "createdAt"]),
+
   conversations: defineTable({
     userId: v.string(),
     title: v.string(),
@@ -430,6 +472,12 @@ export default defineSchema({
     pinned: v.optional(v.boolean()),
     archived: v.optional(v.boolean()),
     isFavorite: v.optional(v.boolean()),
+    /**
+     * Short-lived JSON of the latest image attachments (data URLs) so follow-up
+     * questions can re-run vision after chatReplyJobs rows are deleted.
+     */
+    lastVisionAttachmentsJson: v.optional(v.string()),
+    lastVisionAttachmentsAt: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_user_updated", ["userId", "updatedAt"])
@@ -740,6 +788,7 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_creator", ["creatorId", "updatedAt"])
+    .index("by_creator_status", ["creatorId", "status", "updatedAt"])
     .index("by_status", ["status", "updatedAt"])
     .index("by_category", ["category", "updatedAt"]),
 
@@ -833,6 +882,8 @@ export default defineSchema({
     regenerateFromMessageId: v.optional(v.id("messages")),
     clientRequestId: v.optional(v.string()),
     chatSystem: v.optional(v.string()),
+    /** Optional reply depth: quick | detailed | expert */
+    responseDetail: v.optional(v.string()),
     liveWeb: v.optional(v.boolean()),
     liveWebMode: v.optional(
       v.union(v.literal("research"), v.literal("actions"))
@@ -1062,6 +1113,62 @@ export default defineSchema({
     .index("by_follower", ["followerId"])
     .index("by_following", ["followingId"])
     .index("by_pair", ["followerId", "followingId"]),
+
+  /**
+   * GigaSocial 1:1 DM threads (Phase 2C — additive; flagged off by default).
+   * participantAId is the lexicographically smaller userId for stable pair keys.
+   */
+  socialDmThreads: defineTable({
+    participantAId: v.string(),
+    participantBId: v.string(),
+    initiatedBy: v.string(),
+    requestStatus: socialDmRequestStatusValidator,
+    lastMessageAt: v.optional(v.number()),
+    lastMessagePreview: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_pair", ["participantAId", "participantBId"])
+    .index("by_participantA_updated", ["participantAId", "updatedAt"])
+    .index("by_participantB_updated", ["participantBId", "updatedAt"]),
+
+  socialDmMessages: defineTable({
+    threadId: v.id("socialDmThreads"),
+    senderId: v.string(),
+    body: v.string(),
+    clientId: v.optional(v.string()),
+    deliveryState: socialDmDeliveryStateValidator,
+    createdAt: v.number(),
+  })
+    .index("by_thread_created", ["threadId", "createdAt"])
+    .index("by_sender_created", ["senderId", "createdAt"])
+    .index("by_thread_client", ["threadId", "clientId"]),
+
+  socialDmReads: defineTable({
+    threadId: v.id("socialDmThreads"),
+    userId: v.string(),
+    lastReadAt: v.number(),
+  }).index("by_thread_user", ["threadId", "userId"]),
+
+  socialDmBlocks: defineTable({
+    blockerId: v.string(),
+    blockedId: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_blocker", ["blockerId", "createdAt"])
+    .index("by_pair", ["blockerId", "blockedId"]),
+
+  socialDmReports: defineTable({
+    reporterId: v.string(),
+    threadId: v.optional(v.id("socialDmThreads")),
+    messageId: v.optional(v.id("socialDmMessages")),
+    reason: v.string(),
+    details: v.optional(v.string()),
+    status: socialDmReportStatusValidator,
+    createdAt: v.number(),
+  })
+    .index("by_reporter_created", ["reporterId", "createdAt"])
+    .index("by_status", ["status", "createdAt"]),
 
   socialLiveStreams: defineTable({
     hostId: v.string(),
@@ -1405,12 +1512,27 @@ export default defineSchema({
     .index("by_user_date", ["userId", "dateKey"])
     .index("by_challenge", ["challengeId"]),
 
-  /** View counts for static editorial blog articles (keyed by slug). */
+  /** View counts + rating aggregates for static editorial blog articles (keyed by slug). */
   blogPostStats: defineTable({
     slug: v.string(),
     viewCount: v.number(),
+    /** Sum of all submitted integer ratings (1–5). Optional for legacy rows. */
+    ratingSum: v.optional(v.number()),
+    ratingCount: v.optional(v.number()),
+    ratingAvg: v.optional(v.number()),
     updatedAt: v.number(),
   }).index("by_slug", ["slug"]),
+
+  /** One rating row per anonymous clientId per blog slug (duplicate-submission safeguard). */
+  blogPostRatings: defineTable({
+    slug: v.string(),
+    clientId: v.string(),
+    rating: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_slug_client", ["slug", "clientId"]),
 
   /** GigaLearn weakness → practice → reassess loop (server sync). */
   gigaLearnProgress: defineTable({
@@ -1427,6 +1549,176 @@ export default defineSchema({
   })
     .index("by_user_topic", ["userId", "topicKey"])
     .index("by_user_updated", ["userId", "updatedAt"]),
+
+  /**
+   * GigaLearn Academy — author-created structured courses (additive).
+   * Built-in catalogue courses live in web/lib/gigalearn/academy/courseCatalog.ts.
+   * Does not replace curriculumEngine or gigaLearnProgress.
+   */
+  gigaLearnAcademyCourses: defineTable({
+    slug: v.string(),
+    title: v.string(),
+    description: v.string(),
+    subject: v.string(),
+    category: v.string(),
+    difficulty: v.union(
+      v.literal("beginner"),
+      v.literal("intermediate"),
+      v.literal("advanced")
+    ),
+    durationMinutes: v.number(),
+    learningObjectives: v.array(v.string()),
+    prerequisites: v.array(v.string()),
+    curriculumPreview: v.string(),
+    assessmentDescription: v.string(),
+    instructorName: v.optional(v.string()),
+    instructorBio: v.optional(v.string()),
+    access: v.union(
+      v.literal("free"),
+      v.literal("credits"),
+      v.literal("subscription")
+    ),
+    creditCost: v.optional(v.number()),
+    certificateEligible: v.boolean(),
+    completionRequirements: v.string(),
+    /** JSON-serialized AcademyModule[] pathway */
+    modulesJson: v.string(),
+    status: v.union(
+      v.literal("draft"),
+      v.literal("published"),
+      v.literal("archived")
+    ),
+    authorUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_status", ["status"])
+    .index("by_status_category", ["status", "category"])
+    .index("by_author", ["authorUserId", "updatedAt"]),
+
+  /**
+   * GigaLearn Academy enrolments — consumer pathway progress.
+   * Separate from enterprise orgEnrollments. Does not mutate gigaLearnProgress.
+   */
+  gigaLearnAcademyEnrolments: defineTable({
+    userId: v.string(),
+    courseSlug: v.string(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("withdrawn"),
+      v.literal("completed")
+    ),
+    enrolledAt: v.number(),
+    lastModuleId: v.optional(v.string()),
+    lastLessonId: v.optional(v.string()),
+    progressPercent: v.number(),
+    /** Phase 4 — server-tracked pathway lesson completions (JSON string[]). */
+    completedLessonIdsJson: v.optional(v.string()),
+    /** Instructor approval timestamp for certificate policies that require it. */
+    certificateInstructorApprovedAt: v.optional(v.number()),
+    certificateInstructorApprovedBy: v.optional(v.string()),
+    /** Optional project approval for certificate policies. */
+    certificateProjectApprovedAt: v.optional(v.number()),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_course", ["courseSlug"])
+    .index("by_user_course", ["userId", "courseSlug"])
+    .index("by_user_status", ["userId", "status"]),
+
+  /**
+   * GigaLearn Academy assessment attempts (Phase 3).
+   * Server-authoritative scores — never trust client-supplied grades.
+   * Separate from school-curriculum practice / gigaLearnProgress.
+   */
+  gigaLearnAcademyAttempts: defineTable({
+    userId: v.string(),
+    courseSlug: v.string(),
+    assessmentId: v.string(),
+    attemptNumber: v.number(),
+    status: v.union(
+      v.literal("in_progress"),
+      v.literal("submitted"),
+      v.literal("graded"),
+      v.literal("pending_review")
+    ),
+    /** Learner answers only (no official score fields from client). */
+    answersJson: v.string(),
+    score: v.optional(v.number()),
+    maxScore: v.optional(v.number()),
+    passed: v.optional(v.boolean()),
+    resultsJson: v.optional(v.string()),
+    feedbackSummary: v.optional(v.string()),
+    revisionHint: v.optional(v.string()),
+    gradingMode: v.union(
+      v.literal("objective"),
+      v.literal("ai_assisted"),
+      v.literal("instructor_review")
+    ),
+    gradedBy: v.optional(
+      v.union(
+        v.literal("objective"),
+        v.literal("ai"),
+        v.literal("instructor"),
+        v.literal("mixed")
+      )
+    ),
+    idempotencyKey: v.string(),
+    startedAt: v.number(),
+    submittedAt: v.optional(v.number()),
+    gradedAt: v.optional(v.number()),
+    reviewerUserId: v.optional(v.string()),
+    reviewNotes: v.optional(v.string()),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_assessment", ["userId", "assessmentId"])
+    .index("by_user_course", ["userId", "courseSlug"])
+    .index("by_idempotency", ["userId", "assessmentId", "idempotencyKey"])
+    .index("by_status", ["status", "updatedAt"]),
+
+  /**
+   * GigaLearn Academy certificates (Phase 4).
+   * Server-issued only — never trust client completion/grade payloads.
+   * Soft-revoke only; never hard-delete learner certificate history.
+   */
+  gigaLearnAcademyCertificates: defineTable({
+    /** Unpredictable public verification id (not sequential). */
+    publicId: v.string(),
+    /** Deterministic key userId::courseSlug for idempotent issuance. */
+    issuanceKey: v.string(),
+    userId: v.string(),
+    /** Public-safe display name snapshot (never email). */
+    learnerDisplayName: v.string(),
+    courseSlug: v.string(),
+    courseTitle: v.string(),
+    issuingOrganization: v.string(),
+    issuedAt: v.number(),
+    completedAt: v.number(),
+    finalGrade: v.optional(v.number()),
+    status: v.union(v.literal("valid"), v.literal("revoked")),
+    templateVersion: v.string(),
+    verificationUrl: v.string(),
+    revokedAt: v.optional(v.number()),
+    revokedBy: v.optional(v.string()),
+    revocationReason: v.optional(v.string()),
+    /** Optional cached PDF in Convex storage (regenerable from record). */
+    pdfStorageId: v.optional(v.id("_storage")),
+    updatedAt: v.number(),
+  })
+    .index("by_public_id", ["publicId"])
+    .index("by_issuance_key", ["issuanceKey"])
+    .index("by_user", ["userId"])
+    .index("by_user_course", ["userId", "courseSlug"])
+    .index("by_status_issued", ["status", "issuedAt"]),
+
+  /** Lightweight rate limit buckets for public certificate verification. */
+  gigaLearnAcademyCertVerifyLimits: defineTable({
+    bucketKey: v.string(),
+    windowStartedAt: v.number(),
+    count: v.number(),
+  }).index("by_bucket", ["bucketKey"]),
 
   /** Per-user developer API keys (hashed at rest). */
   apiKeys: defineTable({
@@ -1470,4 +1762,163 @@ export default defineSchema({
     .index("by_email", ["email"])
     .index("by_status_invited", ["status", "invitedAt"])
     .index("by_token", ["magicLinkToken"]),
+
+  /**
+   * External connector OAuth / token connections.
+   * Access and refresh tokens are stored encrypted (AES-GCM); never returned to clients.
+   */
+  connectorConnections: defineTable({
+    userId: v.string(),
+    provider: v.string(),
+    status: v.union(
+      v.literal("connected"),
+      v.literal("needs_reauth"),
+      v.literal("revoked"),
+      v.literal("error")
+    ),
+    accountLabel: v.optional(v.string()),
+    scopes: v.array(v.string()),
+    accessTokenEnc: v.string(),
+    refreshTokenEnc: v.optional(v.string()),
+    tokenExpiresAt: v.optional(v.number()),
+    /** Provider-specific non-secret metadata (JSON string). */
+    metadataJson: v.optional(v.string()),
+    lastError: v.optional(v.string()),
+    connectedAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_provider", ["userId", "provider"])
+    .index("by_provider_status", ["provider", "status"]),
+
+  /** Short-lived OAuth CSRF state for connector authorization. */
+  connectorOAuthStates: defineTable({
+    state: v.string(),
+    userId: v.string(),
+    provider: v.string(),
+    returnPath: v.string(),
+    codeVerifier: v.optional(v.string()),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_state", ["state"])
+    .index("by_expires", ["expiresAt"]),
+
+  /** Confirm-before-act staging for consequential connector operations. */
+  connectorPendingActions: defineTable({
+    userId: v.string(),
+    provider: v.string(),
+    actionType: v.string(),
+    payloadJson: v.string(),
+    summary: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("confirmed"),
+      v.literal("cancelled"),
+      v.literal("executed"),
+      v.literal("failed")
+    ),
+    resultJson: v.optional(v.string()),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_status", ["userId", "status"])
+    .index("by_expires", ["expiresAt"]),
+
+  /** Connector audit trail (no secrets). */
+  connectorAuditLogs: defineTable({
+    userId: v.string(),
+    provider: v.string(),
+    action: v.string(),
+    ok: v.boolean(),
+    detail: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_provider_created", ["provider", "createdAt"]),
+
+  /**
+   * Social login identities (Google / Apple / Microsoft / GitHub).
+   * Stable provider `subject` is the join key — never email alone.
+   * Separate from connector OAuth (`connectorConnections`).
+   */
+  authProviderIdentities: defineTable({
+    provider: v.union(
+      v.literal("google"),
+      v.literal("apple"),
+      v.literal("microsoft"),
+      v.literal("github")
+    ),
+    subject: v.string(),
+    userId: v.string(),
+    emailAtLink: v.optional(v.string()),
+    createdAt: v.number(),
+    lastLoginAt: v.optional(v.number()),
+  })
+    .index("by_provider_subject", ["provider", "subject"])
+    .index("by_user", ["userId"])
+    .index("by_user_provider", ["userId", "provider"]),
+
+  /** Short-lived CSRF/PKCE state for social login OAuth (not connector OAuth). */
+  authOAuthStates: defineTable({
+    state: v.string(),
+    provider: v.union(
+      v.literal("google"),
+      v.literal("apple"),
+      v.literal("microsoft"),
+      v.literal("github")
+    ),
+    codeVerifier: v.optional(v.string()),
+    nonce: v.optional(v.string()),
+    returnPath: v.string(),
+    /** When set, OAuth completes as an explicit link for this signed-in user. */
+    linkUserId: v.optional(v.string()),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_state", ["state"])
+    .index("by_expires", ["expiresAt"]),
+
+  /** One-time codes that hand a minted session to the browser after OAuth. */
+  authExchangeCodes: defineTable({
+    code: v.string(),
+    email: v.string(),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+    consumedAt: v.optional(v.number()),
+  })
+    .index("by_code", ["code"])
+    .index("by_expires", ["expiresAt"]),
+
+  /**
+   * Executive assistant orchestration plans.
+   * Steps JSON never stores provider secrets — only operation metadata/results summaries.
+   */
+  assistantOrchestrationPlans: defineTable({
+    userId: v.string(),
+    goal: v.string(),
+    intent: v.string(),
+    status: v.union(
+      v.literal("planned"),
+      v.literal("awaiting_confirmation"),
+      v.literal("running"),
+      v.literal("completed"),
+      v.literal("failed"),
+      v.literal("cancelled")
+    ),
+    stepsJson: v.string(),
+    missingHintsJson: v.string(),
+    notesJson: v.string(),
+    reportJson: v.optional(v.string()),
+    conversationId: v.optional(v.string()),
+    expiresAt: v.number(),
+    /** Monotonic revision for CAS / stale-write rejection. */
+    revision: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_user_status", ["userId", "status"])
+    .index("by_expires", ["expiresAt"]),
 });

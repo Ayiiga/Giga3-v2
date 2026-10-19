@@ -16,7 +16,10 @@ import {
   type ChatEngineResult,
 } from "./chatEngine";
 import { getSystemPrompt } from "./aiModes";
-import { chatSystemStyleAddon } from "./assistantIdentity";
+import {
+  chatSystemStyleAddon,
+  responseDetailStyleAddon,
+} from "./assistantIdentity";
 import { personaSystemPromptAddon } from "./gigaPersonas";
 import { buildChatSubscriptionGuidanceAddon } from "./chatSubscriptionGuidance";
 import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
@@ -24,6 +27,7 @@ import { prepareAnswerQualityContext, validateAnswerQuality } from "./answerQual
 import { shouldAcceptConversationalEngineResult } from "./chatConversationalAcceptance";
 import { CHAT_ERROR_CODES, classifyProviderError } from "./chatErrorCodes";
 import { logChatReply } from "./chatReplyLog";
+import { hasWritingCraftIntent } from "./writingCraft";
 
 export const CONVERSATIONAL_REPLY_TIMEOUT_MS = 45_000;
 
@@ -62,6 +66,8 @@ export type ConversationalReplyArgs = {
   personaId?: string;
   /** User-selected chat system (fast/smart/…); defaults to fast when omitted. */
   chatSystem?: string;
+  /** Optional reply depth: quick | detailed | expert */
+  responseDetail?: string;
   since: number;
 };
 
@@ -100,6 +106,7 @@ export async function executeConversationalReply(
   let systemPrompt =
     getSystemPrompt(args.mode) +
     chatSystemStyleAddon(chatSystem) +
+    responseDetailStyleAddon(args.responseDetail, args.content) +
     buildInterestSystemAddon(parseInterestProfile(user?.interestProfile)) +
     "\n\n" +
     qualityContext.systemPromptAddon +
@@ -115,8 +122,11 @@ export async function executeConversationalReply(
   if (personaAddon) {
     systemPrompt += `\n\n${personaAddon}`;
   }
-  systemPrompt +=
-    "\n\nReply helpfully and concisely. Do not invent current news or run web research unless the user asks for live information.";
+  systemPrompt += hasWritingCraftIntent(args.content)
+    ? "\n\nDeliver the finished writing the user asked for. Stay natural and professional. No preamble or closing commentary. Do not invent current news or run web research unless the user asks for live information."
+    : qualityContext.responseMode === "educational"
+      ? "\n\nReply helpfully in natural human phrasing. Match length to the question — direct for simple facts, deeper only when teaching or asked. Do not invent current news or run web research unless the user asks for live information."
+      : "\n\nReply helpfully and concisely. Do not invent current news or run web research unless the user asks for live information.";
 
   const chatMessages = trimChatMessages([
     { role: "system" as const, content: systemPrompt },

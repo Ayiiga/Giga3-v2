@@ -32,16 +32,15 @@ describe("Chat mobile app UI shell", () => {
     expect(chrome).toContain("chat-header-bar--app");
     expect(chrome).toContain("Giga3Logo");
     expect(chrome).toContain("chat-header-title-mobile");
-    expect(chatShell).toContain("ChatVoiceLanguageBar");
-    expect(chatShell).toContain("chat-voice-language-bar--mobile");
-    expect(chatShell).toContain("displayMessages.length === 0");
+    expect(chrome).toContain("ChatMoreMenu");
+    expect(chatShell).not.toContain("ChatVoiceLanguageBar");
     expect(chatShell).toContain("chat-main-column--has-messages");
     expect(keyboardShell).toContain("warmUpBrowserVoices");
-    expect(css).toContain("chat-voice-language-pill");
     expect(logo).toContain("#6D28D9");
     expect(logo).toContain("#7C3AED");
     expect(css).toContain("#7c3aed");
     expect(css).toContain("--chat-header-height");
+    expect(css).toContain(".chat-header-bar--app .chat-header-menu");
     expect(keyboardShell).toContain("chat-app-shell");
     expect(css).toContain("chat-app-shell");
     expect(css).toContain("100dvh");
@@ -51,13 +50,28 @@ describe("Chat mobile app UI shell", () => {
     expect(input).toContain("Ask Giga3 anything…");
   });
 
-  it("persists voice language preference for African reader", () => {
+  it("makes the mobile more-menu (3-dots) white on the purple header", () => {
+    const more = readFileSync(
+      resolve(__dirname, "../../web/components/chat/ChatMoreMenu.tsx"),
+      "utf8"
+    );
+    const css = readFileSync(
+      resolve(__dirname, "../../web/styles/chat-mobile-app.css"),
+      "utf8"
+    );
+    expect(more).toContain("chat-header-menu");
+    expect(more).toContain("text-white");
+    expect(more).toContain("More actions");
+    expect(css).toContain("color: #fff !important");
+  });
+
+  it("persists voice language preference via Settings (not chat chrome)", () => {
     const pref = readFileSync(
       resolve(__dirname, "../../web/lib/chat/voiceLanguagePreference.ts"),
       "utf8"
     );
-    const reader = readFileSync(
-      resolve(__dirname, "../../web/components/chat/AfricanVoiceReader.tsx"),
+    const settings = readFileSync(
+      resolve(__dirname, "../../web/components/settings/LanguagePreferencesSettings.tsx"),
       "utf8"
     );
     const voices = readFileSync(
@@ -65,7 +79,8 @@ describe("Chat mobile app UI shell", () => {
       "utf8"
     );
     expect(pref).toContain("giga3_voice_language_id");
-    expect(reader).toContain("subscribeVoiceLanguageId");
+    expect(settings).toContain("writeVoiceLanguageId");
+    expect(settings).toContain("Read-aloud voice");
     expect(voices).toContain("(M)");
     expect(voices).toContain("(F)");
   });

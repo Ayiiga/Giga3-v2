@@ -34,6 +34,7 @@ import {
   selectMethodologiesForContext,
 } from "../web/lib/gigalearn/methodologies";
 import { getLevel, resolveLegacyLevelId } from "../web/lib/gigalearn/curriculumEngine";
+import { ACADEMY_TUTOR_RULES } from "../web/lib/gigalearn/academy/tutorContext";
 
 export const TUTOR_MODES = [
   "explain",
@@ -179,6 +180,12 @@ async function chargeAndRoute(
   return { verifiedEmail, usage, routing, mode };
 }
 
+const academyContextValidator = v.object({
+  courseSlug: v.string(),
+  moduleId: v.optional(v.string()),
+  lessonId: v.optional(v.string()),
+});
+
 /** Adaptive tutor turn — Socratic or direct, always curriculum-grounded. */
 export const tutorTurn = action({
   args: {
@@ -191,22 +198,73 @@ export const tutorTurn = action({
     ),
     /** Learner's own recent performance, summarized client-side (authorized). */
     performanceSummary: v.optional(v.string()),
+    /**
+     * Optional GigaLearn Academy focus. Enrolment is verified server-side.
+     * Tutoring never auto-completes Academy pathway lessons.
+     */
+    academyContext: v.optional(academyContextValidator),
   },
   handler: async (ctx, args) => {
     const studentInput = args.studentInput.trim().slice(0, 2000);
     if (!studentInput && args.mode !== "check" && args.mode !== "practice") {
       throw new Error("Tell the tutor what you want to work on.");
     }
+
+    let academyBlock = "";
+    let academyMeta: {
+      courseSlug: string;
+      moduleId: string;
+      lessonId: string;
+      nextLesson: { moduleId: string; lessonId: string; title: string } | null;
+      revisionHint: string;
+    } | null = null;
+
+    if (args.academyContext?.courseSlug?.trim()) {
+      const academy = await ctx.runQuery(api.gigaLearnAcademy.getEnrolledTutorContext, {
+        sessionToken: args.sessionToken,
+        courseSlug: args.academyContext.courseSlug.trim().slice(0, 80),
+        moduleId: args.academyContext.moduleId?.trim().slice(0, 80),
+        lessonId: args.academyContext.lessonId?.trim().slice(0, 80),
+      });
+      if (!academy.ok) {
+        if (academy.reason === "not_enrolled") {
+          throw new Error("Enrol in this Academy course before using course-aware tutoring.");
+        }
+        if (academy.reason === "missing_materials") {
+          throw new Error("Approved lesson materials are unavailable for this course checkpoint.");
+        }
+        throw new Error("This Academy course is not available for tutoring.");
+      }
+      academyBlock = [
+        ACADEMY_TUTOR_RULES,
+        academy.materialsBlock,
+        `Current lesson: ${academy.lessonTitle} (${academy.moduleTitle}).`,
+        academy.nextLesson
+          ? `When appropriate, suggest next lesson: “${academy.nextLesson.title}” (module ${academy.nextLesson.moduleId} / lesson ${academy.nextLesson.lessonId}). Do not mark it complete.`
+          : "This is the last lesson in the pathway — suggest revision if helpful.",
+        `Revision hint: ${academy.revisionHint}`,
+      ].join("\n\n");
+      academyMeta = {
+        courseSlug: academy.courseSlug,
+        moduleId: academy.moduleId,
+        lessonId: academy.lessonId,
+        nextLesson: academy.nextLesson,
+        revisionHint: academy.revisionHint,
+      };
+    }
+
     const { usage, routing, mode } = await chargeAndRoute(ctx, {
       sessionToken: args.sessionToken,
       action: "chat",
       reference: `gigalearn-tutor:${args.mode}`,
       metadata: JSON.stringify({
-        source: "gigalearn-tutor",
+        source: academyMeta ? "gigalearn-academy-tutor" : "gigalearn-tutor",
         mode: args.mode,
         subjectId: args.context.subjectId ?? null,
         levelId: args.context.levelId ?? null,
         curriculumId: args.context.curriculumId ?? null,
+        academyCourseSlug: academyMeta?.courseSlug ?? null,
+        academyLessonId: academyMeta?.lessonId ?? null,
       }),
       query: studentInput || args.mode,
     });
@@ -224,7 +282,7 @@ export const tutorTurn = action({
         : selectMethodologiesForContext({
             levelBand: levelDef?.band,
             subjectId: args.context.subjectId,
-            topic: args.context.topic,
+            topic: args.context.topic || academyMeta?.lessonId,
             max: 4,
           });
     const methodologyBlock = buildMethodologyPromptBlock(methods, {
@@ -232,12 +290,19 @@ export const tutorTurn = action({
       gradeLabel: args.context.grade ?? levelDef?.gradeLabel,
     });
 
+    const topicHint =
+      args.context.topic ||
+      (academyMeta ? `Academy lesson ${academyMeta.lessonId}` : undefined) ||
+      args.context.subject ||
+      "this topic";
+
     const systemPrompt = [
       ...TUTOR_BASE_RULES,
       `Tutor mode: ${args.mode}. ${TUTOR_MODE_PROMPTS[args.mode as TutorMode]}`,
       "Curriculum context (stable IDs are authoritative; display names are for presentation):",
       ...contextLines(args.context),
       methodologyBlock,
+      academyBlock,
       args.performanceSummary?.trim()
         ? `Learner performance (their own authorized history — adapt difficulty, do not shame):\n${args.performanceSummary.trim().slice(0, 1200)}`
         : "",
@@ -256,21 +321,27 @@ export const tutorTurn = action({
       content: m.content.slice(0, 1500),
     }));
 
-    const engineResult = await completeChatWithFailover(
-      trimChatMessages(
-        [
-          { role: "system", content: `${getSystemPrompt(mode)}\n\n${systemPrompt}\n\n${qualityContext.systemPromptAddon}` },
-          ...toRetrievalSystemMessage(qualityContext),
-          ...prior,
-          {
-            role: "user",
-            content: studentInput || `Begin the ${args.mode} step for ${args.context.topic || args.context.subject || "this topic"}.`,
-          },
-        ],
-        12
-      ),
-      routing
-    );
+    let engineResult;
+    try {
+      engineResult = await completeChatWithFailover(
+        trimChatMessages(
+          [
+            { role: "system", content: `${getSystemPrompt(mode)}\n\n${systemPrompt}\n\n${qualityContext.systemPromptAddon}` },
+            ...toRetrievalSystemMessage(qualityContext),
+            ...prior,
+            {
+              role: "user",
+              content: studentInput || `Begin the ${args.mode} step for ${topicHint}.`,
+            },
+          ],
+          12
+        ),
+        routing
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "AI provider failed";
+      throw new Error(`Tutor unavailable: ${message}`);
+    }
 
     const validated = validateAnswerQuality({ answer: engineResult.content, context: qualityContext });
 
@@ -279,7 +350,11 @@ export const tutorTurn = action({
         sessionToken: args.sessionToken,
         action: "chat",
         reference: `gigalearn-tutor:${args.mode}`,
-        metadata: JSON.stringify({ source: "gigalearn-tutor", mode: args.mode }),
+        metadata: JSON.stringify({
+          source: academyMeta ? "gigalearn-academy-tutor" : "gigalearn-tutor",
+          mode: args.mode,
+          academyCourseSlug: academyMeta?.courseSlug ?? null,
+        }),
       });
     }
 
@@ -293,6 +368,17 @@ export const tutorTurn = action({
       credits: updatedUsage?.credits ?? usage.credits,
       usedFallback: engineResult.usedFallback,
       provider: engineResult.providerId,
+      /** Guidance only — never implies pathway completion. */
+      academy: academyMeta
+        ? {
+            courseSlug: academyMeta.courseSlug,
+            moduleId: academyMeta.moduleId,
+            lessonId: academyMeta.lessonId,
+            nextLesson: academyMeta.nextLesson,
+            revisionHint: academyMeta.revisionHint,
+            tutoringCompletesLesson: false as const,
+          }
+        : null,
     };
   },
 });

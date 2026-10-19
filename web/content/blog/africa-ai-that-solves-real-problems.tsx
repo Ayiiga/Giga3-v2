@@ -1,4 +1,5 @@
 import {
+  ArticleFigure,
   ArticleH2,
   ArticleLink,
   Prose,
@@ -54,7 +55,13 @@ function ArticleContent() {
         tool they try.
       </Prose>
 
-      <ArticleH2 id="who-ai-helps">Who practical AI should help</ArticleH2>
+      
+      <ArticleFigure
+        src="/images/blog/africa-ai-solves-real-problems.jpg"
+        alt="Mentor and students solving a practical study problem with a laptop"
+        caption="Beyond hype: AI should help finish real homework and real work."
+      />
+<ArticleH2 id="who-ai-helps">Who practical AI should help</ArticleH2>
       <Prose>
         Students need explanations they can follow, practice they can revise with, and clear
         boundaries around academic integrity. Teachers need help drafting plans and worksheets —
@@ -124,7 +131,13 @@ function ArticleContent() {
         with honesty about the journey.
       </Prose>
 
-      <ArticleH2 id="invitation">An invitation</ArticleH2>
+      
+      <ArticleFigure
+        src="/images/blog/support-coding-mentorship.jpg"
+        alt="Mentor and learner reviewing work on a laptop"
+        caption="Builders should ship tools people can use on everyday phones."
+      />
+<ArticleH2 id="invitation">An invitation</ArticleH2>
       <Prose>
         If you have read this far, I would like to hear from you. Which real-world problem would
         you most like AI to help solve — in your classroom, business, creative work, or daily life?

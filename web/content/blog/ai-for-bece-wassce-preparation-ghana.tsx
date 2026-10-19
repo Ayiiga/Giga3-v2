@@ -1,4 +1,5 @@
 import {
+  ArticleFigure,
   ArticleH2,
   ArticleH3,
   ArticleLink,
@@ -55,7 +56,13 @@ function ArticleContent() {
         question yourself on paper. Verify the result using marking schemes, class notes, or a
         teacher&apos;s feedback.
       </Prose>
-      <BulletList
+      
+      <ArticleFigure
+        src="/images/blog/support-students-group-study.jpg"
+        alt="Ghanaian students revising together with textbooks and sticky notes"
+        caption="AI works best beside classmates, teachers, and your own handwritten practice."
+      />
+<BulletList
         items={[
           "Generate practice questions at the right difficulty — request BECE or WASSCE style.",
           "Break down worked examples when a textbook explanation feels too dense.",
@@ -137,7 +144,13 @@ function ArticleContent() {
         means you submit work you understand and can defend orally if asked. Copying a model&apos;s essay
         verbatim violates that standard even if detection tools do not flag it.
       </Prose>
-      <BulletList
+      
+      <ArticleFigure
+        src="/images/blog/wassce-ai-study.jpg"
+        alt="SHS student revising alone with a notebook under a desk lamp"
+        caption="Responsible revision means attempting questions yourself before checking explanations."
+      />
+<BulletList
         items={[
           "Rewrite every explanation in your own words.",
           "Cite AI assistance when your school policy requires it.",

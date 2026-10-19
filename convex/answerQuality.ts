@@ -25,6 +25,13 @@ import {
   shouldShowFullSourceList,
   stripSourcesSectionFromAnswer,
 } from "./newsEvidence/userPresentation";
+import {
+  DOCUMENT_EXPORT_SYSTEM_HINT,
+  hasDocumentDeliverableIntent,
+  hasWritingCraftIntent,
+  NATURAL_RESPONSE_STYLE_ADDON,
+  WRITING_CRAFT_SYSTEM_ADDON,
+} from "./writingCraft";
 
 type QueryClass =
   | "factual"
@@ -155,10 +162,9 @@ function hasAcademicIntent(query: string): boolean {
   );
 }
 
-function hasCreativeIntent(query: string): boolean {
-  return /\b(poem|story|novel|fiction|fictional|creative writing|brainstorm|caption|slogan|joke|screenplay|narrative)\b/i.test(
-    query
-  );
+/** Fiction / short creative — also covered by writing craft for response mode. */
+export function hasCreativeIntent(query: string): boolean {
+  return hasWritingCraftIntent(query);
 }
 
 function hasResearchBackedIntent(query: string): boolean {
@@ -168,8 +174,12 @@ function hasResearchBackedIntent(query: string): boolean {
 }
 
 function hasResearchWritingIntent(query: string): boolean {
+  // Bare "business report" / export PDF is document craft, not GigaResearch.
+  if (hasWritingCraftIntent(query) && !/\b(research|literature|thesis|dissertation|peer[- ]reviewed)\b/i.test(query)) {
+    return false;
+  }
   return (
-    /\b(write|create|draft|compose|develop|outline|prepare)\b[\s\S]{0,48}\b(book|ebook|report|article|essay|paper|thesis|dissertation|manuscript|chapter|monograph)\b/i.test(
+    /\b(write|create|draft|compose|develop|outline|prepare)\b[\s\S]{0,48}\b(book|ebook|research report|article|essay|paper|thesis|dissertation|manuscript|chapter|monograph)\b/i.test(
       query
     ) ||
     /\b(research and write|write (a |an )?research|research (report|paper|article|essay)|analyze this topic)\b/i.test(
@@ -574,7 +584,18 @@ function detectExamQuestion(query: string): boolean {
   );
 }
 
+/** User wants deeper substance rather than a restated short answer. */
+export function detectDetailFollowUpIntent(query: string): boolean {
+  return /\b(more detail|more details|go deeper|elaborate|expand on|tell me more|explain (?:it |this |that )?(?:further|more|in detail|fully|better)|in more depth|don'?t repeat|stop repeating|without repeating|full(?:er)? explanation|deeper explanation|more thorough|can you explain|give (?:me )?(?:the )?details|break it down)\b/i.test(
+    query.trim()
+  );
+}
+
 function inferQueryClass(mode: AiModeId, query: string): QueryClass {
+  // Writing craft wins over academic keyword false-positives (e.g. "explain" in a rewrite).
+  if (hasWritingCraftIntent(query) || CONVERSATIONAL_MODES.has(mode)) {
+    return "creative";
+  }
   if (
     hasAcademicIntent(query) ||
     mode === "homework" ||
@@ -585,7 +606,7 @@ function inferQueryClass(mode: AiModeId, query: string): QueryClass {
   ) {
     return "academic";
   }
-  if (hasCreativeIntent(query) || CONVERSATIONAL_MODES.has(mode)) {
+  if (hasCreativeIntent(query)) {
     return "creative";
   }
   if (hasOpinionIntent(query)) {
@@ -599,6 +620,9 @@ function inferQueryClass(mode: AiModeId, query: string): QueryClass {
 
 function inferResponseMode(mode: AiModeId, query: string): ResponseMode {
   if (hasConversationalIntent(query) || CONVERSATIONAL_MODES.has(mode)) {
+    return "conversational";
+  }
+  if (hasWritingCraftIntent(query) && !hasResearchBackedIntent(query)) {
     return "conversational";
   }
   if (hasCreativeIntent(query) && !hasResearchBackedIntent(query)) {
@@ -739,6 +763,8 @@ function buildSystemPromptAddon(params: {
   hasInlineImageData: boolean;
   rankedSources: RankedSource[];
   mtnHeroesOfChangeMode: boolean;
+  detailFollowUp: boolean;
+  hasPriorAssistant: boolean;
 }): string {
   const researchWritingTask =
     params.mode === "research" ||
@@ -766,26 +792,43 @@ function buildSystemPromptAddon(params: {
         ].join("\n")
       : "";
 
+  const writingCraft = hasWritingCraftIntent(params.query);
   const conversationalRule =
-    params.responseMode === "conversational"
+    params.responseMode === "conversational" && !writingCraft
       ? "- Conversational mode: reply naturally and warmly. Do not include transparency notices, confidence scores, citation panels, verification warnings, or evidence sections."
       : "";
+  const writingCraftRule = writingCraft ? WRITING_CRAFT_SYSTEM_ADDON : "";
+  const documentExportRule = hasDocumentDeliverableIntent(params.query)
+    ? DOCUMENT_EXPORT_SYSTEM_HINT
+    : "";
 
   const catalogFormattingRule = hasStructuredCatalogIntent(params.query)
     ? [
         "Structured catalog format (scholarships, grants, programs, opportunities):",
-        "- Start with a short intro paragraph (2–3 sentences).",
+        "- Optional one-sentence frame only if it helps; otherwise start with the list.",
         "- Use a numbered list — one blank line between items.",
         "- Each item: **Program name** on its own line, then nested bullets with **Funding:**, **Eligibility:**, **Deadline:**, **Study mode:**, **Application:** (only include fields you know).",
         "- Use *italics* for deadlines or notes; use markdown links for application URLs.",
-        "- End with one closing paragraph — no share footer or 'Made with Giga3 AI' line.",
+        "- Skip a closing wrap-up unless it adds a concrete next step (deadline tip, eligibility caveat). No share footer or 'Made with Giga3 AI' line.",
         "- Never run multiple programs into one paragraph.",
       ].join("\n")
     : "";
 
   const educationalRule =
     params.responseMode === "educational"
-      ? "- Educational mode: give a direct, professional answer first. Use clear sections only when they help. Never show Verification, Confidence scores, Citation count, Evidence used, or Validation flags unless the user explicitly asked for fact-checking. Do not add a **Sources** section or link list unless the user asked for sources, citations, or references — weave facts into the answer naturally."
+      ? "- Educational mode: lead with the answer. Add teaching structure only when the user is learning or asked for steps/examples. Never show Verification, Confidence scores, Citation count, Evidence used, or Validation flags unless the user explicitly asked for fact-checking. Do not add a **Sources** section or link list unless the user asked for sources, citations, or references — weave facts into the answer naturally."
+      : "";
+
+  const detailFollowUpRule = params.detailFollowUp
+    ? [
+        "- Detail follow-up (required): the user wants deeper substance, not a restatement.",
+        "- Do not repeat or lightly rephrase the previous assistant reply.",
+        "- Skip or minimize ## ⚡ Quick Answer if it would recycle earlier wording; lead with ## 🧠 More Complete Explanation.",
+        "- Add new mechanisms, worked steps, edge cases, contrasts, and a concrete example the prior turn did not cover.",
+        "- Sound like a sharp human tutor or colleague: precise language, natural rhythm, no filler templates.",
+      ].join("\n")
+    : params.hasPriorAssistant && params.responseMode === "educational"
+      ? "- Thread follow-up: advance the explanation with new information. Never paste or paraphrase the previous answer."
       : "";
 
   const examRule = params.isExamQuestion
@@ -854,18 +897,22 @@ function buildSystemPromptAddon(params: {
 
   const sectionRule =
     params.responseMode === "conversational" ||
+    writingCraft ||
     params.mtnHeroesOfChangeMode ||
     params.isBiographyRequest ||
     params.hasAnyAttachment ||
     researchWritingTask
       ? ""
         : [
-          "Giga3 Smart Answers:",
-          "- Prefer natural conversation. Use only the sections that help, and never leave a heading empty.",
-          "- Simple fact: ## ⚡ Quick Answer only (1–2 sentences).",
-          "- Definition: ## ⚡ Quick Answer and ## 📘 Simple Definition.",
-          "- Teaching or how-to: also use ## 🧠 More Complete Explanation, ## 🔑 Key Points, ## 🌍 Real-World Example, and ## 📝 Practice / Try It when they help. Add ## 🚀 Next Step for a useful follow-up.",
-          "- Bold keywords only. Keep paragraphs short. Use a Ghanaian, African, school, business, or everyday example when an example helps.",
+          "Giga3 Smart Answers (optional teaching aid — never a mandatory template):",
+          "- Prefer plain natural prose. Use a Smart Answers heading only when that section genuinely helps understanding.",
+          "- Never force an introduction, summary, or conclusion. Never leave a heading empty.",
+          params.detailFollowUp
+            ? "- Detail request: expand with new substance (mechanisms, steps, edge cases, fresh examples). Do not recycle earlier wording. Skip ## ⚡ Quick Answer if it would only repeat."
+            : "- Simple fact or short definition: answer in plain prose without Smart Answers headings.",
+          "- Teaching / how-to / “explain step by step”: optionally use ## ⚡ Quick Answer, ## 📘 Simple Definition, ## 🧠 More Complete Explanation, ## 🔑 Key Points, ## 🌍 Real-World Example, ## 📝 Practice / Try It, and ## 🚀 Next Step — only the ones that help; skip the rest.",
+          "- If the user asked for an essay, report, introduction, or conclusion, follow their structure instead of Smart Answers.",
+          "- Bold keywords only. Keep paragraphs short but substantive. Use a Ghanaian, African, school, business, or everyday example when an example helps.",
           "- Skip every Smart Answers heading for greetings and one-line chat.",
         ].join("\n");
 
@@ -881,12 +928,17 @@ function buildSystemPromptAddon(params: {
   return [
     "Accuracy, Authenticity, and Trustworthiness Engine:",
     "- Prioritize factual correctness, authenticity, and clarity.",
+    // Priority: safety/facts → natural organization → user's deliverable → task formats → general quality.
+    NATURAL_RESPONSE_STYLE_ADDON,
+    writingCraftRule,
+    documentExportRule,
     conversationalRule,
     researchWritingRule,
     catalogFormattingRule,
-    educationalRule,
-    learnerInstruction(params.learnerLevel),
-    examRule,
+    writingCraft ? "" : educationalRule,
+    writingCraft ? "" : detailFollowUpRule,
+    writingCraft ? "" : learnerInstruction(params.learnerLevel),
+    writingCraft ? "" : examRule,
     highStakesRule,
     citationRule,
     confidenceRule,
@@ -939,6 +991,10 @@ export function prepareAnswerQualityContext(params: {
 
   const candidates = buildSourceCandidates({ query, attachments, history });
   const rankedSources = rankSources(query, candidates);
+  const detailFollowUp = detectDetailFollowUpIntent(query);
+  const hasPriorAssistant = history.some(
+    (message) => message.role === "assistant" && message.content.trim().length > 0
+  );
 
   return {
     query,
@@ -972,6 +1028,8 @@ export function prepareAnswerQualityContext(params: {
       hasInlineImageData,
       rankedSources,
       mtnHeroesOfChangeMode,
+      detailFollowUp,
+      hasPriorAssistant,
     }),
     retrievalContextBlock: buildRetrievalContextBlock(
       queryClass,

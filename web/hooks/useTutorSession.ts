@@ -42,20 +42,33 @@ interface TutorContext {
   methodologyIds?: string[];
 }
 
+export type AcademyTutorSessionContext = {
+  courseSlug: string;
+  moduleId?: string;
+  lessonId?: string;
+};
+
 /** Conversational adaptive tutor turns (1 credit each, same auth/credits). */
 export function useTutorSession(args: {
   sessionToken: string | null;
   context: TutorContext;
   getPerformanceSummary?: () => string;
+  /** Optional Academy focus — enrolment verified on the server inside tutorTurn. */
+  academyContext?: AcademyTutorSessionContext | null;
 }) {
   const tutorTurn = useAction(api.adaptiveLearning.tutorTurn);
   const [messages, setMessages] = useState<TutorMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastAcademyGuidance, setLastAcademyGuidance] = useState<{
+    nextLesson: { moduleId: string; lessonId: string; title: string } | null;
+    revisionHint: string;
+  } | null>(null);
 
   const reset = useCallback(() => {
     setMessages([]);
     setError(null);
+    setLastAcademyGuidance(null);
   }, []);
 
   const send = useCallback(
@@ -78,10 +91,23 @@ export function useTutorSession(args: {
           studentInput: trimmed,
           history,
           performanceSummary: args.getPerformanceSummary?.() || undefined,
+          academyContext: args.academyContext
+            ? {
+                courseSlug: args.academyContext.courseSlug,
+                moduleId: args.academyContext.moduleId,
+                lessonId: args.academyContext.lessonId,
+              }
+            : undefined,
         });
         const reply = response.reply?.trim();
         if (!reply) throw new Error("The tutor returned an empty response. Please try again.");
         setMessages((prev) => [...prev, { role: "assistant", content: reply, mode }]);
+        if (response.academy) {
+          setLastAcademyGuidance({
+            nextLesson: response.academy.nextLesson,
+            revisionHint: response.academy.revisionHint,
+          });
+        }
         return reply;
       } catch (e) {
         setError(formatMediaError(e));
@@ -90,8 +116,8 @@ export function useTutorSession(args: {
         setLoading(false);
       }
     },
-    [args.sessionToken, args.context, args.getPerformanceSummary, messages, tutorTurn]
+    [args.sessionToken, args.context, args.getPerformanceSummary, args.academyContext, messages, tutorTurn]
   );
 
-  return { messages, loading, error, send, reset };
+  return { messages, loading, error, send, reset, lastAcademyGuidance };
 }

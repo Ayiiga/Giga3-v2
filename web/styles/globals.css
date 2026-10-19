@@ -26,6 +26,13 @@
   --bubble-user: #ede9fe;
   --bubble-assistant: #f4f4f5;
   --shadow-premium: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 24px -8px rgba(91, 33, 182, 0.08);
+  /* Chat / PWA type scale — body ≥16px; conversation comfortably larger on phones */
+  --chat-font-body: 1rem; /* 16px floor (inputs / prevent iOS zoom) */
+  --chat-font-conversation: 1.0625rem; /* 17px mobile conversation */
+  --chat-font-conversation-lg: 1.125rem; /* 18px sm+ */
+  --chat-font-secondary: 0.875rem; /* 14px secondary */
+  --chat-font-meta: 0.75rem; /* 12px true metadata only */
+  --chat-line-height: 1.7;
 }
 
 .dark {
@@ -921,6 +928,50 @@ button:focus-visible {
   overflow-anchor: none;
 }
 
+/* Compact document / GigaLearn mobile density — keeps touch targets, reduces empty card air. */
+.document-compact {
+  --doc-gap: 0.75rem;
+}
+
+.document-compact.space-y-5 > :not([hidden]) ~ :not([hidden]),
+.document-compact .space-y-5 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: var(--doc-gap);
+}
+
+.document-compact .saas-card {
+  padding: 0.875rem !important;
+}
+
+@media (min-width: 640px) {
+  .document-compact .saas-card {
+    padding: 1.25rem !important;
+  }
+}
+
+.document-studio .ProseMirror {
+  min-height: 14rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.document-studio .ProseMirror p {
+  margin: 0.4rem 0;
+}
+
+.document-studio .ProseMirror h1,
+.document-studio .ProseMirror h2,
+.document-studio .ProseMirror h3 {
+  margin: 0.7rem 0 0.35rem;
+  font-weight: 700;
+  color: #1a1330;
+}
+
+.document-studio .ProseMirror ul,
+.document-studio .ProseMirror ol {
+  margin: 0.4rem 0 0.4rem 1.25rem;
+}
+
 .gigalearn-grade-scroll {
   scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
@@ -1119,14 +1170,37 @@ button:focus-visible {
   }
 }
 
+.chat-assistant-body,
+.chat-user-message-text {
+  font-size: var(--chat-font-conversation);
+  line-height: var(--chat-line-height);
+}
+
+@media (min-width: 640px) {
+  .chat-assistant-body,
+  .chat-user-message-text {
+    font-size: var(--chat-font-conversation-lg);
+  }
+}
+
 .chat-markdown {
   @apply max-w-full text-foreground;
+  font-size: var(--chat-font-conversation);
+  line-height: var(--chat-line-height);
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
+@media (min-width: 640px) {
+  .chat-markdown {
+    font-size: var(--chat-font-conversation-lg);
+  }
+}
+
 .chat-markdown .chat-md-p {
-  @apply mb-3 last:mb-0 whitespace-pre-wrap break-words leading-[1.7];
+  @apply mb-3 last:mb-0 whitespace-pre-wrap break-words;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 .chat-markdown .chat-md-h1 {

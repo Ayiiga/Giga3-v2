@@ -49,6 +49,7 @@ import { emitOutboxStatus } from "@/lib/chat/outboxEvents";
 import { CHAT_SEGMENT_NOTICE, DAILY_FRESH_CHAT_NOTICE } from "@/lib/chat/chatSegmentation";
 import { useDailyFreshChat } from "@/hooks/useDailyFreshChat";
 import { chatSystemForModel, gigaModelForMode, type GigaModelId } from "@/lib/chat/gigaModels";
+import { loadResponseDetailPreference } from "@/lib/chat/responseDetail";
 import {
   acceptTimeoutMs,
   CHAT_REGENERATE_TIMEOUT_MS,
@@ -600,6 +601,7 @@ export function useChatPlatform() {
 
         if (useQuickReply) {
           const quickTimeoutMs = Math.max(acceptTimeoutMsValue, 75_000);
+          const responseDetail = loadResponseDetailPreference() ?? undefined;
           const result = await withClientTimeout(
             convexHttpCall<AcceptMessageResult>(
               convexUrl,
@@ -615,6 +617,7 @@ export function useChatPlatform() {
                 ...(personaId ? { personaId } : {}),
                 clientRequestId,
                 chatSystem,
+                ...(responseDetail ? { responseDetail } : {}),
               },
               { timeoutMs: quickTimeoutMs, retries: 0 }
             ),
@@ -667,6 +670,7 @@ export function useChatPlatform() {
           return { ok: true as const, conversationId: result.conversationId };
         }
 
+        const responseDetail = loadResponseDetailPreference() ?? undefined;
         const mutationArgs = {
           sessionToken: token,
           ...(conversationId
@@ -677,6 +681,7 @@ export function useChatPlatform() {
           ...(personaId ? { personaId } : {}),
           clientRequestId,
           chatSystem,
+          ...(responseDetail ? { responseDetail } : {}),
           ...liveWebOpts,
           ...(attachments?.length
             ? {
@@ -1501,7 +1506,6 @@ export function useChatPlatform() {
     selectConversation,
     deleteConversation,
     changeMode,
-    personaId,
     changePersona,
     sendMessage,
     stopGenerating,
