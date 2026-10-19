@@ -40,12 +40,13 @@ describe("Academy visual theme", () => {
       resolve(ROOT, "web/components/gigalearn/academy/AcademyHome.tsx"),
       "utf8"
     );
-    expect(home).toContain("academy-visual-hero");
-    expect(home).toContain("academy-visual-dashboard");
-    expect(home).toContain("academy-visual-practice");
-    expect(home).toContain("academy-visual-performance");
-    expect(home).toContain("academy-visual-certificates");
-    expect(home).toContain("academy-visual-catalogue");
+    expect(home).toContain("ACADEMY_SURFACE_CLASS");
+    expect(home).toContain("ACADEMY_SURFACE_CLASS.hero");
+    expect(home).toContain("ACADEMY_SURFACE_CLASS.dashboard");
+    expect(home).toContain("ACADEMY_SURFACE_CLASS.practice");
+    expect(home).toContain("ACADEMY_SURFACE_CLASS.performance");
+    expect(home).toContain("ACADEMY_SURFACE_CLASS.certificates");
+    expect(home).toContain("ACADEMY_SURFACE_CLASS.catalogue");
     expect(home).toContain("studioThemeClass");
     expect(home).toContain("Coming soon");
     expect(home).toContain("Available");
