@@ -135,7 +135,7 @@ export function AcademyCourseCatalogueBody() {
         </p>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2">
-          {courses.map((course) => (
+          {courses.map((course: AcademyCourseListItem) => (
             <li key={course.slug}>
               <Link
                 href={`/gigalearn/academy/course/?slug=${encodeURIComponent(course.slug)}`}

@@ -79,13 +79,17 @@ function PersonalLearningSummary() {
     );
   }
 
-  const activeEnrolments = enrolments.filter((e) => e.status === "active");
-  const resume = activeEnrolments.find((e) => e.lastLessonId) ?? activeEnrolments[0];
+  const activeEnrolments = enrolments.filter(
+    (e: { status: string }) => e.status === "active"
+  );
+  const resume =
+    activeEnrolments.find((e: { lastLessonId?: string | null }) => e.lastLessonId) ??
+    activeEnrolments[0];
   const resumeTitle = resume
     ? getBuiltinAcademyCourse(resume.courseSlug)?.title ?? resume.courseSlug
     : null;
-  const graded = attempts.filter((a) => a.score != null);
-  const passedCount = graded.filter((a) => a.passed).length;
+  const graded = attempts.filter((a: { score?: number | null }) => a.score != null);
+  const passedCount = graded.filter((a: { passed?: boolean | null }) => a.passed).length;
 
   return (
     <section
