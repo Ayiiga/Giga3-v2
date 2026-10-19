@@ -917,6 +917,165 @@ button:focus-visible {
   isolation: isolate;
 }
 
+/* GigaLearn Academy visual system — section/studio colour tokens (presentation only) */
+.academy-visual-hero,
+.academy-visual-dashboard,
+.academy-visual-practice,
+.academy-visual-performance,
+.academy-visual-certificates,
+.academy-visual-catalogue,
+.academy-visual-studio {
+  --av-muted: color-mix(in srgb, var(--av-fg) 72%, transparent);
+  --av-border: color-mix(in srgb, var(--av-fg) 20%, transparent);
+  --av-chip-bg: color-mix(in srgb, var(--av-fg) 10%, transparent);
+  --av-surface: color-mix(in srgb, #ffffff 88%, var(--av-bg));
+  border-radius: 1rem;
+  border: 1px solid var(--av-border);
+  background: var(--av-bg);
+  color: var(--av-fg);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--av-fg) 8%, transparent);
+}
+
+.academy-visual-hero {
+  --av-bg: #4c1d95;
+  --av-fg: #ffffff;
+  --av-muted: color-mix(in srgb, #ffffff 82%, transparent);
+  --av-border: color-mix(in srgb, #ffffff 22%, transparent);
+  background: linear-gradient(135deg, #4c1d95 0%, #312e81 55%, #1e1b4b 100%);
+}
+
+.academy-visual-dashboard {
+  --av-bg: #f3e8ff;
+  --av-fg: #2e1065;
+}
+
+.academy-visual-practice {
+  --av-bg: #1e3a8a;
+  --av-fg: #ffffff;
+  --av-muted: color-mix(in srgb, #ffffff 84%, transparent);
+  --av-border: color-mix(in srgb, #ffffff 24%, transparent);
+  --av-surface: color-mix(in srgb, #ffffff 14%, #1e3a8a);
+  background: linear-gradient(145deg, #1e3a8a 0%, #1e40af 48%, #312e81 100%);
+}
+
+.academy-visual-performance {
+  --av-bg: #dcfce7;
+  --av-fg: #14532d;
+}
+
+.academy-visual-certificates {
+  --av-bg: #fef3c7;
+  --av-fg: #78350f;
+}
+
+.academy-visual-catalogue {
+  --av-bg: #ffffff;
+  --av-fg: #0f172a;
+  --av-muted: #475569;
+  --av-border: #e2e8f0;
+  box-shadow: none;
+}
+
+.academy-visual-studio--giga-ai {
+  --av-bg: #312e81;
+  --av-fg: #ffffff;
+  --av-muted: color-mix(in srgb, #ffffff 84%, transparent);
+  --av-border: color-mix(in srgb, #ffffff 22%, transparent);
+  --av-surface: color-mix(in srgb, #ffffff 12%, #312e81);
+}
+
+.academy-visual-studio--giga-web {
+  --av-bg: #dbeafe;
+  --av-fg: #172554;
+}
+
+.academy-visual-studio--giga-pwa {
+  --av-bg: #ccfbf1;
+  --av-fg: #134e4a;
+}
+
+.academy-visual-studio--giga-app {
+  --av-bg: #ffedd5;
+  --av-fg: #7c2d12;
+}
+
+.academy-visual-studio--giga-coding {
+  --av-bg: #ede9fe;
+  --av-fg: #4c1d95;
+}
+
+.academy-visual-studio--giga-robotics {
+  --av-bg: #cffafe;
+  --av-fg: #164e63;
+}
+
+.academy-visual-studio--giga-innovation {
+  --av-bg: #ffe4e6;
+  --av-fg: #881337;
+}
+
+.academy-visual-muted {
+  color: var(--av-muted);
+}
+
+.academy-visual-chip {
+  border: 1px solid var(--av-border);
+  background: var(--av-chip-bg);
+  color: var(--av-fg);
+}
+
+.academy-visual-tile {
+  border: 1px solid var(--av-border);
+  background: var(--av-surface);
+  color: var(--av-fg);
+}
+
+.academy-visual-cta {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--av-border);
+  background: var(--av-surface);
+  padding: 0.5rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--av-fg);
+}
+
+.academy-visual-cta:hover {
+  border-color: color-mix(in srgb, var(--av-fg) 35%, transparent);
+}
+
+.academy-visual-cta:focus-visible {
+  outline: 2px solid var(--av-fg);
+  outline-offset: 2px;
+}
+
+.academy-visual-cta--solid {
+  background: #ffffff;
+  color: #1e1b4b;
+  border-color: #ffffff;
+}
+
+.academy-visual-cta--solid:hover {
+  background: #f8fafc;
+}
+
+.academy-visual-cta--ghost {
+  background: transparent;
+  color: var(--av-fg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .academy-visual-hero,
+  .academy-visual-practice {
+    transition: box-shadow 180ms ease;
+  }
+}
+
 /* GigaLearn: reduce mobile layout shift during AI replies and level chips */
 .gigalearn-stable {
   isolation: isolate;

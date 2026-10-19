@@ -6,14 +6,31 @@ import { ArrowLeft, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+/**
+ * Academy Phase 1 nav + Exam Practice Centre entry (PR #548 + #549 integration).
+ * Exam Practice uses its own page chrome for section highlighting.
+ */
 const NAV = [
-  { href: "/gigalearn/academy/", label: "Catalogue" },
-  { href: "/gigalearn/academy/my/", label: "My courses" },
-  { href: "/gigalearn/academy/certificates/", label: "Certificates" },
-  { href: "/gigalearn/academy/verify/", label: "Verify" },
-  { href: "/gigalearn/academy/author/", label: "Author" },
-  { href: "/gigalearn/", label: "GigaLearn hubs" },
+  { href: "/gigalearn/academy/", label: "Home", key: "home" as const },
+  { href: "/gigalearn/academy/courses/", label: "Courses", key: "catalogue" as const },
+  { href: "/gigalearn/exam/", label: "Exam Practice", key: null },
+  { href: "/gigalearn/academy/assess/", label: "Practice", key: "practice" as const },
+  { href: "/gigalearn/academy/my/", label: "My courses", key: "my" as const },
+  { href: "/gigalearn/academy/certificates/", label: "Certificates", key: "certificates" as const },
+  { href: "/gigalearn/academy/verify/", label: "Verify", key: "verify" as const },
+  { href: "/gigalearn/academy/author/", label: "Author", key: "author" as const },
+  { href: "/gigalearn/", label: "GigaLearn hubs", key: null },
 ] as const;
+
+export type AcademyNavActive =
+  | "home"
+  | "catalogue"
+  | "practice"
+  | "my"
+  | "author"
+  | "course"
+  | "certificates"
+  | "verify";
 
 export function AcademyChrome({
   children,
@@ -24,7 +41,7 @@ export function AcademyChrome({
   children: ReactNode;
   title: string;
   subtitle?: string;
-  active?: "catalogue" | "my" | "author" | "course" | "certificates" | "verify";
+  active?: AcademyNavActive;
 }) {
   return (
     <div className="gigalearn-stable document-compact mx-auto max-w-6xl space-y-4 pb-[calc(var(--primary-nav-offset,0px)+1rem)]">
@@ -53,28 +70,12 @@ export function AcademyChrome({
         <nav aria-label="Academy sections" className="relative -mx-1">
           <div className="gigalearn-grade-scroll flex gap-2 overflow-x-auto px-1 pb-1">
             {NAV.map((item) => {
-              const key =
-                item.label === "Catalogue"
-                  ? "catalogue"
-                  : item.label === "My courses"
-                    ? "my"
-                    : item.label === "Certificates"
-                      ? "certificates"
-                      : item.label === "Verify"
-                        ? "verify"
-                        : item.label === "Author"
-                          ? "author"
-                          : null;
               const isActive =
-                (active === "catalogue" && key === "catalogue") ||
-                (active === "my" && key === "my") ||
-                (active === "certificates" && key === "certificates") ||
-                (active === "verify" && key === "verify") ||
-                (active === "author" && key === "author") ||
-                (active === "course" && key === "catalogue");
+                item.key != null &&
+                (active === item.key || (active === "course" && item.key === "catalogue"));
               return (
                 <Link
-                  key={item.href}
+                  key={`${item.href}:${item.label}`}
                   href={item.href}
                   className={cn(
                     "min-h-11 shrink-0 rounded-full border px-3.5 py-2 text-xs font-semibold",

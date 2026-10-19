@@ -5,10 +5,20 @@ import { AcademyAuthorFoundation } from "@/components/gigalearn/academy/AcademyA
 import { AcademyCatalogue } from "@/components/gigalearn/academy/AcademyCatalogue";
 import { AcademyCertificatesPanel } from "@/components/gigalearn/academy/AcademyCertificatesPanel";
 import { AcademyCourseDetail } from "@/components/gigalearn/academy/AcademyCourseDetail";
+import { AcademyHome } from "@/components/gigalearn/academy/AcademyHome";
 import { AcademyMyCourses } from "@/components/gigalearn/academy/AcademyMyCourses";
 import { AcademyVerifyPanel } from "@/components/gigalearn/academy/AcademyVerifyPanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 
+export function AcademyHomeRoot() {
+  return (
+    <ConvexAppShell>
+      <AcademyHome />
+    </ConvexAppShell>
+  );
+}
+
+/** @deprecated Prefer AcademyHomeRoot for /academy/; kept for courses catalogue page. */
 export function AcademyCatalogueRoot() {
   return (
     <ConvexAppShell>
