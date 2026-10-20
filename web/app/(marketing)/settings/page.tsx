@@ -12,7 +12,7 @@ const AccountSettingsClient = dynamic(
 
 export const metadata: Metadata = {
   title: "Settings",
-  description: "Theme, account, and sign-out settings for Giga3 AI.",
+  description: "Theme, account, sign-out, and delete-account settings for Giga3 AI.",
   robots: { index: false, follow: false },
   alternates: { canonical: "/settings/" },
 };
