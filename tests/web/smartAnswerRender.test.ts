@@ -43,7 +43,7 @@ describe("Smart Answer rendering", () => {
     expect(html).toContain("Accra");
     expect(html).toContain("<ul");
     expect(html).toContain("<li");
-    expect(html).toContain('href="/learn/"');
+    expect(html).toContain('href="/gigalearn/"');
     expect(html).toContain('aria-labelledby="smart-answer-msg-1-quick-0"');
     expect(html).toContain("<h2");
     expect(html).toContain('aria-hidden="true"');

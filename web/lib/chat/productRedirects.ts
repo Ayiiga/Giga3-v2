@@ -156,3 +156,43 @@ export function isInternalGiga3Href(href: string): boolean {
     return false;
   }
 }
+
+const LEGACY_INTERNAL_PATH_REWRITES: Record<string, string> = {
+  "/learn": "/gigalearn/",
+  "/account": "/settings/",
+  "/account/settings": "/settings/",
+};
+
+/**
+ * Map legacy internal paths still emitted in chat replies to live destinations.
+ * Keeps relative and absolute giga3ai.com links working after product moves.
+ */
+export function canonicalizeInternalGiga3Href(href: string): string {
+  const trimmed = href.trim();
+  if (!trimmed) return trimmed;
+
+  const resolveAlias = (pathname: string): string | null => {
+    const normalized = pathname.replace(/\/+$/, "") || "/";
+    return LEGACY_INTERNAL_PATH_REWRITES[normalized] ?? null;
+  };
+
+  if (trimmed.startsWith("/")) {
+    const qIndex = trimmed.search(/[?#]/);
+    const path = qIndex === -1 ? trimmed : trimmed.slice(0, qIndex);
+    const suffix = qIndex === -1 ? "" : trimmed.slice(qIndex);
+    const alias = resolveAlias(path);
+    return alias ? `${alias}${suffix}` : trimmed;
+  }
+
+  try {
+    const url = new URL(trimmed);
+    const host = url.hostname.replace(/^www\./, "");
+    if (host !== "giga3ai.com") return trimmed;
+    const alias = resolveAlias(url.pathname);
+    if (!alias) return trimmed;
+    url.pathname = alias;
+    return url.toString();
+  } catch {
+    return trimmed;
+  }
+}

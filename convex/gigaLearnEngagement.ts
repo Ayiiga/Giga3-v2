@@ -6,7 +6,7 @@
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { requireSession } from "./auth";
+import { requireSession, tryRequireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { adminCredentialArgs, ensureAdminAccess } from "./adminAccess";
 import { todayKey } from "./creditsConfig";
@@ -125,7 +125,11 @@ export const listMyNextSteps = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken, ctx);
+    // Soft-fail invalid/expired tokens so LearnerNextSteps useQuery cannot crash.
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) {
+      return { steps: [], activeEnrolments: 0, generatedAt: Date.now() };
+    }
     const cap = Math.min(args.limit ?? 6, 12);
     const enrolments = await ctx.db
       .query("gigaLearnAcademyEnrolments")
