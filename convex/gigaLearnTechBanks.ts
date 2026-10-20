@@ -4,7 +4,7 @@
  */
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { requireSession } from "./auth";
+import { requireSession, tryRequireSession } from "./auth";
 import { isSubscriptionActive } from "./creditsConfig";
 import { sessionArgs } from "./validators";
 import {
@@ -105,7 +105,8 @@ export const listTechHubCatalogue = query({
 export const getTechCoursePracticeSummary = query({
   args: { ...sessionArgs, courseSlug: v.string() },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken, ctx);
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return null;
     const slug = normalizeSlug(args.courseSlug);
     const meta = getTechCourseMeta(slug);
     if (!meta) return null;
@@ -320,10 +321,11 @@ export const startTechPracticeSession = mutation({
 export const getTechPracticeSession = query({
   args: { ...sessionArgs, sessionId: v.id("gigaLearnTechSessions") },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken, ctx);
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return null;
     const session = await ctx.db.get(args.sessionId);
     if (!session || session.userId !== email) {
-      throw new Error("Practice session not found.");
+      return null;
     }
 
     const now = Date.now();
@@ -562,7 +564,8 @@ export const previewTechTopicQuestions = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken, ctx);
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return [];
     const invite = await ctx.db
       .query("adminInvites")
       .withIndex("by_email", (q: any) => q.eq("email", email))

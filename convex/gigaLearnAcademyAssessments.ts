@@ -117,7 +117,14 @@ export const listCourseAssessments = query({
     courseSlug: v.string(),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken, ctx);
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) {
+      return {
+        courseSlug: normalizeSlug(args.courseSlug),
+        unlockedModuleIds: [] as string[],
+        assessments: [],
+      };
+    }
     const { slug } = await requireActiveEnrolment(ctx, email, args.courseSlug);
     const defs = listBuiltinAssessmentsForCourse(slug);
     const passed = await passedIdsForUser(ctx, email, slug);
@@ -167,7 +174,8 @@ export const getAssessmentAttemptView = query({
     assessmentId: v.string(),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken, ctx);
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return null;
     const { slug } = await requireActiveEnrolment(ctx, email, args.courseSlug);
     const assessment = getBuiltinAssessment(slug, args.assessmentId);
     if (!assessment) return null;
@@ -250,7 +258,15 @@ export const getCourseProgression = query({
     courseSlug: v.string(),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken, ctx);
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) {
+      return {
+        courseSlug: normalizeSlug(args.courseSlug),
+        passedAssessmentIds: [] as string[],
+        unlockedModuleIds: [] as string[],
+        allModuleIds: [] as string[],
+      };
+    }
     const { slug } = await requireActiveEnrolment(ctx, email, args.courseSlug);
     const course = getBuiltinAcademyCourse(slug);
     const defs = listBuiltinAssessmentsForCourse(slug);

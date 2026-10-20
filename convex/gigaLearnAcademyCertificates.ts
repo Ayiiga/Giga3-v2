@@ -193,7 +193,24 @@ export const getCertificateEligibility = query({
     courseSlug: v.string(),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken, ctx);
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) {
+      return {
+        eligible: false,
+        courseSlug: args.courseSlug.trim().toLowerCase(),
+        policyFound: false,
+        missing: [
+          {
+            kind: "enrolment_active" as const,
+            detail: "Sign in to check certificate eligibility.",
+          },
+        ],
+        finalScore: null,
+        requiredAssessmentIds: [] as string[],
+        courseTitle: null,
+        existingCertificatePublicId: null,
+      };
+    }
     const { course, result } = await buildEligibility(ctx, email, args.courseSlug);
     const existing = course
       ? await findActiveCertificate(ctx, email, course.slug)

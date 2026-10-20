@@ -1,6 +1,6 @@
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { requireSession } from "./auth";
+import { requireSession, tryRequireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { platformNotificationCategoryValidator } from "./schema";
 
@@ -11,7 +11,10 @@ export const listNotifications = query({
     category: v.optional(platformNotificationCategoryValidator),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    // Soft-fail: PlatformChromeHost mounts this globally; throwing Unauthorized
+    // crashes chat/home shells via useQuery.
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return { notifications: [], unreadCount: 0 };
     const limit = args.limit ?? 40;
 
     let rows = await ctx.db

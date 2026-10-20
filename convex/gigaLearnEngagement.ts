@@ -96,7 +96,8 @@ export const recordLearnerEvent = mutation({
     event: v.string(),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken, ctx);
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return { ok: false as const, reason: "unauthorized" as const };
     const event = args.event.trim() as GigaLearnEngagementEvent;
     if (!CLIENT_EVENTS.has(event)) {
       throw new Error("Unsupported learner engagement event.");

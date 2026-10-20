@@ -2,6 +2,7 @@
 
 import { AcademyChrome } from "@/components/gigalearn/academy/AcademyChrome";
 import { ExamPracticeShareButton } from "@/components/gigalearn/exam/ExamPracticeShareButton";
+import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { ProductSignInPrompt } from "@/components/seo/ProductSignInPrompt";
@@ -717,14 +718,16 @@ function TechHubInner() {
 
 export function TechHubPractice() {
   return (
-    <Suspense
-      fallback={
-        <AcademyChrome active="course" title="Technology Learning Hub">
-          <ClientAppHydrationNotice productName="Technology Learning Hub" />
-        </AcademyChrome>
-      }
-    >
-      <TechHubInner />
-    </Suspense>
+    <ConvexAppShell>
+      <Suspense
+        fallback={
+          <AcademyChrome active="course" title="Technology Learning Hub">
+            <ClientAppHydrationNotice productName="Technology Learning Hub" />
+          </AcademyChrome>
+        }
+      >
+        <TechHubInner />
+      </Suspense>
+    </ConvexAppShell>
   );
 }

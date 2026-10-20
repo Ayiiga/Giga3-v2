@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { requireSession } from "./auth";
+import { requireSession, tryRequireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { parseInterestProfile } from "./userLearning";
 import { todayKey } from "./creditsConfig";
@@ -47,7 +47,8 @@ type AchievementContext = {
 export const getReferralInfo = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return null;
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", email))
@@ -189,7 +190,8 @@ export const syncAchievements = mutation({
 export const getRecommendations = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return { items: [] };
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", email))
@@ -279,7 +281,8 @@ export const getRecommendations = query({
 export const getHomeDashboard = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return null;
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", email))
