@@ -13,6 +13,8 @@ import type { ReactNode } from "react";
  */
 const NAV = [
   { href: "/gigalearn/academy/", label: "Home", key: "home" as const },
+  { href: "/gigalearn/?tab=early-years", label: "Early years", key: null },
+  { href: "/gigalearn/?tab=learn", label: "Basic school", key: null },
   { href: "/gigalearn/academy/courses/", label: "Courses", key: "catalogue" as const },
   { href: "/gigalearn/exam/", label: "Exam Practice", key: null },
   { href: "/gigalearn/academy/assess/", label: "Practice", key: "practice" as const },
