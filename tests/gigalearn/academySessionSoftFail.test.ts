@@ -47,4 +47,11 @@ describe("Academy personalization queries soft-fail invalid sessions", () => {
     expect(block).toContain("tryRequireSession");
     expect(block).toMatch(/if\s*\(\s*!email\s*\)\s*return\s*\[\]/);
   });
+
+  it("credits.getUsageSnapshot soft-fails invalid sessions (null, not throw)", () => {
+    const src = read("convex/credits.ts");
+    const block = src.slice(src.indexOf("export const getUsageSnapshot"));
+    expect(block).toContain("tryRequireSession");
+    expect(block).toMatch(/if\s*\(\s*!userId\s*\)\s*return\s*null/);
+  });
 });

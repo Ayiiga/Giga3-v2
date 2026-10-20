@@ -1,7 +1,7 @@
 import { internal } from "./_generated/api";
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { requireSession } from "./auth";
+import { requireSession, tryRequireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { creditActionValidator } from "./schema";
 import {
@@ -219,7 +219,10 @@ export const deductForChatMode = mutation({
 export const getUsageSnapshot = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken, ctx);
+    // Soft-fail invalid/expired tokens so billing widgets / GigaLearn useQuery
+    // cannot crash the React error boundary (returns null like "user missing").
+    const userId = await tryRequireSession(args.sessionToken, ctx);
+    if (!userId) return null;
     const user = await getUserByEmail(ctx, userId);
     if (!user) return null;
 
