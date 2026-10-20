@@ -49,7 +49,7 @@ Opens the official Giga3 AI website in a fullscreen Android app shell.
 | Asset | Status |
 |-------|--------|
 | High-res icon 512×512 | Available: `web/public/icons/icon-512.png` |
-| Feature graphic 1024×500 | **Missing — create before listing** |
+| Feature graphic 1024×500 | Prepared: `docs/google-play/assets/feature-graphic-1024x500.png` (verify visually before upload) |
 | Phone screenshots (min 2) | **Capture on device after TWA verification** |
 | 7" / 10" tablet screenshots | Optional / recommended |
 
@@ -66,3 +66,8 @@ Opens the official Giga3 AI website in a fullscreen Android app shell.
 ## Testing account note for reviewers
 
 Provide a dedicated reviewer account (email + password) that can open Chat, GigaLearn, Marketplace browse, and Wallet screens without production payment charges. Prefer Paystack test mode for any checkout smoke.
+
+
+## Screenshots note (2026-10-19)
+
+Mobile viewport captures of the **production website** are under `/opt/cursor/artifacts/android-twa/store-screenshots/` for listing prep. They are **not** screenshots of the installed TWA APK. Replace after a successful device install.
