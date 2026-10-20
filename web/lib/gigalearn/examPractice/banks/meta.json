@@ -1,0 +1,133 @@
+{
+  "banks": [
+    {
+      "bankId": "bece-prep",
+      "courseSlug": "exam-bece-prep",
+      "title": "Ghana BECE Preparation",
+      "sourceDocument": "Ghana_BECE_Preparation_500_Objective_Questions_Explained_c887.pdf",
+      "approvedQuestionCount": 468,
+      "pendingQuestionCount": 0,
+      "topics": [
+        {
+          "id": "integrated-science",
+          "label": "Integrated Science",
+          "questionCount": 50
+        },
+        {
+          "id": "social-studies",
+          "label": "Social Studies",
+          "questionCount": 50
+        },
+        {
+          "id": "rme",
+          "label": "RME",
+          "questionCount": 50
+        },
+        {
+          "id": "computing",
+          "label": "Computing",
+          "questionCount": 50
+        },
+        {
+          "id": "career-technology",
+          "label": "Career Technology",
+          "questionCount": 50
+        },
+        {
+          "id": "creative-arts",
+          "label": "Creative Arts",
+          "questionCount": 50
+        },
+        {
+          "id": "ghanaian-language-culture",
+          "label": "Ghanaian Language / Culture",
+          "questionCount": 49
+        },
+        {
+          "id": "mathematics",
+          "label": "Mathematics",
+          "questionCount": 48
+        },
+        {
+          "id": "french",
+          "label": "French",
+          "questionCount": 40
+        },
+        {
+          "id": "english",
+          "label": "English",
+          "questionCount": 31
+        }
+      ]
+    },
+    {
+      "bankId": "teacher-promotion",
+      "courseSlug": "exam-teacher-promotion",
+      "title": "GES Teachers Promotion Aptitude",
+      "sourceDocument": "GES_Teachers_Promotion_500_Objective_Questions_Explained_fb4d.pdf",
+      "approvedQuestionCount": 60,
+      "pendingQuestionCount": 179,
+      "topics": [
+        {
+          "id": "applied-education-administration-professional-judgement",
+          "label": "Applied Education Administration & Professional Judgement",
+          "questionCount": 58
+        },
+        {
+          "id": "professional-ethics-conduct",
+          "label": "Professional Ethics & Conduct",
+          "questionCount": 40
+        },
+        {
+          "id": "finance-public-accountability",
+          "label": "Finance & Public Accountability",
+          "questionCount": 29
+        },
+        {
+          "id": "ges-history-legislation",
+          "label": "Ges History & Legislation",
+          "questionCount": 20
+        },
+        {
+          "id": "ges-administration-institutions",
+          "label": "Ges Administration & Institutions",
+          "questionCount": 20
+        },
+        {
+          "id": "school-leadership-improvement",
+          "label": "School Leadership & Improvement",
+          "questionCount": 20
+        },
+        {
+          "id": "staff-management-discipline",
+          "label": "Staff Management & Discipline",
+          "questionCount": 20
+        },
+        {
+          "id": "reasoning-general-aptitude",
+          "label": "Reasoning & General Aptitude",
+          "questionCount": 20
+        },
+        {
+          "id": "child-protection-inclusion-ict",
+          "label": "Child Protection, Inclusion & Ict",
+          "questionCount": 10
+        },
+        {
+          "id": "professional-judgement",
+          "label": "Professional Judgement",
+          "questionCount": 2
+        }
+      ]
+    },
+    {
+      "bankId": "ad2-study-guide",
+      "courseSlug": "exam-ad2-study-guide",
+      "title": "GES Assistant Director II Study Guide 2026 (practice set)",
+      "sourceDocument": "Attractive_GES_Assistant_Director_II_Study_Guide_2026_d118.pdf",
+      "approvedQuestionCount": 0,
+      "pendingQuestionCount": 0,
+      "topics": []
+    }
+  ]
+}

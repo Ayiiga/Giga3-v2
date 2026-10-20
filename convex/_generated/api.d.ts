@@ -64,7 +64,9 @@ import type * as chatUserMessages from "../chatUserMessages.js";
 import type * as cleanup from "../cleanup.js";
 import type * as connectors_crypto from "../connectors/crypto.js";
 import type * as connectors_http from "../connectors/http.js";
+import type * as connectors_moodleUrl from "../connectors/moodleUrl.js";
 import type * as connectors_oauth from "../connectors/oauth.js";
+import type * as connectors_oauthErrors from "../connectors/oauthErrors.js";
 import type * as connectors_operations from "../connectors/operations.js";
 import type * as connectors_pendingActionPolicy from "../connectors/pendingActionPolicy.js";
 import type * as connectors_providers_google from "../connectors/providers/google.js";
@@ -118,6 +120,7 @@ import type * as gigaLearnAcademyAssessments from "../gigaLearnAcademyAssessment
 import type * as gigaLearnAcademyCertificates from "../gigaLearnAcademyCertificates.js";
 import type * as gigaLearnEngagement from "../gigaLearnEngagement.js";
 import type * as gigaLearnProgress from "../gigaLearnProgress.js";
+import type * as gigaLearnTechBanks from "../gigaLearnTechBanks.js";
 import type * as gigaPersonas from "../gigaPersonas.js";
 import type * as gigaSocial from "../gigaSocial.js";
 import type * as gigaSocialCommunities from "../gigaSocialCommunities.js";
@@ -391,7 +394,9 @@ declare const fullApi: ApiFromModules<{
   cleanup: typeof cleanup;
   "connectors/crypto": typeof connectors_crypto;
   "connectors/http": typeof connectors_http;
+  "connectors/moodleUrl": typeof connectors_moodleUrl;
   "connectors/oauth": typeof connectors_oauth;
+  "connectors/oauthErrors": typeof connectors_oauthErrors;
   "connectors/operations": typeof connectors_operations;
   "connectors/pendingActionPolicy": typeof connectors_pendingActionPolicy;
   "connectors/providers/google": typeof connectors_providers_google;
@@ -445,6 +450,7 @@ declare const fullApi: ApiFromModules<{
   gigaLearnAcademyCertificates: typeof gigaLearnAcademyCertificates;
   gigaLearnEngagement: typeof gigaLearnEngagement;
   gigaLearnProgress: typeof gigaLearnProgress;
+  gigaLearnTechBanks: typeof gigaLearnTechBanks;
   gigaPersonas: typeof gigaPersonas;
   gigaSocial: typeof gigaSocial;
   gigaSocialCommunities: typeof gigaSocialCommunities;

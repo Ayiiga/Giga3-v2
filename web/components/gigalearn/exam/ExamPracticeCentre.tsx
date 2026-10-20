@@ -8,11 +8,14 @@ import { getSessionToken, getUserEmail } from "@/lib/auth";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import { ACADEMY_SURFACE_CLASS } from "@/lib/gigalearn/academy/visualTheme";
 import {
+  AD2_STUDY_GUIDE_SUMMARY,
   BECE_AWAITING_MATERIALS_MESSAGE,
+  BECE_BANK_SUMMARY,
   BECE_SUBJECTS_AVAILABLE,
   EXAM_PRACTICE_CENTRE_TAGLINE,
   EXAM_PRACTICE_CENTRE_TITLE,
   EXAM_PRACTICE_DESTINATIONS,
+  TEACHER_PROMOTION_BANK_SUMMARY,
   TEACHER_PROMOTION_LEVEL_LABELS,
   TEACHER_PROMOTION_SOURCE_INVENTORY,
   answerStatusLabel,
@@ -170,6 +173,7 @@ function TeacherHubPracticeLink() {
 
 function BeceCentreCard() {
   const hasSubjects = BECE_SUBJECTS_AVAILABLE.length > 0;
+  const ready = BECE_BANK_SUMMARY.available && hasSubjects;
 
   return (
     <section id="bece-centre" aria-labelledby="bece-centre-heading" className="space-y-3">
@@ -182,56 +186,110 @@ function BeceCentreCard() {
               BECE Mock Examination Centre
             </h2>
             <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-semibold">
-              Awaiting sources
+              {ready ? "Independent practice" : "Awaiting sources"}
             </span>
           </div>
           <p className="text-sm text-white/90">
-            Practise by subject and review mistakes when verified BECE papers are available.
+            {ready
+              ? "Practise by subject, review explanations, and build stamina with timed sets."
+              : "Practise by subject and review mistakes when verified BECE papers are available."}{" "}
             Teacher-promotion materials are never shown here.
           </p>
         </div>
       </div>
 
-      <article className="exam-landing-card" data-testid="bece-awaiting-materials" role="status">
-        <span className="exam-landing-pill" style={{ background: "#DDD6FE", color: "#4C1D95" }}>
-          Coming soon
-        </span>
-        <h3 className="mt-3 text-base font-bold text-[#4C1D95]">{BECE_AWAITING_MATERIALS_MESSAGE}</h3>
-        <p className="mt-1 text-sm text-slate-600">
-          No BECE examination papers were identified in the current source set. Subject cards and
-          timed mocks will appear here after verified materials are imported and reviewed — we will
-          not invent WAEC papers.
-        </p>
-        {!hasSubjects ? (
+      {ready ? (
+        <article className="exam-landing-card" data-testid="bece-practice-ready">
+          <span className="exam-landing-pill" style={{ background: "#DDD6FE", color: "#4C1D95" }}>
+            {BECE_BANK_SUMMARY.approvedCount} objective items
+          </span>
+          <h3 className="mt-3 text-base font-bold text-[#4C1D95]">
+            Ghana BECE preparation practice
+          </h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Independent objective practice with explanations across imported subjects. Not an
+            official WAEC paper — confirm current syllabus guidance for your year.
+          </p>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2" data-testid="bece-subjects-slot" data-ready="true">
+            {BECE_SUBJECTS_AVAILABLE.map((s) => (
+              <li key={s.id} className="rounded-xl border border-slate-200 px-3 py-2 text-sm">
+                <span className="font-medium text-slate-800">{s.label}</span>
+                {s.questionCount != null ? (
+                  <span className="mt-0.5 block text-xs text-slate-500">
+                    {s.questionCount} questions
+                  </span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <Link href={EXAM_PRACTICE_DESTINATIONS.becePractice} className="exam-landing-cta">
+              <Play className="h-4 w-4 fill-current" aria-hidden />
+              Open BECE practice
+            </Link>
+            <Link
+              href={EXAM_PRACTICE_DESTINATIONS.beceTimed}
+              className="exam-landing-cta exam-landing-cta--ghost"
+              style={{ color: "#4C1D95", background: "#F5F3FF", borderColor: "#DDD6FE" }}
+            >
+              Timed practice
+            </Link>
+            <Link
+              href={EXAM_PRACTICE_DESTINATIONS.beceCourse}
+              className="exam-landing-cta exam-landing-cta--ghost"
+              style={{ color: "#4C1D95", background: "#F5F3FF", borderColor: "#DDD6FE" }}
+            >
+              Enrol / course page
+            </Link>
+          </div>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <StudentLearnFromExamLink />
+            <Link
+              href={EXAM_PRACTICE_DESTINATIONS.aiTutor}
+              className="exam-landing-cta exam-landing-cta--ghost"
+              style={{ color: "#4C1D95", background: "#F5F3FF", borderColor: "#DDD6FE" }}
+            >
+              Ask AI Tutor
+            </Link>
+          </div>
+          <p className="mt-3 text-xs text-slate-500">
+            AI-generated practice is labelled separately and is not an official WAEC/BECE paper bank.
+          </p>
+        </article>
+      ) : (
+        <article className="exam-landing-card" data-testid="bece-awaiting-materials" role="status">
+          <span className="exam-landing-pill" style={{ background: "#DDD6FE", color: "#4C1D95" }}>
+            Coming soon
+          </span>
+          <h3 className="mt-3 text-base font-bold text-[#4C1D95]">
+            {BECE_AWAITING_MATERIALS_MESSAGE}
+          </h3>
+          <p className="mt-1 text-sm text-slate-600">
+            No BECE examination papers were identified in the current source set. Subject cards and
+            timed mocks will appear here after verified materials are imported and reviewed — we will
+            not invent WAEC papers.
+          </p>
           <ul
             className="mt-3 hidden"
             aria-hidden
             data-testid="bece-subjects-slot"
             data-ready="false"
           />
-        ) : (
-          <ul className="mt-3 grid gap-2 sm:grid-cols-2" data-testid="bece-subjects-slot">
-            {BECE_SUBJECTS_AVAILABLE.map((s) => (
-              <li key={s.id} className="rounded-xl border border-slate-200 px-3 py-2 text-sm">
-                {s.label}
-              </li>
-            ))}
-          </ul>
-        )}
-        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-          <StudentLearnFromExamLink />
-          <Link
-            href={EXAM_PRACTICE_DESTINATIONS.aiTutor}
-            className="exam-landing-cta exam-landing-cta--ghost"
-            style={{ color: "#4C1D95", background: "#F5F3FF", borderColor: "#DDD6FE" }}
-          >
-            Ask AI Tutor
-          </Link>
-        </div>
-        <p className="mt-3 text-xs text-slate-500">
-          AI-generated practice is labelled separately and is not an official WAEC/BECE paper bank.
-        </p>
-      </article>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            <StudentLearnFromExamLink />
+            <Link
+              href={EXAM_PRACTICE_DESTINATIONS.aiTutor}
+              className="exam-landing-cta exam-landing-cta--ghost"
+              style={{ color: "#4C1D95", background: "#F5F3FF", borderColor: "#DDD6FE" }}
+            >
+              Ask AI Tutor
+            </Link>
+          </div>
+          <p className="mt-3 text-xs text-slate-500">
+            AI-generated practice is labelled separately and is not an official WAEC/BECE paper bank.
+          </p>
+        </article>
+      )}
     </section>
   );
 }
@@ -292,6 +350,44 @@ function TeacherPromotionCentreCard() {
         <p className="mt-2 text-xs text-slate-500">{PROMOTION_FREE_SET_META.provenanceNote}</p>
       </article>
 
+      {TEACHER_PROMOTION_BANK_SUMMARY.available ? (
+        <article className="exam-landing-card" data-testid="teacher-promotion-bank-ready">
+          <span className="exam-landing-pill">
+            {TEACHER_PROMOTION_BANK_SUMMARY.approvedCount} approved ·{" "}
+            {TEACHER_PROMOTION_BANK_SUMMARY.pendingCount} provisional
+          </span>
+          <h3 className="mt-3 text-base font-bold text-[#14532D]">
+            GES Teachers Promotion aptitude bank
+          </h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Interactive practice from the imported promotion objective set. Provisional items are
+            labelled in learn mode — not claimed as an official GES examination paper.
+          </p>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <Link
+              href={EXAM_PRACTICE_DESTINATIONS.teacherPromotionPractice}
+              className="exam-landing-cta"
+            >
+              <Play className="h-4 w-4 fill-current" aria-hidden />
+              Open promotion practice
+            </Link>
+            <Link
+              href={EXAM_PRACTICE_DESTINATIONS.teacherPromotionLearn}
+              className="exam-landing-cta exam-landing-cta--ghost"
+            >
+              Learn mode
+            </Link>
+            <Link
+              href={EXAM_PRACTICE_DESTINATIONS.teacherPromotionCourse}
+              className="exam-landing-cta exam-landing-cta--ghost"
+            >
+              Enrol / course page
+            </Link>
+          </div>
+          <p className="mt-2 text-xs text-slate-500">{AD2_STUDY_GUIDE_SUMMARY.note}</p>
+        </article>
+      ) : null}
+
       <Link
         href="#my-performance"
         className="exam-landing-card flex items-center gap-3 hover:border-[#86EFAC]"
@@ -343,8 +439,9 @@ function TeacherPromotionCentreCard() {
           <TeacherHubPracticeLink />
         </div>
         <p className="mt-3 text-xs text-slate-500" data-testid="promotion-bank-pending">
-          Larger source-derived GES banks remain pending review. Until then, free orientation
-          practice and AI tools are clearly labelled as non-official.
+          {TEACHER_PROMOTION_BANK_SUMMARY.available
+            ? `${TEACHER_PROMOTION_BANK_SUMMARY.pendingCount} imported items remain pending review; free orientation practice and AI tools stay clearly labelled as non-official.`
+            : "Larger source-derived GES banks remain pending review. Until then, free orientation practice and AI tools are clearly labelled as non-official."}
         </p>
       </article>
 

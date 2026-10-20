@@ -79,7 +79,7 @@ describe("Exam Practice quiz UI wiring", () => {
     expect(session).toContain("Next");
   });
 
-  it("keeps BECE awaiting state free of promotion question stems", () => {
+  it("keeps BECE centre free of promotion question stems", () => {
     const ui = readFileSync(
       resolve(ROOT, "web/components/gigalearn/exam/ExamPracticeCentre.tsx"),
       "utf8"
@@ -88,7 +88,7 @@ describe("Exam Practice quiz UI wiring", () => {
       ui.indexOf("function BeceCentreCard"),
       ui.indexOf("function TeacherPromotionCentreCard")
     );
-    expect(beceBlock).toContain("bece-awaiting-materials");
+    expect(beceBlock).toContain("bece-practice-ready");
     expect(beceBlock).not.toContain("PROMOTION_FREE");
     expect(beceBlock).not.toContain("Start Free 30");
     expect(beceBlock).not.toContain("Benito");

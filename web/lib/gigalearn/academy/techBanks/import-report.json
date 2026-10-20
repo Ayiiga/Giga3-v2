@@ -1,0 +1,154 @@
+{
+  "techBanks": [
+    {
+      "sourceFile": "Website_PWA_500_Practical_Objective_Questions_df45.pdf",
+      "bankId": "website-pwa",
+      "courseSlug": "website-pwa-development",
+      "extracted": 500,
+      "uniqueImportable": 273,
+      "approvedImported": 273,
+      "pendingImported": 0,
+      "topicCount": 25
+    },
+    {
+      "sourceFile": "Robotics_500_Practical_Objective_Questions_042e.pdf",
+      "bankId": "robotics",
+      "courseSlug": "robotics-intelligent-systems",
+      "extracted": 500,
+      "uniqueImportable": 273,
+      "approvedImported": 273,
+      "pendingImported": 0,
+      "topicCount": 25
+    },
+    {
+      "sourceFile": "Other_Digital_Technologies_500_Practical_Objective_Questions_424c.pdf",
+      "bankId": "other-digital",
+      "courseSlug": "other-digital-technologies",
+      "extracted": 500,
+      "uniqueImportable": 273,
+      "approvedImported": 273,
+      "pendingImported": 0,
+      "topicCount": 25
+    },
+    {
+      "sourceFile": "AI_500_Practical_Objective_Questions_ad8b.pdf",
+      "bankId": "ai-ml",
+      "courseSlug": "ai-machine-learning",
+      "extracted": 500,
+      "uniqueImportable": 273,
+      "approvedImported": 273,
+      "pendingImported": 0,
+      "topicCount": 25,
+      "nearDuplicates": 227,
+      "exactOrNearDuplicateRemoved": 227,
+      "parseFailed": 0,
+      "rejected": 0,
+      "claimedAs500Unique": false
+    }
+  ],
+  "examBanks": [
+    {
+      "sourceFile": "Ghana_BECE_Preparation_500_Objective_Questions_Explained_c887.pdf",
+      "kind": "exam",
+      "extracted": 500,
+      "pages": 37,
+      "nearDuplicates": 32,
+      "uniqueImportable": 468,
+      "approvedImported": 468,
+      "pendingImported": 0,
+      "parseFailed": 0,
+      "rejected": 0,
+      "exactDuplicates": 0,
+      "topics": [
+        "Integrated Science",
+        "Social Studies",
+        "RME",
+        "Computing",
+        "Career Technology",
+        "Creative Arts",
+        "Ghanaian Language / Culture",
+        "Mathematics",
+        "French",
+        "English"
+      ],
+      "topicCount": 10,
+      "claimedAsOfficialWaec": false,
+      "sourceKind": "authored_practice"
+    },
+    {
+      "sourceFile": "GES_Teachers_Promotion_500_Objective_Questions_Explained_fb4d.pdf",
+      "kind": "exam",
+      "extracted": 500,
+      "pages": 46,
+      "nearDuplicates": 261,
+      "uniqueImportable": 239,
+      "approvedImported": 60,
+      "pendingImported": 179,
+      "parseFailed": 0,
+      "rejected": 0,
+      "exactDuplicates": 0,
+      "topics": [
+        "Applied Education Administration & Professional Judgement",
+        "Professional Ethics & Conduct",
+        "Finance & Public Accountability",
+        "Ges History & Legislation",
+        "Ges Administration & Institutions",
+        "School Leadership & Improvement",
+        "Staff Management & Discipline",
+        "Reasoning & General Aptitude",
+        "Child Protection, Inclusion & Ict",
+        "Professional Judgement"
+      ],
+      "topicCount": 10,
+      "claimedAsOfficialGes": false,
+      "sourceKind": "authored_practice"
+    },
+    {
+      "sourceFile": "Attractive_GES_Assistant_Director_II_Study_Guide_2026_d118.pdf",
+      "kind": "study_guide",
+      "extracted": 0,
+      "pages": 16,
+      "nearDuplicates": 0,
+      "uniqueImportable": 0,
+      "approvedImported": 0,
+      "pendingImported": 0,
+      "parseFailed": 0,
+      "rejected": 0,
+      "topics": [],
+      "topicCount": 0,
+      "note": "Study guide PDF with no extractable A–D MCQs; not invented."
+    }
+  ],
+  "missingSources": [
+    {
+      "file": "Mobile_App_500_Practical_Objective_Questions.pdf",
+      "courseSlug": "mobile-app-development",
+      "expectedUploadPath": "/home/ubuntu/.cursor/projects/workspace/uploads/Mobile_App_500_Practical_Objective_Questions.pdf",
+      "expectedRepoImportPath": "web/lib/gigalearn/academy/techBanks/mobile-app.json",
+      "status": "not_uploaded"
+    }
+  ],
+  "totals": {
+    "techUniqueApproved": 1092,
+    "examExtracted": 1000,
+    "examUniqueImportable": 707,
+    "examApproved": 528,
+    "examPendingReview": 179,
+    "claimedAs2500Tech": false,
+    "techExtracted": 2000,
+    "aiExtracted": 500,
+    "aiNearDuplicatesRemoved": 227,
+    "aiUniqueApproved": 273,
+    "aiRejected": 0,
+    "claimedAs500AiUnique": false
+  },
+  "notes": [
+    "AI bank: extracted 500, removed 227 near-duplicates, imported 273 unique approved. Not claimed as 500 unique.",
+    "Website/PWA, Robotics, Other Digital: 273 unique approved each (same extract pipeline).",
+    "BECE: 468 approved across 10 subjects; independent practice, not an official WAEC paper.",
+    "Teacher Promotion: 60 approved + 179 provisional pending_review; not an official GES paper.",
+    "AD II study guide: 0 extractable A–D MCQs (not invented).",
+    "Mobile App PDF still missing — course remains awaitingMaterials until import.",
+    "Exam banks reuse gigaLearnTechSessions server-graded practice (no second assessment system)."
+  ]
+}

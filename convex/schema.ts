@@ -1738,6 +1738,46 @@ export default defineSchema({
     count: v.number(),
   }).index("by_bucket", ["bucketKey"]),
 
+  /**
+   * Technology Learning Hub practice sessions (additive).
+   * Question banks live in committed JSON loaded by Convex — answer keys never
+   * ship in learner-facing queries until submit/grade rules allow.
+   */
+  gigaLearnTechSessions: defineTable({
+    userId: v.string(),
+    courseSlug: v.string(),
+    mode: v.union(
+      v.literal("learn"),
+      v.literal("practice_test"),
+      v.literal("timed"),
+      v.literal("revision"),
+      v.literal("topic"),
+      v.literal("random"),
+      v.literal("challenge")
+    ),
+    topicId: v.optional(v.string()),
+    questionIdsJson: v.string(),
+    /** Selected option index per questionId — learner answers only. */
+    answersJson: v.string(),
+    status: v.union(
+      v.literal("in_progress"),
+      v.literal("submitted"),
+      v.literal("graded")
+    ),
+    /** Server-authoritative deadline for timed mode (ms since epoch). */
+    endsAt: v.optional(v.number()),
+    score: v.optional(v.number()),
+    maxScore: v.optional(v.number()),
+    resultsJson: v.optional(v.string()),
+    startedAt: v.number(),
+    submittedAt: v.optional(v.number()),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_course", ["userId", "courseSlug"])
+    .index("by_user_status", ["userId", "status"])
+    .index("by_user_updated", ["userId", "updatedAt"]),
+
   /** Per-user developer API keys (hashed at rest). */
   apiKeys: defineTable({
     userId: v.string(),

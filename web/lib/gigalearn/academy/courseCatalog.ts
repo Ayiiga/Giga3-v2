@@ -10,6 +10,7 @@ export const ACADEMY_CATEGORIES = [
   "Early years",
   "Teacher practice",
   "Study skills",
+  "Technology",
 ] as const;
 
 export const ACADEMY_SUBJECTS = [
@@ -18,6 +19,11 @@ export const ACADEMY_SUBJECTS = [
   "Science",
   "Integrated studies",
   "Teaching",
+  "Artificial Intelligence",
+  "Web & PWA",
+  "Mobile Development",
+  "Robotics",
+  "Digital Technologies",
 ] as const;
 
 const BUILTIN_COURSES: AcademyCourse[] = [
@@ -302,6 +308,480 @@ const BUILTIN_COURSES: AcademyCourse[] = [
               kind: "gigalearn_tool",
               toolId: "quiz-generator",
               label: "Quiz generator",
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "ai-machine-learning",
+    title: "Artificial Intelligence and Machine Learning",
+    description:
+      "Practical AI fundamentals — prompts, generative AI, agents, evaluation, privacy, and responsible use. Interactive objective practice from the imported AI question bank (273 unique approved after near-duplicate removal).",
+    subject: "Artificial Intelligence",
+    category: "Technology",
+    difficulty: "beginner",
+    durationMinutes: 480,
+    learningObjectives: [
+      "Explain core AI and machine-learning ideas in plain language",
+      "Write clearer prompts and evaluate AI outputs critically",
+      "Recognise privacy, security, and ethics risks in AI workflows",
+      "Plan simple AI-assisted automation without inventing unsafe claims",
+    ],
+    prerequisites: ["Basic computer literacy", "Signed-in Giga3 account"],
+    curriculumPreview:
+      "Technology Learning Hub · AI_500 bank · 273 unique approved (227 near-duplicates removed; not claimed as 500 unique).",
+    assessmentDescription:
+      "Interactive MCQ practice (learn, timed, topic, revision). Answer keys are server-graded; unverified items stay flagged for review.",
+    instructorName: "GigaLearn Technology Faculty",
+    access: "free",
+    certificateEligible: true,
+    completionRequirements:
+      "Enrol and complete Technology Hub practice sessions across prompting, evaluation, and responsible AI topics.",
+    source: "catalog",
+    status: "published",
+    modules: [
+      {
+        id: "m-ai-fundamentals",
+        title: "AI fundamentals & prompting",
+        summary: "Core concepts and practical prompt practice.",
+        lessons: [
+          {
+            id: "l-ai-overview",
+            title: "Course overview",
+            summary: "How this pathway uses the Technology Learning Hub.",
+            required: true,
+            estimatedMinutes: 15,
+            activityKind: "lesson",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=ai-machine-learning",
+              label: "Open Technology Hub",
+            },
+          },
+          {
+            id: "l-ai-practice",
+            title: "AI practice bank",
+            summary: "Interactive learn mode with explanations after each submit.",
+            required: true,
+            estimatedMinutes: 60,
+            activityKind: "practice",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=ai-machine-learning&mode=learn",
+              label: "Start learn mode",
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "website-pwa-development",
+    title: "Website Development and Progressive Web Apps",
+    description:
+      "Responsive design, PWAs, service workers, offline, security, accessibility, and deployment — scenario-based objective practice from the Website/PWA bank.",
+    subject: "Web & PWA",
+    category: "Technology",
+    difficulty: "intermediate",
+    durationMinutes: 600,
+    learningObjectives: [
+      "Choose practical fixes for responsive and PWA reliability issues",
+      "Reason about caching, offline, and update UX safely",
+      "Apply web security, accessibility, and SEO basics",
+      "Troubleshoot common website/PWA failures with clear next steps",
+    ],
+    prerequisites: ["Familiarity with HTML/CSS or web basics", "Signed-in Giga3 account"],
+    curriculumPreview:
+      "Technology Learning Hub · Website_PWA_500 bank (unique approved items after dedupe).",
+    assessmentDescription:
+      "Learn, practice test, timed, topic, random, revision, and practical challenge modes. Server-side scoring.",
+    instructorName: "GigaLearn Technology Faculty",
+    access: "free",
+    certificateEligible: true,
+    completionRequirements:
+      "Enrol and complete Technology Hub sessions covering core PWA topics; pass practice checkpoints.",
+    source: "catalog",
+    status: "published",
+    modules: [
+      {
+        id: "m-web-foundations",
+        title: "Responsive web & PWA foundations",
+        summary: "Layout, installability, service workers, and offline behaviour.",
+        lessons: [
+          {
+            id: "l-web-hub",
+            title: "Open Technology Hub",
+            summary: "Browse topics and start interactive practice.",
+            required: true,
+            estimatedMinutes: 20,
+            activityKind: "lesson",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=website-pwa-development",
+              label: "Website & PWA practice",
+            },
+          },
+          {
+            id: "l-web-learn",
+            title: "Learn mode (10 questions)",
+            summary: "One question at a time with explanations after submit.",
+            required: true,
+            estimatedMinutes: 40,
+            activityKind: "practice",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=website-pwa-development&mode=learn",
+              label: "Start learn mode",
+            },
+          },
+          {
+            id: "l-web-timed",
+            title: "Timed assessment",
+            summary: "Server-authoritative timer — client clock cannot alter results.",
+            required: true,
+            estimatedMinutes: 45,
+            activityKind: "quiz",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=website-pwa-development&mode=timed",
+              label: "Timed assessment",
+            },
+          },
+        ],
+      },
+      {
+        id: "m-web-projects",
+        title: "Practical web projects",
+        summary: "Apply ideas with safe, written activities (no production experiments).",
+        lessons: [
+          {
+            id: "l-web-project",
+            title: "Manifest & offline checklist",
+            summary: "Inspect a sample manifest and plan offline tests in a sandbox.",
+            required: false,
+            estimatedMinutes: 35,
+            activityKind: "resource",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=website-pwa-development&mode=challenge",
+              label: "Practical challenge mode",
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "mobile-app-development",
+    title: "Mobile App Development",
+    description:
+      "Mobile architecture, UI, APIs, auth, offline sync, push, security, and release practice. Interactive bank loads after the Mobile App PDF is imported.",
+    subject: "Mobile Development",
+    category: "Technology",
+    difficulty: "intermediate",
+    durationMinutes: 540,
+    learningObjectives: [
+      "Describe mobile app architecture and secure API integration",
+      "Plan offline storage, sync, and push notification flows",
+      "Spot common mobile security and performance issues",
+      "Outline testing, payments, and release checklist steps",
+    ],
+    prerequisites: ["Basic programming or app-use familiarity", "Signed-in Giga3 account"],
+    curriculumPreview:
+      "Technology Learning Hub · awaiting Mobile_App_500_Practical_Objective_Questions.pdf import.",
+    assessmentDescription:
+      "Interactive MCQ practice when the mobile bank is available; server-graded results only.",
+    instructorName: "GigaLearn Technology Faculty",
+    access: "free",
+    certificateEligible: true,
+    completionRequirements:
+      "Enrol and complete Technology Hub practice once the mobile bank is imported.",
+    source: "catalog",
+    status: "published",
+    modules: [
+      {
+        id: "m-mobile-core",
+        title: "Mobile foundations",
+        summary: "Architecture, UI, and API practice pathway.",
+        lessons: [
+          {
+            id: "l-mobile-hub",
+            title: "Technology Hub",
+            summary: "Opens the mobile course practice surface.",
+            required: true,
+            estimatedMinutes: 15,
+            activityKind: "lesson",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=mobile-app-development",
+              label: "Open mobile hub",
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "robotics-intelligent-systems",
+    title: "Robotics and Intelligent Systems",
+    description:
+      "Sensors, actuators, microcontrollers, navigation, safety, and troubleshooting — scenario MCQs. Never run hazardous robot experiments outside a supervised lab.",
+    subject: "Robotics",
+    category: "Technology",
+    difficulty: "intermediate",
+    durationMinutes: 600,
+    learningObjectives: [
+      "Choose safe sensing and control steps for common robot scenarios",
+      "Diagnose motor, power, and calibration problems carefully",
+      "Apply robotics safety and emergency-stop thinking",
+      "Plan testing without claiming a hardware simulator that is not present",
+    ],
+    prerequisites: ["STEM curiosity; no lab hardware required for MCQ practice"],
+    curriculumPreview:
+      "Technology Learning Hub · Robotics_500 bank (unique approved items after dedupe).",
+    assessmentDescription:
+      "Interactive practice with safety-first explanations. No hardware simulation is claimed.",
+    instructorName: "GigaLearn Technology Faculty",
+    access: "free",
+    certificateEligible: true,
+    completionRequirements:
+      "Enrol and complete Technology Hub sessions on sensors, control, and safety topics.",
+    source: "catalog",
+    status: "published",
+    modules: [
+      {
+        id: "m-robot-core",
+        title: "Sensors, control & safety",
+        summary: "Practical decision-making for intelligent systems.",
+        lessons: [
+          {
+            id: "l-robot-hub",
+            title: "Open Technology Hub",
+            summary: "Topic practice and timed assessments.",
+            required: true,
+            estimatedMinutes: 20,
+            activityKind: "lesson",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=robotics-intelligent-systems",
+              label: "Robotics practice",
+            },
+          },
+          {
+            id: "l-robot-learn",
+            title: "Learn mode",
+            summary: "Submit answers before seeing explanations.",
+            required: true,
+            estimatedMinutes: 40,
+            activityKind: "practice",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=robotics-intelligent-systems&mode=learn",
+              label: "Start learn mode",
+            },
+          },
+          {
+            id: "l-robot-challenge",
+            title: "Practical challenge scenarios",
+            summary: "Scenario-style items with reinforcement suggestions (written only).",
+            required: false,
+            estimatedMinutes: 35,
+            activityKind: "quiz",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=robotics-intelligent-systems&mode=challenge",
+              label: "Challenge mode",
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "exam-bece-prep",
+    title: "Ghana BECE Preparation Practice",
+    description:
+      "Independent BECE-style objective practice across English, Mathematics, Science, Social Studies and more — with explanations. Not an official WAEC paper.",
+    subject: "Integrated studies",
+    category: "Exam prep",
+    difficulty: "beginner",
+    durationMinutes: 720,
+    learningObjectives: [
+      "Practise objective items across core BECE subject areas",
+      "Review explanations after each attempt",
+      "Use topic practice and timed sessions to build exam stamina",
+      "Treat this as revision support — confirm current WAEC/NaCCA guidance for your year",
+    ],
+    prerequisites: ["JHS / Basic 7–9 learners", "Signed-in Giga3 account"],
+    curriculumPreview:
+      "Exam Practice · Ghana_BECE_Preparation_500 bank (unique items after validation).",
+    assessmentDescription:
+      "Server-graded learn, timed, topic, and revision modes. Independent practice — not an official WAEC paper.",
+    instructorName: "GigaLearn Exam Faculty",
+    access: "free",
+    certificateEligible: false,
+    completionRequirements:
+      "Enrol and complete practice sessions; certificates are not claimed for this independent bank.",
+    source: "catalog",
+    status: "published",
+    modules: [
+      {
+        id: "m-bece-core",
+        title: "BECE subject practice",
+        summary: "Topic and timed practice across imported subjects.",
+        lessons: [
+          {
+            id: "l-bece-hub",
+            title: "Open BECE practice",
+            summary: "Browse subjects and start interactive practice.",
+            required: true,
+            estimatedMinutes: 20,
+            activityKind: "practice",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=exam-bece-prep",
+              label: "BECE practice hub",
+            },
+          },
+          {
+            id: "l-bece-timed",
+            title: "Timed practice set",
+            summary: "Server-authoritative timer for exam-style pacing.",
+            required: true,
+            estimatedMinutes: 45,
+            activityKind: "quiz",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=exam-bece-prep&mode=timed",
+              label: "Timed BECE practice",
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "exam-teacher-promotion",
+    title: "GES Teachers Promotion Aptitude Practice",
+    description:
+      "Independent promotion aptitude practice covering GES history, ethics, leadership, finance, safeguarding and reasoning. Not an official GES examination paper.",
+    subject: "Teaching",
+    category: "Exam prep",
+    difficulty: "intermediate",
+    durationMinutes: 600,
+    learningObjectives: [
+      "Practise promotion-style objective items with explanations",
+      "Revise weak topics through revision mode",
+      "Treat pending-review items as provisional until verified",
+      "Confirm current promotion notices and GES directives for your cohort",
+    ],
+    prerequisites: ["Teachers preparing for GES promotion", "Signed-in Giga3 account"],
+    curriculumPreview:
+      "Exam Practice · GES_Teachers_Promotion_500 bank (approved + provisional pending_review items).",
+    assessmentDescription:
+      "Server-graded practice modes. Provisional keys are labelled — not claimed as official GES keys.",
+    instructorName: "GigaLearn Exam Faculty",
+    access: "free",
+    certificateEligible: false,
+    completionRequirements:
+      "Enrol and complete practice sessions; verify official promotion requirements separately.",
+    source: "catalog",
+    status: "published",
+    modules: [
+      {
+        id: "m-promo-core",
+        title: "Promotion aptitude practice",
+        summary: "Laws, ethics, leadership and professional judgement.",
+        lessons: [
+          {
+            id: "l-promo-hub",
+            title: "Open promotion practice",
+            summary: "Interactive practice for Teacher Promotion Aptitude.",
+            required: true,
+            estimatedMinutes: 20,
+            activityKind: "practice",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=exam-teacher-promotion",
+              label: "Teacher promotion practice",
+            },
+          },
+          {
+            id: "l-promo-learn",
+            title: "Learn mode",
+            summary: "Submit before seeing explanations; provisional items are labelled.",
+            required: true,
+            estimatedMinutes: 40,
+            activityKind: "practice",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=exam-teacher-promotion&mode=learn",
+              label: "Start learn mode",
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "other-digital-technologies",
+    title: "Other Digital Technologies",
+    description:
+      "Cybersecurity, cloud, IoT, networking, APIs, data, payments, and digital project practice from the Other Digital Technologies bank.",
+    subject: "Digital Technologies",
+    category: "Technology",
+    difficulty: "beginner",
+    durationMinutes: 540,
+    learningObjectives: [
+      "Recognise phishing and basic security hygiene",
+      "Reason about cloud, networking, and API integration trade-offs",
+      "Apply backup, privacy, and troubleshooting checklists",
+      "Never test security against systems you do not own or have permission to assess",
+    ],
+    prerequisites: ["Everyday digital literacy", "Signed-in Giga3 account"],
+    curriculumPreview:
+      "Technology Learning Hub · Other_Digital_Technologies_500 bank (unique approved items).",
+    assessmentDescription:
+      "Full practice modes with server-side scoring and revision of incorrect items.",
+    instructorName: "GigaLearn Technology Faculty",
+    access: "free",
+    certificateEligible: true,
+    completionRequirements:
+      "Enrol and complete Technology Hub practice across security and cloud topics.",
+    source: "catalog",
+    status: "published",
+    modules: [
+      {
+        id: "m-digital-core",
+        title: "Security, cloud & integration",
+        summary: "Everyday digital technology decisions.",
+        lessons: [
+          {
+            id: "l-digital-hub",
+            title: "Open Technology Hub",
+            summary: "Browse topics such as phishing, cloud, and APIs.",
+            required: true,
+            estimatedMinutes: 20,
+            activityKind: "lesson",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=other-digital-technologies",
+              label: "Digital technologies practice",
+            },
+          },
+          {
+            id: "l-digital-topic",
+            title: "Topic practice",
+            summary: "Target a single topic with a short set.",
+            required: true,
+            estimatedMinutes: 35,
+            activityKind: "practice",
+            resource: {
+              kind: "external",
+              href: "/gigalearn/academy/tech/?course=other-digital-technologies&mode=topic",
+              label: "Topic practice",
             },
           },
         ],

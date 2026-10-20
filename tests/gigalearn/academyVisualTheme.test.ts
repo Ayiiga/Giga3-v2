@@ -73,7 +73,8 @@ describe("Academy visual theme", () => {
     expect(exam).toContain("exam-landing-banner--bece");
     expect(exam).toContain("exam-ghana-stripe");
     expect(exam).toContain("Start Free 30 Questions");
-    expect(exam).toContain("data-testid=\"bece-awaiting-materials\"");
+    expect(exam).toContain('data-testid="bece-practice-ready"');
+    expect(exam).toContain('data-testid="teacher-promotion-bank-ready"');
     expect(exam).not.toContain("0248");
     // Anti-MoMo copy is allowed; unofficial activation flows are not.
     expect(exam.toLowerCase()).not.toContain("copy momo");

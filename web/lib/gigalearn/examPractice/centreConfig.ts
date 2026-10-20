@@ -1,15 +1,17 @@
 /**
- * Exam Practice Centre — Phase B config (landing only).
- * Source classifications from docs/gigalearn-exam-practice-centre-phase0-audit.md.
- * No question bank; no fabricated BECE papers.
+ * Exam Practice Centre — landing config + honest bank inventory.
+ * BECE / Teacher Promotion interactive banks live under Academy tech practice.
+ * No fabricated WAEC papers; AD II study guide has no extractable MCQs.
  */
+
+import { getExamBankMeta } from "@/lib/gigalearn/examPractice/examBankMeta";
 
 export const EXAM_PRACTICE_CENTRE_TITLE = "GigaLearn Exam Practice Centre";
 
 export const EXAM_PRACTICE_CENTRE_TAGLINE =
   "Practise smarter. Understand your mistakes. Prepare with confidence.";
 
-/** Honest BECE empty copy — Phase 0 found zero BECE papers in uploads. */
+/** Kept for copy when a bank is empty; BECE bank is now imported. */
 export const BECE_AWAITING_MATERIALS_MESSAGE =
   "BECE practice materials are being prepared.";
 
@@ -25,10 +27,20 @@ export const TEACHER_PROMOTION_LEVEL_LABELS = [
 ] as const;
 
 /**
- * Teacher-promotion source inventory (Phase 0). Not imported in Phase B.
- * answerStatus describes source state before human verification.
+ * Teacher-promotion source inventory.
+ * answerStatus describes source state before / during human verification.
  */
 export const TEACHER_PROMOTION_SOURCE_INVENTORY = [
+  {
+    id: "ges-teachers-promotion-500",
+    title: "GES Teachers Promotion 500 Objective Questions Explained",
+    answerStatus: "partial_awaiting_verification" as const,
+  },
+  {
+    id: "ad2-study-guide-2026",
+    title: "Attractive GES Assistant Director II Study Guide 2026",
+    answerStatus: "partial_awaiting_verification" as const,
+  },
   {
     id: "capsules-2022",
     title: "GES Capsules Promotion Aptitude Quiz (2022)",
@@ -56,6 +68,14 @@ export const EXAM_PRACTICE_DESTINATIONS = {
   examHome: "/gigalearn/exam/",
   /** Timed Teacher Promotion free orientation practice (not an official GES paper). */
   promotionFreePractice: "/gigalearn/exam/practice/",
+  /** Imported BECE objective bank (interactive Academy practice). */
+  becePractice: "/gigalearn/academy/tech/?course=exam-bece-prep",
+  beceTimed: "/gigalearn/academy/tech/?course=exam-bece-prep&mode=timed",
+  beceCourse: "/gigalearn/academy/course/?slug=exam-bece-prep",
+  /** Imported Teacher Promotion aptitude bank. */
+  teacherPromotionPractice: "/gigalearn/academy/tech/?course=exam-teacher-promotion",
+  teacherPromotionLearn: "/gigalearn/academy/tech/?course=exam-teacher-promotion&mode=learn",
+  teacherPromotionCourse: "/gigalearn/academy/course/?slug=exam-teacher-promotion",
   academy: "/gigalearn/academy/",
   academyAssess: "/gigalearn/academy/assess/",
   academyMy: "/gigalearn/academy/my/",
@@ -69,15 +89,47 @@ export const EXAM_PRACTICE_DESTINATIONS = {
   pricing: "/pricing/",
 } as const;
 
+const beceMeta = getExamBankMeta("exam-bece-prep");
+const teacherMeta = getExamBankMeta("exam-teacher-promotion");
+const ad2Meta = getExamBankMeta("exam-ad2-study-guide");
+
 /**
- * BECE subjects placeholder — empty until verified papers arrive.
- * UI can map this list later without redesigning the centre card.
+ * BECE subjects from the imported preparation bank (not official WAEC papers).
  */
 export const BECE_SUBJECTS_AVAILABLE: ReadonlyArray<{
   id: string;
   label: string;
   questionCount?: number;
-}> = [];
+}> = (beceMeta?.topics ?? []).map((t) => ({
+  id: t.id,
+  label: t.label,
+  questionCount: t.questionCount,
+}));
+
+export const BECE_BANK_SUMMARY = {
+  available: (beceMeta?.approvedQuestionCount ?? 0) > 0,
+  approvedCount: beceMeta?.approvedQuestionCount ?? 0,
+  pendingCount: beceMeta?.pendingQuestionCount ?? 0,
+  sourceDocument: beceMeta?.sourceDocument ?? null,
+} as const;
+
+export const TEACHER_PROMOTION_BANK_SUMMARY = {
+  available:
+    (teacherMeta?.approvedQuestionCount ?? 0) +
+      (teacherMeta?.pendingQuestionCount ?? 0) >
+    0,
+  approvedCount: teacherMeta?.approvedQuestionCount ?? 0,
+  pendingCount: teacherMeta?.pendingQuestionCount ?? 0,
+  sourceDocument: teacherMeta?.sourceDocument ?? null,
+} as const;
+
+export const AD2_STUDY_GUIDE_SUMMARY = {
+  available: false,
+  approvedCount: ad2Meta?.approvedQuestionCount ?? 0,
+  pendingCount: ad2Meta?.pendingQuestionCount ?? 0,
+  note: "Study guide only — no extractable A–D MCQs imported (not invented).",
+  sourceDocument: ad2Meta?.sourceDocument ?? null,
+} as const;
 
 export function answerStatusLabel(
   status:

@@ -4,9 +4,11 @@ import {
   ACADEMY_CATEGORIES,
   ACADEMY_SUBJECTS,
   filterAcademyCourses,
+  getBuiltinAcademyCourse,
   listBuiltinAcademyCourses,
   toAcademyListItem,
 } from "@/lib/gigalearn/academy/courseCatalog";
+import { getTechCourseMeta } from "@/lib/gigalearn/academy/techBanks/techBankMeta";
 import type { AcademyCourseListItem } from "@/lib/gigalearn/academy/types";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -135,7 +137,10 @@ export function AcademyCourseCatalogueBody() {
         </p>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2">
-          {courses.map((course: AcademyCourseListItem) => (
+          {courses.map((course: AcademyCourseListItem) => {
+            const full = getBuiltinAcademyCourse(course.slug);
+            const tech = getTechCourseMeta(course.slug);
+            return (
             <li key={course.slug}>
               <Link
                 href={`/gigalearn/academy/course/?slug=${encodeURIComponent(course.slug)}`}
@@ -153,9 +158,21 @@ export function AcademyCourseCatalogueBody() {
                       Certificate-eligible
                     </span>
                   ) : null}
+                  {tech?.awaitingMaterials ? (
+                    <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-medium text-amber-900">
+                      Awaiting bank
+                    </span>
+                  ) : null}
                 </div>
                 <h3 className="mt-3 text-base font-semibold text-foreground">{course.title}</h3>
                 <p className="mt-1 line-clamp-3 flex-1 text-sm text-muted">{course.description}</p>
+                {full?.learningObjectives?.length ? (
+                  <ul className="mt-2 line-clamp-2 list-inside list-disc text-xs text-muted">
+                    {full.learningObjectives.slice(0, 2).map((o) => (
+                      <li key={o}>{o}</li>
+                    ))}
+                  </ul>
+                ) : null}
                 <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted">
                   <span className="inline-flex items-center gap-1">
                     <BookOpen className="h-3.5 w-3.5" aria-hidden />
@@ -164,12 +181,18 @@ export function AcademyCourseCatalogueBody() {
                   <span className="inline-flex items-center gap-1">
                     <Clock3 className="h-3.5 w-3.5" aria-hidden />
                     {formatDuration(course.durationMinutes)} · {course.moduleCount} modules
+                    {tech
+                      ? ` · ${tech.approvedQuestionCount} questions`
+                      : ` · ${course.lessonCount} lessons`}
                   </span>
                 </div>
-                <span className="mt-3 text-sm font-semibold text-accent">View course →</span>
+                <span className="mt-3 text-sm font-semibold text-accent">
+                  {tech ? "Start learning →" : "View course →"}
+                </span>
               </Link>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
     </div>

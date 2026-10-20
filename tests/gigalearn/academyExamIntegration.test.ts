@@ -51,14 +51,14 @@ describe("Academy + Exam Practice integration", () => {
     expect(sitemap).toContain("/gigalearn/exam/");
   });
 
-  it("preserves BECE empty bank and studio honesty after integration", () => {
-    expect(BECE_SUBJECTS_AVAILABLE).toHaveLength(0);
+  it("preserves BECE subject honesty and studio inventory after integration", () => {
+    expect(BECE_SUBJECTS_AVAILABLE.length).toBeGreaterThan(0);
     expect(LEARNING_STUDIOS.some((s) => s.status === "planned")).toBe(true);
     expect(LEARNING_STUDIOS.some((s) => s.status === "available" && s.href)).toBe(true);
     expect(listBuiltinAcademyCourses().length).toBeGreaterThanOrEqual(4);
 
     const schema = readFileSync(resolve(ROOT, "convex/schema.ts"), "utf8");
-    // No new exam question-bank table in these phases.
+    // Exam banks reuse tech practice sessions — no separate exam question table.
     expect(schema).not.toMatch(/gigaLearnExamQuestions|examPracticeQuestions/);
   });
 
