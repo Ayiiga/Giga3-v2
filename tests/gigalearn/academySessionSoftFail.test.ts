@@ -40,4 +40,11 @@ describe("Academy personalization queries soft-fail invalid sessions", () => {
     expect(block).toContain("tryRequireSession");
     expect(block).toMatch(/steps:\s*\[\]/);
   });
+
+  it("listProgress soft-fails invalid sessions so /gigalearn hub cannot crash", () => {
+    const src = read("convex/gigaLearnProgress.ts");
+    const block = src.slice(src.indexOf("export const listProgress"));
+    expect(block).toContain("tryRequireSession");
+    expect(block).toMatch(/if\s*\(\s*!email\s*\)\s*return\s*\[\]/);
+  });
 });

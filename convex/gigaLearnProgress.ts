@@ -1,6 +1,6 @@
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { requireSession } from "./auth";
+import { requireSession, tryRequireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { isOfflineAssessmentStale } from "../web/lib/gigalearn/offlineProgressMerge";
 
@@ -22,7 +22,9 @@ export const listProgress = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken, ctx);
+    // Soft-fail invalid/expired tokens so GigaLearn hub useQuery cannot crash.
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return [];
     const cap = Math.min(args.limit ?? 20, 50);
     const rows = await ctx.db
       .query("gigaLearnProgress")

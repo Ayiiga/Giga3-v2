@@ -536,7 +536,9 @@ export const canAuthorCourses = query({
 export const listMyAuthoredCourses = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken, ctx);
+    // Soft-fail invalid/expired tokens so Author panel useQuery cannot crash.
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return [];
     const allowed = await userMayAuthor(ctx, email);
     if (!allowed) return [];
     const rows = await ctx.db
