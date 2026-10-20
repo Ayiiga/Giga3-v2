@@ -498,6 +498,8 @@ export const getChatCredits = query({
       credits: user.credits ?? 0,
       aiTier,
       isPremium,
+      /** True when the user has a credit_purchase log — not residual balance. */
+      hasPurchasedCredits,
       subscriptionActive,
       canUseOpenAiImage: shouldOfferOpenAiImageGeneration(
         user.subscriptionPlan ?? "free",

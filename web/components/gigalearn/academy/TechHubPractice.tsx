@@ -1,6 +1,7 @@
 "use client";
 
 import { AcademyChrome } from "@/components/gigalearn/academy/AcademyChrome";
+import { ExamPracticeShareButton } from "@/components/gigalearn/exam/ExamPracticeShareButton";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { ProductSignInPrompt } from "@/components/seo/ProductSignInPrompt";
@@ -13,6 +14,16 @@ import {
 } from "@/lib/gigalearn/academy/techBanks/techBankMeta";
 import type { TechPracticeMode } from "@/lib/gigalearn/academy/techBanks/techBankTypes";
 import { ACADEMY_SURFACE_CLASS } from "@/lib/gigalearn/academy/visualTheme";
+import {
+  EXAM_PRACTICE_FREE_QUESTION_COUNT,
+  EXAM_PRACTICE_PREMIUM_QUESTION_COUNT,
+  hasExamPracticePremiumAccess,
+  isExamPracticeCourseSlug,
+} from "@/lib/gigalearn/examPractice/practiceLimits";
+import {
+  rewardForCorrectAnswer,
+  rewardForSessionScore,
+} from "@/lib/gigalearn/examPractice/rewardCopy";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
@@ -35,7 +46,9 @@ const MODES: { id: TechPracticeMode; label: string; hint: string }[] = [
 function TechHubInner() {
   const params = useSearchParams();
   const courseSlug = (params.get("course") || "").trim().toLowerCase();
-  const initialMode = (params.get("mode") || "learn").trim() as TechPracticeMode;
+  const isExamCourse = isExamPracticeCourseSlug(courseSlug);
+  const initialMode = (params.get("mode") || (isExamCourse ? "timed" : "learn")).trim() as TechPracticeMode;
+  const urlCount = Number(params.get("count") || "");
   const sessionToken = getSessionToken();
   const course = useMemo(
     () => (courseSlug ? getBuiltinAcademyCourse(courseSlug) : undefined),
@@ -50,16 +63,47 @@ function TechHubInner() {
     api.gigaLearnTechBanks.getTechCoursePracticeSummary,
     sessionToken && courseSlug ? { sessionToken, courseSlug } : "skip"
   );
+  const chatCredits = useQuery(
+    api.users.getChatCredits,
+    sessionToken ? { sessionToken } : "skip"
+  );
   const enrol = useMutation(api.gigaLearnAcademy.enrolInCourse);
   const startSession = useMutation(api.gigaLearnTechBanks.startTechPracticeSession);
   const saveAnswer = useMutation(api.gigaLearnTechBanks.saveTechPracticeAnswer);
   const submitSession = useMutation(api.gigaLearnTechBanks.submitTechPracticeSession);
 
+  // Premium packs require active subscription or credit-pack purchase.
+  // `isPremium` already reflects credit-pack purchase via AI tier; residual
+  // balance alone must not unlock larger packs (server enforces the same).
+  const premiumAccess = hasExamPracticePremiumAccess({
+    subscriptionActive: chatCredits?.subscriptionActive,
+    isPremium: chatCredits?.isPremium,
+  });
+
+  const countChoices = useMemo(() => {
+    if (!isExamCourse) return [5, 10, 15, 20, 30];
+    if (premiumAccess) {
+      return [10, 20, 50, 100, 200, EXAM_PRACTICE_PREMIUM_QUESTION_COUNT];
+    }
+    return [10, 20, 30, EXAM_PRACTICE_FREE_QUESTION_COUNT];
+  }, [isExamCourse, premiumAccess]);
+
+  const defaultCount = useMemo(() => {
+    if (Number.isFinite(urlCount) && urlCount > 0) {
+      return countChoices.includes(urlCount)
+        ? urlCount
+        : countChoices.reduce((best, n) =>
+            Math.abs(n - urlCount) < Math.abs(best - urlCount) ? n : best
+          );
+    }
+    return isExamCourse ? EXAM_PRACTICE_FREE_QUESTION_COUNT : 10;
+  }, [urlCount, countChoices, isExamCourse]);
+
   const [mode, setMode] = useState<TechPracticeMode>(
     MODES.some((m) => m.id === initialMode) ? initialMode : "learn"
   );
   const [topicId, setTopicId] = useState(params.get("topic") || "");
-  const [count, setCount] = useState(10);
+  const [count, setCount] = useState(defaultCount);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<Id<"gigaLearnTechSessions"> | null>(null);
@@ -74,6 +118,8 @@ function TechHubInner() {
   >([]);
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [reward, setReward] = useState<string | null>(null);
+  const [streak, setStreak] = useState(0);
   const [learnFeedback, setLearnFeedback] = useState<{
     correct: boolean;
     explanation: string;
@@ -96,6 +142,10 @@ function TechHubInner() {
       options: string[];
     }>;
   }>(null);
+
+  useEffect(() => {
+    setCount(defaultCount);
+  }, [defaultCount]);
 
   const liveSession = useQuery(
     api.gigaLearnTechBanks.getTechPracticeSession,
@@ -186,6 +236,8 @@ function TechHubInner() {
       setLocalQuestions(started.questions);
       setIndex(0);
       setAnswers({});
+      setReward(null);
+      setStreak(0);
       setEndsAt(started.endsAt);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not start practice.");
@@ -219,6 +271,19 @@ function TechHubInner() {
       }
       if (res.feedback) {
         setLearnFeedback(res.feedback);
+        if (res.feedback.correct) {
+          const nextStreak = streak + 1;
+          setStreak(nextStreak);
+          setReward(
+            rewardForCorrectAnswer({
+              streak: nextStreak,
+              seed: index + nextStreak,
+            })
+          );
+        } else {
+          setStreak(0);
+          setReward(null);
+        }
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save answer.");
@@ -247,10 +312,22 @@ function TechHubInner() {
   }
 
   if (results) {
+    const sessionPraise =
+      results.percent != null ? rewardForSessionScore(results.percent) : null;
+    const shareKind = courseSlug.includes("bece")
+      ? ("bece" as const)
+      : courseSlug.includes("teacher-promotion")
+        ? ("teacher_promotion" as const)
+        : null;
     return (
       <AcademyChrome active="course" title={`${course.title} · Results`}>
         <article className={cn(ACADEMY_SURFACE_CLASS.catalogue, "space-y-4 p-4 sm:p-6")}>
           <h2 className="text-xl font-bold text-[#1E1B4B]">Session complete</h2>
+          {sessionPraise ? (
+            <p className="exam-session-reward" role="status">
+              {sessionPraise}
+            </p>
+          ) : null}
           <p className="text-sm text-slate-600">
             Score {results.score}/{results.maxScore}
             {results.percent != null ? ` · ${results.percent}%` : ""}
@@ -279,10 +356,19 @@ function TechHubInner() {
                 setResults(null);
                 setSessionId(null);
                 setLocalQuestions([]);
+                setReward(null);
+                setStreak(0);
               }}
             >
               Practise again
             </Button>
+            {shareKind ? (
+              <ExamPracticeShareButton
+                kind={shareKind}
+                label="Share this practice"
+                className="sm:min-w-[12rem]"
+              />
+            ) : null}
             <ButtonLink
               href={`/gigalearn/academy/course/?slug=${encodeURIComponent(courseSlug)}`}
               variant="secondary"
@@ -305,7 +391,12 @@ function TechHubInner() {
 
     return (
       <AcademyChrome active="course" title={course.title}>
-        <div className="exam-session exam-session--bece">
+        <div
+          className={cn(
+            "exam-session",
+            courseSlug.includes("bece") && "exam-session--bece"
+          )}
+        >
           <div className="exam-session-toolbar">
             <Link
               href={`/gigalearn/academy/course/?slug=${encodeURIComponent(courseSlug)}`}
@@ -331,6 +422,7 @@ function TechHubInner() {
               </div>
               <p className="exam-session-toolbar-sub">
                 {Object.keys(answers).length} answered
+                {streak > 1 ? ` · streak ${streak}` : ""}
               </p>
             </div>
             {mm && ss ? (
@@ -396,6 +488,11 @@ function TechHubInner() {
                   );
                 })}
               </ul>
+              {revealed && reward ? (
+                <p className="exam-session-reward" role="status" data-testid="exam-reward">
+                  {reward}
+                </p>
+              ) : null}
               {revealed && learnFeedback ? (
                 <div className="exam-session-explain" role="status">
                   <p>
@@ -422,6 +519,7 @@ function TechHubInner() {
               onClick={() => {
                 setIndex((i) => Math.max(0, i - 1));
                 setLearnFeedback(null);
+                setReward(null);
               }}
             >
               ← Previous
@@ -434,6 +532,7 @@ function TechHubInner() {
                 onClick={() => {
                   setIndex((i) => i + 1);
                   setLearnFeedback(null);
+                  setReward(null);
                 }}
               >
                 Next →
@@ -560,13 +659,25 @@ function TechHubInner() {
                 value={count}
                 onChange={(e) => setCount(Number(e.target.value))}
               >
-                {[5, 10, 15, 20, 30].map((n) => (
+                {countChoices.map((n) => (
                   <option key={n} value={n}>
                     {n}
+                    {isExamCourse && n > EXAM_PRACTICE_FREE_QUESTION_COUNT
+                      ? " (subscription / pack purchase)"
+                      : ""}
                   </option>
                 ))}
               </select>
             </label>
+            {isExamCourse ? (
+              <p className="text-xs text-slate-500">
+                Free learners get up to {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions. An active
+                subscription or a credit-pack purchase unlocks up to{" "}
+                {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT} (capped by bank size). A leftover credit
+                balance alone does not unlock larger packs. Correct answers earn praise like
+                Excellent and Superb.
+              </p>
+            ) : null}
             {error ? <p className="text-sm text-rose-700">{error}</p> : null}
             <Button
               type="button"

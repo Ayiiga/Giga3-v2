@@ -183,6 +183,24 @@ describe("Technology Learning Hub question banks", () => {
     expect(getBuiltinAcademyCourse("exam-bece-prep")?.description).toMatch(/practice|not.*official|WAEC/i);
   });
 
+  it("allows exam packs up to 500 while tech hub stays at 50", () => {
+    const examIds = selectTechQuestionIds({
+      courseSlug: "exam-bece-prep",
+      mode: "practice_test",
+      count: 500,
+      seed: 7,
+    });
+    expect(examIds.length).toBeGreaterThan(50);
+    expect(examIds.length).toBeLessThanOrEqual(500);
+    const techIds = selectTechQuestionIds({
+      courseSlug: "website-pwa-development",
+      mode: "random",
+      count: 500,
+      seed: 7,
+    });
+    expect(techIds.length).toBeLessThanOrEqual(50);
+  });
+
   it("selects shuffled sets without dropping answer-key integrity", () => {
     const ids = selectTechQuestionIds({
       courseSlug: "website-pwa-development",

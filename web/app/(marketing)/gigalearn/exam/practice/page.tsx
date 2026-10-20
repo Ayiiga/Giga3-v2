@@ -20,7 +20,7 @@ export const metadata = publicMetadata({
   path: "/gigalearn/exam/practice",
   title: "Teacher Promotion Free Practice | GigaLearn Exam Practice",
   description:
-    "Timed free 30-question Teacher Promotion orientation practice on GigaLearn. Not an official GES examination paper.",
+    "Timed free 50-question Teacher Promotion orientation practice on GigaLearn. Not an official GES examination paper.",
 });
 
 export default function ExamPracticeSessionPage() {

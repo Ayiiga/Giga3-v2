@@ -40,11 +40,14 @@ export function listPracticeCourseMeta(): TechCourseMeta[] {
 
 export function techPracticeHref(
   courseSlug: string,
-  opts?: { mode?: string; topic?: string }
+  opts?: { mode?: string; topic?: string; count?: number }
 ): string {
   const params = new URLSearchParams();
   params.set("course", courseSlug);
   if (opts?.mode) params.set("mode", opts.mode);
   if (opts?.topic) params.set("topic", opts.topic);
+  if (opts?.count != null && Number.isFinite(opts.count) && opts.count > 0) {
+    params.set("count", String(Math.floor(opts.count)));
+  }
   return `/gigalearn/academy/tech/?${params.toString()}`;
 }

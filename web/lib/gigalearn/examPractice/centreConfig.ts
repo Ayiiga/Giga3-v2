@@ -69,12 +69,20 @@ export const EXAM_PRACTICE_DESTINATIONS = {
   /** Timed Teacher Promotion free orientation practice (not an official GES paper). */
   promotionFreePractice: "/gigalearn/exam/practice/",
   /** Imported BECE objective bank (interactive Academy practice). */
-  becePractice: "/gigalearn/academy/tech/?course=exam-bece-prep",
-  beceTimed: "/gigalearn/academy/tech/?course=exam-bece-prep&mode=timed",
+  becePractice: "/gigalearn/academy/tech/?course=exam-bece-prep&count=50",
+  beceTimed: "/gigalearn/academy/tech/?course=exam-bece-prep&mode=timed&count=50",
+  /** Full BECE pack — server clamps to 50 without subscription/credits. */
+  becePracticeFull:
+    "/gigalearn/academy/tech/?course=exam-bece-prep&mode=practice_test&count=500",
   beceCourse: "/gigalearn/academy/course/?slug=exam-bece-prep",
   /** Imported Teacher Promotion aptitude bank. */
-  teacherPromotionPractice: "/gigalearn/academy/tech/?course=exam-teacher-promotion",
-  teacherPromotionLearn: "/gigalearn/academy/tech/?course=exam-teacher-promotion&mode=learn",
+  teacherPromotionPractice:
+    "/gigalearn/academy/tech/?course=exam-teacher-promotion&count=50",
+  teacherPromotionLearn:
+    "/gigalearn/academy/tech/?course=exam-teacher-promotion&mode=learn&count=50",
+  /** Full promotion pack — server clamps to 50 without subscription/credits. */
+  teacherPromotionPracticeFull:
+    "/gigalearn/academy/tech/?course=exam-teacher-promotion&mode=practice_test&count=500",
   teacherPromotionCourse: "/gigalearn/academy/course/?slug=exam-teacher-promotion",
   academy: "/gigalearn/academy/",
   academyAssess: "/gigalearn/academy/assess/",

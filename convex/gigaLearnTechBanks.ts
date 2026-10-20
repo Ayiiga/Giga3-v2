@@ -5,6 +5,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
+import { isSubscriptionActive } from "./creditsConfig";
 import { sessionArgs } from "./validators";
 import {
   getTechBankQuestionById,
@@ -17,6 +18,11 @@ import {
 import { getTechCourseMeta, listTechCourseMeta } from "../web/lib/gigalearn/academy/techBanks/techBankMeta";
 import { getBuiltinAcademyCourse } from "../web/lib/gigalearn/academy/courseCatalog";
 import type { TechPracticeMode } from "../web/lib/gigalearn/academy/techBanks/techBankTypes";
+import {
+  isExamPracticeCourseSlug,
+  resolveExamPracticeSessionCount,
+  shouldAbandonPriorExamInProgress,
+} from "../web/lib/gigalearn/examPractice/practiceLimits";
 
 const MODE_VALIDATOR = v.union(
   v.literal("learn"),
@@ -52,7 +58,8 @@ function parseIds(raw: string): string[] {
   try {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.map((x) => String(x).slice(0, 120)).filter(Boolean).slice(0, 50);
+    // Exam Practice premium packs may request up to 500 items.
+    return parsed.map((x) => String(x).slice(0, 120)).filter(Boolean).slice(0, 500);
   } catch {
     return [];
   }
@@ -200,9 +207,46 @@ export const startTechPracticeSession = mutation({
       }
     }
 
-    const defaultCount =
-      mode === "learn" ? 10 : mode === "timed" ? 20 : mode === "practice_test" ? 20 : 10;
-    const count = args.count ?? defaultCount;
+    const defaultCount = isExamPracticeCourseSlug(slug)
+      ? mode === "learn"
+        ? 10
+        : 50
+      : mode === "learn"
+        ? 10
+        : mode === "timed"
+          ? 20
+          : mode === "practice_test"
+            ? 20
+            : 10;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    // Credit-pack purchase unlock (not residual balance). Matches AI premium tier.
+    const hasPurchasedCredits = user
+      ? await ctx.db
+          .query("creditLogs")
+          .withIndex("by_user_created", (q) => q.eq("userId", email))
+          .order("desc")
+          .take(50)
+          .then((rows) => rows.some((row) => row.action === "credit_purchase"))
+      : false;
+    const subscriptionActive = isSubscriptionActive(
+      user?.subscriptionPlan ?? "free",
+      user?.subscriptionExpiresAt
+    );
+    const bankSize = getTechBankQuestions(slug).length;
+    const resolved = resolveExamPracticeSessionCount({
+      requested: args.count ?? defaultCount,
+      courseSlug: slug,
+      bankSize,
+      subscriptionActive,
+      hasPurchasedCredits,
+      // Residual balance must not unlock — pass through only for API clarity.
+      credits: user?.credits ?? 0,
+    });
+    const count = resolved.count;
     const seed = Date.now() ^ Math.floor(Math.random() * 1e9);
     const questionIds = selectTechQuestionIds({
       courseSlug: slug,
@@ -221,6 +265,26 @@ export const startTechPracticeSession = mutation({
     if (mode === "timed") {
       const mins = Math.max(5, Math.min(90, Math.floor(args.timeLimitMinutes ?? 30)));
       endsAt = now + mins * 60_000;
+    }
+
+    // Exam Practice: abandon prior in-progress sessions for this course so
+    // concurrent starts cannot pile up large server-side answer-key sessions.
+    if (shouldAbandonPriorExamInProgress(slug)) {
+      const priorOpen = await ctx.db
+        .query("gigaLearnTechSessions")
+        .withIndex("by_user_course", (q: any) =>
+          q.eq("userId", email).eq("courseSlug", slug)
+        )
+        .order("desc")
+        .take(20);
+      for (const prior of priorOpen) {
+        if (prior.status !== "in_progress") continue;
+        await ctx.db.patch(prior._id, {
+          status: "submitted",
+          submittedAt: now,
+          updatedAt: now,
+        });
+      }
     }
 
     const sessionId = await ctx.db.insert("gigaLearnTechSessions", {
@@ -243,6 +307,7 @@ export const startTechPracticeSession = mutation({
       topicId: args.topicId?.trim() || null,
       endsAt: endsAt ?? null,
       questionCount: questionIds.length,
+      premiumAccess: resolved.premiumAccess,
       approvedBankSize: meta.approvedQuestionCount,
       questions: questionIds.map((id) => {
         const q = getTechBankQuestionById(slug, id)!;

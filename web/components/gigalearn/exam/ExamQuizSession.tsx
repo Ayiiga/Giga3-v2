@@ -1,12 +1,18 @@
 "use client";
 
+import { ExamPracticeShareButton } from "@/components/gigalearn/exam/ExamPracticeShareButton";
 import { Button } from "@/components/ui/Button";
+import { recordLocalExamPracticeResult } from "@/lib/gigalearn/examPractice/localProgress";
+import {
+  rewardForCorrectAnswer,
+  rewardForSessionScore,
+} from "@/lib/gigalearn/examPractice/rewardCopy";
 import type { ExamPracticeQuestion, ExamPracticeSetMeta } from "@/lib/gigalearn/examPractice/types";
 import { optionIds, scoreQuiz, type QuizAnswerMap } from "@/lib/gigalearn/examPractice/quizEngine";
 import { cn } from "@/lib/utils";
 import { Check, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type Props = {
   meta: ExamPracticeSetMeta;
@@ -21,6 +27,9 @@ export function ExamQuizSession({ meta, questions, exitHref, theme = "teacher" }
   const [answers, setAnswers] = useState<QuizAnswerMap>({});
   const [secondsLeft, setSecondsLeft] = useState(meta.durationMinutes * 60);
   const [finished, setFinished] = useState(false);
+  const [reward, setReward] = useState<string | null>(null);
+  const [streak, setStreak] = useState(0);
+  const recordedRef = useRef(false);
 
   const current = questions[index];
   const selected = current ? answers[current.id] : undefined;
@@ -42,20 +51,44 @@ export function ExamQuizSession({ meta, questions, exitHref, theme = "teacher" }
     return () => window.clearInterval(id);
   }, [finished]);
 
+  useEffect(() => {
+    if (!finished || recordedRef.current) return;
+    recordedRef.current = true;
+    recordLocalExamPracticeResult({
+      setId: meta.id,
+      category: meta.category,
+      correct: score.correct,
+      total: score.total,
+      percent: score.percent,
+      finishedAt: Date.now(),
+    });
+  }, [finished, meta.category, meta.id, score.correct, score.percent, score.total]);
+
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
   const ss = String(secondsLeft % 60).padStart(2, "0");
   const progressPct = questions.length
     ? Math.round(((index + 1) / questions.length) * 100)
     : 0;
 
+  const bannerTitle =
+    theme === "bece"
+      ? "BECE Preparation Practice"
+      : "Promotion Exam Preparation Practice";
+
   if (!current || finished) {
+    const sessionPraise = rewardForSessionScore(score.percent);
     return (
       <div className={cn("exam-session", theme === "bece" && "exam-session--bece")}>
-        <ExamSessionHeader title={meta.title} />
+        <ExamSessionHeader title={meta.title} theme={theme} />
         <div className="exam-session-body">
           <article className="exam-session-card exam-session-results">
             <p className="exam-session-kicker">Results</p>
             <h2 className="exam-session-title">Practice complete</h2>
+            {sessionPraise ? (
+              <p className="exam-session-reward" role="status">
+                {sessionPraise}
+              </p>
+            ) : null}
             <p className="exam-session-note">{meta.provenanceNote}</p>
             <dl className="exam-session-scoregrid">
               <div className="exam-session-scorecell exam-session-scorecell--accent">
@@ -82,10 +115,17 @@ export function ExamQuizSession({ meta, questions, exitHref, theme = "teacher" }
                   setIndex(0);
                   setSecondsLeft(meta.durationMinutes * 60);
                   setFinished(false);
+                  setReward(null);
+                  setStreak(0);
+                  recordedRef.current = false;
                 }}
               >
                 Practise again
               </Button>
+              <ExamPracticeShareButton
+                kind={meta.category === "bece" ? "bece" : "teacher_promotion"}
+                label="Share this practice"
+              />
               <Link href={exitHref} className="exam-session-btn-secondary min-h-11 w-full">
                 Back to Exam Practice
               </Link>
@@ -98,7 +138,7 @@ export function ExamQuizSession({ meta, questions, exitHref, theme = "teacher" }
 
   return (
     <div className={cn("exam-session", theme === "bece" && "exam-session--bece")}>
-      <ExamSessionHeader title="Promotion Exam Preparation Practice" />
+      <ExamSessionHeader title={bannerTitle} theme={theme} />
       <div className="exam-session-toolbar">
         <Link
           href={exitHref}
@@ -114,7 +154,10 @@ export function ExamQuizSession({ meta, questions, exitHref, theme = "teacher" }
           <div className="exam-session-progress" aria-hidden>
             <div className="exam-session-progress-fill" style={{ width: `${progressPct}%` }} />
           </div>
-          <p className="exam-session-toolbar-sub">{score.answered} answered</p>
+          <p className="exam-session-toolbar-sub">
+            {score.answered} answered
+            {streak > 1 ? ` · streak ${streak}` : ""}
+          </p>
         </div>
         <div className="exam-session-timer" aria-live="polite">
           <span className="exam-session-timer-label">Time left</span>
@@ -146,12 +189,27 @@ export function ExamQuizSession({ meta, questions, exitHref, theme = "teacher" }
                   <button
                     type="button"
                     disabled={revealed}
-                    onClick={() =>
+                    onClick={() => {
+                      if (revealed) return;
+                      const ok = oid === current.correct;
                       setAnswers((prev) => ({
                         ...prev,
                         [current.id]: oid,
-                      }))
-                    }
+                      }));
+                      if (ok) {
+                        const nextStreak = streak + 1;
+                        setStreak(nextStreak);
+                        setReward(
+                          rewardForCorrectAnswer({
+                            streak: nextStreak,
+                            seed: index + nextStreak,
+                          })
+                        );
+                      } else {
+                        setStreak(0);
+                        setReward(null);
+                      }
+                    }}
                     className={cn(
                       "exam-session-option",
                       showCorrect && "exam-session-option--correct",
@@ -169,6 +227,12 @@ export function ExamQuizSession({ meta, questions, exitHref, theme = "teacher" }
             })}
           </ul>
 
+          {revealed && reward ? (
+            <p className="exam-session-reward" role="status" data-testid="exam-reward">
+              {reward}
+            </p>
+          ) : null}
+
           {revealed ? (
             <div className="exam-session-explain" role="status">
               <p>
@@ -185,7 +249,10 @@ export function ExamQuizSession({ meta, questions, exitHref, theme = "teacher" }
           type="button"
           className="exam-session-btn-secondary"
           disabled={index === 0}
-          onClick={() => setIndex((i) => Math.max(0, i - 1))}
+          onClick={() => {
+            setIndex((i) => Math.max(0, i - 1));
+            setReward(null);
+          }}
         >
           ← Previous
         </button>
@@ -201,7 +268,10 @@ export function ExamQuizSession({ meta, questions, exitHref, theme = "teacher" }
           <button
             type="button"
             className="exam-session-btn-primary"
-            onClick={() => setIndex((i) => Math.min(questions.length - 1, i + 1))}
+            onClick={() => {
+              setIndex((i) => Math.min(questions.length - 1, i + 1));
+              setReward(null);
+            }}
           >
             Next →
           </button>
@@ -212,14 +282,22 @@ export function ExamQuizSession({ meta, questions, exitHref, theme = "teacher" }
   );
 }
 
-function ExamSessionHeader({ title }: { title: string }) {
+function ExamSessionHeader({
+  title,
+  theme,
+}: {
+  title: string;
+  theme: "teacher" | "bece";
+}) {
   return (
     <header className="exam-session-banner">
       <div className="exam-ghana-stripe" aria-hidden />
       <div className="exam-session-banner-inner">
         <h1 className="exam-session-banner-title">{title}</h1>
         <p className="exam-session-banner-sub">
-          Independent practice platform for Ghana Education Service promotion-exam preparation
+          {theme === "bece"
+            ? "Independent practice for BECE preparation on GigaLearn — not an official WAEC paper"
+            : "Independent practice platform for Ghana Education Service promotion-exam preparation"}
         </p>
       </div>
     </header>
