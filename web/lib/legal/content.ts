@@ -201,7 +201,10 @@ export const legalDocuments: readonly LegalDocument[] = [
       {
         id: "your-rights",
         title: "Your Rights",
-        paragraphs: ["Depending on your location, you may have the right to:"],
+        paragraphs: [
+          "Depending on your location, you may have the right to:",
+          "To delete your Giga3 AI account yourself, follow the steps on our Account deletion page at /legal/delete-account/.",
+        ],
         bullets: [
           "Access your personal data.",
           "Correct inaccurate information.",
@@ -485,6 +488,94 @@ export const legalDocuments: readonly LegalDocument[] = [
     ],
     outro: [
       "No online service can guarantee absolute security. We continue to review and improve these controls and will update this page when they change.",
+    ],
+  },
+  {
+    slug: "delete-account",
+    title: "Account deletion",
+    effectiveDate: LEGAL_EFFECTIVE_DATE,
+    description:
+      "How to delete your Giga3 AI account, what personal data is removed, and what may be retained for legal or operational reasons.",
+    intro: [
+      "This page explains how to permanently delete your Giga3 AI account. It is written for users of the Giga3 AI website, Progressive Web App, and Android app, and matches the self-service deletion flow in Settings.",
+    ],
+    sections: [
+      {
+        id: "how-to-delete",
+        title: "1. How to delete your account (self-service)",
+        paragraphs: [
+          "If you can still sign in to Giga3 AI, use the in-app Delete account flow. Deletion is permanent and cannot be undone.",
+        ],
+        bullets: [
+          "Open https://www.giga3ai.com/ and sign in with the email address for the account you want to delete.",
+          "Go to Settings (https://www.giga3ai.com/settings/).",
+          "In the Danger zone, select Delete account.",
+          "Type your account email exactly to confirm, then confirm deletion.",
+          "After a successful deletion you are signed out and cannot use that account again.",
+        ],
+      },
+      {
+        id: "cannot-access",
+        title: "2. If you cannot access your account",
+        paragraphs: [
+          "If you cannot sign in (for example you lost access to the email inbox), email hello@giga3ai.com from an address that proves you control the account when possible. Include the account email, that you are requesting account deletion, and enough detail for us to verify the request. We will process verified deletion requests through the same account-deletion controls used in the product.",
+        ],
+      },
+      {
+        id: "data-deleted",
+        title: "3. Personal data deleted when you delete your account",
+        paragraphs: [
+          "When self-service deletion succeeds, Giga3 AI permanently removes the following for that account email:",
+        ],
+        bullets: [
+          "Your user account profile record (the users row tied to your email).",
+          "Password credentials and hashed password material for that email.",
+          "All active sessions for that email (you are signed out everywhere).",
+          "Chat conversations and messages owned by that account.",
+        ],
+      },
+      {
+        id: "data-retained",
+        title: "4. Data that may be retained",
+        paragraphs: [
+          "Account deletion removes the account and chat history described above. It does not erase every operational or legal record that may still reference your former email. We may retain the following for legitimate operational or legal reasons:",
+        ],
+        bullets: [
+          "Payment, subscription, credit, and billing authorisation records needed for accounting, tax, dispute resolution, fraud prevention, and compliance with applicable law. These are kept only as long as those purposes require (typically aligned with financial-record retention obligations in the jurisdictions where we operate).",
+          "A security audit event that an account deletion occurred, used to detect abuse and investigate security incidents. Audit events are retained for security monitoring and then removed or aggregated under our normal security-log retention practices.",
+          "Aggregated or de-identified usage analytics that no longer identify you personally.",
+          "Records of purchases, payouts, or content shared with other users (for example marketplace transactions) where we must keep a commercial or legal record, or where removing the record would break another user’s purchase or rights.",
+          "Backups and disaster-recovery copies, which may take a limited time to expire after live deletion, and logs held by infrastructure providers under their own retention schedules.",
+        ],
+      },
+      {
+        id: "third-parties",
+        title: "5. Third-party processors",
+        paragraphs: [
+          "Prompts and uploaded content may already have been processed by AI and payment providers while you used the Service. Deleting your Giga3 AI account does not automatically erase copies those processors may hold under their own policies. See our Privacy Policy for how we use processors.",
+        ],
+      },
+      {
+        id: "permanent",
+        title: "6. Deletion is permanent",
+        paragraphs: [
+          "Once deletion completes, you cannot recover the deleted account, password, or chat history. Creating a new account with the same email later starts fresh and does not restore prior chats or credits tied to the deleted account.",
+        ],
+      },
+      {
+        id: "privacy",
+        title: "7. Privacy Policy",
+        paragraphs: [
+          "For a full description of how Giga3 AI collects and uses personal data, read the Privacy Policy at /legal/privacy/.",
+        ],
+      },
+      {
+        id: "contact",
+        title: "8. Contact",
+        paragraphs: [
+          "Questions about account deletion: hello@giga3ai.com.",
+        ],
+      },
     ],
   },
 ] as const;

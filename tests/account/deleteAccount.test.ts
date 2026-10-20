@@ -68,4 +68,22 @@ describe("deleteMyAccount server + Settings UI wiring", () => {
     expect(ui).toContain("api.accountDeletion.deleteMyAccount");
     expect(ui).toContain("Permanently delete");
   });
+
+  it("publishes a public /legal/delete-account/ page for Play Console", () => {
+    expect(
+      existsSync(resolve(ROOT, "web/app/(marketing)/legal/delete-account/page.tsx"))
+    ).toBe(true);
+    const page = read("web/app/(marketing)/legal/delete-account/page.tsx");
+    expect(page).toContain('legalDocumentBySlug["delete-account"]');
+    expect(page).toContain("publicMetadata");
+    const content = read("web/lib/legal/content.ts");
+    expect(content).toContain('slug: "delete-account"');
+    expect(content).toContain("hello@giga3ai.com");
+    expect(content).toContain("/settings/");
+    expect(content).toContain("/legal/privacy/");
+    // Must not over-promise deletion beyond deleteMyAccount
+    expect(content).not.toMatch(
+      /delete-account[\s\S]{0,2000}permanently removes[\s\S]{0,800}payment/
+    );
+  });
 });

@@ -53,6 +53,7 @@ const STATIC_SITEMAP_PATHS = [
   "/legal/acceptable-use/",
   "/legal/ai-usage/",
   "/legal/security/",
+  "/legal/delete-account/",
   "/ai-for-ghana/",
   "/ai-for-business-ghana/",
   "/ai-for-creators-ghana/",
