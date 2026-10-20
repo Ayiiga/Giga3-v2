@@ -25,6 +25,7 @@ describe("Paystack fulfillment safety", () => {
     expect(src).not.toMatch(/strictAmountCheck:\s*(false|options)/);
     expect(src).toContain("validatePaymentAmount(record, args.paystackResponse)");
     expect(src).toContain('status: "failed",\n        paystackResponse: args.paystackResponse,');
+    expect(src).toContain("cannot fulfil safely");
   });
 
   it("allows Paystack popup via global COOP while gigaedit uses scoped isolation", () => {

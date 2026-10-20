@@ -143,8 +143,10 @@ export const completeListingUpload = mutation({
       };
     }
 
+    // Persist storage id (durable). Signed getUrl() values expire — do not rely on them alone.
     const coverUrl = await ctx.storage.getUrl(args.storageId);
     await ctx.db.patch(intent.listingId, {
+      coverStorageId: args.storageId,
       coverImageUrl: coverUrl ?? listing.coverImageUrl,
       updatedAt: now,
     });
@@ -153,6 +155,7 @@ export const completeListingUpload = mutation({
       ok: true as const,
       requiresAdminReview: false,
       message: "Cover image updated.",
+      coverImageUrl: coverUrl ?? undefined,
     };
   },
 });

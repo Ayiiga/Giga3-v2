@@ -1,6 +1,8 @@
 "use client";
 
+import { BlogAggregateRatingJsonLd } from "@/components/blog/BlogAggregateRatingJsonLd";
 import { BlogShare } from "@/components/blog/BlogShare";
+import { BlogStarRating } from "@/components/blog/BlogStarRating";
 import { BlogViewCount } from "@/components/blog/BlogViewCount";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 
@@ -19,6 +21,21 @@ export function BlogArticleMetaStats({ slug }: { slug: string }) {
           <BlogViewCount slug={slug} recordOnMount compact />
         </dd>
       </div>
+      <div>
+        <dt className="sr-only">Rating</dt>
+        <dd>
+          <BlogStarRating slug={slug} variant="compact" />
+        </dd>
+      </div>
+    </ConvexAppShell>
+  );
+}
+
+export function BlogArticleRatingSection({ slug, path }: { slug: string; path: string }) {
+  return (
+    <ConvexAppShell>
+      <BlogAggregateRatingJsonLd slug={slug} path={path} />
+      <BlogStarRating slug={slug} variant="full" />
     </ConvexAppShell>
   );
 }

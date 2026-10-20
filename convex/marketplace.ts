@@ -1,5 +1,6 @@
 import { internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { verificationStatusOf } from "./creatorProfiles";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
@@ -9,14 +10,28 @@ import {
   marketplaceReportReasonValidator,
 } from "./schema";
 import { marketplaceUploadsEnabled } from "./marketplaceUploadPolicy";
-import { isListingFileApproved } from "./marketplaceListingHelpers";
+import {
+  isListingFileApproved,
+  sanitizePublicHttpUrl,
+} from "./marketplaceListingHelpers";
+import {
+  aggregatePurchaseTotals,
+  clampStorefrontLimit,
+  pickEligibleStorefrontListings,
+  toSellerRevenueProfile,
+} from "./marketplaceCompleteness";
 import { requireEntitlementForEmail } from "./entitlements";
 import {
-  toCreatorListing,
+  toCreatorListingResolved,
   toPublicCreatorProfile,
-  toPublicListing,
+  toPublicListingResolved,
   toPublicReview,
 } from "./marketplaceViews";
+import {
+  assertWithdrawalEligibility,
+  loadEconomySettings,
+  validateWithdrawalAmountGhs,
+} from "./gigaSocialEconomy";
 
 const MARKETPLACE_CATEGORIES = [
   "Education",
@@ -38,12 +53,21 @@ export const searchListings = query({
   args: {
     query: v.optional(v.string()),
     category: v.optional(v.string()),
+    /** Comma-separated legacy categories for discovery collections. */
+    categoriesAny: v.optional(v.array(v.string())),
     productType: v.optional(marketplaceProductTypeValidator),
+    /** Match any of these product types (discovery collections). */
+    productTypesAny: v.optional(v.array(marketplaceProductTypeValidator)),
+    minPriceGhs: v.optional(v.number()),
+    maxPriceGhs: v.optional(v.number()),
     verifiedOnly: v.optional(v.boolean()),
     limit: v.optional(v.number()),
+    /** Skip first N purchasable rows after filters (simple pagination). */
+    offset: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const cap = Math.min(args.limit ?? 40, 80);
+    const offset = Math.max(0, Math.min(args.offset ?? 0, 400));
     let rows = await ctx.db
       .query("marketplaceListings")
       .withIndex("by_status", (q) => q.eq("status", "published"))
@@ -54,8 +78,30 @@ export const searchListings = query({
     if (args.category) {
       rows = rows.filter((r) => r.category === args.category);
     }
+    // Discovery collections pass both arrays and mean OR (category or product type).
+    const catsAny = args.categoriesAny?.filter(Boolean) ?? [];
+    const typesAny = args.productTypesAny ?? [];
+    if (catsAny.length > 0 && typesAny.length > 0) {
+      const catSet = new Set(catsAny);
+      const typeSet = new Set(typesAny);
+      rows = rows.filter(
+        (r) => catSet.has(r.category) || typeSet.has(r.productType)
+      );
+    } else if (catsAny.length > 0) {
+      const set = new Set(catsAny);
+      rows = rows.filter((r) => set.has(r.category));
+    } else if (typesAny.length > 0) {
+      const set = new Set(typesAny);
+      rows = rows.filter((r) => set.has(r.productType));
+    }
     if (args.productType) {
       rows = rows.filter((r) => r.productType === args.productType);
+    }
+    if (args.minPriceGhs != null) {
+      rows = rows.filter((r) => r.priceGhs >= args.minPriceGhs!);
+    }
+    if (args.maxPriceGhs != null) {
+      rows = rows.filter((r) => r.priceGhs <= args.maxPriceGhs!);
     }
     if (q) {
       rows = rows.filter((r) => {
@@ -65,7 +111,8 @@ export const searchListings = query({
     }
 
     const creators = new Map<string, { displayName: string; handle: string; verified: boolean }>();
-    for (const row of rows.slice(0, cap)) {
+    // Load creator profiles for every candidate before verified-only filtering.
+    for (const row of rows) {
       if (creators.has(row.creatorId)) continue;
       const profile = await ctx.db
         .query("creatorProfiles")
@@ -88,10 +135,14 @@ export const searchListings = query({
       (listing) => listing.status === "published" && isListingFileApproved(listing)
     );
 
-    return purchasable.slice(0, cap).map((listing) => ({
-      ...toPublicListing(listing),
-      creator: creators.get(listing.creatorId) ?? null,
-    }));
+    const page = purchasable.slice(offset, offset + cap);
+
+    return await Promise.all(
+      page.map(async (listing) => ({
+        ...(await toPublicListingResolved(ctx.storage, listing)),
+        creator: creators.get(listing.creatorId) ?? null,
+      }))
+    );
   },
 });
 
@@ -110,7 +161,7 @@ export const getListing = query({
       .order("desc")
       .take(20);
     return {
-      listing: toPublicListing(listing),
+      listing: await toPublicListingResolved(ctx.storage, listing),
       creator: creator ? toPublicCreatorProfile(creator) : null,
       reviews: reviews.map(toPublicReview),
     };
@@ -121,12 +172,61 @@ export const getMyListings = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);
-    return (await ctx.db
+    const rows = await ctx.db
       .query("marketplaceListings")
       .withIndex("by_creator", (q) => q.eq("creatorId", email))
       .order("desc")
-      .take(100)
-    ).map(toCreatorListing);
+      .take(100);
+    return await Promise.all(rows.map((row) => toCreatorListingResolved(ctx.storage, row)));
+  },
+});
+
+/**
+ * Public storefront catalogue for a creator handle.
+ * Only published + file-approved listings; never exposes storage IDs or seller email.
+ * Uses by_creator_status so drafts/archived cannot crowd out eligible products.
+ */
+export const listPublishedByHandle = query({
+  args: {
+    handle: v.string(),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const handle = args.handle
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 32);
+    if (!handle) return { profile: null, listings: [] as const };
+    const profile = await ctx.db
+      .query("creatorProfiles")
+      .withIndex("by_handle", (q) => q.eq("handle", handle))
+      .first();
+    if (!profile) return { profile: null, listings: [] as const };
+
+    const cap = clampStorefrontLimit(args.limit);
+    // Published-only index stream — drafts/archived never consume the result budget.
+    const publishedRows = await ctx.db
+      .query("marketplaceListings")
+      .withIndex("by_creator_status", (q) =>
+        q.eq("creatorId", profile.userId).eq("status", "published")
+      )
+      .order("desc")
+      .collect();
+
+    const listings = await Promise.all(
+      pickEligibleStorefrontListings(
+        publishedRows,
+        cap,
+        isListingFileApproved
+      ).map((listing) => toPublicListingResolved(ctx.storage, listing))
+    );
+
+    return {
+      profile: toPublicCreatorProfile(profile),
+      listings,
+    };
   },
 });
 
@@ -143,6 +243,8 @@ export const createListing = mutation({
     tags: v.array(v.string()),
     previewText: v.optional(v.string()),
     previewUrl: v.optional(v.string()),
+    previewToc: v.optional(v.string()),
+    previewIntro: v.optional(v.string()),
     coverImageUrl: v.optional(v.string()),
     coverStorageId: v.optional(v.id("_storage")),
     publish: v.optional(v.boolean()),
@@ -176,10 +278,11 @@ export const createListing = mutation({
     if (!title || !description) throw new Error("Title and description are required.");
     if (args.priceGhs < 1) throw new Error("Minimum price is GHS 1.");
 
-    let coverImageUrl = args.coverImageUrl?.trim();
     if (args.coverStorageId) {
       throw new Error("Use prepareListingUpload for cover images.");
     }
+    const coverImageUrl = sanitizePublicHttpUrl(args.coverImageUrl, "Cover image URL");
+    const previewUrl = sanitizePublicHttpUrl(args.previewUrl, "Preview URL");
 
     const now = Date.now();
     return await ctx.db.insert("marketplaceListings", {
@@ -193,13 +296,17 @@ export const createListing = mutation({
       copyrightNotice: args.copyrightNotice?.trim().slice(0, 500),
       tags: args.tags.map((t) => t.trim().slice(0, 40)).filter(Boolean).slice(0, 12),
       previewText: args.previewText?.trim().slice(0, 2000),
-      previewUrl: args.previewUrl,
+      previewUrl,
+      previewToc: args.previewToc?.trim().slice(0, 4000) || undefined,
+      previewIntro: args.previewIntro?.trim().slice(0, 4000) || undefined,
       coverImageUrl,
       status: "draft",
       ratingAvg: 0,
       ratingCount: 0,
       purchaseCount: 0,
       viewCount: 0,
+      promoClickCount: 0,
+      previewOpenCount: 0,
       createdAt: now,
       updatedAt: now,
     });
@@ -212,12 +319,17 @@ export const updateListing = mutation({
     listingId: v.id("marketplaceListings"),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
+    category: v.optional(v.string()),
     priceGhs: v.optional(v.number()),
     status: v.optional(
       v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))
     ),
     previewText: v.optional(v.string()),
+    previewUrl: v.optional(v.string()),
+    previewToc: v.optional(v.string()),
+    previewIntro: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
+    coverImageUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);
@@ -244,20 +356,67 @@ export const updateListing = mutation({
       if (!isListingFileApproved(listing)) {
         throw new Error("Attach and upload your PDF before publishing.");
       }
+      const productType = String(listing.productType || "").toLowerCase();
+      const ebookLike = productType.includes("ebook") || productType === "book";
+      const nextCoverUrl =
+        args.coverImageUrl !== undefined ? args.coverImageUrl : listing.coverImageUrl;
+      if (ebookLike && !listing.coverStorageId && !String(nextCoverUrl || "").trim()) {
+        throw new Error(
+          "Add a cover image (upload or durable image URL) before publishing an ebook."
+        );
+      }
     }
 
+    const wasPublished = listing.status === "published";
     const patch: Record<string, unknown> = { updatedAt: Date.now() };
     if (args.title !== undefined) patch.title = args.title.trim().slice(0, 120);
     if (args.description !== undefined) {
       patch.description = args.description.trim().slice(0, 4000);
     }
-    if (args.priceGhs !== undefined) patch.priceGhs = Math.round(args.priceGhs);
+    if (args.category !== undefined) {
+      const category = args.category.trim();
+      if (!(MARKETPLACE_CATEGORIES as readonly string[]).includes(category)) {
+        throw new Error("Invalid category.");
+      }
+      patch.category = category;
+    }
+    if (args.priceGhs !== undefined) {
+      const price = Math.round(args.priceGhs);
+      if (price < 1 || price > 100_000) throw new Error("Price must be between GHS 1 and GHS 100,000.");
+      patch.priceGhs = price;
+    }
     if (args.status !== undefined) patch.status = args.status;
     if (args.previewText !== undefined) patch.previewText = args.previewText?.slice(0, 2000);
+    if (args.previewUrl !== undefined) {
+      patch.previewUrl = sanitizePublicHttpUrl(args.previewUrl, "Preview URL");
+    }
+    if (args.previewToc !== undefined) {
+      patch.previewToc = args.previewToc.trim().slice(0, 4000) || undefined;
+    }
+    if (args.previewIntro !== undefined) {
+      patch.previewIntro = args.previewIntro.trim().slice(0, 4000) || undefined;
+    }
+    if (args.coverImageUrl !== undefined) {
+      // External / CDN covers only — seller file covers must use prepareListingUpload.
+      patch.coverImageUrl = sanitizePublicHttpUrl(args.coverImageUrl, "Cover image URL");
+    }
     if (args.tags !== undefined) {
       patch.tags = args.tags.map((t) => t.trim().slice(0, 40)).filter(Boolean).slice(0, 12);
     }
+    // Confirm publication in the DB before any success notification.
     await ctx.db.patch(args.listingId, patch);
+
+    if (args.status === "published" && !wasPublished) {
+      try {
+        await ctx.scheduler.runAfter(
+          0,
+          internal.marketplacePublishNotify.notifyListingPublishedInternal,
+          { listingId: args.listingId }
+        );
+      } catch {
+        // Publication already succeeded — notify retries must never fail the mutation.
+      }
+    }
   },
 });
 
@@ -357,14 +516,81 @@ export const recordView = mutation({
     sessionToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    if (!args.sessionToken) return;
+    // Signed-in views only — privacy-conscious; anonymous traffic is not counted.
+    if (!args.sessionToken) return { ok: false as const, reason: "anonymous" as const };
     await requireSession(args.sessionToken, ctx);
     const listing = await ctx.db.get(args.listingId);
-    if (!listing || listing.status !== "published") return;
+    if (!listing || listing.status !== "published") {
+      return { ok: false as const, reason: "not_found" as const };
+    }
     await ctx.db.patch(args.listingId, {
       viewCount: listing.viewCount + 1,
       updatedAt: Date.now(),
     });
+    return { ok: true as const, kind: "view" as const };
+  },
+});
+
+/** Promotion-link clicks from the author share panel (privacy-conscious counters). */
+export const recordPromoClick = mutation({
+  args: {
+    listingId: v.id("marketplaceListings"),
+    channel: v.optional(
+      v.union(
+        v.literal("copy"),
+        v.literal("whatsapp"),
+        v.literal("facebook"),
+        v.literal("telegram"),
+        v.literal("linkedin"),
+        v.literal("other")
+      )
+    ),
+    sessionToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const listing = await ctx.db.get(args.listingId);
+    if (!listing || listing.status !== "published") {
+      return { ok: false as const };
+    }
+    // Optional session — promo clicks may come from the author dashboard while signed in.
+    if (args.sessionToken) {
+      try {
+        await requireSession(args.sessionToken, ctx);
+      } catch {
+        return { ok: false as const };
+      }
+    }
+    await ctx.db.patch(args.listingId, {
+      promoClickCount: (listing.promoClickCount ?? 0) + 1,
+      updatedAt: Date.now(),
+    });
+    return { ok: true as const, kind: "promo_click" as const, channel: args.channel ?? "other" };
+  },
+});
+
+/** Preview engagement (TOC / intro / sample) — not a purchase signal. */
+export const recordPreviewOpen = mutation({
+  args: {
+    listingId: v.id("marketplaceListings"),
+    sessionToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const listing = await ctx.db.get(args.listingId);
+    if (!listing || listing.status !== "published") {
+      return { ok: false as const };
+    }
+    if (args.sessionToken) {
+      try {
+        await requireSession(args.sessionToken, ctx);
+      } catch {
+        /* count anonymously when token is stale */
+      }
+    }
+    await ctx.db.patch(args.listingId, {
+      previewOpenCount: (listing.previewOpenCount ?? 0) + 1,
+      updatedAt: Date.now(),
+    });
+    return { ok: true as const, kind: "preview_open" as const };
   },
 });
 
@@ -494,16 +720,29 @@ export const getMyPurchases = query({
       const listing = await ctx.db.get(purchase.listingId);
       if (!listing) continue;
       let downloadUrl: string | null = null;
-      if (listing.fileStorageId) {
+      // Match getDownloadAccess: buyers only receive URLs for approved files.
+      if (listing.fileStorageId && isListingFileApproved(listing)) {
         downloadUrl = await ctx.storage.getUrl(listing.fileStorageId);
       }
       results.push({
-        purchase,
-        listing,
-        /** Signed Convex storage URL when the buyer owns a file-backed listing. */
+        purchase: {
+          _id: purchase._id,
+          listingId: purchase.listingId,
+          amountGhs: purchase.amountGhs,
+          platformFeeGhs: purchase.platformFeeGhs,
+          creatorEarningsGhs: purchase.creatorEarningsGhs,
+          license: purchase.license,
+          createdAt: purchase.createdAt,
+          paymentReference: purchase.paymentReference,
+        },
+        // Never expose private storage IDs or seller email on the buyer library.
+        listing: await toPublicListingResolved(ctx.storage, listing),
+        /** Expiring Convex storage URL when the buyer owns a file-backed listing. */
         downloadUrl,
         fileName: listing.fileName ?? "download",
         hasDownload: Boolean(downloadUrl),
+        downloadPendingReview:
+          Boolean(listing.fileStorageId) && !isListingFileApproved(listing),
       });
     }
     return results;
@@ -532,7 +771,154 @@ export const getCreatorRevenue = query({
       .order("desc")
       .take(30);
 
-    return { profile, payouts, sales };
+    // Strip buyer emails and sensitive verification/location fields.
+    return {
+      profile: toSellerRevenueProfile(profile),
+      payouts,
+      sales: sales.map((sale) => ({
+        _id: sale._id,
+        listingId: sale.listingId,
+        amountGhs: sale.amountGhs,
+        platformFeeGhs: sale.platformFeeGhs,
+        creatorEarningsGhs: sale.creatorEarningsGhs,
+        createdAt: sale.createdAt,
+        paymentReference: sale.paymentReference,
+        license: sale.license,
+      })),
+    };
+  },
+});
+
+/**
+ * Seller sales analytics. marketplacePurchases rows are written only after
+ * successful Paystack fulfilment (pending/failed charges never appear here).
+ * Refunds are not modeled in the current schema — disclosed in the response.
+ *
+ * Date filtering uses the by_creator(createdAt) index range + collect() so
+ * totals are never silently truncated by a pre-filter take(N).
+ */
+export const getCreatorSalesAnalytics = query({
+  args: {
+    sessionToken: v.string(),
+    fromMs: v.optional(v.number()),
+    toMs: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken, ctx);
+    const profile = await ctx.db
+      .query("creatorProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", email))
+      .first();
+    if (!profile) return null;
+
+    const fromMs = args.fromMs ?? 0;
+    const toMs = args.toMs ?? Number.MAX_SAFE_INTEGER;
+
+    // Indexed range on (creatorId, createdAt) — every matching purchase.
+    const sales = await ctx.db
+      .query("marketplacePurchases")
+      .withIndex("by_creator", (q) =>
+        q.eq("creatorId", email).gte("createdAt", fromMs).lte("createdAt", toMs)
+      )
+      .order("desc")
+      .collect();
+
+    const totals = aggregatePurchaseTotals(
+      sales.map((sale) => ({
+        listingId: String(sale.listingId),
+        amountGhs: sale.amountGhs,
+        platformFeeGhs: sale.platformFeeGhs,
+        creatorEarningsGhs: sale.creatorEarningsGhs,
+        createdAt: sale.createdAt,
+      }))
+    );
+
+    const byListing = new Map<
+      string,
+      { listingId: string; purchaseCount: number; grossGhs: number; earningsGhs: number; feesGhs: number }
+    >();
+
+    for (const sale of sales) {
+      const key = String(sale.listingId);
+      const row = byListing.get(key) ?? {
+        listingId: key,
+        purchaseCount: 0,
+        grossGhs: 0,
+        earningsGhs: 0,
+        feesGhs: 0,
+      };
+      row.purchaseCount += 1;
+      row.grossGhs += sale.amountGhs;
+      row.earningsGhs += sale.creatorEarningsGhs;
+      row.feesGhs += sale.platformFeeGhs;
+      byListing.set(key, row);
+    }
+
+    const productSummaries = [];
+    for (const row of byListing.values()) {
+      const listing = await ctx.db.get(row.listingId as any);
+      productSummaries.push({
+        listingId: row.listingId,
+        title: listing?.title ?? "Deleted listing",
+        status: listing?.status ?? "archived",
+        purchaseCount: row.purchaseCount,
+        grossGhs: row.grossGhs,
+        feesGhs: row.feesGhs,
+        earningsGhs: row.earningsGhs,
+        // Engagement counters (distinct from confirmed Paystack purchases).
+        viewCount: listing?.viewCount ?? 0,
+        promoClickCount: listing?.promoClickCount ?? 0,
+        previewOpenCount: listing?.previewOpenCount ?? 0,
+      });
+    }
+    productSummaries.sort((a, b) => b.grossGhs - a.grossGhs);
+
+    const payouts = await ctx.db
+      .query("creatorPayouts")
+      .withIndex("by_creator", (q) => q.eq("creatorId", email))
+      .order("desc")
+      .take(30);
+
+    const recentSales = [];
+    for (const sale of sales.slice(0, 20)) {
+      const listing = await ctx.db.get(sale.listingId);
+      recentSales.push({
+        _id: sale._id,
+        listingId: sale.listingId,
+        listingTitle: listing?.title ?? "Listing",
+        amountGhs: sale.amountGhs,
+        platformFeeGhs: sale.platformFeeGhs,
+        creatorEarningsGhs: sale.creatorEarningsGhs,
+        createdAt: sale.createdAt,
+      });
+    }
+
+    return {
+      summary: {
+        grossSalesGhs: totals.grossSalesGhs,
+        purchaseCount: totals.purchaseCount,
+        platformFeesGhs: totals.platformFeesGhs,
+        creatorEarningsGhs: totals.creatorEarningsGhs,
+        payoutBalanceGhs: profile.payoutBalanceGhs,
+        lifetimeSales: profile.totalSales,
+        lifetimeEarningsGhs: profile.totalEarningsGhs,
+      },
+      productSummaries,
+      recentSales,
+      payouts: payouts.map((p) => ({
+        _id: p._id,
+        amountGhs: p.amountGhs,
+        status: p.status,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+        method: p.method ?? null,
+      })),
+      limitations: {
+        refundsSupported: false,
+        automatedPayouts: false,
+        source: "marketplacePurchases rows are created only after successful Paystack fulfilment",
+      },
+    };
   },
 });
 
@@ -550,16 +936,50 @@ export const requestPayout = mutation({
       .withIndex("by_user", (q) => q.eq("userId", email))
       .first();
     if (!profile) throw new Error("Creator profile required.");
-    const minPayout = Number(process.env.MARKETPLACE_MIN_PAYOUT_GHS) || 50;
-    const amount = Math.round(args.amountGhs);
-    if (amount < minPayout) {
-      throw new Error(`Minimum payout is GHS ${minPayout}.`);
-    }
-    if (amount > profile.payoutBalanceGhs) {
-      throw new Error("Insufficient payout balance.");
+    if (profile.userId !== email) {
+      throw new Error("Payout profile ownership mismatch.");
     }
 
+    // When the seller also has a GigaSocial profile, enforce 50-fan + acceptance rules.
+    const socialProfile = await ctx.db
+      .query("socialProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", email))
+      .first();
+    let minPayout = Number(process.env.MARKETPLACE_MIN_PAYOUT_GHS) || 50;
+    if (socialProfile) {
+      if (socialProfile.userId !== email) {
+        throw new Error("Profile ownership mismatch.");
+      }
+      const { settings } = await assertWithdrawalEligibility(ctx, socialProfile);
+      minPayout = Math.max(minPayout, settings.minWithdrawalGhs);
+    } else {
+      const settings = await loadEconomySettings(ctx);
+      minPayout = Math.max(minPayout, settings.minWithdrawalGhs);
+    }
+
+    const validated = validateWithdrawalAmountGhs({
+      rawAmount: args.amountGhs,
+      availableBalanceGhs: profile.payoutBalanceGhs,
+      minWithdrawalGhs: minPayout,
+    });
+    if (!validated.ok) {
+      throw new Error(validated.error);
+    }
+    const amount = validated.amountGhs;
+
     const now = Date.now();
+    const recent = await ctx.db
+      .query("creatorPayouts")
+      .withIndex("by_creator", (q) => q.eq("creatorId", email))
+      .order("desc")
+      .take(10);
+    const inFlight = recent.find(
+      (p) => p.status === "pending" || p.status === "processing"
+    );
+    if (inFlight) {
+      throw new Error("A withdrawal is already in progress.");
+    }
+
     await ctx.db.patch(profile._id, {
       payoutBalanceGhs: profile.payoutBalanceGhs - amount,
       updatedAt: now,

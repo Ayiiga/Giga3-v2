@@ -88,15 +88,17 @@ describe("Workspace shortcut order", () => {
       labels.map((label) => src.indexOf(label)).filter((i) => i >= 0);
 
     const sidebarOrder = orderOf(apps, [
+      'label: "GigaLearn Academy"',
+      'label: "Exam Practice"',
+      'label: "Technology Hub"',
       'label: "GigaSocial"',
-      'label: "GigaEdits"',
-      'label: "GigaLearn"',
-      'label: "Media Studio"',
     ]);
     expect(sidebarOrder).toHaveLength(4);
     expect(sidebarOrder[0]).toBeLessThan(sidebarOrder[1]);
     expect(sidebarOrder[1]).toBeLessThan(sidebarOrder[2]);
     expect(sidebarOrder[2]).toBeLessThan(sidebarOrder[3]);
+    expect(apps).not.toContain('label: "GigaEdits"');
+    expect(apps).not.toContain('label: "Media Studio"');
     expect(sidebar).toContain("CHAT_WORKSPACE_PRIMARY_APPS");
 
     expect(more).not.toContain('label: "GigaSocial"');
@@ -107,8 +109,5 @@ describe("Workspace shortcut order", () => {
     expect(more).toContain("support@giga3ai.com");
 
     expect(workspace).toContain("CHAT_WORKSPACE_PRIMARY_APPS");
-    expect(apps.indexOf("GigaSocial")).toBeLessThan(apps.indexOf("GigaEdits"));
-    expect(apps.indexOf("GigaEdits")).toBeLessThan(apps.indexOf("GigaLearn"));
-    expect(apps.indexOf("GigaLearn")).toBeLessThan(apps.indexOf("Media Studio"));
   });
 });

@@ -54,11 +54,11 @@ export const StudentHub = memo(function StudentHub({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Student</h2>
-        <p className="mt-1 text-sm text-muted">
-          Your learning path, practice, revision and grade-appropriate activities.
+        <h2 className="text-base font-semibold text-foreground sm:text-lg">Student</h2>
+        <p className="mt-0.5 text-sm text-muted">
+          Subjects, lessons, quizzes, exam prep, and your recent progress.
         </p>
       </div>
 

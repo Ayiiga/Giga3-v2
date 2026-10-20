@@ -4,14 +4,21 @@ import { describe, expect, it } from "vitest";
 import { CHAT_WORKSPACE_PRIMARY_APPS } from "../../web/lib/chat/workspaceApps";
 
 describe("chat workspace navigation", () => {
-  it("lists primary apps in GigaSocial → GigaEdits → GigaLearn → Media Studio order", () => {
+  it("lists primary apps in education-first order", () => {
     expect(CHAT_WORKSPACE_PRIMARY_APPS.map((app) => app.label)).toEqual([
+      "GigaLearn Academy",
+      "Exam Practice",
+      "Technology Hub",
       "GigaSocial",
-      "GigaEdits",
-      "GigaLearn",
-      "Media Studio",
       "Giga3 Blog",
     ]);
+  });
+
+  it("does not advertise Media Studio or GigaEdits as workspace apps", () => {
+    const labels = CHAT_WORKSPACE_PRIMARY_APPS.map((app) => app.label);
+    expect(labels).not.toContain("Media Studio");
+    expect(labels).not.toContain("GigaEdits");
+    expect(labels).not.toContain("GigaEdit");
   });
 
   it("builds sidebar workspace nav from the shared primary app list", () => {
@@ -42,7 +49,28 @@ describe("chat workspace navigation", () => {
       "utf8"
     );
     expect(src).toContain("siteConfig.links.prompts");
-    expect(src).toContain("siteConfig.links.about");
+    expect(src).toContain('href="/settings/"');
     expect(src).not.toMatch(/Browse saved prompts[\s\S]{0,120}href=\"\/chat\"/);
+  });
+
+  it("keeps Account destinations in Settings instead of the chat sidebar", () => {
+    const sidebar = readFileSync(
+      resolve(__dirname, "../../web/components/chat/ChatSidebar.tsx"),
+      "utf8"
+    );
+    const settings = readFileSync(
+      resolve(__dirname, "../../web/components/account/AccountSettingsClient.tsx"),
+      "utf8"
+    );
+    const accountNav = readFileSync(
+      resolve(__dirname, "../../web/lib/account/accountNav.ts"),
+      "utf8"
+    );
+    expect(sidebar).not.toContain('label: "GigaWallet"');
+    expect(sidebar).not.toContain('title="Account"');
+    expect(sidebar).not.toContain("<SidebarSection title=\"Account\">");
+    expect(settings).toContain("ACCOUNT_SETTINGS_NAV");
+    expect(accountNav).toContain('label: "GigaWallet"');
+    expect(accountNav).toContain('label: "Help Center"');
   });
 });

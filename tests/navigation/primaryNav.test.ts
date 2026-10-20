@@ -5,19 +5,28 @@ import {
   resolvePrimaryNavTab,
   shouldShowDesktopRail,
 } from "../../web/lib/navigation/primaryNav";
+import { isRetiredProductPath } from "../../web/lib/navigation/retiredProducts";
 
 describe("primaryNav route matching", () => {
-  it("marks the five product destinations as primary nav routes", () => {
+  it("marks the five education-first destinations as primary nav routes", () => {
     expect(isPrimaryNavRoute("/chat")).toBe(true);
     expect(isPrimaryNavRoute("/chat/")).toBe(true);
     expect(isPrimaryNavRoute("/gigalearn")).toBe(true);
-    expect(isPrimaryNavRoute("/gigalearn/")).toBe(true);
-    expect(isPrimaryNavRoute("/media")).toBe(true);
-    expect(isPrimaryNavRoute("/gigaedit")).toBe(true);
+    expect(isPrimaryNavRoute("/gigalearn/academy")).toBe(true);
+    expect(isPrimaryNavRoute("/gigalearn/exam")).toBe(true);
     expect(isPrimaryNavRoute("/gigasocial/")).toBe(true);
     expect(isPrimaryNavRoute("/gigasocial/profile")).toBe(true);
     expect(isPrimaryNavRoute("/marketplace")).toBe(true);
     expect(isPrimaryNavRoute("/marketplace/item/abc")).toBe(true);
+  });
+
+  it("does not treat retired create products as primary nav routes", () => {
+    expect(isPrimaryNavRoute("/media")).toBe(false);
+    expect(isPrimaryNavRoute("/gigaedit")).toBe(false);
+    expect(isPrimaryNavRoute("/video")).toBe(false);
+    expect(isPrimaryNavRoute("/ai-studio")).toBe(false);
+    expect(isRetiredProductPath("/media")).toBe(true);
+    expect(isRetiredProductPath("/gigaedit/?tab=video")).toBe(true);
   });
 
   it("hides nav on login, share, and payment routes", () => {
@@ -35,32 +44,32 @@ describe("primaryNav route matching", () => {
   it("resolves active tabs from pathname", () => {
     expect(resolvePrimaryNavTab("/chat")).toBe("home");
     expect(resolvePrimaryNavTab("/gigalearn/")).toBe("learn");
-    expect(resolvePrimaryNavTab("/media?tab=video")).toBe("create");
-    expect(resolvePrimaryNavTab("/gigaedit/?tab=video")).toBe("create");
+    expect(resolvePrimaryNavTab("/gigalearn/academy")).toBe("learn");
+    expect(resolvePrimaryNavTab("/gigalearn/exam")).toBe("practice");
     expect(resolvePrimaryNavTab("/gigasocial/?tab=feed")).toBe("social");
     expect(resolvePrimaryNavTab("/marketplace")).toBe("market");
   });
 
-  it("shows desktop rail for learn/create/social but not chat", () => {
+  it("shows desktop rail for learn/practice/social/market but not chat", () => {
     expect(shouldShowDesktopRail("/gigalearn")).toBe(true);
-    expect(shouldShowDesktopRail("/media")).toBe(true);
-    expect(shouldShowDesktopRail("/gigaedit")).toBe(true);
+    expect(shouldShowDesktopRail("/gigalearn/exam")).toBe(true);
     expect(shouldShowDesktopRail("/gigasocial/")).toBe(true);
+    expect(shouldShowDesktopRail("/marketplace")).toBe(true);
     expect(shouldShowDesktopRail("/chat")).toBe(false);
+    expect(shouldShowDesktopRail("/media")).toBe(false);
   });
 
-  it("resolves nested product routes to the correct tab", () => {
-    expect(resolvePrimaryNavTab("/gigaedit/?tab=video")).toBe("create");
-    expect(resolvePrimaryNavTab("/gigasocial/profile")).toBe("social");
-    expect(resolvePrimaryNavTab("/gigasocial/post/abc")).toBe("social");
-    expect(resolvePrimaryNavTab("/media/?tab=video")).toBe("create");
-    expect(resolvePrimaryNavTab("/gigalearn/practice")).toBe("learn");
-  });
-
-  it("defaults the Create tab to GigaEdits when no explicit selection is present", () => {
-    const create = PRIMARY_NAV_TABS.find((tab) => tab.id === "create");
-    expect(create?.href).toContain("/gigaedit");
-    expect(create?.href).not.toContain("/media");
+  it("uses Practice tab for Exam Practice (no Create tab)", () => {
+    expect(PRIMARY_NAV_TABS.map((t) => t.id)).toEqual([
+      "home",
+      "learn",
+      "practice",
+      "social",
+      "market",
+    ]);
+    const practice = PRIMARY_NAV_TABS.find((tab) => tab.id === "practice");
+    expect(practice?.href).toContain("/gigalearn/exam");
+    expect(PRIMARY_NAV_TABS.some((tab) => (tab.id as string) === "create")).toBe(false);
   });
 
   it("keeps navigation hidden on auth and payment routes", () => {

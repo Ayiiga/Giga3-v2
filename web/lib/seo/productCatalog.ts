@@ -23,8 +23,8 @@ export const PRODUCT_GROUPS: readonly { id: ProductGroupId; title: string; lead:
   },
   {
     id: "create",
-    title: "Create",
-    lead: "Images, video, editing and writing tools that hand off to each other.",
+    title: "Create & write",
+    lead: "Document Studio and Creator Studio for writing and learning materials — dedicated Media Studio and GigaEdits products are retired.",
   },
   {
     id: "share",
@@ -81,51 +81,35 @@ export const PRODUCT_CATALOG: readonly ProductEntry[] = [
     group: "learn",
   },
   {
-    href: "/media",
-    name: "Media Studio",
-    tagline: "AI image generation and editing",
+    href: "/documents",
+    name: "Document Studio",
+    tagline: "CVs, letters and reports — PDF & Word",
     description:
-      "Media Studio generates and enhances AI images and video with fal.ai, Replicate, and Google AI Studio backup. For teleprompter, voice recording, and timeline editing, open GigaEdits.",
+      "Document Studio creates and edits CVs, application letters, business plans, lesson notes and reports with rich formatting, A4/A5 page setup, and real PDF and Word export. Also available from AI Chat and GigaLearn Create.",
     group: "create",
   },
   {
-    href: "/video",
-    name: "Video AI",
-    tagline: "AI-assisted video generation",
+    href: "/gigalearn/academy",
+    name: "GigaLearn Academy",
+    tagline: "Courses, tutoring, and certificates",
     description:
-      "Generate and explore AI-assisted video workflows. Create clips for GigaEdit editing and GigaSocial publishing.",
-    group: "create",
+      "GigaLearn Academy offers structured courses, enrolments, AI tutoring, assessments, progress tracking, certificates, and the Technology Learning Hub.",
+    group: "learn",
   },
   {
-    href: "/gigaedit",
-    name: "GigaEdit",
-    tagline: "Video and photo editor",
+    href: "/gigalearn/exam",
+    name: "Exam Practice",
+    tagline: "BECE, Teacher Promotion, and subject practice",
     description:
-      "GigaEdit is the on-device editor for trimming, joining, captions, teleprompter, voice and video recording, voiceover, and export. Import clips, record takes, and post to GigaSocial when ready.",
-    group: "create",
-  },
-  {
-    href: "/gigaedits",
-    name: "GigaEdits",
-    tagline: "Creator editing product",
-    description:
-      "GigaEdits is the creator editing entry point on Giga3 AI — open GigaEdit to trim, caption, and publish video, then share on GigaSocial.",
-    group: "create",
+      "Exam Practice provides server-graded practice for BECE, Teacher Promotion, and subject revision — not official past papers unless clearly labelled.",
+    group: "learn",
   },
   {
     href: "/creator-studio",
     name: "Creator Studio",
     tagline: "Writing and social drafting",
     description:
-      "Creator Studio offers writing assistance, image generation shortcuts, and social media drafting for creators who publish to GigaSocial and beyond.",
-    group: "create",
-  },
-  {
-    href: "/ai-studio",
-    name: "Giga3 AI Studio",
-    tagline: "Creative umbrella — Media Studio & Video AI",
-    description:
-      "Giga3 AI Studio is the marketing hub for creative workflows — start in Media Studio for images or Video AI for clips, then edit in GigaEdit and publish on GigaSocial.",
+      "Creator Studio offers writing assistance and social media drafting for creators who publish to GigaSocial and beyond.",
     group: "create",
   },
   {
@@ -133,7 +117,7 @@ export const PRODUCT_CATALOG: readonly ProductEntry[] = [
     name: "GigaSocial",
     tagline: "AI-powered creator community",
     description:
-      "GigaSocial is an AI-powered community for creators in Africa to connect, share posts, discover topics, and publish work from GigaEdit and Media Studio.",
+      "GigaSocial is an AI-powered community for creators in Africa to connect, share posts, discover topics, and publish work.",
     group: "share",
   },
   {

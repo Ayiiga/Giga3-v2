@@ -87,8 +87,10 @@ function validatePaymentAmount(record: { amountGhs: number }, paystackResponse: 
   }
   const pesewas = parsePaystackAmountPesewas(paystackResponse);
   if (pesewas === null) {
-    console.warn("[paystack] Could not parse amount from Paystack response for reconciliation");
-    return;
+    // Fail closed: never grant credits/subscriptions without a parseable charged amount.
+    throw new Error(
+      "Payment amount missing from Paystack response — cannot fulfil safely"
+    );
   }
   const expected = toPesewas(record.amountGhs);
   if (pesewas < expected) {

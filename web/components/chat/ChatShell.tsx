@@ -4,7 +4,6 @@ import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ChatSegmentNotice } from "@/components/chat/ChatSegmentNotice";
 import { ChatBanners } from "@/components/chat/ChatBanners";
 import { ChatChrome } from "@/components/chat/ChatChrome";
-import { ChatVoiceLanguageBar } from "@/components/chat/ChatVoiceLanguageBar";
 import type { ChatActionsMenuHandle } from "@/components/chat/ChatActionsMenu";
 import { ChatConversationPane } from "@/components/chat/ChatConversationPane";
 import { ChatOverflowProbe } from "@/components/chat/ChatOverflowProbe";
@@ -39,6 +38,11 @@ import {
   storeGigaModel,
   type GigaModelId,
 } from "@/lib/chat/gigaModels";
+import {
+  loadResponseDetailPreference,
+  saveResponseDetailPreference,
+  type ResponseDetailId,
+} from "@/lib/chat/responseDetail";
 import { findLatestImageUrlInMessages } from "@/lib/chat/parseMessageMedia";
 import { consumeGigaLearnChatHandoff } from "@/lib/gigalearn/chatHandoff";
 import { consumePromptChatHandoff } from "@/lib/chat/promptHandoff";
@@ -139,11 +143,17 @@ function ChatShellInner({
   const [templateNotice, setTemplateNotice] = useState<string | null>(null);
   const [dismissedError, setDismissedError] = useState<string | null>(null);
   const [modelTier, setModelTier] = useState<GigaModelId>("fast");
+  const [responseDetail, setResponseDetail] = useState<ResponseDetailId | null>(
+    () => loadResponseDetailPreference()
+  );
   const [handoffAttachments, setHandoffAttachments] = useState<PreparedChatAttachment[]>([]);
   const [conversationSearch, setConversationSearch] = useState("");
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const [localTurns, setLocalTurns] = useState<UiMessage[]>([]);
   const insertRef = useRef<((text: string, notice?: string) => void) | null>(null);
+  const pickFilesRef = useRef<
+    ((files: File[], kind: import("@/lib/chat/multimodalAttachments").AttachmentKind) => void) | null
+  >(null);
   const chatActionsRef = useRef<ChatActionsMenuHandle | null>(null);
   const { effectiveOnline } = useEffectiveOnline();
 
@@ -235,6 +245,18 @@ function ChatShellInner({
     insertRef.current?.(text);
   }, []);
 
+  const handlePickFilesFromMenu = useCallback(
+    (files: File[], kind: import("@/lib/chat/multimodalAttachments").AttachmentKind) => {
+      pickFilesRef.current?.(files, kind);
+    },
+    []
+  );
+
+  const handleComposerNotice = useCallback((message: string) => {
+    // Informational status only — templates are inserted via onInsertTemplate.
+    setTemplateNotice(message);
+  }, []);
+
   const handleInsertDocument = useCallback((text: string) => {
     if (insertRef.current) {
       insertRef.current(text);
@@ -281,6 +303,19 @@ function ChatShellInner({
     setLocalTurns([]);
     creationIntakeRef.current = null;
   }, [activeId]);
+
+  // Drop optimistic local turns once the server conversation echoes the same content
+  // (prevents duplicated user/assistant bubbles after sync).
+  useEffect(() => {
+    if (!localTurns.length || !messages.length) return;
+    const serverKeys = new Set(
+      messages.map((m) => `${m.role}\0${m.content.trim()}`)
+    );
+    setLocalTurns((prev) => {
+      const next = prev.filter((m) => !serverKeys.has(`${m.role}\0${m.content.trim()}`));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [messages, localTurns.length]);
 
   const appendLocalTurn = useCallback((userText: string, assistantText: string) => {
     const now = Date.now();
@@ -343,7 +378,7 @@ function ChatShellInner({
           creationIntakeRef.current = null;
         }
 
-        // Open GigaSocial / GigaEdits / GigaLearn / Media Studio (and other apps) locally.
+        // Open Academy / Exam Practice / GigaSocial / Marketplace (and other apps) locally.
         if (trimmed && !attachments?.length) {
           const product = matchProductRedirectIntent(trimmed);
           if (product) {
@@ -732,6 +767,11 @@ function ChatShellInner({
             modelTier={modelTier}
             mode={mode}
             onModelTierChange={handleModelTierChange}
+            responseDetail={responseDetail}
+            onResponseDetailChange={(id) => {
+              setResponseDetail(id);
+              saveResponseDetailPreference(id);
+            }}
             onOpenSidebar={handleOpenSidebar}
             onSetPublicShare={onSetPublicShare}
             chatActionsRef={chatActionsRef}
@@ -744,11 +784,12 @@ function ChatShellInner({
               selectConversation(id);
               handleCloseMobile();
             }}
+            onPickFiles={handlePickFilesFromMenu}
+            onSelectDocumentTemplate={handleSelectDocumentTemplate}
+            onInsertTemplate={handleInsertTemplate}
+            onComposerError={handleTemplateError}
+            onComposerNotice={handleComposerNotice}
           />
-
-          {displayMessages.length === 0 ? (
-            <ChatVoiceLanguageBar className="chat-voice-language-bar--mobile lg:hidden" />
-          ) : null}
 
           <ChatBanners
             email={email}
@@ -777,11 +818,17 @@ function ChatShellInner({
             className={displayMessages.length > 0 ? "hidden md:block" : undefined}
           />
 
-          {templateNotice && (
-            <p className="border-b border-red-500/20 bg-red-500/10 px-4 py-2.5 text-center text-sm text-red-200">
+          {templateNotice ? (
+            <p
+              className={
+                /could not|not found|unavailable|error|failed/i.test(templateNotice)
+                  ? "border-b border-red-500/20 bg-red-500/10 px-4 py-2.5 text-center text-sm text-red-700 dark:text-red-200"
+                  : "border-b border-accent/20 bg-accent/10 px-4 py-2.5 text-center text-sm text-foreground"
+              }
+            >
               {templateNotice}
             </p>
-          )}
+          ) : null}
         </div>
 
         <ChatConversationPane
@@ -800,6 +847,7 @@ function ChatShellInner({
           flushingOutboxId={flushingOutboxId}
           onCancelOutbox={(id) => void cancelOutboxMessage(id)}
           insertRef={insertRef}
+          pickFilesRef={pickFilesRef}
           onSend={handleSend}
           onInsertTemplate={handleInsertTemplate}
           onSelectDocumentTemplate={handleSelectDocumentTemplate}
@@ -847,6 +895,7 @@ function ChatShellInner({
           onSelectPersona={(id) => void changePersona(id)}
           recentConversations={recentConversations}
           onSelectConversation={handleSelectConversation}
+          userEmail={email}
         />
       </div>
     </div>

@@ -52,10 +52,12 @@ describe("chat footer layout", () => {
     );
   });
 
-  it("keeps suggestion chips flush above the composer input", () => {
+  it("hides mobile suggestion chips so replies stay readable above the composer", () => {
     expect(globalsCss).toContain(".chat-footer-chips + .chat-composer-dock .chat-composer");
     expect(globalsCss).toMatch(/padding-top:\s*0/);
-    expect(mobileCss).toContain(".chat-footer-chips + .chat-composer-dock .chat-composer");
+    expect(mobileCss).toMatch(
+      /html\.chat-route \.chat-footer-chips[\s\S]*display:\s*none\s*!important/
+    );
     expect(mobileCss).toMatch(/\.chat-suggested-chips__row[\s\S]*padding:\s*0/);
     expect(mobileCss).toMatch(/\.chat-suggested-chips[\s\S]*min-height:\s*0/);
   });

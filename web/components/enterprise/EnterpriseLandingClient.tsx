@@ -14,7 +14,7 @@ import {
 
 function EnterpriseLandingInner() {
   return (
-    <div className="mx-auto max-w-5xl space-y-12">
+    <div className="mx-auto w-full min-w-0 max-w-5xl space-y-12">
       <header className="text-center">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-violet-500/10 px-3 py-1 text-sm font-medium text-violet-700">
           <Building2 className="h-4 w-4" aria-hidden />

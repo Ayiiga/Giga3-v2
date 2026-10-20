@@ -264,6 +264,26 @@ export async function prepareChatAttachment(
     return { ...base, text: truncateText(await readTextFile(file)) };
   }
 
+  if (kind === "pdf") {
+    try {
+      const { extractPdfText, formatPdfAttachmentText } = await import(
+        "@/lib/chat/pdfTextExtract"
+      );
+      const extracted = await extractPdfText(file);
+      return {
+        ...base,
+        text: formatPdfAttachmentText(name, extracted),
+      };
+    } catch {
+      return {
+        ...base,
+        text:
+          `${name} PDF attached, but text could not be extracted in this browser. ` +
+          `Do not invent document contents. Ask the user to retry, paste key sections, or upload page images.`,
+      };
+    }
+  }
+
   if (kind === "document" || kind === "presentation" || kind === "spreadsheet" || kind === "archive") {
     try {
       const extracted = await extractZip(file, kind);
@@ -281,10 +301,7 @@ export async function prepareChatAttachment(
 
   return {
     ...base,
-    text:
-      kind === "pdf"
-        ? `${name} PDF attached. Extract visible text/OCR where supported; if scanned, analyze as a scanned document and solve/summarize from available content.`
-        : `${name} attached for multimodal analysis.`,
+    text: `${name} attached for multimodal analysis.`,
   };
 }
 

@@ -674,20 +674,13 @@ export const regenerateMessage = action({
     );
     const chargedAi = engineResult.providerId !== "local_fallback";
 
-    if (chargedAi) {
-      if (engineResult.providerId === "openai_image") {
-        await ctx.runMutation(internal.credits.deductCreditsInternal, {
-          userId: email,
-          action: "image",
-          reference: args.conversationId,
-        });
-      } else {
-        await ctx.runMutation(internal.credits.deductForChatModeInternal, {
-          userId: email,
-          mode,
-          reference: args.conversationId,
-        });
-      }
+    // Ordinary text chat is credit-free. Only image generation deducts here.
+    if (chargedAi && engineResult.providerId === "openai_image") {
+      await ctx.runMutation(internal.credits.deductCreditsInternal, {
+        userId: email,
+        action: "image",
+        reference: args.conversationId,
+      });
     }
 
     await ctx.runMutation(internal.platform.appendMessage, {

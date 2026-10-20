@@ -85,6 +85,7 @@ const EASE_LABELS: Record<1 | 2 | 3 | 4 | 5, string> = {
 
 type OfferListener = (offer: CreatorSurveyOffer) => void;
 let offerListener: OfferListener | null = null;
+let dismissListener: (() => void) | null = null;
 
 export function subscribeCreatorSurveyOffers(listener: OfferListener): () => void {
   offerListener = listener;
@@ -93,9 +94,25 @@ export function subscribeCreatorSurveyOffers(listener: OfferListener): () => voi
   };
 }
 
+/** Host registers so publish can clear the overlay without dropping the offer API. */
+export function subscribeCreatorSurveyDismiss(listener: () => void): () => void {
+  dismissListener = listener;
+  return () => {
+    if (dismissListener === listener) dismissListener = null;
+  };
+}
+
 /** Offer the survey UI (host decides dismiss/submit gates). */
 export function offerCreatorSurvey(offer: CreatorSurveyOffer): void {
   offerListener?.(offer);
+}
+
+/**
+ * Dismiss an open survey without submitting (e.g. user taps Post to GigaSocial).
+ * Marks dismissed via the host so auto-prompt does not immediately return.
+ */
+export function requestCreatorSurveyDismiss(): void {
+  dismissListener?.();
 }
 
 /**

@@ -7,7 +7,7 @@ import { redirectToPaystack } from "@/lib/payments/paystackService";
 import { api } from "convex/_generated/api";
 import { useAction, useQuery } from "convex/react";
 import { Megaphone, Loader2 } from "lucide-react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 
 const DEFAULT_DURATIONS = [1, 3, 5, 7, 14, 21, 30, 60, 90];
 
@@ -20,6 +20,10 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
 }) {
   const settings = useQuery(api.gigaSocialEconomy.getEconomySettings, {});
   const campaigns = useQuery(api.gigaSocialEconomy.listBoostCampaigns, { sessionToken });
+  const dashboard = useQuery(
+    api.gigaSocialEconomy.getCreatorDashboard,
+    postId ? "skip" : { sessionToken }
+  );
   const initBoost = useAction(api.paystack.initializeBoostPayment);
 
   const [budgetGhs, setBudgetGhs] = useState(50);
@@ -28,13 +32,23 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (postId) setTargetId(postId);
+  }, [postId]);
+
+  useEffect(() => {
+    if (postId || targetId || !dashboard?.topPosts?.length) return;
+    setTargetId(dashboard.topPosts[0].postId);
+  }, [dashboard?.topPosts, postId, targetId]);
+
   const durations = settings?.boostDurationDays ?? DEFAULT_DURATIONS;
   const minBudget = settings?.boostBudgetMinGhs ?? 10;
   const maxBudget = settings?.boostBudgetMaxGhs ?? 2000;
+  const ownPosts = dashboard?.topPosts ?? [];
 
   const handlePayAndLaunch = useCallback(async () => {
     if (!targetId.trim()) {
-      setError("Enter a post ID to boost.");
+      setError("Select a post to boost.");
       return;
     }
     setBusy(true);
@@ -54,7 +68,7 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
     }
   }, [budgetGhs, durationDays, initBoost, sessionToken, targetId]);
 
-  if (campaigns === undefined || settings === undefined) {
+  if (campaigns === undefined || settings === undefined || (!postId && dashboard === undefined)) {
     return <LoadingState label="Loading boost campaigns…" />;
   }
 
@@ -67,25 +81,38 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
         </h2>
         <p className="mt-1 text-sm text-muted">
           Pay with mobile money, card, or bank via Paystack. Budget {formatGhs(minBudget)}–
-          {formatGhs(maxBudget)}.
+          {formatGhs(maxBudget)}. Boosts increase discovery — views, fans, or sales are not
+          guaranteed.
         </p>
 
         <div className="mt-4 space-y-3">
-          {!postId ? (
+          {postId ? (
+            <p className="rounded-lg border border-border bg-white px-3 py-2 text-xs text-muted">
+              Selected post ready — no Post ID copy/paste needed.
+            </p>
+          ) : (
             <label className="block text-sm">
-              <span className="text-muted">Post ID</span>
-              <input
-                type="text"
-                value={targetId}
-                onChange={(e) => setTargetId(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm"
-                placeholder="Paste post ID"
-              />
+              <span className="text-muted">Your post</span>
+              {ownPosts.length > 0 ? (
+                <select
+                  value={targetId}
+                  onChange={(e) => setTargetId(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm"
+                >
+                  {ownPosts.map((p) => (
+                    <option key={p.postId} value={p.postId}>
+                      {(p.body || "Media post").slice(0, 60)}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <p className="mt-1 text-xs text-muted">Publish a post first, then boost it.</p>
+              )}
             </label>
-          ) : null}
+          )}
 
           <label className="block text-sm">
-            <span className="text-muted">Budget (GHC)</span>
+            <span className="text-muted">Budget (GHS)</span>
             <input
               type="range"
               min={minBudget}
@@ -99,7 +126,7 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
           </label>
 
           <label className="block text-sm">
-            <span className="text-muted">Duration</span>
+            <span className="text-muted">Campaign duration</span>
             <select
               value={durationDays}
               onChange={(e) => setDurationDays(Number(e.target.value))}
@@ -107,13 +134,17 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
             >
               {durations.map((d) => (
                 <option key={d} value={d}>
-                  {d} {d === 1 ? "Day" : "Days"}
+                  {d} {d === 1 ? "day" : "days"}
                 </option>
               ))}
             </select>
           </label>
 
-          <Button type="button" disabled={busy} onClick={() => void handlePayAndLaunch()}>
+          <p className="text-sm font-medium text-foreground">
+            Total: {formatGhs(budgetGhs)} for {durationDays} {durationDays === 1 ? "day" : "days"}
+          </p>
+
+          <Button type="button" disabled={busy || !targetId.trim()} onClick={() => void handlePayAndLaunch()}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
             Pay & launch with Paystack
           </Button>

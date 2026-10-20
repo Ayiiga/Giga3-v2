@@ -52,6 +52,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     path: marketplaceItemPath(params.listingId),
     title: clampSeoTitle(`${bundle.listing.title}${creatorLabel}`, ref),
     description: clampSeoDescription(bundle.description, ref),
+    image: bundle.listing.coverImageUrl,
+    imageAlt: bundle.listing.title,
   });
 }
 
@@ -93,9 +95,15 @@ export default async function MarketplaceItemDetailPage({ params }: PageProps) {
         ratingValue={bundle.ratingValue}
       />
       <ProductSeoHeader
+        compact
+        collapsible
+        expandLabel="Read more"
+        collapseLabel="Show less"
         title={bundle.listing.title}
         description={bundle.description}
         detail={`${creatorLine} Pay with Paystack in GHS — downloads unlock only after payment.`}
+        coverImageUrl={bundle.listing.coverImageUrl}
+        coverImageAlt={`${bundle.listing.title} cover`}
         showProductNav={false}
       />
       <MarketplaceItemDetailShell listingId={params.listingId} />

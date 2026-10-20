@@ -1,0 +1,15 @@
+{
+  "name": "giga3-android-twa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Giga3 AI Trusted Web Activity shell (Bubblewrap)",
+  "scripts": {
+    "generate": "node scripts/generate-project.mjs",
+    "build:debug": "./gradlew assembleDebug",
+    "build:release": "./gradlew bundleRelease"
+  },
+  "devDependencies": {
+    "@bubblewrap/cli": "^1.25.0",
+    "@bubblewrap/core": "^1.25.0"
+  }
+}

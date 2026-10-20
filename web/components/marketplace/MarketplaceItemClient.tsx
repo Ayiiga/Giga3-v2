@@ -1,17 +1,24 @@
 "use client";
 
+import { isBookLikeProduct, ProductCover } from "@/components/marketplace/ProductCover";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { formatGhs } from "@/lib/marketplace/catalog";
 import { parseMarketplaceListingId } from "@/lib/marketplace/listingRoute";
+import {
+  buildPromotionalCaption,
+  buildShareDestination,
+  copyTextToClipboard,
+} from "@/lib/marketplace/promotionalCaption";
+import { marketplaceItemUrl } from "@/lib/seo/publicPaths";
 import { formatTimestampDateTime } from "@/lib/datetime";
 import { getSessionToken } from "@/lib/auth";
 import { redirectToPaystack } from "@/lib/payments/paystackService";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
-import { BadgeCheck, Download, Flag, ShieldCheck } from "lucide-react";
+import { BadgeCheck, Download, Flag, Share2, ShieldCheck } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
@@ -36,6 +43,8 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
     listingId && sessionToken ? { sessionToken, listingId } : "skip"
   );
   const recordView = useMutation(api.marketplace.recordView);
+  const recordPreviewOpen = useMutation(api.marketplace.recordPreviewOpen);
+  const recordPromoClick = useMutation(api.marketplace.recordPromoClick);
   const addReview = useMutation(api.marketplace.addReview);
   const reportListing = useMutation(api.marketplace.reportListing);
   const initPurchase = useAction(api.paystack.initializeMarketplacePayment);
@@ -53,6 +62,8 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
   const [reviewMessage, setReviewMessage] = useState<string | null>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [shareMessage, setShareMessage] = useState<string | null>(null);
+  const [previewTracked, setPreviewTracked] = useState(false);
 
   useEffect(() => {
     if (!listingId) return;
@@ -138,46 +149,118 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
     }
   }
 
+  const bookLike = isBookLikeProduct({
+    category: listing.category,
+    productType: listing.productType ? String(listing.productType) : null,
+  });
+  const hasTextPreview = Boolean(
+    listing.previewText || listing.previewToc || listing.previewIntro || listing.previewUrl
+  );
+
   return (
-    <Container className="py-8 sm:py-12">
-      <div className="mx-auto max-w-4xl space-y-8">
-      <div className="flex items-center justify-between gap-3">
-        <ButtonLink href="/marketplace" variant="ghost" size="sm">
+    <Container className="document-compact py-6 pb-[calc(var(--primary-nav-offset,0px)+1.25rem)] sm:py-10">
+      <div className="mx-auto max-w-4xl space-y-6 sm:space-y-8">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <ButtonLink href="/marketplace" variant="ghost" size="sm" className="min-h-11">
           ← Marketplace
         </ButtonLink>
-        <ButtonLink href="/marketplace/purchases" variant="ghost" size="sm">
+        <ButtonLink href="/marketplace/purchases" variant="ghost" size="sm" className="min-h-11">
           My purchases
         </ButtonLink>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-        <div>
-          {listing.coverImageUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+      <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:gap-8">
+        <div className="min-w-0">
+          <div
+            id="preview"
+            className="mb-5"
+            onMouseEnter={() => {
+              if (previewTracked || !listingId) return;
+              setPreviewTracked(true);
+              void recordPreviewOpen({
+                listingId,
+                sessionToken: getSessionToken() ?? undefined,
+              }).catch(() => undefined);
+            }}
+          >
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
+              {bookLike ? "Book cover" : "Product cover"}
+            </p>
+            <ProductCover
               src={listing.coverImageUrl}
-                alt={`${listing.title} product cover`}
-                loading="lazy"
-              className="mb-6 aspect-video w-full rounded-2xl object-cover"
+              title={listing.title}
+              category={listing.category}
+              productType={listing.productType ? String(listing.productType) : null}
+              className="w-full max-w-sm"
+              aspectClassName={bookLike ? "aspect-[3/4]" : "aspect-[4/5] sm:aspect-[16/10]"}
+              fit={bookLike ? "contain" : "cover"}
             />
-          )}
-          <h1 className="text-3xl font-bold">{listing.title}</h1>
+            <p className="mt-2 text-xs text-muted">
+              {listing.coverImageUrl
+                ? bookLike
+                  ? "Book cover for this listing. Sample pages below are author-controlled previews."
+                  : "Listing cover image. Purchasing unlocks the full paid file."
+                : bookLike
+                  ? "Showing a title cover page until the seller uploads a custom cover image."
+                  : "Cover image not available yet — the seller can upload one from Sell."}
+            </p>
+          </div>
+          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">
+            {listing.category}
+            {listing.productType ? ` · ${String(listing.productType).replace(/_/g, " ")}` : ""}
+          </p>
+          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{listing.title}</h2>
           {creator && (
             <p className="mt-2 text-muted">
               by{" "}
               <a href={`/creator/?handle=${creator.handle}`} className="text-emerald-600 underline">
                 {creator.displayName}
               </a>
-              {creator.verified ? " · Verified creator" : ""}
+              {creator.verified ? (
+                <span className="ml-2 inline-flex items-center gap-1 text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                  <BadgeCheck className="h-4 w-4" aria-hidden />
+                  Verified seller
+                </span>
+              ) : null}
             </p>
           )}
-          <p className="mt-4 whitespace-pre-wrap text-foreground/90">{listing.description}</p>
-          {listing.previewText && (
-            <div className="mt-6 rounded-2xl border border-border bg-card p-5">
-              <h2 className="font-semibold">Preview</h2>
-              <p className="mt-2 whitespace-pre-wrap text-sm text-muted">{listing.previewText}</p>
+          <p className="mt-4 whitespace-pre-wrap text-foreground/90 leading-relaxed">{listing.description}</p>
+          {hasTextPreview ? (
+            <div className="mt-6 space-y-4 rounded-2xl border border-violet-200/60 bg-card p-4 sm:p-5 dark:border-violet-900/40">
+              <h3 className="font-semibold">Inside this {bookLike ? "book" : "product"}</h3>
+              <p className="text-xs text-muted">
+                Author-controlled sample only — purchasing unlocks the full paid file.
+              </p>
+              {listing.previewToc ? (
+                <div>
+                  <h4 className="text-sm font-semibold">Table of contents</h4>
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{listing.previewToc}</p>
+                </div>
+              ) : null}
+              {listing.previewIntro ? (
+                <div>
+                  <h4 className="text-sm font-semibold">Introduction</h4>
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{listing.previewIntro}</p>
+                </div>
+              ) : null}
+              {listing.previewText ? (
+                <div>
+                  <h4 className="text-sm font-semibold">Sample pages</h4>
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{listing.previewText}</p>
+                </div>
+              ) : null}
+              {listing.previewUrl ? (
+                <a
+                  href={listing.previewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-11 items-center text-sm font-medium text-violet-700 underline dark:text-violet-300"
+                >
+                  Open sample file
+                </a>
+              ) : null}
             </div>
-          )}
+          ) : null}
           {listing.copyrightNotice && (
             <p className="mt-4 text-xs text-muted">© {listing.copyrightNotice}</p>
           )}
@@ -196,6 +279,65 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
             </p>
           ) : null}
           {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                const url = marketplaceItemUrl(listingId!);
+                const caption = buildPromotionalCaption({
+                  listingId: listingId!,
+                  title: listing.title,
+                  description: listing.description,
+                  priceGhs: listing.priceGhs,
+                  category: listing.category,
+                  productType: listing.productType,
+                });
+                void copyTextToClipboard(url).then((ok) => {
+                  setShareMessage(ok ? "Product link copied." : "Could not copy link.");
+                });
+                void recordPromoClick({
+                  listingId: listingId!,
+                  channel: "copy",
+                  sessionToken: getSessionToken() ?? undefined,
+                }).catch(() => undefined);
+                void caption;
+              }}
+            >
+              <Share2 className="mr-1.5 h-3.5 w-3.5" aria-hidden />
+              Copy link
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                const url = marketplaceItemUrl(listingId!);
+                const text = buildPromotionalCaption({
+                  listingId: listingId!,
+                  title: listing.title,
+                  description: listing.description,
+                  priceGhs: listing.priceGhs,
+                  category: listing.category,
+                  productType: listing.productType,
+                });
+                window.open(
+                  buildShareDestination("whatsapp", { title: listing.title, text, url }),
+                  "_blank",
+                  "noopener,noreferrer"
+                );
+                void recordPromoClick({
+                  listingId: listingId!,
+                  channel: "whatsapp",
+                  sessionToken: getSessionToken() ?? undefined,
+                }).catch(() => undefined);
+              }}
+            >
+              WhatsApp
+            </Button>
+          </div>
+          {shareMessage ? <p className="mt-2 text-xs text-emerald-700">{shareMessage}</p> : null}
           {download?.allowed && download.url ? (
             <>
               <a

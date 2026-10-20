@@ -15,7 +15,7 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { adminCredentialArgs, ensureAdminAccess } from "./adminAccess";
-import { toPublicListing } from "./marketplaceViews";
+import { toPublicListingResolved } from "./marketplaceViews";
 
 export const CREATOR_SERIES_PRICE_GHS = 150;
 export const CREATOR_SERIES_OFFICIAL_TAG = "giga3-official-series";
@@ -111,22 +111,26 @@ export const listOfficialCreatorSeries = query({
       .order("desc")
       .take(200);
 
-    return OFFICIAL_SERIES.map((series) => {
-      const listing = published.find((row) =>
-        row.tags.includes(series.listingTag)
-      );
-      return {
-        listingTag: series.listingTag,
-        title: series.title,
-        description: series.description,
-        previewText: series.previewText,
-        category: series.category,
-        priceGhs: listing?.priceGhs ?? CREATOR_SERIES_PRICE_GHS,
-        pdfPath: series.pdfPath,
-        coverPath: series.coverPath,
-        listing: listing ? toPublicListing(listing) : null,
-      };
-    });
+    return await Promise.all(
+      OFFICIAL_SERIES.map(async (series) => {
+        const listing = published.find((row) =>
+          row.tags.includes(series.listingTag)
+        );
+        return {
+          listingTag: series.listingTag,
+          title: series.title,
+          description: series.description,
+          previewText: series.previewText,
+          category: series.category,
+          priceGhs: listing?.priceGhs ?? CREATOR_SERIES_PRICE_GHS,
+          pdfPath: series.pdfPath,
+          coverPath: series.coverPath,
+          listing: listing
+            ? await toPublicListingResolved(ctx.storage, listing)
+            : null,
+        };
+      })
+    );
   },
 });
 
@@ -191,6 +195,7 @@ export const upsertOfficialSeriesListing = internalMutation({
     tags: v.array(v.string()),
     priceGhs: v.number(),
     coverImageUrl: v.optional(v.string()),
+    coverStorageId: v.optional(v.id("_storage")),
     fileStorageId: v.id("_storage"),
     fileName: v.string(),
     previewUrl: v.optional(v.string()),
@@ -224,6 +229,7 @@ export const upsertOfficialSeriesListing = internalMutation({
       previewText: args.previewText.slice(0, 2000),
       previewUrl: args.previewUrl,
       coverImageUrl: args.coverImageUrl,
+      coverStorageId: args.coverStorageId,
       fileStorageId: args.fileStorageId,
       fileName: args.fileName.slice(0, 200),
       fileReviewStatus: "approved" as const,
@@ -292,11 +298,13 @@ export const seedGiga3CreatorSeries = action({
       const pdfBlob = await fetchAsBlob(pdfUrl);
       const fileStorageId = await ctx.storage.store(pdfBlob);
 
+      // Prefer durable public CDN cover; also store a Convex blob when fetch works.
       let coverImageUrl: string | undefined = coverUrl;
+      let coverStorageId: Id<"_storage"> | undefined;
       try {
         const coverBlob = await fetchAsBlob(coverUrl);
-        const coverId = await ctx.storage.store(coverBlob);
-        coverImageUrl = (await ctx.storage.getUrl(coverId)) ?? coverUrl;
+        coverStorageId = await ctx.storage.store(coverBlob);
+        coverImageUrl = coverUrl;
       } catch {
         // Cover is optional — listing still publishes with public cover URL.
       }
@@ -313,6 +321,7 @@ export const seedGiga3CreatorSeries = action({
           tags: series.tags,
           priceGhs: CREATOR_SERIES_PRICE_GHS,
           coverImageUrl,
+          coverStorageId,
           fileStorageId,
           fileName: series.fileName,
           // Do not expose the full PDF as a public preview URL.

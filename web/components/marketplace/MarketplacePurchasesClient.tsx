@@ -1,8 +1,11 @@
 "use client";
 
+import { ProductCover } from "@/components/marketplace/ProductCover";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { LoadingState } from "@/components/ui/LoadingState";
 import { formatGhs } from "@/lib/marketplace/catalog";
 import { formatTimestampDateTime } from "@/lib/datetime";
 import { getSessionToken } from "@/lib/auth";
@@ -32,8 +35,8 @@ function MarketplacePurchasesInner() {
   );
 
   return (
-    <Container className="py-8 sm:py-12">
-      <div className="mx-auto max-w-4xl space-y-8">
+    <Container className="document-compact py-4 pb-[calc(var(--primary-nav-offset,0px)+1.25rem)] sm:py-8">
+      <div className="mx-auto max-w-4xl space-y-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-700 dark:text-emerald-300">
@@ -42,7 +45,7 @@ function MarketplacePurchasesInner() {
             </div>
             <h1 className="page-title">Your library</h1>
             <p className="mt-2 text-muted">
-              Paid products unlock here. Download your PDF after a successful Paystack payment.
+              Paid products unlock here. Download your file after a successful Paystack payment.
             </p>
             <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-emerald-800 dark:text-emerald-300">
               <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
@@ -55,37 +58,36 @@ function MarketplacePurchasesInner() {
         </div>
 
         {!sessionToken || purchases === undefined ? (
-          <p className="text-center text-muted">Loading your purchases…</p>
+          <LoadingState label="Loading your purchases…" />
         ) : purchases.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border p-10 text-center text-muted">
-            <p>You haven&apos;t purchased anything yet.</p>
-            <ButtonLink href="/marketplace" className="mt-4">
-              Explore the marketplace
-            </ButtonLink>
+          <div className="space-y-4">
+            <EmptyState
+              icon={ShoppingBag}
+              title="No purchases yet"
+              description="When you buy a digital product with Paystack, it appears here with a download link."
+            />
+            <div className="flex justify-center">
+              <ButtonLink href="/marketplace">Explore the marketplace</ButtonLink>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
             {purchases.map((row: NonNullable<typeof purchases>[number]) => {
-              const cover = row.listing.coverImageUrl;
               const canDownload = Boolean(row.hasDownload && row.downloadUrl);
+              const pendingReview = Boolean(row.downloadPendingReview);
               return (
                 <article
                   key={row.purchase._id}
                   className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
                 >
                   <div className="flex min-w-0 flex-1 gap-3">
-                    {cover ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={cover}
-                        alt=""
-                        className="h-24 w-16 shrink-0 rounded-lg object-cover sm:h-28 sm:w-20"
-                      />
-                    ) : (
-                      <div className="flex h-24 w-16 shrink-0 items-center justify-center rounded-lg bg-emerald-950/5 text-[11px] text-muted sm:h-28 sm:w-20">
-                        eBook
-                      </div>
-                    )}
+                    <ProductCover
+                      src={row.listing.coverImageUrl}
+                      title={row.listing.title}
+                      category={row.listing.category}
+                      className="w-16 shrink-0 sm:w-20"
+                      aspectClassName="aspect-[4/5]"
+                    />
                     <div className="min-w-0">
                       <Link
                         href={`/marketplace/item/${row.listing._id}/`}
@@ -100,6 +102,9 @@ function MarketplacePurchasesInner() {
                       <p className="mt-1 text-xs capitalize text-muted">
                         {row.purchase.license.replace(/_/g, " ")} license · paid via Paystack
                       </p>
+                      <p className="mt-1 text-xs font-medium text-emerald-800 dark:text-emerald-300">
+                        Status: paid
+                      </p>
                     </div>
                   </div>
                   <div className="flex shrink-0 flex-wrap gap-2">
@@ -112,9 +117,13 @@ function MarketplacePurchasesInner() {
                         <Download className="mr-2 h-4 w-4" aria-hidden />
                         Download PDF
                       </a>
+                    ) : pendingReview ? (
+                      <span className="inline-flex min-h-11 max-w-[16rem] items-center rounded-xl border border-amber-200 bg-amber-50 px-3 text-xs text-amber-950 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-100">
+                        Purchase recorded — file awaiting moderation before download unlocks.
+                      </span>
                     ) : (
-                      <span className="inline-flex min-h-11 items-center rounded-xl border border-dashed border-border px-3 text-xs text-muted">
-                        File preparing…
+                      <span className="inline-flex min-h-11 max-w-[16rem] items-center rounded-xl border border-dashed border-border px-3 text-xs text-muted">
+                        No downloadable file on this listing yet. Contact support if this persists.
                       </span>
                     )}
                     <ButtonLink

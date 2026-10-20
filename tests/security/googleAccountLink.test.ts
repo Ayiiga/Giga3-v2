@@ -41,7 +41,7 @@ describe("Google account linking", () => {
     expect(decision).toEqual({ kind: "sign-in", email: "original@example.com" });
   });
 
-  it("links a verified Google identity onto an existing password account", () => {
+  it("rejects email-only match so accounts are not auto-merged", () => {
     const decision = decideGoogleAccountLink({
       googleSub: "sub-link",
       email: "user@example.com",
@@ -49,7 +49,10 @@ describe("Google account linking", () => {
       bySub: null,
       byEmail: account(),
     });
-    expect(decision).toEqual({ kind: "link", email: "user@example.com" });
+    expect(decision).toEqual({
+      kind: "reject",
+      code: "account_exists_requires_link",
+    });
   });
 
   it("does not create a duplicate when the email already exists", () => {
@@ -77,6 +80,10 @@ describe("Google account linking", () => {
       }),
     ];
     expect(cases.every((decision) => decision.kind !== "create")).toBe(true);
+    expect(cases[0]).toEqual({
+      kind: "reject",
+      code: "account_exists_requires_link",
+    });
   });
 
   it("rejects a second Google account for an email that is already linked", () => {

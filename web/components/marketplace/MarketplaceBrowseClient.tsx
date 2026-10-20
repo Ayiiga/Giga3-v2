@@ -1,14 +1,22 @@
 "use client";
 
 import { CreatorAcademySection } from "@/components/marketplace/CreatorAcademySection";
+import { ProductCover } from "@/components/marketplace/ProductCover";
 import { SurfaceRecommendations } from "@/components/recommendations/SurfaceRecommendations";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
-import { ButtonLink } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import { SIMPLE_CATEGORIES, formatGhs } from "@/lib/marketplace/catalog";
+import { formatGhs } from "@/lib/marketplace/catalog";
+import {
+  DISCOVERY_COLLECTIONS,
+  PRICE_FILTERS,
+  listingMatchesCollection,
+  listingMatchesPrice,
+  type DiscoveryCollectionId,
+} from "@/lib/marketplace/discovery";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import { BadgeCheck, Search, ShieldCheck, ShoppingBag, Store } from "lucide-react";
@@ -16,14 +24,18 @@ import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
+const PAGE_SIZE = 24;
+
 function MarketplaceBrowseInner() {
   const searchParams = useSearchParams();
   const initialQ = searchParams.get("q") ?? "";
   const [query, setQuery] = useState(initialQ);
   const debouncedQuery = useDebouncedValue(query, 300);
-  const [category, setCategory] = useState<string>("");
+  const [collectionId, setCollectionId] = useState<DiscoveryCollectionId | "">("");
+  const [priceFilterId, setPriceFilterId] = useState<string>("");
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [sort, setSort] = useState<"newest" | "price-low" | "price-high">("newest");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
     const q = searchParams.get("q");
@@ -32,161 +44,248 @@ function MarketplaceBrowseInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [debouncedQuery, collectionId, priceFilterId, verifiedOnly, sort]);
+
+  // Call production-compatible args only. Server-side discovery filters land with
+  // the Convex deploy from this PR; until then filter client-side so browse works.
   const listings = useQuery(api.marketplace.searchListings, {
     query: debouncedQuery || undefined,
-    category: category || undefined,
     verifiedOnly: verifiedOnly || undefined,
-    limit: 40,
+    limit: 80,
   });
 
-  const sortedListings = useMemo(() => {
+  const priceFilter = PRICE_FILTERS.find((p) => p.id === priceFilterId) ?? PRICE_FILTERS[0]!;
+
+  const filteredSorted = useMemo(() => {
     if (!listings) return listings;
-    return [...listings].sort((a, b) => {
+    const matched = listings.filter((item) => {
+      if (!listingMatchesCollection(item, collectionId)) return false;
+      if (!listingMatchesPrice(item.priceGhs, priceFilter.min, priceFilter.max)) return false;
+      return true;
+    });
+    return [...matched].sort((a, b) => {
       if (sort === "price-low") return a.priceGhs - b.priceGhs;
       if (sort === "price-high") return b.priceGhs - a.priceGhs;
-      return 0;
+      const aTime = a.createdAt ?? a.updatedAt ?? 0;
+      const bTime = b.createdAt ?? b.updatedAt ?? 0;
+      return bTime - aTime;
     });
-  }, [listings, sort]);
+  }, [listings, collectionId, priceFilter.min, priceFilter.max, sort]);
+
+  const visible = filteredSorted?.slice(0, visibleCount) ?? null;
+  const hasMore = Boolean(filteredSorted && filteredSorted.length > visibleCount);
 
   return (
-    <Container className="discover-stable py-8 sm:py-12">
-      <div className="mx-auto max-w-5xl space-y-8">
-        <header className="space-y-4">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="max-w-2xl">
-              <p className="mb-2 inline-flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-300">
+    <Container className="discover-stable document-compact px-4 py-3 pb-[calc(var(--primary-nav-offset,0px)+1rem)] sm:px-6 sm:py-4">
+      <div id="marketplace-catalogue" className="mx-auto max-w-5xl scroll-mt-20 space-y-4">
+        <header className="space-y-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="inline-flex items-center gap-1.5 text-xs font-medium text-accent sm:text-sm">
                 <Store className="h-4 w-4" aria-hidden />
-                Giga3 Marketplace
+                Marketplace
               </p>
-              <h2 className="page-title font-serif tracking-tight">Buy. Pay. Download.</h2>
-              <p className="mt-2 text-muted">
-                Digital guides and templates in GHS. Pay with Paystack — your file unlocks only
-                after payment.
-              </p>
+              <h2 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
+                Buy, pay, download
+              </h2>
             </div>
             <div className="flex flex-wrap gap-2">
-              <ButtonLink href="/marketplace/purchases" variant="secondary">
+              <ButtonLink href="/marketplace/purchases" variant="secondary" size="sm">
                 My purchases
               </ButtonLink>
-              <ButtonLink href="/marketplace/sell">
-                <ShoppingBag className="mr-2 h-4 w-4" aria-hidden />
+              <ButtonLink href="/marketplace/sell" size="sm">
+                <ShoppingBag className="mr-1.5 h-4 w-4" aria-hidden />
                 Sell
               </ButtonLink>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-emerald-800/15 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-100">
-            <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden />
+          <div className="flex items-start gap-2 rounded-xl border border-accent/20 bg-accent/5 px-3 py-2.5 text-sm text-foreground">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden />
             <span>
-              Paystack checkout only. Never pay sellers outside the app. Prefer{" "}
-              <strong>Verified</strong> creators.
+              Secure checkout with Paystack. Digital downloads unlock after verified payment.
+              Prefer <strong>Verified</strong> creators — never pay sellers outside the app.
             </span>
           </div>
         </header>
 
-        <CreatorAcademySection />
-
-        <SurfaceRecommendations
-          surface="marketplace"
-          title="Suggested marketplace actions"
-          limit={4}
-        />
-
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-          <div className="relative min-w-0 flex-1">
-            <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted" aria-hidden />
+        <div className="space-y-2.5">
+          <div className="relative min-w-0">
+            <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted" aria-hidden />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search products…"
+              placeholder="Search by name or description…"
               aria-label="Search marketplace"
-              className="w-full rounded-xl border border-border bg-card py-3 pl-10 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/30"
+              className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-accent/30"
             />
           </div>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="rounded-xl border border-border bg-card px-4 py-3"
-            aria-label="Category"
+
+          <div
+            className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+            role="listbox"
+            aria-label="Marketplace collections"
           >
-            <option value="">All categories</option>
-            {SIMPLE_CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
+            <button
+              type="button"
+              role="option"
+              aria-selected={collectionId === ""}
+              onClick={() => setCollectionId("")}
+              className={`shrink-0 rounded-full border px-3 py-2 text-sm ${
+                collectionId === ""
+                  ? "border-emerald-700 bg-emerald-700 text-white"
+                  : "border-border bg-card text-foreground"
+              }`}
+            >
+              All
+            </button>
+            {DISCOVERY_COLLECTIONS.map((col) => (
+              <button
+                key={col.id}
+                type="button"
+                role="option"
+                aria-selected={collectionId === col.id}
+                title={col.description}
+                onClick={() => setCollectionId(col.id)}
+                className={`shrink-0 rounded-full border px-3 py-2 text-sm ${
+                  collectionId === col.id
+                    ? "border-emerald-700 bg-emerald-700 text-white"
+                    : "border-border bg-card text-foreground"
+                }`}
+              >
+                {col.label}
+              </button>
             ))}
-          </select>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as typeof sort)}
-            className="rounded-xl border border-border bg-card px-4 py-3"
-            aria-label="Sort"
-          >
-            <option value="newest">Newest</option>
-            <option value="price-low">Price: low → high</option>
-            <option value="price-high">Price: high → low</option>
-          </select>
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm">
-            <input
-              type="checkbox"
-              checked={verifiedOnly}
-              onChange={(e) => setVerifiedOnly(e.target.checked)}
-              className="rounded"
-            />
-            Verified only
-          </label>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <select
+              value={priceFilterId}
+              onChange={(e) => setPriceFilterId(e.target.value)}
+              className="rounded-xl border border-border bg-card px-4 py-3"
+              aria-label="Price filter"
+            >
+              {PRICE_FILTERS.map((p) => (
+                <option key={p.id || "any"} value={p.id}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as typeof sort)}
+              className="rounded-xl border border-border bg-card px-4 py-3"
+              aria-label="Sort"
+            >
+              <option value="newest">Newest</option>
+              <option value="price-low">Price: low → high</option>
+              <option value="price-high">Price: high → low</option>
+            </select>
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm">
+              <input
+                type="checkbox"
+                checked={verifiedOnly}
+                onChange={(e) => setVerifiedOnly(e.target.checked)}
+                className="rounded"
+              />
+              Verified only
+            </label>
+          </div>
         </div>
 
-        {!sortedListings ? (
+        {!visible ? (
           <LoadingState label="Loading marketplace…" />
-        ) : sortedListings.length === 0 ? (
-          <EmptyState
-            icon={Store}
-            title="No products found"
-            description="Try another search, or browse the Creator Academy guides above."
-          />
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {sortedListings.map((item: NonNullable<typeof sortedListings>[number]) => (
-              <Link
-                key={item._id}
-                href={`/marketplace/item/${item._id}/`}
-                className="saas-card group flex gap-4 rounded-2xl p-4 hover:border-emerald-600/35"
-              >
-                {item.coverImageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={item.coverImageUrl}
-                    alt=""
-                    loading="lazy"
-                    className="h-24 w-20 shrink-0 rounded-xl object-cover"
-                  />
-                ) : (
-                  <div className="flex h-24 w-20 shrink-0 items-center justify-center rounded-xl bg-emerald-950/5 text-[10px] font-semibold uppercase text-muted">
-                    PDF
-                  </div>
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <h2 className="line-clamp-2 font-serif text-lg font-semibold group-hover:text-emerald-800 dark:group-hover:text-emerald-300">
-                      {item.title}
-                    </h2>
-                    <span className="shrink-0 font-bold tabular-nums">{formatGhs(item.priceGhs)}</span>
-                  </div>
-                  <p className="mt-1 line-clamp-2 text-sm text-muted">{item.description}</p>
-                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted">
-                    <span>{item.category}</span>
-                    {item.creator?.verified ? (
-                      <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
-                        <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
-                        Verified
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-              </Link>
-            ))}
+        ) : visible.length === 0 ? (
+          <div className="space-y-3">
+            <EmptyState
+              icon={Store}
+              title="No products found"
+              description="Try another search, collection, or price range — or list your own digital product."
+            />
+            <div className="flex justify-center">
+              <ButtonLink href="/marketplace/sell" size="sm">
+                Start Selling
+              </ButtonLink>
+            </div>
           </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+              {visible.map((item: NonNullable<typeof visible>[number]) => {
+                const hasPreview = Boolean(
+                  item.previewText ||
+                    item.previewToc ||
+                    item.previewIntro ||
+                    item.previewUrl
+                );
+                return (
+                  <article
+                    key={item._id}
+                    className="saas-card group flex flex-col overflow-hidden rounded-2xl p-2.5 sm:p-3 hover:border-violet-400/40"
+                  >
+                    <Link href={`/marketplace/item/${item._id}/`} className="block">
+                      <ProductCover
+                        src={item.coverImageUrl}
+                        title={item.title}
+                        category={item.category}
+                        className="w-full"
+                        aspectClassName="aspect-[3/4]"
+                      />
+                    </Link>
+                    <div className="mt-2 flex min-h-0 flex-1 flex-col gap-1 px-0.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <Link href={`/marketplace/item/${item._id}/`}>
+                          <h2 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground group-hover:text-violet-800 dark:group-hover:text-violet-300 sm:text-[0.95rem]">
+                            {item.title}
+                          </h2>
+                        </Link>
+                        <span className="shrink-0 text-sm font-bold tabular-nums text-violet-800 dark:text-violet-300">
+                          {formatGhs(item.priceGhs)}
+                        </span>
+                      </div>
+                      <p className="line-clamp-2 text-xs text-muted">{item.description}</p>
+                      <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
+                        <span className="rounded-md bg-violet-500/10 px-1.5 py-0.5 text-violet-800 dark:text-violet-200">
+                          {item.category}
+                        </span>
+                        {item.creator?.verified ? (
+                          <span className="inline-flex items-center gap-0.5 font-medium text-violet-700 dark:text-violet-300">
+                            <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
+                            Verified
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="mt-auto flex flex-wrap gap-1.5 pt-2">
+                        {hasPreview ? (
+                          <Link
+                            href={`/marketplace/item/${item._id}/#preview`}
+                            className="inline-flex min-h-8 flex-1 items-center justify-center rounded-lg border border-border px-2 text-[11px] font-medium hover:border-violet-400"
+                          >
+                            Preview
+                          </Link>
+                        ) : null}
+                        <Link
+                          href={`/marketplace/item/${item._id}/`}
+                          className="inline-flex min-h-8 flex-1 items-center justify-center rounded-lg bg-violet-700 px-2 text-[11px] font-semibold text-white hover:bg-violet-800"
+                        >
+                          {item.purchaseReady ? "Buy / details" : "View details"}
+                        </Link>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+            {hasMore ? (
+              <div className="flex justify-center pt-2">
+                <Button variant="secondary" onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}>
+                  Load more
+                </Button>
+              </div>
+            ) : null}
+          </>
         )}
       </div>
     </Container>

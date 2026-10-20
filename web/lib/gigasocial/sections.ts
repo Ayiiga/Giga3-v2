@@ -17,7 +17,8 @@ export type GigaSocialSection =
   | "live"
   | "creator"
   | "profile"
-  | "notifications";
+  | "notifications"
+  | "messages";
 
 export interface GigaSocialSectionDefinition {
   id: GigaSocialSection;
@@ -68,6 +69,12 @@ export const GIGASOCIAL_SECTIONS: GigaSocialSectionDefinition[] = [
     label: "Notifications",
     description: "Likes, comments, and community updates",
     icon: Bell,
+  },
+  {
+    id: "messages",
+    label: "Messages",
+    description: "Direct messages and message requests",
+    icon: MessageCircle,
   },
 ];
 

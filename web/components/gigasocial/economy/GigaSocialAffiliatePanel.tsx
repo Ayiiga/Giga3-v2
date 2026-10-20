@@ -48,14 +48,6 @@ export const GigaSocialAffiliatePanel = memo(function GigaSocialAffiliatePanel({
 
   if (!affiliate) return null;
 
-  if (!affiliate.unlocked) {
-    return (
-      <p className="text-sm text-muted">
-        Affiliate program unlocks at 500 fans. Tips on your posts stay open meanwhile.
-      </p>
-    );
-  }
-
   return (
     <div className="space-y-4">
       <div className="saas-card rounded-2xl border border-border p-4">
@@ -64,7 +56,12 @@ export const GigaSocialAffiliatePanel = memo(function GigaSocialAffiliatePanel({
           Affiliate Program
         </h2>
         <p className="mt-1 text-sm text-muted">
-          Share your unique link and earn {affiliate.commissionPercent}% commission on conversions.
+          Open to everyone — no fan minimum. Share your unique link and earn{" "}
+          {affiliate.commissionPercent}% commission on qualifying conversions.
+        </p>
+        <p className="mt-2 text-xs text-muted">
+          Affiliate earnings are separate from creator tips and content rewards. Joining does not
+          activate creator monetisation or withdrawals.
         </p>
 
         {affiliate.affiliateLink ? (
@@ -86,7 +83,7 @@ export const GigaSocialAffiliatePanel = memo(function GigaSocialAffiliatePanel({
             onClick={() => void handleGenerate()}
           >
             {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
-            Generate affiliate link
+            Join & generate affiliate link
           </Button>
         )}
         {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
@@ -106,6 +103,20 @@ export const GigaSocialAffiliatePanel = memo(function GigaSocialAffiliatePanel({
           <p className="text-lg font-semibold">{formatGhs(affiliate.earningsGhs)}</p>
         </div>
       </div>
+
+      {affiliate.recentEvents?.length ? (
+        <section className="saas-card rounded-2xl border border-border p-4">
+          <h3 className="text-sm font-semibold text-foreground">Recent activity</h3>
+          <ul className="mt-2 space-y-1.5 text-sm text-muted">
+            {affiliate.recentEvents.slice(0, 8).map((e, i) => (
+              <li key={`${e.createdAt}-${i}`}>
+                {e.eventType}
+                {e.amountGhs != null ? ` · ${formatGhs(e.amountGhs)}` : ""}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </div>
   );
 });

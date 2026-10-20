@@ -1,0 +1,46 @@
+{
+  "generatedAt": "2026-10-14T16:44:18.332Z",
+  "model": "fal-ai/flux/schnell",
+  "results": [
+    {
+      "id": "start-learning-coding-ghana",
+      "skipped": false,
+      "file": "start-learning-coding-ghana.jpg"
+    },
+    {
+      "id": "one-million-coders-courses-careers",
+      "skipped": false,
+      "file": "one-million-coders-courses-careers.jpg"
+    },
+    {
+      "id": "ai-skills-ghanaian-students-2026",
+      "skipped": false,
+      "file": "ai-skills-ghanaian-students-2026.jpg"
+    },
+    {
+      "id": "coding-vs-ai-beginners",
+      "skipped": false,
+      "file": "coding-vs-ai-beginners.jpg"
+    },
+    {
+      "id": "first-software-project-ghana",
+      "skipped": false,
+      "file": "first-software-project-ghana.jpg"
+    },
+    {
+      "id": "support-coding-practice-desk",
+      "skipped": false,
+      "file": "support-coding-practice-desk.jpg"
+    },
+    {
+      "id": "support-skills-roadmap-notebook",
+      "skipped": false,
+      "file": "support-skills-roadmap-notebook.jpg"
+    },
+    {
+      "id": "support-team-project-build",
+      "skipped": false,
+      "file": "support-team-project-build.jpg"
+    }
+  ]
+}

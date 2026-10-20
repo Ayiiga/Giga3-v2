@@ -21,10 +21,7 @@ import { cn } from "@/lib/utils";
 import {
   Archive,
   BookOpen,
-  Coins,
-  CreditCard,
   FileText,
-  HelpCircle,
   Home,
   ImageIcon,
   LayoutGrid,
@@ -110,7 +107,7 @@ type WorkspaceNavItem =
       hint?: string;
     };
 
-/** Workspace apps: GigaSocial → GigaEdits → GigaLearn → Media Studio, then remaining tools. */
+/** Workspace apps: Academy → Exam Practice → Tech Hub → GigaSocial → Blog, then remaining tools. */
 const PRIMARY_NAV: WorkspaceNavItem[] = [
   ...CHAT_WORKSPACE_PRIMARY_APPS.map((app) => ({
     id: app.id,
@@ -132,14 +129,6 @@ const PRIMARY_NAV: WorkspaceNavItem[] = [
   { hash: "news", label: "News desk", icon: Newspaper },
   { hash: "sports", label: "Sports desk", icon: Trophy },
 ];
-
-const ACCOUNT_NAV = [
-  { href: "/wallet", label: "GigaWallet", icon: CreditCard },
-  { href: "/workspace", label: "Workspace", icon: UsersRound },
-  { href: "/subscribe", label: "Subscription", icon: Sparkles },
-  { href: "/credits", label: "Credits", icon: Coins },
-  { href: siteConfig.links.home, label: "Dashboard", icon: Settings },
-] as const;
 
 function ChatSidebarComponent({
   conversations,
@@ -437,27 +426,19 @@ function ChatSidebarComponent({
         </div>
 
         <div className="shrink-0 border-t border-border bg-card/80 p-3">
-          <SidebarSection title="Account">
-            {ACCOUNT_NAV.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                onClick={onCloseMobile}
-                className="flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted hover:bg-accent/5 hover:text-foreground"
-              >
-                <item.icon className="h-4 w-4 shrink-0" aria-hidden />
-                {item.label}
-              </Link>
-            ))}
-            <Link
-              href={siteConfig.links.about}
-              onClick={onCloseMobile}
-              className="flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted hover:bg-accent/5 hover:text-foreground"
-            >
-              <HelpCircle className="h-4 w-4 shrink-0" aria-hidden />
-              Help Center
-            </Link>
-          </SidebarSection>
+          <Link
+            href="/settings/"
+            onClick={onCloseMobile}
+            className="flex min-h-11 items-center gap-3 rounded-xl border border-border bg-background px-3 text-sm font-medium text-foreground hover:bg-accent/5"
+          >
+            <Settings className="h-4 w-4 shrink-0 text-accent" aria-hidden />
+            <span className="min-w-0 flex-1">
+              Settings
+              <span className="mt-0.5 block text-[11px] font-normal text-muted">
+                Wallet, subscription, credits, help
+              </span>
+            </span>
+          </Link>
 
           <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-border bg-background px-3 py-2.5">
             <div className="min-w-0">

@@ -1,42 +1,36 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { GigaSocialSection } from "@/lib/gigasocial/sections";
+import {
+  GIGASOCIAL_SECTIONS,
+  type GigaSocialSection,
+} from "@/lib/gigasocial/sections";
 import {
   recordAppOpen,
   shouldShowAttentionDot,
 } from "@/lib/pwa/attentionDot";
-import { Bell, Compass, Home, Plus, User } from "lucide-react";
-import { memo, useEffect, useState } from "react";
-
-type ContextNavId = "feed" | "discover" | "create" | "notifications" | "profile";
-
-const CONTEXT_NAV_ITEMS: {
-  id: ContextNavId;
-  label: string;
-  section?: GigaSocialSection;
-  create?: boolean;
-  icon: typeof Home;
-}[] = [
-  { id: "feed", label: "Feed", section: "feed", icon: Home },
-  { id: "discover", label: "Discover", section: "discover", icon: Compass },
-  { id: "create", label: "Create", create: true, icon: Plus },
-  { id: "notifications", label: "Inbox", section: "notifications", icon: Bell },
-  { id: "profile", label: "Profile", section: "profile", icon: User },
-];
+import { Plus } from "lucide-react";
+import { memo, useEffect, useMemo, useState } from "react";
 
 /**
  * GigaSocial secondary navigation — inline top bar on mobile/tablet.
  * Must NOT be a fixed bottom bar (global primary nav owns the bottom).
+ * Mirrors desktop section tabs so every section is reachable on small screens.
+ * Inbox remains activity notifications; Messages is a separate optional entry.
  */
 export const GigaSocialContextNav = memo(function GigaSocialContextNav({
   activeSection,
   unread = 0,
+  showMessages = false,
+  showLive = true,
   onNavigate,
   onCreate,
 }: {
   activeSection: GigaSocialSection;
   unread?: number;
+  /** Phase 2D — only when NEXT_PUBLIC_GIGASOCIAL_DM enables UI chrome. */
+  showMessages?: boolean;
+  showLive?: boolean;
   onNavigate: (section: GigaSocialSection) => void;
   onCreate: () => void;
 }) {
@@ -53,30 +47,57 @@ export const GigaSocialContextNav = memo(function GigaSocialContextNav({
     }
   }, [activeSection, attention]);
 
+  const items = useMemo(() => {
+    type NavItem =
+      | { kind: "section"; id: GigaSocialSection; label: string }
+      | { kind: "create" };
+
+    const sections = GIGASOCIAL_SECTIONS.filter((item) => {
+      if (item.id === "live") return showLive;
+      if (item.id === "messages") return showMessages;
+      return true;
+    }).map((item) => ({
+      kind: "section" as const,
+      id: item.id,
+      label: item.id === "notifications" ? "Inbox" : item.label,
+    }));
+
+    // Keep Create near Discover for thumb reach; insert after Discover when present.
+    const discoverIdx = sections.findIndex((s) => s.id === "discover");
+    const insertAt = discoverIdx >= 0 ? discoverIdx + 1 : Math.min(2, sections.length);
+    const withCreate: NavItem[] = [
+      ...sections.slice(0, insertAt),
+      { kind: "create" },
+      ...sections.slice(insertAt),
+    ];
+    return withCreate;
+  }, [showLive, showMessages]);
+
   return (
     <nav
       className="gigasocial-context-nav lg:hidden"
       aria-label="GigaSocial sections"
     >
       <div className="gigasocial-context-nav__scroll">
-        {CONTEXT_NAV_ITEMS.map((item) => {
-          if (item.create) {
+        {items.map((item) => {
+          if (item.kind === "create") {
             return (
               <button
-                key={item.id}
+                key="create"
                 type="button"
                 className="gigasocial-context-nav__create"
                 aria-label="Create post"
                 onClick={onCreate}
               >
                 <Plus className="h-5 w-5" aria-hidden />
-                <span>{item.label}</span>
+                <span>Create</span>
               </button>
             );
           }
 
-          const Icon = item.icon;
-          const active = item.section === activeSection;
+          const def = GIGASOCIAL_SECTIONS.find((s) => s.id === item.id);
+          const Icon = def?.icon;
+          const active = item.id === activeSection;
           const showAttention = item.id === "feed" && attention && unread === 0;
 
           return (
@@ -93,11 +114,11 @@ export const GigaSocialContextNav = memo(function GigaSocialContextNav({
               }
               onClick={() => {
                 if (item.id === "feed") setAttention(false);
-                if (item.section) onNavigate(item.section);
+                onNavigate(item.id);
               }}
             >
               <span className="relative inline-flex">
-                <Icon className="h-4 w-4" aria-hidden />
+                {Icon ? <Icon className="h-4 w-4" aria-hidden /> : null}
                 {item.id === "notifications" && unread > 0 ? (
                   <span className="absolute -right-2 -top-1 rounded-full bg-[var(--gs-gold)] px-1 text-[9px] font-bold text-[#0b1220]">
                     {unread > 9 ? "9+" : unread}

@@ -1,6 +1,9 @@
-import { siteConfig } from "@/lib/site";
+/**
+ * Legacy Create sub-destinations (Media Studio / GigaEdits) are retired in Phase 2.
+ * Kept as an empty module surface so imports remain stable; CreateSubNav renders nothing.
+ */
 
-export type CreateSubDestinationId = "media" | "gigaedit";
+export type CreateSubDestinationId = never;
 
 export type CreateSubDestination = {
   id: CreateSubDestinationId;
@@ -10,39 +13,13 @@ export type CreateSubDestination = {
   description: string;
 };
 
-/** Create tab destinations — GigaEdits first (default), Media Studio still available. */
-export const CREATE_SUB_DESTINATIONS: CreateSubDestination[] = [
-  {
-    id: "gigaedit",
-    label: "GigaEdits",
-    shortLabel: "Edits",
-    href: `${siteConfig.links.gigaedit}/`,
-    description: "Trim, record & publish",
-  },
-  {
-    id: "media",
-    label: "Media Studio",
-    shortLabel: "Studio",
-    href: `${siteConfig.links.media}/`,
-    description: "AI images & video",
-  },
-];
+/** Empty — dedicated Create destinations removed for education-first navigation. */
+export const CREATE_SUB_DESTINATIONS: CreateSubDestination[] = [];
 
-function normalizePath(pathname: string): string {
-  const withoutQuery = pathname.split("?")[0] ?? "/";
-  if (!withoutQuery || withoutQuery === "/") return "/";
-  return withoutQuery.endsWith("/") && withoutQuery.length > 1
-    ? withoutQuery.slice(0, -1)
-    : withoutQuery;
-}
-
-export function resolveCreateSubDestination(pathname: string): CreateSubDestinationId | null {
-  const path = normalizePath(pathname);
-  if (path.startsWith("/media")) return "media";
-  if (path.startsWith("/gigaedit")) return "gigaedit";
+export function resolveCreateSubDestination(_pathname: string): CreateSubDestinationId | null {
   return null;
 }
 
-export function isCreateSubRoute(pathname: string): boolean {
-  return resolveCreateSubDestination(pathname) != null;
+export function isCreateSubRoute(_pathname: string): boolean {
+  return false;
 }

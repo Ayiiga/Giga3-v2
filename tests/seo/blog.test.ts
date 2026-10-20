@@ -14,9 +14,28 @@ import { blogJsonLdAuthor } from "../../web/components/blog/BlogArticleJsonLd";
 
 const WEB_ROOT = resolve(__dirname, "../../web");
 
+describe("blog slug aliases for Search Console / title-inferred URLs", () => {
+  it("301s the title-shaped coding-vs-ai URL to the published canonical slug", () => {
+    const redirects = readFileSync(resolve(WEB_ROOT, "public/_redirects"), "utf8");
+    expect(redirects).toContain(
+      "/blog/coding-vs-ai-which-skill-should-beginners-learn-first/ /blog/coding-vs-ai-which-skill-beginners-learn-first/  301"
+    );
+    expect(redirects).toContain(
+      "/blog/coding-vs-ai-which-skill-should-beginners-learn-first  /blog/coding-vs-ai-which-skill-beginners-learn-first/  301"
+    );
+    // Canonical published slug remains without the extra "should" segment.
+    expect(
+      BLOG_POST_REGISTRY.some((p) => p.slug === "coding-vs-ai-which-skill-beginners-learn-first")
+    ).toBe(true);
+    expect(
+      BLOG_POST_REGISTRY.some((p) => p.slug === "coding-vs-ai-which-skill-should-beginners-learn-first")
+    ).toBe(false);
+  });
+});
+
 describe("blog post registry", () => {
-  it("has sixteen articles with valid categories", () => {
-    expect(BLOG_POST_REGISTRY).toHaveLength(16);
+  it("has twenty-one articles with valid categories", () => {
+    expect(BLOG_POST_REGISTRY).toHaveLength(21);
     const slugs = BLOG_POST_REGISTRY.map((p) => p.slug);
     expect(slugs).toContain("best-ai-tools-in-ghana-2026");
     expect(slugs).toContain("ai-for-bece-wassce-preparation-ghana");
@@ -34,6 +53,11 @@ describe("blog post registry", () => {
     expect(slugs).toContain("chatgpt-vs-gemini-vs-claude-ghana-2026");
     expect(slugs).toContain("make-money-with-ai-ghana-2026");
     expect(slugs).toContain("africa-ai-that-solves-real-problems");
+    expect(slugs).toContain("how-to-start-learning-coding-in-ghana");
+    expect(slugs).toContain("one-million-coders-ghana-courses-skills-careers");
+    expect(slugs).toContain("ai-skills-every-ghanaian-student-should-learn-2026");
+    expect(slugs).toContain("coding-vs-ai-which-skill-beginners-learn-first");
+    expect(slugs).toContain("how-to-build-first-software-project-beginner-ghana");
     for (const post of BLOG_POST_REGISTRY) {
       expect(categorySlugForName(post.category)).toBeTruthy();
       expect(post.featuredImageAlt.length).toBeGreaterThan(10);
@@ -42,7 +66,7 @@ describe("blog post registry", () => {
 
   it("exposes posts with hrefs and reading time", () => {
     const posts = getRegistryBlogPosts();
-    expect(posts).toHaveLength(16);
+    expect(posts).toHaveLength(21);
     for (const post of posts) {
       expect(post.href).toBe(`/blog/${post.slug}/`);
       expect(post.readingTime).toMatch(/min read/);

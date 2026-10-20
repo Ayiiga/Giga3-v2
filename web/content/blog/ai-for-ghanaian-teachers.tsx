@@ -1,4 +1,5 @@
 import {
+  ArticleFigure,
   ArticleH2,
   ArticleH3,
   ArticleLink,
@@ -44,7 +45,13 @@ function ArticleContent() {
         starter activities, main teaching points, and plenary questions aligned to Ghana Education
         Service expectations. Edit the plan to match your pupils&apos; prior knowledge.
       </Prose>
-      <BulletList
+      
+      <ArticleFigure
+        src="/images/blog/support-teacher-planning.jpg"
+        alt="Teacher arranging worksheets and a laptop for lesson planning"
+        caption="AI can draft outlines; teachers still choose what fits their class."
+      />
+<BulletList
         items={[
           "Example: 'JHS 2 Integrated Science — photosynthesis, 40 minutes, include a practical demo idea.'",
           "Example: 'Primary 4 English — comprehension on community helpers, include Ghanaian context.'",
@@ -99,7 +106,13 @@ function ArticleContent() {
       </Prose>
 
       <ArticleH2 id="review-output">Always review AI output</ArticleH2>
-      <BulletList
+      
+      <ArticleFigure
+        src="/images/blog/ai-for-teachers.jpg"
+        alt="Ghanaian teacher preparing classroom materials at a desk"
+        caption="Always review AI drafts before they reach students or parents."
+      />
+<BulletList
         items={[
           "Check facts — AI can invent historical dates and scientific claims.",
           "Match language level to your pupils.",

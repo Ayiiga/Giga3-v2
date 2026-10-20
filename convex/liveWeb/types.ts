@@ -14,6 +14,7 @@ export type WebSearchResult = {
   uri: string;
   snippet?: string;
   domain: string;
+  publishedAt?: string;
 };
 
 export type WebPageContent = {

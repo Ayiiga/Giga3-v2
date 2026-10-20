@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  AFRICAN_READER_VOICES,
-} from "@/components/chat/AfricanVoiceReader";
-import { CHAT_CREATE_SECTIONS } from "@/lib/chat/chatCreateMenu";
+import { GIGA_CHAT_VOICES } from "@/lib/speech/gigaVoiceProfiles";
+import { CHAT_DISCOVER_SECTIONS, CHAT_PLUS_SECTIONS } from "@/lib/chat/chatCreateMenu";
 import { getSuggestedPrompts } from "@/lib/chat/suggestedPrompts";
 import {
   WORKSPACE_FILTER_TABS,
@@ -46,14 +44,14 @@ describe("workspace filter tabs", () => {
 });
 
 describe("upload grid runtime badges", () => {
-  it("marks media items ON DEVICE and document items AI STUDIO", () => {
-    const media = CHAT_CREATE_SECTIONS.find((s) => s.id === "media")!;
+  it("marks plus media items ON DEVICE and Discover research AI STUDIO", () => {
+    const media = CHAT_PLUS_SECTIONS.find((s) => s.id === "media")!;
     expect(media.items.length).toBeGreaterThan(0);
     for (const item of media.items) {
       expect(item.runtime).toBe("ON DEVICE");
     }
-    const docs = CHAT_CREATE_SECTIONS.find((s) => s.id === "documents")!;
-    const research = docs.items.find((i) => i.id === "doc-research")!;
+    const researchSection = CHAT_DISCOVER_SECTIONS.find((s) => s.id === "research")!;
+    const research = researchSection.items.find((i) => i.id === "doc-research")!;
     expect(research.label).toBe("Action Research");
     expect(research.runtime).toBe("AI STUDIO");
   });
@@ -74,9 +72,9 @@ describe("global suggested prompts", () => {
 
 describe("African reader voices", () => {
   it("defaults to English (British) first with male and female African voices", () => {
-    expect(AFRICAN_READER_VOICES.length).toBeGreaterThanOrEqual(11);
-    expect(AFRICAN_READER_VOICES[0].id).toBe("english-british");
-    expect(AFRICAN_READER_VOICES.some((v) => v.name.includes("(M)"))).toBe(true);
-    expect(AFRICAN_READER_VOICES.some((v) => v.name.includes("(F)"))).toBe(true);
+    expect(GIGA_CHAT_VOICES.length).toBeGreaterThanOrEqual(11);
+    expect(GIGA_CHAT_VOICES[0].id).toBe("english-british");
+    expect(GIGA_CHAT_VOICES.some((v) => v.name.includes("(M)"))).toBe(true);
+    expect(GIGA_CHAT_VOICES.some((v) => v.name.includes("(F)"))).toBe(true);
   });
 });

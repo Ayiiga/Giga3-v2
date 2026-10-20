@@ -1,5 +1,6 @@
 import type { ActionCtx } from "./_generated/server";
 import { api, internal } from "./_generated/api";
+import { requireSession } from "./auth";
 import { CREDIT_COSTS } from "./creditsConfig";
 import { computeSingleClipVideoCredits } from "./mediaVideoCreditPricing";
 import type { VideoModelTierId } from "./mediaVideoProviderPricing";
@@ -49,8 +50,10 @@ export async function chargeCreditsForMedia(
   jobId: string,
   creditAmount: number
 ): Promise<void> {
-  await ctx.runMutation(api.credits.deductCredits, {
-    sessionToken,
+  const userId = await requireSession(sessionToken, ctx);
+  // Variable video pricing stays on the internal mutation — never client-callable.
+  await ctx.runMutation(internal.credits.deductCreditsInternal, {
+    userId,
     action,
     reference: jobId,
     amount: creditAmount,

@@ -28,6 +28,7 @@ import {
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import { getSessionToken } from "@/lib/auth";
 import { saveGigaLearnProfile } from "@/lib/gigalearn/profile";
+import { loadPracticeSession } from "@/lib/gigalearn/practiceSessionStorage";
 import { getStudioContext, saveStudioContext, type StudioContext } from "@/lib/gigalearn/studioContext";
 import type { LearnerRole } from "@/lib/gigalearn/curricula";
 import { siteConfig } from "@/lib/site";
@@ -43,14 +44,21 @@ function GigaLearnContent() {
 
   const params = useSearchParams();
   const tabParam = params.get("tab");
+  const intentParam = params.get("intent");
   const { email, usage, mounted } = useMediaBilling();
 
   const [area, setArea] = useState<GigaLearnPrimaryArea>(() => resolvePrimaryArea(tabParam));
   const [studentSubOverride, setStudentSubOverride] = useState<StudentSubView | undefined>();
+  const [hasUnfinishedPractice, setHasUnfinishedPractice] = useState(false);
 
   useEffect(() => {
     setArea(resolvePrimaryArea(params.get("tab")));
   }, [params]);
+
+  useEffect(() => {
+    const session = loadPracticeSession();
+    setHasUnfinishedPractice(Boolean(session && !session.finished));
+  }, [area, tabParam]);
 
   useEffect(() => {
     warmUpBrowserVoices();
@@ -122,37 +130,70 @@ function GigaLearnContent() {
   const insightSub = insightSubViewFromTab(tabParam);
 
   return (
-    <div className="gigalearn-stable mx-auto max-w-6xl space-y-6 pb-[calc(var(--primary-nav-offset,0px)+1rem)]">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
+    <div className="gigalearn-stable document-compact mx-auto w-full max-w-6xl min-w-0 space-y-3 pb-[calc(var(--primary-nav-offset,0px)+1rem)]">
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <Link
             href={siteConfig.links.dashboard}
-            className="mb-3 inline-flex min-h-9 items-center gap-2 text-sm text-muted hover:text-foreground"
+            className="mb-1.5 inline-flex min-h-9 items-center gap-1.5 text-sm text-muted hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden />
             Back to chat
           </Link>
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 text-accent">
-              <GraduationCap className="h-6 w-6" aria-hidden />
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+              <GraduationCap className="h-5 w-5" aria-hidden />
             </div>
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            <div className="min-w-0">
+              <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
                 GigaLearn
               </h2>
-              <p className="text-sm text-muted">
+              <p className="text-xs text-muted sm:text-sm">
                 Student · Teacher · Create · Parent · Insight · AI Tutor
               </p>
             </div>
           </div>
+          <div className="mt-2.5 flex flex-wrap gap-2">
+            {hasUnfinishedPractice ? (
+              <button
+                type="button"
+                onClick={() => {
+                  selectArea("student");
+                  setStudentSubOverride("revision");
+                }}
+                className="inline-flex min-h-10 items-center rounded-xl border border-accent/40 bg-accent/10 px-3 text-sm font-semibold text-foreground hover:bg-accent/15"
+              >
+                Continue Learning
+              </button>
+            ) : null}
+            <ButtonLink href="/gigalearn/academy/" className="min-h-10">
+              Open GigaLearn Academy
+            </ButtonLink>
+            <ButtonLink href="/gigalearn/exam/" variant="secondary" className="min-h-10">
+              Exam Practice Centre
+            </ButtonLink>
+          </div>
+          {intentParam === "promotion-practice" && area === "teacher" ? (
+            <p
+              className="mt-3 rounded-xl border border-border bg-[var(--surface,#fafafa)] px-3 py-2 text-sm text-muted"
+              role="status"
+              data-testid="promotion-practice-intent"
+            >
+              Teacher Promotion practice path from Exam Practice Centre. Use Teacher tools for AI
+              practice now — source-derived promotion banks remain pending review (not invented
+              here).
+            </p>
+          ) : null}
         </div>
-        <div className="rounded-2xl border border-border bg-white px-3 py-2 text-right text-sm">
-          <p className="text-xs text-muted">Credits</p>
-          <p className="font-semibold text-foreground">{usage?.credits ?? "—"}</p>
-          <Link href={siteConfig.links.credits} className="text-xs text-accent hover:underline">
-            Get more
-          </Link>
-        </div>
+        {usage?.credits != null ? (
+          <div className="rounded-xl border border-border bg-white px-3 py-2 text-right text-sm">
+            <p className="text-xs text-muted">Credits</p>
+            <p className="font-semibold text-foreground">{usage.credits}</p>
+            <Link href={siteConfig.links.credits} className="text-xs text-accent hover:underline">
+              Get more
+            </Link>
+          </div>
+        ) : null}
       </header>
 
       <nav

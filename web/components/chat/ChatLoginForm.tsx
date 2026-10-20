@@ -14,8 +14,13 @@ import {
   signUpWithPassword,
 } from "@/lib/authPassword";
 import { signInWithGoogle } from "@/lib/authGoogle";
+import {
+  exchangeSocialAuthCode,
+  socialAuthErrorMessage,
+} from "@/lib/authSocial";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { GoogleSignInButton, googleClientId } from "@/components/chat/GoogleSignInButton";
+import { SocialAuthButtons } from "@/components/chat/SocialAuthButtons";
 import { PasswordField } from "@/components/chat/PasswordField";
 import { VisionTagline } from "@/components/vision/VisionTagline";
 import { siteConfig } from "@/lib/site";
@@ -38,11 +43,42 @@ function ChatLoginFormInner() {
   const [submitting, setSubmitting] = useState(false);
   const [restoringSession] = useState(() => hasPersistedAuth());
   const googleEnabled = Boolean(googleClientId());
+  const authCode = params.get("auth_code");
+  const authError = socialAuthErrorMessage(params.get("auth_error"));
 
   useEffect(() => {
+    if (authError) setError(authError);
+  }, [authError]);
+
+  useEffect(() => {
+    if (!authCode) return;
+    let cancelled = false;
+    setSubmitting(true);
+    setError(null);
+    void exchangeSocialAuthCode(authCode)
+      .then(() => {
+        if (!cancelled) {
+          router.replace(nextPath.startsWith("/") ? nextPath : "/chat");
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(
+            err instanceof Error ? err.message : "Social sign-in could not be completed."
+          );
+          setSubmitting(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [authCode, nextPath, router]);
+
+  useEffect(() => {
+    if (authCode) return;
     if (!hasPersistedAuth() && !getUserEmail()) return;
     router.replace(nextPath.startsWith("/") ? nextPath : "/chat");
-  }, [router, nextPath]);
+  }, [router, nextPath, authCode]);
 
   if (restoringSession) {
     return (
@@ -128,9 +164,7 @@ function ChatLoginFormInner() {
               Welcome to Giga3 AI
             </h1>
             <p className="mt-2 text-sm text-muted">
-              {googleEnabled
-                ? "Continue with Google, or use your email and password"
-                : "Sign in or create an account with email and password"}
+              Continue with Google, Apple, Microsoft, GitHub, or email and password
             </p>
             <VisionTagline className="mt-3" variant="subtle" />
           </div>
@@ -163,12 +197,20 @@ function ChatLoginFormInner() {
           ))}
         </div>
 
-        {googleEnabled && mode !== "forgot" && (
-          <div className="mb-5">
-            <GoogleSignInButton
+        {mode !== "forgot" && (
+          <div className="mb-5 space-y-3">
+            {googleEnabled && (
+              <GoogleSignInButton
+                mode={mode}
+                disabled={submitting}
+                onCredential={(idToken) => void handleGoogle(idToken)}
+                onError={(message) => setError(message)}
+              />
+            )}
+            <SocialAuthButtons
               mode={mode}
               disabled={submitting}
-              onCredential={(idToken) => void handleGoogle(idToken)}
+              returnPath={nextPath.startsWith("/") ? nextPath : "/chat/"}
               onError={(message) => setError(message)}
             />
             <div className="relative my-5 text-center">
@@ -261,8 +303,7 @@ function ChatLoginFormInner() {
         </form>
 
         <p className="mt-6 text-center text-xs leading-[1.7] text-muted">
-          A product of {siteConfig.founder.organizationShort} · Founded by{" "}
-          {siteConfig.founder.name}
+          A product of {siteConfig.founder.organizationShort}
         </p>
         <p className="mt-4 text-center text-sm text-muted">
           <Link href="/pricing" className="text-accent hover:underline">

@@ -5,6 +5,7 @@ import { ChatConversationSearch } from "@/components/chat/ChatConversationSearch
 import type { ConversationItem } from "@/components/chat/ChatSidebar";
 import { ChatMoreMenu } from "@/components/chat/ChatMoreMenu";
 import { ModelSelector } from "@/components/chat/ModelSelector";
+import { ResponseDetailSelector } from "@/components/chat/ResponseDetailSelector";
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
 import { PlatformChromeHost } from "@/components/platform/PlatformChromeHost";
 import { ChatGigaSocialStoryRingsSafe } from "@/components/chat/ChatGigaSocialStoryRingsSafe";
@@ -13,7 +14,10 @@ import { Giga3Logo } from "@/components/brand/Giga3Logo";
 import { CreditBadge } from "@/components/billing/CreditBadge";
 import { useRenderDiagnostic } from "@/hooks/useRenderDiagnostic";
 import { clearAllClientAuth } from "@/lib/auth";
+import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
+import type { AttachmentKind } from "@/lib/chat/multimodalAttachments";
 import type { GigaModelId } from "@/lib/chat/gigaModels";
+import type { ResponseDetailId } from "@/lib/chat/responseDetail";
 import type { AiModeId } from "@/lib/aiRouter";
 import { isSupabaseDataBackend } from "@/lib/dataBackend";
 import { branding } from "@/lib/branding";
@@ -40,6 +44,8 @@ interface ChatChromeProps {
   modelTier: GigaModelId;
   mode: AiModeId;
   onModelTierChange: (id: GigaModelId) => void;
+  responseDetail: ResponseDetailId | null;
+  onResponseDetailChange: (id: ResponseDetailId | null) => void;
   onOpenSidebar: () => void;
   onOpenWorkspace?: () => void;
   onSetPublicShare?: (
@@ -52,6 +58,11 @@ interface ChatChromeProps {
   conversations: ConversationItem[];
   activeConversationId: string | null;
   onSelectConversation: (id: string) => void;
+  onPickFiles?: (files: File[], kind: AttachmentKind) => void;
+  onSelectDocumentTemplate?: (templateId: DocumentTemplateId) => void;
+  onInsertTemplate?: (text: string) => void;
+  onComposerError?: (message: string) => void;
+  onComposerNotice?: (message: string) => void;
 }
 
 function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean {
@@ -72,6 +83,8 @@ function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean
     prev.modelTier === next.modelTier &&
     prev.mode === next.mode &&
     prev.onModelTierChange === next.onModelTierChange &&
+    prev.responseDetail === next.responseDetail &&
+    prev.onResponseDetailChange === next.onResponseDetailChange &&
     prev.onOpenSidebar === next.onOpenSidebar &&
     prev.onOpenWorkspace === next.onOpenWorkspace &&
     prev.onSetPublicShare === next.onSetPublicShare &&
@@ -81,7 +94,12 @@ function chromePropsEqual(prev: ChatChromeProps, next: ChatChromeProps): boolean
     prev.onConversationSearchChange === next.onConversationSearchChange &&
     prev.conversations === next.conversations &&
     prev.activeConversationId === next.activeConversationId &&
-    prev.onSelectConversation === next.onSelectConversation
+    prev.onSelectConversation === next.onSelectConversation &&
+    prev.onPickFiles === next.onPickFiles &&
+    prev.onSelectDocumentTemplate === next.onSelectDocumentTemplate &&
+    prev.onInsertTemplate === next.onInsertTemplate &&
+    prev.onComposerError === next.onComposerError &&
+    prev.onComposerNotice === next.onComposerNotice
   );
 }
 
@@ -101,6 +119,8 @@ export const ChatChrome = memo(function ChatChrome({
   modelTier,
   mode,
   onModelTierChange,
+  responseDetail,
+  onResponseDetailChange,
   onOpenSidebar,
   onOpenWorkspace,
   onSetPublicShare,
@@ -111,6 +131,11 @@ export const ChatChrome = memo(function ChatChrome({
   conversations,
   activeConversationId,
   onSelectConversation,
+  onPickFiles,
+  onSelectDocumentTemplate,
+  onInsertTemplate,
+  onComposerError,
+  onComposerNotice,
 }: ChatChromeProps) {
   useRenderDiagnostic("ChatChrome");
 
@@ -135,7 +160,7 @@ export const ChatChrome = memo(function ChatChrome({
             aria-label={`${branding.name} home`}
           >
             <Giga3Logo size={32} aria-label="" />
-            <span className="chat-header-title-mobile truncate text-sm font-bold text-white">
+            <span className="chat-header-title-mobile truncate font-bold text-white">
               {branding.shortName}
             </span>
           </Link>
@@ -199,7 +224,15 @@ export const ChatChrome = memo(function ChatChrome({
             />
           </div>
 
-          <ChatMoreMenu credits={credits} className="relative lg:hidden" />
+          <ChatMoreMenu
+            credits={credits}
+            className="relative"
+            onPickFiles={onPickFiles}
+            onSelectDocumentTemplate={onSelectDocumentTemplate}
+            onInsertTemplate={onInsertTemplate}
+            onError={onComposerError}
+            onNotice={onComposerNotice}
+          />
 
           <button
             type="button"
@@ -218,28 +251,39 @@ export const ChatChrome = memo(function ChatChrome({
         </div>
       </div>
 
-      <div className="chat-header-combo hidden border-t border-border/70 px-3 py-2 sm:px-4 md:block">
-        <div className="chat-header-combo-inner flex min-w-0 items-stretch overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-          <ModelSelector
-            value={modelTier}
-            onChange={onModelTierChange}
-            hasOpenAiAccess={hasOpenAiAccess}
-            isPremium={isPremium}
-            subscriptionActive={subscriptionActive}
-            freeOpenAiRemaining={freeOpenAiRemaining}
+      <div className="border-t border-border/70 px-3 py-2 sm:px-4">
+        <div className="chat-header-combo hidden md:block">
+          <div className="chat-header-combo-inner flex min-w-0 items-stretch overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+            <ModelSelector
+              value={modelTier}
+              onChange={onModelTierChange}
+              hasOpenAiAccess={hasOpenAiAccess}
+              isPremium={isPremium}
+              subscriptionActive={subscriptionActive}
+              freeOpenAiRemaining={freeOpenAiRemaining}
+              disabled={isSending}
+              compact
+              embedded
+              className="shrink-0"
+            />
+            <ChatConversationSearch
+              value={conversationSearch}
+              onChange={onConversationSearchChange}
+              conversations={conversations}
+              activeId={activeConversationId}
+              onSelect={onSelectConversation}
+              embedded
+              className="min-w-0 flex-1"
+            />
+          </div>
+        </div>
+        <div className="flex min-w-0 items-center gap-2 md:mt-2">
+          <span className="shrink-0 text-xs text-muted">Detail</span>
+          <ResponseDetailSelector
+            value={responseDetail}
+            onChange={onResponseDetailChange}
             disabled={isSending}
-            compact
-            embedded
-            className="shrink-0"
-          />
-          <ChatConversationSearch
-            value={conversationSearch}
-            onChange={onConversationSearchChange}
-            conversations={conversations}
-            activeId={activeConversationId}
-            onSelect={onSelectConversation}
-            embedded
-            className="min-w-0 flex-1"
+            className="min-w-0"
           />
         </div>
       </div>

@@ -71,7 +71,7 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `GEMINI_IMAGE_EDIT_MODEL` | No | Gemini backup for editing + Imagen fallback, default `gemini-2.5-flash-image` |
    | `FAL_KEY` or `FAL_API_KEY` | For fal.ai failover | fal.ai dashboard |
    | `FAL_MODEL` | No | Chat LLM on fal OpenRouter / any-llm, default `google/gemini-2.5-flash` |
-   | `FAL_IMAGE_MODEL` | No | Image model, default `fal-ai/nano-banana-pro` (see fal.ai docs) |
+   | `FAL_IMAGE_MODEL` | No | Image model, default `fal-ai/flux/schnell` (see fal.ai docs) |
    | `REPLICATE_API_TOKEN` | For media | Image/video generation |
    | `REPLICATE_IMAGE_MODEL` | No | Text-to-image backup, default `black-forest-labs/flux-schnell` |
    | `REPLICATE_IMAGE_EDIT_MODEL` | No | Image editing backup, default `black-forest-labs/flux-kontext-pro` |
@@ -92,10 +92,39 @@ Production domain (from `frontend/CNAME`): **`www.giga3ai.com`** — attach this
    | `RESEND_API_KEY` | **Yes for email** | Password reset + engagement emails via [Resend](https://resend.com). Without this, forgot-password cannot deliver mail. GitHub secret is synced on Convex deploy. |
    | `AUTH_FROM_EMAIL` | Recommended | After verifying `giga3ai.com`, set `Giga3 AI <noreply@giga3ai.com>` on Convex **and** as a GitHub Actions variable/secret so deploy does not leave it unset. App code falls back to `onboarding@resend.dev` only when Convex env is empty (testing — owner inbox only). Deploy **does not** overwrite Convex when the GitHub value is unset. |
    | `AUTH_EMAIL_FALLBACK_INBOX` | Optional | Receives operational notices when a reset email fails to send. It must never receive another user's reset link. Synced from GitHub only when set. |
-   | `GOOGLE_CLIENT_ID` | For Google sign-in | OAuth web client ID. Same value as `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. Not a client secret. |
+   | `GOOGLE_CLIENT_ID` | For Google sign-in | OAuth web client ID. Same value as `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. Not a client secret. Also accepts `AUTH_GOOGLE_CLIENT_ID` / `AUTH_GOOGLE_ID`. |
+   | `AUTH_APPLE_CLIENT_ID` / `AUTH_APPLE_TEAM_ID` / `AUTH_APPLE_KEY_ID` / `AUTH_APPLE_PRIVATE_KEY` | Apple sign-in | Services ID + Sign in with Apple key. Redirect: `https://<deployment>.convex.site/auth/oauth/callback`. See `docs/SOCIAL_AUTH.md`. Separate from connectors. |
+   | `AUTH_MICROSOFT_CLIENT_ID` / `AUTH_MICROSOFT_CLIENT_SECRET` | Microsoft sign-in | Entra web app. Optional `AUTH_MICROSOFT_TENANT`. Not `MICROSOFT_CONNECTOR_*`. |
+   | `AUTH_GITHUB_CLIENT_ID` / `AUTH_GITHUB_CLIENT_SECRET` | GitHub sign-in | GitHub OAuth App callback on `/auth/oauth/callback`. |
+   | `CONNECTOR_TOKEN_ENCRYPTION_KEY` | For Connectors | AES-GCM key for Drive/Gmail/Outlook/Zoom/Moodle/Notion tokens. Falls back to `SESSION_SIGNING_SECRET` if unset. |
+   | `GOOGLE_CONNECTOR_CLIENT_ID` / `GOOGLE_CONNECTOR_CLIENT_SECRET` | Google Drive + Gmail connectors | Confidential OAuth web client (not the GIS sign-in client). Redirect: `https://<deployment>.convex.site/connectors/oauth/callback`. |
+   | `MICROSOFT_CONNECTOR_CLIENT_ID` / `MICROSOFT_CONNECTOR_CLIENT_SECRET` | Outlook Calendar | Entra app registration. Optional `MICROSOFT_CONNECTOR_TENANT` (default `common`). |
+   | `ZOOM_CONNECTOR_CLIENT_ID` / `ZOOM_CONNECTOR_CLIENT_SECRET` | Zoom meetings | Zoom Marketplace OAuth app. |
+   | `NOTION_CONNECTOR_CLIENT_ID` / `NOTION_CONNECTOR_CLIENT_SECRET` | Notion | Notion public integration. |
+
+   See `docs/CONNECTORS.md` for scopes, status meanings, and smoke checks. Never put connector secrets in `NEXT_PUBLIC_*`.
    | `STRIPE_SECRET_KEY` | Legacy only | Old token checkout in `payments.ts` |
    | `HF_TOKEN` | No (MMS not enabled) | Server-side Hugging Face token. Fine-grained read token. Not read by the static site. |
    | `KHAYA_SUBSCRIPTION_KEY` | For African voice and translation | GhanaNLP / Khaya key. Sent only as `Ocp-Apim-Subscription-Key` from Convex. |
+   | `TAVILY_API_KEY` | Optional (live web) | Primary server-side web search provider for chat live-web research. Never expose in the browser or `NEXT_PUBLIC_*`. |
+   | `SERPER_API_KEY` | Optional (live web) | Fallback search API when Tavily is unavailable or not configured. |
+   | `BRAVE_SEARCH_API_KEY` | Optional (live web) | Third fallback search API. |
+   | `GIGA3_LIVE_WEB_ENABLED` | No | Default enabled. Set `false` to disable live web research server-side. |
+   | `LIVE_WEB_SEARCH_TIMEOUT_MS` | No | Search API timeout (default `10000`). |
+   | `LIVE_WEB_MAX_SEARCH_RESULTS` | No | Max search hits per query (default `5`). |
+   | `LIVE_WEB_MAX_PAGES_TO_READ` | No | Max pages fetched after search (default `3`). |
+   | `LIVE_WEB_RATE_LIMIT_PER_HOUR` | No | Per-user live web requests per hour (default `30`). |
+
+   **Live web search (`TAVILY_API_KEY`) — Convex server secret only**
+
+   Chat live-web research (current news, fact-check, sports scores, etc.) runs in Convex via `convex/liveWeb/`. When `TAVILY_API_KEY` is set, Tavily is the preferred search provider; Serper and Brave are optional fallbacks. If no search API key is configured, Giga3 falls back to Gemini Google Search grounding during answer generation — chat continues to work normally.
+
+   Do **not** set `TAVILY_API_KEY` (or other search keys) in Cloudflare Pages, GitHub Pages build env, or any `NEXT_PUBLIC_*` variable.
+
+   1. Convex Dashboard → production deployment → **Settings → Environment Variables** → add `TAVILY_API_KEY`.
+   2. Or from a trusted machine: `npx convex env set TAVILY_API_KEY "tvly-…"` (never commit the key).
+
+   Optional: add GitHub secret `TAVILY_API_KEY` so **Deploy Convex backend** can sync it on each deploy (same pattern as `GEMINI_API_KEY`).
 
    ```bash
    npx convex env set OPENAI_API_KEY "sk-..."

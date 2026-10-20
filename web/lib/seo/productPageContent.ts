@@ -7,104 +7,137 @@ function catalogEntry(href: string) {
   return entry;
 }
 
+/** Retired creative umbrella — CTAs point at retained education-first products. */
 export const AI_STUDIO_PAGE: PublicProductPageShellProps = {
-  title: "Giga3 AI Studio — Creative AI workflows",
-  description: catalogEntry("/ai-studio").description,
-  audience: "creators, students, and businesses exploring AI-powered media",
+  title: "Giga3 AI Studio — retired creative umbrella",
+  description:
+    "Giga3 AI Studio is no longer a dedicated product. Continue with AI Assistant, GigaLearn Academy, Exam Practice, and GigaSocial.",
+  audience: "learners, teachers, and creators using Giga3 AI",
   whatItDoes:
-    "Giga3 AI Studio is the creative umbrella inside Giga3 AI. It routes you to Media Studio for images and Video AI for clips — the same credit-based tools used from chat and Creator Studio.",
+    "The former AI Studio umbrella that pointed at Media Studio and Video AI has been retired. Giga3 AI now prioritises learning and productivity tools under one account.",
   whoFor: [
-    "Creators who start with a prompt and need images or short video",
-    "Students making visuals for projects and presentations",
-    "Teams prototyping marketing assets in Ghana Cedis (GHS)",
+    "Students and teachers using Academy and Exam Practice",
+    "Anyone who needs chat, writing, research, or in-chat images",
+    "Creators publishing on GigaSocial",
   ],
   capabilities: [
-    "AI image generation and edit-with-source in Media Studio",
-    "Text-to-video workflows in Video AI with tiered credit costs",
-    "Hand-offs from chat, Creator Studio, and GigaEdit when you are signed in",
-    "Responsible use: verify AI outputs before publishing; credits enforced server-side",
+    "AI Assistant for chat, writing, research, coding, and images",
+    "GigaLearn Academy courses, tutoring, and certificates",
+    "Exam Practice with server-graded sessions",
+    "GigaSocial publishing and Marketplace digital products",
   ],
   giga3Connection:
-    "Open Media Studio or Video AI from here, then publish through GigaEdit or GigaSocial. Billing, entitlements, and credits stay on your Giga3 account — nothing runs client-side without server checks.",
-  primaryHref: "/media",
-  primaryLabel: "Open Media Studio",
-  secondaryHref: "/video",
-  secondaryLabel: "Open Video AI",
+    "Billing, entitlements, and credits stay on your Giga3 account. Dedicated Media Studio and Video AI entry points are retired; shared image services remain available from the AI Assistant when signed in.",
+  primaryHref: "/chat",
+  primaryLabel: "Open AI Assistant",
+  secondaryHref: "/gigalearn/academy",
+  secondaryLabel: "Open Academy",
 };
 
+/** Retired GigaEdits marketing shell — CTAs point at GigaSocial and Creator Studio. */
 export const GIGAEDITS_PAGE: PublicProductPageShellProps = {
-  title: "GigaEdits — Creator editing on Giga3",
+  title: "GigaEdits — retired creator editing product",
   description:
-    "GigaEdits is the creator editing product on Giga3 AI — trim, caption, and publish video with GigaEdit, then share on GigaSocial.",
+    "GigaEdits is no longer a dedicated Giga3 product. Continue with AI Assistant, Creator Studio, and GigaSocial. Local device drafts are not deleted.",
   audience: "creators, educators, and social publishers",
   whatItDoes:
-    "GigaEdits is the marketing home for creator editing on Giga3. The GigaEdit app at /gigaedit/ is where you trim, join, caption, and publish — after you generate clips in Video AI or Media Studio. Start with the Creator Growth Starter Pack: Hook Reel (9:16), YouTube Intro (16:9), or Promo Poster (4:5) — format starters that seed aspect ratio and title; you import your media and finish with existing Giga3 AI tools.",
+    "GigaEdits marketing pages are retired. Draft in Creator Studio, get help from the AI Assistant, and publish on GigaSocial. Device-local editor drafts remain on your browser if you already created them.",
   whoFor: [
-    "Short-form creators polishing reels and social clips",
-    "Educators packaging lesson segments",
-    "Marketers combining AI-generated assets before posting",
+    "Creators publishing to GigaSocial",
+    "Educators packaging learning materials",
+    "Writers using Creator Studio and Document Studio",
   ],
   capabilities: [
-    "Creator Growth Starter Pack — Hook Reel, YouTube Intro, Promo Poster format starters",
-    "Timeline editing, captions, and audio in GigaEdit",
-    "Import from Video AI and device uploads",
-    "Publish-ready exports for GigaSocial",
+    "Creator Studio for writing and social drafts",
+    "AI Assistant for research and in-chat images",
+    "GigaSocial feed and publishing",
+    "Marketplace for selling digital learning products",
   ],
   giga3Connection:
-    "Creator Studio helps you draft; Media Studio and Video AI generate assets; GigaEdits (GigaEdit) finishes and publishes to GigaSocial or download. Project drafts save on your device in the browser — not to cloud account backup yet.",
-  primaryHref: "/gigaedit",
-  primaryLabel: "Open GigaEdit",
+    "Project drafts saved in the browser are not deleted. GigaEdits is no longer advertised as a standalone product; education and social tools remain under the same Giga3 account.",
+  primaryHref: "/gigasocial",
+  primaryLabel: "Open GigaSocial",
   secondaryHref: "/creator-studio",
   secondaryLabel: "Creator Studio",
 };
 
+/** Retired Media Studio shell — CTAs point at AI Assistant. */
 export const MEDIA_PAGE_SHELL: PublicProductPageShellProps = {
-  title: "Media Studio — AI image generation on Giga3",
-  description: catalogEntry("/media").description,
+  title: "Media Studio — retired dedicated product",
+  description:
+    "Media Studio is no longer a dedicated Giga3 product. Generate and edit images in the AI Assistant when signed in.",
   audience: "creators, students, and marketers making visuals",
   whatItDoes:
-    "Media Studio generates and edits AI images from text prompts. Optional source-image edit mode uses your upload as a starting point. Credits are checked server-side before each job.",
+    "Standalone Media Studio entry points are retired. Image generation and edit-with-source remain available through the signed-in AI Assistant using the same server-checked credits.",
   whoFor: [
-    "Chat users who need images inline or in Creator Studio",
-    "Social creators making post visuals before GigaEdit or GigaSocial",
+    "Chat users who need images inline",
     "Students illustrating projects and presentations",
+    "Creators drafting in Creator Studio before GigaSocial",
   ],
   capabilities: [
-    "Text-to-image generation with provider failover on the backend",
-    "Edit-with-source when you pass a reference image URL",
-    "Recent generations list and hand-off links to chat and GigaEdit",
+    "In-chat image help from the AI Assistant",
+    "Server-side credit checks before generation jobs",
+    "Hand-off deep links preserved for existing chat workflows",
   ],
   giga3Connection:
-    "Media Studio shares the same Giga3 account, credits, and entitlements as chat. Sign in to generate; results can be saved, downloaded, or opened in GigaEdit and GigaSocial.",
-  primaryHref: "/media",
-  primaryLabel: "Open Media Studio",
-  secondaryHref: "/chat",
-  secondaryLabel: "Open chat",
+    "Media Studio is not advertised as a standalone product. Shared image backends, credits, and entitlements remain intact for AI Assistant workflows.",
+  primaryHref: "/chat",
+  primaryLabel: "Open AI Assistant",
+  secondaryHref: "/gigalearn/academy",
+  secondaryLabel: "Open Academy",
 };
 
 export const GIGALEARN_PAGE_SHELL: PublicProductPageShellProps = {
-  title: "GigaLearn — AI tutor and exam prep on Giga3 AI",
-  description: catalogEntry("/gigalearn").description,
+  title: "How GigaLearn works",
+  description:
+    "GigaLearn helps you study Ghana curriculum topics, practise exam-style questions, track progress, and learn with an AI tutor — then continue into structured Academy pathways when you want a guided course.",
   audience: "students, teachers, and parents in Ghana and across Africa",
   whatItDoes:
-    "GigaLearn is Giga3 AI's learning assistant for homework help, practice questions, study plans, and BECE and WASSCE revision support for JHS and SHS. Personas and progress tracking require a signed-in Giga3 account.",
+    "Open Student for subjects, lessons, quizzes and exam prep; Teacher for classroom tools; Create for learning materials; Parent for home support; Insight for progress signals; and AI Tutor for guided help. Sign-in is required to save progress and use credits.",
   whoFor: [
     "JHS and SHS students preparing for BECE and WASSCE",
     "Teachers building classroom activities and quizzes",
     "Parents supporting revision at home",
   ],
   capabilities: [
-    "Study modes with Ghana-focused curriculum context",
-    "Practice questions and progress saved to your account",
-    "Persona hand-off from chat when you choose a tutor style",
+    "Ghana curriculum-aligned study modes and practice questions",
+    "Exam preparation workflows for BECE and WASSCE revision",
+    "Teacher tools and parent-friendly progress views",
+    "Academy courses for structured pathways on top of daily practice",
     "Responsible AI learning — verify answers with teachers and syllabus materials",
   ],
   giga3Connection:
     "GigaLearn uses the same credits and entitlements as Giga3 chat. For exam-focused workflows, see AI for BECE and WASSCE preparation at /ai-for-bece-wassce-ghana/. Organisation workspaces can route students through /workspace when your school is onboarded.",
-  primaryHref: "/ai-for-bece-wassce-ghana",
-  primaryLabel: "BECE & WASSCE prep guide",
-  secondaryHref: "/chat/login",
-  secondaryLabel: "Sign in",
+  primaryHref: "/gigalearn/academy/",
+  primaryLabel: "Open GigaLearn Academy",
+  secondaryHref: "/ai-for-bece-wassce-ghana",
+  secondaryLabel: "BECE & WASSCE guide",
+  relatedLinks: [
+    {
+      href: "/blog/ai-skills-every-ghanaian-student-should-learn-2026/",
+      label: "AI skills every Ghanaian student should learn in 2026",
+    },
+    {
+      href: "/blog/how-to-start-learning-coding-in-ghana/",
+      label: "How to start learning coding in Ghana",
+    },
+    {
+      href: "/blog/coding-vs-ai-which-skill-beginners-learn-first/",
+      label: "Coding vs AI: which skill beginners should learn first",
+    },
+    {
+      href: "/ai-tools-for-students-ghana/",
+      label: "AI tools for students in Ghana",
+    },
+    {
+      href: "/ai-for-teachers-ghana/",
+      label: "AI for teachers in Ghana",
+    },
+    {
+      href: "/ai-for-schools-ghana/",
+      label: "AI for schools in Ghana",
+    },
+  ],
 };
 
 export const ENTERPRISE_PAGE_SHELL: PublicProductPageShellProps = {
@@ -132,49 +165,53 @@ export const ENTERPRISE_PAGE_SHELL: PublicProductPageShellProps = {
 };
 
 export const MARKETPLACE_PAGE_SHELL: PublicProductPageShellProps = {
-  title: "Giga3 Marketplace — Buy digital products in GHS",
-  description: catalogEntry("/marketplace").description,
+  title: "Digital Products for Learning, Business, and Creativity",
+  description:
+    "Discover eligible ebooks, educational materials, templates, and business resources from Giga3 creators. Buy in Ghana cedis with Paystack, or list your own digital products after account review.",
   audience: "learners, creators, and buyers in Ghana and beyond",
   whatItDoes:
-    "Browse ebooks, templates, and educational PDFs from verified creators. Pay with Paystack in GHS — files unlock only after payment succeeds.",
+    "Search the catalogue, open a listing, pay with Paystack, then download from My purchases once payment is verified. Sellers list products through Start Selling — uploads are moderated before they appear publicly.",
   whoFor: [
     "Students buying study guides and templates",
     "Creators selling digital products alongside GigaSocial",
     "Teams sourcing vetted educational resources",
   ],
   capabilities: [
-    "Search, categories, and verified creator badges",
-    "Paystack checkout with secure file delivery",
-    "Creator Academy official series (priced separately from subscriptions)",
+    "How to purchase: browse → checkout with Paystack → download from My purchases",
+    "How to sell: open Start Selling, submit product details, wait for moderation",
+    "Payment security: Paystack only; files unlock after verified payment",
+    "Verified creator badges when a seller has completed verification",
   ],
   giga3Connection:
-    "Marketplace complements GigaLearn and Creator Studio — sell what you create on Giga3. Purchases do not replace chat subscription credits; each product lists its own GHS price.",
-  primaryHref: "/marketplace",
-  primaryLabel: "Browse marketplace",
+    "Marketplace complements GigaLearn and Creator Studio — sell what you create on Giga3. Purchases do not replace chat subscription credits; each product lists its own GHS price. Terms: /legal/terms and /legal/refunds.",
+  primaryHref: "/marketplace/#marketplace-catalogue",
+  primaryLabel: "Browse products",
   secondaryHref: "/marketplace/sell",
   secondaryLabel: "Start selling",
 };
 
+/** Retired Video AI shell — CTAs point at AI Assistant and GigaSocial. */
 export const VIDEO_PAGE_SHELL: PublicProductPageShellProps = {
-  title: "Video AI — Generate clips on Giga3",
-  description: catalogEntry("/video").description,
-  audience: "creators and marketers making short video",
+  title: "Video AI — retired dedicated product",
+  description:
+    "Standalone Video AI is no longer a dedicated Giga3 product. Continue with AI Assistant and GigaSocial.",
+  audience: "creators and educators making short video",
   whatItDoes:
-    "Video AI generates short clips from text prompts (and optional first-frame images). Credits are checked server-side before each job; results hand off to GigaEdit for editing.",
+    "Dedicated Video AI entry points are retired with Media Studio. Ask the AI Assistant for guidance, or publish your own media on GigaSocial. Server video credit tables remain intact; no production data was deleted.",
   whoFor: [
-    "Social creators prototyping reels and ads",
-    "Educators illustrating concepts with short clips",
-    "Teams exploring AI video before full production",
+    "Creators publishing on GigaSocial",
+    "Educators packaging lesson segments",
+    "Teams exploring AI tools under one Giga3 account",
   ],
   capabilities: [
-    "Text-to-video with synced audio (provider failover on the backend)",
-    "Separate video-credit wallet for Video AI plans and packs",
-    "Export to GigaEdit and GigaSocial publishing flows",
+    "AI Assistant for creative guidance",
+    "GigaSocial for publishing community media",
+    "Marketplace for selling digital learning products",
   ],
   giga3Connection:
-    "Video AI sits beside Media Studio under the Giga3 AI Studio creative umbrella. Sign in to generate; entitlements and video credits are enforced on the server — balances are not exposed on public pages.",
-  primaryHref: "/video",
-  primaryLabel: "Open Video AI",
-  secondaryHref: "/video/plans",
-  secondaryLabel: "Video plans",
+    "Video AI is not advertised as a standalone product. Shared backends and credit ledgers are preserved; entitlements continue to be enforced server-side.",
+  primaryHref: "/chat",
+  primaryLabel: "Open AI Assistant",
+  secondaryHref: "/gigasocial",
+  secondaryLabel: "Open GigaSocial",
 };

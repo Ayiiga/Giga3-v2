@@ -6,18 +6,11 @@ import {
 } from "../../web/lib/navigation/createDestinations";
 
 describe("createDestinations", () => {
-  it("lists GigaEdits first (default) then Media Studio under Create", () => {
-    expect(CREATE_SUB_DESTINATIONS.map((d) => d.id)).toEqual(["gigaedit", "media"]);
-    expect(CREATE_SUB_DESTINATIONS[0].href).toContain("/gigaedit");
-    expect(CREATE_SUB_DESTINATIONS[1].href).toContain("/media");
-  });
-
-  it("resolves create sub-routes from pathname", () => {
-    expect(resolveCreateSubDestination("/media")).toBe("media");
-    expect(resolveCreateSubDestination("/media/?tab=video")).toBe("media");
-    expect(resolveCreateSubDestination("/gigaedit")).toBe("gigaedit");
-    expect(resolveCreateSubDestination("/gigaedit/?tab=teleprompter")).toBe("gigaedit");
-    expect(isCreateSubRoute("/gigaedit/")).toBe(true);
+  it("has no dedicated Create sub-destinations after education-first retirement", () => {
+    expect(CREATE_SUB_DESTINATIONS).toEqual([]);
+    expect(resolveCreateSubDestination("/media")).toBeNull();
+    expect(resolveCreateSubDestination("/gigaedit")).toBeNull();
+    expect(isCreateSubRoute("/gigaedit/")).toBe(false);
     expect(isCreateSubRoute("/chat")).toBe(false);
   });
 });

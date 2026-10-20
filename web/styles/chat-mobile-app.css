@@ -88,11 +88,20 @@
     gap: 16px;
   }
 
-  /* Compact reserved typing row — still always present (scroll stability), smaller blank. */
+  /* Compact reserved typing row — always present (scroll stability), minimal blank. */
   html.chat-route .chat-typing-bar {
-    min-height: 2.5rem;
-    padding-top: 0.25rem;
-    padding-bottom: 0.25rem;
+    min-height: 2rem;
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+  }
+
+  /* Distraction-free while composing: collapse soft upsells; keep essential chrome. */
+  html.chat-route.chat-composer-active .chat-banner-upsell {
+    display: none !important;
+  }
+
+  html.chat-route.chat-composer-active .chat-header-band {
+    min-height: 0;
   }
 
   /* Composer stack — pinned bottom, safe area */
@@ -102,14 +111,12 @@
     background: #fff;
   }
 
+  /*
+   * Hide suggestion chips on mobile chat — they stack above the composer and
+   * steal space from the reply (chips only mount when the thread has messages).
+   */
   html.chat-route .chat-footer-chips {
-    flex-shrink: 0;
-    width: 100%;
-    max-width: 100%;
-    margin-inline: 0;
-    padding-inline: var(--chat-edge-pad) var(--chat-edge-pad-right);
-    padding-top: 6px;
-    padding-bottom: 0;
+    display: none !important;
   }
 
   /* Chips sit flush above the composer — no double vertical padding */
@@ -205,12 +212,18 @@
 }
 
 .chat-header-bar--app .chat-header-menu {
-  color: #fff;
+  color: #fff !important;
+  opacity: 1;
 }
 
 .chat-header-bar--app .chat-header-menu:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff !important;
+}
+
+.chat-header-bar--app .chat-header-menu svg {
   color: #fff;
+  stroke: #fff;
 }
 
 .chat-header-title-mobile {
@@ -328,6 +341,20 @@
     color: #111827;
     border-radius: 1.25rem;
     padding: 0.65rem 0.75rem;
+    font-size: var(--chat-font-conversation);
+    line-height: var(--chat-line-height);
+  }
+
+  html.chat-route .chat-assistant-body,
+  html.chat-route .chat-markdown,
+  html.chat-route .smart-answer {
+    font-size: var(--chat-font-conversation);
+    line-height: var(--chat-line-height);
+  }
+
+  html.chat-route .chat-composer-textarea {
+    font-size: var(--chat-font-body);
+    line-height: 1.5;
   }
 
   .dark .chat-message-bubble-assistant-inner--app {

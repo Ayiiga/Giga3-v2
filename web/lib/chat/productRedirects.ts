@@ -58,16 +58,17 @@ function matchTaskShortcut(text: string): Giga3ChatProduct | null {
     /\b(generate|create|make)\b/.test(text) &&
     /\b(an? )?(image|photo|picture|poster|thumbnail|logo)\b/.test(text)
   ) {
-    return GIGA3_CHAT_PRODUCTS.find((p) => p.id === "media") ?? null;
+    // Images stay in AI Assistant (Media Studio is not a dedicated product).
+    return GIGA3_CHAT_PRODUCTS.find((p) => p.id === "chat") ?? null;
   }
   if (
     /\b(generate|create|make)\b/.test(text) &&
     /\b(an? )?(video|clip|reel)\b/.test(text)
   ) {
-    return GIGA3_CHAT_PRODUCTS.find((p) => p.id === "video") ?? null;
+    return GIGA3_CHAT_PRODUCTS.find((p) => p.id === "chat") ?? null;
   }
   if (/\b(edit|trim|join|caption)\b/.test(text) && /\b(video|photo|clip)\b/.test(text)) {
-    return GIGA3_CHAT_PRODUCTS.find((p) => p.id === "gigaedit") ?? null;
+    return GIGA3_CHAT_PRODUCTS.find((p) => p.id === "gigasocial") ?? null;
   }
   if (
     /\b(post|share|publish)\b/.test(text) &&
@@ -124,22 +125,24 @@ const MARKDOWN_LINK = /\[([^\]]+)\]\(([^)]+)\)/g;
 /** Unique products linked in an assistant reply (markdown or bare paths). */
 export function extractProductRedirectsFromText(content: string): Giga3ChatProduct[] {
   if (!content) return [];
-  const found = new Map<string, Giga3ChatProduct>();
+  const foundByHref = new Map<string, Giga3ChatProduct>();
 
   for (const match of content.matchAll(MARKDOWN_LINK)) {
     const product = findGiga3ChatProductByHref(match[2]);
-    if (product) found.set(product.id, product);
+    if (product) foundByHref.set(product.href, product);
   }
 
   for (const product of GIGA3_CHAT_PRODUCTS) {
     const path = product.href;
     const bare = path.replace(/\/$/, "");
     if (content.includes(path) || content.includes(bare)) {
-      found.set(product.id, product);
+      // Prefer the first catalog entry for a shared href (e.g. GigaEdits → GigaSocial).
+      if (!foundByHref.has(path)) foundByHref.set(path, product);
     }
   }
 
-  return GIGA3_CHAT_PRODUCTS.filter((product) => found.has(product.id));
+  const foundIds = new Set([...foundByHref.values()].map((p) => p.id));
+  return GIGA3_CHAT_PRODUCTS.filter((product) => foundIds.has(product.id));
 }
 
 export function isInternalGiga3Href(href: string): boolean {

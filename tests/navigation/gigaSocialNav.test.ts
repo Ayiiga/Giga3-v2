@@ -25,6 +25,25 @@ describe("GigaSocial navigation — no duplicate bottom bars", () => {
     expect(premiumCss).toContain(".gigasocial-context-nav");
   });
 
+  it("wires the same section set on mobile context nav as desktop tabs", () => {
+    const contextNav = readFileSync(
+      resolve(__dirname, "../../web/components/gigasocial/ux/GigaSocialContextNav.tsx"),
+      "utf8"
+    );
+    const client = readFileSync(
+      resolve(__dirname, "../../web/components/gigasocial/GigaSocialClient.tsx"),
+      "utf8"
+    );
+    expect(contextNav).toContain("GIGASOCIAL_SECTIONS");
+    expect(contextNav).toContain("showLive");
+    expect(contextNav).toContain("showMessages");
+    expect(client).toContain("showLive={features.enableGigaLive}");
+    expect(contextNav).toContain('item.id === "live"');
+    expect(contextNav).toContain('item.id === "messages"');
+    expect(contextNav).toContain('item.id === "notifications" ? "Inbox"');
+    expect(contextNav).toContain('kind: "create"');
+  });
+
   it("reserves padding for global primary nav only", () => {
     const css = readFileSync(
       resolve(__dirname, "../../web/styles/primary-nav.css"),

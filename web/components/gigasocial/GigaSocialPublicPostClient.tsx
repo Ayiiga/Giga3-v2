@@ -94,7 +94,7 @@ function PublicPostInner({ initialPostId }: { initialPostId?: string }) {
   const likes = post.likeCount ?? 0;
 
   return (
-    <div className="marketing-stable mx-auto max-w-2xl space-y-6">
+    <div className="marketing-stable mx-auto w-full max-w-2xl space-y-6 px-4 sm:px-6">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
         <Link href="/" className="flex items-center gap-2 font-semibold text-foreground">
           <BrandLogo size={28} className="!h-7 !w-7" />

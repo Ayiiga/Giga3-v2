@@ -1,32 +1,32 @@
-import dynamic from "next/dynamic";
+import { RetiredProductNotice } from "@/components/product/RetiredProductNotice";
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
+import { RETIRED_PRODUCTS } from "@/lib/navigation/retiredProducts";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 
-const VideoPlansClient = dynamic(
-  () =>
-    import("@/components/video/VideoPlansClient").then((m) => m.VideoPlansClient),
-  { ssr: false }
-);
+const meta = RETIRED_PRODUCTS.find((p) => p.id === "video")!;
 
 export const metadata = publicMetadata({
   path: "/video/plans",
-  title: "Video AI Plans — Giga3 AI",
+  title: "Video AI Plans retired | Giga3 AI",
   description:
-    "Video AI subscriptions and credit packs on Giga3 AI, billed in GHS via Paystack. Video credits are separate from chat credits.",
+    "Standalone Video AI plans are retired with Media Studio. Continue with AI Assistant, Academy, Exam Practice, and GigaSocial.",
+  index: false,
 });
 
 export default function VideoPlansPage() {
   return (
     <>
       <ProductSeoHeader
-        title="Video AI Plans"
-        description="Independent video subscriptions and credit packs for AI video generation. Video credits never mix with chat credits."
-        showProductNav={false}
+        className="sr-only"
         compact
+        title={`${meta.formerName} Plans`}
+        description={meta.summary}
+        showProductNav={false}
       />
-      <div className="media-stable py-8 sm:py-12">
-        <VideoPlansClient />
-      </div>
+      <RetiredProductNotice
+        formerName={`${meta.formerName} Plans`}
+        summary={meta.summary}
+      />
     </>
   );
 }

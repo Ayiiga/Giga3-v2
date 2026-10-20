@@ -59,7 +59,7 @@ function CreatorStudioContent() {
   }
 
   return (
-    <div className="creator-studio-stable mx-auto max-w-6xl space-y-8">
+    <div className="creator-studio-stable mx-auto w-full min-w-0 max-w-6xl space-y-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link
@@ -202,8 +202,8 @@ function CreatorStudioContent() {
       </section>
 
       <div className="flex flex-wrap gap-3">
-        <ButtonLink href={siteConfig.links.media} variant="outline" className="min-h-11">
-          Open Media Studio
+        <ButtonLink href={siteConfig.links.dashboard} variant="outline" className="min-h-11">
+          Open AI Assistant
         </ButtonLink>
         <ButtonLink href="/marketplace/sell/" variant="outline" className="min-h-11">
           Creator dashboard

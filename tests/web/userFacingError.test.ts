@@ -5,6 +5,7 @@ import {
   publicAuthErrorMessage,
 } from "../../web/lib/auth/publicAuthError";
 import {
+  ADVANCED_PERSONA_DAILY_LIMIT_MESSAGE,
   ADVANCED_PERSONA_PAID_PLAN_MESSAGE,
   NETWORK_OFFLINE_MESSAGE,
   stripConvexErrorNoise,
@@ -54,6 +55,16 @@ describe("public auth error messaging", () => {
     expect(publicAuthErrorMessage(new Error("Passwords do not match."))).toBe(
       "Passwords do not match."
     );
+  });
+
+  it("strips Convex stack noise from advanced persona entitlement errors", () => {
+    const raw =
+      "Server Error Uncaught Error: You've used today's free tutor questions (15). Upgrade for unlimited academic help, or continue without a persona. at requireAndConsumeAdvancedPersonaAccess (../../convex/entitlements.ts:180:8) at async handler (../../convex/chatMessaging.ts:189:8)";
+    expect(stripConvexErrorNoise(raw)).toContain("free tutor questions");
+    expect(toUserFacingError(new Error(raw))).toBe(
+      ADVANCED_PERSONA_DAILY_LIMIT_MESSAGE
+    );
+    expect(toUserFacingError(new Error(raw))).not.toContain("entitlements.ts");
   });
 });
 

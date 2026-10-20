@@ -1,7 +1,5 @@
 "use client";
 
-import { CreditPromptBanner } from "@/components/billing/CreditPromptBanner";
-import { CreditsPaystackModal } from "@/components/billing/CreditsPaystackModal";
 import { ChatInputToolbar } from "@/components/chat/ChatInputToolbar";
 import { ChatLinkDetectedBar } from "@/components/chat/ChatLinkDetectedBar";
 import { EmojiPicker } from "@/components/chat/EmojiPicker";
@@ -15,7 +13,6 @@ import {
   type PreparedChatAttachment,
   type AttachmentKind,
 } from "@/lib/chat/multimodalAttachments";
-import { CHAT_CREDIT_COST } from "@/lib/billing/creditPrompts";
 import { dispatchChatViewportSync } from "@/lib/chat/chatViewportEvents";
 import {
   formatUploadBytes,
@@ -46,6 +43,9 @@ interface ChatInputProps {
   placeholder?: string;
   /** Parent can call `.current(text, notice?)` to insert templates into the textarea. */
   insertRef?: MutableRefObject<((text: string, notice?: string) => void) | null>;
+  pickFilesRef?: MutableRefObject<
+    ((files: File[], kind: AttachmentKind) => void) | null
+  >;
   uploadUsage?: UploadUsageSnapshot | null;
   credits?: number | null;
   subscriptionActive?: boolean;
@@ -73,6 +73,7 @@ export const ChatInput = memo(function ChatInput({
   disabled,
   placeholder = "Ask Giga3 anything…",
   insertRef,
+  pickFilesRef,
   uploadUsage,
   credits,
   subscriptionActive = false,
@@ -104,7 +105,6 @@ export const ChatInput = memo(function ChatInput({
   const [isMobileComposer, setIsMobileComposer] = useState(false);
   const [isNarrowScreen, setIsNarrowScreen] = useState(false);
   const [listening, setListening] = useState(false);
-  const [payOpen, setPayOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const composerRef = useRef<HTMLDivElement>(null);
 
@@ -265,6 +265,16 @@ export const ChatInput = memo(function ChatInput({
   handlePickFilesRef.current = handlePickFiles;
 
   useEffect(() => {
+    if (!pickFilesRef) return;
+    pickFilesRef.current = (files, kind) => {
+      void handlePickFilesRef.current(files, kind);
+    };
+    return () => {
+      pickFilesRef.current = null;
+    };
+  }, [pickFilesRef]);
+
+  useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
     function onPaste(e: ClipboardEvent) {
@@ -294,12 +304,12 @@ export const ChatInput = memo(function ChatInput({
     };
   }, [attachments]);
 
-  const outOfCredits = credits != null && credits < CHAT_CREDIT_COST;
-  const canSend = Boolean(value.trim() || attachments.length > 0) && !outOfCredits;
+  // Ordinary text chat is credit-free — never block the composer on chat balance.
+  const canSend = Boolean(value.trim() || attachments.length > 0);
 
   function submit() {
     const trimmed = value.trim();
-    if ((!trimmed && attachments.length === 0) || disabled || busy || outOfCredits) return;
+    if ((!trimmed && attachments.length === 0) || disabled || busy) return;
     const displayContent = buildUserDisplayContent(trimmed, attachments);
     onSend(displayContent, attachments);
     setValue("");
@@ -328,7 +338,7 @@ export const ChatInput = memo(function ChatInput({
     }
   }
 
-  const inputDisabled = disabled || busy || outOfCredits;
+  const inputDisabled = disabled || busy;
   const showUploadHint =
     attachments.length > 0 ||
     (uploadUsage != null &&
@@ -340,31 +350,6 @@ export const ChatInput = memo(function ChatInput({
       className="chat-composer min-w-0 max-w-full px-0 py-1 sm:px-3 sm:py-1.5"
     >
       <div className="chat-thread space-y-2">
-        {outOfCredits && (
-          <>
-            <CreditPromptBanner
-              variant="empty"
-              credits={credits}
-              creditCost={CHAT_CREDIT_COST}
-              subscriptionActive={subscriptionActive}
-              compact
-            />
-            <button
-              type="button"
-              onClick={() => setPayOpen(true)}
-              className="min-h-11 w-full rounded-full bg-[#EAB308] px-4 py-2 text-sm font-bold text-black"
-            >
-              Buy credits · Pro 250cr GH₵150 🇬🇭
-            </button>
-            <CreditsPaystackModal
-              isOpen={payOpen}
-              onClose={() => setPayOpen(false)}
-              currentCredits={credits}
-              onSuccess={() => setPayOpen(false)}
-            />
-          </>
-        )}
-
         <ChatLinkDetectedBar
           draft={value}
           disabled={inputDisabled}
@@ -558,9 +543,11 @@ export const ChatInput = memo(function ChatInput({
         {!isPremium &&
         freeImageGenerationEnabled &&
         freeImageRemaining != null &&
-        freeImageLimit != null ? (
+        freeImageLimit != null &&
+        !composerFocused &&
+        !value.trim() ? (
           <p
-            className="px-2 text-center text-[11px] leading-relaxed text-[#6D28D9]/90"
+            className="px-2 text-center text-xs leading-relaxed text-[#6D28D9]/90 sm:text-sm"
             role="status"
             aria-live="polite"
           >

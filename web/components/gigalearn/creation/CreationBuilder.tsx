@@ -3,6 +3,7 @@
 import { CreditPromptLinks } from "@/components/billing/CreditPromptLinks";
 import { MessageMarkdown } from "@/components/chat/MessageMarkdown";
 import { CreatorResultPanel } from "@/components/creator-studio/CreatorResultPanel";
+import { DocumentResultCard } from "@/components/documents/DocumentResultCard";
 import { FieldInput } from "@/components/gigalearn/creation/FieldInput";
 import { RhymePlayer } from "@/components/gigalearn/rhymes/RhymePlayer";
 import { useCreationGeneration } from "@/hooks/useCreationGeneration";
@@ -734,10 +735,15 @@ export function CreationBuilder({
       ) : null}
 
       {complete ? (
-        <div className="mt-6 space-y-3">
+        <div className="mt-4 space-y-3">
           <h4 className="text-sm font-semibold text-foreground">Complete {template.documentNoun}</h4>
+          <DocumentResultCard
+            content={documentText}
+            title={template.title}
+            templateKind={/cv|resume/i.test(template.id) ? "cv" : "generic"}
+          />
           <CreatorResultPanel content={documentText} publishKind="blog" />
-          <details className="rounded-2xl border border-border p-4 text-xs text-muted">
+          <details className="rounded-2xl border border-border p-3 text-xs text-muted">
             <summary className="min-h-11 cursor-pointer text-sm font-medium text-foreground">Content provenance</summary>
             <ProvenanceDetails draft={buildDraft()} footer={provenanceFooter(template, sourceReferences)} />
           </details>

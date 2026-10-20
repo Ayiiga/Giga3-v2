@@ -1,6 +1,12 @@
 "use client";
 
-import { getSessionToken } from "@/lib/auth";
+import { getSessionToken, getUserEmail } from "@/lib/auth";
+import {
+  HOME_DESTINATIONS,
+  buildHomeGreeting,
+  listSyncHomeResumeItems,
+  type HomeResumeItem,
+} from "@/lib/chat/homeContinuity";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import {
@@ -9,15 +15,19 @@ import {
   MessageSquare,
   Sparkles,
   Target,
-  Trophy,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { memo } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { LoadingState } from "@/components/ui/LoadingState";
 
+/**
+ * Value-first dashboard: resume unfinished work, open destinations,
+ * then light activity signals. Chat remains the primary home at /chat.
+ */
 export function HomeDashboardPanel() {
   const sessionToken = getSessionToken();
+  const email = getUserEmail();
   const dashboard = useQuery(
     api.platformGrowth.getHomeDashboard,
     sessionToken ? { sessionToken } : "skip"
@@ -27,10 +37,20 @@ export function HomeDashboardPanel() {
     sessionToken ? { sessionToken } : "skip"
   );
 
+  const greeting = useMemo(() => buildHomeGreeting({ email }), [email]);
+  const [localResume, setLocalResume] = useState<HomeResumeItem[]>([]);
+
+  useEffect(() => {
+    setLocalResume(listSyncHomeResumeItems(3));
+  }, []);
+
   if (!sessionToken) {
     return (
       <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted">
-        <Link href="/chat/login" className="text-accent hover:underline">Sign in</Link> to see your dashboard
+        <Link href="/chat/login" className="text-accent hover:underline">
+          Sign in
+        </Link>{" "}
+        to resume your work and see personalized recommendations.
       </div>
     );
   }
@@ -41,16 +61,20 @@ export function HomeDashboardPanel() {
 
   if (!dashboard) return null;
 
-  const goalProgress = Math.min(100, Math.round((dashboard.todayUsage.aiRequests / dashboard.dailyGoal) * 100));
-
   return (
-    <div className="space-y-4">
-      <div className="dashboard-stat-grid">
-        <StatCard icon={Zap} label="Today's AI usage" value={dashboard.todayUsage.aiRequests} />
-        <StatCard icon={MessageSquare} label="Chats today" value={dashboard.todayUsage.chats} />
-        <StatCard icon={Flame} label="Learning streak" value={`${dashboard.streakDays}d`} />
-        <StatCard icon={Target} label="Credits" value={dashboard.credits} />
-      </div>
+    <div className="space-y-5">
+      <header>
+        <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+          {greeting.title}
+        </h2>
+        <p className="mt-1 text-sm text-muted">{greeting.subtitle}</p>
+        <Link
+          href="/chat"
+          className="mt-3 inline-flex min-h-11 items-center justify-center rounded-xl bg-accent px-4 text-sm font-semibold text-white hover:opacity-95"
+        >
+          Open AI Chat
+        </Link>
+      </header>
 
       {dashboard.continueChat && (
         <Link
@@ -58,27 +82,50 @@ export function HomeDashboardPanel() {
           className="dashboard-panel-card saas-card flex items-center justify-between rounded-xl px-4 py-3 hover:border-accent/30"
         >
           <div>
-            <p className="text-xs font-medium text-accent">Continue where you stopped</p>
+            <p className="text-xs font-medium text-accent">Continue chat</p>
             <p className="font-medium">{dashboard.continueChat.title}</p>
           </div>
           <ArrowRight className="h-4 w-4 text-muted" aria-hidden />
         </Link>
       )}
 
-      <div className="dashboard-panel-card saas-card rounded-xl p-4">
-        <div className="flex items-center justify-between text-sm">
-          <span className="font-medium">Daily goal</span>
-          <span className="text-muted">
-            {dashboard.todayUsage.aiRequests}/{dashboard.dailyGoal} AI requests
-          </span>
+      {localResume.length > 0 && (
+        <section aria-label="Unfinished work on this device">
+          <h3 className="mb-2 text-sm font-semibold">On this device</h3>
+          <ul className="space-y-1.5">
+            {localResume.map((item) => (
+              <li key={item.id}>
+                <Link
+                  href={item.href}
+                  className="flex items-center justify-between rounded-xl border border-border px-3 py-2 text-sm hover:border-accent/30"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium">{item.label}</span>
+                    <span className="block truncate text-xs text-muted">{item.detail}</span>
+                  </span>
+                  <span className="shrink-0 text-xs font-medium text-accent">Open</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <section aria-label="Destinations">
+        <h3 className="mb-2 text-sm font-semibold">Destinations</h3>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+          {HOME_DESTINATIONS.map((d) => (
+            <Link
+              key={d.id}
+              href={d.href}
+              className="rounded-xl border border-border px-3 py-2.5 text-center hover:border-accent/30"
+            >
+              <p className="text-sm font-semibold">{d.label}</p>
+              <p className="mt-0.5 text-[11px] text-muted">{d.description}</p>
+            </Link>
+          ))}
         </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted/30">
-          <div
-            className="dashboard-progress-fill h-full rounded-full bg-accent"
-            style={{ width: `${goalProgress}%` }}
-          />
-        </div>
-      </div>
+      </section>
 
       {recommendations?.items && recommendations.items.length > 0 && (
         <div>
@@ -86,6 +133,9 @@ export function HomeDashboardPanel() {
             <Sparkles className="h-4 w-4 text-accent" aria-hidden />
             Recommended for you
           </h3>
+          <p className="mb-2 text-xs text-muted">
+            Based on your role and preferences — not fabricated popularity.
+          </p>
           <div className="dashboard-rec-grid">
             {recommendations.items.slice(0, 4).map((item) => (
               <Link
@@ -107,7 +157,10 @@ export function HomeDashboardPanel() {
           <ul className="space-y-1">
             {dashboard.recentChats.map((c) => (
               <li key={c.id}>
-                <Link href={`/chat?c=${c.id}`} className="block rounded-lg px-2 py-1.5 text-sm hover:bg-accent/5">
+                <Link
+                  href={`/chat?c=${c.id}`}
+                  className="block rounded-lg px-2 py-1.5 text-sm hover:bg-accent/5"
+                >
                   {c.title}
                 </Link>
               </li>
@@ -116,47 +169,11 @@ export function HomeDashboardPanel() {
         </div>
       )}
 
-      {dashboard.achievements.length > 0 && (
-        <div>
-          <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold">
-            <Trophy className="h-4 w-4 text-accent" aria-hidden />
-            Achievements
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {dashboard.achievements.map((a) => (
-              <span
-                key={a.badgeId}
-                className="rounded-full border border-accent/20 bg-accent/5 px-3 py-1 text-xs font-medium"
-                title={a.label}
-              >
-                {a.label}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="dashboard-quick-grid">
-        {[
-          { label: "GigaSocial", href: "/gigasocial/", featured: true },
-          { label: "GigaEdit", href: "/gigaedit/" },
-          { label: "Learn", href: "/gigalearn" },
-          { label: "Chat", href: "/chat" },
-          { label: "Media", href: "/media" },
-          { label: "Wallet", href: "/wallet" },
-        ].map((q) => (
-          <Link
-            key={q.href}
-            href={q.href}
-            className={
-              "featured" in q && q.featured
-                ? "rounded-xl border border-accent/40 bg-accent/10 py-2 text-center text-xs font-bold text-foreground ring-1 ring-accent/15 hover:bg-accent/15"
-                : "rounded-xl border border-border py-2 text-center text-xs font-medium hover:border-accent/30"
-            }
-          >
-            {q.label}
-          </Link>
-        ))}
+      <div className="dashboard-stat-grid">
+        <StatCard icon={Zap} label="AI requests today" value={dashboard.todayUsage.aiRequests} />
+        <StatCard icon={MessageSquare} label="Chats today" value={dashboard.todayUsage.chats} />
+        <StatCard icon={Flame} label="Learning streak" value={`${dashboard.streakDays}d`} />
+        <StatCard icon={Target} label="Credits" value={dashboard.credits} />
       </div>
     </div>
   );

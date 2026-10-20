@@ -1,4 +1,5 @@
 import {
+  ArticleFigure,
   ArticleH2,
   ArticleH3,
   ArticleLink,
@@ -49,7 +50,13 @@ function ArticleContent() {
         during periods of high living costs.
       </Prose>
 
-      <ArticleH2 id="verified-facts">Verified facts</ArticleH2>
+      
+      <ArticleFigure
+        src="/images/blog/support-small-business-phone.jpg"
+        alt="Shop owner managing business messages on a smartphone"
+        caption="Wage debates connect to everyday work and informal livelihoods."
+      />
+<ArticleH2 id="verified-facts">Verified facts</ArticleH2>
       <Prose>
         The following points are documented through official announcements and the Fair Wages and
         Salaries Commission (FWSC):
@@ -75,7 +82,13 @@ function ArticleContent() {
         <em>basic salary excluding allowances</em>, roughly double a previously reported figure of
         about GH¢30,000 through 2024.
       </Prose>
-      <ArticleH3>Important qualification</ArticleH3>
+      
+      <ArticleFigure
+        src="/images/blog/ghana-wage-system.jpg"
+        alt="Office worker reviewing numbers at a desk in Ghana"
+        caption="Wage debates matter because they touch everyday livelihoods — check primary sources."
+      />
+<ArticleH3>Important qualification</ArticleH3>
       <Prose>
         We have <strong>not</strong> independently verified an official published payslip at
         GH¢60,000. This number is a <em>reported figure</em> from media analysis and public debate,

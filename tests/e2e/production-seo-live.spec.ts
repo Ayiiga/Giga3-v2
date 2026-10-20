@@ -23,10 +23,37 @@ test.describe("Production — SEO & indexability (technical readiness only)", ()
 
   test("sample public pages have valid canonical URLs and JSON-LD where expected", async ({
     page,
+    request,
   }) => {
+    // Retry browser navigations: Cloudflare/challenge aborts (net::ERR_ABORTED) are
+    // intermittent and previously failed the scheduled SEO job on /pricing/ alone.
+    async function gotoStable(path: string) {
+      let lastErr: unknown;
+      for (let attempt = 1; attempt <= 3; attempt += 1) {
+        try {
+          const response = await page.goto(path, {
+            waitUntil: "domcontentloaded",
+            timeout: 45_000,
+          });
+          return response;
+        } catch (err) {
+          lastErr = err;
+          const msg = err instanceof Error ? err.message : String(err);
+          if (!/ERR_ABORTED|ERR_CONNECTION|Timeout/i.test(msg) || attempt === 3) {
+            throw err;
+          }
+          await page.waitForTimeout(750 * attempt);
+        }
+      }
+      throw lastErr;
+    }
+
     for (const path of ["/", "/pricing/", "/gigalearn/", "/blog/"]) {
-      const response = await page.goto(path, { waitUntil: "domcontentloaded" });
-      expect(response?.status(), `${path} HTTP status`).toBe(200);
+      const head = await request.get(path);
+      expect(head.status(), `${path} HTTP status (API)`).toBe(200);
+
+      const response = await gotoStable(path);
+      expect(response?.status() ?? head.status(), `${path} HTTP status (page)`).toBe(200);
       const canonical = await page.locator('link[rel="canonical"]').getAttribute("href");
       expect(canonical, `${path} canonical`).toMatch(/^https:\/\/www\.giga3ai\.com\//);
 

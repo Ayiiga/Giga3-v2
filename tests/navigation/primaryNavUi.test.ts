@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("PrimaryNav UI wiring", () => {
-  it("uses exact short labels and mounts from root layout", () => {
+  it("uses education-first short labels and mounts from root layout", () => {
     const nav = readFileSync(
       resolve(__dirname, "../../web/lib/navigation/primaryNav.ts"),
       "utf8"
@@ -16,8 +16,10 @@ describe("PrimaryNav UI wiring", () => {
 
     expect(nav).toContain('label: "Home"');
     expect(nav).toContain('label: "Learn"');
-    expect(nav).toContain('label: "Create"');
+    expect(nav).toContain('label: "Practice"');
     expect(nav).toContain('label: "Social"');
+    expect(nav).toContain('label: "Market"');
+    expect(nav).not.toContain('label: "Create"');
     expect(component).toContain("aria-current");
     expect(component).toContain("primary-nav__label");
     expect(layout).toContain("PrimaryNavHost");
@@ -57,22 +59,5 @@ describe("PrimaryNav UI wiring", () => {
     expect(nav).toContain('aria-label="Giga3 primary navigation"');
     expect(nav).toContain("primary-nav__label");
     expect(nav).toContain("PrimaryNavIcons");
-    expect(nav).toContain("CreateSubNav");
-  });
-
-  it("offsets layout when Create sub-nav is visible", () => {
-    const host = readFileSync(
-      resolve(__dirname, "../../web/components/navigation/PrimaryNavHost.tsx"),
-      "utf8"
-    );
-    const css = readFileSync(
-      resolve(__dirname, "../../web/styles/primary-nav.css"),
-      "utf8"
-    );
-
-    expect(host).toContain("primary-nav-create-sub");
-    expect(host).toContain("isCreateSubRoute");
-    expect(css).toContain(".create-sub-nav");
-    expect(css).toContain("primary-nav-create-sub");
   });
 });

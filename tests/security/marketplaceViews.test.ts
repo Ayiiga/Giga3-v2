@@ -28,12 +28,33 @@ describe("marketplaceViews", () => {
     updatedAt: 1,
   };
 
-  it("removes fileStorageId and creatorId from public listings", () => {
-    const pub = toPublicListing(listing);
+  it("removes fileStorageId, coverStorageId, and creatorId from public listings", () => {
+    const pub = toPublicListing({
+      ...listing,
+      coverStorageId: "_storage:cover-blob" as any,
+    });
     expect(pub.hasFile).toBe(true);
     expect(pub.title).toBe("Test ebook");
     expect(pub).not.toHaveProperty("fileStorageId");
+    expect(pub).not.toHaveProperty("coverStorageId");
     expect(pub).not.toHaveProperty("creatorId");
+  });
+
+  it("keeps public preview fields without exposing private download storage", () => {
+    const pub = toPublicListing({
+      ...listing,
+      previewText: "Chapter 1 excerpt",
+      previewUrl: "https://www.giga3ai.com/preview/sample.pdf",
+      coverImageUrl: "https://www.giga3ai.com/images/cover.jpg",
+      fileStorageId: "_storage:private-product" as any,
+    });
+    expect(pub.previewText).toBe("Chapter 1 excerpt");
+    expect(pub.previewUrl).toContain("/preview/");
+    expect(pub.coverImageUrl).toContain("cover.jpg");
+    expect(pub.hasFile).toBe(true);
+    expect(pub).not.toHaveProperty("fileStorageId");
+    // Public payloads must not echo raw storage handles.
+    expect(JSON.stringify(pub)).not.toContain("_storage:");
   });
 
   it("removes buyerId from public reviews", () => {

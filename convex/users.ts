@@ -21,8 +21,10 @@ import { consumeAuthRateLimit } from "./authRateLimit";
 import { SECURITY_EVENT_TYPES } from "./securityMonitoring";
 import { RateLimitError, UnauthorizedError } from "./securityErrors";
 import { resolveAiProviderTier } from "./providerRouter";
+import { getFreeAdvancedPersonaSnapshotDb } from "./freeAdvancedPersonaQuota";
 import { getFreeOpenAiSnapshotDb } from "./freeOpenAiQuota";
 import { getFreeImageSnapshotDb } from "./freeImageQuota";
+import { computeEntitlements, hasFeature } from "./entitlements";
 import { isSubscriptionActive } from "./creditsConfig";
 import {
   isFreeImageDailyQuotaEnabled,
@@ -34,6 +36,7 @@ import {
 import { shouldOfferOpenAiImageGeneration } from "./premiumImage";
 import {
   decideGoogleAccountLink,
+  decideGoogleExplicitLink,
   googleProfilePatch,
   type GoogleLinkAccount,
   type GoogleLinkRejectCode,
@@ -140,18 +143,37 @@ export const completeGoogleSignInInternal = internalMutation({
         emailVerificationTime: created.emailVerificationTime ?? now,
         ...profile,
       });
+      const existingIdentity = await ctx.db
+        .query("authProviderIdentities")
+        .withIndex("by_provider_subject", (q) =>
+          q.eq("provider", "google").eq("subject", googleSub)
+        )
+        .first();
+      if (!existingIdentity) {
+        await ctx.db.insert("authProviderIdentities", {
+          provider: "google",
+          subject: googleSub,
+          userId: created.email,
+          emailAtLink: email,
+          createdAt: now,
+          lastLoginAt: now,
+        });
+      }
       return { ok: true as const, kind: "create" as const, email: created.email };
     }
 
+    // Auto-link is disabled; only sign-in remains for this decision path.
+    if (decision.kind !== "sign-in") {
+      return { ok: false as const, code: "invalid_identity" as const };
+    }
+
     const user =
-      decision.kind === "sign-in"
-        ? bySubDoc?.email === decision.email
-          ? bySubDoc
-          : await ctx.db
-              .query("users")
-              .withIndex("by_email", (q) => q.eq("email", decision.email))
-              .first()
-        : byEmailDoc;
+      bySubDoc?.email === decision.email
+        ? bySubDoc
+        : await ctx.db
+            .query("users")
+            .withIndex("by_email", (q) => q.eq("email", decision.email))
+            .first();
 
     if (!user) {
       return { ok: false as const, code: "invalid_identity" as const };
@@ -169,7 +191,7 @@ export const completeGoogleSignInInternal = internalMutation({
       name?: string;
       image?: string;
     } = { ...profile };
-    if (decision.kind === "link") {
+    if (!user.googleSub) {
       patch.googleSub = googleSub;
     }
     if (args.emailVerified && user.email === email && !user.emailVerificationTime) {
@@ -178,10 +200,104 @@ export const completeGoogleSignInInternal = internalMutation({
     if (Object.keys(patch).length > 0) {
       await ctx.db.patch(user._id, patch);
     }
+    const identity = await ctx.db
+      .query("authProviderIdentities")
+      .withIndex("by_provider_subject", (q) =>
+        q.eq("provider", "google").eq("subject", googleSub)
+      )
+      .first();
+    if (identity) {
+      await ctx.db.patch(identity._id, { lastLoginAt: now });
+    } else {
+      await ctx.db.insert("authProviderIdentities", {
+        provider: "google",
+        subject: googleSub,
+        userId: user.email,
+        emailAtLink: email,
+        createdAt: now,
+        lastLoginAt: now,
+      });
+    }
     return {
       ok: true as const,
-      kind: decision.kind,
+      kind: "sign-in" as const,
       email: user.email,
+    };
+  },
+});
+
+/** Explicit Google link for a signed-in session (email must match). */
+export const linkGoogleIdentityInternal = internalMutation({
+  args: {
+    sessionEmail: v.string(),
+    googleSub: v.string(),
+    email: v.string(),
+    emailVerified: v.boolean(),
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+  },
+  handler: async (ctx, args): Promise<GoogleSignInResult> => {
+    const sessionEmail = args.sessionEmail.trim().toLowerCase();
+    const email = args.email.trim().toLowerCase();
+    const googleSub = args.googleSub.trim();
+    const sessionUser = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", sessionEmail))
+      .first();
+    if (!sessionUser) {
+      return { ok: false as const, code: "invalid_identity" as const };
+    }
+    const bySubDoc = await ctx.db
+      .query("users")
+      .withIndex("by_googleSub", (q) => q.eq("googleSub", googleSub))
+      .first();
+
+    const decision = decideGoogleExplicitLink({
+      googleSub,
+      email,
+      emailVerified: args.emailVerified,
+      sessionEmail,
+      bySub: bySubDoc ? googleLinkAccount(bySubDoc) : null,
+      sessionGoogleSub: sessionUser.googleSub?.trim() || null,
+    });
+    if (decision.kind === "reject") {
+      return { ok: false as const, code: decision.code };
+    }
+    const now = Date.now();
+    if (decision.kind === "link" || !sessionUser.googleSub) {
+      await ctx.db.patch(sessionUser._id, { googleSub });
+    }
+    const profile = googleProfilePatch({
+      name: args.name,
+      picture: args.image,
+      existingName: sessionUser.name,
+      existingImage: sessionUser.image,
+    });
+    if (Object.keys(profile).length > 0) {
+      await ctx.db.patch(sessionUser._id, profile);
+    }
+    const identity = await ctx.db
+      .query("authProviderIdentities")
+      .withIndex("by_provider_subject", (q) =>
+        q.eq("provider", "google").eq("subject", googleSub)
+      )
+      .first();
+    if (!identity) {
+      await ctx.db.insert("authProviderIdentities", {
+        provider: "google",
+        subject: googleSub,
+        userId: sessionEmail,
+        emailAtLink: email,
+        createdAt: now,
+        lastLoginAt: now,
+      });
+    } else {
+      await ctx.db.patch(identity._id, { lastLoginAt: now, userId: sessionEmail });
+    }
+    return {
+      ok: true as const,
+      kind: decision.kind === "link" ? ("link" as const) : ("sign-in" as const),
+      email: sessionEmail,
     };
   },
 });
@@ -364,16 +480,26 @@ export const getChatCredits = query({
 
     const freeOpenAi = await getFreeOpenAiSnapshotDb(ctx, email);
     const freeImage = await getFreeImageSnapshotDb(ctx, email);
+    const freePersona = await getFreeAdvancedPersonaSnapshotDb(ctx, email);
     const isPremium = aiTier === "premium";
     const subscriptionActive = isSubscriptionActive(
       user.subscriptionPlan ?? "free",
       user.subscriptionExpiresAt
     );
+    const entitlements = computeEntitlements({
+      subscriptionPlan: user.subscriptionPlan ?? "free",
+      subscriptionExpiresAt: user.subscriptionExpiresAt,
+      credits: user.credits,
+      hasPurchasedCredits,
+    });
+    const hasPaidPersonas = hasFeature(entitlements, "advanced_personas");
 
     return {
       credits: user.credits ?? 0,
       aiTier,
       isPremium,
+      /** True when the user has a credit_purchase log — not residual balance. */
+      hasPurchasedCredits,
       subscriptionActive,
       canUseOpenAiImage: shouldOfferOpenAiImageGeneration(
         user.subscriptionPlan ?? "free",
@@ -400,6 +526,12 @@ export const getChatCredits = query({
       freeImageLimit: isFreeImageDailyQuotaEnabled() ? freeImage.limit : null,
       freeImageResetsAt: isFreeImageDailyQuotaEnabled() ? freeImage.resetsAt : null,
       freeImageTimeZone: isFreeImageDailyQuotaEnabled() ? freeImage.timeZone : null,
+      freePersonaRemaining: hasPaidPersonas
+        ? freePersona.limit
+        : freePersona.remaining,
+      freePersonaLimit: freePersona.limit,
+      freePersonaResetsAt: freePersona.resetsAt,
+      hasAdvancedPersonaAccess: hasPaidPersonas || freePersona.remaining > 0,
     };
   },
 });
@@ -455,6 +587,10 @@ export const deductTokens = mutation({
   args: { ...sessionArgs, amount: v.number() },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);
+    // Reject non-positive amounts — a negative value would mint tokens.
+    if (!Number.isFinite(args.amount) || args.amount <= 0 || !Number.isInteger(args.amount)) {
+      throw new Error("Invalid token amount");
+    }
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", email))
@@ -462,7 +598,13 @@ export const deductTokens = mutation({
     if (!user) {
       throw new Error("User not found");
     }
-    const tokens = Math.max(0, (user.tokens ?? 0) - args.amount);
+    const balance = user.tokens ?? 0;
+    if (balance < args.amount) {
+      throw new Error(
+        `Insufficient tokens (${args.amount} required, ${balance} available)`
+      );
+    }
+    const tokens = balance - args.amount;
     await ctx.db.patch(user._id, { tokens });
     return tokens;
   },
