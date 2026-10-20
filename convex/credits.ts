@@ -257,7 +257,8 @@ export const getUsageSnapshot = query({
 export const listCreditLogs = query({
   args: { ...sessionArgs, limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken, ctx);
+    const userId = await tryRequireSession(args.sessionToken, ctx);
+    if (!userId) return [];
     const cap = args.limit ?? 50;
     const rows = await ctx.db
       .query("creditLogs")

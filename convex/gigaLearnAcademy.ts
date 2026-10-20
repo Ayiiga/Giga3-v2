@@ -278,7 +278,8 @@ export const getEnrolledTutorContext = query({
     lessonId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken, ctx);
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return { ok: false as const, reason: "unauthorized" as const };
     const course = await resolveCourse(ctx, args.courseSlug);
     if (!course || course.status !== "published") {
       return { ok: false as const, reason: "course_unavailable" as const };

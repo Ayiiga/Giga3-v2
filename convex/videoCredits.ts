@@ -1,6 +1,6 @@
 import { internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { requireSession } from "./auth";
+import { requireSession, tryRequireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { videoCreditActionValidator } from "./schema";
 import { FREE_VIDEO_STARTER_CREDITS } from "./videoCreditsConfig";
@@ -142,7 +142,16 @@ export const deductVideoCreditsInternal = internalMutation({
 export const getVideoWallet = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) {
+      return {
+        videoCredits: 0,
+        videoSubscriptionActive: false,
+        videoSubscriptionPlan: null,
+        videoSubscriptionExpiresAt: null,
+        catalog: listVideoCatalog(),
+      };
+    }
     const user = await getUserByEmail(ctx, email);
     if (!user) {
       return {

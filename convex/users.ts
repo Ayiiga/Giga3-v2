@@ -436,7 +436,9 @@ export const backfillMissingStarterCredits = internalMutation({
 export const getUser = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken, ctx);
+    // Soft-fail invalid tokens so useQuery shells cannot crash.
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return null;
     return await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", email))

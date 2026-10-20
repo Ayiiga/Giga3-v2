@@ -3,7 +3,7 @@ import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getPlanMonthlyCredits, SUBSCRIPTION_PERIOD_MS } from "./subscriptionPlans";
 import { paidPlanValidator } from "./schema";
-import { requireSession } from "./auth";
+import { requireSession, tryRequireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import {
   GRANDFATHERED_SUBSCRIBER_EMAIL,
@@ -21,7 +21,8 @@ const subscriptionSourceValidator = v.union(
 export const getActiveSubscription = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken, ctx);
+    const userId = await tryRequireSession(args.sessionToken, ctx);
+    if (!userId) return null;
     return await ctx.db
       .query("subscriptions")
       .withIndex("by_user_status", (q) =>
@@ -35,7 +36,8 @@ export const getActiveSubscription = query({
 export const getRenewalSettings = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken, ctx);
+    const userId = await tryRequireSession(args.sessionToken, ctx);
+    if (!userId) return null;
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", userId))
