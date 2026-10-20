@@ -1,5 +1,6 @@
 "use client";
 
+import { DeleteAccountSection } from "@/components/account/DeleteAccountSection";
 import { LinkedProvidersSettings } from "@/components/account/LinkedProvidersSettings";
 import { GigaLiteSettings } from "@/components/settings/GigaLiteSettings";
 import { LanguagePreferencesSettings } from "@/components/settings/LanguagePreferencesSettings";
@@ -116,6 +117,8 @@ function AccountSettingsClientInner() {
           Sign out
         </button>
       </div>
+
+      <DeleteAccountSection email={email} />
     </div>
   );
 }
