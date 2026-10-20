@@ -28,10 +28,12 @@ import { useEffect } from "react";
 import {
   ArrowRight,
   Award,
+  Baby,
   BookOpen,
   ClipboardCheck,
   GraduationCap,
   MessageCircle,
+  School,
   Sparkles,
   Target,
 } from "lucide-react";
@@ -217,6 +219,66 @@ function PersonalLearningSummary() {
           <ArrowRight className="h-4 w-4" aria-hidden />
         </Link>
       </div>
+    </section>
+  );
+}
+
+/**
+ * Primary school pathways — Learn tab opens Academy, so Early years / Basic school
+ * must stay visible here (they live on the GigaLearn Student hub).
+ */
+function SchoolPathways() {
+  return (
+    <section
+      aria-labelledby="school-pathways-heading"
+      className="space-y-3"
+      data-testid="academy-school-pathways"
+    >
+      <div>
+        <h2 id="school-pathways-heading" className="text-lg font-bold text-[#1E1B4B]">
+          Early years &amp; Basic school
+        </h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Start by age or grade — concrete Early years activities, then Basic school subjects and
+          lessons on the Student hub.
+        </p>
+      </div>
+      <ul className="grid gap-3 sm:grid-cols-2">
+        <li>
+          <Link
+            href="/gigalearn/?tab=early-years"
+            className="academy-visual-quick academy-visual-quick--early"
+            data-testid="academy-pathway-early-years"
+          >
+            <Baby className="h-5 w-5 shrink-0" aria-hidden />
+            <span>
+              Early years
+              <span className="mt-1 block text-xs font-medium text-white/85">
+                Creche · KG1 · KG2 · real-object learning
+              </span>
+            </span>
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="/gigalearn/?tab=learn"
+            className="academy-visual-quick academy-visual-quick--basic"
+            data-testid="academy-pathway-basic-school"
+          >
+            <School className="h-5 w-5 shrink-0" aria-hidden />
+            <span>
+              Basic school
+              <span className="mt-1 block text-xs font-medium text-white/85">
+                P1–JHS subjects, lessons, and quizzes
+              </span>
+            </span>
+          </Link>
+        </li>
+      </ul>
+      <p className="text-xs text-slate-600">
+        Also in the Academy menu above: <span className="font-semibold">Early years</span> and{" "}
+        <span className="font-semibold">Basic school</span>.
+      </p>
     </section>
   );
 }
@@ -489,6 +551,8 @@ export function AcademyHome() {
           </div>
         </div>
       </section>
+
+      <SchoolPathways />
 
       <PersonalLearningSummary />
 
