@@ -142,7 +142,8 @@ describe("Free orientation bank + UI wiring for 50 / share / rewards", () => {
     expect(css).toContain(".exam-session-reward");
 
     const convex = readFileSync(resolve(ROOT, "convex/gigaLearnTechBanks.ts"), "utf8");
-    expect(convex).toContain("clampPracticeQuestionCount");
-    expect(convex).toContain("hasExamPracticePremiumAccess");
+    expect(convex).toContain("resolveExamPracticeSessionCount");
+    expect(convex).toContain("hasPurchasedCredits");
+    expect(convex).toContain("shouldAbandonPriorExamInProgress");
   });
 });
