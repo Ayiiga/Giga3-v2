@@ -6,7 +6,7 @@ import { GIGAEDITS_PAGE } from "../../web/lib/seo/productPageContent";
 
 describe("entity consistency (SEO trust)", () => {
   it("uses Ghana-built super-app positioning in GEO statement", () => {
-    expect(GEO_POSITIONING_STATEMENT).toContain("Ghana-built");
+    expect(GEO_POSITIONING_STATEMENT).toContain("built in Africa");
     expect(GEO_POSITIONING_STATEMENT).toContain("GigaLearn");
     expect(GEO_POSITIONING_STATEMENT).not.toMatch(/enterprise voice/i);
     expect(GEO_POSITIONING_STATEMENT).not.toMatch(/codebase context/i);
@@ -22,9 +22,10 @@ describe("entity consistency (SEO trust)", () => {
       resolve(__dirname, "../../web/app/(marketing)/gigaedits/page.tsx"),
       "utf8"
     );
-    expect(page).toContain("GIGAEDITS_PAGE.description");
+    expect(page).toContain("RETIRED_PRODUCTS");
+    expect(page).toContain("index: false");
     expect(page).not.toContain("AI Creator Tools");
-    expect(GIGAEDITS_PAGE.whatItDoes).toContain("/gigaedit/");
+    expect(GIGAEDITS_PAGE.whatItDoes).toMatch(/retired/i);
   });
 
   it("robots.txt references only the sitemap index", () => {
