@@ -2,16 +2,15 @@ import type { GigaEditOpenOptions, GigaEditSection } from "@/lib/gigaedit/types"
 import { siteConfig } from "@/lib/site";
 
 /**
- * Product scope for the four primary nav tabs.
- *
- * Studio (/media) — AI image/video generation and cloud enhancement tools.
- * Edits (/gigaedit) — timeline editing, teleprompter, and on-device audio/video recording.
+ * Product scope for the education-first primary nav tabs (Phase 2).
+ * Media Studio / GigaEdits are no longer primary destinations.
  */
 export const PRIMARY_NAV_PRODUCT_SCOPE = {
-  home: "AI chat, research, writing, and personas",
-  learn: "GigaLearn — lessons, practice, exam prep, and AI tutoring",
-  create: "Media Studio (AI image/video) and GigaEdits (timeline, teleprompter, recording)",
+  home: "AI Assistant — chat, research, writing, coding, and in-chat images",
+  learn: "GigaLearn Academy — courses, tutoring, Technology Learning Hub",
+  practice: "Exam Practice — BECE, Teacher Promotion, subject and timed sets",
   social: "GigaSocial feed, stories, and publishing",
+  market: "Marketplace — ebooks, learning materials, and digital products",
 } as const;
 
 /** Sections that must resolve under GigaEdits — never Media Studio. */

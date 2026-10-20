@@ -102,9 +102,15 @@ export function resolveGigaCreateRoute(action: GigaCreateActionId): GigaCreateRo
     case "ai-chat":
       return { kind: "navigate", href: siteConfig.links.dashboard };
     case "ai-image":
-      return { kind: "navigate", href: siteConfig.links.media };
+      return {
+        kind: "navigate",
+        href: `${siteConfig.links.dashboard}?prompt=${encodeURIComponent("Generate an image: ")}`,
+      };
     case "ai-video":
-      return { kind: "navigate", href: siteConfig.links.video };
+      return {
+        kind: "navigate",
+        href: `${siteConfig.links.dashboard}?prompt=${encodeURIComponent("Help me plan a short video: ")}`,
+      };
     case "ai-document":
       return { kind: "navigate", href: `${siteConfig.links.dashboard}?category=writing` };
     case "ai-coding":

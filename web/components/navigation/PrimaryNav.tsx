@@ -1,6 +1,5 @@
 "use client";
 
-import { CreateSubNav } from "@/components/navigation/CreateSubNav";
 import {
   CreateNavIcon,
   HomeNavIcon,
@@ -17,8 +16,10 @@ import {
 import { triggerHaptic } from "@/lib/gigasocial/haptics";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { memo, type ComponentType } from "react";
+
+/** Practice tab reuses the former Create glyph (checklist / wand affinity). */
+const PracticeNavIcon = CreateNavIcon;
 
 const PRIMARY_NAV_ICONS: Record<
   PrimaryNavTabId,
@@ -26,7 +27,7 @@ const PRIMARY_NAV_ICONS: Record<
 > = {
   home: HomeNavIcon,
   learn: LearnNavIcon,
-  create: CreateNavIcon,
+  practice: PracticeNavIcon,
   social: SocialNavIcon,
   market: MarketNavIcon,
 };
@@ -43,20 +44,15 @@ const PrimaryNavBar = memo(function PrimaryNavBar({
   pathname,
 }: PrimaryNavBarProps) {
   const isMobile = variant === "mobile";
-  const showCreateSub = activeTab === "create";
 
   return (
     <nav
       className={cn(
         "primary-nav",
-        isMobile ? "primary-nav--mobile" : "primary-nav--desktop",
-        showCreateSub && "primary-nav--with-create-sub"
+        isMobile ? "primary-nav--mobile" : "primary-nav--desktop"
       )}
       aria-label="Giga3 primary navigation"
     >
-      {showCreateSub ? (
-        <CreateSubNav pathname={pathname} variant="bar" className="primary-nav__create-sub" />
-      ) : null}
       <div className={cn("primary-nav__inner", isMobile && "primary-nav__inner--mobile")}>
         {PRIMARY_NAV_TABS.map((tab) => {
           const Icon = PRIMARY_NAV_ICONS[tab.id];

@@ -266,23 +266,23 @@ export const GHANA_LANDING_PAGES = {
     path: "/ai-for-creators-ghana",
     metaTitle: "AI for Creators in Ghana | Giga3 AI",
     metaDescription:
-      "Create, edit, and publish with Giga3 AI — Media Studio, Video AI, GigaEdit, and GigaSocial for Ghanaian creators with GHS marketplace payments.",
+      "Create and publish with Giga3 AI — AI Assistant, Creator Studio, GigaSocial, and Marketplace for Ghanaian creators with GHS payments.",
     h1: "AI for Creators in Ghana",
     lead:
-      "From AI images and video to editing and community publishing — one creator workflow on Giga3 AI for Ghanaian creators.",
+      "From AI-assisted writing and images to community publishing — one creator workflow on Giga3 AI for Ghanaian creators.",
     intro: [
-      "Creators in Ghana need tools that work on mobile networks, bill in cedis, and connect generation → edit → publish without juggling five separate apps.",
-      "Giga3 links Media Studio, Video AI, GigaEdit, GigaSocial, and Marketplace under one account with server-checked credits.",
+      "Creators in Ghana need tools that work on mobile networks, bill in cedis, and connect drafting → publishing without juggling five separate apps.",
+      "Giga3 links the AI Assistant, Creator Studio, GigaSocial, and Marketplace under one account with server-checked credits.",
     ],
     sections: [
       {
-        heading: "Create → Edit → Publish",
+        heading: "Draft → Assist → Publish",
         paragraphs: [
-          "Generate visuals in Media Studio or clips in Video AI, polish in GigaEdit, then publish to GigaSocial. Creator Studio helps draft captions and scripts before you post.",
+          "Draft captions and scripts in Creator Studio, get research and in-chat image help from the AI Assistant, then publish to GigaSocial.",
         ],
         bullets: [
-          "Media Studio — AI image generation and edit-with-source",
-          "GigaEdit — trim, caption, and join on device",
+          "AI Assistant — writing, research, coding, and in-chat images",
+          "Creator Studio — social drafts and writing assistance",
           "GigaSocial — community feed, profiles, and publishing",
         ],
       },
@@ -302,22 +302,22 @@ export const GHANA_LANDING_PAGES = {
       {
         question: "Do creators need separate apps?",
         answer:
-          "No. Giga3 is a progressive web app. Install from /install and move between Media Studio, GigaEdit, and GigaSocial with one sign-in.",
+          "No. Giga3 is a progressive web app. Install from /install and move between AI Assistant, Creator Studio, and GigaSocial with one sign-in.",
       },
       {
-        question: "Can I edit video on my phone?",
+        question: "Where do I publish finished work?",
         answer:
-          "Yes. GigaEdit runs in the browser with on-device editing features. Heavy exports may take longer on low-end devices — export errors surface recoverable messages rather than fake success.",
+          "Publish to GigaSocial from the feed compose tools. Marketplace is for selling eligible digital products after moderation.",
       },
     ],
     breadcrumbLabel: "AI for creators in Ghana",
     relatedReading: [
-      { href: "/gigaedits", label: "GigaEdits — creator editing" },
-      { href: "/media", label: "Media Studio" },
+      { href: "/creator-studio", label: "Creator Studio" },
+      { href: "/chat", label: "AI Assistant" },
       { href: "/gigasocial", label: "GigaSocial community" },
     ],
-    primaryCta: { href: "/media", label: "Open Media Studio" },
-    secondaryCta: { href: "/gigaedit", label: "Open GigaEdit" },
+    primaryCta: { href: "/creator-studio", label: "Open Creator Studio" },
+    secondaryCta: { href: "/gigasocial", label: "Open GigaSocial" },
   },
   africanAiTools: {
     path: "/african-ai-tools",

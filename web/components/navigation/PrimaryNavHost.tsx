@@ -1,7 +1,6 @@
 "use client";
 
 import { PrimaryNav } from "@/components/navigation/PrimaryNav";
-import { isCreateSubRoute } from "@/lib/navigation/createDestinations";
 import {
   isPrimaryNavRoute,
   shouldShowDesktopRail,
@@ -19,13 +18,12 @@ function readHtmlFlags() {
 }
 
 /**
- * Mounts the global 4-tab nav on product routes and toggles layout CSS hooks on <html>.
+ * Mounts the education-first primary nav on product routes and toggles layout CSS hooks on <html>.
  */
 export function PrimaryNavHost() {
   const pathname = usePathname() ?? "/";
   const onProductRoute = isPrimaryNavRoute(pathname);
   const showRail = shouldShowDesktopRail(pathname);
-  const showCreateSub = isCreateSubRoute(pathname);
   const [flags, setFlags] = useState({
     immersive: false,
     keyboardOpen: false,
@@ -53,7 +51,7 @@ export function PrimaryNavHost() {
     html.classList.toggle("primary-nav-route", onProductRoute);
     html.classList.toggle("primary-nav-rail", onProductRoute && showRail);
     html.classList.toggle("primary-nav-bar-visible", navBarVisible);
-    html.classList.toggle("primary-nav-create-sub", navBarVisible && showCreateSub);
+    html.classList.remove("primary-nav-create-sub");
     html.classList.toggle("primary-nav-compact", navCompact);
     return () => {
       html.classList.remove(
@@ -64,7 +62,7 @@ export function PrimaryNavHost() {
         "primary-nav-compact"
       );
     };
-  }, [onProductRoute, showRail, navBarVisible, showCreateSub, navCompact]);
+  }, [onProductRoute, showRail, navBarVisible, navCompact]);
 
   if (!onProductRoute) return null;
 

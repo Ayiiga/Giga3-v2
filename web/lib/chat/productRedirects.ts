@@ -58,16 +58,17 @@ function matchTaskShortcut(text: string): Giga3ChatProduct | null {
     /\b(generate|create|make)\b/.test(text) &&
     /\b(an? )?(image|photo|picture|poster|thumbnail|logo)\b/.test(text)
   ) {
-    return GIGA3_CHAT_PRODUCTS.find((p) => p.id === "media") ?? null;
+    // Images stay in AI Assistant (Media Studio is not a dedicated product).
+    return GIGA3_CHAT_PRODUCTS.find((p) => p.id === "chat") ?? null;
   }
   if (
     /\b(generate|create|make)\b/.test(text) &&
     /\b(an? )?(video|clip|reel)\b/.test(text)
   ) {
-    return GIGA3_CHAT_PRODUCTS.find((p) => p.id === "video") ?? null;
+    return GIGA3_CHAT_PRODUCTS.find((p) => p.id === "chat") ?? null;
   }
   if (/\b(edit|trim|join|caption)\b/.test(text) && /\b(video|photo|clip)\b/.test(text)) {
-    return GIGA3_CHAT_PRODUCTS.find((p) => p.id === "gigaedit") ?? null;
+    return GIGA3_CHAT_PRODUCTS.find((p) => p.id === "gigasocial") ?? null;
   }
   if (
     /\b(post|share|publish)\b/.test(text) &&

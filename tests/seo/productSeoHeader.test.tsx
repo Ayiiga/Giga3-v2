@@ -106,16 +106,15 @@ describe("ProductSeoHeader compact Learn more", () => {
     expect(page).toContain("JsonLd");
   });
 
-  it("keeps GigaEdit page compact with Read more and Starter Pack detail", () => {
+  it("soft-retires GigaEdit page with noindex retirement notice", () => {
     const page = readFileSync(
       resolve(__dirname, "../../web/app/(marketing)/gigaedit/page.tsx"),
       "utf8"
     );
-    expect(page).toContain("GigaEdit — Trim, join, and publish video");
+    expect(page).toContain("GigaEditRetiredGate");
     expect(page).toMatch(/ProductSeoHeader[\s\S]*compact/);
-    expect(page).toContain("Creator Growth Starter Pack");
-    expect(page).toContain("Hook Reel");
+    expect(page).toContain("index: false");
     expect(page).toMatch(/publicMetadata\(/);
-    expect(page).toContain("JsonLd");
+    expect(page).not.toContain("Creator Growth Starter Pack");
   });
 });

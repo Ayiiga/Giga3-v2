@@ -29,22 +29,22 @@ describe("productPageContent", () => {
     }
   });
 
-  it("routes GigaEdits landing to the GigaEdit editor", () => {
-    expect(GIGAEDITS_PAGE.primaryHref).toBe("/gigaedit");
+  it("routes retired GigaEdits landing to GigaSocial", () => {
+    expect(GIGAEDITS_PAGE.primaryHref).toBe("/gigasocial");
   });
 
-  it("routes AI Studio umbrella to Media Studio", () => {
-    expect(AI_STUDIO_PAGE.primaryHref).toBe("/media");
-    expect(AI_STUDIO_PAGE.secondaryHref).toBe("/video");
+  it("routes retired AI Studio umbrella to AI Assistant", () => {
+    expect(AI_STUDIO_PAGE.primaryHref).toBe("/chat");
+    expect(AI_STUDIO_PAGE.secondaryHref).toBe("/gigalearn/academy");
   });
 
-  it("routes media shell to the app and gigalearn shell to Academy", () => {
-    expect(MEDIA_PAGE_SHELL.primaryHref).toBe("/media");
+  it("routes media shell to AI Assistant and gigalearn shell to Academy", () => {
+    expect(MEDIA_PAGE_SHELL.primaryHref).toBe("/chat");
     expect(GIGALEARN_PAGE_SHELL.primaryHref).toBe("/gigalearn/academy/");
     expect(GIGALEARN_PAGE_SHELL.secondaryHref).toBe("/ai-for-bece-wassce-ghana");
   });
 
-  it("loads Media Studio app first on /media (SEO header is sr-only)", () => {
+  it("soft-retires /media with a gate (SEO header is sr-only)", () => {
     const media = readFileSync(
       resolve(__dirname, "../../web/app/(marketing)/media/page.tsx"),
       "utf8"
@@ -53,11 +53,11 @@ describe("productPageContent", () => {
       resolve(__dirname, "../../web/app/(marketing)/gigalearn/page.tsx"),
       "utf8"
     );
-    expect(media).toContain("MediaPageRoot");
+    expect(media).toContain("MediaRetiredGate");
     expect(media).toContain("ProductSeoHeader");
     expect(media).toContain('className="sr-only"');
+    expect(media).toContain("index: false");
     expect(media).not.toContain("PublicProductPageShell");
-    expect(media).toContain("ClientAppHydrationNotice");
     expect(gigalearn).toContain("PublicProductPageShell");
     expect(gigalearn).not.toMatch(/Loading…/);
   });
