@@ -225,6 +225,15 @@ function MarketplaceSellInner() {
         setMessage(uploadResult.message);
       }
 
+      const ebookLike =
+        productType.toLowerCase().includes("ebook") ||
+        productType.toLowerCase() === "book";
+      if (!asDraft && ebookLike && !coverImageFile && !coverImageUrl.trim()) {
+        throw new Error(
+          "Add a cover image (upload or URL) before publishing an ebook."
+        );
+      }
+
       if (!asDraft) {
         await updateListing({ sessionToken, listingId, status: "published" });
         setMessage("Published — buyers can purchase and download your PDF.");
@@ -363,7 +372,7 @@ function MarketplaceSellInner() {
   }
 
   return (
-    <Container className="discover-stable py-8 sm:py-12">
+    <Container className="discover-stable document-compact py-6 pb-[calc(var(--primary-nav-offset,0px)+1.25rem)] sm:py-10">
       <div className="mx-auto max-w-5xl space-y-10">
         <div className="overflow-hidden rounded-3xl border border-emerald-900/10 bg-[#042f2e] px-6 py-7 text-emerald-50 sm:px-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -770,13 +779,14 @@ function MarketplaceSellInner() {
             <input
               value={coverImageUrl}
               onChange={(e) => setCoverImageUrl(e.target.value)}
-              placeholder="Cover image URL (optional)"
+              placeholder="Cover image URL (required for ebooks if not uploading)"
               className="rounded-xl border px-4 py-3"
             />
             <label className="flex cursor-pointer flex-col gap-2 rounded-xl border border-dashed px-4 py-4 text-sm">
-              <span className="font-medium">Cover image upload (optional)</span>
+              <span className="font-medium">Cover image upload</span>
               <span className="text-muted">
-                {coverImageFile?.name ?? "JPG or PNG for your listing card"}
+                {coverImageFile?.name ??
+                  "JPG or PNG book cover — required before publishing ebooks"}
               </span>
               <input
                 type="file"

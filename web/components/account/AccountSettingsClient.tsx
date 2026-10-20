@@ -44,7 +44,7 @@ function AccountSettingsClientInner() {
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-6">
+    <div className="mx-auto w-full min-w-0 max-w-lg space-y-6">
       <header className="text-center">
         <h1 className="page-title">Settings</h1>
         <p className="mt-2 text-sm text-muted">Account preferences for {email}</p>

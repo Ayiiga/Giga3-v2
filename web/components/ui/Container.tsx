@@ -1,5 +1,9 @@
 import { cn } from "@/lib/utils";
 
+/**
+ * Page-width shell with mobile-safe horizontal inset.
+ * Full-bleed sections pass `!px-0` (or `px-0`) to opt out.
+ */
 export function Container({
   className,
   children,
@@ -8,6 +12,13 @@ export function Container({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("mx-auto w-full max-w-6xl", className)}>{children}</div>
+    <div
+      className={cn(
+        "mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8",
+        className
+      )}
+    >
+      {children}
+    </div>
   );
 }

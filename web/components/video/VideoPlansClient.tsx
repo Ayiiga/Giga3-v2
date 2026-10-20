@@ -30,7 +30,7 @@ function VideoPlansInner() {
   const catalog = wallet?.catalog;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-10">
+    <div className="mx-auto w-full max-w-5xl space-y-10 px-4 sm:px-6 lg:px-8">
       <CheckoutOverlay
         phase={checkoutPhase}
         label={checkoutPreview?.label}

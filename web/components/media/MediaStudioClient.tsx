@@ -127,7 +127,7 @@ function MediaStudioContent() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-10">
+    <div className="mx-auto w-full min-w-0 max-w-5xl space-y-10">
       <CreateSubNav pathname={pathname} variant="inline" />
       <MediaCreditsBar
         credits={usage ? usage.credits : null}

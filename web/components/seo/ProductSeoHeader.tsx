@@ -8,6 +8,9 @@ type ProductSeoHeaderProps = {
   description: string;
   /** Extra paragraph with feature detail — keep factual and concise. */
   detail?: string;
+  /** Optional product/cover image shown above the title (e.g. Marketplace books). */
+  coverImageUrl?: string | null;
+  coverImageAlt?: string;
   /** Omit product nav when the page already includes rich linking. */
   showProductNav?: boolean;
   /** Tighter padding for app pages that hydrate immediately below the header. */
@@ -29,6 +32,8 @@ export function ProductSeoHeader({
   title,
   description,
   detail,
+  coverImageUrl,
+  coverImageAlt,
   showProductNav = true,
   compact = false,
   collapsible,
@@ -41,11 +46,27 @@ export function ProductSeoHeader({
   const bodyClass = compact
     ? "text-sm leading-5 text-muted sm:text-[15px] sm:leading-6"
     : "section-lead";
+  const cover = coverImageUrl?.trim() || "";
 
   return (
     <header className={`border-b border-border bg-white ${className}`.trim()}>
-      <Container className={compact ? "px-4 py-3 sm:px-6 sm:py-4" : "py-8 sm:py-10"}>
+      <Container className={compact ? "py-3 sm:py-4" : "py-8 sm:py-10"}>
         <div className={compact ? "mx-auto max-w-5xl" : "mx-auto max-w-3xl"}>
+          {cover ? (
+            <div
+              className="mb-4 overflow-hidden rounded-xl border border-border bg-violet-950/[0.04] sm:mb-5"
+              data-testid="product-seo-cover"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={cover}
+                alt={coverImageAlt?.trim() || title}
+                className="mx-auto max-h-72 w-full object-contain sm:max-h-80"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+          ) : null}
           <h1
             className={
               compact

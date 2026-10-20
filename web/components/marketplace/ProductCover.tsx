@@ -1,13 +1,15 @@
 "use client";
 
+import { generatedBookCoverDataUrl } from "@/lib/marketplace/generatedBookCover";
 import { cn } from "@/lib/utils";
 import { BookOpen, FileText, LayoutTemplate, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type ProductCoverProps = {
   src?: string | null;
   title: string;
   category?: string;
+  productType?: string | null;
   className?: string;
   /** Tailwind aspect class, default portrait card cover. */
   aspectClassName?: string;
@@ -33,7 +35,25 @@ function fallbackTone(category?: string): string {
   if (c.includes("software") || c.includes("developer")) return "from-indigo-800 to-slate-900";
   if (c.includes("course") || c.includes("training")) return "from-violet-700 to-stone-900";
   if (c.includes("creator")) return "from-violet-800 to-emerald-950";
+  if (c.includes("education") || c.includes("ebook") || c.includes("book")) {
+    return "from-emerald-800 to-slate-900";
+  }
   return "from-violet-800 to-indigo-950";
+}
+
+export function isBookLikeProduct(opts?: {
+  category?: string | null;
+  productType?: string | null;
+}): boolean {
+  const category = (opts?.category ?? "").toLowerCase();
+  const productType = (opts?.productType ?? "").toLowerCase();
+  return (
+    productType.includes("ebook") ||
+    productType.includes("book") ||
+    category.includes("education") ||
+    category.includes("ebook") ||
+    category.includes("book")
+  );
 }
 
 function CoverFallback({
@@ -81,17 +101,28 @@ export function ProductCover({
   src,
   title,
   category,
+  productType,
   className,
   aspectClassName = "aspect-[4/5]",
   fit = "cover",
 }: ProductCoverProps) {
   const [broken, setBroken] = useState(false);
+  const bookLike = isBookLikeProduct({ category, productType });
+  const generatedCover = useMemo(
+    () =>
+      bookLike
+        ? generatedBookCoverDataUrl({ title, category, productType })
+        : null,
+    [bookLike, title, category, productType]
+  );
 
   useEffect(() => {
     setBroken(false);
   }, [src]);
 
-  if (!src || broken) {
+  const displaySrc = !src || broken ? generatedCover : src;
+
+  if (!displaySrc) {
     return (
       <CoverFallback
         title={title}
@@ -102,28 +133,37 @@ export function ProductCover({
     );
   }
 
+  const isGenerated = !src || broken;
+  const imageFit =
+    isGenerated ? "cover" : fit === "contain" || bookLike ? "contain" : "cover";
+
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl bg-violet-950/5",
+        "relative overflow-hidden rounded-xl border border-border/70",
+        isGenerated ? "bg-emerald-950" : "bg-zinc-50 dark:bg-zinc-900/40",
         aspectClassName,
         className
       )}
-      data-cover-state="image"
+      data-cover-state={isGenerated ? "generated" : "image"}
+      data-testid="product-cover-image"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={src}
-        alt=""
+        src={displaySrc}
+        alt={`${title} cover`}
         loading="lazy"
         decoding="async"
+        referrerPolicy="no-referrer"
         className={cn(
           "absolute inset-0 h-full w-full",
-          fit === "contain" ? "object-contain" : "object-cover"
+          imageFit === "contain" ? "object-contain p-1" : "object-cover"
         )}
         onError={() => {
-          console.info("[marketplace-cover] image failed", { title, src });
-          setBroken(true);
+          if (src && !broken) {
+            console.info("[marketplace-cover] image failed", { title, src });
+            setBroken(true);
+          }
         }}
       />
     </div>

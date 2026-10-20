@@ -87,7 +87,7 @@ function AutomationPageInner() {
   ];
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
+    <div className="mx-auto w-full min-w-0 max-w-5xl space-y-8">
       <header>
         <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-violet-500/10 px-3 py-1 text-sm font-medium text-violet-700">
           <Zap className="h-4 w-4" aria-hidden />

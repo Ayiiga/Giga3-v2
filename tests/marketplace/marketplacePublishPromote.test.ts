@@ -93,6 +93,13 @@ describe("marketplace promotional sharing", () => {
     expect(sell).toContain("ProductPromotionPanel");
     expect(sell).toContain("previewToc");
     expect(itemPage).toContain("coverImageUrl");
+    expect(itemPage).toContain("coverImageUrl={bundle.listing.coverImageUrl}");
+    const itemClient = readFileSync(
+      resolve(__dirname, "../../web/components/marketplace/MarketplaceItemClient.tsx"),
+      "utf8"
+    );
+    expect(itemClient).toContain("Book cover");
+    expect(itemClient).toContain("isBookLikeProduct");
     expect(meta).toContain("imageOverride");
   });
 });
