@@ -1208,6 +1208,40 @@ button:focus-visible {
   padding: 0.85rem 1rem;
 }
 
+.exam-session-reward {
+  margin: 0.75rem 0 0;
+  border-radius: 0.85rem;
+  border: 1px solid color-mix(in srgb, #facc15 55%, #86efac);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #fef9c3 88%, #ffffff) 0%,
+    color-mix(in srgb, #dcfce7 80%, #ffffff) 100%
+  );
+  padding: 0.65rem 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--exam-green);
+  animation: exam-reward-pop 0.45s ease-out;
+}
+
+@keyframes exam-reward-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(0.35rem) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exam-session-reward {
+    animation: none;
+  }
+}
+
 .exam-session-footer {
   display: grid;
   grid-template-columns: 1fr 1fr;

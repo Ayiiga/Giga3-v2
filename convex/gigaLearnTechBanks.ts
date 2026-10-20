@@ -5,6 +5,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
+import { isSubscriptionActive } from "./creditsConfig";
 import { sessionArgs } from "./validators";
 import {
   getTechBankQuestionById,
@@ -17,6 +18,11 @@ import {
 import { getTechCourseMeta, listTechCourseMeta } from "../web/lib/gigalearn/academy/techBanks/techBankMeta";
 import { getBuiltinAcademyCourse } from "../web/lib/gigalearn/academy/courseCatalog";
 import type { TechPracticeMode } from "../web/lib/gigalearn/academy/techBanks/techBankTypes";
+import {
+  clampPracticeQuestionCount,
+  hasExamPracticePremiumAccess,
+  isExamPracticeCourseSlug,
+} from "../web/lib/gigalearn/examPractice/practiceLimits";
 
 const MODE_VALIDATOR = v.union(
   v.literal("learn"),
@@ -52,7 +58,8 @@ function parseIds(raw: string): string[] {
   try {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.map((x) => String(x).slice(0, 120)).filter(Boolean).slice(0, 50);
+    // Exam Practice premium packs may request up to 500 items.
+    return parsed.map((x) => String(x).slice(0, 120)).filter(Boolean).slice(0, 500);
   } catch {
     return [];
   }
@@ -200,9 +207,37 @@ export const startTechPracticeSession = mutation({
       }
     }
 
-    const defaultCount =
-      mode === "learn" ? 10 : mode === "timed" ? 20 : mode === "practice_test" ? 20 : 10;
-    const count = args.count ?? defaultCount;
+    const defaultCount = isExamPracticeCourseSlug(slug)
+      ? mode === "learn"
+        ? 10
+        : 50
+      : mode === "learn"
+        ? 10
+        : mode === "timed"
+          ? 20
+          : mode === "practice_test"
+            ? 20
+            : 10;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    const premiumAccess = hasExamPracticePremiumAccess({
+      subscriptionActive: isSubscriptionActive(
+        user?.subscriptionPlan ?? "free",
+        user?.subscriptionExpiresAt
+      ),
+      credits: user?.credits ?? 0,
+      isPremium: false,
+    });
+    const bankSize = getTechBankQuestions(slug).length;
+    const count = clampPracticeQuestionCount({
+      requested: args.count ?? defaultCount,
+      courseSlug: slug,
+      premiumAccess,
+      bankSize,
+    });
     const seed = Date.now() ^ Math.floor(Math.random() * 1e9);
     const questionIds = selectTechQuestionIds({
       courseSlug: slug,

@@ -14,10 +14,10 @@ import { scoreQuiz } from "../../web/lib/gigalearn/examPractice/quizEngine";
 const ROOT = resolve(__dirname, "../..");
 
 describe("Teacher Promotion free practice bank", () => {
-  it("ships exactly 30 orientation questions with A–D options and explanations", () => {
+  it("ships exactly 50 orientation questions with A–D options and explanations", () => {
     const qs = getPromotionFreeQuestions();
-    expect(PROMOTION_FREE_SET_META.questionCount).toBe(30);
-    expect(qs).toHaveLength(30);
+    expect(PROMOTION_FREE_SET_META.questionCount).toBe(50);
+    expect(qs).toHaveLength(50);
     expect(PROMOTION_FREE_SET_META.provenanceNote.toLowerCase()).toMatch(/not an official/);
     for (const q of qs) {
       expect(q.options.A && q.options.B && q.options.C && q.options.D).toBeTruthy();
@@ -31,9 +31,9 @@ describe("Teacher Promotion free practice bank", () => {
     const qs = getPromotionFreeQuestions();
     const allCorrect = Object.fromEntries(qs.map((q) => [q.id, q.correct]));
     expect(scoreQuiz(qs, allCorrect)).toEqual({
-      correct: 30,
-      answered: 30,
-      total: 30,
+      correct: 50,
+      answered: 50,
+      total: 50,
       percent: 100,
     });
     const none = scoreQuiz(qs, {});
@@ -51,7 +51,7 @@ describe("Exam Practice quiz UI wiring", () => {
       resolve(ROOT, "web/components/gigalearn/exam/ExamPracticeCentre.tsx"),
       "utf8"
     );
-    expect(ui).toContain("Start Free 30 Questions");
+    expect(ui).toContain("Start Free {EXAM_PRACTICE_FREE_QUESTION_COUNT} Questions");
     expect(ui).toContain("promotionFreePractice");
     expect(ui).toContain("exam-ghana-stripe");
     expect(ui).toContain("Paystack");
@@ -77,6 +77,7 @@ describe("Exam Practice quiz UI wiring", () => {
     expect(session).toContain("exam-session-option--wrong");
     expect(session).toContain("Previous");
     expect(session).toContain("Next");
+    expect(session).toContain("rewardForCorrectAnswer");
   });
 
   it("keeps BECE centre free of promotion question stems", () => {

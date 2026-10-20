@@ -8,13 +8,13 @@
 import type { ExamPracticeQuestion, ExamPracticeSetMeta } from "./types";
 
 export const PROMOTION_FREE_SET_META: ExamPracticeSetMeta = {
-  id: "promotion-free-30",
-  title: "Free 30-question practice",
+  id: "promotion-free-50",
+  title: "Free 50-question practice",
   subtitle:
-    "Practise the free 30 questions, see your score, and repeat them as often as you need.",
+    "Practise the free 50 questions, see your score, earn praise for correct answers, and repeat as often as you need.",
   freeLabel: "Free practice",
-  questionCount: 30,
-  durationMinutes: 30,
+  questionCount: 50,
+  durationMinutes: 50,
   provenanceNote:
     "GigaLearn orientation practice — not an official Ghana Education Service examination paper.",
   category: "teacher_promotion",
@@ -470,6 +470,306 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     correct: "A",
     explanation:
       "GigaLearn free promotion practice is an orientation / revision format. Official promotion exams are administered by the appropriate authorities.",
+  },
+  {
+    id: "p31",
+    topic: "Curriculum",
+    audience: "Both",
+    stem: "In Ghana’s pre-tertiary system, the Standards-Based Curriculum emphasises:",
+    options: {
+      A: "Competencies, core values, and learner-centred practice",
+      B: "Only memorising colonial history dates",
+      C: "Removing mathematics from basic schools",
+      D: "Ending continuous assessment",
+    },
+    correct: "A",
+    explanation:
+      "The Standards-Based Curriculum focuses on competencies, values, and active learning rather than rote recall alone.",
+  },
+  {
+    id: "p32",
+    topic: "Assessment",
+    audience: "Both",
+    stem: "Formative assessment is best described as assessment that:",
+    options: {
+      A: "Guides teaching and learning while instruction is ongoing",
+      B: "Is used only after school closure",
+      C: "Replaces all end-of-term exams automatically",
+      D: "Is illegal in public schools",
+    },
+    correct: "A",
+    explanation:
+      "Formative assessment provides feedback during learning so teachers and learners can adjust practice.",
+  },
+  {
+    id: "p33",
+    topic: "Inclusive education",
+    audience: "Both",
+    stem: "Inclusive education primarily aims to:",
+    options: {
+      A: "Ensure learners with diverse needs can participate meaningfully in school",
+      B: "Exclude learners who need support",
+      C: "Stop teaching science",
+      D: "Limit enrolment to urban schools only",
+    },
+    correct: "A",
+    explanation:
+      "Inclusive education seeks participation, access, and support for learners with diverse abilities and backgrounds.",
+  },
+  {
+    id: "p34",
+    topic: "School leadership",
+    audience: "Both",
+    stem: "Instructional leadership by a headteacher most directly focuses on:",
+    options: {
+      A: "Improving teaching quality and learner outcomes",
+      B: "Personal political campaigns",
+      C: "Closing the library permanently",
+      D: "Ignoring teacher professional development",
+    },
+    correct: "A",
+    explanation:
+      "Instructional leaders prioritise curriculum, teaching practice, and learning results.",
+  },
+  {
+    id: "p35",
+    topic: "Professional ethics",
+    audience: "Both",
+    stem: "A teacher who keeps confidential learner information private is demonstrating:",
+    options: {
+      A: "Professional ethics and duty of care",
+      B: "Neglect of duty",
+      C: "Examination malpractice",
+      D: "Financial mismanagement",
+    },
+    correct: "A",
+    explanation:
+      "Protecting confidential learner data is a core ethical responsibility for educators.",
+  },
+  {
+    id: "p36",
+    topic: "Classroom management",
+    audience: "Both",
+    stem: "Establishing clear routines at the start of lessons mainly helps to:",
+    options: {
+      A: "Reduce wasted time and support orderly learning",
+      B: "Increase bullying",
+      C: "Remove assessment",
+      D: "Replace lesson planning",
+    },
+    correct: "A",
+    explanation:
+      "Predictable routines help learners settle quickly and maximise instructional time.",
+  },
+  {
+    id: "p37",
+    topic: "Education policy",
+    audience: "Both",
+    stem: "Free Senior High School (Free SHS) policy in Ghana primarily sought to:",
+    options: {
+      A: "Expand access to secondary education by reducing cost barriers",
+      B: "Abolish basic education",
+      C: "Privatise all kindergartens only",
+      D: "End teacher recruitment forever",
+    },
+    correct: "A",
+    explanation:
+      "Free SHS was introduced to widen access to secondary schooling by reducing household cost barriers.",
+  },
+  {
+    id: "p38",
+    topic: "ICT in education",
+    audience: "Both",
+    stem: "Using ICT responsibly in teaching should prioritise:",
+    options: {
+      A: "Pedagogy, learner safety, and equitable access",
+      B: "Only downloading entertainment videos",
+      C: "Ignoring data privacy",
+      D: "Replacing all teachers immediately",
+    },
+    correct: "A",
+    explanation:
+      "Effective ICT use supports learning goals while protecting learners and addressing access gaps.",
+  },
+  {
+    id: "p39",
+    topic: "Child protection",
+    audience: "Both",
+    stem: "When a teacher suspects a learner may be at risk of harm, the professional response is to:",
+    options: {
+      A: "Follow child-protection reporting procedures through the appropriate channels",
+      B: "Ignore the concern",
+      C: "Publish the learner’s name on social media",
+      D: "Punish the whole class collectively",
+    },
+    correct: "A",
+    explanation:
+      "Child protection requires timely reporting through established school and authority channels.",
+  },
+  {
+    id: "p40",
+    topic: "Record keeping",
+    audience: "Both",
+    stem: "Accurate attendance and assessment records help schools mainly to:",
+    options: {
+      A: "Monitor learner progress and account for school activity",
+      B: "Hide underperformance permanently",
+      C: "Avoid communicating with parents",
+      D: "Replace the national curriculum",
+    },
+    correct: "A",
+    explanation:
+      "Good records support monitoring, accountability, and communication about learner progress.",
+  },
+  {
+    id: "p41",
+    topic: "Differentiated instruction",
+    audience: "Both",
+    stem: "Differentiated instruction means a teacher:",
+    options: {
+      A: "Adjusts content, process, or product to meet varied learner needs",
+      B: "Teaches only the fastest learners",
+      C: "Uses one worksheet forever without review",
+      D: "Stops assessing writing",
+    },
+    correct: "A",
+    explanation:
+      "Differentiation adapts teaching so learners at different levels can succeed with appropriate challenge and support.",
+  },
+  {
+    id: "p42",
+    topic: "Community",
+    audience: "Both",
+    stem: "Strong school–community partnerships typically improve:",
+    options: {
+      A: "Learner support, attendance, and shared responsibility for education",
+      B: "Isolation of the school from parents",
+      C: "Elimination of PTA engagement",
+      D: "Automatic promotion without learning",
+    },
+    correct: "A",
+    explanation:
+      "When families and communities engage, learners often receive better support and schools gain trust.",
+  },
+  {
+    id: "p43",
+    topic: "Literacy",
+    audience: "Both",
+    stem: "Early grade literacy programmes are important because they:",
+    options: {
+      A: "Build foundational reading skills that support later learning",
+      B: "Replace mathematics forever",
+      C: "Are only for university students",
+      D: "Discourage reading at home",
+    },
+    correct: "A",
+    explanation:
+      "Foundational literacy in early grades underpins success across subjects later on.",
+  },
+  {
+    id: "p44",
+    topic: "Time management",
+    audience: "Both",
+    stem: "A well-prepared scheme of work mainly helps teachers to:",
+    options: {
+      A: "Pace syllabus coverage across the term",
+      B: "Avoid teaching entirely",
+      C: "Cancel continuous assessment",
+      D: "Ignore learning objectives",
+    },
+    correct: "A",
+    explanation:
+      "Schemes of work organise topics and time so syllabus goals can be met systematically.",
+  },
+  {
+    id: "p45",
+    topic: "Feedback",
+    audience: "Both",
+    stem: "Effective written feedback on learner work should be:",
+    options: {
+      A: "Specific, timely, and actionable",
+      B: "Vague and delayed for months",
+      C: "Only a red mark with no guidance",
+      D: "Shared publicly to shame learners",
+    },
+    correct: "A",
+    explanation:
+      "Useful feedback tells learners what went well and what to improve next.",
+  },
+  {
+    id: "p46",
+    topic: "Gender equity",
+    audience: "Both",
+    stem: "Promoting gender equity in schools includes:",
+    options: {
+      A: "Equal opportunities and respectful treatment for girls and boys",
+      B: "Barring girls from science",
+      C: "Assigning leadership only by stereotype",
+      D: "Ignoring harassment complaints",
+    },
+    correct: "A",
+    explanation:
+      "Gender-responsive schooling expands opportunity and safety for all learners.",
+  },
+  {
+    id: "p47",
+    topic: "Resource management",
+    audience: "Both",
+    stem: "Transparent management of school resources (books, funds, materials) is important because it:",
+    options: {
+      A: "Builds trust and ensures resources reach learners",
+      B: "Encourages misuse without records",
+      C: "Is optional for public accountability",
+      D: "Replaces teaching standards",
+    },
+    correct: "A",
+    explanation:
+      "Clear records and fair allocation help resources support teaching and learning.",
+  },
+  {
+    id: "p48",
+    topic: "Continuous professional development",
+    audience: "Both",
+    stem: "Teachers engage in continuous professional development mainly to:",
+    options: {
+      A: "Update knowledge, skills, and classroom practice",
+      B: "Avoid classrooms permanently",
+      C: "Stop using lesson notes",
+      D: "Eliminate collaboration with peers",
+    },
+    correct: "A",
+    explanation:
+      "Ongoing professional learning helps teachers stay current and improve outcomes.",
+  },
+  {
+    id: "p49",
+    topic: "Examination integrity",
+    audience: "Both",
+    stem: "Helping a learner cheat in a high-stakes examination is:",
+    options: {
+      A: "Examination malpractice and unprofessional conduct",
+      B: "Recommended instructional strategy",
+      C: "Required by the curriculum",
+      D: "A form of inclusive education",
+    },
+    correct: "A",
+    explanation:
+      "Malpractice undermines fairness and violates professional standards.",
+  },
+  {
+    id: "p50",
+    topic: "GigaLearn practice",
+    audience: "Both",
+    stem: "Larger Teacher Promotion or BECE practice packs on GigaLearn (beyond free orientation) typically require:",
+    options: {
+      A: "A signed-in account with an active subscription or purchased credits",
+      B: "Unofficial Mobile Money side payments outside Giga3",
+      C: "No sign-in and unlimited offline answer keys forever",
+      D: "Fabricated official WAEC papers",
+    },
+    correct: "A",
+    explanation:
+      "GigaLearn keeps free orientation practice available, while larger server-graded packs use your Giga3 subscription or credits — never unofficial MoMo channels.",
   },
 ] as const;
 

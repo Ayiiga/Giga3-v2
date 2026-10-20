@@ -13,6 +13,11 @@ import robotics from "@/lib/gigalearn/academy/techBanks/robotics.json";
 import websitePwa from "@/lib/gigalearn/academy/techBanks/website-pwa.json";
 import becePrep from "@/lib/gigalearn/examPractice/banks/bece-prep.json";
 import teacherPromotion from "@/lib/gigalearn/examPractice/banks/teacher-promotion.json";
+import {
+  EXAM_PRACTICE_PREMIUM_QUESTION_COUNT,
+  TECH_HUB_DEFAULT_MAX_COUNT,
+  isExamPracticeCourseSlug,
+} from "@/lib/gigalearn/examPractice/practiceLimits";
 
 type BankFile = {
   bankId: string;
@@ -114,7 +119,12 @@ export function selectTechQuestionIds(args: {
   seed: number;
   revisionQuestionIds?: string[];
 }): string[] {
-  const count = Math.max(1, Math.min(50, Math.floor(args.count)));
+  // Exam Practice packs allow up to 500; Technology Hub courses stay within 50.
+  // Entitlement clamp (free 50 vs premium 500) is enforced in startTechPracticeSession.
+  const hardMax = isExamPracticeCourseSlug(args.courseSlug)
+    ? EXAM_PRACTICE_PREMIUM_QUESTION_COUNT
+    : TECH_HUB_DEFAULT_MAX_COUNT;
+  const count = Math.max(1, Math.min(hardMax, Math.floor(args.count)));
   const rand = mulberry32(args.seed);
 
   if (args.mode === "revision" && args.revisionQuestionIds?.length) {

@@ -72,7 +72,7 @@ describe("Academy visual theme", () => {
     expect(exam).toContain("exam-landing-banner");
     expect(exam).toContain("exam-landing-banner--bece");
     expect(exam).toContain("exam-ghana-stripe");
-    expect(exam).toContain("Start Free 30 Questions");
+    expect(exam).toContain("Start Free {EXAM_PRACTICE_FREE_QUESTION_COUNT} Questions");
     expect(exam).toContain('data-testid="bece-practice-ready"');
     expect(exam).toContain('data-testid="teacher-promotion-bank-ready"');
     expect(exam).not.toContain("0248");

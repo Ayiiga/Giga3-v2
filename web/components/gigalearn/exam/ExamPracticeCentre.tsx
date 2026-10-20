@@ -1,5 +1,6 @@
 "use client";
 
+import { ExamPracticeShareButton } from "@/components/gigalearn/exam/ExamPracticeShareButton";
 import { LearningProgressRing } from "@/components/gigalearn/ui/LearningProgressRing";
 import { ButtonLink } from "@/components/ui/Button";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
@@ -20,6 +21,11 @@ import {
   TEACHER_PROMOTION_SOURCE_INVENTORY,
   answerStatusLabel,
 } from "@/lib/gigalearn/examPractice/centreConfig";
+import {
+  EXAM_PRACTICE_FREE_QUESTION_COUNT,
+  EXAM_PRACTICE_PREMIUM_QUESTION_COUNT,
+} from "@/lib/gigalearn/examPractice/practiceLimits";
+import { loadLocalExamPracticeResults } from "@/lib/gigalearn/examPractice/localProgress";
 import { PROMOTION_FREE_SET_META } from "@/lib/gigalearn/examPractice/promotionOrientationBank";
 import {
   learnerEventSessionKey,
@@ -41,7 +47,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 function welcomeDisplayName(): string {
   const email = getUserEmail();
@@ -225,7 +231,7 @@ function BeceCentreCard() {
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <Link href={EXAM_PRACTICE_DESTINATIONS.becePractice} className="exam-landing-cta">
               <Play className="h-4 w-4 fill-current" aria-hidden />
-              Open BECE practice
+              Start free {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions
             </Link>
             <Link
               href={EXAM_PRACTICE_DESTINATIONS.beceTimed}
@@ -235,12 +241,22 @@ function BeceCentreCard() {
               Timed practice
             </Link>
             <Link
+              href={EXAM_PRACTICE_DESTINATIONS.becePracticeFull}
+              className="exam-landing-cta exam-landing-cta--ghost"
+              style={{ color: "#4C1D95", background: "#F5F3FF", borderColor: "#DDD6FE" }}
+            >
+              Full pack (up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT})
+            </Link>
+            <Link
               href={EXAM_PRACTICE_DESTINATIONS.beceCourse}
               className="exam-landing-cta exam-landing-cta--ghost"
               style={{ color: "#4C1D95", background: "#F5F3FF", borderColor: "#DDD6FE" }}
             >
               Enrol / course page
             </Link>
+          </div>
+          <div className="mt-3">
+            <ExamPracticeShareButton kind="bece" label="Share BECE practice" />
           </div>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row">
             <StudentLearnFromExamLink />
@@ -253,7 +269,9 @@ function BeceCentreCard() {
             </Link>
           </div>
           <p className="mt-3 text-xs text-slate-500">
-            AI-generated practice is labelled separately and is not an official WAEC/BECE paper bank.
+            Free sessions use {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions. Subscription or purchased
+            credits unlock up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT} (capped by bank size). Not an
+            official WAEC/BECE paper bank.
           </p>
         </article>
       ) : (
@@ -317,7 +335,7 @@ function TeacherPromotionCentreCard() {
           ) : null}
           <p className="text-sm text-white/90">
             {signedIn
-              ? "Your free 30-question practice is ready."
+              ? `Your free ${EXAM_PRACTICE_FREE_QUESTION_COUNT}-question practice is ready.`
               : "Independent practice for Ghana Education Service promotion-exam preparation."}
           </p>
           <p className="text-xs text-white/75">
@@ -345,8 +363,14 @@ function TeacherPromotionCentreCard() {
           className="exam-landing-cta mt-4"
         >
           <Play className="h-4 w-4 fill-current" aria-hidden />
-          Start Free 30 Questions
+          Start Free {EXAM_PRACTICE_FREE_QUESTION_COUNT} Questions
         </Link>
+        <div className="mt-2">
+          <ExamPracticeShareButton
+            kind="teacher_promotion"
+            label="Share Teacher Promotion practice"
+          />
+        </div>
         <p className="mt-2 text-xs text-slate-500">{PROMOTION_FREE_SET_META.provenanceNote}</p>
       </article>
 
@@ -378,13 +402,23 @@ function TeacherPromotionCentreCard() {
               Learn mode
             </Link>
             <Link
+              href={EXAM_PRACTICE_DESTINATIONS.teacherPromotionPracticeFull}
+              className="exam-landing-cta exam-landing-cta--ghost"
+            >
+              Full pack (up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT})
+            </Link>
+            <Link
               href={EXAM_PRACTICE_DESTINATIONS.teacherPromotionCourse}
               className="exam-landing-cta exam-landing-cta--ghost"
             >
               Enrol / course page
             </Link>
           </div>
-          <p className="mt-2 text-xs text-slate-500">{AD2_STUDY_GUIDE_SUMMARY.note}</p>
+          <p className="mt-2 text-xs text-slate-500">
+            Free sessions use {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions. Subscription or purchased
+            credits unlock up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT} from the imported bank.{" "}
+            {AD2_STUDY_GUIDE_SUMMARY.note}
+          </p>
         </article>
       ) : null}
 
@@ -420,7 +454,14 @@ function TeacherPromotionCentreCard() {
         <div className="mt-4 space-y-2 rounded-xl bg-[#FFFBEB] px-3 py-3 text-sm text-[#78350F]">
           <p className="font-semibold">What you get on Giga3</p>
           <ul className="list-inside list-disc space-y-1 text-[#92400E]">
-            <li>Free 30-question orientation practice (repeat anytime)</li>
+            <li>
+              Free {EXAM_PRACTICE_FREE_QUESTION_COUNT}-question orientation practice (repeat anytime)
+            </li>
+            <li>
+              Up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT} practice questions with subscription or
+              credits
+            </li>
+            <li>Rewards and progress on correct answers</li>
             <li>Teacher hub AI practice tools</li>
             <li>Academy assessments when enrolled</li>
             <li>Paystack billing in GHS — no unofficial MoMo activation</li>
@@ -522,6 +563,39 @@ function AiStudyTutorCard() {
   );
 }
 
+function LocalExamProgressBlock() {
+  const [rows, setRows] = useState(() =>
+    typeof window === "undefined" ? [] : loadLocalExamPracticeResults()
+  );
+
+  useEffect(() => {
+    setRows(loadLocalExamPracticeResults());
+  }, []);
+
+  if (rows.length === 0) return null;
+
+  return (
+    <div className="mt-4" data-testid="local-exam-progress">
+      <h3 className="text-sm font-bold text-slate-800">Recent Exam Practice (this device)</h3>
+      <ul className="mt-2 space-y-2" aria-label="Local exam practice results">
+        {rows.slice(0, 5).map((row) => (
+          <li
+            key={`${row.setId}-${row.finishedAt}`}
+            className="academy-visual-tile flex flex-wrap items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm"
+          >
+            <span className="min-w-0 truncate font-medium">
+              {row.category === "bece" ? "BECE" : "Teacher Promotion"} · {row.setId}
+            </span>
+            <span className="academy-visual-muted text-xs">
+              {row.percent}% · {row.correct}/{row.total}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function MyPerformanceCard() {
   const sessionToken = getSessionToken();
   const progress = useQuery(
@@ -550,8 +624,9 @@ function MyPerformanceCard() {
         </h2>
         <p className="academy-visual-muted mt-2 text-sm">
           Sign in to see your real GigaLearn practice and Academy assessment history. We do not
-          invent scores or streaks.
+          invent scores or streaks. Free orientation results can still appear on this device below.
         </p>
+        <LocalExamProgressBlock />
         <div className="mt-4 rounded-xl border border-[var(--av-border)] bg-[var(--av-surface)] p-3">
           <ProductSignInPrompt
             productName="GigaLearn Exam Practice"
@@ -628,6 +703,8 @@ function MyPerformanceCard() {
           <dd className="mt-1 text-xl font-bold">{attempts.length}</dd>
         </div>
       </dl>
+
+      <LocalExamProgressBlock />
 
       {progress.length === 0 && attempts.length === 0 && enrolments.length === 0 ? (
         <p
