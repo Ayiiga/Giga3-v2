@@ -61,7 +61,7 @@ describe("GigaEdits P0 UX reliability", () => {
   });
 
   it("marketing copy does not claim account cloud project backup", () => {
-    expect(GIGAEDITS_PAGE.giga3Connection).toMatch(/on your device/i);
+    expect(GIGAEDITS_PAGE.giga3Connection).toMatch(/saved in the browser/i);
     expect(GIGAEDITS_PAGE.giga3Connection).not.toMatch(/save projects to your account/i);
   });
 

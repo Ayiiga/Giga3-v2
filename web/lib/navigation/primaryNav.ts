@@ -1,10 +1,11 @@
 import { PRIMARY_NAV_PRODUCT_SCOPE } from "@/lib/navigation/editsDestinations";
+import { isRetiredProductPath } from "@/lib/navigation/retiredProducts";
 import { siteConfig } from "@/lib/site";
 
 /** Re-export scope notes for docs and UI copy. */
 export { PRIMARY_NAV_PRODUCT_SCOPE };
 
-export type PrimaryNavTabId = "home" | "learn" | "create" | "social" | "market";
+export type PrimaryNavTabId = "home" | "learn" | "practice" | "social" | "market";
 
 export type PrimaryNavTab = {
   id: PrimaryNavTabId;
@@ -13,7 +14,7 @@ export type PrimaryNavTab = {
   match: (pathname: string) => boolean;
 };
 
-/** Routes where the global 4-tab nav must not appear (login, share, payment, etc.). */
+/** Routes where the global primary nav must not appear (login, share, payment, etc.). */
 const HIDDEN_PREFIXES = ["/chat/login", "/chat/share", "/payment/"];
 
 function normalizePath(pathname: string): string {
@@ -24,6 +25,10 @@ function normalizePath(pathname: string): string {
     : withoutQuery;
 }
 
+/**
+ * Education-first primary destinations (Phase 2).
+ * Create / Media Studio / GigaEdits are no longer primary tabs.
+ */
 export const PRIMARY_NAV_TABS: PrimaryNavTab[] = [
   {
     id: "home",
@@ -37,18 +42,20 @@ export const PRIMARY_NAV_TABS: PrimaryNavTab[] = [
   {
     id: "learn",
     label: "Learn",
-    href: siteConfig.links.gigalearn,
-    match: (pathname) => normalizePath(pathname).startsWith("/gigalearn"),
-  },
-  {
-    id: "create",
-    label: "Create",
-    /** Default Create destination when no explicit Media Studio / GigaEdits selection. */
-    href: siteConfig.links.gigaedit,
+    href: siteConfig.links.gigalearnAcademy,
     match: (pathname) => {
       const path = normalizePath(pathname);
-      return path.startsWith("/media") || path.startsWith("/gigaedit");
+      if (!path.startsWith("/gigalearn")) return false;
+      // Exam Practice has its own tab.
+      if (path.startsWith("/gigalearn/exam")) return false;
+      return true;
     },
+  },
+  {
+    id: "practice",
+    label: "Practice",
+    href: siteConfig.links.gigalearnExam,
+    match: (pathname) => normalizePath(pathname).startsWith("/gigalearn/exam"),
   },
   {
     id: "social",
@@ -69,9 +76,10 @@ export function isPrimaryNavHiddenPath(pathname: string): boolean {
   return HIDDEN_PREFIXES.some((prefix) => path.startsWith(prefix));
 }
 
-/** True when the current URL is one of the four primary product destinations. */
+/** True when the current URL is one of the primary product destinations. */
 export function isPrimaryNavRoute(pathname: string): boolean {
   if (isPrimaryNavHiddenPath(pathname)) return false;
+  if (isRetiredProductPath(pathname)) return false;
   return PRIMARY_NAV_TABS.some((tab) => tab.match(pathname));
 }
 
@@ -82,7 +90,7 @@ export function resolvePrimaryNavTab(pathname: string): PrimaryNavTabId | null {
 }
 
 /**
- * Desktop left rail: same four destinations, but chat already has a sidebar on large screens.
+ * Desktop left rail: same destinations, but chat already has a sidebar on large screens.
  */
 export function shouldShowDesktopRail(pathname: string): boolean {
   if (!isPrimaryNavRoute(pathname)) return false;

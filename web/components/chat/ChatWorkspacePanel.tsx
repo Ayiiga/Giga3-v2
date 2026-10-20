@@ -114,7 +114,7 @@ function ChatWorkspacePanelComponent({
       const url = buildMediaStudioUrl(template);
       router.push(url);
     } catch {
-      onError("Could not open Media Studio. Try again or visit /media manually.");
+      onError("Could not open image tools. Try again from chat, or open /media?continue=1.");
       setMediaNavigating(null);
     }
   }

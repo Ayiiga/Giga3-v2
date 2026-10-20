@@ -378,7 +378,7 @@ function ChatShellInner({
           creationIntakeRef.current = null;
         }
 
-        // Open GigaSocial / GigaEdits / GigaLearn / Media Studio (and other apps) locally.
+        // Open Academy / Exam Practice / GigaSocial / Marketplace (and other apps) locally.
         if (trimmed && !attachments?.length) {
           const product = matchProductRedirectIntent(trimmed);
           if (product) {

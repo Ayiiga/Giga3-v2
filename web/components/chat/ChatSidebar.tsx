@@ -107,7 +107,7 @@ type WorkspaceNavItem =
       hint?: string;
     };
 
-/** Workspace apps: GigaSocial → GigaEdits → GigaLearn → Media Studio, then remaining tools. */
+/** Workspace apps: Academy → Exam Practice → Tech Hub → GigaSocial → Blog, then remaining tools. */
 const PRIMARY_NAV: WorkspaceNavItem[] = [
   ...CHAT_WORKSPACE_PRIMARY_APPS.map((app) => ({
     id: app.id,

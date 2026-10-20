@@ -4,14 +4,21 @@ import { describe, expect, it } from "vitest";
 import { CHAT_WORKSPACE_PRIMARY_APPS } from "../../web/lib/chat/workspaceApps";
 
 describe("chat workspace navigation", () => {
-  it("lists primary apps in GigaSocial → GigaEdits → GigaLearn → Media Studio order", () => {
+  it("lists primary apps in education-first order", () => {
     expect(CHAT_WORKSPACE_PRIMARY_APPS.map((app) => app.label)).toEqual([
+      "GigaLearn Academy",
+      "Exam Practice",
+      "Technology Hub",
       "GigaSocial",
-      "GigaEdits",
-      "GigaLearn",
-      "Media Studio",
       "Giga3 Blog",
     ]);
+  });
+
+  it("does not advertise Media Studio or GigaEdits as workspace apps", () => {
+    const labels = CHAT_WORKSPACE_PRIMARY_APPS.map((app) => app.label);
+    expect(labels).not.toContain("Media Studio");
+    expect(labels).not.toContain("GigaEdits");
+    expect(labels).not.toContain("GigaEdit");
   });
 
   it("builds sidebar workspace nav from the shared primary app list", () => {

@@ -51,15 +51,18 @@ describe("homeContinuity", () => {
     expect(anon.title).toBe("Good evening");
   });
 
-  it("exposes five destinations including Chat as home", () => {
+  it("exposes five education-first destinations including Chat as home", () => {
     expect(HOME_DESTINATIONS.map((d) => d.id)).toEqual([
       "home",
       "learn",
-      "create",
+      "practice",
       "social",
       "market",
     ]);
     expect(HOME_DESTINATIONS[0].href).toBe("/chat");
+    expect(HOME_DESTINATIONS.find((d) => d.id === "practice")?.href).toContain(
+      "/gigalearn/exam"
+    );
   });
 
   it("returns starter prompts for quick actions", () => {

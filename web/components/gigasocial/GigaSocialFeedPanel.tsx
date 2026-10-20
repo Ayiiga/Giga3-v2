@@ -1189,10 +1189,6 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
           onSelectMode={(mode) => {
             const source = remixStudioPost;
             setRemixStudioPost(null);
-            if (mode === "ai-subtitles") {
-              window.location.assign("/gigaedit/?tab=video");
-              return;
-            }
             openComposer("remix", source, { remixMode: mode });
           }}
         />

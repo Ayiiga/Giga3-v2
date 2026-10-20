@@ -52,8 +52,8 @@ export const OFFLINE_RECOMMENDATION_FALLBACK: Record<
   ],
   edit: [
     {
-      title: "Open GigaEdit",
-      action: "/gigaedit/",
+      title: "Open Creator Studio",
+      action: "/creator-studio/",
       prompt: "",
       reason: "Offline fallback",
       entitlement: "free",
@@ -61,8 +61,8 @@ export const OFFLINE_RECOMMENDATION_FALLBACK: Record<
   ],
   studio: [
     {
-      title: "Media Studio",
-      action: "/media/",
+      title: "AI Assistant",
+      action: "/chat/",
       prompt: "",
       reason: "Offline fallback",
       entitlement: "free",

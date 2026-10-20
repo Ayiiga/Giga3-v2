@@ -15,7 +15,7 @@ import { memo, useState, type FormEvent } from "react";
 
 /**
  * Frontend-only guest shell for AI Chat: interface is visible, send requires sign-in.
- * Product-open requests (GigaSocial, GigaEdits, GigaLearn, Media Studio, …) still redirect.
+ * Product-open requests (Academy, Exam Practice, GigaSocial, Marketplace, …) still redirect.
  */
 export const ChatGuestBrowseView = memo(function ChatGuestBrowseView() {
   const { effectiveOnline } = useEffectiveOnline();
@@ -80,8 +80,8 @@ export const ChatGuestBrowseView = memo(function ChatGuestBrowseView() {
 
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 overflow-y-auto px-6 py-10 text-center">
         <p className="max-w-md text-base leading-relaxed text-muted">
-          Ask to open GigaSocial, GigaEdits, GigaLearn, Media Studio, or another Giga3 app.
-          Sending AI prompts requires an account.
+          Ask to open GigaLearn Academy, Exam Practice, GigaSocial, Marketplace, or another
+          Giga3 app. Sending AI prompts requires an account.
         </p>
         <div className="flex w-full max-w-md flex-wrap justify-center gap-2">
           {CHAT_WORKSPACE_PRIMARY_APPS.map((app) => (

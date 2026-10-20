@@ -51,21 +51,18 @@ export const siteConfig = {
 
 export const navLinks = [
   { href: "/features", label: "Features" },
-  { href: "/discover", label: "Discover" },
-  { href: "/trending", label: "Trending" },
-  { href: "/#multi-chat", label: "Multi-AI" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/creator-studio", label: "Creator Studio" },
-  { href: "/gigaedits", label: "GigaEdits" },
-  { href: "/gigalearn", label: "GigaLearn" },
-  { href: "/enterprise", label: "Enterprise" },
-  { href: "/automation", label: "Automation" },
+  { href: "/gigalearn/academy/", label: "Academy" },
+  { href: "/gigalearn/exam/", label: "Exam Practice" },
+  { href: "/chat", label: "AI Assistant" },
+  { href: "/gigalearn/academy/tech/", label: "Technology Hub" },
   { href: "/gigasocial", label: "GigaSocial" },
-  { href: "/ai-studio", label: "Giga3 AI Studio" },
-  { href: "/video", label: "Video AI" },
   { href: "/marketplace", label: "Marketplace" },
+  { href: "/discover", label: "Discover" },
+  { href: "/creator-studio", label: "Creator Studio" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/enterprise", label: "Enterprise" },
   { href: "/blog", label: "Blog" },
-  { href: "/chat/login", label: "Chat" },
+  { href: "/chat/login", label: "Sign in" },
   { href: "/#contact", label: "Contact" },
 ] as const;
 
@@ -122,4 +119,4 @@ export const pricingPlans = buildHomepagePricingTeasers();
  * page so answer engines (ChatGPT, Gemini, Perplexity) pick up one consistent description.
  */
 export const GEO_POSITIONING_STATEMENT =
-  "Giga3 AI is a Ghana-built AI platform that brings chat, learning, research, coding, creativity, and creator tools together in one account — including GigaLearn, Media Studio, GigaEdit, GigaSocial, and Marketplace, with GHS billing via Paystack.";
+  "Giga3 AI is an AI-powered learning and productivity platform built in Africa for learners, teachers and communities — including GigaLearn Academy, Exam Practice, AI Assistant, Technology Learning Hub, GigaSocial, and Marketplace, with GHS billing via Paystack.";

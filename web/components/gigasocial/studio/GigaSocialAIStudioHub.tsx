@@ -34,9 +34,9 @@ export type AIStudioTool = {
 export const AI_STUDIO_TOOLS: AIStudioTool[] = [
   {
     id: "gigaedit",
-    label: "GigaEdit",
+    label: "Camera & record",
     emoji: "🎬",
-    description: "Full creator studio — video, photo, teleprompter",
+    description: "Record with teleprompter in GigaSocial",
   },
   {
     id: "teleprompter",
@@ -54,7 +54,7 @@ export const AI_STUDIO_TOOLS: AIStudioTool[] = [
     id: "thumbnail-maker",
     label: "Thumbnail Maker",
     emoji: "🖼",
-    description: "Generate click-worthy thumbnails",
+    description: "Ask AI Assistant for thumbnail ideas",
   },
   {
     id: "caption-generator",
@@ -66,19 +66,19 @@ export const AI_STUDIO_TOOLS: AIStudioTool[] = [
     id: "background-remover",
     label: "Background Remover",
     emoji: "✂️",
-    description: "Clean product and portrait shots",
+    description: "Image help in AI Assistant",
   },
   {
     id: "video-editor",
-    label: "Video Editor",
+    label: "Trim in composer",
     emoji: "🎬",
-    description: "Trim and polish before posting",
+    description: "Trim clips in the GigaSocial composer",
   },
   {
     id: "logo-maker",
     label: "Logo Maker",
     emoji: "◈",
-    description: "Quick brand marks with AI",
+    description: "Logo concepts in AI Assistant",
   },
   {
     id: "brand-kit",
@@ -126,7 +126,7 @@ export type AIStudioLaunch =
 export function resolveAIStudioLaunch(toolId: AIStudioToolId): AIStudioLaunch {
   switch (toolId) {
     case "gigaedit":
-      return { kind: "navigate", href: `${siteConfig.links.gigaedit}/` };
+      return { kind: "compose-camera", teleprompter: true };
     case "teleprompter":
       return { kind: "compose-camera", teleprompter: true };
     case "script-generator":
@@ -139,16 +139,18 @@ export function resolveAIStudioLaunch(toolId: AIStudioToolId): AIStudioLaunch {
     case "background-remover":
     case "logo-maker":
     case "brand-kit":
-      return { kind: "navigate", href: siteConfig.links.media };
+      return {
+        kind: "navigate",
+        href: `${siteConfig.links.dashboard}?prompt=${encodeURIComponent("Help me create a visual: ")}`,
+      };
     case "caption-generator":
       return {
         kind: "navigate",
         href: `${siteConfig.links.dashboard}?category=writing`,
       };
     case "video-editor":
-      return { kind: "navigate", href: `${siteConfig.links.gigaedit}/?tab=video` };
+      return { kind: "compose-camera" };
     case "music-generator":
-      return { kind: "navigate", href: siteConfig.links.video };
     case "voice-studio":
       return { kind: "navigate", href: siteConfig.links.dashboard };
     case "template-library":

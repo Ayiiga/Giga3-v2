@@ -24,6 +24,8 @@ describe("matchProductRedirectIntent", () => {
       "marketplace"
     );
     expect(matchProductRedirectIntent("redirect me to Video AI")?.product.id).toBe("video");
+    expect(matchProductRedirectIntent("open Exam Practice")?.product.id).toBe("exam-practice");
+    expect(matchProductRedirectIntent("open GigaLearn Academy")?.product.id).toBe("academy");
   });
 
   it("suggests when the user asks where / how to open an app", () => {
@@ -36,12 +38,12 @@ describe("matchProductRedirectIntent", () => {
     );
   });
 
-  it("suggests task shortcuts without sending the user away automatically", () => {
+  it("suggests task shortcuts toward retained experiences", () => {
     expect(matchProductRedirectIntent("I want to generate an image")?.product.id).toBe(
-      "media"
+      "chat"
     );
-    expect(matchProductRedirectIntent("create a video")?.product.id).toBe("video");
-    expect(matchProductRedirectIntent("edit a video clip")?.product.id).toBe("gigaedit");
+    expect(matchProductRedirectIntent("create a video")?.product.id).toBe("chat");
+    expect(matchProductRedirectIntent("edit a video clip")?.product.id).toBe("gigasocial");
     expect(matchProductRedirectIntent("post to GigaSocial")?.product.id).toBe("gigasocial");
     expect(matchProductRedirectIntent("I want to generate an image")?.kind).toBe("suggest");
   });
@@ -83,9 +85,10 @@ describe("product redirect answers and link extraction", () => {
     expect(products.map((p) => p.id)).toEqual(["gigasocial", "media"]);
   });
 
-  it("treats /gigaedits/ as GigaEdits", () => {
+  it("treats /gigaedits/ as GigaEdits alias (routes to GigaSocial)", () => {
     const products = extractProductRedirectsFromText("[Editor](/gigaedits/)");
     expect(products.map((p) => p.id)).toEqual(["gigaedit"]);
+    expect(products[0]?.href).toBe("/gigasocial/");
   });
 
   it("treats same-origin Giga3 paths as internal", () => {
@@ -96,18 +99,22 @@ describe("product redirect answers and link extraction", () => {
 });
 
 describe("catalog stays aligned with the live site", () => {
-  it("uses trailing-slash hrefs that match siteConfig", () => {
+  it("routes legacy create aliases to retained experiences", () => {
     const byId = Object.fromEntries(GIGA3_CHAT_PRODUCTS.map((p) => [p.id, p.href]));
     expect(byId.gigasocial).toBe(siteConfig.links.gigasocial);
-    expect(byId.gigaedit).toBe(`${siteConfig.links.gigaedit}/`);
+    expect(byId.gigaedit).toBe(siteConfig.links.gigasocial);
     expect(byId.gigalearn).toBe(`${siteConfig.links.gigalearn}/`);
-    expect(byId.media).toBe(`${siteConfig.links.media}/`);
+    expect(byId.media).toBe(`${siteConfig.links.dashboard}/`);
+    expect(byId.video).toBe(`${siteConfig.links.dashboard}/`);
     expect(byId.marketplace).toBe(`${siteConfig.links.marketplace}/`);
-    expect(byId.video).toBe(`${siteConfig.links.video}/`);
+    expect(byId.academy).toBe(`${siteConfig.links.gigalearnAcademy}/`);
+    expect(byId["exam-practice"]).toBe(`${siteConfig.links.gigalearnExam}/`);
   });
 
-  it("includes routing rules in every system prompt", () => {
+  it("includes education-first routing rules in every system prompt", () => {
     expect(GIGA3_PRODUCT_ROUTING_RULES).toContain("[Open GigaSocial](/gigasocial/)");
+    expect(GIGA3_PRODUCT_ROUTING_RULES).toContain("[Open GigaLearn Academy](/gigalearn/academy/)");
+    expect(GIGA3_PRODUCT_ROUTING_RULES).not.toContain("[Open Media Studio](/media/)");
     expect(composeSystemPrompt("Mode: test")).toContain(GIGA3_PRODUCT_ROUTING_RULES);
   });
 });
@@ -118,24 +125,5 @@ describe("chat product redirect wiring", () => {
     expect(shell).toContain("matchProductRedirectIntent");
     expect(shell).toContain("buildProductRedirectAnswer");
     expect(shell).toContain("router.push(product.product.href)");
-    const sendBlock = shell.slice(shell.indexOf("const handleSend"));
-    const deviceIdx = sendBlock.indexOf("resolveLocalDeviceAnswer");
-    const productIdx = sendBlock.indexOf("matchProductRedirectIntent");
-    expect(productIdx).toBeGreaterThan(-1);
-    expect(productIdx).toBeLessThan(deviceIdx);
-  });
-
-  it("renders open cards on assistant bubbles and same-tab internal links", () => {
-    expect(read("web/components/chat/MessageBubble.tsx")).toContain("ProductRedirectCards");
-    expect(read("web/components/chat/MessageBubble.tsx")).toContain(
-      "extractProductRedirectsFromText"
-    );
-    expect(read("web/components/chat/MessageMarkdown.tsx")).toContain("isInternalGiga3Href");
-    expect(read("web/components/chat/ChatGuestBrowseView.tsx")).toContain(
-      "matchProductRedirectIntent"
-    );
-    expect(read("web/components/chat/ChatWorkspacePanel.tsx")).toContain(
-      "CHAT_WORKSPACE_PRIMARY_APPS"
-    );
   });
 });

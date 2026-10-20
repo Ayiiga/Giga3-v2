@@ -176,20 +176,24 @@ describe("robots.txt", () => {
 });
 
 describe("productLinks", () => {
-  it("includes core ecosystem destinations", () => {
+  it("includes core education-first ecosystem destinations", () => {
     const hrefs = GIGA3_PRODUCT_LINKS.map((l) => l.href);
     expect(hrefs).toContain("/chat");
-    expect(hrefs).toContain("/media");
-    expect(hrefs).toContain("/gigaedit");
+    expect(hrefs).toContain("/gigalearn/academy");
+    expect(hrefs).toContain("/gigalearn/exam");
+    expect(hrefs).toContain("/gigasocial");
     expect(hrefs).toContain("/discover");
-    expect(hrefs).toContain("/video");
     expect(hrefs).toContain("/enterprise");
+    expect(hrefs).not.toContain("/media");
+    expect(hrefs).not.toContain("/gigaedit");
+    expect(hrefs).not.toContain("/video");
   });
 
-  it("footer links cover indexable ecosystem pages", () => {
+  it("footer links cover indexable ecosystem pages without retired products", () => {
     const hrefs = FOOTER_PRODUCT_LINKS.map((l) => l.href);
     for (const path of [
-      "/video",
+      "/gigalearn/academy",
+      "/gigalearn/exam",
       "/trending",
       "/prompts",
       "/developers",
@@ -198,6 +202,10 @@ describe("productLinks", () => {
     ]) {
       expect(hrefs).toContain(path);
     }
+    expect(hrefs).not.toContain("/media");
+    expect(hrefs).not.toContain("/video");
+    expect(hrefs).not.toContain("/gigaedit");
+    expect(hrefs).not.toContain("/ai-studio");
   });
 });
 

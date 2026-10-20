@@ -23,11 +23,11 @@ export const ImageStudioQuickPanel = memo(function ImageStudioQuickPanel({
     <div className={cn("space-y-3", className)}>
       <div className="flex items-center gap-2 text-sm font-medium text-foreground">
         <Sparkles className="h-4 w-4 text-accent" aria-hidden />
-        Image Studio
+        Image tools
       </div>
       <p className="text-xs leading-relaxed text-muted">
-        Generate or edit images in Media Studio. Edit actions open the studio — paste a
-        source URL there if the chat has no image yet.
+        Generate or edit images with Giga3 image tools. Edit actions open the shared
+        generator — paste a source URL there if the chat has no image yet.
       </p>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {IMAGE_STUDIO_QUICK_ACTIONS.map((action) => {
@@ -43,7 +43,7 @@ export const ImageStudioQuickPanel = memo(function ImageStudioQuickPanel({
               )}
               title={
                 needsSourceHint
-                  ? `${action.label} — paste a source image in Media Studio`
+                  ? `${action.label} — paste a source image in the image tools`
                   : action.label
               }
             >

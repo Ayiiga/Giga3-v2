@@ -1,26 +1,29 @@
-import { PublicProductPageShell } from "@/components/seo/PublicProductPageShell";
-import { JsonLd } from "@/components/seo/JsonLd";
-import { AI_STUDIO_PAGE } from "@/lib/seo/productPageContent";
+import { RetiredProductNotice } from "@/components/product/RetiredProductNotice";
+import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
+import { RETIRED_PRODUCTS } from "@/lib/navigation/retiredProducts";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
+
+const meta = RETIRED_PRODUCTS.find((p) => p.id === "ai-studio")!;
 
 export const metadata = publicMetadata({
   path: "/ai-studio",
-  title: "Giga3 AI Studio — Creative AI Tools",
+  title: "AI Studio retired | Giga3 AI",
   description:
-    "Giga3 AI Studio helps creators explore AI-assisted image and media workflows from one mobile-ready African AI super app.",
+    "Giga3 AI Studio creative umbrella pages are retired. Continue with AI Assistant, GigaLearn Academy, Exam Practice, and GigaSocial.",
+  index: false,
 });
 
 export default function AiStudioPage() {
   return (
     <>
-      <JsonLd type="SoftwareApplication" />
-      <JsonLd
-        breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
-          { name: "Giga3 AI Studio", path: "/ai-studio" },
-        ]}
+      <ProductSeoHeader
+        className="sr-only"
+        compact
+        title={meta.formerName}
+        description={meta.summary}
+        showProductNav={false}
       />
-      <PublicProductPageShell {...AI_STUDIO_PAGE} />
+      <RetiredProductNotice formerName={meta.formerName} summary={meta.summary} />
     </>
   );
 }

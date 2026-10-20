@@ -417,10 +417,17 @@ function buildManifest() {
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
       },
       {
-        name: "Video AI",
-        short_name: "Video",
-        description: "Video AI studio",
-        url: "/video/",
+        name: "Academy",
+        short_name: "Learn",
+        description: "GigaLearn Academy",
+        url: "/gigalearn/academy/",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+      },
+      {
+        name: "Exam Practice",
+        short_name: "Practice",
+        description: "Exam practice sessions",
+        url: "/gigalearn/exam/",
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
       },
       {
@@ -432,7 +439,7 @@ function buildManifest() {
       },
       {
         name: "GigaLearn",
-        short_name: "Learn",
+        short_name: "Study",
         description: "AI learning studio for students and teachers",
         url: "/gigalearn/",
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],

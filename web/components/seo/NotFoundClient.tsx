@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
 const POPULAR = PRODUCT_CATALOG.filter((p) =>
-  ["/chat", "/gigalearn", "/media", "/gigasocial"].includes(p.href)
+  ["/chat", "/gigalearn/academy", "/gigalearn/exam", "/gigasocial"].includes(p.href)
 );
 
 const buttonBase =

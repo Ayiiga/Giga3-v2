@@ -23,25 +23,25 @@ export type HomeDestination = {
   description: string;
 };
 
-/** Five product destinations — optional cross-links, never forced. */
+/** Education-first destinations — optional cross-links, never forced. */
 export const HOME_DESTINATIONS: HomeDestination[] = [
   {
     id: "home",
-    label: "Chat",
+    label: "AI Assistant",
     href: "/chat",
-    description: "Your AI assistant",
+    description: "Chat, writing, research, and coding",
   },
   {
     id: "learn",
-    label: "Learn",
-    href: "/gigalearn",
-    description: "Lessons and practice",
+    label: "Academy",
+    href: "/gigalearn/academy/",
+    description: "Courses, tutoring, and certificates",
   },
   {
-    id: "create",
-    label: "Create",
-    href: "/gigaedit",
-    description: "Edits and media",
+    id: "practice",
+    label: "Exam Practice",
+    href: "/gigalearn/exam/",
+    description: "BECE, Teacher Promotion, and more",
   },
   {
     id: "social",
@@ -53,7 +53,7 @@ export const HOME_DESTINATIONS: HomeDestination[] = [
     id: "market",
     label: "Market",
     href: "/marketplace",
-    description: "Buy and sell digital goods",
+    description: "Ebooks and learning materials",
   },
 ];
 

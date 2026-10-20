@@ -48,13 +48,22 @@ describe("primary nav daylight contrast", () => {
   });
 
   it("activates only the tab that matches the route", () => {
-    const sequence = ["/chat", "/gigalearn", "/media", "/gigasocial", "/gigaedit", "/chat"];
+    const sequence = [
+      "/chat",
+      "/gigalearn",
+      "/gigalearn/exam",
+      "/gigasocial",
+      "/marketplace",
+      "/media",
+      "/chat",
+    ];
     expect(sequence.map((path) => resolvePrimaryNavTab(path))).toEqual([
       "home",
       "learn",
-      "create",
+      "practice",
       "social",
-      "create",
+      "market",
+      null,
       "home",
     ]);
     expect(resolvePrimaryNavTab("/gigalearn")).not.toBe("home");

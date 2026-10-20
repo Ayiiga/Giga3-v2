@@ -18,9 +18,10 @@ describe("account routes (chat overflow menu targets)", () => {
     expect(notFound).toContain("/api/log-404");
     expect(notFound).toContain("Go to home page");
     expect(notFound).toContain("Browse all features");
-    expect(notFound).toContain('"/gigalearn"');
+    expect(notFound).toContain('"/gigalearn/academy"');
+    expect(notFound).toContain('"/gigalearn/exam"');
     expect(notFound).toContain('"/gigasocial"');
-    expect(notFound).toContain('"/media"');
     expect(notFound).toContain('"/chat"');
+    expect(notFound).not.toContain('"/media"');
   });
 });

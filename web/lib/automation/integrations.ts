@@ -18,15 +18,6 @@ export const INTEGRATION_ADAPTERS: IntegrationAdapter[] = [
     href: siteConfig.links.dashboard,
   },
   {
-    id: "giga3_media",
-    label: "Media Studio",
-    category: "Platform",
-    available: true,
-    status: "active",
-    description: "Image and video generation pipelines.",
-    href: siteConfig.links.media,
-  },
-  {
     id: "giga3_gigalearn",
     label: "GigaLearn",
     category: "Platform",
@@ -34,6 +25,15 @@ export const INTEGRATION_ADAPTERS: IntegrationAdapter[] = [
     status: "active",
     description: "Education tools for workflow automation steps.",
     href: siteConfig.links.gigalearn,
+  },
+  {
+    id: "giga3_academy",
+    label: "GigaLearn Academy",
+    category: "Platform",
+    available: true,
+    status: "active",
+    description: "Courses, tutoring, and Technology Learning Hub.",
+    href: siteConfig.links.gigalearnAcademy,
   },
   {
     id: "giga3_marketplace",

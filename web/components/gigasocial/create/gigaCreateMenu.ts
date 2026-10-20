@@ -180,13 +180,13 @@ const AI_ITEMS: GigaCreateMenuItem[] = [
     id: "ai-image",
     label: "AI Image",
     emoji: "🖼",
-    description: "Generate images in Media Studio",
+    description: "Generate images in AI Assistant",
   },
   {
     id: "ai-video",
-    label: "AI Video",
+    label: "AI Video help",
     emoji: "🎬",
-    description: "Generate video in Video AI",
+    description: "Ask AI Assistant for video guidance",
   },
   {
     id: "ai-document",
