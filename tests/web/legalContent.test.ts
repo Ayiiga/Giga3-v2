@@ -18,7 +18,28 @@ describe("legal content", () => {
       "acceptable-use",
       "ai-usage",
       "security",
+      "delete-account",
     ]);
+  });
+
+  it("account deletion page matches self-service deletion scope", () => {
+    const doc = legalDocumentBySlug["delete-account"];
+    expect(doc.title).toBe("Account deletion");
+    const body = text("delete-account");
+    expect(body).toContain("giga3 ai");
+    expect(body).toContain("settings");
+    expect(body).toContain("delete account");
+    expect(body).toContain("hello@giga3ai.com");
+    expect(body).toContain("/legal/privacy/");
+    expect(body).toContain("permanent");
+    // Deleted categories must match convex/accountDeletion.ts
+    expect(body).toContain("password credentials");
+    expect(body).toContain("chat conversations and messages");
+    expect(body).toContain("sessions");
+    // Retention honesty — do not promise full wipe of billing records
+    expect(body).toContain("payment");
+    expect(body).toContain("subscription");
+    expect(body).toContain("security audit");
   });
 
   it("uses one shared effective date across documents", () => {
