@@ -663,7 +663,7 @@ function TechHubInner() {
                   <option key={n} value={n}>
                     {n}
                     {isExamCourse && n > EXAM_PRACTICE_FREE_QUESTION_COUNT
-                      ? " (subscription / credits)"
+                      ? " (subscription / pack purchase)"
                       : ""}
                   </option>
                 ))}
