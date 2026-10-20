@@ -26,7 +26,6 @@ export const metadata = publicMetadata({
 export default function GigaLearnAcademyTechHubPage() {
   return (
     <>
-      <h1 className="sr-only">GigaLearn Academy Technology Learning Hub</h1>
       <ProductSeoHeader
         compact
         title="Technology Learning Hub"
