@@ -208,7 +208,9 @@ export const listMyAssessmentHistory = query({
     courseSlug: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken, ctx);
+    // Soft-fail invalid/expired tokens so Academy home useQuery cannot crash.
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return [];
     const slug = args.courseSlug ? normalizeSlug(args.courseSlug) : null;
     const rows = slug
       ? await ctx.db

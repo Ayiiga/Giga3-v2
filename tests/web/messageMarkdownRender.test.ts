@@ -43,7 +43,7 @@ describe("MessageMarkdown markup", () => {
     expect(html).toContain("<ul");
     expect(html).toContain("<ol");
     expect(html).toContain("Step one");
-    expect(html).toContain('href="https://www.giga3ai.com/learn"');
+    expect(html).toContain('href="https://www.giga3ai.com/gigalearn/"');
     expect(html).not.toContain("javascript:");
     expect(html).toContain("chat-md-pre");
     expect(html).toContain("hl-keyword");

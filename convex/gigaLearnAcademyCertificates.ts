@@ -305,7 +305,9 @@ export const issueCertificate = mutation({
 export const listMyCertificates = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken, ctx);
+    // Soft-fail invalid/expired tokens so Academy home useQuery cannot crash.
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return [];
     const rows = await ctx.db
       .query("gigaLearnAcademyCertificates")
       .withIndex("by_user", (q) => q.eq("userId", email))

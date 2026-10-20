@@ -244,7 +244,9 @@ export const listMyEnrolments = query({
     includeWithdrawn: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken, ctx);
+    // Soft-fail invalid/expired tokens so useQuery cannot crash the Learn tab.
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return [];
     const rows = await ctx.db
       .query("gigaLearnAcademyEnrolments")
       .withIndex("by_user", (q) => q.eq("userId", email))

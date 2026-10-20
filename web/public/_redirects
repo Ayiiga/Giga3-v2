@@ -15,6 +15,14 @@
 # Account shortcuts (chat overflow menu + bookmarks)
 /privacy            /legal/privacy/              301
 /privacy/           /legal/privacy/              301
+/account            /settings/                   301
+/account/           /settings/                   301
+/account/settings   /settings/                   301
+/account/settings/  /settings/                   301
+
+# Legacy /learn aliases used in chat markdown and old shares → GigaLearn hub
+/learn              /gigalearn/                  301
+/learn/             /gigalearn/                  301
 
 # Legacy static site paths → App Router
 /login.html         /chat/login/                 301

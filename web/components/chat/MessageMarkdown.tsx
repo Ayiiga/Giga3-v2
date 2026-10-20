@@ -9,7 +9,10 @@ import {
   type MarkdownBlock,
   type MarkdownListItem,
 } from "@/lib/chat/messageMarkdownParser";
-import { isInternalGiga3Href } from "@/lib/chat/productRedirects";
+import {
+  canonicalizeInternalGiga3Href,
+  isInternalGiga3Href,
+} from "@/lib/chat/productRedirects";
 import dynamic from "next/dynamic";
 import { Fragment, memo, useMemo, type ReactNode } from "react";
 
@@ -178,11 +181,12 @@ function renderInlineNode(node: InlineNode, key: number): ReactNode {
       if (!node.href) {
         return <Fragment key={`l-${key}`}>{renderInlineNodes(node.children)}</Fragment>;
       }
-      const internal = isInternalGiga3Href(node.href);
+      const href = canonicalizeInternalGiga3Href(node.href);
+      const internal = isInternalGiga3Href(href);
       return (
         <a
           key={`a-${key}`}
-          href={node.href}
+          href={href}
           target={internal ? undefined : "_blank"}
           rel={internal ? undefined : "noopener noreferrer"}
           className="chat-md-link"
