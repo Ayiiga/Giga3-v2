@@ -72,9 +72,11 @@ function TechHubInner() {
   const saveAnswer = useMutation(api.gigaLearnTechBanks.saveTechPracticeAnswer);
   const submitSession = useMutation(api.gigaLearnTechBanks.submitTechPracticeSession);
 
+  // Premium packs require active subscription or credit-pack purchase.
+  // `isPremium` already reflects credit-pack purchase via AI tier; residual
+  // balance alone must not unlock larger packs (server enforces the same).
   const premiumAccess = hasExamPracticePremiumAccess({
     subscriptionActive: chatCredits?.subscriptionActive,
-    credits: chatCredits?.credits,
     isPremium: chatCredits?.isPremium,
   });
 
@@ -669,10 +671,11 @@ function TechHubInner() {
             </label>
             {isExamCourse ? (
               <p className="text-xs text-slate-500">
-                Free learners get up to {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions. Active
-                subscription or purchased credits unlock up to{" "}
-                {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT} (capped by bank size). Correct answers earn
-                praise like Excellent and Superb.
+                Free learners get up to {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions. An active
+                subscription or a credit-pack purchase unlocks up to{" "}
+                {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT} (capped by bank size). A leftover credit
+                balance alone does not unlock larger packs. Correct answers earn praise like
+                Excellent and Superb.
               </p>
             ) : null}
             {error ? <p className="text-sm text-rose-700">{error}</p> : null}

@@ -67,10 +67,13 @@ describe("Exam practice question limits", () => {
     ).toBe(468);
   });
 
-  it("grants premium access for active subscription or positive credits", () => {
+  it("grants premium for subscription or credit-pack purchase — not residual balance", () => {
     expect(hasExamPracticePremiumAccess({ subscriptionActive: true })).toBe(true);
-    expect(hasExamPracticePremiumAccess({ credits: 5 })).toBe(true);
+    expect(hasExamPracticePremiumAccess({ hasPurchasedCredits: true })).toBe(true);
     expect(hasExamPracticePremiumAccess({ isPremium: true })).toBe(true);
+    expect(hasExamPracticePremiumAccess({ credits: 5, subscriptionActive: false })).toBe(
+      false
+    );
     expect(hasExamPracticePremiumAccess({ credits: 0, subscriptionActive: false })).toBe(
       false
     );

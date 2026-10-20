@@ -269,9 +269,9 @@ function BeceCentreCard() {
             </Link>
           </div>
           <p className="mt-3 text-xs text-slate-500">
-            Free sessions use {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions. Subscription or purchased
-            credits unlock up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT} (capped by bank size). Not an
-            official WAEC/BECE paper bank.
+            Free sessions use {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions. An active subscription or
+            a credit-pack purchase unlocks up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT} (capped by
+            bank size). Not an official WAEC/BECE paper bank.
           </p>
         </article>
       ) : (
@@ -415,9 +415,9 @@ function TeacherPromotionCentreCard() {
             </Link>
           </div>
           <p className="mt-2 text-xs text-slate-500">
-            Free sessions use {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions. Subscription or purchased
-            credits unlock up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT} from the imported bank.{" "}
-            {AD2_STUDY_GUIDE_SUMMARY.note}
+            Free sessions use {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions. An active subscription or
+            a credit-pack purchase unlocks up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT} from the
+            imported bank. {AD2_STUDY_GUIDE_SUMMARY.note}
           </p>
         </article>
       ) : null}
@@ -458,8 +458,8 @@ function TeacherPromotionCentreCard() {
               Free {EXAM_PRACTICE_FREE_QUESTION_COUNT}-question orientation practice (repeat anytime)
             </li>
             <li>
-              Up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT} practice questions with subscription or
-              credits
+              Up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT} practice questions with an active
+              subscription or credit-pack purchase
             </li>
             <li>Rewards and progress on correct answers</li>
             <li>Teacher hub AI practice tools</li>

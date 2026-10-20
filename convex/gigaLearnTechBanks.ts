@@ -19,9 +19,9 @@ import { getTechCourseMeta, listTechCourseMeta } from "../web/lib/gigalearn/acad
 import { getBuiltinAcademyCourse } from "../web/lib/gigalearn/academy/courseCatalog";
 import type { TechPracticeMode } from "../web/lib/gigalearn/academy/techBanks/techBankTypes";
 import {
-  clampPracticeQuestionCount,
-  hasExamPracticePremiumAccess,
   isExamPracticeCourseSlug,
+  resolveExamPracticeSessionCount,
+  shouldAbandonPriorExamInProgress,
 } from "../web/lib/gigalearn/examPractice/practiceLimits";
 
 const MODE_VALIDATOR = v.union(
@@ -223,21 +223,30 @@ export const startTechPracticeSession = mutation({
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", email))
       .first();
-    const premiumAccess = hasExamPracticePremiumAccess({
-      subscriptionActive: isSubscriptionActive(
-        user?.subscriptionPlan ?? "free",
-        user?.subscriptionExpiresAt
-      ),
-      credits: user?.credits ?? 0,
-      isPremium: false,
-    });
+    // Credit-pack purchase unlock (not residual balance). Matches AI premium tier.
+    const hasPurchasedCredits = user
+      ? await ctx.db
+          .query("creditLogs")
+          .withIndex("by_user_created", (q) => q.eq("userId", email))
+          .order("desc")
+          .take(50)
+          .then((rows) => rows.some((row) => row.action === "credit_purchase"))
+      : false;
+    const subscriptionActive = isSubscriptionActive(
+      user?.subscriptionPlan ?? "free",
+      user?.subscriptionExpiresAt
+    );
     const bankSize = getTechBankQuestions(slug).length;
-    const count = clampPracticeQuestionCount({
+    const resolved = resolveExamPracticeSessionCount({
       requested: args.count ?? defaultCount,
       courseSlug: slug,
-      premiumAccess,
       bankSize,
+      subscriptionActive,
+      hasPurchasedCredits,
+      // Residual balance must not unlock — pass through only for API clarity.
+      credits: user?.credits ?? 0,
     });
+    const count = resolved.count;
     const seed = Date.now() ^ Math.floor(Math.random() * 1e9);
     const questionIds = selectTechQuestionIds({
       courseSlug: slug,
@@ -256,6 +265,26 @@ export const startTechPracticeSession = mutation({
     if (mode === "timed") {
       const mins = Math.max(5, Math.min(90, Math.floor(args.timeLimitMinutes ?? 30)));
       endsAt = now + mins * 60_000;
+    }
+
+    // Exam Practice: abandon prior in-progress sessions for this course so
+    // concurrent starts cannot pile up large server-side answer-key sessions.
+    if (shouldAbandonPriorExamInProgress(slug)) {
+      const priorOpen = await ctx.db
+        .query("gigaLearnTechSessions")
+        .withIndex("by_user_course", (q: any) =>
+          q.eq("userId", email).eq("courseSlug", slug)
+        )
+        .order("desc")
+        .take(20);
+      for (const prior of priorOpen) {
+        if (prior.status !== "in_progress") continue;
+        await ctx.db.patch(prior._id, {
+          status: "submitted",
+          submittedAt: now,
+          updatedAt: now,
+        });
+      }
     }
 
     const sessionId = await ctx.db.insert("gigaLearnTechSessions", {
@@ -278,6 +307,7 @@ export const startTechPracticeSession = mutation({
       topicId: args.topicId?.trim() || null,
       endsAt: endsAt ?? null,
       questionCount: questionIds.length,
+      premiumAccess: resolved.premiumAccess,
       approvedBankSize: meta.approvedQuestionCount,
       questions: questionIds.map((id) => {
         const q = getTechBankQuestionById(slug, id)!;
