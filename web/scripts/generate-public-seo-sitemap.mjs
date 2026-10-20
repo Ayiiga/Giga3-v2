@@ -78,6 +78,7 @@ const GIGALEARN_SITEMAP_PATHS = [
   "/gigalearn/academy/courses/",
   "/gigalearn/academy/tech/",
   "/gigalearn/exam/",
+  "/gigalearn/exam/practice/",
   "/gigalearn/academy/verify/",
   "/ai-for-bece-wassce-ghana/",
   "/ai-tools-for-students-ghana/",
