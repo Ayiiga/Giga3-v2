@@ -39,7 +39,7 @@ def twaManifest = [
     // - short_name: Shorter string used if |name| is too long.
     // - url: Absolute path of the URL to launch the app with (e.g '/create').
     // - icon: Name of the resource in the drawable folder to use as an icon.
-    shortcuts: [[name:'Chat', short_name:'Chat', url:'https://www.giga3ai.com/chat/', icon:'shortcut_0'],[name:'Video AI', short_name:'Video', url:'https://www.giga3ai.com/video/', icon:'shortcut_1'],[name:'Marketplace', short_name:'Shop', url:'https://www.giga3ai.com/marketplace/', icon:'shortcut_2'],[name:'GigaLearn', short_name:'Learn', url:'https://www.giga3ai.com/gigalearn/', icon:'shortcut_3']],
+    shortcuts: [[name:'Chat', short_name:'Chat', url:'https://www.giga3ai.com/chat/', icon:'shortcut_0'],[name:'Academy', short_name:'Learn', url:'https://www.giga3ai.com/gigalearn/academy/', icon:'shortcut_1'],[name:'Exam Practice', short_name:'Practice', url:'https://www.giga3ai.com/gigalearn/exam/', icon:'shortcut_2'],[name:'Marketplace', short_name:'Shop', url:'https://www.giga3ai.com/marketplace/', icon:'shortcut_3']],
     // The duration of fade out animation in milliseconds to be played when removing splash screen.
     splashScreenFadeOutDuration: 300,
     generatorApp: 'bubblewrap-cli (giga3 generate-project.mjs)', // Application that generated the Android Project
@@ -207,7 +207,9 @@ repositories {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.6.2'
+    
+        implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.6.2'
+    
 }
 
 // Release signing — local credentials only (docs/google-play/signing.md)

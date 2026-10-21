@@ -13,24 +13,33 @@ if (signingPropertiesFile.exists()) {
     signingPropertiesFile.withInputStream { signingProperties.load(it) }
 }
 
+/** Resolve keystore paths relative to android/ (rootProject), matching signing.properties.example. */
+def resolveStoreFile = { String storePath ->
+    if (!storePath) return null
+    def trimmed = storePath.trim()
+    def asFile = new File(trimmed)
+    if (asFile.isAbsolute()) return asFile
+    return rootProject.file(trimmed)
+}
+
 def resolveSigning = {
     def result = [configured: false]
     def storePath = signingProperties.getProperty("storeFile")
     if (storePath) {
-        result.storeFile = file(storePath)
+        result.storeFile = resolveStoreFile(storePath)
         result.storePassword = signingProperties.getProperty("storePassword")
         result.keyAlias = signingProperties.getProperty("keyAlias", "android")
         result.keyPassword = signingProperties.getProperty("keyPassword")
-        result.configured = result.storeFile.exists()
+        result.configured = result.storeFile != null && result.storeFile.exists()
         return result
     }
     def envStore = System.getenv("GIGA3_ANDROID_KEYSTORE_PATH")
     if (envStore) {
-        result.storeFile = file(envStore)
+        result.storeFile = resolveStoreFile(envStore)
         result.storePassword = System.getenv("GIGA3_ANDROID_KEYSTORE_PASSWORD")
         result.keyAlias = System.getenv("GIGA3_ANDROID_KEY_ALIAS") ?: "android"
         result.keyPassword = System.getenv("GIGA3_ANDROID_KEY_PASSWORD") ?: result.storePassword
-        result.configured = result.storeFile.exists()
+        result.configured = result.storeFile != null && result.storeFile.exists()
     }
     return result
 }
@@ -63,4 +72,6 @@ if (!signing.configured) {
         "Copy signing.properties.example → signing.properties or set GIGA3_ANDROID_KEYSTORE_* env vars. " +
         "bundleRelease will produce an unsigned AAB."
     )
+} else {
+    logger.lifecycle("Giga3 release signing: configured (keystore path resolved; credentials not logged).")
 }

@@ -11,8 +11,8 @@ Trusted Web Activity verification requires **matching** statements in:
 |------|--------|
 | App package | `com.giga3ai.app` (configured in TWA project) |
 | Site delegation in app | Configured for `https://www.giga3ai.com` |
-| **SHA-256 fingerprint in `assetlinks.json`** | **NOT CONFIGURED** — no production signing certificate exists yet |
-| Production `assetlinks.json` deployed | **NO** — do not deploy until fingerprint is real |
+| **SHA-256 fingerprint in `assetlinks.json`** | **PARTIAL** — upload-key SHA-256 is known locally; **Play App Signing** SHA-256 still required from Play Console |
+| Production `assetlinks.json` deployed | **NO** — `https://www.giga3ai.com/.well-known/assetlinks.json` still **404** (do not deploy placeholders) |
 
 ## What you must provide
 
@@ -67,13 +67,16 @@ Google statements API → fetch error. **TWA domain verification is not complete
 | **Upload key** | Same page → *Upload key certificate*, or `keytool -list -v` on `upload-keystore.jks` | Signs the AAB you upload; may also be listed in assetlinks if you sideload upload-signed APKs |
 | **Android debug key** | `~/.android/debug.keystore` | Debug APK sideloads only — never treat as production |
 
-Prepared JSON (placeholders only — **not** for deploy): `docs/google-play/assetlinks.prepared.json`
+Prepared JSON: `docs/google-play/assetlinks.prepared.json`
+
+- Slot 1: `PASTE_PLAY_APP_SIGNING_CERT_SHA256_HERE` — replace with Play Console **App signing key certificate** SHA-256 after first upload / App Signing enrollment.
+- Slot 2: upload-key SHA-256 from the local `upload-keystore.jks` (filled 2026-10-21) — useful for upload-signed sideloads; **not** a substitute for the Play App Signing cert on Play-installed builds.
 
 For local debug installs only, the Android debug keystore SHA-256 observed in this Cloud Agent was:
 
 `2B:BE:F1:14:2A:BB:36:DA:70:19:AE:F7:CC:97:7E:53:4C:F6:60:54:80:10:F3:10:36:F2:97:70:38:52:A6:FE`
 
-Do **not** publish that fingerprint as the production Play App Signing certificate.  
-Do **not** copy `assetlinks.prepared.json` to `web/public/` until real fingerprints replace every `PASTE_*` token.
+Do **not** publish the debug fingerprint as the production Play App Signing certificate.  
+Do **not** copy `assetlinks.prepared.json` to `web/public/` until the Play App Signing `PASTE_*` token is replaced with a real fingerprint.
 
 Owner action list: `docs/google-play/next-owner-actions.md`

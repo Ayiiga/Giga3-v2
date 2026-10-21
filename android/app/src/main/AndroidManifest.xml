@@ -199,6 +199,8 @@
 
         
             <activity android:name="com.google.androidbrowserhelper.trusted.NotificationPermissionRequestActivity" />
+        
 
+        
     </application>
 </manifest>

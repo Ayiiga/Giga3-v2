@@ -73,6 +73,17 @@ if (!buildGradle.includes(signingHook)) {
   );
 }
 
+// Bubblewrap has occasionally emitted "androix.browser" (missing "d") in meta-data names.
+const androidManifestPath = join(androidRoot, "app/src/main/AndroidManifest.xml");
+const androidManifest = readFileSync(androidManifestPath, "utf8");
+if (androidManifest.includes("androix.browser")) {
+  writeFileSync(
+    androidManifestPath,
+    androidManifest.replaceAll("androix.browser", "androidx.browser")
+  );
+  console.log("Fixed Bubblewrap androix.browser typo in AndroidManifest.xml");
+}
+
 console.log("Generated TWA project at", androidRoot);
 console.log("Package ID:", twa.packageId);
 console.log("Host:", twa.host);
