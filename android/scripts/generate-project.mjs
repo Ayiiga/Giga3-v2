@@ -37,10 +37,10 @@ Object.assign(twa, {
   maskableIconUrl: iconMaskableUrl,
   enableNotifications: true,
   signingKey: { path: "./android.keystore", alias: "android" },
-  appVersionName: "1.0.0",
-  appVersion: "1.0.0",
-  appVersionCode: 1,
-  minSdkVersion: 21,
+  appVersionName: "1.0.2",
+  appVersion: "1.0.2",
+  appVersionCode: 3,
+  minSdkVersion: 24,
   fingerprints: [],
   features: {
     // Keep off unless product needs geolocation — pulls ACCESS_*_LOCATION into the APK.

@@ -15,6 +15,7 @@ const BASE_FEEDBACK_TYPES: { id: FeedbackType; label: string; icon: typeof Bug }
   { id: "feature", label: "Request feature", icon: Lightbulb },
   { id: "ai_rating", label: "Rate AI response", icon: Star },
   { id: "incorrect_info", label: "Report incorrect info", icon: MessageSquare },
+  { id: "unsafe_ai", label: "Report unsafe AI reply", icon: Flag },
 ];
 
 const PHASE5_FEEDBACK_TYPES: { id: FeedbackType; label: string; icon: typeof Bug }[] = [

@@ -69,7 +69,7 @@ Each PDF was opened with `pdftotext`; first-page text matches the official artic
 | K | App access / reviewer instructions | **NEEDS REVIEW** | Provide test account if gated features require sign-in |
 | L | Permissions / sensitive data | **PASS** (manifest) | Only `POST_NOTIFICATIONS`; no location permission in APK |
 | M | Billing / payments policy | **NEEDS REVIEW** | See `billing-policy-review.md` — Paystack on web; Play Billing off in TWA |
-| N | Store listing assets | **FAIL** (incomplete) | Icon exists; feature graphic 1024×500 and screenshots still outstanding (`release-checklist.md`) |
+| N | Store listing assets | **PARTIAL** | Icon 512×512 + feature graphic 1024×500 files ready; **installed-TWA screenshots** still outstanding |
 | O | App functionality / stability | **NEEDS REVIEW** | Debug + release builds succeed; no physical Android device test in this run |
 | P | Testing-track requirements | **NEEDS REVIEW** | Personal accounts may require closed testing before production (doc 05) |
 | Q | Account deletion | **PASS** (URL) | `https://www.giga3ai.com/legal/delete-account/` → HTTP 200 |
@@ -110,14 +110,16 @@ Credentials / keystore passwords were **not** printed or committed.
 3. Upload signed AAB to **Internal testing** (do not publish production without approval).
 4. Enable Play App Signing; copy **App signing** SHA-256 into `assetlinks.prepared.json`; authorize deploy of `web/public/.well-known/assetlinks.json`.
 5. Complete Data Safety, content rating, ads, audience, AI/UGC declarations.
-6. Create feature graphic + phone screenshots.
+6. Visually approve feature graphic; capture phone screenshots on a physical device.
 7. Run physical-device smoke matrix (`internal-testing-checklist.md`).
 8. If personal developer account: plan closed testing per doc 05 before production access.
 
 ## 9. Store listing still outstanding
 
-- Feature graphic 1024×500
-- Phone screenshots (min 2)
+- Phone screenshots from **installed TWA** (min 2) — website viewport captures are interim only
+- Visual approval of feature graphic before Console upload
+
+See also: `docs/google-play/final-play-readiness-2026-10-21.md` (Phases 1–7 final checklist).
 - Short/full descriptions finalized in Console
 - Category / contact email confirmation
 

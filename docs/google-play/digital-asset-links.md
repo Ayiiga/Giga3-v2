@@ -54,10 +54,11 @@ A non-production template is kept at:
 
 **Do not copy the template to `web/public/` until the fingerprint is real.**
 
-## Status (2026-10-19)
+## Status (2026-10-21)
 
 Production check: `https://www.giga3ai.com/.well-known/assetlinks.json` → **404**.  
-Google statements API → fetch error. **TWA domain verification is not complete.**
+Upload-key SHA-256 is filled in `assetlinks.prepared.json`; Play App Signing SHA-256 still `PASTE_*`.  
+**TWA domain verification is not complete.** Final checklist: `final-play-readiness-2026-10-21.md`.
 
 ### Which SHA-256 to use
 

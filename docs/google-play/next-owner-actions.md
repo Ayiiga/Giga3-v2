@@ -1,89 +1,71 @@
-# Exact next owner actions (no auto-deploy)
+# Exact next owner actions (no auto-deploy / no auto-upload)
 
 Stop conditions: do **not** deploy the website, upload to Play, or publish until you explicitly authorize each step.
+
+Authoritative status: `docs/google-play/final-play-readiness-2026-10-21.md`
+
+## Already done (do not redo)
+
+- Upload keystore exists: `android/upload-keystore.jks`, alias `android` (gitignored).
+- Signed release AAB builds with existing signing:  
+  `android/app/build/outputs/bundle/release/app-release.aab`  
+  and downloadable `android-signing-handoff/app-release-play-ready.aab`  
+  (`jarsigner` → jar verified; versionCode **2**, versionName **1.0.1**, minSdk **24**, targetSdk **36**, package **`com.giga3ai.app`**).
+- Signing backup: `android-signing-handoff/Giga3AI-Android-Backup.zip` (gitignored; keep offline).
+- Upload-key SHA-256 recorded in `docs/google-play/assetlinks.prepared.json`.
+- Feature graphic file prepared at `docs/google-play/assets/feature-graphic-1024x500.png`.
+- Privacy / delete-account URLs live under `/legal/…`.
 
 ## 1) Confirm package ID in Play Console
 
 1. Open Google Play Console → Create app (or open existing).
 2. Confirm application ID is exactly `com.giga3ai.app`.
-3. Public store URL currently returns **404** for that ID — treat as *likely unused*, not a reservation guarantee.
 
-## 2) Create upload keystore (local only)
+## 2) Upload signed AAB (Internal testing) — needs approval
 
-On a trusted machine (not this Cloud Agent unless you deliberately choose to):
+Use the verified AAB (do not regenerate a new keystore):
 
-```bash
-cd android
-keytool -genkeypair -v \
-  -keystore upload-keystore.jks \
-  -alias android \
-  -keyalg RSA -keysize 2048 -validity 10000 \
-  -storetype PKCS12
+```text
+android/app/build/outputs/bundle/release/app-release.aab
 ```
 
-Then:
+Enable **Play App Signing** on first upload.
 
-```bash
-cp signing.properties.example signing.properties
-# fill storeFile / passwords / keyAlias
-./gradlew bundleRelease
-```
+## 3) Complete Digital Asset Links (blocked until App Signing SHA exists)
 
-Verify signing:
-
-```bash
-jarsigner -verify -verbose -certs app/build/outputs/bundle/release/app-release.aab | tail
-```
-
-Current Cloud Agent AAB is **unsigned** (`jarsigner`: “jar is unsigned”).
-
-## 3) Enable Play App Signing
-
-1. First AAB upload (Internal testing) with Play App Signing enabled.
-2. In **Setup → App signing**, copy:
-   - **App signing key certificate** SHA-256 ← required for production TWA / Digital Asset Links
-   - **Upload key certificate** SHA-256 ← used to sign what you upload
-
-## 4) Publish Digital Asset Links (needs deploy approval)
-
-1. Edit `docs/google-play/assetlinks.prepared.json`:
-   - Replace `PASTE_PLAY_APP_SIGNING_CERT_SHA256_HERE` with the **App signing** SHA-256 (colon-separated).
-   - Optionally keep upload/debug fingerprints only for sideload testing.
-2. After explicit deploy authorization, copy to:
+1. Play Console → **Setup → App signing** → copy **App signing key certificate** SHA-256.
+2. Edit `docs/google-play/assetlinks.prepared.json`:
+   - Replace `PASTE_PLAY_APP_SIGNING_CERT_SHA256_HERE` with that value (colon-separated).
+   - Keep the upload-key fingerprint for sideload testing if desired.
+3. After explicit deploy authorization, copy to:
 
    `web/public/.well-known/assetlinks.json`
 
-3. Deploy via the normal Cloudflare Pages workflow.
-4. Verify:
+4. Deploy via the normal Cloudflare Pages workflow.
+5. Verify:
 
 ```bash
 curl -sI https://www.giga3ai.com/.well-known/assetlinks.json
 curl -s "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.giga3ai.com&relation=delegate_permission/common.handle_all_urls"
 ```
 
-**Do not** publish the template’s `REPLACE_WITH_SHA256_FINGERPRINT` or the prepared file’s `PASTE_*` placeholders.
+**Do not** publish the `PASTE_*` placeholder.
 
-## 5) Device smoke (physical recommended)
+## 4) Device smoke (physical required)
 
-Cloud Agent limitation: headless emulator reaches TCP 5554/5555 but stays **`adb offline`** (guest adbd never becomes ready). Use a physical Android device:
+Cloud Agent: no Android device/emulator attached (`adb devices` empty). Use a physical device after Internal testing install or sideload:
 
-```bash
-adb install -r android/app/build/outputs/apk/debug/app-debug.apk
-adb shell am start -n com.giga3ai.app/.LauncherActivity
-```
+- Confirm fullscreen TWA only after DAL is live with the **installed** build’s signing cert.
+- Exercise login, navigation, external links, keyboard, offline/error, GigaLearn flows.
+- Capture genuine phone screenshots from the installed app (replace website viewport PNGs).
 
-Check fullscreen TWA (no Chrome custom-tab URL bar) only after DAL is live with the **installed** APK’s signing cert (debug cert for debug APK).
+## 5) Store listing + Console declarations
 
-## 6) Store listing assets
+- Upload icon 512×512 and feature graphic 1024×500 (visually approve first).
+- Replace interim website screenshots with device captures (min 2 phone).
+- Complete Data Safety, content rating, ads, audience, app access / reviewer account.
+- Draft copy: `docs/google-play/store-listing-draft.md`.
 
-Still outstanding:
-
-- Feature graphic **1024×500**
-- Phone screenshots (capture after real device TWA session)
-- Data safety / content rating / reviewer test account
-
-Draft copy: `docs/google-play/store-listing-draft.md`
-
-## 7) Upload / publish
+## 6) Production publish
 
 Requires separate explicit authorization. Not performed by the agent.

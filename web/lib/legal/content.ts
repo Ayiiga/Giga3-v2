@@ -224,7 +224,9 @@ export const legalDocuments: readonly LegalDocument[] = [
         id: "children",
         title: "Children's Privacy",
         paragraphs: [
-          "Giga3 AI is not intended for children under the age required by applicable law in their jurisdiction. We do not knowingly collect personal information from children without appropriate consent.",
+          "Giga3 AI includes education features used by school-age learners, including children under 13, and other features intended for older users.",
+          "We ask signed-in users for birth month and year (not government ID) to apply age-appropriate access. Accounts identified as under 13 cannot use public social posting, follows, or direct messaging. Chat for those accounts uses additional child-safety rules.",
+          "We minimize personal information collected from children. Parents or guardians who believe a child provided data inappropriately may contact support through the website to request review or deletion. This description reflects product controls; it is not a certification of COPPA, GDPR-K, or Google Play Families Policy compliance.",
         ],
       },
       {

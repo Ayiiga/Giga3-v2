@@ -62,6 +62,8 @@ import type * as chatSegmentation from "../chatSegmentation.js";
 import type * as chatSubscriptionGuidance from "../chatSubscriptionGuidance.js";
 import type * as chatTiming from "../chatTiming.js";
 import type * as chatUserMessages from "../chatUserMessages.js";
+import type * as childSafety from "../childSafety.js";
+import type * as childSafetyPolicy from "../childSafetyPolicy.js";
 import type * as cleanup from "../cleanup.js";
 import type * as connectors_crypto from "../connectors/crypto.js";
 import type * as connectors_http from "../connectors/http.js";
@@ -393,6 +395,8 @@ declare const fullApi: ApiFromModules<{
   chatSubscriptionGuidance: typeof chatSubscriptionGuidance;
   chatTiming: typeof chatTiming;
   chatUserMessages: typeof chatUserMessages;
+  childSafety: typeof childSafety;
+  childSafetyPolicy: typeof childSafetyPolicy;
   cleanup: typeof cleanup;
   "connectors/crypto": typeof connectors_crypto;
   "connectors/http": typeof connectors_http;

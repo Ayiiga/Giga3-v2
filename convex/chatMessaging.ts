@@ -44,6 +44,12 @@ import {
   creditActionForChatImageGeneration,
 } from "./creditsConfig";
 import { classifyRequestKind } from "./providerRouter";
+import { getAgeAccessForEmail } from "./childSafety";
+import {
+  scanTextForSafetyHits,
+  shouldBlockUnsafeContent,
+  UNSAFE_INPUT_USER_MESSAGE,
+} from "./childSafetyPolicy";
 
 const attachmentValidator = v.optional(
   v.array(
@@ -181,6 +187,38 @@ export const acceptMessage = mutation({
 
     await ensureChatUser(ctx, email);
 
+    const ageAccess = await getAgeAccessForEmail(ctx, email, now);
+    const safetyHits = scanTextForSafetyHits(args.content);
+    if (shouldBlockUnsafeContent(safetyHits, ageAccess.category)) {
+      if (!conversationId) {
+        throw new Error("Conversation not found");
+      }
+      await ctx.db.insert("messages", {
+        conversationId,
+        userId: normalizedEmail,
+        role: "user",
+        content: args.content,
+        createdAt: now,
+      });
+      await ctx.db.insert("messages", {
+        conversationId,
+        userId: normalizedEmail,
+        role: "assistant",
+        content: UNSAFE_INPUT_USER_MESSAGE,
+        createdAt: now + 1,
+      });
+      await ctx.db.patch(conversationId, { updatedAt: now + 1 });
+      return {
+        status: "complete" as const,
+        conversationId,
+        content: UNSAFE_INPUT_USER_MESSAGE,
+        chatProviderLabel: getChatProviderLabel("local_fallback"),
+        usedFallback: true,
+        segmented: false,
+        safetyBlocked: true as const,
+      };
+    }
+
     if (args.chatSystem === "pro") {
       await requireProModelAccess(ctx, email);
     }
@@ -191,7 +229,10 @@ export const acceptMessage = mutation({
       researchCapability: args.researchCapability,
     });
     const mode = resolved.mode;
-    const personaId = resolved.personaId;
+    // Child / unknown accounts: do not apply adult specialist personas.
+    const personaId = ageAccess.requiresChildAiMode
+      ? undefined
+      : resolved.personaId;
 
     const rawAttachments = (args.attachments ?? []) as RawAttachmentInput[];
     const attachments = rawAttachments as ChatCompletionAttachment[];

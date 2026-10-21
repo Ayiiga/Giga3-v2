@@ -49,8 +49,8 @@ Opens the official Giga3 AI website in a fullscreen Android app shell.
 | Asset | Status |
 |-------|--------|
 | High-res icon 512×512 | Available: `web/public/icons/icon-512.png` |
-| Feature graphic 1024×500 | Prepared: `docs/google-play/assets/feature-graphic-1024x500.png` (verify visually before upload) |
-| Phone screenshots (min 2) | **Capture on device after TWA verification** |
+| Feature graphic 1024×500 | **File ready** (1024×500): `docs/google-play/assets/feature-graphic-1024x500.png` — visually approve before Console upload |
+| Phone screenshots (min 2) | **Still need installed-TWA device captures.** Interim website viewport PNGs only: `/opt/cursor/artifacts/android-twa/store-screenshots/` |
 | 7" / 10" tablet screenshots | Optional / recommended |
 
 ## Declarations checklist
