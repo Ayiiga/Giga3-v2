@@ -117,12 +117,22 @@ const IMPORTANT_PUBLIC_ROUTES = new Set([
   "/ai-for-teachers-ghana/",
   "/ai-for-schools-ghana/",
   "/ai-for-bece-wassce-ghana/",
+  "/ai-for-business-ghana/",
+  "/ai-for-creators-ghana/",
+  "/african-ai-tools/",
   "/gigalearn/",
+  "/gigalearn/academy/",
+  "/gigalearn/exam/",
   "/features/",
   "/pricing/",
   "/about/",
   "/press/",
   "/blog/",
+  "/marketplace/",
+  "/gigasocial/",
+  "/documents/",
+  "/creator-studio/",
+  "/discover/",
 ]);
 
 for (const p of pages) {
