@@ -4,7 +4,7 @@ import { publicMetadata } from "@/lib/seo/publicMetadata";
 export const metadata = publicMetadata({
   path: "/whats-new",
   title: "What’s New in Giga3 AI",
-  description: "Release notes and product updates across Giga3 AI chat, GigaSocial, GigaLearn, GigaEdit and Media Studio.",
+  description: "Release notes and product updates across Giga3 AI chat, GigaSocial, GigaLearn, Creator Studio and Marketplace.",
   index: false,
 });
 

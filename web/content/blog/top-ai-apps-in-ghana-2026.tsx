@@ -29,7 +29,7 @@ export const PLAIN_TEXT = `
 Ghana AI app landscape mobile first Paystack cedis chat writing study image video productivity creators business.
 ChatGPT Gemini Copilot Perplexity Giga3 AI chat writing modes.
 Study GigaLearn exam preparation practice questions.
-Image generation Media Studio Video AI creator editing GigaEdit.
+Image generation AI Assistant in-chat images Creator Studio.
 Productivity notes summaries email drafts calendars.
 Creator tools captions scripts thumbnails social publishing GigaSocial.
 Business customer support proposals automation enterprise.
@@ -104,11 +104,10 @@ function ArticleContent() {
 
       <ArticleH2 id="images-video">Image and video generation</ArticleH2>
       <Prose>
-        Visual AI helps creators prototype thumbnails, storyboards, and b-roll concepts. Giga3&apos;s{" "}
-        <ArticleLink href="/media/">Media Studio</ArticleLink> and{" "}
-        <ArticleLink href="/video/">Video AI</ArticleLink> sit alongside international generators.
-        Export sizes thoughtfully on mobile data — a high-resolution PNG can cost more to upload
-        than the prompt took to type.
+        Visual AI helps creators prototype thumbnails, storyboards, and b-roll concepts. On Giga3,
+        the <ArticleLink href="/chat/">AI Assistant</ArticleLink> supports in-chat image help
+        alongside international generators. Export sizes thoughtfully on mobile data — a
+        high-resolution PNG can cost more to upload than the prompt took to type.
       </Prose>
 
       
@@ -130,9 +129,9 @@ function ArticleContent() {
         items={[
           "Prompt library — starting points for repeatable content (/prompts).",
           "Creator Studio — guided series and assets (/creator-studio).",
-          "GigaEdit — edit video before publishing (/gigaedit).",
+          "Document Studio — CVs, letters, and reports (/documents).",
           "GigaSocial — distribute to an audience (/gigasocial).",
-          "AI Studio — multi-tool creative hub (/ai-studio).",
+          "Marketplace — sell eligible digital products (/marketplace).",
         ]}
       />
       <Prose>
@@ -200,7 +199,7 @@ function Body({ post }: BlogArticleBodyProps) {
       cta={
         <BlogProductCta
           title="Explore Giga3 AI in one app"
-          description="Chat, Media Studio, GigaLearn, and more — with starter credits to try before you subscribe."
+          description="Chat, GigaLearn, Creator Studio, and more — with starter credits to try before you subscribe."
           href="/chat/login/"
           label="Get started"
         />

@@ -226,7 +226,7 @@ export const GHANA_LANDING_PAGES = {
         bullets: [
           "Research and writing assistance with cited web search where enabled",
           "Coding help for internal tools and scripts",
-          "Media Studio for marketing visuals and Video AI for short clips",
+          "AI Assistant for research, writing help, and in-chat images",
         ],
       },
       {
@@ -323,10 +323,10 @@ export const GHANA_LANDING_PAGES = {
     path: "/african-ai-tools",
     metaTitle: "African AI Tools — Giga3 AI Platform",
     metaDescription:
-      "Giga3 AI is an Africa-focused AI super app for chat, learning, media, and creator tools — built in Ghana with GHS billing and multi-provider failover.",
+      "Giga3 AI is an Africa-focused AI super app for chat, learning, Document Studio, and creator tools — built in Ghana with GHS billing and multi-provider failover.",
     h1: "African AI Tools on Giga3 AI",
     lead:
-      "An Africa-focused AI platform for chat, education, media, and creator workflows — built in Ghana, billed in GHS, designed for learners and builders across the continent.",
+      "An Africa-focused AI platform for chat, education, writing, and creator workflows — built in Ghana, billed in GHS, designed for learners and builders across the continent.",
     intro: [
       "Many global AI tools assume USD billing, desktop-first UX, and single-provider reliability. Giga3 AI is built with African users in mind: Paystack in Ghana cedis, PWA install on mobile, and server-side provider failover.",
       "This page describes what Giga3 offers today — not a ranking of every AI product on the continent.",
@@ -335,7 +335,7 @@ export const GHANA_LANDING_PAGES = {
       {
         heading: "What makes Giga3 different for African users",
         paragraphs: [
-          "Giga3 combines chat, GigaLearn, Media Studio, Video AI, GigaEdit, GigaSocial, and Marketplace in one account. Credits and subscriptions are enforced on the server — not in the browser.",
+          "Giga3 combines chat, GigaLearn, Document Studio, Creator Studio, GigaSocial, and Marketplace in one account. Credits and subscriptions are enforced on the server — not in the browser.",
         ],
         bullets: [
           "GHS pricing via Paystack for consumer plans",

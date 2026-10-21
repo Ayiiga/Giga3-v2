@@ -5,7 +5,7 @@ const base = publicMetadata({
   path: "/ghana-ai",
   title: "Ghana AI Super App — Giga3 AI for Students, Teachers & Business",
   description:
-    "Ghana's AI Super App for BECE, WASSCE and beyond. Giga3 AI helps students, teachers and businesses with AI chat, GigaLearn, video and more. Built for Ghana curriculum.",
+    "Ghana's AI Super App for BECE and WASSCE. AI chat, GigaLearn Academy and Exam Practice for students, teachers and businesses — built for Ghana.",
 });
 
 export const metadata: Metadata = {

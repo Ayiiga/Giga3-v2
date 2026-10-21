@@ -32,11 +32,11 @@ const PRO = SUBSCRIPTION_PLANS.pro;
 export const PLAIN_TEXT = `
 Why AI tools matter in Ghana. Students creators businesses mobile data Paystack cedis.
 AI tools for students research writing coding GigaLearn BECE WASSCE.
-AI for creators Media Studio Video AI GigaEdit GigaSocial.
+AI for creators Creator Studio AI Assistant GigaSocial.
 AI for businesses chat automation enterprise pricing Ghana.
 Free vs paid starter credits subscription plans GHS.
 How to choose verify sources academic integrity mobile networks.
-Getting started Giga3 AI chat media studio install PWA.
+Getting started Giga3 AI chat Creator Studio install PWA.
 `.trim();
 
 function ArticleContent() {
@@ -125,11 +125,11 @@ function ArticleContent() {
       />
 <BulletList
         items={[
-          "Media Studio — image generation and visual assets (/media).",
-          "Video AI — short clips and motion concepts (/video).",
-          "GigaEdit — trim, caption, and polish before publishing (/gigaedit).",
-          "GigaSocial — share finished work to an audience (/gigasocial).",
+          "AI Assistant — writing, research, and in-chat images (/chat).",
           "Creator Studio — guided workflows for recurring content (/creator-studio).",
+          "Document Studio — CVs, letters, and reports (/documents).",
+          "GigaSocial — share finished work to an audience (/gigasocial).",
+          "Marketplace — sell eligible digital products in GHS (/marketplace).",
         ]}
       />
       <Prose>
@@ -191,8 +191,8 @@ function ArticleContent() {
       <Prose>
         Pick one job — explain a concept, draft a caption, or summarise a long article — and run it
         end to end in a single app. If chat solves it, start with{" "}
-        <ArticleLink href="/chat/login/">Giga3 AI Chat</ArticleLink>. If you need visuals, open{" "}
-        <ArticleLink href="/media/">Media Studio</ArticleLink>. Install the PWA from{" "}
+        <ArticleLink href="/chat/login/">Giga3 AI Chat</ArticleLink>. For creator drafts, open{" "}
+        <ArticleLink href="/creator-studio/">Creator Studio</ArticleLink>. Install the PWA from{" "}
         <ArticleLink href="/install/">Install app</ArticleLink> for a home-screen shortcut without an
         app store download.
       </Prose>

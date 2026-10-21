@@ -7,7 +7,7 @@ export const metadata = publicMetadata({
   path: "/help",
   title: "Help & FAQ — Giga3 AI",
   description:
-    "Get help with Giga3 AI chat, credits, Paystack billing, GigaLearn, Media Studio, and GigaSocial.",
+    "Get help with Giga3 AI chat, credits, Paystack billing, GigaLearn, Document Studio, and GigaSocial.",
   index: false,
 });
 

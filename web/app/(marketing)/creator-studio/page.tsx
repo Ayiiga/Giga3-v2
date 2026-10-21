@@ -32,7 +32,7 @@ export default function CreatorStudioPage() {
       />
       <ProductSeoHeader
         title="Creator Studio — Draft, design, and plan content"
-        description="Plan posts, generate copy, and jump to Media Studio or GigaEdit when you need visuals or video."
+        description="Plan posts, generate copy, and use the AI Assistant for research and in-chat images before you publish to GigaSocial."
         detail="Sign in to save drafts and use Giga3 AI credits."
         showProductNav={false}
         compact

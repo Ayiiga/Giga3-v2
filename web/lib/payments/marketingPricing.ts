@@ -80,11 +80,11 @@ export function buildHomepagePricingTeasers(): readonly MarketingPlanTeaser[] {
       name: "Free",
       price: formatGhs(0),
       period: "",
-      description: `${FREE_STARTER_CREDITS} starter credits to explore chat, writing, and media.`,
+      description: `${FREE_STARTER_CREDITS} starter credits to explore chat, writing, and learning.`,
       features: [
         `${FREE_STARTER_CREDITS} starter credits`,
         "Chat & research modes",
-        "Image & video studio",
+        "In-chat images & Document Studio",
         "Email sign-in",
       ],
       cta: "Get started",
@@ -99,7 +99,7 @@ export function buildHomepagePricingTeasers(): readonly MarketingPlanTeaser[] {
       features: [
         `${basic.credits} credits / month`,
         "Paystack billing",
-        "Media studio",
+        "AI Assistant & GigaLearn",
         "PWA install",
       ],
       cta: "View plans",
@@ -114,7 +114,7 @@ export function buildHomepagePricingTeasers(): readonly MarketingPlanTeaser[] {
       features: [
         `${pro.credits} credits / month`,
         "Paystack billing",
-        "Media studio",
+        "AI Assistant & GigaLearn",
         "PWA install",
       ],
       cta: "View plans",
@@ -129,7 +129,7 @@ export function buildHomepagePricingTeasers(): readonly MarketingPlanTeaser[] {
       features: [
         `${premium.credits} credits / month`,
         "Paystack billing",
-        "Media studio",
+        "AI Assistant & GigaLearn",
         "Team-friendly limits",
       ],
       cta: "View plans",
