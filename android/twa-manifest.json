@@ -30,21 +30,21 @@
       "chosenIconUrl": "https://www.giga3ai.com/icons/icon-192.png"
     },
     {
-      "name": "Video AI",
-      "shortName": "Video",
-      "url": "https://www.giga3ai.com/video/",
+      "name": "Academy",
+      "shortName": "Learn",
+      "url": "https://www.giga3ai.com/gigalearn/academy/",
+      "chosenIconUrl": "https://www.giga3ai.com/icons/icon-192.png"
+    },
+    {
+      "name": "Exam Practice",
+      "shortName": "Practice",
+      "url": "https://www.giga3ai.com/gigalearn/exam/",
       "chosenIconUrl": "https://www.giga3ai.com/icons/icon-192.png"
     },
     {
       "name": "Marketplace",
       "shortName": "Shop",
       "url": "https://www.giga3ai.com/marketplace/",
-      "chosenIconUrl": "https://www.giga3ai.com/icons/icon-192.png"
-    },
-    {
-      "name": "GigaLearn",
-      "shortName": "Learn",
-      "url": "https://www.giga3ai.com/gigalearn/",
       "chosenIconUrl": "https://www.giga3ai.com/icons/icon-192.png"
     }
   ],
