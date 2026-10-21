@@ -211,7 +211,9 @@ export const feedbackSubmissionTypeValidator = v.union(
   v.literal("incorrect_info"),
   /** Phase 5 expanded types (clients only send when phase5.feedback is on). */
   v.literal("usability"),
-  v.literal("content_report")
+  v.literal("content_report"),
+  /** Child-safety / harmful AI reply report (always available when signed in). */
+  v.literal("unsafe_ai")
 );
 
 export const feedbackPriorityValidator = v.union(
@@ -312,6 +314,13 @@ export default defineSchema({
     renewalFailures: v.optional(v.number()),
     lastRenewalAttemptAt: v.optional(v.number()),
     renewalReminderSentAt: v.optional(v.number()),
+    /**
+     * Child-safety age attestation (month + year only — no government ID).
+     * Used to gate social UGC/DM and apply child AI mode. See childSafetyPolicy.ts.
+     */
+    birthYear: v.optional(v.number()),
+    birthMonth: v.optional(v.number()),
+    ageAttestedAt: v.optional(v.number()),
   })
     .index("by_email", ["email"])
     .index("by_googleSub", ["googleSub"])
@@ -1180,6 +1189,22 @@ export default defineSchema({
   })
     .index("by_reporter_created", ["reporterId", "createdAt"])
     .index("by_status", ["status", "createdAt"]),
+
+  /** UGC reports for GigaSocial posts/comments — moderation queue (not auto-resolving). */
+  socialContentReports: defineTable({
+    reporterId: v.string(),
+    targetType: v.union(v.literal("post"), v.literal("comment"), v.literal("profile")),
+    postId: v.optional(v.id("socialPosts")),
+    commentId: v.optional(v.id("socialComments")),
+    profileUserId: v.optional(v.string()),
+    reason: v.string(),
+    details: v.optional(v.string()),
+    status: socialDmReportStatusValidator,
+    createdAt: v.number(),
+  })
+    .index("by_reporter_created", ["reporterId", "createdAt"])
+    .index("by_status", ["status", "createdAt"])
+    .index("by_post", ["postId", "createdAt"]),
 
   socialLiveStreams: defineTable({
     hostId: v.string(),

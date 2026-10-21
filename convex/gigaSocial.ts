@@ -31,6 +31,8 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { ensureMonetizationUnlock, isMonetizationUnlocked, parsePrivacySettings } from "./gigaSocialEconomy";
 import { assertSocialVideoDuration } from "./gigaSocialMediaPolicy";
 import { consumeSocialWriteRateLimit } from "./socialRateLimit";
+import { assertChildSafetyFeature } from "./childSafety";
+import { ValidationError } from "./securityErrors";
 
 const SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC = 15;
 export const MAX_SOCIAL_ACCOUNTS_PER_USER = 3;
@@ -752,6 +754,7 @@ export const ensureMyProfile = mutation({
   args: sessionArgs,
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
+    await assertChildSafetyFeature(ctx, userId, "social_ugc");
     const profile = await getOrCreateProfile(ctx, userId);
     return { handle: profile.handle, displayName: profile.displayName };
   },
@@ -1059,6 +1062,7 @@ export const upsertMyProfile = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
+    await assertChildSafetyFeature(ctx, userId, "social_ugc");
     const profile = args.profileId
       ? await getOwnedProfileDoc(ctx, userId, args.profileId)
       : await getOrCreateProfile(ctx, userId);
@@ -1145,6 +1149,7 @@ export const createSocialAccount = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
+    await assertChildSafetyFeature(ctx, userId, "social_ugc");
     await getOrCreateProfile(ctx, userId);
     const existing = await listProfileDocs(ctx, userId);
     if (existing.length >= MAX_SOCIAL_ACCOUNTS_PER_USER) {
@@ -1218,6 +1223,7 @@ export const createPost = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
+    await assertChildSafetyFeature(ctx, userId, "social_ugc");
     await consumeSocialWriteRateLimit(ctx, userId, "create_post");
     const body = sanitizeSocialText(args.body, socialBodyMaxLength(args.postType));
     const hashtags = extractHashtags(body);
@@ -1419,6 +1425,7 @@ export const toggleLike = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
+    await assertChildSafetyFeature(ctx, userId, "social_ugc");
     await consumeSocialWriteRateLimit(ctx, userId, "toggle_like");
     const post = await ctx.db.get(args.postId);
     if (!post || post.deletedAt) throw new Error("Post not found.");
@@ -1474,8 +1481,9 @@ export const addComment = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
+    await assertChildSafetyFeature(ctx, userId, "social_ugc");
     await consumeSocialWriteRateLimit(ctx, userId, "add_comment");
-    const body = sanitizeSocialText(args.body, socialBodyMaxLength(args.postType));
+    const body = sanitizeSocialText(args.body, socialBodyMaxLength("text"));
     if (!body) throw new Error("Comment cannot be empty.");
 
     const post = await ctx.db.get(args.postId);
@@ -1860,6 +1868,7 @@ export const toggleFan = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken);
+    await assertChildSafetyFeature(ctx, userId, "social_follow");
     if (userId === args.creatorId) {
       throw new Error("You cannot fan yourself.");
     }
@@ -1907,5 +1916,71 @@ export const getFanRelationship = query({
     const { fanCount, supportingCount } = await getFanCounts(ctx, args.creatorId);
     const supporting = await isSupporting(ctx, userId, args.creatorId);
     return { fanCount, supportingCount, supporting };
+  },
+});
+
+const SOCIAL_REPORT_REASONS = new Set([
+  "spam",
+  "harassment",
+  "sexual_content",
+  "hate",
+  "violence",
+  "child_safety",
+  "other",
+]);
+
+/**
+ * Report a post, comment, or profile for moderation review.
+ * Does not auto-delete content — queues for human review.
+ */
+export const reportSocialContent = mutation({
+  args: {
+    sessionToken: v.string(),
+    targetType: v.union(
+      v.literal("post"),
+      v.literal("comment"),
+      v.literal("profile")
+    ),
+    postId: v.optional(v.id("socialPosts")),
+    commentId: v.optional(v.id("socialComments")),
+    profileUserId: v.optional(v.string()),
+    reason: v.string(),
+    details: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const reporterId = await requireSession(args.sessionToken);
+    const reason = args.reason.trim().toLowerCase().slice(0, 40);
+    if (!SOCIAL_REPORT_REASONS.has(reason)) {
+      throw new ValidationError("Choose a valid report reason.");
+    }
+    const details = args.details?.trim().slice(0, 2000);
+
+    if (args.targetType === "post") {
+      if (!args.postId) throw new ValidationError("Post is required.");
+      const post = await ctx.db.get(args.postId);
+      if (!post || post.deletedAt) throw new ValidationError("Post not found.");
+    } else if (args.targetType === "comment") {
+      if (!args.commentId) throw new ValidationError("Comment is required.");
+      const comment = await ctx.db.get(args.commentId);
+      if (!comment || comment.deletedAt) {
+        throw new ValidationError("Comment not found.");
+      }
+    } else {
+      const profileUserId = args.profileUserId?.trim().toLowerCase();
+      if (!profileUserId) throw new ValidationError("Profile is required.");
+    }
+
+    const reportId = await ctx.db.insert("socialContentReports", {
+      reporterId,
+      targetType: args.targetType,
+      postId: args.postId,
+      commentId: args.commentId,
+      profileUserId: args.profileUserId?.trim().toLowerCase(),
+      reason,
+      details,
+      status: "open",
+      createdAt: Date.now(),
+    });
+    return { ok: true as const, reportId };
   },
 });

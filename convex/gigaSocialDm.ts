@@ -35,6 +35,7 @@ import {
 } from "./gigaSocialDmPolicy";
 import { consumeSocialWriteRateLimit } from "./socialRateLimit";
 import { normalizeUserId } from "./userIds";
+import { assertChildSafetyFeature } from "./childSafety";
 
 type ThreadDoc = Doc<"socialDmThreads">;
 
@@ -309,6 +310,7 @@ export const sendMessage = mutation({
   handler: async (ctx, args) => {
     assertGigaSocialDmEnabled();
     const userId = await requireDmUserId(args.sessionToken, ctx);
+    await assertChildSafetyFeature(ctx, userId, "social_dm");
     await consumeSocialWriteRateLimit(ctx, userId, "dm_send");
 
     const body = sanitizeDmBody(args.body);
@@ -412,6 +414,7 @@ export const acceptRequest = mutation({
   handler: async (ctx, args) => {
     assertGigaSocialDmEnabled();
     const userId = await requireDmUserId(args.sessionToken, ctx);
+    await assertChildSafetyFeature(ctx, userId, "social_dm");
     const thread = await getThreadOrThrow(ctx, args.threadId);
     assertDmThreadParticipant(thread, userId);
     await assertPairNotBlocked(ctx, thread.participantAId, thread.participantBId);

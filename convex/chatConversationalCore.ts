@@ -28,6 +28,12 @@ import { shouldAcceptConversationalEngineResult } from "./chatConversationalAcce
 import { CHAT_ERROR_CODES, classifyProviderError } from "./chatErrorCodes";
 import { logChatReply } from "./chatReplyLog";
 import { hasWritingCraftIntent } from "./writingCraft";
+import {
+  CHILD_AI_SYSTEM_ADDENDUM,
+  scanTextForSafetyHits,
+  shouldBlockUnsafeContent,
+  UNSAFE_OUTPUT_FALLBACK_MESSAGE,
+} from "./childSafetyPolicy";
 
 export const CONVERSATIONAL_REPLY_TIMEOUT_MS = 45_000;
 
@@ -118,7 +124,15 @@ export async function executeConversationalReply(
       query: args.content,
     });
 
-  const personaAddon = personaSystemPromptAddon(args.personaId);
+  const ageAccess = await ctx.runQuery(internal.childSafety.getAgeAccessInternal, {
+    email: args.userId,
+  });
+  if (ageAccess.requiresChildAiMode) {
+    systemPrompt += `\n\n${CHILD_AI_SYSTEM_ADDENDUM}`;
+  }
+  const personaAddon = ageAccess.requiresChildAiMode
+    ? ""
+    : personaSystemPromptAddon(args.personaId);
   if (personaAddon) {
     systemPrompt += `\n\n${personaAddon}`;
   }
@@ -189,11 +203,16 @@ export async function executeConversationalReply(
     answer: engineResult.content,
     context: qualityContext,
   });
+  let safeContent = validated.content;
+  const outputHits = scanTextForSafetyHits(safeContent);
+  if (shouldBlockUnsafeContent(outputHits, ageAccess.category)) {
+    safeContent = UNSAFE_OUTPUT_FALLBACK_MESSAGE;
+  }
 
   await ctx.runMutation(internal.platform.appendAssistantReplyIfMissing, {
     conversationId: args.conversationId,
     userId: args.userId,
-    content: validated.content,
+    content: safeContent,
     since: args.since,
   });
 

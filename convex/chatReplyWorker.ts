@@ -14,6 +14,12 @@ import {
   chatSystemStyleAddon,
   responseDetailStyleAddon,
 } from "./assistantIdentity";
+import {
+  CHILD_AI_SYSTEM_ADDENDUM,
+  scanTextForSafetyHits,
+  shouldBlockUnsafeContent,
+  UNSAFE_OUTPUT_FALLBACK_MESSAGE,
+} from "./childSafetyPolicy";
 import { personaSystemPromptAddon } from "./gigaPersonas";
 import { buildChatSubscriptionGuidanceAddon } from "./chatSubscriptionGuidance";
 import { buildInterestSystemAddon, parseInterestProfile } from "./userLearning";
@@ -765,7 +771,15 @@ export const processJob = internalAction({
           credits: refreshedUser?.credits,
           query: job.content,
         });
-      const personaAddon = personaSystemPromptAddon(job.personaId);
+      const ageAccess = await ctx.runQuery(internal.childSafety.getAgeAccessInternal, {
+        email,
+      });
+      if (ageAccess.requiresChildAiMode) {
+        systemPrompt += `\n\n${CHILD_AI_SYSTEM_ADDENDUM}`;
+      }
+      const personaAddon = ageAccess.requiresChildAiMode
+        ? ""
+        : personaSystemPromptAddon(job.personaId);
       if (personaAddon) {
         systemPrompt += `\n\n${personaAddon}`;
       }
@@ -1132,6 +1146,12 @@ export const processJob = internalAction({
         });
         assistantContent = validated.content;
         qualityReport = validated.report;
+      }
+
+      const outputHits = scanTextForSafetyHits(assistantContent);
+      if (shouldBlockUnsafeContent(outputHits, ageAccess.category)) {
+        assistantContent = UNSAFE_OUTPUT_FALLBACK_MESSAGE;
+        qualityReport = null;
       }
 
       const chargedAi = engineResult.providerId !== "local_fallback";

@@ -32,7 +32,9 @@ function inferPriority(
   type: string,
   rating?: number
 ): "low" | "normal" | "high" | "critical" {
-  if (type === "bug" || type === "content_report") return "high";
+  if (type === "bug" || type === "content_report" || type === "unsafe_ai") {
+    return "high";
+  }
   if (type === "incorrect_info") return "high";
   if (type === "ai_rating" && typeof rating === "number" && rating <= 2) {
     return "high";
@@ -85,7 +87,8 @@ export const submitFeedback = mutation({
     const email = await requireSession(args.sessionToken);
     await enforceFeedbackRate(ctx, `feedback:${email}`);
 
-    if (PHASE5_ONLY_TYPES.has(args.type)) {
+    // unsafe_ai is always available for child-safety reports (not gated on phase5).
+    if (PHASE5_ONLY_TYPES.has(args.type) && args.type !== "unsafe_ai") {
       if (!(await isPhase5FlagEnabled(ctx, "phase5.feedback"))) {
         throw new Error("That feedback category is not available yet.");
       }

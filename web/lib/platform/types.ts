@@ -18,7 +18,8 @@ export type FeedbackType =
   | "ai_rating"
   | "incorrect_info"
   | "usability"
-  | "content_report";
+  | "content_report"
+  | "unsafe_ai";
 
 export type FeedbackStatus = "open" | "reviewing" | "resolved" | "closed";
 

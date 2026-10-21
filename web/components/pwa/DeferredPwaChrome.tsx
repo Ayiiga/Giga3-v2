@@ -32,6 +32,15 @@ const EngagementHost = dynamic(
   { ssr: false }
 );
 
+const AgeGateHost = dynamic(
+  withChunkRetryLoader(() =>
+    import("@/components/safety/AgeGateHost").then((module) => ({
+      default: module.AgeGateHost,
+    }))
+  ),
+  { ssr: false }
+);
+
 /** Defers non-critical PWA UI until after first paint / idle time. */
 export function DeferredPwaChrome() {
   const [ready, setReady] = useState(false);
@@ -51,6 +60,7 @@ export function DeferredPwaChrome() {
   return (
     <>
       <SwUpdatePrompt />
+      <AgeGateHost />
       <EngagementHost />
       <InstallPrompt />
       <PushPrompt />
