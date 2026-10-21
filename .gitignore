@@ -19,3 +19,6 @@ web/public/sw.js.map
 
 # Local-only Cloud Agent file transfer (never commit secrets)
 .cursor-private-transfer/
+
+# Phone handoff of signing backup (never commit)
+android-signing-handoff/
