@@ -20,8 +20,8 @@
     "path": "./android.keystore",
     "alias": "android"
   },
-  "appVersionName": "1.0.0",
-  "appVersionCode": 1,
+  "appVersionName": "1.0.1",
+  "appVersionCode": 2,
   "shortcuts": [
     {
       "name": "Chat",
@@ -66,7 +66,7 @@
   "isChromeOSOnly": false,
   "isMetaQuest": false,
   "fullScopeUrl": "https://www.giga3ai.com/",
-  "minSdkVersion": 21,
+  "minSdkVersion": 24,
   "orientation": "portrait-primary",
   "fingerprints": [],
   "additionalTrustedOrigins": [],
@@ -78,5 +78,5 @@
     "standalone",
     "window-controls-overlay"
   ],
-  "appVersion": "1.0.0"
+  "appVersion": "1.0.1"
 }

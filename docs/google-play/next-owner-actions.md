@@ -9,7 +9,8 @@ Authoritative status: `docs/google-play/final-play-readiness-2026-10-21.md`
 - Upload keystore exists: `android/upload-keystore.jks`, alias `android` (gitignored).
 - Signed release AAB builds with existing signing:  
   `android/app/build/outputs/bundle/release/app-release.aab`  
-  (`jarsigner` → jar verified; versionCode **1**, targetSdk **36**, package **`com.giga3ai.app`**).
+  and downloadable `android-signing-handoff/app-release-play-ready.aab`  
+  (`jarsigner` → jar verified; versionCode **2**, versionName **1.0.1**, minSdk **24**, targetSdk **36**, package **`com.giga3ai.app`**).
 - Signing backup: `android-signing-handoff/Giga3AI-Android-Backup.zip` (gitignored; keep offline).
 - Upload-key SHA-256 recorded in `docs/google-play/assetlinks.prepared.json`.
 - Feature graphic file prepared at `docs/google-play/assets/feature-graphic-1024x500.png`.

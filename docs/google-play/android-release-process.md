@@ -45,7 +45,7 @@ Confirm before each release:
 
 - `applicationId` = `com.giga3ai.app` in `android/app/build.gradle`
 - Launch URL = `https://www.giga3ai.com/` (via `hostName` + `launchUrl`)
-- `compileSdkVersion` / `targetSdkVersion` = 36, `minSdkVersion` = 21
+- `compileSdkVersion` / `targetSdkVersion` = 36, `minSdkVersion` = 24 (Play Automatic Protection requires ≥24)
 - Play Billing disabled in `twa-manifest.json` (`playBilling.enabled: false`)
 - Permissions: `POST_NOTIFICATIONS` only in manifest; camera/mic via web APIs; location delegation **off**
 
