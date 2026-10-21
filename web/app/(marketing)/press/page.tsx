@@ -16,9 +16,15 @@ export const metadata = publicMetadata({
 });
 
 const PRODUCT_HIGHLIGHTS = PRODUCT_CATALOG.filter((p) =>
-  ["/gigalearn", "/media", "/gigaedit", "/gigasocial", "/marketplace", "/creator-studio"].includes(
-    p.href
-  )
+  [
+    "/gigalearn",
+    "/gigalearn/academy",
+    "/gigalearn/exam",
+    "/gigasocial",
+    "/marketplace",
+    "/creator-studio",
+    "/documents",
+  ].includes(p.href)
 );
 
 export default function PressPage() {

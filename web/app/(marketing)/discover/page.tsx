@@ -34,7 +34,7 @@ export default function DiscoverPage() {
       <ProductSeoHeader
         title="Discover — Explore the Giga3 AI ecosystem"
         description="Find trending prompts, educational resources, marketplace products, and community topics across Giga3 AI products in one place."
-        detail="Use Discover to jump into AI Chat, GigaLearn, Media Studio, GigaEdit, GigaSocial, or the Marketplace without hunting through menus."
+        detail="Use Discover to jump into AI Chat, GigaLearn, Creator Studio, GigaSocial, or the Marketplace without hunting through menus."
         showProductNav={false}
       />
       <div className="discover-stable section-padding pt-8 pb-8">

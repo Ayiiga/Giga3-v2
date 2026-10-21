@@ -22,18 +22,18 @@ export const metadata = publicMetadata({
   path: PATH,
   title: "Giga3 AI Features — Every Product in One AI Ecosystem",
   description:
-    "All Giga3 AI products in one place: AI chat and research, GigaLearn, Media Studio, Video AI, GigaEdit, GigaSocial, Marketplace, Enterprise and developer API.",
+    "All Giga3 AI products in one place: AI chat and research, GigaLearn Academy, Exam Practice, Document Studio, Creator Studio, GigaSocial, Marketplace, Enterprise and developer API.",
 });
 
 const FAQ: FaqItem[] = [
   {
     question: "Are Giga3 AI products separate apps?",
     answer:
-      "No. Every product runs inside the same Giga3 AI account and progressive web app. Your sign-in, credits and subscription are shared, and creations move between tools — for example an image from Media Studio can be edited in GigaEdit and published to GigaSocial.",
+      "No. Every product runs inside the same Giga3 AI account and progressive web app. Your sign-in, credits and subscription are shared across chat, learning, writing, community and marketplace tools — for example a draft from Creator Studio can be published to GigaSocial or listed on the Marketplace.",
   },
   {
     question: "Do I pay separately for each product?",
-    answer: `One account covers everything. Chat, research, writing and image tools draw from the same credit balance: ${FREE_STARTER_CREDITS} free starter credits, then ${SUBSCRIPTION_PLANS.basic.label} (GHS ${SUBSCRIPTION_PLANS.basic.priceGhs}), ${SUBSCRIPTION_PLANS.pro.label} (GHS ${SUBSCRIPTION_PLANS.pro.priceGhs}) or ${SUBSCRIPTION_PLANS.premium.label} (GHS ${SUBSCRIPTION_PLANS.premium.priceGhs}) per month. Video AI uses a separate video-credit wallet with its own plans.`,
+    answer: `One account covers everything. Chat, research, writing and in-chat image tools draw from the same credit balance: ${FREE_STARTER_CREDITS} free starter credits, then ${SUBSCRIPTION_PLANS.basic.label} (GHS ${SUBSCRIPTION_PLANS.basic.priceGhs}), ${SUBSCRIPTION_PLANS.pro.label} (GHS ${SUBSCRIPTION_PLANS.pro.priceGhs}) or ${SUBSCRIPTION_PLANS.premium.label} (GHS ${SUBSCRIPTION_PLANS.premium.priceGhs}) per month.`,
   },
   {
     question: "Which AI models power Giga3 AI?",
@@ -50,7 +50,7 @@ export default function FeaturesPage() {
           path: PATH,
           name: "Giga3 AI Features — Every Product in One AI Ecosystem",
           description:
-            "All Giga3 AI products in one place: AI chat and research, GigaLearn, Media Studio, Video AI, GigaEdit, GigaSocial, Marketplace, Enterprise and developer API.",
+            "All Giga3 AI products in one place: AI chat and research, GigaLearn Academy, Exam Practice, Document Studio, Creator Studio, GigaSocial, Marketplace, Enterprise and developer API.",
         }}
       />
       <JsonLd
@@ -67,7 +67,7 @@ export default function FeaturesPage() {
               <h1 className="page-title">Giga3 AI features: one ecosystem, every tool connected</h1>
               <p className="section-lead mt-4">
                 Giga3 AI is a single account and app that brings AI chat, research, coding help,
-                learning, image and video creation, editing, a creator community and a GHS
+                learning, Document Studio, Creator Studio, a creator community and a GHS
                 marketplace together. Each product below is live today and links to its own page.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
@@ -117,18 +117,20 @@ export default function FeaturesPage() {
             <section className="mt-14 max-w-3xl space-y-4">
               <ArticleH2>How the pieces fit together</ArticleH2>
               <Prose>
-                Create an image in <ArticleLink href="/media">Media Studio</ArticleLink>, cut it into a
-                clip with captions in <ArticleLink href="/gigaedit">GigaEdit</ArticleLink>, publish it to{" "}
-                <ArticleLink href="/gigasocial">GigaSocial</ArticleLink>, and sell the finished template on
-                the <ArticleLink href="/marketplace">Marketplace</ArticleLink>. Students follow the same path
-                from a <ArticleLink href="/chat">chat</ArticleLink> explanation to{" "}
-                <ArticleLink href="/gigalearn">GigaLearn</ArticleLink> practice, while schools and teams add{" "}
-                <ArticleLink href="/enterprise">workspaces</ArticleLink> and{" "}
+                Draft in <ArticleLink href="/creator-studio">Creator Studio</ArticleLink> or{" "}
+                <ArticleLink href="/documents">Document Studio</ArticleLink>, get research and in-chat
+                image help from the <ArticleLink href="/chat">AI Assistant</ArticleLink>, publish to{" "}
+                <ArticleLink href="/gigasocial">GigaSocial</ArticleLink>, and sell eligible digital
+                products on the <ArticleLink href="/marketplace">Marketplace</ArticleLink>. Students
+                follow the same path from a chat explanation to{" "}
+                <ArticleLink href="/gigalearn/academy">GigaLearn Academy</ArticleLink> and{" "}
+                <ArticleLink href="/gigalearn/exam">Exam Practice</ArticleLink>, while schools and teams
+                add <ArticleLink href="/enterprise">workspaces</ArticleLink> and{" "}
                 <ArticleLink href="/automation">automation</ArticleLink> on top.
               </Prose>
               <Prose>
                 Billing is in Ghanaian cedis through Paystack, with one credit balance shared across
-                chat, research, writing and image tools. See{" "}
+                chat, research, writing and in-chat image tools. See{" "}
                 <ArticleLink href="/pricing">pricing</ArticleLink> for the current plans.
               </Prose>
             </section>

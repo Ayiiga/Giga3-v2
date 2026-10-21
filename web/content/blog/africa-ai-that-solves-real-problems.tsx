@@ -22,7 +22,7 @@ export const PLAIN_TEXT = `
 Africa does not need more AI hype. We need AI that solves real problems for students teachers
 entrepreneurs researchers creators everyday users. African needs and experiences should shape
 AI development. Responsible AI verification privacy human judgment. Giga3 AI built in Africa
-powered by AI designed for everyone. Chat GigaLearn Media Studio creative productivity.
+powered by AI designed for everyone. Chat GigaLearn Creator Studio creative productivity.
 `.trim();
 
 function ArticleContent() {
@@ -76,8 +76,9 @@ function ArticleContent() {
         <ArticleLink href="/chat/">AI Chat</ArticleLink> for learning, research, writing, and
         everyday questions;{" "}
         <ArticleLink href="/gigalearn/">GigaLearn</ArticleLink> for structured study and exam
-        preparation; and creative tools such as{" "}
-        <ArticleLink href="/media/">Media Studio</ArticleLink> for image generation and editing.
+        preparation; and{" "}
+        <ArticleLink href="/creator-studio/">Creator Studio</ArticleLink> plus in-chat images for
+        creative drafts.
         None of these replace teachers, professionals, or personal responsibility. They are meant
         to assist people who already carry the hard work.
       </Prose>

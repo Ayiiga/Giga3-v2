@@ -84,7 +84,7 @@ const PERSONAS: {
     icon: Palette,
     tagline: "Create, edit and publish — then earn in GHS.",
     points: [
-      "Media Studio images, Video AI clips and GigaEdit on-device editing",
+      "Creator Studio drafts plus AI Assistant research and in-chat images",
       "Publish to the GigaSocial community from one account",
       "Sell digital products on Marketplace with Paystack checkout",
     ],
@@ -109,10 +109,10 @@ const TOOLS = [
   },
   {
     icon: Video,
-    title: "Video & Media Studio",
-    text: "Generate video and images, add text overlays, then polish in GigaEdit.",
-    href: "/media",
-    linkLabel: "Open Media Studio",
+    title: "Creator Studio",
+    text: "Draft captions and scripts, then publish to GigaSocial from one account.",
+    href: "/creator-studio",
+    linkLabel: "Open Creator Studio",
   },
   {
     icon: Users,
@@ -148,7 +148,7 @@ const FAQ: FaqItem[] = [
   {
     question: "What is the Ghana AI Super App?",
     answer:
-      "The Ghana AI Super App is Giga3 AI — one platform combining AI chat, GigaLearn tutoring, video and image creation, GigaEdit, GigaSocial community and Marketplace, built in Ghana with GHS billing through Paystack.",
+      "The Ghana AI Super App is Giga3 AI — one platform combining AI chat, GigaLearn tutoring, Document Studio, Creator Studio, GigaSocial community and Marketplace, built in Ghana with GHS billing through Paystack.",
   },
   {
     question: "How does Giga3 AI help BECE and WASSCE students?",

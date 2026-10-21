@@ -12,7 +12,7 @@ import {
 } from "@/lib/payments/subscriptionCatalog";
 
 const HOME_DESCRIPTION =
-  "Giga3 AI is Africa's AI super app for chat, research, learning, coding, image and video creation, editing and productivity. Built in Ghana for Africa and the world.";
+  "Giga3 AI is Africa's AI super app for chat, research, learning, coding, Document Studio, GigaSocial, Marketplace and productivity. Built in Ghana for Africa and the world.";
 
 export const metadata = publicMetadata({
   path: "/",

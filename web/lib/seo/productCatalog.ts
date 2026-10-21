@@ -24,7 +24,7 @@ export const PRODUCT_GROUPS: readonly { id: ProductGroupId; title: string; lead:
   {
     id: "create",
     title: "Create & write",
-    lead: "Document Studio and Creator Studio for writing and learning materials — dedicated Media Studio and GigaEdits products are retired.",
+    lead: "Document Studio and Creator Studio for writing, learning materials, and social drafts under one account.",
   },
   {
     id: "share",

@@ -24,7 +24,7 @@ const TOC = [
 export const PLAIN_TEXT = `
 Ghanaian youth AI money online content creation graphic design video editing social media copywriting tutoring freelancing.
 No guaranteed income legitimate opportunities scams fake investment fake AI jobs advance fee crypto get rich quick.
-Creator Studio Media Studio GigaSocial responsible earning Ghana.
+Creator Studio AI Assistant GigaSocial responsible earning Ghana.
 `.trim();
 
 function ArticleContent() {
@@ -60,10 +60,10 @@ function ArticleContent() {
       />
 <ArticleH2 id="design-video">Design and video</ArticleH2>
       <Prose>
-        AI assists with image concepts via <ArticleLink href="/media/">Media Studio</ArticleLink>,
-        short clips via <ArticleLink href="/video/">Video AI</ArticleLink>, and edits via{" "}
-        <ArticleLink href="/gigaedit/">GigaEdit</ArticleLink>. Deliver finished files clients can
-        use — AI drafts alone are rarely enough.
+        AI assists with image concepts via the{" "}
+        <ArticleLink href="/chat/">AI Assistant</ArticleLink> and writing workflows in{" "}
+        <ArticleLink href="/creator-studio/">Creator Studio</ArticleLink>. Deliver finished files
+        clients can use — AI drafts alone are rarely enough.
       </Prose>
 
       <ArticleH2 id="writing-tutoring">Writing and tutoring</ArticleH2>
@@ -124,7 +124,7 @@ function ArticleContent() {
           { href: "/blog/facebook-tiktok-whatsapp-fact-checking/", label: "Verify before you share" },
           { href: "/blog/best-ai-tools-in-ghana-2026/", label: "Best AI tools in Ghana" },
           { href: "/creator-studio/", label: "Creator Studio" },
-          { href: "/media/", label: "Media Studio" },
+          { href: "/chat/", label: "AI Assistant" },
         ]}
       />
     </>
@@ -139,7 +139,7 @@ function Body({ post }: BlogArticleBodyProps) {
       cta={
         <BlogProductCta
           title="Create and publish with Giga3 AI"
-          description="Media Studio, Video AI, and Creator Studio — build a portfolio before you pitch clients."
+          description="Creator Studio, AI Assistant, and GigaSocial — build a portfolio before you pitch clients."
           href="/creator-studio/"
           label="Open Creator Studio"
         />

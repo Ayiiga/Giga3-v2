@@ -196,8 +196,8 @@ function ArticleContent() {
         <ArticleH3>Useful AI tools</ArticleH3>
         <Prose>
           <ArticleLink href="/gigasocial/">GigaSocial</ArticleLink>,{" "}
-          <ArticleLink href="/media/">Media Studio</ArticleLink>, plus any chat assistant for
-          caption variants.
+          <ArticleLink href="/creator-studio/">Creator Studio</ArticleLink>, plus any chat assistant
+          for caption variants.
         </Prose>
         <ArticleH3>How to start</ArticleH3>
         <Prose>
@@ -242,9 +242,9 @@ function ArticleContent() {
         />
         <ArticleH3>Useful AI tools</ArticleH3>
         <Prose>
-          <ArticleLink href="/gigaedit/">GigaEdit</ArticleLink>,{" "}
-          <ArticleLink href="/video/">Video AI</ArticleLink>, transcription-assisted editing in your
-          NLE of choice.
+          Transcription-assisted editing in your NLE of choice, plus drafting help from the{" "}
+          <ArticleLink href="/chat/">AI Assistant</ArticleLink> and publishing on{" "}
+          <ArticleLink href="/gigasocial/">GigaSocial</ArticleLink>.
         </Prose>
         <ArticleH3>How to start</ArticleH3>
         <Prose>Repurpose one public talk (with permission) into three vertical clips as portfolio proof.</Prose>
@@ -333,8 +333,8 @@ function ArticleContent() {
         />
         <ArticleH3>Useful AI tools</ArticleH3>
         <Prose>
-          <ArticleLink href="/media/">Media Studio</ArticleLink>, ChatGPT/Gemini for mood-board
-          prompts, vector finishing in Canva/Figma/Illustrator.
+          The <ArticleLink href="/chat/">AI Assistant</ArticleLink> for mood-board prompts and
+          concept images, plus vector finishing in Canva/Figma/Illustrator.
         </Prose>
         <ArticleH3>How to start</ArticleH3>
         <Prose>Create three fictional brand kits (food, fashion, fintech) for your portfolio.</Prose>

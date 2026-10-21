@@ -1,7 +1,7 @@
 import { Container } from "@/components/ui/Container";
 import { CREATOR_WORKFLOW_STEPS } from "@/lib/seo/productLinks";
 
-/** Static explanation of the create → edit → publish flow across Media Studio and GigaEdit. */
+/** Static explanation of the write → assist → publish flow (education-first creator path). */
 export function CreatorWorkflowIntro() {
   return (
     <section className="border-b border-border bg-zinc-50 py-10">
@@ -9,7 +9,7 @@ export function CreatorWorkflowIntro() {
         <div className="mx-auto max-w-3xl">
           <h2 className="text-lg font-semibold text-foreground">Creator workflow on Giga3 AI</h2>
           <p className="mt-3 text-base leading-7 text-muted">
-            Start in Media Studio to generate images, open GigaEdit to assemble and refine video,
+            Draft in Creator Studio, get research and in-chat image help from the AI Assistant,
             then publish to GigaSocial when your work is ready.
           </p>
           <ol className="mt-6 space-y-4">
