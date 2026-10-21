@@ -24,6 +24,15 @@ describe("marketingPricing", () => {
     expect(teasers[3].name).toBe(SUBSCRIPTION_PLANS.premium.label);
   });
 
+  it("does not advertise retired Media Studio or GigaEdit products", () => {
+    const featureText = buildHomepagePricingTeasers()
+      .flatMap((t) => [...t.features, t.description])
+      .join(" ");
+    expect(featureText).not.toMatch(/media studio/i);
+    expect(featureText).not.toMatch(/gigaedit/i);
+    expect(featureText).not.toMatch(/video ai/i);
+  });
+
   it("uses canonical plan labels", () => {
     expect(subscriptionPlanLabel("basic")).toBe("Basic");
     expect(subscriptionPlanLabel("pro")).toBe("Pro");

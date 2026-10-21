@@ -22,7 +22,7 @@ export const metadata = publicMetadata({
   path: PATH,
   title: "Giga3 AI Features — Every Product in One AI Ecosystem",
   description:
-    "All Giga3 AI products in one place: AI chat and research, GigaLearn Academy, Exam Practice, Document Studio, Creator Studio, GigaSocial, Marketplace, Enterprise and developer API.",
+    "Giga3 AI products in one place: AI chat, GigaLearn Academy, Exam Practice, Document Studio, Creator Studio, GigaSocial, Marketplace and Enterprise.",
 });
 
 const FAQ: FaqItem[] = [
@@ -50,7 +50,7 @@ export default function FeaturesPage() {
           path: PATH,
           name: "Giga3 AI Features — Every Product in One AI Ecosystem",
           description:
-            "All Giga3 AI products in one place: AI chat and research, GigaLearn Academy, Exam Practice, Document Studio, Creator Studio, GigaSocial, Marketplace, Enterprise and developer API.",
+            "Giga3 AI products in one place: AI chat, GigaLearn Academy, Exam Practice, Document Studio, Creator Studio, GigaSocial, Marketplace and Enterprise.",
         }}
       />
       <JsonLd
