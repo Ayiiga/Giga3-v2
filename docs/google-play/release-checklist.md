@@ -18,8 +18,9 @@
 - [ ] Short description (≤80 chars)
 - [ ] Full description (≤4000 chars)
 - [ ] App icon 512×512 (`web/public/icons/icon-512.png`)
-- [ ] Feature graphic 1024×500 (**not in repo — create**)
-- [ ] Phone screenshots (min 2)
+- [ ] Feature graphic 1024×500 (`docs/google-play/assets/feature-graphic-1024x500.png` — visually approve, then upload)
+- [ ] Phone screenshots (min 2) from **installed TWA** (website viewport PNGs are interim only)
+- [ ] See final status: `final-play-readiness-2026-10-21.md`
 - [ ] Tablet screenshots (recommended)
 - [ ] Category selected
 - [ ] Contact email
