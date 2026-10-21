@@ -110,16 +110,25 @@ Credentials / keystore passwords were **not** printed or committed.
 3. Upload signed AAB to **Internal testing** (do not publish production without approval).
 4. Enable Play App Signing; copy **App signing** SHA-256 into `assetlinks.prepared.json`; authorize deploy of `web/public/.well-known/assetlinks.json`.
 5. Complete Data Safety, content rating, ads, audience, AI/UGC declarations.
+<<<<<<< HEAD
 6. Visually approve feature graphic; capture phone screenshots on a physical device.
+=======
+6. Create feature graphic + phone screenshots.
+>>>>>>> origin/main
 7. Run physical-device smoke matrix (`internal-testing-checklist.md`).
 8. If personal developer account: plan closed testing per doc 05 before production access.
 
 ## 9. Store listing still outstanding
 
+<<<<<<< HEAD
 - Phone screenshots from **installed TWA** (min 2) — website viewport captures are interim only
 - Visual approval of feature graphic before Console upload
 
 See also: `docs/google-play/final-play-readiness-2026-10-21.md` (Phases 1–7 final checklist).
+=======
+- Feature graphic 1024×500
+- Phone screenshots (min 2)
+>>>>>>> origin/main
 - Short/full descriptions finalized in Console
 - Category / contact email confirmation
 
