@@ -96,7 +96,7 @@ function ArticleContent() {
 
       <ArticleH2 id="images">8. Image creation</ArticleH2>
       <Prose>
-        Generate diagrams and project visuals via <ArticleLink href="/media/">Media Studio</ArticleLink>{" "}
+        Generate diagrams and project visuals via <ArticleLink href="/creator-studio/">Creator Studio</ArticleLink>{" "}
         or similar tools. Label AI-generated images when submitting coursework if required.
       </Prose>
 

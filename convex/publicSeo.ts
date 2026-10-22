@@ -18,6 +18,8 @@ const MAX_SITEMAP_LISTINGS = 500;
 /** Build-time and crawler SEO bundles for public Marketplace and GigaSocial pages. */
 const MAX_SITEMAP_POSTS = 300;
 const MAX_SITEMAP_PROFILES = 300;
+/** Skip thin UGC that Search Console typically leaves as Discovered-not-indexed. */
+const MIN_SITEMAP_POST_BODY_CHARS = 80;
 
 function truncateDescription(text: string, max = 320): string {
   const trimmed = text.replace(/\s+/g, " ").trim();
@@ -86,6 +88,13 @@ export const getMarketplaceSeoBundle = query({
   },
 });
 
+function postHasSitemapSignal(post: { body: string; mediaMetaJson?: string }) {
+  const bodyLen = post.body.replace(/\s+/g, " ").trim().length;
+  if (bodyLen >= MIN_SITEMAP_POST_BODY_CHARS) return true;
+  const media = post.mediaMetaJson?.trim();
+  return Boolean(media && media !== "[]" && media !== "{}");
+}
+
 /** Public GigaSocial posts for sitemap generation (public visibility only). */
 export const listPublicPostSitemapEntries = query({
   args: { limit: v.optional(v.number()) },
@@ -94,7 +103,10 @@ export const listPublicPostSitemapEntries = query({
     const rows = await ctx.db.query("socialPosts").order("desc").take(cap * 4);
 
     return rows
-      .filter((post) => !post.deletedAt && post.visibility !== "followers")
+      .filter(
+        (post) =>
+          !post.deletedAt && post.visibility !== "followers" && postHasSitemapSignal(post)
+      )
       .slice(0, cap)
       .map((post) => {
         const display = splitPostDisplay(post.body);
@@ -166,16 +178,42 @@ export const listPublicProfileSitemapEntries = query({
   args: { limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const cap = Math.min(args.limit ?? MAX_SITEMAP_PROFILES, MAX_SITEMAP_PROFILES);
-    const profiles = await ctx.db.query("socialProfiles").order("desc").take(cap * 2);
+    const profiles = await ctx.db.query("socialProfiles").order("desc").take(cap * 3);
 
-    return profiles
-      .filter((profile) => Boolean(normalizeSocialHandle(profile.handle)))
-      .slice(0, cap)
-      .map((profile) => ({
-        handle: normalizeSocialHandle(profile.handle),
+    const eligible: {
+      handle: string;
+      displayName: string;
+      updatedAt: number;
+    }[] = [];
+
+    for (const profile of profiles) {
+      if (eligible.length >= cap) break;
+      const handle = normalizeSocialHandle(profile.handle);
+      if (!handle) continue;
+
+      const bio = (profile.bio ?? "").replace(/\s+/g, " ").trim();
+      const displayName = (profile.displayName ?? "").replace(/\s+/g, " ").trim();
+      const hasIdentity = bio.length >= 20 || (displayName.length >= 2 && displayName.toLowerCase() !== handle);
+      if (!hasIdentity) continue;
+
+      const recent = await ctx.db
+        .query("socialPosts")
+        .withIndex("by_author_created", (q) => q.eq("authorId", profile.userId))
+        .order("desc")
+        .take(12);
+      const hasPublicPost = recent.some(
+        (post) => !post.deletedAt && post.visibility !== "followers" && postHasSitemapSignal(post)
+      );
+      if (!hasPublicPost) continue;
+
+      eligible.push({
+        handle,
         displayName: profile.displayName,
         updatedAt: profile.updatedAt ?? profile.createdAt,
-      }));
+      });
+    }
+
+    return eligible;
   },
 });
 

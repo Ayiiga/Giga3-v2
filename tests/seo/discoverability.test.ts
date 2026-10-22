@@ -102,10 +102,28 @@ describe("canonical host redirect", () => {
     expect(src.indexOf("apexToWwwRedirect")).toBeLessThan(src.indexOf("isGigaSocialPostPath"));
   });
 
-  it("serves offline.html from middleware before trailingSlash handling", () => {
+  it("serves offline.html from bundled HTML (avoids ASSETS pretty-URL to /offline)", () => {
     const middleware = readFileSync(resolve(root, "web/functions/_middleware.js"), "utf8");
     expect(middleware).toContain("isOfflineHtmlPath");
-    expect(middleware).toContain("ASSETS.fetch");
+    expect(middleware).toContain("OFFLINE_PAGE_HTML");
+    expect(middleware).toContain("serveOfflineHtml");
+    expect(middleware).not.toContain("ASSETS.fetch(assetRequest)");
+  });
+
+  it("returns HTTP 404 for soft-404 pretty-URL paths", () => {
+    const middleware = readFileSync(resolve(root, "web/functions/_middleware.js"), "utf8");
+    expect(middleware).toContain("isSoft404Path");
+    expect(middleware).toContain("serveSoft404");
+    expect(middleware).toContain('status: 404');
+  });
+
+  it("keeps the PWA offline shell HTML in sync with the middleware bundle", () => {
+    const pub = readFileSync(resolve(root, "web/public/offline.html"), "utf8");
+    const bundled = readFileSync(resolve(root, "web/functions/offlinePageHtml.js"), "utf8");
+    expect(bundled).toContain("OFFLINE_PAGE_HTML");
+    // JSON.stringify of the public file must appear in the module export.
+    expect(bundled).toContain(JSON.stringify(pub).slice(1, 40));
+    expect(bundled.length).toBeGreaterThan(pub.length);
   });
 });
 
@@ -121,6 +139,12 @@ describe("noindex app shells avoid homepage canonical leak", () => {
       ["web/app/(marketing)/credits/page.tsx", 'canonical: "/credits/"'],
       ["web/app/(marketing)/subscribe/page.tsx", 'canonical: "/subscribe/"'],
       ["web/app/(marketing)/admin/page.tsx", 'canonical: "/admin/"'],
+      ["web/app/(marketing)/marketplace/sell/page.tsx", 'canonical: "/marketplace/sell/"'],
+      [
+        "web/app/(marketing)/marketplace/purchases/page.tsx",
+        'canonical: "/marketplace/purchases/"',
+      ],
+      ["web/app/(app)/chat/login/page.tsx", 'canonical: "/chat/login/"'],
     ];
     for (const [file, needle] of checks) {
       expect(readFileSync(resolve(root, file), "utf8")).toContain(needle);
@@ -134,10 +158,12 @@ describe("noindex app shells avoid homepage canonical leak", () => {
 });
 
 describe("404 and homepage structured data", () => {
-  it("marks the not-found page noindex and does not canonicalize it to the homepage", () => {
+  it("marks the not-found page noindex with a non-homepage canonical", () => {
     const src = readFileSync(resolve(root, "web/app/not-found.tsx"), "utf8");
     expect(src).toContain("index: false");
-    expect(src).toContain('canonical: "/404.html"');
+    expect(src).toContain('canonical: "/404/"');
+    expect(src).not.toContain('canonical: "/404.html"');
+    expect(src).not.toContain('canonical: "/"');
   });
 
   it("emits WebSite, Organization, and WebApplication markup on the homepage", () => {

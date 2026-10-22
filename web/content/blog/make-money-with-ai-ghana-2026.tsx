@@ -196,7 +196,7 @@ function ArticleContent() {
         <ArticleH3>Useful AI tools</ArticleH3>
         <Prose>
           <ArticleLink href="/gigasocial/">GigaSocial</ArticleLink>,{" "}
-          <ArticleLink href="/media/">Media Studio</ArticleLink>, plus any chat assistant for
+          <ArticleLink href="/creator-studio/">Creator Studio</ArticleLink>, plus any chat assistant for
           caption variants.
         </Prose>
         <ArticleH3>How to start</ArticleH3>
@@ -242,8 +242,8 @@ function ArticleContent() {
         />
         <ArticleH3>Useful AI tools</ArticleH3>
         <Prose>
-          <ArticleLink href="/gigaedit/">GigaEdit</ArticleLink>,{" "}
-          <ArticleLink href="/video/">Video AI</ArticleLink>, transcription-assisted editing in your
+          <ArticleLink href="/documents/">Document Studio</ArticleLink>,{" "}
+          <ArticleLink href="/creator-studio/">Creator Studio</ArticleLink>, transcription-assisted editing in your
           NLE of choice.
         </Prose>
         <ArticleH3>How to start</ArticleH3>
@@ -333,7 +333,7 @@ function ArticleContent() {
         />
         <ArticleH3>Useful AI tools</ArticleH3>
         <Prose>
-          <ArticleLink href="/media/">Media Studio</ArticleLink>, ChatGPT/Gemini for mood-board
+          <ArticleLink href="/creator-studio/">Creator Studio</ArticleLink>, ChatGPT/Gemini for mood-board
           prompts, vector finishing in Canva/Figma/Illustrator.
         </Prose>
         <ArticleH3>How to start</ArticleH3>

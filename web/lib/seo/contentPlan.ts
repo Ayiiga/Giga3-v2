@@ -69,7 +69,12 @@ export const SEO_CONTENT_PLAN: readonly SeoContentPlanEntry[] = [
     targetKeyword: "ai for creators africa",
     searchIntent: "Commercial investigation — creator toolchain",
     recommendedPath: "/ai-for-creators-ghana/",
-    internalLinks: ["/media/", "/gigaedit/", "/gigasocial/", "/blog/ai-money-making-opportunities-ghana/"],
+    internalLinks: [
+      "/creator-studio/",
+      "/documents/",
+      "/gigasocial/",
+      "/blog/ai-money-making-opportunities-ghana/",
+    ],
     upgradeInsteadOfDuplicate: ["/ai-for-creators-ghana/"],
   },
   {
