@@ -497,9 +497,17 @@ function TeacherPromotionCentreCard() {
           </p>
         </div>
         <p className="mt-2 text-sm text-slate-600">
-          Five separate banks for AD II through Director I. Published practice items:{" "}
-          {PROMOTION_RANK_BANKS_TOTAL.published} of {PROMOTION_RANK_BANKS_TOTAL.target} target —
-          gaps are backlog, not filled with duplicates. All items await human verification.
+          Five separate banks for AD II through Director I. Distinct published practice items:{" "}
+          {PROMOTION_RANK_BANKS_TOTAL.published} of {PROMOTION_RANK_BANKS_TOTAL.target} target
+          (550 per rank) — gaps are backlog, not filled with duplicates. All items await human
+          verification. Study PDFs:{" "}
+          <Link
+            href={EXAM_PRACTICE_DESTINATIONS.promotionGuidesZip}
+            className="font-semibold text-[#14532D] underline-offset-2 hover:underline"
+          >
+            download all guides (ZIP)
+          </Link>
+          .
         </p>
         <ul className="mt-3 space-y-3">
           {PROMOTION_RANK_BANK_SUMMARIES.map((bank) => (
@@ -558,6 +566,14 @@ function TeacherPromotionCentreCard() {
                   >
                     Enrol
                   </Link>
+                  {bank.guidePdfHref ? (
+                    <Link
+                      href={bank.guidePdfHref}
+                      className="exam-landing-cta exam-landing-cta--ghost !py-2 !text-xs"
+                    >
+                      Download PDF guide
+                    </Link>
+                  ) : null}
                 </div>
               ) : (
                 <p className="mt-2 text-xs text-slate-500">Bank not published yet.</p>

@@ -46,7 +46,9 @@ describe("Technology Learning Hub question banks", () => {
         techUniqueApproved: number;
         claimedAs2500Tech: boolean;
         claimedAs2500PromotionVerified?: boolean;
+        claimedAs2750PromotionVerified?: boolean;
         promotionRankUniquePublished?: number;
+        promotionRankGapTo2750?: number;
         aiExtracted: number;
         aiNearDuplicatesRemoved: number;
         aiUniqueApproved: number;
@@ -74,6 +76,8 @@ describe("Technology Learning Hub question banks", () => {
         claimedAsOfficialWaec?: boolean;
         claimedAsOfficialGes?: boolean;
         claimedAs500Unique?: boolean;
+        claimedAs550Unique?: boolean;
+        trueFalseImported?: number;
         sourceKind?: string;
       }>;
     };
@@ -108,12 +112,16 @@ describe("Technology Learning Hub question banks", () => {
     expect(teacher?.pendingImported).toBe(58);
     expect(teacher?.claimedAsOfficialGes).toBe(false);
     expect(report.totals.examApproved).toBe(706);
-    expect(report.totals.examPendingReview).toBe(342);
-    expect(report.totals.promotionRankUniquePublished).toBe(284);
+    expect(report.totals.examPendingReview).toBe(1477);
+    expect(report.totals.promotionRankUniquePublished).toBe(1419);
     expect(report.totals.claimedAs2500PromotionVerified).toBe(false);
+    expect(report.totals.claimedAs2750PromotionVerified).toBe(false);
+    expect(report.totals.promotionRankGapTo2750).toBe(1331);
     const adIi = report.examBanks.find((b) => b.courseSlug === "exam-ad-ii");
-    expect(adIi?.uniqueImportable).toBe(85);
+    expect(adIi?.uniqueImportable).toBe(295);
     expect(adIi?.claimedAs500Unique).toBe(false);
+    expect(adIi?.claimedAs550Unique).toBe(false);
+    expect(adIi?.trueFalseImported).toBe(54);
   });
 
   it("each loaded tech bank has approved MCQs with four options and a valid key", () => {
