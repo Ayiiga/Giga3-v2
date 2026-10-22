@@ -301,7 +301,7 @@ function ArticleContent() {
       <ArticleH3>Creators and side hustles</ArticleH3>
       <Prose>
         ChatGPT and Claude both draft scripts and captions well; add{" "}
-        <ArticleLink href="/media/">Media Studio</ArticleLink> or{" "}
+        <ArticleLink href="/creator-studio/">Creator Studio</ArticleLink> or{" "}
         <ArticleLink href="/creator-studio/">Creator Studio</ArticleLink> when you need visuals, not
         just text. Read{" "}
         <ArticleLink href="/blog/make-money-with-ai-ghana-2026/">

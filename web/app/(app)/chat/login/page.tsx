@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   title: "Sign in",
   description: "Sign in to Giga3 AI with Google or with your email and password",
   robots: { index: false, follow: false },
+  // Self-canonical — chat layout otherwise leaks /chat/ as the canonical.
+  alternates: { canonical: "/chat/login/" },
 };
 
 export default function ChatLoginPage() {

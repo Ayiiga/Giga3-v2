@@ -6,7 +6,8 @@ export const metadata: Metadata = {
   title: "Page not found",
   description: "The page you were looking for does not exist on Giga3 AI.",
   robots: { index: false, follow: false },
-  alternates: { canonical: "/404.html" },
+  // No canonical: /404.html pretty-URLs to /404 and created a soft-404 /
+  // redirect-conflict signal in Search Console when served as HTTP 200.
 };
 
 export default function NotFound() {

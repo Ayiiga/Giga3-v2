@@ -78,9 +78,9 @@ function ArticleContent() {
       </Prose>
       <ArticleH3>Creativity and media</ArticleH3>
       <Prose>
-        <ArticleLink href="/ai-studio/">AI Studio</ArticleLink>,{" "}
-        <ArticleLink href="/media/">Media Studio</ArticleLink>, and{" "}
-        <ArticleLink href="/video/">Video AI</ArticleLink> help creators produce faster — with clear
+        <ArticleLink href="/creator-studio/">Creator Studio</ArticleLink>,{" "}
+        <ArticleLink href="/documents/">Document Studio</ArticleLink>, and{" "}
+        <ArticleLink href="/gigasocial/">GigaSocial</ArticleLink> help creators produce faster — with clear
         labelling of AI-assisted work.
       </Prose>
 
