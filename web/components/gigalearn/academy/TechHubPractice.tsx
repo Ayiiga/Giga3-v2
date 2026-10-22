@@ -139,6 +139,7 @@ function TechHubInner() {
     explanation: string;
     correctIndex: number | null;
     pendingReview?: boolean;
+    optionExplanations?: string[];
   } | null>(null);
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [serverSkew, setServerSkew] = useState(0);
@@ -154,6 +155,7 @@ function TechHubInner() {
       explanation: string;
       questionText: string;
       options: string[];
+      optionExplanations?: string[];
     }>;
   }>(null);
 
@@ -279,6 +281,8 @@ function TechHubInner() {
 
   async function onSubmitAnswer(selectedIndex: number) {
     if (!sessionToken || !sessionId || !current) return;
+    // Learn mode: one reveal + one reward pulse per question (no resubmit farming).
+    if (mode === "learn" && learnFeedback != null) return;
     setBusy(true);
     setError(null);
     try {
@@ -374,6 +378,30 @@ function TechHubInner() {
                     : " · Key under review"}
                 </p>
                 <p className="mt-1 text-slate-600">{r.explanation}</p>
+                {r.optionExplanations && r.optionExplanations.length === r.options.length ? (
+                  <ul className="exam-session-option-notes mt-2 space-y-1.5">
+                    {r.options.map((opt, oi) => {
+                      const note = r.optionExplanations?.[oi] ?? "";
+                      const isKey = oi === r.correctIndex;
+                      return (
+                        <li
+                          key={`${r.questionId}-rev-${oi}`}
+                          className={cn(
+                            "rounded-lg border px-2.5 py-2 text-xs leading-snug",
+                            isKey
+                              ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+                              : "border-slate-200 bg-slate-50 text-slate-700"
+                          )}
+                        >
+                          <span className="font-semibold">
+                            {String.fromCharCode(65 + oi)}. {opt}
+                          </span>
+                          <span className="mt-0.5 block font-normal">{note}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : null}
               </li>
             ))}
           </ul>
@@ -566,6 +594,36 @@ function TechHubInner() {
                     </span>
                     {learnFeedback.explanation}
                   </p>
+                  {learnFeedback.optionExplanations &&
+                  learnFeedback.optionExplanations.length === current.options.length ? (
+                    <ul className="exam-session-option-notes mt-3 space-y-2">
+                      {current.options.map((opt, oi) => {
+                        const note = learnFeedback.optionExplanations?.[oi] ?? "";
+                        const isKey = learnFeedback.correctIndex === oi;
+                        return (
+                          <li
+                            key={`${current.questionId}-note-${oi}`}
+                            className={cn(
+                              "rounded-lg border px-3 py-2 text-sm leading-snug",
+                              isKey
+                                ? "border-emerald-200 bg-emerald-50 text-emerald-950"
+                                : "border-slate-200 bg-slate-50 text-slate-700"
+                            )}
+                            data-testid={
+                              isKey ? "exam-option-note-correct" : "exam-option-note"
+                            }
+                          >
+                            <span className="font-semibold">
+                              {isTrueFalse
+                                ? opt.toUpperCase()
+                                : `${String.fromCharCode(65 + oi)}. ${opt}`}
+                            </span>
+                            <span className="mt-0.5 block font-normal">{note}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : null}
                 </div>
               ) : null}
               {error ? <p className="mt-3 text-sm text-rose-700">{error}</p> : null}

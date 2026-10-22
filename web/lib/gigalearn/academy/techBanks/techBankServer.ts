@@ -206,6 +206,20 @@ export function presentTechQuestion(
   };
 }
 
+/** Display-order option notes — never sent before feedback is authorized. */
+export function presentOptionExplanations(
+  q: TechBankQuestion | null | undefined,
+  permutation?: number[]
+): string[] | undefined {
+  if (!q?.optionExplanations?.length) return undefined;
+  if (q.optionExplanations.length !== q.options.length) return undefined;
+  const order =
+    permutation && permutation.length === q.options.length
+      ? permutation
+      : q.options.map((_, i) => i);
+  return order.map((original) => q.optionExplanations?.[original] ?? "");
+}
+
 export function selectTechQuestionIds(args: {
   courseSlug: string;
   mode: TechPracticeMode;
@@ -296,6 +310,8 @@ export function gradeTechAnswers(args: {
     explanation: string;
     questionText: string;
     options: string[];
+    /** Display-order notes parallel to `options` (when available). */
+    optionExplanations?: string[];
     provisional?: boolean;
   }>;
 } {
@@ -312,6 +328,7 @@ export function gradeTechAnswers(args: {
     const displayCorrect = q
       ? displayCorrectIndex(q.correctIndex, perm ?? q.options.map((_, i) => i))
       : -1;
+    const displayOptionExplanations = presentOptionExplanations(q, perm);
     if (!q || !isScorableReviewStatus(q.reviewStatus)) {
       return {
         questionId: id,
@@ -322,6 +339,7 @@ export function gradeTechAnswers(args: {
           "This item is awaiting review and was not scored as an approved answer key.",
         questionText: q?.questionText ?? "Unavailable",
         options: presented?.options ?? q?.options ?? [],
+        optionExplanations: displayOptionExplanations,
       };
     }
     const provisional = q.reviewStatus === "pending_review";
@@ -336,6 +354,7 @@ export function gradeTechAnswers(args: {
         : q.explanation,
       questionText: q.questionText,
       options: presented?.options ?? q.options,
+      optionExplanations: displayOptionExplanations,
       provisional,
     };
   });

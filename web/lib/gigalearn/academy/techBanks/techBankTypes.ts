@@ -36,6 +36,12 @@ export type TechBankQuestion = {
   correctIndex: number;
   correctOptionId?: string;
   explanation: string;
+  /**
+   * Parallel to `options` — concise why-correct / why-incorrect notes shown
+   * after submission (learn mode) or in end-of-session review. Never shown
+   * before the learner submits when exam rules withhold feedback.
+   */
+  optionExplanations?: string[];
   difficulty: TechDifficulty;
   questionType: TechQuestionType;
   sourceDocument: string;

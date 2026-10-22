@@ -43,7 +43,14 @@
         "awaiting_verification",
         "stem_rewritten",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Correct — Promptly reporting suspected misuse through authorised channels best answers the question because it matches the intended professional practice.",
+        "Incorrect — Destroying evidence does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Conducting an unauthorised public accusation does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignoring the concern does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -84,7 +91,14 @@
         "awaiting_verification",
         "stem_rewritten",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Correct — A work plan linking activities, outputs, outcomes, owners and dates best answers the question because it matches the intended professional practice.",
+        "Incorrect — A budget without a delivery plan does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — A report with no responsibilities does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — A list of activities without expected results does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -125,7 +139,14 @@
         "awaiting_verification",
         "stem_rewritten",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Ignoring unintended consequences does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Counting inputs only does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — A balanced set of indicators covering access, process and learning outcomes best answers the question because it matches the intended professional practice.",
+        "Incorrect — One metric used to represent all quality does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -166,7 +187,14 @@
         "awaiting_verification",
         "stem_rewritten",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Assuming policies enforce themselves does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Informal memory as the only control does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Documenting controls, responsible persons and review dates best answers the question because it matches the intended professional practice.",
+        "Incorrect — A risk register with no owners does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -207,7 +235,14 @@
         "awaiting_verification",
         "stem_rewritten",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Correct — Prioritising actions based on evidence, impact and feasibility best answers the question because it matches the intended professional practice.",
+        "Incorrect — Ignoring implementation capacity does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Launching every initiative at once does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Choosing actions only because they are fashionable does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -247,7 +282,14 @@
         "original_practice",
         "awaiting_verification",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Allowing unauthorised access does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Changing rules secretly for selected candidates does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Failing to document irregularities does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Using secure procedures, fair conditions and documented incident handling best answers the question because it matches the intended professional practice."
       ]
     },
     {
@@ -255,7 +297,7 @@
       "courseSlug": "exam-deputy-director",
       "topicId": "examination-integrity",
       "topicLabel": "Examination integrity",
-      "questionText": "Which principle is most directly described by the following practice: using secure procedures, fair conditions and documented incident handling?",
+      "questionText": "In professional education practice, which approach should be preferred (case deputy-director-360)?",
       "options": [
         "Using secure procedures, fair conditions and documented incident handling",
         "Changing rules secretly for selected candidates",
@@ -270,7 +312,7 @@
       ],
       "correctIndex": 0,
       "correctOptionId": "exam-deputy-director-q009-opt-A",
-      "explanation": "\"Using secure procedures, fair conditions and documented incident handling\" is the most appropriate choice for this practice item on Examination integrity. It aligns with defensible professional judgement in examination integrity. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "explanation": "Using secure procedures, fair conditions and documented incident handling is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
@@ -284,10 +326,18 @@
       ],
       "promotionRank": "deputy-director",
       "tags": [
-        "original_practice",
         "awaiting_verification",
+        "clue_repaired",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1",
+        "original_practice"
+      ],
+      "optionExplanations": [
+        "Correct — Using secure procedures, fair conditions and documented incident handling best answers the question because it matches the intended professional practice.",
+        "Incorrect — Changing rules secretly for selected candidates does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Failing to document irregularities does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Allowing unauthorised access does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -327,7 +377,14 @@
         "original_practice",
         "awaiting_verification",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Correct — Separating authorisation, payment and reconciliation where practicable best answers the question because it matches the intended professional practice.",
+        "Incorrect — One person controlling every step without review does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — No supporting documents does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Reconciling only when problems arise does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -335,7 +392,7 @@
       "courseSlug": "exam-deputy-director",
       "topicId": "numerical-reasoning",
       "topicLabel": "Numerical reasoning",
-      "questionText": "Which principle is most directly described by the following practice: percentage change is calculated relative to the original value?",
+      "questionText": "In professional education practice, which approach should be preferred (case deputy-director-150)?",
       "options": [
         "Treating every percentage as a fixed amount",
         "Percentage change is calculated relative to the original value",
@@ -350,7 +407,7 @@
       ],
       "correctIndex": 1,
       "correctOptionId": "exam-deputy-director-q017-opt-B",
-      "explanation": "\"Percentage change is calculated relative to the original value\" is the most appropriate choice for this practice item on Numerical reasoning. It aligns with defensible professional judgement in numerical reasoning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "explanation": "Percentage change is calculated relative to the original value is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
@@ -364,10 +421,18 @@
       ],
       "promotionRank": "deputy-director",
       "tags": [
-        "original_practice",
         "awaiting_verification",
+        "clue_repaired",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1",
+        "original_practice"
+      ],
+      "optionExplanations": [
+        "Incorrect — Treating every percentage as a fixed amount does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Percentage change is calculated relative to the original value best answers the question because it matches the intended professional practice.",
+        "Incorrect — Dividing the new value by zero does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Adding percentage points without a base does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -407,7 +472,14 @@
         "original_practice",
         "awaiting_verification",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — A budget without a delivery plan does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — A work plan linking activities, outputs, outcomes, owners and dates best answers the question because it matches the intended professional practice.",
+        "Incorrect — A list of activities without expected results does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — A report with no responsibilities does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -447,7 +519,14 @@
         "original_practice",
         "awaiting_verification",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Counting inputs only does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignoring unintended consequences does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — One metric used to represent all quality does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — A balanced set of indicators covering access, process and learning outcomes best answers the question because it matches the intended professional practice."
       ]
     },
     {
@@ -487,7 +566,14 @@
         "original_practice",
         "awaiting_verification",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Ignoring expenditure limits does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Spending first and planning later does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Budgeting aligned with approved priorities and available funds best answers the question because it matches the intended professional practice.",
+        "Incorrect — Allocating funds without objectives does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -527,7 +613,14 @@
         "original_practice",
         "awaiting_verification",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Personal use without approval does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignoring waste and maintenance does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Using public resources for authorised educational purposes best answers the question because it matches the intended professional practice.",
+        "Incorrect — No records of allocation does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -567,7 +660,14 @@
         "original_practice",
         "awaiting_verification",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Choosing actions only because they are fashionable does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignoring implementation capacity does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Prioritising actions based on evidence, impact and feasibility best answers the question because it matches the intended professional practice.",
+        "Incorrect — Launching every initiative at once does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -575,7 +675,7 @@
       "courseSlug": "exam-deputy-director",
       "topicId": "school-community-relations",
       "topicLabel": "School-community relations",
-      "questionText": "Which principle is most directly described by the following practice: using attendance data to identify and address barriers?",
+      "questionText": "In professional education practice, which approach should be preferred (case deputy-director-254)?",
       "options": [
         "Punishing absence without investigating causes",
         "Removing attendance monitoring",
@@ -590,7 +690,7 @@
       ],
       "correctIndex": 2,
       "correctOptionId": "exam-deputy-director-q042-opt-C",
-      "explanation": "\"Using attendance data to identify and address barriers\" is the most appropriate choice for this practice item on School-community relations. It aligns with defensible professional judgement in school-community relations. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "explanation": "Using attendance data to identify and address barriers is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
@@ -604,10 +704,18 @@
       ],
       "promotionRank": "deputy-director",
       "tags": [
-        "original_practice",
         "awaiting_verification",
+        "clue_repaired",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1",
+        "original_practice"
+      ],
+      "optionExplanations": [
+        "Incorrect — Punishing absence without investigating causes does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Removing attendance monitoring does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Using attendance data to identify and address barriers best answers the question because it matches the intended professional practice.",
+        "Incorrect — Assuming every absence is deliberate does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -615,7 +723,7 @@
       "courseSlug": "exam-deputy-director",
       "topicId": "data-and-research",
       "topicLabel": "Data and research",
-      "questionText": "Which principle is most directly described by the following practice: reporting limitations and uncertainty honestly?",
+      "questionText": "When using education data or research, which practice is most appropriate (case deputy-director-10)?",
       "options": [
         "Hiding contradictory findings",
         "Reporting limitations and uncertainty honestly",
@@ -630,15 +738,17 @@
       ],
       "correctIndex": 1,
       "correctOptionId": "exam-deputy-director-q056-opt-B",
-      "explanation": "Reporting limitations and uncertainty honestly is the best answer because it supports sound practice in data and research. The other options describe less appropriate or contrary approaches.",
+      "explanation": "Reporting limitations and uncertainty honestly is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
       "sourceQuestionNumber": 10,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -647,14 +757,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Hiding contradictory findings does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Reporting limitations and uncertainty honestly best answers the question because it matches the intended professional practice.",
+        "Incorrect — Presenting estimates as certainties does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Claiming more than the data support does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q059",
       "courseSlug": "exam-deputy-director",
       "topicId": "evidence-based-leadership",
       "topicLabel": "Evidence-based leadership",
-      "questionText": "Which principle is most directly described by the following practice: testing whether an intervention works before scaling it broadly?",
+      "questionText": "In professional education practice, which approach should be preferred (case deputy-director-17)?",
       "options": [
         "Assuming good intentions guarantee impact",
         "Testing whether an intervention works before scaling it broadly",
@@ -669,15 +785,17 @@
       ],
       "correctIndex": 1,
       "correctOptionId": "exam-deputy-director-q059-opt-B",
-      "explanation": "Testing whether an intervention works before scaling it broadly is the best answer because it supports sound practice in evidence-based leadership. The other options describe less appropriate or contrary approaches. GigaLearn • Independent practice resource Page 5",
+      "explanation": "Testing whether an intervention works before scaling it broadly is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
       "sourceQuestionNumber": 17,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -686,14 +804,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Assuming good intentions guarantee impact does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Testing whether an intervention works before scaling it broadly best answers the question because it matches the intended professional practice.",
+        "Incorrect — Scaling immediately without evaluation does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignoring unintended effects does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q093",
       "courseSlug": "exam-deputy-director",
       "topicId": "data-and-research",
       "topicLabel": "Data and research",
-      "questionText": "Which principle is most directly described by the following practice: protecting participants' privacy and obtaining appropriate consent?",
+      "questionText": "When using education data or research, which practice is most appropriate (case deputy-director-93)?",
       "options": [
         "Publishing names unnecessarily",
         "Protecting participants' privacy and obtaining appropriate consent",
@@ -708,15 +832,17 @@
       ],
       "correctIndex": 1,
       "correctOptionId": "exam-deputy-director-q093-opt-B",
-      "explanation": "Protecting participants' privacy and obtaining appropriate consent is the best answer because it supports sound practice in data and research. The other options describe less appropriate or contrary approaches.",
+      "explanation": "Protecting participants' privacy and obtaining appropriate consent is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
       "sourceQuestionNumber": 93,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -725,14 +851,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Publishing names unnecessarily does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Protecting participants' privacy and obtaining appropriate consent best answers the question because it matches the intended professional practice.",
+        "Incorrect — Using data for an undisclosed purpose does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Collecting identifiable data without safeguards does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q103",
       "courseSlug": "exam-deputy-director",
       "topicId": "public-administration-and-ethics",
       "topicLabel": "Public administration and ethics",
-      "questionText": "Which principle is most directly described by the following practice: transparency and accountability?",
+      "questionText": "In professional education practice, which approach should be preferred (case deputy-director-130)?",
       "options": [
         "Personal benefit from public resources",
         "Transparency and accountability",
@@ -747,15 +879,17 @@
       ],
       "correctIndex": 1,
       "correctOptionId": "exam-deputy-director-q103-opt-B",
-      "explanation": "Transparency and accountability is the best answer because it supports sound practice in public administration and ethics. The other options describe less appropriate or contrary approaches. GigaLearn • Independent practice resource Page 33",
+      "explanation": "Transparency and accountability is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
       "sourceQuestionNumber": 130,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -764,14 +898,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Personal benefit from public resources does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Transparency and accountability best answers the question because it matches the intended professional practice.",
+        "Incorrect — Avoiding audit trails does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Concealing records does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q144",
       "courseSlug": "exam-deputy-director",
       "topicId": "planning-and-evaluation",
       "topicLabel": "Planning and evaluation",
-      "questionText": "Which principle is most directly described by the following practice: continuous improvement informed by evidence and reflection?",
+      "questionText": "In professional education practice, which approach should be preferred (case deputy-director-257)?",
       "options": [
         "Avoiding feedback",
         "Repeating the same approach despite evidence of failure",
@@ -786,15 +926,17 @@
       ],
       "correctIndex": 3,
       "correctOptionId": "exam-deputy-director-q144-opt-D",
-      "explanation": "Continuous improvement informed by evidence and reflection is the best answer because it supports sound practice in planning and evaluation. The other options describe less appropriate or contrary approaches.",
+      "explanation": "Continuous improvement informed by evidence and reflection is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
       "sourceQuestionNumber": 257,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -803,14 +945,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Avoiding feedback does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Repeating the same approach despite evidence of failure does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Making changes without checking results does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Continuous improvement informed by evidence and reflection best answers the question because it matches the intended professional practice."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q172",
       "courseSlug": "exam-deputy-director",
       "topicId": "leadership-and-governance",
       "topicLabel": "Leadership and governance",
-      "questionText": "Which principle is most directly described by the following practice: decisions grounded in current, authoritative policy and law?",
+      "questionText": "In professional education practice, which approach should be preferred (case deputy-director-390)?",
       "options": [
         "Ignoring the date and scope of a policy",
         "Decisions grounded in current, authoritative policy and law",
@@ -825,15 +973,17 @@
       ],
       "correctIndex": 1,
       "correctOptionId": "exam-deputy-director-q172-opt-B",
-      "explanation": "Decisions grounded in current, authoritative policy and law is the best answer because it supports sound practice in leadership and governance. The other options describe less appropriate or contrary approaches.",
+      "explanation": "Decisions grounded in current, authoritative policy and law is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
       "sourceQuestionNumber": 390,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -842,7 +992,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Ignoring the date and scope of a policy does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Decisions grounded in current, authoritative policy and law best answers the question because it matches the intended professional practice.",
+        "Incorrect — Treating social media claims as legislation does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Relying solely on an old unofficial note does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q198",
@@ -872,7 +1028,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -881,7 +1038,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Correct — Assessment should align with the intended learning outcome.",
+        "Incorrect — An unrelated spelling test does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — An attendance register does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — A task asking only for a date does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q207",
@@ -911,7 +1074,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -920,7 +1084,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Accept every claim without examination does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Reasoning with evidence supports analysis and evaluation.",
+        "Incorrect — Require copying only does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Discourage questions does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q216",
@@ -950,7 +1120,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -959,7 +1130,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Replace assessment does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Record teacher attendance does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — A clear objective identifies what learners should know or do.",
+        "Incorrect — List every school rule does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q225",
@@ -989,7 +1166,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -998,7 +1176,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Assume guilt immediately does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Delete records does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Discuss details with everyone does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Allegations require proper procedure and fairness."
+      ]
     },
     {
       "questionId": "exam-deputy-director-tf-010",
@@ -1024,7 +1208,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -1033,7 +1218,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect (True) — that judgement would treat an inaccurate or incomplete claim as correct.",
+        "Correct (False) — the statement is not accurate as written; Data must be interpreted in context and alongside other evidence."
+      ]
     },
     {
       "questionId": "exam-deputy-director-tf-021",
@@ -1059,7 +1248,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -1068,7 +1258,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Correct (True) — the statement matches accepted professional practice: Formative assessment can help a teacher adjust instruction during learning.\nTRUE\n\nGigaLearn  DD Practice\nPage 21\nFALSE",
+        "Incorrect (False) — that judgement would reverse the accepted meaning of the statement."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q230",
@@ -1098,7 +1292,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1107,7 +1302,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Colour alone does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Price alone does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Whether it avoids the objective does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Resources should be fit for purpose."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q231",
@@ -1137,7 +1338,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1146,7 +1348,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Correct — Data should be interpreted carefully and in context.",
+        "Incorrect — Treat one figure as the whole truth does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignore context does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Alter records to fit expectations does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q232",
@@ -1176,7 +1384,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1185,7 +1394,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Give one person all decision power does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Constructive engagement can strengthen understanding and implementation.",
+        "Incorrect — Remove professional judgement does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Guarantee unanimous agreement does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q233",
@@ -1215,7 +1430,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1224,7 +1440,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Blame learners for every difficulty does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignore feedback does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Reflection uses evidence to improve practice.",
+        "Incorrect — Repeat lessons without review does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-tf-023",
@@ -1250,7 +1472,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -1259,7 +1482,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Correct (True) — the statement matches accepted professional practice: GigaLearn  DD Practice\nPage 30\nCollaborative planning can help teachers share expertise.\nTRUE\nFALSE",
+        "Incorrect (False) — that judgement would reverse the accepted meaning of the statement."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q234",
@@ -1289,7 +1516,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1298,7 +1526,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Avoid feedback until year end does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Expect instant knowledge of every local procedure does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Structured induction helps new staff develop.",
+        "Incorrect — Assign duties without explanation does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q235",
@@ -1328,7 +1562,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1337,7 +1572,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Choose an activity before identifying need does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Promise results without baseline data does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Avoid consultation does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — A clear problem definition makes the intervention focused."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q236",
@@ -1367,7 +1608,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1376,7 +1618,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Correct — Fact-finding and follow-up build trust.",
+        "Incorrect — Dismiss the parent immediately does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Promise an outcome before checking does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Reveal another learner's record does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q237",
@@ -1406,7 +1654,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1415,7 +1664,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Blame one person without inquiry does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Monitoring should inform evidence-based adjustment.",
+        "Incorrect — Hide results does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Continue indefinitely does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-tf-024",
@@ -1441,7 +1696,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -1450,7 +1706,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Correct (True) — the statement matches accepted professional practice: GigaLearn  DD Practice\nPage 49\nA rubric can describe criteria for different performance levels.\nTRUE\nFALSE",
+        "Incorrect (False) — that judgement would reverse the accepted meaning of the statement."
+      ]
     },
     {
       "questionId": "exam-deputy-director-tf-025",
@@ -1476,7 +1736,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -1485,7 +1746,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Correct (True) — the statement matches accepted professional practice: Assessment should align with the learning objective it measures.\nTRUE\n\nGigaLearn  DD Practice\nPage 59\nFALSE",
+        "Incorrect (False) — that judgement would reverse the accepted meaning of the statement."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q238",
@@ -1515,7 +1780,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1524,7 +1790,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Use one method regardless of need does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Differentiation adjusts support to help learners meet learning goals.",
+        "Incorrect — Remove all challenge does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignore evidence does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q239",
@@ -1554,7 +1826,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1563,7 +1836,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Discuss it casually in public does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Send it to all contacts does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Confidential information should be protected and shared appropriately.",
+        "Incorrect — Post it publicly does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q240",
@@ -1593,7 +1872,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1602,7 +1882,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Promise absolute secrecy does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Discuss it widely does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignore it without assessment does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Concerns should be handled through appropriate procedures and confidentiality."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q241",
@@ -1632,7 +1918,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1641,7 +1928,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Correct — Assessment evidence should guide responsive instruction.",
+        "Incorrect — Continue without adjustment does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Blame the learners does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Remove the topic does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-tf-026",
@@ -1667,7 +1960,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -1676,7 +1970,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect (True) — that judgement would treat an inaccurate or incomplete claim as correct.",
+        "Correct (False) — the statement is not accurate as written; Evidence should prompt review and appropriate adaptation."
+      ]
     },
     {
       "questionId": "exam-deputy-director-tf-027",
@@ -1702,7 +2000,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -1711,7 +2010,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect (True) — that judgement would treat an inaccurate or incomplete claim as correct.",
+        "Correct (False) — the statement is not accurate as written; Concerns must be handled through appropriate safeguarding procedures."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q242",
@@ -1741,7 +2044,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1750,7 +2054,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Correct — Tools should be assessed for safety and educational value.",
+        "Incorrect — Assume every answer is correct does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Upload private data anywhere does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Use technology even when it obstructs learning does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q243",
@@ -1780,7 +2090,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1789,7 +2100,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Hide expectations does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Rubrics clarify expectations and assessment criteria.",
+        "Incorrect — Replace task instructions does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Guarantee identical scores does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q244",
@@ -1819,7 +2136,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1828,7 +2146,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Discard decisions without review does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Avoid documentation does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Documentation and handover reduce disruption.",
+        "Incorrect — Keep all information with one person does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q245",
@@ -1858,7 +2182,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1867,7 +2192,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — Judge personal style alone does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Embarrass the teacher does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Conclude without observing does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Evidence-based observation supports fair feedback."
+      ]
     },
     {
       "questionId": "exam-deputy-director-tf-028",
@@ -1893,7 +2224,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -1902,7 +2234,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Correct (True) — the statement matches accepted professional practice: GigaLearn  DD Practice\nPage 87\nA respectful classroom climate can support learner participation.\nTRUE\nFALSE",
+        "Incorrect (False) — that judgement would reverse the accepted meaning of the statement."
+      ]
     },
     {
       "questionId": "exam-deputy-director-tf-029",
@@ -1928,7 +2264,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -1937,7 +2274,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Correct (True) — the statement matches accepted professional practice: Clear success criteria help learners understand expectations.\nTRUE\n\nGigaLearn  DD Practice\nPage 97\nFALSE",
+        "Incorrect (False) — that judgement would reverse the accepted meaning of the statement."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q246",
@@ -1967,7 +2308,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1976,7 +2318,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Incorrect — A personal insult does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — A score with no context does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Public shaming does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Useful feedback is specific, respectful and actionable."
+      ]
     },
     {
       "questionId": "exam-deputy-director-q247",
@@ -2006,7 +2354,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2015,7 +2364,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "deputy-director"
+      "promotionRank": "deputy-director",
+      "optionExplanations": [
+        "Correct — Formative assessment informs teaching while learning is in progress.",
+        "Incorrect — Wait until the end of the year to assess does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Give marks without feedback does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Assess only volunteers does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     }
   ]
 }
