@@ -92,18 +92,29 @@ Existing skips: 9 (pre-existing). No new skips introduced to hide failures.
 
 ## 8–11. Merge / deploy status
 
-Filled after corrective PR merge and workflow confirmation.
-
 | Field | Status |
 |-------|--------|
-| Corrective PR | _(pending)_ |
-| Merge commit SHA | _(pending)_ |
-| Convex deploy | #574: **success** on `dcf62b2e`; corrective: _(pending)_ |
-| Cloudflare Pages | #574: **success** on `dcf62b2e`; corrective: _(pending)_ |
+| Corrective PR | [#575](https://github.com/Ayiiga/Giga3-v2/pull/575) — `cursor/promotion-rank-banks-rebase-161d` @ `9841e87d` |
+| Merge commit SHA | _(awaiting CI + merge)_ |
+| Convex deploy | #574: **success** on `dcf62b2e` ([39789683433](https://github.com/Ayiiga/Giga3-v2/actions/runs/39789683433)); corrective: _(pending merge)_ |
+| Cloudflare Pages | #574: **success** on `dcf62b2e` ([39789683454](https://github.com/Ayiiga/Giga3-v2/actions/runs/39789683454)); corrective: _(pending merge)_ |
+| Supersedes | [#573](https://github.com/Ayiiga/Giga3-v2/pull/573) (conflicted) |
 
-## 12. Production smoke tests
+## 12. Production smoke tests (#574 deploy on www.giga3ai.com)
 
-Filled after Pages deploy of corrective commit.
+Public HTTP checks (no auth / no paid actions), 2026-10-22:
+
+| Check | Result |
+|-------|--------|
+| A. Exam Practice Centre loads | **PASS** HTTP 200 `/gigalearn/exam/` (Teacher Promotion / Exam Practice present) |
+| B. Teacher Promotion free practice route | **PASS** HTTP 200 `/gigalearn/exam/practice/` |
+| C. Rank banks open | **FAIL / N/A on #574 alone** — rank banks not yet on production until #575 merges |
+| D–E. Free/premium server rules | **UNVERIFIED** (requires signed-in production session) |
+| F–J. Shuffle scoring / navigation / new attempt | **UNVERIFIED** (requires authenticated practice session) |
+| K. Tech Hub permutations on Convex | **LIKELY** — Convex deploy succeeded for `dcf62b2e` with `optionPermutationsJson`; interactive attempt not exercised |
+| L. Answer-key leakage in public HTML | **PASS** — no `correctIndex` / `correctOptionId` in public responses |
+| M. Academy / assess routes | **PASS** HTTP 200 `/gigalearn/academy/`, `/gigalearn/academy/assess/`, teacher course + tech URLs |
+| N. Console/hydration | **UNVERIFIED** (no browser automation in this pass) |
 
 ## 13. Remaining limitations
 
