@@ -249,13 +249,19 @@ function TechHubInner() {
       });
       setSessionId(started.sessionId);
       setLocalQuestions(
-        started.questions.map((q) => ({
-          ...q,
-          questionType:
-            (q as { questionType?: TechQuestionType }).questionType === "true_false"
-              ? "true_false"
-              : "mcq",
-        }))
+        started.questions.map(
+          (q: {
+            questionId: string;
+            topicLabel: string;
+            questionText: string;
+            options: string[];
+            difficulty: string;
+            questionType?: TechQuestionType;
+          }) => ({
+            ...q,
+            questionType: q.questionType === "true_false" ? "true_false" : "mcq",
+          })
+        )
       );
       setIndex(0);
       setAnswers({});
