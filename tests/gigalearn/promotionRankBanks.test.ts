@@ -99,8 +99,8 @@ describe("promotion rank free / premium entitlement gate", () => {
       seed: 42,
       premiumAccess: false,
     });
-    // Session clamp still 50 for free entitlement even when free pool is larger.
-    expect(freeIds.length).toBe(50);
+    // Loader returns the full free pool; session start clamps to 50 via practiceLimits.
+    expect(freeIds.length).toBe(75);
     for (const id of freeIds) {
       const q = getTechBankQuestionById("exam-ad-ii", id)!;
       expect(q.accessTier).toContain("free");

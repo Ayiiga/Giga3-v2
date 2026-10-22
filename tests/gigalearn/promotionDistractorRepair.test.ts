@@ -45,7 +45,8 @@ describe("teacher-promotion distractor repair", () => {
   it("repaired 179 provisional items and removed generic fillers", () => {
     const repaired = bank.filter((q) => q.tags.includes("distractors_repaired"));
     expect(repaired.length).toBeGreaterThanOrEqual(179);
-    for (const q of bank) {
+    const mcqs = bank.filter((q) => (q.questionType || "mcq") === "mcq");
+    for (const q of mcqs) {
       for (const opt of q.options) {
         expect(GENERIC.has(opt)).toBe(false);
       }
@@ -57,9 +58,15 @@ describe("teacher-promotion distractor repair", () => {
   });
 
   it("keeps answer-key integrity under option permutations after repair", () => {
-    const sample = bank.slice(0, 40);
+    const sample = bank
+      .filter((q) => (q.questionType || "mcq") === "mcq")
+      .slice(0, 40);
     const perms = buildSessionOptionPermutations(
-      sample.map((q) => ({ questionId: q.questionId, options: q.options })),
+      sample.map((q) => ({
+        questionId: q.questionId,
+        options: q.options,
+        questionType: q.questionType,
+      })),
       4242
     );
     for (const q of sample) {
@@ -95,7 +102,10 @@ describe("teacher-promotion distractor repair", () => {
     expect(needs[0]?.reviewStatus).toBe("pending_review");
     const verified = bank.filter((q) => q.verificationStatus === "human_verified");
     expect(verified.length).toBe(24);
-    expect(bank.every((q) => (q.optionIds?.length ?? 0) === 4)).toBe(true);
+    const mcqs = bank.filter((q) => (q.questionType || "mcq") === "mcq");
+    const tfs = bank.filter((q) => q.questionType === "true_false");
+    expect(mcqs.every((q) => (q.optionIds?.length ?? 0) === 4)).toBe(true);
+    expect(tfs.every((q) => (q.optionIds?.length ?? 0) === 2)).toBe(true);
     expect(
       bank.every((q) => q.correctOptionId === q.optionIds?.[q.correctIndex])
     ).toBe(true);

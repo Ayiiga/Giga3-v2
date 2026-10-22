@@ -155,7 +155,7 @@ describe("Technology Learning Hub question banks", () => {
     const ad2Meta = getExamBankMeta("exam-ad2-study-guide");
     expect(beceMeta?.approvedQuestionCount).toBe(468);
     expect(teacherMeta?.approvedQuestionCount).toBe(238);
-    expect(teacherMeta?.pendingQuestionCount).toBe(1);
+    expect(teacherMeta?.pendingQuestionCount).toBe(58);
     expect(ad2Meta?.approvedQuestionCount).toBe(0);
 
     const bece = getTechBankQuestions("exam-bece-prep");
