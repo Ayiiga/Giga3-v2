@@ -34,9 +34,11 @@ describe("Exam Practice Centre Phase B", () => {
 
   it("lists teacher-promotion levels and source inventory without claiming verified keys", () => {
     expect(TEACHER_PROMOTION_LEVEL_LABELS.map((l) => l.id)).toEqual([
-      "deputy-director",
-      "assistant-director-i",
       "assistant-director-ii",
+      "assistant-director-i",
+      "deputy-director",
+      "director-ii",
+      "director-i",
       "principal-superintendent",
     ]);
     expect(TEACHER_PROMOTION_SOURCE_INVENTORY.length).toBeGreaterThanOrEqual(4);
@@ -77,6 +79,8 @@ describe("Exam Practice Centre Phase B", () => {
     expect(ui).toContain("Ghana Teacher Promotion Practice");
     expect(ui).toContain('data-testid="teacher-promotion-centre"');
     expect(ui).toContain('data-testid="teacher-promotion-bank-ready"');
+    expect(ui).toContain('data-testid="promotion-rank-banks"');
+    expect(ui).toContain("PROMOTION_RANK_BANK_SUMMARIES");
     expect(ui).toContain('data-testid="ai-study-tutor"');
     expect(ui).toContain('data-testid="my-performance"');
     expect(ui).toContain("listProgress");

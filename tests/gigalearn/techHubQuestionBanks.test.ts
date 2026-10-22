@@ -45,6 +45,8 @@ describe("Technology Learning Hub question banks", () => {
         techExtracted: number;
         techUniqueApproved: number;
         claimedAs2500Tech: boolean;
+        claimedAs2500PromotionVerified?: boolean;
+        promotionRankUniquePublished?: number;
         aiExtracted: number;
         aiNearDuplicatesRemoved: number;
         aiUniqueApproved: number;
@@ -65,10 +67,13 @@ describe("Technology Learning Hub question banks", () => {
       }>;
       examBanks: Array<{
         sourceFile: string;
+        courseSlug?: string;
         approvedImported: number;
         pendingImported: number;
+        uniqueImportable?: number;
         claimedAsOfficialWaec?: boolean;
         claimedAsOfficialGes?: boolean;
+        claimedAs500Unique?: boolean;
         sourceKind?: string;
       }>;
     };
@@ -103,7 +108,12 @@ describe("Technology Learning Hub question banks", () => {
     expect(teacher?.pendingImported).toBe(1);
     expect(teacher?.claimedAsOfficialGes).toBe(false);
     expect(report.totals.examApproved).toBe(706);
-    expect(report.totals.examPendingReview).toBe(1);
+    expect(report.totals.examPendingReview).toBe(260);
+    expect(report.totals.promotionRankUniquePublished).toBe(259);
+    expect(report.totals.claimedAs2500PromotionVerified).toBe(false);
+    const adIi = report.examBanks.find((b) => b.courseSlug === "exam-ad-ii");
+    expect(adIi?.uniqueImportable).toBe(60);
+    expect(adIi?.claimedAs500Unique).toBe(false);
   });
 
   it("each loaded tech bank has approved MCQs with four options and a valid key", () => {
