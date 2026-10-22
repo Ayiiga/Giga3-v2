@@ -29,8 +29,9 @@ export const siteConfig = {
     creatorStudio: "/creator-studio",
     gigaedit: "/gigaedit",
     gigalearn: "/gigalearn",
-    gigalearnAcademy: "/gigalearn/academy",
-    gigalearnExam: "/gigalearn/exam",
+    gigalearnAcademy: "/gigalearn/academy/",
+    /** Trailing slash required — static export + Cloudflare Pages 308 without it. */
+    gigalearnExam: "/gigalearn/exam/",
     gigasocial: "/gigasocial/",
     developers: "/developers",
     enterprise: "/enterprise",

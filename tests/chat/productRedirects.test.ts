@@ -107,8 +107,8 @@ describe("catalog stays aligned with the live site", () => {
     expect(byId.media).toBe(`${siteConfig.links.dashboard}/`);
     expect(byId.video).toBe(`${siteConfig.links.dashboard}/`);
     expect(byId.marketplace).toBe(`${siteConfig.links.marketplace}/`);
-    expect(byId.academy).toBe(`${siteConfig.links.gigalearnAcademy}/`);
-    expect(byId["exam-practice"]).toBe(`${siteConfig.links.gigalearnExam}/`);
+    expect(byId.academy).toBe(siteConfig.links.gigalearnAcademy);
+    expect(byId["exam-practice"]).toBe(siteConfig.links.gigalearnExam);
   });
 
   it("includes education-first routing rules in every system prompt", () => {

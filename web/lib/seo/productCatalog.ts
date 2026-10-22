@@ -89,7 +89,7 @@ export const PRODUCT_CATALOG: readonly ProductEntry[] = [
     group: "create",
   },
   {
-    href: "/gigalearn/academy",
+    href: "/gigalearn/academy/",
     name: "GigaLearn Academy",
     tagline: "Courses, tutoring, and certificates",
     description:
@@ -97,7 +97,7 @@ export const PRODUCT_CATALOG: readonly ProductEntry[] = [
     group: "learn",
   },
   {
-    href: "/gigalearn/exam",
+    href: "/gigalearn/exam/",
     name: "Exam Practice",
     tagline: "BECE, Teacher Promotion, and subject practice",
     description:

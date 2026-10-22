@@ -179,8 +179,8 @@ describe("productLinks", () => {
   it("includes core education-first ecosystem destinations", () => {
     const hrefs = GIGA3_PRODUCT_LINKS.map((l) => l.href);
     expect(hrefs).toContain("/chat");
-    expect(hrefs).toContain("/gigalearn/academy");
-    expect(hrefs).toContain("/gigalearn/exam");
+    expect(hrefs).toContain("/gigalearn/academy/");
+    expect(hrefs).toContain("/gigalearn/exam/");
     expect(hrefs).toContain("/gigasocial");
     expect(hrefs).toContain("/discover");
     expect(hrefs).toContain("/enterprise");
@@ -192,8 +192,8 @@ describe("productLinks", () => {
   it("footer links cover indexable ecosystem pages without retired products", () => {
     const hrefs = FOOTER_PRODUCT_LINKS.map((l) => l.href);
     for (const path of [
-      "/gigalearn/academy",
-      "/gigalearn/exam",
+      "/gigalearn/academy/",
+      "/gigalearn/exam/",
       "/trending",
       "/prompts",
       "/developers",

@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { normalizeAppPath } from "@/lib/navigation/safeNavigate";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { forwardRef } from "react";
@@ -73,7 +74,7 @@ export function ButtonLink({
   }
 
   return (
-    <Link href={href} className={classes}>
+    <Link href={normalizeAppPath(href)} className={classes}>
       {children}
     </Link>
   );

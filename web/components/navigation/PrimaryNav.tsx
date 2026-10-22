@@ -7,6 +7,7 @@ import {
   MarketNavIcon,
   SocialNavIcon,
 } from "@/components/navigation/PrimaryNavIcons";
+import { normalizeAppPath } from "@/lib/navigation/safeNavigate";
 import {
   PRIMARY_NAV_TABS,
   type PrimaryNavTabId,
@@ -57,7 +58,7 @@ const PrimaryNavBar = memo(function PrimaryNavBar({
         {PRIMARY_NAV_TABS.map((tab) => {
           const Icon = PRIMARY_NAV_ICONS[tab.id];
           const active = tab.id === activeTab;
-          const href = tab.href;
+          const href = normalizeAppPath(tab.href);
 
           return (
             <Link

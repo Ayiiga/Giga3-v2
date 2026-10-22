@@ -17,7 +17,7 @@ export const CHAT_WORKSPACE_PRIMARY_APPS: ChatWorkspaceApp[] = [
   {
     id: "gigalearn",
     label: "GigaLearn Academy",
-    href: `${siteConfig.links.gigalearnAcademy}/`,
+    href: siteConfig.links.gigalearnAcademy,
     icon: BookOpen,
     gradient: "from-violet-600 to-indigo-600",
     badge: "Learn",
@@ -26,7 +26,7 @@ export const CHAT_WORKSPACE_PRIMARY_APPS: ChatWorkspaceApp[] = [
   {
     id: "exam-practice",
     label: "Exam Practice",
-    href: `${siteConfig.links.gigalearnExam}/`,
+    href: siteConfig.links.gigalearnExam,
     icon: ClipboardList,
     gradient: "from-amber-500 to-orange-600",
     badge: "Practice",
