@@ -18,32 +18,32 @@ const GUIDE_DIR = resolve(
 
 const CANONICAL_PDFS = [
   {
-    file: "GigaLearn_AD_II_550_Questions_Answers.pdf",
+    file: "GigaLearn_AD_II_295_Practice_Questions_Answers.pdf",
     expected: 295,
     rankId: "ad-ii",
     courseSlug: "exam-ad-ii",
   },
   {
-    file: "GigaLearn_AD_I_550_Questions_Answers.pdf",
-    expected: 282,
+    file: "GigaLearn_AD_I_87_Practice_Questions_Answers.pdf",
+    expected: 87,
     rankId: "ad-i",
     courseSlug: "exam-ad-i",
   },
   {
-    file: "GigaLearn_DD_550_Questions_Answers.pdf",
-    expected: 276,
+    file: "GigaLearn_DD_52_Practice_Questions_Answers.pdf",
+    expected: 52,
     rankId: "deputy-director",
     courseSlug: "exam-deputy-director",
   },
   {
-    file: "GigaLearn_D_II_550_Questions_Answers.pdf",
-    expected: 281,
+    file: "GigaLearn_D_II_40_Practice_Questions_Answers.pdf",
+    expected: 40,
     rankId: "director-ii",
     courseSlug: "exam-director-ii",
   },
   {
-    file: "GigaLearn_D_I_550_Questions_Answers.pdf",
-    expected: 285,
+    file: "GigaLearn_D_I_46_Practice_Questions_Answers.pdf",
+    expected: 46,
     rankId: "director-i",
     courseSlug: "exam-director-i",
   },
@@ -67,7 +67,8 @@ describe("promotion guide PDFs", () => {
       expect(existsSync(path), row.file).toBe(true);
       const buf = readFileSync(path);
       expect(buf.subarray(0, 5).toString("utf8")).toBe("%PDF-");
-      expect(buf.length).toBeGreaterThan(50_000);
+      // Smaller ranks produce smaller guides; require a non-trivial PDF payload.
+      expect(buf.length).toBeGreaterThan(10_000);
 
       const meta = getExamBankMeta(row.courseSlug);
       const published =
@@ -104,7 +105,8 @@ describe("promotion guide PDFs", () => {
       resolve(ROOT, "docs/gigalearn/promotion-550-content-audit.md"),
       "utf8"
     );
-    expect(audit).toMatch(/1419/);
+    expect(audit).toMatch(/520/);
+    expect(audit).toMatch(/Cross-rank|cross-rank/i);
     expect(audit).toMatch(/must \*\*not\*\* be advertised as 550 distinct/i);
   });
 });
