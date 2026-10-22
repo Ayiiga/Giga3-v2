@@ -1784,6 +1784,11 @@ export default defineSchema({
     questionIdsJson: v.string(),
     /** Selected option index per questionId — learner answers only. */
     answersJson: v.string(),
+    /**
+     * Optional display→original option permutations per questionId.
+     * Absent on legacy sessions (identity order). Additive — never required.
+     */
+    optionPermutationsJson: v.optional(v.string()),
     status: v.union(
       v.literal("in_progress"),
       v.literal("submitted"),

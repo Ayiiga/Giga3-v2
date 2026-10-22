@@ -99,11 +99,11 @@ describe("Technology Learning Hub question banks", () => {
     expect(bece?.approvedImported).toBe(468);
     expect(bece?.claimedAsOfficialWaec).toBe(false);
     expect(bece?.sourceKind).toBe("authored_practice");
-    expect(teacher?.approvedImported).toBe(60);
-    expect(teacher?.pendingImported).toBe(179);
+    expect(teacher?.approvedImported).toBe(238);
+    expect(teacher?.pendingImported).toBe(1);
     expect(teacher?.claimedAsOfficialGes).toBe(false);
-    expect(report.totals.examApproved).toBe(528);
-    expect(report.totals.examPendingReview).toBe(179);
+    expect(report.totals.examApproved).toBe(706);
+    expect(report.totals.examPendingReview).toBe(1);
   });
 
   it("each loaded tech bank has approved MCQs with four options and a valid key", () => {
@@ -144,8 +144,8 @@ describe("Technology Learning Hub question banks", () => {
     const teacherMeta = getExamBankMeta("exam-teacher-promotion");
     const ad2Meta = getExamBankMeta("exam-ad2-study-guide");
     expect(beceMeta?.approvedQuestionCount).toBe(468);
-    expect(teacherMeta?.approvedQuestionCount).toBe(60);
-    expect(teacherMeta?.pendingQuestionCount).toBe(179);
+    expect(teacherMeta?.approvedQuestionCount).toBe(238);
+    expect(teacherMeta?.pendingQuestionCount).toBe(1);
     expect(ad2Meta?.approvedQuestionCount).toBe(0);
 
     const bece = getTechBankQuestions("exam-bece-prep");
@@ -155,7 +155,7 @@ describe("Technology Learning Hub question banks", () => {
 
     const teacher = getTechBankQuestions("exam-teacher-promotion");
     expect(teacher.length).toBe(239);
-    expect(teacher.filter((q) => q.reviewStatus === "pending_review").length).toBe(179);
+    expect(teacher.filter((q) => q.reviewStatus === "pending_review").length).toBe(1);
 
     const provisional = teacher.find((q) => q.reviewStatus === "pending_review")!;
     const graded = gradeTechAnswers({
@@ -240,21 +240,24 @@ describe("Technology Learning Hub question banks", () => {
     expect(convex).toContain("requireSession(args.sessionToken, ctx)");
     expect(convex).toContain("requireActiveEnrolment");
     expect(convex).toContain("endsAt");
-    expect(convex).toContain("toPublicTechQuestion");
+    expect(convex).toContain("presentTechQuestion");
+    expect(convex).toContain("buildSessionOptionPermutations");
+    expect(convex).toContain("optionPermutationsJson");
     expect(convex).toContain("saveTechPracticeAnswer");
     expect(convex).toContain("submitTechPracticeSession");
     const startBlock = convex.slice(
       convex.indexOf("export const startTechPracticeSession"),
       convex.indexOf("export const getTechPracticeSession")
     );
-    expect(startBlock).toContain("toPublicTechQuestion");
+    expect(startBlock).toContain("presentTechQuestion");
+    expect(startBlock).toContain("optionPermutationsJson");
     expect(startBlock).not.toContain("correctIndex:");
     // In-progress session query must not leak keys; learn-mode feedback is gated.
     const getBlock = convex.slice(
       convex.indexOf("export const getTechPracticeSession"),
       convex.indexOf("export const saveTechPracticeAnswer")
     );
-    expect(getBlock).toContain("toPublicTechQuestion");
+    expect(getBlock).toContain("presentTechQuestion");
     expect(getBlock).not.toContain("correctIndex:");
     expect(getBlock).toContain('session.status === "graded"');
     const saveBlock = convex.slice(

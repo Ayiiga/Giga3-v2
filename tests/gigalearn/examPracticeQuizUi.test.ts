@@ -73,11 +73,18 @@ describe("Exam Practice quiz UI wiring", () => {
     );
     expect(session).toContain("Time left");
     expect(session).toContain("Explanation:");
+    expect(session).toContain("Correct answer:");
     expect(session).toContain("exam-session-option--correct");
     expect(session).toContain("exam-session-option--wrong");
     expect(session).toContain("Previous");
     expect(session).toContain("Next");
     expect(session).toContain("rewardForCorrectAnswer");
+    const root = readFileSync(
+      resolve(ROOT, "web/components/gigalearn/exam/ExamPracticeSessionRoot.tsx"),
+      "utf8"
+    );
+    expect(root).toContain("buildShuffledFreePractice");
+    expect(root).toContain("loadFreePracticeDraft");
   });
 
   it("keeps BECE centre free of promotion question stems", () => {

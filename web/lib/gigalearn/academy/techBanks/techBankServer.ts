@@ -18,6 +18,13 @@ import {
   TECH_HUB_DEFAULT_MAX_COUNT,
   isExamPracticeCourseSlug,
 } from "@/lib/gigalearn/examPractice/practiceLimits";
+import {
+  buildOptionPermutation,
+  createSeededRng,
+  displayCorrectIndex,
+  fisherYatesShuffleInPlace,
+  toOriginalOptionIndex,
+} from "@/lib/gigalearn/examPractice/optionShuffle";
 
 type BankFile = {
   bankId: string;
@@ -94,21 +101,38 @@ export function toPublicTechQuestion(q: TechBankQuestion): TechPublicQuestion {
 }
 
 function mulberry32(seed: number): () => number {
-  let t = seed >>> 0;
-  return () => {
-    t += 0x6d2b79f5;
-    let r = Math.imul(t ^ (t >>> 15), 1 | t);
-    r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
-    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-  };
+  return createSeededRng(seed);
 }
 
 function shuffleInPlace<T>(arr: T[], rand: () => number): T[] {
-  for (let i = arr.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(rand() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+  return fisherYatesShuffleInPlace(arr, rand);
+}
+
+/** displayIndex → originalIndex for each question in a practice session. */
+export type OptionPermutationMap = Record<string, number[]>;
+
+export function buildSessionOptionPermutations(
+  questions: Array<{ questionId: string; options: string[] }>,
+  seed: number
+): OptionPermutationMap {
+  const rand = createSeededRng(seed ^ 0x9e3779b9);
+  const out: OptionPermutationMap = {};
+  for (const q of questions) {
+    out[q.questionId] = buildOptionPermutation(q.options.length, rand);
   }
-  return arr;
+  return out;
+}
+
+export function presentTechQuestion(
+  q: TechBankQuestion,
+  permutation?: number[]
+): TechPublicQuestion {
+  const publicQ = toPublicTechQuestion(q);
+  if (!permutation || permutation.length !== q.options.length) return publicQ;
+  return {
+    ...publicQ,
+    options: permutation.map((original) => q.options[original] ?? ""),
+  };
 }
 
 export function selectTechQuestionIds(args: {
@@ -164,7 +188,10 @@ function isScorableReviewStatus(status: TechBankQuestion["reviewStatus"]): boole
 export function gradeTechAnswers(args: {
   courseSlug: string;
   questionIds: string[];
+  /** Display indices as chosen by the learner (after option shuffle). */
   answers: Record<string, number>;
+  /** Optional display→original permutations stored on the session. */
+  optionPermutations?: OptionPermutationMap;
 }): {
   score: number;
   maxScore: number;
@@ -182,34 +209,41 @@ export function gradeTechAnswers(args: {
 } {
   const results = args.questionIds.map((id) => {
     const q = getTechBankQuestionById(args.courseSlug, id);
-    const selected =
+    const perm = args.optionPermutations?.[id];
+    const selectedDisplay =
       typeof args.answers[id] === "number" && Number.isInteger(args.answers[id])
         ? args.answers[id]
         : null;
+    const selectedOriginal =
+      selectedDisplay == null ? null : toOriginalOptionIndex(selectedDisplay, perm);
+    const presented = q ? presentTechQuestion(q, perm) : null;
+    const displayCorrect = q
+      ? displayCorrectIndex(q.correctIndex, perm ?? q.options.map((_, i) => i))
+      : -1;
     if (!q || !isScorableReviewStatus(q.reviewStatus)) {
       return {
         questionId: id,
-        selectedIndex: selected,
+        selectedIndex: selectedDisplay,
         correctIndex: -1,
         correct: false,
         explanation:
           "This item is awaiting review and was not scored as an approved answer key.",
         questionText: q?.questionText ?? "Unavailable",
-        options: q?.options ?? [],
+        options: presented?.options ?? q?.options ?? [],
       };
     }
     const provisional = q.reviewStatus === "pending_review";
-    const correct = selected === q.correctIndex;
+    const correct = selectedOriginal === q.correctIndex;
     return {
       questionId: id,
-      selectedIndex: selected,
-      correctIndex: q.correctIndex,
+      selectedIndex: selectedDisplay,
+      correctIndex: displayCorrect,
       correct,
       explanation: provisional
         ? `Provisional key (pending review). ${q.explanation}`
         : q.explanation,
       questionText: q.questionText,
-      options: q.options,
+      options: presented?.options ?? q.options,
       provisional,
     };
   });

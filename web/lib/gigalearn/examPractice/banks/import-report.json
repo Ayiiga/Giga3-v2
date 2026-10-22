@@ -82,8 +82,8 @@
       "pages": 46,
       "nearDuplicates": 261,
       "uniqueImportable": 239,
-      "approvedImported": 60,
-      "pendingImported": 179,
+      "approvedImported": 238,
+      "pendingImported": 1,
       "parseFailed": 0,
       "rejected": 0,
       "exactDuplicates": 0,
@@ -101,7 +101,9 @@
       ],
       "topicCount": 10,
       "claimedAsOfficialGes": false,
-      "sourceKind": "authored_practice"
+      "sourceKind": "authored_practice",
+      "humanVerified": 24,
+      "heldPendingReview": 1
     },
     {
       "sourceFile": "Attractive_GES_Assistant_Director_II_Study_Guide_2026_d118.pdf",
@@ -116,7 +118,7 @@
       "rejected": 0,
       "topics": [],
       "topicCount": 0,
-      "note": "Study guide PDF with no extractable A–D MCQs; not invented."
+      "note": "Study guide PDF with no extractable A\u2013D MCQs; not invented."
     }
   ],
   "missingSources": [
@@ -132,23 +134,24 @@
     "techUniqueApproved": 1092,
     "examExtracted": 1000,
     "examUniqueImportable": 707,
-    "examApproved": 528,
-    "examPendingReview": 179,
+    "examApproved": 706,
+    "examPendingReview": 1,
     "claimedAs2500Tech": false,
     "techExtracted": 2000,
     "aiExtracted": 500,
     "aiNearDuplicatesRemoved": 227,
     "aiUniqueApproved": 273,
     "aiRejected": 0,
-    "claimedAs500AiUnique": false
+    "claimedAs500AiUnique": false,
+    "teacherPromotionHumanVerified": 24
   },
   "notes": [
     "AI bank: extracted 500, removed 227 near-duplicates, imported 273 unique approved. Not claimed as 500 unique.",
     "Website/PWA, Robotics, Other Digital: 273 unique approved each (same extract pipeline).",
     "BECE: 468 approved across 10 subjects; independent practice, not an official WAEC paper.",
     "Teacher Promotion: 60 approved + 179 provisional pending_review; not an official GES paper.",
-    "AD II study guide: 0 extractable A–D MCQs (not invented).",
-    "Mobile App PDF still missing — course remains awaitingMaterials until import.",
+    "AD II study guide: 0 extractable A\u2013D MCQs (not invented).",
+    "Mobile App PDF still missing \u2014 course remains awaitingMaterials until import.",
     "Exam banks reuse gigaLearnTechSessions server-graded practice (no second assessment system)."
   ]
 }

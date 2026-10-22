@@ -88,9 +88,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Which agency is associated with school inspection and standards assurance at the pre-tertiary level?",
     options: {
       A: "NaSIA",
-      B: "GRA",
-      C: "EC",
-      D: "DVLA",
+      B: "NaCCA",
+      C: "NTC",
+      D: "WAEC"
     },
     correct: "A",
     explanation:
@@ -102,10 +102,10 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     audience: "Both",
     stem: "At which level of GES administration is a District Director of Education typically placed?",
     options: {
-      A: "School classroom only",
+      A: "National headquarters only, with no district role",
       B: "District education office",
-      C: "Foreign mission",
-      D: "Private company board",
+      C: "A foreign mission office abroad",
+      D: "A private company board of directors"
     },
     correct: "B",
     explanation:
@@ -134,8 +134,8 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     options: {
       A: "Principal Superintendent",
       B: "Chief Petty Officer",
-      C: "Flight Lieutenant",
-      D: "Inspector of Taxes",
+      C: "Regional Market Supervisor",
+      D: "Inspector of Taxes Grade"
     },
     correct: "A",
     explanation:
@@ -148,9 +148,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "In a typical public basic school, who is the professional head responsible for day-to-day instructional leadership?",
     options: {
       A: "Headteacher / Head of school",
-      B: "Circuit court judge",
-      C: "Market queen",
-      D: "Assembly member only",
+      B: "Circuit court registrar alone",
+      C: "Market association chairperson",
+      D: "Assembly member without school duty"
     },
     correct: "A",
     explanation:
@@ -177,10 +177,10 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     audience: "Both",
     stem: "Inclusive education primarily aims to:",
     options: {
-      A: "Exclude learners with disabilities from schools",
+      A: "Exclude learners with disabilities from schools by default",
       B: "Ensure all learners can participate meaningfully in education",
-      C: "Replace teachers with machines",
-      D: "Abolish school rules",
+      C: "Replace teachers with machines for every lesson",
+      D: "Abolish school rules and classroom expectations entirely"
     },
     correct: "B",
     explanation:
@@ -193,9 +193,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "A teacher who keeps learner assessment records confidential is mainly demonstrating:",
     options: {
       A: "Professional ethics and respect for privacy",
-      B: "Disobedience to school policy",
-      C: "Political campaigning",
-      D: "Financial auditing",
+      B: "Disobedience to lawful school policy guidance",
+      C: "Political campaigning during instructional hours",
+      D: "Financial auditing of the school feeding fund"
     },
     correct: "A",
     explanation:
@@ -208,9 +208,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Circuit supervision in GES typically supports schools by:",
     options: {
       A: "Monitoring teaching, learning, and school improvement",
-      B: "Collecting customs duties",
-      C: "Issuing passports",
-      D: "Running political rallies",
+      B: "Collecting customs duties for the revenue authority",
+      C: "Issuing travel documents at the school office",
+      D: "Running political rallies during instructional time"
     },
     correct: "A",
     explanation:
@@ -223,9 +223,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "A good lesson plan should most clearly show:",
     options: {
       A: "Learning objectives, activities, and assessment",
-      B: "Only the teacher’s personal diary",
-      C: "A shopping list",
-      D: "The school football score",
+      B: "Only the teacher’s personal diary with no outcomes",
+      C: "A shopping list of supplies without objectives",
+      D: "Sports scores and extracurricular results only"
     },
     correct: "A",
     explanation:
@@ -238,9 +238,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Free SHS in Ghana is best described as a policy that:",
     options: {
       A: "Removes fees barriers to senior high / TVET access for eligible learners",
-      B: "Closes all private schools",
-      C: "Ends basic education",
-      D: "Abolishes the teaching profession",
+      B: "Closes all private schools regardless of performance or demand",
+      C: "Ends basic education after primary with no junior high pathway",
+      D: "Abolishes the teaching profession and school leadership roles"
     },
     correct: "A",
     explanation:
@@ -253,9 +253,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "In school settings, corporal punishment is generally discouraged because it:",
     options: {
       A: "Can harm learners and contradicts child-protection best practice",
-      B: "Always raises examination scores",
-      C: "Is required by every subject syllabus",
-      D: "Replaces the need for classroom management",
+      B: "Always raises examination scores across every subject band",
+      C: "Is required by every subject syllabus as the main method",
+      D: "Replaces the need for classroom management and guidance"
     },
     correct: "A",
     explanation:
@@ -268,9 +268,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "An admission register in a school is primarily used to:",
     options: {
       A: "Record learners enrolled in the school",
-      B: "List teacher salaries only",
-      C: "Store kitchen recipes",
-      D: "Track political parties",
+      B: "List teacher salaries without enrolment data",
+      C: "Store kitchen recipes for school feeding only",
+      D: "Track political parties instead of enrolment"
     },
     correct: "A",
     explanation:
@@ -283,9 +283,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "A school timetable mainly helps to:",
     options: {
       A: "Organise subjects, periods, and teacher deployment across the week",
-      B: "Replace the curriculum",
-      C: "Set national tax rates",
-      D: "Elect the District Chief Executive",
+      B: "Replace the national curriculum with local preferences only",
+      C: "Set national tax rates for the Ministry of Finance each term",
+      D: "Elect the District Chief Executive without parental input"
     },
     correct: "A",
     explanation:
@@ -298,9 +298,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "A School Management Committee (SMC) / PTA typically supports schools by:",
     options: {
       A: "Engaging parents and community in school improvement",
-      B: "Setting the Bank of Ghana policy rate",
-      C: "Issuing passports",
-      D: "Writing the national constitution",
+      B: "Setting the central bank policy rate for school fees",
+      C: "Issuing passports for learners and teaching staff",
+      D: "Writing the national constitution for the school board"
     },
     correct: "A",
     explanation:
@@ -314,8 +314,8 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     options: {
       A: "What learners can do with knowledge and skills",
       B: "Memorising only disconnected facts with no application",
-      C: "Ending all assessment",
-      D: "Teaching without objectives",
+      C: "Ending all assessment of learning in every subject",
+      D: "Teaching without objectives or intended outcomes"
     },
     correct: "A",
     explanation:
@@ -328,9 +328,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "The Ministry of Education in Ghana is primarily responsible for:",
     options: {
       A: "National education policy direction and oversight",
-      B: "Issuing driving licences",
-      C: "Running only private shops",
-      D: "Managing the armed forces",
+      B: "Issuing driving licences for teachers and parents",
+      C: "Running only private retail shops in schools",
+      D: "Managing the armed forces and defence budget"
     },
     correct: "A",
     explanation:
@@ -343,9 +343,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Continuous professional development (CPD) for teachers is important because it:",
     options: {
       A: "Helps teachers update skills and improve classroom practice",
-      B: "Replaces the need for lesson preparation",
-      C: "Is only for accountants",
-      D: "Ends learner assessment forever",
+      B: "Replaces the need for lesson preparation entirely",
+      C: "Is required only for accountants outside teaching",
+      D: "Ends learner assessment forever across all grades"
     },
     correct: "A",
     explanation:
@@ -403,9 +403,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "When communicating a policy change to teachers, a District Director should prioritise:",
     options: {
       A: "Clear, timely, and accurate information through official channels",
-      B: "Rumour only",
-      C: "Silence until after exams forever",
-      D: "Social media insults",
+      B: "Rumour only in typical school settings under ordinary conditions",
+      C: "Silence until after exams forever in typical school settings under ordinary conditions",
+      D: "Social media insults in typical school settings under ordinary conditions"
     },
     correct: "A",
     explanation:
@@ -433,9 +433,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "School guidance and counselling services primarily help learners with:",
     options: {
       A: "Academic, personal, and career support",
-      B: "Collecting market tolls",
-      C: "Building highways",
-      D: "Issuing land titles",
+      B: "Collecting market tolls in typical school settings",
+      C: "Building highways in typical school settings",
+      D: "Issuing land titles in typical school settings"
     },
     correct: "A",
     explanation:
@@ -463,9 +463,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "On GigaLearn, free orientation practice questions should be treated as:",
     options: {
       A: "Study practice to build confidence — not as an official GES examination paper",
-      B: "A guaranteed promotion certificate",
-      C: "A WAEC BECE paper",
-      D: "A substitute for professional conduct",
+      B: "A guaranteed promotion certificate in typical school settings under ordinary conditions",
+      C: "A WAEC BECE paper in typical school settings under ordinary conditions without professional justification",
+      D: "A substitute for professional conduct in typical school settings under ordinary conditions"
     },
     correct: "A",
     explanation:
@@ -478,9 +478,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "In Ghana’s pre-tertiary system, the Standards-Based Curriculum emphasises:",
     options: {
       A: "Competencies, core values, and learner-centred practice",
-      B: "Only memorising colonial history dates",
-      C: "Removing mathematics from basic schools",
-      D: "Ending continuous assessment",
+      B: "Only memorising colonial history dates in typical school settings",
+      C: "Removing mathematics from basic schools in typical school settings",
+      D: "Ending continuous assessment in typical school settings"
     },
     correct: "A",
     explanation:
@@ -493,9 +493,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Formative assessment is best described as assessment that:",
     options: {
       A: "Guides teaching and learning while instruction is ongoing",
-      B: "Is used only after school closure",
-      C: "Replaces all end-of-term exams automatically",
-      D: "Is illegal in public schools",
+      B: "Is used only after school closure in typical school settings",
+      C: "Replaces all end-of-term exams automatically in typical school settings",
+      D: "Is illegal in public schools in typical school settings"
     },
     correct: "A",
     explanation:
@@ -508,9 +508,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Inclusive education primarily aims to:",
     options: {
       A: "Ensure learners with diverse needs can participate meaningfully in school",
-      B: "Exclude learners who need support",
-      C: "Stop teaching science",
-      D: "Limit enrolment to urban schools only",
+      B: "Exclude learners who need support in typical school settings under ordinary conditions",
+      C: "Stop teaching science in typical school settings under ordinary conditions",
+      D: "Limit enrolment to urban schools only in typical school settings under ordinary conditions"
     },
     correct: "A",
     explanation:
@@ -538,9 +538,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "A teacher who keeps confidential learner information private is demonstrating:",
     options: {
       A: "Professional ethics and duty of care",
-      B: "Neglect of duty",
-      C: "Examination malpractice",
-      D: "Financial mismanagement",
+      B: "Neglect of duty in typical school settings",
+      C: "Examination malpractice in typical school settings",
+      D: "Financial mismanagement in typical school settings"
     },
     correct: "A",
     explanation:
@@ -553,9 +553,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Establishing clear routines at the start of lessons mainly helps to:",
     options: {
       A: "Reduce wasted time and support orderly learning",
-      B: "Increase bullying",
-      C: "Remove assessment",
-      D: "Replace lesson planning",
+      B: "Increase bullying in typical school settings",
+      C: "Remove assessment in typical school settings",
+      D: "Replace lesson planning in typical school settings"
     },
     correct: "A",
     explanation:
@@ -568,9 +568,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Free Senior High School (Free SHS) policy in Ghana primarily sought to:",
     options: {
       A: "Expand access to secondary education by reducing cost barriers",
-      B: "Abolish basic education",
-      C: "Privatise all kindergartens only",
-      D: "End teacher recruitment forever",
+      B: "Abolish basic education in typical school settings under ordinary conditions",
+      C: "Privatise all kindergartens only in typical school settings",
+      D: "End teacher recruitment forever in typical school settings"
     },
     correct: "A",
     explanation:
@@ -598,9 +598,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "When a teacher suspects a learner may be at risk of harm, the professional response is to:",
     options: {
       A: "Follow child-protection reporting procedures through the appropriate channels",
-      B: "Ignore the concern",
-      C: "Publish the learner’s name on social media",
-      D: "Punish the whole class collectively",
+      B: "Ignore the concern in typical school settings under ordinary conditions without professional justification",
+      C: "Publish the learner’s name on social media in typical school settings under ordinary conditions",
+      D: "Punish the whole class collectively in typical school settings under ordinary conditions"
     },
     correct: "A",
     explanation:
@@ -613,9 +613,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Accurate attendance and assessment records help schools mainly to:",
     options: {
       A: "Monitor learner progress and account for school activity",
-      B: "Hide underperformance permanently",
-      C: "Avoid communicating with parents",
-      D: "Replace the national curriculum",
+      B: "Hide underperformance permanently in typical school settings",
+      C: "Avoid communicating with parents in typical school settings",
+      D: "Replace the national curriculum in typical school settings"
     },
     correct: "A",
     explanation:
@@ -628,9 +628,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Differentiated instruction means a teacher:",
     options: {
       A: "Adjusts content, process, or product to meet varied learner needs",
-      B: "Teaches only the fastest learners",
-      C: "Uses one worksheet forever without review",
-      D: "Stops assessing writing",
+      B: "Teaches only the fastest learners in typical school settings under ordinary conditions",
+      C: "Uses one worksheet forever without review in typical school settings",
+      D: "Stops assessing writing in typical school settings under ordinary conditions"
     },
     correct: "A",
     explanation:
@@ -643,9 +643,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Strong school–community partnerships typically improve:",
     options: {
       A: "Learner support, attendance, and shared responsibility for education",
-      B: "Isolation of the school from parents",
-      C: "Elimination of PTA engagement",
-      D: "Automatic promotion without learning",
+      B: "Isolation of the school from parents in typical school settings under ordinary conditions",
+      C: "Elimination of PTA engagement in typical school settings under ordinary conditions",
+      D: "Automatic promotion without learning in typical school settings under ordinary conditions"
     },
     correct: "A",
     explanation:
@@ -658,9 +658,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Early grade literacy programmes are important because they:",
     options: {
       A: "Build foundational reading skills that support later learning",
-      B: "Replace mathematics forever",
-      C: "Are only for university students",
-      D: "Discourage reading at home",
+      B: "Replace mathematics forever in typical school settings under ordinary conditions",
+      C: "Are only for university students in typical school settings",
+      D: "Discourage reading at home in typical school settings under ordinary conditions"
     },
     correct: "A",
     explanation:
@@ -703,9 +703,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Promoting gender equity in schools includes:",
     options: {
       A: "Equal opportunities and respectful treatment for girls and boys",
-      B: "Barring girls from science",
-      C: "Assigning leadership only by stereotype",
-      D: "Ignoring harassment complaints",
+      B: "Barring girls from science in typical school settings under ordinary conditions",
+      C: "Assigning leadership only by stereotype in typical school settings",
+      D: "Ignoring harassment complaints in typical school settings under ordinary conditions"
     },
     correct: "A",
     explanation:
@@ -718,9 +718,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Transparent management of school resources (books, funds, materials) is important because it:",
     options: {
       A: "Builds trust and ensures resources reach learners",
-      B: "Encourages misuse without records",
-      C: "Is optional for public accountability",
-      D: "Replaces teaching standards",
+      B: "Encourages misuse without records in typical school settings",
+      C: "Is optional for public accountability in typical school settings",
+      D: "Replaces teaching standards in typical school settings"
     },
     correct: "A",
     explanation:
@@ -733,9 +733,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Teachers engage in continuous professional development mainly to:",
     options: {
       A: "Update knowledge, skills, and classroom practice",
-      B: "Avoid classrooms permanently",
-      C: "Stop using lesson notes",
-      D: "Eliminate collaboration with peers",
+      B: "Avoid classrooms permanently in typical school settings",
+      C: "Stop using lesson notes in typical school settings",
+      D: "Eliminate collaboration with peers in typical school settings"
     },
     correct: "A",
     explanation:
@@ -748,9 +748,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Helping a learner cheat in a high-stakes examination is:",
     options: {
       A: "Examination malpractice and unprofessional conduct",
-      B: "Recommended instructional strategy",
-      C: "Required by the curriculum",
-      D: "A form of inclusive education",
+      B: "Recommended instructional strategy in typical school settings",
+      C: "Required by the curriculum in typical school settings",
+      D: "A form of inclusive education in typical school settings"
     },
     correct: "A",
     explanation:
@@ -763,9 +763,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Larger Teacher Promotion or BECE practice packs on GigaLearn (beyond free orientation) typically require:",
     options: {
       A: "A signed-in account with an active subscription or purchased credits",
-      B: "Unofficial Mobile Money side payments outside Giga3",
-      C: "No sign-in and unlimited offline answer keys forever",
-      D: "Fabricated official WAEC papers",
+      B: "Unofficial Mobile Money side payments outside Giga3 in typical school settings",
+      C: "No sign-in and unlimited offline answer keys forever in typical school settings",
+      D: "Fabricated official WAEC papers in typical school settings under ordinary conditions"
     },
     correct: "A",
     explanation:

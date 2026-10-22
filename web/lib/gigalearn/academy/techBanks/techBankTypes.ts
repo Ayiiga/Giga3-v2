@@ -24,7 +24,13 @@ export type TechBankQuestion = {
   topicLabel: string;
   questionText: string;
   options: string[];
+  /**
+   * Stable option identities (parallel to `options`). Runtime shuffle remaps
+   * display order; grading uses correctIndex / correctOptionId + permutations.
+   */
+  optionIds?: string[];
   correctIndex: number;
+  correctOptionId?: string;
   explanation: string;
   difficulty: TechDifficulty;
   questionType: "mcq";
@@ -32,6 +38,13 @@ export type TechBankQuestion = {
   sourceQuestionNumber: number;
   reviewStatus: TechReviewStatus;
   tags: string[];
+  sourceType?: "original_practice" | "adapted" | "verified_historical" | "awaiting_verification";
+  verificationStatus?: "awaiting_verification" | "human_verified" | "rejected";
+  /** Public-source notes — never implies official GES exam approval. */
+  verificationNotes?: string;
+  publicationStatus?: "published_practice" | "draft" | "retired";
+  accessTier?: Array<"free" | "premium">;
+  promotionRank?: string;
 };
 
 export type TechBankFile = {

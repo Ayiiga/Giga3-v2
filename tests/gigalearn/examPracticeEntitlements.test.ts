@@ -298,7 +298,8 @@ describe("share UTM + answer-key hygiene", () => {
       start.indexOf("export const startTechPracticeSession"),
       start.indexOf("export const getTechPracticeSession")
     );
-    expect(block).toContain("toPublicTechQuestion");
+    expect(block).toContain("presentTechQuestion");
+    expect(block).toContain("optionPermutationsJson");
     expect(block).not.toContain("correctIndex:");
     expect(block).not.toContain("explanation:");
   });
