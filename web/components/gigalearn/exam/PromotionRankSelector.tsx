@@ -86,9 +86,9 @@ export function PromotionRankSelector() {
               <p className="text-xs font-semibold uppercase tracking-wide text-[#14532D]">
                 Teacher Promotion
               </p>
-              <h1 className="text-2xl font-bold tracking-tight text-[#1E1B4B] sm:text-3xl">
+              <p className="text-2xl font-bold tracking-tight text-[#1E1B4B] sm:text-3xl">
                 Choose your promotion rank
-              </h1>
+              </p>
               <p className="mt-1 text-sm text-slate-600">
                 Free practice for Ghana Education Service promotion preparation. Select your
                 rank to start learn-mode practice with explanations after each answer. Not an
