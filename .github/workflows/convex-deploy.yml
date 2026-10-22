@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "convex/**"
+      # Bundled into Convex at deploy time (gigaLearnTechBanks imports banks + shuffle).
+      - "web/lib/gigalearn/**"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/convex-deploy.yml"

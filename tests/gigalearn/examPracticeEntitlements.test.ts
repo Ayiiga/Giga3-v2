@@ -17,7 +17,10 @@ import {
   resolveExamPracticeSessionCount,
   shouldAbandonPriorExamInProgress,
 } from "../../web/lib/gigalearn/examPractice/practiceLimits";
-import { selectTechQuestionIds } from "../../web/lib/gigalearn/academy/techBanks/techBankServer";
+import {
+  getTechBankQuestions,
+  selectTechQuestionIds,
+} from "../../web/lib/gigalearn/academy/techBanks/techBankServer";
 import { examPracticeShareUrl } from "../../web/lib/gigalearn/examPractice/sharePractice";
 
 const ROOT = resolve(__dirname, "../..");
@@ -302,5 +305,28 @@ describe("share UTM + answer-key hygiene", () => {
     expect(block).toContain("optionPermutationsJson");
     expect(block).not.toContain("correctIndex:");
     expect(block).not.toContain("explanation:");
+  });
+
+  it("free session selection never returns premium-only AD II stems", () => {
+    const freeIds = new Set(
+      selectTechQuestionIds({
+        courseSlug: "exam-ad-ii",
+        mode: "practice_test",
+        count: 500,
+        seed: 42,
+        premiumAccess: false,
+      })
+    );
+    const premiumOnly = getTechBankQuestions("exam-ad-ii").filter(
+      (q) =>
+        Array.isArray(q.accessTier) &&
+        q.accessTier.includes("premium") &&
+        !q.accessTier.includes("free")
+    );
+    expect(premiumOnly.length).toBeGreaterThan(0);
+    for (const q of premiumOnly) {
+      expect(freeIds.has(q.questionId)).toBe(false);
+    }
+    expect(freeIds.size).toBeLessThanOrEqual(EXAM_PRACTICE_FREE_QUESTION_COUNT);
   });
 });
