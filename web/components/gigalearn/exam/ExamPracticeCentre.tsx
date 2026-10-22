@@ -499,8 +499,9 @@ function TeacherPromotionCentreCard() {
         <p className="mt-2 text-sm text-slate-600">
           Five separate banks for AD II through Director I. Distinct published practice items:{" "}
           {PROMOTION_RANK_BANKS_TOTAL.published} of {PROMOTION_RANK_BANKS_TOTAL.target} target
-          (550 per rank) — gaps are backlog, not filled with duplicates. All items await human
-          verification. Study PDFs:{" "}
+          (550 per rank is a backlog goal, not a claim that each bank has 550 items). Exact
+          cross-rank duplicate stems were removed. All items await human verification. Study
+          PDFs:{" "}
           <Link
             href={EXAM_PRACTICE_DESTINATIONS.promotionGuidesZip}
             className="font-semibold text-[#14532D] underline-offset-2 hover:underline"

@@ -100,6 +100,11 @@ export function getTechBankQuestions(
   const bank = BANKS[slug];
   if (!bank) return [];
   let rows = bank.questions;
+  // Retired / draft items stay in JSON for recovery but never enter practice pools.
+  rows = rows.filter((q) => {
+    const pub = q.publicationStatus;
+    return pub == null || pub === "published_practice";
+  });
   const includePending = opts?.includePending ?? INCLUDE_PENDING_SLUGS.has(slug);
   if (opts?.approvedOnly === false) {
     // all statuses except rejected

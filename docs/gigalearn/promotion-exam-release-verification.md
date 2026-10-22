@@ -2,11 +2,11 @@
 
 **Verification date:** 2026-10-22 (Africa/Accra)  
 **Production URL:** https://www.giga3ai.com/  
-**Final release status:** **DEPLOYED, PRODUCTION VERIFICATION INCOMPLETE**
+**Final release status:** Updated by post-#583 cross-rank dedupe branch (see latest PR).
 
 ---
 
-## Merge SHAs (GitHub)
+## Merge SHAs (GitHub) — prior ship train
 
 | PR | Status | Exact squash-merge SHA |
 |----|--------|------------------------|
@@ -14,88 +14,72 @@
 | #575 | MERGED | `34adfb46302f6857b9b79caa5bc4a928612fcc25` |
 | #576 | MERGED | `945f9fbe0df26541ef38c2c85fd3feb2a490172d` |
 | #577 | MERGED | `e240fa4aeb33fede6f1fccbd2e5accbd07768c4a` |
+| #580 | MERGED | `a36c3dedb095bd2e5fc3240b194f81f73358ba69` |
+| #583 | MERGED | `e0de94272a4d326235443aa99044472800d89ab5` |
 
-Current `origin/main` HEAD: `e240fa4aeb33fede6f1fccbd2e5accbd07768c4a`.
+`#572` (answer-position bias) was closed as superseded — landed via `#574` / `#580`.
 
 ---
 
-## Defects addressed in #577
+## Confirmed defect fixed after #583
 
 | ID | Class | Finding | Action |
 |----|-------|---------|--------|
-| D1 | Deploy process | Convex path filter omitted `web/lib/gigalearn/**` (bundled into `gigaLearnTechBanks`) | **Fixed & deployed** |
-| D2 | Verification gap | No Playwright Exam Practice coverage | **Fixed** — `tests/e2e/production-exam-practice.spec.ts` |
-| D3 | Verification gap | Authenticated production shuffle/premium | **Still blocked** — no `GIGA3_E2E_*`; workflow_dispatch 403 |
-| — | Scoring / entitlement software defect | None confirmed | — |
+| D-CR1 | Content integrity | 899 / 1419 published rank items were exact cross-rank duplicate stems | **Fixed** — keep first occurrence AD II→D I; five-rank total **520** |
+| D-CR2 | Misleading asset naming | Primary `guidePdfHref` pointed at `*_550_Questions_Answers.pdf` | **Fixed** — primary links use `*_N_Practice_Questions_Answers.pdf` |
+| D-CR3 | Docs drift | Release verification still claimed 259 rank items / HEAD `e240fa4a` | **Fixed** — this document |
+| D-CR4 | Loader hygiene | `publicationStatus` retired/draft not filtered | **Fixed** — practice pools only `published_practice` (or unset) |
 
 ---
 
-## Deployment evidence
+## Honest published inventory (after cross-rank dedupe)
 
-| Workflow | Commit | Conclusion | Run |
-|----------|--------|------------|-----|
-| Deploy Convex backend | `e240fa4a` (#577) | **success** | [39799498290](https://github.com/Ayiiga/Giga3-v2/actions/runs/39799498290) |
-| Deploy to Cloudflare Pages | `e240fa4a` (#577) | **success** | [39799498270](https://github.com/Ayiiga/Giga3-v2/actions/runs/39799498270) |
-| CI — Unit & Security Tests | `e240fa4a` (#577) | **success** | [39799498301](https://github.com/Ayiiga/Giga3-v2/actions/runs/39799498301) |
-| Deploy Convex backend | `34adfb46` (#575) | **success** | [39791120071](https://github.com/Ayiiga/Giga3-v2/actions/runs/39791120071) |
-| Deploy to Cloudflare Pages | `945f9fbe` (#576) | **success** | [39794640618](https://github.com/Ayiiga/Giga3-v2/actions/runs/39794640618) |
+| Rank | Distinct | MCQ | True/False | Gap to 550 |
+|------|---------:|----:|-----------:|-----------:|
+| AD II | 295 | 241 | 54 | 255 |
+| AD I | 87 | 78 | 9 | 463 |
+| Deputy Director | 52 | 43 | 9 | 498 |
+| Director II | 40 | 31 | 9 | 510 |
+| Director I | 46 | 37 | 9 | 504 |
+
+**Five-rank total:** 520 of 2,750 target (gap 2,230).  
+**Verified:** 0 human-verified in rank banks (all `pending_review` / SOURCE ANSWER — REVIEW REQUIRED).  
+**Not claimed:** official GES papers; 550 unique per rank.
+
+Primary downloads (honest filenames):
+
+- `/downloads/gigalearn/promotion-guides/GigaLearn_AD_II_295_Practice_Questions_Answers.pdf`
+- `/downloads/gigalearn/promotion-guides/GigaLearn_AD_I_87_Practice_Questions_Answers.pdf`
+- `/downloads/gigalearn/promotion-guides/GigaLearn_DD_52_Practice_Questions_Answers.pdf`
+- `/downloads/gigalearn/promotion-guides/GigaLearn_D_II_40_Practice_Questions_Answers.pdf`
+- `/downloads/gigalearn/promotion-guides/GigaLearn_D_I_46_Practice_Questions_Answers.pdf`
+- `/downloads/gigalearn/promotion-guides/GigaLearn_Teacher_Promotion_Practice_Guides.zip`
+
+`*_550_Questions_Answers.pdf` aliases remain byte-identical for old bookmarks and are **not** a claim of 550 distinct questions.
 
 ---
 
-## Verified in production
+## Automated coverage
 
-Post-#577 smoke 2026-10-22 ~15:00 UTC (Africa/Accra). Artifact: `/opt/cursor/artifacts/prod-smoke-post-577-2026-10-22.log`.
-
-| Check | Result |
+| Suite | Focus |
 |-------|--------|
-| Exam Centre, free practice, Academy, assess | **PASS** HTTP 200 |
-| Five rank tech routes + teacher-promotion tech | **PASS** HTTP 200 |
-| Rank course pages (ad-ii, director-i) | **PASS** HTTP 200 |
-| Public HTML `correctIndex` / `correctOptionId` | **PASS** — 0 hits (12 routes) |
-| Unauthenticated `startTechPracticeSession` | **PASS** — `UnauthorizedError` |
-
-Browser smoke **does not** prove shuffle scoring or free/premium entitlement correctness.
+| `promotionBankQuality.test.ts` | Schema, cross-rank uniqueness, shuffle grading, entitlements, PDF/ZIP hrefs |
+| `promotionRankBanks.test.ts` | Honest counts + free clamp |
+| `promotionTrueFalse.test.ts` | TF import/grading/filters |
+| `examAnswerPositionBias.test.ts` | Fisher–Yates + permutation scoring |
+| `promotionGuidePdfs.test.ts` | Asset structure + ZIP |
 
 ---
 
-## Verified in automated tests only
-
-| Suite | Result |
-|-------|--------|
-| `vitest run tests/gigalearn/` (pre-merge #577) | **463 passed**, 9 skipped |
-| Focused shuffle / entitlements / ranks / deploy-path | **58 passed** |
-| PR #577 CI vitest | **success** ([39798062339](https://github.com/Ayiiga/Giga3-v2/actions/runs/39798062339)) |
-| web lint / production build | **exit 0** |
-
-Shuffle, option-permutation persistence, display↔original grading, free-tier premium-stem exclusion, and residual-credit non-unlock are covered by unit/integration tests + server code review.
-
----
-
-## Blocked or unverified
+## Blocked or unverified in production (unchanged)
 
 | Check | Status | Why |
 |-------|--------|-----|
 | Authenticated start → answer → submit → restore → retry | **BLOCKED** | No authorized `GIGA3_E2E_*` credentials in agent env |
-| Signed-in free vs premium stem access | **BLOCKED** | Same; cannot dispatch Production E2E (HTTP 403) |
-| GUI hydration / console walkthrough | **UNVERIFIED** | No computer-use this pass |
-
-**To reach RELEASE VERIFIED:** run Production E2E Verification with secrets, or provide authorized free + premium test accounts (do not alter real customer entitlements).
-
----
-
-## Known content limitations
-
-| Item | Status |
-|------|--------|
-| Published rank questions | **259** (not 2,500) — AD II 60 / AD I 56 / Deputy 50 / Director II 47 / Director I 46 |
-| Free / premium-only | 243 / 16 |
-| Teacher Promotion | 239; 238 approved; **q008** provisional; 24 human_verified |
-| Official GES papers | **Not claimed** |
+| Signed-in free vs premium stem access | **BLOCKED** | Same |
 
 ---
 
 ## Final release status
 
-**DEPLOYED, PRODUCTION VERIFICATION INCOMPLETE**
-
-`#574`–`#577` are on `main` at `e240fa4a`. Convex and Cloudflare Pages deploys for that commit succeeded. Public routes and unauthorized API checks pass. Authenticated production scoring and entitlement verification remain blocked without authorized E2E credentials.
+Pending merge/deploy of the cross-rank dedupe PR. Do not advertise 550 questions per rank or 2,750 verified items.

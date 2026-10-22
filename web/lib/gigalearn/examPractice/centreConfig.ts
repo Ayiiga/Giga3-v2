@@ -98,7 +98,7 @@ export const EXAM_PRACTICE_DESTINATIONS = {
   adIPractice: "/gigalearn/academy/tech/?course=exam-ad-i&count=50",
   adIPracticeMcq: "/gigalearn/academy/tech/?course=exam-ad-i&qtype=mcq&count=50",
   adIPracticeTf:
-    "/gigalearn/academy/tech/?course=exam-ad-i&qtype=true_false&count=29",
+    "/gigalearn/academy/tech/?course=exam-ad-i&qtype=true_false&count=9",
   adIPracticeFull:
     "/gigalearn/academy/tech/?course=exam-ad-i&mode=practice_test&count=500",
   adICourse: "/gigalearn/academy/course/?slug=exam-ad-i",
@@ -107,7 +107,7 @@ export const EXAM_PRACTICE_DESTINATIONS = {
   deputyDirectorPracticeMcq:
     "/gigalearn/academy/tech/?course=exam-deputy-director&qtype=mcq&count=50",
   deputyDirectorPracticeTf:
-    "/gigalearn/academy/tech/?course=exam-deputy-director&qtype=true_false&count=29",
+    "/gigalearn/academy/tech/?course=exam-deputy-director&qtype=true_false&count=9",
   deputyDirectorPracticeFull:
     "/gigalearn/academy/tech/?course=exam-deputy-director&mode=practice_test&count=500",
   deputyDirectorCourse: "/gigalearn/academy/course/?slug=exam-deputy-director",
@@ -115,7 +115,7 @@ export const EXAM_PRACTICE_DESTINATIONS = {
   directorIiPracticeMcq:
     "/gigalearn/academy/tech/?course=exam-director-ii&qtype=mcq&count=50",
   directorIiPracticeTf:
-    "/gigalearn/academy/tech/?course=exam-director-ii&qtype=true_false&count=29",
+    "/gigalearn/academy/tech/?course=exam-director-ii&qtype=true_false&count=9",
   directorIiPracticeFull:
     "/gigalearn/academy/tech/?course=exam-director-ii&mode=practice_test&count=500",
   directorIiCourse: "/gigalearn/academy/course/?slug=exam-director-ii",
@@ -123,7 +123,7 @@ export const EXAM_PRACTICE_DESTINATIONS = {
   directorIPracticeMcq:
     "/gigalearn/academy/tech/?course=exam-director-i&qtype=mcq&count=50",
   directorIPracticeTf:
-    "/gigalearn/academy/tech/?course=exam-director-i&qtype=true_false&count=29",
+    "/gigalearn/academy/tech/?course=exam-director-i&qtype=true_false&count=9",
   directorIPracticeFull:
     "/gigalearn/academy/tech/?course=exam-director-i&mode=practice_test&count=500",
   directorICourse: "/gigalearn/academy/course/?slug=exam-director-i",
@@ -158,6 +158,23 @@ const directorIMeta = getExamBankMeta("exam-director-i");
 export const PROMOTION_RANK_TARGET_COUNT = 550;
 export const PROMOTION_RANKS_TARGET_TOTAL = PROMOTION_RANK_TARGET_COUNT * 5;
 
+function rankGuideShortCode(courseSlug: string | null | undefined): string | null {
+  switch (courseSlug) {
+    case "exam-ad-ii":
+      return "AD_II";
+    case "exam-ad-i":
+      return "AD_I";
+    case "exam-deputy-director":
+      return "DD";
+    case "exam-director-ii":
+      return "D_II";
+    case "exam-director-i":
+      return "D_I";
+    default:
+      return null;
+  }
+}
+
 function rankBankSummary(meta: ReturnType<typeof getExamBankMeta>) {
   const approved = meta?.approvedQuestionCount ?? 0;
   const pending = meta?.pendingQuestionCount ?? 0;
@@ -167,6 +184,13 @@ function rankBankSummary(meta: ReturnType<typeof getExamBankMeta>) {
   const types: Array<"mcq" | "true_false"> = [];
   if (mcqCount > 0) types.push("mcq");
   if (trueFalseCount > 0) types.push("true_false");
+  const short = rankGuideShortCode(meta?.courseSlug);
+  // Primary download uses the honest published count in the filename — never "550"
+  // unless that rank genuinely has 550 distinct items.
+  const guidePdfHref =
+    short && published > 0
+      ? `/downloads/gigalearn/promotion-guides/GigaLearn_${short}_${published}_Practice_Questions_Answers.pdf`
+      : null;
   return {
     available: published > 0,
     approvedCount: approved,
@@ -180,19 +204,7 @@ function rankBankSummary(meta: ReturnType<typeof getExamBankMeta>) {
     sourceDocument: meta?.sourceDocument ?? null,
     title: meta?.title ?? null,
     courseSlug: meta?.courseSlug ?? null,
-    guidePdfHref: meta?.courseSlug
-      ? `/downloads/gigalearn/promotion-guides/GigaLearn_${
-          meta.courseSlug === "exam-ad-ii"
-            ? "AD_II"
-            : meta.courseSlug === "exam-ad-i"
-              ? "AD_I"
-              : meta.courseSlug === "exam-deputy-director"
-                ? "DD"
-                : meta.courseSlug === "exam-director-ii"
-                  ? "D_II"
-                  : "D_I"
-        }_550_Questions_Answers.pdf`
-      : null,
+    guidePdfHref,
   } as const;
 }
 

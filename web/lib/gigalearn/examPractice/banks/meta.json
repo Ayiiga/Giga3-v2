@@ -176,13 +176,13 @@
           "questionCount": 9
         },
         {
-          "id": "numerical-reasoning",
-          "label": "Numerical reasoning",
+          "id": "curriculum",
+          "label": "Curriculum",
           "questionCount": 8
         },
         {
-          "id": "curriculum",
-          "label": "Curriculum",
+          "id": "numerical-reasoning",
+          "label": "Numerical reasoning",
           "questionCount": 8
         },
         {
@@ -201,11 +201,6 @@
           "questionCount": 6
         },
         {
-          "id": "learner-wellbeing",
-          "label": "Learner wellbeing",
-          "questionCount": 5
-        },
-        {
           "id": "digital-and-information-literacy",
           "label": "Digital and information literacy",
           "questionCount": 5
@@ -218,6 +213,11 @@
         {
           "id": "inclusive-education",
           "label": "Inclusive education",
+          "questionCount": 5
+        },
+        {
+          "id": "learner-wellbeing",
+          "label": "Learner wellbeing",
           "questionCount": 5
         },
         {
@@ -236,8 +236,28 @@
           "questionCount": 5
         },
         {
-          "id": "school-community-relations",
-          "label": "School-community relations",
+          "id": "ethics-and-fairness",
+          "label": "Ethics and fairness",
+          "questionCount": 4
+        },
+        {
+          "id": "finance-and-accountability",
+          "label": "Finance and accountability",
+          "questionCount": 4
+        },
+        {
+          "id": "leadership-and-communication",
+          "label": "Leadership and communication",
+          "questionCount": 4
+        },
+        {
+          "id": "planning-and-evaluation",
+          "label": "Planning and evaluation",
+          "questionCount": 4
+        },
+        {
+          "id": "professional-accountability",
+          "label": "Professional accountability",
           "questionCount": 4
         },
         {
@@ -251,8 +271,8 @@
           "questionCount": 4
         },
         {
-          "id": "finance-and-accountability",
-          "label": "Finance and accountability",
+          "id": "school-community-relations",
+          "label": "School-community relations",
           "questionCount": 4
         },
         {
@@ -261,48 +281,8 @@
           "questionCount": 4
         },
         {
-          "id": "leadership-and-communication",
-          "label": "Leadership and communication",
-          "questionCount": 4
-        },
-        {
-          "id": "ethics-and-fairness",
-          "label": "Ethics and fairness",
-          "questionCount": 4
-        },
-        {
-          "id": "professional-accountability",
-          "label": "Professional accountability",
-          "questionCount": 4
-        },
-        {
-          "id": "planning-and-evaluation",
-          "label": "Planning and evaluation",
-          "questionCount": 4
-        },
-        {
-          "id": "ethical-leadership",
-          "label": "Ethical leadership",
-          "questionCount": 3
-        },
-        {
-          "id": "organisational-culture",
-          "label": "Organisational culture",
-          "questionCount": 3
-        },
-        {
-          "id": "work-planning",
-          "label": "Work planning",
-          "questionCount": 3
-        },
-        {
-          "id": "leadership-and-governance",
-          "label": "Leadership and governance",
-          "questionCount": 3
-        },
-        {
-          "id": "resource-stewardship",
-          "label": "Resource stewardship",
+          "id": "decision-making",
+          "label": "Decision-making",
           "questionCount": 3
         },
         {
@@ -316,8 +296,18 @@
           "questionCount": 3
         },
         {
-          "id": "decision-making",
-          "label": "Decision-making",
+          "id": "ethical-leadership",
+          "label": "Ethical leadership",
+          "questionCount": 3
+        },
+        {
+          "id": "leadership-and-governance",
+          "label": "Leadership and governance",
+          "questionCount": 3
+        },
+        {
+          "id": "organisational-culture",
+          "label": "Organisational culture",
           "questionCount": 3
         },
         {
@@ -326,14 +316,29 @@
           "questionCount": 3
         },
         {
-          "id": "stakeholder-engagement",
-          "label": "Stakeholder engagement",
+          "id": "resource-stewardship",
+          "label": "Resource stewardship",
           "questionCount": 3
         },
         {
           "id": "risk-and-compliance",
           "label": "Risk and compliance",
           "questionCount": 3
+        },
+        {
+          "id": "stakeholder-engagement",
+          "label": "Stakeholder engagement",
+          "questionCount": 3
+        },
+        {
+          "id": "work-planning",
+          "label": "Work planning",
+          "questionCount": 3
+        },
+        {
+          "id": "evidence-based-leadership",
+          "label": "Evidence-based leadership",
+          "questionCount": 2
         },
         {
           "id": "examination-integrity",
@@ -343,11 +348,6 @@
         {
           "id": "school-improvement",
           "label": "School improvement",
-          "questionCount": 2
-        },
-        {
-          "id": "evidence-based-leadership",
-          "label": "Evidence-based leadership",
           "questionCount": 2
         },
         {
@@ -363,214 +363,164 @@
       "title": "GES Assistant Director I Promotion Practice",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "approvedQuestionCount": 0,
-      "pendingQuestionCount": 282,
-      "mcqCount": 253,
-      "trueFalseCount": 29,
+      "pendingQuestionCount": 87,
+      "mcqCount": 78,
+      "trueFalseCount": 9,
       "topics": [
         {
           "id": "professional-practice",
           "label": "Professional practice",
-          "questionCount": 62
+          "questionCount": 33
         },
         {
           "id": "true-false-promotion",
           "label": "True / False — Promotion Aptitude",
-          "questionCount": 29
-        },
-        {
-          "id": "leadership-and-supervision",
-          "label": "Leadership and supervision",
-          "questionCount": 12
-        },
-        {
-          "id": "educational-assessment",
-          "label": "Educational assessment",
-          "questionCount": 10
-        },
-        {
-          "id": "human-resource-management",
-          "label": "Human resource management",
           "questionCount": 9
         },
         {
           "id": "communication",
           "label": "Communication",
-          "questionCount": 8
-        },
-        {
-          "id": "teaching-and-learning",
-          "label": "Teaching and learning",
-          "questionCount": 8
-        },
-        {
-          "id": "data-and-research",
-          "label": "Data and research",
-          "questionCount": 7
-        },
-        {
-          "id": "professional-learning",
-          "label": "Professional learning",
-          "questionCount": 6
-        },
-        {
-          "id": "school-community-relations",
-          "label": "School-community relations",
-          "questionCount": 6
-        },
-        {
-          "id": "leadership-and-governance",
-          "label": "Leadership and governance",
-          "questionCount": 6
-        },
-        {
-          "id": "resource-management",
-          "label": "Resource management",
-          "questionCount": 6
-        },
-        {
-          "id": "public-administration-and-ethics",
-          "label": "Public administration and ethics",
-          "questionCount": 6
-        },
-        {
-          "id": "curriculum",
-          "label": "Curriculum",
-          "questionCount": 6
-        },
-        {
-          "id": "educational-technology",
-          "label": "Educational technology",
-          "questionCount": 5
-        },
-        {
-          "id": "digital-and-information-literacy",
-          "label": "Digital and information literacy",
-          "questionCount": 5
-        },
-        {
-          "id": "learner-wellbeing",
-          "label": "Learner wellbeing",
-          "questionCount": 5
-        },
-        {
-          "id": "numerical-reasoning",
-          "label": "Numerical reasoning",
-          "questionCount": 5
-        },
-        {
-          "id": "work-planning",
-          "label": "Work planning",
-          "questionCount": 5
-        },
-        {
-          "id": "school-improvement",
-          "label": "School improvement",
           "questionCount": 4
         },
         {
-          "id": "quality-assurance",
-          "label": "Quality assurance",
-          "questionCount": 4
-        },
-        {
-          "id": "professional-accountability",
-          "label": "Professional accountability",
-          "questionCount": 4
-        },
-        {
-          "id": "ethical-leadership",
-          "label": "Ethical leadership",
-          "questionCount": 4
-        },
-        {
-          "id": "planning-and-evaluation",
-          "label": "Planning and evaluation",
-          "questionCount": 4
-        },
-        {
-          "id": "organisational-culture",
-          "label": "Organisational culture",
-          "questionCount": 4
-        },
-        {
-          "id": "resource-stewardship",
-          "label": "Resource stewardship",
-          "questionCount": 4
-        },
-        {
-          "id": "statistics-and-reporting",
-          "label": "Statistics and reporting",
-          "questionCount": 4
+          "id": "leadership-and-supervision",
+          "label": "Leadership and supervision",
+          "questionCount": 3
         },
         {
           "id": "programme-management",
           "label": "Programme management",
-          "questionCount": 4
-        },
-        {
-          "id": "learning-and-motivation",
-          "label": "Learning and motivation",
-          "questionCount": 4
-        },
-        {
-          "id": "examination-integrity",
-          "label": "Examination integrity",
           "questionCount": 3
         },
         {
-          "id": "inclusive-education",
-          "label": "Inclusive education",
-          "questionCount": 3
+          "id": "data-and-research",
+          "label": "Data and research",
+          "questionCount": 2
         },
         {
-          "id": "finance-and-accountability",
-          "label": "Finance and accountability",
-          "questionCount": 3
+          "id": "digital-and-information-literacy",
+          "label": "Digital and information literacy",
+          "questionCount": 2
         },
         {
-          "id": "risk-and-compliance",
-          "label": "Risk and compliance",
-          "questionCount": 3
+          "id": "human-resource-management",
+          "label": "Human resource management",
+          "questionCount": 2
         },
         {
-          "id": "ethics-and-fairness",
-          "label": "Ethics and fairness",
-          "questionCount": 3
+          "id": "leadership-and-governance",
+          "label": "Leadership and governance",
+          "questionCount": 2
         },
         {
-          "id": "evidence-based-leadership",
-          "label": "Evidence-based leadership",
-          "questionCount": 3
+          "id": "professional-learning",
+          "label": "Professional learning",
+          "questionCount": 2
         },
         {
-          "id": "equity-and-access",
-          "label": "Equity and access",
-          "questionCount": 3
+          "id": "public-administration-and-ethics",
+          "label": "Public administration and ethics",
+          "questionCount": 2
+        },
+        {
+          "id": "school-community-relations",
+          "label": "School-community relations",
+          "questionCount": 2
+        },
+        {
+          "id": "school-improvement",
+          "label": "School improvement",
+          "questionCount": 2
+        },
+        {
+          "id": "work-planning",
+          "label": "Work planning",
+          "questionCount": 2
         },
         {
           "id": "decision-making",
           "label": "Decision-making",
-          "questionCount": 3
+          "questionCount": 1
         },
         {
-          "id": "leadership-and-communication",
-          "label": "Leadership and communication",
-          "questionCount": 3
-        },
-        {
-          "id": "public-service-leadership",
-          "label": "Public service leadership",
-          "questionCount": 3
-        },
-        {
-          "id": "stakeholder-engagement",
-          "label": "Stakeholder engagement",
-          "questionCount": 3
+          "id": "educational-assessment",
+          "label": "Educational assessment",
+          "questionCount": 1
         },
         {
           "id": "educational-law-and-policy",
           "label": "Educational law and policy",
-          "questionCount": 3
+          "questionCount": 1
+        },
+        {
+          "id": "educational-technology",
+          "label": "Educational technology",
+          "questionCount": 1
+        },
+        {
+          "id": "equity-and-access",
+          "label": "Equity and access",
+          "questionCount": 1
+        },
+        {
+          "id": "ethical-leadership",
+          "label": "Ethical leadership",
+          "questionCount": 1
+        },
+        {
+          "id": "evidence-based-leadership",
+          "label": "Evidence-based leadership",
+          "questionCount": 1
+        },
+        {
+          "id": "examination-integrity",
+          "label": "Examination integrity",
+          "questionCount": 1
+        },
+        {
+          "id": "learner-wellbeing",
+          "label": "Learner wellbeing",
+          "questionCount": 1
+        },
+        {
+          "id": "numerical-reasoning",
+          "label": "Numerical reasoning",
+          "questionCount": 1
+        },
+        {
+          "id": "organisational-culture",
+          "label": "Organisational culture",
+          "questionCount": 1
+        },
+        {
+          "id": "planning-and-evaluation",
+          "label": "Planning and evaluation",
+          "questionCount": 1
+        },
+        {
+          "id": "quality-assurance",
+          "label": "Quality assurance",
+          "questionCount": 1
+        },
+        {
+          "id": "resource-management",
+          "label": "Resource management",
+          "questionCount": 1
+        },
+        {
+          "id": "resource-stewardship",
+          "label": "Resource stewardship",
+          "questionCount": 1
+        },
+        {
+          "id": "risk-and-compliance",
+          "label": "Risk and compliance",
+          "questionCount": 1
+        },
+        {
+          "id": "stakeholder-engagement",
+          "label": "Stakeholder engagement",
+          "questionCount": 1
         }
       ]
     },
@@ -580,214 +530,94 @@
       "title": "GES Deputy Director Promotion Practice",
       "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
       "approvedQuestionCount": 0,
-      "pendingQuestionCount": 276,
-      "mcqCount": 247,
-      "trueFalseCount": 29,
+      "pendingQuestionCount": 52,
+      "mcqCount": 43,
+      "trueFalseCount": 9,
       "topics": [
         {
           "id": "professional-practice",
           "label": "Professional practice",
-          "questionCount": 59
+          "questionCount": 22
         },
         {
           "id": "true-false-promotion",
           "label": "True / False — Promotion Aptitude",
-          "questionCount": 29
-        },
-        {
-          "id": "teaching-and-learning",
-          "label": "Teaching and learning",
           "questionCount": 9
-        },
-        {
-          "id": "educational-assessment",
-          "label": "Educational assessment",
-          "questionCount": 9
-        },
-        {
-          "id": "leadership-and-supervision",
-          "label": "Leadership and supervision",
-          "questionCount": 8
-        },
-        {
-          "id": "public-administration-and-ethics",
-          "label": "Public administration and ethics",
-          "questionCount": 8
-        },
-        {
-          "id": "numerical-reasoning",
-          "label": "Numerical reasoning",
-          "questionCount": 7
-        },
-        {
-          "id": "resource-management",
-          "label": "Resource management",
-          "questionCount": 7
         },
         {
           "id": "data-and-research",
           "label": "Data and research",
-          "questionCount": 7
-        },
-        {
-          "id": "finance-and-accountability",
-          "label": "Finance and accountability",
-          "questionCount": 6
-        },
-        {
-          "id": "programme-management",
-          "label": "Programme management",
-          "questionCount": 6
-        },
-        {
-          "id": "quality-assurance",
-          "label": "Quality assurance",
-          "questionCount": 6
-        },
-        {
-          "id": "school-community-relations",
-          "label": "School-community relations",
-          "questionCount": 6
-        },
-        {
-          "id": "planning-and-evaluation",
-          "label": "Planning and evaluation",
-          "questionCount": 6
-        },
-        {
-          "id": "risk-and-compliance",
-          "label": "Risk and compliance",
-          "questionCount": 5
-        },
-        {
-          "id": "school-improvement",
-          "label": "School improvement",
-          "questionCount": 5
-        },
-        {
-          "id": "communication",
-          "label": "Communication",
-          "questionCount": 5
+          "questionCount": 2
         },
         {
           "id": "examination-integrity",
           "label": "Examination integrity",
-          "questionCount": 5
+          "questionCount": 2
         },
         {
-          "id": "human-resource-management",
-          "label": "Human resource management",
-          "questionCount": 5
+          "id": "finance-and-accountability",
+          "label": "Finance and accountability",
+          "questionCount": 2
         },
         {
-          "id": "resource-stewardship",
-          "label": "Resource stewardship",
-          "questionCount": 5
+          "id": "programme-management",
+          "label": "Programme management",
+          "questionCount": 2
         },
         {
-          "id": "leadership-and-governance",
-          "label": "Leadership and governance",
-          "questionCount": 5
+          "id": "quality-assurance",
+          "label": "Quality assurance",
+          "questionCount": 2
         },
         {
-          "id": "stakeholder-engagement",
-          "label": "Stakeholder engagement",
-          "questionCount": 4
-        },
-        {
-          "id": "statistics-and-reporting",
-          "label": "Statistics and reporting",
-          "questionCount": 4
-        },
-        {
-          "id": "learner-wellbeing",
-          "label": "Learner wellbeing",
-          "questionCount": 4
+          "id": "school-improvement",
+          "label": "School improvement",
+          "questionCount": 2
         },
         {
           "id": "evidence-based-leadership",
           "label": "Evidence-based leadership",
-          "questionCount": 4
+          "questionCount": 1
         },
         {
-          "id": "professional-accountability",
-          "label": "Professional accountability",
-          "questionCount": 4
+          "id": "leadership-and-governance",
+          "label": "Leadership and governance",
+          "questionCount": 1
         },
         {
-          "id": "curriculum",
-          "label": "Curriculum",
-          "questionCount": 4
+          "id": "numerical-reasoning",
+          "label": "Numerical reasoning",
+          "questionCount": 1
         },
         {
-          "id": "ethics-and-fairness",
-          "label": "Ethics and fairness",
-          "questionCount": 4
+          "id": "planning-and-evaluation",
+          "label": "Planning and evaluation",
+          "questionCount": 1
         },
         {
-          "id": "equity-and-access",
-          "label": "Equity and access",
-          "questionCount": 4
+          "id": "public-administration-and-ethics",
+          "label": "Public administration and ethics",
+          "questionCount": 1
         },
         {
-          "id": "professional-learning",
-          "label": "Professional learning",
-          "questionCount": 4
+          "id": "resource-management",
+          "label": "Resource management",
+          "questionCount": 1
         },
         {
-          "id": "learning-and-motivation",
-          "label": "Learning and motivation",
-          "questionCount": 4
+          "id": "resource-stewardship",
+          "label": "Resource stewardship",
+          "questionCount": 1
         },
         {
-          "id": "work-planning",
-          "label": "Work planning",
-          "questionCount": 3
+          "id": "risk-and-compliance",
+          "label": "Risk and compliance",
+          "questionCount": 1
         },
         {
-          "id": "digital-and-information-literacy",
-          "label": "Digital and information literacy",
-          "questionCount": 3
-        },
-        {
-          "id": "ethical-leadership",
-          "label": "Ethical leadership",
-          "questionCount": 3
-        },
-        {
-          "id": "inclusive-education",
-          "label": "Inclusive education",
-          "questionCount": 3
-        },
-        {
-          "id": "leadership-and-communication",
-          "label": "Leadership and communication",
-          "questionCount": 3
-        },
-        {
-          "id": "educational-technology",
-          "label": "Educational technology",
-          "questionCount": 3
-        },
-        {
-          "id": "public-service-leadership",
-          "label": "Public service leadership",
-          "questionCount": 3
-        },
-        {
-          "id": "educational-law-and-policy",
-          "label": "Educational law and policy",
-          "questionCount": 3
-        },
-        {
-          "id": "decision-making",
-          "label": "Decision-making",
-          "questionCount": 2
-        },
-        {
-          "id": "organisational-culture",
-          "label": "Organisational culture",
-          "questionCount": 2
+          "id": "school-community-relations",
+          "label": "School-community relations",
+          "questionCount": 1
         }
       ]
     },
@@ -797,214 +627,59 @@
       "title": "GES Director II Promotion Practice",
       "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
       "approvedQuestionCount": 0,
-      "pendingQuestionCount": 281,
-      "mcqCount": 252,
-      "trueFalseCount": 29,
+      "pendingQuestionCount": 40,
+      "mcqCount": 31,
+      "trueFalseCount": 9,
       "topics": [
         {
           "id": "professional-practice",
           "label": "Professional practice",
-          "questionCount": 60
+          "questionCount": 22
         },
         {
           "id": "true-false-promotion",
           "label": "True / False — Promotion Aptitude",
-          "questionCount": 29
+          "questionCount": 9
         },
         {
           "id": "data-and-research",
           "label": "Data and research",
-          "questionCount": 12
-        },
-        {
-          "id": "teaching-and-learning",
-          "label": "Teaching and learning",
-          "questionCount": 12
-        },
-        {
-          "id": "leadership-and-supervision",
-          "label": "Leadership and supervision",
-          "questionCount": 11
-        },
-        {
-          "id": "educational-assessment",
-          "label": "Educational assessment",
-          "questionCount": 10
-        },
-        {
-          "id": "leadership-and-governance",
-          "label": "Leadership and governance",
-          "questionCount": 7
-        },
-        {
-          "id": "planning-and-evaluation",
-          "label": "Planning and evaluation",
-          "questionCount": 7
-        },
-        {
-          "id": "resource-management",
-          "label": "Resource management",
-          "questionCount": 6
-        },
-        {
-          "id": "curriculum",
-          "label": "Curriculum",
-          "questionCount": 6
-        },
-        {
-          "id": "numerical-reasoning",
-          "label": "Numerical reasoning",
-          "questionCount": 6
+          "questionCount": 2
         },
         {
           "id": "equity-and-access",
           "label": "Equity and access",
-          "questionCount": 5
-        },
-        {
-          "id": "finance-and-accountability",
-          "label": "Finance and accountability",
-          "questionCount": 5
+          "questionCount": 1
         },
         {
           "id": "leadership-and-communication",
           "label": "Leadership and communication",
-          "questionCount": 5
+          "questionCount": 1
         },
         {
-          "id": "public-administration-and-ethics",
-          "label": "Public administration and ethics",
-          "questionCount": 5
+          "id": "leadership-and-governance",
+          "label": "Leadership and governance",
+          "questionCount": 1
+        },
+        {
+          "id": "planning-and-evaluation",
+          "label": "Planning and evaluation",
+          "questionCount": 1
         },
         {
           "id": "risk-and-compliance",
           "label": "Risk and compliance",
-          "questionCount": 5
+          "questionCount": 1
         },
         {
           "id": "stakeholder-engagement",
           "label": "Stakeholder engagement",
-          "questionCount": 5
+          "questionCount": 1
         },
         {
           "id": "statistics-and-reporting",
           "label": "Statistics and reporting",
-          "questionCount": 5
-        },
-        {
-          "id": "digital-and-information-literacy",
-          "label": "Digital and information literacy",
-          "questionCount": 5
-        },
-        {
-          "id": "educational-law-and-policy",
-          "label": "Educational law and policy",
-          "questionCount": 4
-        },
-        {
-          "id": "organisational-culture",
-          "label": "Organisational culture",
-          "questionCount": 4
-        },
-        {
-          "id": "resource-stewardship",
-          "label": "Resource stewardship",
-          "questionCount": 4
-        },
-        {
-          "id": "inclusive-education",
-          "label": "Inclusive education",
-          "questionCount": 4
-        },
-        {
-          "id": "quality-assurance",
-          "label": "Quality assurance",
-          "questionCount": 4
-        },
-        {
-          "id": "human-resource-management",
-          "label": "Human resource management",
-          "questionCount": 4
-        },
-        {
-          "id": "ethical-leadership",
-          "label": "Ethical leadership",
-          "questionCount": 4
-        },
-        {
-          "id": "public-service-leadership",
-          "label": "Public service leadership",
-          "questionCount": 4
-        },
-        {
-          "id": "professional-accountability",
-          "label": "Professional accountability",
-          "questionCount": 4
-        },
-        {
-          "id": "school-community-relations",
-          "label": "School-community relations",
-          "questionCount": 4
-        },
-        {
-          "id": "programme-management",
-          "label": "Programme management",
-          "questionCount": 4
-        },
-        {
-          "id": "school-improvement",
-          "label": "School improvement",
-          "questionCount": 3
-        },
-        {
-          "id": "examination-integrity",
-          "label": "Examination integrity",
-          "questionCount": 3
-        },
-        {
-          "id": "communication",
-          "label": "Communication",
-          "questionCount": 3
-        },
-        {
-          "id": "educational-technology",
-          "label": "Educational technology",
-          "questionCount": 3
-        },
-        {
-          "id": "evidence-based-leadership",
-          "label": "Evidence-based leadership",
-          "questionCount": 3
-        },
-        {
-          "id": "ethics-and-fairness",
-          "label": "Ethics and fairness",
-          "questionCount": 3
-        },
-        {
-          "id": "decision-making",
-          "label": "Decision-making",
-          "questionCount": 3
-        },
-        {
-          "id": "work-planning",
-          "label": "Work planning",
-          "questionCount": 3
-        },
-        {
-          "id": "learner-wellbeing",
-          "label": "Learner wellbeing",
-          "questionCount": 3
-        },
-        {
-          "id": "learning-and-motivation",
-          "label": "Learning and motivation",
-          "questionCount": 2
-        },
-        {
-          "id": "professional-learning",
-          "label": "Professional learning",
-          "questionCount": 2
+          "questionCount": 1
         }
       ]
     },
@@ -1014,214 +689,64 @@
       "title": "GES Director I Promotion Practice",
       "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
       "approvedQuestionCount": 0,
-      "pendingQuestionCount": 285,
-      "mcqCount": 256,
-      "trueFalseCount": 29,
+      "pendingQuestionCount": 46,
+      "mcqCount": 37,
+      "trueFalseCount": 9,
       "topics": [
         {
           "id": "professional-practice",
           "label": "Professional practice",
-          "questionCount": 59
+          "questionCount": 22
         },
         {
           "id": "true-false-promotion",
           "label": "True / False — Promotion Aptitude",
-          "questionCount": 29
+          "questionCount": 9
         },
         {
           "id": "public-administration-and-ethics",
           "label": "Public administration and ethics",
-          "questionCount": 12
-        },
-        {
-          "id": "teaching-and-learning",
-          "label": "Teaching and learning",
-          "questionCount": 12
-        },
-        {
-          "id": "leadership-and-supervision",
-          "label": "Leadership and supervision",
-          "questionCount": 10
-        },
-        {
-          "id": "educational-assessment",
-          "label": "Educational assessment",
-          "questionCount": 9
-        },
-        {
-          "id": "data-and-research",
-          "label": "Data and research",
-          "questionCount": 7
-        },
-        {
-          "id": "human-resource-management",
-          "label": "Human resource management",
-          "questionCount": 7
+          "questionCount": 3
         },
         {
           "id": "educational-law-and-policy",
           "label": "Educational law and policy",
-          "questionCount": 6
+          "questionCount": 2
         },
         {
           "id": "ethical-leadership",
           "label": "Ethical leadership",
-          "questionCount": 6
+          "questionCount": 2
         },
         {
           "id": "ethics-and-fairness",
           "label": "Ethics and fairness",
-          "questionCount": 6
-        },
-        {
-          "id": "planning-and-evaluation",
-          "label": "Planning and evaluation",
-          "questionCount": 6
-        },
-        {
-          "id": "resource-management",
-          "label": "Resource management",
-          "questionCount": 6
-        },
-        {
-          "id": "communication",
-          "label": "Communication",
-          "questionCount": 6
+          "questionCount": 2
         },
         {
           "id": "professional-accountability",
           "label": "Professional accountability",
-          "questionCount": 5
+          "questionCount": 2
         },
         {
           "id": "decision-making",
           "label": "Decision-making",
-          "questionCount": 5
+          "questionCount": 1
         },
         {
           "id": "evidence-based-leadership",
           "label": "Evidence-based leadership",
-          "questionCount": 5
+          "questionCount": 1
         },
         {
           "id": "organisational-culture",
           "label": "Organisational culture",
-          "questionCount": 5
+          "questionCount": 1
         },
         {
           "id": "public-service-leadership",
           "label": "Public service leadership",
-          "questionCount": 5
-        },
-        {
-          "id": "leadership-and-governance",
-          "label": "Leadership and governance",
-          "questionCount": 5
-        },
-        {
-          "id": "numerical-reasoning",
-          "label": "Numerical reasoning",
-          "questionCount": 5
-        },
-        {
-          "id": "curriculum",
-          "label": "Curriculum",
-          "questionCount": 5
-        },
-        {
-          "id": "school-community-relations",
-          "label": "School-community relations",
-          "questionCount": 5
-        },
-        {
-          "id": "inclusive-education",
-          "label": "Inclusive education",
-          "questionCount": 4
-        },
-        {
-          "id": "learning-and-motivation",
-          "label": "Learning and motivation",
-          "questionCount": 4
-        },
-        {
-          "id": "digital-and-information-literacy",
-          "label": "Digital and information literacy",
-          "questionCount": 4
-        },
-        {
-          "id": "stakeholder-engagement",
-          "label": "Stakeholder engagement",
-          "questionCount": 4
-        },
-        {
-          "id": "learner-wellbeing",
-          "label": "Learner wellbeing",
-          "questionCount": 4
-        },
-        {
-          "id": "resource-stewardship",
-          "label": "Resource stewardship",
-          "questionCount": 4
-        },
-        {
-          "id": "educational-technology",
-          "label": "Educational technology",
-          "questionCount": 4
-        },
-        {
-          "id": "examination-integrity",
-          "label": "Examination integrity",
-          "questionCount": 3
-        },
-        {
-          "id": "quality-assurance",
-          "label": "Quality assurance",
-          "questionCount": 3
-        },
-        {
-          "id": "finance-and-accountability",
-          "label": "Finance and accountability",
-          "questionCount": 3
-        },
-        {
-          "id": "work-planning",
-          "label": "Work planning",
-          "questionCount": 3
-        },
-        {
-          "id": "leadership-and-communication",
-          "label": "Leadership and communication",
-          "questionCount": 3
-        },
-        {
-          "id": "risk-and-compliance",
-          "label": "Risk and compliance",
-          "questionCount": 3
-        },
-        {
-          "id": "equity-and-access",
-          "label": "Equity and access",
-          "questionCount": 3
-        },
-        {
-          "id": "professional-learning",
-          "label": "Professional learning",
-          "questionCount": 3
-        },
-        {
-          "id": "school-improvement",
-          "label": "School improvement",
-          "questionCount": 3
-        },
-        {
-          "id": "programme-management",
-          "label": "Programme management",
-          "questionCount": 2
-        },
-        {
-          "id": "statistics-and-reporting",
-          "label": "Statistics and reporting",
-          "questionCount": 2
+          "questionCount": 1
         }
       ]
     }

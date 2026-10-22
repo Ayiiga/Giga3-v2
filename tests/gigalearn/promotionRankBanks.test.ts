@@ -28,11 +28,11 @@ const RANK_SLUGS = [
 ] as const;
 
 const EXPECTED_COUNTS: Record<(typeof RANK_SLUGS)[number], number> = {
-  "exam-ad-ii": 295, // 241 MCQ + 54 True/False (distinct; not 550 verified)
-  "exam-ad-i": 282,
-  "exam-deputy-director": 276,
-  "exam-director-ii": 281,
-  "exam-director-i": 285,
+  "exam-ad-ii": 295, // 241 MCQ + 54 True/False (cross-rank deduped; not 550 verified)
+  "exam-ad-i": 87,
+  "exam-deputy-director": 52,
+  "exam-director-ii": 40,
+  "exam-director-i": 46,
 };
 
 describe("promotion rank banks inventory", () => {
@@ -46,10 +46,10 @@ describe("promotion rank banks inventory", () => {
       expect(getBuiltinAcademyCourse(slug)?.category).toBe("Exam prep");
     }
     const total = RANK_SLUGS.reduce((n, s) => n + EXPECTED_COUNTS[s], 0);
-    expect(total).toBe(1419);
-    expect(PROMOTION_RANK_BANKS_TOTAL.published).toBe(1419);
+    expect(total).toBe(520);
+    expect(PROMOTION_RANK_BANKS_TOTAL.published).toBe(520);
     expect(PROMOTION_RANK_BANKS_TOTAL.target).toBe(2750);
-    expect(PROMOTION_RANK_BANKS_TOTAL.gap).toBe(1331);
+    expect(PROMOTION_RANK_BANKS_TOTAL.gap).toBe(2230);
   });
 
   it("does not claim 550 verified items per rank", () => {
@@ -59,7 +59,7 @@ describe("promotion rank banks inventory", () => {
       expect(bank.gapToTarget).toBeGreaterThan(0);
       expect(bank.approvedCount).toBe(0);
       expect(bank.pendingCount).toBe(bank.publishedCount);
-      expect(bank.guidePdfHref).toMatch(/_550_Questions_Answers\.pdf$/);
+      expect(bank.guidePdfHref).toMatch(/_\d+_Practice_Questions_Answers\.pdf$/);
     }
   });
 

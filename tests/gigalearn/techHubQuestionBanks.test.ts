@@ -112,11 +112,11 @@ describe("Technology Learning Hub question banks", () => {
     expect(teacher?.pendingImported).toBe(58);
     expect(teacher?.claimedAsOfficialGes).toBe(false);
     expect(report.totals.examApproved).toBe(706);
-    expect(report.totals.examPendingReview).toBe(1477);
-    expect(report.totals.promotionRankUniquePublished).toBe(1419);
+    expect(report.totals.examPendingReview).toBe(578);
+    expect(report.totals.promotionRankUniquePublished).toBe(520);
     expect(report.totals.claimedAs2500PromotionVerified).toBe(false);
     expect(report.totals.claimedAs2750PromotionVerified).toBe(false);
-    expect(report.totals.promotionRankGapTo2750).toBe(1331);
+    expect(report.totals.promotionRankGapTo2750).toBe(2230);
     const adIi = report.examBanks.find((b) => b.courseSlug === "exam-ad-ii");
     expect(adIi?.uniqueImportable).toBe(295);
     expect(adIi?.claimedAs500Unique).toBe(false);

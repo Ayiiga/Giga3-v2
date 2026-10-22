@@ -241,7 +241,7 @@ describe("promotion True/False filtering and honest rank availability", () => {
       premiumAccess: true,
       questionType: "true_false",
     });
-    expect(adITf.length).toBe(29);
+    expect(adITf.length).toBe(9);
   });
 
   it("exposes honest per-rank MCQ / True-False availability on the centre config", () => {
@@ -250,16 +250,16 @@ describe("promotion True/False filtering and honest rank availability", () => {
     expect(adIi.trueFalseCount).toBe(54);
     expect(adIi.questionTypes).toEqual(["mcq", "true_false"]);
     expect(adIi.trueFalseHref).toContain("qtype=true_false");
-    expect(adIi.guidePdfHref).toContain("GigaLearn_AD_II_550_Questions_Answers.pdf");
+    expect(adIi.guidePdfHref).toContain("GigaLearn_AD_II_295_Practice_Questions_Answers.pdf");
 
     for (const bank of PROMOTION_RANK_BANK_SUMMARIES) {
       expect(bank.trueFalseCount).toBeGreaterThan(0);
       expect(bank.questionTypes).toEqual(["mcq", "true_false"]);
       expect(bank.trueFalseHref).toContain("qtype=true_false");
-      expect(bank.guidePdfHref).toMatch(/_550_Questions_Answers\.pdf$/);
+      expect(bank.guidePdfHref).toMatch(/_\d+_Practice_Questions_Answers\.pdf$/);
     }
 
-    expect(PROMOTION_RANK_BANKS_TOTAL.published).toBe(1419);
+    expect(PROMOTION_RANK_BANKS_TOTAL.published).toBe(520);
     expect(getExamBankMeta("exam-ad-ii")?.trueFalseCount).toBe(54);
     expect(getExamBankMeta("exam-teacher-promotion")?.trueFalseCount).toBe(57);
   });
