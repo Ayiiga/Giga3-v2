@@ -6,8 +6,9 @@ export const metadata: Metadata = {
   title: "Page not found",
   description: "The page you were looking for does not exist on Giga3 AI.",
   robots: { index: false, follow: false },
-  // No canonical: /404.html pretty-URLs to /404 and created a soft-404 /
-  // redirect-conflict signal in Search Console when served as HTTP 200.
+  // Self path (not homepage). Middleware serves /404* as HTTP 404 so this
+  // never looks like a soft-404 homepage duplicate.
+  alternates: { canonical: "/404/" },
 };
 
 export default function NotFound() {

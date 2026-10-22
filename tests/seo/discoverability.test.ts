@@ -158,9 +158,10 @@ describe("noindex app shells avoid homepage canonical leak", () => {
 });
 
 describe("404 and homepage structured data", () => {
-  it("marks the not-found page noindex and does not set a conflicting canonical", () => {
+  it("marks the not-found page noindex with a non-homepage canonical", () => {
     const src = readFileSync(resolve(root, "web/app/not-found.tsx"), "utf8");
     expect(src).toContain("index: false");
+    expect(src).toContain('canonical: "/404/"');
     expect(src).not.toContain('canonical: "/404.html"');
     expect(src).not.toContain('canonical: "/"');
   });

@@ -42,7 +42,7 @@ No authenticated Google Search Console integration and no exported URL list were
 ### Confirmed production bugs (pre-fix)
 
 1. **Soft 404:** `https://www.giga3ai.com/404` and `/404/` → 200 + noindex + title “Page not found”. Unknown URLs correctly return 404; the pretty-URL of `404.html` did not.
-2. **Redirect / canonical conflict on 404:** `not-found` metadata used `canonical: "/404.html"` while CF Pages 308s `/404.html` → `/404`.
+2. **Redirect / canonical conflict on 404:** `not-found` previously used `canonical: "/404.html"` (asset layer 308 → `/404`) or inherited the homepage canonical when omitted. Now uses `/404/` and middleware returns HTTP 404 for `/404*`.
 3. **PWA offline shell broken for crawlers/SW fetch:** `/offline.html` → 308 → `/offline` (marketing page) because both `public/offline.html` and `app/(marketing)/offline` exist; middleware `ASSETS.fetch` followed the asset-layer pretty URL.
 4. **Homepage canonical leak:** `/marketplace/sell/` and `/marketplace/purchases/` were `noindex` but canonical `https://www.giga3ai.com/`. `/chat/login/` canonicalized to `/chat/`.
 5. **Internal links to retired noindex routes** in blog articles and content plan (`/media/`, `/video/`, `/gigaedit/`, `/ai-studio/`).
