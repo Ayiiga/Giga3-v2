@@ -28,11 +28,11 @@ const RANK_SLUGS = [
 ] as const;
 
 const EXPECTED_COUNTS: Record<(typeof RANK_SLUGS)[number], number> = {
-  "exam-ad-ii": 85, // 60 MCQ + 25 True/False (source-imported, pending review)
-  "exam-ad-i": 56,
-  "exam-deputy-director": 50,
-  "exam-director-ii": 47,
-  "exam-director-i": 46,
+  "exam-ad-ii": 295, // 241 MCQ + 54 True/False (distinct; not 550 verified)
+  "exam-ad-i": 282,
+  "exam-deputy-director": 276,
+  "exam-director-ii": 281,
+  "exam-director-i": 285,
 };
 
 describe("promotion rank banks inventory", () => {
@@ -46,18 +46,20 @@ describe("promotion rank banks inventory", () => {
       expect(getBuiltinAcademyCourse(slug)?.category).toBe("Exam prep");
     }
     const total = RANK_SLUGS.reduce((n, s) => n + EXPECTED_COUNTS[s], 0);
-    expect(total).toBe(284);
-    expect(PROMOTION_RANK_BANKS_TOTAL.published).toBe(284);
-    expect(PROMOTION_RANK_BANKS_TOTAL.target).toBe(2500);
-    expect(PROMOTION_RANK_BANKS_TOTAL.gap).toBe(2216);
+    expect(total).toBe(1419);
+    expect(PROMOTION_RANK_BANKS_TOTAL.published).toBe(1419);
+    expect(PROMOTION_RANK_BANKS_TOTAL.target).toBe(2750);
+    expect(PROMOTION_RANK_BANKS_TOTAL.gap).toBe(1331);
   });
 
-  it("does not claim 500 verified items per rank", () => {
+  it("does not claim 550 verified items per rank", () => {
     for (const bank of PROMOTION_RANK_BANK_SUMMARIES) {
-      expect(bank.publishedCount).toBeLessThan(500);
+      expect(bank.publishedCount).toBeLessThan(550);
+      expect(bank.targetCount).toBe(550);
       expect(bank.gapToTarget).toBeGreaterThan(0);
       expect(bank.approvedCount).toBe(0);
       expect(bank.pendingCount).toBe(bank.publishedCount);
+      expect(bank.guidePdfHref).toMatch(/_550_Questions_Answers\.pdf$/);
     }
   });
 
@@ -88,7 +90,7 @@ describe("promotion rank banks inventory", () => {
 describe("promotion rank free / premium entitlement gate", () => {
   it("excludes premium-only stems from free selection pools", () => {
     const freePool = getTechBankQuestions("exam-ad-ii", { freeTierOnly: true });
-    // 50 free MCQs + 25 free True/False (all AD2 TF are free-tier tagged)
+    // 50 free MCQs + 25 free True/False (original AD2 Feb 2023 TF)
     expect(freePool.length).toBe(75);
     expect(freePool.every((q) => isTechQuestionAccessible(q, false))).toBe(true);
 
@@ -114,7 +116,7 @@ describe("promotion rank free / premium entitlement gate", () => {
       seed: 42,
       premiumAccess: true,
     });
-    expect(premiumIds.length).toBe(85);
+    expect(premiumIds.length).toBe(295);
     expect(premiumIds.some((id) => id === "exam-ad-ii-q051")).toBe(true);
     expect(premiumIds.some((id) => id.startsWith("exam-ad-ii-tf-"))).toBe(true);
   });

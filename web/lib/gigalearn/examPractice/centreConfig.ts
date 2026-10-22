@@ -91,30 +91,47 @@ export const EXAM_PRACTICE_DESTINATIONS = {
   adIiPracticeMcq:
     "/gigalearn/academy/tech/?course=exam-ad-ii&qtype=mcq&count=50",
   adIiPracticeTf:
-    "/gigalearn/academy/tech/?course=exam-ad-ii&qtype=true_false&count=25",
+    "/gigalearn/academy/tech/?course=exam-ad-ii&qtype=true_false&count=50",
   adIiPracticeFull:
     "/gigalearn/academy/tech/?course=exam-ad-ii&mode=practice_test&count=500",
   adIiCourse: "/gigalearn/academy/course/?slug=exam-ad-ii",
   adIPractice: "/gigalearn/academy/tech/?course=exam-ad-i&count=50",
+  adIPracticeMcq: "/gigalearn/academy/tech/?course=exam-ad-i&qtype=mcq&count=50",
+  adIPracticeTf:
+    "/gigalearn/academy/tech/?course=exam-ad-i&qtype=true_false&count=29",
   adIPracticeFull:
     "/gigalearn/academy/tech/?course=exam-ad-i&mode=practice_test&count=500",
   adICourse: "/gigalearn/academy/course/?slug=exam-ad-i",
   deputyDirectorPractice:
     "/gigalearn/academy/tech/?course=exam-deputy-director&count=50",
+  deputyDirectorPracticeMcq:
+    "/gigalearn/academy/tech/?course=exam-deputy-director&qtype=mcq&count=50",
+  deputyDirectorPracticeTf:
+    "/gigalearn/academy/tech/?course=exam-deputy-director&qtype=true_false&count=29",
   deputyDirectorPracticeFull:
     "/gigalearn/academy/tech/?course=exam-deputy-director&mode=practice_test&count=500",
   deputyDirectorCourse: "/gigalearn/academy/course/?slug=exam-deputy-director",
   directorIiPractice: "/gigalearn/academy/tech/?course=exam-director-ii&count=50",
+  directorIiPracticeMcq:
+    "/gigalearn/academy/tech/?course=exam-director-ii&qtype=mcq&count=50",
+  directorIiPracticeTf:
+    "/gigalearn/academy/tech/?course=exam-director-ii&qtype=true_false&count=29",
   directorIiPracticeFull:
     "/gigalearn/academy/tech/?course=exam-director-ii&mode=practice_test&count=500",
   directorIiCourse: "/gigalearn/academy/course/?slug=exam-director-ii",
   directorIPractice: "/gigalearn/academy/tech/?course=exam-director-i&count=50",
+  directorIPracticeMcq:
+    "/gigalearn/academy/tech/?course=exam-director-i&qtype=mcq&count=50",
+  directorIPracticeTf:
+    "/gigalearn/academy/tech/?course=exam-director-i&qtype=true_false&count=29",
   directorIPracticeFull:
     "/gigalearn/academy/tech/?course=exam-director-i&mode=practice_test&count=500",
   directorICourse: "/gigalearn/academy/course/?slug=exam-director-i",
   /** Mixed teacher-promotion bank True/False practice (rank unconfirmed for mock sources). */
   teacherPromotionTf:
     "/gigalearn/academy/tech/?course=exam-teacher-promotion&qtype=true_false&count=50",
+  promotionGuidesZip:
+    "/downloads/gigalearn/promotion-guides/GigaLearn_Teacher_Promotion_Practice_Guides.zip",
   academy: "/gigalearn/academy/",
   academyAssess: "/gigalearn/academy/assess/",
   academyMy: "/gigalearn/academy/my/",
@@ -137,6 +154,10 @@ const deputyDirectorMeta = getExamBankMeta("exam-deputy-director");
 const directorIiMeta = getExamBankMeta("exam-director-ii");
 const directorIMeta = getExamBankMeta("exam-director-i");
 
+/** Per-rank practice target (distinct publishable items — not “550 verified”). */
+export const PROMOTION_RANK_TARGET_COUNT = 550;
+export const PROMOTION_RANKS_TARGET_TOTAL = PROMOTION_RANK_TARGET_COUNT * 5;
+
 function rankBankSummary(meta: ReturnType<typeof getExamBankMeta>) {
   const approved = meta?.approvedQuestionCount ?? 0;
   const pending = meta?.pendingQuestionCount ?? 0;
@@ -154,11 +175,24 @@ function rankBankSummary(meta: ReturnType<typeof getExamBankMeta>) {
     mcqCount,
     trueFalseCount,
     questionTypes: types,
-    targetCount: 500,
-    gapToTarget: Math.max(0, 500 - published),
+    targetCount: PROMOTION_RANK_TARGET_COUNT,
+    gapToTarget: Math.max(0, PROMOTION_RANK_TARGET_COUNT - published),
     sourceDocument: meta?.sourceDocument ?? null,
     title: meta?.title ?? null,
     courseSlug: meta?.courseSlug ?? null,
+    guidePdfHref: meta?.courseSlug
+      ? `/downloads/gigalearn/promotion-guides/GigaLearn_${
+          meta.courseSlug === "exam-ad-ii"
+            ? "AD_II"
+            : meta.courseSlug === "exam-ad-i"
+              ? "AD_I"
+              : meta.courseSlug === "exam-deputy-director"
+                ? "DD"
+                : meta.courseSlug === "exam-director-ii"
+                  ? "D_II"
+                  : "D_I"
+        }_550_Questions_Answers.pdf`
+      : null,
   } as const;
 }
 
@@ -224,8 +258,8 @@ export const PROMOTION_RANK_BANK_SUMMARIES = [
     focus:
       "Instructional supervision, staff development, school improvement, operational leadership.",
     practiceHref: EXAM_PRACTICE_DESTINATIONS.adIPractice,
-    mcqHref: EXAM_PRACTICE_DESTINATIONS.adIPractice,
-    trueFalseHref: null as string | null,
+    mcqHref: EXAM_PRACTICE_DESTINATIONS.adIPracticeMcq,
+    trueFalseHref: EXAM_PRACTICE_DESTINATIONS.adIPracticeTf,
     fullHref: EXAM_PRACTICE_DESTINATIONS.adIPracticeFull,
     courseHref: EXAM_PRACTICE_DESTINATIONS.adICourse,
     ...rankBankSummary(adIMeta),
@@ -236,8 +270,8 @@ export const PROMOTION_RANK_BANK_SUMMARIES = [
     focus:
       "Institutional and district management, monitoring and evaluation, resource accountability.",
     practiceHref: EXAM_PRACTICE_DESTINATIONS.deputyDirectorPractice,
-    mcqHref: EXAM_PRACTICE_DESTINATIONS.deputyDirectorPractice,
-    trueFalseHref: null as string | null,
+    mcqHref: EXAM_PRACTICE_DESTINATIONS.deputyDirectorPracticeMcq,
+    trueFalseHref: EXAM_PRACTICE_DESTINATIONS.deputyDirectorPracticeTf,
     fullHref: EXAM_PRACTICE_DESTINATIONS.deputyDirectorPracticeFull,
     courseHref: EXAM_PRACTICE_DESTINATIONS.deputyDirectorCourse,
     ...rankBankSummary(deputyDirectorMeta),
@@ -248,8 +282,8 @@ export const PROMOTION_RANK_BANK_SUMMARIES = [
     focus:
       "Strategic planning, governance, policy implementation, institutional performance.",
     practiceHref: EXAM_PRACTICE_DESTINATIONS.directorIiPractice,
-    mcqHref: EXAM_PRACTICE_DESTINATIONS.directorIiPractice,
-    trueFalseHref: null as string | null,
+    mcqHref: EXAM_PRACTICE_DESTINATIONS.directorIiPracticeMcq,
+    trueFalseHref: EXAM_PRACTICE_DESTINATIONS.directorIiPracticeTf,
     fullHref: EXAM_PRACTICE_DESTINATIONS.directorIiPracticeFull,
     courseHref: EXAM_PRACTICE_DESTINATIONS.directorIiCourse,
     ...rankBankSummary(directorIiMeta),
@@ -260,8 +294,8 @@ export const PROMOTION_RANK_BANK_SUMMARIES = [
     focus:
       "Advanced strategic leadership, organisational governance, public-sector accountability.",
     practiceHref: EXAM_PRACTICE_DESTINATIONS.directorIPractice,
-    mcqHref: EXAM_PRACTICE_DESTINATIONS.directorIPractice,
-    trueFalseHref: null as string | null,
+    mcqHref: EXAM_PRACTICE_DESTINATIONS.directorIPracticeMcq,
+    trueFalseHref: EXAM_PRACTICE_DESTINATIONS.directorIPracticeTf,
     fullHref: EXAM_PRACTICE_DESTINATIONS.directorIPracticeFull,
     courseHref: EXAM_PRACTICE_DESTINATIONS.directorICourse,
     ...rankBankSummary(directorIMeta),
@@ -270,7 +304,7 @@ export const PROMOTION_RANK_BANK_SUMMARIES = [
 
 export const PROMOTION_RANK_BANKS_TOTAL = {
   published: PROMOTION_RANK_BANK_SUMMARIES.reduce((n, b) => n + b.publishedCount, 0),
-  target: 2500,
+  target: PROMOTION_RANKS_TARGET_TOTAL,
   gap: PROMOTION_RANK_BANK_SUMMARIES.reduce((n, b) => n + b.gapToTarget, 0),
 } as const;
 
