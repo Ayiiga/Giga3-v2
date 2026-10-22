@@ -40,7 +40,8 @@ export const PAYSTACK_MODAL_PACKS: ModalPack[] = [
     credits: 100,
     priceGhs: 60,
     name: "Basic",
-    subtitle: "100 credits/month (60 GHS) — chat, writing, research & media",
+    subtitle:
+      "100 credits/month (60 GHS) — chat, writing, research, media & Exam Practice full packs",
     productId: "sub_basic_monthly",
     recurring: true,
   },
@@ -49,7 +50,8 @@ export const PAYSTACK_MODAL_PACKS: ModalPack[] = [
     credits: 250,
     priceGhs: 150,
     name: "Pro",
-    subtitle: "250 credits/month (150 GHS) for daily creators",
+    subtitle:
+      "250 credits/month (150 GHS) for daily creators, plus Exam Practice full packs",
     badge: "Most Popular",
     popular: true,
     productId: "sub_pro_monthly",
@@ -60,7 +62,8 @@ export const PAYSTACK_MODAL_PACKS: ModalPack[] = [
     credits: 500,
     priceGhs: 350,
     name: "Premium",
-    subtitle: "500 credits/month (350 GHS) for teams and power users",
+    subtitle:
+      "500 credits/month (350 GHS) for teams and power users, plus Exam Practice full packs",
     productId: "sub_premium_monthly",
     recurring: true,
   },

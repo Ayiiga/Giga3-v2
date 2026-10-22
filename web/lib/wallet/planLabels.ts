@@ -29,6 +29,10 @@ export function planEntitlements(planId: SubscriptionPlanId): PlanEntitlement[] 
   return [
     { label: "AI chat & writing modes", included: true },
     { label: "Creator Studio access", included: isStudent },
+    {
+      label: "Exam Practice full packs (Basic GHS 60+)",
+      included: isStudent,
+    },
     { label: "GigaSocial communities", included: true },
     { label: "Marketplace listing privileges", included: isCreator },
     { label: "Premium media tools", included: isCreator },
